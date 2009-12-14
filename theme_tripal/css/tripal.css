@@ -1,0 +1,91 @@
+/*
+ Copyright 2009 Clemson University
+*/
+
+table.tripal_table_vert {
+   width: 0px;  /* reset the table width */
+}
+
+tbody.tripal_table_vert, tbody th {
+   border: 0px solid #CCCCCC;
+   padding: 0px;
+}
+
+table.tripal_table_horz {
+   width: 0px;  /* reset the table width */
+}
+
+tbody.tripal_table_horz, tbody th {
+   border: 0px solid #CCCCCC;
+   padding: 5px 15px 10px 0px;
+   margin: 0px;
+}
+
+td.tripal_table_horz, td {  
+   padding: 0px 15px 5px 0px;
+   margin: 0px;
+}
+
+.tripal_expandableBox {
+   padding: 10px 10px 10px 10px;
+   border: 1px solid #CCC5AE;
+   cursor: pointer; /* hand-shaped cursor */
+   background-image: url("../images/arrow-up-48x48.png");
+   background-repeat: no-repeat;
+   background-position: top right; 
+   background-color: #EEEFFF;
+}
+
+.tripal_expandableBoxContent{
+   margin: 0 0 0 0;
+   padding: 5px 5px 5px 5px;
+   clear:both;
+   border-right: 1px solid #CCC5AE;
+   border-bottom: 1px solid #CCC5AE;
+   border-left: 1px solid #CCC5AE;
+   background-color: #FFFFFF;
+   font-size: small;
+   overflow: auto;
+}
+
+.tripal_expandableSubBoxContent{
+   padding: 5px 5px 5px 5px;
+   clear:both;
+   border-right: 1px solid #CCC5AE;
+   border-bottom: 1px solid #CCC5AE;
+   border-left: 1px solid #CCC5AE;
+   border-top: 1px solid #CCC5AE;
+   background-color: #EEFEEE;
+   overflow: auto;
+   min-height: 150px;
+   font-family: courier;
+}
+
+#tripal_expandableBox_toggle_button {
+   cursor: pointer; /* hand-shaped cursor */
+}
+
+#tripal_ajaxLoading {
+   position: fixed;
+   top: 40%;
+   left: 40%;
+   padding: 15px;
+   border: 1px solid #000000;
+   background-color: #EEEEEE;
+   opacity: 0.75;
+   -moz-opacity: 0.75;
+   z-index: 10;
+}
+
+#tripal_ajaxLoading #loadingText {
+   font-weight: bold;
+   font-size: 1.5em;
+   color: #000000;
+}
+
+/* Restrict the list of checkboxes in a 300px window */
+.form-checkboxes {
+   height: auto;
+   max-height: 300px;
+   overflow: auto;
+}
