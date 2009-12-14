@@ -3,23 +3,28 @@
 //
 
 if (Drupal.jsEnabled) {
-  var baseurl;
+   var baseurl;
+   var isClean;
   
    $(document).ready(function() {
        // Get the base url. Drupal can not pass it through the form so we need 
        // to get it ourself. Use different patterns to match the url in case
        // the Clean URL function is turned on
        baseurl = location.href.substring(0,location.href.lastIndexOf('/?q=/node'));
+       isClean = 1;
        if(!baseurl) {
-    	   baseurl = location.href.substring(0,location.href.lastIndexOf('/node'));
+          baseurl = location.href.substring(0,location.href.lastIndexOf('/node'));
+          isClean = 0;
        }
        if (!baseurl) {
           // This base_url is obtained when Clena URL function is off
           baseurl = location.href.substring(0,location.href.lastIndexOf('/?q=node'));
+          isClean = 1;
        }
        if (!baseurl) {
           // The last possibility is we've assigned an alias path, get base_url till the last /
           baseurl = location.href.substring(0,location.href.lastIndexOf('/'));
+          isClean = 0;
        }
 
      // any img object of class .tripal_cv_chart will have it's src attribute
@@ -51,21 +56,25 @@ if (Drupal.jsEnabled) {
      $(".tripal_cv_tree").attr("id", function(){
          var api = new jGCharts.Api();
          var tree_id = $(this).attr("id");
-         var link = baseurl + '/tripal_cv_tree/' + tree_id; 
+         var link = baseurl + "/";
+         if(isClean){
+            link += "?q=";
+         }
+         link += 'tripal_cv_tree/' + tree_id; 
          tripal_startAjax();
-	 $.ajax({
-	      url: link,
-	      dataType: 'json',
-	      type: 'POST',
-	      success: function(data){  
+         $.ajax({
+            url: link,
+            dataType: 'json',
+            type: 'POST',
+            success: function(data){  
                  vars = { 
                   cv : data[0],
                   tree_id : data[1],
                  }
                  init_tree(tree_id,vars);    
                  tripal_stopAjax();
-	      }
-	 });
+            }
+         });
       });
    }
 
@@ -73,19 +82,23 @@ if (Drupal.jsEnabled) {
      $(".tripal_cv_chart").attr("src", function(){
          var api = new jGCharts.Api();
          var chart_id = $(this).attr("id");
-         var link = baseurl + '/tripal_cv_chart/' + chart_id;
+         var link = baseurl + "/";
+         if(isClean){
+            link += "?q=";
+         }
+         link += '/tripal_cv_chart/' + chart_id;
          tripal_startAjax();
          $.ajax({
-	   url: link,
-	   dataType: 'json',
-	   type: 'POST',
-	   success: function(data){  
-             src = api.make(data[0]);
-             chart_id = data[1];
-             $('#' + chart_id).attr('src',src);       
-             tripal_stopAjax();
-	   }
-	 });
+            url: link,
+            dataType: 'json',
+            type: 'POST',
+            success: function(data){  
+               src = api.make(data[0]);
+               chart_id = data[1];
+               $('#' + chart_id).attr('src',src);       
+               tripal_stopAjax();
+            }
+         });
       });
    }
    // The Tripal CV module provides a CV term browser.  This function
@@ -134,8 +147,8 @@ if (Drupal.jsEnabled) {
    //------------------------------------------------------------
    // This function initializes a CV term tree
    function init_tree(id,vars){
-	   var link = baseurl + '/tripal_cv_update_tree';
-	   var theme_link = baseurl + "/sites/all/themes/theme_tripal/js/jsTree/source/themes/";
+      var link = baseurl + '/tripal_cv_update_tree';
+      var theme_link = baseurl + "/sites/all/themes/theme_tripal/js/jsTree/source/themes/";
       $("#" + id).tree ({
         data    : {
           type    : "json", // ENUM [json, xml_flat, xml_nested, predefined]
