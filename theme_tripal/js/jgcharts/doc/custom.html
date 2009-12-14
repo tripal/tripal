@@ -1,0 +1,413 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+    <meta http-equiv="refresh" content="0; url=../include/demo/">
+    <meta http-equiv="Content-type" content="text/html; charset=UTF-8" />
+    <title>jgcharts - jQuery Google Charts</title>
+    <meta http-equiv="Content-Language" content="en-us" />
+    <meta name="author" content="Massimiliano Balestrieri" />
+    <script type="text/javascript" src="../lib/jquery/jquery-1.2.6.min.js"></script>
+    <script type="text/javascript" src="../lib/farbtastic/farbtastic.js"></script>
+    <link rel="stylesheet" href="../lib/farbtastic/farbtastic.css" type="text/css" />
+    <script type="text/javascript" src="../lib/metadata/jquery.metadata.pack.js"></script>
+    <script type="text/javascript" src="../lib/sugar-arrays.js"></script>
+    <script type="text/javascript" src="../lib/iterators.js"></script>
+    <script type="text/javascript" src="../lib/jquery.tablelib.js"></script>
+    <script type="text/javascript" src="../jgcharts.js"></script>
+    <script type="text/javascript" src="../plugins/table/jgtable.js"></script>
+    <script type="text/javascript"><!--
+        jQuery(document).ready(function(){
+            var json = jQuery.getJSON(
+                "json/delpiero.json",
+	            //wait json data
+	            function(json){
+	                var data_custom = [];
+	                for(var x= 0;x< jQuery("#table-9").find("tbody > tr").size();x++){
+		                data_custom.push(jQuery.map( jQuery("#table-9").find("tbody > tr:eq(" + x + ") > td"),
+	                               function(td,index){
+                                        if(index % 11 == 1 || index % 11 == 2){
+                                            if(parseInt(jQuery(td).text()))
+                                                return parseInt(jQuery(td).text());
+                                            else
+                                                return 0;
+                                        } 
+                                   }
+	                    ));
+	                    
+	                }
+	                var axis_custom = jQuery.map( jQuery("#table-9").find("tbody > tr > th.custom"),
+                               function(th) { return jQuery(th).text(); }
+                    );
+                    var legend_custom = ["presenze", "gol"];
+                    
+                    json.axis_labels = axis_custom;
+                    json.data = data_custom;
+                    json.legend = legend_custom;
+                    
+                    
+		            jQuery(".jgtable-json").jgtable(json);
+		            
+		            var data_custom = [];
+                    for(var x= 0;x< jQuery("#table-9").find("tbody > tr").size();x++){
+                        data_custom.push(jQuery.map( jQuery("#table-9").find("tbody > tr:eq(" + x + ") > td"),
+                                   function(td,index){
+                                        if(index % 11 == 9 || index % 11 == 10){
+                                            if(parseInt(jQuery(td).text()))
+                                                return parseInt(jQuery(td).text());
+                                            else
+                                                return 0;
+                                        } 
+                                   }
+                        ));
+                        
+                    }
+                    json.data = data_custom;
+                    json.title = 'Gol e presenze totali';
+                    
+		            jQuery(".jgtable-json").jgtable(json);
+		            jQuery(".example h1").click(function(){
+		                jQuery(this).parent().find("div, table").toggle();
+		            });
+		            //.trigger("click");
+	        });
+            
+        });
+    --></script>
+    <style type="text/css">
+        body{font-family:Trebuchet MS,Arial,FreeSans,sans-serif;}
+        .example h1{border:1px dashed #000;padding:3px;}
+        table {width:100%}
+        table tbody tr td,table tbody tr th,table thead tr th,table tfoot tr th
+        {text-align:left;font-weight:normal;font-size:80%;border:1px dashed #000; padding:3px; margin:1px}
+    </style>
+</head>
+<body>
+<h1>JQuery Google Charts 0.91 - Examples (<a href="dashboard.html">try dashboard for write metadata</a>)</h1>
+<div class="example">
+<h1>Example Custom - Alessandro Del Piero</h1>
+<table id="table-9" class="jgtable-json">
+  <thead>
+    <tr>
+    <th colspan="2">Cronologia</th>
+    <th colspan="2">Campionato</th>
+    <th colspan="2">Coppe di Lega<small><sup>*</sup></small></th>
+    <th colspan="2">Coppe Europee<small><sup>**</sup></small></th>
+    <th colspan="2">Coppe Internazionali<small><sup>***</sup></small></th>
+    <th colspan="2">Totale</th>
+  </tr>
+  <tr>
+    <th>Stagione - Squadra</th>
+    <th>Serie</th>
+    <th>Presenze</th>
+    <th>Gol</th>
+    <th>Presenze</th>
+    <th>Gol</th>
+    <th>Presenze</th>
+    
+    <th>Gol</th>
+    <th>Presenze</th>
+    <th>Gol</th>
+    <th>Presenze</th>
+    <th>Gol</th>
+  </tr>
+  </thead>
+  <tfoot>
+    <tr>
+        <th colspan="2">Totale</th>
+        <th>417</th>
+        <th>176</th>
+        <th>51</th>
+        <th>22</th>
+        <th>105</th>
+        <th>43</th>
+        <th>1</th>
+        
+        <th>1</th>
+        <th>574</th>
+        <th>242</th>
+    </tr>
+    </tfoot>
+  <tbody>
+  
+  <tr>
+	<th class="custom">1991-92 - Padova</th>
+	
+	<td>B</td>
+	<td>4</td>
+	<td>-</td>
+	<td>-</td>
+	<td>-</td>
+	<td>-</td>
+	<td>-</td>
+	<td>-</td>
+	<td>-</td>
+	
+	<td>4</td>
+	<td>-</td>
+	</tr>
+	<tr>
+	<th class="custom">1992-93 - Juventus</th>
+	<td>B</td>
+	<td>10</td>
+	<td>1</td>
+	
+	<td>-</td>
+	<td>-</td>
+	<td>-</td>
+	<td>-</td>
+	<td>-</td>
+	<td>-</td>
+	<td>10</td>
+	<td>1</td>
+	</tr>
+	
+	<tr>
+	<th class="custom">1993-94 - Juventus</th>
+	<td>A</td>
+	<td>11</td>
+	<td>5</td>
+	<td>1</td>
+	<td>-</td>
+	<td>2</td>
+	
+	<td>-</td>
+	<td>-</td>
+	<td>-</td>
+	<td>14</td>
+	<td>5</td>
+	</tr>
+	<tr>
+	<th class="custom">1994-95 - Juventus</th>
+	
+	<td>A</td>
+	<td>29</td>
+	<td>8</td>
+	<td>10</td>
+	<td>1</td>
+	<td>11</td>
+	<td>1</td>
+	<td>-</td>
+	<td>-</td>
+	
+	<td>50</td>
+	<td>10</td>
+	</tr>
+	<tr>
+	<th class="custom">1995-96 - Juventus</th>
+	<td>A</td>
+	<td>29</td>
+	<td>6</td>
+	
+	<td>3</td>
+	<td>1</td>
+	<td>11</td>
+	<td>6</td>
+	<td>-</td>
+	<td>-</td>
+	<td>43</td>
+	<td>13</td>
+	</tr>
+	
+	<tr>
+	<th class="custom">1996-97 - Juventus</th>
+	<td>A</td>
+	<td>22</td>
+	<td>8</td>
+	<td>4</td>
+	<td>-</td>
+	<td>8</td>
+	
+	<td>6</td>
+	<td>1</td>
+	<td>1</td>
+	<td>35</td>
+	<td>15</td>
+	</tr>
+	<tr>
+	<th class="custom">1997-98 - Juventus</th>
+	
+	<td>A</td>
+	<td>32</td>
+	<td>21</td>
+	<td>5</td>
+	<td>1</td>
+	<td>10</td>
+	<td>10</td>
+	<td>-</td>
+	<td>-</td>
+	
+	<td>47</td>
+	<td>32</td>
+	</tr>
+	<tr>
+	<th class="custom">1998-99 - Juventus</th>
+	<td>A</td>
+	<td>8</td>
+	<td>2</td>
+	
+	<td>2</td>
+	<td>1</td>
+	<td>4</td>
+	<td>-</td>
+	<td>-</td>
+	<td>-</td>
+	<td>14</td>
+	<td>3</td>
+	</tr>
+	
+	<tr>
+	<th class="custom">1999-00 - Juventus</th>
+	<td>A</td>
+	<td>34</td>
+	<td>9</td>
+	<td>2</td>
+	<td>1</td>
+	<td>9</td>
+	
+	<td>2</td>
+	<td>-</td>
+	<td>-</td>
+	<td>45</td>
+	<td>12</td>
+	</tr>
+	<tr>
+	<th class="custom">2000-01 - Juventus</th>
+	
+	<td>A</td>
+	<td>25</td>
+	<td>9</td>
+	<td>2</td>
+	<td>-</td>
+	<td>6</td>
+	<td>-</td>
+	<td>-</td>
+	<td>-</td>
+	
+	<td>33</td>
+	<td>9</td>
+	</tr>
+	<tr>
+	<th class="custom">2001-02 - Juventus</th>
+	<td>A</td>
+	<td>32</td>
+	<td>16</td>
+	
+	<td>4</td>
+	<td>1</td>
+	<td>10</td>
+	<td>4</td>
+	<td>-</td>
+	<td>-</td>
+	<td>46</td>
+	<td>21</td>
+	</tr>
+	
+	<tr>
+	<th class="custom">2002-03 - Juventus</th>
+	<td>A</td>
+	<td>24</td>
+	<td>16</td>
+	<td>1</td>
+	<td>2</td>
+	<td>13</td>
+	
+	<td>5</td>
+	<td>-</td>
+	<td>-</td>
+	<td>38</td>
+	<td>23</td>
+	</tr>
+	<tr>
+	<th class="custom">2003-04 - Juventus</th>
+	
+	<td>A</td>
+	<td>22</td>
+	<td>8</td>
+	<td>5</td>
+	<td>3</td>
+	<td>4</td>
+	<td>3</td>
+	<td>-</td>
+	<td>-</td>
+	
+	<td>31</td>
+	<td>14</td>
+	</tr>
+	<tr>
+	<th class="custom">2004-05 - Juventus</th>
+	<td>A</td>
+	<td>30</td>
+	<td>14</td>
+	
+	<td>1</td>
+	<td>-</td>
+	<td>10</td>
+	<td>3</td>
+	<td>-</td>
+	<td>-</td>
+	<td>41</td>
+	<td>17</td>
+	</tr>
+	
+	<tr>
+	<th class="custom">2005-06 - Juventus</th>
+    <td>A</td>
+	<td>33</td>
+	<td>12</td>
+	<td>5</td>
+	<td>5</td>
+	<td>7</td>
+	
+	<td>3</td>
+	<td>-</td>
+	<td>-</td>
+	<td>45</td>
+	<td>20</td>
+	</tr>
+	<tr>
+	<th class="custom">2006-07 - Juventus</th>
+    
+	<td>B</td>
+	<td>35</td>
+	<td>20</td>
+	<td>2</td>
+	<td>3</td>
+	<td>-</td>
+	<td>-</td>
+	<td>-</td>
+	<td>-</td>
+	
+	<td>37</td>
+	<td>23</td>
+	</tr>
+	
+	<tr>
+	<th class="custom">2007-08 - Juventus</th>
+    <td>A</td>
+	<td>37</td>
+	<td>21</td>
+	
+	<td>4</td>
+	<td>3</td>
+	<td>-</td>
+	<td>-</td>
+	<td>-</td>
+	<td>-</td>
+	<td>41</td>
+	<td>24</td>
+	</tr>
+	
+	
+	</tbody>
+	
+</table>
+</div>
+
+<script src="http://www.google-analytics.com/urchin.js" type="text/javascript"></script>
+<script type="text/javascript">
+_uacct = "UA-258871-1";
+urchinTracker();
+</script>
+
+</body>
+</html>    
