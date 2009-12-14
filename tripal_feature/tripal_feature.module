@@ -56,8 +56,8 @@ function tripal_feature_admin () {
          '#type' => 'fieldset',
          '#title' => t('Feature Browser')
       );
-      $allowedoptions ['show_feature_browser'] = "Show the feature browser on the organism page. The Browser loads when page loads. This may be slow for large sites.";
-      $allowedoptions ['hide_feature_browser'] = "Hide the feature browser on the organism page. Disables the feature browser completely.";
+      $allowedoptions1 ['show_feature_browser'] = "Show the feature browser on the organism page. The browser loads when page loads. This may be slow for large sites.";
+      $allowedoptions1 ['hide_feature_browser'] = "Hide the feature browser on the organism page. Disables the feature browser completely.";
 //      $allowedoptions ['allow_feature_browser'] = "Allow loading of the feature browsing through AJAX. For large sites the initial page load will be quick with the feature browser loading afterwards.";
 
       $form['browser']['browse_features'] = array(
@@ -67,13 +67,35 @@ function tripal_feature_admin () {
             'information, especially for large sites, but it will alow users exploring the site (such '.
             'as students) to better understand the data types available on the site.',
          '#type' => 'radios',
-         '#options' => $allowedoptions,
+         '#options' => $allowedoptions1,
          '#default_value'=>variable_get('tripal_feature_browse_setting',
             array('show_feature_browser')),
       );
       $form['browser']['set_browse_button'] = array(
          '#type' => 'submit',
          '#value' => t('Set Browser'),
+         '#weight' => 2,
+      );
+
+      $form['summary'] = array(
+         '#type' => 'fieldset',
+         '#title' => t('Feature Summary')
+      );
+      $allowedoptions2 ['show_feature_summary'] = "Show the feature summary on the organism page. The summary loads when page loads.";
+      $allowedoptions2 ['hide_feature_summary'] = "Hide the feature summary on the organism page. Disables the feature summary.";
+
+      $form['summary']['feature_summary'] = array(
+         '#title' => 'Feature Summary on Organism Page',
+         '#description' => 'A feature summary can be added to an organism page to allow users to see the '.
+            'type and quantity of features available for the organism.',
+         '#type' => 'radios',
+         '#options' => $allowedoptions2,
+         '#default_value'=>variable_get('tripal_feature_summary_setting',
+            array('show_feature_summary')),
+      );
+      $form['summary']['set_summary_button'] = array(
+         '#type' => 'submit',
+         '#value' => t('Set Summary'),
          '#weight' => 2,
       );
 
@@ -130,7 +152,9 @@ function tripal_feature_admin_validate($form, &$form_state) {
       variable_set('tripal_feature_browse_setting',$form_state['values']['browse_features']);
    }
 
-
+   if ($form_state['values']['op'] == t('Set Summary')) {
+      variable_set('tripal_feature_summary_setting',$form_state['values']['feature_summary']);
+   }
 }
 /************************************************************************
  *
@@ -974,6 +998,13 @@ function tripal_feature_theme () {
  */
 function theme_tripal_feature_counts($node){
 
+   // don't show the summary if the settings in the admin page is turned off
+   $show_browser = variable_get('tripal_feature_summary_setting',array('show_feature_summary'));
+
+   if(strcmp($show_browser,'show_feature_summary')!=0){
+      return;
+   }
+
    // get the feature counts.  This is dependent on a materialized view
    // installed with the organism module
    $content = '';
@@ -1027,6 +1058,7 @@ function tripal_feature_cv_chart($chart_id){
      count_mview      => 'organism_feature_count',
      cvterm_id_column => 'cvterm_id',
      count_column     => 'num_features',
+     size             => '650x200',
      filter           => "CNT.organism_id = $organism_id AND NOT feature_type = 'EST_match' ",
   );
   return $options;
