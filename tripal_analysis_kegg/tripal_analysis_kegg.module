@@ -1,0 +1,1211 @@
+<?php
+
+//
+// Copyright 2009 Clemson University
+//
+
+/*******************************************************************************
+ *
+ ******************************************************************************/
+
+function tripal_analysis_kegg_init(){
+   // add the tripal_analysis_kegg JS and CSS
+   drupal_add_js(drupal_get_path('theme', 'tripal').'/js/tripal_analysis_kegg.js');
+   drupal_add_css(drupal_get_path('theme', 'tripal').'/css/tripal_analysis_kegg.css');
+   // add the jsTree JS and CSS
+   drupal_add_css(drupal_get_path('theme', 'tripal').'/js/jsTree/source/tree_component.css');
+   drupal_add_js (drupal_get_path('theme', 'tripal').'/js/jsTree/source/_lib.js');
+   drupal_add_js (drupal_get_path('theme', 'tripal').'/js/jsTree/source/tree_component.js');
+}
+/*******************************************************************************
+ *  Provide information to drupal about the node types that we're creating
+ *  in this module
+ */
+function tripal_analysis_kegg_node_info() {
+   $nodes = array();
+   $nodes['chado_analysis_kegg'] = array(
+      'name' => t('Analysis: KEGG'),
+      'module' => 'chado_analysis_kegg',
+      'description' => t('Results from a KEGG/KAAS analysis'),
+      'has_title' => FALSE,
+      'title_label' => t('Analysis: KEGG'),
+      'has_body' => FALSE,
+      'body_label' => t('KEGG Analysis Description'),
+      'locked' => TRUE
+   );
+   return $nodes;
+}
+
+/*******************************************************************************
+ * Menu items are automatically added for the new node types created
+ * by this module to the 'Create Content' Navigation menu item.  This function
+ * adds more menu items needed for this module.
+ */
+function tripal_analysis_kegg_menu() {
+   $items['brite/%'] = array(
+     'title' => t('KEGG BRITE'),
+     'page callback' => 'tripal_analysis_kegg_brite',
+     'page arguments' => array(1, 2),
+     'access arguments' => array('access content'),
+     'type' => MENU_CALLBACK
+   );
+   $items['node/%/kegg'] = array(
+     'title' => t('KEGG'),
+     'page callback' => 'tripal_analysis_kegg_organism_results',
+     'page arguments' => array(1),
+     'access callback' => 'tripal_analysis_kegg_node_has_menu',
+     'access arguments' => array('access chado_analysis_kegg content',1),
+     'type' => MENU_LOCAL_TASK | MENU_NORMAL_ITEM
+   );
+   $items['tripal_analysis_kegg_org_report'] = array(
+      'path' => 'tripal_analysis_kegg_org_report',
+      'title' => t('Analysis KEGG report'),
+      'page callback' => 'tripal_analysis_kegg_org_report',
+      'page arguments' => array(1),
+      'access arguments' => array('access chado_analysis_kegg content'),
+      'type' => MENU_CALLBACK
+   );
+   return $items;
+}
+/*******************************************************************************
+ * Set the permission types that the chado module uses.  Essentially we
+ * want permissionis that protect creation, editing and deleting of chado
+ * data objects
+ */
+function tripal_analysis_kegg_perm(){
+   return array(
+      'access chado_analysis_kegg content',
+      'create chado_analysis_kegg content',
+      'delete chado_analysis_kegg content',
+      'edit chado_analysis_kegg content',
+   );
+}
+
+/*******************************************************************************
+ *  The following function proves access control for users trying to
+ *  perform actions on data managed by this module
+ */
+function chado_analysis_kegg_access($op, $node, $account){
+   if ($op == 'create') {
+      return user_access('create chado_analysis_kegg content', $account);
+   }
+
+   if ($op == 'update') {
+      if (user_access('edit chado_analysis_kegg content', $account)) {
+         return TRUE;
+      }
+   }
+   if ($op == 'delete') {
+      if (user_access('delete chado_analysis_kegg content', $account)) {
+         return TRUE;
+      }
+   }
+   if ($op == 'view') {
+      if (user_access('access chado_analysis_kegg content', $account)) {
+         return TRUE;
+      }
+   }
+   return FALSE;
+}
+
+/*******************************************************************************
+ * Dynamic addition/removal of menu item
+ */
+function tripal_analysis_kegg_node_has_menu($type,$vid){
+
+   // check to see if this node is an organism node
+   $sql = 'SELECT organism_id FROM {chado_organism} WHERE vid = %d';
+   $result = db_query($sql, $vid);
+
+   // menu status
+   $box_status =variable_get("tripal_analysis_kegg-box-results","menu_off");
+
+   // if this node is not an organism or a feature node then return false
+   // we don't want the menu item to be shown, otherwise get the normal perms
+   if($org_id = db_fetch_object($result)){
+      if(strcmp($box_status,"menu_on")==0){
+         return user_access($type);
+      }
+   } else {
+      return FALSE;
+   }
+}
+/*******************************************************************************
+ */
+function tripal_analysis_kegg_brite($analysis_id, $type_id, $ajax){
+   // If not called by ajax
+   if (!$ajax) {
+      // Add ajax loading box
+      $url_ajax = url("sites/all/themes/theme_tripal/images/ajax-loader.gif");
+      $content .= "<div id=\"tripal_ajaxLoading\" style=\"display:none\">".
+                   "<div id=\"loadingText\">Loading...</div>".
+                   "<img src=\"$url_ajax\"></div>";
+      // Generate tripal_expandable box for the content
+      $content .=  "<div id=\"tripal_kegg_brite_results\" class=\"tripal_kegg_brite-info-box\">
+                      <div class=\"tripal_expandableBox\">
+                        <h3>Analysis Results</h3>
+                      </div>
+                      <div class=\"tripal_expandableBoxContent\">
+                        <table>
+                          <tr>
+                            <th>KEGG BRITE</th>
+                            <th id=\"tripal_kegg_brite_header\">Hierarchy:</th>
+                          </tr>
+                          <tr>
+                            <td nowrap valign=\"top\">";
+      // List all BRITE terms on the left
+      $sql = "SELECT CVT.name, CVT.cvterm_id
+              FROM {cvterm} CVT 
+              INNER JOIN analysisprop AP ON CVT.cvterm_id = AP.type_id
+              WHERE AP.analysis_id = %d
+              AND CVT.definition LIKE 'KEGG BRITE term: %'
+              ORDER BY CVT.cvterm_id";
+      $previous_db = db_set_active('chado');
+      $result = db_query($sql, $analysis_id);
+      db_set_active($previous_db);
+      while ($brite_term = db_fetch_object($result)) {
+         $url = url("brite/$analysis_id/$brite_term->cvterm_id/1");
+         $content .= "<li class=\"tripal_kegg_brite_terms\"><a onclick=\"return tripal_update_brite(".
+                   "this,$brite_term->cvterm_id)\" href=\"$url\">
+                   $brite_term->name
+                   </a></li>";
+      }
+      // Show the hierarchy tree
+      $content .="</td>
+                  <td nowrap id=\"tripal_kegg_brite_hierarchy\" valign=\"top\">";
+      $content .= "<i>Note:</i> Click a BRITE term for its functional hierarchy";
+      
+   // If called by ajax, generate tree structure
+   } else {
+      // Get BRITE term from cvterm table
+      $previous_db = db_set_active('chado');
+      $sql = 'SELECT name FROM {cvterm} WHERE cvterm_id=%d';
+      $brite_term = db_result(db_query($sql, $type_id));
+
+      // Get BRITE hierarchy tree
+      $sql = "SELECT value
+           FROM {analysisprop} AP
+           INNER JOIN CVterm CVT on AP.type_id = CVT.cvterm_id
+           INNER JOIN CV on CVT.cv_id = CV.cv_id
+           WHERE CV.name = 'tripal' and CVT.name = '%s' 
+           AND AP.analysis_id = %d";
+
+      $result = db_fetch_object(db_query($sql, $brite_term, $analysis_id));
+      db_set_active($previous_db);
+      $content .= "<div class=\"tripal_kegg_brite_tree\" id=\"tripal_kegg_brite_tree_$type_id\">$result->value</div>";
+   }
+    
+   if (!$ajax) {
+            $content .= "     </td>
+                            </tr>
+                          </table>
+                        </div>
+                      </div>";
+   }
+   // since this function provides output for addition into
+   // an analysis page, as well as an AJAX refresh of content
+   // within the BRITE hierarchy we need to setup the return
+   // different depending on the request type
+   if($ajax){
+      drupal_json(array('update' => $content,
+      					   'id' => "tripal_kegg_brite_tree_$type_id",
+                        'brite_term' => "Hierarchy: $brite_term"));
+   } else {
+      return $content;
+   }
+}
+
+/*******************************************************************************
+ *  Provide a KEGG Analysis form
+ */
+function chado_analysis_kegg_form ($node){
+
+   $type = node_get_types('type', $node);
+   $form = array();
+   $form['title']= array(
+      '#type' => 'hidden',
+      '#default_value' => $node->title,
+   );
+   $form['analysisname']= array(
+      '#type' => 'textfield',
+      '#title' => t('Analysis Name'),
+      '#required' => FALSE,
+      '#default_value' => $node->analysisname,
+      '#weight' => 1
+   );
+   $form['program']= array(
+      '#type' => 'textfield',
+      '#title' => t('Program'),
+      '#required' => TRUE,
+      '#default_value' => $node->program,
+      '#weight' => 2
+   );
+   $form['programversion']= array(
+      '#type' => 'textfield',
+      '#title' => t('Program Version'),
+      '#required' => TRUE,
+      '#default_value' => $node->programversion,
+      '#weight' => 3
+   );
+   $form['algorithm']= array(
+      '#type' => 'textfield',
+      '#title' => t('Algorithm'),
+      '#required' => FALSE,
+      '#default_value' => $node->algorithm,
+      '#weight' => 4
+   );
+   $form['sourcename']= array(
+      '#type' => 'textfield',
+      '#title' => t('Source Name'),
+      '#required' => FALSE,
+      '#default_value' => $node->sourcename,
+      '#weight' => 5
+   );
+   $form['sourceversion']= array(
+      '#type' => 'textfield',
+      '#title' => t('Source Version'),
+      '#required' => FALSE,
+      '#default_value' => $node->sourceversion,
+      '#weight' => 6
+   );
+   $form['sourceuri']= array(
+      '#type' => 'textfield',
+      '#title' => t('Source URI'),
+      '#required' => FALSE,
+      '#default_value' => $node->sourceuri,
+      '#weight' => 7
+   );
+   // Get time saved in chado
+   $default_time = $node->timeexecuted;
+   $year = preg_replace("/^(\d+)-\d+-\d+ .*/", "$1", $default_time);
+   $month = preg_replace("/^\d+-0?(\d+)-\d+ .*/", "$1", $default_time);
+   $day = preg_replace("/^\d+-\d+-0?(\d+) .*/", "$1", $default_time);
+   // If the time is not set, use current time
+   if (!$default_time) {
+      $default_time = time();
+      $year = format_date($default_time, 'custom', 'Y');
+      $month = format_date($default_time, 'custom', 'n');
+      $day = format_date($default_time, 'custom', 'j');
+   }
+   $form['timeexecuted']= array(
+      '#type' => 'date',
+      '#title' => t('Time Executed'),
+      '#required' => TRUE,
+      '#default_value' => array(
+         'year' => $year,
+         'month' => $month,
+         'day' => $day,
+   ),
+      '#weight' => 8
+   );
+   $form['description']= array(
+      '#type' => 'textarea',
+      '#rows' => 15,
+      '#title' => t('Description and/or Program Settings'),
+      '#required' => FALSE,
+      '#default_value' => check_plain($node->description),
+      '#weight' => 9
+   );
+
+   //----KEGG/KAAS Settings (Shown only when Tripal KASS is enabled) ----
+   $moreSettings ['kegg'] = 'KEGG Analysis Settings';
+   $form['kegg'] = array(
+      '#title' => t('KEGG Settings'),
+      '#type' => 'fieldset',
+      '#description' => t('Specific Settings for KEGG Analysis.'),
+      '#collapsible' => TRUE,
+      '#attributes' => array('id' => 'kegg-extra-settings'),
+      '#weight' => 11
+   );
+   $form['kegg']['hierfile'] = array(
+      '#title' => t('KAAS hier.tar.gz Output File'),
+      '#type' => 'textfield',
+      '#description' => t('The full path to the hier.tar.gz file generated by KAAS. 
+                           Alternatively, you can input the full path to the directory
+                           that contains decompressed kegg files.'),
+      '#default_value' => $node->hierfile,
+   );
+   $form['kegg']['keggjob'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Submit a job to parse the kegg output into analysisfeatureprop table'),
+      '#description' => t('Note: features associated with the KAAS results must '.
+                          'exist in chado before parsing the file. Otherwise, KEGG '.
+                          'results that cannot be linked to a feature will be '.
+                          'discarded.'),
+      '#default_value' => $node->keggjob,
+   );
+   return $form;
+}
+/*******************************************************************************
+ *
+ */
+function chado_analysis_kegg_insert($node){
+   global $user;
+   // Create a timestamp so we can insert it into the chado database
+   $time = $node->timeexecuted;
+   $month = $time['month'];
+   $day = $time['day'];
+   $year = $time['year'];
+   $timestamp = $month.'/'.$day.'/'.$year;
+
+   // If this analysis already exists then don't recreate it in chado
+   $analysis_id = $node->analysis_id;
+   if ($analysis_id) {
+      $sql = "SELECT analysis_id ".
+             "FROM {Analysis} ".
+             "WHERE analysis_id = %d ";
+      $previous_db = db_set_active('chado');
+      $analysis = db_fetch_object(db_query($sql, $node->analysis_id));
+      db_set_active($previous_db);
+   }
+
+   // If the analysis doesn't exist then let's create it in chado.
+   if(!$analysis){
+      // First add the item to the chado analysis table
+      $sql = "INSERT INTO {analysis} ".
+             "  (name, description, program, programversion, algorithm, ".
+             "   sourcename, sourceversion, sourceuri, timeexecuted) ".
+             "VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s')";
+      $previous_db = db_set_active('chado');  // use chado database
+      db_query($sql,$node->analysisname, $node->description,
+      $node->program,$node->programversion,$node->algorithm,
+      $node->sourcename, $node->sourceversion, $node->sourceuri,
+      $timestamp);
+
+      // find the newly entered analysis_id
+      $sql = "SELECT analysis_id ".
+             "FROM {Analysis} ".
+             "WHERE program='%s'".
+             "AND programversion='%s'".
+             "AND sourcename='%s'";
+      $analysis_id = db_result(db_query($sql, $node->program,
+      $node->programversion, $node->sourcename));
+
+      // Get cvterm_id for 'analysis_kegg_settings'
+      $sql = "SELECT CVT.cvterm_id FROM {cvterm} CVT ".
+             "INNER JOIN cv ON cv.cv_id = CVT.cv_id ".
+             "WHERE CVT.name = 'analysis_kegg_settings' ".
+             "AND CV.name = 'tripal'";
+      $type_id = db_result(db_query($sql));
+      
+      // Insert the analysis type into the analysisprop table
+      $sql = "
+         INSERT INTO {analysisprop} (analysis_id, type_id, value) 
+         VALUES (%d, %d, '%s')
+      ";
+      $keggsettings = $node->hierfile;
+      db_query($sql, $analysis_id, $type_id, $keggsettings);
+
+      db_set_active($previous_db);  // switch back to drupal database
+      // Add a job if the user wants to parse the html output
+      if($node->keggjob) {
+         $job_args[0] = $analysis_id;
+         $job_args[1] = $node->hierfile;
+         if (is_readable($node->hierfile)) {
+         	$fname = preg_replace("/.*\/(.*)/", "$1", $node->hierfile);
+            tripal_add_job("Parse KAAS output: $fname",'tripal_analysis_kegg',
+                           'tripal_analysis_kegg_parseHierFile', $job_args, $user->uid);
+         } else {
+            drupal_set_message("Can not open KAAS hier.tar.gz output file. Job not scheduled.");
+         }
+      }
+   }
+
+   // Make sure the entry for this analysis doesn't already exist in the
+   // chado_analysis table if it doesn't exist then we want to add it.
+   $node_check_sql = "SELECT * FROM {chado_analysis} ".
+                     "WHERE analysis_id = %d";
+   $node_check = db_fetch_object(db_query($node_check_sql, $analysis_id));
+   if(!$node_check){
+      // next add the item to the drupal table
+      $sql = "INSERT INTO {chado_analysis} (nid, vid, analysis_id) ".
+             "VALUES (%d, %d, %d)";
+      db_query($sql,$node->nid,$node->vid,$analysis_id);
+      // Create a title for the analysis node using the unique keys so when the
+      // node is saved, it will have a title
+      $record = new stdClass();
+      // If the analysis has a name, use it as the node title. If not, construct
+      // the title using program, programversion, and sourcename
+      if ($node->analysisname) {
+         $record->title = $node->analysisname;
+      } else {
+         //Construct node title as "program (version)
+         $record->title = "$node->program ($node->programversion)";
+      }
+      $record->nid = $node->nid;
+      drupal_write_record('node',$record,'nid');
+      drupal_write_record('node_revisions',$record,'nid');
+   }
+}
+/*******************************************************************************
+ * Delete KEGG anlysis
+ */
+function chado_analysis_kegg_delete($node){
+   // Before removing, get analysis_id so we can remove it from chado database
+   // later
+   $sql_drupal = "SELECT analysis_id ".
+                 "FROM {chado_analysis} ".
+                 "WHERE nid = %d ".
+                 "AND vid = %d";
+   $analysis_id = db_result(db_query($sql_drupal, $node->nid, $node->vid));
+
+   // Remove data from the {chado_analysis}, {node}, and {node_revisions} tables
+   $sql_del = "DELETE FROM {chado_analysis} ".
+              "WHERE nid = %d ".
+              "AND vid = %d";
+   db_query($sql_del, $node->nid, $node->vid);
+   $sql_del = "DELETE FROM {node} ".
+              "WHERE nid = %d ".
+              "AND vid = %d";
+   db_query($sql_del, $node->nid, $node->vid);
+   $sql_del = "DELETE FROM {node_revisions} ".
+              "WHERE nid = %d ".
+              "AND vid = %d";
+   db_query($sql_del, $node->nid, $node->vid);
+
+   //Remove from analysisfeatureprop, analysisfeature, analysis, and analysisprop tables
+   $previous_db = db_set_active('chado');
+   $sql = "SELECT analysisfeature_id FROM {analysisfeature} WHERE analysis_id=%d";
+   $results = db_query($sql, $analysis_id);
+   while ($af = db_fetch_object($results)) {
+      db_query("DELETE FROM {analysisfeatureprop} WHERE analysisfeature_id = %d", $af->analysisfeature_id);
+   }
+   db_query("DELETE FROM {analysisfeature} WHERE analysis_id = %d", $analysis_id);
+   db_query("DELETE FROM {analysisprop} WHERE analysis_id = %d", $analysis_id);
+   db_query("DELETE FROM {analysis} WHERE analysis_id = %d", $analysis_id);
+   db_set_active($previous_db);
+}
+
+/*******************************************************************************
+ * Update KEGG analysis
+ */
+function chado_analysis_kegg_update($node){
+   global $user;
+   if($node->revision){
+      // TODO -- decide what to do about revisions
+   } else {
+      // Create a timestamp so we can insert it into the chado database
+      $time = $node->timeexecuted;
+      $month = $time['month'];
+      $day = $time['day'];
+      $year = $time['year'];
+      $timestamp = $month.'/'.$day.'/'.$year;
+
+      // get the analysis_id for this node:
+      $sql = "SELECT analysis_id ".
+             "FROM {chado_analysis} ".
+             "WHERE vid = %d";
+      $analysis_id = db_fetch_object(db_query($sql, $node->vid))->analysis_id;
+
+      $sql = "UPDATE {analysis} ".
+             "SET name = '%s', ".
+             "    description = '%s', ".
+             "    program = '%s', ".
+             "    programversion = '%s', ".
+             "    algorithm = '%s', ".
+             "    sourcename = '%s', ".
+             "    sourceversion = '%s', ".
+             "    sourceuri = '%s', ".
+             "    timeexecuted = '%s' ".
+             "WHERE analysis_id = %d ";
+
+      $previous_db = db_set_active('chado');  // use chado database
+      db_query($sql, $node->analysisname, $node->description, $node->program,
+      $node->programversion,$node->algorithm,$node->sourcename,
+      $node->sourceversion, $node->sourceuri, $timestamp, $analysis_id);
+
+      // Get cvterm_id for 'analysis_kegg_settings'
+      $sql = "SELECT CVT.cvterm_id FROM {cvterm} CVT ".
+             "INNER JOIN cv CV ON CV.cv_id = CVT.cv_id ".
+             "WHERE CVT.name = 'analysis_kegg_settings' ".
+             "AND CV.name = 'tripal'";
+      $type_id = db_result(db_query($sql));
+       
+      $sql = "UPDATE {analysisprop} ".
+             "SET value = '%s' ".
+             "WHERE analysis_id = %d AND type_id = %d";
+      $keggsettings = $node->hierfile;
+      db_query($sql, $keggsettings, $analysis_id, $type_id);
+
+      db_set_active($previous_db);  // switch back to drupal database
+      // Add a job if the user wants to parse the html output
+      if($node->keggjob) {
+         $job_args[0] = $analysis_id;
+         $job_args[1] = $node->hierfile;
+         if (is_readable($node->hierfile)) {
+         	$fname = preg_replace("/.*\/(.*)/", "$1", $node->hierfile);
+            tripal_add_job("Parse KAAS output: $fname",'tripal_analysis_kegg',
+                           'tripal_analysis_kegg_parseHierFile', $job_args, $user->uid);
+         } else {
+            drupal_set_message("Can not open KAAS hier.tar.gz output file. Job not scheduled.");
+         }
+      }
+
+      // Create a title for the analysis node using the unique keys so when the
+      // node is saved, it will have a title
+      $record = new stdClass();
+      // If the analysis has a name, use it as the node title. If not, construct
+      // the title using program, programversion, and sourcename
+      if ($node->analysisname) {
+         $record->title = $node->analysisname;
+      } else {
+         //Construct node title as "program (version)
+         $record->title = "$node->program ($node->programversion)";
+      }
+      $record->nid = $node->nid;
+      drupal_write_record('node',$record,'nid');
+      drupal_write_record('node_revisions',$record,'nid');
+   }
+}
+/*******************************************************************************
+ *  When a node is requested by the user this function is called to allow us
+ *  to add auxiliary data to the node object.
+ */
+function chado_analysis_kegg_load($node){
+   // get the analysis_id for this node:
+   $sql = "SELECT analysis_id FROM {chado_analysis} WHERE vid = %d";
+   $ana_node = db_fetch_object(db_query($sql, $node->vid));
+   $additions = new stdClass();
+   if ($ana_node) {
+      // get analysis information
+      $sql = "SELECT Analysis_id, name AS analysisname, description, program, ".
+             "  programversion, algorithm, sourcename, sourceversion, ".
+             "  sourceuri, timeexecuted ".
+             "FROM {Analysis} ".
+             "WHERE Analysis_id = $ana_node->analysis_id";
+      $previous_db = db_set_active('chado');  // use chado database
+      $additions = db_fetch_object(db_query($sql));
+
+      // get cvterm_id for 'analysis_kegg_settings'
+      $sql = "SELECT CVT.cvterm_id FROM {cvterm} CVT ".
+             "INNER JOIN cv ON cv.cv_id = CVT.cv_id ".
+             "WHERE CVT.name = 'analysis_kegg_settings' ".
+             "AND CV.name = 'tripal'";
+      $type_id = db_result(db_query($sql));
+      // get analysisprop information
+      $sql = "SELECT value FROM {analysisprop} ".
+             "WHERE analysis_id = %d ".
+             "AND type_id = %d";
+      $analysisprop = db_result(db_query($sql, $ana_node->analysis_id, $type_id));
+      
+      $additions->hierfile = $analysisprop;
+
+      db_set_active($previous_db);  // now use drupal database
+   }
+   // If the analysis has a name, use it as the node title. If not, construct
+   // the title using program programversion, and sourcename
+   if ($additions->analysisname) {
+      $additions->title = $additions->analysisname;
+   } else {
+      // Construct node title as "program version (source)
+      $additions->title = "$additions->program ($additions->programversion)";
+   }
+   return $additions;
+}
+
+/*******************************************************************************
+ *  This function customizes the view of the chado_analysis node.  It allows
+ *  us to generate the markup.
+ */
+function chado_analysis_kegg_view ($node, $teaser = FALSE, $page = FALSE) {
+   // use drupal's default node view:
+   if (!$teaser) {
+      $node = node_prepare($node, $teaser);
+      // When previewing a node submitting form, it shows 'Array' instead of
+      // correct date format. We need to format the date here
+      $time = $node->timeexecuted;
+      if(is_array($time)){
+         $month = $time['month'];
+         $day = $time['day'];
+         $year = $time['year'];
+         $timestamp = $year.'-'.$month.'-'.$day;
+         $node->timeexecuted = $timestamp;
+      }
+   }
+   return $node;
+}
+/********************************************************************************
+ */
+function tripal_analysis_kegg_parseHierFile ($analysis_id, $hierfile, $job_id) {
+   
+   // If user input a file (e.g. hier.tar.gz), decompress it first
+   if (is_file($hierfile)) {
+      $data_dir = file_directory_path() . "/tripal/tripal_analysis_kegg";
+      $stderr = shell_exec("cd $data_dir; tar -zxf $hierfile;");
+      print "$stderr\n";
+      $hierdir = $data_dir."/hier";
+   // Otherwise, treat it as a directory
+   } else {
+      $hierdir = $hierfile;
+   }
+   $dir_handle = @opendir($hierdir) or die("Unable to open $hierdir");
+   $total_files = count(glob($hierdir . '/*.*'));
+   $interval = intval($total_files * 0.01);
+   $no_file = 0;
+   while ($file = readdir($dir_handle)) {
+
+      if(preg_match("/^.*\.keg/",$file)){
+      	// Update the progress
+         if ($no_file % $interval == 0) {
+            $percentage = (int) ($no_file / $total_files * 100);
+            tripal_job_set_progress($job_id, $percentage);
+            print $percentage."% ";
+         }
+         $no_file ++;
+         
+         # print "Parsing $hierdir/$file\n";
+         $content = tripal_analysis_kegg_parse_keg_file("$hierdir/$file",$type,$analysis_id);
+
+         # add the item to the database
+         if($content){
+            //------------------------------------------------------
+            // Insert into analysisprop table
+            //------------------------------------------------------
+            // Make sure the same value doesn't exist before inserting into chado
+            $sql = "SELECT value
+                    FROM {analysisprop}                     WHERE analysis_id = %d
+                    AND type_id = (SELECT cvterm_id 
+                                   FROM {cvterm} CVT 
+                                   INNER JOIN CV ON CVT.cv_id = CV.cv_id
+                                   WHERE CV.name = 'tripal' AND CVT.name = '%s'
+                                   )
+                   ";
+            $previous_db = db_set_active('chado');
+            $oldvalue = db_result(db_query($sql, $analysis_id, $type));
+            db_set_active($previous_db);
+            if ($oldvalue != $content) {
+               $sql = "
+	             INSERT INTO {analysisprop} (analysis_id, type_id, value) VALUES
+	             (%d,
+	              (SELECT cvterm_id 
+	               FROM {cvterm} CVT 
+	               INNER JOIN CV ON CVT.cv_id = CV.cv_id
+	               WHERE CV.name = 'tripal' AND CVT.name = '%s'),
+	              '%s')";   
+               $previous_db = db_set_active('chado');
+               db_query($sql,$analysis_id,$type,$content);
+               db_set_active($previous_db);
+            }
+            
+         }
+      }
+   }
+   print "Done.\n";
+   closedir($dir_handle);
+
+   // If user input a file, remove decompressed files after parsing
+   if (is_file($hierfile)) {
+      $stderr = shell_exec("rm -r $hierdir;");
+      print "$stderr\n";
+   }
+   return;
+}
+/*******************************************************************************
+ *
+ */
+function tripal_analysis_kegg_parse_keg_file ($file,&$type,$analysis_id){
+   $handle = fopen($file,'r');
+   $depth = array();
+   $current = '@';  # this is one character below 'A' in the ASCII table
+   $prev = '@';
+   $id = 0;
+   $type_id = 0;
+   $no_line = 0;
+   $prefix = variable_get('chado_feature_accession_prefix','ID');
+   while($line = fgets($handle)){
+      $no_line ++;
+      // Find out what kind of file we're looking at.
+      if(preg_match("/#DEFINITION\s+(.*)\s+.+?$/",$line,$matches)){
+         // Set type as the matched term in the DEFINITION line and add it as a new cvterm
+         $type = $matches[1];
+         // Before inserting, make sure this cvterm doesn't exist
+         $previous_db = db_set_active('chado');
+         $sql = "SELECT cvterm_id 
+                 FROM {cvterm} CVT
+                 INNER JOIN cv ON cv.cv_id = CVT.cv_id
+                 WHERE cv.name = 'tripal'
+                 AND CVT.name = '%s'";
+         $type_id = db_result(db_query($sql, $type));
+         db_set_active($previous_db);
+         if (!$type_id) {
+            tripal_add_cvterms($type, "KEGG BRITE term: $type");
+            // Get newly added type_id
+            $sql = "SELECT cvterm_id 
+                    FROM {cvterm} CVT
+                    INNER JOIN cv ON cv.cv_id = CVT.cv_id
+                    WHERE cv.name = 'tripal'
+                    AND CVT.name = '%s'";
+            $previous_db = db_set_active('chado');
+            $type_id = db_result(db_query($sql, $type));
+            db_set_active($previous_db);
+         }
+      }
+      // get the depth of the hierarch (e.g. A,B,C or D);
+      preg_match("/^([ABCDEFGHIJKLMNOP])\s*(.*)/",$line,$matches);
+      # skip lines that aren't data or are empty
+      if(!$matches[1] or !$matches[2]){continue;}
+      $prev = $current;
+      $current = $matches[1];
+
+      for($i = (ord($current) - ord($prev)); $i < 0; $i++){
+         $content .= "</li></ul>\n";
+      }
+      for($i = 0; $i < (ord($current) - ord($prev)); $i++){
+         $content .= "<ul>\n";
+      }
+      
+      // change all relative paths to absolute paths pointing to KEGG (www.genome.jp)
+      $matches[2] = preg_replace("/<a href=\"\//i","<a href=\"http://www.genome.jp/",$matches[2]);
+      
+      // add id to <a> tags so we can link kegg.gif to it in tripal_analysis_kegg.css
+      $matches[2] = preg_replace("/<a href=\"/i","<a id=\"tripal_kegg_brite_links\" target=\"_blank\" href=\"",$matches[2]);
+
+      // extract the features that have been mapped to the various KEGG IDs
+      if(preg_match("/^(.*?);\s*(\<a.+)/",$matches[2],$mat)){
+         // Find cvterm_id for 'kegg_brite_data'
+         $sql = "SELECT cvterm_id 
+                 FROM {cvterm} CVT
+                 INNER JOIN cv ON cv.cv_id = CVT.cv_id
+                 WHERE cv.name = 'tripal'
+                 AND CVT.name = '%s'";
+         $previous_db = db_set_active('chado');
+         $brite_data_type_id = db_result(db_query($sql, 'kegg_brite_data'));
+         db_set_active($previous_db);
+         
+         $uniquename = $mat[1];
+         // Find feature_id using uniquename
+         $sql = "SELECT feature_id FROM {feature} WHERE uniquename = '%s'";
+         $previous_db = db_set_active('chado');
+         $feature_id = db_result(db_query($sql, $uniquename)); // retrive first returned feature_id (assuming uniquename is unique)
+         db_set_active($previous_db);
+         // Get the higest rank for this feature_id in analysisfeatureprop table
+         $sql = "SELECT MAX(rank) FROM {analysisfeatureprop} AFP ".
+                "INNER JOIN analysisfeature AF ON AF.analysisfeature_id = AFP.analysisfeature_id ".       
+                "WHERE feature_id=%d ".
+                "AND analysis_id=%d ".
+                "AND type_id=%d ";
+         $previous_db = db_set_active('chado');
+         $afp =  db_fetch_object(db_query($sql, $feature_id, $analysis_id, $brite_data_type_id));
+         db_set_active($prevous_db);
+         $hi_rank = 0;
+         if ($afp) {
+            $hi_rank = $afp->max + 1;
+         }
+         //------------------------------------------------------
+         // Insert into analysisfeature table
+         //------------------------------------------------------
+         $sql = "INSERT INTO {analysisfeature} (feature_id, analysis_id) ".
+                "VALUES (%d, %d)";
+         $previous_db = db_set_active('chado');
+         db_query ($sql, $feature_id, $analysis_id);
+         db_set_active($previous_db);
+         // Get the newly inserted analysisfeature_id
+         $sql = "SELECT analysisfeature_id FROM {analysisfeature} WHERE feature_id = %d AND analysis_id = %d";
+         $previous_db = db_set_active('chado');
+         $analysisfeature_id = db_result(db_query($sql, $feature_id, $analysis_id));
+         db_set_active($previous_db);
+         //------------------------------------------------------
+         // Insert into analysisfeatureprop table
+         //------------------------------------------------------
+         // Before inserting, make sure it's not a duplicate
+         $sql = "SELECT value FROM {analysisfeatureprop} WHERE analysisfeature_id = %d AND type_id = %d";
+         $previous_db = db_set_active('chado');
+         $result = db_query($sql, $analysisfeature_id, $brite_data_type_id);
+         db_set_active($previous_db);
+         $duplicate = 0;
+         while ($afp_value = db_fetch_object($result)) {
+            preg_match("/<a.+?>(.+)<\/a>/",$afp_value->value,$old_ids);
+            preg_match("/<a.+?>(.+)<\/a>/",$mat[2], $new_ids);
+            if ($old_ids[1] && $old_ids[1] == $new_ids[1]) {
+               $duplicate = 1;
+            }
+         }
+         if (!$duplicate) {
+            $sql = "INSERT INTO {analysisfeatureprop} (analysisfeature_id, type_id, value, rank)".
+                   "VALUES (%d, %d, '%s', %d)";
+            $previous_db = db_set_active('chado');
+            db_query($sql, $analysisfeature_id, $brite_data_type_id, $mat[2], $hi_rank);
+            db_set_active($previous_db);
+         }
+         // Add link to each matched feature
+         $feature_url = url("$prefix$feature_id");
+         $matches[2] = preg_replace("/^(.*?)(;\s*\<a)/","<a id=\"tripal_kegg_feature_links\" target=\"_blank\" href=\"/$prefix$feature_id\">"."$1"."</a>"."$2",$matches[2]);
+      }
+      $content .= "<li id=\"term_$id\"><a></a>$matches[2]\n";
+      $id++;
+   }
+   $content .= "</ul>";
+   fclose($handle);
+   return $content;
+}
+/*******************************************************************************
+ * HOOK: Implementation of hook_nodeapi()
+ * Display library information for associated features or organisms
+ * This function also provides contents for indexing
+ */
+function tripal_analysis_kegg_nodeapi(&$node, $op, $teaser, $page) {
+   switch ($op) {
+      // Note that this function only adds library view to an organism/feature
+      // node. The view of a library node is controled by the theme *.tpl file
+      case 'view':
+
+         // Set the node types for showing library information
+         $types_to_show = variable_get('tripal_analysis_kegg_setting',
+            array('chado_feature','chado_analysis_kegg','chado_organism'));
+
+         // Abort if this node is not one of the types we should show.
+         if (!in_array($node->type, $types_to_show, TRUE)) {
+         	// Turn the menu off if it's on
+            $box_status = variable_get("tripal_analysis_kegg-box-results","menu_off");
+            if (strcmp($box_status,"menu_on")==0 && $node->type =='chado_organism'){
+            	variable_set("tripal_analysis_kegg-box-results","menu_off");
+            }
+            break;
+         }
+         
+         // Add library to the content item if it's not a teaser
+         if (!$teaser) {
+            // add the library to the organism/feature search indexing
+            if($node->build_mode == NODE_BUILD_SEARCH_INDEX){
+               $node->content['tripal_analysis_kegg_search_index'] = array(
+						'#value' => theme('tripal_analysis_kegg_search_index',$node),
+						'#weight' => 6,
+               );
+            } else if ($node->build_mode == NODE_BUILD_SEARCH_RESULT) {
+               $node->content['tripal_analysis_kegg_search_result'] = array(
+						'#value' => theme('tripal_analysis_kegg_search_result',$node),
+						'#weight' => 6,
+               );
+            } else {
+               // Show KEGG BRITE on an analysis page OR KEGG info box on a feature page
+               $node->content['tripal_analysis_kegg_node_add'] = array(
+                  '#value' => theme('tripal_analysis_kegg_node_add', $node),
+                  '#weight' => 6
+               );
+            }
+         }
+   }
+}
+
+/************************************************************************
+ *  We need to let drupal know about our theme functions and their arguments.
+ *  We create theme functions to allow users of the module to customize the
+ *  look and feel of the output generated in this module
+ */
+function tripal_analysis_kegg_theme () {
+   return array(
+
+      'tripal_analysis_kegg_search_index' => array (
+         'arguments' => array('node'),
+   ),
+      'tripal_analysis_kegg_search_result' => array (
+         'arguments' => array('node'),
+   ),
+      'tripal_analysis_kegg_node_add' => array (
+         'arguments' => array('node'),
+   )
+   );
+}
+/************************************************************************
+ */
+function theme_tripal_analysis_kegg_search_index($node){
+ if ($node->type == 'chado_feature') {
+      // Find cvterm_id for 'kegg_brite_data'
+      $sql = "SELECT cvterm_id 
+              FROM {cvterm} CVT
+              INNER JOIN cv ON cv.cv_id = CVT.cv_id
+              WHERE cv.name = 'tripal'
+              AND CVT.name = '%s'";
+      $previous_db = db_set_active('chado');
+      $brite_data_type_id = db_result(db_query($sql, 'kegg_brite_data'));
+      
+      // Get analysis id
+      $sql = "SELECT analysis_id AS aid 
+              FROM {analysisfeature} AF 
+              INNER JOIN analysisfeatureprop AFP ON AF.analysisfeature_id = AFP.analysisfeature_id
+              WHERE feature_id = %d
+              AND AFP.type_id = %d
+              GROUP BY analysis_id";
+      $feature = $node->feature;
+      $feature_id = $feature->feature_id;
+      $hasResult = db_result(db_query($sql, $feature_id, $brite_data_type_id));
+      $result = db_query($sql, $feature->feature_id, $brite_data_type_id);
+
+      // Show kegg result ORDER BY time
+      if ($hasResult) { // If there is any result, show expandable box
+         $content = "";
+
+         while ($ana = db_fetch_object($result)) {
+            // Show analysis date
+            $sql = "SELECT name, to_char(timeexecuted, 'MM-DD-YYYY') AS time 
+                    FROM {analysis} 
+                    WHERE analysis_id = %d";
+            $ana_details = db_fetch_object(db_query($sql, $ana->aid));
+            // Find node id for the analysis
+            db_set_active($previous_db);
+            $ana_nid = db_result(db_query("SELECT nid FROM {chado_analysis} WHERE analysis_id = %d", $ana->aid));
+            $ana_url = url("node/".$ana_nid);
+            $previous_db = db_set_active('chado');
+       
+            // Show content
+            $content .= "$ana_details->name";
+         
+            // Show Kegg results
+            $sql = "SELECT AFP.value AS afpvalue
+                    FROM {analysisfeatureprop} AFP
+                    INNER JOIN analysisfeature AF on AF.analysisfeature_id = AFP.analysisfeature_id
+                    WHERE AF.analysis_id = %d
+                    AND AF.feature_id = %d
+                   ";
+            $kegg_results = db_query($sql, $ana->aid, $feature_id);
+            while ($afp = db_fetch_object($kegg_results)) {
+               $content .= " $afp->afpvalue";
+            }
+         }
+      }
+      db_set_active($previous_db);
+      return $content;
+   }
+}
+
+/************************************************************************
+ */
+function theme_tripal_analysis_kegg_search_result($node){
+   $content = theme_tripal_analysis_kegg_node_add($node);
+   return $content;
+}
+
+/************************************************************************
+ */
+function theme_tripal_analysis_kegg_node_add($node) {
+   // Show Kegg additional information on a KEGG Analysis page
+   if ($node->type == 'chado_analysis_kegg') {
+      return tripal_analysis_kegg_full_report($node->analysis_id);
+   }   
+   
+   // Show Kegg-info-box on a Feature page
+   else if ($node->type == 'chado_feature') {
+       return tripal_analysis_kegg_feature_add($node);
+   } 
+   
+   // Show Kegg full reports on the organism page
+   else if ($node->type == 'chado_organism') {
+      $box_status = variable_get("tripal_analysis_kegg-box-results","menu_off");
+ 
+      if (strcmp($box_status,"menu_off")==0){
+         $content .= tripal_analysis_kegg_organism_add($node);
+      }
+   }
+   return $content;
+}
+/************************************************************************
+ */
+
+function tripal_analysis_kegg_org_report($analysis_id){
+   $content = tripal_analysis_kegg_full_report($analysis_id);
+   $opt = array($content);
+   return drupal_json($opt);
+}
+/************************************************************************
+ */
+function tripal_analysis_kegg_full_report($analysis_id){
+   // Test if brite data have been parsed into the database
+   $sql = "SELECT CVT.name, CVT.cvterm_id
+           FROM {cvterm} CVT 
+             INNER JOIN analysisprop AP ON CVT.cvterm_id = AP.type_id
+           WHERE AP.analysis_id = %d
+              AND CVT.definition LIKE 'KEGG BRITE term: %'
+           ORDER BY CVT.cvterm_id";
+   $previous_db = db_set_active('chado');
+   $result = db_query($sql, $analysis_id);
+   db_set_active($previous_db);
+
+   if (db_result($result)) {
+      $content = tripal_analysis_kegg_brite($analysis_id, $type_id, 0);
+   } else {
+      $content = "<i>Note:</i> Analysis result is not available. Please schedule and run the job to parse the kegg output.";
+   }
+   return $content;
+}
+/*******************************************************************************
+ * Tripal Kegg administrative setting form. This function is called by
+ * tripal_analysis module which asks for an admin form to show on the page
+ */
+function tripal_analysis_kegg_get_settings() {
+   // Get an array of node types with internal names as keys
+   $options = node_get_types('names');
+   // Add 'chado_feature' to allowed content types for showing kegg results
+   $allowedoptions ['chado_feature'] = "Show KEGG results on feature pages";
+   $allowedoptions ['chado_analysis_kegg'] = "Show KEGG BRITE results on the analysis page.";
+   $allowedoptions ['chado_organism'] = "Show KEGG BRITE results on the organism pages.";
+
+   $form['description'] = array(
+       '#type' => 'item',
+       '#value' => t("Some chado features were analyzed by KEGG automatic annotation server (KAAS). This option allows user to display the kegg analysis results. Please read user manual for storage and display of kegg files. Check the box to enable the analysis results. Uncheck to disable it."),
+       '#weight' => 0,
+   );
+
+   $form['tripal_analysis_kegg_setting'] = array(
+      '#type' => 'checkboxes',
+      '#options' => $allowedoptions,
+      '#default_value' => variable_get('tripal_analysis_kegg_setting',
+      array('chado_feature', 'chado_analysis_kegg')),
+   );
+
+   $settings->form = $form;
+   $settings->title = "Tripal Kegg";
+   return $settings;
+}
+/************************************************************************
+*/
+function tripal_analysis_kegg_organism_results($node) {
+   $node = node_load($node);
+   return tripal_analysis_kegg_organism_add($node);
+}
+/************************************************************************
+*/
+function tripal_analysis_kegg_feature_add($node) {
+      // Find cvterm_id for 'kegg_brite_data'
+      $sql = "SELECT cvterm_id 
+              FROM {cvterm} CVT
+              INNER JOIN cv ON cv.cv_id = CVT.cv_id
+              WHERE cv.name = 'tripal'
+              AND CVT.name = '%s'";
+      $previous_db = db_set_active('chado');
+      $brite_data_type_id = db_result(db_query($sql, 'kegg_brite_data'));
+      
+      // Get analysis id
+      $sql = "SELECT analysis_id AS aid 
+              FROM {analysisfeature} AF 
+              INNER JOIN analysisfeatureprop AFP ON AF.analysisfeature_id = AFP.analysisfeature_id
+              WHERE feature_id = %d
+              AND AFP.type_id = %d
+              GROUP BY analysis_id";
+      $feature = $node->feature;
+      $feature_id = $feature->feature_id;
+      $hasResult = db_result(db_query($sql, $feature_id, $brite_data_type_id));
+      $result = db_query($sql, $feature->feature_id, $brite_data_type_id);
+
+      // Show kegg result ORDER BY time
+      if ($hasResult) { // If there is any result, show expandable box
+         $content .= "<div id=\"tripal_kegg-hits\" class=\"tripal_kegg-info-box\">
+                        <div class=\"tripal_expandableBox\">
+                          <h3>KEGG Analysis</h3>
+                        </div>
+                        <div class=\"tripal_expandableBoxContent\">
+                          <span>
+                            <table class=\"tripal_kegg_results_table\">
+                            <tr><td>";
+
+         while ($ana = db_fetch_object($result)) {
+            // Show analysis date
+            $sql = "SELECT name, to_char(timeexecuted, 'MM-DD-YYYY') AS time 
+                    FROM {analysis} 
+                    WHERE analysis_id = %d";
+            $ana_details = db_fetch_object(db_query($sql, $ana->aid));
+            // Find node id for the analysis
+            db_set_active($previous_db);
+            $ana_nid = db_result(db_query("SELECT nid FROM {chado_analysis} WHERE analysis_id = %d", $ana->aid));
+            $ana_url = url("node/".$ana_nid);
+            $previous_db = db_set_active('chado');
+       
+            // Show content
+            $content .= "<strong>Analysis Date:</strong> $ana_details->time
+                           (<a href=$ana_url>$ana_details->name</a>)<br>";
+         
+            // Show Kegg results
+            $sql = "SELECT AFP.value AS afpvalue
+                    FROM {analysisfeatureprop} AFP
+                    INNER JOIN analysisfeature AF on AF.analysisfeature_id = AFP.analysisfeature_id
+                    WHERE AF.analysis_id = %d
+                    AND AF.feature_id = %d
+                   ";
+            $kegg_results = db_query($sql, $ana->aid, $feature_id);
+            while ($afp = db_fetch_object($kegg_results)) {
+               $content .= "$afp->afpvalue<br>";
+            }
+            $content .= "<br>";
+         }
+         $content .= '</td></tr></table></span></div></div>';
+      }
+      db_set_active($previous_db);
+   return $content;
+}
+/************************************************************************
+*/
+function tripal_analysis_kegg_organism_add($node) {
+   // Show GO information in a expandable box for a organism page.
+   // Make sure we have $node->organism_id. In the case of creating a new
+   // organism, the organism_id is not created until we save. This will cause
+   // an error when users preview the creation without a $node->organism_id
+   $box_status = variable_get("tripal_analysis_kegg-box-results","menu_off");
+      
+   if(strcmp($box_status,"menu_off")==0){
+      $content .= "
+      <div class=\"tripal_kegg_summary-info-box\">
+        <div class=\"tripal_expandableBox\">
+	       <h3>KEGG Analysis Results</h3>
+	     </div>
+        <div class=\"tripal_expandableBoxContent\">
+      ";
+   } 
+
+   $select_analysis = drupal_get_form('tripal_analysis_kegg_select_form',$node);
+
+   $url = url("sites/all/themes/theme_tripal/images/ajax-loader.gif");
+   $content .= "
+     $select_analysis
+     <div id=\"tripal_ajaxLoading\" style=\"display:none\">
+     <div id=\"loadingText\">Loading...</div>
+     <img src=\"$url\"></div>
+     <div id=\"tripal_analysis_kegg_org_report\"></div>
+   ";
+
+   if(user_access('access administrative pages')){
+      $link = url("tripal_toggle_box_menu/tripal_analysis_kegg/results/$node->nid");
+   	if(strcmp($box_status,"menu_off")==0){
+         $content .= "<br><a href=\"$link\">Show on menu</a>";
+      } else {
+         $content .= "<br><a href=\"$link\">Remove from menu</a>";
+      }
+   }
+   if(strcmp($box_status,"menu_off")==0){
+      $content .= "</div></div>";
+   }
+
+   return $content;
+}
+/************************************************************************
+*/
+function tripal_analysis_kegg_select_form(&$form_state = NULL,$node){
+
+   $form = array();
+   // find analyses that have GO terms
+   $sql = "
+     SELECT *
+     FROM {kegg_by_organism} KBO
+     WHERE organism_id = %d
+     ORDER BY analysis_id DESC
+   ";
+   $previous_db = db_set_active('chado');
+   $results = db_query($sql,$node->organism_id);
+   db_set_active($previous_db);
+
+   $analyses = array();
+   $analyses[''] = '';
+   while($analysis = db_fetch_object($results)){
+      $analyses[$analysis->analysis_id] = "$analysis->analysis_name";
+   }
+  
+   # create the select box
+   $form['analysis_select'] = array(
+      '#title' => t('Select a KEGG report to view'),
+      '#description' => t('Any analysis with KEGG results related to this organism are available for viewing. For further information, see the analysis information page.'),
+      '#type'  => 'select',
+      '#options' => $analyses,
+      '#attributes' => array (
+         'onchange' => 'tripal_analysis_kegg_org_report(this.options[this.selectedIndex].value)'
+      ),
+   );
+   return $form;
+}
