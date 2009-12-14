@@ -1,0 +1,155 @@
+<?php
+
+//
+// Copyright 2009 Clemson University
+//
+
+require_once "jobs.php";
+require_once "mviews.php";
+require_once "cvterms.php";
+/*************************************************************************
+*
+*/
+function tripal_core_init(){
+	
+}
+/*************************************************************************
+*
+*/
+function tripal_create_moddir($module_name){
+   // make the data directory for this module
+   $data_dir = file_directory_path() . "/tripal/$module_name";
+   if(!file_check_directory($data_dir,FILE_CREATE_DIRECTORY|FILE_MODIFY_PERMISSIONS)){
+      $message = "Cannot create directory $data_dir. This module may not ".
+                 "behave correctly without this directory.  Please  create ".
+                 "the directory manually or fix the problem and reinstall.";
+      drupal_set_message($message,'error');      
+      watchdog('tripal_core',$message,array(),WATCHDOG_ERROR);
+   }
+}
+/*************************************************************************
+*
+*/
+function tripal_get_moddir($module_name){
+   $data_dir = file_directory_path() . "/tripal/$module_name";
+   return $data_dir;
+}
+/*************************************************************************
+*
+*/
+function tripal_core_menu() {
+   $items = array();
+   
+   // Triapl setting groups
+   $items['admin/tripal'] = array(
+      'title' => 'Tripal Management',
+      'description' => "Manage the behavior or Tripal and its various modules.",
+      'position' => 'right',
+      'weight' => -5,
+      'page callback' => 'system_admin_menu_block_page',
+      'access arguments' => array('administer site configuration'),
+      'file' => 'system.admin.inc',
+      'file path' => drupal_get_path('module', 'system'),
+   );
+
+   // the administative settings menu
+/*   $items['admin/tripal/tripal_core'] = array(
+     'title' => 'Tripal core settings',
+     'description' => 'Tripal Settings',
+     'page callback' => 'drupal_get_form',
+     'page arguments' => array('tripal_core_admin'),
+     'access arguments' => array('access administration pages'),
+     'type' => MENU_NORMAL_ITEM,
+   );
+*/
+   $items['admin/tripal/tripal_jobs'] = array(
+     'title' => 'Jobs',
+     'description' => 'Jobs managed by Tripal',
+     'page callback' => 'tripal_jobs_report',
+     'access arguments' => array('access administration pages'),
+     'type' => MENU_NORMAL_ITEM,
+   );
+   $items['admin/tripal/tripal_mview/%'] = array(
+     'title' => 'Materialized View',
+     'description' => 'Materialized views are used to improve speed of large or complex queries.',
+     'page callback' => 'tripal_mview_report',
+     'page arguments' => array(3),
+     'access arguments' => array('access administration pages'),
+     'type' => MENU_NORMAL_ITEM,
+   );
+   $items['admin/tripal/tripal_mviews'] = array(
+     'title' => 'Materialized Views',
+     'description' => 'Materialized views are used to improve speed of large or complex queries.',
+     'page callback' => 'tripal_mviews_report',
+     'access arguments' => array('access administration pages'),
+     'type' => MENU_NORMAL_ITEM,
+   );
+   $items['admin/tripal/tripal_mviews/new'] = array(
+     'title' => 'Create View',
+     'description' => 'Materialized views are used to improve speed of large or complex queries.',
+     'page callback' => 'drupal_get_form',
+     'page arguments' => array('tripal_mviews_form'),
+     'access arguments' => array('access administration pages'),
+     'type' => MENU_NORMAL_ITEM,
+   );
+   $items['admin/tripal/tripal_mviews/edit/%'] = array(
+     'title' => 'Edit View',
+     'page callback' => 'drupal_get_form',
+     'page arguments' => array('tripal_mviews_form',4),
+     'access arguments' => array('access administration pages'),
+     'type' => MENU_NORMAL_ITEM,
+   );
+   $items['admin/tripal/tripal_mviews/action/%/%'] = array(
+     'title' => 'Create View',
+     'description' => 'Materialized views are used to improve speed of large or complex queries.',
+     'page callback' => 'tripal_mviews_action',
+     'page arguments' => array(4,5),
+     'access arguments' => array('access administration pages'),
+     'type' => MENU_CALLBACK,
+   );
+
+   $items['tripal_toggle_box_menu/%/%/%'] = array(
+     'title' => t('Libraries'),
+     'page callback' => 'tripal_toggle_box_menu',
+     'page arguments' => array(1,2,3),
+     'access arguments' => array('access administration pages'),
+     'type' => MENU_CALLBACK | MENU_LINKS_TO_PARENT 
+   );
+  return $items;
+}
+/************************************************************************
+*  The typical display for information on feature, organism, library, etc
+*  pages is to use the Tripal expandable boxes.  However, some sites may
+*  prefer to use a menu system to keep the pages less cluttered.  This
+*  function provides a common interface for setting a Drupal variable
+*  that indicates whether or not the content is displayed in a box or as
+*  a menu item.  This function just reverses the setting each time it is
+*  called
+*/
+function tripal_toggle_box_menu($module,$box_name,$nid){
+   // if the content is not in a menu then we wnat to turn on the
+   // menu. If the content is in a menu item then we want to turn
+   // on the box. 
+   if(strcmp(variable_get("$module-box-$box_name","menu_off"),"menu_off")==0){
+      variable_set("$module-box-$box_name","menu_on");
+   } else {
+      variable_set("$module-box-$box_name","menu_off");
+   }
+   drupal_goto("node/$nid");
+}
+/************************************************************************
+*
+*/
+function tripal_core_admin () {
+
+
+   $form['chado_feature_data_url'] = array (
+      '#title'       => t('URL for data files'),
+      '#type'        => t('textfield'),
+      '#description' => t("This is the base URL location (without a leading forward slash)  for where files (e.g. blast .xml files) related to each feature are stored. All files available for download or parsing that a feature needs for display should be located in this base directory."), 
+      '#required'    => TRUE,
+      '#default_value' => variable_get('chado_feature_data_url','sites/default/files/data'),
+   );
+   
+   return system_settings_form($form);
+}
