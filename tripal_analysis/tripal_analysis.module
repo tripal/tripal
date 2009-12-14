@@ -1,0 +1,837 @@
+<?php
+// $Id:
+// Copyright 2009 Clemson University
+/*******************************************************************************
+ * Note: When we pull information for an analysis from chado database. We use
+ * 'analysisname' instead of just 'name' to avoid name collision with drupal's
+ * node->name variable. Therefore, the SQL statement used is 'SELECT name AS
+ * analysisname FROM Analysis', instead of 'SELECT name FROM Analysis'. All
+ * other node variables have exact same name as the column name.
+ ******************************************************************************/
+
+/*************************************************************************
+*
+*/
+function tripal_analysis_register_child($modulename){
+   $sql = "INSERT INTO {tripal_analysis} (modulename) VALUES ('%s')";
+   db_query($sql, $modulename);
+}
+/*************************************************************************
+*
+*/
+function tripal_analysis_unregister_child($modulename){
+   if (db_table_exists('tripal_analysis')) {
+      $sql = "DELETE FROM {tripal_analysis} WHERE modulename = '%s'";
+      db_query($sql, $modulename);
+   }
+}
+/******************************************************************************
+ * Tripal Analysis lets users display/hide analysis results associated
+ * with a tripal feature. Load javascript when module initialized
+ */
+function tripal_analysis_init(){
+   drupal_add_js(drupal_get_path('theme', 'tripal').
+                                 '/js/tripal_analysis.js');
+}
+/*******************************************************************************
+ * tripal_analysis_menu()
+ * HOOK: Implementation of hook_menu()
+ * Entry points and paths of the module
+ */
+function tripal_analysis_menu() {
+	// Display available analyses
+	$items['analyses'] = array(
+      'menu_name' => ('primary-links'), //Enable the 'Analysis' primary link
+      'title' => t('Analyses'),
+      'page callback' => 'tripal_analysis_show_analyses',
+      'access arguments' => array('access chado_analysis content'),
+      'type' => MENU_NORMAL_ITEM
+	);
+	//Sync analysis
+	$items['chado_sync_analyses'] = array(
+     'title' => t('Sync Data'),
+     'page callback' => 'tripal_analysis_sync_analyses',
+     'access arguments' => array('administer site configuration'),
+     'type' => MENU_CALLBACK
+	);
+	// Tripal Analysis administrative settings
+	$items['admin/tripal/tripal_analysis'] = array(
+      'title' => 'Analyses',
+      'description' => 'Settings for the displays of analysis results.',
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array('tripal_analysis_admin'),
+      'access arguments' => array('administer site configuration'),
+      'type' => MENU_NORMAL_ITEM,
+      'file' => 'tripal_analysis.admin.inc',
+	);
+	return $items;
+}
+
+/*******************************************************************************
+ * Display the summary view of analyses when click on the 'Analyses'
+ * primary-link
+ */
+function tripal_analysis_show_analyses (){
+	// Show libraries stored in Drupal's {chado_analysis} table
+	$sql = "SELECT COUNT(analysis_id) FROM {chado_analysis}";
+	$no_ana = db_result(db_query ($sql));
+	if($no_ana != 0) {
+		$analyses = get_chado_analyses ();
+		return theme('tripal_analysis_analysis_table', $analyses);
+	} else {
+		return t("No analysis available at this time.");
+	}
+
+}
+
+/*******************************************************************************
+ *  Provide information to drupal about the node types that we're creating
+ *  in this module
+ */
+function tripal_analysis_node_info() {
+	$nodes = array();
+	$nodes['chado_analysis'] = array(
+      'name' => t('Analysis'),
+      'module' => 'chado_analysis',
+      'description' => t('An analysis from the chado database'),
+      'has_title' => FALSE,
+      'title_label' => t('Analysis'),
+      'has_body' => FALSE,
+      'body_label' => t('Analysis Description'),
+      'locked' => TRUE
+	);
+	return $nodes;
+}
+/*******************************************************************************
+ *  When a new chado_analysis node is created we also need to add information
+ *  to our chado_analysis table.  This function is called on insert of a new
+ *  node of type 'chado_analysis' and inserts the necessary information.
+ */
+function chado_analysis_insert($node){
+	global $user;
+	// Create a timestamp so we can insert it into the chado database
+	$time = $node->timeexecuted;
+	$month = $time['month'];
+	$day = $time['day'];
+	$year = $time['year'];
+	$timestamp = $month.'/'.$day.'/'.$year;
+
+	// If this analysis already exists then don't recreate it in chado
+	$analysis_id = $node->analysis_id;
+	if ($analysis_id) {
+		$sql = "SELECT analysis_id ".
+               "FROM {Analysis} ".
+               "WHERE analysis_id = %d ";
+		$previous_db = db_set_active('chado');
+		$analysis = db_fetch_object(db_query($sql, $node->analysis_id));
+		db_set_active($previous_db);
+	}
+
+	// If the analysis doesn't exist then let's create it in chado.
+	if(!$analysis){
+		// First add the item to the chado analysis table
+		$sql = "INSERT INTO {analysis} ".
+             "  (name, description, program, programversion, algorithm, ".
+             "   sourcename, sourceversion, sourceuri, timeexecuted) ".
+             "VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s')";
+		$previous_db = db_set_active('chado');  // use chado database
+		db_query($sql,$node->analysisname, $node->description,
+		$node->program,$node->programversion,$node->algorithm,
+		$node->sourcename, $node->sourceversion, $node->sourceuri,
+		$timestamp);
+      db_set_active($previous_db);
+	}
+
+	// Make sure the entry for this analysis doesn't already exist in the
+	// chado_analysis table if it doesn't exist then we want to add it.
+	$node_check_sql = "SELECT * FROM {chado_analysis} ".
+                     "WHERE analysis_id = %d";
+	$node_check = db_fetch_object(db_query($node_check_sql, $analysis_id));
+	if(!$node_check){
+		// next add the item to the drupal table
+		$sql = "INSERT INTO {chado_analysis} (nid, vid, analysis_id) ".
+             "VALUES (%d, %d, %d)";
+		db_query($sql,$node->nid,$node->vid,$analysis_id);
+		// Create a title for the analysis node using the unique keys so when the
+		// node is saved, it will have a title
+		$record = new stdClass();
+		// If the analysis has a name, use it as the node title. If not, construct
+		// the title using program, programversion, and sourcename
+		if ($node->analysisname) {
+			$record->title = $node->analysisname;
+		} else {
+			//Construct node title as "program (version)
+			$record->title = "$node->program ($node->programversion)";
+		}
+		$record->nid = $node->nid;
+		drupal_write_record('node',$record,'nid');
+		drupal_write_record('node_revisions',$record,'nid');
+	}
+}
+/*******************************************************************************
+ */
+function chado_analysis_delete($node){
+	// Before removing, get analysis_id so we can remove it from chado database
+	// later
+	$sql_drupal = "SELECT analysis_id ".
+                 "FROM {chado_analysis} ".
+                 "WHERE nid = %d ".
+                 "AND vid = %d";
+	$analysis_id = db_result(db_query($sql_drupal, $node->nid, $node->vid));
+
+	// Remove data from the {chado_analysis}, {node}, and {node_revisions} tables
+	$sql_del = "DELETE FROM {chado_analysis} ".
+              "WHERE nid = %d ".
+              "AND vid = %d";
+	db_query($sql_del, $node->nid, $node->vid);
+	$sql_del = "DELETE FROM {node} ".
+              "WHERE nid = %d ".
+              "AND vid = %d";
+	db_query($sql_del, $node->nid, $node->vid);
+	$sql_del = "DELETE FROM {node_revisions} ".
+              "WHERE nid = %d ".
+              "AND vid = %d";
+	db_query($sql_del, $node->nid, $node->vid);
+
+	//Remove from analysis and analysisprop tables of chado database as well
+	$previous_db = db_set_active('chado');
+	db_query("DELETE FROM {analysis} WHERE analysis_id = %d", $analysis_id);
+	db_set_active($previous_db);
+}
+
+/*******************************************************************************
+ * Update analyses
+ */
+function chado_analysis_update($node){
+	global $user;
+	if($node->revision){
+		// TODO -- decide what to do about revisions
+	} else {
+		// Create a timestamp so we can insert it into the chado database
+		$time = $node->timeexecuted;
+		$month = $time['month'];
+		$day = $time['day'];
+		$year = $time['year'];
+		$timestamp = $month.'/'.$day.'/'.$year;
+
+		// get the analysis_id for this node:
+		$sql = "SELECT analysis_id ".
+             "FROM {chado_analysis} ".
+             "WHERE vid = %d";
+		$analysis_id = db_fetch_object(db_query($sql, $node->vid))->analysis_id;
+
+		$sql = "UPDATE {analysis} ".
+             "SET name = '%s', ".
+             "    description = '%s', ".
+             "    program = '%s', ".
+             "    programversion = '%s', ".
+             "    algorithm = '%s', ".
+             "    sourcename = '%s', ".
+             "    sourceversion = '%s', ".
+             "    sourceuri = '%s', ".
+             "    timeexecuted = '%s' ".
+             "WHERE analysis_id = %d ";
+
+		$previous_db = db_set_active('chado');  // use chado database
+		db_query($sql, $node->analysisname, $node->description, $node->program,
+		$node->programversion,$node->algorithm,$node->sourcename,
+		$node->sourceversion, $node->sourceuri, $timestamp, $analysis_id);
+      db_set_active($previous_db);  // switch back to drupal database
+		
+		// Create a title for the analysis node using the unique keys so when the
+		// node is saved, it will have a title
+		$record = new stdClass();
+		// If the analysis has a name, use it as the node title. If not, construct
+		// the title using program, programversion, and sourcename
+		if ($node->analysisname) {
+			$record->title = $node->analysisname;
+		} else {
+			//Construct node title as "program (version)
+			$record->title = "$node->program ($node->programversion)";
+		}
+		$record->nid = $node->nid;
+		drupal_write_record('node',$record,'nid');
+		drupal_write_record('node_revisions',$record,'nid');
+	}
+}
+
+/*******************************************************************************
+ *  When editing or creating a new node of type 'chado_analysis' we need
+ *  a form.  This function creates the form that will be used for this.
+ */
+function chado_analysis_form ($node){
+
+	$type = node_get_types('type', $node);
+	$form = array();
+	$form['title']= array(
+      '#type' => 'hidden',
+      '#default_value' => $node->title,
+	);
+	$form['analysisname']= array(
+      '#type' => 'textfield',
+      '#title' => t('Analysis Name'),
+      '#required' => FALSE,
+      '#default_value' => $node->analysisname,
+      '#weight' => 1
+	);
+	$form['program']= array(
+      '#type' => 'textfield',
+      '#title' => t('Program'),
+      '#required' => TRUE,
+      '#default_value' => $node->program,
+      '#weight' => 2
+	);
+	$form['programversion']= array(
+      '#type' => 'textfield',
+      '#title' => t('Program Version'),
+      '#required' => TRUE,
+      '#default_value' => $node->programversion,
+      '#weight' => 3
+	);
+	$form['algorithm']= array(
+      '#type' => 'textfield',
+      '#title' => t('Algorithm'),
+      '#required' => FALSE,
+      '#default_value' => $node->algorithm,
+      '#weight' => 4
+	);
+	$form['sourcename']= array(
+      '#type' => 'textfield',
+      '#title' => t('Source Name'),
+      '#required' => FALSE,
+      '#default_value' => $node->sourcename,
+      '#weight' => 5
+	);
+	$form['sourceversion']= array(
+      '#type' => 'textfield',
+      '#title' => t('Source Version'),
+      '#required' => FALSE,
+      '#default_value' => $node->sourceversion,
+      '#weight' => 6
+	);
+	$form['sourceuri']= array(
+      '#type' => 'textfield',
+      '#title' => t('Source URI'),
+      '#required' => FALSE,
+      '#default_value' => $node->sourceuri,
+      '#weight' => 7
+	);
+	// Get time saved in chado
+	$default_time = $node->timeexecuted;
+	$year = preg_replace("/^(\d+)-\d+-\d+ .*/", "$1", $default_time);
+	$month = preg_replace("/^\d+-0?(\d+)-\d+ .*/", "$1", $default_time);
+	$day = preg_replace("/^\d+-\d+-0?(\d+) .*/", "$1", $default_time);
+	// If the time is not set, use current time
+	if (!$default_time) {
+		$default_time = time();
+		$year = format_date($default_time, 'custom', 'Y');
+		$month = format_date($default_time, 'custom', 'n');
+		$day = format_date($default_time, 'custom', 'j');
+	}
+	$form['timeexecuted']= array(
+      '#type' => 'date',
+      '#title' => t('Time Executed'),
+      '#required' => TRUE,
+      '#default_value' => array(
+         'year' => $year,
+         'month' => $month,
+         'day' => $day,
+	),
+      '#weight' => 8
+	);
+	$form['description']= array(
+      '#type' => 'textarea',
+      '#rows' => 15,
+      '#title' => t('Description and/or Program Settings'),
+      '#required' => FALSE,
+      '#default_value' => check_plain($node->description),
+      '#weight' => 9
+	);
+	
+	return $form;
+}
+
+/*******************************************************************************
+ *  When a node is requested by the user this function is called to allow us
+ *  to add auxiliary data to the node object.
+ */
+function chado_analysis_load($node){
+	// get the analysis_id for this node:
+	$sql = "SELECT analysis_id FROM {chado_analysis} WHERE vid = %d";
+	$ana_node = db_fetch_object(db_query($sql, $node->vid));
+	$additions = new stdClass();
+	if ($ana_node) {
+		// get analysis information
+		$sql = "SELECT Analysis_id, name AS analysisname, description, program, ".
+             "  programversion, algorithm, sourcename, sourceversion, ".
+             "  sourceuri, timeexecuted ".
+             "FROM {Analysis} ".
+             "WHERE Analysis_id = $ana_node->analysis_id";
+		$previous_db = db_set_active('chado');  // use chado database
+		$additions = db_fetch_object(db_query($sql));
+		db_set_active($previous_db);  // now use drupal database
+	}
+	// If the analysis has a name, use it as the node title. If not, construct
+	// the title using program programversion, and sourcename
+	if ($additions->analysisname) {
+		$additions->title = $additions->analysisname;
+	} else {
+		// Construct node title as "program version (source)
+		$additions->title = "$additions->program ($additions->programversion)";
+	}
+	return $additions;
+}
+
+/*******************************************************************************
+ *  This function customizes the view of the chado_analysis node.  It allows
+ *  us to generate the markup.
+ */
+function chado_analysis_view ($node, $teaser = FALSE, $page = FALSE) {
+	// use drupal's default node view:
+	if (!$teaser) {
+		$node = node_prepare($node, $teaser);
+		// When previewing a node submitting form, it shows 'Array' instead of
+		// correct date format. We need to format the date here
+		$time = $node->timeexecuted;
+		if(is_array($time)){
+			$month = $time['month'];
+			$day = $time['day'];
+			$year = $time['year'];
+			$timestamp = $year.'-'.$month.'-'.$day;
+			$node->timeexecuted = $timestamp;
+		}
+	}
+	return $node;
+}
+
+/*******************************************************************************
+ * Synchronize analyses from chado to drupal
+ */
+function tripal_analysis_sync_analyses ($analysis_id = NULL, $job_id = NULL){
+	global $user;
+	$page_content = '';
+
+	if(!$analysis_id){
+		$sql = "SELECT Analysis_id, name AS analysisname, description, program, ".
+   		 "  programversion, algorithm, sourcename, sourceversion, sourceuri, ".
+          "  timeexecuted ".
+          "FROM {Analysis} ".
+          "ORDER BY analysis_id";
+		$previous_db = db_set_active('chado');  // use chado database
+		$results = db_query($sql);
+		db_set_active($previous_db);  // now use drupal database
+	} else {
+		$sql = "SELECT Analysis_id, name AS analysisname, description, program, ".
+   		  "  programversion, algorithm, sourcename, sourceversion, sourceuri, ".
+          "  timeexecuted ".
+          "FROM {Analysis} ".
+          "WHERE analysis_id = %d";
+          "ORDER BY analysis_id";
+		$previous_db = db_set_active('chado');  // use chado database
+		$results = db_query($sql,$analysis_id);
+		db_set_active($previous_db);  // now use drupal database
+	}
+
+	// We'll use the following SQL statement for checking if the analysis
+	// already exists as a drupal node.
+	$sql = "SELECT * FROM {chado_analysis} ".
+          "WHERE analysis_id = %d";
+
+	while($analysis = db_fetch_object($results)){
+		// check if this analysis already exists in the drupal database. if it
+		// does then skip this analysis and go to the next one.
+		if(!db_fetch_object(db_query($sql,$analysis->analysis_id))){
+			
+			$new_node = new stdClass();
+			// try to access analysisprop for this analysis
+			$sql = "SELECT * FROM {analysisprop} WHERE analysis_id = %d";
+			$previous_db = db_set_active('chado');
+			$analysisprop = db_fetch_object(db_query($sql, $analysis->analysis_id));
+			// If analysisprop exists, this analysis can be a blast analysis or 
+			// interpro analysis. Get its type using cvterm_id
+			if ($analysisprop) {
+				$sql = "SELECT name, definition FROM {cvterm} WHERE cvterm_id = %d";
+				$result = db_fetch_object(db_query($sql, $analysisprop->type_id));
+				// This is a blast analysis
+				if ($result->name == 'analysis_blast_settings') {
+					$new_node->type = 'chado_analysis_blast';
+			   // This is a interpro analysis
+				} else if ($result->name == 'analysis_interpro_settings') {
+					$new_node->type = 'chado_analysis_interpro';
+			   // This is a kegg analysis
+				} else if ($result->name == 'analysis_kegg_settings' ||
+	              		  $result->name == 'kegg_brite_data' ||
+				           preg_match("/KEGG BRITE term:/", $result->definition)) {
+				   $new_node->type = 'chado_analysis_kegg';
+				} else {
+				   $new_node->type = 'chado_analysis';
+				}
+			// If it doesn't exist, this analysis is generic
+			} else {
+				$new_node->type = 'chado_analysis';
+			}
+			db_set_active($previous_db);
+			
+			$new_node->uid = $user->uid;
+			$new_node->analysis_id = $analysis->analysis_id;
+			$new_node->analysisname = $analysis->analysisname;
+			$new_node->description = $analysis->description;
+			$new_node->program = $analysis->program;
+			$new_node->programversion = $analysis->programversion;
+			$new_node->algorithm = $analysis->algorithm;
+			$new_node->sourcename = $analysis->sourcename;
+			$new_node->sourceversion = $analysis->sourceversion;
+			$new_node->sourceuri = $analysis->sourceuri;
+			$new_node->timeexecuted = $analysis->timeexecuted;
+
+			// If the analysis has a name, use it as the node title. If not,
+			// construct the title using program, programversion, and sourcename
+			if ($new_node->analysisname) {
+				$new_node->title = $new_node->analysisname;
+			} else {
+				//Construct node title as "program (version)
+				$new_node->title = "$analysis->program ($analysis->programversion)";
+			}
+			node_validate($new_node);
+			if(!form_get_errors()){
+				$node = node_submit($new_node);
+				node_save($node);
+				if($node->nid){
+					$page_content .= "Added $new_node->title<br>";
+				}
+			}
+		} else {
+			$page_content .= "Skipped $new_node->title<br>";
+		}
+	}
+	return $page_content;
+}
+/*******************************************************************************
+ * Display help and module information
+ * @param path which path of the site we're displaying help
+ * @param arg array that holds the current path as would be returned from arg()
+ * function
+ * @return help text for the path
+ */
+function tripal_analysis_help($path, $arg) {
+	$output = '';
+	switch ($path) {
+		case "admin/help#tripal_analysis":
+			$output = '<p>'.
+			t("Displays links to nodes created on this date").
+                '</p>';
+			break;
+	}
+	return $output;
+}
+/*******************************************************************************
+ *  The following function proves access control for users trying to
+ *  perform actions on data managed by this module
+ */
+function chado_analysis_access($op, $node, $account){
+	if ($op == 'create') {
+		return user_access('create chado_analysis content', $account);
+	}
+
+	if ($op == 'update') {
+		if (user_access('edit chado_analysis content', $account)) {
+			return TRUE;
+		}
+	}
+	if ($op == 'delete') {
+		if (user_access('delete chado_analysis content', $account)) {
+			return TRUE;
+		}
+	}
+	if ($op == 'view') {
+		if (user_access('access chado_analysis content', $account)) {
+			return TRUE;
+		}
+	}
+	return FALSE;
+}
+
+/*******************************************************************************
+ *  Set the permission types that the chado module uses.  Essentially we
+ *  want permissionis that protect creation, editing and deleting of chado
+ #  data objects
+ */
+function tripal_analysis_perm(){
+	return array(
+      'access chado_analysis content',
+      'create chado_analysis content',
+      'delete chado_analysis content',
+      'edit chado_analysis content',
+	);
+}
+
+/*******************************************************************************
+ *  We need to let drupal know about our theme functions and their arguments.
+ *  We create theme functions to allow users of the module to customize the
+ *  look and feel of the output generated in this module
+ */
+function tripal_analysis_theme () {
+	return array(
+      'tripal_analysis_analysis_table' => array (
+         'arguments' => array('analyses'),
+	),
+	);
+}
+
+/*******************************************************************************
+ * This function uses analysis_id's of all drupal analysis nodes as input and
+ * pull the analysis information (name, description, program, programversion,
+ * algorithm, sourcename, sourceversion, sourceuri, timeexecuted) from
+ * chado database. The return type is an object array that stores $analysis
+ * objects sorted by program
+ */
+function get_chado_analyses() {
+	$sql_drupal = "SELECT COUNT (analysis_id) FROM {chado_analysis}";
+	$no_orgs = db_result(db_query($sql_drupal));
+	if ($no_orgs != 0) {
+		$sql = "SELECT analysis_id, CA.nid, type FROM {chado_analysis} CA INNER JOIN node ON CA.nid = node.nid";
+		$result = db_query($sql);
+		$previous_db = db_set_active('chado');
+		$sql = "SELECT Analysis_id, name AS analysisname, description, program, 
+		                       programversion, algorithm, sourcename, sourceversion, 
+		                       sourceuri, timeexecuted
+		           FROM {Analysis} 		           WHERE analysis_id=%d";
+		$analyses = array();
+		$count = 0;
+		while ($data = db_fetch_object($result)) {
+			$analysis = db_fetch_object(db_query($sql, $data->analysis_id));
+			$analysis->node_id = $data->nid;
+			$analysis->node_type = $data->type;
+			// Use node_type as the key so we can sort by node type
+			// Since node_type is not unique by itself, we need to add
+			// $count to the key
+			$sortedBy = $analysis->timeexecuted;
+			$analyses ["$sortedBy$count"] = $analysis;
+			$count ++;
+		}
+		db_set_active($previous_db);
+
+		//Sort analyses by time, descending order
+		krsort($analyses, SORT_STRING);
+		return $analyses;
+	}
+}
+/************************************************************************
+ *
+ */
+function theme_tripal_analysis_analysis_table (&$analyses) {
+   
+	$output = "<br>Analyses are listed in the descending order of their execution time.<br><a id=\"tripal_expandableBox_toggle_button\" onClick=\"toggleExpandableBoxes()\">[-] Collapse All</a>";
+	
+   foreach($analyses as $analysis){
+		// Prepare information for html output
+		$ana_node_url = url("node/$analysis->node_id");
+	   if ($analysis->sourceversion) {
+         $ver = "($analysis->sourceversion)";
+      }
+      $date =  preg_replace("/^(\d+-\d+-\d+) .*/","$1",$analysis->timeexecuted);
+      
+      // Generate html output
+		$output .= "<div class=\"tripal_chado_analysis-info-box\" style=\"padding:5px\">
+                         <div class=\"tripal_expandableBox\">
+                           <h3>$analysis->analysisname ($date)</h3>
+                         </div>
+                         <div class=\"tripal_expandableBoxContent\">
+                           <span>
+                             <table class=\"tripal_chado_analysis_content\">
+                               <tr><td>
+                                 Name: <a href=\"$ana_node_url\">$analysis->analysisname</a>
+                               </td></tr>
+                               <tr><td>
+                                 Program: $analysis->program ($analysis->programversion)
+                               </td></tr>
+                               <tr><td>
+                                 Algorithm: $analysis->algorithm
+                               </td></tr>
+		                         <tr><td>
+                                 Source: $analysis->sourcename $ver
+		                         </td></tr>
+		                         <tr><td>
+                                 Source URI: $analysis->sourceuri
+                               </td></tr>
+                               <tr><td>
+                                 Executed Time:$date
+                               </td></tr>
+                               <tr><td>
+                                 Description: $analysis->description
+                               </td></tr>
+                             </table>
+                           </span>
+                         </div>
+                       </div>";
+	}
+
+	return $output;
+}
+
+/************************************************************************
+ *
+ */
+function tripal_analyses_cleanup($dummy = NULL, $job_id = NULL) {
+
+	// build the SQL statments needed to check if nodes point to valid analyses
+	$dsql = "SELECT * FROM {node} WHERE type = 'chado_analysis' order by nid";
+	$nsql = "SELECT * FROM {node} WHERE nid = %d";
+	$csql = "SELECT * FROM {chado_analysis} where nid = %d ";
+	$cosql= "SELECT * FROM {chado_analysis}";
+	$tsql = "SELECT * FROM {analysis} O ".
+           "WHERE analysis_id = %d";
+
+	// load into nodes array
+	$results = db_query($dsql);
+	$count = 0;
+	$nodes = array();
+	while($node = db_fetch_object($results)){
+		$nodes[$count] = $node;
+		$count++;
+	}
+
+	// load the chado_analyses into an array
+	$results = db_query($cosql);
+	$cnodes = array();
+	while($node = db_fetch_object($results)){
+		$cnodes[$count] = $node;
+		$count++;
+	}
+	$interval = intval($count * 0.01);
+
+	// iterate through all of the chado_analysis nodes and delete those that aren't valid
+	foreach($nodes as $nid){
+
+		// update the job status every 1% analyses
+		if($job_id and $i % $interval == 0){
+			tripal_job_set_progress($job_id,intval(($i/$count)*100));
+		}
+
+		// first check to see if the node has a corresponding entry
+		// in the chado_analysis table. If not then delete the node.
+		$analysis = db_fetch_object(db_query($csql,$nid->nid));
+		if(!$analysis){
+			node_delete($nid->nid);
+			$message = "Missing in chado_analysis table.... DELETING: $nid->nid\n";
+			watchdog('tripal_analysis',$message,array(),WATCHDOG_WARNING);
+			continue;
+		}
+		$i++;
+	}
+
+	// iterate through all of the chado_analysis nodes and delete those  that aren't valid
+	foreach($cnodes as $nid){
+		// update the job status every 1% analyses
+		if($job_id and $i % $interval == 0){
+			tripal_job_set_progress($job_id,intval(($i/$count)*100));
+		}
+		$node = db_fetch_object(db_query($nsql,$nid->nid));
+		if(!$node){
+			db_query("DELETE FROM {chado_analysis} WHERE nid = $nid->nid");
+			$message = "chado_analysis missing node.... DELETING: $nid->nid\n";
+			watchdog('tripal_analysis',$message,array(),WATCHDOG_WARNING);
+		}
+
+		$i++;
+	}
+	return '';
+}
+/*******************************************************************************
+ *
+ */
+function tripal_analysis_reindex_features ($analysis_id = NULL, $job_id = NULL){
+	$i = 0;
+
+	// if the caller provided a analysis_id then get all of the features
+	// associated with the analysis. Otherwise get all sequences assoicated
+	// with all libraries.
+	if(!$analysis_id){
+		$sql = "SELECT Analysis_id, Feature_id ".
+          "FROM {Analysisfeature} ".
+          "ORDER BY analysis_id";
+		$previous_db = db_set_active('chado');  // use chado database
+		$results = db_query($sql);
+		db_set_active($previous_db);  // now use drupal database
+	} else {
+		$sql = "SELECT Analysis_id, Feature_id ".
+             "FROM {Analysisfeature} ".
+             "WHERE analysis_id = %d";
+             "ORDER BY analysis_id";
+		$previous_db = db_set_active('chado');  // use chado database
+		$results = db_query($sql,$analysis_id);
+		db_set_active($previous_db);  // now use drupal database
+	}
+
+	// load into ids array
+	$count = 0;
+	$ids = array();
+	while($id = db_fetch_object($results)){
+		$ids[$count] = $id->feature_id;
+		$count++;
+	}
+
+	$interval = intval($count * 0.01);
+	foreach($ids as $feature_id){
+		// update the job status every 1% features
+		if($job_id and $i % interval == 0){
+			tripal_job_set_progress($job_id,intval(($i/$count)*100));
+		}
+		tripal_feature_sync_feature ($feature_id);
+		$i++;
+	}
+}
+/*******************************************************************************
+ *
+ */
+function tripal_analysis_taxonify_features ($analysis_id = NULL, $job_id = NULL){
+	$i = 0;
+
+	// if the caller provided a analysis_id then get all of the features
+	// associated with the analysis. Otherwise get all sequences assoicated
+	// with all libraries.
+	if(!$analysis_id){
+		$sql = "SELECT Analysis_id, Feature_id ".
+          "FROM {Analysisfeature} ".
+          "ORDER BY analysis_id";
+		$previous_db = db_set_active('chado');  // use chado database
+		$results = db_query($sql);
+		db_set_active($previous_db);  // now use drupal database
+	} else {
+		$sql = "SELECT Analysis_id, Feature_id ".
+             "FROM {Analysisfeature} ".
+             "WHERE analysis_id = %d";
+             "ORDER BY analysis_id";
+		$previous_db = db_set_active('chado');  // use chado database
+		$results = db_query($sql,$analysis_id);
+		db_set_active($previous_db);  // now use drupal database
+	}
+
+	// load into ids array
+	$count = 0;
+	$ids = array();
+	while($id = db_fetch_object($results)){
+		$ids[$count] = $id->feature_id;
+		$count++;
+	}
+
+	// make sure our vocabularies are set before proceeding
+	tripal_feature_set_vocabulary();
+
+	// use this SQL for getting the nodes
+	$nsql =  "SELECT * FROM {chado_feature} CF ".
+            "  INNER JOIN {node} N ON N.nid = CF.nid ".
+            "WHERE feature_id = %d";
+
+	// iterate through the features and set the taxonomy
+	$interval = intval($count * 0.01);
+	foreach($ids as $feature_id){
+		// update the job status every 1% features
+		if($job_id and $i % interval == 0){
+			tripal_job_set_progress($job_id,intval(($i/$count)*100));
+		}
+		$node = db_fetch_object(db_query($nsql,$feature_id));
+		tripal_feature_set_taxonomy($node,$feature_id);
+		$i++;
+	}
+}
