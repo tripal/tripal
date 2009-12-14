@@ -1,0 +1,1387 @@
+<?php
+// $Id:
+// Copyright 2009 Clemson University
+/*******************************************************************************
+ * Tripal Blast Result lets users show/hide blast results associated
+ * with a tripal feature
+ ******************************************************************************/
+function tripal_analysis_blast_init(){
+	// Add javascript and style sheet
+	drupal_add_css(drupal_get_path('theme', 'tripal').
+                                  '/css/tripal_analysis_blast.css');
+	drupal_add_js(drupal_get_path('theme', 'tripal').
+                                 '/js/tripal_analysis_blast.js');
+}
+
+/*******************************************************************************
+ * tripal_analysis_blast_menu()
+ * HOOK: Implementation of hook_menu()
+ * Entry points and paths of the module
+ */
+function tripal_analysis_blast_menu() {
+	//Show top 10/25/all blast results for ajax calls
+	$items['tripal_top_blast'] = array(
+      'path' => 'top_blast',
+      'title' => t('Blast Hits'),
+      'page callback' => 'tripal_get_blast_results',
+      'page arguments' => array(1,2,3,'1'),
+      'access arguments' => array('access content'),
+      'type' => MENU_CALLBACK
+	);
+	// Show regular expressions for selected database in Blast admin page
+	$items['admin/tripal/tripal_blast_regex'] = array(
+      'title' => t('Blast Regex'),
+      'page callback' => 'tripal_get_blast_regex',
+      'page arguments' => array(3),
+      'access arguments' => array('administer site configuration'),
+      'type' => MENU_CALLBACK
+	);
+	return $items;
+}
+
+
+/*******************************************************************************
+ * tripal_analysis_blast_nodeapi()
+ * HOOK: Implementation of hook_nodeapi()
+ * Display blast results for allowed node types
+ */
+function tripal_analysis_blast_nodeapi(&$node, $op, $teaser, $page) {
+
+	switch ($op) {
+		case 'view':
+			// Find out which node types for showing the blast
+			$types_to_show = variable_get('tripal_analysis_blast_setting',
+			array('chado_feature'));
+
+			// Abort if this node is not one of the types we should show.
+			if (!in_array($node->type, $types_to_show, TRUE)) {
+				break;
+			}
+			// Add blast to the content item if it's not a teaser
+			if (!$teaser && $node->feature->feature_id) {
+				if($node->build_mode == NODE_BUILD_SEARCH_INDEX){
+					$node->content['tripal_analysis_blast_index_version'] = array(
+                  '#value' => theme('parse_NCBI_Blast_XML_index_version',$node),
+                  '#weight' => 8,
+					);
+				} else {
+
+					// Show blast result if not at teaser view
+					$node->content['tripal_analysis_blast_form'] = array(
+                  '#value' => theme('tripal_analysis_blast_results', $node),
+                  '#weight' => 8
+					);
+				}
+			}
+	}
+}
+/************************************************************************
+ *  We need to let drupal know about our theme functions and their arguments.
+ *  We create theme functions to allow users of the module to customize the
+ *  look and feel of the output generated in this module
+ */
+function tripal_analysis_blast_theme () {
+	return array(
+      'parse_NCBI_Blast_XML_index_version' => array (
+         'arguments' => array('node'),
+	),
+      'tripal_analysis_blast_results' => array (
+         'arguments' => array('node'),
+	)
+	);
+}
+/*******************************************************************************
+ * Prepare blast result for the feature shown on the page
+ */
+function theme_tripal_analysis_blast_results ($node) {
+	$feature = $node->feature;
+	$content = tripal_get_blast_results($feature->feature_id, 0, 10, 0);
+	return $content;
+}
+
+/*******************************************************************************
+ * Prepare blast result for the feature shown on the page
+ */
+function theme_parse_NCBI_Blast_XML_index_version ($node) {
+	$feature = $node->feature;
+	$content = tripal_get_blast_results_index_version($feature->feature_id);
+	return $content;
+}
+
+/*******************************************************************************
+ * tripal_get_blast_results()
+ * Get blast result from featureprop table for the feature
+ */
+function tripal_get_blast_results($feature_id, $db_id, $max,$ajax){
+
+	// Get cvterm_id for 'analysis_blast_output_iteration_hits' which is required
+	// for inserting into the analysisfeatureprop table
+	$previous_db = db_set_active('chado');
+	$sql = "SELECT CVT.cvterm_id FROM {cvterm} CVT ".
+          "INNER JOIN cv ON cv.cv_id = CVT.cv_id ".
+          "WHERE CVT.name = 'analysis_blast_output_iteration_hits' ".
+          "AND CV.name = 'tripal'";
+	$type_id = db_result(db_query($sql));
+
+   // Get xml string from analysisfeatureprop value column, get db_id from analysisprop value column
+   // , and get analysis_id from analysisfeature table
+	$sql = "SELECT AP.value AS apvalue, AFP.value AS afpvalue, AF.analysis_id AS aid 
+	        FROM {analysisfeatureprop} AFP
+	        INNER JOIN analysisfeature AF ON AF.analysisfeature_id = AFP.analysisfeature_id
+	        INNER JOIN analysisprop AP ON AP.analysis_id = AF.analysis_id
+	        WHERE feature_id = %d
+	        AND AFP.type_id = %d ";
+	$result = db_query($sql, $feature_id, $type_id);
+	db_set_active($previous_db);
+
+	// get the HTML content for viewing each of the XML file
+	while ($analysisfeatureprop = db_fetch_object($result)) {
+
+	   // get db_id
+		$blastsettings = explode("|", $analysisfeatureprop->apvalue);
+		$att_db_id = $blastsettings [0];
+		
+		// get analysis name and date
+		$previous_db = db_set_active('chado');
+		$sql = "SELECT analysis_id AS aid, name, to_char(timeexecuted, 'MM-DD-YYYY') AS time
+		        FROM {analysis} 		        WHERE analysis_id = %d";
+		$analysis = db_fetch_object(db_query($sql, $analysisfeatureprop->aid));
+      db_set_active($previous_db);
+
+		// If not called by ajax, go through all blast hits
+		if ($ajax == 0) {
+			// Get db object using the db_id
+			$previous_db = db_set_active('chado');
+			$sql = "SELECT * FROM {db} WHERE db_id=%d";
+			$db = db_fetch_object(db_query($sql, $att_db_id));
+			db_set_active($previous_db);
+			
+			$content .= parse_NCBI_Blast_XML($analysisfeatureprop->afpvalue,$db,$max,$feature_id,$ajax, $analysis);
+
+		// Otherwise, only update expandable box the user has clicked on
+		} else {
+			if ($att_db_id == $db_id) {
+				// Get db object using the db_id
+				$previous_db = db_set_active('chado');
+				$sql = "SELECT * FROM {db} WHERE db_id=%d";
+				$db = db_fetch_object(db_query($sql, $att_db_id));
+				db_set_active($previous_db);
+				$content .= parse_NCBI_Blast_XML($analysisfeatureprop->afpvalue,$db,$max,$feature_id,$ajax, $analysis);
+			}
+		}
+	}
+
+	// since this function provides output for addition into
+	// a feature page, as well as an AJAX refresh of content
+	// within the blast hits we need to setup the return
+	// different depending on the request type
+	if($ajax){
+		drupal_json(array('update' => $content));
+	} else {
+		return $content;
+	}
+}
+/*******************************************************************************
+ * Scanning the file folder for blast results and prepare content for indexing
+ */
+function tripal_get_blast_results_index_version ($feature_id){
+
+// Get cvterm_id for 'analysis_blast_output_iteration_hits' which is required
+   // for inserting into the analysisfeatureprop table
+   $previous_db = db_set_active('chado');
+   $sql = "SELECT CVT.cvterm_id FROM {cvterm} CVT ".
+          "INNER JOIN cv ON cv.cv_id = CVT.cv_id ".
+          "WHERE CVT.name = 'analysis_blast_output_iteration_hits' ".
+          "AND CV.name = 'tripal'";
+   $type_id = db_result(db_query($sql));
+
+   // Get xml string from analysisfeatureprop value column, get db_id from analysisprop value column
+   // , and get analysis_id from analysisfeature table
+   $sql = "SELECT AP.value AS apvalue, AFP.value AS afpvalue, AF.analysis_id AS aid 
+           FROM {analysisfeatureprop} AFP
+           INNER JOIN analysisfeature AF ON AF.analysisfeature_id = AFP.analysisfeature_id
+           INNER JOIN analysisprop AP ON AP.analysis_id = AF.analysis_id
+           WHERE feature_id = %d
+           AND AFP.type_id = %d ";
+   $result = db_query($sql, $feature_id, $type_id);
+   db_set_active($previous_db);
+
+   // get the HTML content for viewing each of the XML file
+   while ($analysisfeatureprop = db_fetch_object($result)) {
+      // get analysis name and date
+      $previous_db = db_set_active('chado');
+      $sql = "SELECT analysis_id AS aid, name, to_char(timeexecuted, 'MM-DD-YYYY') AS time
+              FROM {analysis}               WHERE analysis_id = %d";
+      $analysis = db_fetch_object(db_query($sql, $analysisfeatureprop->aid));
+      db_set_active($previous_db);
+      
+      $blastsettings = explode("|", $analysisfeatureprop->apvalue);
+      $att_db_id = $blastsettings [0];
+      
+      // Get db object using the db_id
+      $previous_db = db_set_active('chado');
+      $sql = "SELECT * FROM {db} WHERE db_id=%d";
+      $db = db_fetch_object(db_query($sql, $att_db_id));
+      db_set_active($previous_db);
+      // Only index best 10 hits because the default page only shows 10 blast results
+      $max = 10;
+      $content .= parse_NCBI_Blast_XML($analysisfeatureprop->afpvalue,$db,$max,$feature_id,$ajax, $analysis);
+     
+   }
+	return $content;
+
+}
+/*******************************************************************************
+ * parse_NCBI_Blast_XML()
+ * Parse XML BLAST result and generate HTML output
+ */
+function parse_NCBI_Blast_XML($xml_string,$db,$max,$feature_id,$ajax, $analysis) {
+
+	// Get the parser using db_id
+	$sql = "SELECT * FROM {tripal_analysis_blast} WHERE db_id = %d";
+	$parser = db_fetch_object(db_query($sql, $db->db_id));
+	$db_name = $parser->displayname;
+	$is_genbank = $parser->genbank_style;
+	$regex_hit_id = $parser->regex_hit_id;
+	$regex_hit_def = $parser->regex_hit_def;
+	$regex_hit_accession = $parser->regex_hit_accession;
+
+	// set default if regular expressions have not been specified
+	if(!$regex_hit_id){
+		$regex_hit_id = '/^(.*?)\s.*$/';
+	} else {
+		$regex_hit_id = '/'.$regex_hit_id.'/';
+	}
+	if(!$regex_hit_def){
+		$regex_hit_def = '/^.*?\s(.*)$/';
+	} else {
+		$regex_hit_def = '/'.$regex_hit_def.'/';
+	}
+   if(!$regex_hit_accession){
+      $regex_hit_accession = '/^(.*?)\s.*$/';
+   } else {
+   	$regex_hit_accession = '/'.$regex_hit_accession.'/';
+   }
+	// add a URL for this database if one exists
+	if($db->url && $db_name){
+		$db_name = "<a href=\"$db->url\">$db_name</a>";
+	}
+
+	$url = url("sites/all/themes/theme_tripal/images/ajax-loader.gif");
+	// generate the HTML header for the table of blast results
+	if(!$ajax){  // don't regenerate the header divs if this is an ajax request
+		// add on the ajaxLoading box for use when updating via ajax
+		$html_out .= "<div id=\"tripal_ajaxLoading\" style=\"display:none\">".
+                   "<div id=\"loadingText\">Loading...</div>".
+                   "<img src=\"$url\"></div>";
+		if (!$db_name) {
+		 $html_out .= "<div id=\"blast-hits\" class=\"tripal_blast-info-box\">".
+                          "<div class=\"tripal_expandableBox\">".
+                          "<h3>$analysis->name</h3></div>".
+                          "<div class=\"tripal_expandableBoxContent\" ".
+                         "id=\"blast_db_$db->db_id\">";
+		} else {
+		   $html_out .= "<div id=\"blast-hits\" class=\"tripal_blast-info-box\">".
+                             "<div class=\"tripal_expandableBox\">".
+                             "<h3>$db_name</h3></div>".
+                             "<div class=\"tripal_expandableBoxContent\" ".
+                             "id=\"blast_db_$db->db_id\">";
+		}
+	};
+   
+	// Find node id for the analysis
+   $ana_nid = db_result(db_query("SELECT nid FROM {chado_analysis} WHERE analysis_id = %d", $analysis->aid));
+   $ana_url = url("node/".$ana_nid);
+	// Show analysis date and name
+   $html_out .= "<strong>Analysis Date: </strong>$analysis->time (<a href=$ana_url>$analysis->name</a>)<br>";
+
+	// Load the file.  This XML file should be an extract
+   // of the original XML file with only a single iteration.
+   // An iteration is essentially all the hits for a single
+   // query sequence.
+   $xml_output = simplexml_load_string($xml_string);
+   $iteration = ''; 
+   // new XML file parser has added the feature name within <Iteration_query-def> tags.
+   if ($xml_output->getName() == 'Iteration') {
+      foreach ($xml_output->children() as $xml_tag) {
+   	   if ($xml_tag->getName() == 'Iteration_query-def') {
+            // Here we show the feature name again to check if we pull the correct data
+            $html_out .= "Query: $xml_tag<br>";
+      	} else if ($xml_tag->getName() == 'Iteration_hits') {
+      		$iteration = $xml_tag;
+      	}
+      }
+   // This is for the file parsed by the old parser
+   } else {
+   	$iteration = $xml_output;
+   }
+   
+   $number_hits = 0;
+   foreach($iteration->children() as $hits){
+      $number_hits ++;
+   }
+	
+	// add the links for updating blast info using Ajax
+	if($max != 10){
+		$url = url("tripal_top_blast/$feature_id/$db->db_id/10");
+		$html_out .= "<span><a onclick=\"return tripal_update_blast(".
+                   "this,$db->db_id)\" href=\"$url\">Show Best 10 Hits</a></span>";
+	} else {
+		$html_out .= "<span>Best 10 Hits Shown</span>";
+	}
+	if($number_hits <= 10){
+      // Do nothing if number of hits <= 10		
+	} else if ($max != 25) {
+	   $url = url("tripal_top_blast/$feature_id/$db->db_id/25");
+      $html_out .= "<span> | <a onclick=\"return tripal_update_blast(".
+                   "this,$db->db_id)\" href=\"$url\">Show Best 25 Hits</a></span>";
+	}else {
+		$html_out .= "<span> | Best 25 Hits Shown</span>";
+	}
+	if($number_hits <= 25){
+		// Do nothing if number of hits <= 25
+	} else if ($max != 0) {
+	   $url = url("tripal_top_blast/$feature_id/$db->db_id/0");
+      $html_out .= "<span> | <a onclick=\"return tripal_update_blast(".
+                   "this,$db->db_id)\" href=\"$url\">Show All Hits</a>  </span>";
+	} else {
+		$html_out .= "<span> | All Hits Shown</span>";
+	}
+
+	$html_out .= '<br><span><i>Note:</i> Click a description for more details.'.
+                '</span>';
+	$html_out .= '<span><table class="tripal_blast_results_table">'.
+                '  <tr>'.
+                '    <th nowrap>Match Name</th>'.
+                '    <th nowrap>E value</th>'.
+                '    <th nowrap>Identity</th>'.
+                '  </tr>';
+
+
+
+	// now run through the blast hits/hsps of this iteration
+	// and generate the rows of the table
+
+	foreach($iteration->children() as $hits){
+		// if we've hit the maximum number of hits then
+		// return
+		if($max > 0 && $hit_count >= $max){
+			$html_out .= '</table></span>';
+			if(!$ajax){
+				$html_out .= '</div></div>';
+			}
+			return $html_out;
+		}
+		$hit_count++;
+		
+		foreach($hits->children() as $hit){
+			$best_evalue = 0;
+			$best_identity = 0;
+         $best_len = 0;
+			$element_name = $hit->getName();
+			if($element_name == 'Hit_id'){
+				// if parsing "name, acc, desc" from three tags (1/3)
+				if ($is_genbank) {
+					$hit_name = $hit;
+				}
+			} else if($element_name == 'Hit_def'){
+				if($is_genbank){
+					$description = $hit;
+				} else {
+					$accession = preg_replace($regex_hit_accession,"$1",$hit);
+					$hit_name = preg_replace($regex_hit_id,"$1",$hit);
+					$description = preg_replace($regex_hit_def,"$1",$hit);
+				}
+			} else if($element_name == 'Hit_accession'){
+				// if parsing "name, acc, desc" from three tags (3/3)
+				if ($is_genbank){
+					$accession = $hit;
+				}
+				// now run through each HSP for this hit
+			} else if($element_name == 'Hit_hsps'){
+				foreach($hit->children() as $hsp){
+					foreach($hsp->children() as $hsp_info){
+						$element_name = $hsp_info->getName();
+						if($element_name == 'Hsp_num'){
+							$hsp_num = $hsp_info;
+						}
+						if($element_name == 'Hsp_bit-score'){
+							$hsp_bit_score = $hsp_info;
+						}
+						if($element_name == 'Hsp_score'){
+							$hsp_score = $hsp_info;
+						}
+						if($element_name == 'Hsp_evalue'){
+							$hsp_evalue = $hsp_info;
+							// use the first evalue for this set of HSPs
+							// as the best evalue. This get's shown as
+							// info for the overall match.
+							if(!$best_evalue){
+								$best_evalue = $hsp_evalue;
+							}
+						}
+						if($element_name == 'Hsp_query-from'){
+							$hsp_query_from = $hsp_info;
+						}
+						if($element_name == 'Hsp_query-to'){
+							$hsp_query_to = $hsp_info;
+						}
+						if($element_name == 'Hsp_hit-from'){
+							$hsp_hit_from = $hsp_info;
+						}
+						if($element_name == 'Hsp_hit-to'){
+							$hsp_hit_to = $hsp_info;
+						}
+						if($element_name == 'Hsp_query-frame'){
+							$hsp_query_frame = $hsp_info;
+						}
+						if($element_name == 'Hsp_identity'){
+						   $hsp_identity = $hsp_info;
+						   // use the first evalue for this set of HSPs
+                     // as the best evalue. This get's shown as
+                     // info for the overall match.
+						   if(!$best_identity){
+                        $best_identity = $hsp_identity;
+                     }
+						}
+						if($element_name == 'Hsp_positive'){
+							$hsp_positive = $hsp_info;
+						}
+						if($element_name == 'Hsp_align-len'){
+						   $hsp_align_len = $hsp_info;
+                     // use the first evalue for this set of HSPs
+                     // as the best evalue. This get's shown as
+                     // info for the overall match.
+						   if(!$best_len){
+                        $best_len = $hsp_align_len;
+                     }
+						}
+						if($element_name == 'Hsp_qseq'){
+							$hsp_qseq = $hsp_info;
+						}
+						if($element_name == 'Hsp_hseq'){
+							$hsp_hseq = $hsp_info;
+						}
+						if($element_name == 'Hsp_midline'){
+							$hsp_midline = $hsp_info;
+						}
+					}
+					if($hsp_num > 1){
+						//   $html_out .="<br>";
+					}
+					$hsp_html_out .="<b>HSP $hsp_num</b> <pre>Score: ".
+                                     "$hsp_bit_score bits ($hsp_score), ".
+                                     "Expect = $hsp_evalue<br>";
+					$hsp_html_out .= sprintf("Identity = %d/%d (%.2f%%), ".
+                                              "Postives = %d/%d (%.2f%%), ".
+                                              "Query Frame = $hsp_query_frame".
+                                              "</pre>",
+					$hsp_identity, $hsp_align_len,
+					$hsp_identity/$hsp_align_len*100,
+					$hsp_positive, $hsp_align_len,
+					$hsp_positive/$hsp_align_len*100);
+					$hsp_html_out .= sprintf("<pre>Query: %4d $hsp_qseq %d".
+                                              "<br>",
+					$hsp_query_from,$hsp_query_to);
+					$hsp_html_out .= sprintf("            $hsp_midline<br>");
+					$hsp_html_out .= sprintf("Sbjct: %4d $hsp_hseq %d</pre>".
+                                              "<br>",
+					$hsp_hit_from,$hsp_hit_to);
+				}
+			}
+		}
+		$arrowr_url = url("sites/all/themes/theme_tripal/images/arrow_r.png");
+		$html_out .= "<tr>";
+		if($accession && $db->urlprefix){
+			$html_out .= "<td><img src=$arrowr_url align=\"top\" class=\"blast-hit-arrow-icon\"> <a href=\"$db->urlprefix$accession\" ".
+                            "target=\"_blank\">$hit_name</a></td>";
+		} else {
+			// Test if this is another feature in the database
+			$sql = "SELECT feature_id FROM {feature} WHERE uniquename = '%s'";
+			$previous_db = db_set_active('chado');
+			$hit_feature_id = db_result(db_query($sql, $hit_name));
+			db_set_active($previous_db);
+			// If it is, add link to that feature
+			if ($hit_feature_id) {
+				$hit_url = url("ID$hit_feature_id");
+				$html_out .= "<td><img src=$arrowr_url align=\"top\" class=\"blast-hit-arrow-icon\"> <a href=\"$hit_url\" ".
+                            "target=\"_blank\">$hit_name</a></td>";
+			} else {
+			   $html_out .= "<td><img src=$arrowr_url align=\"top\" class=\"blast-hit-arrow-icon\"> $hit_name</td>";
+			}
+		}
+		$html_out .= "<td nowrap>$best_evalue</td>";
+		$percent_identity = number_format($best_identity/$best_len*100,
+		2);
+		$html_out .= "<td nowrap>$percent_identity%</td>";
+		$html_out .= "</tr><tr><td colspan=3><div class=\"tripal_expandableSubBox\">".
+                         "$description</div></td></tr><tr><td colspan=4><div class=".
+                         "\"tripal_expandableSubBoxContent\">".
+                         "$hsp_html_out</div><td></tr>";
+		$hsp_html_out = '';
+	}
+
+	$html_out .= '</table></span>';
+	if(!$ajax){
+		// we don't have the header div's when ajax is being used to update
+		$html_out .= '</div></div>';
+	}
+	return $html_out;
+}
+/*******************************************************************************
+ * Parse NCBI Blast results for indexing so that user can use blast results to
+ * find corresponding features
+ */
+function parse_NCBI_Blast_XML_index_version($xml_string,$db,$feature_id) {
+// Get the parser using db_id
+   $sql = "SELECT * FROM {tripal_analysis_blast} WHERE db_id = %d";
+   $parser = db_fetch_object(db_query($sql, $db->db_id));
+   $db_name = $parser->displayname;
+   $is_genbank = $parser->genbank_style;
+   $regex_hit_id = $parser->regex_hit_id;
+   $regex_hit_def = $parser->regex_hit_def;
+   $regex_hit_accession = $parser->regex_hit_accession;
+
+   // set default if regular expressions have not been specified
+   if(!$regex_hit_id){
+      $regex_hit_id = '/^(.*?)\s.*$/';
+   } else {
+      $regex_hit_id = '/'.$regex_hit_id.'/';
+   }
+   if(!$regex_hit_def){
+      $regex_hit_def = '/^.*?\s(.*)$/';
+   } else {
+      $regex_hit_def = '/'.$regex_hit_def.'/';
+   }
+   if(!$regex_hit_accession){
+      $regex_hit_accession = '/^(.*?)\s.*$/';
+   } else {
+      $regex_hit_accession = '/'.$regex_hit_accession.'/';
+   }
+
+	$html_out .= "<h3>$db_name</h3>";
+
+   // Load the file.  This XML file should be an extract
+   // of the original XML file with only a single iteration.
+   // An iteration is essentially all the hits for a single
+   // query sequence.
+   $xml_output = simplexml_load_string($xml_string);
+   $iteration = ''; 
+   // new XML file parser has added the feature name within <Iteration_query-def> tags.
+   if ($xml_output->getName() == 'Iteration') {
+      foreach ($xml_output->children() as $xml_tag) {
+         if ($xml_tag->getName() == 'Iteration_query-def') {
+            // Here we show the feature name again to check if we pull the correct data
+            $html_out .= "Query: $xml_tag<br>";
+         } else if ($xml_tag->getName() == 'Iteration_hits') {
+            $iteration = $xml_tag;
+         }
+      }
+   // This is for the file parsed by the old parser
+   } else {
+      $iteration = $xml_output;
+   }
+
+	// now run through the blast hits/hsps of this iteration
+	// and generate the rows of the table
+	foreach($iteration->children() as $hits){
+		$best_evalue = 0;
+		foreach($hits->children() as $hit){
+			$best_evalue = 0;
+			$element_name = $hit->getName();
+		if($element_name == 'Hit_id'){
+            // if parsing "name, acc, desc" from three tags (1/3)
+            if ($is_genbank) {
+               $hit_name = $hit;
+            }
+         } else if($element_name == 'Hit_def'){
+            if($is_genbank){
+               $description = $hit;
+            } else {
+               $accession = preg_replace($regex_hit_accession,"$1",$hit);
+               $hit_name = preg_replace($regex_hit_id,"$1",$hit);
+               $description = preg_replace($regex_hit_def,"$1",$hit);
+            }
+         } else if($element_name == 'Hit_accession'){
+            // if parsing "name, acc, desc" from three tags (3/3)
+            if ($is_genbank){
+               $accession = $hit;
+            }
+            // now run through each HSP for this hit
+         }
+		}
+		$html_out .= "<p>$hit_name<br>";
+		$html_out .= "$accession<br>";
+		$html_out .= "<b>$description</b></br>";
+		$hsp_html_out = '';
+	}
+	return $html_out;
+}
+/*******************************************************************************
+ * Tripal Blast administrative setting form. This function is called by
+ * tripal_analysis module which asks for an admin form to show on the page
+ */
+function tripal_analysis_blast_get_settings() {
+	// Get an array of node types with internal names as keys
+	$options = node_get_types('names');
+	// Add 'chado_feature' to allowed content types for showing blast results
+	$allowedoptions ['chado_feature'] = "Show blast results on feature pages";
+
+	$form['description'] = array(
+       '#type' => 'item',
+       '#value' => t("Most chado features were analyzed by blast against major sequence databases. This option allows user to display the blast analysis results. Please read user manual for storage and display of blast files. Check the box to enable the analysis results. Uncheck to disable it."),
+		 '#weight' => 0,
+	);
+
+	$form['tripal_analysis_blast_setting'] = array(
+      '#type' => 'checkboxes',
+      '#options' => $allowedoptions,
+      '#default_value' => variable_get('tripal_analysis_blast_setting',
+	array('chado_feature')),
+	);
+	$form['blast_parser'] = array(
+      '#title' => t('Blast Parser Settings'),
+      '#type' => 'fieldset',
+      '#description' => t('Configure parsers for showing blast results. Each database is '.
+                          'allowed to have one xml parser.'),
+      '#weight' => 10
+	);
+
+	$previous_db = db_set_active('chado');  // use chado database
+	// get a list of db from chado for user to choose
+	$sql = 'SELECT db_id, name FROM {db} ORDER BY lower(name)';
+	$results = db_query ($sql);
+	$blastdbs = array();
+	while ($db = db_fetch_object($results)){
+		$blastdbs[$db->db_id] = $db->name;
+	}
+	$form['db_options'] = array(
+      '#type' => 'value',
+      '#value' => $blastdbs
+	);
+	$form['blast_parser']['blastdb'] = array(
+      '#title' => t('Database'),
+      '#type' => 'select',
+      '#description' => t('The database used for the blast analysis.'),
+      '#options' => $form['db_options']['#value'],
+      '#attributes' => array(
+         'onChange' => "return tripal_update_regex(this)",
+	)
+	);
+	$form['blast_parser']['displayname'] = array(
+      '#title' => t('Title for the blast analysis'),
+      '#type' => 'textfield',
+	);
+	$form['blast_parser']['gb_style_parser'] = array(
+      '#title' => t('Use Genebank style parser. This will clear all regular expression settings for the selected database.'),
+	   '#type' => 'checkbox',
+	   '#attributes' => array(
+         'onClick' => "return tripal_set_genbank_style(this)",
+	   )
+	);
+	$form['blast_parser']['hit_id'] = array(
+      '#title' => t('Regular expression for Hit Name'),
+      '#type' => 'textfield',
+	);
+	$form['blast_parser']['hit_def'] = array(
+      '#title' => t('Regular expression for Hit Description'),
+      '#type' => 'textfield',
+	);
+	$form['blast_parser']['hit_accession'] = array(
+      '#title' => t('Regular expression for Hit Accession'),
+      '#type' => 'textfield',
+	);
+	$form['blast_parser']['button'] = array(
+      '#type' => 'submit',
+      '#value' => t('Save settings')
+	);
+	db_set_active($previous_db); // use drupal database
+
+	$settings->form = $form;
+	$settings->title = "Tripal Blast";
+	return $settings;
+}
+
+/*******************************************************************************
+ * Parse Blast XML Output file into analysisfeatureprop table
+ */
+function tripal_analysis_blast_parseXMLFile ($analysis_id, $blastdb, $blastfile, $job_id) {
+
+	// Prepare log
+	$filename = preg_replace("/.*\/(.*)/", "$1", $blastfile);
+	$logfile = file_directory_path() . "/tripal/tripal_analysis_blast/load_$filename.log";
+	$log = fopen($logfile, 'a'); // append parsing results to log file
+
+	// Parsing started
+	print "Parsing File:".$blastfile." ...\n";
+	fwrite($log, date("D M j G:i:s Y").". Loading $blastfile\n");
+
+	// Get cvterm_id for 'analysis_blast_output_iteration_hits' which is required
+	// for inserting into the analysisfeatureprop table
+	$previous_db = db_set_active('chado'); // use chado database
+	$sql = "SELECT CVT.cvterm_id FROM {cvterm} CVT ".
+          "INNER JOIN cv ON cv.cv_id = CVT.cv_id ".
+          "WHERE CVT.name = 'analysis_blast_output_iteration_hits' ".
+          "AND CV.name = 'tripal'";
+	$type_id = db_result(db_query($sql));
+
+	// Load the XML file.
+	$blastoutput = simplexml_load_file($blastfile);	
+	$no_iterations = 0;
+	foreach($blastoutput->children() as $tmp) {
+		if ($tmp->getName() == 'BlastOutput_iterations') {
+			foreach($tmp->children() as $itr) {
+				if ($itr->getName() == 'Iteration') {
+					$no_iterations ++;
+				}
+			}
+		}
+	}
+	print "$no_iterations iterations to be processed.\n";
+	
+   $interval = intval($no_iterations * 0.01);
+	$idx_iterations = 0;
+	foreach ($blastoutput->children() as $blastoutput_tags) {
+
+		if ($blastoutput_tags->getName() == 'BlastOutput_iterations') {
+			foreach($blastoutput_tags->children() as $iterations) {
+				if ($iterations->getName() == 'Iteration') {
+
+					// Set job status
+					$idx_iterations ++;
+					if ($idx_iterations % $interval == 0) {
+					   $percentage = (int) ($idx_iterations / $no_iterations * 100);
+					   db_set_active($previous_db);
+					   tripal_job_set_progress($job_id, $percentage);
+					   $previous_db = db_set_active('chado');
+					   print $percentage."% ";
+					}
+					// now run through the blast hits/hsps of this iteration
+					// and generate the rows of the table
+					$feature_id = 0;
+					foreach($iterations->children() as $iteration_tags) {
+
+						// Match chado feature uniquename with <Iteration_query-def>
+						// and get the feature_id
+						$featurenaem_xml = '';
+						if($iteration_tags->getName() == 'Iteration_query-def'){
+
+							// If the Iteration_query-def in the format of "feature_id|uniquename"
+							// get feature_id from it directly
+							if (preg_match("/(\d+)\|.+/", $iteration_tags, $matches)) {
+								$feature_id = $matches[1];
+
+							// If not matched, treat Iteration_query-def as uniquename
+							} else {
+
+								// Find out how many features match this uniquename
+								$sql = "SELECT count(feature_id) FROM {feature} ".
+                               "WHERE uniquename = '%s' ";
+								$no_features = db_result(db_query($sql, $iteration_tags));
+									
+								// If there is only one match, get the feature_id
+								if ($no_features == 1) {
+									$sql = "SELECT feature_id FROM {feature} ".
+							             "WHERE uniquename = '%s' ";
+									$feature_id = db_result(db_query($sql, $iteration_tags));
+
+								// If the uniquename matches more than one features then skip and print 'Ambiguous'
+								} else if ($no_features > 1) {
+									fwrite($log, "Ambiguous: ".$iteration_tags." matches more than one feature and is not processed.\n");
+									continue;
+								
+								// If the uniquename did not match, skip and print 'Failed'
+								} else {
+									fwrite($log, "Failed: ".$iteration_tags."\n");
+								}
+							}
+							// Successfully matched. print 'Succeeded'
+							if ($feature_id) {
+								fwrite($log, "Succeeded: ".$iteration_tags." => feature id:".$feature_id);
+								$featurename_xml = $iteration_tags->asXML();
+							}
+
+						// Insert Iteration_hits into analysisfeatureprop and analysisfeature tables
+						} else if($iteration_tags->getName() == 'Iteration_hits'){
+						   if ($feature_id) {
+
+								// Make sure this iteration doesn't exist in analysisfeatureprop. If it does, update but not insert
+								$sql = "SELECT analysisfeatureprop_id FROM {analysisfeatureprop} AFP ".
+							          "INNER JOIN analysisfeature AF ON AF.analysisfeature_id = AFP.analysisfeature_id ".       
+								       "WHERE feature_id=%d ".
+							          "AND analysis_id=%d ".
+								       "AND type_id=%d ";
+								
+								$result = db_query($sql, $feature_id, $analysis_id, $type_id);
+								$analysisfeatureprop = db_fetch_object($result);
+								$xml_content = "<Iteration>\n".$featurename_xml."\n".$iteration_tags->asXML()."\n</Iteration>";
+								
+								// If this Iteration_hits already exists, update it
+								if ($analysisfeatureprop) {
+									$sql = "UPDATE {analysisfeatureprop} ".
+								          "SET value = '%s' ".
+								          "WHERE analysisfeatureprop_id = %d ";
+									
+									db_query($sql, $xml_content, $analysisfeatureprop->analysisfeatureprop_id);		
+									fwrite($log, " (Update)\n"); // write to log
+								
+								// Otherwise, insert the Iteration_hits into analysisfeature and analysisfeatureprop tables
+							   } else {
+								   //------------------------------------------------------
+                           // Insert into analysisfeature table
+                           //------------------------------------------------------
+                           $sql = "INSERT INTO {analysisfeature} (feature_id, analysis_id) ".
+                                  "VALUES (%d, %d)";
+                           db_query ($sql, $feature_id, $analysis_id);
+                           // Get the newly inserted analysisfeature_id
+                           $sql = "SELECT analysisfeature_id FROM {analysisfeature} WHERE feature_id = %d AND analysis_id = %d";
+                           $analysisfeature_id = db_result(db_query($sql, $feature_id, $analysis_id));
+                           //------------------------------------------------------
+                           // Insert into analysisfeatureprop table
+                           //------------------------------------------------------
+									$sql = "INSERT INTO {analysisfeatureprop} (analysisfeature_id, type_id, value, rank)".
+                                  "VALUES (%d, %d, '%s', %d)";
+									db_query($sql, $analysisfeature_id, $type_id, $xml_content, '0');
+									fwrite($log, " (Insert)\n"); // write to log
+								}								 
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	db_set_active ($previous_db); // Use drupal database
+	print "Done.\nSuccessful and failed entries have been saved in the log file:\n $logfile\n";
+	fwrite($log, "\n");
+	fclose($log);
+   return;
+}
+
+/*******************************************************************************
+ * This function is only called by ajax to get regular expressions for blast
+ * admin page
+ */
+function tripal_get_blast_regex ($db_id) {
+	$sql = "SELECT * FROM {tripal_analysis_blast} WHERE db_id = %d";
+	$blast_regexs = db_fetch_object(db_query($sql, $db_id));
+	drupal_json(
+	array(
+	     'name' => $blast_regexs->displayname,
+	     'genbank_style' => $blast_regexs->genbank_style,
+	     'reg1' => $blast_regexs->regex_hit_id,
+	     'reg2' => $blast_regexs->regex_hit_def,
+	     'reg3' => $blast_regexs->regex_hit_accession,
+	)
+	);
+}
+
+/*******************************************************************************
+ *  Provide information to drupal about the node types that we're creating
+ *  in this module
+ */
+function tripal_analysis_blast_node_info() {
+   $nodes = array();
+   $nodes['chado_analysis_blast'] = array(
+      'name' => t('Analysis: Blast'),
+      'module' => 'chado_analysis_blast',
+      'description' => t('A blast analysis from the chado database'),
+      'has_title' => FALSE,
+      'title_label' => t('Analysis: Blast'),
+      'has_body' => FALSE,
+      'body_label' => t('Blast Analysis Description'),
+      'locked' => TRUE
+   );
+   return $nodes;
+}
+
+/*******************************************************************************
+ *  Provide a Blast Analysis form
+ */
+function chado_analysis_blast_form ($node){
+
+   $type = node_get_types('type', $node);
+   $form = array();
+   $form['title']= array(
+      '#type' => 'hidden',
+      '#default_value' => $node->title,
+   );
+   $form['analysisname']= array(
+      '#type' => 'textfield',
+      '#title' => t('Analysis Name'),
+      '#required' => FALSE,
+      '#default_value' => $node->analysisname,
+      '#weight' => 1
+   );
+   $form['program']= array(
+      '#type' => 'textfield',
+      '#title' => t('Program'),
+      '#required' => TRUE,
+      '#default_value' => $node->program,
+      '#weight' => 2
+   );
+   $form['programversion']= array(
+      '#type' => 'textfield',
+      '#title' => t('Program Version'),
+      '#required' => TRUE,
+      '#default_value' => $node->programversion,
+      '#weight' => 3
+   );
+   $form['algorithm']= array(
+      '#type' => 'textfield',
+      '#title' => t('Algorithm'),
+      '#required' => FALSE,
+      '#default_value' => $node->algorithm,
+      '#weight' => 4
+   );
+   $form['sourcename']= array(
+      '#type' => 'textfield',
+      '#title' => t('Source Name'),
+      '#required' => FALSE,
+      '#default_value' => $node->sourcename,
+      '#weight' => 5
+   );
+   $form['sourceversion']= array(
+      '#type' => 'textfield',
+      '#title' => t('Source Version'),
+      '#required' => FALSE,
+      '#default_value' => $node->sourceversion,
+      '#weight' => 6
+   );
+   $form['sourceuri']= array(
+      '#type' => 'textfield',
+      '#title' => t('Source URI'),
+      '#required' => FALSE,
+      '#default_value' => $node->sourceuri,
+      '#weight' => 7
+   );
+   // Get time saved in chado
+   $default_time = $node->timeexecuted;
+   $year = preg_replace("/^(\d+)-\d+-\d+ .*/", "$1", $default_time);
+   $month = preg_replace("/^\d+-0?(\d+)-\d+ .*/", "$1", $default_time);
+   $day = preg_replace("/^\d+-\d+-0?(\d+) .*/", "$1", $default_time);
+   // If the time is not set, use current time
+   if (!$default_time) {
+      $default_time = time();
+      $year = format_date($default_time, 'custom', 'Y');
+      $month = format_date($default_time, 'custom', 'n');
+      $day = format_date($default_time, 'custom', 'j');
+   }
+   $form['timeexecuted']= array(
+      '#type' => 'date',
+      '#title' => t('Time Executed'),
+      '#required' => TRUE,
+      '#default_value' => array(
+         'year' => $year,
+         'month' => $month,
+         'day' => $day,
+      ),
+      '#weight' => 8
+   );
+   $form['description']= array(
+      '#type' => 'textarea',
+      '#rows' => 15,
+      '#title' => t('Description and/or Program Settings'),
+      '#required' => FALSE,
+      '#default_value' => check_plain($node->description),
+      '#weight' => 9
+   );
+
+   // Blast specific settings
+   if (preg_match("/.*\|.*\|.*/",$node->blastdb)) {
+      $prop_values = explode("|", $node->blastdb);
+      $node->blastdb = $prop_values[0];
+      $node->blastfile = $prop_values[1];
+      $node->blastparameters = $prop_values[2];
+   }
+   $form['blast'] = array(
+      '#title' => t('Blast Settings'),
+      '#type' => 'fieldset',
+      '#description' => t('Specific Settings for Blast Analysis.'),
+      '#collapsible' => TRUE,
+      '#attributes' => array('id' => 'blast-extra-settings'),
+      '#weight' => 11
+   );
+         
+   $previous_db = db_set_active('chado');  // use chado database
+   // get a list of db from chado for user to choose
+   $sql = 'SELECT db_id, name FROM {db} ORDER BY lower(name)';
+   $results = db_query ($sql);
+   db_set_active($previous_db);
+   $blastdbs = array();
+   while ($db = db_fetch_object($results)){
+      $blastdbs[$db->db_id] = $db->name;
+   }
+   $form['db_options'] = array(
+      '#type' => 'value',
+      '#value' => $blastdbs
+   );
+   $form['blast']['blastdb'] = array(
+      '#title' => t('Database'),
+      '#type' => 'select',
+      '#description' => t('The database used for the blast analysis.'),
+      '#options' => $form['db_options']['#value'],
+      '#default_value' => $node->blastdb,
+   );
+      
+   $form['blast']['blastfile'] = array(
+      '#title' => t('Blast Output File (in xml format)'),
+      '#type' => 'textfield',
+      '#description' => t('The xml output file generated by blast in full path.'),
+      '#default_value' => $node->blastfile,
+   );
+   $form['blast']['blastjob'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Submit a job to parse the xml output into analysisfeatureprop table'),
+      '#description' => t('Note: features associated with the blast results must '.
+                          'exist in chado before parsing the file. Otherwise, blast '.
+                          'results that cannot be linked to a feature will be '.
+                          'discarded. Also, Triapl Blast module needs to be enabled.'),
+      '#default_value' => $node->blastjob
+   );
+   $form['blast']['blastparameters'] = array(
+      '#title' => t('Parameters'),
+      '#type' => 'textfield',
+      '#description' => t('The parameters for running the blast analysis.'),
+      '#default_value' => $node->blastparameters,
+   );
+   
+   return $form;
+}
+
+function chado_analysis_blast_insert($node){
+   global $user;
+   // Create a timestamp so we can insert it into the chado database
+   $time = $node->timeexecuted;
+   $month = $time['month'];
+   $day = $time['day'];
+   $year = $time['year'];
+   $timestamp = $month.'/'.$day.'/'.$year;
+
+   // If this analysis already exists then don't recreate it in chado
+   $analysis_id = $node->analysis_id;
+   if ($analysis_id) {
+      $sql = "SELECT analysis_id ".
+               "FROM {Analysis} ".
+               "WHERE analysis_id = %d ";
+      $previous_db = db_set_active('chado');
+      $analysis = db_fetch_object(db_query($sql, $node->analysis_id));
+      db_set_active($previous_db);
+   }
+
+   // If the analysis doesn't exist then let's create it in chado.
+   if(!$analysis){
+      // First add the item to the chado analysis table
+      $sql = "INSERT INTO {analysis} ".
+             "  (name, description, program, programversion, algorithm, ".
+             "   sourcename, sourceversion, sourceuri, timeexecuted) ".
+             "VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s')";
+      $previous_db = db_set_active('chado');  // use chado database
+      db_query($sql,$node->analysisname, $node->description,
+      $node->program,$node->programversion,$node->algorithm,
+      $node->sourcename, $node->sourceversion, $node->sourceuri,
+      $timestamp);
+
+      // find the newly entered analysis_id
+      $sql = "SELECT analysis_id ".
+             "FROM {Analysis} ".
+             "WHERE program='%s'".
+             "AND programversion='%s'".
+             "AND sourcename='%s'";
+      $analysis_id = db_result(db_query($sql, $node->program,
+      $node->programversion, $node->sourcename));
+
+      // Get cvterm_id for 'analysis_blast_settings'
+      $sql = "SELECT CVT.cvterm_id FROM {cvterm} CVT ".
+             "INNER JOIN cv ON cv.cv_id = CVT.cv_id ".
+             "WHERE CVT.name = 'analysis_blast_settings' ".
+             "AND CV.name = 'tripal'";
+      $type_id = db_result(db_query($sql));
+
+      // Insert into chado {analysisprop} table
+      $sql = "INSERT INTO {analysisprop} (analysis_id, type_id, value) ".
+             "VALUES (%d, %d, '%s')";
+      $blastsettings = $node->blastdb."|".$node->blastfile."|".$node->blastparameters;
+      db_query($sql, $analysis_id, $type_id, $blastsettings);
+
+      db_set_active($previous_db);  // switch back to drupal database
+      // Add a job if the user wants to parse the xml output
+      if($node->blastjob) {
+         $job_args[0] = $analysis_id;
+         $job_args[1] = $node->blastdb;
+         $job_args[2] = $node->blastfile;
+         if (is_readable($node->blastfile)) {
+         	$fname = preg_replace("/.*\/(.*)/", "$1", $node->blastfile);
+            tripal_add_job("Parse blast: $fname",'tripal_analysis_blast',
+                           'tripal_analysis_blast_parseXMLFile', $job_args, $user->uid);
+         } else {
+            drupal_set_message("Can not open blast output file. Job not scheduled.");
+         }
+      }
+   }
+
+   // Make sure the entry for this analysis doesn't already exist in the
+   // chado_analysis table if it doesn't exist then we want to add it.
+   $node_check_sql = "SELECT * FROM {chado_analysis} ".
+                     "WHERE analysis_id = %d";
+   $node_check = db_fetch_object(db_query($node_check_sql, $analysis_id));
+   if(!$node_check){
+      // next add the item to the drupal table
+      $sql = "INSERT INTO {chado_analysis} (nid, vid, analysis_id) ".
+             "VALUES (%d, %d, %d)";
+      db_query($sql,$node->nid,$node->vid,$analysis_id);
+      // Create a title for the analysis node using the unique keys so when the
+      // node is saved, it will have a title
+      $record = new stdClass();
+      // If the analysis has a name, use it as the node title. If not, construct
+      // the title using program, programversion, and sourcename
+      if ($node->analysisname) {
+         $record->title = $node->analysisname;
+      } else {
+         //Construct node title as "program (version)
+         $record->title = "$node->program ($node->programversion)";
+      }
+      $record->nid = $node->nid;
+      drupal_write_record('node',$record,'nid');
+      drupal_write_record('node_revisions',$record,'nid');
+   }
+}
+/*******************************************************************************
+ * Delete blast anlysis
+ */
+function chado_analysis_blast_delete($node){
+   // Before removing, get analysis_id so we can remove it from chado database
+   // later
+   $sql_drupal = "SELECT analysis_id ".
+                 "FROM {chado_analysis} ".
+                 "WHERE nid = %d ".
+                 "AND vid = %d";
+   $analysis_id = db_result(db_query($sql_drupal, $node->nid, $node->vid));
+
+   // Remove data from the {chado_analysis}, {node}, and {node_revisions} tables
+   $sql_del = "DELETE FROM {chado_analysis} ".
+              "WHERE nid = %d ".
+              "AND vid = %d";
+   db_query($sql_del, $node->nid, $node->vid);
+   $sql_del = "DELETE FROM {node} ".
+              "WHERE nid = %d ".
+              "AND vid = %d";
+   db_query($sql_del, $node->nid, $node->vid);
+   $sql_del = "DELETE FROM {node_revisions} ".
+              "WHERE nid = %d ".
+              "AND vid = %d";
+   db_query($sql_del, $node->nid, $node->vid);
+
+   //Remove from analysisfeatureprop, analysisfeature, analysis, and analysisprop tables
+   $previous_db = db_set_active('chado');
+   $sql = "SELECT analysisfeature_id FROM {analysisfeature} WHERE analysis_id=%d";
+   $results = db_query($sql, $analysis_id);
+   while ($af = db_fetch_object($results)) {
+      db_query("DELETE FROM {analysisfeatureprop} WHERE analysisfeature_id = %d", $af->analysisfeature_id);
+   }
+   db_query("DELETE FROM {analysisfeature} WHERE analysis_id = %d", $analysis_id);
+   db_query("DELETE FROM {analysisprop} WHERE analysis_id = %d", $analysis_id);
+   db_query("DELETE FROM {analysis} WHERE analysis_id = %d", $analysis_id);
+   db_set_active($previous_db);
+}
+
+/*******************************************************************************
+ * Update blast analysis
+ */
+function chado_analysis_blast_update($node){
+   global $user;
+   if($node->revision){
+      // TODO -- decide what to do about revisions
+   } else {
+      // Create a timestamp so we can insert it into the chado database
+      $time = $node->timeexecuted;
+      $month = $time['month'];
+      $day = $time['day'];
+      $year = $time['year'];
+      $timestamp = $month.'/'.$day.'/'.$year;
+
+      // get the analysis_id for this node:
+      $sql = "SELECT analysis_id ".
+             "FROM {chado_analysis} ".
+             "WHERE vid = %d";
+      $analysis_id = db_fetch_object(db_query($sql, $node->vid))->analysis_id;
+
+      $sql = "UPDATE {analysis} ".
+             "SET name = '%s', ".
+             "    description = '%s', ".
+             "    program = '%s', ".
+             "    programversion = '%s', ".
+             "    algorithm = '%s', ".
+             "    sourcename = '%s', ".
+             "    sourceversion = '%s', ".
+             "    sourceuri = '%s', ".
+             "    timeexecuted = '%s' ".
+             "WHERE analysis_id = %d ";
+
+      $previous_db = db_set_active('chado');  // use chado database
+      db_query($sql, $node->analysisname, $node->description, $node->program,
+      $node->programversion,$node->algorithm,$node->sourcename,
+      $node->sourceversion, $node->sourceuri, $timestamp, $analysis_id);
+
+      // Get cvterm_id for 'analysis_blast_settings'
+      $sql = "SELECT CVT.cvterm_id FROM {cvterm} CVT ".
+             "INNER JOIN cv CV ON CV.cv_id = CVT.cv_id ".
+             "WHERE CVT.name = 'analysis_blast_settings' ".
+             "AND CV.name = 'tripal'";
+      $type_id = db_result(db_query($sql));
+         
+      $sql = "UPDATE {analysisprop} ".
+             "SET value = '%s' ".
+             "WHERE analysis_id = %d AND type_id = %d";
+      $blastsettings = $node->blastdb."|".$node->blastfile."|".$node->blastparameters;
+      db_query($sql, $blastsettings, $analysis_id, $type_id);
+      db_set_active($previous_db);  // switch back to drupal database
+      // Add a job if the user wants to parse the xml output
+      if($node->blastjob) {
+         $job_args[0] = $analysis_id;
+         $job_args[1] = $node->blastdb;
+         $job_args[2] = $node->blastfile;
+         if (is_readable($node->blastfile)) {
+         	$fname = preg_replace("/.*\/(.*)/", "$1", $node->blastfile);
+            tripal_add_job("Parse blast: $fname",'tripal_analysis_blast',
+                           'tripal_analysis_blast_parseXMLFile', $job_args, $user->uid);
+         } else {
+            drupal_set_message("Can not open blast output file. Job not scheduled.");
+         }
+      }   
+      
+      // Create a title for the analysis node using the unique keys so when the
+      // node is saved, it will have a title
+      $record = new stdClass();
+      // If the analysis has a name, use it as the node title. If not, construct
+      // the title using program, programversion, and sourcename
+      if ($node->analysisname) {
+         $record->title = $node->analysisname;
+      } else {
+         //Construct node title as "program (version)
+         $record->title = "$node->program ($node->programversion)";
+      }
+      $record->nid = $node->nid;
+      drupal_write_record('node',$record,'nid');
+      drupal_write_record('node_revisions',$record,'nid');
+   }
+}
+/*******************************************************************************
+ *  When a node is requested by the user this function is called to allow us
+ *  to add auxiliary data to the node object.
+ */
+function chado_analysis_blast_load($node){
+   // get the analysis_id for this node:
+   $sql = "SELECT analysis_id FROM {chado_analysis} WHERE vid = %d";
+   $ana_node = db_fetch_object(db_query($sql, $node->vid));
+   $additions = new stdClass();
+   if ($ana_node) {
+      // get analysis information
+      $sql = "SELECT Analysis_id, name AS analysisname, description, program, ".
+             "  programversion, algorithm, sourcename, sourceversion, ".
+             "  sourceuri, timeexecuted ".
+             "FROM {Analysis} ".
+             "WHERE Analysis_id = $ana_node->analysis_id";
+      $previous_db = db_set_active('chado');  // use chado database
+      $additions = db_fetch_object(db_query($sql));
+
+      // get cvterm_id for 'analysis_blast_settings'
+      $sql = "SELECT CVT.cvterm_id FROM {cvterm} CVT ".
+             "INNER JOIN cv ON cv.cv_id = CVT.cv_id ".
+             "WHERE CVT.name = 'analysis_blast_settings' ".
+             "AND CV.name = 'tripal'";
+      $type_id = db_result(db_query($sql));
+      // get analysisprop information
+      $sql = "SELECT value FROM {analysisprop} ".
+             "WHERE analysis_id = %d ".
+             "AND type_id = %d";
+      $analysisprop = db_result(db_query($sql, $ana_node->analysis_id, $type_id));
+      $prop_values = explode ("|", $analysisprop, 1);
+      $additions->blastdb = $prop_values[0];
+      $additions->blastfile = $prop_values[1];
+      $additions->blastparameters = $prop_values[2];
+
+      db_set_active($previous_db);  // now use drupal database
+   }
+   // If the analysis has a name, use it as the node title. If not, construct
+   // the title using program programversion, and sourcename
+   if ($additions->analysisname) {
+      $additions->title = $additions->analysisname;
+   } else {
+      // Construct node title as "program version (source)
+      $additions->title = "$additions->program ($additions->programversion)";
+   }
+   return $additions;
+}
+
+/*******************************************************************************
+ *  This function customizes the view of the chado_analysis node.  It allows
+ *  us to generate the markup.
+ */
+function chado_analysis_blast_view ($node, $teaser = FALSE, $page = FALSE) {
+   // use drupal's default node view:
+   if (!$teaser) {
+      $node = node_prepare($node, $teaser);
+      // When previewing a node submitting form, it shows 'Array' instead of
+      // correct date format. We need to format the date here
+      $time = $node->timeexecuted;
+      if(is_array($time)){
+         $month = $time['month'];
+         $day = $time['day'];
+         $year = $time['year'];
+         $timestamp = $year.'-'.$month.'-'.$day;
+         $node->timeexecuted = $timestamp;
+      }
+      // When viewing a node, we need to reformat the analysisprop since we
+      // separate each value with a bar |
+      if (preg_match("/.*\|.*\|.*/",$node->blastdb)) {
+         $prop_values = explode("|", $node->blastdb);
+         $node->blastdb = $prop_values[0];
+         $node->blastfile = $prop_values[1];
+         $node->blastparameters = $prop_values[2];
+      }
+   }
+   return $node;
+}
+
+/*******************************************************************************
+ * Set the permission types that the chado module uses.  Essentially we
+ * want permissionis that protect creation, editing and deleting of chado
+ * data objects
+ */
+function tripal_analysis_blast_perm(){
+   return array(
+      'access chado_analysis_blast content',
+      'create chado_analysis_blast content',
+      'delete chado_analysis_blast content',
+      'edit chado_analysis_blast content',
+   );
+}
+
+/*******************************************************************************
+ *  The following function proves access control for users trying to
+ *  perform actions on data managed by this module
+ */
+function chado_analysis_blast_access($op, $node, $account){
+   if ($op == 'create') {
+      return user_access('create chado_analysis_blast content', $account);
+   }
+
+   if ($op == 'update') {
+      if (user_access('edit chado_analysis_blast content', $account)) {
+         return TRUE;
+      }
+   }
+   if ($op == 'delete') {
+      if (user_access('delete chado_analysis_blast content', $account)) {
+         return TRUE;
+      }
+   }
+   if ($op == 'view') {
+      if (user_access('access chado_analysis_blast content', $account)) {
+         return TRUE;
+      }
+   }
+   return FALSE;
+}
+
