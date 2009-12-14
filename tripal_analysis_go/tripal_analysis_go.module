@@ -1,0 +1,582 @@
+<?php
+
+//
+// Copyright 2009 Clemson University
+//
+
+function tripal_analysis_go_init(){
+   // Add style sheet
+   drupal_add_css(drupal_get_path('theme', 'tripal').
+                                  '/css/tripal_analysis_go.css');
+
+   drupal_add_js(drupal_get_path('theme', 'tripal').
+       '/js/tripal_analysis_go.js');
+}
+
+/*******************************************************************************
+ * Menu items are automatically added for the new node types created
+ * by this module to the 'Create Content' Navigation menu item.  This function
+ * adds more menu items needed for this module.
+ */
+function tripal_analysis_go_menu() {
+   $items = array();
+
+   $items['node/%/goterms'] = array(
+     'title' => t('GO Analysis'),
+     'page callback' => 'tripal_analysis_go_organism_goterms',
+     'page arguments' => array(1),
+     'access callback' => 'tripal_analysis_go_node_has_menu',
+     'access arguments' => array('access chado_analysis_go content',1),
+     'type' => MENU_LOCAL_TASK | MENU_NORMAL_ITEM
+   );
+   $items['download_goterm_features'] = array(
+      'path' => 'download_goterm_features',
+      'title' => t('Get GO Term Features'),
+      'page callback' => 'tripal_analysis_go_get_goterm_features',
+      'page arguments' => array(1,2),
+      'access arguments' => array('access chado_analysis_go content'),
+      'type' => MENU_CALLBACK
+   );
+   $items['tripal_analysis_go_org_charts'] = array(
+      'path' => 'tripal_analysis_go_org_charts',
+      'title' => t('Analysis GO Charts'),
+      'page callback' => 'tripal_analysis_go_org_charts',
+      'page arguments' => array(1),
+      'access arguments' => array('access chado_analysis_go content'),
+      'type' => MENU_CALLBACK
+   );
+
+
+   return $items;
+}
+/*******************************************************************************
+ * Set the permission types that the chado module uses.  Essentially we
+ * want permissionis that protect creation, editing and deleting of chado
+ * data objects
+ */
+function tripal_analysis_go_perm(){
+   return array(
+      'access chado_analysis_go content',
+      'create chado_analysis_go content',
+      'delete chado_analysis_go content',
+      'edit chado_analysis_go content',
+   );
+}
+/*******************************************************************************
+ *  The following function proves access control for users trying to
+ *  perform actions on data managed by this module
+ */
+function chado_analysis_go_access($op, $node, $account){
+   if ($op == 'create') {
+      return user_access('create chado_analysis_go content', $account);
+   }
+
+   if ($op == 'update') {
+      if (user_access('edit chado_analysis_go content', $account)) {
+         return TRUE;
+      }
+   }
+   if ($op == 'delete') {
+      if (user_access('delete chado_analysis_go content', $account)) {
+         return TRUE;
+      }
+   }
+   if ($op == 'view') {
+      if (user_access('access chado_analysis_go content', $account)) {
+         return TRUE;
+      }
+   }
+   return FALSE;
+}
+/*******************************************************************************
+ * Dynamic addition/removal of menu item
+ */
+function tripal_analysis_go_node_has_menu($type,$vid){
+
+   // check to see if this node is an organism node
+   $sql = 'SELECT organism_id FROM {chado_organism} WHERE vid = %d';
+   $result = db_query($sql, $vid);
+
+   // menu status
+   $box_status =variable_get("tripal_analysis_go-box-goterms","menu_off");
+
+   // if this node is not an organism or a feature node then return false
+   // we don't want the menu item to be shown, otherwise get the normal perms
+   if($org_id = db_fetch_object($result)){
+      if(strcmp($box_status,"menu_on")==0){
+         return user_access($type);
+      }
+   } else {
+      return FALSE;
+   }
+}
+/*******************************************************************************
+ * HOOK: Implementation of hook_nodeapi()
+ * Display library information for associated features or organisms
+ * This function also provides contents for indexing
+ */
+function tripal_analysis_go_nodeapi(&$node, $op, $teaser, $page) {
+
+   switch ($op) {
+      // Note that this function only adds library view to an organism/feature
+      // node. The view of a library node is controled by the theme *.tpl file
+      case 'view':
+      
+         // Set the node types for showing library information
+         $types_to_show = variable_get('tripal_analysis_go_setting',
+            array('chado_feature','chado_organism'));
+
+         // Abort if this node is not one of the types we should show.
+         if (!in_array($node->type, $types_to_show, TRUE)) {
+            // Turn the menu off if it's on
+            $box_status = variable_get("tripal_analysis_go-box-goterms","menu_off");
+            if (strcmp($box_status,"menu_on")==0 && $node->type =='chado_organism'){
+               variable_set("tripal_analysis_go-box-goterms","menu_off");
+            }
+            break;
+         }
+
+         // Add library to the content item if it's not a teaser
+         if (!$teaser) {
+            // add the library to the organism/feature search indexing
+            if($node->build_mode == NODE_BUILD_SEARCH_INDEX){
+               $node->content['tripal_analysis_go_search_index'] = array(
+						'#value' => theme('tripal_analysis_go_search_index',$node),
+						'#weight' => 5,
+               );
+            } else if ($node->build_mode == NODE_BUILD_SEARCH_RESULT) {
+               $node->content['tripal_analysis_go_search_result'] = array(
+						'#value' => theme('tripal_analysis_go_search_result',$node),
+						'#weight' => 5,
+               );
+            } else {
+               // Show go terms if the organism/feature is not at teaser view               
+               $node->content['tripal_analysis_go_node_add'] = array(
+						'#value' => theme('tripal_analysis_go_node_add', $node),
+					   '#weight' => 5
+               );
+            }
+         }
+   }
+}
+
+/************************************************************************
+ *  We need to let drupal know about our theme functions and their arguments.
+ *  We create theme functions to allow users of the module to customize the
+ *  look and feel of the output generated in this module
+ */
+function tripal_analysis_go_theme () {
+   return array(
+   	  
+      'tripal_analysis_go_search_index' => array (
+         'arguments' => array('node'),
+      ),
+      'tripal_analysis_go_search_result' => array (
+         'arguments' => array('node'),
+      ),
+      'tripal_analysis_go_node_add' => array (
+         'arguments' => array('node'),
+      )
+   );
+}
+/************************************************************************
+*/
+function theme_tripal_analysis_go_search_index($node){
+
+}
+
+/************************************************************************
+*/
+function theme_tripal_analysis_go_search_result($node){
+
+}
+/************************************************************************
+*/
+function theme_tripal_analysis_go_node_add($node){
+   $content = '';
+   if(strcmp($node->type,'chado_feature')==0){
+      $content = tripal_analysis_go_feature_add($node);
+   }
+   if(strcmp($node->type,'chado_organism')==0){
+      $box_status = variable_get("tripal_analysis_go-box-goterms","menu_off");
+      if (strcmp($box_status,"menu_off")==0){
+         $content = tripal_analysis_go_organism_add($node);
+      }
+   }
+   return $content;
+}
+/************************************************************************
+*/
+function tripal_analysis_go_organism_goterms($node) {
+   $node = node_load($node);
+   return tripal_analysis_go_organism_add($node);
+}
+/************************************************************************
+*/
+function tripal_analysis_go_select_form(&$form_state = NULL,$node){
+
+   $form = array();
+   // find analyses that have GO terms
+   $sql = "
+     SELECT DISTINCT A.analysis_id, A.name, GCA.organism_id
+     FROM {go_count_analysis} GCA
+       INNER JOIN Analysis A on GCA.analysis_id = A.analysis_id
+     WHERE organism_id = %d
+     ORDER BY analysis_id DESC
+   ";
+   $previous_db = db_set_active('chado');
+   $results = db_query($sql,$node->organism_id);
+   db_set_active($previous_db);
+
+   $analyses = array();
+   $analyses[''] = '';
+   while($analysis = db_fetch_object($results)){
+      $analyses[$analysis->analysis_id."-".$analysis->organism_id] = "$analysis->name";
+   }
+  
+   # create the select box
+   $form['analysis_select'] = array(
+      '#title' => t('Select a GO report to view'),
+      '#description' => t('Any analysis with GO results related to this organism are available for viewing. For further information, see the analysis information page.'),
+      '#type'  => 'select',
+      '#options' => $analyses,
+      '#attributes' => array (
+         'onchange' => 'tripal_analysis_go_org_charts(this.options[this.selectedIndex].value)'
+      ),
+   );
+   return $form;
+}
+/************************************************************************
+*/
+function tripal_analysis_go_org_charts ($element) {
+   $analysis_id = preg_replace("/^(\d+)-(\d+)$/","$1",$element);
+   $organism_id = preg_replace("/^(\d+)-(\d+)$/","$2",$element);
+   $content = '';
+
+   if($analysis_id and $organism_id){
+      $content = "
+
+        <b>Biological Process</b>
+        <br><i>Expand the tree to browse term counts. Click a term to view term details.</i>
+        <div class=\"tripal_cv_tree\"  id=\"tripal_analysis_go_cv_tree_".$organism_id."-".$analysis_id."_bp\"></div>
+	<br><br><img class=\"tripal_cv_chart\" id=\"tripal_analysis_go_cv_chart_".$organism_id."-".$analysis_id."_bp\" src=\"\" border=\"0\">	   
+	<br><br><br><br>
+
+        <b>Cellular Component</b>
+        <br><i>Expand the tree to browse term counts. Click a term to view term details.</i>
+        <div class=\"tripal_cv_tree\"  id=\"tripal_analysis_go_cv_tree_".$organism_id."-".$analysis_id."_cc\"></div>
+        <br><br><img class=\"tripal_cv_chart\" id=\"tripal_analysis_go_cv_chart_".$organism_id."-".$analysis_id."_cc\" src=\"\" border=\"0\">
+
+        <br><br><br><br>
+        <b>Molecular Function</b>       
+        <br><i>Expand the tree to browse term counts. Click a term to view term details.</i>
+        <div class=\"tripal_cv_tree\"  id=\"tripal_analysis_go_cv_tree_".$organism_id."-".$analysis_id."_mf\"></div>      
+        <br><br><img class=\"tripal_cv_chart\" id=\"tripal_analysis_go_cv_chart_".$organism_id."-".$analysis_id."_mf\" src=\"\" border=\"0\">
+      ";
+   }
+   $opt = array($content);
+   return drupal_json($opt);
+}
+/************************************************************************
+*/
+function tripal_analysis_go_organism_add($node) {
+   // Show GO information in a expandable box for a organism page.
+   // Make sure we have $node->organism_id. In the case of creating a new
+   // organism, the organism_id is not created until we save. This will cause
+   // an error when users preview the creation without a $node->organism_id
+   $box_status = variable_get("tripal_analysis_go-box-goterms","menu_off");
+      
+   if(strcmp($box_status,"menu_off")==0){
+      $content .= "
+      <div class=\"tripal_go_summary-info-box\">
+        <div class=\"tripal_expandableBox\">
+	       <h3>Gene Ontology Summary</h3>
+	     </div>
+        <div class=\"tripal_expandableBoxContent\">
+      ";
+   } 
+
+   // check to see if we have any analyses
+   $sql = "
+     SELECT DISTINCT A.analysis_id, A.name, GCA.organism_id
+     FROM {go_count_analysis} GCA
+       INNER JOIN Analysis A on GCA.analysis_id = A.analysis_id
+     WHERE organism_id = %d
+     ORDER BY analysis_id DESC
+   ";
+   $previous_db = db_set_active('chado');
+   $results = db_fetch_object(db_query($sql,$node->organism_id));
+   db_set_active($previous_db);
+
+   if($results){
+      $select_analysis = drupal_get_form('tripal_analysis_go_select_form',$node);
+
+      $url = url("sites/all/themes/theme_tripal/images/ajax-loader.gif");
+      $content .= "
+        $select_analysis
+        <div id=\"tripal_cv_cvterm_info_box\">
+           <a href=\"#\" onclick=\"$('#tripal_cv_cvterm_info_box').hide()\" style=\"float: right\">Close [X]</a>
+           <h3>Term Information</h3>
+           <div id=\"tripal_cv_cvterm_info\"></div>
+        </div>
+        <div id=\"tripal_ajaxLoading\" style=\"display:none\">
+        <div id=\"loadingText\">Loading...</div>
+        <img src=\"$url\"></div><div id=\"tripal_analysis_go_org_charts\"></div>
+      ";
+   } else {
+      $content .= "There are currently no Gene Ontology (GO) reports for this organism\n";
+   }
+
+   if(user_access('access administrative pages')){
+      $link = url("tripal_toggle_box_menu/tripal_analysis_go/goterms/$node->nid");
+   	if(strcmp($box_status,"menu_off")==0){
+         $content .= "<br><a href=\"$link\">Show on menu</a>";
+      } else {
+         $content .= "<br><a href=\"$link\">Remove from menu</a>";
+      }
+   }
+   if(strcmp($box_status,"menu_off")==0){
+      $content .= "</div></div>";
+   }
+
+   return $content;
+}
+/************************************************************************
+ *
+ */
+function tripal_analysis_go_cv_chart($chart_id){
+
+  // The CV module will create the JSON array necessary for buillding a
+  // pie chart using jgChart and Google Charts.  We have to pass to it
+  // a table that contains count information, tell it which column 
+  // contains the cvterm_id and provide a filter for getting the
+  // results we want from the table.
+  $organism_id = preg_replace("/^tripal_analysis_go_cv_chart_(\d+)-(\d+)_(bp|cc|mf)$/","$1",$chart_id);
+  $analysis_id = preg_replace("/^tripal_analysis_go_cv_chart_(\d+)-(\d+)_(bp|cc|mf)$/","$2",$chart_id);
+  $type        = preg_replace("/^tripal_analysis_go_cv_chart_(\d+)-(\d+)_(bp|cc|mf)$/","$3",$chart_id);
+
+  $sql = "SELECT * FROM {Analysis} WHERE analysis_id = %d";
+  $previous_db = db_set_active('chado');  // use chado database
+  $analysis = db_fetch_object(db_query($sql,$analysis_id));
+  db_set_active($previous_db);  // now use drupal database  
+ 
+  if(strcmp($type,'mf')==0){
+     $class = 'molecular_function';
+     $title = "Number of Molecular Function Terms From $analysis->name Analysis";
+  }
+  if(strcmp($type,'cc')==0){
+     $class = 'cellular_component';
+     $title = "Number of Cellular Component Terms From $analysis->name Analysis";
+  }
+  if(strcmp($type,'bp')==0){
+     $class = 'biological_process';
+     $title = "Number of Biological Process Terms From $analysis->name Analysis";
+  }
+  $options = array(
+     count_mview      => 'go_count_analysis',
+     cvterm_id_column => 'cvterm_id',
+     count_column     => 'feature_count',
+     filter           => "
+        CNT.organism_id = $organism_id AND 
+        CNT.analysis_id = $analysis_id AND 
+        CNT.cvterm_id IN ( 
+          SELECT CVTR.subject_id 
+          FROM {CVTerm_relationship} CVTR 
+            INNER JOIN CVTerm CVT on CVTR.object_id = CVT.cvterm_id
+            INNER JOIN CV on CVT.cv_id = CV.cv_id
+          WHERE CVT.name = '$class' AND  
+                 CV.name = '$class'
+        )
+     ",
+     type             => 'p',
+     size             => '680x230',
+     title            => $title,
+  );
+  return $options;
+}
+/************************************************************************
+ *
+ */
+function tripal_analysis_go_cv_tree($tree_id){
+
+  $organism_id = preg_replace("/^tripal_analysis_go_cv_tree_(\d+)-(\d+)_(bp|cc|mf)$/","$1",$tree_id);
+  $analysis_id = preg_replace("/^tripal_analysis_go_cv_tree_(\d+)-(\d+)_(bp|cc|mf)$/","$2",$tree_id);
+  $type        = preg_replace("/^tripal_analysis_go_cv_tree_(\d+)-(\d+)_(bp|cc|mf)$/","$3",$tree_id);
+
+  if(strcmp($type,'mf')==0){
+     $class = 'molecular_function';
+  }
+  if(strcmp($type,'cc')==0){
+     $class = 'cellular_component';
+  }
+  if(strcmp($type,'bp')==0){
+     $class = 'biological_process';
+  }
+
+  $options = array(
+     cv_id            => tripal_cv_get_cv_id($class),
+     count_mview      => 'go_count_analysis',
+     cvterm_id_column => 'cvterm_id',
+     count_column     => 'feature_count',
+     filter           => "CNT.organism_id = $organism_id AND CNT.analysis_id = $analysis_id",
+     label            => 'Features',
+  );
+  return $options;
+}
+/************************************************************************
+*/
+function tripal_analysis_go_cvterm_add($cvterm_id,$tree_id){
+  $organism_id = preg_replace("/^tripal_analysis_go_cv_tree_(\d+)-(\d+)_(bp|cc|mf)$/","$1",$tree_id);
+  $analysis_id = preg_replace("/^tripal_analysis_go_cv_tree_(\d+)-(\d+)_(bp|cc|mf)$/","$2",$tree_id);
+
+  $sql = "
+     SELECT DBX.accession
+     FROM {cvterm} CVT
+       INNER JOIN dbxref DBX on DBX.dbxref_id = CVT.dbxref_id
+     WHERE cvterm_id = %d
+  ";
+  $previous_db = db_set_active('chado');
+  $xref = db_fetch_object(db_query($sql,$cvterm_id));
+  db_set_active($previous_db);
+
+  $link = url("download_goterm_features/$cvterm_id/$tree_id");
+  $options = array(
+     'Download sequences' => "<a href=\"$link\">GO_".$xref->accession.".fasta</a>",
+  );
+  return $options;
+}
+/************************************************************************
+*/
+function tripal_analysis_go_get_goterm_features($cvterm_id,$tree_id){
+
+   // get hte accession number for this cvterm and use it in naming the download
+   $sql = "
+      SELECT DBX.accession
+      FROM {cvterm} CVT
+        INNER JOIN dbxref DBX on DBX.dbxref_id = CVT.dbxref_id
+      WHERE cvterm_id = %d
+   ";
+   $previous_db = db_set_active('chado');
+   $xref = db_fetch_object(db_query($sql,$cvterm_id));
+   db_set_active($previous_db);
+
+   drupal_set_header('Content-Type: text');
+   drupal_set_header('Content-Disposition: attachment; filename="GO_'.$xref->accession.'.fasta"');
+
+   $organism_id = preg_replace("/^tripal_analysis_go_cv_tree_(\d+)-(\d+)_(bp|cc|mf)$/","$1",$tree_id);
+   $analysis_id = preg_replace("/^tripal_analysis_go_cv_tree_(\d+)-(\d+)_(bp|cc|mf)$/","$2",$tree_id);
+   $sql = "
+      SELECT DISTINCT F.name,F.residues,F.feature_id
+      FROM {cvtermpath} CVTP
+         INNER JOIN CVTerm CVT1 on CVTP.subject_id = CVT1.cvterm_id
+         INNER JOIN CVTerm CVT2 on CVTP.object_id = CVT2.cvterm_id
+         INNER JOIN AnalysisFeatureProp AFP on AFP.type_id = CVTP.subject_id 
+         INNER JOIN AnalysisFeature AF on AF.analysisfeature_id = AFP.analysisfeature_id
+         INNER JOIN Feature F on AF.feature_id = F.feature_id
+      WHERE CVTP.object_id = %d and F.organism_id = %d and AF.analysis_id = %d
+      ORDER BY F.name
+   ";
+   $previous_db = db_set_active('chado');
+   $results = db_query($sql,$cvterm_id,$organism_id,$analysis_id);
+   db_set_active($previous_db);
+   while($feature = db_fetch_object($results)){
+      // get the go term information for each sequence
+      $sql = "
+         SELECT CVT.name,DBX.accession 
+         FROM {Feature_CVTerm} FCVT 
+           INNER JOIN CVTerm CVT on FCVT.cvterm_id = CVT.cvterm_id
+           INNER JOIN DBXref DBX on CVT.dbxref_id = DBX.dbxref_id
+         WHERE FCVT.feature_id = %d
+      ";
+
+      $previous_db = db_set_active('chado');
+      $terms = db_query($sql,$feature->feature_id);
+      db_set_active($previous_db);
+      $desc = '[';
+      while($term = db_fetch_object($terms)){
+         $desc .= "GO:$term->accession $term->name; ";
+      }
+      $desc = chop($desc);
+      $desc = chop($desc,';');
+      $desc .= ']';
+      print tripal_feature_return_fasta($feature, $desc);   
+   }
+   return;
+}
+/************************************************************************
+*/
+function tripal_analysis_go_feature_add($node) {
+   $content = "";
+   $sql = "
+       SELECT DISTINCT FCVT.feature_id,DBX.accession,CVT.name as goterm, 
+          CVT.cvterm_id as go_id, CV.name as cvname
+       FROM {Feature_Cvterm} FCVT  
+          INNER JOIN Cvterm CVT           ON CVT.cvterm_ID = FCVT.cvterm_ID
+          INNER JOIN CV                   ON CV.cv_id = CVT.cv_id  
+          INNER JOIN dbxref DBX           ON DBX.dbxref_id = CVT.dbxref_id
+        WHERE      
+          (CV.name = 'biological_process' OR 
+           CV.name = 'cellular_component' OR 
+           CV.name = 'molecular_function') AND 
+          FCVT.feature_id = %d
+        ORDER BY CV.name, CVT.name
+   ";
+
+   $previous_db = db_set_active('chado');
+   $results = db_query($sql,$node->feature->feature_id);
+   db_set_active($previous_db);
+   $term = db_fetch_object($results); // retrive the first result
+   if ($term) {
+      $content .= "<div id=\"tripal_go_box\" class=\"tripal_go-info-box\">";
+      $content .= "<div class=\"tripal_expandableBox\">".
+            	   "<h3>GO terms assigned to this feature</h3>".
+                  "</div>";
+      $content .= "<div class=\"tripal_expandableBoxContent\">";
+      $content .= "<table class=\"feature-go-terms\">";
+      $content .= "  <tr>";
+      $content .= "    <th class=\"dbfieldname\">Accession</th>";
+      $content .= "    <th class=\"dbfieldname\">Category</th>";
+      $content .= "    <th class=\"dbfieldname\">Term</th>";
+      $content .= "  </tr>";
+      do {
+         $content .= "<tr>";
+         $content .= "  <td>GO:$term->accession</td>";
+         $content .= "  <td>$term->cvname</td>";
+         $content .= "  <td>$term->goterm</td>";
+         $content .= "</tr>";      
+      } while($term = db_fetch_object($results));
+      $content .= "</table>";
+      $content .= "</div></div>";
+   }
+   return $content;
+}
+
+/*******************************************************************************
+ * Tripal GO administrative setting form. This function is called by
+ * tripal_analysis module which asks for an admin form to show on the page
+ */
+function tripal_analysis_go_get_settings() {
+   // Get an array of node types with internal names as keys
+   $options = node_get_types('names');
+   // Add 'chado_feature' to allowed content types for showing unigene results
+   $allowedoptions ['chado_feature'] = "Show GO terms on feature pages";
+   $allowedoptions ['chado_organism'] = "Show GO analysis on organism pages";
+
+   $form['description'] = array(
+       '#type' => 'item',
+       '#value' => t("This option allows user to display the Gene Ontology (GO) ".
+          "information. For features, this would include all GO terms assigned to a feature ".
+          "and for organisms this would be statistical pie charts of GO terms for a organism. Check the box to ".
+          "enable the display of GO information. Uncheck to disable."),
+       '#weight' => 0,
+   );
+
+   $form['tripal_analysis_go_setting'] = array(
+      '#type' => 'checkboxes',
+      '#options' => $allowedoptions,
+      '#default_value'=>variable_get('tripal_analysis_go_setting',array('chado_feature', 'chado_organism')),
+   );
+   $settings->form = $form;
+   $settings->title = "Tripal GO";
+   return $settings;
+}
