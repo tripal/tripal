@@ -1,0 +1,1975 @@
+<?php
+
+//
+// Copyright 2009 Clemson University
+//
+
+/*************************************************************************
+*
+*/
+function tripal_feature_init(){
+
+   // add the jGCharts JS and CSS
+   drupal_add_js (drupal_get_path('theme', 'tripal').'/js/tripal_feature.js'); 
+   drupal_add_js (drupal_get_path('theme', 'tripal').'/js/jgcharts/jgcharts.js'); 
+}
+/************************************************************************
+ *
+ */
+function tripal_feature_admin () {
+
+   // before proceeding check to see if we have any
+   // currently processing jobs. If so, we don't want
+   // to give the opportunity to sync libraries
+   $active_jobs = FALSE;
+   if(tripal_get_module_active_jobs('tripal_feature')){
+      $active_jobs = TRUE;
+   }
+
+   if(!$active_jobs){
+
+      $form['chado_feature_accession_prefix'] = array (
+         '#title'       => t('Accession Prefix'),
+         '#type'        => t('textfield'),
+         '#description' => t("Accession numbers for features consist of the ".
+            "chado feature_id and a site specific prefix.  Set the prefix that ".
+            "will be incorporated in front of each feature_id to form a unique ".
+            "accession number for this site."),
+         '#required'    => TRUE,
+         '#default_value' => variable_get('chado_feature_accession_prefix','ID'),
+      );
+
+      $form['chado_feature_types'] = array(
+         '#title'       => t('Feature Types'),
+         '#type'        => 'textarea',
+         '#description' => t('Enter the names of the sequence types that the ".
+            "site will support with independent pages.  Pages for these data ".
+            "types will be built automatically for features that exist in the ".
+            "chado database.  The names listed here should be spearated by ".
+            "spaces or entered separately on new lines. The names must match ".
+            "exactly (spelling and case) with terms in the sequence ontology'),
+         '#required'    => TRUE,
+         '#default_value' => variable_get('chado_feature_types','EST contig'),
+      );
+
+      $form['browser'] = array(
+         '#type' => 'fieldset',
+         '#title' => t('Feature Browser')
+      );
+      $allowedoptions ['show_feature_browser'] = "Show the feature browser on the organism page. The Browser loads when page loads. This may be slow for large sites.";
+      $allowedoptions ['hide_feature_browser'] = "Hide the feature browser on the organism page. Disables the feature browser completely.";
+//      $allowedoptions ['allow_feature_browser'] = "Allow loading of the feature browsing through AJAX. For large sites the initial page load will be quick with the feature browser loading afterwards.";
+
+      $form['browser']['browse_features'] = array(
+         '#title' => 'Feature Browser on Organism Page',
+         '#description' => 'A feature browser can be added to an organism page to allow users to quickly '. 
+            'access a feature.  This will most likely not be the ideal mechanism for accessing feature '.
+            'information, especially for large sites, but it will alow users exploring the site (such '.
+            'as students) to better understand the data types available on the site.',
+         '#type' => 'radios',
+         '#options' => $allowedoptions,
+         '#default_value'=>variable_get('tripal_feature_browse_setting',
+            array('show_feature_browser')),
+      );
+      $form['browser']['set_browse_button'] = array(
+         '#type' => 'submit',
+         '#value' => t('Set Browser'),
+         '#weight' => 2,
+      );
+
+      get_tripal_feature_admin_form_sync_set($form);
+      get_tripal_feature_admin_form_taxonomy_set($form);
+      get_tripal_feature_admin_form_reindex_set($form);
+      get_tripal_feature_admin_form_cleanup_set($form);
+   } else {
+      $form['notice'] = array(
+         '#type' => 'fieldset',
+         '#title' => t('Feature Management Temporarily Unavailable')
+      );
+      $form['notice']['message'] = array(
+         '#value' => t('Currently, feature management jobs are waiting or ".
+            "are running. Managemment features have been hidden until these ".
+            "jobs complete.  Please check back later once these jobs have ".
+            "finished.  You can view the status of pending jobs in the Tripal ".
+            "jobs page.'),
+      );
+   }
+   return system_settings_form($form);
+}
+
+/************************************************************************
+ *
+ */
+function tripal_feature_admin_validate($form, &$form_state) {
+   global $user;  // we need access to the user info
+   $job_args = array();
+
+   // if the user wants to sync up the chado features then
+   // add the job to the management queue
+   if ($form_state['values']['op'] == t('Sync all Features')) {
+      tripal_add_job('Sync all features','tripal_feature',
+         'tripal_feature_sync_features',$job_args,$user->uid);
+   }
+
+   if ($form_state['values']['op'] == t('Set/Reset Taxonomy for all feature nodes')) {
+      tripal_add_job('Set all feature taxonomy','tripal_feature',
+         'tripal_features_set_taxonomy',$job_args,$user->uid);
+   }
+
+   if ($form_state['values']['op'] == t('Reindex all feature nodes')) {
+      tripal_add_job('Reindex all features','tripal_feature',
+         'tripal_features_reindex',$job_args,$user->uid);
+   }
+
+   if ($form_state['values']['op'] == t('Clean up orphaned features')) {
+      tripal_add_job('Cleanup orphaned features','tripal_feature',
+         'tripal_features_cleanup',$job_args,$user->uid);
+   }
+
+   if ($form_state['values']['op'] == t('Set Browser')) {
+      variable_set('tripal_feature_browse_setting',$form_state['values']['browse_features']);
+   }
+
+
+}
+/************************************************************************
+ *
+ */
+function get_tripal_feature_admin_form_cleanup_set(&$form) {
+   $form['cleanup'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Clean Up')
+   );
+   $form['cleanup']['description'] = array(
+       '#type' => 'item',
+       '#value' => t("With Drupal and chado residing in different databases ".
+          "it is possible that nodes in Drupal and features in Chado become ".
+          "\"orphaned\".  This can occur if a feature node in Drupal is ".
+          "deleted but the corresponding chado feature is not and/or vice ".
+          "versa.  The Cleanup function will also remove nodes for features ".
+          "that are not in the list of allowed feature types as specified ".
+          "above.  This is helpful when a feature type needs to be ".
+          "removed but was previously present as Drupal nodes. ".
+          "Click the button below to resolve these discrepancies."),
+       '#weight' => 1,
+   );
+   $form['cleanup']['button'] = array(
+      '#type' => 'submit',
+      '#value' => t('Clean up orphaned features'),
+      '#weight' => 2,
+   );
+}
+/************************************************************************
+ *
+ */
+function get_tripal_feature_admin_form_reindex_set(&$form) {
+   $form['reindex'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Reindex')
+   );
+   $form['reindex']['description'] = array(
+       '#type' => 'item',
+       '#value' => t("Reindexing of nodes is important when content for nodes ".
+          "is updated external to drupal, such as external uploads to chado. ".
+          "Features need to be reindexed to ensure that updates to features ".
+          "are searchable. Depending on the number of features this may take ".
+          "quite a while. Click the button below to begin reindexing of ".
+          "features."),
+       '#weight' => 1,
+   );
+   $form['reindex']['button'] = array(
+      '#type' => 'submit',
+      '#value' => t('Reindex all feature nodes'),
+      '#weight' => 2,
+   );
+}
+/************************************************************************
+ *
+ */
+function get_tripal_feature_admin_form_taxonomy_set (&$form) {
+
+
+   $form['taxonomy'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Set Taxonomy')
+   );
+
+   $form['taxonomy']['description'] = array(
+       '#type' => 'item',
+       '#value' => t("Drupal allows for assignment of \"taxonomy\" or ".
+          "catagorical terms to nodes. These terms allow for advanced ".
+          "filtering during searching."),
+       '#weight' => 1,
+   );
+   $tax_options = array (
+      'organism' => t('Organism name'),
+      'feature_type'  => t('Feature Type (e.g. EST, mRNA, etc.)'),
+      'analysis' => t('Analysis Name'),
+      'library'  => t('Library Name'),
+   );
+   $form['taxonomy']['tax_classes'] = array (
+     '#title'       => t('Available Taxonomic Classes'),
+     '#type'        => t('checkboxes'),
+     '#description' => t("Please select the class of terms to assign to ".
+        "chado features"),
+     '#required'    => FALSE,
+     '#prefix'      => '<div id="taxclass_boxes">',
+     '#suffix'      => '</div>',
+     '#options'     => $tax_options,
+     '#weight'      => 2,
+     '#default_value' => variable_get('tax_classes',''),
+   );
+   $form['taxonomy']['button'] = array(
+      '#type' => 'submit',
+      '#value' => t('Set/Reset Taxonomy for all feature nodes'),
+      '#weight' => 3,
+   );
+
+}
+/************************************************************************
+ *
+ */
+function get_tripal_feature_admin_form_sync_set (&$form) {
+
+  
+   // get the list of organisms which will be synced.
+   $feature_sql = "SELECT * FROM {Feature} WHERE uniquename = '%s' and organism_id = %d";
+   $previous_db = db_set_active('chado');
+   $feature = db_fetch_object(db_query($feature_sql,$node->title,$node->organism_id));
+   db_set_active($previous_db);
+
+   // define the fieldsets
+   $form['sync'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Sync Features')
+   );
+
+   $form['sync']['description'] = array(
+      '#type' => 'item',
+      '#value' => t("Click the 'Sync all Features' button to create Drupal ".
+         "content for features in chado. Only features of the types listed ".
+         "above in the Feature Types box will be synced. Depending on the ".
+         "number of features in the chado database this may take a long ".
+         "time to complete. "),
+      '#weight' => 1,
+   );
+
+   $orgs = tripal_organism_get_synced();   
+   $org_list = '';
+   foreach($orgs as $org){
+      $org_list .= "$org->genus $org->species, ";
+   }
+   $form['sync']['description2'] = array(
+      '#type' => 'item',
+      '#value' => "Only features for the following organisms will be synced: ".
+         " $org_list",
+      '#weight' => 1,
+   );
+
+   $form['sync']['button'] = array(
+      '#type' => 'submit',
+      '#value' => t('Sync all Features'),
+      '#weight' => 3,
+   );
+
+}
+/************************************************************************
+ * Display help and module information
+ * @param path which path of the site we're displaying help
+ * @param arg array that holds the current path as would be returned from arg() function
+ * @return help text for the path
+ */
+function tripal_feature_help($path, $arg) {
+   $output = '';
+   switch ($path) {
+      case "admin/help#tripal_feature":
+         $output='<p>'.t("Displays links to nodes created on this date").'</p>';
+         break;
+   }
+   return $output;
+}
+
+/************************************************************************
+ *  Provide information to drupal about the node types that we're creating
+ *  in this module
+ */
+function tripal_feature_node_info() {
+   $nodes = array();
+
+   $nodes['chado_feature'] = array(
+      'name' => t('Feature'),
+      'module' => 'chado_feature',
+      'description' => t('A feature from the chado database'),
+      'has_title' => FALSE,
+      'title_label' => t('Feature'),
+      'has_body' => FALSE,
+      'body_label' => t('Feature Description'),
+      'locked' => TRUE
+   );
+   return $nodes;
+}
+
+/************************************************************************
+ *  Set the permission types that the chado module uses.  Essentially we
+ *  want permissionis that protect creation, editing and deleting of chado
+ *  data objects
+ */
+function tripal_feature_perm(){
+   return array(
+      'access chado_feature content',
+      'create chado_feature content',
+      'delete chado_feature content',
+      'edit chado_feature content',
+   );
+}
+
+/************************************************************************
+ *  Set the permission types that the module uses.
+ */
+function chado_feature_access($op, $node, $account) {
+   if ($op == 'create') {
+      return user_access('create chado_feature content', $account);
+   }
+
+   if ($op == 'update') {
+      if (user_access('edit chado_feature content', $account)) {
+         return TRUE;
+      }
+   }
+   if ($op == 'delete') {
+      if (user_access('delete chado_feature content', $account)) {
+         return TRUE;
+      }
+   }
+   if ($op == 'view') {
+      if (user_access('access chado_feature content', $account)) {
+         return TRUE;
+      }
+   }
+   return FALSE;
+}
+/************************************************************************
+ *  Menu items are automatically added for the new node types created
+ *  by this module to the 'Create Content' Navigation menu item.  This function
+ *  adds more menu items needed for this module.
+ */
+function tripal_feature_menu() {
+   $items = array();
+
+   // the administative settings menu
+   $items['admin/tripal/tripal_feature'] = array(
+     'title' => 'Features',
+     'description' => 'Settings for Chado Features',
+     'page callback' => 'drupal_get_form',
+     'page arguments' => array('tripal_feature_admin'),
+     'access arguments' => array('administer site configuration'),
+     'type' => MENU_NORMAL_ITEM,
+   );
+
+   $items['admin/settings/tripal/tripal_feature/load'] = array(
+     'title' => 'Bulk Load',
+     'description' => 'Upload Data into Chado & Drupal',
+     'page callback' => 'tripal_feature_bulkload',
+     'access arguments' => array('administer site configuration'),
+     'type' => MENU_NORMAL_ITEM,
+   );
+
+   return $items;
+}
+
+/************************************************************************
+ *  When a new chado_feature node is created we also need to add information
+ *  to our chado_feature table.  This function is called on insert of a new node
+ *  of type 'chado_feature' and inserts the necessary information.
+ */
+function chado_feature_insert($node){
+   // remove spaces, newlines from residues
+   $residues = preg_replace("/[\n\r\s]/","",$node->residues);
+
+   // If this feature already exists then don't recreate it in chado
+   // TODO: the unique index in chado for this also includes the type_id. If the site
+   // ever needs to have the same feature name for different types then this will break.
+   $feature_sql = "SELECT * FROM {Feature} WHERE uniquename = '%s' and organism_id = %d";
+   $previous_db = db_set_active('chado');
+   $feature = db_fetch_object(db_query($feature_sql,$node->title,$node->organism_id));
+   db_set_active($previous_db);
+
+   // if the feature doesn't exist then let's create it in chado.
+   if(!$feature){
+      $sql = "INSERT INTO {feature} (organism_id, name, uniquename, residues, seqlen,".
+             "    is_obsolete, type_id)".
+             " VALUES(%d,'%s','%s','%s',%d, %s, ".
+             "   (SELECT cvterm_id ".
+             "    FROM {CVTerm} CVT ".
+             "    INNER JOIN CV ON CVT.cv_id = CV.cv_id ".
+             "    WHERE CV.name = 'sequence' and CVT.name = '%s'))";
+      $obsolete = 'FALSE';
+      if($node->is_obsolete){
+         $obsolete = 'TRUE';
+      }
+
+      // use chado database
+      $previous_db = db_set_active('chado');
+      db_query($sql,$node->organism_id,$node->title,$node->title,
+      $residues,strlen($residues),$obsolete,$node->feature_type);
+
+      // now that we've added the feature, get the feature id for this feature
+      $feature = db_fetch_object(db_query($feature_sql,$node->title,$node->organism_id));
+
+      // now use drupal database
+      db_set_active($previous_db);
+   }
+
+   // add the genbank accession and synonyms
+   chado_feature_add_synonyms($node->synonyms,$feature->feature_id);
+
+   // make sure the entry for this feature doesn't already exist in the chado_feature table
+   // if it doesn't exist then we want to add it.
+   $node_check_sql = "SELECT * FROM {chado_feature} ".
+                     "WHERE feature_id = '%s'";
+   $node_check = db_fetch_object(db_query($node_check_sql,$feature->feature_id));
+   if(!$node_check){
+      // next add the item to the drupal table
+      $sql = "INSERT INTO {chado_feature} (nid, vid, feature_id, sync_date) ".
+             "VALUES (%d, %d, %d, " . time() . ")";
+      db_query($sql,$node->nid,$node->vid,$feature->feature_id);
+   }
+}
+/************************************************************************
+ */
+function chado_feature_delete($node){
+   // get feature_id so we can remove it from chado database
+   $sql_drupal = "SELECT feature_id ".
+                 "FROM {chado_feature} ".
+                 "WHERE nid = %d AND vid = %d";
+   $feature_id = db_result(db_query($sql_drupal, $node->nid, $node->vid));
+
+   // remove the drupal content  
+   $sql_del = "DELETE FROM {chado_feature} ".
+              "WHERE nid = %d ".
+              "AND vid = %d";
+   db_query($sql_del, $node->nid, $node->vid);
+   $sql_del = "DELETE FROM {node} ".
+              "WHERE nid = %d ".
+              "AND vid = %d";
+   db_query($sql_del, $node->nid, $node->vid);
+   $sql_del = "DELETE FROM {node_revisions} ".
+              "WHERE nid = %d ".
+              "AND vid = %d";
+   db_query($sql_del, $node->nid, $node->vid);
+
+
+   // Remove data from feature tables of chado database.  This will
+   // cause a cascade delete and remove all data in referencing tables
+   // for this feature
+   $previous_db = db_set_active('chado');
+   db_query("DELETE FROM {feature} WHERE feature_id = %d", $feature_id);
+   db_set_active($previous_db);
+   
+   drupal_set_message("The feature and all associated data were removed from ".
+      "chado");
+
+}
+/************************************************************************
+ */
+function chado_feature_update($node){
+   if($node->revision){
+      // TODO -- decide what to do about revisions
+   } else {
+      // get the feature for this node:
+      $sql = 'SELECT feature_id FROM {chado_feature} WHERE vid = %d';
+      $feature = db_fetch_object(db_query($sql, $node->vid));
+
+      // remove spaces, newlines from residues
+      $residues = preg_replace("/[\n\r\s]/","",$node->residues);
+
+      $sql = "UPDATE {feature} ".
+             " SET residues = '%s', ".
+             "   name = '%s', ".
+             "   uniquename = '%s', ".
+             "   seqlen = %d, ".
+             "   organism_id = %d, ".
+             "   is_obsolete = %s, ".
+             "   type_id = (SELECT cvterm_id ".
+             "              FROM {CVTerm} CVT ".
+             "              INNER JOIN CV ON CVT.cv_id = CV.cv_id ".
+             "              WHERE CV.name = 'sequence' and CVT.name = '%s') ".
+             "WHERE feature_id = %d ";
+      $obsolete = 'FALSE';
+      if($node->is_obsolete){
+         $obsolete = 'TRUE';
+      }
+      $previous_db = db_set_active('chado');  // use chado database
+      db_query($sql,$residues,$node->title,$node->title,
+      strlen($residues),$node->organism_id,$obsolete,$node->feature_type,
+      $feature->feature_id);
+      db_set_active($previous_db);  // now use drupal database
+
+      // add the genbank accession & synonyms
+      // chado_feature_add_gbaccession($node->gbaccession,$feature->feature_id);
+      chado_feature_add_synonyms($node->synonyms,$feature->feature_id);
+   }
+}
+/************************************************************************
+ *
+ */
+function chado_feature_add_synonyms($synonyms,$feature_id){
+
+   // make sure we only have a single space between each synonym
+   $synonyms = preg_replace("/[\s\n\r]+/"," ",$synonyms);
+   // split the synonyms into an array based on a space as the delimieter
+   $syn_array = array();
+   $syn_array = explode(" ",$synonyms);
+
+   // use the chado database
+   $previous_db = db_set_active('chado');
+
+   // remove any old synonyms
+   $feature_syn_dsql = "DELETE FROM {feature_synonym} WHERE feature_id = %d";
+   if(!db_query($feature_syn_dsql,$feature_id)){
+      $error .= "Could not remove synonyms from feature. ";
+   }
+
+   // return if we don't have any synonmys to add
+   if(!$synonyms){
+      db_set_active($previous_db);
+      return;
+   }
+   // iterate through each synonym and add it to the database
+   foreach($syn_array as $syn){
+      // skip this item if it's empty
+      if(!$syn){ break; }
+
+      // check to see if we have this accession number already in the database
+      // if so then don't add it again. it messes up drupal if the insert fails.
+      // It is possible for the accession number to be present and not the feature
+      $synonym_sql = "SELECT synonym_id FROM {synonym} ".
+                     "WHERE name = '%s'";
+      $synonym = db_fetch_object(db_query($synonym_sql,$syn));
+      if(!$synonym){
+         $synonym_isql = "INSERT INTO {synonym} (name,synonym_sgml,type_id) ".
+                         "VALUES ('%s','%s', ".
+                         "   (SELECT cvterm_id ".
+                         "    FROM {CVTerm} CVT ".
+                         "    INNER JOIN CV ON CVT.cv_id = CV.cv_id ".
+                         "    WHERE CV.name = 'feature_property' and CVT.name = 'synonym'))";
+         if(!db_query($synonym_isql,$syn,$syn)){
+            $error .= "Could not add synonym. ";
+         }
+         // now get the synonym we just added
+         $synonym_sql = "SELECT synonym_id FROM {synonym} ".
+                        "WHERE name = '%s'";
+         $synonym = db_fetch_object(db_query($synonym_sql,$syn));
+      }
+
+      // now add in our new sysnonym
+      $feature_syn_isql = "INSERT INTO {feature_synonym} (synonym_id,feature_id,pub_id) ".
+                          "VALUES (%d,%d,1)";
+      if(!db_query($feature_syn_isql,$synonym->synonym_id,$feature_id)){
+         $error .= "Could not add synonyms to feature. ";
+      }
+   }
+
+   // return to the drupal database
+   db_set_active($previous_db);
+   return $error;
+
+}
+/************************************************************************
+ *
+ */
+function chado_feature_add_gbaccession($accession,$feature_id){
+
+   // use chado database
+   $previous_db = db_set_active('chado');
+
+   // remove any old accession from genbank dbEST
+   $fdbxref_dsql = "DELETE FROM {feature_dbxref} ".
+                   "WHERE feature_id = %d and dbxref_id IN ".
+                   "   (SELECT DBX.dbxref_id FROM {dbxref} DBX ".
+                   "    INNER JOIN DB  ON DB.db_id = DBX.db_id ".
+                   "    INNER JOIN feature_dbxref FDBX ON DBX.dbxref_id = FDBX.dbxref_id ".
+                   "    WHERE DB.name = 'DB:Genbank' and FDBX.feature_id = %d)";
+   if(!db_query($fdbxref_dsql,$feature_id,$feature_id)){
+      $error .= "Could not remove accession from feature. ";
+   }
+
+   // if we don't have an accession number to add then just return
+   if(!$accession){
+      db_set_active($previous_db);
+      return;
+   }
+   // get the db_id
+   $db_sql = "SELECT db_id FROM {DB} ".
+             "WHERE name = 'DB:Genbank_est'";
+   $db = db_fetch_object(db_query($db_sql));
+
+   // check to see if we have this accession number already in the database
+   // if so then don't add it again. it messes up drupal if the insert fails.
+   // It is possible for the accession number to be present and not the feature
+   $dbxref_sql = "SELECT dbxref_id FROM {dbxref} ".
+                 "WHERE db_id = %d and accession = '%s'";
+   $dbxref = db_fetch_object(db_query($dbxref_sql,$db->db_id,$accession));
+   if(!$dbxref){
+      // add the accession number
+      $dbxref_isql = "INSERT INTO {dbxref} (db_id,accession) ".
+                     "  VALUES (%d, '%s') ";
+      if(!db_query($dbxref_isql,$db->db_id,$accession)){
+         $error .= 'Could not add accession as a database reference ';
+      }
+      // get the dbxref_id for the just added accession number
+      $dbxref_sql = "SELECT dbxref_id FROM {dbxref} ".
+                    "WHERE db_id = %d and accession = '%s'";
+      $dbxref = db_fetch_object(db_query($dbxref_sql,$db->db_id,$accession));
+   }
+
+
+   // associate the accession number with the feature
+   $feature_dbxref_isql = "INSERT INTO {feature_dbxref} (feature_id,dbxref_id) ".
+                          "  VALUES (%d, %d) ";
+   if(!db_query($feature_dbxref_isql,$feature_id,$dbxref->dbxref_id)){
+      $error .= 'Could not add feature database reference. ';
+   }
+
+   db_set_active($previous_db);
+   return $error;
+}
+
+/************************************************************************
+ *
+ */
+function chado_feature_form ($node,$param){
+   $type = node_get_types('type', $node);
+   $form = array();
+   $feature = $node->feature;
+   $synonyms = $node->synonyms;
+   $analyses = $node->analyses;
+   $references = $node->references;
+
+   // We need to pass above variables for preview to show
+   $form['feature'] = array(
+      '#type' => 'value',
+      '#value' => $feature
+   );
+   // This field is read when previewing a node
+   $form['synonyms'] = array(
+      '#type' => 'value',
+      '#value' => $synonyms
+   );
+   // This field is read when previewing a node
+   $form['analyses'] = array(
+      '#type' => 'value',
+      '#value' => $analyses
+   );
+   // This field is read when previewing a node
+   $form['references'] = array(
+      '#type' => 'value',
+      '#value' => $references
+   );
+
+   // keep track of the feature id if we have one.  If we do have one then
+   // this would indicate an update as opposed to an insert.
+   $form['feature_id'] = array(
+      '#type' => 'value',
+      '#value' => $feature->feature_id,
+   );
+
+   $form['title']= array(
+      '#type' => 'textfield',
+      '#title' => t('Unique Feature Name'),
+      '#required' => TRUE,
+      '#default_value' => $feature->featurename,
+      '#description' => t('Enter a unique name for this feature'),
+      '#weight' => 1,
+      '#maxlength' => 255
+   );
+
+   // get the list of supported feature types
+   $ftypes = array();
+   $ftypes[''] = '';
+   $supported_ftypes = split("[ \n]",variable_get('chado_feature_types','EST contig'));
+   foreach($supported_ftypes as $ftype){
+      $ftypes["$ftype"] = $ftype;
+   }
+
+   $form['feature_type'] = array (
+     '#title'       => t('Feature Type'),
+     '#type'        => t('select'),
+     '#description' => t("Choose the feature type."),
+     '#required'    => TRUE,
+     '#default_value' => $feature->cvname,
+     '#options'     => $ftypes,
+     '#weight'      => 2
+   );
+   // get the list of organisms
+   $sql = "SELECT * FROM {Organism} ORDER BY genus, species";
+   $previous_db = db_set_active('chado');  // use chado database
+   $org_rset = db_query($sql);
+   db_set_active($previous_db);  // now use drupal database
+
+   //
+   $organisms = array();
+   $organisms[''] = '';
+   while($organism = db_fetch_object($org_rset)){
+      $organisms[$organism->organism_id] = "$organism->genus $organism->species ($organism->common_name)";
+   }
+
+   $form['organism_id'] = array (
+     '#title'       => t('Organism'),
+     '#type'        => t('select'),
+     '#description' => t("Choose the organism with which this feature is associated "),
+     '#required'    => TRUE,
+     '#default_value' => $feature->organism_id,
+     '#options'     => $organisms,
+     '#weight'      => 3,
+   );
+
+   // Get synonyms
+   if ($synonyms) {
+      if (is_array($synonyms)) {
+         foreach ($synonyms as $synonym){
+            $syn_text .= "$synonym->name\n";
+         }
+      } else {
+         $syn_text = $synonyms;
+      }
+   }
+   $form['synonyms']= array(
+      '#type' => 'textarea',
+      '#title' => t('Synonyms'),
+      '#required' => FALSE,
+      '#default_value' => $syn_text,
+      '#description' => t('Enter alternate names (synonmys) for this feature to help in searching and identification. You may enter as many alternate names as needed separated by spaces or on different lines.'),
+      '#weight' => 5,
+   );
+
+   $form['residues']= array(
+      '#type' => 'textarea',
+      '#title' => t('Residues'),
+      '#required' => FALSE,
+      '#default_value' => $feature->residues,
+      '#description' => t('Enter the nucelotide sequences for this feature'),
+      '#weight' => 6
+   );
+
+   $checked = '';
+   if($feature->is_obsolete == 't'){
+      $checked = '1';
+   }
+   $form['is_obsolete']= array(
+      '#type' => 'checkbox',
+      '#title' => t('Is Obsolete'),
+      '#required' => FALSE,
+      '#default_value' => $checked,
+      '#description' => t('Check this box if this sequence should be retired and no longer included in further analysis.'),
+      '#weight' => 8
+   );
+   return $form;
+}
+/************************************************************************
+ *
+ */
+function chado_feature_validate($node){
+   $result = 0;
+
+   // if this is an update, we want to make sure that a different feature for
+   // the organism doesn't already have this uniquename. We don't want to give
+   // two sequences the same uniquename
+   if($node->feature_id){
+      $sql = "SELECT * FROM {Feature} WHERE uniquename = '%s' ".
+             "  AND organism_id = %d AND NOT feature_id = %d";
+      $previous_db = db_set_active('chado');
+      $result = db_fetch_object(db_query($sql, $node->title,$node->organism_id,$node->feature_id));
+      db_set_active($previous_db);
+      if($result){
+         form_set_error('title',t("Feature update cannot proceed. The feature name '$node->title' is not unique for this organism. Please provide a unique name for this feature. "));
+      }
+   }
+
+   // if this is an insert then we just need to make sure this name doesn't
+   // already exist for this organism if it does then we need to throw an error
+   else {
+      $sql = "SELECT * FROM {Feature} WHERE uniquename = '%s' AND organism_id = %d";
+      $previous_db = db_set_active('chado');
+      $result = db_fetch_object(db_query($sql, $node->title,$node->organism_id));
+      db_set_active($previous_db);
+      if($result){
+         form_set_error('title',t("Feature insert cannot proceed. The feature name '$node->title' already exists for this organism. Please provide a unique name for this feature. "));
+      }
+   }
+
+   // we want to remove all characters except IUPAC nucleotide characters from the
+   // the residues. however, residues are not required so if blank then we'll skip
+   // this step
+   if($node->residues){
+      $residues = preg_replace("/[^\w]/",'',$node->residues);
+      if(!preg_match("/^[ACTGURYMKSWBDHVN]+$/i",$residues)){
+         form_set_error('residues',t("The residues in feature $node->title contains more than the nucleotide IUPAC characters. Only the following characters are allowed: A,C,T,G,U,R,Y,M,K,S,W,B,D,H,V,N: '" . $residues ."'"));
+      }
+   }
+
+   // we don't allow a genbank accession number for a contig
+   if($node->feature_type == 'contig' and $node->gbaccession){
+      form_set_error('gbaccession',t("Contigs cannot have a genbank accession number.  Please change the feature type or remove the accession number"));
+   }
+
+
+
+}
+/************************************************************************
+ *  When a node is requested by the user this function is called to allow us
+ *  to add auxiliary data to the node object.
+ */
+function chado_feature_load($node){
+   // get the feature_id for this node:
+   $sql = 'SELECT feature_id FROM {chado_feature} WHERE vid = %d';
+   $map = db_fetch_object(db_query($sql, $node->vid));
+
+   $previous_db = db_set_active('chado');  // use chado database
+
+   // get information about this organism and add it to the items in this node
+   $sql = "SELECT F.feature_id, F.name as featurename, F.uniquename, ".
+          "F.residues, F.seqlen, O.genus, O.species, O.common_name, ".
+          "  CVT.name as cvname, O.organism_id, F.type_id, F.is_obsolete  ".
+          "FROM {Feature} F ".
+          "  INNER JOIN Organism O ON F.organism_id = O.organism_id ".
+          "  INNER JOIN CVterm CVT ON F.type_id = CVT.cvterm_id ".
+          "WHERE F.feature_id = %d";
+   $feature = db_fetch_object(db_query($sql,$map->feature_id));
+   $additions->feature = $feature;
+   $additions->seqlen = $feature->seqlen;
+   
+   // get the feature synonyms
+   $sql = "SELECT S.name ".
+          "FROM {Feature_Synonym} FS ".
+          "  INNER JOIN Synonym S ".
+          "    ON FS.synonym_id = S.Synonym_id ".
+          "WHERE FS.feature_id = %d";
+   $results = db_query($sql,$map->feature_id);
+   $synonyms = array();
+   $i=0;
+   while($synonym = db_fetch_object($results)){
+      $synonyms[$i++] = $synonym;
+   }
+   $additions->synonyms = $synonyms;
+
+   // get feature references in external databases
+   $sql = "SELECT F.uniquename,F.Feature_id,DBX.accession,DB.description as dbdesc, ".
+          "   DB.db_id, DB.name as db_name, DB.urlprefix ".
+          "FROM {Feature} F ".
+          "  INNER JOIN Feature_dbxref FDBX on F.feature_id = FDBX.feature_id ".
+          "  INNER JOIN Dbxref DBX on DBX.dbxref_id = FDBX.dbxref_id ".
+          "  INNER JOIN DB on DB.db_id = DBX.db_id ".
+          "WHERE F.feature_id = %d";
+   $results = db_query($sql,$map->feature_id);
+   $references = array();
+   $i=0;
+   while($accession = db_fetch_object($results)){
+      $references[$i++] = $accession;
+      // we want to specifically pull out the genbank id
+      if(preg_match("/Genbank_est/",$accession->db_name)){
+         $additions->gbaccession = $accession;
+      }
+   }
+   $additions->references = $references;
+   db_set_active($previous_db);  // now use drupal database
+
+   // get organism node nid
+   $sql = "SELECT nid FROM {chado_organism} WHERE organism_id = %d";
+   $org_nid = db_result(db_query($sql, $additions->feature->organism_id));
+   $additions->org_nid = $org_nid;
+   return $additions;
+}
+
+/************************************************************************
+ *  This function customizes the view of the chado_feature node.  It allows
+ *  us to generate the markup.
+ */
+function chado_feature_view ($node, $teaser = FALSE, $page = FALSE) {
+
+   if (!$teaser) {
+      // use drupal's default node view:
+      $node = node_prepare($node, $teaser);
+            
+      // if we're building the node for searching then
+      // we want to handle this within the module and
+      // not allow theme customization.  We don't want to
+      // index all items (such as DNA sequence).
+      if($node->build_mode == NODE_BUILD_SEARCH_INDEX){
+         $node->content['index_version'] = array(
+            '#value' => theme('tripal_feature_search_index',$node),
+            '#weight' => 1,
+         );
+      }
+      else if($node->build_mode == NODE_BUILD_SEARCH_RESULT){
+         $node->content['index_version'] = array(
+            '#value' => theme('tripal_feature_search_results',$node),
+            '#weight' => 1,
+         );
+      }
+      else {
+         // do nothing here, let the theme derived template handle display
+      }
+   }
+
+   return $node;
+}
+
+/*******************************************************************************
+ * Display feature information for associated organisms. This function also
+ * provides contents for indexing
+ */
+function tripal_feature_nodeapi(&$node, $op, $teaser, $page) {
+
+   switch ($op) {
+      // Note that this function only adds feature view to an organism node.
+      // The view of a feature node is controled by the theme *.tpl file
+      case 'view':
+         // Set the node types for showing feature information
+         $types_to_show = array('chado_organism', 'chado_library');
+
+         // Abort if this node is not one of the types we should show.
+         if (!in_array($node->type, $types_to_show, TRUE)) {
+            break;
+         }
+
+         // Add feature to the content item if it's not a teaser
+         if (!$teaser) {
+
+            // Show feature browser
+            $node->content['tripal_feature_browser'] = array(
+               '#value' => theme('tripal_feature_browser', $node),
+               '#weight' => 5
+            );
+            $node->content['tripal_feature_org_counts'] = array(
+               '#value' => theme('tripal_feature_counts', $node),
+               '#weight' => 4
+            );
+         }
+   }
+}
+/************************************************************************
+ *  We need to let drupal know about our theme functions and their arguments.
+ *  We create theme functions to allow users of the module to customize the
+ *  look and feel of the output generated in this module
+ */
+function tripal_feature_theme () {
+   return array(
+      'tripal_feature_search_index' => array (
+         'arguments' => array('node'),
+       ),
+      'tripal_feature_search_results' => array (
+         'arguments' => array('node'),
+      ),
+      'tripal_feature_browser' => array (
+         'arguments' => array('node'),
+      ),
+      'tripal_feature_counts' => array (
+         'arguments' => array('node'),
+      )
+   );
+}
+/*******************************************************************************
+ *  create a list of features for the organism and pie chart
+ */
+function theme_tripal_feature_counts($node){
+
+   // get the feature counts.  This is dependent on a materialized view
+   // installed with the organism module
+   $content = '';
+   if ($node->organism_id && $node->type == 'chado_organism') {
+      $sql = "SELECT * FROM {organism_feature_count} ".
+      		 "WHERE organism_id = %d AND NOT feature_type = 'EST_match' ".
+             "ORDER BY num_features desc";
+      $features = array();
+      $previous_db = db_set_active('chado');  // use chado database
+      $results = db_query($sql,$node->organism_id);
+      db_set_active($previous_db);  // now use drupal database
+      $feature = db_fetch_object($results); // retrieve the first result
+      if ($feature) {
+         $content .= "<div class=\"tripal_feature_summary-info-box\"><br>
+                             <div class=\"tripal_expandableBox\">".
+                     "<h3>Feature Summary</h3>".
+                     "</div>";
+         $content .= "<div class=\"tripal_expandableBoxContent\">";
+         $content .= "<table class=\"tripal_table_horz\">";
+         $content .= "  <tr>";
+         $content .= "    <th class=\"dbfieldname\">Type</th>";
+         $content .= "    <th class=\"dbfieldname\">Number</th>";
+         $content .= "  </tr>";
+         do {
+            $content .= "<tr>";
+            $content .= "  <td>$feature->feature_type</td>";
+            $content .= "  <td>". number_format($feature->num_features) . "</td>";
+            $content .= "</tr>";
+         } while($feature = db_fetch_object($results));
+         $content .= "</table>";
+         $content .= "
+            <img class=\"tripal_cv_chart\" id=\"tripal_feature_cv_chart_$node->organism_id\" src=\"\" border=\"0\">
+         ";
+         $content .= "</div></div>";
+      }
+   }
+   return $content;
+}
+/************************************************************************
+ *
+ */
+function tripal_feature_cv_chart($chart_id){
+
+  // The CV module will create the JSON array necessary for buillding a
+  // pie chart using jgChart and Google Charts.  We have to pass to it
+  // a table that contains count information, tell it which column 
+  // contains the cvterm_id and provide a filter for getting the
+  // results we want from the table.
+  $organism_id = preg_replace("/^tripal_feature_cv_chart_(\d+)$/","$1",$chart_id);
+  $options = array(
+     count_mview      => 'organism_feature_count',
+     cvterm_id_column => 'cvterm_id',
+     count_column     => 'num_features',
+     filter           => "CNT.organism_id = $organism_id AND NOT feature_type = 'EST_match' ",
+  );
+  return $options;
+}
+/************************************************************************
+ *
+ */
+function tripal_feature_cv_tree($tree_id){
+
+  // The CV module will create the JSON array necessary for buillding a
+  // pie chart using jgChart and Google Charts.  We have to pass to it
+  // a table that contains count information, tell it which column 
+  // contains the cvterm_id and provide a filter for getting the
+  // results we want from the table.
+  $organism_id = preg_replace("/^tripal_feature_cv_tree_(\d+)$/","$1",$tree_id);
+  $options = array(
+     cv_id            => tripal_cv_get_cv_id('sequence'),
+     count_mview      => 'organism_feature_count',
+     cvterm_id_column => 'cvterm_id',
+     count_column     => 'num_features',
+     filter           => "CNT.organism_id = $organism_id",
+     label            => 'Features',
+  );
+  return $options;
+}
+/*******************************************************************************
+ *  create a simple paged feature browser
+ */
+function theme_tripal_feature_browser($node){
+
+   // don't show the browser if the settings in the admin page is turned off
+   $show_browser = variable_get('tripal_feature_browse_setting',array('show_feature_browser'));
+
+   if(strcmp($show_browser,'show_feature_browser')!=0){
+      return;
+   }
+   if ($node->organism_id && $node->type == 'chado_organism') {
+      # get the list of available sequence ontology terms for which
+      # we will build drupal pages from features in chado.  If a feature
+      # is not one of the specified typse we won't build a node for it.
+      $allowed_types = variable_get('chado_feature_types','EST contig');
+      $allowed_types = preg_replace("/[\s\n\r]+/"," ",$allowed_types);
+      $so_terms = split(' ',$allowed_types);
+      $where_cvt = "";
+      foreach ($so_terms as $term){
+         $where_cvt .= "CVT.name = '$term' OR ";
+      }
+      $where_cvt = substr($where_cvt,0,strlen($where_cvt)-3);  # strip trailing 'OR'
+
+      // get the features for this organism
+      $sql  = "SELECT F.name,F.feature_id,F.uniquename,CVT.name as cvname ".
+              "FROM {feature} F ".
+                 "  INNER JOIN {cvterm} CVT on F.type_id = CVT.cvterm_id ".
+               "WHERE organism_id = $node->organism_id and ($where_cvt) ".
+               "ORDER BY feature_id ASC";
+
+      // the counting SQL
+      $csql  = "SELECT count(*) ".
+               "FROM {feature} F".
+               "  INNER JOIN {cvterm} CVT on F.type_id = CVT.cvterm_id ".
+               "WHERE organism_id = $node->organism_id and ($where_cvt) ".
+               "GROUP BY organism_id ";
+
+      $previous_db = db_set_active('chado');  // use chado database
+      $features = pager_query($sql,10,0,$csql);
+      db_set_active($previous_db);  // now use drupal database
+
+      $content = "<br><div id=\"tripal_feature_box\" class=\"feature-info-box\">";
+      $content .= "<div class=\"tripal_expandableBox\">".
+                  "<h3>Browse Features</h3>".
+                  "</div>";
+      $content .= "<div class=\"tripal_expandableBoxContent\">";
+      $content .= "Below are the features associated with this organism.\n";
+      $content .= "<table class=\"tripal_table_horz\">";
+      $content .= "  <tr>";
+      $content .= "    <th>Feature Name</th>";
+      $content .= "    <th>Type</th>";
+      $content .= "  </tr>";
+
+      // prepare the query that will lookup node ids
+      $sql = "SELECT nid FROM {chado_feature} ".
+              "WHERE feature_id = %d";
+      while($feature = db_fetch_object($features)){
+         $node = db_fetch_object(db_query($sql,$feature->feature_id));
+         if($node){
+            $name= "<a href=\"" . url("node/$node->nid") . "\">$feature->name</a>";
+         } else {
+            $name= "$feature->name";
+         }
+         $content .= "  <tr>";
+         $content .= "    <td>$name</td>";
+         $content .= "    <td>$feature->cvname</td>";
+         $content .= "  </tr>";
+      }
+      $content .= "</table>";
+      $content .= theme('pager');
+      $content .= "</div></div>";
+      return $content;
+   }
+}
+/************************************************************************
+ *  This function is an extension of the chado_feature_view by providing
+ *  the markup for the feature object THAT WILL BE INDEXED.
+ */
+function theme_tripal_feature_search_index ($node) {
+   $feature = $node->feature;
+   $content = '';
+
+   // get the accession prefix
+   $aprefix = variable_get('chado_feature_accession_prefix','ID');
+
+   $content .= "<h1>$feature->uniquename</h1>. ";
+   $content .= "<strong>$aprefix$feature->feature_id.</strong> ";
+   $content .= "$feature->cvname ";
+   $content .= "$feature->common_name ";
+
+   // add the synonyms of this feature to the text for searching
+   $synonyms = $node->synonyms;
+   if(count($synonyms) > 0){
+      foreach ($synonyms as $result){
+         $content .= "$result->name ";
+      }
+   }
+
+   return $content;
+}
+/************************************************************************
+ *  This function is an extension of the chado_feature_view by providing
+ *  the markup for the feature object THAT WILL BE INDEXED.
+ */
+function theme_tripal_feature_search_results ($node) {
+   $feature = $node->feature;
+   $content = '';
+
+   // get the accession prefix
+   $aprefix = variable_get('chado_feature_accession_prefix','ID');
+
+   $content .= "Feature Name: <h1>$feature->uniquename</h1>. ";
+   $content .= "<strong>Accession: $aprefix$feature->feature_id.</strong>";
+   $content .= "Type: $feature->cvname. ";
+   $content .= "Organism: $feature->common_name. ";
+
+   // add the synonyms of this feature to the text for searching
+   $synonyms = $node->synonyms;
+   if(count($synonyms) > 0){
+      $content .= "Synonyms: ";
+      foreach ($synonyms as $result){
+         $content .= "$result->name, ";
+      }
+   }
+
+   return $content;
+}
+/************************************************************************
+ *
+ */
+function tripal_feature_sync_features ($max_sync = 0, $job_id = NULL){
+   $i = 0;
+
+   // get the list of available sequence ontology terms for which
+   // we will build drupal pages from features in chado.  If a feature
+   // is not one of the specified typse we won't build a node for it.
+   $allowed_types = variable_get('chado_feature_types','EST contig');
+   $allowed_types = preg_replace("/[\s\n\r]+/"," ",$allowed_types);
+   $so_terms = split(' ',$allowed_types);
+   $where_cvt = "";
+   foreach ($so_terms as $term){
+      $where_cvt .= "CVT.name = '$term' OR ";
+   }
+   $where_cvt = substr($where_cvt,0,strlen($where_cvt)-3);  # strip trailing 'OR'
+
+   // get the list of organisms that are synced and only include features from
+   // those organisms
+   $orgs = tripal_organism_get_synced();
+   $where_org = "";
+   foreach($orgs as $org){
+      $where_org .= "F.organism_id = $org->organism_id OR ";
+   }
+   $where_org = substr($where_org,0,strlen($where_org)-3);  # strip trailing 'OR'
+
+   // use this SQL statement to get the features that we're going to upload
+   $sql = "SELECT feature_id ".
+          "FROM {FEATURE} F ".
+          "   INNER JOIN Cvterm CVT ON F.type_id = CVT.cvterm_id ".
+          "WHERE ($where_cvt) AND ($where_org) ".
+          "ORDER BY feature_id";
+   // get the list of features
+   $previous_db = db_set_active('chado');  // use chado database
+   $results = db_query($sql);
+
+   db_set_active($previous_db);  // now use drupal database
+
+   // load into ids array
+   $count = 0;
+   $ids = array();
+   while($id = db_fetch_object($results)){
+      $ids[$count] = $id->feature_id;
+      $count++;
+   }
+
+   // make sure our vocabularies are set before proceeding
+   tripal_feature_set_vocabulary();
+
+   // pre-create the SQL statement that will be used to check
+   // if a feature has already been synced.  We skip features
+   // that have been synced
+   $sql = "SELECT * FROM {chado_feature} WHERE feature_id = %d";
+
+   // Iterate through features that need to be synced
+   $interval = intval($count * 0.01);
+   foreach($ids as $feature_id){
+      // update the job status every 1% features
+      if($job_id and $i % $interval == 0){
+         tripal_job_set_progress($job_id,intval(($i/$count)*100));
+      }
+      // if we have a maximum number to sync then stop when we get there
+      // if not then just continue on
+      if($max_sync and $i == $max_sync){
+         return '';
+      }
+      if(!db_fetch_object(db_query($sql,$feature_id))){
+         tripal_feature_sync_feature ($feature_id);
+      }
+      $i++;
+   }
+
+   return '';
+}
+
+/************************************************************************
+ *
+ */
+function tripal_feature_sync_feature ($feature_id){
+
+   global $user;
+   $create_node = 1;   // set to 0 if the node exists and we just sync and not create
+
+   // get the accession prefix
+   $aprefix = variable_get('chado_feature_accession_prefix','ID');
+
+   // if we don't have a feature_id then return
+   if(!$feature_id){
+      drupal_set_message(t("Please provide a feature_id to sync"));
+      return '';
+   }
+
+   // get information about this feature
+   $fsql = "SELECT F.feature_id, F.name, F.uniquename,O.genus, ".
+           "    O.species,CVT.name as cvname,F.residues,F.organism_id ".
+           "FROM {FEATURE} F ".
+           "  INNER JOIN Cvterm CVT ON F.type_id = CVT.cvterm_id ".
+           "  INNER JOIN Organism O ON F.organism_id = O.organism_ID ".
+           "WHERE F.feature_id = %d";
+   $previous_db = db_set_active('chado');  // use chado database
+   $feature = db_fetch_object(db_query($fsql,$feature_id));
+   db_set_active($previous_db);  // now use drupal database
+
+   // check to make sure that we don't have any nodes with this feature name as a title
+   // but without a corresponding entry in the chado_feature table if so then we want to
+   // clean up that node.  (If a node is found we don't know if it belongs to our feature or
+   // not since features can have the same name/title.)
+   $tsql =  "SELECT * FROM {node} N ".
+            "WHERE title = '%s'";
+   $cnsql = "SELECT * FROM {chado_feature} ".
+            "WHERE nid = %d";
+   $nodes = db_query($tsql,$feature->name);
+   // cycle through all nodes that may have this title
+   while($node = db_fetch_object($nodes)){
+      $feature_nid = db_fetch_object(db_query($cnsql,$node->nid));
+      if(!$feature_nid){
+         drupal_set_message(t("$feature_id: A node is present but the chado_feature entry is missing... correcting"));
+         node_delete($node->nid);
+      }
+   }
+
+   // check if this feature already exists in the chado_feature table.
+   // if we have a chado feature, we want to check to see if we have a node
+   $cfsql = "SELECT * FROM {chado_feature} ".
+            "WHERE feature_id = %d";
+   $nsql =  "SELECT * FROM {node} ".
+            "WHERE nid = %d";
+   $chado_feature = db_fetch_object(db_query($cfsql,$feature->feature_id));
+   if($chado_feature){
+      drupal_set_message(t("$feature_id: A chado_feature entry exists"));
+      $node = db_fetch_object(db_query($nsql,$chado_feature->nid));
+      if(!$node){
+         // if we have a chado_feature but not a node then we have a problem and
+         // need to cleanup
+         drupal_set_message(t("$feature_id: The node is missing, but has a chado_feature entry... correcting"));
+         $df_sql = "DELETE FROM {chado_feature} WHERE feature_id = %d";
+         db_query($df_sql,$feature_id);
+      } else {
+         drupal_set_message(t("$feature_id: A corresponding node exists"));
+         $create_node = 0;
+      }
+   }
+
+   // if we've encountered an error then just return.
+   if($error_msg = db_error()){
+      //print "$error_msg\n";
+      return '';
+   }
+
+   // if a drupal node does not exist for this feature then we want to
+   // create one.  Note that the node_save call in this block
+   // will call the hook_submit function which
+   if($create_node){
+      drupal_set_message(t("$feature_id: Creating node $feature->name"));
+      $new_node = new stdClass();
+      $new_node->type = 'chado_feature';
+      $new_node->uid = $user->uid;
+      $new_node->title = "$feature->name";
+      $new_node->feature_id = $feature->feature_id;
+      $new_node->residues = $feature->residues;
+      $new_node->organism_id = $feature->organism_id;
+      $new_node->feature_type = $feature->cvname;
+
+      // validate the node and if okay then submit
+      node_validate($new_node);
+      if ($errors = form_get_errors()) {
+         foreach($errors as $key => $msg){
+            drupal_set_message($msg);
+         }
+         return $errors;
+      } else {
+         $node = node_submit($new_node);
+         node_save($node);
+      }
+
+   }
+   else {
+      $node = $chado_feature;
+   }
+
+
+   // set the taxonomy for this node
+   drupal_set_message(t("$feature_id ($node->nid): setting taxonomy"));
+   tripal_feature_set_taxonomy($node,$feature_id);
+
+   // reindex the node
+   drupal_set_message(t("$feature_id( $node->nid): indexing"));
+   tripal_feature_index_feature ($feature_id,$node->nid);
+
+   // remove any URL alias that may already exist and recreate
+   drupal_set_message(t("$feature_id ($node->nid): setting URL alias"));
+   db_query("DELETE FROM {url_alias} WHERE dst = '%s'", "$aprefix$feature_id");
+   path_set_alias("node/$node->nid","$aprefix$feature_id");
+
+   return '';
+}
+/************************************************************************
+ *
+ */
+function tripal_feature_set_vocabulary (){
+
+   //include the file containing the required functions for adding taxonomy vocabs
+   module_load_include('inc', 'taxonomy', 'taxonomy.admin');
+
+   // get the vocabularies so that we make sure we don't recreate
+   // the vocabs that already exist
+   $vocabularies = taxonomy_get_vocabularies();
+   $ft_vid = NULL;
+   $op_vid = NULL;
+   $lb_vid = NULL;
+   $an_vid = NULL;
+
+   // These taxonomic terms are hard coded because we
+   // konw we have these relationships in the chado tables
+   // through foreign key relationships.  The tripal
+   // modules that correspond to these chado "modules" don't
+   // need to be installed for the taxonomy to work.
+   foreach($vocabularies as $vocab){
+      if($vocab->name == 'Feature Type'){
+         $ft_vid = $vocab->vid;
+      }
+      if($vocab->name == 'Organism'){
+         $op_vid = $vocab->vid;
+      }
+      if($vocab->name == 'Library'){
+         $lb_vid = $vocab->vid;
+      }
+      if($vocab->name == 'Analysis'){
+         $an_vid = $vocab->vid;
+      }
+   }
+
+   if(!$ft_vid){
+      $form_state = array();
+      $values = array(
+         'name' => t('Feature Type'),
+         'nodes' => array('chado_feature' => 'chado_feature'),
+         'description' => t('The feature type (or SO cvterm for this feature).'),
+         'help' => t('Select the term that matches the feature '),
+         'tags' => 0,
+         'hierarchy' => 1,
+         'relations' => 1,
+         'multiple' => 0,
+         'required' => 0,
+         'weight' => 1,
+      );
+      drupal_execute('taxonomy_form_vocabulary', $form_state,$values);
+      drupal_execute('taxonomy_form_vocabulary', $form_state);
+   }
+
+   if(!$op_vid){
+      $form_state = array();
+      $values = array(
+         'name' => t('Organism'),
+         'nodes' => array('chado_feature' => 'chado_feature'),
+         'description' => t('The organism to which this feature belongs.'),
+         'help' => t('Select the term that matches the feature '),
+         'tags' => 0,
+         'hierarchy' => 1,
+         'relations' => 1,
+         'multiple' => 0,
+         'required' => 0,
+         'weight' => 2,
+      );
+      drupal_execute('taxonomy_form_vocabulary', $form_state,$values);
+      drupal_execute('taxonomy_form_vocabulary', $form_state);
+   }
+
+   if(!$lb_vid){
+      $form_state = array();
+      $values = array(
+         'name' => t('Library'),
+         'nodes' => array('chado_feature' => 'chado_feature'),
+         'description' => t('Chado features associated with a library are assigned the term associated with the library'),
+         'help' => t('Select the term that matches the feature '),
+         'tags' => 0,
+         'hierarchy' => 1,
+         'relations' => 1,
+         'multiple' => 0,
+         'required' => 0,
+         'weight' => 3,
+      );
+      drupal_execute('taxonomy_form_vocabulary', $form_state, $values);
+      drupal_execute('taxonomy_form_vocabulary', $form_state);
+   }
+
+   if(!$an_vid){
+      $form_state = array();
+      $values = array(
+         'name' => t('Analysis'),
+         'nodes' => array('chado_feature' => 'chado_feature'),
+         'description' => t('Any analysis to which this feature belongs.'),
+         'help' => t('Select the term that matches the feature '),
+         'tags' => 0,
+         'hierarchy' => 1,
+         'relations' => 1,
+         'multiple' => 1,
+         'required' => 0,
+         'weight' => 4,
+      );
+      drupal_execute('taxonomy_form_vocabulary', $form_state,$values);
+      drupal_execute('taxonomy_form_vocabulary', $form_state);
+   }
+}
+/************************************************************************
+ *
+ */
+function tripal_feature_del_vocabulary(){
+   //include the file containing the required functions for adding taxonomy vocabs
+   module_load_include('inc', 'taxonomy', 'taxonomy.admin');
+
+   // get the vocabularies
+   $vocabularies = taxonomy_get_vocabularies();
+
+   // These taxonomic terms are hard coded because we
+   // know we have these relationships in the chado tables
+   // through foreign key relationships.  The tripal
+   // modules that correspond to these chado "modules" don't
+   // need to be installed for the taxonomy to work.
+   foreach($vocabularies as $vocab){
+      if($vocab->name == 'Feature Type'){
+         taxonomy_del_vocabulary($vocab->vid);
+      }
+      if($vocab->name == 'Organism'){
+         taxonomy_del_vocabulary($vocab->vid);
+      }
+      if($vocab->name == 'Library'){
+         taxonomy_del_vocabulary($vocab->vid);
+      }
+      if($vocab->name == 'Analysis'){
+         taxonomy_del_vocabulary($vocab->vid);
+      }
+   }
+
+}
+/************************************************************************
+ *
+ */
+function tripal_features_set_taxonomy($max_sync = 0,$job_id = NULL){
+
+   // make sure our vocabularies are cleaned and reset before proceeding
+   tripal_feature_del_vocabulary();
+   tripal_feature_set_vocabulary();
+
+   // iterate through all drupal feature nodes and set the taxonomy
+   $results = db_query("SELECT * FROM {chado_feature}");
+   $nsql =  "SELECT * FROM {node} ".
+            "WHERE nid = %d";
+   $i = 0;
+
+   // load into ids array
+   $count = 0;
+   $chado_features = array();
+   while($chado_feature = db_fetch_object($results)){
+      $chado_features[$count] = $chado_feature;
+      $count++;
+   }
+
+   // Iterate through features that need to be synced
+   $interval = intval($count * 0.01);
+   foreach($chado_features as $chado_feature){
+
+      // update the job status every 1% features
+      if($job_id and $i % $interval == 0){
+         tripal_job_set_progress($job_id,intval(($i/$count)*100));
+      }
+      $node = db_fetch_object(db_query($nsql,$chado_feature->nid));
+      tripal_feature_set_taxonomy($node,$chado_feature->feature_id);
+
+      $i++;
+   }
+}
+/************************************************************************
+ *
+ */
+function tripal_feature_set_taxonomy ($node,$feature_id){
+
+   // iterate through the taxonomy classes that have been
+   // selected by the admin user and make sure we only set those
+   $tax_classes = variable_get('tax_classes', '');
+   $do_ft = 0;
+   $do_op = 0;
+   $do_lb = 0;
+   $do_an = 0;
+   foreach($tax_classes as $class){
+      if(strcmp($class ,'organism')==0){
+         $do_op = 1;
+      }
+      if(strcmp($class,'feature_type')==0){
+         $do_ft = 1;
+      }
+      if(strcmp($class,'library')==0){
+         $do_lb = 1;
+      }
+      if(strcmp($class,'analysis')==0){
+         $do_an = 1;
+      }
+   }
+
+
+   // get the list of vocabularies and find our two vocabularies of interest
+   $vocabularies = taxonomy_get_vocabularies();
+   $ft_vid = NULL;
+   $op_vid = NULL;
+   $lb_vid = NULL;
+   $an_vid = NULL;
+   foreach($vocabularies as $vocab){
+      if($vocab->name == 'Feature Type'){
+         $ft_vid = $vocab->vid;
+      }
+      if($vocab->name == 'Organism'){
+         $op_vid = $vocab->vid;
+      }
+      if($vocab->name == 'Library'){
+         $lb_vid = $vocab->vid;
+      }
+      if($vocab->name == 'Analysis'){
+         $an_vid = $vocab->vid;
+      }
+   }
+
+   // get the cvterm and the organism for this feature
+   $sql = "SELECT CVT.name AS cvname, O.genus, O.species ".
+          "FROM {CVTerm} CVT ".
+          "  INNER JOIN Feature F on F.type_id = CVT.cvterm_id ".
+          "  INNER JOIN Organism O ON F.organism_id = O.organism_id ".
+          "WHERE F.feature_id = $feature_id";
+   $previous_db = db_set_active('chado');  // use chado database
+   $feature = db_fetch_object(db_query($sql));
+   db_set_active($previous_db);  // now use drupal database
+
+   // Set the feature type for this feature
+   if($do_ft && $ft_vid){
+      $tags["$ft_vid"] = "$feature->cvname";
+   }
+   // Set the organism for this feature type
+   if($do_op && $op_vid){
+      $tags["$op_vid"] = "$feature->genus $feature->species";
+   }
+
+   // get the library that this feature may belong to and add it as taxonomy
+   if($do_lb && $lb_vid){
+      $sql = "SELECT L.name ".
+             "FROM {Library} L ".
+             "  INNER JOIN Library_feature LF ON LF.library_id = L.library_id ".
+             "WHERE LF.feature_id = %d ";
+      $previous_db = db_set_active('chado');  // use chado database
+      $library = db_fetch_object(db_query($sql,$feature_id));
+      db_set_active($previous_db);  // now use drupal database
+      $tags["$lb_vid"] = "$library->name";
+   }
+
+   // get the analysis that this feature may belong to and add it as taxonomy
+   if($do_an && $an_vid){
+      $sql = "SELECT A.name ".
+             "FROM {Analysis} A ".
+             "  INNER JOIN Analysisfeature AF ON AF.analysis_id = A.analysis_id ".
+             "WHERE AF.feature_id = $feature_id ";
+      $results = db_query($sql);
+      $previous_db = db_set_active('chado');  // use chado database
+      $analysis_terms = array();
+      while($analysis=db_fetch_object($results)){
+         // TODO -- how to set more than one taxonmy term ????
+         $analysis_terms[] = "$analysis->name";
+         //           $tags["$an_vid"] = "$analysis->name";
+      }
+      $tags["$an_vid"] = $analysis_terms;
+      db_set_active($previous_db);  // now use drupal database
+   }
+
+   // now add the taxonomy to the node
+   $terms['tags'] = $tags;
+   taxonomy_node_save($node,$terms);
+   //   print "Setting $node->title: " . implode(", ",$tags) . "\n";
+
+}
+/************************************************************************
+ *
+ */
+function tripal_features_reindex ($max_sync,$job_id = NULL){
+   $i = 0;
+
+   // We register a shutdown function to ensure that the nodes
+   // that are indexed will have proper entries in the search_totals
+   // table.  Without these entries, the searching doesn't work
+   // properly. This function may run for quite a while since
+   // it must calculate the sum of the scores of all entries in
+   // the search_index table.  In the case of common words like
+   // 'contig', this will take quite a while
+   register_shutdown_function('search_update_totals');
+
+   // use this SQL statement to get the features that we're going to index. This
+   // SQL statement is derived from the hook_search function in the Drupal API.
+   // Essentially, this is the SQL statement that finds all nodes that need
+   // reindexing, but adjusted to include the chado_feature
+   $sql = "SELECT N.nid, N.title, CF.feature_id ".
+          "FROM {node} N ".
+          "  INNER JOIN chado_feature CF ON CF.nid = N.nid ";
+   $results = db_query($sql);
+
+   // load into ids array
+   $count = 0;
+   $chado_features = array();
+   while($chado_feature = db_fetch_object($results)){
+      $chado_features[$count] = $chado_feature;
+      $count++;
+   }
+
+   // Iterate through features that need to be synced
+   $interval = intval($count * 0.01);
+   foreach($chado_features as $chado_feature){
+
+      // update the job status every 1% features
+      if($job_id and $i % $interval == 0){
+         tripal_job_set_progress($job_id,intval(($i/$count)*100));
+      }
+
+      // sync only the max requested
+      if($max_sync and $i == $max_sync){
+         return '';
+      }
+      tripal_feature_index_feature ($chado_feature->feature_id,$chado_feature->nid);
+      $i++;
+   }
+
+   return '';
+}
+
+/************************************************************************
+ *
+ */
+function tripal_feature_index_feature ($feature_id,$nid){
+   // return if we haven't been provided with a feature_id
+   if(!$feature_id){
+      return 0;
+   }
+
+   // if we only have a feature_id then let's find a corresponding
+   // node.  If we can't find a node then return.
+   if(!$nid){
+      $nsql = "SELECT N.nid,N.title FROM {chado_feature} CF ".
+              "  INNER JOIN {node} N ON N.nid = CF.nid ".
+              "WHERE CF.feature_id = %d";
+      $node = db_fetch_object(db_query($nsql,$feature_id));
+      if(!$node){
+         return 0;
+      }
+      $node = node_load($node->nid);
+   } else {
+      $node = node_load($nid);
+   }
+
+   // node load the noad, the comments and the taxonomy and
+   // index
+   $node->build_mode = NODE_BUILD_SEARCH_INDEX;
+   $node = node_build_content($node, FALSE, FALSE);
+   $node->body = drupal_render($node->content);
+   node_invoke_nodeapi($node, 'view', FALSE, FALSE);
+   $node->body .= module_invoke('comment', 'nodeapi', $node, 'update index');
+   $node->body .= module_invoke('taxonomy','nodeapi', $node, 'update index');
+   //   print "$node->title: $node->body\n";
+   search_index($node->nid,'node',$node->body);
+   return 1;
+}
+/************************************************************************
+ *
+ */
+function tripal_features_cleanup($dummy = NULL, $job_id = NULL) {
+
+   // build the SQL statments needed to check if nodes point to valid features
+   $dsql = "SELECT * FROM {node} WHERE type = 'chado_feature' order by nid";
+   $nsql = "SELECT * FROM {node} WHERE nid = %d";
+   $csql = "SELECT * FROM {chado_feature} where nid = %d ";
+   $cfsql= "SELECT * FROM {chado_feature}";
+   $tsql = "SELECT * FROM {feature} F ".
+          "  INNER JOIN CVTerm CVT ON F.type_id = CVT.cvterm_id ".
+          "WHERE feature_id = %d  AND (";
+   $supported_ftypes = split("[ \n]",variable_get('chado_feature_types','EST contig'));
+   foreach($supported_ftypes as $ftype){
+      $tsql .= " CVT.name = '$ftype' OR ";
+   }
+   $tsql .= " 0=1) ";  // add a 0=1 just as a filler so we don't have to remove a trailing 'OR'
+
+   // load into nodes array
+   $results = db_query($dsql);
+   $count = 0;
+   $nodes = array();
+   while($node = db_fetch_object($results)){
+      $nodes[$count] = $node;
+      $count++;
+   }
+
+   // load the chado_features into an array
+   $results = db_query($cfsql);
+   $cnodes = array();
+   while($node = db_fetch_object($results)){
+      $cnodes[$count] = $node;
+      $count++;
+   }
+   $interval = intval($count * 0.01);
+
+   // iterate through all of the chado_feature nodes and delete those  that aren't valid
+   foreach($nodes as $nid){
+
+      // update the job status every 1% features
+      if($job_id and $i % $interval == 0){
+         tripal_job_set_progress($job_id,intval(($i/$count)*100));
+      }
+
+      // first check to see if the node has a corresponding entry
+      // in the chado_feature table. If not then delete the node.
+      $feature = db_fetch_object(db_query($csql,$nid->nid));
+      if(!$feature){
+         node_delete($nid->nid);
+         $message = "Missing in chado_feature table.... DELETING: $nid->nid\n";
+         watchdog('tripal_feature',$message,array(),WATCHDOG_WARNING);
+         continue;
+      }
+
+      // second check to see if the node is for a feature of an allowed type.
+      // if not, then delete the node.  This check will also take care of the
+      // case when a node exists and an entry in the chado_feature table exists
+      // but no feature with a matching feature_id exists
+      $previous_db = db_set_active('chado');  // use chado database
+      $ftype = db_fetch_object(db_query($tsql,$feature->feature_id));
+      db_set_active($previous_db);  // now use drupal database
+
+      if(!$ftype){
+         node_delete($nid->nid);
+         db_query("DELETE FROM {chado_feature} WHERE feature_id = $feature->feature_id");
+         $message = "Node of the wrong feature type.... DELETING: $nid->nid\n";
+         watchdog('tripal_feature',$message,array(),WATCHDOG_WARNING);
+      }
+      $i++;
+   }
+
+   // iterate through all of the chado_feature nodes and delete those  that aren't valid
+   foreach($cnodes as $nid){
+      // update the job status every 1% features
+      if($job_id and $i % $interval == 0){
+         tripal_job_set_progress($job_id,intval(($i/$count)*100));
+      }
+      $node = db_fetch_object(db_query($nsql,$nid->nid));
+      if(!$node){
+         db_query("DELETE FROM {chado_feature} WHERE nid = $nid->nid");
+         $message = "chado_feature missing node.... DELETING: $nid->nid\n";
+         watchdog('tripal_feature',$message,array(),WATCHDOG_WARNING);
+      }
+
+      $i++;
+   }
+   return '';
+}
+
+/************************************************************************
+ *
+ */
+function tripal_feature_bulkload(){
+   return drupal_get_form('tripal_feature_load_fasta_form');
+}
+/************************************************************************
+ *
+ */
+function tripal_feature_load_fasta_form (&$form_state = NULL){
+
+   // get the list of organisms
+   $sql = "SELECT * FROM {Organism} ORDER BY genus,species";
+   $previous_db = db_set_active('chado');  // use chado database
+   $org_rset = db_query($sql);
+   db_set_active($previous_db);  // now use drupal database
+   $organisms = array();
+   $organisms[''] = '';
+   while($organism = db_fetch_object($org_rset)){
+      $organisms[$organism->organism_id] = "$organism->genus $organism->species ($organism->common_name)";
+   }
+
+   // get the list of supported feature types
+   $ftypes = array();
+   $ftypes[''] = '';
+   $supported_ftypes = split("[ \n]",variable_get('chado_feature_feature_types','EST contig'));
+   foreach($supported_ftypes as $ftype){
+      $ftypes["$ftype"] = $ftype;
+   }
+
+   // get the list of libraries
+   // TODO !!!! Use Ajax to filter this automatically based on the organism
+   // selected by the user. This will prevent mistakes from user input.
+   $sql = "SELECT * FROM {Library} L ".
+          "  INNER JOIN Organism O ON L.organism_id = O.organism_id ".
+          "ORDER BY L.name";
+   $previous_db = db_set_active('chado');  // use chado database
+   $lib_rset = db_query($sql);
+   db_set_active($previous_db);  // now use drupal database
+   $libraries = array();
+   $libraries[''] = '';
+   while($library = db_fetch_object($lib_rset)){
+      $libraries[$library->library_id] = "$library->name ($library->genus $library->species)";
+   }
+
+   $form['#attributes']['enctype'] = 'multipart/form-data';
+
+   $form['organism'] = array (
+      '#title'       => t('Organism'),
+      '#type'        => t('select'),
+      '#description' => t("Choose the organism with which these sequences are associated "),
+      '#required'    => TRUE,
+      '#default_vaule' => '',
+      '#options'     => $organisms,
+      '#weight'      => 1,
+   );
+   $form['library'] = array (
+      '#title'       => t('Library'),
+      '#type'        => t('select'),
+      '#description' => t("Choose the library with from which these sequences are derived. Leave blank if not applicable."),
+      '#required'    => FALSE,
+      '#default_vaule' => '',
+      '#options'     => $libraries,
+      '#weight'      => 2,
+   );
+   $form['ftype'] = array (
+      '#title'       => t('Feature Type'),
+      '#type'        => t('select'),
+      '#description' => t("Choose the category of sequences you are uploading.  All sequences in the FASTA file will be imported as this type"),
+      '#required'    => TRUE,
+      '#default_vaule' => '',
+      '#options'     => $ftypes,
+      '#weight'      => 3,
+   );
+   $form['fasta_file'] = array(
+      '#type'       => t('file'),
+      '#title'      => t('Fasta File'),
+      '#description'   => t('Upload a FASTA file of sequences. The definition line should contain only the feature name. All other annotations should be removed. The file must not be larger than ' . file_upload_max_size() . ' bytes'),
+      '#weight'        => 4,
+   );
+   $form['upload'] = array(
+      '#type' => 'submit',
+      '#value' => t('Upload File'),
+      '#weight' => 2,
+      '#executes_submit_callback' => TRUE,
+      '#weight'      => 5,
+   );
+
+   return $form;
+}
+/************************************************************************
+ *
+ */
+function tripal_feature_load_fasta_form_validate($form, &$form_state){
+
+   // TODO !!! check that the fasta file is valid
+
+   global $user;
+
+   // we need a path within the drupal installation to temporarily use as the destination
+   // after we upload, we'll move the file to analysis directory
+   $upload_url = file_directory_path() . "/chado_feature_bulk_upload/$user->uid";
+
+   // create the download directory. We do it this way rather than the
+   // file_check_directory because we don't want a drupal message presented
+   // the user when the directory is created.
+   if (!is_dir($upload_url)) {
+      mkdir($upload_url,0775,TRUE);
+   }
+
+   // upload the file and copy it to the proper location
+   $validators = array();  // we don't have any validators
+   if($file = file_save_upload('fasta_file',$validators,$upload_url)){
+      drupal_set_message("File $file->name uploaded succesfully");
+   } else {
+      form_set_error('fasta_file',t('Upload Failed'));
+   }
+}
+/************************************************************************
+ *
+ */
+function tripal_feature_load_fasta_form_submit($form, &$form_state){
+   global $user;
+
+   // add a job to be executed
+   tripal_add_job ($job_name,$type,$callback,$uid);
+}
+/************************************************************************
+ *
+ */
+function tripal_feature_return_fasta($feature,$desc){   
+   $fasta  = ">" . variable_get('chado_feature_accession_prefix','ID') . "$feature->feature_id|$feature->name";
+   $fasta .= " $desc\n";
+   $fasta .= wordwrap($feature->residues, 50, "\n", true);
+   $fasta .= "\n\n";
+   return $fasta;
+}
+
