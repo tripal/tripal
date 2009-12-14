@@ -1,0 +1,699 @@
+<?php
+// $Id:
+//
+// Copyright 2009 Clemson University
+//
+
+function tripal_analysis_unigene_init(){
+   // Add style sheet
+   drupal_add_css(drupal_get_path('theme', 'tripal').
+                                  '/css/tripal_analysis_unigene.css');
+}
+
+/*******************************************************************************
+ * HOOK: Implemntation of hook_menu() to provide a call back for EST Assembly Tab
+ */
+function tripal_analysis_unigene_menu() {
+	$items['node/%/assembly'] = array(
+      'title' => t('EST Assemblies'),
+      'page callback' => 'tripal_analysis_unigene_organism_assembly',
+      'page arguments' => array(1),
+      'access callback' => 'tripal_analysis_unigene_node_has_menu',
+      'access arguments' => array('access chado_analysis content',1),
+      'type' => MENU_LOCAL_TASK | MENU_NORMAL_ITEM
+   );
+   return $items;
+}
+/*******************************************************************************
+ * Dynamic addition/removal of menu item
+ */
+function tripal_analysis_unigene_node_has_menu($type,$vid){
+   // check to see if this node is an organism node
+   $sql = 'SELECT organism_id FROM {chado_organism} WHERE vid = %d';
+   $result = db_query($sql, $vid);
+
+   // menu status
+   $box_status =variable_get("tripal_analysis_unigene-box-assembly","menu_off");
+
+   // if this node is not an organism or a feature node then return false
+   // we don't want the menu item to be shown, otherwise get the normal perms
+   if($org_id = db_fetch_object($result)){
+      if(strcmp($box_status,"menu_on")==0){
+         return user_access($type);
+      }
+   } else {
+      return FALSE;
+   }
+}
+/*******************************************************************************
+ * tripal_analysis_unigene_nodeapi()
+ * HOOK: Implementation of hook_nodeapi()
+ * Display unigene results for allowed node types
+ */
+function tripal_analysis_unigene_nodeapi(&$node, $op, $teaser, $page) {
+
+   switch ($op) {
+      case 'view':
+         // Find out which node types for showing the unigene
+         $types_to_show = variable_get('tripal_analysis_unigene_setting',
+            array('chado_feature','chado_organism'));
+
+         // Abort if this node is not one of the types we should show.
+         if (!in_array($node->type, $types_to_show, TRUE)) {
+            // Turn the menu off if it's on
+            $box_status = variable_get("tripal_analysis_unigene-box-assembly","menu_off");
+            if (strcmp($box_status,"menu_on")==0 && $node->type =='chado_organism'){
+               variable_set("tripal_analysis_unigene-box-assembly","menu_off");
+            }
+            break;
+         }
+         // Add unigene to the content item if it's not a teaser
+         if (!$teaser) {
+         	
+            // add the alignment to the feature search indexing
+            if($node->build_mode == NODE_BUILD_SEARCH_INDEX){
+               $node->content['tripal_analysis_unigene_index_version'] = array(
+						'#value' => theme('tripal_analysis_unigene_search_index',$node),
+						'#weight' => 4,
+               );
+            } else if ($node->build_mode == NODE_BUILD_SEARCH_RESULT) {
+               $node->content['tripal_analysis_unigene_index_version'] = array(
+						'#value' => theme('tripal_analysis_unigene_search_result',$node),
+						'#weight' => 4,
+               );
+            } else {
+               if(strcmp($node->type,'chado_feature')==0){
+                  // Show unigene content if not at teaser view
+                  $node->content['tripal_analysis_unigene_node_addition'] = array(
+					   	'#value' => theme('tripal_analysis_unigene_feature_alignments', $node),
+						   '#weight' => 4
+                  );
+               }
+
+               if(strcmp($node->type,'chado_organism')==0){
+                  // Show unigene content if not at teaser view
+                  $node->content['tripal_analysis_unigene_node_add'] = array(
+					   	'#value' => theme('tripal_analysis_unigene_node_add', $node),
+						   '#weight' => 4
+                  );
+               }
+            }
+      }
+   }
+}
+/************************************************************************
+ *  We need to let drupal know about our theme functions and their arguments.
+ *  We create theme functions to allow users of the module to customize the
+ *  look and feel of the output generated in this module
+ */
+function tripal_analysis_unigene_theme () {
+   return array(
+      'tripal_analysis_unigene_search_index' => array (
+         'arguments' => array('node'),
+      ),
+      'tripal_analysis_unigene_search_result' => array (
+         'arguments' => array('node'),
+      ),
+      'tripal_analysis_unigene_feature_alignments' => array (
+         'arguments' => array('node'),
+      ),
+      'tripal_analysis_unigene_node_add' => array (
+         'arguments' => array('node'),
+      ),
+   );
+}
+/************************************************************************
+ *  This function is an extension of the chado_feature_view by providing
+ *  the markup for the feature object THAT WILL BE INDEXED.
+ */
+function theme_tripal_analysis_unigene_search_index ($node) {
+
+   $feature = $node->feature;
+   $obj_feature = tripal_analysis_unigene_get_alignments($feature);
+   $alignments = $obj_feature->alignments;
+   $content = "<strong>";
+   if(count($alignments) > 0){
+      // iterate through each alignment
+      foreach ($alignments as $result){
+         // EST alignments in chado use an EST_match type to map ESTs to
+         // contigs and a rank to indicate the major srcfeature.
+         // We don't want to show EST_matches on the alignment view
+         // since that doesn't make much sense to the end user.  If this
+         // is an EST_match and the feature is an EST then we want to show
+         // the contig in the alignments.  The contig name is part of the
+         // uniquename in the EST_match
+         if($node->feature->cvname == 'EST' && $result->cvname == 'EST_match'){
+            $sql = "SELECT srcfeature_id ".
+                   "FROM {featureloc} ".
+                   "WHERE feature_id = $result->feature_id ".
+                   "ORDER BY rank";
+            $previous_db = db_set_active ('chado');
+            $contig_fid = db_result(db_query($sql));
+            $sql = "SELECT name FROM {feature} WHERE feature_id = $contig_fid";
+            $contig_name = db_result(db_query($sql));
+            db_set_active($previous_db);
+            $sql = "SELECT nid ".
+                   "FROM {chado_feature} ".
+                   "WHERE feature_id = $contig_fid";
+            $contig_nid = db_result(db_query($sql));
+            // Check if the EST exists as a drupal node. If yes, add a link to
+            // it. If no, just show the name
+            if ($contig_nid != 0) {
+               $sql = "SELECT nid FROM {node} WHERE nid=$contig_nid";
+               $node_exists = db_result(db_query($sql));
+            }
+            $content .= "$contig_name " ;
+         }
+         elseif($node->feature->cvname == 'contig' && $result->cvname == 'EST_match'){
+            $sql = "SELECT vid ".
+                   "FROM {node} ".
+                   "WHERE title = '$result->feature_name'".
+                   "ORDER BY vid DESC";
+            // since the feature name is also the node title we can look it up
+            $est_node = db_fetch_object(db_query($sql));
+            $content .= "$result->feature_name ";
+         }
+         else {
+            $content .= "$result->cvname $result->feature_name ";
+         }
+      }
+   }
+   $content .= "</strong>";
+   return $content;
+}
+
+/************************************************************************
+ *  This function is an extension of the chado_feature_view by providing
+ *  the markup for the feature object to show on a search result page.
+ */
+function theme_tripal_analysis_unigene_search_result ($node) {
+
+   $feature = $node->feature;
+   $obj_feature = tripal_analysis_unigene_get_alignments($feature);
+   $alignments = $obj_feature->alignments;
+   $content = "<strong>";
+   if(count($alignments) > 0){
+      // iterate through each alignment
+      foreach ($alignments as $result){
+         // EST alignments in chado use an EST_match type to map ESTs to
+         // contigs and a rank to indicate the major srcfeature.
+         // We don't want to show EST_matches on the alignment view
+         // since that doesn't make much sense to the end user.  If this
+         // is an EST_match and the feature is an EST then we want to show
+         // the contig in the alignments.  The contig name is part of the
+         // uniquename in the EST_match
+         if($node->feature->cvname == 'EST' && $result->cvname == 'EST_match'){
+            $sql = "SELECT srcfeature_id ".
+                   "FROM {featureloc} ".
+                   "WHERE feature_id = $result->feature_id ".
+                   "ORDER BY rank";
+            $previous_db = db_set_active ('chado');
+            $contig_fid = db_result(db_query($sql));
+            $sql = "SELECT name FROM {feature} WHERE feature_id = $contig_fid";
+            $contig_name = db_result(db_query($sql));
+            db_set_active($previous_db);
+            $sql = "SELECT nid ".
+                   "FROM {chado_feature} ".
+                   "WHERE feature_id = $contig_fid";
+            $contig_nid = db_result(db_query($sql));
+            // Check if the EST exists as a drupal node. If yes, add a link to
+            // it. If no, just show the name
+            if ($contig_nid != 0) {
+               $sql = "SELECT nid FROM {node} WHERE nid=$contig_nid";
+               $node_exists = db_result(db_query($sql));
+            }
+            $content .= "Alignment to contig $contig_name. " ;
+         }
+         elseif($node->feature->cvname == 'contig' && $result->cvname == 'EST_match'){
+            $sql = "SELECT vid ".
+                   "FROM {node} ".
+                   "WHERE title = '$result->feature_name'".
+                   "ORDER BY vid DESC";
+            // since the feature name is also the node title we can look it up
+            $est_node = db_fetch_object(db_query($sql));
+            $content .= "Aligned EST: $result->feature_name ";
+         }
+         else {
+            $content .= "Aligned $result->cvname: $result->feature_name ";
+         }
+      }
+   }
+   $content .= "</strong>";
+   return $content;
+}
+
+/*******************************************************************************
+ * tripal_analysis_unigene_results ()
+ * Prepare unigene result for the feature shown on the page
+ */
+function theme_tripal_analysis_unigene_feature_alignments($node) {
+   $feature = $node->feature;
+   $obj_feature = tripal_analysis_unigene_get_alignments($feature);
+   $alignments = $obj_feature->alignments;
+   if(count($alignments) > 0){
+      $content = "<div id=\"tripal_analysis_unigene_box\" class=\"tripal_unigene-info-box\">";
+      // we're showing contig alignments in GBrowse so create a link here for
+      // that if this feature is a contig
+      if($node->feature->cvname == 'contig'){
+         $content .= "<div class=\"tripal_expandableBox\">".
+                     "  <h3>ESTs in this contig</h3>".
+                     "</div>";
+         $content .= "<div class=\"tripal_expandableBoxContent\">";
+      } else {
+         $content .= "<div class=\"tripal_expandableBox\">".
+                     "  <h3>Alignments</h3>".
+                     "</div>";
+         $content .= "<div class=\"tripal_expandableBoxContent\">";
+      }
+      $content .= "".
+         "<table class=\"tripal_table_horz\">".
+         "  <tr>".
+         "    <th>Type</th>".
+         "    <th>Feature</th>".
+         "    <th align=\"right\">Position</th>".
+         "  </tr>";
+      // iterate through each alignment
+      foreach ($alignments as $result){
+         // EST alignments in chado use an EST_match type to map ESTs to
+         // contigs and a rank to indicate the major srcfeature.
+         // We don't want to show EST_matches on the alignment view
+         // since that doesn't make much sense to the end user.  If this
+         // is an EST_match and the feature is an EST then we want to show
+         // the contig in the alignments.  The contig name is part of the
+         // uniquename in the EST_match
+         if($node->feature->cvname == 'EST' && $result->cvname == 'EST_match'){
+            $sql = "SELECT srcfeature_id ".
+                   "FROM {featureloc} ".
+                   "WHERE feature_id = $result->feature_id ".
+                   "ORDER BY rank";
+            $previous_db = db_set_active ('chado');
+            $contig_fid = db_result(db_query($sql));
+            $sql = "SELECT name FROM {feature} WHERE feature_id = $contig_fid";
+            $contig_name = db_result(db_query($sql));
+            db_set_active($previous_db);
+            $sql = "SELECT nid ".
+                   "FROM {chado_feature} ".
+                   "WHERE feature_id = $contig_fid";
+            $contig_nid = db_result(db_query($sql));
+            // Check if the EST exists as a drupal node. If yes, add a link to
+            // it. If no, just show the name
+            if ($contig_nid != 0) {
+               $sql = "SELECT nid FROM {node} WHERE nid=$contig_nid";
+               $node_exists = db_result(db_query($sql));
+            }
+            $content .=
+              "<tr>".
+              "  <td>Contig</td>".
+              "  <td>";
+            if ($node_exists != 0) {
+               $content .= "<a href=\"".url("node/$contig_nid")."\">".
+              	     	   "$contig_name</a>";
+            } else {
+               $content .= $contig_name;
+            }
+            $content .=
+              "  </td>".
+              "  <td align=\"right\">".
+            number_format($result->fmin).
+                   "-".
+            number_format($result->fmax).
+              "  </td>".
+              "</tr>";
+         }
+
+         elseif($node->feature->cvname == 'contig' &&
+         $result->cvname == 'EST_match'){
+            $sql = "SELECT vid ".
+                   "FROM {node} ".
+                   "WHERE title = '$result->feature_name'".
+                   "ORDER BY vid DESC";
+            // since the feature name is also the node title we can look it up
+            $est_node = db_fetch_object(db_query($sql));
+            $content .=
+              "<tr>".
+              "  <td>EST</td>".
+              "  <td>";
+            //Check if the EST exists as a drupal node before adding a hyperlink
+            if ($est_node->vid != 0) {
+               $content .=
+               	 "<a href=\"".url("node/$est_node->vid")."\">".
+               $result->feature_name.
+              	 "</a>";
+            } else {
+               $content .= $result->feature_name;
+            }
+            $content .=
+              "  </td>".
+              "  <td align=\"right\">".
+            number_format($result->fmin).
+                   "-".
+            number_format($result->fmax).
+              "  </td>".
+              "</tr>";
+         }
+         else {
+            $content .= "".
+              "<tr>".
+              "  <td>$result->cvname</td>".
+              "  <td>$result->feature_name</td>".
+              "  <td align=\"right\">$result->fmin</td>".
+              "  <td align=\"right\">$result->fmax</td>".
+              "  <td align=\"right\">$result->strand</td>".
+              "</tr>";
+         }
+      }
+      $content .= "</table>";
+
+      /* if this is a contig then get the alignment
+       if($node->feature->cvname == 'contig'){
+       // get the directory prefix
+       $prefix = preg_replace("/^(\d*)\d{3}$/","$1",$node->feature_id);
+       if(!$prefix){
+       $prefix = '0';
+       }
+       $data_url = variable_get('chado_feature_data_url','sites/default/files/data');
+       $fh = fopen("$data_url/misc/$prefix/$node->feature->feature_id/alignment.txt", 'r');
+       if($fh){
+       $content .= "<b>Alignment:</b><div class=\"tripal_feature_assembly_alignment\"><pre>";
+       while(!feof($fh)){
+       $content .= fgets($fh);
+       }
+       $content .="</pre></div>";
+       }
+       fclose($fh);
+       }
+       */
+      $content .= "</div></div>";
+   }
+   return $content;
+}
+/*******************************************************************************
+*
+*/
+function tripal_analysis_unigene_get_alignments($map) {
+
+   // get the alignments for this feature
+   $sql = "SELECT F.name as feature_name, FL.fmin, FL.fmax, FL.strand, ".
+          "  FL.phase, CVT.name as cvname, F.feature_id, F.uniquename, ".
+          "  FL.featureloc_id ".
+          "FROM {featureloc} FL ".
+          "  INNER JOIN Feature F ON F.feature_id = FL.feature_id ".
+          "  INNER JOIN Cvterm CVT ON CVT.cvterm_id = F.type_id ".
+          "WHERE srcfeature_id = %d AND ".
+          "  NOT(CVT.name = 'match' or CVT.name = 'match_part') ".
+          "ORDER BY FL.fmin, FL.fmax";
+   $previous_db = db_set_active('chado');
+   $results = db_query($sql,$map->feature_id);
+   $alignments = array();
+   $i=0;
+   while($subfeature = db_fetch_object($results)){
+      $alignments[$i++] = $subfeature;
+   }
+   $additions->alignments = $alignments;
+
+   /* get the GO Terms
+    $sql = "SELECT DISTINCT * FROM {go_results_mview} ".
+    "WHERE feature_id = %d";
+    $results = db_query($sql,$map->feature_id);
+    $go_terms = array();
+    $i=0;
+    while($term = db_fetch_object($results)){
+    $go_terms[$i++] = $term;
+    }
+    $additions->go_terms = $go_terms;
+
+    // get the feature properties
+    $sql = "SELECT FP.value,FP.rank,CVT.name,CVT.definition ".
+    "FROM {featureprop} FP".
+    "  INNER JOIN Cvterm CVT ".
+    "    ON FP.type_id = CVT.cvterm_id ".
+    "WHERE feature_id = %d";
+    $results = db_query($sql,$map->feature_id);
+    $properties = array();
+    $i=0;
+    while($property = db_fetch_object($results)){
+    $properties[$i++] = $property;
+    }
+    $additions->properties = $properties;
+    */
+   db_set_active($previous_db);
+   return $additions;
+}
+/************************************************************************
+*
+*/
+function tripal_analysis_unigene_organism_assembly($node){
+   $node = node_load($node);
+   return tripal_analysis_unigene_organism_add($node);
+}
+/************************************************************************
+*
+*/
+function theme_tripal_analysis_unigene_node_add ($node){
+
+   if(strcmp($node->type,'chado_organism')==0){
+      $box_status = variable_get("tripal_analysis_unigene-box-assembly","menu_off");
+      if (strcmp($box_status,"menu_off")==0){
+         $content = tripal_analysis_unigene_organism_add($node);
+      }
+   }
+   return $content;
+}
+/************************************************************************
+*
+*/   
+function tripal_analysis_unigene_organism_add($node){
+   // get the organism_id for this node:
+   $sql = 'SELECT * FROM {chado_organism} WHERE vid = %d';
+   $org_id = db_fetch_object(db_query($sql, $node->nid));
+   
+   // get information about this organism 
+   $sql = "SELECT * FROM {organism} ".
+          "WHERE organism_id = %d";
+   $previous_db = db_set_active('chado');  // use chado database
+   $organism = db_fetch_object(db_query($sql,$org_id->organism_id));
+   db_set_active($previous_db);  // now use drupal database
+
+   // get information about this assembly and add it to the items in this node
+   $sql = "SELECT * FROM {unigene_mview} ".
+          "WHERE organism_id = %d ".
+          "ORDER BY analysis_id DESC";
+
+   $previous_db = db_set_active('chado');  // use chado database
+   $results = db_query($sql,$org_id->organism_id);
+   db_set_active($previous_db);  // now use drupal database
+   $i = 0;
+   while ($assembly = db_fetch_object($results)){
+      // get information about this organism and add it to the items in this node
+      $libraries = array();
+      $libraries_sql = "SELECT library_id, library_name ".
+                       "FROM {unigene_libraries_mview} ".
+                       "WHERE analysis_id = %d ";
+      $previous_db = db_set_active('chado');  // use chado database
+      $libraries_result = db_query($libraries_sql,$assembly->analysis_id);
+      db_set_active($previous_db);  // now use drupal database
+      $library_sql = "SELECT * FROM {chado_library} WHERE library_id = %d";
+      $k = 0;
+      while ($library = db_fetch_object($libraries_result)){
+          $library_node = db_fetch_object(db_query($library_sql,$library->library_id));
+          $library->node_id = $library_node->nid;
+          $libraries[$k++] = $library;
+      }      
+      $assembly->libraries = $libraries;
+      $assemblies[$i++] = $assembly;
+
+   } 
+   // if this content is intended to be a menu item the 
+   // we need to know so we can format the content slightly different
+   $box_status =variable_get("tripal_analysis_unigene-box-assembly","menu_off");
+
+   if(count($assemblies) > 0){
+      $content = "<div id=\"organism_tab_content\">".
+       "<p>New assemblies are built after a significant number of sequences are added to the project or new software is available. ".
+       "Click on name for more information.</p><br>";
+
+      foreach($assemblies as $assembly){
+            $content .= "<div class=\"tripal_unigene-info-box\">".
+             "<div class=\"tripal_expandableBox\"><h3><a name=\"$assembly->name\">$assembly->name</a></h3></div>".
+             "<div class=\"tripal_expandableBoxContent\">";
+            $content .= "<table>".
+             "<tr><td class=\"dbfieldname\"> Version                        </td>".
+             "    <td class=\"dbfieldvalue\">$assembly->uversion            </td></tr>".
+             "<tr><td class=\"dbfieldname\"> Analysis ID                    </td>".
+             "    <td class=\"dbfieldvalue\">$assembly->analysis_id         </td></tr>".
+             "<tr><td class=\"dbfieldname\"> Date                           </td>".
+             "    <td class=\"dbfieldvalue\">$assembly->adate               </td></tr>".
+             "<tr><td class=\"dbfieldname\"> Software                       </td>".
+             "    <td class=\"dbfieldvalue\">$assembly->program             </td></tr>".
+             "<tr><td class=\"dbfieldname\"> Software Version               </td>".
+             "    <td class=\"dbfieldvalue\">$assembly->programversion      </td></tr>".
+             "<tr><td class=\"dbfieldname\"> Number of Contigs              </td>".
+             "    <td class=\"dbfieldvalue\">$assembly->num_contigs         </td></tr>".
+             "<tr><td class=\"dbfieldname\"> Description                    </td>".
+             "    <td class=\"dbfieldvalue\">$assembly->description         </td></tr>".
+             "<tr><td class=\"dbfieldname\"> Libraries Included in Assembly </td>".
+             "    <td class=\"dbfieldvalue\"> ";
+# TODO: THIS SHOULD NOT HAVE A LINK IF THERE IS NO LIBRARY NODE IN DRUPAL
+             foreach($assembly->libraries as $library){
+               $content .= "<a href=\"/node/$library->node_id\">$library->library_name</a> ";
+             }
+             $content .= " </td></tr>".
+             "</table>";
+
+             # Generate the download linkes
+             $a_dir = tripal_get_moddir('tripal_analysis_unigene') . 
+                "/$assembly->analysis_id";
+ 
+             if(is_dir($a_dir)){
+                $content .= "<ul class=\"organism\">";
+
+                if($target_file = file_scan_directory($a_dir,'\.contigs.fasta$',
+                      array('.','..','CVS'),0,FALSE)){
+                   foreach($target_file as $key=>$value){
+                      $target = $target_file[$key];
+                   }
+                   $link = url($target->filename);
+                   $content .= " 
+                      <li>
+                        <a href=\"$link\">Download contigs </a>
+                      </li>
+                   ";
+                }
+                if($target_file = file_scan_directory($a_dir,'\.contigs.qual$',
+                      array('.','..','CVS'),0,FALSE)){
+                   foreach($target_file as $key=>$value){
+                      $target = $target_file[$key];
+                   }
+                   $link = url($target->filename);
+                   $content .= " 
+                      <li>
+                        <a href=\"$link\">Download contigs quality </a>
+                      </li>
+                   ";
+                }
+                if($target_file = file_scan_directory($a_dir,'\.singlets.fasta$',
+                      array('.','..','CVS'),0,FALSE)){
+                   foreach($target_file as $key=>$value){
+                      $target = $target_file[$key];
+                   }
+                   $link = url($target->filename);
+                   $content .= " 
+                      <li>
+                        <a href=\"$link\">Download singlets </a>
+                      </li>
+                   ";
+
+                }
+                if($target_file = file_scan_directory($a_dir,'\.singlets.qual$',
+                      array('.','..','CVS'),0,FALSE)){
+                   foreach($target_file as $key=>$value){
+                      $target = $target_file[$key];
+                   }
+                   $link = url($target->filename);
+                   $content .= " 
+                      <li>
+                        <a href=\"$link\">Download singlets quality </a>
+                      </li>
+                   ";
+
+                }
+                if($target_file = file_scan_directory($a_dir,'\.ace$',
+                      array('.','..','CVS'),0,FALSE)){
+                   foreach($target_file as $key=>$value){
+                      $target = $target_file[$key];
+                   }
+                   $link = url($target->filename);
+                   $content .= " 
+                      <li>
+                        <a href=\"$link\">Download ace file </a>
+                      </li>
+                   ";
+;
+                }
+             $content .= "</ul>";
+             }
+             if(user_access('access administrative pages')){
+                $link = url("tripal_toggle_box_menu/tripal_analysis_unigene/assembly/$node->nid");
+                if(strcmp($box_status,"menu_off")==0){
+                   $content .= "<a href=\"$link\">Show on menu</a>";
+                } else {
+                   $content .= "<a href=\"$link\">Remove from menu</a>";
+                }
+             }
+       	    $content .= "</div></div>";
+      }
+   
+      $content .= "</div>";
+   }
+   return $content;
+}
+/*******************************************************************************
+ * Tripal Unigene administrative setting form. This function is called by
+ * tripal_analysis module which asks for an admin form to show on the page
+ */
+function tripal_analysis_unigene_get_settings() {
+   // Get an array of node types with internal names as keys
+   $options = node_get_types('names');
+   // Add 'chado_feature' to allowed content types for showing unigene results
+   $allowedoptions ['chado_feature'] = "Show 'ESTs in this contig' on feature pages";
+   $allowedoptions ['chado_organism'] = "Show assemblies on organism pages";
+
+   $form['description'] = array(
+       '#type' => 'item',
+       '#value' => t("This option allows user to display the unigene assembly ".
+          "information. For contigs, this would include an alignment and for ".
+          "organisms this would be a list of assemblies. Check the box to ".
+          "enable the display of unigene information. Uncheck to disable."),
+		 '#weight' => 0,
+   );
+
+   $form['tripal_analysis_unigene_setting'] = array(
+      '#type' => 'checkboxes',
+      '#options' => $allowedoptions,
+      '#default_value'=>variable_get('tripal_analysis_unigene_setting',array()),
+   );
+   $settings->form = $form;
+   $settings->title = "Tripal Unigene";
+   return $settings;
+}
+
+/*******************************************************************************
+ * Set the permission types that the chado module uses.  Essentially we
+ * want permissionis that protect creation, editing and deleting of chado
+ * data objects
+ */
+function tripal_analysis_unigene_perm(){
+   return array(
+      'access chado_analysis_unigene content',
+      'create chado_analysis_unigene content',
+      'delete chado_analysis_unigene content',
+      'edit chado_analysis_unigene content',
+   );
+}
+
+/*******************************************************************************
+ *  The following function proves access control for users trying to
+ *  perform actions on data managed by this module
+ */
+function chado_analysis_unigene_access($op, $node, $account){
+   if ($op == 'create') {
+      return user_access('create chado_analysis_unigene content', $account);
+   }
+
+   if ($op == 'update') {
+      if (user_access('edit chado_analysis_unigene content', $account)) {
+         return TRUE;
+      }
+   }
+   if ($op == 'delete') {
+      if (user_access('delete chado_analysis_unigene content', $account)) {
+         return TRUE;
+      }
+   }
+   if ($op == 'view') {
+      if (user_access('access chado_analysis_unigene content', $account)) {
+         return TRUE;
+      }
+   }
+   return FALSE;
+}

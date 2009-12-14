@@ -1,0 +1,171 @@
+<?php
+//$Id:
+
+/*******************************************************************************
+ * Implementation of hook_install().
+ */
+function tripal_analysis_unigene_install() {
+   // create the module's data directory
+   tripal_create_moddir('tripal_analysis_unigene');
+
+   // We need to register to tripal_analysis module so it can provide a control
+   // for our unigene result. Basically the registration is done by inserting
+   // required information into the {tripal_analysis} table.
+   tripal_analysis_register_child('tripal_analysis_unigene');
+
+   $previous_db = db_set_active('chado');
+   if (db_table_exists('unigene_libraries_mview')) {
+      $sql = "DROP TABLE unigene_libraries_mview";
+      db_query($sql);
+   }
+   if (db_table_exists('unigene_mview')) {
+      $sql = "DROP TABLE unigene_mview";
+      db_query($sql);
+   }
+   db_set_active($previous_db);
+   
+   tripal_add_cvterms('unigene_version','The version number for the unigene ".
+     "(e.g. v1, v2, etc...) ');
+   tripal_add_cvterms('singlet',"Indicates the feature is a singlet in a ".
+     "specific unigene version (e.g. v1, v2, etc...). The value specified ".
+     "should match that of the unigene_version");
+
+   tripal_add_mview('unigene_libraries_mview',
+     'tripal_analysis_unigene',
+     'unigene_libraries_mview',
+     'analysis_name character varying(255), analysis_id integer,  '.
+     'organism_common_name character varying(255), organism_id integer, '.
+     'library_name character varying(255), library_id integer, '.
+     'library_type character varying(255)',
+     'analysis_id,organism_id,library_id',
+     "select A.name as analysis_name, A.analysis_id, ".
+     "         O.common_name as organism_common_name, O.organism_id, ".
+     "         L.name as library_name, L.library_id,".
+     "         CV.name as library_type ".
+     "FROM {Analysis} A ".
+     "INNER JOIN Analysisfeature AF ON A.analysis_id = AF.analysis_ID ".
+     "INNER JOIN Featureloc FL ON AF.feature_id = FL.feature_ID ".
+     "INNER JOIN Feature F ON FL.srcfeature_id = F.feature_id ".
+     "INNER JOIN Organism O ON F.organism_id = O.organism_id ".
+     "INNER JOIN Library_feature LF ON F.feature_id = LF.feature_id ".
+     "INNER JOIN Library L ON LF.library_id = L.library_id ".
+     "INNER JOIN CVterm CV ON L.type_id = CV.cvterm_id ".
+     "GROUP BY A.analysis_id, A.name, O.common_name, O.organism_id, ".
+     "   L.library_id, L.name, CV.name",
+     ''
+   );
+
+   tripal_add_mview('unigene_mview',
+      'tripal_analysis_unigene',
+      'unigene_mview',
+      'analysis_id integer, name character varying(255), description text, '.
+      'program character varying(255), programversion character varying(255), '.
+      'algorithm character varying(255), sourcename character varying(255), '.
+      'sourceversion character varying(255), sourceuri text, '.
+      'timeexecuted timestamp,  organism_id integer, '.
+      'uversion text, adate text, short_name text, num_ests integer, '.
+		'num_contigs integer, num_singlets integer',
+	   'analysis_id, organism_id',
+	   "SELECT Distinct A.analysis_id, A.name, A.description, A.program, A.programversion, A.algorithm, ".
+      "  A.sourcename, A.sourceversion, A.sourceuri, A.timeexecuted, O.organism_id, ".
+      "  AP.value as uversion, AP2.value as adate, AP3.value as short_name,   ".
+      " (SELECT count(*) FROM {feature} F  ".
+      "   INNER JOIN CVTerm CVT on F.type_id = CVT.cvterm_id  ".
+      "   INNER JOIN CV on CVT.cv_id = CV.cv_id ".
+      "   INNER JOIN analysisfeature AF on AF.feature_id = F.feature_id ".
+      " WHERE CVT.name = 'EST' and ".
+      "       CV.name = 'sequence' and ".
+      "       AF.analysis_id = A.analysis_id) as num_ests, ".
+      " (SELECT count(*) FROM {feature} F  ".
+      "    INNER JOIN CVTerm CVT on F.type_id = CVT.cvterm_id  ".
+      "    INNER JOIN CV on CVT.cv_id = CV.cv_id ".
+      "    INNER JOIN analysisfeature AF on AF.feature_id = F.feature_id ".
+      "  WHERE CVT.name = 'contig' and ".
+      "         CV.name = 'sequence' and ".
+      "         AF.analysis_id = A.analysis_id) as num_contigs, ".
+      " (SELECT count(*) FROM {feature} F  ".
+      "    INNER JOIN CVTerm CVT on F.type_id = CVT.cvterm_id  ".
+      "    INNER JOIN CV on CVT.cv_id = CV.cv_id ".
+      "    INNER JOIN analysisfeature AF on AF.feature_id = F.feature_id ".
+      "    INNER JOIN analysisprop AP on AP.analysis_id = AF.analysis_id ".
+      "    INNER JOIN CVTerm CVT2 on CVT2.cvterm_id = AP.type_id ".
+      "    INNER JOIN CV CV2 on CVT2.cv_id = CV2.cv_id ".
+      "  WHERE CVT.name = 'contig' and  ".
+      "         CV.name = 'sequence' and  ".
+      "       CVT2.name = 'singlet' and  ".
+      "         CV.name = 'tripal'  and  ".
+      "         AF.analysis_id = A.analysis_id) as num_singlets ".
+      "FROM {Analysis} A ".
+      "  INNER JOIN Analysisprop AP ".
+      "    ON A.analysis_id = AP.analysis_id ".
+      "  INNER JOIN CVterm CV ".
+      "    ON AP.type_id = CV.cvterm_ID ".
+      "  INNER JOIN Analysisprop AP2 ".
+      "    ON A.analysis_id = AP2.analysis_id ".
+      "  INNER JOIN CVterm CV2 ".
+      "    ON AP2.type_id = CV2.cvterm_ID   ".
+      "  INNER JOIN Analysisprop AP3 ".
+      "    ON A.analysis_id = AP3.analysis_id ".
+      "  INNER JOIN CVterm CV3 ".
+      "    ON AP3.type_id = CV3.cvterm_ID   ".
+      "  INNER JOIN Analysisfeature AF ".
+      "    ON A.analysis_id = AF.analysis_ID ".
+      "  INNER JOIN Feature F  ".
+      "    ON AF.Feature_ID = F.Feature_ID ".
+      "  INNER JOIN CVterm CV4 ".
+      "    ON F.type_id = CV4.cvterm_id  ".
+      "  INNER JOIN Organism O ".
+      "    ON F.Organism_ID = O.Organism_ID ".
+      "WHERE ".
+      "  CV.name = 'unigene_version' ".
+      "  AND CV2.name = 'analysis_date' ".
+      "  AND CV3.name = 'analysis_short_name' ".
+      "GROUP BY A.analysis_id, A.name, A.description, A.program, ".
+      "   A.programversion, A.algorithm, A.sourcename, A.sourceversion, ".
+      "   A.sourceuri, A.timeexecuted, AP.value, AP2.value, AP3.value, O.organism_id", 
+	   ''
+   );
+}
+
+/*******************************************************************************
+ * Implementation of hook_uninstall().
+ */
+function tripal_analysis_unigene_uninstall() {
+   $mview = tripal_mviews_get_mview_id('unigene_mview');
+   if($mview){
+      tripal_mviews_action('delete',$mview);
+   }
+   $mview = tripal_mviews_get_mview_id('unigene_libraries_mview');
+   if($mview){
+      tripal_mviews_action('delete',$mview);
+   }
+   // Delete the settings from {tripal_analysis} table
+   // Drupal complains when the user tries to uninstall tripal_analysis 
+   // and tripal_analysis_unigene at the same time. This is because Drupal drops
+   // the {tripal_analysis} table before we can delete anything from it. Thus,
+   // we perform a db_table_exists() check before the deletion
+   tripal_analysis_unregister_child('tripal_analysis_unigene');
+
+   // Delete module's variables from variables table.
+   db_query("DELETE FROM {variable} WHERE name='%s'",
+            'tripal_analysis_unigene_setting');
+   
+}
+
+/*******************************************************************************
+ * Implementation of hook_requirements(). Make sure 'Tripal Core' and 'Tripal
+ * Analysis' are enabled before installation
+ */
+function tripal_analysis_unigene_requirements($phase) {
+   $requirements = array();
+   if ($phase == 'install') {
+      if (!function_exists('tripal_create_moddir') || !function_exists('tripal_analysis_register_child')) {
+         $requirements ['tripal_analysis_unigene'] = array(
+            'title' => "tripal_analysis_unigene",
+            'value' => "error. Some required modules are just being installed. Please try again.",
+            'severity' => REQUIREMENT_ERROR,
+         );
+      }
+   }
+   return $requirements;
+}
