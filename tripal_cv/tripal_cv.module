@@ -1,0 +1,252 @@
+<?php
+
+require_once "charts.php";
+require_once "trees.php";
+
+//
+// Copyright 2009 Clemson University
+//
+/*************************************************************************
+*
+*/
+function tripal_cv_init(){
+
+   // add the tripal_cv JS and CSS
+   drupal_add_css(drupal_get_path('theme', 'tripal').
+                                  '/css/tripal_cv.css');
+   drupal_add_js(drupal_get_path('theme', 'tripal').'/js/tripal_cv.js');
+
+   // add the jsTree JS and CSS
+   drupal_add_css(drupal_get_path('theme', 'tripal').'/js/jsTree/source/tree_component.css');
+   drupal_add_js (drupal_get_path('theme', 'tripal').'/js/jsTree/source/_lib.js');
+   drupal_add_js (drupal_get_path('theme', 'tripal').'/js/jsTree/source/tree_component.js');
+}
+/*************************************************************************
+*
+*/
+function tripal_cv_menu() {
+   $items = array();
+
+   $items['admin/tripal/tripal_cv'] = array(
+     'title' => 'CV',
+     'description' => 'Manage integration of Chado controlled vocabularies',
+     'page callback' => 'drupal_get_form',
+     'page arguments' => array('tripal_cv_admin'),
+     'access arguments' => array('administer site configuration'),
+     'type' => MENU_NORMAL_ITEM,
+   );
+
+   $items['tripal_cv_chart'] = array(
+      'path' => 'tripal_cv_chart',
+      'title' => t('CV Chart'),
+      'page callback' => 'tripal_cv_chart',
+      'page arguments' => array(1),
+      'access arguments' => array('access content'),
+      'type' => MENU_CALLBACK
+   );
+
+   $items['tripal_cv_tree'] = array(
+      'path' => 'tripal_cv_tree',
+      'title' => t('CV Term Viewer'),
+      'page callback' => 'tripal_cv_tree',
+      'page arguments' => array(1),
+      'access arguments' => array('access content'),
+      'type' => MENU_CALLBACK
+   );
+   // menu items for working with the CV module tree browser
+   /*
+   $items['cv_browser'] = array(
+      'title' => t('CV Relationship Browser'),
+      'page callback' => 'tripal_cv_show_browser',
+      'access arguments' => array('access chado_cv content'),
+      'type' => MENU_NORMAL_ITEM
+   );
+   */
+   $items['tripal_cv_init_browser'] = array(
+      'path' => 'tripal_cv_init_browser',
+      'title' => t('CV Browser'),
+      'page callback' => 'tripal_cv_init_browser',
+      'page arguments' => array(1),
+      'access arguments' => array('access content'),
+      'type' => MENU_CALLBACK
+   );
+   // menu item for interaction with the tree
+   $items['tripal_cv_update_tree'] = array(
+      'path' => 'tripal_cv_update_tree',
+      'title' => t('CV Tree'),
+      'page callback' => 'tripal_cv_update_tree',
+      'page arguments' => array(2,3),
+      'access arguments' => array('access content'),
+      'type' => MENU_CALLBACK
+   );
+
+   // menu items for working with terms
+   $items['tripal_cv_cvterm_info'] = array(
+      'path' => 'tripal_cv_cvterm_info',
+      'title' => t('CV Term Viewer'),
+      'page callback' => 'tripal_cv_cvterm_info',
+      'page arguments' => array(1),
+      'access arguments' => array('access content'),
+      'type' => MENU_CALLBACK
+   );
+
+   $items['tripal_cv_cvterm_edit'] = array(
+      'path' => 'tripal_cv_edit',
+      'title' => t('CV Term Editor'),
+      'page callback' => 'tripal_cv_cvterm_edit',
+      'page arguments' => array(1),
+      'access arguments' => array('edit chado_cv content'),
+      'type' => MENU_CALLBACK
+   );
+
+   return $items;
+}
+/*******************************************************************************
+ *  The following function proves access control for users trying to
+ *  perform actions on data managed by this module
+ */
+function chado_cv_access($op, $node, $account){
+  if ($op == 'create') {
+      return user_access('create chado_cv content', $account);
+   }
+
+   if ($op == 'update') {
+      if (user_access('edit chado_cv content', $account)) {
+         return TRUE;
+      }
+   }
+   if ($op == 'delete') {
+      if (user_access('delete chado_cv content', $account)) {
+         return TRUE;
+      }
+   }
+   if ($op == 'view') {
+      if (user_access('access chado_cv content', $account)) {
+         return TRUE;
+      }
+   }
+   return FALSE;
+}
+/*******************************************************************************
+*  Set the permission types that the chado module uses.  Essentially we
+*  want permissionis that protect creation, editing and deleting of chado
+*  data objects
+*/
+function tripal_cv_perm(){
+   return array(
+      'access chado_cv content',
+      'create chado_cv content',
+      'delete chado_cv content',
+      'edit chado_cv content',
+   );
+}
+
+/*************************************************************************
+*
+*/
+function tripal_cv_admin () {
+	$form['update_cvtermpath'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Chado cvtermpath')
+   );
+   $form['update_cvtermpath']['description'] = array(
+       '#type' => 'item',
+       '#value' => t("Submit a job to update chado cvtermpath table."),
+       '#weight' => 1,
+   );
+   $form['update_cvtermpath']['button'] = array(
+      '#type' => 'submit',
+      '#value' => t('Update cvtermpath'),
+      '#weight' => 2,
+   );
+   return system_settings_form($form);
+}
+
+/*************************************************************************
+*
+*/
+function tripal_cv_admin_validate($form, &$form_state) {
+   global $user;
+	// -------------------------------------
+   // Submit a job to update cvtermpath
+   $job_args = array();
+   if ($form_state['values']['op'] == t('Update cvtermpath')) {
+      tripal_add_job('Update cvtermpath','tripal_cv',
+         'tripal_cv_update_cvtermpath',$job_args,$user->uid);
+   }
+}
+
+/***********************************************************
+ * Update the cvtermpath table
+ */
+function tripal_cv_update_cvtermpath($dummy = NULL, $job_id = NULL) {
+
+   print "\nUpdating cvtermpath...\n";
+
+   $previous_db = db_set_active('chado');
+   $sql = "SELECT * FROM fill_cvtermpath('biological_process')";
+   db_query($sql);         
+   $sql = "SELECT * FROM fill_cvtermpath('molecular_function')";
+   db_query($sql);
+   $sql = "SELECT * FROM fill_cvtermpath('cellular_component')";
+   db_query($sql);
+   db_set_active($previous_db);
+   return;
+
+}
+
+/*******************************************************************************
+ *  We need to let drupal know about our theme functions and their arguments.
+ *  We create theme functions to allow users of the module to customize the
+ *  look and feel of the output generated in this module
+ */
+function tripal_cv_theme () {
+   return array(
+      'tripal_cv_cvterm_edit' => array (
+         'arguments' => array('cvterm'),
+      ),
+   );
+}
+
+/*************************************************************************
+*/
+function tripal_cv_get_cv_id($cv_name){
+
+   $sql = "
+      SELECT cv_id FROM {cv} WHERE name = '%s'
+   ";
+   $previous_db = db_set_active('chado');
+   $cv = db_fetch_object(db_query($sql,$cv_name));
+   db_set_active($previous_db);
+   return $cv->cv_id;
+}
+/*************************************************************************
+*
+*/
+function tripal_cv_cvterm_edit($cvterm_id){
+   $sql = "
+      SELECT CVT.name as cvtermname, CVT.definition, CV.name as cvname
+      FROM {CVTerm} CVT
+        INNER JOIN CV on CVT.cv_id = CV.cv_id
+      WHERE CVT.cvterm_id = %d
+   ";
+   $previous_db = db_set_active('chado');
+   $cvterm = db_fetch_object(db_query($sql,$cvterm_id));
+   db_set_active($previous_db);
+   return theme('tripal_cv_cvterm_edit',$cvterm);
+}
+/*************************************************************************
+*
+*/
+function theme_tripal_cv_cvterm_edit(&$cvterm){
+   $output = "
+      <div id=\"cvterm\">
+      <table>
+        <tr><th>Term</th><td>$cvterm->cvtermname</td></tr>
+        <tr><th>Vocabulary</th><td>$cvterm->cvname</td></tr>
+        <tr><th>Definition</th><td>$cvterm->definition</td></tr>
+      </table>
+      </div>
+   ";
+   return $output;
+}

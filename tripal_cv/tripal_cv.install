@@ -1,0 +1,73 @@
+<?php
+
+/*******************************************************************************
+*  Implementation of hook_install();
+*/
+function tripal_cv_install(){
+
+   // create the module's data directory
+   tripal_create_moddir('tripal_cv');
+
+   // Add the materialized view needed to keep track of the 
+   // 
+   $previous_db = db_set_active('chado');
+   if (db_table_exists('cv_root_mview')) {
+      $sql = "DROP TABLE cv_root_mview";
+      db_query($sql);
+   }
+   db_set_active($previous_db);
+   // Create the MView
+   tripal_add_mview(
+      // view name
+      'cv_root_mview',
+      // module name  
+      'tripal_cv',
+      // table name
+      'cv_root_mview',
+      // table schema
+      'name character varying(1024), cvterm_id integer, cv_id integer, 
+       cv_name character varying(255)',
+      // indexed columns
+      'cvterm_id, cv_id',
+      // SQL statement that populates the view
+      'SELECT DISTINCT CVT.name,CVT.cvterm_id, CV.cv_id, CV.name
+       FROM {cvterm_relationship} CVTR
+         INNER JOIN cvterm CVT on CVTR.object_id = CVT.cvterm_id
+         INNER JOIN CV on CV.cv_id = CVT.cv_id
+       WHERE CVTR.object_id not in
+         (SELECT subject_id FROM {cvterm_relationship}) ',
+      // special index
+      ''
+   );
+
+}
+
+/*******************************************************************************
+* Implementation of hook_uninstall()
+*/
+function tripal_cv_uninstall(){
+
+	// remove the materialized view
+   $mview = tripal_mviews_get_mview_id('cv_root_mview');
+   if($mview){
+	   tripal_mviews_action('delete',$mview);
+	}
+}
+
+/*******************************************************************************
+ * Implementation of hook_requirements(). Make sure 'Tripal Core' is enabled
+ * before installation
+ */
+function tripal_cv_requirements($phase) {
+   $requirements = array();
+   if ($phase == 'install') {
+      if (!function_exists('tripal_create_moddir')) {
+         $requirements ['tripal_cv'] = array(
+            'title' => "tripal_cv",
+            'value' => "Required modules must be installed first before Tripal CV module can be installed",
+            'severity' => REQUIREMENT_ERROR,
+         );
+      }
+   }
+   return $requirements;
+}
