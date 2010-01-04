@@ -768,36 +768,40 @@ function tripal_analysis_blast_parseXMLFile ($analysis_id, $blastdb, $blastfile,
 
 							// If the Iteration_query-def in the format of "feature_id|uniquename"
 							// get feature_id from it directly
-							if (preg_match("/(\d+)\|.+/", $iteration_tags, $matches)) {
+							if (preg_match("/^(\d+)\|.+/", $iteration_tags, $matches)) {
 								$feature_id = $matches[1];
 
-							// If not matched, treat Iteration_query-def as uniquename
+							// If not in above format, try to match <Iteration_query-def> to feature's uniquename
 							} else {
-
+								// treat the first word of <Iteration_query-def> as uniquename
+								$first_word = $iteration_tags;
+                        if (preg_match('/^(.*?)\s.*$/', $iteration_tags, $matches)) {
+                        	$first_word = $matches[1];
+                        }
 								// Find out how many features match this uniquename
 								$sql = "SELECT count(feature_id) FROM {feature} ".
                                "WHERE uniquename = '%s' ";
-								$no_features = db_result(db_query($sql, $iteration_tags));
+								$no_features = db_result(db_query($sql, $first_word));
 									
 								// If there is only one match, get the feature_id
 								if ($no_features == 1) {
 									$sql = "SELECT feature_id FROM {feature} ".
 							             "WHERE uniquename = '%s' ";
-									$feature_id = db_result(db_query($sql, $iteration_tags));
+									$feature_id = db_result(db_query($sql, $first_word));
 
 								// If the uniquename matches more than one features then skip and print 'Ambiguous'
 								} else if ($no_features > 1) {
-									fwrite($log, "Ambiguous: ".$iteration_tags." matches more than one feature and is not processed.\n");
+									fwrite($log, "Ambiguous: ".$first_word." matches more than one feature and is not processed.\n");
 									continue;
 								
 								// If the uniquename did not match, skip and print 'Failed'
 								} else {
-									fwrite($log, "Failed: ".$iteration_tags."\n");
+									fwrite($log, "Failed: ".$first_word."\n");
 								}
 							}
 							// Successfully matched. print 'Succeeded'
 							if ($feature_id) {
-								fwrite($log, "Succeeded: ".$iteration_tags." => feature id:".$feature_id);
+								fwrite($log, "Succeeded: ".$first_word." => feature id:".$feature_id);
 								$featurename_xml = $iteration_tags->asXML();
 							}
 
