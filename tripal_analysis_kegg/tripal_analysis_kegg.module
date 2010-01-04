@@ -401,6 +401,7 @@ function chado_analysis_kegg_insert($node){
       if($node->keggjob) {
          $job_args[0] = $analysis_id;
          $job_args[1] = $node->hierfile;
+         $job_args[2] = base_path();
          if (is_readable($node->hierfile)) {
          	$fname = preg_replace("/.*\/(.*)/", "$1", $node->hierfile);
             tripal_add_job("Parse KAAS output: $fname",'tripal_analysis_kegg',
@@ -532,6 +533,7 @@ function chado_analysis_kegg_update($node){
       if($node->keggjob) {
          $job_args[0] = $analysis_id;
          $job_args[1] = $node->hierfile;
+         $job_args[2] = base_path();
          if (is_readable($node->hierfile)) {
          	$fname = preg_replace("/.*\/(.*)/", "$1", $node->hierfile);
             tripal_add_job("Parse KAAS output: $fname",'tripal_analysis_kegg',
@@ -626,7 +628,7 @@ function chado_analysis_kegg_view ($node, $teaser = FALSE, $page = FALSE) {
 }
 /********************************************************************************
  */
-function tripal_analysis_kegg_parseHierFile ($analysis_id, $hierfile, $job_id) {
+function tripal_analysis_kegg_parseHierFile ($analysis_id, $hierfile, $base_path, $job_id) {
    
    // If user input a file (e.g. hier.tar.gz), decompress it first
    if (is_file($hierfile)) {
@@ -654,7 +656,7 @@ function tripal_analysis_kegg_parseHierFile ($analysis_id, $hierfile, $job_id) {
          $no_file ++;
          
          # print "Parsing $hierdir/$file\n";
-         $content = tripal_analysis_kegg_parse_keg_file("$hierdir/$file",$type,$analysis_id);
+         $content = tripal_analysis_kegg_parse_keg_file("$hierdir/$file",$type,$analysis_id, $base_path);
 
          # add the item to the database
          if($content){
@@ -703,7 +705,7 @@ function tripal_analysis_kegg_parseHierFile ($analysis_id, $hierfile, $job_id) {
 /*******************************************************************************
  *
  */
-function tripal_analysis_kegg_parse_keg_file ($file,&$type,$analysis_id){
+function tripal_analysis_kegg_parse_keg_file ($file,&$type,$analysis_id, $base_path){
    $handle = fopen($file,'r');
    $depth = array();
    $current = '@';  # this is one character below 'A' in the ASCII table
@@ -829,7 +831,7 @@ function tripal_analysis_kegg_parse_keg_file ($file,&$type,$analysis_id){
          }
          // Add link to each matched feature
          $feature_url = url("$prefix$feature_id");
-         $matches[2] = preg_replace("/^(.*?)(;\s*\<a)/","<a id=\"tripal_kegg_feature_links\" target=\"_blank\" href=\"/$prefix$feature_id\">"."$1"."</a>"."$2",$matches[2]);
+         $matches[2] = preg_replace("/^(.*?)(;\s*\<a)/","<a id=\"tripal_kegg_feature_links\" target=\"_blank\" href=\"$base_path$prefix$feature_id\">"."$1"."</a>"."$2",$matches[2]);
       }
       $content .= "<li id=\"term_$id\"><a></a>$matches[2]\n";
       $id++;
@@ -991,7 +993,6 @@ function theme_tripal_analysis_kegg_node_add($node) {
    // Show Kegg full reports on the organism page
    else if ($node->type == 'chado_organism') {
       $box_status = variable_get("tripal_analysis_kegg-box-results","menu_off");
- 
       if (strcmp($box_status,"menu_off")==0){
          $content .= tripal_analysis_kegg_organism_add($node);
       }
