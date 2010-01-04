@@ -2,6 +2,7 @@
 /*******************************************************************************
  *  This function provides data for the VIEWS module. The function generates
  *  a new field 'Tripal organism: Common name' when adding a 'Node' view type. 
+ *  Test svn
  */
 
 function tripal_organism_views_data() {
