@@ -794,8 +794,9 @@ function tripal_get_interpro_results($feature_id){
                  INNER JOIN analysisfeature AF on AF.analysisfeature_id = AFP.analysisfeature_id
                  WHERE AF.analysis_id = %d
                  AND AF.feature_id = %d
+                 AND AFP.type_id = %d
                 ";
-         $interpro_results = db_query($sql, $ana->aid, $feature_id);
+         $interpro_results = db_query($sql, $ana->aid, $feature_id, $type_id);
       	 while ($afp = db_fetch_object($interpro_results)) {
       	 	$content .= $afp->afpvalue;
       	 }
