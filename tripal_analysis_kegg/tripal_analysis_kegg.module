@@ -642,12 +642,13 @@ function tripal_analysis_kegg_parseHierFile ($analysis_id, $hierfile, $base_path
    }
    $dir_handle = @opendir($hierdir) or die("Unable to open $hierdir");
    $total_files = count(glob($hierdir . '/*.*'));
+   print "There are $total_files keg file(s).\n";
    $interval = intval($total_files * 0.01);
    $no_file = 0;
    while ($file = readdir($dir_handle)) {
 
       if(preg_match("/^.*\.keg/",$file)){
-      	// Update the progress
+         // Update the progress
          if ($no_file % $interval == 0) {
             $percentage = (int) ($no_file / $total_files * 100);
             tripal_job_set_progress($job_id, $percentage);
@@ -655,7 +656,7 @@ function tripal_analysis_kegg_parseHierFile ($analysis_id, $hierfile, $base_path
          }
          $no_file ++;
          
-         # print "Parsing $hierdir/$file\n";
+         # $type variable will be set in tripal_analysis_kegg_parse_keg_file()
          $content = tripal_analysis_kegg_parse_keg_file("$hierdir/$file",$type,$analysis_id, $base_path);
 
          # add the item to the database
@@ -665,7 +666,8 @@ function tripal_analysis_kegg_parseHierFile ($analysis_id, $hierfile, $base_path
             //------------------------------------------------------
             // Make sure the same value doesn't exist before inserting into chado
             $sql = "SELECT value
-                    FROM {analysisprop}                     WHERE analysis_id = %d
+                    FROM {analysisprop}
+                    WHERE analysis_id = %d
                     AND type_id = (SELECT cvterm_id 
                                    FROM {cvterm} CVT 
                                    INNER JOIN CV ON CVT.cv_id = CV.cv_id
@@ -675,18 +677,27 @@ function tripal_analysis_kegg_parseHierFile ($analysis_id, $hierfile, $base_path
             $previous_db = db_set_active('chado');
             $oldvalue = db_result(db_query($sql, $analysis_id, $type));
             db_set_active($previous_db);
+            
+            // Insert the content
             if ($oldvalue != $content) {
-               $sql = "
-	             INSERT INTO {analysisprop} (analysis_id, type_id, value) VALUES
-	             (%d,
-	              (SELECT cvterm_id 
-	               FROM {cvterm} CVT 
-	               INNER JOIN CV ON CVT.cv_id = CV.cv_id
-	               WHERE CV.name = 'tripal' AND CVT.name = '%s'),
-	              '%s')";   
-               $previous_db = db_set_active('chado');
-               db_query($sql,$analysis_id,$type,$content);
-               db_set_active($previous_db);
+            	
+            	$previous_db = db_set_active('chado'); // Use chado database
+            	// Get type_id for the BRITE term
+            	$sql = "SELECT cvterm_id 
+                       FROM {cvterm} CVT 
+                       INNER JOIN CV ON CVT.cv_id = CV.cv_id
+                       WHERE CV.name = 'tripal' AND CVT.name = '%s'";
+            	$brite_cvterm_id = db_result(db_query($sql, $type)); 
+
+            	// Replace all single quote as HTML code before insert
+            	$content = preg_replace("/\'/", "&#39;", $content);
+            	
+            	// Insert the value
+               $sql = "INSERT INTO {analysisprop} (analysis_id, type_id, value) 
+                       VALUES (%d, %d,'$content')";   
+               
+               db_query($sql, $analysis_id, $brite_cvterm_id);
+               db_set_active($previous_db); // Use drupal database
             }
             
          }
@@ -703,7 +714,10 @@ function tripal_analysis_kegg_parseHierFile ($analysis_id, $hierfile, $base_path
    return;
 }
 /*******************************************************************************
- *
+ * Parse *.keg files. 
+ * Each file has a definition line. BRITE term is extracted * from this line 
+ * and added to chado as a cvterm. Tree structure for this cvterm is then 
+ * generated and saved to analysisfeature and analysisfeatureprop tables.
  */
 function tripal_analysis_kegg_parse_keg_file ($file,&$type,$analysis_id, $base_path){
    $handle = fopen($file,'r');
@@ -762,7 +776,7 @@ function tripal_analysis_kegg_parse_keg_file ($file,&$type,$analysis_id, $base_p
       // add id to <a> tags so we can link kegg.gif to it in tripal_analysis_kegg.css
       $matches[2] = preg_replace("/<a href=\"/i","<a id=\"tripal_kegg_brite_links\" target=\"_blank\" href=\"",$matches[2]);
 
-      // extract the features that have been mapped to the various KEGG IDs
+      // extract the features that have been mapped to the KEGG IDs
       if(preg_match("/^(.*?);\s*(\<a.+)/",$matches[2],$mat)){
          // Find cvterm_id for 'kegg_brite_data'
          $sql = "SELECT cvterm_id 
@@ -857,10 +871,10 @@ function tripal_analysis_kegg_nodeapi(&$node, $op, $teaser, $page) {
 
          // Abort if this node is not one of the types we should show.
          if (!in_array($node->type, $types_to_show, TRUE)) {
-         	// Turn the menu off if it's on
+            // Turn the menu off if it's on
             $box_status = variable_get("tripal_analysis_kegg-box-results","menu_off");
             if (strcmp($box_status,"menu_on")==0 && $node->type =='chado_organism'){
-            	variable_set("tripal_analysis_kegg-box-results","menu_off");
+               variable_set("tripal_analysis_kegg-box-results","menu_off");
             }
             break;
          }
@@ -870,13 +884,13 @@ function tripal_analysis_kegg_nodeapi(&$node, $op, $teaser, $page) {
             // add the library to the organism/feature search indexing
             if($node->build_mode == NODE_BUILD_SEARCH_INDEX){
                $node->content['tripal_analysis_kegg_search_index'] = array(
-						'#value' => theme('tripal_analysis_kegg_search_index',$node),
-						'#weight' => 6,
+                  '#value' => theme('tripal_analysis_kegg_search_index',$node),
+                  '#weight' => 6,
                );
             } else if ($node->build_mode == NODE_BUILD_SEARCH_RESULT) {
                $node->content['tripal_analysis_kegg_search_result'] = array(
-						'#value' => theme('tripal_analysis_kegg_search_result',$node),
-						'#weight' => 6,
+                  '#value' => theme('tripal_analysis_kegg_search_result',$node),
+                  '#weight' => 6,
                );
             } else {
                // Show KEGG BRITE on an analysis page OR KEGG info box on a feature page
@@ -1145,8 +1159,8 @@ function tripal_analysis_kegg_organism_add($node) {
       $content .= "
       <div class=\"tripal_kegg_summary-info-box\">
         <div class=\"tripal_expandableBox\">
-	       <h3>KEGG Analysis Results</h3>
-	     </div>
+          <h3>KEGG Analysis Results</h3>
+        </div>
         <div class=\"tripal_expandableBoxContent\">
       ";
    } 
@@ -1164,7 +1178,7 @@ function tripal_analysis_kegg_organism_add($node) {
 
    if(user_access('access administrative pages')){
       $link = url("tripal_toggle_box_menu/tripal_analysis_kegg/results/$node->nid");
-   	if(strcmp($box_status,"menu_off")==0){
+      if(strcmp($box_status,"menu_off")==0){
          $content .= "<br><a href=\"$link\">Show on menu</a>";
       } else {
          $content .= "<br><a href=\"$link\">Remove from menu</a>";
