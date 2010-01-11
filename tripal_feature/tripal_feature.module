@@ -25,7 +25,6 @@ function tripal_feature_admin () {
    if(tripal_get_module_active_jobs('tripal_feature')){
       $active_jobs = TRUE;
    }
-
    if(!$active_jobs){
 
       $form['chado_feature_accession_prefix'] = array (
@@ -56,8 +55,10 @@ function tripal_feature_admin () {
          '#type' => 'fieldset',
          '#title' => t('Feature Browser')
       );
-      $allowedoptions1 ['show_feature_browser'] = "Show the feature browser on the organism page. The browser loads when page loads. This may be slow for large sites.";
-      $allowedoptions1 ['hide_feature_browser'] = "Hide the feature browser on the organism page. Disables the feature browser completely.";
+      $allowedoptions1  = array (
+        'show_feature_browser' => "Show the feature browser on the organism page. The browser loads when page loads. This may be slow for large sites.",
+        'hide_feature_browser' => "Hide the feature browser on the organism page. Disables the feature browser completely.",
+      );
 //      $allowedoptions ['allow_feature_browser'] = "Allow loading of the feature browsing through AJAX. For large sites the initial page load will be quick with the feature browser loading afterwards.";
 
       $form['browser']['browse_features'] = array(
@@ -68,8 +69,7 @@ function tripal_feature_admin () {
             'as students) to better understand the data types available on the site.',
          '#type' => 'radios',
          '#options' => $allowedoptions1,
-         '#default_value'=>variable_get('tripal_feature_browse_setting',
-            array('show_feature_browser')),
+         '#default_value'=>variable_get('tripal_feature_browse_setting', 'show_feature_browser'),
       );
       $form['browser']['set_browse_button'] = array(
          '#type' => 'submit',
@@ -90,8 +90,7 @@ function tripal_feature_admin () {
             'type and quantity of features available for the organism.',
          '#type' => 'radios',
          '#options' => $allowedoptions2,
-         '#default_value'=>variable_get('tripal_feature_summary_setting',
-            array('show_feature_summary')),
+         '#default_value'=>variable_get('tripal_feature_summary_setting', 'show_feature_summary'),
       );
       $form['summary']['set_summary_button'] = array(
          '#type' => 'submit',
