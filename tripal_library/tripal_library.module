@@ -802,7 +802,7 @@ function tripal_library_show_libraries (){
       if($no_libs != count($libraries)) {
          drupal_set_message("Synchronization needed.");
       }
-      return theme('tripal_library_library_table', $libraries);
+      return theme('tripal_library_library_table', &$libraries);
    } else {
       return t("No library exists. Please contact administrators to ".
                "synchronize libraries.");
