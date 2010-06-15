@@ -61,7 +61,7 @@ function tripal_analysis_blast_nodeapi(&$node, $op, $teaser, $page) {
 			if (!$teaser && $node->feature->feature_id) {
 				if($node->build_mode == NODE_BUILD_SEARCH_INDEX){
 					$node->content['tripal_analysis_blast_index_version'] = array(
-                  '#value' => theme('parse_NCBI_Blast_XML_index_version',$node),
+                  '#value' => theme('tripal_analysis_blast_results_index_version',$node),
                   '#weight' => 8,
 					);
 				} else {
@@ -82,7 +82,7 @@ function tripal_analysis_blast_nodeapi(&$node, $op, $teaser, $page) {
  */
 function tripal_analysis_blast_theme () {
 	return array(
-      'parse_NCBI_Blast_XML_index_version' => array (
+      'tripal_analysis_blast_results_index_version' => array (
          'arguments' => array('node'),
 	),
       'tripal_analysis_blast_results' => array (
@@ -102,7 +102,7 @@ function theme_tripal_analysis_blast_results ($node) {
 /*******************************************************************************
  * Prepare blast result for the feature shown on the page
  */
-function theme_parse_NCBI_Blast_XML_index_version ($node) {
+function theme_tripal_analysis_blast_results_index_version ($node) {
 	$feature = $node->feature;
 	$content = tripal_get_blast_results_index_version($feature->feature_id);
 	return $content;
@@ -225,7 +225,7 @@ function tripal_get_blast_results_index_version ($feature_id){
 		db_set_active($previous_db);
 		// Only index best 10 hits because the default page only shows 10 blast results
 		$max = 10;
-		$content .= parse_NCBI_Blast_XML($analysisfeatureprop->afpvalue,$db,$max,$feature_id,$ajax, $analysis);
+		$content .= parse_NCBI_Blast_XML_index_version($analysisfeatureprop->afpvalue,$db,$max,$feature_id,$ajax, $analysis);
 			
 	}
 	return $content;
@@ -1066,6 +1066,7 @@ function tripal_analysis_blast_node_info() {
  *  Provide a Blast Analysis form
  */
 function chado_analysis_blast_form ($node){
+    //dprint_r($node);
 
 	$type = node_get_types('type', $node);
 	$form = array();
@@ -1216,102 +1217,155 @@ function chado_analysis_blast_form ($node){
 	return $form;
 }
 
+function chado_analysis_blast_validate($node, &$form){
+    //dprint_r($node);
+
+    // Only nodes being updated will have an nid already
+    if($node->nid){
+        //---------------------------------------------------
+        // We are validating a form for updating an existing node
+        //---------------------------------------------------
+
+        // TO DO: check that the new fields don't yield a non-unique primary key in chado
+    }
+    else{
+        //---------------------------------------------------
+        // We are validating a form for inserting a new node
+        //---------------------------------------------------
+        // The primary key for the chado analysis table is 
+        // program, programversion, sourcename
+        // Check to see if this analysis really is new -ie, it doesn't have the same
+        // primary key as any other analysis 
+	    $sql = "SELECT analysis_id ".
+            "FROM {analysis} ".
+            "WHERE program='%s'".
+            "AND programversion='%s'".
+            "AND sourcename='%s'";
+	    $previous_db = db_set_active('chado');
+	    $analysis_id = db_result(db_query($sql, $node->program, $node->programversion, $node->sourcename));
+        db_set_active($previous_db);
+    
+        if($analysis_id){
+            //---------------------------------------------------
+            // this primary key already exists in chado analysis table!
+            //---------------------------------------------------
+    
+            // check to see if it has also been synced with drupal
+	        $sql = "SELECT nid FROM {chado_analysis} ".
+                            "WHERE analysis_id = %d";
+	        $node_id = db_result(db_query($sql, $analysis_id));
+	        if($node_id){
+                //---------------------------------------------------
+                // the analysis has already been synced with drupal, redirect the user
+                // to modify that node or start over
+                //---------------------------------------------------
+                $error = 'This analysis already exists in the chado database (analysis id ';
+                $error .= $analysis_id.') and has been synchronized ';
+                    $error .= 'with drupal. See node '.$node_id.' if you wish to update that analysis.  ';
+                $error .= ' For a new analysis, please select a unique primary key ';
+                $error .= '(primary key consists of sourcename, program and programversion).';
+                form_set_error('sourcename', t($error));
+            }
+    
+            else{
+                //---------------------------------------------------
+                // the analysis does not exist in drupal - tell the user 
+                // to sync from chado or create a new unique primary key
+                //---------------------------------------------------
+                $error = 'This analysis already exists in the chado database (analysis id ';
+                $error .= $analysis_id.') but has not been synchronized ';
+                $error .= 'with drupal. See the tripal admin pages to synchronize. ';
+                $error .= ' For a new analysis, please select a unique primary key ';
+                $error .= '(primary key consists of sourcename, program and programversion).';
+                form_set_error('sourcename', t($error));
+            }
+        }
+    }
+}
+
 function chado_analysis_blast_insert($node){
 	global $user;
+
 	// Create a timestamp so we can insert it into the chado database
-	$time = $node->timeexecuted;
+   	$time = $node->timeexecuted;
 	$month = $time['month'];
 	$day = $time['day'];
 	$year = $time['year'];
 	$timestamp = $month.'/'.$day.'/'.$year;
 
-	// If this analysis already exists then don't recreate it in chado
-	$analysis_id = $node->analysis_id;
-	if ($analysis_id) {
-		$sql = "SELECT analysis_id ".
-               "FROM {Analysis} ".
-               "WHERE analysis_id = %d ";
-		$previous_db = db_set_active('chado');
-		$analysis = db_fetch_object(db_query($sql, $node->analysis_id));
-		db_set_active($previous_db);
-	}
+    //---------------------------------------------------
+	// First add the item to the chado analysis table
+    //---------------------------------------------------
+	$sql = "INSERT INTO {analysis} ".
+           "  (name, description, program, programversion, algorithm, ".
+           "   sourcename, sourceversion, sourceuri, timeexecuted) ".
+           "VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s')";
+	$previous_db = db_set_active('chado');  // use chado database
+	db_query($sql,$node->analysisname, $node->description,
+	$node->program,$node->programversion,$node->algorithm,
+	$node->sourcename, $node->sourceversion, $node->sourceuri,
+	$timestamp);
 
-	// If the analysis doesn't exist then let's create it in chado.
-	if(!$analysis){
-		// First add the item to the chado analysis table
-		$sql = "INSERT INTO {analysis} ".
-             "  (name, description, program, programversion, algorithm, ".
-             "   sourcename, sourceversion, sourceuri, timeexecuted) ".
-             "VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s')";
-		$previous_db = db_set_active('chado');  // use chado database
-		db_query($sql,$node->analysisname, $node->description,
-		$node->program,$node->programversion,$node->algorithm,
-		$node->sourcename, $node->sourceversion, $node->sourceuri,
-		$timestamp);
+	// find the newly entered analysis_id
+	$sql = "SELECT analysis_id ".
+            "FROM {analysis} ".
+            "WHERE program='%s'".
+            "AND programversion='%s'".
+            "AND sourcename='%s'";
+	$analysis_id = db_result(db_query($sql, $node->program,
+	$node->programversion, $node->sourcename));
 
-		// find the newly entered analysis_id
-		$sql = "SELECT analysis_id ".
-             "FROM {Analysis} ".
-             "WHERE program='%s'".
-             "AND programversion='%s'".
-             "AND sourcename='%s'";
-		$analysis_id = db_result(db_query($sql, $node->program,
-		$node->programversion, $node->sourcename));
+	// Get cvterm_id for 'analysis_blast_settings'
+	$sql = "SELECT CVT.cvterm_id FROM {cvterm} CVT ".
+            "INNER JOIN cv ON cv.cv_id = CVT.cv_id ".
+            "WHERE CVT.name = 'analysis_blast_settings' ".
+            "AND CV.name = 'tripal'";
+	$type_id = db_result(db_query($sql));
 
-		// Get cvterm_id for 'analysis_blast_settings'
-		$sql = "SELECT CVT.cvterm_id FROM {cvterm} CVT ".
-             "INNER JOIN cv ON cv.cv_id = CVT.cv_id ".
-             "WHERE CVT.name = 'analysis_blast_settings' ".
-             "AND CV.name = 'tripal'";
-		$type_id = db_result(db_query($sql));
+    //---------------------------------------------------
+	// Insert into chado {analysisprop} table
+    //---------------------------------------------------
+	$sql = "INSERT INTO {analysisprop} (analysis_id, type_id, value) ".
+            "VALUES (%d, %d, '%s')";
+	$blastsettings = $node->blastdb."|".$node->blastfile."|".$node->blastparameters;
+	db_query($sql, $analysis_id, $type_id, $blastsettings);
 
-		// Insert into chado {analysisprop} table
-		$sql = "INSERT INTO {analysisprop} (analysis_id, type_id, value) ".
-             "VALUES (%d, %d, '%s')";
-		$blastsettings = $node->blastdb."|".$node->blastfile."|".$node->blastparameters;
-		db_query($sql, $analysis_id, $type_id, $blastsettings);
+	db_set_active($previous_db);  // switch back to drupal database
 
-		db_set_active($previous_db);  // switch back to drupal database
-		// Add a job if the user wants to parse the xml output
-		if($node->blastjob) {
-			$job_args[0] = $analysis_id;
-			$job_args[1] = $node->blastdb;
-			$job_args[2] = $node->blastfile;
-			if (is_readable($node->blastfile)) {
-				$fname = preg_replace("/.*\/(.*)/", "$1", $node->blastfile);
-				tripal_add_job("Parse blast: $fname",'tripal_analysis_blast',
-                           'tripal_analysis_blast_parseXMLFile', $job_args, $user->uid);
-			} else {
-				drupal_set_message("Can not open blast output file. Job not scheduled.");
-			}
-		}
-	}
-
-	// Make sure the entry for this analysis doesn't already exist in the
-	// chado_analysis table if it doesn't exist then we want to add it.
-	$node_check_sql = "SELECT * FROM {chado_analysis} ".
-                     "WHERE analysis_id = %d";
-	$node_check = db_fetch_object(db_query($node_check_sql, $analysis_id));
-	if(!$node_check){
-		// next add the item to the drupal table
-		$sql = "INSERT INTO {chado_analysis} (nid, vid, analysis_id) ".
-             "VALUES (%d, %d, %d)";
-		db_query($sql,$node->nid,$node->vid,$analysis_id);
-		// Create a title for the analysis node using the unique keys so when the
-		// node is saved, it will have a title
-		$record = new stdClass();
-		// If the analysis has a name, use it as the node title. If not, construct
-		// the title using program, programversion, and sourcename
-		if ($node->analysisname) {
-			$record->title = $node->analysisname;
+    //---------------------------------------------------
+	// Add a job if the user wants to parse the xml output
+    //---------------------------------------------------
+	if($node->blastjob) {
+		$job_args[0] = $analysis_id;
+		$job_args[1] = $node->blastdb;
+		$job_args[2] = $node->blastfile;
+		if (is_readable($node->blastfile)) {
+			$fname = preg_replace("/.*\/(.*)/", "$1", $node->blastfile);
+			tripal_add_job("Parse blast: $fname",'tripal_analysis_blast',
+                          'tripal_analysis_blast_parseXMLFile', $job_args, $user->uid);
 		} else {
-			//Construct node title as "program (version)
-			$record->title = "$node->program ($node->programversion)";
+			drupal_set_message("Can not open blast output file. Job not scheduled.");
 		}
-		$record->nid = $node->nid;
-		drupal_write_record('node',$record,'nid');
-		drupal_write_record('node_revisions',$record,'nid');
 	}
+
+	// next add the item to the drupal table
+	$sql = "INSERT INTO {chado_analysis} (nid, vid, analysis_id) ".
+            "VALUES (%d, %d, %d)";
+	db_query($sql,$node->nid,$node->vid,$analysis_id);
+	// Create a title for the analysis node using the unique keys so when the
+	// node is saved, it will have a title
+	$record = new stdClass();
+	// If the analysis has a name, use it as the node title. If not, construct
+	// the title using program, programversion, and sourcename
+	if ($node->analysisname) {
+		$record->title = $node->analysisname;
+	} else {
+		//Construct node title as "program (version)
+		$record->title = "$node->program ($node->programversion)";
+	}
+	$record->nid = $node->nid;
+	drupal_write_record('node',$record,'nid');
+	drupal_write_record('node_revisions',$record,'nid');
 }
 /*******************************************************************************
  * Delete blast anlysis
@@ -1452,18 +1506,26 @@ function chado_analysis_blast_load($node){
 		$previous_db = db_set_active('chado');  // use chado database
 		$additions = db_fetch_object(db_query($sql));
 
+		// get number of features assc with this analysis
+		$sql = "SELECT count(feature_id) as featurecount ".
+             "FROM {Analysisfeature} ".
+             "WHERE Analysis_id = %d";
+		$additions->featurecount = db_result(db_query($sql, $ana_node->analysis_id));
+
 		// get cvterm_id for 'analysis_blast_settings'
 		$sql = "SELECT CVT.cvterm_id FROM {cvterm} CVT ".
              "INNER JOIN cv ON cv.cv_id = CVT.cv_id ".
              "WHERE CVT.name = 'analysis_blast_settings' ".
              "AND CV.name = 'tripal'";
 		$type_id = db_result(db_query($sql));
+
 		// get analysisprop information
 		$sql = "SELECT value FROM {analysisprop} ".
              "WHERE analysis_id = %d ".
              "AND type_id = %d";
 		$analysisprop = db_result(db_query($sql, $ana_node->analysis_id, $type_id));
 		$prop_values = explode ("|", $analysisprop, 1);
+
 		$additions->blastdb = $prop_values[0];
 		$additions->blastfile = $prop_values[1];
 		$additions->blastparameters = $prop_values[2];
@@ -1478,6 +1540,9 @@ function chado_analysis_blast_load($node){
 		// Construct node title as "program version (source)
 		$additions->title = "$additions->program ($additions->programversion)";
 	}
+
+
+	
 	return $additions;
 }
 
@@ -1487,6 +1552,7 @@ function chado_analysis_blast_load($node){
  */
 function chado_analysis_blast_view ($node, $teaser = FALSE, $page = FALSE) {
 	// use drupal's default node view:
+    //dprint_r($node);
 	if (!$teaser) {
 		$node = node_prepare($node, $teaser);
 		// When previewing a node submitting form, it shows 'Array' instead of
