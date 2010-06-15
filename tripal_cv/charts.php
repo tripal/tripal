@@ -15,7 +15,7 @@ function tripal_cv_chart($chart_id){
 
   // now call the function in the module responsible for the chart.  This 
   // should call the tripal_cv_count_chart with the proper parameters set
-  $opt = call_user_func_array($callback,$chart_id);
+  $opt = call_user_func_array($callback,array($chart_id));
 
   // build the JSON array to return to the javascript caller
   $json_arr = tripal_cv_count_chart($opt[count_mview],$opt[cvterm_id_column],
