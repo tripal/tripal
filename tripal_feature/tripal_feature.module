@@ -1664,7 +1664,13 @@ function tripal_feature_set_taxonomy ($node,$feature_id){
       $tags["$lb_vid"] = "$library->name";
    }
 
+   // now add the taxonomy to the node
+   $terms['tags'] = $tags;
+   taxonomy_node_save($node,$terms);
+   //   print "Setting $node->title: " . implode(", ",$tags) . "\n";
+
    // get the analysis that this feature may belong to and add it as taxonomy
+   // We'll add each one individually since there may be more than one analysis
    if($do_an && $an_vid){
       $sql = "SELECT A.name ".
              "FROM {Analysis} A ".
@@ -1674,18 +1680,12 @@ function tripal_feature_set_taxonomy ($node,$feature_id){
       $previous_db = db_set_active('chado');  // use chado database
       $analysis_terms = array();
       while($analysis=db_fetch_object($results)){
-         // TODO -- how to set more than one taxonmy term ????
-         $analysis_terms[] = "$analysis->name";
-         //           $tags["$an_vid"] = "$analysis->name";
+         $tags2["$an_vid"] = "$analysis->name";
+         $terms['tags'] = $tags2;
+         taxonomy_node_save($node,$terms);
       }
-      $tags["$an_vid"] = $analysis_terms;
       db_set_active($previous_db);  // now use drupal database
    }
-
-   // now add the taxonomy to the node
-   $terms['tags'] = $tags;
-   taxonomy_node_save($node,$terms);
-   //   print "Setting $node->title: " . implode(", ",$tags) . "\n";
 
 }
 /************************************************************************
