@@ -436,7 +436,7 @@ function tripal_organism_admin_validate($form, &$form_state) {
  */
 function tripal_organism_theme () {
    return array(
-      'tripal_organism_organism_table' => array (
+      'tripal_organism_organism_page' => array (
          'arguments' => array('organisms'),
       ),
    );
@@ -785,14 +785,14 @@ function tripal_organism_show_organisms (){
    $no_orgs = db_result(db_query ($sql));
    if($no_orgs != 0) {
       $organisms = get_chado_organisms ();
-      return theme('tripal_organism_organism_table', $organisms);
+      return theme('tripal_organism_organism_page', $organisms);
    } else {
       return t("No organism exists. Please contact administrators to ".
                "synchronize organisms.");
    }
 }
 
-function theme_tripal_organism_organism_table (&$organisms) {
+function theme_tripal_organism_organism_page($organisms) {
 
 	$output = "<br><a id=\"tripal_expandableBox_toggle_button\" onClick=\"toggleExpandableBoxes()\">[-] Collapse All</a>";
    foreach($organisms as $organism){
@@ -891,7 +891,7 @@ function tripal_organism_reindex_features ($organism_id = NULL, $job_id = NULL){
    $interval = intval($count * 0.01);
    foreach($ids as $feature_id){
       // update the job status every 1% features
-      if($job_id and $i % interval == 0){
+      if($job_id and $i % $interval == 0){
 	     tripal_job_set_progress($job_id,intval(($i/$count)*100));
 	   }
       tripal_feature_sync_feature ($feature_id);
