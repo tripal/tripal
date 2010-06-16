@@ -77,7 +77,7 @@ function tripal_analysis_show_analyses (){
 	$no_ana = db_result(db_query ($sql));
 	if($no_ana != 0) {
 		$analyses = get_chado_analyses ();
-		return theme('tripal_analysis_analysis_table', $analyses);
+		return theme('tripal_analysis_analysis_page', $analyses);
 	} else {
 		return t("No analysis available at this time.");
 	}
@@ -572,7 +572,7 @@ function tripal_analysis_perm(){
  */
 function tripal_analysis_theme () {
 	return array(
-      'tripal_analysis_analysis_table' => array (
+      'tripal_analysis_analysis_page' => array (
          'arguments' => array('analyses'),
 	),
 	);
@@ -619,7 +619,7 @@ function get_chado_analyses() {
 /************************************************************************
  *
  */
-function theme_tripal_analysis_analysis_table (&$analyses) {
+function theme_tripal_analysis_analysis_page($analyses) {
    
 	$output = "<br>Analyses are listed in the descending order of their execution time.<br><a id=\"tripal_expandableBox_toggle_button\" onClick=\"toggleExpandableBoxes()\">[-] Collapse All</a>";
 	
