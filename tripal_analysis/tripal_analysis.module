@@ -415,8 +415,7 @@ function tripal_analysis_sync_analyses ($analysis_id = NULL, $job_id = NULL){
 		$sql = "SELECT Analysis_id, name AS analysisname, description, program, ".
    		 "  programversion, algorithm, sourcename, sourceversion, sourceuri, ".
           "  timeexecuted ".
-          "FROM {Analysis} ".
-          "ORDER BY analysis_id";
+          "FROM {Analysis} ";
 		$previous_db = db_set_active('chado');  // use chado database
 		$results = db_query($sql);
 		db_set_active($previous_db);  // now use drupal database
@@ -426,11 +425,15 @@ function tripal_analysis_sync_analyses ($analysis_id = NULL, $job_id = NULL){
           "  timeexecuted ".
           "FROM {Analysis} ".
           "WHERE analysis_id = %d";
-          "ORDER BY analysis_id";
 		$previous_db = db_set_active('chado');  // use chado database
 		$results = db_query($sql,$analysis_id);
 		db_set_active($previous_db);  // now use drupal database
 	}
+
+    ##REMOVE 
+    print "results:\n";
+    print $results;
+    print "\n";
 
 	// We'll use the following SQL statement for checking if the analysis
 	// already exists as a drupal node.
@@ -443,15 +446,22 @@ function tripal_analysis_sync_analyses ($analysis_id = NULL, $job_id = NULL){
 		if(!db_fetch_object(db_query($sql,$analysis->analysis_id))){
 			
 			$new_node = new stdClass();
+        
 			// try to access analysisprop for this analysis
 			$sql = "SELECT * FROM {analysisprop} WHERE analysis_id = %d";
 			$previous_db = db_set_active('chado');
 			$analysisprop = db_fetch_object(db_query($sql, $analysis->analysis_id));
+			db_set_active($previous_db);
+
 			// If analysisprop exists, this analysis can be a blast analysis or 
 			// interpro analysis. Get its type using cvterm_id
 			if ($analysisprop) {
+
 				$sql = "SELECT name, definition FROM {cvterm} WHERE cvterm_id = %d";
+			    $previous_db = db_set_active('chado');
 				$result = db_fetch_object(db_query($sql, $analysisprop->type_id));
+			    db_set_active($previous_db);
+
 				// This is a blast analysis
 				if ($result->name == 'analysis_blast_settings') {
 					$new_node->type = 'chado_analysis_blast';
@@ -470,8 +480,7 @@ function tripal_analysis_sync_analyses ($analysis_id = NULL, $job_id = NULL){
 			} else {
 				$new_node->type = 'chado_analysis';
 			}
-			db_set_active($previous_db);
-			
+
 			$new_node->uid = $user->uid;
 			$new_node->analysis_id = $analysis->analysis_id;
 			$new_node->analysisname = $analysis->analysisname;
@@ -489,13 +498,22 @@ function tripal_analysis_sync_analyses ($analysis_id = NULL, $job_id = NULL){
 			if ($new_node->analysisname) {
 				$new_node->title = $new_node->analysisname;
 			} else {
-				//Construct node title as "program (version)
+				//Construct node title as "program (version)"
 				$new_node->title = "$analysis->program ($analysis->programversion)";
 			}
+
 			node_validate($new_node);
-			if(!form_get_errors()){
+
+            $errors = form_get_errors();
+
+            if($errors){
+                print_r($errors);
+            }
+            else{
+			##if(!form_get_errors()){
 				$node = node_submit($new_node);
 				node_save($node);
+
 				if($node->nid){
 					$page_content .= "Added $new_node->title<br>";
 				}
@@ -674,66 +692,56 @@ function theme_tripal_analysis_analysis_page($analyses) {
  */
 function tripal_analyses_cleanup($dummy = NULL, $job_id = NULL) {
 
-	// build the SQL statments needed to check if nodes point to valid analyses
-	$dsql = "SELECT * FROM {node} WHERE type = 'chado_analysis' order by nid";
-	$nsql = "SELECT * FROM {node} WHERE nid = %d";
-	$csql = "SELECT * FROM {chado_analysis} where nid = %d ";
-	$cosql= "SELECT * FROM {chado_analysis}";
-	$tsql = "SELECT * FROM {analysis} O ".
-           "WHERE analysis_id = %d";
+    // select each node from node table with chado_analysis as type
+    // check to make sure it also exists in chado_analysis table, delete if it doesn't
+    // (this should never, ever happen, but we'll double check anyway)
+	$sql_drupal_node = "SELECT * FROM {node} WHERE type LIKE 'chado_analysis%' order by nid";
+    $sql_drupal_ca = "SELECT * from {chado_analysis} WHERE nid = %d";
 
-	// load into nodes array
-	$results = db_query($dsql);
-	$count = 0;
-	$nodes = array();
+	$results = db_query($sql_drupal_node);
 	while($node = db_fetch_object($results)){
-		$nodes[$count] = $node;
-		$count++;
-	}
-
-	// load the chado_analyses into an array
-	$results = db_query($cosql);
-	$cnodes = array();
-	while($node = db_fetch_object($results)){
-		$cnodes[$count] = $node;
-		$count++;
-	}
-	$interval = intval($count * 0.01);
-
-	// iterate through all of the chado_analysis nodes and delete those that aren't valid
-	foreach($nodes as $nid){
-
-		// update the job status every 1% analyses
-		if($job_id and $i % $interval == 0){
-			tripal_job_set_progress($job_id,intval(($i/$count)*100));
-		}
-
-		// first check to see if the node has a corresponding entry
-		// in the chado_analysis table. If not then delete the node.
-		$analysis = db_fetch_object(db_query($csql,$nid->nid));
-		if(!$analysis){
-			node_delete($nid->nid);
-			$message = "Missing in chado_analysis table.... DELETING: $nid->nid\n";
+        $ca_record = db_fetch_object(db_query($sql_drupal_ca, $node->nid));
+        if(!$ca_record){ 
+            node_delete($node->nid); 
+			$message = "Missing in chado_analysis table.... DELETING node: $nid->nid\n";
 			watchdog('tripal_analysis',$message,array(),WATCHDOG_WARNING);
-			continue;
-		}
-		$i++;
+        }
 	}
 
-	// iterate through all of the chado_analysis nodes and delete those  that aren't valid
-	foreach($cnodes as $nid){
-		// update the job status every 1% analyses
-		if($job_id and $i % $interval == 0){
-			tripal_job_set_progress($job_id,intval(($i/$count)*100));
-		}
-		$node = db_fetch_object(db_query($nsql,$nid->nid));
-		if(!$node){
-			db_query("DELETE FROM {chado_analysis} WHERE nid = $nid->nid");
-			$message = "chado_analysis missing node.... DELETING: $nid->nid\n";
+    // get nodes from chado_analysis table and load into array, saving chado analysis_id
+    // as we iterate through, we'll check that they are actual nodes and
+    // delete if they aren't
+    // (this should never, ever happen, but we'll double check anyway)
+	$sql_drupal_ca2 = "SELECT * FROM {chado_analysis}";
+	$sql_drupal_node2 = "SELECT * FROM {node} WHERE type LIKE 'chado_analysis%' AND nid = %d";
+
+	$results = db_query($sql_drupal_ca2);
+	$nid2aid = array();
+	while($ca_record = db_fetch_object($results)){
+        $node = db_fetch_object(db_query($sql_drupal_node2, $ca_record->nid));
+        if(!$node){ 
+			db_query("DELETE FROM {chado_analysis} WHERE nid = $ca_record->nid");
+			$message = "chado_analysis missing node.... DELETING chado_analysis record with nid: $ca_record->nid\n";
+			watchdog('tripal_analysis',$message,array(),WATCHDOG_WARNING);
+        }
+        else{
+		    $nid2aid[$ca_record->nid] = $ca_record->analysis_id;
+        }
+	}
+
+	// iterate through all of the chado_analysis nodes in drupal
+    // and delete those that aren't valid in chado
+    $sql_chado = "SELECT analysis_id from {analysis} WHERE analysis_id = %d";
+
+	foreach($nid2aid as $nid => $aid){
+        $previous_db = db_set_active('chado');
+		$chado_record = db_fetch_object(db_query($sql_chado,$aid));
+        db_set_active($previous_db);
+		if(!$chado_record){
+            node_delete($nid); 
+			$message = "Missing in analysis table in chado.... DELETING node: $nid\n";
 			watchdog('tripal_analysis',$message,array(),WATCHDOG_WARNING);
 		}
-
-		$i++;
 	}
 	return '';
 }
