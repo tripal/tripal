@@ -1,10 +1,6 @@
 <?php
 
-/* IMPORTANT! DISABLE apc before launching this script.*/
 /* This script can be used to launch jobs on a multi-site Drupal installation*/
-
-ini_set('apc.enable_cli','0');
-
 
 include_once './includes/bootstrap.inc';
 
@@ -85,8 +81,8 @@ runjob($hostname, $username);
 
 function runjob($sitename, $username) {
 
-    $_SERVER['SCRIPT_NAME'] = '/sites/all/modules/tripal_jobs/tripal_jobs_launcher.php';
-    $_SERVER['SCRIPT_FILENAME'] = '/sites/all/modules/tripal_jobs/tripal_jobs_launcher.php';
+    $_SERVER['SCRIPT_NAME'] = '/sites/all/modules/tripal_jobs/tripal_launch_jobs_multi.php';
+    $_SERVER['SCRIPT_FILENAME'] = '/sites/all/modules/tripal_jobs/tripal_launch_jobs_multi.php';
     $_SERVER['HTTP_HOST'] = $sitename;
     $_SERVER['REMOTE_ADDR'] = 'localhost';
     $_SERVER['REQUEST_METHOD'] = 'GET';
