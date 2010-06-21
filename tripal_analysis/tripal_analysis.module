@@ -453,8 +453,8 @@ function tripal_analysis_sync_analyses ($analysis_id = NULL, $job_id = NULL){
 			$analysisprop = db_fetch_object(db_query($sql, $analysis->analysis_id));
 			db_set_active($previous_db);
 
-			// If analysisprop exists, this analysis can be a blast analysis or 
-			// interpro analysis. Get its type using cvterm_id
+			// Get the type of analysis using cvterm_id
+            // Current possibilities: kegg, unigene, interpro, blast
 			if ($analysisprop) {
 
 				$sql = "SELECT name, definition FROM {cvterm} WHERE cvterm_id = %d";
@@ -462,6 +462,9 @@ function tripal_analysis_sync_analyses ($analysis_id = NULL, $job_id = NULL){
 				$result = db_fetch_object(db_query($sql, $analysisprop->type_id));
 			    db_set_active($previous_db);
 
+				// This is a unigene analysis
+				if ($result->name == 'analysis_unigene_settings') {
+					$new_node->type = 'chado_unigene_blast';
 				// This is a blast analysis
 				if ($result->name == 'analysis_blast_settings') {
 					$new_node->type = 'chado_analysis_blast';
