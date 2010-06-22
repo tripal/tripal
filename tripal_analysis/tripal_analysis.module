@@ -466,7 +466,7 @@ function tripal_analysis_sync_analyses ($analysis_id = NULL, $job_id = NULL){
 				if ($result->name == 'analysis_unigene_settings') {
 					$new_node->type = 'chado_unigene_blast';
 				// This is a blast analysis
-				if ($result->name == 'analysis_blast_settings') {
+				} else if ($result->name == 'analysis_blast_settings') {
 					$new_node->type = 'chado_analysis_blast';
 			   // This is a interpro analysis
 				} else if ($result->name == 'analysis_interpro_settings') {
