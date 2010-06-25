@@ -30,30 +30,30 @@ function tripal_analysis_unigene_install() {
      "specific unigene version (e.g. v1, v2, etc...). The value specified ".
      "should match that of the unigene_version");
 
-   tripal_add_mview('unigene_libraries_mview',
-     'tripal_analysis_unigene',
-     'unigene_libraries_mview',
-     'analysis_name character varying(255), analysis_id integer,  '.
-     'organism_common_name character varying(255), organism_id integer, '.
-     'library_name character varying(255), library_id integer, '.
-     'library_type character varying(255)',
-     'analysis_id,organism_id,library_id',
-     "select A.name as analysis_name, A.analysis_id, ".
-     "         O.common_name as organism_common_name, O.organism_id, ".
-     "         L.name as library_name, L.library_id,".
-     "         CV.name as library_type ".
-     "FROM {Analysis} A ".
-     "INNER JOIN Analysisfeature AF ON A.analysis_id = AF.analysis_ID ".
-     "INNER JOIN Featureloc FL ON AF.feature_id = FL.feature_ID ".
-     "INNER JOIN Feature F ON FL.srcfeature_id = F.feature_id ".
-     "INNER JOIN Organism O ON F.organism_id = O.organism_id ".
-     "INNER JOIN Library_feature LF ON F.feature_id = LF.feature_id ".
-     "INNER JOIN Library L ON LF.library_id = L.library_id ".
-     "INNER JOIN CVterm CV ON L.type_id = CV.cvterm_id ".
-     "GROUP BY A.analysis_id, A.name, O.common_name, O.organism_id, ".
-     "   L.library_id, L.name, CV.name",
-     ''
-   );
+   //tripal_add_mview('unigene_libraries_mview',
+     //'tripal_analysis_unigene',
+     //'unigene_libraries_mview',
+     //'analysis_name character varying(255), analysis_id integer,  '.
+     //'organism_common_name character varying(255), organism_id integer, '.
+     //'library_name character varying(255), library_id integer, '.
+     //'library_type character varying(255)',
+     //'analysis_id,organism_id,library_id',
+     //"select A.name as analysis_name, A.analysis_id, ".
+     //"         O.common_name as organism_common_name, O.organism_id, ".
+     //"         L.name as library_name, L.library_id,".
+     //"         CV.name as library_type ".
+     //"FROM {Analysis} A ".
+     //"INNER JOIN Analysisfeature AF ON A.analysis_id = AF.analysis_ID ".
+     //"INNER JOIN Featureloc FL ON AF.feature_id = FL.feature_ID ".
+     //"INNER JOIN Feature F ON FL.srcfeature_id = F.feature_id ".
+     //"INNER JOIN Organism O ON F.organism_id = O.organism_id ".
+     //"INNER JOIN Library_feature LF ON F.feature_id = LF.feature_id ".
+     //"INNER JOIN Library L ON LF.library_id = L.library_id ".
+     //"INNER JOIN CVterm CV ON L.type_id = CV.cvterm_id ".
+     //"GROUP BY A.analysis_id, A.name, O.common_name, O.organism_id, ".
+     //"   L.library_id, L.name, CV.name",
+     //''
+   //);
 
    tripal_add_mview('unigene_mview',
       'tripal_analysis_unigene',
@@ -63,12 +63,12 @@ function tripal_analysis_unigene_install() {
       'algorithm character varying(255), sourcename character varying(255), '.
       'sourceversion character varying(255), sourceuri text, '.
       'timeexecuted timestamp,  organism_id integer, '.
-      'uversion text, adate text, short_name text, num_ests integer, '.
+      'uversion text, adate text, num_ests integer, '.
 		'num_contigs integer, num_singlets integer',
 	   'analysis_id, organism_id',
 	   "SELECT Distinct A.analysis_id, A.name, A.description, A.program, A.programversion, A.algorithm, ".
       "  A.sourcename, A.sourceversion, A.sourceuri, A.timeexecuted, O.organism_id, ".
-      "  AP.value as uversion, AP2.value as adate, AP3.value as short_name,   ".
+      "  AP.value as uversion, AP2.value as adate,    ".
       " (SELECT count(*) FROM {feature} F  ".
       "   INNER JOIN CVTerm CVT on F.type_id = CVT.cvterm_id  ".
       "   INNER JOIN CV on CVT.cv_id = CV.cv_id ".
@@ -104,10 +104,6 @@ function tripal_analysis_unigene_install() {
       "    ON A.analysis_id = AP2.analysis_id ".
       "  INNER JOIN CVterm CV2 ".
       "    ON AP2.type_id = CV2.cvterm_ID   ".
-      "  INNER JOIN Analysisprop AP3 ".
-      "    ON A.analysis_id = AP3.analysis_id ".
-      "  INNER JOIN CVterm CV3 ".
-      "    ON AP3.type_id = CV3.cvterm_ID   ".
       "  INNER JOIN Analysisfeature AF ".
       "    ON A.analysis_id = AF.analysis_ID ".
       "  INNER JOIN Feature F  ".
@@ -119,10 +115,9 @@ function tripal_analysis_unigene_install() {
       "WHERE ".
       "  CV.name = 'unigene_version' ".
       "  AND CV2.name = 'analysis_date' ".
-      "  AND CV3.name = 'analysis_short_name' ".
       "GROUP BY A.analysis_id, A.name, A.description, A.program, ".
       "   A.programversion, A.algorithm, A.sourcename, A.sourceversion, ".
-      "   A.sourceuri, A.timeexecuted, AP.value, AP2.value, AP3.value, O.organism_id", 
+      "   A.sourceuri, A.timeexecuted, AP.value, AP2.value, O.organism_id", 
 	   ''
    );
 }

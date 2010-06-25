@@ -482,27 +482,28 @@ function tripal_analysis_unigene_organism_add($node){
    $previous_db = db_set_active('chado');  // use chado database
    $results = db_query($sql,$org_id->organism_id);
    db_set_active($previous_db);  // now use drupal database
-   $i = 0;
-   while ($assembly = db_fetch_object($results)){
-      // get information about this organism and add it to the items in this node
-      $libraries = array();
-      $libraries_sql = "SELECT library_id, library_name ".
-                       "FROM {unigene_libraries_mview} ".
-                       "WHERE analysis_id = %d ";
-      $previous_db = db_set_active('chado');  // use chado database
-      $libraries_result = db_query($libraries_sql,$assembly->analysis_id);
-      db_set_active($previous_db);  // now use drupal database
-      $library_sql = "SELECT * FROM {chado_library} WHERE library_id = %d";
-      $k = 0;
-      while ($library = db_fetch_object($libraries_result)){
-          $library_node = db_fetch_object(db_query($library_sql,$library->library_id));
-          $library->node_id = $library_node->nid;
-          $libraries[$k++] = $library;
-      }      
-      $assembly->libraries = $libraries;
-      $assemblies[$i++] = $assembly;
 
-   } 
+   //$i = 0;
+   //while ($assembly = db_fetch_object($results)){
+      // get information about this organism and add it to the items in this node
+      //$libraries = array();
+      //$libraries_sql = "SELECT library_id, library_name ".
+                       //"FROM {unigene_libraries_mview} ".
+                       //"WHERE analysis_id = %d ";
+      //$previous_db = db_set_active('chado');  // use chado database
+      //$libraries_result = db_query($libraries_sql,$assembly->analysis_id);
+      //db_set_active($previous_db);  // now use drupal database
+      //$library_sql = "SELECT * FROM {chado_library} WHERE library_id = %d";
+      //$k = 0;
+      //while ($library = db_fetch_object($libraries_result)){
+          //$library_node = db_fetch_object(db_query($library_sql,$library->library_id));
+          //$library->node_id = $library_node->nid;
+          //$libraries[$k++] = $library;
+      //}      
+      //$assembly->libraries = $libraries;
+      //$assemblies[$i++] = $assembly;
+   //} 
+
    // if this content is intended to be a menu item the 
    // we need to know so we can format the content slightly different
    $box_status =variable_get("tripal_analysis_unigene-box-assembly","menu_off");
@@ -533,10 +534,10 @@ function tripal_analysis_unigene_organism_add($node){
              "    <td class=\"dbfieldvalue\">$assembly->description         </td></tr>".
              "<tr><td class=\"dbfieldname\"> Libraries Included in Assembly </td>".
              "    <td class=\"dbfieldvalue\"> ";
-# TODO: THIS SHOULD NOT HAVE A LINK IF THERE IS NO LIBRARY NODE IN DRUPAL
-             foreach($assembly->libraries as $library){
-               $content .= "<a href=\"/node/$library->node_id\">$library->library_name</a> ";
-             }
+//# TODO: THIS SHOULD NOT HAVE A LINK IF THERE IS NO LIBRARY NODE IN DRUPAL
+             //foreach($assembly->libraries as $library){
+               //$content .= "<a href=\"/node/$library->node_id\">$library->library_name</a> ";
+             //}
              $content .= " </td></tr>".
              "</table>";
 
