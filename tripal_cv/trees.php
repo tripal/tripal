@@ -30,7 +30,7 @@ function tripal_cv_tree($tree_id){
      // now call the function in the module responsible for the tree.  This 
      // should call the tripal_cv_init_cv with the proper parameters set for
      // getting the cv_id of the vocabulary to use
-     $opt = call_user_func_array($callback,$tree_id);
+     $opt = call_user_func_array($callback,array($tree_id));
 
      // we only need to return the cv_id for this function call.
      $json_array[] = $opt[cv_id];
@@ -57,7 +57,7 @@ function tripal_cv_update_tree() {
    $tripal_mod = preg_replace("/^(tripal_.+?)_cv_tree_(.+)$/","$1",$tree_id);
    if($tripal_mod){
       $callback = $tripal_mod . "_cv_tree";
-      $opt = call_user_func_array($callback,$tree_id);
+      $opt = call_user_func_array($callback,array($tree_id));
    }
 
    # get the CV root terms
