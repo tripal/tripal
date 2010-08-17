@@ -495,6 +495,7 @@ function tripal_analysis_interpro_parseHTMLFile ($analysis_id, $interprofile, $p
           "WHERE CVT.name = 'analysis_interpro_output_hit' ".
           "AND CV.name = 'tripal'";
 	$type_id = db_result(db_query($sql));
+	print "cvterm_id for analysis_interpro_output_iteration_hits is $type_id\n";
 
 	// Load the HTML file and convert it into XML for loading
 	$dom = new domDocument;
@@ -516,8 +517,8 @@ function tripal_analysis_interpro_parseHTMLFile ($analysis_id, $interprofile, $p
 	$interval = intval($no_iterations * 0.01);
 	$idx_iterations = 0;
 
-    // Processed the tables
-    foreach ($tables as $table) {
+	// Processed the tables
+	foreach ($tables as $table) {
         //if (preg_match('/No hits reported/', $table->asXML()) ) {
             //print "skipping this table b/c no hits are reported\n";
         //}
@@ -542,29 +543,29 @@ function tripal_analysis_interpro_parseHTMLFile ($analysis_id, $interprofile, $p
                         // Remove _ORF from the sequence name
                         $seqname = preg_replace('/^(.+?)_\d_.+/', "$1", $a);
                         print "seqname is $seqname\n";
-
+    
                         // Find out how many features match this uniquename
                         $sql = "SELECT count(feature_id) FROM {feature} ".
                         "WHERE uniquename = '%s' ";
                         $no_features = db_result(db_query($sql, $seqname));
-
+						    
                         // If there is only one match, get the feature_id
                         if ($no_features == 1) {
                             $sql = "SELECT feature_id FROM {feature} ".
                                     "WHERE uniquename = '%s' ";
                             $feature_id = db_result(db_query($sql, $seqname));
                             print "\tfeature id is $feature_id\n";
-
+    
                             // If the uniquename matches more than one features then skip and print 'Ambiguous'
                         } else if ($no_features > 1) {
                             fwrite($log, "Ambiguous: ".$seqname." matches more than one feature and is not processed.\n");
                             continue;
-
+    
                         // If the uniquename did not match, skip and print 'Failed'
                         } else {
                             fwrite($log, "Failed: ".$seqname."\n");
                         }
-
+    
                     }
                 }
             }
@@ -582,13 +583,19 @@ function tripal_analysis_interpro_parseHTMLFile ($analysis_id, $interprofile, $p
                 $found_row    = "/<tr><td valign=\"top\"><b>Found.*?in<\/b><\/td>\s*<td valign=\"top\">\s*no.*?entries<\/td>\s*<\/tr>/";
                 $contains_row = "/<tr><td valign=\"top\"><b>Contains<\/b><\/td>\s*<td valign=\"top\">\s*no.*?entries<\/td>\s*<\/tr>/";
                 $go_row       = "/<tr><td valign=\"top\"><b>GO.*?terms<\/b><\/td>\s*<td valign=\"top\">\s*none<\/td>\s*<\/tr>/";
-
+    
                 $table_txt = $table->asXML();
                 $table_txt = preg_replace($parent_row, "", $table_txt);
                 $table_txt = preg_replace($children_row, "", $table_txt);
                 $table_txt = preg_replace($found_row, "", $table_txt);
                 $table_txt = preg_replace($contains_row, "", $table_txt);
                 $table_txt = preg_replace($go_row, "", $table_txt);
+
+                //------------------------------------
+                // Clease unwanted ORF link from table 
+                //------------------------------------
+                $orf_link = "/<b><a href=\"\/iprscan\/wget.*?\">(.*?)<\/a><\/b>/";
+                $table_txt = preg_replace($orf_link, "$1", $table_txt);
 
                 //print "----------------------------\n";
                 //print "old: ".$table->asXML()."\n\n\n";
@@ -597,20 +604,30 @@ function tripal_analysis_interpro_parseHTMLFile ($analysis_id, $interprofile, $p
                 //print "----------------------------\n";
 
                 //------------------------------------
-                // Insert into analysisfeature table
+                // If this feature has already been associated with this analysis, do not reinsert
+                // Otherwise, Insert into analysisfeature table
                 //------------------------------------
-                $sql = "INSERT INTO {analysisfeature} (feature_id, analysis_id) ".
+                $sql = "Select analysisfeature_id as id from {analysisfeature} where feature_id = %d and analysis_id = %d";
+                $analysisfeature =  db_fetch_object(db_query($sql, $feature_id, $analysis_id));
+                if($analysisfeature){ $analysisfeature_id = $analysisfeature->id; }
+                if(!$analysisfeature_id){
+                    print "inserting analysisfeature\n";
+                   $sql = "INSERT INTO {analysisfeature} (feature_id, analysis_id) ".
                         "VALUES (%d, %d)";
-                db_query ($sql, $feature_id, $analysis_id);
+                   db_query ($sql, $feature_id, $analysis_id);
+                   $sql = "Select analysisfeature_id from {analysisfeature} where feature_id = %d and analysis_id = %d";
+                   $analysisfeature =  db_fetch_object(db_query($sql, $feature_id, $analysis_id));
+                   $analysisfeature_id = $analysisfeature->id;
+                }
 
-                // If a matched feature is found, write to log.
-                fwrite($log, "Succeeded: ".$seqname." => feature id:".$feature_id);
+                print "analysisfeature_id is $analysisfeature_id (analysis_id = $analysis_id; feature_id = $feature_id)\n";
+
 
                 // Get the higest rank for this feature_id in analysisfeatureprop table.
                 // If the value of the inserting content is not duplicate, add it to  
                 // analysisfeaturepro with 'higest_rank + 1'
                 $sql = "SELECT MAX(rank) FROM {analysisfeatureprop} AFP ".
-                        "INNER JOIN analysisfeature AF ON AF.analysisfeature_id = AFP.analysisfeature_id ".
+                        "INNER JOIN analysisfeature AF ON AF.analysisfeature_id = AFP.analysisfeature_id ".       
                         "WHERE feature_id=%d ".
                         "AND analysis_id=%d ".
                         "AND type_id=%d ";
@@ -620,32 +637,30 @@ function tripal_analysis_interpro_parseHTMLFile ($analysis_id, $interprofile, $p
                 if ($afp) {
                     $hi_rank = $afp->max + 1;
                 }
-                // Get the newly inserted analysisfeature_id
-                $sql = "SELECT analysisfeature_id FROM {analysisfeature} WHERE feature_id = %d AND analysis_id = %d";
-                $analysisfeature_id = db_result(db_query($sql, $feature_id, $analysis_id));
-                //------------------------------------------------------------
-                // Insert interpro html tags into analysisfeatureprop table
-                //------------------------------------------------------------
-                // Before inserting, make sure it's not a duplicate
-                $sql = "SELECT value FROM {analysisfeatureprop} WHERE analysisfeature_id = %d AND type_id = %d";
-                $result = db_query($sql, $analysisfeature_id, $type_id);
-                $duplicate = 0;
-                while ($afp_value = db_fetch_object($result)) {
-                    if ($table_txt == $afp_value->value) {
+            
+				//------------------------------------------------------------
+				// Insert interpro html tags into analysisfeatureprop table
+				//------------------------------------------------------------
+				// Before inserting, make sure it's not a duplicate
+				$sql = "SELECT value FROM {analysisfeatureprop} WHERE analysisfeature_id = %d AND type_id = %d";
+				$result = db_query($sql, $analysisfeature_id, $type_id);
+				$duplicate = 0;
+				while ($afp_value = db_fetch_object($result)) {
+				    if ($table_txt == $afp_value->value) {
                         $duplicate = 1;
-                    }
-                }
-                if (!$duplicate) {
-                    $sql = "INSERT INTO {analysisfeatureprop} (analysisfeature_id, type_id, value, rank)".
+				    }
+				}
+				if (!$duplicate) {
+				    $sql = "INSERT INTO {analysisfeatureprop} (analysisfeature_id, type_id, value, rank)".
                             "VALUES (%d, %d, '%s', %d)";
-                    db_query($sql, $analysisfeature_id, $type_id, $table_txt, $hi_rank);
-                    fwrite($log, " (Insert)\n"); // write to log
+				    db_query($sql, $analysisfeature_id, $type_id, $table_txt, $hi_rank);
+				    fwrite($log, " (Insert)\n"); // write to log
                     print "\twriting table\n";
-                } else {
-                   fwrite($log, " (Skipped)\n");
+				} else {
+				   fwrite($log, " (Skipped)\n");
                     print "\tskipping table - dup\n";
-                }
-
+				}
+				
                 // Parse GO terms. Make sure GO database schema is installed in chado
                 $go_db_id = db_result(db_query("SELECT db_id FROM {db} WHERE name='GO'"));
                 if (!$go_db_id) {
@@ -660,13 +675,13 @@ function tripal_analysis_interpro_parseHTMLFile ($analysis_id, $interprofile, $p
                             foreach ($gotags as $gotag) {
                                 // Look for 'GO:accession#'
                                 if (preg_match("/^.*?GO:(\d+).*$/", $gotag, $matches)) {
-
+                        	
                                     // Find cvterm_id for the matched GO term
                                     $sql = "SELECT cvterm_id FROM {cvterm} CVT 
                                             INNER JOIN dbxref DBX ON CVT.dbxref_id = DBX.dbxref_id
                                             WHERE DBX.accession = '%s' AND DBX.db_id = %d";
                                     $goterm_id = db_result(db_query($sql, $matches[1], $go_db_id));
-
+                           
                                     //-------------------------------------------
                                     // Insert GO terms into feature_cvterm table
                                     //-------------------------------------------
@@ -691,12 +706,11 @@ function tripal_analysis_interpro_parseHTMLFile ($analysis_id, $interprofile, $p
     }
     db_set_active ($previous_db); // Use drupal database
     print "Done.\nSuccessful and failed entries have been saved in the log file:\n $logfile\n";
-
+	
     fwrite($log, "\n");
     fclose($log);
     return;
 }
-
 
 /*******************************************************************************
  * tripal_analysis_interpro_nodeapi()
@@ -824,9 +838,8 @@ function tripal_get_interpro_results($feature_id){
                  INNER JOIN analysisfeature AF on AF.analysisfeature_id = AFP.analysisfeature_id
                  WHERE AF.analysis_id = %d
                  AND AF.feature_id = %d
-                 AND AFP.type_id = %d
                 ";
-         $interpro_results = db_query($sql, $ana->aid, $feature_id, $type_id);
+         $interpro_results = db_query($sql, $ana->aid, $feature_id);
       	 while ($afp = db_fetch_object($interpro_results)) {
       	 	$content .= $afp->afpvalue;
       	 }
