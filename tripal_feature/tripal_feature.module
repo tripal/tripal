@@ -1003,7 +1003,7 @@ function theme_tripal_feature_counts($node){
    // don't show the summary if the settings in the admin page is turned off
    $show_browser = variable_get('tripal_feature_summary_setting',array('show_feature_summary'));
 
-   if(strcmp($show_browser,'show_feature_summary')!=0){
+   if(strcmp($show_browser[0],'show_feature_summary')!=0){
       return;
    }
 
@@ -1094,7 +1094,7 @@ function theme_tripal_feature_browser($node){
    // don't show the browser if the settings in the admin page is turned off
    $show_browser = variable_get('tripal_feature_browse_setting',array('show_feature_browser'));
 
-   if(strcmp($show_browser,'show_feature_browser')!=0){
+   if(strcmp($show_browser[0],'show_feature_browser')!=0){
       return;
    }
    if ($node->organism_id && $node->type == 'chado_organism') {
