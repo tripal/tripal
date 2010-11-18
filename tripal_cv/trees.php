@@ -216,14 +216,19 @@ function tripal_cv_get_term_children($cvterm_id,$cnt_table = null,
 */
 function tripal_cv_init_browser($cv_id) {
 
-   $content  = "<div id=\"tripal_cv_term_box\" class=\"feature-info-box\">";
-   $content .= "<div class=\"tripal_expandableBox\">";
-   $content .= "<h3>Term Information</h3>";
-   $content .= "</div>";
-   $content .= "<div class=\"tripal_expandableBoxContent\">";
-   $content .= "<div id=\"cvterm_info\"></div></div>";
-   $content .= "<h3>Tree Browser</h3>";
-   $content .= "<div id=\"browser\"</div></div>";
+   $content = "
+        <div id=\"tripal_cv_cvterm_info_box\">
+           <a href=\"#\" onclick=\"$('#tripal_cv_cvterm_info_box').hide()\" style=\"float: right\">Close [X]</a>
+           <h3>Term Information</h3>
+           <div id=\"tripal_cv_cvterm_info\"></div>
+        </div>
+        <div id=\"tripal_ajaxLoading\" style=\"display:none\">
+           <div id=\"loadingText\">Loading...</div>
+           <img src=\"$url\">
+        </div> 
+         <h3>Tree Browser</h3>
+        <div id=\"browser\"</div></div>
+   ";
 
    drupal_json(array('update' => "$content"));
 }
@@ -237,10 +242,12 @@ function tripal_cv_cvterm_info($cvterm_id){
    $tree_id = check_plain($_REQUEST['tree_id']);
 
    // first get any additional information to add to the cvterm
-   $tripal_mod = preg_replace("/^(tripal_.+?)_cv_tree_(.+)$/","$1",$tree_id);
-   if($tripal_mod){
-      $callback = $tripal_mod . "_cvterm_add";
-      $opt = call_user_func_array($callback,array($cvterm_id,$tree_id));
+   if(strcmp($tree_id,'undefined')!=0){
+      $tripal_mod = preg_replace("/^(tripal_.+?)_cv_tree_(.+)$/","$1",$tree_id);
+      if($tripal_mod){
+         $callback = $tripal_mod . "_cvterm_add";
+         $opt = call_user_func_array($callback,array($cvterm_id,$tree_id));
+      }
    }
 
    $sql = "
@@ -284,8 +291,10 @@ function tripal_cv_cvterm_info($cvterm_id){
    ";
 
    // now add in any additional options from a hook
-   foreach ($opt as $key=>$value){
-      $content .= "<tr><th>$key</th><td>$value</td>";
+   if($opt){
+      foreach ($opt as $key=>$value){
+         $content .= "<tr><th>$key</th><td>$value</td>";
+      }
    }
 
    // close out the information table

@@ -76,14 +76,12 @@ function tripal_cv_menu() {
       'type' => MENU_CALLBACK
    );
    // menu items for working with the CV module tree browser
-   /*
    $items['cv_browser'] = array(
       'title' => t('CV Relationship Browser'),
       'page callback' => 'tripal_cv_show_browser',
       'access arguments' => array('access chado_cv content'),
       'type' => MENU_NORMAL_ITEM
    );
-   */
    $items['tripal_cv_init_browser'] = array(
       'path' => 'tripal_cv_init_browser',
       'title' => t('CV Browser'),
@@ -101,7 +99,6 @@ function tripal_cv_menu() {
       'access arguments' => array('access content'),
       'type' => MENU_CALLBACK
    );
-
    // menu items for working with terms
    $items['tripal_cv_cvterm_info'] = array(
       'path' => 'tripal_cv_cvterm_info',
