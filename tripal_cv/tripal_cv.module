@@ -80,7 +80,7 @@ function tripal_cv_menu() {
       'title' => t('CV Relationship Browser'),
       'page callback' => 'tripal_cv_show_browser',
       'access arguments' => array('access chado_cv content'),
-      'type' => MENU_NORMAL_ITEM
+      'type' => MENU_CALLBACK
    );
    $items['tripal_cv_init_browser'] = array(
       'path' => 'tripal_cv_init_browser',
@@ -168,10 +168,12 @@ function tripal_cv_perm(){
 function tripal_cv_admin_page(){
    $add_url = url("admin/tripal/tripal_cv/new");
    $cvtermpath_url = url("admin/tripal/tripal_cv/cvtermpath");
+   $browser_url = url("cv_browser");
    $output = "<a href=\"$add_url\">Add a new controlled vocabulary</a> | ";
-   $output .= "<a href=\"$cvtermpath_url\">Update the cvtermpath table</a> ";  
+   $output .= "<a href=\"$cvtermpath_url\">Update the cvtermpath table</a> | ";
+   $output .= "<a href=\"$browser_url\">Browse a vocabulary</a> ";    
    $output .= drupal_get_form('tripal_cv_select_form');
-   $output .= '<div id="db-edit-div">Please select a database above to view or edit</div>';
+   $output .= '<div id="db-edit-div">Please select a vocabulary above to view or edit</div>';
    return $output;
 }
 /*************************************************************************
