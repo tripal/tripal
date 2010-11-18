@@ -17,7 +17,7 @@ if (Drupal.jsEnabled) {
           isClean = 0;
        }
        if (!baseurl) {
-          // This base_url is obtained when Clena URL function is off
+          // This base_url is obtained when Clean URL function is off
           baseurl = location.href.substring(0,location.href.lastIndexOf('/?q=node'));
           isClean = 1;
        }

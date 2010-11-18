@@ -71,6 +71,7 @@ if (Drupal.jsEnabled) {
          }
       );
    }
+   //------------------------------------------------------------
    // Toggle the tripal_expandableBox
    function toggleExpandableBoxes(){
 	   var status = $('#tripal_expandableBox_toggle_button').html();
@@ -88,5 +89,25 @@ if (Drupal.jsEnabled) {
 		   $('.tripal_expandableBox').css("background-image", icon_up);
 		   $('#tripal_expandableBox_toggle_button').html('[-] Collapse All');
 	   }
+   }
+   //------------------------------------------------------------
+   function tripal_get_base_url() {
+
+       // Get the base url. Drupal can not pass it through a form so we need 
+	    // to get it ourself. Use different patterns to match the url in case
+       // the Clean URL function is turned on
+       var baseurl = location.href.substring(0,location.href.lastIndexOf('/?q=/node'));
+       if(!baseurl) {
+    	    var baseurl = location.href.substring(0,location.href.lastIndexOf('/node'));
+       }
+       if (!baseurl) {
+          // This base_url is obtained when Clena URL function is off
+          var baseurl = location.href.substring(0,location.href.lastIndexOf('/?q=node'));
+       }
+       if (!baseurl) {
+          // The last possibility is we've assigned an alias path, get base_url till the last /
+          var baseurl = location.href.substring(0,location.href.lastIndexOf('/'));
+       }
+       return baseurl;
    }
 }
