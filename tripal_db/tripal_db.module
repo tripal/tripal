@@ -36,7 +36,7 @@ function tripal_db_menu() {
      'title' => 'Edit External Databases',
      'page callback' => 'tripal_ajax_db_edit',
      'access arguments' => array('access administration pages'),
-     'type' => MENU_NORMAL_ITEM,
+     'type' => MENU_CALLBACK,
    );
 
    return $items;
