@@ -52,7 +52,7 @@ function tripal_cv_count_chart($cnt_table, $fk_column,
    $sql = "
       SELECT CVT.name, CVT.cvterm_id, CNT.$cnt_column as num_items
       FROM {$cnt_table} CNT 
-       INNER JOIN cvterm CVT on CNT.$fk_column = CVT.cvterm_id 
+       INNER JOIN {cvterm} CVT on CNT.$fk_column = CVT.cvterm_id 
       WHERE $filter
    ";    
 

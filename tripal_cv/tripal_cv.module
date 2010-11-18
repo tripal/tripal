@@ -27,12 +27,34 @@ function tripal_cv_init(){
 function tripal_cv_menu() {
    $items = array();
 
-   $items['admin/tripal/tripal_cv'] = array(
-     'title' => 'CV',
+   $items['admin/tripal/tripal_cv/cvtermpath'] = array(
+     'title' => 'Update Chado cvtermpath table for GO terms',
      'description' => 'Manage integration of Chado controlled vocabularies',
      'page callback' => 'drupal_get_form',
-     'page arguments' => array('tripal_cv_admin'),
+     'page arguments' => array('tripal_cv_cvtermpath_form'),
      'access arguments' => array('administer site configuration'),
+     'type' => MENU_NORMAL_ITEM,
+   );
+
+   $items['admin/tripal/tripal_cv'] = array(
+     'title' => 'Controlled Vocabulary Management',
+     'description' => 'Manage controlled vocabularies/ontolgoies in Chado ',
+     'page callback' => 'tripal_cv_admin_page',
+     'access arguments' => array('administer site configuration'),
+     'type' => MENU_NORMAL_ITEM,
+   );
+
+   $items['admin/tripal/tripal_cv/new'] = array(
+     'title' => 'Add a Controlled Vocabulary',
+     'page callback' => 'drupal_get_form',
+     'page arguments' => array('tripal_cv_form'),
+     'access arguments' => array('access administration pages'),
+     'type' => MENU_NORMAL_ITEM,
+   );
+   $items['admin/tripal/tripal_cv/edit/js'] = array(
+     'title' => 'Edit Controlled Vocabularies',
+     'page callback' => 'tripal_ajax_cv_edit',
+     'access arguments' => array('access administration pages'),
      'type' => MENU_NORMAL_ITEM,
    );
 
@@ -141,37 +163,254 @@ function tripal_cv_perm(){
    );
 }
 
-/*************************************************************************
-*
-*/
-function tripal_cv_admin () {
-	$form['update_cvtermpath'] = array(
-      '#type' => 'fieldset',
-      '#title' => t('Chado cvtermpath')
-   );
-   $form['update_cvtermpath']['description'] = array(
-       '#type' => 'item',
-       '#value' => t("Submit a job to update chado cvtermpath table."),
-       '#weight' => 1,
-   );
-   $form['update_cvtermpath']['button'] = array(
-      '#type' => 'submit',
-      '#value' => t('Update cvtermpath'),
-      '#weight' => 2,
-   );
-   return system_settings_form($form);
-}
+
 
 /*************************************************************************
 *
 */
-function tripal_cv_admin_validate($form, &$form_state) {
+function tripal_cv_admin_page(){
+   $add_url = url("admin/tripal/tripal_cv/new");
+   $cvtermpath_url = url("admin/tripal/tripal_cv/cvtermpath");
+   $output = "<a href=\"$add_url\">Add a new controlled vocabulary</a> | ";
+   $output .= "<a href=\"$cvtermpath_url\">Update the cvtermpath table</a> ";  
+   $output .= drupal_get_form('tripal_cv_select_form');
+   $output .= '<div id="db-edit-div">Please select a database above to view or edit</div>';
+   return $output;
+}
+/*************************************************************************
+*
+*/
+function tripal_cv_select_form(){
+
+	$previous_db = db_set_active('chado');  // use chado database
+	// get a list of db from chado for user to choose
+	$sql = "SELECT * FROM {cv} WHERE NOT name = 'tripal' ORDER BY name ";
+	$results = db_query ($sql);
+	db_set_active($previous_db); // use drupal database
+
+	$cvs = array();
+   $cvs[] = '';
+	while ($cv = db_fetch_object($results)){
+		$cvs[$cv->cv_id] = $cv->name;
+	}
+
+	$form['cvid'] = array(
+      '#title' => t('Controlled Vocabulary/Ontology Name'),
+      '#type' => 'select',
+      '#options' => $cvs,
+      '#ahah' => array(
+         'path' => 'admin/tripal/tripal_cv/edit/js',
+         'wrapper' => 'db-edit-div',
+         'effect' => 'fade',
+         'event' => 'change',
+         'method' => 'replace',
+      ),
+	);
+
+   return $form;
+}
+/*************************************************************************
+*
+*/
+function tripal_ajax_cv_edit (){ 
+   // get the database id, build the form and then return the JSON object
+   $cvid = $_POST['cvid'];
+   $form = drupal_get_form('tripal_cv_form',$cvid);
+   drupal_json(array('status' => TRUE, 'data' => $form));
+}
+/*************************************************************************
+*
+*/
+function tripal_cv_form(&$form_state = NULL,$cvid = NULL){
+
+   // get this requested database
+   if($cvid){
+      $sql = "SELECT * FROM {cv} WHERE cv_id = %d ";
+      $previous_db = db_set_active('chado');
+      $cv = db_fetch_object(db_query($sql,$cvid));
+      db_set_active($previous_db);
+
+
+      # set the default values.  If there is a value set in the 
+      # form_state then let's use that, otherwise, we'll pull 
+      # the values from the database 
+      $default_db = $form_state['values']['name'];
+      $default_desc = $form_state['values']['description'];
+      $default_url = $form_state['values']['url'];
+      $default_urlprefix = $form_state['values']['urlprefix'];
+      if(!$default_db){
+         $default_cv = $cv->name;
+      }
+      if(!$default_desc){
+         $default_desc = $cv->definition;
+      }
+      $action = 'Update';
+   } else {
+      $action = 'Add';
+   }
+
+   $form['cvid'] = array(
+      '#type' => 'hidden',
+      '#value' => $cvid
+   );
+
+   $form['name']= array(
+      '#type'          => 'textfield',
+      '#title'         => t("Controlled Vocabulary name"),
+      '#description'   => t('Please enter the name for this vocabulary.'),
+      '#required'      => TRUE,
+      '#default_value' => $default_cv,
+      '#weight'        => 1
+   );
+
+   $form['definition']= array(
+      '#type'          => 'textarea',
+      '#title'         => t('Description'),
+      '#description'   => t('Please enter a description for this vocabulary'),
+      '#default_value' => $default_desc,
+      '#weight'        => 2
+   );
+
+   if(strcmp($action,'Update')==0){
+      $form['update'] = array (
+        '#type'         => 'submit',
+        '#value'        => t('Update'),
+        '#weight'       => 5,
+        '#executes_submit_callback' => TRUE,
+      );
+      $form['delete'] = array (
+        '#type'         => 'submit',
+        '#value'        => t('Delete'),
+        '#weight'       => 6,
+        '#executes_submit_callback' => TRUE,
+      );
+   } else {
+      $form['add'] = array (
+        '#type'         => 'submit',
+        '#value'        => t('Add'),
+        '#weight'       => 5,
+        '#executes_submit_callback' => TRUE,
+      );
+   }
+   $form['#redirect'] = 'admin/tripal/tripal_cv';
+
+
+   return $form;
+}
+/************************************************************************
+*
+*/
+function tripal_cv_form_submit($form, &$form_state){
+
+   $name =  $form_state['values']['name'];
+   $desc =  $form_state['values']['definition'];
+   $cvid =  $form_state['values']['cvid'];
+   $op   =  $form_state['values']['op'];
+
+   if($cvid){ 
+      if(strcmp($op,'Update')==0){
+         $sql = "
+            UPDATE {cv} SET 
+              name = '%s',
+              definition = '%s'
+            WHERE cv_id = %d
+         ";
+         $previous_db = db_set_active('chado');
+         $db = db_query($sql,$name,$desc,$cvid);
+         db_set_active($previous_db);
+         if($db){
+           drupal_set_message("Controlled vocabulary updated");
+         } else {
+           drupal_set_message("Failed to update controlled vocabulary.");
+         }
+      } 
+      if(strcmp($op,'Delete')==0){
+         $sql = "
+            DELETE FROM {cv}
+            WHERE cv_id = %d
+         ";
+         $previous_db = db_set_active('chado');
+         $db = db_query($sql,$cvid);
+         db_set_active($previous_db);
+         if($db){
+           drupal_set_message("Controlled vocabulary deleted");
+         } else {
+           drupal_set_message("Failed to delete controlled vocabulary.");
+         }
+      }
+   } 
+   else { 
+      $sql = "
+         INSERT INTO {cv}
+          (name,definition)
+         VALUES 
+          ('%s','%s')
+      ";
+      $previous_db = db_set_active('chado');
+      $db = db_query($sql,$name,$desc);
+      db_set_active($previous_db);
+      if($db){
+        drupal_set_message("External database added");
+      } else {
+        drupal_set_message("Failed to add external database.");
+      }
+   } 
+
+   return '';
+}
+/*************************************************************************
+*
+*/
+function tripal_cv_cvtermpath_form () {
+
+	$previous_db = db_set_active('chado');  // use chado database
+	// get a list of db from chado for user to choose
+	$sql = "SELECT * FROM {cv} WHERE NOT name = 'tripal' ORDER BY name ";
+	$results = db_query ($sql);
+	db_set_active($previous_db); // use drupal database
+
+	$cvs = array();
+   $cvs[] = '';
+	while ($cv = db_fetch_object($results)){
+		$cvs[$cv->cv_id] = $cv->name;
+	}
+
+	$form['cvid'] = array(
+      '#title' => t('Controlled Vocabulary/Ontology Name'),
+      '#type' => 'select',
+      '#options' => $cvs,
+      '#description' => t('Select a controlled vocabulary for which you would like to upate the cvtermpath.'),
+	);
+
+   $form['description'] = array(
+       '#type' => 'item',
+       '#value' => t("Submit a job to update chado cvtermpath table."),
+       '#weight' => 1,
+   );
+   $form['button'] = array(
+      '#type' => 'submit',
+      '#value' => t('Update cvtermpath'),
+      '#weight' => 2,
+   );
+   return $form;
+}
+/*************************************************************************
+*
+*/
+function tripal_cv_cvtermpath_form_validate($form, &$form_state) {
    global $user;
-	// -------------------------------------
+
+   $cvid =  $form_state['values']['cvid'];
+
+   // first get the controlled vocabulary name:
+   $previous_db = db_set_active('chado');
+   $cv = db_fetch_object(db_query("SELECT * FROM {cv} WHERE cv_id = %d",$cvid));
+   db_set_active($previous_db);
+
    // Submit a job to update cvtermpath
-   $job_args = array();
+   $job_args = array($cvid);
    if ($form_state['values']['op'] == t('Update cvtermpath')) {
-      tripal_add_job('Update cvtermpath','tripal_cv',
+      tripal_add_job("Update cvtermpath: $cv->name",'tripal_cv',
          'tripal_cv_update_cvtermpath',$job_args,$user->uid);
    }
 }
@@ -179,20 +418,18 @@ function tripal_cv_admin_validate($form, &$form_state) {
 /***********************************************************
  * Update the cvtermpath table
  */
-function tripal_cv_update_cvtermpath($dummy = NULL, $job_id = NULL) {
+function tripal_cv_update_cvtermpath($cvid = NULL, $job_id = NULL) {
 
-   print "\nUpdating cvtermpath...\n";
-
+   // first get the controlled vocabulary name:
    $previous_db = db_set_active('chado');
-   $sql = "SELECT * FROM fill_cvtermpath('biological_process')";
-   db_query($sql);         
-   $sql = "SELECT * FROM fill_cvtermpath('molecular_function')";
-   db_query($sql);
-   $sql = "SELECT * FROM fill_cvtermpath('cellular_component')";
-   db_query($sql);
+   $cv = db_fetch_object(db_query("SELECT * FROM {cv} WHERE cv_id = %d",$cvid));
+   print "\nUpdating cvtermpath for $cv->name...\n";
+
+   // now fill the cvtermpath table
+   $sql = "SELECT * FROM fill_cvtermpath('%s')";
+   db_query($sql,$cv->name);         
    db_set_active($previous_db);
    return;
-
 }
 
 /*******************************************************************************
