@@ -28,8 +28,8 @@ function tripal_cv_menu() {
    $items = array();
 
    $items['admin/tripal/tripal_cv/cvtermpath'] = array(
-     'title' => 'Update Chado cvtermpath table for GO terms',
-     'description' => 'Manage integration of Chado controlled vocabularies',
+     'title' => 'Update Chado cvtermpath tables',
+     'description' => 'The Chado cvtermpath table provides lineage for terms and is  useful for quickly finding any ancestor parent of a term.  However, this table must be populated.  This page allows for populating of this table one vocabulary at a time',
      'page callback' => 'drupal_get_form',
      'page arguments' => array('tripal_cv_cvtermpath_form'),
      'access arguments' => array('administer site configuration'),
@@ -55,7 +55,7 @@ function tripal_cv_menu() {
      'title' => 'Edit Controlled Vocabularies',
      'page callback' => 'tripal_ajax_cv_edit',
      'access arguments' => array('access administration pages'),
-     'type' => MENU_NORMAL_ITEM,
+     'type' => MENU_CALLBACK,
    );
 
    $items['tripal_cv_chart'] = array(
