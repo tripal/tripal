@@ -58,7 +58,8 @@ function tripal_get_module_active_jobs ($modulename){
 */
 function tripal_jobs_report () {
    //$jobs = db_query("SELECT * FROM {tripal_jobs} ORDER BY job_id DESC");
-   $jobs = pager_query("SELECT * FROM {tripal_jobs} ORDER BY job_id DESC",10,0,"SELECT count(*) FROM {tripal_jobs}");
+   $jobs = pager_query("SELECT * FROM {tripal_jobs} TJ INNER JOIN users U on TJ.uid = U.uid ORDER BY job_id DESC",
+      10,0,"SELECT count(*) FROM {tripal_jobs}");
 	
    // create a table with each row containig stats for 
    // an individual job in the results set.
@@ -68,6 +69,7 @@ function tripal_jobs_report () {
    $output .= "<table class=\"border-table\">". 
               "  <tr>".
               "    <th>Job ID</th>".
+              "    <th>User</th>".
               "    <th>Job Name</th>".
               "    <th nowrap>Dates</th>".             
 			     "    <th>Priority</th>".
@@ -89,6 +91,7 @@ function tripal_jobs_report () {
       }
       $output .= "  <tr>";
       $output .= "    <td>$job->job_id</td>".
+                 "    <td>$job->name</td>".
                  "    <td>$job->job_name</td>".
                  "    <td nowrap>Submit Date: $submit".
                  "    <br>Start Time: $start".
