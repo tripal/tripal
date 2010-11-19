@@ -73,9 +73,11 @@ function tripal_core_install_sql ($sql_file){
       // Find SQL for new objects
       if(preg_match('/^\s*CREATE\s+TABLE/i',$line) and !$in_string){
          $stack[] = 'table';
+         $line = preg_replace("/public./","chado.",$line);
       }
       if(preg_match('/^\s*ALTER\s+TABLE/i',$line) and !$in_string){
          $stack[] = 'alter table';
+         $line = preg_replace("/public./","chado.",$line);
       }
       if(preg_match('/^\s*SET/i',$line) and !$in_string){
          $stack[] = 'set';
@@ -85,21 +87,26 @@ function tripal_core_install_sql ($sql_file){
       }
       if(preg_match('/^\s*CREATE\s+SEQUENCE/i',$line) and !$in_string){
          $stack[] = 'sequence';
+         $line = preg_replace("/public./","chado.",$line);
       }
       if(preg_match('/^\s*CREATE\s+(?:OR\s+REPLACE\s+)*VIEW/i',$line) and !$in_string){
          $stack[] = 'view';
+         $line = preg_replace("/public./","chado.",$line);
       }
       if(preg_match('/^\s*COMMENT/i',$line) and !$in_string and sizeof($stack)==0){
          $stack[] = 'comment';  
+         $line = preg_replace("/public./","chado.",$line);
       }
       if(preg_match('/^\s*CREATE\s+(?:OR\s+REPLACE\s+)*FUNCTION/i',$line) and !$in_string){
          $stack[] = 'function';
+         $line = preg_replace("/public./","chado.",$line);
       }
       if(preg_match('/^\s*CREATE\s+INDEX/i',$line) and !$in_string){
          $stack[] = 'index';
       }
       if(preg_match('/^\s*INSERT\s+INTO/i',$line) and !$in_string){
          $stack[] = 'insert';
+         $line = preg_replace("/public./","chado.",$line);
       }
       if(preg_match('/^\s*CREATE\s+TYPE/i',$line) and !$in_string){
          $stack[] = 'type';
