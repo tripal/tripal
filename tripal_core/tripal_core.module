@@ -8,6 +8,8 @@ require_once "jobs.php";
 require_once "mviews.php";
 require_once "cvterms.php";
 require_once "chado_install.php";
+require_once "gff_loader.php";
+require_once "obo_loader.php";
 
 /*************************************************************************
 *
@@ -121,6 +123,20 @@ function tripal_core_menu() {
      'title' => 'Install Chado v1.11',
      'description' => 'Installs Chado version 1.11 inside the current Drupal database',
      'page callback' => 'tripal_core_install_job',
+     'access arguments' => array('access administration pages'),
+     'type' => MENU_NORMAL_ITEM,
+   );
+   $items['admin/tripal/gff3_load'] = array(
+     'title' => 'Load a GFF3 file',
+     'description' => 'Loads a GFF3 file into Chado',
+     'page callback' => 'tripal_core_load_gff3',
+     'access arguments' => array('access administration pages'),
+     'type' => MENU_NORMAL_ITEM,
+   );
+   $items['admin/tripal/obo_load'] = array(
+     'title' => 'Load an OBO file',
+     'description' => 'Loads an OBO v1.2 file into Chado',
+     'page callback' => 'tripal_core_load_obo_job',
      'access arguments' => array('access administration pages'),
      'type' => MENU_NORMAL_ITEM,
    );
