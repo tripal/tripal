@@ -9,7 +9,6 @@ require_once "mviews.php";
 require_once "cvterms.php";
 require_once "chado_install.php";
 require_once "gff_loader.php";
-require_once "obo_loader.php";
 
 /*************************************************************************
 *
@@ -133,13 +132,7 @@ function tripal_core_menu() {
      'access arguments' => array('access administration pages'),
      'type' => MENU_NORMAL_ITEM,
    );
-   $items['admin/tripal/obo_load'] = array(
-     'title' => 'Load an OBO file',
-     'description' => 'Loads an OBO v1.2 file into Chado',
-     'page callback' => 'tripal_core_load_obo_job',
-     'access arguments' => array('access administration pages'),
-     'type' => MENU_NORMAL_ITEM,
-   );
+
   return $items;
 }
 /************************************************************************
