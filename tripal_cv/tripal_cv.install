@@ -16,6 +16,7 @@ function tripal_cv_install(){
       db_query($sql);
    }
    db_set_active($previous_db);
+
    // Create the MView
    tripal_add_mview(
       // view name
@@ -40,8 +41,30 @@ function tripal_cv_install(){
       ''
    );
 
-}
+   // create the tables that correlate OBO files/references with a chado CV
+   drupal_install_schema('tripal_cv');
 
+}
+/*******************************************************************************
+*  This update adds the new tripal_obo table.  This is an upgrade from
+*  Tripal version 0.2
+*/
+
+function tripal_cv_update_6000(){
+   drupal_install_schema('tripal_cv');
+   $ret = array(
+      '#finished' => 1,
+   );
+   
+   return $ret;
+}
+/************************************************************************
+* Implementation of hook_schema().
+*/
+function tripal_cv_schema() {
+   $schema = tripal_cv_get_schemas();
+   return $schema;
+}
 /*******************************************************************************
 * Implementation of hook_uninstall()
 */
@@ -52,6 +75,8 @@ function tripal_cv_uninstall(){
    if($mview){
 	   tripal_mviews_action('delete',$mview);
 	}
+
+   drupal_uninstall_schema('tripal_cv');
 }
 
 /*******************************************************************************
@@ -70,4 +95,27 @@ function tripal_cv_requirements($phase) {
       }
    }
    return $requirements;
+}
+/************************************************************************
+* This function simply defines all tables needed for the module to work
+* correctly.  By putting the table definitions in a separate function we 
+* can easily provide the entire list for hook_install or individual
+* tables for an update.
+*/
+function tripal_cv_get_schemas (){  
+  $schema = array();
+
+  $schema['tripal_obo'] = array(
+      'fields' => array(
+         'cv_id' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+         'file'  => array('type' => 'varchar','length' => 1024),
+         'url'   => array('type' => 'varchar','length' => 1024),
+      ),
+      'indexes' => array(
+         'cv_id' => array('cv_id')
+       ),
+      'primary key' => array('cv_id'),
+  );
+
+  return $schema;
 }

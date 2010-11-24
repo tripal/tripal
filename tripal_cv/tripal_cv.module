@@ -2,6 +2,7 @@
 
 require_once "charts.php";
 require_once "trees.php";
+require_once "obo_loader.php";
 
 //
 // Copyright 2009 Clemson University
@@ -47,7 +48,14 @@ function tripal_cv_menu() {
    $items['admin/tripal/tripal_cv/new'] = array(
      'title' => 'Add a Controlled Vocabulary',
      'page callback' => 'drupal_get_form',
-     'page arguments' => array('tripal_cv_form'),
+     'page arguments' => array('tripal_cv_add_form'),
+     'access arguments' => array('access administration pages'),
+     'type' => MENU_NORMAL_ITEM,
+   );
+   $items['admin/tripal/tripal_cv/obo'] = array(
+     'title' =>'Upload an OBO File',
+     'page callback' => 'drupal_get_form',
+     'page arguments' => array('tripal_cv_obo_form'),
      'access arguments' => array('access administration pages'),
      'type' => MENU_NORMAL_ITEM,
    );
@@ -167,9 +175,11 @@ function tripal_cv_perm(){
 */
 function tripal_cv_admin_page(){
    $add_url = url("admin/tripal/tripal_cv/new");
+   $obo_url = url("admin/tripal/tripal_cv/obo");
    $cvtermpath_url = url("admin/tripal/tripal_cv/cvtermpath");
    $browser_url = url("cv_browser");
    $output = "<a href=\"$add_url\">Add a new controlled vocabulary</a> | ";
+   $output = "<a href=\"$obo_url\">Upload an OBO file</a> | ";
    $output .= "<a href=\"$cvtermpath_url\">Update the cvtermpath table</a> | ";
    $output .= "<a href=\"$browser_url\">Browse a vocabulary</a> ";    
    $output .= drupal_get_form('tripal_cv_select_form');
@@ -214,50 +224,26 @@ function tripal_cv_select_form(){
 function tripal_ajax_cv_edit (){ 
    // get the database id, build the form and then return the JSON object
    $cvid = $_POST['cvid'];
-   $form = drupal_get_form('tripal_cv_form',$cvid);
+   $form = drupal_get_form('tripal_cv_edit_form',$cvid);
    drupal_json(array('status' => TRUE, 'data' => $form));
 }
 /*************************************************************************
 *
 */
-function tripal_cv_form(&$form_state = NULL,$cvid = NULL){
+function tripal_cv_add_form(&$form_state = NULL){
 
-   // get this requested database
-   if($cvid){
-      $sql = "SELECT * FROM {cv} WHERE cv_id = %d ";
-      $previous_db = db_set_active('chado');
-      $cv = db_fetch_object(db_query($sql,$cvid));
-      db_set_active($previous_db);
-
-
-      # set the default values.  If there is a value set in the 
-      # form_state then let's use that, otherwise, we'll pull 
-      # the values from the database 
-      $default_db = $form_state['values']['name'];
-      $default_desc = $form_state['values']['description'];
-      $default_url = $form_state['values']['url'];
-      $default_urlprefix = $form_state['values']['urlprefix'];
-      if(!$default_db){
-         $default_cv = $cv->name;
-      }
-      if(!$default_desc){
-         $default_desc = $cv->definition;
-      }
-      $action = 'Update';
-   } else {
-      $action = 'Add';
-   }
 
    $form['cvid'] = array(
       '#type' => 'hidden',
       '#value' => $cvid
    );
 
+
    $form['name']= array(
       '#type'          => 'textfield',
       '#title'         => t("Controlled Vocabulary name"),
-      '#description'   => t('Please enter the name for this vocabulary.'),
-      '#required'      => TRUE,
+      '#description'   => t('Please enter the name for this vocabulary.  This field will be ignored if an OBO file or URL is provided above'),
+      '#required'      => FALSE,
       '#default_value' => $default_cv,
       '#weight'        => 1
    );
@@ -270,27 +256,120 @@ function tripal_cv_form(&$form_state = NULL,$cvid = NULL){
       '#weight'        => 2
    );
 
-   if(strcmp($action,'Update')==0){
-      $form['update'] = array (
-        '#type'         => 'submit',
-        '#value'        => t('Update'),
-        '#weight'       => 5,
-        '#executes_submit_callback' => TRUE,
-      );
-      $form['delete'] = array (
-        '#type'         => 'submit',
-        '#value'        => t('Delete'),
-        '#weight'       => 6,
-        '#executes_submit_callback' => TRUE,
-      );
-   } else {
-      $form['add'] = array (
-        '#type'         => 'submit',
-        '#value'        => t('Add'),
-        '#weight'       => 5,
-        '#executes_submit_callback' => TRUE,
-      );
+
+   $form['add'] = array (
+     '#type'         => 'submit',
+     '#value'        => t('Add'),
+     '#weight'       => 5,
+     '#executes_submit_callback' => TRUE,
+   );
+
+   $form['#redirect'] = 'admin/tripal/tripal_cv';
+
+
+   return $form;
+}
+/*************************************************************************
+*
+*/
+function tripal_cv_obo_form(&$form_state = NULL){
+
+
+   $form['obo_url']= array(
+      '#type'          => 'textfield',
+      '#title'         => t('Remote OBO v1.2 Definition File'),
+      '#description'   => t('Please enter a URL the points to online OBO file.  The file will be downloaded and parsed. 
+                             All necessary information for naming of the conrolled vocabulary is contained in the file.
+                             If the specification file contains more than one vocabulary then each will be created.'),
+      '#default_value' => $default_desc,
+      '#weight'        => -1
+   );
+   $form['obo_file']= array(
+      '#type'          => 'textfield',
+      '#title'         => t('Local OBO v1.2 Definition File'),
+      '#description'   => t('Please enter the full path for an OBO definition file.  The path must be accessible to the
+                             server on which this Drupal instance is running.  All necessary information for naming of the
+                             controlled vocabulary is contained in this file.  If the specification file contains more than 
+                             one vocabulary then each will be created.'),
+      '#default_value' => $default_desc,
+      '#weight'        => 0
+   );
+
+
+   $form['upload'] = array (
+     '#type'         => 'submit',
+     '#value'        => t('Upload'),
+     '#weight'       => 5,
+     '#executes_submit_callback' => TRUE,
+   );
+
+   $form['#redirect'] = 'admin/tripal/tripal_cv';
+
+
+   return $form;
+}
+/*************************************************************************
+*
+*/
+function tripal_cv_edit_form(&$form_state = NULL,$cvid = NULL){
+
+  
+   $sql = "SELECT * FROM {cv} WHERE cv_id = %d ";
+   $previous_db = db_set_active('chado');
+   $cv = db_fetch_object(db_query($sql,$cvid));
+   db_set_active($previous_db);
+
+
+   # set the default values.  If there is a value set in the 
+   # form_state then let's use that, otherwise, we'll pull 
+   # the values from the database 
+   $default_db = $form_state['values']['name'];
+   $default_desc = $form_state['values']['description'];
+   $default_url = $form_state['values']['url'];
+   $default_urlprefix = $form_state['values']['urlprefix'];
+   if(!$default_db){
+      $default_cv = $cv->name;
    }
+   if(!$default_desc){
+      $default_desc = $cv->definition;
+   }
+ 
+
+   $form['cvid'] = array(
+      '#type' => 'hidden',
+      '#value' => $cvid
+   );
+ 
+   $form['name']= array(
+      '#type'          => 'textfield',
+      '#title'         => t("Controlled Vocabulary name"),
+      '#description'   => t('Please enter the name for this vocabulary.'),
+      '#required'      => FALSE,
+      '#default_value' => $default_cv,
+      '#weight'        => 1
+   );
+
+   $form['definition']= array(
+      '#type'          => 'textarea',
+      '#title'         => t('Description'),
+      '#description'   => t('Please enter a description for this vocabulary'),
+      '#default_value' => $default_desc,
+      '#weight'        => 2
+   );
+
+   $form['update'] = array (
+     '#type'         => 'submit',
+     '#value'        => t('Update'),
+     '#weight'       => 5,
+     '#executes_submit_callback' => TRUE,
+   );
+   $form['delete'] = array (
+     '#type'         => 'submit',
+     '#value'        => t('Delete'),
+     '#weight'       => 6,
+     '#executes_submit_callback' => TRUE,
+   );
+
    $form['#redirect'] = 'admin/tripal/tripal_cv';
 
 
@@ -299,61 +378,90 @@ function tripal_cv_form(&$form_state = NULL,$cvid = NULL){
 /************************************************************************
 *
 */
-function tripal_cv_form_submit($form, &$form_state){
+function tripal_cv_edit_form_submit($form, &$form_state){
 
    $name =  $form_state['values']['name'];
    $desc =  $form_state['values']['definition'];
    $cvid =  $form_state['values']['cvid'];
    $op   =  $form_state['values']['op'];
-
-   if($cvid){ 
-      if(strcmp($op,'Update')==0){
-         $sql = "
-            UPDATE {cv} SET 
-              name = '%s',
-              definition = '%s'
-            WHERE cv_id = %d
-         ";
-         $previous_db = db_set_active('chado');
-         $db = db_query($sql,$name,$desc,$cvid);
-         db_set_active($previous_db);
-         if($db){
-           drupal_set_message("Controlled vocabulary updated");
-         } else {
-           drupal_set_message("Failed to update controlled vocabulary.");
-         }
-      } 
-      if(strcmp($op,'Delete')==0){
-         $sql = "
-            DELETE FROM {cv}
-            WHERE cv_id = %d
-         ";
-         $previous_db = db_set_active('chado');
-         $db = db_query($sql,$cvid);
-         db_set_active($previous_db);
-         if($db){
-           drupal_set_message("Controlled vocabulary deleted");
-         } else {
-           drupal_set_message("Failed to delete controlled vocabulary.");
-         }
-      }
-   } 
-   else { 
+  
+   if(strcmp($op,'Update')==0){
       $sql = "
-         INSERT INTO {cv}
-          (name,definition)
-         VALUES 
-          ('%s','%s')
+         UPDATE {cv} SET 
+           name = '%s',
+           definition = '%s'
+         WHERE cv_id = %d
       ";
       $previous_db = db_set_active('chado');
-      $db = db_query($sql,$name,$desc);
+      $db = db_query($sql,$name,$desc,$cvid);
       db_set_active($previous_db);
       if($db){
-        drupal_set_message("External database added");
+        drupal_set_message("Controlled vocabulary updated");
       } else {
-        drupal_set_message("Failed to add external database.");
+        drupal_set_message("Failed to update controlled vocabulary.");
       }
    } 
+   if(strcmp($op,'Delete')==0){
+      $sql = "
+         DELETE FROM {cv}
+         WHERE cv_id = %d
+      ";
+      $previous_db = db_set_active('chado');
+      $db = db_query($sql,$cvid);
+      db_set_active($previous_db);
+      if($db){
+        drupal_set_message("Controlled vocabulary deleted");
+      } else {
+        drupal_set_message("Failed to delete controlled vocabulary.");
+      }
+   }
+
+
+   return '';
+}
+/************************************************************************
+*
+*/
+function tripal_cv_add_form_submit($form, &$form_state){
+
+   $name =  $form_state['values']['name'];
+   $desc =  $form_state['values']['definition'];
+
+   $sql = "
+      INSERT INTO {cv}
+       (name,definition)
+      VALUES 
+       ('%s','%s')
+   ";
+   $previous_db = db_set_active('chado');
+   $db = db_query($sql,$name,$desc);
+   db_set_active($previous_db);
+   if($db){
+     drupal_set_message("Controlled vocabulary added");
+   } else {
+     drupal_set_message("Failed to add controlled vocabulary.");
+   }
+
+
+   return '';
+}
+/************************************************************************
+*
+*/
+function tripal_cv_obo_form_submit($form, &$form_state){
+   global $user;
+
+   $obo_url =  $form_state['values']['obo_url'];
+   $obo_file  = $form_state['values']['obo_file'];
+
+   if($obo_url){ 
+   }
+   elseif($obo_file){
+      $args = array($obo_file);
+      tripal_add_job("Load OBO $file",'tripal_cv',
+         "tripal_cv_load_obo_v1_2",$args,$user->uid);
+   } 
+ 
 
    return '';
 }
