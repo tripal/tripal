@@ -32,12 +32,12 @@ function tripal_add_mview ($name,$modulename,$mv_table,$mv_specs,$indexed,$query
    if(drupal_write_record('tripal_mviews',$record)){
 
       // drop the table from chado if it exists
-      $previous_db = db_set_active('chado');  // use chado database
+      $previous_db = tripal_db_set_active('chado');  // use chado database
       if (db_table_exists($mv_table)) {
          $sql = "DROP TABLE $mv_table";
          db_query($sql);
       }
-      db_set_active($previous_db);  // now use drupal database
+      tripal_db_set_active($previous_db);  // now use drupal database
       
       // now add the table for this view
       $index = '';
@@ -45,9 +45,9 @@ function tripal_add_mview ($name,$modulename,$mv_table,$mv_specs,$indexed,$query
          $index = ", CONSTRAINT ". $mv_table . "_index UNIQUE ($indexed) ";
       }
       $sql = "CREATE TABLE {$mv_table} ($mv_specs $index)"; 
-      $previous_db = db_set_active('chado');  // use chado database
+      $previous_db = tripal_db_set_active('chado');  // use chado database
       $results = db_query($sql);
-      db_set_active($previous_db);  // now use drupal database
+      tripal_db_set_active($previous_db);  // now use drupal database
       if($results){
          drupal_set_message(t("View '$name' created"));
       } else {
@@ -101,12 +101,12 @@ function tripal_mviews_action ($op,$mview_id){
       db_query($sql);
 		
 	   // drop the table from chado if it exists
-      $previous_db = db_set_active('chado');  // use chado database
+      $previous_db = tripal_db_set_active('chado');  // use chado database
       if (db_table_exists($mview->mv_table)) {
          $sql = "DROP TABLE $mview->mv_table";
          db_query($sql);
       }
-      db_set_active($previous_db);  // now use drupal database
+      tripal_db_set_active($previous_db);  // now use drupal database
    }
    return '';
 }
@@ -117,10 +117,10 @@ function tripal_update_mview ($mview_id){
    $sql = "SELECT * FROM {tripal_mviews} WHERE mview_id = %d ";
    $mview = db_fetch_object(db_query($sql,$mview_id));
    if($mview){
-      $previous_db = db_set_active('chado');  // use chado database
+      $previous_db = tripal_db_set_active('chado');  // use chado database
 	   $results = db_query("DELETE FROM {$mview->mv_table}");
       $results = db_query("INSERT INTO $mview->mv_table ($mview->query)");
-      db_set_active($previous_db);  // now use drupal database
+      tripal_db_set_active($previous_db);  // now use drupal database
       if($results){
 	      $record = new stdClass();
          $record->mview_id = $mview_id;

@@ -260,9 +260,9 @@ function get_tripal_feature_admin_form_sync_set (&$form) {
   
    // get the list of organisms which will be synced.
    $feature_sql = "SELECT * FROM {Feature} WHERE uniquename = '%s' and organism_id = %d";
-   $previous_db = db_set_active('chado');
+   $previous_db = tripal_db_set_active('chado');
    $feature = db_fetch_object(db_query($feature_sql,$node->title,$node->organism_id));
-   db_set_active($previous_db);
+   tripal_db_set_active($previous_db);
 
    // define the fieldsets
    $form['sync'] = array(
@@ -416,9 +416,9 @@ function chado_feature_insert($node){
    // TODO: the unique index in chado for this also includes the type_id. If the site
    // ever needs to have the same feature name for different types then this will break.
    $feature_sql = "SELECT * FROM {Feature} WHERE uniquename = '%s' and organism_id = %d";
-   $previous_db = db_set_active('chado');
+   $previous_db = tripal_db_set_active('chado');
    $feature = db_fetch_object(db_query($feature_sql,$node->title,$node->organism_id));
-   db_set_active($previous_db);
+   tripal_db_set_active($previous_db);
 
    // if the feature doesn't exist then let's create it in chado.
    if(!$feature){
@@ -435,7 +435,7 @@ function chado_feature_insert($node){
       }
 
       // use chado database
-      $previous_db = db_set_active('chado');
+      $previous_db = tripal_db_set_active('chado');
       db_query($sql,$node->organism_id,$node->title,$node->title,
       $residues,strlen($residues),$obsolete,$node->feature_type);
 
@@ -443,7 +443,7 @@ function chado_feature_insert($node){
       $feature = db_fetch_object(db_query($feature_sql,$node->title,$node->organism_id));
 
       // now use drupal database
-      db_set_active($previous_db);
+      tripal_db_set_active($previous_db);
    }
 
    // add the genbank accession and synonyms
@@ -488,9 +488,9 @@ function chado_feature_delete($node){
    // Remove data from feature tables of chado database.  This will
    // cause a cascade delete and remove all data in referencing tables
    // for this feature
-   $previous_db = db_set_active('chado');
+   $previous_db = tripal_db_set_active('chado');
    db_query("DELETE FROM {feature} WHERE feature_id = %d", $feature_id);
-   db_set_active($previous_db);
+   tripal_db_set_active($previous_db);
    
    drupal_set_message("The feature and all associated data were removed from ".
       "chado");
@@ -525,11 +525,11 @@ function chado_feature_update($node){
       if($node->is_obsolete){
          $obsolete = 'TRUE';
       }
-      $previous_db = db_set_active('chado');  // use chado database
+      $previous_db = tripal_db_set_active('chado');  // use chado database
       db_query($sql,$residues,$node->title,$node->title,
       strlen($residues),$node->organism_id,$obsolete,$node->feature_type,
       $feature->feature_id);
-      db_set_active($previous_db);  // now use drupal database
+      tripal_db_set_active($previous_db);  // now use drupal database
 
       // add the genbank accession & synonyms
       // chado_feature_add_gbaccession($node->gbaccession,$feature->feature_id);
@@ -548,7 +548,7 @@ function chado_feature_add_synonyms($synonyms,$feature_id){
    $syn_array = explode(" ",$synonyms);
 
    // use the chado database
-   $previous_db = db_set_active('chado');
+   $previous_db = tripal_db_set_active('chado');
 
    // remove any old synonyms
    $feature_syn_dsql = "DELETE FROM {feature_synonym} WHERE feature_id = %d";
@@ -558,7 +558,7 @@ function chado_feature_add_synonyms($synonyms,$feature_id){
 
    // return if we don't have any synonmys to add
    if(!$synonyms){
-      db_set_active($previous_db);
+      tripal_db_set_active($previous_db);
       return;
    }
    // iterate through each synonym and add it to the database
@@ -597,7 +597,7 @@ function chado_feature_add_synonyms($synonyms,$feature_id){
    }
 
    // return to the drupal database
-   db_set_active($previous_db);
+   tripal_db_set_active($previous_db);
    return $error;
 
 }
@@ -607,7 +607,7 @@ function chado_feature_add_synonyms($synonyms,$feature_id){
 function chado_feature_add_gbaccession($accession,$feature_id){
 
    // use chado database
-   $previous_db = db_set_active('chado');
+   $previous_db = tripal_db_set_active('chado');
 
    // remove any old accession from genbank dbEST
    $fdbxref_dsql = "DELETE FROM {feature_dbxref} ".
@@ -622,7 +622,7 @@ function chado_feature_add_gbaccession($accession,$feature_id){
 
    // if we don't have an accession number to add then just return
    if(!$accession){
-      db_set_active($previous_db);
+      tripal_db_set_active($previous_db);
       return;
    }
    // get the db_id
@@ -657,7 +657,7 @@ function chado_feature_add_gbaccession($accession,$feature_id){
       $error .= 'Could not add feature database reference. ';
    }
 
-   db_set_active($previous_db);
+   tripal_db_set_active($previous_db);
    return $error;
 }
 
@@ -729,9 +729,9 @@ function chado_feature_form ($node,$param){
    );
    // get the list of organisms
    $sql = "SELECT * FROM {Organism} ORDER BY genus, species";
-   $previous_db = db_set_active('chado');  // use chado database
+   $previous_db = tripal_db_set_active('chado');  // use chado database
    $org_rset = db_query($sql);
-   db_set_active($previous_db);  // now use drupal database
+   tripal_db_set_active($previous_db);  // now use drupal database
 
    //
    $organisms = array();
@@ -804,9 +804,9 @@ function chado_feature_validate($node){
    if($node->feature_id){
       $sql = "SELECT * FROM {Feature} WHERE uniquename = '%s' ".
              "  AND organism_id = %d AND NOT feature_id = %d";
-      $previous_db = db_set_active('chado');
+      $previous_db = tripal_db_set_active('chado');
       $result = db_fetch_object(db_query($sql, $node->title,$node->organism_id,$node->feature_id));
-      db_set_active($previous_db);
+      tripal_db_set_active($previous_db);
       if($result){
          form_set_error('title',t("Feature update cannot proceed. The feature name '$node->title' is not unique for this organism. Please provide a unique name for this feature. "));
       }
@@ -816,9 +816,9 @@ function chado_feature_validate($node){
    // already exist for this organism if it does then we need to throw an error
    else {
       $sql = "SELECT * FROM {Feature} WHERE uniquename = '%s' AND organism_id = %d";
-      $previous_db = db_set_active('chado');
+      $previous_db = tripal_db_set_active('chado');
       $result = db_fetch_object(db_query($sql, $node->title,$node->organism_id));
-      db_set_active($previous_db);
+      tripal_db_set_active($previous_db);
       if($result){
          form_set_error('title',t("Feature insert cannot proceed. The feature name '$node->title' already exists for this organism. Please provide a unique name for this feature. "));
       }
@@ -851,7 +851,7 @@ function chado_feature_load($node){
    $sql = 'SELECT feature_id FROM {chado_feature} WHERE vid = %d';
    $map = db_fetch_object(db_query($sql, $node->vid));
 
-   $previous_db = db_set_active('chado');  // use chado database
+   $previous_db = tripal_db_set_active('chado');  // use chado database
 
    // get information about this organism and add it to the items in this node
    $sql = "SELECT F.feature_id, F.name as featurename, F.uniquename, ".
@@ -898,7 +898,7 @@ function chado_feature_load($node){
       }
    }
    $additions->references = $references;
-   db_set_active($previous_db);  // now use drupal database
+   tripal_db_set_active($previous_db);  // now use drupal database
 
    // get organism node nid
    $sql = "SELECT nid FROM {chado_organism} WHERE organism_id = %d";
@@ -1015,9 +1015,9 @@ function theme_tripal_feature_counts($node){
       		 "WHERE organism_id = %d AND NOT feature_type = 'EST_match' ".
              "ORDER BY num_features desc";
       $features = array();
-      $previous_db = db_set_active('chado');  // use chado database
+      $previous_db = tripal_db_set_active('chado');  // use chado database
       $results = db_query($sql,$node->organism_id);
-      db_set_active($previous_db);  // now use drupal database
+      tripal_db_set_active($previous_db);  // now use drupal database
       $feature = db_fetch_object($results); // retrieve the first result
       if ($feature) {
          $content .= "<div class=\"tripal_feature_summary-info-box\"><br>
@@ -1124,9 +1124,9 @@ function theme_tripal_feature_browser($node){
                "WHERE organism_id = $node->organism_id and ($where_cvt) ".
                "GROUP BY organism_id ";
 
-      $previous_db = db_set_active('chado');  // use chado database
+      $previous_db = tripal_db_set_active('chado');  // use chado database
       $features = pager_query($sql,10,0,$csql);
-      db_set_active($previous_db);  // now use drupal database
+      tripal_db_set_active($previous_db);  // now use drupal database
 
       $content = "<br><div id=\"tripal_feature_box\" class=\"feature-info-box\">";
       $content .= "<div class=\"tripal_expandableBox\">".
@@ -1445,9 +1445,9 @@ function tripal_feature_set_taxonomy ($node,$feature_id){
           "  INNER JOIN Feature F on F.type_id = CVT.cvterm_id ".
           "  INNER JOIN Organism O ON F.organism_id = O.organism_id ".
           "WHERE F.feature_id = $feature_id";
-   $previous_db = db_set_active('chado');  // use chado database
+   $previous_db = tripal_db_set_active('chado');  // use chado database
    $feature = db_fetch_object(db_query($sql));
-   db_set_active($previous_db);  // now use drupal database
+   tripal_db_set_active($previous_db);  // now use drupal database
 
    // Set the feature type for this feature
    if($do_ft && $ft_vid){
@@ -1464,9 +1464,9 @@ function tripal_feature_set_taxonomy ($node,$feature_id){
              "FROM {Library} L ".
              "  INNER JOIN Library_feature LF ON LF.library_id = L.library_id ".
              "WHERE LF.feature_id = %d ";
-      $previous_db = db_set_active('chado');  // use chado database
+      $previous_db = tripal_db_set_active('chado');  // use chado database
       $library = db_fetch_object(db_query($sql,$feature_id));
-      db_set_active($previous_db);  // now use drupal database
+      tripal_db_set_active($previous_db);  // now use drupal database
       $tags["$lb_vid"] = "$library->name";
    }
 
@@ -1483,14 +1483,14 @@ function tripal_feature_set_taxonomy ($node,$feature_id){
              "  INNER JOIN Analysisfeature AF ON AF.analysis_id = A.analysis_id ".
              "WHERE AF.feature_id = $feature_id ";
       $results = db_query($sql);
-      $previous_db = db_set_active('chado');  // use chado database
+      $previous_db = tripal_db_set_active('chado');  // use chado database
       $analysis_terms = array();
       while($analysis=db_fetch_object($results)){
          $tags2["$an_vid"] = "$analysis->name";
          $terms['tags'] = $tags2;
          taxonomy_node_save($node,$terms);
       }
-      db_set_active($previous_db);  // now use drupal database
+      tripal_db_set_active($previous_db);  // now use drupal database
    }
 
 }
@@ -1553,9 +1553,9 @@ function tripal_features_cleanup($dummy = NULL, $job_id = NULL) {
       // if not, then delete the node.  This check will also take care of the
       // case when a node exists and an entry in the chado_feature table exists
       // but no feature with a matching feature_id exists
-      $previous_db = db_set_active('chado');  // use chado database
+      $previous_db = tripal_db_set_active('chado');  // use chado database
       $ftype = db_fetch_object(db_query($tsql,$feature->feature_id));
-      db_set_active($previous_db);  // now use drupal database
+      tripal_db_set_active($previous_db);  // now use drupal database
 
       if(!$ftype){
          node_delete($nid->nid);
@@ -1597,9 +1597,9 @@ function tripal_feature_load_fasta_form (&$form_state = NULL){
 
    // get the list of organisms
    $sql = "SELECT * FROM {Organism} ORDER BY genus,species";
-   $previous_db = db_set_active('chado');  // use chado database
+   $previous_db = tripal_db_set_active('chado');  // use chado database
    $org_rset = db_query($sql);
-   db_set_active($previous_db);  // now use drupal database
+   tripal_db_set_active($previous_db);  // now use drupal database
    $organisms = array();
    $organisms[''] = '';
    while($organism = db_fetch_object($org_rset)){
@@ -1620,9 +1620,9 @@ function tripal_feature_load_fasta_form (&$form_state = NULL){
    $sql = "SELECT * FROM {Library} L ".
           "  INNER JOIN Organism O ON L.organism_id = O.organism_id ".
           "ORDER BY L.name";
-   $previous_db = db_set_active('chado');  // use chado database
+   $previous_db = tripal_db_set_active('chado');  // use chado database
    $lib_rset = db_query($sql);
-   db_set_active($previous_db);  // now use drupal database
+   tripal_db_set_active($previous_db);  // now use drupal database
    $libraries = array();
    $libraries[''] = '';
    while($library = db_fetch_object($lib_rset)){

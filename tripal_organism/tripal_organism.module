@@ -1,9 +1,5 @@
 <?php
 
-//
-// Copyright 2009 Clemson University
-//
-
 /*******************************************************************************
  *  Provide information to drupal about the node types that we're creating
  *  in this module
@@ -189,9 +185,9 @@ function get_tripal_organism_admin_form_taxonomy_set(&$form) {
 
   // get the list of libraries
   $sql = "SELECT * FROM {Organism} ORDER BY genus,species";
-  $previous_db = db_set_active('chado');  // use chado database
+  $previous_db = tripal_db_set_active('chado');  // use chado database
   $org_rset = db_query($sql);
-  db_set_active($previous_db);  // now use drupal database
+  tripal_db_set_active($previous_db);  // now use drupal database
 
   // iterate through all of the libraries
   $org_boxes = array();
@@ -235,9 +231,9 @@ function get_tripal_organism_admin_form_reindex_set(&$form) {
 
   // get the list of libraries
   $sql = "SELECT * FROM {Organism} ORDER BY genus,species";
-  $previous_db = db_set_active('chado');  // use chado database
+  $previous_db = tripal_db_set_active('chado');  // use chado database
   $org_rset = db_query($sql);
-  db_set_active($previous_db);  // now use drupal database
+  tripal_db_set_active($previous_db);  // now use drupal database
 
   // iterate through all of the libraries
   $org_boxes = array();
@@ -288,9 +284,9 @@ function get_tripal_organism_admin_form_sync_set (&$form) {
 
      // get the list of organisms
      $sql = "SELECT * FROM {Organism} ORDER BY genus,species";
-     $previous_db = db_set_active('chado');  // use chado database
+     $previous_db = tripal_db_set_active('chado');  // use chado database
      $org_rset = db_query($sql);
-     db_set_active($previous_db);  // now use drupal database
+     tripal_db_set_active($previous_db);  // now use drupal database
 
      // if we've added any organisms to the list that can be synced
      // then we want to build the form components to allow the user
@@ -363,9 +359,9 @@ function tripal_organism_admin_validate($form, &$form_state) {
         if($organism_id and preg_match("/^\d+$/i",$organism_id)){
            // get the list of organisms
            $sql = "SELECT * FROM {Organism} WHERE organism_id = %d";
-           $previous_db = db_set_active('chado');  // use chado database
+           $previous_db = tripal_db_set_active('chado');  // use chado database
            $organism = db_fetch_object(db_query($sql,$organism_id));
-           db_set_active($previous_db);  // now use drupal database
+           tripal_db_set_active($previous_db);  // now use drupal database
            $to_sync[$organism_id] = "$organism->genus $organism->species";
         }
      }
@@ -392,9 +388,9 @@ function tripal_organism_admin_validate($form, &$form_state) {
        if($organism_id and preg_match("/^\d+$/i",$organism_id)){
           // get the organism info
           $sql = "SELECT * FROM {organism} WHERE organism_id = %d";
-          $previous_db = db_set_active('chado');  // use chado database
+          $previous_db = tripal_db_set_active('chado');  // use chado database
           $organism = db_fetch_object(db_query($sql,$organism_id));
-          db_set_active($previous_db);  // now use drupal database
+          tripal_db_set_active($previous_db);  // now use drupal database
           $job_args[0] = $organism_id;
           tripal_add_job("Reindex features for organism: $organism->genus ".
              "$organism->species",'tripal_organism',
@@ -411,9 +407,9 @@ function tripal_organism_admin_validate($form, &$form_state) {
        if($organism_id and preg_match("/^\d+$/i",$organism_id)){
           // get the organism info
           $sql = "SELECT * FROM {organism} WHERE organism_id = %d";
-          $previous_db = db_set_active('chado');  // use chado database
+          $previous_db = tripal_db_set_active('chado');  // use chado database
           $organism = db_fetch_object(db_query($sql,$organism_id));
-          db_set_active($previous_db);  // now use drupal database
+          tripal_db_set_active($previous_db);  // now use drupal database
           $job_args[0] = $organism_id;
           tripal_add_job("Set taxonomy for features in organism: ".
              "$organism->genus $organism->species",'tripal_organism',
@@ -463,9 +459,9 @@ function chado_organism_insert($node){
             "FROM {Organism} ".
             "WHERE genus = '%s' ".
             "AND species = '%s'";
-   $previous_db = db_set_active('chado');
+   $previous_db = tripal_db_set_active('chado');
    $organism = db_fetch_object(db_query($o_sql, $node->genus,$node->species));
-   db_set_active($previous_db);
+   tripal_db_set_active($previous_db);
 
    // if the feature doesn't exist then let's create it in chado.
    if(!$organism){
@@ -473,13 +469,13 @@ function chado_organism_insert($node){
       $sql = "INSERT INTO {organism} ".
              " (abbreviation, genus, species,common_name,comment) VALUES ".
              " ('%s','%s','%s','%s','%s')";
-     $previous_db = db_set_active('chado');  // use chado database
+     $previous_db = tripal_db_set_active('chado');  // use chado database
      db_query($sql,$node->abbreviation, $node->genus,
      $node->species,$node->common_name,$node->description);
 
      // find the newly entered organism_id
      $organism = db_fetch_object(db_query($o_sql, $node->genus,$node->species));
-     db_set_active($previous_db);  // switch back to drupal database
+     tripal_db_set_active($previous_db);  // switch back to drupal database
 
    }
 
@@ -533,7 +529,7 @@ function chado_organism_delete($node){
    // Test dependency before deleting from chado database. If a library or
    // feature depends on this organism, don't delete it
    $sql = "SELECT feature_id FROM {feature} WHERE organism_id = %d";
-   $previous_db = db_set_active('chado');
+   $previous_db = tripal_db_set_active('chado');
    $check_feature = db_result(db_query($sql, $organism_id));
    $sql = "SELECT library_id FROM {library} WHERE organism_id = %d";
    $check_lib = db_result(db_query($sql, $organism_id));
@@ -552,7 +548,7 @@ function chado_organism_delete($node){
                          "library or feature depends on this organism. It was ".
       					 "not removed from chado.");
    }
-   db_set_active($previous_db);
+   tripal_db_set_active($previous_db);
 }
 /*******************************************************************************
 *
@@ -595,10 +591,10 @@ function chado_organism_update($node){
              "    common_name = '%s' ".
              "WHERE organism_id = %d ";
 
-      $previous_db = db_set_active('chado');  // use chado database
+      $previous_db = tripal_db_set_active('chado');  // use chado database
       db_query($sql,$node->description, $node->abbreviation, $node->genus,
           $node->species,$node->common_name,$org->organism_id);
-      db_set_active($previous_db);  // now use drupal database
+      tripal_db_set_active($previous_db);  // now use drupal database
 
       //$sql = "UPDATE {node} SET title = '$node->genus $node->species' WHERE nid = $node->nid";
       //db_query($sql);
@@ -673,7 +669,7 @@ function chado_organism_load($node){
    $sql = "SELECT organism_id FROM {chado_organism} WHERE vid = %d";
    $org_node = db_fetch_object(db_query($sql, $node->vid));
 
-   $previous_db = db_set_active('chado');  // use chado database
+   $previous_db = tripal_db_set_active('chado');  // use chado database
 
    // get information about this organism and add it to the items in this node
    if ($org_node->organism_id) {
@@ -691,7 +687,7 @@ function chado_organism_load($node){
    $additions->description = $organism->description;
 
 
-   db_set_active($previous_db);  // now use drupal database
+   tripal_db_set_active($previous_db);  // now use drupal database
 
    return $additions;
 }
@@ -715,14 +711,14 @@ function tripal_organism_sync_organisms ($organism_id = NULL, $job_id = NULL){
 
    if(!$organism_id){
       $sql = "SELECT * FROM {Organism} O";
-      $previous_db = db_set_active('chado');  // use chado database
+      $previous_db = tripal_db_set_active('chado');  // use chado database
       $results = db_query($sql);
-      db_set_active($previous_db);  // now use drupal database
+      tripal_db_set_active($previous_db);  // now use drupal database
    } else {
       $sql = "SELECT * FROM {Organism} L WHERE organism_id = %d";
-      $previous_db = db_set_active('chado');  // use chado database
+      $previous_db = tripal_db_set_active('chado');  // use chado database
       $results = db_query($sql,$organism_id);
-      db_set_active($previous_db);  // now use drupal database
+      tripal_db_set_active($previous_db);  // now use drupal database
    }
 
    // We'll use the following SQL statement for checking if the organism
@@ -839,7 +835,7 @@ function get_chado_organisms() {
    if ($no_orgs != 0) {
       $sql = "SELECT organism_id, nid FROM {chado_organism}";
       $result = db_query($sql);
-      $previous_db = db_set_active('chado');
+      $previous_db = tripal_db_set_active('chado');
       $sql = "SELECT genus, species, common_name, comment ".
              "FROM {Organism} ".
              "WHERE organism_id=%d";
@@ -855,7 +851,7 @@ function get_chado_organisms() {
          $organisms [$key] = $organism;
          $count ++;
       }
-      db_set_active($previous_db);
+      tripal_db_set_active($previous_db);
 
       //Sort organisms by common name
       ksort($organisms, SORT_STRING);
@@ -876,9 +872,9 @@ function tripal_organism_reindex_features ($organism_id = NULL, $job_id = NULL){
           "FROM {feature} ".
           "WHERE organism_id = $organism_id ".
           "ORDER BY feature_id";
-   $previous_db = db_set_active('chado');  // use chado database
+   $previous_db = tripal_db_set_active('chado');  // use chado database
    $results = db_query($sql);
-   db_set_active($previous_db);  // now use drupal databa  db_set_active($previous_db);  // now use drupal database
+   tripal_db_set_active($previous_db);  // now use drupal databa  tripal_db_set_active($previous_db);  // now use drupal database
 
    // load into ids array
    $count = 0;
@@ -912,9 +908,9 @@ function tripal_organism_taxonify_features ($organism_id = NULL, $job_id = NULL)
           "FROM {feature} ".
           "WHERE organism_id = $organism_id ".
           "ORDER BY feature_id";
-   $previous_db = db_set_active('chado');  // use chado database
+   $previous_db = tripal_db_set_active('chado');  // use chado database
    $results = db_query($sql);
-   db_set_active($previous_db);  // now use drupal database
+   tripal_db_set_active($previous_db);  // now use drupal database
 
    // load into ids array
    $count = 0;
@@ -961,9 +957,9 @@ function tripal_organism_get_synced() {
 
    // iterate through the organisms and build an array of those that are synced
    while($org = db_fetch_object($orgs)){
-      $previous_db = db_set_active('chado');  // use chado database
+      $previous_db = tripal_db_set_active('chado');  // use chado database
       $info = db_fetch_object(db_query($csql,$org->organism_id));
-      db_set_active($previous_db);  // now use drupal database
+      tripal_db_set_active($previous_db);  // now use drupal database
       $org_list[] = $info;
    }  
    return $org_list;

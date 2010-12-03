@@ -116,7 +116,7 @@ function tripal_get_blast_results($feature_id, $db_id, $max,$ajax){
 
 	// Get cvterm_id for 'analysis_blast_output_iteration_hits' which is required
 	// for inserting into the analysisfeatureprop table
-	$previous_db = db_set_active('chado');
+	$previous_db = tripal_db_set_active('chado');
 	$sql = "SELECT CVT.cvterm_id FROM {cvterm} CVT ".
           "INNER JOIN cv ON cv.cv_id = CVT.cv_id ".
           "WHERE CVT.name = 'analysis_blast_output_iteration_hits' ".
@@ -132,7 +132,7 @@ function tripal_get_blast_results($feature_id, $db_id, $max,$ajax){
 	        WHERE feature_id = %d
 	        AND AFP.type_id = %d ";
 	$result = db_query($sql, $feature_id, $type_id);
-	db_set_active($previous_db);
+	tripal_db_set_active($previous_db);
 
 	// get the HTML content for viewing each of the XML file
 	while ($analysisfeatureprop = db_fetch_object($result)) {
@@ -142,19 +142,19 @@ function tripal_get_blast_results($feature_id, $db_id, $max,$ajax){
 		$att_db_id = $blastsettings [0];
 
 		// get analysis name and date
-		$previous_db = db_set_active('chado');
+		$previous_db = tripal_db_set_active('chado');
 		$sql = "SELECT analysis_id AS aid, name, to_char(timeexecuted, 'MM-DD-YYYY') AS time
 		        FROM {analysis} 		        WHERE analysis_id = %d";
 		$analysis = db_fetch_object(db_query($sql, $analysisfeatureprop->aid));
-		db_set_active($previous_db);
+		tripal_db_set_active($previous_db);
 
 		// If not called by ajax, go through all blast hits
 		if ($ajax == 0) {
 			// Get db object using the db_id
-			$previous_db = db_set_active('chado');
+			$previous_db = tripal_db_set_active('chado');
 			$sql = "SELECT * FROM {db} WHERE db_id=%d";
 			$db = db_fetch_object(db_query($sql, $att_db_id));
-			db_set_active($previous_db);
+			tripal_db_set_active($previous_db);
 
 			$content .= parse_NCBI_Blast_XML($analysisfeatureprop->afpvalue,$db,$max,$feature_id,$ajax, $analysis);
 
@@ -162,10 +162,10 @@ function tripal_get_blast_results($feature_id, $db_id, $max,$ajax){
 		} else {
 			if ($att_db_id == $db_id) {
 				// Get db object using the db_id
-				$previous_db = db_set_active('chado');
+				$previous_db = tripal_db_set_active('chado');
 				$sql = "SELECT * FROM {db} WHERE db_id=%d";
 				$db = db_fetch_object(db_query($sql, $att_db_id));
-				db_set_active($previous_db);
+				tripal_db_set_active($previous_db);
 				$content .= parse_NCBI_Blast_XML($analysisfeatureprop->afpvalue,$db,$max,$feature_id,$ajax, $analysis);
 			}
 		}
@@ -188,7 +188,7 @@ function tripal_get_blast_results_index_version ($feature_id){
 
 	// Get cvterm_id for 'analysis_blast_output_iteration_hits' which is required
 	// for inserting into the analysisfeatureprop table
-	$previous_db = db_set_active('chado');
+	$previous_db = tripal_db_set_active('chado');
 	$sql = "SELECT CVT.cvterm_id FROM {cvterm} CVT ".
           "INNER JOIN cv ON cv.cv_id = CVT.cv_id ".
           "WHERE CVT.name = 'analysis_blast_output_iteration_hits' ".
@@ -204,25 +204,25 @@ function tripal_get_blast_results_index_version ($feature_id){
            WHERE feature_id = %d
            AND AFP.type_id = %d ";
 	$result = db_query($sql, $feature_id, $type_id);
-	db_set_active($previous_db);
+	tripal_db_set_active($previous_db);
 
 	// get the HTML content for viewing each of the XML file
 	while ($analysisfeatureprop = db_fetch_object($result)) {
 		// get analysis name and date
-		$previous_db = db_set_active('chado');
+		$previous_db = tripal_db_set_active('chado');
 		$sql = "SELECT analysis_id AS aid, name, to_char(timeexecuted, 'MM-DD-YYYY') AS time
               FROM {analysis}               WHERE analysis_id = %d";
 		$analysis = db_fetch_object(db_query($sql, $analysisfeatureprop->aid));
-		db_set_active($previous_db);
+		tripal_db_set_active($previous_db);
 
 		$blastsettings = explode("|", $analysisfeatureprop->apvalue);
 		$att_db_id = $blastsettings [0];
 
 		// Get db object using the db_id
-		$previous_db = db_set_active('chado');
+		$previous_db = tripal_db_set_active('chado');
 		$sql = "SELECT * FROM {db} WHERE db_id=%d";
 		$db = db_fetch_object(db_query($sql, $att_db_id));
-		db_set_active($previous_db);
+		tripal_db_set_active($previous_db);
 		// Only index best 10 hits because the default page only shows 10 blast results
 		$max = 10;
 		$content .= parse_NCBI_Blast_XML_index_version($analysisfeatureprop->afpvalue,$db,$max,$feature_id,$ajax, $analysis);
@@ -498,9 +498,9 @@ function parse_NCBI_Blast_XML($xml_string,$db,$max,$feature_id,$ajax, $analysis)
 		} else {
 			// Test if this is another feature in the database
 			$sql = "SELECT feature_id FROM {feature} WHERE uniquename = '%s'";
-			$previous_db = db_set_active('chado');
+			$previous_db = tripal_db_set_active('chado');
 			$hit_feature_id = db_result(db_query($sql, $hit_name));
-			db_set_active($previous_db);
+			tripal_db_set_active($previous_db);
 			// If it is, add link to that feature
 			if ($hit_feature_id) {
 				$hit_url = url("ID$hit_feature_id");
@@ -647,7 +647,7 @@ function tripal_analysis_blast_get_settings() {
       '#weight' => 10
 	);
 
-	$previous_db = db_set_active('chado');  // use chado database
+	$previous_db = tripal_db_set_active('chado');  // use chado database
 	// get a list of db from chado for user to choose
 	$sql = 'SELECT db_id, name FROM {db} ORDER BY lower(name)';
 	$results = db_query ($sql);
@@ -666,7 +666,7 @@ function tripal_analysis_blast_get_settings() {
       '#options' => $form['db_options']['#value'],
       '#attributes' => array(
          'onChange' => "return tripal_update_regex(this)",
-	)
+	    )
 	);
 	$form['blast_parser']['displayname'] = array(
       '#title' => t('Title for the blast analysis'),
@@ -677,7 +677,7 @@ function tripal_analysis_blast_get_settings() {
 	   '#type' => 'checkbox',
 	   '#attributes' => array(
          'onClick' => "return tripal_set_genbank_style(this)",
-	)
+	    )
 	);
 	$form['blast_parser']['hit_id'] = array(
       '#title' => t('Regular expression for Hit Name'),
@@ -695,7 +695,7 @@ function tripal_analysis_blast_get_settings() {
       '#type' => 'submit',
       '#value' => t('Save settings')
 	);
-	db_set_active($previous_db); // use drupal database
+	tripal_db_set_active($previous_db); // use drupal database
 
 	$settings->form = $form;
 	$settings->title = "Tripal Blast";
@@ -720,7 +720,7 @@ function tripal_analysis_blast_parseXMLFile ($analysis_id, $blastdb, $blastfile,
 
 		// Get cvterm_id for 'analysis_blast_output_iteration_hits' which is required
 		// for inserting into the analysisfeatureprop table
-		$previous_db = db_set_active('chado'); // use chado database
+		$previous_db = tripal_db_set_active('chado'); // use chado database
 		$sql = "SELECT CVT.cvterm_id FROM {cvterm} CVT ".
           "INNER JOIN cv ON cv.cv_id = CVT.cv_id ".
           "WHERE CVT.name = 'analysis_blast_output_iteration_hits' ".
@@ -753,9 +753,9 @@ function tripal_analysis_blast_parseXMLFile ($analysis_id, $blastdb, $blastfile,
 						$idx_iterations ++;
 						if ($idx_iterations % $interval == 0) {
 							$percentage = (int) ($idx_iterations / $no_iterations * 100);
-							db_set_active($previous_db);
+							tripal_db_set_active($previous_db);
 							tripal_job_set_progress($job_id, $percentage);
-							$previous_db = db_set_active('chado');
+							$previous_db = tripal_db_set_active('chado');
 							print $percentage."% ";
 						}
 						// now run through the blast hits/hsps of this iteration
@@ -857,7 +857,7 @@ function tripal_analysis_blast_parseXMLFile ($analysis_id, $blastdb, $blastfile,
 				}
 			}
 		}
-		db_set_active ($previous_db); // Use drupal database
+		tripal_db_set_active ($previous_db); // Use drupal database
 
 		// Otherwise, $blastfile is a directory. Iterate through all xml files in it
 	} else {
@@ -870,7 +870,7 @@ function tripal_analysis_blast_parseXMLFile ($analysis_id, $blastdb, $blastfile,
 
 		// Get cvterm_id for 'analysis_blast_output_iteration_hits' which is required
 		// for inserting into the analysisfeatureprop table
-		$previous_db = db_set_active('chado'); // use chado database
+		$previous_db = tripal_db_set_active('chado'); // use chado database
 		$sql = "SELECT CVT.cvterm_id FROM {cvterm} CVT ".
           "INNER JOIN cv ON cv.cv_id = CVT.cv_id ".
           "WHERE CVT.name = 'analysis_blast_output_iteration_hits' ".
@@ -883,9 +883,9 @@ function tripal_analysis_blast_parseXMLFile ($analysis_id, $blastdb, $blastfile,
 				// Set job status
 				if ($no_file % $interval == 0) {
 					$percentage = (int) ($no_file / $total_files * 100);
-					db_set_active($previous_db);
+					tripal_db_set_active($previous_db);
 					tripal_job_set_progress($job_id, $percentage);
-					$previous_db = db_set_active('chado');
+					$previous_db = tripal_db_set_active('chado');
 					print $percentage."% ";
 				}
 
@@ -1016,7 +1016,7 @@ function tripal_analysis_blast_parseXMLFile ($analysis_id, $blastdb, $blastfile,
 				$no_file ++;
 			}
 		}
-		db_set_active ($previous_db); // Use drupal database
+		tripal_db_set_active ($previous_db); // Use drupal database
 	}
 
 	print "Done.\nSuccessful and failed entries have been saved in the log file:\n $logfile\n";
@@ -1171,11 +1171,11 @@ function chado_analysis_blast_form ($node){
       '#weight' => 11
 	);
 
-	$previous_db = db_set_active('chado');  // use chado database
+	$previous_db = tripal_db_set_active('chado');  // use chado database
 	// get a list of db from chado for user to choose
 	$sql = 'SELECT db_id, name FROM {db} ORDER BY lower(name)';
 	$results = db_query ($sql);
-	db_set_active($previous_db);
+	tripal_db_set_active($previous_db);
 	$blastdbs = array();
 	while ($db = db_fetch_object($results)){
 		$blastdbs[$db->db_id] = $db->name;
@@ -1258,9 +1258,9 @@ function chado_analysis_blast_validate($node, &$form){
                 "WHERE program='%s'".
                 "AND programversion='%s'".
                 "AND sourcename='%s'";
-	        $previous_db = db_set_active('chado');
+	        $previous_db = tripal_db_set_active('chado');
 	        $analysis_id = db_result(db_query($sql, $node->program, $node->programversion, $node->sourcename));
-            db_set_active($previous_db);
+            tripal_db_set_active($previous_db);
         
             if($analysis_id){
                 //---------------------------------------------------
@@ -1318,7 +1318,7 @@ function chado_analysis_blast_insert($node){
            "  (name, description, program, programversion, algorithm, ".
            "   sourcename, sourceversion, sourceuri, timeexecuted) ".
            "VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s')";
-	$previous_db = db_set_active('chado');  // use chado database
+	$previous_db = tripal_db_set_active('chado');  // use chado database
 	db_query($sql,$node->analysisname, $node->description,
 	$node->program,$node->programversion,$node->algorithm,
 	$node->sourcename, $node->sourceversion, $node->sourceuri,
@@ -1348,7 +1348,7 @@ function chado_analysis_blast_insert($node){
 	$blastsettings = $node->blastdb."|".$node->blastfile."|".$node->blastparameters;
 	db_query($sql, $analysis_id, $type_id, $blastsettings);
 
-	db_set_active($previous_db);  // switch back to drupal database
+	tripal_db_set_active($previous_db);  // switch back to drupal database
 
     //---------------------------------------------------
 	// Add a job if the user wants to parse the xml output
@@ -1412,7 +1412,7 @@ function chado_analysis_blast_delete($node){
 	db_query($sql_del, $node->nid, $node->vid);
 
 	//Remove from analysisfeatureprop, analysisfeature, analysis, and analysisprop tables
-	$previous_db = db_set_active('chado');
+	$previous_db = tripal_db_set_active('chado');
 	$sql = "SELECT analysisfeature_id FROM {analysisfeature} WHERE analysis_id=%d";
 	$results = db_query($sql, $analysis_id);
 	while ($af = db_fetch_object($results)) {
@@ -1421,7 +1421,7 @@ function chado_analysis_blast_delete($node){
 	db_query("DELETE FROM {analysisfeature} WHERE analysis_id = %d", $analysis_id);
 	db_query("DELETE FROM {analysisprop} WHERE analysis_id = %d", $analysis_id);
 	db_query("DELETE FROM {analysis} WHERE analysis_id = %d", $analysis_id);
-	db_set_active($previous_db);
+	tripal_db_set_active($previous_db);
 }
 
 /*******************************************************************************
@@ -1457,7 +1457,7 @@ function chado_analysis_blast_update($node){
              "    timeexecuted = '%s' ".
              "WHERE analysis_id = %d ";
 
-		$previous_db = db_set_active('chado');  // use chado database
+		$previous_db = tripal_db_set_active('chado');  // use chado database
 		db_query($sql, $node->analysisname, $node->description, $node->program,
 		$node->programversion,$node->algorithm,$node->sourcename,
 		$node->sourceversion, $node->sourceuri, $timestamp, $analysis_id);
@@ -1474,7 +1474,7 @@ function chado_analysis_blast_update($node){
              "WHERE analysis_id = %d AND type_id = %d";
 		$blastsettings = $node->blastdb."|".$node->blastfile."|".$node->blastparameters;
 		db_query($sql, $blastsettings, $analysis_id, $type_id);
-		db_set_active($previous_db);  // switch back to drupal database
+		tripal_db_set_active($previous_db);  // switch back to drupal database
 		// Add a job if the user wants to parse the xml output
 		if($node->blastjob) {
 			$job_args[0] = $analysis_id;
@@ -1521,7 +1521,7 @@ function chado_analysis_blast_load($node){
              "  sourceuri, timeexecuted ".
              "FROM {Analysis} ".
              "WHERE Analysis_id = $ana_node->analysis_id";
-		$previous_db = db_set_active('chado');  // use chado database
+		$previous_db = tripal_db_set_active('chado');  // use chado database
 		$additions = db_fetch_object(db_query($sql));
 
 		// get number of features assc with this analysis
@@ -1548,7 +1548,7 @@ function chado_analysis_blast_load($node){
 		$additions->blastfile = $prop_values[1];
 		$additions->blastparameters = $prop_values[2];
 
-		db_set_active($previous_db);  // now use drupal database
+		tripal_db_set_active($previous_db);  // now use drupal database
 	}
 	// If the analysis has a name, use it as the node title. If not, construct
 	// the title using program programversion, and sourcename

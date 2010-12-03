@@ -160,9 +160,9 @@ function tripal_analysis_kegg_brite($analysis_id, $type_id, $ajax){
               WHERE AP.analysis_id = %d
               AND CVT.definition LIKE 'KEGG BRITE term: %'
               ORDER BY CVT.cvterm_id";
-      $previous_db = db_set_active('chado');
+      $previous_db = tripal_db_set_active('chado');
       $result = db_query($sql, $analysis_id);
-      db_set_active($previous_db);
+      tripal_db_set_active($previous_db);
       while ($brite_term = db_fetch_object($result)) {
          $url = url("brite/$analysis_id/$brite_term->cvterm_id/1");
          $content .= "<li class=\"tripal_kegg_brite_terms\"><a onclick=\"return tripal_update_brite(".
@@ -178,7 +178,7 @@ function tripal_analysis_kegg_brite($analysis_id, $type_id, $ajax){
    // If called by ajax, generate tree structure
    } else {
       // Get BRITE term from cvterm table
-      $previous_db = db_set_active('chado');
+      $previous_db = tripal_db_set_active('chado');
       $sql = 'SELECT name FROM {cvterm} WHERE cvterm_id=%d';
       $brite_term = db_result(db_query($sql, $type_id));
 
@@ -191,7 +191,7 @@ function tripal_analysis_kegg_brite($analysis_id, $type_id, $ajax){
            AND AP.analysis_id = %d";
 
       $result = db_fetch_object(db_query($sql, $brite_term, $analysis_id));
-      db_set_active($previous_db);
+      tripal_db_set_active($previous_db);
       $content .= "<div class=\"tripal_kegg_brite_tree\" id=\"tripal_kegg_brite_tree_$type_id\">$result->value</div>";
    }
     
@@ -354,9 +354,9 @@ function chado_analysis_kegg_insert($node){
       $sql = "SELECT analysis_id ".
              "FROM {Analysis} ".
              "WHERE analysis_id = %d ";
-      $previous_db = db_set_active('chado');
+      $previous_db = tripal_db_set_active('chado');
       $analysis = db_fetch_object(db_query($sql, $node->analysis_id));
-      db_set_active($previous_db);
+      tripal_db_set_active($previous_db);
    }
 
    // If the analysis doesn't exist then let's create it in chado.
@@ -366,7 +366,7 @@ function chado_analysis_kegg_insert($node){
              "  (name, description, program, programversion, algorithm, ".
              "   sourcename, sourceversion, sourceuri, timeexecuted) ".
              "VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s')";
-      $previous_db = db_set_active('chado');  // use chado database
+      $previous_db = tripal_db_set_active('chado');  // use chado database
       db_query($sql,$node->analysisname, $node->description,
       $node->program,$node->programversion,$node->algorithm,
       $node->sourcename, $node->sourceversion, $node->sourceuri,
@@ -396,7 +396,7 @@ function chado_analysis_kegg_insert($node){
       $keggsettings = $node->hierfile;
       db_query($sql, $analysis_id, $type_id, $keggsettings);
 
-      db_set_active($previous_db);  // switch back to drupal database
+      tripal_db_set_active($previous_db);  // switch back to drupal database
       // Add a job if the user wants to parse the html output
       if($node->keggjob) {
          $job_args[0] = $analysis_id;
@@ -465,7 +465,7 @@ function chado_analysis_kegg_delete($node){
    db_query($sql_del, $node->nid, $node->vid);
 
    //Remove from analysisfeatureprop, analysisfeature, analysis, and analysisprop tables
-   $previous_db = db_set_active('chado');
+   $previous_db = tripal_db_set_active('chado');
    $sql = "SELECT analysisfeature_id FROM {analysisfeature} WHERE analysis_id=%d";
    $results = db_query($sql, $analysis_id);
    while ($af = db_fetch_object($results)) {
@@ -474,7 +474,7 @@ function chado_analysis_kegg_delete($node){
    db_query("DELETE FROM {analysisfeature} WHERE analysis_id = %d", $analysis_id);
    db_query("DELETE FROM {analysisprop} WHERE analysis_id = %d", $analysis_id);
    db_query("DELETE FROM {analysis} WHERE analysis_id = %d", $analysis_id);
-   db_set_active($previous_db);
+   tripal_db_set_active($previous_db);
 }
 
 /*******************************************************************************
@@ -510,7 +510,7 @@ function chado_analysis_kegg_update($node){
              "    timeexecuted = '%s' ".
              "WHERE analysis_id = %d ";
 
-      $previous_db = db_set_active('chado');  // use chado database
+      $previous_db = tripal_db_set_active('chado');  // use chado database
       db_query($sql, $node->analysisname, $node->description, $node->program,
       $node->programversion,$node->algorithm,$node->sourcename,
       $node->sourceversion, $node->sourceuri, $timestamp, $analysis_id);
@@ -528,7 +528,7 @@ function chado_analysis_kegg_update($node){
       $keggsettings = $node->hierfile;
       db_query($sql, $keggsettings, $analysis_id, $type_id);
 
-      db_set_active($previous_db);  // switch back to drupal database
+      tripal_db_set_active($previous_db);  // switch back to drupal database
       // Add a job if the user wants to parse the html output
       if($node->keggjob) {
          $job_args[0] = $analysis_id;
@@ -575,7 +575,7 @@ function chado_analysis_kegg_load($node){
              "  sourceuri, timeexecuted ".
              "FROM {Analysis} ".
              "WHERE Analysis_id = $ana_node->analysis_id";
-      $previous_db = db_set_active('chado');  // use chado database
+      $previous_db = tripal_db_set_active('chado');  // use chado database
       $additions = db_fetch_object(db_query($sql));
 
       // get cvterm_id for 'analysis_kegg_settings'
@@ -592,7 +592,7 @@ function chado_analysis_kegg_load($node){
       
       $additions->hierfile = $analysisprop;
 
-      db_set_active($previous_db);  // now use drupal database
+      tripal_db_set_active($previous_db);  // now use drupal database
    }
    // If the analysis has a name, use it as the node title. If not, construct
    // the title using program programversion, and sourcename
@@ -674,14 +674,14 @@ function tripal_analysis_kegg_parseHierFile ($analysis_id, $hierfile, $base_path
                                    WHERE CV.name = 'tripal' AND CVT.name = '%s'
                                    )
                    ";
-            $previous_db = db_set_active('chado');
+            $previous_db = tripal_db_set_active('chado');
             $oldvalue = db_result(db_query($sql, $analysis_id, $type));
-            db_set_active($previous_db);
+            tripal_db_set_active($previous_db);
             
             // Insert the content
             if ($oldvalue != $content) {
             	
-            	$previous_db = db_set_active('chado'); // Use chado database
+            	$previous_db = tripal_db_set_active('chado'); // Use chado database
             	// Get type_id for the BRITE term
             	$sql = "SELECT cvterm_id 
                        FROM {cvterm} CVT 
@@ -697,7 +697,7 @@ function tripal_analysis_kegg_parseHierFile ($analysis_id, $hierfile, $base_path
                        VALUES (%d, %d,'$content')";   
                
                db_query($sql, $analysis_id, $brite_cvterm_id);
-               db_set_active($previous_db); // Use drupal database
+               tripal_db_set_active($previous_db); // Use drupal database
             }
             
          }
@@ -735,14 +735,14 @@ function tripal_analysis_kegg_parse_keg_file ($file,&$type,$analysis_id, $base_p
          // Set type as the matched term in the DEFINITION line and add it as a new cvterm
          $type = $matches[1];
          // Before inserting, make sure this cvterm doesn't exist
-         $previous_db = db_set_active('chado');
+         $previous_db = tripal_db_set_active('chado');
          $sql = "SELECT cvterm_id 
                  FROM {cvterm} CVT
                  INNER JOIN cv ON cv.cv_id = CVT.cv_id
                  WHERE cv.name = 'tripal'
                  AND CVT.name = '%s'";
          $type_id = db_result(db_query($sql, $type));
-         db_set_active($previous_db);
+         tripal_db_set_active($previous_db);
          if (!$type_id) {
             tripal_add_cvterms($type, "KEGG BRITE term: $type");
             // Get newly added type_id
@@ -751,9 +751,9 @@ function tripal_analysis_kegg_parse_keg_file ($file,&$type,$analysis_id, $base_p
                     INNER JOIN cv ON cv.cv_id = CVT.cv_id
                     WHERE cv.name = 'tripal'
                     AND CVT.name = '%s'";
-            $previous_db = db_set_active('chado');
+            $previous_db = tripal_db_set_active('chado');
             $type_id = db_result(db_query($sql, $type));
-            db_set_active($previous_db);
+            tripal_db_set_active($previous_db);
          }
       }
       // get the depth of the hierarch (e.g. A,B,C or D);
@@ -784,25 +784,25 @@ function tripal_analysis_kegg_parse_keg_file ($file,&$type,$analysis_id, $base_p
                  INNER JOIN cv ON cv.cv_id = CVT.cv_id
                  WHERE cv.name = 'tripal'
                  AND CVT.name = '%s'";
-         $previous_db = db_set_active('chado');
+         $previous_db = tripal_db_set_active('chado');
          $brite_data_type_id = db_result(db_query($sql, 'kegg_brite_data'));
-         db_set_active($previous_db);
+         tripal_db_set_active($previous_db);
          
          $uniquename = $mat[1];
          // Find feature_id using uniquename
          $sql = "SELECT feature_id FROM {feature} WHERE uniquename = '%s'";
-         $previous_db = db_set_active('chado');
+         $previous_db = tripal_db_set_active('chado');
          $feature_id = db_result(db_query($sql, $uniquename)); // retrive first returned feature_id (assuming uniquename is unique)
-         db_set_active($previous_db);
+         tripal_db_set_active($previous_db);
          // Get the higest rank for this feature_id in analysisfeatureprop table
          $sql = "SELECT MAX(rank) FROM {analysisfeatureprop} AFP ".
                 "INNER JOIN analysisfeature AF ON AF.analysisfeature_id = AFP.analysisfeature_id ".       
                 "WHERE feature_id=%d ".
                 "AND analysis_id=%d ".
                 "AND type_id=%d ";
-         $previous_db = db_set_active('chado');
+         $previous_db = tripal_db_set_active('chado');
          $afp =  db_fetch_object(db_query($sql, $feature_id, $analysis_id, $brite_data_type_id));
-         db_set_active($prevous_db);
+         tripal_db_set_active($prevous_db);
          $hi_rank = 0;
          if ($afp) {
             $hi_rank = $afp->max + 1;
@@ -812,22 +812,22 @@ function tripal_analysis_kegg_parse_keg_file ($file,&$type,$analysis_id, $base_p
          //------------------------------------------------------
          $sql = "INSERT INTO {analysisfeature} (feature_id, analysis_id) ".
                 "VALUES (%d, %d)";
-         $previous_db = db_set_active('chado');
+         $previous_db = tripal_db_set_active('chado');
          db_query ($sql, $feature_id, $analysis_id);
-         db_set_active($previous_db);
+         tripal_db_set_active($previous_db);
          // Get the newly inserted analysisfeature_id
          $sql = "SELECT analysisfeature_id FROM {analysisfeature} WHERE feature_id = %d AND analysis_id = %d";
-         $previous_db = db_set_active('chado');
+         $previous_db = tripal_db_set_active('chado');
          $analysisfeature_id = db_result(db_query($sql, $feature_id, $analysis_id));
-         db_set_active($previous_db);
+         tripal_db_set_active($previous_db);
          //------------------------------------------------------
          // Insert into analysisfeatureprop table
          //------------------------------------------------------
          // Before inserting, make sure it's not a duplicate
          $sql = "SELECT value FROM {analysisfeatureprop} WHERE analysisfeature_id = %d AND type_id = %d";
-         $previous_db = db_set_active('chado');
+         $previous_db = tripal_db_set_active('chado');
          $result = db_query($sql, $analysisfeature_id, $brite_data_type_id);
-         db_set_active($previous_db);
+         tripal_db_set_active($previous_db);
          $duplicate = 0;
          while ($afp_value = db_fetch_object($result)) {
             preg_match("/<a.+?>(.+)<\/a>/",$afp_value->value,$old_ids);
@@ -839,9 +839,9 @@ function tripal_analysis_kegg_parse_keg_file ($file,&$type,$analysis_id, $base_p
          if (!$duplicate) {
             $sql = "INSERT INTO {analysisfeatureprop} (analysisfeature_id, type_id, value, rank)".
                    "VALUES (%d, %d, '%s', %d)";
-            $previous_db = db_set_active('chado');
+            $previous_db = tripal_db_set_active('chado');
             db_query($sql, $analysisfeature_id, $brite_data_type_id, $mat[2], $hi_rank);
-            db_set_active($previous_db);
+            tripal_db_set_active($previous_db);
          }
          // Add link to each matched feature
          $feature_url = url("$prefix$feature_id");
@@ -932,7 +932,7 @@ function theme_tripal_analysis_kegg_search_index($node){
               INNER JOIN cv ON cv.cv_id = CVT.cv_id
               WHERE cv.name = 'tripal'
               AND CVT.name = '%s'";
-      $previous_db = db_set_active('chado');
+      $previous_db = tripal_db_set_active('chado');
       $brite_data_type_id = db_result(db_query($sql, 'kegg_brite_data'));
       
       // Get analysis id
@@ -958,10 +958,10 @@ function theme_tripal_analysis_kegg_search_index($node){
                     WHERE analysis_id = %d";
             $ana_details = db_fetch_object(db_query($sql, $ana->aid));
             // Find node id for the analysis
-            db_set_active($previous_db);
+            tripal_db_set_active($previous_db);
             $ana_nid = db_result(db_query("SELECT nid FROM {chado_analysis} WHERE analysis_id = %d", $ana->aid));
             $ana_url = url("node/".$ana_nid);
-            $previous_db = db_set_active('chado');
+            $previous_db = tripal_db_set_active('chado');
        
             // Show content
             $content .= "$ana_details->name";
@@ -979,7 +979,7 @@ function theme_tripal_analysis_kegg_search_index($node){
             }
          }
       }
-      db_set_active($previous_db);
+      tripal_db_set_active($previous_db);
       return $content;
    }
 }
@@ -1031,9 +1031,9 @@ function tripal_analysis_kegg_full_report($analysis_id){
            WHERE AP.analysis_id = %d
               AND CVT.definition LIKE 'KEGG BRITE term: %'
            ORDER BY CVT.cvterm_id";
-   $previous_db = db_set_active('chado');
+   $previous_db = tripal_db_set_active('chado');
    $result = db_query($sql, $analysis_id);
-   db_set_active($previous_db);
+   tripal_db_set_active($previous_db);
 
    if (db_result($result)) {
       $content = tripal_analysis_kegg_brite($analysis_id, $type_id, 0);
@@ -1086,7 +1086,7 @@ function tripal_analysis_kegg_feature_add($node) {
               INNER JOIN cv ON cv.cv_id = CVT.cv_id
               WHERE cv.name = 'tripal'
               AND CVT.name = '%s'";
-      $previous_db = db_set_active('chado');
+      $previous_db = tripal_db_set_active('chado');
       $brite_data_type_id = db_result(db_query($sql, 'kegg_brite_data'));
       
       // Get analysis id
@@ -1119,10 +1119,10 @@ function tripal_analysis_kegg_feature_add($node) {
                     WHERE analysis_id = %d";
             $ana_details = db_fetch_object(db_query($sql, $ana->aid));
             // Find node id for the analysis
-            db_set_active($previous_db);
+            tripal_db_set_active($previous_db);
             $ana_nid = db_result(db_query("SELECT nid FROM {chado_analysis} WHERE analysis_id = %d", $ana->aid));
             $ana_url = url("node/".$ana_nid);
-            $previous_db = db_set_active('chado');
+            $previous_db = tripal_db_set_active('chado');
        
             // Show content
             $content .= "<strong>Analysis Date:</strong> $ana_details->time
@@ -1143,7 +1143,7 @@ function tripal_analysis_kegg_feature_add($node) {
          }
          $content .= '</td></tr></table></span></div></div>';
       }
-      db_set_active($previous_db);
+      tripal_db_set_active($previous_db);
    return $content;
 }
 /************************************************************************
@@ -1202,9 +1202,9 @@ function tripal_analysis_kegg_select_form(&$form_state = NULL,$node){
      WHERE organism_id = %d
      ORDER BY analysis_id DESC
    ";
-   $previous_db = db_set_active('chado');
+   $previous_db = tripal_db_set_active('chado');
    $results = db_query($sql,$node->organism_id);
-   db_set_active($previous_db);
+   tripal_db_set_active($previous_db);
 
    $analyses = array();
    $analyses[''] = '';

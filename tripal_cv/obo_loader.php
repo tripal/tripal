@@ -96,13 +96,15 @@ function tripal_cv_load_obo_add_ref($name,$path){
 */
 function tripal_cv_load_obo_v1_2($file,$jobid = NULL,&$newcvs) {
 
+   global $previous_db;
+
    $header = array();
    $obo = array();
    
    print "Opening File $file\n";
 
    // set the search path
-   db_query("set search_path to chado,public");  // TODO: fix this
+   $previous_db = tripal_db_set_active('chado');
 
    // make sure we have an 'internal' and a '_global' database
    if(!tripal_cv_obo_add_db('internal')){
@@ -148,6 +150,7 @@ function tripal_cv_obo_quiterror ($message){
 */
 function tripal_cv_obo_loader_done (){
    // return the search path to normal
+   tripal_db_set_active($previous_db);
    db_query("set search_path to public");  
    return '';
 }
@@ -345,7 +348,7 @@ function tripal_cv_obo_add_cv($name,$comment){
 function tripal_cv_obo_add_cvterm_prop($cvterm,$property,$value,$rank){
 
    // make sure the 'cvterm_property_type' CV exists
-   $cv = tripal_cv_obo_add_cv($property,'');
+   $cv = tripal_cv_obo_add_cv('cvterm_property_type','');
    if(!$cv){ 
       tripal_cv_obo_quiterror("Cannot add/find cvterm_property_type cvterm");
    }

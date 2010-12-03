@@ -187,9 +187,9 @@ function chado_analysis_interpro_insert($node){
 		$sql = "SELECT analysis_id ".
                "FROM {Analysis} ".
                "WHERE analysis_id = %d ";
-		$previous_db = db_set_active('chado');
+		$previous_db = tripal_db_set_active('chado');
 		$analysis = db_fetch_object(db_query($sql, $node->analysis_id));
-		db_set_active($previous_db);
+		tripal_db_set_active($previous_db);
 	}
 
 	// If the analysis doesn't exist then let's create it in chado.
@@ -199,7 +199,7 @@ function chado_analysis_interpro_insert($node){
              "  (name, description, program, programversion, algorithm, ".
              "   sourcename, sourceversion, sourceuri, timeexecuted) ".
              "VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s')";
-		$previous_db = db_set_active('chado');  // use chado database
+		$previous_db = tripal_db_set_active('chado');  // use chado database
 		db_query($sql,$node->analysisname, $node->description,
 		$node->program,$node->programversion,$node->algorithm,
 		$node->sourcename, $node->sourceversion, $node->sourceuri,
@@ -227,7 +227,7 @@ function chado_analysis_interpro_insert($node){
 		$interprosettings = $node->interprofile."|".$node->interproparameters;
 		db_query($sql, $analysis_id, $type_id, $interprosettings);
 
-		db_set_active($previous_db);  // switch back to drupal database
+		tripal_db_set_active($previous_db);  // switch back to drupal database
 		// Add a job if the user wants to parse the html output
 		if($node->interprojob) {
 			$job_args[0] = $analysis_id;
@@ -300,7 +300,7 @@ function chado_analysis_interpro_delete($node){
 	db_query($sql_del, $node->nid, $node->vid);
 
 	//Remove from analysisfeatureprop, analysisfeature, analysis, and analysisprop tables
-   $previous_db = db_set_active('chado');
+   $previous_db = tripal_db_set_active('chado');
    $sql = "SELECT analysisfeature_id FROM {analysisfeature} WHERE analysis_id=%d";
    $results = db_query($sql, $analysis_id);
    while ($af = db_fetch_object($results)) {
@@ -309,7 +309,7 @@ function chado_analysis_interpro_delete($node){
    db_query("DELETE FROM {analysisfeature} WHERE analysis_id = %d", $analysis_id);
    db_query("DELETE FROM {analysisprop} WHERE analysis_id = %d", $analysis_id);
    db_query("DELETE FROM {analysis} WHERE analysis_id = %d", $analysis_id);
-   db_set_active($previous_db);
+   tripal_db_set_active($previous_db);
 }
 
 /*******************************************************************************
@@ -345,7 +345,7 @@ function chado_analysis_interpro_update($node){
              "    timeexecuted = '%s' ".
              "WHERE analysis_id = %d ";
 
-		$previous_db = db_set_active('chado');  // use chado database
+		$previous_db = tripal_db_set_active('chado');  // use chado database
 		db_query($sql, $node->analysisname, $node->description, $node->program,
 		$node->programversion,$node->algorithm,$node->sourcename,
 		$node->sourceversion, $node->sourceuri, $timestamp, $analysis_id);
@@ -362,7 +362,7 @@ function chado_analysis_interpro_update($node){
              "WHERE analysis_id = %d AND type_id = %d";
 		$interprosettings = $node->interprofile."|".$node->interproparameters;
 		db_query($sql, $interprosettings, $analysis_id, $type_id);
-		db_set_active($previous_db);  // switch back to drupal database
+		tripal_db_set_active($previous_db);  // switch back to drupal database
 		// Add a job if the user wants to parse the html output
 		if($node->interprojob) {
 			$job_args[0] = $analysis_id;
@@ -413,7 +413,7 @@ function chado_analysis_interpro_load($node){
              "  sourceuri, timeexecuted ".
              "FROM {Analysis} ".
              "WHERE Analysis_id = $ana_node->analysis_id";
-		$previous_db = db_set_active('chado');  // use chado database
+		$previous_db = tripal_db_set_active('chado');  // use chado database
 		$additions = db_fetch_object(db_query($sql));
 
 		// get cvterm_id for 'analysis_interpro_settings'
@@ -431,7 +431,7 @@ function chado_analysis_interpro_load($node){
 		$additions->interprofile = $prop_values[0];
 		$additions->interproparameters = $prop_values[1];
 
-		db_set_active($previous_db);  // now use drupal database
+		tripal_db_set_active($previous_db);  // now use drupal database
 	}
 	// If the analysis has a name, use it as the node title. If not, construct
 	// the title using program programversion, and sourcename
@@ -489,7 +489,7 @@ function tripal_analysis_interpro_parseHTMLFile ($analysis_id, $interprofile, $p
 
 	// Get cvterm_id for 'analysis_interpro_output_iteration_hits' which is required
 	// for inserting into the analysisfeatureprop table
-	$previous_db = db_set_active('chado'); // use chado database
+	$previous_db = tripal_db_set_active('chado'); // use chado database
 	$sql = "SELECT CVT.cvterm_id FROM {cvterm} CVT ".
           "INNER JOIN cv ON cv.cv_id = CVT.cv_id ".
           "WHERE CVT.name = 'analysis_interpro_output_hit' ".
@@ -527,9 +527,9 @@ function tripal_analysis_interpro_parseHTMLFile ($analysis_id, $interprofile, $p
             $idx_iterations ++;
             if ($idx_iterations % $interval == 0) {
                     $percentage = (int) ($idx_iterations / $no_iterations * 100);
-                    db_set_active($previous_db);
+                    tripal_db_set_active($previous_db);
                     tripal_job_set_progress($job_id, $percentage);
-                    $previous_db = db_set_active('chado');
+                    $previous_db = tripal_db_set_active('chado');
                     print $percentage."% ";
             }
 
@@ -704,7 +704,7 @@ function tripal_analysis_interpro_parseHTMLFile ($analysis_id, $interprofile, $p
             }
         }
     }
-    db_set_active ($previous_db); // Use drupal database
+    tripal_db_set_active ($previous_db); // Use drupal database
     print "Done.\nSuccessful and failed entries have been saved in the log file:\n $logfile\n";
 	
     fwrite($log, "\n");
@@ -786,7 +786,7 @@ function theme_parse_EBI_Interpro_XML_index_version ($node) {
 function tripal_get_interpro_results($feature_id){
 	// Get cvterm_id for 'analysis_interpro_output_hit' which is required
 	// for inserting into the analysisfeatureprop table
-	$previous_db = db_set_active('chado');
+	$previous_db = tripal_db_set_active('chado');
 	$sql = "SELECT CVT.cvterm_id FROM {cvterm} CVT 
 	        INNER JOIN cv ON cv.cv_id = CVT.cv_id
 	        WHERE CVT.name = 'analysis_interpro_output_hit'
@@ -823,10 +823,10 @@ function tripal_get_interpro_results($feature_id){
          		  WHERE analysis_id = %d";
          $ana_details = db_fetch_object(db_query($sql, $ana->aid));
          // Find node id for the analysis
-         db_set_active($previous_db);
+         tripal_db_set_active($previous_db);
          $ana_nid = db_result(db_query("SELECT nid FROM {chado_analysis} WHERE analysis_id = %d", $ana->aid));
          $ana_url = url("node/".$ana_nid);
-         $previous_db = db_set_active('chado');
+         $previous_db = tripal_db_set_active('chado');
        
          // Show content
          $content .= "<strong>Analysis Date:</strong> $ana_details->time
@@ -847,7 +847,7 @@ function tripal_get_interpro_results($feature_id){
       $content .= '</td></tr></table></span></div></div>';
    }
      
-   db_set_active($previous_db);
+   tripal_db_set_active($previous_db);
 	return $content;
 }
 
@@ -858,7 +858,7 @@ function tripal_get_interpro_results($feature_id){
 function tripal_get_interpro_results_index_version($feature_id){
    // Get cvterm_id for 'analysis_interpro_output_hit' which is required
    // for inserting into the analysisfeatureprop table
-   $previous_db = db_set_active('chado');
+   $previous_db = tripal_db_set_active('chado');
    $sql = "SELECT CVT.cvterm_id FROM {cvterm} CVT ".
           "INNER JOIN cv ON cv.cv_id = CVT.cv_id ".
           "WHERE CVT.name = 'analysis_interpro_output_hit' ".
@@ -872,7 +872,7 @@ function tripal_get_interpro_results_index_version($feature_id){
           "WHERE feature_id = %d ".
           "AND AFP.type_id = %d ";
    $result = db_query($sql, $feature_id, $type_id);
-   db_set_active($previous_db);
+   tripal_db_set_active($previous_db);
    if (db_result($result)) {
       // get the HTML content for viewing each of the XML file
       while ($analysisfeatureprop = db_fetch_object($result)) {

@@ -70,11 +70,11 @@ function tripal_db_admin_page(){
 */
 function tripal_db_select_form(){
 
-	$previous_db = db_set_active('chado');  // use chado database
+	$previous_db = tripal_db_set_active('chado');  // use chado database
 	// get a list of db from chado for user to choose
 	$sql = "SELECT * FROM {db} WHERE NOT name = 'tripal' ORDER BY name ";
 	$results = db_query ($sql);
-	db_set_active($previous_db); // use drupal database
+	tripal_db_set_active($previous_db); // use drupal database
 
 	$dbs = array();
    $dbs[] = '';
@@ -114,9 +114,9 @@ function tripal_db_form(&$form_state = NULL,$dbid = NULL){
    // get this requested database
    if($dbid){
       $sql = "SELECT * FROM {db} WHERE db_id = $dbid ";
-      $previous_db = db_set_active('chado');
+      $previous_db = tripal_db_set_active('chado');
       $db = db_fetch_object(db_query($sql));
-      db_set_active($previous_db);
+      tripal_db_set_active($previous_db);
 
 
       # set the default values.  If there is a value set in the 
@@ -228,9 +228,9 @@ function tripal_db_form_submit($form, &$form_state){
               urlprefix = '%s'
             WHERE db_id = %d
          ";
-         $previous_db = db_set_active('chado');
+         $previous_db = tripal_db_set_active('chado');
          $db = db_query($sql,$name,$desc,$url,$urlp,$dbid);
-         db_set_active($previous_db);
+         tripal_db_set_active($previous_db);
          if($db){
            drupal_set_message("External database updated");
          } else {
@@ -242,9 +242,9 @@ function tripal_db_form_submit($form, &$form_state){
             DELETE FROM {db}
             WHERE db_id = %d
          ";
-         $previous_db = db_set_active('chado');
+         $previous_db = tripal_db_set_active('chado');
          $db = db_query($sql,$dbid);
-         db_set_active($previous_db);
+         tripal_db_set_active($previous_db);
          if($db){
            drupal_set_message("External database deleted");
          } else {
@@ -259,9 +259,9 @@ function tripal_db_form_submit($form, &$form_state){
          VALUES 
           ('%s','%s','%s','%s')
       ";
-      $previous_db = db_set_active('chado');
+      $previous_db = tripal_db_set_active('chado');
       $db = db_query($sql,$name,$desc,$url,$urlp);
-      db_set_active($previous_db);
+      tripal_db_set_active($previous_db);
       if($db){
         drupal_set_message("External database added");
       } else {

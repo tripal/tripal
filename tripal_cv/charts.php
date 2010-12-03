@@ -57,9 +57,9 @@ function tripal_cv_count_chart($cnt_table, $fk_column,
    ";    
 
    $features = array();
-   $previous_db = db_set_active('chado');  // use chado database
+   $previous_db = tripal_db_set_active('chado');  // use chado database
    $results = db_query($sql);
-   db_set_active($previous_db);  // now use drupal database
+   tripal_db_set_active($previous_db);  // now use drupal database
    $data = array();
    $axis = array();
    $legend = array();

@@ -15,7 +15,7 @@ function tripal_analysis_install() {
 	// Create analysisfeatureprop table in chado. This cannot be accomplished
 	// by calling drupal_install_schema because it's not in the drupal db. This
 	// table is used to store Blast xml and Interpro html/goterms
-	$previous_db = db_set_active('chado');
+	$previous_db = tripal_db_set_active('chado');
 	if (!db_table_exists('analysisfeatureprop')) {
 	   $sql = "CREATE TABLE {analysisfeatureprop} (".
 	          "  analysisfeatureprop_id SERIAL PRIMARY KEY, ".
@@ -27,7 +27,7 @@ function tripal_analysis_install() {
 	          ")";
 	   db_query($sql);
 	}
-	db_set_active($previous_db);
+	tripal_db_set_active($previous_db);
 
    tripal_add_cvterms('analysis_type','The type of analysis was performed. This value is automatically set by each Tripal Analysis module and should be equal to the module name (e.g. tripal_analysis_blast, tripal_analysis_go).');
 	tripal_add_cvterms('analysis_date','The date that an analysis was performed.');

@@ -25,12 +25,12 @@ function tripal_library_install(){
 
    // Add the materialized view needed to count the features for the library
    // Drop the MView table if it exists
-   $previous_db = db_set_active('chado');
+   $previous_db = tripal_db_set_active('chado');
    if (db_table_exists('library_feature_count')) {
       $sql = "DROP TABLE library_feature_count";
       db_query($sql);
    }
-   db_set_active($previous_db);
+   tripal_db_set_active($previous_db);
    // Create the MView
    tripal_add_mview('library_feature_count','tripal_library',
       'library_feature_count',

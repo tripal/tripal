@@ -1,9 +1,5 @@
 <?php
 
-//
-// Copyright 2009 Clemson University
-//
-
 require_once "jobs.php";
 require_once "mviews.php";
 require_once "cvterms.php";
@@ -170,4 +166,39 @@ function tripal_core_admin () {
    );
    
    return system_settings_form($form);
+}
+/************************************************************************
+* The tripal_db_set_active function is used to prevent namespace collisions
+* when chado and drupal are installed in the same database but in different
+* schemas.  It is also used for backwards compatibility with older versions
+* of tripal or in cases where chado is located outside of the Drupal database.
+*/
+function tripal_db_set_active($dbname){
+   global $db_url, $db_type;
+
+   // only postgres can support search paths.  So if this is MysQL then
+   // just run the normal tripal_db_set_active function.
+   if(strcmp($db_type,'pgsql')==0){
+
+      // if the 'chado' database is in the $db_url variable then chado is 
+      // not in the same Drupal database
+      if(is_array($db_url)){ 
+         if(isset($db_url[$dbname])){
+            return tripal_db_set_active($dbname);
+         } 
+      }
+
+      // here we make the assumption that the default database schema is
+      // 'public'.  This will most likely always be the case but if not,
+      // then this code will break
+      if(strcmp($dbname,'chado')==0){
+         db_query("set search_path to %s",'chado,public');  
+         return 'public';
+      } 
+      else {
+         db_query("set search_path to %s",'public,chado');  
+         return 'chado';
+      }
+   }
+   else return tripal_db_set_active($dbname);
 }

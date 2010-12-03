@@ -191,11 +191,11 @@ function tripal_cv_admin_page(){
 */
 function tripal_cv_select_form(){
 
-	$previous_db = db_set_active('chado');  // use chado database
+	$previous_db = tripal_db_set_active('chado');  // use chado database
 	// get a list of db from chado for user to choose
 	$sql = "SELECT * FROM {cv} WHERE NOT name = 'tripal' ORDER BY name ";
 	$results = db_query ($sql);
-	db_set_active($previous_db); // use drupal database
+	tripal_db_set_active($previous_db); // use drupal database
 
 	$cvs = array();
    $cvs[] = '';
@@ -379,9 +379,9 @@ function tripal_cv_edit_form(&$form_state = NULL,$cvid = NULL){
 
   
    $sql = "SELECT * FROM {cv} WHERE cv_id = %d ";
-   $previous_db = db_set_active('chado');
+   $previous_db = tripal_db_set_active('chado');
    $cv = db_fetch_object(db_query($sql,$cvid));
-   db_set_active($previous_db);
+   tripal_db_set_active($previous_db);
 
 
    # set the default values.  If there is a value set in the 
@@ -456,9 +456,9 @@ function tripal_cv_edit_form_submit($form, &$form_state){
            definition = '%s'
          WHERE cv_id = %d
       ";
-      $previous_db = db_set_active('chado');
+      $previous_db = tripal_db_set_active('chado');
       $db = db_query($sql,$name,$desc,$cvid);
-      db_set_active($previous_db);
+      tripal_db_set_active($previous_db);
       if($db){
         drupal_set_message("Controlled vocabulary updated");
       } else {
@@ -470,9 +470,9 @@ function tripal_cv_edit_form_submit($form, &$form_state){
          DELETE FROM {cv}
          WHERE cv_id = %d
       ";
-      $previous_db = db_set_active('chado');
+      $previous_db = tripal_db_set_active('chado');
       $db = db_query($sql,$cvid);
-      db_set_active($previous_db);
+      tripal_db_set_active($previous_db);
       if($db){
         drupal_set_message("Controlled vocabulary deleted");
       } else {
@@ -497,9 +497,9 @@ function tripal_cv_add_form_submit($form, &$form_state){
       VALUES 
        ('%s','%s')
    ";
-   $previous_db = db_set_active('chado');
+   $previous_db = tripal_db_set_active('chado');
    $db = db_query($sql,$name,$desc);
-   db_set_active($previous_db);
+   tripal_db_set_active($previous_db);
    if($db){
      drupal_set_message("Controlled vocabulary added");
    } else {
@@ -548,11 +548,11 @@ function tripal_cv_obo_form_submit($form, &$form_state){
 */
 function tripal_cv_cvtermpath_form () {
 
-	$previous_db = db_set_active('chado');  // use chado database
+	$previous_db = tripal_db_set_active('chado');  // use chado database
 	// get a list of db from chado for user to choose
 	$sql = "SELECT * FROM {cv} WHERE NOT name = 'tripal' ORDER BY name ";
 	$results = db_query ($sql);
-	db_set_active($previous_db); // use drupal database
+	tripal_db_set_active($previous_db); // use drupal database
 
 	$cvs = array();
    $cvs[] = '';
@@ -588,9 +588,9 @@ function tripal_cv_cvtermpath_form_validate($form, &$form_state) {
    $cvid =  $form_state['values']['cvid'];
 
    // first get the controlled vocabulary name:
-   $previous_db = db_set_active('chado');
+   $previous_db = tripal_db_set_active('chado');
    $cv = db_fetch_object(db_query("SELECT * FROM {cv} WHERE cv_id = %d",$cvid));
-   db_set_active($previous_db);
+   tripal_db_set_active($previous_db);
 
    // Submit a job to update cvtermpath
    $job_args = array($cvid);
@@ -606,14 +606,14 @@ function tripal_cv_cvtermpath_form_validate($form, &$form_state) {
 function tripal_cv_update_cvtermpath($cvid = NULL, $job_id = NULL) {
 
    // first get the controlled vocabulary name:
-   $previous_db = db_set_active('chado');
+   $previous_db = tripal_db_set_active('chado');
    $cv = db_fetch_object(db_query("SELECT * FROM {cv} WHERE cv_id = %d",$cvid));
    print "\nUpdating cvtermpath for $cv->name...\n";
 
    // now fill the cvtermpath table
    $sql = "SELECT * FROM fill_cvtermpath('%s')";
    db_query($sql,$cv->name);         
-   db_set_active($previous_db);
+   tripal_db_set_active($previous_db);
    return;
 }
 
@@ -637,9 +637,9 @@ function tripal_cv_get_cv_id($cv_name){
    $sql = "
       SELECT cv_id FROM {cv} WHERE name = '%s'
    ";
-   $previous_db = db_set_active('chado');
+   $previous_db = tripal_db_set_active('chado');
    $cv = db_fetch_object(db_query($sql,$cv_name));
-   db_set_active($previous_db);
+   tripal_db_set_active($previous_db);
    return $cv->cv_id;
 }
 /*************************************************************************
@@ -652,9 +652,9 @@ function tripal_cv_cvterm_edit($cvterm_id){
         INNER JOIN CV on CVT.cv_id = CV.cv_id
       WHERE CVT.cvterm_id = %d
    ";
-   $previous_db = db_set_active('chado');
+   $previous_db = tripal_db_set_active('chado');
    $cvterm = db_fetch_object(db_query($sql,$cvterm_id));
-   db_set_active($previous_db);
+   tripal_db_set_active($previous_db);
    return theme('tripal_cv_cvterm_edit',$cvterm);
 }
 /*************************************************************************

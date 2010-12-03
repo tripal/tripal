@@ -67,10 +67,10 @@ function tripal_feature_sync_features ($max_sync = 0, $job_id = NULL){
           "WHERE ($where_cvt) AND ($where_org) ".
           "ORDER BY feature_id";
    // get the list of features
-   $previous_db = db_set_active('chado');  // use chado database
+   $previous_db = tripal_db_set_active('chado');  // use chado database
    $results = db_query($sql);
 
-   db_set_active($previous_db);  // now use drupal database
+   tripal_db_set_active($previous_db);  // now use drupal database
 
    // load into ids array
    $count = 0;
@@ -143,9 +143,9 @@ function tripal_feature_sync_feature ($feature_id){
            "  INNER JOIN Cvterm CVT ON F.type_id = CVT.cvterm_id ".
            "  INNER JOIN Organism O ON F.organism_id = O.organism_ID ".
            "WHERE F.feature_id = %d";
-   $previous_db = db_set_active('chado');  // use chado database
+   $previous_db = tripal_db_set_active('chado');  // use chado database
    $feature = db_fetch_object(db_query($fsql,$feature_id));
-   db_set_active($previous_db);  // now use drupal database
+   tripal_db_set_active($previous_db);  // now use drupal database
 
    // check to make sure that we don't have any nodes with this feature name as a title
    // but without a corresponding entry in the chado_feature table if so then we want to
@@ -260,9 +260,9 @@ function organism_get_synced() {
 
    // iterate through the organisms and build an array of those that are synced
    while($org = db_fetch_object($orgs)){
-      $previous_db = db_set_active('chado');  // use chado database
+      $previous_db = tripal_db_set_active('chado');  // use chado database
       $info = db_fetch_object(db_query($csql,$org->organism_id));
-      db_set_active($previous_db);  // now use drupal database
+      tripal_db_set_active($previous_db);  // now use drupal database
       $org_list[] = $info;
    }    
    return $org_list;

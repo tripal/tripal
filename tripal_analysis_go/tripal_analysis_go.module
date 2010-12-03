@@ -224,9 +224,9 @@ function tripal_analysis_go_select_form(&$form_state = NULL,$node){
      WHERE organism_id = %d
      ORDER BY analysis_id DESC
    ";
-   $previous_db = db_set_active('chado');
+   $previous_db = tripal_db_set_active('chado');
    $results = db_query($sql,$node->organism_id);
-   db_set_active($previous_db);
+   tripal_db_set_active($previous_db);
 
    $analyses = array();
    $analyses[''] = '';
@@ -304,9 +304,9 @@ function tripal_analysis_go_organism_add($node) {
      WHERE organism_id = %d
      ORDER BY analysis_id DESC
    ";
-   $previous_db = db_set_active('chado');
+   $previous_db = tripal_db_set_active('chado');
    $results = db_fetch_object(db_query($sql,$node->organism_id));
-   db_set_active($previous_db);
+   tripal_db_set_active($previous_db);
 
    if($results){
       $select_analysis = drupal_get_form('tripal_analysis_go_select_form',$node);
@@ -356,9 +356,9 @@ function tripal_analysis_go_cv_chart($chart_id){
   $type        = preg_replace("/^tripal_analysis_go_cv_chart_(\d+)-(\d+)_(bp|cc|mf)$/","$3",$chart_id);
 
   $sql = "SELECT * FROM {Analysis} WHERE analysis_id = %d";
-  $previous_db = db_set_active('chado');  // use chado database
+  $previous_db = tripal_db_set_active('chado');  // use chado database
   $analysis = db_fetch_object(db_query($sql,$analysis_id));
-  db_set_active($previous_db);  // now use drupal database  
+  tripal_db_set_active($previous_db);  // now use drupal database  
  
   if(strcmp($type,'mf')==0){
      $class = 'molecular_function';
@@ -435,9 +435,9 @@ function tripal_analysis_go_cvterm_add($cvterm_id,$tree_id){
        INNER JOIN dbxref DBX on DBX.dbxref_id = CVT.dbxref_id
      WHERE cvterm_id = %d
   ";
-  $previous_db = db_set_active('chado');
+  $previous_db = tripal_db_set_active('chado');
   $xref = db_fetch_object(db_query($sql,$cvterm_id));
-  db_set_active($previous_db);
+  tripal_db_set_active($previous_db);
 
   $link = url("download_goterm_features/$cvterm_id/$tree_id");
   $options = array(
@@ -456,9 +456,9 @@ function tripal_analysis_go_get_goterm_features($cvterm_id,$tree_id){
         INNER JOIN dbxref DBX on DBX.dbxref_id = CVT.dbxref_id
       WHERE cvterm_id = %d
    ";
-   $previous_db = db_set_active('chado');
+   $previous_db = tripal_db_set_active('chado');
    $xref = db_fetch_object(db_query($sql,$cvterm_id));
-   db_set_active($previous_db);
+   tripal_db_set_active($previous_db);
 
    drupal_set_header('Content-Type: text');
    drupal_set_header('Content-Disposition: attachment; filename="GO_'.$xref->accession.'.fasta"');
@@ -476,9 +476,9 @@ function tripal_analysis_go_get_goterm_features($cvterm_id,$tree_id){
       WHERE CVTP.object_id = %d and F.organism_id = %d and AF.analysis_id = %d
       ORDER BY F.name
    ";
-   $previous_db = db_set_active('chado');
+   $previous_db = tripal_db_set_active('chado');
    $results = db_query($sql,$cvterm_id,$organism_id,$analysis_id);
-   db_set_active($previous_db);
+   tripal_db_set_active($previous_db);
    while($feature = db_fetch_object($results)){
       // get the go term information for each sequence
       $sql = "
@@ -489,9 +489,9 @@ function tripal_analysis_go_get_goterm_features($cvterm_id,$tree_id){
          WHERE FCVT.feature_id = %d
       ";
 
-      $previous_db = db_set_active('chado');
+      $previous_db = tripal_db_set_active('chado');
       $terms = db_query($sql,$feature->feature_id);
-      db_set_active($previous_db);
+      tripal_db_set_active($previous_db);
       $desc = '[';
       while($term = db_fetch_object($terms)){
          $desc .= "GO:$term->accession $term->name; ";
@@ -522,9 +522,9 @@ function tripal_analysis_go_feature_add($node) {
         ORDER BY CV.name, CVT.name
    ";
 
-   $previous_db = db_set_active('chado');
+   $previous_db = tripal_db_set_active('chado');
    $results = db_query($sql,$node->feature->feature_id);
-   db_set_active($previous_db);
+   tripal_db_set_active($previous_db);
    $term = db_fetch_object($results); // retrive the first result
    if ($term) {
       $content .= "<div id=\"tripal_go_box\" class=\"tripal_go-info-box\">";

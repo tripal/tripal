@@ -10,12 +10,12 @@ function tripal_cv_install(){
 
    // Add the materialized view needed to keep track of the 
    // 
-   $previous_db = db_set_active('chado');
+   $previous_db = tripal_db_set_active('chado');
    if (db_table_exists('cv_root_mview')) {
       $sql = "DROP TABLE cv_root_mview";
       db_query($sql);
    }
-   db_set_active($previous_db);
+   tripal_db_set_active($previous_db);
 
    // Create the MView
    tripal_add_mview(

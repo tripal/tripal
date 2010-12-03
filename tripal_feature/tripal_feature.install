@@ -29,7 +29,7 @@ function tripal_feature_update_6000(){
    return $ret;
 }
 /*******************************************************************************
-* Implementation of hook_schema().
+
 */
 function tripal_feature_add_organism_count_mview(){
    $view_name = 'organism_feature_count';

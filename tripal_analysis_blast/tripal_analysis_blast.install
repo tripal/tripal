@@ -36,25 +36,25 @@ function tripal_analysis_blast_install() {
                  "VALUES (%d, '%s', '%s', '%s', '%s', %d)";
    
    // Add swissprot parser
-   $previous_db = db_set_active ('chado');
+   $previous_db = tripal_db_set_active ('chado');
    $results = db_query($sql_db, "%swissprot%");
-   db_set_active($previous_db);
+   tripal_db_set_active($previous_db);
    while ($db = db_fetch_object($results)) {
       db_query($sql_parser, $db->db_id, 'ExPASy Swissprot', '^sp\|.*?\|(.*?)\s.*?$', '^sp\|.*?\|.*?\s(.*)$', 'sp\|(.*?)\|.*?\s.*?$', 0);
    }
    
    // Add trembl parser
-   $previous_db = db_set_active ('chado');
+   $previous_db = tripal_db_set_active ('chado');
    $results = db_query($sql_db, "%trembl%");
-   db_set_active($previous_db);
+   tripal_db_set_active($previous_db);
    while ($db = db_fetch_object($results)) {
       db_query($sql_parser, $db->db_id, 'ExPASy TrEMBL', '^.*?\|(.*?)\s.*?$', '^.*?\|.*?\s(.*)$', '^(.*?)\|.*?\s.*?$', 0);
    }
    
    // Add genbank parser
-   $previous_db = db_set_active ('chado');
+   $previous_db = tripal_db_set_active ('chado');
    $results = db_query($sql_db, "%genbank%");
-   db_set_active($previous_db);
+   tripal_db_set_active($previous_db);
    while ($db = db_fetch_object($results)) {
       db_query($sql_parser, $db->db_id, 'Genbank', '', '', '', 1);
    }

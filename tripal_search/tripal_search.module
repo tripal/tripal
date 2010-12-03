@@ -78,10 +78,10 @@ function tripal_search_file($type, $keys, $results) {
     if($f_objd = db_fetch_object(db_query($sqld, $result->sid))){
 
        // Get sequence from chado database
-       $previous_db = db_set_active('chado');  // use chado database
+       $previous_db = tripal_db_set_active('chado');  // use chado database
        $sqlc = "SELECT * FROM {feature} WHERE feature_id = '%s'";
        $f_objc = db_fetch_object(db_query($sqlc,$f_objd->feature_id));
-       db_set_active($previous_db);  // now use drupal database
+       tripal_db_set_active($previous_db);  // now use drupal database
        print tripal_feature_return_fasta($f_objc, $desc);
     } 
   }

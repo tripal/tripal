@@ -22,13 +22,13 @@ function tripal_organism_views_data() {
    
    //Retrieve common_names from chado database using the organism_id
    $sql = 'SELECT common_name FROM {organism} WHERE organism_id=%d';
-   $previous_db = db_set_active ('chado');
+   $previous_db = tripal_db_set_active ('chado');
    $common_names = array ();
    while ($org = db_fetch_object($result)) {     
       $common_name = db_result(db_query ($sql, $org->organism_id));
       $common_names [$org->nid] = $common_name;
    }
-   db_set_active ($previous_db);
+   tripal_db_set_active ($previous_db);
    
    // Insert common_name and nid to the custom table
    $sql = "INSERT INTO {tripal_organism_views_common_name} (nid, common_name) VALUES (%d, '%s')";

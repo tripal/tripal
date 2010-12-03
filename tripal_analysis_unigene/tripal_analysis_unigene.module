@@ -147,11 +147,11 @@ function theme_tripal_analysis_unigene_search_index ($node) {
                    "FROM {featureloc} ".
                    "WHERE feature_id = $result->feature_id ".
                    "ORDER BY rank";
-            $previous_db = db_set_active ('chado');
+            $previous_db = tripal_db_set_active ('chado');
             $contig_fid = db_result(db_query($sql));
             $sql = "SELECT name FROM {feature} WHERE feature_id = $contig_fid";
             $contig_name = db_result(db_query($sql));
-            db_set_active($previous_db);
+            tripal_db_set_active($previous_db);
             $sql = "SELECT nid ".
                    "FROM {chado_feature} ".
                    "WHERE feature_id = $contig_fid";
@@ -207,11 +207,11 @@ function theme_tripal_analysis_unigene_search_result ($node) {
                    "FROM {featureloc} ".
                    "WHERE feature_id = $result->feature_id ".
                    "ORDER BY rank";
-            $previous_db = db_set_active ('chado');
+            $previous_db = tripal_db_set_active ('chado');
             $contig_fid = db_result(db_query($sql));
             $sql = "SELECT name FROM {feature} WHERE feature_id = $contig_fid";
             $contig_name = db_result(db_query($sql));
-            db_set_active($previous_db);
+            tripal_db_set_active($previous_db);
             $sql = "SELECT nid ".
                    "FROM {chado_feature} ".
                    "WHERE feature_id = $contig_fid";
@@ -286,11 +286,11 @@ function theme_tripal_analysis_unigene_feature_alignments($node) {
                    "FROM {featureloc} ".
                    "WHERE feature_id = $result->feature_id ".
                    "ORDER BY rank";
-            $previous_db = db_set_active ('chado');
+            $previous_db = tripal_db_set_active ('chado');
             $contig_fid = db_result(db_query($sql));
             $sql = "SELECT name FROM {feature} WHERE feature_id = $contig_fid";
             $contig_name = db_result(db_query($sql));
-            db_set_active($previous_db);
+            tripal_db_set_active($previous_db);
             $sql = "SELECT nid ".
                    "FROM {chado_feature} ".
                    "WHERE feature_id = $contig_fid";
@@ -402,7 +402,7 @@ function tripal_analysis_unigene_get_alignments($map) {
           "WHERE srcfeature_id = %d AND ".
           "  NOT(CVT.name = 'match' or CVT.name = 'match_part') ".
           "ORDER BY FL.fmin, FL.fmax";
-   $previous_db = db_set_active('chado');
+   $previous_db = tripal_db_set_active('chado');
    $results = db_query($sql,$map->feature_id);
    $alignments = array();
    $i=0;
@@ -436,7 +436,7 @@ function tripal_analysis_unigene_get_alignments($map) {
     }
     $additions->properties = $properties;
     */
-   db_set_active($previous_db);
+   tripal_db_set_active($previous_db);
    return $additions;
 }
 /************************************************************************
@@ -470,18 +470,18 @@ function tripal_analysis_unigene_organism_add($node){
    // get information about this organism 
    $sql = "SELECT * FROM {organism} ".
           "WHERE organism_id = %d";
-   $previous_db = db_set_active('chado');  // use chado database
+   $previous_db = tripal_db_set_active('chado');  // use chado database
    $organism = db_fetch_object(db_query($sql,$org_id->organism_id));
-   db_set_active($previous_db);  // now use drupal database
+   tripal_db_set_active($previous_db);  // now use drupal database
 
    // get information about this assembly and add it to the items in this node
    $sql = "SELECT * FROM {unigene_mview} ".
           "WHERE organism_id = %d ".
           "ORDER BY analysis_id DESC";
 
-   $previous_db = db_set_active('chado');  // use chado database
+   $previous_db = tripal_db_set_active('chado');  // use chado database
    $results = db_query($sql,$org_id->organism_id);
-   db_set_active($previous_db);  // now use drupal database
+   tripal_db_set_active($previous_db);  // now use drupal database
 
    //$i = 0;
    //while ($assembly = db_fetch_object($results)){
@@ -490,9 +490,9 @@ function tripal_analysis_unigene_organism_add($node){
       //$libraries_sql = "SELECT library_id, library_name ".
                        //"FROM {unigene_libraries_mview} ".
                        //"WHERE analysis_id = %d ";
-      //$previous_db = db_set_active('chado');  // use chado database
+      //$previous_db = tripal_db_set_active('chado');  // use chado database
       //$libraries_result = db_query($libraries_sql,$assembly->analysis_id);
-      //db_set_active($previous_db);  // now use drupal database
+      //tripal_db_set_active($previous_db);  // now use drupal database
       //$library_sql = "SELECT * FROM {chado_library} WHERE library_id = %d";
       //$k = 0;
       //while ($library = db_fetch_object($libraries_result)){

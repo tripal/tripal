@@ -13,7 +13,7 @@ function tripal_analysis_unigene_install() {
    // required information into the {tripal_analysis} table.
    tripal_analysis_register_child('tripal_analysis_unigene');
 
-   $previous_db = db_set_active('chado');
+   $previous_db = tripal_db_set_active('chado');
    if (db_table_exists('unigene_libraries_mview')) {
       $sql = "DROP TABLE unigene_libraries_mview";
       db_query($sql);
@@ -22,7 +22,7 @@ function tripal_analysis_unigene_install() {
       $sql = "DROP TABLE unigene_mview";
       db_query($sql);
    }
-   db_set_active($previous_db);
+   tripal_db_set_active($previous_db);
    
    tripal_add_cvterms('unigene_version','The version number for the unigene ".
      "(e.g. v1, v2, etc...) ');
