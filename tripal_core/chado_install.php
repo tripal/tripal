@@ -1,8 +1,26 @@
 <?php
+
 /*************************************************************************
 *
 */
-function tripal_core_install_job (){
+function tripal_core_chado_v1_11_load_form (){
+   $form['description'] = array(
+       '#type' => 'item',
+       '#value' => t("Click the submit button below to install Chado into the Drupal database. <br><font color=\"red\">WARNING:</font> use this only for a new chado installation or reinstall completely.  This will erase any data currently in the chado database.  If you are 
+using chado in a database external to the Drupal database with a 'chado' entry in the 'settings.php' \$db_url argument then this option will intall chado but it will not be usable.  The external database specified in the settings.php file takes precedence."),
+       '#weight' => 1,
+   );
+   $form['button'] = array(
+      '#type' => 'submit',
+      '#value' => t('Install Chado'),
+      '#weight' => 2,
+   );
+   return $form;
+}
+/*************************************************************************
+*
+*/
+function tripal_core_chado_v1_11_load_form_submit ($form, &$form_state){
    global $user;
 
    $args = array();
