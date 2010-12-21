@@ -77,8 +77,8 @@ if (Drupal.jsEnabled) {
 	   var status = $('#tripal_expandableBox_toggle_button').html();
 	   var icon_url = $('.tripal_expandableBox').css("background-image");
 	   icon_url = icon_url.toString().match(/.+\//);
-	   icon_up = icon_url + "arrow-up-48x48.png";
-	   icon_down = icon_url + "arrow-down-48x48.png";
+	   icon_up = icon_url + "arrow-up-48x48.png\")";
+	   icon_down = icon_url + "arrow-down-48x48.png\")";
 	   
 	   if (status == '[-] Collapse All') {
 		   $('.tripal_expandableBoxContent').hide();
