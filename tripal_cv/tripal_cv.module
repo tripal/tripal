@@ -287,14 +287,6 @@ function tripal_cv_obo_form(&$form_state = NULL){
 	}
 
 
-   $form['instructions']= array(
-      '#value' => t('Use this interface to upload a controlled vocabulary in OBO format.  A new vocabulary and its 
-                     associated terms will be added to the database the first time an OBO is uploaded.  Each
-                     subsequent upload will update the terms.  The format of the OBO should be in v1.2 format,
-                     however, this loader does support some older styles formats. '),
-      '#weight'        => -2
-   );
-
    $form['obo_existing'] = array(
       '#type' =>'fieldset',
       '#title' => t('Use a Saved Ontology OBO Reference')
@@ -310,10 +302,7 @@ function tripal_cv_obo_form(&$form_state = NULL){
       '#value' => t('The Ontology OBO files listed in the drop down below have been automatically added upon 
                      installation of the Tripal CV module or were added from a previous upload.  Select
                      an OBO, then click the submit button to load the vocabulary into the database.  If the
-                     vocabularies already exist then the ontology will be updated.  Note that the name of the 
-                     ontology provided here may not match the namespace of the vocabulary.  For instance,
-                     the Gene Ontology will add three vocabularies: biological_process, cellular_component, and 
-                     molecular_function.'),
+                     vocabularies already exist then the ontology will be updated.'),
       '#weight'        => -1
    );
 

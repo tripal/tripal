@@ -369,7 +369,7 @@ function tripal_cv_obo_add_cvterm_prop($cvterm,$property,$value,$rank){
       );
       $cvproptype = tripal_cv_obo_add_cv_term($term,$cv,0,0);
       if(!$cvproptype){  
-         tripal_cv_obo_quiterror("Cannot add/upste cvterm property: internal:$property");
+         tripal_cv_obo_quiterror("Cannot add cvterm property: internal:$property");
       }
    }
 
@@ -479,10 +479,10 @@ function tripal_cv_obo_add_synonyms($term,$cvterm){
                'definition' => array(''),
                'is_obsolete' => array(0),
             );
-            if(!tripal_cv_obo_add_cv_term($term,$syncv,0,1)){
+            $syntype = tripal_cv_obo_add_cv_term($term,$syncv,0,1);
+            if(!$syntype){
                tripal_cv_obo_quiterror("Cannot add synonym type: internal:$type");
             }
-            $syntype = db_fetch_object(db_query($cvtsql,$type,'synonym_type'));
          }       
 
          // make sure the synonym doesn't already exists
