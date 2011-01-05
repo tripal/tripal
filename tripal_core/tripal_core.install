@@ -15,19 +15,6 @@ function tripal_core_install(){
       watchdog('tripal_core',$message,array(),WATCHDOG_ERROR);
    }
 
-
-  // create the 'tripal' controlled volcabulary in chado but only if it doesn't already exist
-  $previous_db = tripal_db_set_active('chado');  // use chado database
-  if(!db_fetch_object(db_query("SELECT * FROM {cv} WHERE name = 'tripal'"))){
-     $results = db_query("INSERT INTO {cv} (name,definition) ".
-	                     "VALUES ('tripal','Terms used by Tripal for modules to manage data such as that stored in property tables like featureprop, analysisprop, etc')");
-  } 
-  if(!db_fetch_object(db_query("SELECT * FROM {db} WHERE name = 'tripal'"))){
-     $results = db_query("INSERT INTO {db} (name,description) ".
-	                     "VALUES ('tripal','Used as a database placeholder for tripal defined objects such as tripal cvterms')");
-  }  
-  tripal_db_set_active($previous_db);  // now use drupal database
-
   // create the tables that manage materialized views and jobs
   drupal_install_schema('tripal_core');
 
