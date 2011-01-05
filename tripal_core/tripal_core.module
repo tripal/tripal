@@ -5,12 +5,20 @@ require_once "mviews.php";
 require_once "cvterms.php";
 require_once "chado_install.php";
 require_once "gff_loader.php";
+require_once "bulk_loader.php";
 
 /*************************************************************************
 *
 */
 function tripal_core_init(){
-	
+   // the two lines below are necessary to ensure that the search_path
+   // variable is always set.  In the case where a view needs to query the
+   // chado schema when it is local to the Drupal database.  Otherwise the
+   // search_path isn't set.  When tripal_db_set_active is called it
+   // automatically sets the serach path if chado is local to the 
+   // Drupal database
+   $previous = tripal_db_set_active('chado');
+   tripal_db_set_active($previous);
 }
 /*************************************************************************
 *
@@ -123,9 +131,18 @@ function tripal_core_menu() {
      'type' => MENU_NORMAL_ITEM,
    );
    $items['admin/tripal/gff3_load'] = array(
-     'title' => 'Load a GFF3 file',
-     'description' => 'Loads a GFF3 file into Chado',
-     'page callback' => 'tripal_core_load_gff3',
+     'title' => 'Import a GFF3 file',
+     'description' => 'Import a GFF3 file into Chado',
+     'page callback' => 'drupal_get_form',
+     'page arguments' => array('tripal_core_gff3_load_form'),
+     'access arguments' => array('access administration pages'),
+     'type' => MENU_NORMAL_ITEM,
+   );
+
+   $items['admin/tripal/bulk_load/create'] = array(
+     'title' => 'Create Bulk Loader',
+     'description' => 'Create a bulk loader template for loading data into Chado',
+     'page callback' => 'tripal_core_bulk_loader_create',
      'access arguments' => array('access administration pages'),
      'type' => MENU_NORMAL_ITEM,
    );
@@ -194,11 +211,11 @@ function tripal_db_set_active($dbname){
       // then this code will break
       if(strcmp($dbname,'chado')==0){
          db_query("set search_path to %s",'chado,public');  
-         return 'public';
+         return 'public,chado';
       } 
       else {
          db_query("set search_path to %s",'public,chado');  
-         return 'chado';
+         return 'chado,public';
       }
    }
    else return tripal_db_set_active($dbname);
