@@ -123,6 +123,19 @@ function tripal_library_menu() {
 
    return $items;
 }
+
+/*************************************************************************
+ * Implements hook_views_api()
+ * Purpose: Essentially this hook tells drupal that there is views support for
+ *  for this module which then includes tripal_db.views.inc where all the
+ *  views integration code is
+ */ 
+function tripal_library_views_api() {
+   return array(
+      'api' => 2.0,
+   );
+}
+
 /*******************************************************************************
  * Dynamic addition/removal of menu item
  */

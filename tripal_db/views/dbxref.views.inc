@@ -48,7 +48,20 @@ function retrieve_dbxref_views_data() {
 
   // Table Field Definitions----------------------
   // Field: dbxref_id (primary key)
-  //   mentioned as index above but not displayable in a view
+  $data['dbxref']['dbxref_id'] = array(
+    'title' => t('Database Reference ID'),
+    'help' => t('The primary key of Database References.'),
+    'field' => array(
+      'handler' => 'views_handler_field_numeric',
+      'click sortable' => TRUE,
+     ),
+    'filter' => array(
+      'handler' => 'views_handler_filter_numeric',
+    ),
+    'sort' => array(
+      'handler' => 'views_handler_sort',
+    ),
+  );
    
   //Field: cv_id (foreign key: cv)
   //  join between cv table and this one in cv.views.inc
@@ -98,9 +111,6 @@ function retrieve_dbxref_views_data() {
     'field' => array(
       'handler' => 'views_handler_field',
       'click sortable' => TRUE,
-    ),
-    'sort' => array(
-      'handler' => 'views_handler_sort',
     ),
     'filter' => array(
       'handler' => 'views_handler_filter_string',

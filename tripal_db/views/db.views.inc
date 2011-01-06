@@ -39,7 +39,20 @@ function retrieve_db_views_data() {
   
   // Table Field Definitions----------------------
   // Field: db_id (primary key)
-  //   mentioned as index above but not displayable in a view
+  $data['db']['db_id'] = array(
+    'title' => t('Database ID'),
+    'help' => t('The primary key of the Database.'),
+    'field' => array(
+      'handler' => 'views_handler_field_numeric',
+      'click sortable' => TRUE,
+     ),
+    'filter' => array(
+      'handler' => 'views_handler_filter_numeric',
+    ),
+    'sort' => array(
+      'handler' => 'views_handler_sort',
+    ),
+  );
   
   // Field: name (varchar 255)
   $data['db']['name'] = array(

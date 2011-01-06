@@ -1033,13 +1033,14 @@ function tripal_organisms_cleanup($dummy = NULL, $job_id = NULL) {
    return '';
 }
 
-/*******************************************************************************
- *  This function customizes the field for the VIEWS module
- */
-   
+/*************************************************************************
+ * Implements hook_views_api()
+ * Purpose: Essentially this hook tells drupal that there is views support for
+ *  for this module which then includes tripal_db.views.inc where all the
+ *  views integration code is
+ */ 
 function tripal_organism_views_api() {
    return array(
       'api' => 2.0,
-      'path' => drupal_get_path('module', 'tripal_organism') . '/views'
    );
 }

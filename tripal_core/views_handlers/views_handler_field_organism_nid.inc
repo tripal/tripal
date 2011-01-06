@@ -2,8 +2,7 @@
 
 class views_handler_field_organism_nid extends views_handler_field_numeric {
  function construct() {
-   parent::construct();
-   $this->additional_fields['organism_id'] = 'organism_id';   
+   parent::construct(); 
  }
 
  function query() { 

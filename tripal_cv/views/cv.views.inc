@@ -38,7 +38,20 @@ function retrieve_cv_views_data() {
 
   // Table Field Definitions----------------------
   // Field: cv_id (primary key)
-  //   mentioned as index above but not displayable in a view  
+  $data['cv']['cv_id'] = array(
+    'title' => t('CV ID'),
+    'help' => t('The primary key of the controlled vocabulary.'),
+    'field' => array(
+      'handler' => 'views_handler_field_numeric',
+      'click sortable' => TRUE,
+     ),
+    'filter' => array(
+      'handler' => 'views_handler_filter_numeric',
+    ),
+    'sort' => array(
+      'handler' => 'views_handler_sort',
+    ),
+  ); 
   
   //Field: name (varchar -255)
   $data['cv']['name'] = array(
@@ -64,9 +77,6 @@ function retrieve_cv_views_data() {
     'field' => array(
        'handler' => 'views_handler_field',
        'click sortable' => TRUE,
-     ),
-     'sort' => array(
-       'handler' => 'views_handler_sort',
      ),
      'filter' => array(
        'handler' => 'views_handler_filter_string',
