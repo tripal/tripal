@@ -1,0 +1,22 @@
+This folder contains all supplementary code needed for views integration
+of the chado dbxref and related tables.
+
+File Descriptions:
+========================================================================
+<chado table name>.views.inc:
+	contains a single function retrieve_<chado table name>_views_data()
+	which describes that table to views. This function is called by
+	<tripal module>_views_data() in ../<tripal module>.views.inc.
+	For more information on the form of this data array look up the
+	views2 documentation for hook_views_data() 
+	-http://views2.logrus.com/doc/html/index.html
+	
+handlers/
+	A folder which contains symbolic links to tripal_core/views_handlers/ files.
+	Each file contained within this folder defines a views handler. Only custom
+	handlers are included in this folder and each must be described in 
+	hook_views_handlers() in ../<tripal module>.views.inc.
+	A views handler does one of the following:
+		1) describe the type of a field and how it should be displayed
+		2) describe a method to sort this field
+		3) describe a method to filter this field

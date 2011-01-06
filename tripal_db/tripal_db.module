@@ -55,6 +55,17 @@ function tripal_db_perm(){
       'edit chado_db content',
    );
 }
+
+/*************************************************************************
+ * Implements hook_views_api()
+ * Purpose: Essentially this hook tells drupal that there is views support for
+ *  for this module which then includes tripal_db.views.inc where all the
+ *  views integration code is
+ */
+function tripal_db_views_api() {
+	return array('api' => 2.0);
+}
+
 /*************************************************************************
 *
 */

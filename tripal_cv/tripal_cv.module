@@ -168,7 +168,15 @@ function tripal_cv_perm(){
    );
 }
 
-
+/*************************************************************************
+ * Implements hook_views_api()
+ * Purpose: Essentially this hook tells drupal that there is views support for
+ *  for this module which then includes tripal_cv.views.inc where all the
+ *  views integration code is
+ */
+function tripal_cv_views_api() {
+	return array('api' => 2.0);
+}
 
 /*************************************************************************
 *
