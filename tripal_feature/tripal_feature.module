@@ -16,6 +16,19 @@ function tripal_feature_init(){
    drupal_add_js (drupal_get_path('theme', 'tripal').'/js/tripal_feature.js'); 
    drupal_add_js (drupal_get_path('theme', 'tripal').'/js/jgcharts/jgcharts.js'); 
 }
+
+/*************************************************************************
+ * Implements hook_views_api()
+ * Purpose: Essentially this hook tells drupal that there is views support for
+ *  for this module which then includes tripal_db.views.inc where all the
+ *  views integration code is
+ */ 
+function tripal_feature_views_api() {
+   return array(
+      'api' => 2.0,
+   );
+}
+
 /************************************************************************
  *
  */

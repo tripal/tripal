@@ -34,29 +34,25 @@ function retrieve_library_views_data() {
 	);
 	
 	// Define relationships between this table and others
-	$data['library']['table']['join'] = array(
-	  'library_feature' => array(
-	    'left_field' => 'library_id',
-	    'field' => 'library_id',
-	  ),
-	  'feature' => array(
-	    'left_table' => 'library_feature',
-	    'left_field' => 'feature_id',
-	    'field' => 'library_id',
-	  ),
-	);
-	
-	// Describe the joins with the library_feature table
-	$data['library_feature']['table']['join'] = array(
-	  'feature' => array(
-	    'left_field' => 'feature_id',
-	    'field' => 'feature_id',
-	  ),
-	  'library' => array(
-	    'left_field' => 'library_id',
-	    'field' => 'library_id',
-	  ),   
-	);
+  $data['library']['table']['join'] = array(
+    'library_feature' => array(
+      'left_field' => 'library_id',
+      'field' => 'library_id',
+    ),
+    'feature' => array(
+      'left_table' => 'library_feature',
+      'left_field' => 'library_id',
+      'field' => 'library_id',
+    ),
+  );
+
+  // Describe the joins with the library_feature table
+  $data['library_feature']['table']['join'] = array(
+    'feature' => array(
+      'left_field' => 'feature_id',
+      'field' => 'feature_id',
+    ),
+  );
 	
 	// Table Field Definitions----------------------
 	// Field: library_id (primary key)
@@ -75,7 +71,9 @@ function retrieve_library_views_data() {
 	  ),
 	);
 	
-	// Field: Node ID (foreign key)
+  // Calculated Field: Node ID
+  //  use custom field handler to query drupal for the node ID
+  //  this is only needed if chado is in a separate database from drupal
 	$data['library']['nid'] = array(
 	  'title' => 'Node ID',
 	  'help' => 'The node ID for the current library',
@@ -84,6 +82,12 @@ function retrieve_library_views_data() {
 	  ),
 	);
 	
+	// Field: organism_id (forgeign key)
+  //  join between organism table and this one in tripal_organism/views/organism.views.inc
+	
+	// Field: type_id (forgeign key)
+  //  join between cvterm table and this one in tripal_cv/views/cvterm.views.inc
+  
 	// Field: Name (varchar 255)
 	$data['library']['name'] = array(
 	  'title' => 'Name',
