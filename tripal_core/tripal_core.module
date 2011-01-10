@@ -205,6 +205,7 @@ function tripal_core_admin () {
 */
 function tripal_db_set_active($dbname){
    global $db_url, $db_type;
+   $chado_exists = 0;
 
    // only postgres can support search paths.  So if this is MysQL then
    // just run the normal tripal_db_set_active function.
@@ -214,21 +215,30 @@ function tripal_db_set_active($dbname){
       // not in the same Drupal database
       if(is_array($db_url)){ 
          if(isset($db_url[$dbname])){
-            return tripal_db_set_active($dbname);
+            return db_set_active($dbname);
          } 
+      }
+
+      // check to make sure the chado schema exists
+      $sql = "select nspname from pg_catalog.pg_namespace where nspname = 'chado'";
+      if(db_fetch_object(db_query($sql))){
+         $chado_exists = 1;
       }
 
       // here we make the assumption that the default database schema is
       // 'public'.  This will most likely always be the case but if not,
       // then this code will break
-      if(strcmp($dbname,'chado')==0){
+      if($chado_exists && strcmp($dbname,'chado')==0){
          db_query("set search_path to %s",'chado,public');  
          return 'public,chado';
       } 
-      else {
+      elseif($chado_exists) {
          db_query("set search_path to %s",'public,chado');  
          return 'chado,public';
       }
+      else {
+         return db_set_active($dbname);
+      }
    }
-   else return tripal_db_set_active($dbname);
+   else return db_set_active($dbname);
 }
