@@ -4,6 +4,10 @@
  *   which describes the library table, it's fields and any joins between it and other tables
  * @see tripal_library_views_data() --in tripal_library.views.inc
  *
+ * @todo Add support for the following tables: library_cvterm, library_pub, library_synonym, libraryprop
+ * @todo Add support for multiple libraries listed per feature
+ * @todo Add join to node table within if <chado/drupal same db>; also addd if not around nid field
+ *
  * BASE TABLE: library
  * @code
  * create table library (

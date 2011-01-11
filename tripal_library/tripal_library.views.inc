@@ -60,6 +60,8 @@ function tripal_library_views_handlers() {
  *   All the results are stored in $view->result
  *   Looking up the NID here ensures the query is only executed once
  *   for all features in the table.
+ *
+ * @todo add if !<chado/drupal same db> around NID portion
  */
 function tripal_library_views_pre_render	(&$view) {
 	if (preg_match('/library/', $view->base_table)) {

@@ -5,6 +5,9 @@
  *   which describes the organism table, it's fields and any joins between it and other tables
  * @see tripal_organism_views_data() --in tripal_organism.views.inc
  *
+ * @todo Add support for the following tables: organismprop, organism_dbxref
+ * @todo Add join to node table within if <chado/drupal same db>; also addd if not around nid field
+ *
  * BASE TABLE: organism
  * @code
  * create table organism (
