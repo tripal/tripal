@@ -855,3 +855,15 @@ function tripal_analysis_taxonify_features ($analysis_id = NULL, $job_id = NULL)
 		$i++;
 	}
 }
+
+/*************************************************************************
+ * Implements hook_views_api()
+ * Purpose: Essentially this hook tells drupal that there is views support for
+ *  for this module which then includes tripal_analysis.views.inc where all the
+ *  views integration code is
+ */ 
+function tripal_analysis_views_api() {
+   return array(
+      'api' => 2.0,
+   );
+}
