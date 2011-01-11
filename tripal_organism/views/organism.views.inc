@@ -70,7 +70,7 @@ function retrieve_organism_views_data() {
     'title' => 'Node ID',
     'help' => 'This is the node ID of this organism. It can be used as a link to the node.',
     'field' => array(
-      'handler' => 'views_handler_field_organism_nid',
+      'handler' => 'views_handler_field_computed_nid',
     ),    
   );
 

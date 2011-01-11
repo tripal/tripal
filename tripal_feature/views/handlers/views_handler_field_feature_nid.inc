@@ -1,1 +1,0 @@
-../../../tripal_core/views_handlers/views_handler_field_feature_nid.inc

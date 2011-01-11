@@ -78,7 +78,7 @@ function retrieve_library_views_data() {
 	  'title' => 'Node ID',
 	  'help' => 'The node ID for the current library',
 	  'field' => array(
-	    'handler' => 'views_handler_field_library_nid',
+	    'handler' => 'views_handler_field_computed_nid',
 	  ),
 	);
 	

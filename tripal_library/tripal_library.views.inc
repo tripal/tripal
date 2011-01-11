@@ -41,7 +41,7 @@ function tripal_library_views_handlers() {
      'path' => drupal_get_path('module', 'tripal_library') . '/views/handlers',
    ),
    'handlers' => array(
-     'views_handler_field_library_nid' => array(
+     'views_handler_field_computed_nid' => array(
        'parent' => 'views_handler_field_numeric',
      ),
      'views_handler_field_tf_boolean' => array(

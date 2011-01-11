@@ -43,7 +43,7 @@ function tripal_feature_views_handlers() {
      'path' => drupal_get_path('module', 'tripal_feature') . '/views/handlers',
    ),
    'handlers' => array(
-     'views_handler_field_feature_nid' => array(
+     'views_handler_field_computed_nid' => array(
        'parent' => 'views_handler_field_numeric',
      ),
      'views_handler_field_readable_date' => array(

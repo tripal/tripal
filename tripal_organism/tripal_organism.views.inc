@@ -41,7 +41,7 @@ function tripal_organism_views_handlers() {
      'path' => drupal_get_path('module', 'tripal_organism') . '/views/handlers',
    ),
    'handlers' => array(
-     'views_handler_field_organism_nid' => array(
+     'views_handler_field_computed_nid' => array(
        'parent' => 'views_handler_field_numeric',
      ),
    ),
