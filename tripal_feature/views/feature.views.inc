@@ -64,11 +64,11 @@
   // Calculated Field: Node ID
   //  use custom field handler to query drupal for the node ID
   //  this is only needed if chado is in a separate database from drupal
-  $data['feature']['nid'] = array(
+  $data['feature']['feature_nid'] = array(
     'title' => 'Node ID',
     'help' => 'This is the node ID of this feature. It can be used as a link to the node.',
     'field' => array(
-      'handler' => 'views_handler_field_computed_nid',
+      'handler' => 'views_handler_field_computed_feature_nid',
       ),
   );
 

@@ -41,7 +41,7 @@ function tripal_library_views_handlers() {
      'path' => drupal_get_path('module', 'tripal_library') . '/views/handlers',
    ),
    'handlers' => array(
-     'views_handler_field_computed_nid' => array(
+     'views_handler_field_computed_library_nid' => array(
        'parent' => 'views_handler_field_numeric',
      ),
      'views_handler_field_tf_boolean' => array(
@@ -54,32 +54,3 @@ function tripal_library_views_handlers() {
  );
 }
 
-/**
- * Implements hook_views_pre_render
- * Purpose: Intercepts the view after the query has been executed
- *   All the results are stored in $view->result
- *   Looking up the NID here ensures the query is only executed once
- *   for all features in the table.
- *
- * @todo add if !<chado/drupal same db> around NID portion
- */
-function tripal_library_views_pre_render	(&$view) {
-	if (preg_match('/library/', $view->base_table)) {
-		
-		// retrieve the library_id for each record in the views current page
-		$library_ids = array();
-		foreach ($view->result as $row_num => $row) {
-			$library_ids[$row_num] = $row->library_id;
-		}
-
-		// Using the list of library_ids from the view
-		// lookup the NIDs from drupal
-		// and add that to the results of the view
-		$sql = "SELECT nid, library_id FROM chado_library WHERE library_id IN (".implode(',',$library_ids).")";
-		$resource = db_query($sql);
-		while ($r = db_fetch_object($resource)) {
-			$key = array_search($r->library_id, $library_ids);
-			$view->result[$key]->nid = $r->nid;
-		}
-	}
-}

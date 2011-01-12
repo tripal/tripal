@@ -41,7 +41,7 @@ function chado_analysis_views_views_handlers() {
       'path' => drupal_get_path('module', 'tripal_analysis') . '/views/handlers',
     ),
     'handlers' => array(
-      'views_handler_field_computed_nid' => array(
+      'views_handler_field_computed_analysis_nid' => array(
         'parent' => 'views_handler_field_numeric',
       ),
       'views_handler_field_readable_date' => array(
@@ -51,32 +51,3 @@ function chado_analysis_views_views_handlers() {
   );
 }
 
-/**
- * Implements hook_views_pre_render
- * Purpose: Intercepts the view after the query has been executed
- *   All the results are stored in $view->result
- *   Looking up the NID here ensures the query is only executed once
- *   for all analysis' in the table.
- *
- * @todo add if !<chado/drupal same db> around NID portion
- */
-function tripal_analysis_views_pre_render	(&$view) {
-	if (preg_match('/analysis/', $view->base_table)) {
-		
-		// retrieve the analysis_id for each record in the views current page
-		$analysis_ids = array();
-		foreach ($view->result as $row_num => $row) {
-			$analysis_ids[$row_num] = $row->analysis_id;
-		}
-
-		// Using the list of analysis_ids from the view
-		// lookup the NIDs from drupal
-		// and add that to the results of the view
-		$sql = "SELECT nid, analysis_id FROM chado_analysis WHERE analysis_id IN (".implode(',',$analysis_ids).")";
-		$resource = db_query($sql);
-		while ($r = db_fetch_object($resource)) {
-			$key = array_search($r->analysis_id, $analysis_ids);
-			$view->result[$key]->nid = $r->nid;
-		}
-	}
-}

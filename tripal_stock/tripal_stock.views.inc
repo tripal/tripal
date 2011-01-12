@@ -43,7 +43,7 @@ function tripal_stock_views_handlers() {
      'path' => drupal_get_path('module', 'tripal_stock') . '/views/handlers',
    ),
    'handlers' => array(
-     'views_handler_field_computed_nid' => array(
+     'views_handler_field_computed_stock_nid' => array(
        'parent' => 'views_handler_field_numeric',
      ),
      'views_handler_field_stockprop_by_type' => array(
@@ -68,7 +68,7 @@ function tripal_stock_views_handlers() {
  );
 }
 
-/**
+/*************************************************************************
  * Implements hook_views_pre_render
  * Purpose: Intercepts the view after the query has been executed
  *   All the results are stored in $view->result
@@ -80,20 +80,13 @@ function tripal_stock_views_handlers() {
 function tripal_stock_views_pre_render	(&$view) {
 	if (preg_match('/stock/', $view->base_table)) {
 		
+		//-----Node IDs---------------------------------------------
+		// @see file: tripal_core.views.inc function: tripal_core_add_node_ids_to_view (&$view);
+		
 		// retrieve the stock_id for each record in the views current page
 		$stock_ids = array();
 		foreach ($view->result as $row_num => $row) {
 			$stock_ids[$row_num] = $row->stock_id;
-		}
-
-		// Using the list of stock_ids from the view
-		// lookup the NIDs from drupal
-		// and add that to the results of the view
-		$sql = "SELECT nid, stock_id FROM chado_stock WHERE stock_id IN (".implode(',',$stock_ids).")";
-		$resource = db_query($sql);
-		while ($r = db_fetch_object($resource)) {
-			$key = array_search($r->stock_id, $stock_ids);
-			$view->result[$key]->nid = $r->nid;
 		}
 		
 		//-----Properties------------------------------------------

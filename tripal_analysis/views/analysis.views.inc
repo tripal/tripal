@@ -78,11 +78,11 @@ function retrieve_analysis_views_data() {
   // Calculated Field: Node ID
   //  use custom field handler to query drupal for the node ID
   //  this is only needed if chado is in a separate database from drupal
-	$data['analysis']['nid'] = array(
+	$data['analysis']['analysis_nid'] = array(
 	  'title' => 'Node ID',
 	  'help' => 'The node ID for the current analysis',
 	  'field' => array(
-	    'handler' => 'views_handler_field_computed_nid',
+	    'handler' => 'views_handler_field_computed_analysis_nid',
 	  ),
 	);
 	

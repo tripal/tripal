@@ -43,7 +43,7 @@ function tripal_feature_views_handlers() {
      'path' => drupal_get_path('module', 'tripal_feature') . '/views/handlers',
    ),
    'handlers' => array(
-     'views_handler_field_computed_nid' => array(
+     'views_handler_field_computed_feature_nid' => array(
        'parent' => 'views_handler_field_numeric',
      ),
      'views_handler_field_readable_date' => array(
@@ -53,32 +53,3 @@ function tripal_feature_views_handlers() {
  );
 }
 
-/**
- * Implements hook_views_pre_render
- * Purpose: Intercepts the view after the query has been executed
- *   All the results are stored in $view->result
- *   Looking up the NID here ensures the query is only executed once
- *   for all features in the table.
- *
- * @todo add if !<chado/drupal same db> around NID portion
- */
-function tripal_feature_views_pre_render	(&$view) {
-	if (preg_match('/feature/', $view->base_table)) {
-		
-		// retrieve the feature_id for each record in the views current page
-		$feature_ids = array();
-		foreach ($view->result as $row_num => $row) {
-			$feature_ids[$row_num] = $row->feature_id;
-		}
-
-		// Using the list of feature_ids from the view
-		// lookup the NIDs from drupal
-		// and add that to the results of the view
-		$sql = "SELECT nid, feature_id FROM chado_feature WHERE feature_id IN (".implode(',',$feature_ids).")";
-		$resource = db_query($sql);
-		while ($r = db_fetch_object($resource)) {
-			$key = array_search($r->feature_id, $feature_ids);
-			$view->result[$key]->nid = $r->nid;
-		}
-	}
-}

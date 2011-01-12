@@ -41,39 +41,9 @@ function tripal_organism_views_handlers() {
      'path' => drupal_get_path('module', 'tripal_organism') . '/views/handlers',
    ),
    'handlers' => array(
-     'views_handler_field_computed_nid' => array(
+     'views_handler_field_computed_organism_nid' => array(
        'parent' => 'views_handler_field_numeric',
      ),
    ),
  );
-}
-
-/**
- * Implements hook_views_pre_render
- * Purpose: Intercepts the view after the query has been executed
- *   All the results are stored in $view->result
- *   Looking up the NID here ensures the query is only executed once
- *   for all organisms in the table.
- *
- * @todo add if !<chado/drupal same db> around NID portion
- */
-function tripal_organism_views_pre_render	(&$view) {
-	if (preg_match('/organism/', $view->base_table)) {
-		
-		// retrieve the organism_id for each record in the views current page
-		$organism_ids = array();
-		foreach ($view->result as $row_num => $row) {
-			$organism_ids[$row_num] = $row->organism_id;
-		}
-
-		// Using the list of organism_ids from the view
-		// lookup the NIDs from drupal
-		// and add that to the results of the view
-		$sql = "SELECT nid, organism_id FROM chado_organism WHERE organism_id IN (".implode(',',$organism_ids).")";
-		$resource = db_query($sql);
-		while ($r = db_fetch_object($resource)) {
-			$key = array_search($r->organism_id, $organism_ids);
-			$view->result[$key]->nid = $r->nid;
-		}
-	}
 }
