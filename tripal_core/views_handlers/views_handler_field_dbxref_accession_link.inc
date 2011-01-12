@@ -28,10 +28,10 @@ class views_handler_field_dbxref_accession_link extends views_handler_field {
        $accession_link = $urlprefix . $accession;
        return($accession_link); 
      } else {
-       return '';
+       return $accession;
      }
    } else {
-     return '';
+     return $accession;
    }
  } 
 } 

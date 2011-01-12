@@ -46,11 +46,9 @@ function retrieve_stock_views_data() {
       'left_field' => 'organism_id',
       'field' => 'organism_id',
     ),
-    'dbxref' => array(
-     'left_field' => 'dbxref_id',                                                                                                                                                                                                   
-      'field' => 'dbxref_id',
-    ),
-  );  
+  ); 
+  
+  
 
 	// Table Field Definitions----------------------
   // Field: feature_id (primary key)

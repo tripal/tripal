@@ -43,7 +43,7 @@ function retrieve_dbxref_views_data() {
     'stock' => array(
       'left_field' => 'dbxref_id',
       'field' => 'dbxref_id',
-    ),     
+    ),  
   );
 
   // Table Field Definitions----------------------
@@ -120,7 +120,7 @@ function retrieve_dbxref_views_data() {
     ),
   );
 
-  // Calculated Field: Accession Link (varchar 1024)
+  // Calculated Field: Accession Link
   //  uses custom field handler to pull db urlprefix and concatenate with accession
   //  solves the problem of not being able to add urlprefix to tables which only
   //  join to dbxref table (not db)

@@ -35,6 +35,21 @@ function retrieve_db_views_data() {
       'left_field' => 'db_id',
       'field' => 'db_id',
     ),
+    'stock' => array(
+    	'left_table' => 'dbxref',
+    	'left_field' => 'db_id',
+    	'field' => 'db_id',
+    ),
+    'cvterm' => array(
+    	'left_table' => 'dbxref',
+    	'left_field' => 'db_id',
+    	'field' => 'db_id',
+    ),
+    'feature' => array(
+    	'left_table' => 'dbxref',
+    	'left_field' => 'db_id',
+    	'field' => 'db_id',
+    ),
   );
   
   // Table Field Definitions----------------------
