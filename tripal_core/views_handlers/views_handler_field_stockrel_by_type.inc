@@ -17,8 +17,8 @@ class views_handler_field_stockrel_by_type extends views_handler_field_prerender
 
   function option_definition() {
     $options = parent::option_definition();
-    $options['stockprop_type_ids'] = array('default' => array());
-		$options['display_options'] = array('default' => array('subject','type','object'));
+    $options['stockrel_type_ids'] = array('default' => array());
+		$options['stockrel_display_options'] = array('default' => array('subject','type','object'));
     return $options;
   }
 
@@ -28,7 +28,9 @@ class views_handler_field_stockrel_by_type extends views_handler_field_prerender
   function options_form(&$form, &$form_state) {
     parent::options_form($form, $form_state);
 
-		$form['display_options'] = array(
+		$form['stockrel_display_options'] = array(
+		  '#prefix' => '<div><div id="edit-options-display_options">',
+      '#suffix' => '</div></div>',
 			'#type' => 'checkboxes',
 			'#title' => t('Display Relationship Parts'),
 			'#description' => t('Check each part of the relationship you want displayed where the part '
@@ -40,10 +42,10 @@ class views_handler_field_stockrel_by_type extends views_handler_field_prerender
 				'type' => 'Relationship Type',
 				'object' => 'Object',
 			),
-			'#default_value' => $this->options['display_options'],
+			'#default_value' => array($this->options['stockrel_display_options']['subject'], $this->options['stockrel_display_options']['type'], $this->options['stockrel_display_options']['object']),
 		);
 		
-    $options = _get_cvterm_options( variable_get('chado_stock_relationship_cv', 'null') );
+    $options = get_chado_cvterm_options( variable_get('chado_stock_relationship_cv', 'null') );
     $form['stockrel_type_ids'] = array(
       '#prefix' => '<div><div id="edit-options-stockrel_type_ids">',
       '#suffix' => '</div></div>',
@@ -97,13 +99,13 @@ class views_handler_field_stockrel_by_type extends views_handler_field_prerender
 
   function render_item($count, $item) {
 	  $text = array();
-		if ($this->options['display_options']['subject']) {
+		if ($this->options['stockrel_display_options']['subject']) {
 			$text[] = $item['subject_name'];
 		}
-		if ($this->options['display_options']['type']) {
+		if ($this->options['stockrel_display_options']['type']) {
 			$text[] = $item['type_name'];
 		}
-		if ($this->options['display_options']['object']) {
+		if ($this->options['stockrel_display_options']['object']) {
 			$text[] = $item['object_name'];
 		}
 		return implode(' ', $text);

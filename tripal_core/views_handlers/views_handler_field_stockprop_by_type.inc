@@ -6,18 +6,13 @@
  */
 class views_handler_field_stockprop_by_type extends views_handler_field_prerender_list {
   function init(&$view, $options) {
-    parent::init($view, $options);
-
-    // Boolean to determine whether
-    //    TRUE =>  value (property type)      -more than one property type displayed
-    //    FALSE => or just value is rendered  -only 1 porperty type is displayed    
-    $this->display_type = TRUE;
-
+    parent::init($view, $options);    
   }
 
   function option_definition() {
     $options = parent::option_definition();
     $options['stockprop_type_ids'] = array('default' => array());
+    $options['stockprop_display_options'] = array('default' => array('type', 'value'));
     return $options;
   }
 
@@ -27,7 +22,23 @@ class views_handler_field_stockprop_by_type extends views_handler_field_prerende
   function options_form(&$form, &$form_state) {
     parent::options_form($form, $form_state);
 
-    $options = _get_cvterm_options( variable_get('chado_stock_prop_types_cv', 'null') );
+		$form['stockprop_display_options'] = array(
+		  '#prefix' => '<div><div id="edit-options-display_options">',
+      '#suffix' => '</div></div>',
+			'#type' => 'checkboxes',
+			'#title' => t('Display Relationship Parts'),
+			'#description' => t('Check each part of the property you want displayed where the parts '
+				.'of a property are: <type> and <value>. '
+				.'For example, with the property temperature 54 degrees Celcius the type=temperature and the value=54 degrees Celcius. '
+				.'Thus, if you checked only value then "54 degrees Celcius" would be displayed.'),
+			'#options' => array(
+				'type' => 'Type',
+				'value' => 'Value',
+			),
+			'#default_value' => array($this->options['stockprop_display_options']['type'], $this->options['stockprop_display_options']['value']),
+		);
+		
+    $options = get_chado_cvterm_options( variable_get('chado_stock_prop_types_cv', 'null') );
     $form['stockprop_type_ids'] = array(
       '#prefix' => '<div><div id="edit-options-stockprop_type_ids">',
       '#suffix' => '</div></div>',
@@ -49,11 +60,6 @@ class views_handler_field_stockprop_by_type extends views_handler_field_prerende
 		$this->aliases['properties'] = 'properties';
 		$this->aliases['stock_id'] = 'stock_id';
 		$this->field_alias = $this->aliases['stock_id'];
-
-		// $this->display_type is used to hide (type name) when only one type is displayed in the column
-		if (sizeof(array_filter($this->options['stockprop_type_ids'])) == 1) {
-			$this->display_type = FALSE;        
-		}
 		
 		//for each stock in this view page
 		foreach ($values as $result) {
@@ -83,17 +89,27 @@ class views_handler_field_stockprop_by_type extends views_handler_field_prerende
 	}
 
   function render_item($count, $item) {
-    if ($this->display_type) {
-      return $item['value'].' ('.$item['type_name'].')';
-    } else {
-      if ($item['value']) {
-        return $item['value'];
+  	$text = array();
+  	
+  dpm($this->options['stockprop_display_options']);
+  	if ($this->options['stockprop_display_options']['value']) {
+  		if ($item['value']) {
+        $text[] =  $item['value'];
       } else {
         //display checkmark image
-				$image_path = drupal_get_path('module','chado_views').'/images/checkmark.gif';
-        return '<img border="0" src="'.url($image_path).'" alt="checkmark" />';
+				$image_path = drupal_get_path('module','tripal_core').'/images/checkmark.gif';
+        $text[] = '<img border="0" src="'.url($image_path).'" alt="checkmark" />';
       }
-    }
+  	} 
+  	if ($this->options['stockprop_display_options']['type']) {
+  		$text[] = $item['type_name'];
+  	}
+  
+		if (sizeof($text) > 1) {
+			return $text[0].' ('.$text[1].')';
+		} else {
+			return $text[0];
+		}
   }
 
   function document_self_tokens(&$tokens) {

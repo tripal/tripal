@@ -1,0 +1,645 @@
+<?php
+// $Id$
+
+require("tripal_stock-administration.inc");
+require("tripal_stock-api_functions.inc");
+require("other_module_api_functions.inc");
+
+/*************************************************************************
+ * Implementation of hook_menu()
+ * Purpose: Add menu items for this module
+ * Note: A Menu item for the Create chado_stock form is automatically
+ *   added to the 'Create Content' Navigation menu
+ *
+ * @return and array for menu descriptions
+ */
+function tripal_stock_menu() {
+  $items = array();
+
+  //Administrative settings menu
+  $items['admin/tripal/tripal_stock'] = array(
+    'title' => t('Stocks'),
+    'description' => t('Settings for Chado Stocks'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_stock_admin'),
+    'access arguments' => array('administer site configuration'),
+    'type' => MENU_NORMAL_ITEM
+  );
+  
+  //Displaying stocks
+  $items['stocks'] = array(
+  	'menu_name' => ('primary-links'),
+    'title' => t('Stocks'),
+    'page callback' => 'tripal_stock_show_stocks',
+    'access arguments' => array('access chado_stock content'),
+    'type' => MENU_NORMAL_ITEM,  
+  );
+
+  return $items;
+}
+
+
+/*************************************************************************
+ * Implementation of hook_perm()
+ * Purpose: Set the permission types that the chado stock module uses
+ *
+ * @return an array listing the possible permission catagories
+ */
+function tripal_stock_perm() {
+  return array(
+    'access chado_stock content',
+    'create chado_stock content',
+    'edit chado_stock content',
+    'delete chado_stock content'
+  );
+}
+
+/*************************************************************************
+ * Implements hook_access()
+ * Purpose: Maps permission catagories to actions; 
+ *   TRUE grants access; FALSE denies it
+ */
+function tripal_stock_access($op, $node, $account) {
+   if ($op == 'create') {
+      return user_access('create chado_stock content', $account);
+   }
+
+   if ($op == 'update') {
+      if (user_access('edit chado_stock content', $account)) {
+         return TRUE;
+      }
+   }
+   if ($op == 'delete') {
+      if (user_access('delete chado_stock content', $account)) {
+         return TRUE;
+      }
+   }
+   if ($op == 'view') {
+      if (user_access('access chado_stock content', $account)) {
+         return TRUE;
+      }
+   }
+   return FALSE;
+}
+
+/*************************************************************************
+ * Implements hook_views_api()
+ * Purpose: Essentially this hook tells drupal that there is views support for
+ *  for this module which then includes tripal_stock.views.inc where all the
+ *  views integration code is
+ */ 
+function tripal_stock_views_api() {
+   return array(
+      'api' => 2.0,
+   );
+}
+
+/*************************************************************************
+ * Implements hook_theme()
+ * Purpose: Register themeing functions for this module
+ *
+ * @return an array of themeing functions to register
+ */
+function tripal_stock_theme() {
+	return array(
+		'tripal_stock_stock_table' => array (
+			'arguments' => array('stocks'),
+		),
+	);
+}
+
+/*************************************************************************
+ * Purpose: show stocks stored in drupals chado_stock table
+ */
+function tripal_stock_show_stocks () {
+	$sql = "SELECT COUNT(stock_id) FROM {chado_stock}";
+   $no_stocks = db_result(db_query($sql));
+   if($no_stocks != 0) {
+      $stocks = get_chado_stocks();
+      if($no_stocks != count($stocks)) {
+         drupal_set_message("Synchronization needed.");
+      }
+      return theme('tripal_stock_stock_table',&$stocks);
+   } else {
+      return t("No Stocks exists. Please contact administrators to ".
+               "synchronize stocks.");
+   }
+}
+
+function theme_tripal_stock_stock_table (&$stocks) {
+
+	// cycle through the stocks and build the stocks page
+	$output = "<div id=\"stocks\">";
+	$output .= '<table>';
+  $output .= "<tr>";
+  $output .= "<th>Name</th>";
+  $output .= "<th>Type</th>";
+  $output .= "<th>Organism</th>";
+  $output .= "<th>Description</th>";
+  $output .= "</tr>";
+
+  foreach($stocks as $stock){
+		$output .= "<tr>";
+		$output .= "<td>".l($stock->stock_name, "node/".$stock->nid)."</td>";
+		$output .= "<td>".$stock->stock_type."</td>";
+		$output .= "<td nowrap>".$stock->organism->common_name."</td>";
+		$output .= "<td>".$stock->description."</td>";
+		$output .= "</tr>";
+	}
+	$output .= "</table>";
+	$output .= "</div>";
+
+   return $output;
+}
+
+/*************************************************************************
+ * @section Implementation of stock Node
+ * including node_load, form, insert, update, delete(by nid and vid)
+ *************************************************************************/
+
+/*************************************************************************
+ * Implements hook_node_info() 
+ */
+function tripal_stock_node_info() {
+  return array(
+    'chado_stock' => array(
+      'name' => t('Stock'),
+      'module' => 'chado_stock',
+      'description' => t('A Chado Stock is a collection of material that can be sampled and have experiments performed on it.'),
+      'has_title' => TRUE,
+      'has_body' => FALSE,
+    ),
+  );
+}
+
+/*************************************************************************
+ * Implements hook_load()
+ * Everytime a chado_stock node is viewed or manipulated this hook is called first to prepare the data
+ */
+function chado_stock_load($node) {
+
+  // Gets the stock_id from the drupal chado_stock table---------------------------------------
+  $map = db_fetch_object(db_query(
+    "SELECT stock_id as stock_id FROM {chado_stock} WHERE vid=%d",
+    $node->vid
+  ));
+  $node->stock_id = $map->stock_id;  
+  
+  //Get the main stock information from the chado stock table-----------------------------------
+  $previous_db = tripal_db_set_active('chado');
+  $chado_stock = db_fetch_object(db_query(
+    "SELECT s.name, s.uniquename, s.description, c.name as type, c.cvterm_id as type_id, s.is_obsolete, s.organism_id "
+    ."FROM stock s, cvterm c WHERE s.type_id=c.cvterm_id AND stock_id=%d",
+    $map->stock_id
+  ));
+  tripal_db_set_active($previous_db);
+  //add to node
+  $node->stock_name = $chado_stock->name;
+  $node->uniquename = $chado_stock->uniquename;
+  $node->description = $chado_stock->description;
+  $node->stock_type = $chado_stock->type;
+  $node->stock_type_id = $chado_stock->type_id;
+  $node->is_obsolete = $chado_stock->is_obsolete;
+
+  // Get organism details from chado & add to node-----------------------------------------------
+  // get organism if for current stock
+  // pull all data from chado for the organism and assign it to the current node
+  $node->organism = get_chado_organism(NULL,$chado_stock->organism_id);
+
+  // Add Synonyms for stock----------------------------------------------------------------------
+  // These are a special case of property (stockprop table) where cvterm='synonym'
+  $previous_db = tripal_db_set_active('chado');
+  $results = db_query(
+    "SELECT sp.stockprop_id, sp.value as value, sp.type_id, 'synonym' as type FROM stockprop sp, cvterm c "
+    ."WHERE sp.stock_id=%d AND sp.type_id=c.cvterm_id AND c.name='synonym'",
+    $map->stock_id
+  );
+  tripal_db_set_active($previous_db);
+  $i=0;
+  // Node->synonyms is an array of synonyms(strings)
+  while ($r = db_fetch_object($results) ) {
+    $synonyms[$i++] = $r;
+  }
+  $node->synonyms = $synonyms;
+
+  // Add properties for stock (not including synonyms)-------------------------------------------
+  // $node->properties is an array of objects where each object describes a single property and has a type and value
+  $previous_db = tripal_db_set_active('chado');
+  $results = db_query(
+    "SELECT sp.stockprop_id, c.name as type, sp.value as value FROM stockprop sp, cvterm c "
+    ."WHERE sp.stock_id=%d AND sp.type_id=c.cvterm_id AND c.name != 'synonym'",
+    $map->stock_id
+  );
+  tripal_db_set_active($previous_db);
+  $i=0;
+  while ($r = db_fetch_object($results) ) {
+    $properties[$i++] = $r;
+  }
+  $node->properties = $properties;
+
+  // Add in main db reference-----------------------------------------------------------------------
+  // this is the dbxref_id in the stock table
+  //$node->main_db_reference is an object describing the dbxref and has an accession, version, description, db_name, db_description, & urlprefix
+  $previous_db = tripal_db_set_active('chado');
+  $db_reference = db_fetch_object(db_query(
+    "SELECT dbx.dbxref_id, dbx.accession, dbx.version, dbx.description, db.db_id, db.name as db_name, db.description as db_description, db.urlprefix as db_urlprefix "
+    ."FROM dbxref dbx, db db, stock s WHERE stock_id=%d AND s.dbxref_id=dbx.dbxref_id AND dbx.db_id=db.db_id",
+    $map->stock_id
+  ));
+  tripal_db_set_active($previous_db);
+  $node->main_db_reference = $db_reference;
+
+  // Add in extra references to external databases---------------------------------------------------
+  // this includes all the dbxref entries in stock_dbxref
+  // $node->db_referencesi s an array of objects where each object describes a given dbxref and has the same fields as the main db references
+  $previous_db = tripal_db_set_active('chado');
+  $results = db_query(
+    "SELECT dbx.dbxref_id, dbx.accession, dbx.version,	dbx.description, db.db_id, db.name as db_name, db.description as db_description, db.urlprefix as db_urlprefix "
+    ."FROM dbxref dbx, db db, stock_dbxref s WHERE stock_id=%d AND s.dbxref_id=dbx.dbxref_id AND dbx.db_id=db.db_id",
+    $map->stock_id
+  );
+  tripal_db_set_active($previous_db);
+    $i=0;
+  while ($r = db_fetch_object($results) ) {
+    $db_references[$i++] = $r;
+  }
+  $node->db_references = $db_references;
+
+  // Add relationships for stock---------------------------------------------------------------------
+  // Relationships are broken down into those where the current stock is the subject (other details stored in $node->object_relationships)
+  // and those where the current stock is the object (other details stored in $node->subject_relationships)
+  // fields available to each include object/subject_name, object/subject_id (stock_id in chado) and object/subject_nid (node id in drupal)
+     // where current is subject.............................
+     $previous_db = tripal_db_set_active('chado');
+     $result = db_query(
+       "SELECT sr.stock_relationship_id, c.name as relationship_type, sr.type_id as relationship_type_id, s.uniquename as object_uniquename, s.name as object_name, s.stock_id as object_id "
+       . "FROM stock_relationship sr, stock s, cvterm c "
+       . "WHERE sr.subject_id=%d AND sr.object_id=s.stock_id AND sr.type_id=c.cvterm_id",
+       $map->stock_id
+     );
+     tripal_db_set_active($previous_db);
+     $i=0;
+     $relationships= array();
+     while ($r = db_fetch_object($result) ) {
+
+       //get nid
+       $object = db_fetch_object(db_query("SELECT * FROM {node} n, {chado_stock} c WHERE c.nid=n.nid AND c.vid=n.vid AND c.stock_id=%d", $r->object_id ));
+       $r->object_nid = $object->nid;
+
+       $relationships[$i++] = $r;
+     }
+     $node->object_relationships = $relationships;
+
+     // where current is object.............................
+     $previous_db = tripal_db_set_active('chado');
+     $result = db_query(
+       "SELECT sr.stock_relationship_id, c.name as relationship_type, sr.type_id as relationship_type_id, s.uniquename as subject_uniquename, s.name as subject_name, s.stock_id as subject_id "
+       . "FROM stock_relationship sr, stock s, cvterm c "
+       . "WHERE	sr.object_id=%d AND sr.subject_id=s.stock_id AND sr.type_id=c.cvterm_id",
+       $map->stock_id
+     );
+     tripal_db_set_active($previous_db);
+     $i=0;
+     $relationships= array();
+     while ($r = db_fetch_object($result) ) {
+
+       //get nid
+       $subject = db_fetch_object(db_query("SELECT * FROM {node} n, {chado_stock} c WHERE c.nid=n.nid AND c.vid=n.vid AND c.stock_id=%d", $r->subject_id ));
+       $r->subject_nid = $subject->nid;
+
+       $relationships[$i++] = $r;
+     }
+     $node->subject_relationships = $relationships;
+
+     return $node;
+}
+
+
+/*************************************************************************
+ * Implements hook_form()	
+ * Creates the main Add/Edit/Delete Form for chado stocks
+ *
+ * Parts to be added by this form
+ *     name, 
+ *     uniquename, 
+ *     description, 
+ *     type => select from cvterm with key cvterm_id,
+ *     organism => select from available with key organism_id
+ *     main_db_reference => accession, version, description, db_name(select from dropdown) 
+ */
+function chado_stock_form($node, $form_state) {
+  $type = node_get_types('type', $node);
+
+  // This defines the path for the next step in a simulated multipart form
+  // NOTE: The %node gets replaced with the nid in insert
+  $form['next_step_path'] = array(
+    '#type' => 'hidden',
+    '#value' => 'node/%node/properties'
+  );
+
+  // If you don't want a multipart form set this to false
+  // Will then do default redirect (to new node) on submit
+  $form['simulate_multipart'] = array(
+    '#type' => 'textfield',
+    '#attributes'=>array('style'=>"display:none"),
+    '#default_value' => TRUE
+  );
+
+  if (!isset($node->uniquename)) {
+    $form['progress'] = array( 
+      '#type' => 'item', 
+      '#value' => 'blank', //implement_add_chado_properties_progress('main')
+    );
+  }
+
+  $form['names'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Stock Name')
+  );
+
+  $form['names']['title'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Name'),
+    '#default_value' => $node->title,
+    '#required'	     => TRUE
+  );
+
+  $form['names']['uniquename'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Unique Name'),
+    '#default_value' => $node->uniquename,
+    '#required'	     => TRUE
+  );
+
+  $form['names']['stock_id'] = array(
+    '#type' => 'hidden',
+    '#value' => $node->stock_id
+  );
+
+  $form['details'] = array(
+    '#type' => 'fieldset',
+    '#title' =>	t('Stock Details')
+  );
+
+  $type_options = get_chado_cvterm_options( variable_get('chado_stock_types_cv', 'null') );
+  $type_options[0] = 'Select a Type';
+  if ($node->nid == '') { $type_default = 0; } else { $type_default = $node->stock_type_id; }
+  $form['details']['type_id'] = array(
+    '#type' => 'select',
+    '#title' => t('Type of Stock'),
+    '#options' => $type_options,
+    '#default_value' => $type_default,
+    '#required'	  => TRUE,
+  );
+
+  $stock_oganism_options = get_chado_organism_options();
+  $stock_oganism_options[0] = 'Select An Organism';
+  if ($node->nid == '') { $organism_default = 0; } else {  $organism_default = $node->organism->organism_id; }
+  $form['details']['organism_id'] = array(
+    '#type' => 'select',
+    '#title' => t('Source Organism for stock'),
+    '#default_value' => $organism_default,
+    '#options' => $stock_oganism_options,
+    '#required'	  => TRUE
+  );
+
+  $form['details']['stock_description'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Notes'),
+    '#default_value' => $node->description,
+    '#description' => t('Briefly enter any notes on the above stock. This should not include phenotypes or genotypes.'),
+  );
+
+  $form['database_reference'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Stock Database Reference')
+  );
+
+  $form['database_reference']['accession'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Accession'),
+    '#default_value' => $node->main_db_reference->accession
+  );
+
+  $form['database_reference']['db_description'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Description of Database Reference'),
+    '#default_value' => $node->main_db_reference->db_description,
+    '#description' => t('Optionally enter a description about the database accession.')
+  );
+
+  $db_options = get_chado_db_options();
+  $db_options[0] = 'Select a Database';
+  if ($node->nid == '') { $db_default = 0; } else { $db_default = $node->main_db_reference->db_id; }
+  $form['database_reference']['database'] = array(
+    '#type' => 'select',
+    '#title' => t('Database'),
+    '#options' => $db_options,
+    '#default_value' => $db_default
+  );
+
+  return $form;
+}
+
+/*************************************************************************
+ * Implements hook_validate()
+ */
+function chado_stock_validate($node, &$form) {
+
+	$int_in_chado_sql = "SELECT count(*) as count FROM %s WHERE %s=%d";
+	$string_in_chado_sql = "SELECT count(*) as count FROM %s WHERE %s='%s'";
+	
+  // Validate Uniquename only if add
+  if (empty($node->stock_id)) {
+  	$previous_db = tripal_db_set_active('chado');
+  	$chado_row = db_fetch_object(db_query("SELECT * FROM stock WHERE uniquename='".$node->uniquename."'"));
+  	tripal_db_set_active($previous_db);
+  	if(!empty($chado_row->stock_id)) {
+  		$drupal_row = db_fetch_object(db_query("SELECT * FROM {chado_stock} WHERE stock_id=".$chado_row->stock_id));
+  		if (!empty($drupal_row->nid)) {
+  			$link = l('node/'.$drupal_row->nid, $node->uniquename);
+  			form_set_error('uniquename', "There is already a stock with that uniquename $link. Please enter another uniquename.");
+			} else {
+				form_set_error('uniquename', "There is already a stock with that uniquename (although it's not sync'd with drupal). Please enter another uniquename.");
+			}
+  	}
+  }
+
+
+  // Check Type of Stock is valid cvterm_id in chado ( $form['values']['details']['type_id'] )
+  if ( $node->type_id == 0) {
+    form_set_error('type_id', 'Please select a type of stock.');
+  } else {
+  	$previous_db = tripal_db_set_active('chado');
+    $num_rows = db_fetch_object(db_query($int_in_chado_sql, 'cvterm', 'cvterm_id', $node->type_id));
+    tripal_db_set_active($previous_db);
+    if ( $num_rows->count != 1) {
+      form_set_error('type_id', "The type you selected is not valid. Please choose another one. (CODE:$num_rows)"); }
+  }
+
+  // Check Source Organism is valid organism_id in chado ( $form['values']['details']['organism_id'] )
+  if ( $node->organism_id == 0) {
+    form_set_error('organism_id', 'Please select a source organism for this stock');
+  } else {
+  	$previous_db = tripal_db_set_active('chado');
+    $num_rows = db_fetch_object(db_query($int_in_chado_sql, 'organism', 'organism_id', $node->organism_id));
+    tripal_db_set_active($previous_db);
+    if ( $num_rows->count != 1 ) {
+      form_set_error('organism_id', "The organism you selected is not valid. Please choose another one. (CODE:$num_rows)"); }
+  }
+
+  // Check if Accession also database
+  if ($node->accession != '') { 
+    if ($node->database == 0) {
+      // there is an accession but no database selected
+      form_set_error('database', 'You need to enter both a database and an accession for that database in order to add a database reference.');
+    }
+  } else {
+    if ($node->database > 0) {
+      // there is a database selected but no accession
+      form_set_error('accession', 'You need to enter both a database and an accession for that database in order to add a database reference.');
+    }
+  }
+
+  // Check database is valid db_id in chado ( $form['values']['database_reference']['database'] )
+  if ( $node->database > 0) {
+  	$previous_db = tripal_db_set_active('chado');
+    $num_rows = db_fetch_object(db_query($int_in_chado_sql, 'db', 'db_id', $node->database));
+    tripal_db_set_active($previous_db);
+    if ($num_rows->count != 1) {
+      form_set_error('database', 'The database you selected is not valid. Please choose another one.'); }
+  }
+
+  // Check Accession is unique for database ( $form['values']['database_reference']['accession'] )
+  if ( $node->accession != '') {
+  	$previous_db = tripal_db_set_active('chado');
+    $num_rows = db_fetch_object(db_query($string_in_chado_sql, 'dbxref', 'accession', $node->accession));
+    tripal_db_set_active($previous_db);
+    if ($num_rows->count > 0) {
+      form_set_error('accession', 'This accession ('.$node->accession.') has already been assigned to another stock.'); }
+  }
+
+}
+
+/*************************************************************************
+ * Implements hook_insert()
+ * Inserts data from chado_stock_form() into drupal and chado
+ */
+function chado_stock_insert($node) {
+
+  $previous_db = tripal_db_set_active('chado');
+	// create dbxref
+  if ( !empty($node->accession) ) {
+    if ( !empty($node->database) ) { 
+      db_query(
+        "INSERT INTO dbxref (db_id, accession, description) VALUES (%d, '%s', '%s')",
+        $node->database,
+        $node->accession,
+				$node->db_description	
+      );
+    }
+  }
+
+  // create stock
+  $dbxref_options['db_id'] = array(
+  	'value' =>$node->database,
+  	'type' => 'INT',
+  );
+  $dbxref_options['accession'] = array(
+  	'value' =>$node->accession,
+  	'type' => 'STRING',
+  );
+  $dbxref = get_chado_dbxref($dbxref_options);
+  if($dbxref->dbxref_id != 0) {
+    db_query(
+      "INSERT INTO stock (dbxref_id, organism_id, name, uniquename, description, type_id, is_obsolete) VALUES (%d, %d, '%s', '%s', '%s', %d, 'f')",
+      $dbxref->dbxref_id,
+      $node->organism_id,
+      $node->title,
+      $node->uniquename,
+      $node->description,
+      $node->type_id
+    );
+  } else {
+    db_query(
+      "INSERT INTO stock (organism_id, name, uniquename, description, type_id, is_obsolete) VALUES (%d, '%s', '%s', '%s', %d, 'f')",
+      $node->organism_id,
+      $node->title,
+      $node->uniquename,
+      $node->description,
+      $node->type_id
+    );
+  }
+  tripal_db_set_active($previous_db);
+
+  // create drupal chado_stock entry
+  $previous_db = tripal_db_set_active('chado');
+  $chado_stock = db_fetch_object(db_query("SELECT stock_id FROM stock WHERE uniquename='".$node->uniquename."' AND type_id=".$node->type_id.' AND organism_id='.$node->organism_id));
+	tripal_db_set_active($previous_db);
+  if (!empty($chado_stock->stock_id)) {
+  	db_query(
+    	"INSERT INTO {chado_stock} (nid, vid, stock_id) "
+    	."VALUES (%d, %d, %d)",
+    	$node->nid,
+    	$node->vid,
+    	$chado_stock->stock_id
+  	);
+
+  	//Move on to next stage of Stock Creation based on next_stage_path field
+  	if ($node->simulate_multipart) {
+    	$next_stage_path = preg_replace('/%node/', $node->nid, $node->next_step_path);  
+    	$_REQUEST['destination'] = $next_stage_path;
+  	}
+  } else {
+		drupal_set_message('Error during stock creation.', 'error');
+  }
+
+}
+
+/*************************************************************************
+ * Implements hook_update()
+ * Handles Editing/Updating of main stock info (that in the chado stock table)
+ * Currently just writes over all old data
+ */
+function chado_stock_update($node) {
+
+  if ($node->revision) {
+    chado_stock_insert($node);
+  } else {
+
+    //can't change stock id which is all thats stored in drupal thus only update chado
+    $previous_db = tripal_db_set_active('chado');
+    db_query(
+      "UPDATE stock SET organism_id=%d, name='%s', uniquename='%s', description='%s', type_id=%d WHERE stock_id=%d",
+      $node->organism_id,
+      $node->title,
+      $node->uniquename,
+      $node->description,
+      $node->type_id,
+      $node->stock_id
+    );
+    tripal_db_set_active($previous_db);
+  }
+
+}
+
+/*************************************************************************
+ * Implements hook_delete()
+ * Handles deleting of chado_stocks
+ */
+function chado_stock_delete($node) {
+
+  //remove drupal node and all revisions
+  db_query(
+    "DELETE FROM {chado_stock} WHERE nid=%d",
+    $node->nid
+  );
+  
+  // Set stock in chado: is_obsolete = TRUE
+  $previous_db = tripal_db_set_active('chado');
+  db_query(
+    "DELETE FROM stock WHERE stock_id=%d",
+    $node->stock_id
+  );
+  tripal_db_set_active($previous_db);
+}

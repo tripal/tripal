@@ -1,0 +1,1 @@
+../../../tripal_core/views_handlers/views_handler_field_stockrel_by_type.inc

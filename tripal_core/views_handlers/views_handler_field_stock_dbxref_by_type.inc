@@ -39,10 +39,10 @@ class views_handler_field_stock_dbxref_by_type extends views_handler_field_prere
 				'db_name' => 'Database Name',
 				'link' => 'Link to External Record',
 			),
-			'#default_value' => $this->options['display_options'],
+			'#default_value' => array($this->options['display_options']['accession'], $this->options['display_options']['db_name'], $this->options['display_options']['link']),
 		);
 		
-    $db_options = _get_db_options();
+    $db_options = get_chado_db_options();
 	  $db_options[0] = 'Select a Database';
 	  ksort($db_options);
     $form['db_ids'] = array(
@@ -98,15 +98,19 @@ class views_handler_field_stock_dbxref_by_type extends views_handler_field_prere
 
   function render_item($count, $item) {
 		$text = array();
-		if ($this->options['display_options']['accession']) {
-			if ($this->options['display_options']['link']) {
-				if (!empty($item['urlprefix'])) {
-					$text[] = l($item['accession'],$item['urlprefix'].$item['accession']);
-				}
+		if ($this->options['display_options']['link']) {
+			if ($this->options['display_options']['accession']) {
+				$text[] = l($item['accession'],$item['urlprefix'].$item['accession']);
 			} else {
+				$text[] = l('External Record',$item['urlprefix'].$item['accession']);
+			}	
+		} else {
+			if ($this->options['display_options']['accession']) {
 				$text[] = $item['accession'];
 			}
 		}
+		
+		
 		if ($this->options['display_options']['db_name']) {
 			$text[] = $item['db_name'];
 		}
