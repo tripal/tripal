@@ -242,3 +242,15 @@ function tripal_db_set_active($dbname){
    }
    else return db_set_active($dbname);
 }
+
+/*************************************************************************
+ * Implements hook_views_api()
+ * Purpose: Essentially this hook tells drupal that there is views support for
+ *  for this module which then includes tripal_core.views.inc where all the
+ *  views integration code is
+ */ 
+function tripal_core_views_api() {
+   return array(
+      'api' => 2.0,
+   );
+}

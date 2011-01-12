@@ -1,1 +1,1 @@
-../../../tripal_core/views_handlers/views_handler_field_computed_nid.inc
+../../../tripal_core/views/handlers/views_handler_field_computed_nid.inc
