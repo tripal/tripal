@@ -1,8 +1,97 @@
 <?php
 
 ///////////////////////////////////////////////////////////////////////////
+// Module: tripal_core
+///////////////////////////////////////////////////////////////////////////
+
+/*************************************************************************
+ * Purpose: Get max rank for a given set of criteria
+ *   This function was developed with the many property tables in chado in mind
+ *
+ * @params tablename: the name of the chado table you want to select the max rank from
+ *    this table must contain a rank column of type integer
+ * @params where_options: array(
+ *													<column_name> => array(
+ *														'type' => <type of column: INT/STRING>,
+ *														'value' => <the vlaue you want to filter on>,
+ *														'exact' => <if TRUE use =; if FALSE use ~>,
+ *													)
+ *				)
+ *     where options should include the id and type for that table to correctly
+ *     group a set of records together where the only difference are the value and rank
+ * @return the maximum rank
+ *
+ */
+function get_max_chado_rank ($tablename, $where_options) {
+
+	$where= array();
+	//generate the where clause from supplied options
+	// the key is the column name
+	foreach ($where_options as $key => $val_array) {
+		if (preg_match('/INT/', $val_array['type'])) {
+			$where[] = $key."=".$val_array['value'];
+		} else {
+			if ($val_array['exact']) { $operator='='; }
+			else { $operator='~'; }
+			$where[] = $key.$operator."'".$val_array['value']."'";
+		}
+	}
+	
+  $previous_db = tripal_db_set_active('chado');
+  $result = db_fetch_object(db_query(
+    "SELECT max(rank) as max_rank, count(rank) as count FROM %s WHERE %s",
+    $tablename,
+    implode(' AND ',$where)
+  ));
+  tripal_db_set_active($previous_db);
+
+	if ($result->count > 0) {
+	  return $result->max_rank;
+	} else {
+		return -1;
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////
 // Module: tripal_cv
 ///////////////////////////////////////////////////////////////////////////
+
+/*************************************************************************
+ * Purpose: To retrieve a chado cv object
+ *
+ * @params where_options: array(
+ *													<column_name> => array(
+ *														'type' => <type of column: INT/STRING>,
+ *														'value' => <the vlaue you want to filter on>,
+ *														'exact' => <if TRUE use =; if FALSE use ~>,
+ *													)
+ *				)
+ * @return chado cv object with all fields from the chado cv table
+ */
+function get_chado_cv ($where_options) {
+	$previous_db = tripal_db_set_active('chado');
+
+	$where= array();
+	//generate the where clause from supplied options
+	// the key is the column name
+	foreach ($where_options as $key => $val_array) {
+		if (preg_match('/INT/', $val_array['type'])) {
+			$where[] = $key."=".$val_array['value'];
+		} else {
+			if ($val_array['exact']) { $operator='='; }
+			else { $operator='~'; }
+			$where[] = $key.$operator."'".$val_array['value']."'";
+		}
+	}
+	
+  $r = db_fetch_object(db_query(
+    "SELECT * FROM cv WHERE ".implode(' AND ',$where)
+  ));
+  
+  tripal_db_set_active($previous_db);
+
+  return $r;
+}
 
 /*************************************************************************
  * Purpose: Create an options array to be used in a form element
@@ -25,6 +114,43 @@ function get_chado_cv_options() {
 
   return $options;
 
+}
+
+/*************************************************************************
+ * Purpose: To retrieve a chado cvterm object
+ *
+ * @params where_options: array(
+ *													<column_name> => array(
+ *														'type' => <type of column: INT/STRING>,
+ *														'value' => <the vlaue you want to filter on>,
+ *														'exact' => <if TRUE use =; if FALSE use ~>,
+ *													)
+ *				)
+ * @return chado cvterm object with all fields from the chado cvterm table
+ */
+function get_chado_cvterm ($where_options) {
+	$previous_db = tripal_db_set_active('chado');
+
+	$where= array();
+	//generate the where clause from supplied options
+	// the key is the column name
+	foreach ($where_options as $key => $val_array) {
+		if (preg_match('/INT/', $val_array['type'])) {
+			$where[] = $key."=".$val_array['value'];
+		} else {
+			if ($val_array['exact']) { $operator='='; }
+			else { $operator='~'; }
+			$where[] = $key.$operator."'".$val_array['value']."'";
+		}
+	}
+	
+  $r = db_fetch_object(db_query(
+    "SELECT * FROM cvterm WHERE ".implode(' AND ',$where)
+  ));
+  
+  tripal_db_set_active($previous_db);
+
+  return $r;
 }
 
 /*************************************************************************
@@ -87,6 +213,7 @@ function get_chado_db_options() {
 }
 
 /*************************************************************************
+ * Purpose: To retrieve a chado dbxref object
  *
  * @params where_options: array(
  *													<column_name> => array(
@@ -95,8 +222,9 @@ function get_chado_db_options() {
  *														'exact' => <if TRUE use =; if FALSE use ~>,
  *													)
  *				)
+ * @return chado dbxref object with all fields from the chado dbxref table
  */
-function get_chado_dbxref($where_options) {
+function get_chado_dbxref ($where_options) {
 	$previous_db = tripal_db_set_active('chado');
 
 	$where= array();

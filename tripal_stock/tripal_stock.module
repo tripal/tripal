@@ -2,8 +2,14 @@
 // $Id$
 
 require("tripal_stock-administration.inc");
+
 require("tripal_stock-api_functions.inc");
 require("other_module_api_functions.inc");
+
+require("tripal_stock-secondary_tables.inc");
+require("tripal_stock-properties.inc");
+require("tripal_stock-relationships.inc");
+require("tripal_stock-db_references.inc");
 
 /*************************************************************************
  * Implementation of hook_menu()
@@ -16,7 +22,7 @@ require("other_module_api_functions.inc");
 function tripal_stock_menu() {
   $items = array();
 
-  //Administrative settings menu
+  //Administrative settings menu-----------------
   $items['admin/tripal/tripal_stock'] = array(
     'title' => t('Stocks'),
     'description' => t('Settings for Chado Stocks'),
@@ -26,7 +32,7 @@ function tripal_stock_menu() {
     'type' => MENU_NORMAL_ITEM
   );
   
-  //Displaying stocks
+  //Displaying stocks----------------------------
   $items['stocks'] = array(
   	'menu_name' => ('primary-links'),
     'title' => t('Stocks'),
@@ -35,9 +41,83 @@ function tripal_stock_menu() {
     'type' => MENU_NORMAL_ITEM,  
   );
 
+  // Adding Secondary Properties-----------------
+  $items['node/%cs_node/properties'] = array(       
+    'title' => t('Add Properties & Synonyms'),                         
+    'description' => t('Settings for Chado Stocks'),
+    'page callback' => 'tripal_stock_add_ALL_property_page',           
+    'page arguments' => array(1), 
+    'access arguments' => array('create chado_stock content'),
+    'type' => MENU_CALLBACK
+  ); 
+
+  $items['node/%cs_node/db_references'] = array(                        
+    'title' => t('Add Database References'),                   
+    'description' => t('Settings for Chado Stocks'),              
+    'page callback' => 'tripal_stock_add_ALL_dbreferences_page',                         
+    'page arguments' => array(1),
+    'access arguments' => array('create chado_stock content'),
+    'type' => MENU_CALLBACK
+  ); 
+
+  $items['node/%cs_node/relationships'] = array(                      
+    'title' => t('Add Relationships'),                      
+    'description' => t('Settings for Chado Stocks'),               
+    'page callback' => 'tripal_stock_add_ALL_relationships_page',                          
+    'page arguments' => array(1),
+    'access arguments' => array('create chado_stock content'),
+    'type' => MENU_CALLBACK
+  );
+
+  //Edit/Deleting Secondary Properties-------------
+  $items['node/%cs_node/edit_properties'] = array(
+    'title' => t('Edit Properties'),
+    'description' => t('Settings for Chado Stocks'),
+    'page callback' => 'tripal_stock_edit_ALL_properties_page',
+    'page arguments' => array(1),
+    'access arguments' => array('edit chado_stock content'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 8,
+  );
+
+    $items['node/%cs_node/edit_relationships'] = array(
+    'title' => t('Edit Relationships'),
+    'description' => t('Settings for Chado Stocks'), 
+    'page callback' => 'tripal_stock_edit_ALL_relationships_page',
+    'page arguments' => array(1),
+    'access arguments' => array('edit chado_stock content'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 9,
+  );
+
+  $items['node/%cs_node/edit_db_references'] = array(
+    'title' => t('Edit DB References'),
+    'description' => t('Settings for Chado Stocks'),
+    'page callback' => 'tripal_stock_edit_ALL_dbreferences_page',
+    'page arguments' => array(1),
+    'access arguments' => array('edit chado_stock content'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 10,
+  );
   return $items;
 }
 
+/*************************************************************************
+ * Implements Menu wildcard_load hook
+ * Purpose: Allows the node ID of a chado stock to be dynamically 
+ *   pulled from the path. The node is loaded from this node ID
+ *   and supplied to the page as an arguement
+ */
+function cs_node_load($nid) {
+  if (is_numeric($nid)) {
+    $node = node_load($nid);
+    if ($node->type == 'chado_stock') {
+      return $node;
+    }
+  }
+
+  return FALSE;
+}
 
 /*************************************************************************
  * Implementation of hook_perm()
@@ -105,6 +185,19 @@ function tripal_stock_theme() {
 		'tripal_stock_stock_table' => array (
 			'arguments' => array('stocks'),
 		),
+		// Property edit forms--------------------------
+    'tripal_stock_edit_ALL_properties_form' => array(
+      'arguments' => array('form'),
+      'function' => 'theme_tripal_stock_edit_ALL_properties_form',
+    ),
+    'tripal_stock_edit_ALL_db_references_form' => array(
+      'arguments' => array('form'),
+      'function' => 'theme_tripal_stock_edit_ALL_db_references_form',
+    ),
+    'tripal_stock_edit_ALL_relationships_form' => array(
+      'arguments' => array('form'),
+      'function' => 'theme_tripal_stock_edit_ALL_relationships_form',
+    ),
 	);
 }
 
@@ -115,7 +208,7 @@ function tripal_stock_show_stocks () {
 	$sql = "SELECT COUNT(stock_id) FROM {chado_stock}";
    $no_stocks = db_result(db_query($sql));
    if($no_stocks != 0) {
-      $stocks = get_chado_stocks();
+      $stocks = get_all_chado_stocks();
       if($no_stocks != count($stocks)) {
          drupal_set_message("Synchronization needed.");
       }
@@ -348,7 +441,7 @@ function chado_stock_form($node, $form_state) {
   if (!isset($node->uniquename)) {
     $form['progress'] = array( 
       '#type' => 'item', 
-      '#value' => 'blank', //implement_add_chado_properties_progress('main')
+      '#value' => implement_add_chado_properties_progress('main')
     );
   }
 
