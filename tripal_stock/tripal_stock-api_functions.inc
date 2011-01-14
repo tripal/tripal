@@ -107,7 +107,7 @@ function get_chado_stocks($criteria, $match_type, $organism_id = NULL) {
 	if (sizeof($where) >= 1) {
 		$execute_query = TRUE;
 		$sql_query = 'SELECT stock.stock_id FROM stock '.implode(' ',$joins).' WHERE '.$where_string;
-		drupal_set_message('Query='.$sql_query);
+		//drupal_set_message('Query='.$sql_query);
 	} elseif (!$unknown_provided) {	
 		$execute_query = TRUE;
 		$sql_query = 'SELECT stock.stock_id FROM stock';
