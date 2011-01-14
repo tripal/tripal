@@ -50,7 +50,9 @@ function get_chado_stocks($criteria, $match_type, $organism_id = NULL) {
 		$new_criteria = array();
 		foreach ($criteria['unknown']['columns'] as $column_name) {
 			if (in_array($column_name, array('stock_id','dbxref_id','organism_id','type_id') )) {
-				$new_criteria[$column_name] = array('type'=>'INT','value' => $criteria['unknown']['value']);
+				if (preg_match('/^\d+$/',$criteria['unknown']['value'])) {
+					$new_criteria[$column_name] = array('type'=>'INT','value' => $criteria['unknown']['value']);
+				}
 			} else {
 				$new_criteria[$column_name] = array('type'=>'STRING','value' => $criteria['unknown']['value'], 'regex'=>TRUE);
 			}
