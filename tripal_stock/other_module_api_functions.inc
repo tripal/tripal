@@ -13,7 +13,7 @@
  * @params where_options: array(
  *													<column_name> => array(
  *														'type' => <type of column: INT/STRING>,
- *														'value' => <the vlaue you want to filter on>,
+ *														'value' => <the value you want to filter on>,
  *														'exact' => <if TRUE use =; if FALSE use ~>,
  *													)
  *				)
@@ -44,7 +44,7 @@ function get_max_chado_rank ($tablename, $where_options) {
     implode(' AND ',$where)
   ));
   tripal_db_set_active($previous_db);
-
+	//drupal_set_message("Max Rank Query=SELECT max(rank) as max_rank, count(rank) as count FROM ".$tablename." WHERE ".implode(' AND ',$where));
 	if ($result->count > 0) {
 	  return $result->max_rank;
 	} else {
@@ -188,6 +188,43 @@ function get_chado_cvterm_options($cv_id = 0) {
 ///////////////////////////////////////////////////////////////////////////
 // Module: tripal_db
 ///////////////////////////////////////////////////////////////////////////
+
+/*************************************************************************
+ * Purpose: To retrieve a chado db object
+ *
+ * @params where_options: array(
+ *													<column_name> => array(
+ *														'type' => <type of column: INT/STRING>,
+ *														'value' => <the vlaue you want to filter on>,
+ *														'exact' => <if TRUE use =; if FALSE use ~>,
+ *													)
+ *				)
+ * @return chado db object with all fields from the chado db table
+ */
+function get_chado_db ($where_options) {
+	$previous_db = tripal_db_set_active('chado');
+
+	$where= array();
+	//generate the where clause from supplied options
+	// the key is the column name
+	foreach ($where_options as $key => $val_array) {
+		if (preg_match('/INT/', $val_array['type'])) {
+			$where[] = $key."=".$val_array['value'];
+		} else {
+			if ($val_array['exact']) { $operator='='; }
+			else { $operator='~'; }
+			$where[] = $key.$operator."'".$val_array['value']."'";
+		}
+	}
+	
+  $r = db_fetch_object(db_query(
+    "SELECT * FROM db WHERE ".implode(' AND ',$where)
+  ));
+  
+  tripal_db_set_active($previous_db);
+
+  return $r;
+}
 
 /*************************************************************************
  * Purpose: Create an options array to be used in a form element

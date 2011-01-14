@@ -79,6 +79,11 @@ function tripal_stock_add_ONE_property_form_validate($form, &$form_state) {
   // Only Require if Adding Property
   if ($form_state['clicked_button']['#value'] == t('Add Property') ) {
 
+		// Check that there is a stock
+		if ( $form_state['values']['prop_stock_id'] <= 0 ) {
+			form_set_error('prop_stock_id', 'There is no associated stock.');
+		}
+		
     // Check that Selected a type
     if ( $form_state['values']['prop_type_id'] == 0) {
       form_set_error('prop_type_id', 'Please select a type of property.');
@@ -106,7 +111,7 @@ function tripal_stock_add_ONE_property_form_validate($form, &$form_state) {
 }
 
 function tripal_stock_add_ONE_property_form_submit($form, &$form_state) {
-
+	
   // if there is a property add it (only won't be a property if clicked next step w/ no property)
   if ($form_state['values']['prop_type_id'] != 0) {
     //determine the rank for this property
@@ -269,7 +274,6 @@ function tripal_stock_update_property($stockprop_id, $cvterm_id, $value, $prefer
 	$previous_db = tripal_db_set_active('chado');
 	$old_obj = db_fetch_object(db_query("SELECT * FROM stockprop WHERE stockprop_id=%d",$stockprop_id));
 	tripal_db_set_active($previous_db);
-	dpm($old_obj);
 	
 	// if they changed the type need to check rank
 	//   (if there is another property of the same type then rank needs to be increased to prevent collisions)

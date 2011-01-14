@@ -49,7 +49,11 @@ function get_chado_stocks($criteria, $match_type, $organism_id = NULL) {
 		$unknown_provided = TRUE;
 		$new_criteria = array();
 		foreach ($criteria['unknown']['columns'] as $column_name) {
-			$new_criteria[$column_name] = array('value' => $criteria['unknown']['value'], 'regex'=>TRUE);
+			if (in_array($column_name, array('stock_id','dbxref_id','organism_id','type_id') )) {
+				$new_criteria[$column_name] = array('type'=>'INT','value' => $criteria['unknown']['value']);
+			} else {
+				$new_criteria[$column_name] = array('type'=>'STRING','value' => $criteria['unknown']['value'], 'regex'=>TRUE);
+			}
 		}
 		$unknown_stocks = get_chado_stocks($new_criteria, 'ANY', $organism_id);
 	}
@@ -81,9 +85,9 @@ function get_chado_stocks($criteria, $match_type, $organism_id = NULL) {
 			else { $operator = '='; }
 			
 			if (preg_match('/INT/', $v['type'])) {
-				$where[] = $column_name.$operator.$v['value'];
+				$where[] = 'stock.'.$column_name.'='.$v['value'];
 			} else {
-				$where[] = $column_name.$operator."'".$v['value']."'";
+				$where[] = 'stock.'.$column_name.$operator."'".$v['value']."'";
 			}		
 		}
 	}
@@ -91,12 +95,19 @@ function get_chado_stocks($criteria, $match_type, $organism_id = NULL) {
 	//Build query-----------------------------------------
 	if (preg_match('/ANY/', $match_type)) {
 		$where_string = implode(' OR ',$where);
+		if ($organism_id) {
+			$where_string = '('.$where_string.') AND organism_id='.$organism_id;
+		}
 	} else {
 		$where_string = implode(' AND ',$where);
+		if ($organism_id) {
+			$where_string .= ' AND organism_id='.$organism_id; }
 	}
+	
 	if (sizeof($where) >= 1) {
 		$execute_query = TRUE;
 		$sql_query = 'SELECT stock.stock_id FROM stock '.implode(' ',$joins).' WHERE '.$where_string;
+		drupal_set_message('Query='.$sql_query);
 	} elseif (!$unknown_provided) {	
 		$execute_query = TRUE;
 		$sql_query = 'SELECT stock.stock_id FROM stock';
@@ -111,6 +122,8 @@ function get_chado_stocks($criteria, $match_type, $organism_id = NULL) {
 		$resource = db_query($sql_query);
 		tripal_db_set_active($previous_db);
 	
+		//drupal_set_message($sql_query);
+	
 		$stock_ids = array();	
 		while ($r = db_fetch_object($resource)) {
 			$stock_ids[] = $r->stock_id;
@@ -118,10 +131,12 @@ function get_chado_stocks($criteria, $match_type, $organism_id = NULL) {
 		$stock_ids = array_unique($stock_ids);
 	
 		//Get Stocks------------------------------------------
-		$resource = db_query("SELECT nid FROM {chado_stock} WHERE stock_id IN (%s)",implode(',',$stock_ids));
-		$main_stocks = array();
-		while ($r = db_fetch_object($resource)) {
-			$main_stocks[] = node_load($r->nid);
+		if (!empty($stock_ids)) {
+			$resource = db_query("SELECT nid FROM {chado_stock} WHERE stock_id IN (%s)",implode(',',$stock_ids));
+			$main_stocks = array();
+			while ($r = db_fetch_object($resource)) {
+				$main_stocks[] = node_load($r->nid);
+			}
 		}
 	}
 	
@@ -135,7 +150,7 @@ function get_chado_stocks($criteria, $match_type, $organism_id = NULL) {
 		if(!empty($unknown_stocks)){
 			return $unknown_stocks;
 		} else {
-			drupal_set_message('No Stocks matched the given criteria','warning');
+			//drupal_set_message('No Stocks matched the given criteria','warning');
 			return array();
 		}
 	}

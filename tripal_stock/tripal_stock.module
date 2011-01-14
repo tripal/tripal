@@ -630,19 +630,20 @@ function chado_stock_insert($node) {
         $node->accession,
 				$node->db_description	
       );
-    }
-  }
 
+  		$dbxref_options['db_id'] = array(
+  			'value' =>$node->database,
+  			'type' => 'INT',
+  		);
+  		$dbxref_options['accession'] = array(
+  			'value' =>$node->accession,
+  			'type' => 'STRING',
+  		);
+  		$dbxref = get_chado_dbxref($dbxref_options);
+  	}
+  }
+  
   // create stock
-  $dbxref_options['db_id'] = array(
-  	'value' =>$node->database,
-  	'type' => 'INT',
-  );
-  $dbxref_options['accession'] = array(
-  	'value' =>$node->accession,
-  	'type' => 'STRING',
-  );
-  $dbxref = get_chado_dbxref($dbxref_options);
   if($dbxref->dbxref_id != 0) {
     db_query(
       "INSERT INTO stock (dbxref_id, organism_id, name, uniquename, description, type_id, is_obsolete) VALUES (%d, %d, '%s', '%s', '%s', %d, 'f')",
