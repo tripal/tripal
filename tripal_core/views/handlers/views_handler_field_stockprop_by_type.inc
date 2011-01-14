@@ -91,7 +91,6 @@ class views_handler_field_stockprop_by_type extends views_handler_field_prerende
   function render_item($count, $item) {
   	$text = array();
   	
-  dpm($this->options['stockprop_display_options']);
   	if ($this->options['stockprop_display_options']['value']) {
   		if ($item['value']) {
         $text[] =  $item['value'];
