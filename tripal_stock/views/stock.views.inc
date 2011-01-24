@@ -159,6 +159,11 @@ function retrieve_stock_views_data() {
       'help' => t('Display a given type of properties associated with a stock.'),
       'handler' => 'views_handler_field_stockprop_by_type',
     ),
+    'filter' => array(
+    	'title' => t('Properties'),
+    	'help' => t('Filter by a given property type or value.'),
+    	'handler' => 'views_handler_filter_stockprop_id',
+    ),
   );
 
 	//Calculated Field: stock properties (ALL)

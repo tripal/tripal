@@ -52,39 +52,17 @@ class views_handler_filter_stockprop_id extends views_handler_filter {
     }
   }
 
-  /**
-   * Add this filter to the query.
-   */
-//  function query() {
-//    if (!empty($this->value) || preg_match('/NULL/', $this->operator)) {
-//      if (preg_match('/stockprop/', $this->query->table_queue['stockprop']['table'])) {
-//        //already one stockprop join thus create another one with a different alias
-//        // to ensure no collisions
-//        $original_join = $this->query->table_queue['stockprop'];
-//
-//        $this->query->table_queue['stockprop_'.$this->type] = $original_join;
-//        $this->query->table_queue['stockprop_'.$this->type]['alias'] = 'stockprop_'.$this->type;
-//        $this->query->tables['stockprop']['count']++;
-//        $this->table_alias = 'stockprop_'.$this->type;
-//      } else {
-//        // Add stockprop join to query if it's not already there
-//        $this->ensure_my_table();
-//      }
-//
-//      if (!empty($this->type)) {
-//        $this->query->add_where($this->options['group'], $this->table_alias. '.type_id = '.$this->type);
-//      }
-//
-//      if (preg_match('/NULL/', $this->operator)) {
-//        $this->query->add_where($this->options['group'], $this->table_alias. '.value ' . $this->operator);
-//      } else {
-//        if (!empty($this->value)) {
-//          $this->query->add_where($this->options['group'], $this->table_alias. '.value ' . $this->operator . " '%s'", $this->value);
-//        }
-//      }
-//    }
-//  }
-
+	function query () {
+		if (preg_match('/IS NOT NULL/', $this->options['operator'])) {
+			$new_where_sql = "stock_id IN (SELECT stock_id FROM stockprop WHERE type_id=".$this->type.")";
+		} elseif (preg_match('/IS NULL/', $this->options['operator'])) {
+			$new_where_sql = "stock_id NOT IN (SELECT stock_id FROM stockprop WHERE type_id=".$this->type.")";
+		} else {
+			$new_where_sql = "stock_id IN (SELECT stock_id FROM stockprop WHERE type_id=".$this->type." AND value".$this->operator."'".$this->value."')";
+		}
+		$this->query->add_where($this->options['group'], $new_where_sql);
+	}
+	
   function types_form(&$form, &$form_state) {
     $previous_db = db_set_active('chado');
     $result = db_query("SELECT cvt.cvterm_id as type_id, cvt.name FROM cvterm cvt WHERE cvt.cvterm_id IN (SELECT type_id FROM stockprop)");
@@ -106,12 +84,27 @@ class views_handler_filter_stockprop_id extends views_handler_filter {
 
   function value_form(&$form, &$form_state) {
     parent::value_form(&$form, &$form_state);
-
-    $form['value'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Value'),
-      '#default_value' => $this->value,
-    );
+	
+		if ($this->options['expose']['display_type'] == 'select') {
+			$previous_db = db_set_active('chado');
+			$resource = db_query("SELECT value FROM stockprop WHERE type_id=".$this->type." ORDER BY value");
+			db_set_active($previous_db);
+			while ($r = db_fetch_object($resource)) {
+				$options[$r->value] = $r->value;
+			}
+			$form['value'] = array(
+        '#type' => 'select',
+        '#title' => $this->options['label'],
+        '#options' => $options,
+        '#default_value' => $this->value,
+      );
+		} else {
+			$form['value'] = array(
+  	    '#type' => 'textfield',
+    	  '#title' => t('Value'),
+      	'#default_value' => $this->value,
+    	);
+    }
   }
 
   function operator_options() {
@@ -201,6 +194,17 @@ class views_handler_filter_stockprop_id extends views_handler_filter {
       '#size' => 40,
       '#description' => t('This will appear in the URL after the ? to identify this filter. Cannot be blank.'),
     );
+    
+    $form['expose']['display_type'] = array(
+    	'#type' => 'radios',
+    	'#default_value' => $this->options['expose']['display_type'],
+    	'#title' => t('Display Type'),
+    	'#description' => t('This will change the form item type of the exposed value form. ie: it can be used to let the user select the property value from a select box rather than a textfield.'),
+			'#options' => array(
+				'textfield' => 'Text Field',
+				'select' => 'Drop Down',
+			),
+    );
   }
 
   function expose_form_right(&$form, &$form_state) {
@@ -264,5 +268,6 @@ class views_handler_filter_stockprop_id extends views_handler_filter {
       );
     }
   }
-
+  
+  
 }

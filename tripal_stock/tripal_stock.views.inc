@@ -64,6 +64,9 @@ function tripal_stock_views_handlers() {
 		'views_handler_field_stock_dbxref_all' => array(
        'parent' => 'views_handler_field_prerender_list',
      ),
+     'views_handler_filter_stockprop_id' => array(
+     	'parent' => 'views_handler_filter',
+     ),
    ),
  );
 }

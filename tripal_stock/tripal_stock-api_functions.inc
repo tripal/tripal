@@ -42,10 +42,11 @@ function get_all_chado_stocks() {
  * @return an array of matching stock objects (produced using node_load)
  *   matching the given criteria
  */
-function get_chado_stocks($criteria, $match_type, $organism_id = NULL) {
+function get_chado_stocks($criteria, $match_type, $organism_id = NULL, $error_checking = FALSE) {
 	
 	//Deal with unknown column----------------------------
 	if (!empty($criteria['unknown'])) {
+		if ($error_checking) { drupal_set_message('Uknown provided','warning');}
 		$unknown_provided = TRUE;
 		$new_criteria = array();
 		foreach ($criteria['unknown']['columns'] as $column_name) {
@@ -57,7 +58,9 @@ function get_chado_stocks($criteria, $match_type, $organism_id = NULL) {
 				$new_criteria[$column_name] = array('type'=>'STRING','value' => $criteria['unknown']['value'], 'regex'=>TRUE);
 			}
 		}
-		$unknown_stocks = get_chado_stocks($new_criteria, 'ANY', $organism_id);
+		if ($error_checking) { drupal_set_message('Re-calling get_chado_stocks(<pre>'.print_r($new_criteria,TRUE).'</pre>, ANY, '.$organism_id.')','warning'); }
+		$unknown_stocks = get_chado_stocks($new_criteria, 'ANY', $organism_id, $error_checking);
+		if ($error_checking) { drupal_set_message(sizeof($unknown_stocks).' Unknown Stocks', 'warning'); }
 	}
 	unset($criteria['unknown']); //so it's not mistaken as a column in the stock table
 	
@@ -94,6 +97,11 @@ function get_chado_stocks($criteria, $match_type, $organism_id = NULL) {
 		}
 	}
 	
+	if ($error_checking) { 
+		drupal_set_message('Where Conditions: <pre>'.print_r($where,TRUE).'</pre>', 'warning'); 
+		drupal_set_message('Left Joins: <pre>'.print_r($joins,TRUE).'</pre>', 'warning');
+	}
+	
 	//Build query-----------------------------------------
 	if (preg_match('/ANY/', $match_type)) {
 		$where_string = implode(' OR ',$where);
@@ -118,19 +126,21 @@ function get_chado_stocks($criteria, $match_type, $organism_id = NULL) {
 		$execute_query = FALSE;
 	}
 	
+	if ($error_checking) { drupal_set_message('Query: '.$sql_query, 'warning'); }
+	
 	if ($execute_query) {
 		//Get stock_ids---------------------------------------
 		$previous_db = tripal_db_set_active('chado');
 		$resource = db_query($sql_query);
 		tripal_db_set_active($previous_db);
 	
-		//drupal_set_message($sql_query);
-	
 		$stock_ids = array();	
 		while ($r = db_fetch_object($resource)) {
 			$stock_ids[] = $r->stock_id;
 		}
 		$stock_ids = array_unique($stock_ids);
+		
+		if ($error_checking) { drupal_set_message('Stock IDs: <pre>'.print_r($stock_ids,TRUE).'</pre>', 'warning'); }
 	
 		//Get Stocks------------------------------------------
 		if (!empty($stock_ids)) {
