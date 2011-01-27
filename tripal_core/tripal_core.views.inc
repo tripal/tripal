@@ -45,17 +45,19 @@ function tripal_core_add_node_ids_to_view (&$view) {
 		$unique_analysis_ids = array_filter($analysis_ids);
 		$unique_analysis_ids = array_unique($unique_analysis_ids);
 
-		// Using the list of analysis_ids from the view
-		// lookup the NIDs from drupal
-		// and add that to the results of the view
-		$sql = "SELECT nid, analysis_id FROM {chado_analysis} WHERE analysis_id IN (".implode(',',$unique_analysis_ids).")";
-		$resource = db_query($sql);
-		while ($r = db_fetch_object($resource)) {
-			$keys = array_keys($analysis_ids, $r->analysis_id);
-			foreach ($keys as $k) {
-				$view->result[$k]->analysis_nid = $r->nid;
+		if (!empty($unique_analysis_ids)) {
+			// Using the list of analysis_ids from the view
+			// lookup the NIDs from drupal
+			// and add that to the results of the view
+			$sql = "SELECT nid, analysis_id FROM {chado_analysis} WHERE analysis_id IN (".implode(',',$unique_analysis_ids).")";
+			$resource = db_query($sql);
+			while ($r = db_fetch_object($resource)) {
+				$keys = array_keys($analysis_ids, $r->analysis_id);
+				foreach ($keys as $k) {
+					$view->result[$k]->analysis_nid = $r->nid;
+				}
 			}
-		}
+		} // if there are any analysis'
 	} //end of case for analysis NID
 	
 	//-----Feature-----------------------------------------------
@@ -74,17 +76,19 @@ function tripal_core_add_node_ids_to_view (&$view) {
 		$unique_feature_ids = array_filter($feature_ids);
 		$unique_feature_ids = array_unique($unique_feature_ids);
 
-		// Using the list of feature_ids from the view
-		// lookup the NIDs from drupal
-		// and add that to the results of the view
-		$sql = "SELECT nid, feature_id FROM {chado_feature} WHERE feature_id IN (".implode(',',$unique_feature_ids).")";
-		$resource = db_query($sql);
-		while ($r = db_fetch_object($resource)) {
-			$keys = array_keys($feature_ids, $r->feature_id);
-			foreach ($keys as $k) {
-				$view->result[$k]->feature_nid = $r->nid;
+		if (!empty($unique_feature_ids)) {
+			// Using the list of feature_ids from the view
+			// lookup the NIDs from drupal
+			// and add that to the results of the view
+			$sql = "SELECT nid, feature_id FROM {chado_feature} WHERE feature_id IN (".implode(',',$unique_feature_ids).")";
+			$resource = db_query($sql);
+			while ($r = db_fetch_object($resource)) {
+				$keys = array_keys($feature_ids, $r->feature_id);
+				foreach ($keys as $k) {
+					$view->result[$k]->feature_nid = $r->nid;
+				}
 			}
-		}
+		} // if there are any features
 	} //end of case for feature NID
 	
 	//-----Library-----------------------------------------------
@@ -103,17 +107,19 @@ function tripal_core_add_node_ids_to_view (&$view) {
 		$unique_library_ids = array_filter($library_ids);
 		$unique_library_ids = array_unique($unique_library_ids);
 
-		// Using the list of library_ids from the view
-		// lookup the NIDs from drupal
-		// and add that to the results of the view
-		$sql = "SELECT nid, library_id FROM {chado_library} WHERE library_id IN (".implode(',',$unique_library_ids).")";
-		$resource = db_query($sql);
-		while ($r = db_fetch_object($resource)) {
-			$keys = array_keys($library_ids, $r->library_id);
-			foreach ($keys as $k) {
-				$view->result[$k]->library_nid = $r->nid;
+		if (!empty($unique_library_ids)) {
+			// Using the list of library_ids from the view
+			// lookup the NIDs from drupal
+			// and add that to the results of the view
+			$sql = "SELECT nid, library_id FROM {chado_library} WHERE library_id IN (".implode(',',$unique_library_ids).")";
+			$resource = db_query($sql);
+			while ($r = db_fetch_object($resource)) {
+				$keys = array_keys($library_ids, $r->library_id);
+				foreach ($keys as $k) {
+					$view->result[$k]->library_nid = $r->nid;
+				}
 			}
-		}
+		} // if there are libraries
 	} //end of case for library NID
 	
 	//-----Organism----------------------------------------------
@@ -132,17 +138,19 @@ function tripal_core_add_node_ids_to_view (&$view) {
 		$unique_organism_ids = array_filter($organism_ids);
 		$unique_organism_ids = array_unique($unique_organism_ids);
 
-		// Using the list of organism_ids from the view
-		// lookup the NIDs from drupal
-		// and add that to the results of the view
-		$sql = "SELECT nid, organism_id FROM {chado_organism} WHERE organism_id IN (".implode(',',$unique_organism_ids).")";
-		$resource = db_query($sql);
-		while ($r = db_fetch_object($resource)) {
-			$keys = array_keys($organism_ids, $r->organism_id);
-			foreach ($keys as $k) {
-				$view->result[$k]->organism_nid = $r->nid;
+		if (!empty($unique_organism_ids)) {
+			// Using the list of organism_ids from the view
+			// lookup the NIDs from drupal
+			// and add that to the results of the view
+			$sql = "SELECT nid, organism_id FROM {chado_organism} WHERE organism_id IN (".implode(',',$unique_organism_ids).")";
+			$resource = db_query($sql);
+			while ($r = db_fetch_object($resource)) {
+				$keys = array_keys($organism_ids, $r->organism_id);
+				foreach ($keys as $k) {
+					$view->result[$k]->organism_nid = $r->nid;
+				}
 			}
-		}
+		} // if there are organisms
 	} //end of case for organism NID
 	
 	//-----Stock-------------------------------------------------
@@ -161,17 +169,19 @@ function tripal_core_add_node_ids_to_view (&$view) {
 		$unique_stock_ids = array_filter($stock_ids);
 		$unique_stock_ids = array_unique($unique_stock_ids);
 
-		// Using the list of stock_ids from the view
-		// lookup the NIDs from drupal
-		// and add that to the results of the view
-		$sql = "SELECT nid, stock_id FROM {chado_stock} WHERE stock_id IN (".implode(',',$unique_stock_ids).")";
-		$resource = db_query($sql);
-		while ($r = db_fetch_object($resource)) {
-			$keys = array_keys($stock_ids, $r->stock_id);
-			foreach ($keys as $k) {
-				$view->result[$k]->stock_nid = $r->nid;
+		if (!empty($unique_stock_ids)) {
+			// Using the list of stock_ids from the view
+			// lookup the NIDs from drupal
+			// and add that to the results of the view
+			$sql = "SELECT nid, stock_id FROM {chado_stock} WHERE stock_id IN (".implode(',',$unique_stock_ids).")";
+			$resource = db_query($sql);
+			while ($r = db_fetch_object($resource)) {
+				$keys = array_keys($stock_ids, $r->stock_id);
+				foreach ($keys as $k) {
+					$view->result[$k]->stock_nid = $r->nid;
+				}
 			}
-		}
+		} //if there are stocks
 	} //end of case for stock NID
 		
 	return $view;

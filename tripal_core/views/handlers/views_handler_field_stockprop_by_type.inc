@@ -22,22 +22,22 @@ class views_handler_field_stockprop_by_type extends views_handler_field_prerende
   function options_form(&$form, &$form_state) {
     parent::options_form($form, $form_state);
 
-		$form['stockprop_display_options'] = array(
-		  '#prefix' => '<div><div id="edit-options-display_options">',
+    $form['stockprop_display_options'] = array(
+      '#prefix' => '<div><div id="edit-options-display_options">',
       '#suffix' => '</div></div>',
-			'#type' => 'checkboxes',
-			'#title' => t('Display Relationship Parts'),
-			'#description' => t('Check each part of the property you want displayed where the parts '
-				.'of a property are: <type> and <value>. '
-				.'For example, with the property temperature 54 degrees Celcius the type=temperature and the value=54 degrees Celcius. '
-				.'Thus, if you checked only value then "54 degrees Celcius" would be displayed.'),
-			'#options' => array(
-				'type' => 'Type',
-				'value' => 'Value',
-			),
-			'#default_value' => array($this->options['stockprop_display_options']['type'], $this->options['stockprop_display_options']['value']),
-		);
-		
+      '#type' => 'checkboxes',
+      '#title' => t('Display Relationship Parts'),
+      '#description' => t('Check each part of the property you want displayed where the parts '
+        .'of a property are: <type> and <value>. '
+        .'For example, with the property temperature 54 degrees Celcius the type=temperature and the value=54 degrees Celcius. '
+        .'Thus, if you checked only value then "54 degrees Celcius" would be displayed.'),
+      '#options' => array(
+        'type' => 'Type',
+        'value' => 'Value',
+      ),
+      '#default_value' => array($this->options['stockprop_display_options']['type'], $this->options['stockprop_display_options']['value']),
+    );
+    
     $options = get_chado_cvterm_options( variable_get('chado_stock_prop_types_cv', 'null') );
     $form['stockprop_type_ids'] = array(
       '#prefix' => '<div><div id="edit-options-stockprop_type_ids">',
@@ -48,7 +48,7 @@ class views_handler_field_stockprop_by_type extends views_handler_field_prerende
       '#default_value' => $this->options['stockprop_type_ids'],
     );
   }
-
+  
   /**
    * Add this term to the query
    */
@@ -56,59 +56,59 @@ class views_handler_field_stockprop_by_type extends views_handler_field_prerende
     $this->add_additional_fields();
   }
 
-	function pre_render($values) {
-		$this->aliases['properties'] = 'properties';
-		$this->aliases['stock_id'] = 'stock_id';
-		$this->field_alias = $this->aliases['stock_id'];
-		
-		//for each stock in this view page
-		foreach ($values as $result) {
-			if (!empty($result->{$this->aliases['properties']})) {
-				
-				// all properties for the current stock
-				$properties = $result->{$this->aliases['properties']};
-				foreach ($properties as $property) {
-					// perform filtering
-					if (!empty($this->options['stockprop_type_ids'])) {
-						$types2keep = array_filter($this->options['stockprop_type_ids']);
-						if (!in_array($property->type_id, $types2keep)) {
-							continue;
-						}
-					}
-					
-					// Add property to the list of items to be rendered
-					$this->items[$property->stock_id][$property->stockprop_id]['stock_id'] = $property->stock_id;
-					$this->items[$property->stock_id][$property->stockprop_id]['stockprop_id'] = $property->stockprop_id;
-					$this->items[$property->stock_id][$property->stockprop_id]['type_id'] = $property->type_id;
-					$this->items[$property->stock_id][$property->stockprop_id]['type_name'] = check_plain($property->type_name);
-					$this->items[$property->stock_id][$property->stockprop_id]['value'] = check_plain($property->value);
-					$this->items[$property->stock_id][$property->stockprop_id]['rank'] = $property->rank;
-				}
-			}
-		}
-	}
+  function pre_render($values) {
+    $this->aliases['properties'] = 'properties';
+    $this->aliases['stock_id'] = 'stock_id';
+    $this->field_alias = $this->aliases['stock_id'];
+    
+    //for each stock in this view page
+    foreach ($values as $result) {
+      if (!empty($result->{$this->aliases['properties']})) {
+        
+        // all properties for the current stock
+        $properties = $result->{$this->aliases['properties']};
+        foreach ($properties as $property) {
+          // perform filtering
+          if (!empty($this->options['stockprop_type_ids'])) {
+            $types2keep = array_filter($this->options['stockprop_type_ids']);
+            if (!in_array($property->type_id, $types2keep)) {
+              continue;
+            }
+          }
+          
+          // Add property to the list of items to be rendered
+          $this->items[$property->stock_id][$property->stockprop_id]['stock_id'] = $property->stock_id;
+          $this->items[$property->stock_id][$property->stockprop_id]['stockprop_id'] = $property->stockprop_id;
+          $this->items[$property->stock_id][$property->stockprop_id]['type_id'] = $property->type_id;
+          $this->items[$property->stock_id][$property->stockprop_id]['type_name'] = check_plain($property->type_name);
+          $this->items[$property->stock_id][$property->stockprop_id]['value'] = check_plain($property->value);
+          $this->items[$property->stock_id][$property->stockprop_id]['rank'] = $property->rank;
+        }
+      }
+    }
+  }
 
   function render_item($count, $item) {
-  	$text = array();
-  	
-  	if ($this->options['stockprop_display_options']['value']) {
-  		if ($item['value']) {
+    $text = array();
+    
+    if ($this->options['stockprop_display_options']['value']) {
+      if ($item['value']) {
         $text[] =  $item['value'];
       } else {
         //display checkmark image
-				$image_path = drupal_get_path('module','tripal_core').'/images/checkmark.gif';
+        $image_path = drupal_get_path('module','tripal_core').'/images/checkmark.gif';
         $text[] = '<img border="0" src="'.url($image_path).'" alt="checkmark" />';
       }
-  	} 
-  	if ($this->options['stockprop_display_options']['type']) {
-  		$text[] = $item['type_name'];
-  	}
+    } 
+    if ($this->options['stockprop_display_options']['type']) {
+      $text[] = $item['type_name'];
+    }
   
-		if (sizeof($text) > 1) {
-			return $text[0].' ('.$text[1].')';
-		} else {
-			return $text[0];
-		}
+    if (sizeof($text) > 1) {
+      return $text[0].' ('.$text[1].')';
+    } else {
+      return $text[0];
+    }
   }
 
   function document_self_tokens(&$tokens) {

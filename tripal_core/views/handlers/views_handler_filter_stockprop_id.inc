@@ -86,6 +86,8 @@ class views_handler_filter_stockprop_id extends views_handler_filter {
     parent::value_form(&$form, &$form_state);
 	
 		if ($this->options['expose']['display_type'] == 'select') {
+		
+			// Get options
 			$previous_db = db_set_active('chado');
 			$resource = db_query("SELECT value FROM stockprop WHERE type_id=".$this->type." ORDER BY value");
 			db_set_active($previous_db);

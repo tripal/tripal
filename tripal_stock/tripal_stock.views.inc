@@ -67,6 +67,9 @@ function tripal_stock_views_handlers() {
      'views_handler_filter_stockprop_id' => array(
      	'parent' => 'views_handler_filter',
      ),
+     'views_handler_argument_stockprop_id' => array(
+     	'parent' => 'views_handler_argument_string',
+     ),
    ),
  );
 }
@@ -92,75 +95,78 @@ function tripal_stock_views_pre_render	(&$view) {
 			$stock_ids[$row_num] = $row->stock_id;
 		}
 		
-		//-----Properties------------------------------------------
-		$field_names = array_keys($view->field);
-		//if any property fields are in the current view
-		$property_field_names = preg_grep('/properties/',$field_names);
-		if (!empty($property_field_names)) {
-			$sql = "SELECT stockprop.*, cvterm.name as type_name FROM stockprop "
-				."INNER JOIN cvterm cvterm ON stockprop.type_id=cvterm.cvterm_id "
-				."WHERE stockprop.stock_id IN (".implode(',',$stock_ids).")";
-			$previous_db = db_set_active('chado');
-			$resource = db_query($sql);
-			db_set_active($previous_db);
+		if (sizeof($stock_ids)) {
 		
-			$view->result[$key]->properties = array();
-			while ($r = db_fetch_object($resource)) {
-				$key = array_search($r->stock_id, $stock_ids);
-				$view->result[$key]->properties[] = $r;
+			//-----Properties------------------------------------------
+			$field_names = array_keys($view->field);
+			//if any property fields are in the current view
+			$property_field_names = preg_grep('/properties/',$field_names);
+			if (!empty($property_field_names)) {
+				$sql = "SELECT stockprop.*, cvterm.name as type_name FROM stockprop "
+					."INNER JOIN cvterm cvterm ON stockprop.type_id=cvterm.cvterm_id "
+					."WHERE stockprop.stock_id IN (".implode(',',$stock_ids).")";
+				$previous_db = db_set_active('chado');
+				$resource = db_query($sql);
+				db_set_active($previous_db);
+		
+				$view->result[$key]->properties = array();
+				while ($r = db_fetch_object($resource)) {
+					$key = array_search($r->stock_id, $stock_ids);
+					$view->result[$key]->properties[] = $r;
+				}
 			}
-		}
 		
-		//-----Relationships----------------------------------------
-		//if any relationship fields are in the current view
-		$relationship_field_names = preg_grep('/relationships/', $field_names);
-		if (!empty($relationship_field_names)) {
-			$sql = "SELECT stock_relationship.*, cvterm.name as type_name, "
-				."subject_stock.name as subject_name, object_stock.name as object_name "
-				."FROM stock_relationship "
-				."LEFT JOIN stock subject_stock ON stock_relationship.subject_id=subject_stock.stock_id "
-				."LEFT JOIN stock object_stock ON stock_relationship.object_id=object_stock.stock_id "
-				."LEFT JOIN cvterm cvterm ON stock_relationship.type_id = cvterm.cvterm_id "
-				."WHERE stock_relationship.subject_id IN (".implode(',',$stock_ids).") "
-				."OR stock_relationship.object_id IN (".implode(',',$stock_ids).") ";
-			$previous_db = db_set_active('chado');
-			$resource = db_query($sql);
-			db_set_active($previous_db);
+			//-----Relationships----------------------------------------
+			//if any relationship fields are in the current view
+			$relationship_field_names = preg_grep('/relationships/', $field_names);
+			if (!empty($relationship_field_names)) {
+				$sql = "SELECT stock_relationship.*, cvterm.name as type_name, "
+					."subject_stock.name as subject_name, object_stock.name as object_name "
+					."FROM stock_relationship "
+					."LEFT JOIN stock subject_stock ON stock_relationship.subject_id=subject_stock.stock_id "
+					."LEFT JOIN stock object_stock ON stock_relationship.object_id=object_stock.stock_id "
+					."LEFT JOIN cvterm cvterm ON stock_relationship.type_id = cvterm.cvterm_id "
+					."WHERE stock_relationship.subject_id IN (".implode(',',$stock_ids).") "
+					."OR stock_relationship.object_id IN (".implode(',',$stock_ids).") ";
+				$previous_db = db_set_active('chado');
+				$resource = db_query($sql);
+				db_set_active($previous_db);
 			
-			while ($r = db_fetch_object($resource)) {
-				if (in_array($r->subject_id, $stock_ids)) {
-					$key = array_search($r->subject_id, $stock_ids);
-					$r->stock_id = $r->subject_id;
-					$view->result[$key]->relationships[] = clone $r;
-				}
-				if (in_array($r->object_id, $stock_ids)) {
-					$key = array_search($r->object_id, $stock_ids);
-					$r->stock_id = $r->object_id;
-					$view->result[$key]->relationships[] = clone $r;
+				while ($r = db_fetch_object($resource)) {
+					if (in_array($r->subject_id, $stock_ids)) {
+						$key = array_search($r->subject_id, $stock_ids);
+						$r->stock_id = $r->subject_id;
+						$view->result[$key]->relationships[] = clone $r;
+					}
+					if (in_array($r->object_id, $stock_ids)) {
+						$key = array_search($r->object_id, $stock_ids);
+						$r->stock_id = $r->object_id;
+						$view->result[$key]->relationships[] = clone $r;
+					}
 				}
 			}
-		}
 		
-		//-----DB References--------------------------------------------
-		//if any dbxref fields are in the current view
-		$dbxref_field_names = preg_grep('/dbxref/',$field_names);
-		if (!empty($dbxref_field_names)) {
-			$sql = "SELECT stock_dbxref.*, dbxref.db_id, db.name as db_name, db.urlprefix, "
-				."dbxref.accession, dbxref.version, dbxref.description "
-				."FROM stock_dbxref "
-				."LEFT JOIN dbxref dbxref ON stock_dbxref.dbxref_id=dbxref.dbxref_id "
-				."LEFT JOIN db db ON dbxref.db_id=db.db_id "
-				."WHERE stock_dbxref.stock_id IN (".implode(',',$stock_ids).")";
-			$previous_db = db_set_active('chado');
-			$resource = db_query($sql);
-			db_set_active($previous_db);
+			//-----DB References--------------------------------------------
+			//if any dbxref fields are in the current view
+			$dbxref_field_names = preg_grep('/dbxref/',$field_names);
+			if (!empty($dbxref_field_names)) {
+				$sql = "SELECT stock_dbxref.*, dbxref.db_id, db.name as db_name, db.urlprefix, "
+					."dbxref.accession, dbxref.version, dbxref.description "
+					."FROM stock_dbxref "
+					."LEFT JOIN dbxref dbxref ON stock_dbxref.dbxref_id=dbxref.dbxref_id "
+					."LEFT JOIN db db ON dbxref.db_id=db.db_id "
+					."WHERE stock_dbxref.stock_id IN (".implode(',',$stock_ids).")";
+				$previous_db = db_set_active('chado');
+				$resource = db_query($sql);
+				db_set_active($previous_db);
 		
-			$view->result[$key]->dbxref = array();
-			while ($r = db_fetch_object($resource)) {
-				$key = array_search($r->stock_id, $stock_ids);
-				$view->result[$key]->dbxref[] = $r;
+				$view->result[$key]->dbxref = array();
+				while ($r = db_fetch_object($resource)) {
+					$key = array_search($r->stock_id, $stock_ids);
+					$view->result[$key]->dbxref[] = $r;
+				}
 			}
-		}
-		
+			
+		} //if there are stocks
 	} //if we're dealing with a stock view
 }

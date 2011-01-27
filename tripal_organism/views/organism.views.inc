@@ -64,6 +64,9 @@ function retrieve_organism_views_data() {
      'sort' => array(
        'handler' => 'views_handler_sort',
      ),
+     'argument' => array(
+     	 'handler' => 'views_handler_argument',
+     ),
   );
 
   // Calculated Field: Node ID
