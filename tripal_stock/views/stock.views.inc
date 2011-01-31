@@ -29,7 +29,16 @@
  * @endcode
  */
 function retrieve_stock_views_data() {
+  global $db_url;
   $data = array();
+
+  // if the chado database is not local to the drupal database
+  // then we need to set the database name.  This should always
+  // be 'chado'.
+  if(is_array($db_url) and array_key_exists('chado',$db_url)){
+     $database = 'chado';
+  }
+
 
 	// Basic table definition
   $data['stock']['table']['group'] = t('Chado Stock');
@@ -37,8 +46,10 @@ function retrieve_stock_views_data() {
     'field' => 'stock_id',
     'title' => t('Chado Stock'),
     'help' => t('Chado Stocks are a record of any material upon which an experiment can be done. For example, a DNA sample, an individual or a population.'),
-    'database' => 'chado'
   );
+  if($database){
+     $data['stock']['table']['database'] = $database;
+  }
 
 	// Define relationships between this table and others
   $data['stock']['table']['join'] = array(
@@ -47,8 +58,6 @@ function retrieve_stock_views_data() {
       'field' => 'organism_id',
     ),
   ); 
-  
-  
 
 	// Table Field Definitions----------------------
   // Field: feature_id (primary key)
@@ -70,13 +79,15 @@ function retrieve_stock_views_data() {
   // Calculated Field: Node ID
   //  use custom field handler to query drupal for the node ID
   //  this is only needed if chado is in a separate database from drupal
-  $data['stock']['stock_nid'] = array(
-    'title' => 'Node ID',
-    'help' => 'This is the node ID of this feature. It can be used as a link to the node.',
-    'field' => array(
+	if ($database){
+  	$data['stock']['stock_nid'] = array(
+    	'title' => 'Node ID',
+    	'help' => 'This is the node ID of this feature. It can be used as a link to the node.',
+    	'field' => array(
        'handler' => 'views_handler_field_computed_stock_nid',
       ),
-  );
+  	);
+  }
 
   //Field: unique name (text)
   $data['stock']['uniquename'] = array(

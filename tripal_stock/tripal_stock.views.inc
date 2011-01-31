@@ -21,10 +21,12 @@
  *   relationships between that table and others (joins)
  */
 require_once('views/stock.views.inc');
+require_once('views/chado_stock.views.inc');
 function tripal_stock_views_data()  {
   $data = array();
 
   $data = array_merge($data, retrieve_stock_views_data());
+  $data = array_merge($data, retrieve_chado_stock_views_data());
   
   return $data;
 }
