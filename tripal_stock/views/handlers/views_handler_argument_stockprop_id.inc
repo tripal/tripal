@@ -52,12 +52,12 @@ class views_handler_argument_stockprop_id extends views_handler_argument_string 
     }
     
 		if (preg_match('/IS NOT NULL/', $this->options['operator'])) {
-			$new_where_sql = "stock_id IN (SELECT stock_id FROM stockprop WHERE type_id=".$this->options['stockprop_type_id'].")";
+			$new_where_sql = "stock.stock_id IN (SELECT stockprop.stock_id FROM stockprop WHERE stockprop.type_id=".$this->options['stockprop_type_id'].")";
 		} elseif (preg_match('/IS NULL/', $this->options['operator'])) {
-			$new_where_sql = "stock_id NOT IN (SELECT stock_id FROM stockprop WHERE type_id=".$this->options['stockprop_type_id'].")";
+			$new_where_sql = "stock.stock_id NOT IN (SELECT stockprop.stock_id FROM stockprop WHERE stockprop.type_id=".$this->options['stockprop_type_id'].")";
 		} else {
-			$new_where_sql = "stock_id IN (SELECT stock_id FROM stockprop "
-							. "WHERE type_id=".$this->options['stockprop_type_id']." AND value".$this->options['operator']."'".$argument."')";
+			$new_where_sql = "stock.stock_id IN (SELECT stockprop.stock_id FROM stockprop "
+							. "WHERE stockprop.type_id=".$this->options['stockprop_type_id']." AND stockprop.value".$this->options['operator']."'".$argument."')";
 		}
 		$this->query->add_where($this->options['group'], $new_where_sql);
   }
