@@ -20,10 +20,12 @@
  *   relationships between that table and others (joins)
  */
 require_once('views/organism.views.inc');
+require_once('views/chado_organism.views.inc');
 function tripal_organism_views_data()  {
   $data = array();
   
   $data = array_merge($data, retrieve_organism_views_data());
+  $data = array_merge($data, retrieve_chado_organism_views_data());
   
   return $data;
 }

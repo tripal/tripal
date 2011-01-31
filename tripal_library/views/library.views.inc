@@ -27,6 +27,15 @@
  * @endcode
  */
 function retrieve_library_views_data() {
+	global $db_url;
+  $data = array();
+
+  // if the chado database is not local to the drupal database
+  // then we need to set the database name.  This should always
+  // be 'chado'.
+  if(is_array($db_url) and array_key_exists('chado',$db_url)){
+     $database = 'chado';
+  }
   
   // Basic table definition
 	$data['library']['table']['group'] = 'Chado Library';
@@ -34,8 +43,10 @@ function retrieve_library_views_data() {
 	  'field' => 'library_id',
 	  'title' => 'Chado Library',
 	  'help' => 'Library existing in the Chado Database',                                                                                                                                                                          
-	  'database' => 'chado'
 	);
+	if($database){
+	  $data['library']['table']['database'] = $database;
+	}
 	
 	// Define relationships between this table and others
   $data['library']['table']['join'] = array(
@@ -78,13 +89,15 @@ function retrieve_library_views_data() {
   // Calculated Field: Node ID
   //  use custom field handler to query drupal for the node ID
   //  this is only needed if chado is in a separate database from drupal
-	$data['library']['library_nid'] = array(
-	  'title' => 'Node ID',
-	  'help' => 'The node ID for the current library',
-	  'field' => array(
-	    'handler' => 'views_handler_field_computed_library_nid',
-	  ),
-	);
+  if($database){
+		$data['library']['library_nid'] = array(
+	  	'title' => 'Node ID',
+	  	'help' => 'The node ID for the current library',
+	  	'field' => array(
+	    	'handler' => 'views_handler_field_computed_library_nid',
+	  	),
+		);
+	}
 	
 	// Field: organism_id (forgeign key)
   //  join between organism table and this one in tripal_organism/views/organism.views.inc

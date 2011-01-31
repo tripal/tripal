@@ -23,15 +23,27 @@
  * @endcode
  */
 function retrieve_organism_views_data() {
+	global $db_url;
+	$data = array();
+	
+	// if the chado database is not local to the drupal database
+  // then we need to set the database name.  This should always
+  // be 'chado'.
+  if(is_array($db_url) and array_key_exists('chado',$db_url)){
+     $database = 'chado';
+  }
 
+	
   // Basic table definition
   $data['organism']['table']['group'] = 'Chado Organism';
   $data['organism']['table']['base'] = array(
     'field' => 'organism_id',
     'title' => 'Chado Organism',
     'help' => 'Organisms existing in the Chado Database',                                                                                                                                                                          
-    'database' => 'chado'
   );
+  if($database){
+     $data['organism']['table']['database'] = $database;
+  }
 
   // Define relationships between this table and others
   $data['organism']['table']['join'] = array(
@@ -72,14 +84,16 @@ function retrieve_organism_views_data() {
   // Calculated Field: Node ID
   //  use custom field handler to query drupal for the node ID
   //  this is only needed if chado is in a separate database from drupal
-  $data['organism']['organism_nid'] = array(
-    'title' => 'Node ID',
-    'help' => 'This is the node ID of this organism. It can be used as a link to the node.',
-    'field' => array(
-      'handler' => 'views_handler_field_computed_organism_nid',
-    ),    
-  );
-
+  if($database){
+	  $data['organism']['organism_nid'] = array(
+  	  'title' => 'Node ID',
+    	'help' => 'This is the node ID of this organism. It can be used as a link to the node.',
+    	'field' => array(
+      	'handler' => 'views_handler_field_computed_organism_nid',
+    	),    
+  	);
+	}
+	
   // Field: abbreviation (varchar 255)
   $data['organism']['abbreviation'] = array(
     'title' => 'Abbreviation',

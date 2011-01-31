@@ -34,15 +34,28 @@
  * @endcode
  */
  function retrieve_feature_views_data() {
+	global $db_url;
+	$data = array();
+	
+	// if the chado database is not local to the drupal database
+  // then we need to set the database name.  This should always
+  // be 'chado'.
+  if(is_array($db_url) and array_key_exists('chado',$db_url)){
+     $database = 'chado';
+  }
 
+	
   // Basic table definition
   $data['feature']['table']['group'] = 'Chado Feature';
   $data['feature']['table']['base'] = array(
     'field' => 'feature_id',
     'title' => 'Chado Features',
     'help' => 'Features are Sequence Data Records in Chado.',
-    'database' => 'chado'
   );
+	if($database){
+		$data['feature']['table']['database'] = $database;
+	}
+
 
   // Table Field Definitions----------------------
   // Field: feature_id (primary key)
@@ -64,13 +77,15 @@
   // Calculated Field: Node ID
   //  use custom field handler to query drupal for the node ID
   //  this is only needed if chado is in a separate database from drupal
-  $data['feature']['feature_nid'] = array(
-    'title' => 'Node ID',
-    'help' => 'This is the node ID of this feature. It can be used as a link to the node.',
-    'field' => array(
-      'handler' => 'views_handler_field_computed_feature_nid',
+  if($database){
+  	$data['feature']['feature_nid'] = array(
+    	'title' => 'Node ID',
+			'help' => 'This is the node ID of this feature. It can be used as a link to the node.',
+    	'field' => array(
+      	'handler' => 'views_handler_field_computed_feature_nid',
       ),
-  );
+  	);
+  }
 
   // Field: organism_id (forgeign key)
   //  join between organism table and this one in tripal_organism/views/organism.views.inc

@@ -27,15 +27,26 @@
  * @endcode
  */
 function retrieve_analysis_views_data() {
-  
+	global $db_url;
+	$data = array();
+
+  // if the chado database is not local to the drupal database
+  // then we need to set the database name.  This should always
+  // be 'chado'.
+  if(is_array($db_url) and array_key_exists('chado',$db_url)){
+     $database = 'chado';
+  }
+	
   // Basic table definition
   $data['analysis']['table']['group'] = 'Chado Analysis';
  	$data['analysis']['table']['base'] = array(
  		'field' => 'analysis_id',
  		'title' => t('Chado Analysis'),
  		'help' => t("An analysis is a particular type of a computational analysis; it may be a blast of one sequence against another, or an all by all blast, or a different kind of analysis altogether. It is a single unit of computation."),
- 		'database' => 'chado',
  	);
+  if($database){
+     $data['analysis']['table']['database'] = $database;
+  }
 
   // Define relationships between this table and others
   $data['analysis']['table']['join'] = array(
@@ -78,14 +89,15 @@ function retrieve_analysis_views_data() {
   // Calculated Field: Node ID
   //  use custom field handler to query drupal for the node ID
   //  this is only needed if chado is in a separate database from drupal
-	$data['analysis']['analysis_nid'] = array(
-	  'title' => 'Node ID',
-	  'help' => 'The node ID for the current analysis',
-	  'field' => array(
-	    'handler' => 'views_handler_field_computed_analysis_nid',
-	  ),
-	);
-	
+  if($database){
+		$data['analysis']['analysis_nid'] = array(
+	  	'title' => 'Node ID',
+	  	'help' => 'The node ID for the current analysis',
+	  	'field' => array(
+	    	'handler' => 'views_handler_field_computed_analysis_nid',
+	  	),
+		);
+	}	
 	// Field: name (varchar 255)
  	$data['analysis']['name'] = array(
     'title' => t('Name'),

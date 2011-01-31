@@ -20,10 +20,12 @@
  *   relationships between that table and others (joins)
  */
 require('views/analysis.views.inc');
+require('views/chado_analysis.views.inc');
 function tripal_analysis_views_data()  {
   $data = array();
 
   $data = array_merge($data, retrieve_analysis_views_data());
+  $data = array_merge($data, retrieve_chado_analysis_views_data());
 
   return $data;
 }
