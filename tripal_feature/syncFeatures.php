@@ -1,8 +1,6 @@
 <?php
 
-//
-// Copyright 2009 Clemson University
-//
+
 # This script can be run as a stand-alone script to sync all the features from chado to drupal
 // Parameter f specifies the feature_id to sync
 // -f 0 will sync all features 
@@ -118,11 +116,11 @@ function tripal_feature_sync_features ($max_sync = 0, $job_id = NULL){
 }
 
 function tripal_feature_sync_feature ($feature_id){
-   print "\tfeature $feature_id\n";
+//   print "\tfeature $feature_id\n";
 
    $mem = memory_get_usage(TRUE);
    $mb = $mem/1048576;
-   print "$mb mb\n";
+//   print "$mb mb\n";
 
    global $user;
    $create_node = 1;   // set to 0 if the node exists and we just sync and not create
@@ -197,11 +195,17 @@ function tripal_feature_sync_feature ($feature_id){
    // create one.  Note that the node_save call in this block
    // will call the hook_submit function which
    if($create_node){
+      // get the organism for this feature
+      $sql = "SELECT * FROM {organism} WHERE organism_id = %d";
+      $organism = db_fetch_object(db_query($sql,$feature->organism_id));
+
       drupal_set_message(t("$feature_id: Creating node $feature->name"));
       $new_node = new stdClass();
       $new_node->type = 'chado_feature';
       $new_node->uid = $user->uid;
-      $new_node->title = "$feature->name";
+      $new_node->title = "$feature->uniquename ($feature->cvname) $organism->genus $organism->species";
+      $new_node->name = "$feature->name";
+      $new_node->uniquename = "$feature->uniquename";
       $new_node->feature_id = $feature->feature_id;
       $new_node->residues = $feature->residues;
       $new_node->organism_id = $feature->organism_id;
