@@ -129,14 +129,14 @@ if (Drupal.jsEnabled) {
 		 $('.tripal_expandableSubBoxContent').hide();
 	     $('.blast-hit-arrow-icon').click(
 	        function() {
-   	           // Find the width of the table column for the tripal_expandableSubBoxContent
+   	        // Find the width of the table column for the tripal_expandableSubBoxContent
 	           var width = $(this).parent().parent().width();
 	           width -= 40;
  	           // Traverse through html DOM objects to find tripal_expandableSubBoxContent and change its settings
-	           var subbox = $(this).parent().parent().next().next().children().children();
+              var subbox = $(this).parent().parent().next().children().children();
 	           subbox.css("width", width + 'px');
 	           subbox.slideToggle('fast', function () {
-	              var image = $(this).parent().parent().prev().prev().children().children();
+              var image = $(this).parent().parent().prev().children().children().children();
 	        	  var icon_url = image.attr("src");
 	        	  if (subbox.is(':visible')) {
 	        		 var changed_icon_url = icon_url.replace(/arrow_r.png/,"arrow_d.png");

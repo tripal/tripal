@@ -1,11 +1,8 @@
-<?php
-/*
-* Copyright 2009 Clemson University
-*/
-?>
 
    <?php if ($picture) {
       print $picture;
+      $feature = $node->feature;
+      $accession = $node->accession;
    }?>
 
    <div class="node<?php if ($sticky) { print " sticky"; } ?><?php if (!$status) { print " node-unpublished"; } ?>">
@@ -23,15 +20,14 @@
       <!--<div id="feature_notice"><img src="sites/all/modules/tripal_analysis_blast/images/info-128x128.png"><br><i>Feature information and annotations have moved. See below</i></div>-->
       <div id="feature-view">
          <?php
-            $aprefix = variable_get('chado_feature_accession_prefix','ID');
-            $feature = $node->feature;
+
             if($feature->is_obsolete == 't'){
             drupal_set_message(t('This feature is obsolete and no longer used in analysis, but is here for reference.'));
          }?>
          <table class="tripal_table_vert">
             <tr><th>Name</th><td><?php print $feature->featurename; ?></td></tr>
-            <tr><th>Accession</th><td><?php print variable_get('chado_feature_accession_prefix','ID'); print $feature->feature_id; ?></td></tr>
-            <tr><th valign="top">Sequence</th><td><pre><?php print ereg_replace("(.{50})","\\1<br>",$feature->residues); ?></pre></td></tr>
+            <tr><th nowrap>Unique Name</th><td><?php print $feature->uniquename; ?></td></tr>
+            <tr><th>Internal ID</th><td><?php print $accession; ?></td></tr>
             <tr><th>Length</th><td><?php print $feature->seqlen ?></td></tr>
             <tr><th>Type</th><td><?php print $feature->cvname; ?></td>
             </tr>
@@ -108,7 +104,23 @@
      <!-- Control link for the expandableBoxes -->
        <br><a id="tripal_expandableBox_toggle_button" onClick="toggleExpandableBoxes()">[-] Collapse All</a><br><br>
      <!-- End of Control link for the expandableBoxes -->
-     <!-- theme_tripal_feature_feature_references -->
+     <!-- Start of sequences -->
+      <div id="feature-sequence" class="tripal_feature-info-box">
+      <div class="tripal_expandableBox"><h3>Sequence</h3></div>
+      <div class="tripal_expandableBoxContent">
+        <?php print ucfirst($feature->cvname); ?> sequence
+        <pre><?php print ereg_replace("(.{100})","\\1<br>",$feature->residues); ?></pre>
+        <?php
+        if(count($orelationships) > 0){
+           foreach ($orelationships as $result){
+              print "<br>" . ucfirst($result->subject_type) . " sequence";
+              print "<pre>" . ereg_replace("(.{100})","\\1<br>",$result->subject_residues) . "</pre>";
+           }
+        }
+        ?>
+      </div></div>
+     <!-- End of sequences -->
+     <!-- Start of theme_tripal_feature_feature_references -->
       <?php
          $references = $node->references;
          if(count($references) > 0){
@@ -132,6 +144,50 @@
          </table></div></div>
       <?php } ?>
      <!-- End of theme_tripal_feature_feature_references -->
+     <!-- Start of theme_tripal_feature_feature_relationships -->
+       <?php
+         $orelationships = $node->orelationships;
+        if(count($orelationships) > 0 or count($srelationships) > 0){
+            print "<div id=\"feature-relationships\" class=\"tripal_feature-info-box\">";
+            print "<div class=\"tripal_expandableBox\"><h3>Relationships</h3></div>";
+            print "<div class=\"tripal_expandableBoxContent\">";
+      
+            if(count($orelationships) > 0){
+               foreach ($orelationships as $result){
+                  if(isset($result->subject_nid)){
+                     print "<a href=\"" . url("node/$result->subject_nid") . "\">$result->subject_name ($result->subject_type)</a> ";
+                  } else {
+                     print "$result->subject_name ($result->subject_type) ";
+                  }
+                  print "<b>$result->rel_type</b> ";
+                  if(isset($result->object_nid)){
+                     print "<a href=\"" . url("node/$result->object_nid") . "\">$result->object_name ($result->object_type)</a> ";
+                  } else {
+                     print "$result->object_name ($result->object_type) ";
+                  }
+                  print"<br>";
+               }
+            }
+            if(count($srelationships) > 0){
+              foreach ($srelationships as $result){
+                  if(isset($result->subject_nid)){
+                     print "<a href=\"" . url("node/$result->subject_nid") . "\">$result->subject_name ($result->subject_type)</a> ";
+                  } else {
+                     print "$result->subject_name ($result->subject_type) ";
+                  }
+                  print "<b>$result->rel_type</b> ";
+                  if(isset($result->object_nid)){
+                     print "<a href=\"" . url("node/$result->object_nid") . "\">$result->object_name ($result->object_type)</a> ";
+                  } else {
+                     print "$result->object_name ($result->object_type) ";
+                  }
+                  print"<br>";
+               }
+            }
+            print "</div></div>";
+         } 
+       ?>
+     <!-- End of theme_tripal_feature_feature_relationships -->
    <?php endif; ?>
    <?php print $content?>
    </div>

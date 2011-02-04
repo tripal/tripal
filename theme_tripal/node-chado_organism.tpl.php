@@ -1,9 +1,3 @@
-<?php
-//
-// Copyright 2009 Clemson University
-//
-?>
-
 <?php if($teaser){ ?>
     <a href="<?php print $node_url?>"><?php print $title?></a>
 <?php } else { ?>
