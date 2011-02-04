@@ -3,6 +3,7 @@
       print $picture;
       $feature = $node->feature;
       $accession = $node->accession;
+      $organism = $node->organism;
    }?>
 
    <div class="node<?php if ($sticky) { print " sticky"; } ?><?php if (!$status) { print " node-unpublished"; } ?>">
@@ -31,25 +32,13 @@
             <tr><th>Length</th><td><?php print $feature->seqlen ?></td></tr>
             <tr><th>Type</th><td><?php print $feature->cvname; ?></td>
             </tr>
-            <?php $org_url = url("node/$org_nid")?>
-            <tr>
-            	<th>Organism</th>
-            	<td>
-            		<?php if ($org_nid) {?>
-            				<a href="<?php print $org_url?>"><?php print $feature->common_name?></a>
-            		<?php
-            		      } else {
-            		         if ($feature->common_name) {
-                               print $feature->common_name;
-            		         } else {
-            		           // This sql is for the preview to show organism common_name
-            		           $sql = "SELECT common_name FROM organism WHERE organism_id = $node->organism_id";
-                               $previous_db = db_set_active('chado');
-                               $org_commonname = db_result(db_query($sql));
-                               print $org_commonname;
-                               db_set_active($previous_db);
-            		         }
-            		      }
+            <tr><th>Organism</th><td>
+            		<?php 
+                     if ($node->org_nid) {
+            				print"<a href=\"". url("node/$node->org_nid") ."\">$organism->genus $organism->species ($organism->common_name)</a>";
+            		   } else {
+            				print"$organism->genus $organism->species ($organism->common_name)";
+            		   }
             		?>
             	</td>
            	</tr>
