@@ -139,7 +139,7 @@ function tripal_stock_perm() {
  * Purpose: Maps permission catagories to actions; 
  *   TRUE grants access; FALSE denies it
  */
-function tripal_stock_access($op, $node, $account) {
+function chado_stock_access($op, $node, $account) {
    if ($op == 'create') {
       return user_access('create chado_stock content', $account);
    }
