@@ -107,7 +107,11 @@ function retrieve_stock_views_data() {
       'handler' => 'views_handler_argument_string',
     ),
   );
-
+  // if joined to the node table add a "Link to Node" option for the field  
+  if (!$database) {
+    $data['stock']['uniquename']['field']['handler'] = 'views_handler_field_node_optional';
+  }
+  
   //Field: name (varchar 255)
   $data['stock']['name'] = array(
     'title' => t('Name'),
@@ -126,7 +130,11 @@ function retrieve_stock_views_data() {
       'handler' => 'views_handler_argument_string',
     ),
   );
-
+  // if joined to the node table add a "Link to Node" option for the field  
+  if (!$database) {
+    $data['stock']['name']['field']['handler'] = 'views_handler_field_node_optional';
+  }
+  
   //Field: description (varchar 255)
   $data['stock']['description'] = array(
     'title' => t('Description'),

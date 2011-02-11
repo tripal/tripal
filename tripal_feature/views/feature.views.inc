@@ -114,6 +114,10 @@
       'handler' => 'views_handler_argument_string',
     ),
   );
+  // if joined to the node table add a "Link to Node" option for the field  
+  if (!$database) {
+    $data['feature']['name']['field']['handler'] = 'views_handler_field_node_optional';
+  }
 
   // Field: unique name (text)
   $data['feature']['uniquename'] = array(
@@ -133,6 +137,10 @@
       'handler' => 'views_handler_argument_string',
     ),
   );
+  // if joined to the node table add a "Link to Node" option for the field  
+  if (!$database) {
+    $data['feature']['uniquename']['field']['handler'] = 'views_handler_field_node_optional';
+  }
 
   // Field: residues (text)
   $data['feature']['residues'] = array(

@@ -123,6 +123,10 @@ function retrieve_library_views_data() {
 	    'handler' => 'views_handler_argument_string',
 	  ),
 	);
+  // if joined to the node table add a "Link to Node" option for the field  
+  if (!$database) {
+    $data['library']['name']['field']['handler'] = 'views_handler_field_node_optional';
+  }
 	
 	// Field: Unique name (text)
 	$data['library']['uniquename'] = array(
@@ -139,6 +143,10 @@ function retrieve_library_views_data() {
 	    'handler' => 'views_handler_argument_string',
 	  ),
 	);
+  // if joined to the node table add a "Link to Node" option for the field  
+  if (!$database) {
+    $data['library']['uniquename']['field']['handler'] = 'views_handler_field_node_optional';
+  }
 	
 	// Field: Is obsolete (integer 0/1)
 	$data['library']['is_obsolete'] = array(

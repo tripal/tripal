@@ -112,6 +112,10 @@ function retrieve_organism_views_data() {
        'handler' => 'views_handler_argument_string',
      ),
   );
+  // if joined to the node table add a "Link to Node" option for the field  
+  if (!$database) {
+    $data['organism']['abbreviation']['field']['handler'] = 'views_handler_field_node_optional';
+  }
 
   // Field: genus (varchar 255)
   $data['organism']['genus'] = array(
@@ -169,6 +173,10 @@ function retrieve_organism_views_data() {
        'handler' => 'views_handler_argument_string',
      ),
   );
+  // if joined to the node table add a "Link to Node" option for the field  
+  if (!$database) {
+    $data['organism']['common_name']['field']['handler'] = 'views_handler_field_node_optional';
+  }
 
   // Field: Comment (text)
   $data['organism']['comment'] = array(

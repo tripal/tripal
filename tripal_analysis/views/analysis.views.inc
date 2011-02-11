@@ -98,6 +98,7 @@ function retrieve_analysis_views_data() {
 	  	),
 		);
 	}	
+	
 	// Field: name (varchar 255)
  	$data['analysis']['name'] = array(
     'title' => t('Name'),
@@ -116,6 +117,10 @@ function retrieve_analysis_views_data() {
       'handler' => 'views_handler_argument_string',
     ),
   );
+  // if joined to the node table add a "Link to Node" option for the field  
+  if (!$database) {
+    $data['analysis']['name']['field']['handler'] = 'views_handler_field_node_optional';
+  }
 
   // Field: description (text)
  	$data['analysis']['description'] = array(
