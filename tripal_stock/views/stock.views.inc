@@ -240,6 +240,11 @@ function retrieve_stock_views_data() {
       'help' => t('Display database references from a given database for the current stock.'),
       'handler' => 'views_handler_field_stock_dbxref_by_type',
     ),
+    'filter' => array(
+    	'title' => t('Database References'),
+    	'help' => t('Filter by a given database reference type and/or value.'),
+    	'handler' => 'views_handler_filter_stock_dbxref_id',
+    ),
   );
 
 	//Calculated Field: stock dbxrefs (ALL)
