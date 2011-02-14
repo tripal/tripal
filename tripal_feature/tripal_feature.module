@@ -5,6 +5,14 @@ require_once "syncFeatures.php";
 require_once "indexFeatures.php";
 require_once "fasta_loader.php";
 
+require_once "tripal_feature.api.inc";
+
+require_once "tripal_feature-secondary_tables.inc";
+require_once "tripal_feature-properties.inc";
+require_once "tripal_feature-relationships.inc";
+require_once "tripal_feature-db_references.inc";
+
+
 /*************************************************************************
 *
 */
@@ -128,13 +136,63 @@ function tripal_feature_menu() {
      'type' => MENU_NORMAL_ITEM,
    );
 
-   $items['admin/settings/tripal/tripal_feature/load'] = array(
-     'title' => 'Bulk Load',
-     'description' => 'Upload Data into Chado & Drupal',
-     'page callback' => 'tripal_feature_bulkload',
-     'access arguments' => array('administer site configuration'),
-     'type' => MENU_NORMAL_ITEM,
-   );
+ // Adding Secondary Properties-----------------
+  $items['node/%/properties'] = array(       
+    'title' => t('Add Properties & Synonyms'),                         
+    'description' => t('Settings for Features'),
+    'page callback' => 'tripal_feature_add_ALL_property_page',           
+    'page arguments' => array(1), 
+    'access arguments' => array('create chado_feature content'),
+    'type' => MENU_CALLBACK
+  ); 
+
+  $items['node/%/db_references'] = array(                        
+    'title' => t('Add Database References'),                   
+    'description' => t('Settings for Features'),              
+    'page callback' => 'tripal_feature_add_ALL_dbreferences_page',                         
+    'page arguments' => array(1),
+    'access arguments' => array('create chado_feature content'),
+    'type' => MENU_CALLBACK
+  ); 
+
+  $items['node/%/relationships'] = array(                      
+    'title' => t('Add Relationships'),                      
+    'description' => t('Settings for Features'),               
+    'page callback' => 'tripal_feature_add_ALL_relationships_page',                          
+    'page arguments' => array(1),
+    'access arguments' => array('create chado_feature content'),
+    'type' => MENU_CALLBACK
+  );
+  //Edit/Deleting Secondary Properties-------------
+  $items['node/%/edit_properties'] = array(
+    'title' => t('Edit Properties'),
+    'description' => t('Settings for Features'),
+    'page callback' => 'tripal_feature_edit_ALL_properties_page',
+    'page arguments' => array(1),
+    'access arguments' => array('edit chado_feature content'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 8,
+  );
+
+    $items['node/%/edit_relationships'] = array(
+    'title' => t('Edit Relationships'),
+    'description' => t('Settings for Feature'), 
+    'page callback' => 'tripal_feature_edit_ALL_relationships_page',
+    'page arguments' => array(1),
+    'access arguments' => array('edit chado_feature content'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 9,
+  );
+
+  $items['node/%/edit_db_references'] = array(
+    'title' => t('Edit DB References'),
+    'description' => t('Settings for Feature'),
+    'page callback' => 'tripal_feature_edit_ALL_dbreferences_page',
+    'page arguments' => array(1),
+    'access arguments' => array('edit chado_feature content'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 10,
+  );
 
    return $items;
 }
@@ -618,7 +676,7 @@ function chado_feature_load($node){
    $map = db_fetch_object(db_query($sql, $node->vid));
 
 
-   // get information about this organism and add it to the items in this node
+   // get information about this feature and add it to the items in this node
    $sql = "SELECT F.feature_id, F.name as featurename, F.uniquename, ".
           "F.residues, F.seqlen, O.genus, O.species, O.common_name, ".
           "  CVT.name as cvname, O.organism_id, F.type_id, F.is_obsolete  ".
@@ -631,11 +689,19 @@ function chado_feature_load($node){
    tripal_db_set_active($previous_db);  // now use drupal database
    $additions->feature = $feature;
    $additions->seqlen = $feature->seqlen;
+
    // add organism node nid
    $sql = "SELECT nid FROM {chado_organism} WHERE organism_id = %d";
    $org_nid = db_result(db_query($sql, $additions->feature->organism_id));
    $additions->org_nid = $org_nid;
    $additions->accession =  variable_get('chado_feature_accession_prefix','ID') . $feature->feature_id;
+
+   // add organism details
+   $sql = "SELECT * FROM {organism} WHERE organism_id = %d";
+   $previous_db = tripal_db_set_active('chado');  // use chado database
+   $organism = db_fetch_object(db_query($sql, $additions->feature->organism_id));
+   tripal_db_set_active($previous_db);  // now use drupal database
+   $additions->organism = $organism;
    
    // add the feature synonyms
    $sql = "SELECT S.name ".
@@ -685,15 +751,30 @@ function chado_feature_load($node){
              FO.uniquename as object_uniquename, 
              CVTO.name as object_type,
              FO.residues as object_residues,
-             FR.object_id
+             FR.object_id,
+             FLS.name as src_name,
+             FLS.feature_id as src_featureid,
+             CVTR.name as src_cvname, 
+             CVTR.cvterm_id as src_type_id,
+             FL.fmin, 
+             FL.fmax, 
+             FL.is_fmin_partial, 
+             FL.is_fmax_partial,
+             FL.strand, 
+             FL.phase, 
+             FL.residue_info
            FROM {feature_relationship} FR
              INNER JOIN {cvterm} CVT ON FR.type_id = CVT.cvterm_id
              INNER JOIN {feature} FS ON FS.feature_id = FR.subject_id
              INNER JOIN {feature} FO ON FO.feature_id = FR.object_id
              INNER JOIN {cvterm} CVTO ON FO.type_id = CVTO.cvterm_id
-             INNER JOIN {cvterm} CVTS ON FS.type_id = CVTS.cvterm_id ";
-   $osql = "$sql  WHERE FR.object_id = %d";
-   $ssql = "$sql  WHERE FR.subject_id = %d";
+             INNER JOIN {cvterm} CVTS ON FS.type_id = CVTS.cvterm_id
+             LEFT JOIN {featureloc} FL on FL.feature_id = FS.feature_id 
+             LEFT JOIN {feature} FLS on FLS.feature_id = FL.srcfeature_id
+             LEFT JOIN {cvterm} CVTR on FLS.type_id = CVTR.cvterm_id
+   ";
+   $osql = "$sql  WHERE FR.object_id = %d ORDER BY FLS.name, FL.fmin ASC";
+   $ssql = "$sql  WHERE FR.subject_id = %d ORDER BY FLS.name, FL.fmin ASC";
 
    // first get the relationships where this feature is the object
    // then where it is the subject 
@@ -731,10 +812,45 @@ function chado_feature_load($node){
      }  
      $srelationships[$i++] = $rel;      
    }
-   $additions->orelationships = $orelationships;
-   $additions->srelationships = $srelationships;
-   // add the feature properties
-   
+   $additions->object_relationships = $orelationships;
+   $additions->subject_relationships = $srelationships;
+
+
+  // get the locations for this feature
+   $sql = "SELECT F.name,F.feature_id, F.uniquename,CVT.name as cvname, CVT.cvterm_id,
+             FL.fmin, FL.fmax, FL.is_fmin_partial, FL.is_fmax_partial,FL.strand, 
+             FL.phase, FL.residue_info
+           FROM featureloc FL
+              INNER JOIN feature F on FL.srcfeature_id = F.feature_id
+              INNER JOIN cvterm CVT on F.type_id = CVT.cvterm_id
+           WHERE FL.feature_id = %d";
+   $previous_db = tripal_db_set_active('chado');  // use chado database
+   $flresults = db_query($sql, $map->feature_id);
+   tripal_db_set_active($previous_db);  // now use drupal database 
+   $i=0;
+   $featurelocs = array();
+   while($loc = db_fetch_object($flresults)){
+      $featurelocs[$i++] = $loc;
+   }
+   $additions->featurelocs = $featurelocs;
+
+   // get features that are aligned to this feature
+   $sql = "SELECT F.name,F.feature_id, F.uniquename,CVT.name as cvname, CVT.cvterm_id,
+             FL.fmin, FL.fmax, FL.is_fmin_partial, FL.is_fmax_partial,FL.strand, 
+             FL.phase, FL.residue_info
+           FROM featureloc FL
+              INNER JOIN feature F on FL.feature_id = F.feature_id
+              INNER JOIN cvterm CVT on F.type_id = CVT.cvterm_id
+           WHERE FL.srcfeature_id = %d";
+   $previous_db = tripal_db_set_active('chado');  // use chado database
+   $flresults = db_query($sql, $map->feature_id);
+   tripal_db_set_active($previous_db);  // now use drupal database 
+   $i=0;
+   $myfeaturelocs = array();
+   while($loc = db_fetch_object($flresults)){
+      $myfeaturelocs[$i++] = $loc;
+   }
+   $additions->myfeaturelocs = $myfeaturelocs;   
 
    return $additions;
 }
@@ -1414,134 +1530,6 @@ function tripal_features_cleanup($dummy = NULL, $job_id = NULL) {
       $i++;
    }
    return '';
-}
-
-/************************************************************************
- *
- */
-function tripal_feature_bulkload(){
-   return drupal_get_form('tripal_feature_load_fasta_form');
-}
-/************************************************************************
- *
- */
-function tripal_feature_load_fasta_form (&$form_state = NULL){
-
-   // get the list of organisms
-   $sql = "SELECT * FROM {Organism} ORDER BY genus,species";
-   $previous_db = tripal_db_set_active('chado');  // use chado database
-   $org_rset = db_query($sql);
-   tripal_db_set_active($previous_db);  // now use drupal database
-   $organisms = array();
-   $organisms[''] = '';
-   while($organism = db_fetch_object($org_rset)){
-      $organisms[$organism->organism_id] = "$organism->genus $organism->species ($organism->common_name)";
-   }
-
-   // get the list of supported feature types
-   $ftypes = array();
-   $ftypes[''] = '';
-   $supported_ftypes = split("[ \n]",variable_get('chado_feature_feature_types','EST contig'));
-   foreach($supported_ftypes as $ftype){
-      $ftypes["$ftype"] = $ftype;
-   }
-
-   // get the list of libraries
-   // TODO !!!! Use Ajax to filter this automatically based on the organism
-   // selected by the user. This will prevent mistakes from user input.
-   $sql = "SELECT * FROM {Library} L ".
-          "  INNER JOIN Organism O ON L.organism_id = O.organism_id ".
-          "ORDER BY L.name";
-   $previous_db = tripal_db_set_active('chado');  // use chado database
-   $lib_rset = db_query($sql);
-   tripal_db_set_active($previous_db);  // now use drupal database
-   $libraries = array();
-   $libraries[''] = '';
-   while($library = db_fetch_object($lib_rset)){
-      $libraries[$library->library_id] = "$library->name ($library->genus $library->species)";
-   }
-
-   $form['#attributes']['enctype'] = 'multipart/form-data';
-
-   $form['organism'] = array (
-      '#title'       => t('Organism'),
-      '#type'        => t('select'),
-      '#description' => t("Choose the organism with which these sequences are associated "),
-      '#required'    => TRUE,
-      '#default_vaule' => '',
-      '#options'     => $organisms,
-      '#weight'      => 1,
-   );
-   $form['library'] = array (
-      '#title'       => t('Library'),
-      '#type'        => t('select'),
-      '#description' => t("Choose the library with from which these sequences are derived. Leave blank if not applicable."),
-      '#required'    => FALSE,
-      '#default_vaule' => '',
-      '#options'     => $libraries,
-      '#weight'      => 2,
-   );
-   $form['ftype'] = array (
-      '#title'       => t('Feature Type'),
-      '#type'        => t('select'),
-      '#description' => t("Choose the category of sequences you are uploading.  All sequences in the FASTA file will be imported as this type"),
-      '#required'    => TRUE,
-      '#default_vaule' => '',
-      '#options'     => $ftypes,
-      '#weight'      => 3,
-   );
-   $form['fasta_file'] = array(
-      '#type'       => t('file'),
-      '#title'      => t('Fasta File'),
-      '#description'   => t('Upload a FASTA file of sequences. The definition line should contain only the feature name. All other annotations should be removed. The file must not be larger than ' . file_upload_max_size() . ' bytes'),
-      '#weight'        => 4,
-   );
-   $form['upload'] = array(
-      '#type' => 'submit',
-      '#value' => t('Upload File'),
-      '#weight' => 2,
-      '#executes_submit_callback' => TRUE,
-      '#weight'      => 5,
-   );
-
-   return $form;
-}
-/************************************************************************
- *
- */
-function tripal_feature_load_fasta_form_validate($form, &$form_state){
-
-   // TODO !!! check that the fasta file is valid
-
-   global $user;
-
-   // we need a path within the drupal installation to temporarily use as the destination
-   // after we upload, we'll move the file to analysis directory
-   $upload_url = file_directory_path() . "/chado_feature_bulk_upload/$user->uid";
-
-   // create the download directory. We do it this way rather than the
-   // file_check_directory because we don't want a drupal message presented
-   // the user when the directory is created.
-   if (!is_dir($upload_url)) {
-      mkdir($upload_url,0775,TRUE);
-   }
-
-   // upload the file and copy it to the proper location
-   $validators = array();  // we don't have any validators
-   if($file = file_save_upload('fasta_file',$validators,$upload_url)){
-      drupal_set_message("File $file->name uploaded succesfully");
-   } else {
-      form_set_error('fasta_file',t('Upload Failed'));
-   }
-}
-/************************************************************************
- *
- */
-function tripal_feature_load_fasta_form_submit($form, &$form_state){
-   global $user;
-
-   // add a job to be executed
-   tripal_add_job ($job_name,$type,$callback,$uid);
 }
 /************************************************************************
  *

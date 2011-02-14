@@ -1,5 +1,11 @@
 <?php
 
+
+// TODO: The rank column on the feature_relationship table needs to be used to
+//       make sure the ordering of CDS (exons) is correct.
+
+// The entries in the GFF file are not in order so the order of the relationships
+// is not put in correctly.
 /*************************************************************************
 *
 */
@@ -14,25 +20,48 @@ function tripal_core_gff3_load_form (){
       '#required' => TRUE,
       '#weight'        => 1
    );
-   $form['add_only']= array(
+   // get the list of organisms
+   $sql = "SELECT * FROM {organism} ORDER BY genus, species";
+   $previous_db = tripal_db_set_active('chado');  // use chado database
+   $org_rset = db_query($sql);
+   tripal_db_set_active($previous_db);  // now use drupal database
+   $organisms = array();
+   $organisms[''] = '';
+   while($organism = db_fetch_object($org_rset)){
+      $organisms[$organism->organism_id] = "$organism->genus $organism->species ($organism->common_name)";
+   }
+   $form['organism_id'] = array (
+     '#title'       => t('Organism'),
+     '#type'        => t('select'),
+     '#description' => t("Choose the organism to which these sequences are associated "),
+     '#required'    => TRUE,
+     '#options'     => $organisms,
+   );
+   $form['import_options'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Import Options'),
+      '#weight'=> 6,
+      '#collapsed' => TRUE
+   );
+   $form['import_options']['add_only']= array(
       '#type' => 'checkbox',
       '#title' => t('Import only new features'),
       '#required' => FALSE,
-      '#default_value' => 'checked',
       '#description' => t('The job will skip features in the GFF file that already
                            exist in the database and import only new features.'),
       '#weight' => 2
    );
-   $form['update']= array(
+   $form['import_options']['update']= array(
       '#type' => 'checkbox',
       '#title' => t('Import all and update'),
       '#required' => FALSE,
+      '#default_value' => 'checked',
       '#description' => t('Existing features will be updated and new features will be added.  Attributes 
                            for a feature that are not present in the GFF but which are present in the 
                            database will not be altered.'),
       '#weight' => 3
    );
-   $form['refresh']= array(
+   $form['import_options']['refresh']= array(
       '#type' => 'checkbox',
       '#title' => t('Import all and replace'),
       '#required' => FALSE,
@@ -40,7 +69,7 @@ function tripal_core_gff3_load_form (){
                            present in the GFF file will be removed.'),
       '#weight' => 4
    );
-   $form['remove']= array(
+   $form['import_options']['remove']= array(
       '#type' => 'checkbox',
       '#title' => t('Delete features'),
       '#required' => FALSE,
@@ -60,16 +89,47 @@ function tripal_core_gff3_load_form (){
 /*************************************************************************
 *
 */
-function tripal_core_gff3_load_form_submit ($form, &$form_state){
-   global $user;
+function tripal_core_gff3_load_form_validate ($form, &$form_state){
 
    $gff_file = $form_state['values']['gff_file'];
+   $organism_id = $form_state['values']['organism_id'];
    $add_only = $form_state['values']['add_only'];
    $update   = $form_state['values']['update'];
    $refresh  = $form_state['values']['refresh'];
    $remove   = $form_state['values']['remove'];
 
-   $args = array($gff_file,$add_only,$update,$refresh,$remove);
+   // check to see if the file is located local to Drupal
+   $dfile = $_SERVER['DOCUMENT_ROOT'] . base_path() . $gff_file; 
+   if(!file_exists($dfile)){
+      // if not local to Drupal, the file must be someplace else, just use
+      // the full path provided
+      $dfile = $gff_file;
+   }
+   if(!file_exists($dfile)){
+      form_set_error('gff_file',t("Cannot find the file on the system. Check that the file exists or that the web server has permissions to read the file."));
+   }
+
+   if (($add_only and ($update or $refresh or $remove)) or 
+       ($update   and ($add_only or $refresh or $remove)) or
+       ($refresh and ($update or $add_only or $remove)) or
+       ($remove and ($update or $refresh or $add_only))){
+       form_set_error('add_only',t("Please select only one checkbox from the import options section"));
+   }
+}
+/*************************************************************************
+*
+*/
+function tripal_core_gff3_load_form_submit ($form, &$form_state){
+   global $user;
+
+   $gff_file = $form_state['values']['gff_file'];
+   $organism_id = $form_state['values']['organism_id'];
+   $add_only = $form_state['values']['add_only'];
+   $update   = $form_state['values']['update'];
+   $refresh  = $form_state['values']['refresh'];
+   $remove   = $form_state['values']['remove'];
+
+   $args = array($gff_file,$organism_id,$add_only,$update,$refresh,$remove);
    $type = '';
    if($add_only){
      $type = 'import only new features';
@@ -83,7 +143,7 @@ function tripal_core_gff3_load_form_submit ($form, &$form_state){
    if($remove){
      $type = 'delete features';
    }
-   tripal_add_job("Import GFF3 file: $type",'tripal_core',
+   tripal_add_job("$type GFF3 file $dfile",'tripal_core',
       'tripal_core_load_gff3',$args,$user->uid);
 
    return '';
@@ -91,8 +151,14 @@ function tripal_core_gff3_load_form_submit ($form, &$form_state){
 /*************************************************************************
 *
 */
-function tripal_core_load_gff3($gff_file, $add_only =0, $update = 0, $refresh = 0, $remove = 0, $job = NULL){
-   
+function tripal_core_load_gff3($gff_file, $organism_id,$add_only =0, 
+   $update = 0, $refresh = 0, $remove = 0, $job = NULL)
+{
+
+   // this array is used to cache all of the features in the GFF file and
+   // used to lookup parent and target relationships
+   $gff_features = array();
+ 
    // check to see if the file is located local to Drupal
    $dfile = $_SERVER['DOCUMENT_ROOT'] . base_path() . $gff_file; 
    if(!file_exists($dfile)){
@@ -113,23 +179,34 @@ function tripal_core_load_gff3($gff_file, $add_only =0, $update = 0, $refresh = 
 
    // get the controlled vocaubulary that we'll be using.  The
    // default is the 'sequence' ontology
-   $vocab = 'sequence';
    $sql = "SELECT * FROM cv WHERE name = '%s'";
-   $cv = db_fetch_object(db_query($sql,$vocab));
+   $cv = db_fetch_object(db_query($sql,'sequence'));
    if(!$cv){
-      print "ERROR:  cannot find the '$vocab' ontology\n";
+      print "ERROR:  cannot find the 'sequence' ontology\n";
       return '';
    }
 
    // get the organism for which this GFF3 file belongs
-   $sql = "SELECT * FROM organism WHERE common_name = 'fruitfly'";
-   $organism = db_fetch_object(db_query($sql));
+   $sql = "SELECT * FROM organism WHERE organism_id = %d";
+   $organism = db_fetch_object(db_query($sql,$organism_id));
 
+
+   $num_lines = sizeof($lines);
+   $interval = intval($num_lines * 0.01);
    foreach ($lines as $line_num => $line) {
       $i++;  // update the line count
+      // update the job status every 1% features
+      if($job and $i % $interval == 0){
+         tripal_job_set_progress($job,intval(($i/$num_lines)*100));
+      }
 
+      // skip comments
       if(preg_match('/^#/',$line)){
-         continue; // skip comments
+         continue; 
+      }
+      // skip empty lines
+      if(preg_match('/^\s*$/',$line)){
+         continue; 
       }
       
 
@@ -173,8 +250,13 @@ function tripal_core_load_gff3($gff_file, $add_only =0, $update = 0, $refresh = 
       }
 
       // get the type record
-      $sql = "SELECT * from cvterm CVT WHERE name = '%s' and cv_id = %d";
-      $cvterm = db_fetch_object(db_query($sql,$type,$cv->cv_id));
+      $cvtermsql = "SELECT CVT.cvterm_id, CVT.cv_id, CVT.name, CVT.definition,
+                       CVT.dbxref_id, CVT.is_obsolete, CVT.is_relationshiptype
+                    FROM {cvterm} CVT
+                       INNER JOIN {cv} CV on CVT.cv_id = CV.cv_id
+                       LEFT JOIN {cvtermsynonym} CVTS on CVTS.cvterm_id = CVT.cvterm_id
+                    WHERE CV.cv_id = %d and (CVT.name = '%s' or CVTS.synonym = '%s')";
+      $cvterm = db_fetch_object(db_query($cvtermsql,$cv->cv_id,$type,$type));
       if(!$cvterm){
          print "ERROR: cannot find ontology term '$type' on line $i.\n";
          return '';
@@ -190,7 +272,9 @@ function tripal_core_load_gff3($gff_file, $add_only =0, $update = 0, $refresh = 
       $attr_fmax_partial = 'f';
       $attr_is_obsolete = 'f';
       $attr_is_analysis = 'f';
+      $attr_others = '';
       $residues = '';
+      $generate_name = 0;
       foreach($attrs as $attr){
          $attr = rtrim($attr);
          $attr = ltrim($attr);
@@ -209,22 +293,63 @@ function tripal_core_load_gff3($gff_file, $add_only =0, $update = 0, $refresh = 
          if(strcmp($tag[0],'ID')==0){
             $attr_uniquename = $tag[1];
          }
-         if(strcmp($tag[0],'Name')==0){
+         elseif(strcmp($tag[0],'Name')==0){
             $attr_name = $tag[1];
          }
+         // get the list of other attributes other than those reserved ones.
+         elseif(strcmp($tag[0],'Alias')!=0        and strcmp($tag[0],'Parent')!=0 and 
+                strcmp($tag[0],'Target')!=0       and strcmp($tag[0],'Gap')!=0 and
+                strcmp($tag[0],'Derives_from')!=0 and strcmp($tag[0],'Note')!=0 and
+                strcmp($tag[0],'Dbxref')!=0       and strcmp($tag[0],'Ontology_term')!=0 and
+                strcmp($tag[0],'Is_circular')!=0){
+            $attr_others[$tag[0]] = $tag[1];
+         }
       }
+
+      // if neither name nor uniquename are provided then generate one
+      if(!$attr_uniquename and !$attr_name){
+         $generate_name = 1;
+      }
+
+      // if a name is not specified then use the unique name
       if(strcmp($attr_name,'')==0){
          $attr_name = $attr_uniquename;
       }
 
-      // skip features that have no ID attribute
+      // if an ID attribute is not specified then use the attribute name and
+      // hope for the best
       if(!$attr_uniquename){
-         continue;
+         $attr_uniquename = $attr_name;
       }
+
+      // make sure the landmark sequence exists in the database.  We don't
+      // know the type of the landmark so we'll hope that it's unique across
+      // all types. If not we'll error out.  This test is only necessary if
+      // if the landmark and the uniquename are different.  If they are the same
+      // then this is the information for the landmark
+      if(strcmp($landmark,$attr_uniquename)!=0){
+         $feature_sql = "SELECT count(*) as num_landmarks
+                         FROM {feature} 
+                         WHERE organism_id = %d and uniquename = '%s'";
+         $count = db_fetch_object(db_query($feature_sql,$organism_id,$landmark));
+         if(!$count or $count->num_landmarks == 0){
+            print "ERROR: the landmark '$landmark' cannot be found for this organism. ". 
+                  "Please add the landmark and then retry the import of this GFF3 ".
+                  "file.\n";
+            return '';
+
+         }
+         if($count->num_landmarks > 1){
+            print "ERROR: the landmark '$landmark' is not unique for this organism. ".
+                  "The features cannot be associated.\n";
+            return '';
+         }
+      }
+
       
       // if the option is to remove or refresh then we want to remove
       // the feature from the database.
-      if($remove or $refresh){
+      if(!$generate_name and ($remove or $refresh)){
          print "Removing feature '$attr_uniquename'\n";
          $sql = "DELETE FROM {feature}
                  WHERE organism_id = %d and uniquename = '%s' and type_id = %d";
@@ -237,12 +362,23 @@ function tripal_core_load_gff3($gff_file, $add_only =0, $update = 0, $refresh = 
 
       // add or update the feature and all properties
       if($update or $refresh or $add_only){
+    
+
          // add/update the feature
          $feature = tripal_core_load_gff3_feature($organism,$cvterm,
-            $attr_uniquename,$attr_name,$residues,$attr_is_analysis,$attr_is_obsolete,
-            $add_only);
+            $attr_uniquename,$attr_name,$residues,$attr_is_analysis,
+            $attr_is_obsolete, $add_only,$generate_name);
+
+         // store all of the features so far use later by parent and target
+         // relationships
+         $gff_features[$feature->uniquename]['type'] = $type;
+
          if($feature){
-            // add/update the featureloc if the landmark and the feature ID are not the same
+            if($generate_name){
+               $attr_uniquename = $feature->uniquename;
+            }
+ 
+            // add/update the featureloc if the landmark and the ID are not the same
             // if they are the same then this entry in the GFF is probably a landmark identifier
             if(strcmp($landmark,$attr_uniquename)!=0){
                tripal_core_load_gff3_featureloc($feature,$organism,
@@ -257,6 +393,10 @@ function tripal_core_load_gff3($gff_file, $add_only =0, $update = 0, $refresh = 
             if(array_key_exists('Dbxref',$tags)){
                tripal_core_load_gff3_dbxref($feature,$tags['Dbxref']);
             }
+            // add parent relationships
+            if(array_key_exists('Parent',$tags)){
+               tripal_core_load_gff3_parents($feature,$cvterm,$tags['Parent'],$gff_features,$organism_id);
+            }
          }
       }
    }
@@ -266,9 +406,70 @@ function tripal_core_load_gff3($gff_file, $add_only =0, $update = 0, $refresh = 
 /*************************************************************************
 *
 */
+function tripal_core_load_gff3_parents($feature,$cvterm,$parents,$gff_features,$organism_id){
+
+   $uname = $feature->uniquename;
+   $type = $cvterm->name;
+   $rel_type = 'part_of';
+
+
+   // create these SQL statements that will be used repeatedly below.
+   $cvtermsql = "SELECT CVT.cvterm_id
+                 FROM {cvterm} CVT
+                    INNER JOIN {cv} CV on CVT.cv_id = CV.cv_id
+                    LEFT JOIN {cvtermsynonym} CVTS on CVTS.cvterm_id = CVT.cvterm_id
+                 WHERE cv.name = '%s' and (CVT.name = '%s' or CVTS.synonym = '%s')";
+
+   $feature_sql = "SELECT * FROM {feature} 
+                   WHERE organism_id = %d and uniquename = '%s' and type_id = %d";
+
+   // iterate through the parents in the list
+   foreach($parents as $parent){  
+      $parent_type = $gff_features[$parent]['type'];
+
+      $parentcvterm = db_fetch_object(db_query($cvtermsql,'sequence',$parent_type,$parent_type));
+      $relcvterm = db_fetch_object(db_query($cvtermsql,'relationship',$rel_type,$rel_type));
+      $parent_feature = db_fetch_object(db_query($feature_sql,$organism_id,$parent,$parentcvterm->cvterm_id));
+
+      if($parent_feature){
+
+         // check to see if the relationship already exists
+         $sql = "SELECT * FROM {feature_relationship} WHERE subject_id = %d and object_id = %d and type_id = %d";
+         $rel = db_fetch_object(db_query($sql,$feature->feature_id,$parent_feature->feature_id,$relcvterm->cvterm_id));
+         if($rel){
+            print "   Relationship already exists, skipping '$uname' ($type) $rel_type '$parent' ($parent_type)\n";
+         } else {      
+            $sql = "INSERT INTO {feature_relationship} (subject_id,object_id,type_id)
+                    VALUES (%d,%d,%d)";
+            $result = db_query($sql,$feature->feature_id,$parent_feature->feature_id,$relcvterm->cvterm_id);
+            if(!$result){
+               print "WARNING: failed to insert feature relationship '$uname' ($type) $rel_type '$parent' ($parent_type)\n";
+            } else {
+               print "   Inserted relationship relationship: '$uname' ($type) $rel_type '$parent' ($parent_type)\n";
+            }
+         } 
+      }
+      else {
+         print "WARNING: cannot establish relationship '$uname' ($type) $rel_type '$parent' ($parent_type): Cannot find the parent\n";
+      }
+   }
+}
+/*************************************************************************
+*
+*/
 function tripal_core_load_gff3_dbxref($feature,$dbxrefs){
    foreach($dbxrefs as $dbxref){
-      print "Adding: $dbxref\n";
+      // check to see if this accession reference exists, if not add it
+//      $dbxrefsql = "SELECT * FROM {dbxref} WHERE db_id = %s and accession = '%s'";
+//      $dbxref = db_fetch_object(db_query($dbxrefsql,$db_id,$accession));
+//      if(!$dbxref){
+//         $sql = "INSERT INTO {dbxref} (db_id,accession) VALUES (%d,'%s')";
+//         $result = db_query($sql,$db_id,$accession);
+//         if(!$result){
+//           print "WARNING: could not add external database acession: '$name accession: $accession'\n";
+//         }
+//         $dbxref = db_fetch_object(db_query($dbxrefsql,$db_id,$accession));
+//      }
    }
 }
 
@@ -372,7 +573,11 @@ function tripal_core_load_gff3_alias($feature,$aliases){
 *
 */
 function tripal_core_load_gff3_feature($organism,$cvterm,$uniquename,$name,
-   $residues,$is_analysis='f',$is_obsolete='f',$add_only)  {
+   $residues,$is_analysis='f',$is_obsolete='f',$add_only,$generate_name)  {
+
+   if($generate_name){
+      $uniquename = 'tripal_temp_loading_name' . rand(1,99999999);
+   }
 
    // check to see if the feature already exists
    $feature_sql = "SELECT * FROM {feature} 
@@ -386,53 +591,73 @@ function tripal_core_load_gff3_feature($organism,$cvterm,$uniquename,$name,
       $is_analysis = 'false';
    }
 
+
    // insert the feature if it does not exist otherwise perform an update
    if(!$feature){
-      print "Adding feature '$uniquename'\n";
-      $sql = "INSERT INTO {feature} (organism_id, name, uniquename, residues, seqlen,
-                 md5checksum, type_id,is_analysis,is_obsolete)
-              VALUES(%d,'%s','%s','%s',%d, '%s', %d, %s, %s)";
-      $result = db_query($sql,$organism->organism_id,$name,$uniquename,$residues,strlen($residues),
+      print "Adding feature '$uniquename' ($cvterm->name)\n";
+      $isql = "INSERT INTO {feature} (organism_id, name, uniquename, residues, seqlen,
+                  md5checksum, type_id,is_analysis,is_obsolete)
+               VALUES(%d,'%s','%s','%s',%d, '%s', %d, %s, %s)";
+      $result = db_query($isql,$organism->organism_id,$name,$uniquename,$residues,strlen($residues),
                md5($residues),$cvterm->cvterm_id,$is_analysis,$is_obsolete);
       if(!$result){
-         print "ERROR: failed to insert feature '$uniquename'\n";
+         print "ERROR: failed to insert feature '$uniquename' ($cvterm->name)\n";
          return 0;
       }
    } 
    elseif(!$add_only) {
-      print "Updating feature '$uniquename'\n";
-      $sql = "UPDATE {feature} 
-              SET name = '%s', residues = '%s', seqlen = '%s', md5checksum = '%s',
-                 is_analysis = %s, is_obsolete = %s
-              WHERE organism_id = %d and uniquename = '%s' and type_id = %d";
-      $result = db_query($sql,$name,$residues,strlen($residues),md5($residues),$is_analysis,$is_obsolete);
+      print "Updating feature '$uniquename' ($cvterm->name)\n";
+      $usql = "UPDATE {feature} 
+               SET name = '%s', residues = '%s', seqlen = '%s', md5checksum = '%s',
+                  is_analysis = %s, is_obsolete = %s
+               WHERE organism_id = %d and uniquename = '%s' and type_id = %d";
+      $result = db_query($usql,$name,$residues,strlen($residues),md5($residues),$is_analysis,$is_obsolete,
+                   $organism_id,$uniquename,$cvterm->cvterm_id);
       if(!$result){
-         print "ERROR: failed to update feature '$uniquename'\n";
+         print "ERROR: failed to update feature '$uniquename' ($cvterm->name)\n";
          return 0;
       }
    }
    else {
       // the feature exists and we don't want to update it so return
       // a value of 0.  This will stop all downstream property additions
-      print "Skipping existing feature: '$uniquename'.\n";
+      print "Skipping existing feature: '$uniquename' ($cvterm->name).\n";
       return 0;
    }
-
    $feature = db_fetch_object(db_query($feature_sql,$organism->organism_id,$uniquename,$cvterm->cvterm_id));
+   // now that we've added the feature let's reset it's uniquename to be
+   // the feature id
+   if($generate_name){
+      $usql = "UPDATE {feature} 
+               SET name = '%s', uniquename = '%s'
+               WHERE feature_id = %d";
+      print "   Renaming feature '$uniquename' => ";
+      $uniquename = "$feature->feature_id";
+      print "$uniquename\n";
+      $result = db_query($usql,$uniquename,$uniquename,$feature_id);
+      if(!$result){
+         print "ERROR: failed to update unnamed feature '$uniquename' with generic name\n";
+         return 0;
+      }
+      $feature->name = $uniquename;
+      $feature->uniquename = $uniquename;
+   }
+
    return $feature;
 }
 /*************************************************************************
 *
 */
-function tripal_core_load_gff3_featureloc($feature,$organism,$landmark,$fmin,$fmax,$strand,$phase,
-   $is_fmin_partial,$is_fmax_partial,$residue_info,$locgroup)  {
+function tripal_core_load_gff3_featureloc($feature,$organism,$landmark,$fmin,
+   $fmax,$strand,$phase,$is_fmin_partial,$is_fmax_partial,$residue_info,$locgroup)
+{
  
    // get the source feature
    $sql = "SELECT * FROM {feature} 
            WHERE organism_id = %d and uniquename = '%s'";
    $srcfeature = db_fetch_object(db_query($sql,$organism->organism_id,$landmark));
    if(!$srcfeature){
-      print "ERROR: cannot find source feature $landmark.\n";
+      print "ERROR: cannot find landmark feature $landmark.  Cannot add the feature location record\n";
       return 0;
    }
 
@@ -443,7 +668,7 @@ function tripal_core_load_gff3_featureloc($feature,$organism,$landmark,$fmin,$fm
 
    // check to see if this featureloc already exists, but also keep track of the
    // last rank value
-   $rank = 0;  
+   $rank = -1;  
    $exists = 0;  
    $featureloc_sql = "SELECT FL.featureloc_id,FL.fmin,FL.fmax, FL.is_fmin_partial,
                          FL.is_fmax_partial, FL.strand, FL.phase, FL.residue_info,
@@ -468,7 +693,8 @@ function tripal_core_load_gff3_featureloc($feature,$organism,$landmark,$fmin,$fm
       $rank = $featureloc->rank;
    }
    if(!$exists){
-      // this feature does not have a feature loc so add it
+      $rank++;
+      // this feature location is new so add it
       if(!$phase){
           $phase = 'NULL';
       }
@@ -493,6 +719,7 @@ function tripal_core_load_gff3_featureloc($feature,$organism,$landmark,$fmin,$fm
                $strand,$phase,$residue_info,$locgroup,$rank);
       if(!$result){
          print "ERROR: failed to insert featureloc\n";
+exit;
          return 0;
       }
    }

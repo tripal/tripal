@@ -4,9 +4,8 @@ require_once "charts.php";
 require_once "trees.php";
 require_once "obo_loader.php";
 
-//
-// Copyright 2009 Clemson University
-//
+require_once "tripal_cv.api.inc";
+
 /*************************************************************************
 *
 */

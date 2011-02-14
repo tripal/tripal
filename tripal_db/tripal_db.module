@@ -1,7 +1,7 @@
 <?php
-//
-// Copyright 2009 Clemson University
-//
+
+require_once "tripal_db.api.inc";
+
 /*************************************************************************
 *
 */

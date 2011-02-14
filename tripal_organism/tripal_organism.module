@@ -1,5 +1,7 @@
 <?php
 
+require_once "tripal_organism.api.inc";
+
 /*******************************************************************************
  *  Provide information to drupal about the node types that we're creating
  *  in this module
@@ -932,7 +934,7 @@ function tripal_organism_taxonify_features ($organism_id = NULL, $job_id = NULL)
    $interval = intval($count * 0.01);
    foreach($ids as $feature_id){
       // update the job status every 1% features
-      if($job_id and $i % interval == 0){
+      if($job_id and $i % $interval == 0){
 	     tripal_job_set_progress($job_id,intval(($i/$count)*100));
 	   }
       $node = db_fetch_object(db_query($nsql,$feature_id));

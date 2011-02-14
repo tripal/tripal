@@ -171,7 +171,9 @@ function chado_analysis_interpro_form ($node){
 	);
 	return $form;
 }
-
+/*******************************************************************************
+ *  
+ */
 function chado_analysis_interpro_insert($node){
 	global $user;
 	// Create a timestamp so we can insert it into the chado database

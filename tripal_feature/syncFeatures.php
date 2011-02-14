@@ -203,7 +203,7 @@ function tripal_feature_sync_feature ($feature_id){
       $new_node = new stdClass();
       $new_node->type = 'chado_feature';
       $new_node->uid = $user->uid;
-      $new_node->title = "$feature->uniquename ($feature->cvname) $organism->genus $organism->species";
+      $new_node->title = "$feature->name, $feature->uniquename ($feature->cvname) $organism->genus $organism->species";
       $new_node->name = "$feature->name";
       $new_node->uniquename = "$feature->uniquename";
       $new_node->feature_id = $feature->feature_id;

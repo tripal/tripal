@@ -355,6 +355,7 @@ function parse_NCBI_Blast_XML($xml_string,$db,$max,$feature_id,$ajax, $analysis)
                 '    <th nowrap>Match Name</th>'.
                 '    <th nowrap>E value</th>'.
                 '    <th nowrap>Identity</th>'.
+                '    <th nowrap>Description</th>'.
                 '  </tr>';
 
 
@@ -490,34 +491,38 @@ function parse_NCBI_Blast_XML($xml_string,$db,$max,$feature_id,$ajax, $analysis)
 				}
 			}
 		}
-		$arrowr_url = url("sites/all/themes/theme_tripal/images/arrow_r.png");
+      $arrowr_url = url(drupal_get_path('theme', 'tripal')."/images/arrow_r.png");
 		$html_out .= "<tr>";
 		if($accession && $db->urlprefix){
-			$html_out .= "<td><img src=$arrowr_url align=\"top\" class=\"blast-hit-arrow-icon\"> <a href=\"$db->urlprefix$accession\" ".
-                            "target=\"_blank\">$hit_name</a></td>";
+			$html_out .= "<td><a href=\"$db->urlprefix$accession\" target=\"_blank\">$hit_name</a></td>";
 		} else {
 			// Test if this is another feature in the database
 			$sql = "SELECT feature_id FROM {feature} WHERE uniquename = '%s'";
-			$previous_db = tripal_db_set_active('chado');
+			$previous_db = db_set_active('chado');
 			$hit_feature_id = db_result(db_query($sql, $hit_name));
-			tripal_db_set_active($previous_db);
+			db_set_active($previous_db);
 			// If it is, add link to that feature
 			if ($hit_feature_id) {
 				$hit_url = url("ID$hit_feature_id");
-				$html_out .= "<td><img src=$arrowr_url align=\"top\" class=\"blast-hit-arrow-icon\"> <a href=\"$hit_url\" ".
-                            "target=\"_blank\">$hit_name</a></td>";
+				$html_out .= "<td><a href=\"$hit_url\" target=\"_blank\">$hit_name</a></td>";
 			} else {
-				$html_out .= "<td><img src=$arrowr_url align=\"top\" class=\"blast-hit-arrow-icon\"> $hit_name</td>";
+				$html_out .= "<td>$hit_name</td>";
 			}
 		}
 		$html_out .= "<td nowrap>$best_evalue</td>";
-		$percent_identity = number_format($best_identity/$best_len*100,
-		2);
+		$percent_identity = number_format($best_identity/$best_len*100, 2);
 		$html_out .= "<td nowrap>$percent_identity%</td>";
-		$html_out .= "</tr><tr><td colspan=3><div class=\"tripal_expandableSubBox\">".
-                         "$description</div></td></tr><tr><td colspan=4><div class=".
-                         "\"tripal_expandableSubBoxContent\">".
-                         "$hsp_html_out</div><td></tr>";
+		$html_out .= "<td nowrap>$description</td>";
+		$html_out .= "</tr>
+                              <tr>
+                                <td colspan=4>
+                                   <a class=\"blast-hit-arrow-icon\"><img src=$arrowr_url align=\"top\"> View Alignment</a>
+                                   <div class=\"tripal_expandableSubBox\"></div>
+                               </td>
+                              </tr>
+                              <tr>
+                                 <td colspan=4><div class=\"tripal_expandableSubBoxContent\">$hsp_html_out</div><td>
+                             </tr>";
 		$hsp_html_out = '';
 	}
 

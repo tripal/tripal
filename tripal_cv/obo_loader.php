@@ -454,6 +454,7 @@ function tripal_cv_obo_add_synonyms($term,$cvterm){
       if(!db_query($sql)){
          tripal_cv_obo_quiterror("Failed to add the synonyms type vocabulary");
       }
+      $syncv = db_fetch_object(db_query($sql));
    }
 
    // now add the synonyms

@@ -208,7 +208,7 @@ function tripal_feature_fasta_load_form_validate($form, &$form_state){
       $dfile = $fasta_file;
    }
    if(!file_exists($dfile)){
-      form_set_error('fasta_file',t("Cannot find the file on the system"));
+      form_set_error('fasta_file',t("Cannot find the file on the system. Check that the file exists or that the web server has permissions to read the file."));
    }
 
    // make sure if a relationship is specified that all fields are provided.
@@ -294,6 +294,10 @@ function tripal_feature_load_fasta($dfile, $organism_id, $type,
    $residues = '';
    $num_lines = sizeof($lines);
    $interval = intval($num_lines * 0.01);
+   if($interval == 0){
+      $interval = 1;
+   }
+
    foreach ($lines as $line_num => $line) {
       $i++;  // update the line count     
 
@@ -342,7 +346,10 @@ function tripal_feature_load_fasta($dfile, $organism_id, $type,
          $residues .= trim($line);
       }
    }
-
+   // now load the last sequence in the file
+   tripal_feature_fasta_loader_insert_feature($name,$uname,$db_id,
+      $accession,$subject,$rel_type,$parent_type,$library_id,$organism_id,$type,
+      $source,$residues,$update);
    return '';
 }
 /*************************************************************************
