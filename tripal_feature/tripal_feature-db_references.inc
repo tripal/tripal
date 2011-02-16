@@ -19,18 +19,20 @@ function tripal_feature_add_ALL_dbreferences_page($node) {
   return $output;
 }
 
-
-/**
+/*******************************************************************************
  * Implements Hook_form()
- * Handles adding of Database References to Stocks
+ * Handles adding of Database References to features
  */
 function tripal_feature_add_ONE_dbreference_form($form_state, $node) {
 
-  $stock_id = $node->stock_id;
-
-  $form['db_nid'] = array(
+  $form['nid'] = array(
     '#type' => 'hidden',
     '#value' => $node->nid
+  );
+
+  $form['feature_id'] = array(
+    '#type' => 'hidden',
+    '#value' => $node->feature->feature_id,
   );
 
   $form['add_dbreference'] = array(
@@ -38,31 +40,26 @@ function tripal_feature_add_ONE_dbreference_form($form_state, $node) {
     '#title' => t('Add Database References') . '<span class="form-optional" title="This field is optional">(optional)</span>',
   );
 
-  $form['add_properties']['db_stock_id'] = array(
-    '#type' => 'value',
-    '#value' => $stock_id,
-    '#required' => TRUE
-
-  );
-
   $form['add_dbreference']['accession'] = array(
     '#type' => 'textfield',
-    '#title' => t('Accession Number'),
+    '#title' => t('Accession'),
+    '#required' => TRUE,
   );
 
-  $form['add_dbreference']['db_description'] = array(
+  $form['add_dbreference']['description'] = array(
     '#type' => 'textarea',
-    '#title' => t('Description of Database Reference') . '<span class="form-optional" title="This field is optional">+</span>',
-    '#description' => t('Optionally enter a description about the database accession.')
+    '#title' => t('Description of Reference') . '<span class="form-optional" title="This field is optional">+</span>',
+    '#description' => t('Optionally enter a description about the database accession.'),
   );
 
   $db_options = tripal_db_get_db_options();
   $db_options[0] = 'Select a Database';
   ksort($db_options);
-  $form['add_dbreference']['database'] = array(
+  $form['add_dbreference']['db_id'] = array(
     '#type' => 'select',
     '#title' => t('Database'),
     '#options' => $db_options,
+    '#required' => TRUE,
   );
 
   $form['add_dbreference']['submit'] = array(
@@ -72,79 +69,67 @@ function tripal_feature_add_ONE_dbreference_form($form_state, $node) {
 
   return $form;
 }
-
+/*******************************************************************************
+*
+*/
 function tripal_feature_add_ONE_dbreference_form_validate($form, &$form_state) {
 
-  // Only ensure db reference valid if adding
-  if ($form_state['clicked_button']['#value'] == t('Add Database Reference') ) {
-    //Do work of required validators
-    if ($form_state['values']['accession'] == '') {
-      form_set_error('accession', 'Accession field is Required.');
-    }
+   $db_id = $form_state['values']['db_id'];
+   $accession = $form_state['values']['accession'];
+   $description = $form_state['values']['description'];
+   $feature_id = $form_state['values']['feature_id'];
+   $nid = $form_state['values']['nid'];
 
-    // Check database is valid db_id in chado
-    if ( $form_state['values']['database'] > 0) {
-    	$previous_db = tripal_db_set_active('chado');
-    	$tmp_obj = db_fetch_object(db_query("SELECT count(*) as count FROM db WHERE db_id=%d",$form_state['values']['database']));
-    	tripal_db_set_active($previous_db);
-    	
-      if ($tmp_obj->count != 1) {
-        form_set_error('database', 'The database you selected is not valid. Please choose another one.'); 
-      }
-    } else {
-      form_set_error('database', 'Please select a database');
-    }
+   // Check database is valid db_id in chado
+   $previous_db = tripal_db_set_active('chado');
+   $tmp_obj = db_fetch_object(db_query("SELECT count(*) as count FROM db WHERE db_id=%d",$db_id));
+   tripal_db_set_active($previous_db);    	
+   if ($tmp_obj->count != 1) {
+      form_set_error('database', 'The database you selected is not valid. Please choose another one.'); 
+   }
 
-    // Check Accession is unique for database
-    $previous_db = tripal_db_set_active('chado');
-    $tmp_obj = db_fetch_object(db_query("SELECT count(*) as count FROM dbxref WHERE accession='%s'",$form_state['values']['accession']));
-    tripal_db_set_active($previous_db);
-    	
-    if ($tmp_obj->count > 0) {
-      form_set_error('accession', 'This accession has already been assigned to another stock.'); 
-    }
+   // Check Accession is unique for database
+   $previous_db = tripal_db_set_active('chado');
+   $sql = "SELECT count(*) as count FROM dbxref WHERE accession='%s' and db_id = %d";
+   $tmp_obj = db_fetch_object(db_query($sql,$accession,$db_id));
+   tripal_db_set_active($previous_db);
 
-  } //end of if adding
+   if ($tmp_obj->count > 0) {
+      form_set_error('accession', 'This accession has already been assigned to another feature in the selected database.'); 
+   }
 
 } 
-
+/*******************************************************************************
+*
+*/
 function tripal_feature_add_ONE_dbreference_form_submit($form, &$form_state) {
 
-  // FIX: Sometimes on programatic submission of form (drupal_execute) values in the form state get lost
-  // 	  however, the post values always seem to be correct
-  if (empty($form_state['values']['db_stock_id'])) { $form_state['values']['db_stock_id'] = $form_state['clicked_button']['#post']['db_stock_id']; }
+   $db_id = $form_state['values']['db_id'];
+   $accession = $form_state['values']['accession'];
+   $description = $form_state['values']['description'];
+   $feature_id = $form_state['values']['feature_id'];
+   $nid = $form_state['values']['nid'];
 
-  // Only Create if valid
-  if ($form_state['values']['database'] > 0) {
-    
+   // create dbxref
+   $previous_db = tripal_db_set_active('chado');
+   $isql =  "INSERT INTO dbxref (db_id, accession, description) VALUES (%d, '%s', '%s')";
+   db_query($isql,$db_id,$accession,$description);
+   tripal_db_set_active($previous_db);
 
-    // create dbxref
-    $previous_db = tripal_db_set_active('chado');
-    db_query(
-      "INSERT INTO dbxref (db_id, accession, description) VALUES (%d, '%s', '%s')",
-      $form_state['values']['database'],
-      $form_state['values']['accession'],
-      $form_state['values']['db_description']
-    );
-    tripal_db_set_active($previous_db);
+   //create feature_dbxref
+   $dbxref = tripal_db_get_dbxref( array('db_id'=>array('type'=>'INT','value'=>$form_state['values']['db_id']), 
+ 											'accession'=>array('type'=>'STRING','exact'=>TRUE,'value'=>$form_state['values']['accession']) ) );
 
-    //create stock_dbxref
-    $dbxref = tripal_db_get_dbxref( array('db_id'=>array('type'=>'INT','value'=>$form_state['values']['database']), 
-    																	'accession'=>array('type'=>'STRING','exact'=>TRUE,'value'=>$form_state['values']['accession']) ) );
-		if (!empty($dbxref->dbxref_id)) {
-			$previous_db = tripal_db_set_active('chado');
-    	db_query(
-      	"INSERT INTO stock_dbxref (stock_id, dbxref_id) VALUES (%d, %d)",
-      	$form_state['values']['db_stock_id'],
-      	$dbxref->dbxref_id
-    	);
-			tripal_db_set_active($previous_db);
-
+	if (!empty($dbxref->dbxref_id)) {
+		$previous_db = tripal_db_set_active('chado');
+      $isql = "INSERT INTO feature_dbxref (feature_id, dbxref_id) VALUES (%d, %d)";
+ 	   db_query($isql,$feature_id,$dbxref->dbxref_id);
+		tripal_db_set_active($previous_db);
     	drupal_set_message('Successfully Added Database Reference');
-    } else {
-    	drupal_set_message('Database reference NOT successfully created...','error');
-    } //end of if dbxref was created successfully
-  } //end of if valid db reference
+      drupal_goto('node/'.$nid);
+   } else {
+ 	   drupal_set_message('Database reference NOT successfully created...','error');
+   } //end of if dbxref was created successfully
 
 }
 
@@ -160,14 +145,13 @@ function tripal_feature_edit_ALL_dbreferences_page($node) {
   $output .= '<br>';
   $output .= drupal_get_form('tripal_feature_add_ONE_dbreference_form', $node);
   $output .= '<br>';
-  $output .= drupal_get_form('tripal_feature_implement_back_to_stock_button', $node->nid);
+  $output .= drupal_get_form('tripal_feature_implement_back_to_feature_button', $node->nid);
 
   return $output;
 }
-                                               
-/**                                            
+/*******************************************************************************                                           
  * Implements Hook_form()                      
- * Handles adding of Properties & Synonyms to Stocks
+ * Handles adding of Properties & Synonyms to Features
  */                                        
 function tripal_feature_edit_ALL_db_references_form($form_state, $node) {
   $form = array();
@@ -178,8 +162,14 @@ function tripal_feature_edit_ALL_db_references_form($form_state, $node) {
   );
 
   $i=0;
-  if (sizeof($node->db_references) != 0) {
-  foreach ($node->db_references as $ref) {
+
+  // pre populate the database options
+  $db_options = tripal_db_get_db_options();
+  $db_options[0] = 'Select a Database';
+  ksort($db_options);
+
+  if (sizeof($node->references) != 0) {
+  foreach ($node->references as $ref) {
     $i++;
     $form["num-$i"] = array(
       '#type' => 'item',
@@ -188,24 +178,21 @@ function tripal_feature_edit_ALL_db_references_form($form_state, $node) {
 
     $form["accession-$i"] = array(
       '#type' => 'textfield',
-      //'#title' => t('Accession'),
+      '#title' => t('Accession'),
       '#size' => 30,
       '#required' => TRUE,
       '#default_value' => $ref->accession
     );
 
-    $db_options = tripal_db_get_db_options();
-    $db_options[0] = 'Select a Database';
-    ksort($db_options);
-    $form["database-$i"] = array( 
+    $form["db_id-$i"] = array( 
       '#type' => 'select', 
-      //'#title' => t('Database'),
+      '#title' => t('Database'),
       '#options' => $db_options, 
       '#default_value' => $ref->db_id
     );
 
 
-    $form["id-$i"] = array(
+    $form["dbxref_id-$i"] = array(
       '#type' => 'hidden',
       '#value' => $ref->dbxref_id
     );
@@ -224,75 +211,81 @@ function tripal_feature_edit_ALL_db_references_form($form_state, $node) {
 
   $form["submit-edits"] = array(
     '#type' => 'submit',
-    '#value' => t('Update DB References')
+    '#value' => t('Update References')
   );
 
   return $form;
 }
-
+/*******************************************************************************
+*
+*/
 function tripal_feature_edit_ALL_db_references_form_submit($form, &$form_state) {
 
-  if ($form_state['clicked_button']['#value'] == t('Update DB References') ) {
+  $num_refs = $form_state['values']['num_db_references'];
+  $action = $form_state['clicked_button']['#value'];
+  $nid = $form_state['values']['nid'];
 
-     //Update all
-     for ($i=1; $i<=$form_state['values']['num_db_references']; $i++) {
-       tripal_feature_update_db_reference(
-					$form_state['values']["id-$i"], 
-					$form_state['values']["database-$i"], 
-					$form_state['values']["accession-$i"]
-			);
+  if (strcmp($action,'Update References')==0) {
+     for ($i=1; $i<=$num_refs; $i++) {
+		 $dbxref_id = $form_state['values']["dbxref_id-$i"]; 
+		 $db_id = $form_state['values']["db_id-$i"];
+		 $accession = $form_state['values']["accession-$i"];
+       tripal_feature_update_db_reference($dbxref_id,$db_id,$accession);
      }
      drupal_set_message("Updated all Database References");
-     drupal_goto('node/'.$form_state['values']['nid']);
-
-  } elseif ( preg_match('/Delete #(\d+)/', $form_state['clicked_button']['#value'], $matches) ) {
-
+     drupal_goto('node/'.$nid);
+  } 
+  elseif ( preg_match('/Delete #(\d+)/', $action, $matches) ) {
      $i = $matches[1];
-     tripal_feature_delete_db_reference($form_state['values']["id-$i"]);
+	  $dbxref_id = $form_state['values']["dbxref_id-$i"]; 
+     tripal_feature_delete_db_reference($dbxref_id);
      drupal_set_message("Deleted Database Reference");
-
-  } else {
+     drupal_goto('node/'.$nid);
+  } 
+  else {
     drupal_set_message("Unrecognized Button Pressed",'error');
   }
 
 }
+/*******************************************************************************
+*
+*/
+function tripal_feature_update_db_reference($dbxref_id, $db_id, $accession) {
 
-function tripal_feature_update_db_reference($dbxref_id, $database_id, $accession) {
-
-  $previous_db = db_set_active('chado');
-  db_query(
-    "UPDATE dbxref SET db_id=%d, accession='%s' WHERE dbxref_id=%d",
-    $database_id, 
-    $accession,
-    $dbxref_id
-  );
-  db_set_active($previous_db);
+  $previous_db = tripal_db_set_active('chado');
+  $sql =  "UPDATE dbxref SET db_id=%d, accession='%s' WHERE dbxref_id=%d";
+  db_query($sql,$db_id,$accession,$dbxref_id);
+  tripal_db_set_active($previous_db);
 
 }
-
+/*******************************************************************************
+*
+*/
 function tripal_feature_delete_db_reference($dbxref_id) {
 
-  $previous_db = db_set_active('chado');
+  $previous_db = tripal_db_set_active('chado');
   db_query(
     "DELETE FROM dbxref WHERE dbxref_id=%d",
     $dbxref_id
   );
 
   db_query(
-    "DELETE FROM stock_dbxref WHERE dbxref_id=%d",
+    "DELETE FROM feature_dbxref WHERE dbxref_id=%d",
     $dbxref_id
   );
-  db_set_active($previous_db);
+  tripal_db_set_active($previous_db);
 
 }
-
+/*******************************************************************************
+*
+*/
 function theme_tripal_feature_edit_ALL_db_references_form ($form) {
   $output = '';
 
   $output .= '<br><fieldset>';
   $output .= '<legend>Edit Existing Database References<span class="form-optional" title="This field is optional">(optional)</span></legend>';
   $output .= '<p>Below is a list of already existing database references, one per line. When entering a database reference, the accession '
-  	     .'is a unique identifier for this stock in the specified database.</p>';
+  	     .'is a unique identifier for this feature in the specified database.</p>';
   $output .= '<table>';
   $output .= '<tr><th>#</th><th>Database</th><th>Accession</th><th></th></tr>';
 
@@ -331,7 +324,7 @@ function list_dbreferences_for_node($db_references) {
     $output .= '</table>'; 
 
   } else {
-    $output = 'No Database References Added to the Current Stock';
+    $output = 'No Database References Added to the Current Feature';
   }              
 
   return $output;

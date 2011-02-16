@@ -21,6 +21,9 @@ function tripal_feature_init(){
    // add the jGCharts JS and CSS
    drupal_add_js (drupal_get_path('theme', 'tripal').'/js/tripal_feature.js'); 
    drupal_add_js (drupal_get_path('theme', 'tripal').'/js/jgcharts/jgcharts.js'); 
+
+   drupal_add_css(drupal_get_path('theme', 'tripal').
+                                  '/css/tripal_feature.css');
 }
 
 /*************************************************************************
@@ -137,7 +140,7 @@ function tripal_feature_menu() {
    );
 
  // Adding Secondary Properties-----------------
-  $items['node/%/properties'] = array(       
+  $items['node/%tripal_feature_node/properties'] = array(       
     'title' => t('Add Properties & Synonyms'),                         
     'description' => t('Settings for Features'),
     'page callback' => 'tripal_feature_add_ALL_property_page',           
@@ -146,7 +149,7 @@ function tripal_feature_menu() {
     'type' => MENU_CALLBACK
   ); 
 
-  $items['node/%/db_references'] = array(                        
+  $items['node/%tripal_feature_node/db_references'] = array(                        
     'title' => t('Add Database References'),                   
     'description' => t('Settings for Features'),              
     'page callback' => 'tripal_feature_add_ALL_dbreferences_page',                         
@@ -155,7 +158,7 @@ function tripal_feature_menu() {
     'type' => MENU_CALLBACK
   ); 
 
-  $items['node/%/relationships'] = array(                      
+  $items['node/%tripal_feature_node/relationships'] = array(                      
     'title' => t('Add Relationships'),                      
     'description' => t('Settings for Features'),               
     'page callback' => 'tripal_feature_add_ALL_relationships_page',                          
@@ -164,7 +167,7 @@ function tripal_feature_menu() {
     'type' => MENU_CALLBACK
   );
   //Edit/Deleting Secondary Properties-------------
-  $items['node/%/edit_properties'] = array(
+  $items['node/%tripal_feature_node/edit_properties'] = array(
     'title' => t('Edit Properties'),
     'description' => t('Settings for Features'),
     'page callback' => 'tripal_feature_edit_ALL_properties_page',
@@ -174,7 +177,7 @@ function tripal_feature_menu() {
     'weight' => 8,
   );
 
-    $items['node/%/edit_relationships'] = array(
+    $items['node/%tripal_feature_node/edit_relationships'] = array(
     'title' => t('Edit Relationships'),
     'description' => t('Settings for Feature'), 
     'page callback' => 'tripal_feature_edit_ALL_relationships_page',
@@ -184,8 +187,8 @@ function tripal_feature_menu() {
     'weight' => 9,
   );
 
-  $items['node/%/edit_db_references'] = array(
-    'title' => t('Edit DB References'),
+  $items['node/%tripal_feature_node/edit_db_references'] = array(
+    'title' => t('Edit References'),
     'description' => t('Settings for Feature'),
     'page callback' => 'tripal_feature_edit_ALL_dbreferences_page',
     'page arguments' => array(1),
@@ -196,7 +199,22 @@ function tripal_feature_menu() {
 
    return $items;
 }
+/*************************************************************************
+ * Implements Menu wildcard_load hook
+ * Purpose: Allows the node ID of a chado stock to be dynamically 
+ *   pulled from the path. The node is loaded from this node ID
+ *   and supplied to the page as an arguement
+ */
+function tripal_feature_node_load($nid) {
+  if (is_numeric($nid)) {
+    $node = node_load($nid);
+    if ($node->type == 'chado_feature') {
+      return $node;
+    }
+  }
 
+  return FALSE;
+}
 /************************************************************************
  *  When a new chado_feature node is created we also need to add information
  *  to our chado_feature table.  This function is called on insert of a new node
@@ -721,7 +739,7 @@ function chado_feature_load($node){
 
    // add feature references in external databases
    $sql = "SELECT F.uniquename,F.Feature_id,DBX.accession,DB.description as dbdesc, ".
-          "   DB.db_id, DB.name as db_name, DB.urlprefix ".
+          "   DB.db_id, DB.name as db_name, DB.urlprefix,DBX.dbxref_id ".
           "FROM {Feature} F ".
           "  INNER JOIN Feature_dbxref FDBX on F.feature_id = FDBX.feature_id ".
           "  INNER JOIN Dbxref DBX on DBX.dbxref_id = FDBX.dbxref_id ".
@@ -742,17 +760,17 @@ function chado_feature_load($node){
    $sql = "SELECT 
              FS.name as subject_name, 
              FS.uniquename as subject_uniquename, 
-             CVTS.name as subject_type,
              FS.residues as subject_residues,
+             CVTS.name as subject_type,
              FR.subject_id,          
-             FR.type_id,
+             FR.type_id as relationship_type_id,
              CVT.name as rel_type,     
              FO.name as object_name, 
              FO.uniquename as object_uniquename, 
              CVTO.name as object_type,
-             FO.residues as object_residues,
              FR.object_id,
              FLS.name as src_name,
+             FLS.uniquename as src_uniquename,
              FLS.feature_id as src_featureid,
              CVTR.name as src_cvname, 
              CVTR.cvterm_id as src_type_id,
@@ -789,6 +807,8 @@ function chado_feature_load($node){
    $orelationships = array();
    $i=0;
    $nodesql = "SELECT nid FROM {chado_feature} WHERE feature_id = %d";
+   $rel_locs;  // holds relationship locations
+   $rel_loc;   // a single relationship location
    while($rel = db_fetch_object($oresults)){
      $node = db_fetch_object(db_query($nodesql,$rel->subject_id));
      if($node){
@@ -798,7 +818,32 @@ function chado_feature_load($node){
      if($node){
         $rel->object_nid = $node->nid;
      }  
-     $orelationships[$i++] = $rel;      
+     $orelationships[$i] = $rel; 
+     if($rel->src_uniquename){
+        $rel_loc = $rel->src_uniquename ."|".$rel->src_type_id;
+        $rel_locs[$rel_loc]['uname'] = $rel->src_uniquename;
+        $rel_locs[$rel_loc]['type'] = $rel->src_type_id;
+        if(!$rel_locs[$rel_loc]['source_min']){
+           $rel_locs[$rel_loc]['source_min'] = 99999999999;
+        }
+        if($rel->fmin < $rel_locs[$rel_loc]['source_min']){
+           $rel_locs[$rel_loc]['source_min'] = $rel->fmin;
+        }     
+        if($rel->fmax > $rel_locs[$rel_loc]['source_max']){
+           $rel_locs[$rel_loc]['source_max'] = $rel->fmax;
+        }
+     }
+     $i++;
+   }
+   // build the parts array needed for coloring the relationsihps in the
+   // reference sequence
+   foreach($orelationships as $index => $rel){
+      if($rel->src_uniquename){
+         $rel_loc = $rel->src_uniquename ."|".$rel->src_type_id;
+         $rel_locs[$rel_loc]['parts'][$index]['type'] = $rel->subject_type;
+         $rel_locs[$rel_loc]['parts'][$index]['start'] = $rel->fmin - $rel_locs[$rel_loc]['source_min'];
+         $rel_locs[$rel_loc]['parts'][$index]['end'] = $rel->fmax - $rel_locs[$rel_loc]['source_min'];
+      }
    }
    $i=0;
    while($rel = db_fetch_object($sresults)){
@@ -815,6 +860,25 @@ function chado_feature_load($node){
    $additions->object_relationships = $orelationships;
    $additions->subject_relationships = $srelationships;
 
+   // now get the sequence from the reference for those feature as a 
+   // subject relationship to this feature.
+   $object_context = array();
+   $i=0;
+   foreach ($rel_locs as $rel_loc => $attrs){
+      if($attrs['uname']){
+         $sql = "SELECT residues 
+                 FROM feature 
+                 WHERE uniquename = '%s' AND organism_id = %d and type_id = %d";
+         $context = db_fetch_object(db_query($sql,$attrs['uname'],$additions->feature->organism_id,$attrs['type']));
+         $context->residues = substr($context->residues,$attrs['source_min'],$attrs['source_max'] - $attrs['source_min']);
+         $context->source = $attrs['uname'];
+         $context->fmin = $attrs['source_min'];
+         $context->fmax = $attrs['source_max'];
+         $context->residues = tripal_feature_color_sequence ($context->residues,$attrs['parts']);
+      }
+      $object_context[$i] = $context;
+   }
+   $additions->relationship_object_info = $object_context;
 
   // get the locations for this feature
    $sql = "SELECT F.name,F.feature_id, F.uniquename,CVT.name as cvname, CVT.cvterm_id,
@@ -855,6 +919,65 @@ function chado_feature_load($node){
    return $additions;
 }
 
+/************************************************************************
+ *  
+ */
+function tripal_feature_color_sequence ($sequence,$parts){
+
+watchdog('tripal_feature',print_r($parts,1));
+   $types = array();
+
+   // first get the list of types so we can create a color legend
+   foreach ($parts as $index => $child){ 
+      $type = $child['type'];
+      if(!in_array($type,$types)){
+         $types[] = $type;
+      }
+   }
+ 
+   $newseq .= "<div id=\"tripal_feature-sequence-legend\">Legend: ";
+   foreach($types as $type){
+      $newseq .= "<span class=\"tripal_feature-sequence-$type\">$type</span>";
+   }
+   $newseq .= "</div>";
+   
+
+   // set the background color of the rows based on the type
+   $pos = 0;
+   $newseq .= "<pre id=\"tripal_feature-sequence\">";
+   foreach ($parts as $index => $child){
+      $type = $child['type'];
+      $start = $child['start'];
+      $end = $child['end'];
+      
+      $class = "class=\"tripal_feature-sequence-$type\"";
+
+      // iterate through the sequence up to the end of the child
+      for ($i = $pos; $i < $end; $i++){ 
+    
+         // if we're at the beginning of the child sequence then set the
+         // appropriate text color
+         if($pos == $start){
+            $newseq .= "<span $class>";
+            $func = 'uc';  // nucleotides within the child should be uppercase
+         }
+         $newseq .= $sequence{$pos};
+         $seqcount++;
+
+         if($seqcount % 100 == 0){
+            $newseq .= "\n";
+         } 
+         $pos++;  
+         if($pos == $end){
+            $newseq .= "</span>";
+            $func = 'lc';
+         }
+      }
+   }
+
+   $newseq .= "</pre>";
+   return $newseq;
+}
 /************************************************************************
  *  This function customizes the view of the chado_feature node.  It allows
  *  us to generate the markup.

@@ -20,13 +20,13 @@ function tripal_feature_add_ALL_relationships_page($node) {
 }
 /*************************************************************************
  * Implements Hook_form()
- * Handles adding of Relationships to Stocks
+ * Handles adding of Relationships to Features
  */
 function tripal_feature_add_ONE_relationship_form($form_state, $node) {
 
-  $stock_id = $node->stock_id;
+  $feature_id = $node->feature_id;
   $organism_id = $node->organism->organism_id;
-  $_SESSION['organism'] = $organism_id; //needed for autocomplete enter stock to work
+  $_SESSION['organism'] = $organism_id; //needed for autocomplete enter feature to work
 
   $form['rel_nid'] = array(
     '#type' => 'hidden', 
@@ -40,13 +40,13 @@ function tripal_feature_add_ONE_relationship_form($form_state, $node) {
 
   $form['add_relationships']['description'] = array(
     '#type' => 'item',
-    '#value' => t('Relationships are specified as follows: (Subject) (Type of Relationship) (Object). For example, Fred is_the_paternal_parent_of Matty, where Fred & Matty are both stocks.')
+    '#value' => t('Relationships are specified as follows: (Subject) (Type of Relationship) (Object). For example, X part_of Y, where X & Y are genomic features.')
   );
 
   $form['add_relationships']['subject_id'] = array(
     '#type' => 'textfield',
     '#title' => t('Subject'),
-    '#description' => 'The Uniquename, Name, Database Reference or Synonym of a Stock can be used here',
+    '#description' => 'The Uniquename, Name, Database Reference or Synonym of a Feature can be used here',
   );
 
   $cv = tripal_cv_get_cv_by_name('relationship');
@@ -63,7 +63,7 @@ function tripal_feature_add_ONE_relationship_form($form_state, $node) {
   $form['add_relationships']['object_id'] = array(
     '#type' => 'textfield',
     '#title' => t('Object'),
-    '#description' => 'The Uniquename, Name, Database Reference or Synonym of a Stock can be used here',
+    '#description' => 'The Uniquename, Name, Database Reference or Synonym of a Feature can be used here',
   );
 
   $form['add_relationships']['r_description'] = array(
@@ -77,14 +77,14 @@ function tripal_feature_add_ONE_relationship_form($form_state, $node) {
     '#value' => t('Add a Relationship')
   );
 
-  $form['add_relationships']['r_stock_id'] = array(
+  $form['add_relationships']['r_feature_id'] = array(
     '#type' => 'value',
-    '#value' => $stock_id,
+    '#value' => $feature_id,
     '#required' => TRUE
 
   );
 
-  $form['add_relationships']['r_stock_uniquename'] = array( 
+  $form['add_relationships']['r_feature_uniquename'] = array( 
     '#type' => 'value',
     '#value' => $node->uniquename,
     '#required' => TRUE
@@ -100,7 +100,7 @@ function tripal_feature_add_ONE_relationship_form_validate($form, &$form_state) 
 
   //Require Validation if adding
   if ($form_state['clicked_button']['#value'] == t('Add a Relationship') ) {
-    // check valid stock selected for subject
+    // check valid feature selected for subject
     $criteria = array('unknown' => array('value'=> $form_state['values']['subject_id'], 
       																		'columns'=>array('name','uniquename','accession','synonym') ));
     $subject_results = get_chado_stocks($criteria,'ANY',$_SESSION['organism']);
@@ -190,7 +190,7 @@ function tripal_feature_edit_ALL_relationships_page($node) {
   $output .= '<br>';
   $output .= drupal_get_form('tripal_feature_add_ONE_relationship_form', $node);
   $output .= '<br>';
-  $output .= drupal_get_form('tripal_feature_implement_back_to_stock_button', $node->nid);
+  $output .= drupal_get_form('tripal_feature_implement_back_to_feature_button', $node->nid);
 
   return $output;
 }
@@ -221,74 +221,82 @@ function tripal_feature_edit_ALL_relationships_form($form_state, $node) {
      $relationships = array_merge($relationships,$node->subject_relationships);
   }
   if (sizeof($relationships) != 0) {
-  foreach ($relationships as $r) {
+     foreach ($relationships as $r) {
 
-    $i++;
-    $form["num-$i"] = array(
-      '#type' => 'item',
-      '#value' => $i.'.'
-    );
+       $i++;
+       $form["num-$i"] = array(
+         '#type' => 'item',
+         '#value' => $i.'.'
+       );
 
-    $form["id-$i"] = array(
-      '#type' => 'hidden',
-      '#value' => $r->stock_relationship_id
-    );
+       $form["id-$i"] = array(
+         '#type' => 'hidden',
+         '#value' => $r->stock_relationship_id
+       );
 
-    //Enter relationship specific fields
-    if ( !empty($r->subject_id) ) { 
-      $default = $r->subject_uniquename;
-      $description = l($r->subject_name, 'node/'.$r->subject_nid); 
-    } else { 
-       $default = $node->uniquename; $description = 'Current Feature'; 
-    }
-    $form["subject_id-$i"] = array(
-      '#type' => 'textfield',      
-      //'#title' => t('Subject'), 
-      '#required'   => TRUE,
-      '#size' => 30,
-      '#default_value' => $default,
-      '#description' => $description,
-    ); 
+       //Enter relationship specific fields
+       if ( !empty($r->subject_id) ) { 
+         $default = $r->subject_uniquename;
+         $description = l($r->subject_name, 'node/'.$r->subject_nid); 
+       } else { 
+          $default = $node->uniquename; $description = 'Current Feature'; 
+       }
+       $form["subject_id-$i"] = array(
+         '#type' => 'textfield',      
+         //'#title' => t('Subject'), 
+         '#required'   => TRUE,
+         '#size' => 30,
+         '#default_value' => $default,
+         '#description' => $description,
+       ); 
 
-    $type_options = tripal_cv_get_cvterm_options( variable_get('chado_feature_relationship_cv', 'null') );
-    ksort($type_options);          
-    $form["type_id-$i"] = array(  
-      '#type' => 'select',    
-      //'#title' => t('Type of Relationship'), 
-      '#options' => $type_options,
-      '#required' => TRUE,
-      '#default_value' => $r->relationship_type_id
-    );
+       $cv = tripal_cv_get_cv_by_name('relationship');
+       $type_options = tripal_cv_get_cvterm_options($cv->cv_id);
+       ksort($type_options);          
+       $form["type_id-$i"] = array(  
+         '#type' => 'select',    
+         //'#title' => t('Type of Relationship'), 
+         '#options' => $type_options,
+         '#required' => TRUE,
+         '#default_value' => $r->relationship_type_id
+       );
 
-    if ( !empty($r->object_id) ) { 
-      $default = $r->object_uniquename;
-      $description = l($r->object_name, 'node/'.$r->object_nid);
-    } else { $default = $node->uniquename; $description = 'Current Feature'; }
-    $form["object_id-$i"] = array(
-      '#type' => 'textfield',          
-      //'#title' => t('Object'),      
-      '#required'   => TRUE,
-      '#size' => 30,
-      '#default_value' => $default,
-      '#description' => $description
-    );
+       if ( !empty($r->object_id) ) { 
+         $default = $r->object_uniquename;
+         $description = l($r->object_name, 'node/'.$r->object_nid);
+       } else { $default = $node->uniquename; $description = 'Current Feature'; }
+       $form["object_id-$i"] = array(
+         '#type' => 'textfield',          
+         //'#title' => t('Object'),      
+         '#required'   => TRUE,
+         '#size' => 30,
+         '#default_value' => $default,
+         '#description' => $description
+       );
 
-    $form["submit-$i"] = array(
-      '#type' => 'submit',
-      '#value' => t("Delete #$i")
-    );
+       $form["submit-$i"] = array(
+         '#type' => 'submit',
+         '#value' => t("Delete #$i")
+       );
 
-  }} //end of foreach relationship
+     } //end of foreach relationship
+     $form['num_relationships'] = array(
+       '#type' => 'hidden',
+       '#value' => $i
+     );
 
-  $form['num_relationships'] = array(
-    '#type' => 'hidden',
-    '#value' => $i
-  );
+     $form["submit-edits"] = array(
+       '#type' => 'submit',
+       '#value' => t('Update Relationships')
+     );
+  } else {
+     $form["info"] = array(
+       '#type' => 'markup',
+       '#value' => t('No relationships currently exist for this feature.')
+     );
+  } 
 
-  $form["submit-edits"] = array(
-    '#type' => 'submit',
-    '#value' => t('Update Relationships')
-  );
+
 
   return $form;
 }
@@ -439,11 +447,11 @@ function theme_tripal_feature_edit_ALL_relationships_form ($form) {
   $output .= '<tr><th>#</th><th>Subject</th><th>Type</th><th>Object</th><th></th></tr>';
 
   for ($i=1; $i<=$form['num_relationships']['#value']; $i++) {
-    $output .= '<tr><td>'.drupal_render($form["num-$i"]).'</td><td>'
-    	       .drupal_render($form["subject_id-$i"]).'</td><td>'
-	       .drupal_render($form["type_id-$i"]).'</td><td>'
-	       .drupal_render($form["object_id-$i"]).'</td><td>'
-	       .drupal_render($form["submit-$i"]).'</td></tr>';
+    $output .= '<tr><td>'.drupal_render($form["num-$i"]).'</td>'.
+      	      '<td>'.drupal_render($form["subject_id-$i"]).'</td>'.
+	            '<td>'.drupal_render($form["type_id-$i"]).'</td>'.
+     	         '<td>'.drupal_render($form["object_id-$i"]).'</td>'.
+	            '<td>'.drupal_render($form["submit-$i"]).'</td></tr>';
   }
 
   $output .= '</table><br>';
@@ -461,7 +469,7 @@ function theme_tripal_feature_edit_ALL_relationships_form ($form) {
 /**
  *
  */
-function list_relationships_for_node($stock_name, $subject_relationships, $object_relationships) {
+function tripal_feature_list_relationships_for_node($feature_name, $subject_relationships, $object_relationships) {
 
   if (!empty($subject_relationships) OR !empty($object_relationships) ) {
     $output = '<table>';
@@ -469,19 +477,19 @@ function list_relationships_for_node($stock_name, $subject_relationships, $objec
 
     if (!empty($subject_relationships) ) {
       foreach ($subject_relationships as $s) {
-        $output .= '<tr><td>'.$s->subject_name.'</td><td>'.$s->relationship_type.'</td><td>'.$stock_name.'</td></tr>';
+        $output .= '<tr><td>'.$s->subject_name.'</td><td>'.$s->relationship_type.'</td><td>'.$feature_name.'</td></tr>';
       }
     }
 
     if (!empty($object_relationships) ) {
       foreach ($object_relationships as $o) {
-        $output .= '<tr><td>'.$stock_name.'</td><td>'.$o->relationship_type.'</td><td>'.$o->object_name.'</td></tr>';
+        $output .= '<tr><td>'.$feature_name.'</td><td>'.$o->relationship_type.'</td><td>'.$o->object_name.'</td></tr>';
       } // end of foreach property
     }
 
     $output .= '</table>';
   } else {
-    $output = 'No Relationships Involving the Current Stock'; 
+    $output = 'No Relationships For the Current Feature'; 
   }
 
   return $output;

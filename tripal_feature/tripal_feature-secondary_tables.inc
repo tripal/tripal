@@ -1,7 +1,7 @@
 <?php
 // $Id$
 
-function tripal_feature_implement_back_to_stock_button($form_state, $nid) {
+function tripal_feature_implement_back_to_feature_button($form_state, $nid) {
   $form = array();
 
   $form['nid'] = array(
@@ -16,16 +16,20 @@ function tripal_feature_implement_back_to_stock_button($form_state, $nid) {
 
   return $form;
 }
-
-function tripal_feature_implement_back_to_stock_button_submit($form, $form_state) {
+/*******************************************************************************
+*
+*/
+function tripal_feature_implement_back_to_feature_button_submit($form, $form_state) {
   drupal_goto('node/'.$form_state['values']['nid']);
 }
-
+/*******************************************************************************
+*
+*/
 function tripal_feature_implement_add_chado_properties_progress($current) {
 
     $value = '<div class="form_progress"><div class="form_progress-text">'; 
 
-    if ($current == 'main') { $value .= '<span id="form-step-current">Create Basic Stock</span>'; } 
+    if ($current == 'main') { $value .= '<span id="form-step-current">Create Basic Feature</span>'; } 
     else { $value .= '<span id="form-step">Create Basic Stock</span>'; }
 
     $value .= '<span id="form-segway">  >>  </span>';
@@ -48,7 +52,9 @@ function tripal_feature_implement_add_chado_properties_progress($current) {
     return $value;
 
 }
-
+/*******************************************************************************
+*
+*/
 function tripal_feature_implement_add_chado_properties_navigate($form_state, $step, $nid) {
   $form = array();
 
@@ -109,7 +115,9 @@ function tripal_feature_implement_add_chado_properties_navigate($form_state, $st
 
   return $form;
 }
-
+/*******************************************************************************
+*
+*/
 function tripal_feature_implement_add_chado_properties_navigate_submit($form, $form_state) {
 
   $raw_steps = preg_split('/::/', $form_state['values']['steps']); 
@@ -161,7 +169,7 @@ function tripal_feature_implement_add_chado_properties_navigate_submit($form, $f
  * Implements Hook_form()
  * Handles setting the is_obsolete property of stocks
  */
-function tripal_stock_is_obsolete_form($node, $stock_id) {
+function tripal_feature_is_obsolete_form($node, $stock_id) {
 
   $form['make_obsolete'] = array(
     '#type' => 'submit',
@@ -176,8 +184,10 @@ function tripal_stock_is_obsolete_form($node, $stock_id) {
 
   return $form;
 }
-
-function tripal_stock_is_obsolete_form_submit($form, &$form_state) {
+/*******************************************************************************
+*
+*/
+function tripal_feature_is_obsolete_form_submit($form, &$form_state) {
 
   $previous_db = db_set_active('chado');
   db_query(

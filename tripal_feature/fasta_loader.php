@@ -334,7 +334,7 @@ function tripal_feature_load_fasta($dfile, $organism_id, $type,
             $uname = trim($matches[1]);
          } else {
             preg_match("/^(.*?)[\s\|].*$/",$line,$matches);
-            $name = trim($matches[1]);
+            $uname = trim($matches[1]);
          }         
          preg_match("/$re_accession/",$line,$matches);
          $accession = trim($matches[1]);
