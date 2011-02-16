@@ -1,5 +1,45 @@
 <?php
+ 
+/*************************************************************************
+ * @section: Return a Single Stock
+ *************************************************************************/
 
+/*************************************************************************
+ * Purpose: Return a given stock object using the nid
+ *
+ * @return stock object created by node load
+ */
+//function get_chado_stock($nid=0, $stock_id=0) {
+function triapl_stock_get_stock_by_nid ($nid) {
+	
+	return node_load($nid);
+	
+}
+
+/*************************************************************************
+ * Purpose: Return a given stock object using the stock id
+ *
+ * @return stock object created by node load
+ */
+//function get_chado_stock($nid=0, $stock_id=0) {
+function triapl_stock_get_stock_by_stock_id ($stock_id) {
+
+  $sql = "SELECT nid FROM {chado_stock} WHERE stock_id=%d";
+  $r = db_fetch_object(db_query($sql, $stock_id));
+  if (!empty($r->nid)) {
+    return node_load($r->nid);
+  } else {
+    drupal_set_message("Function: triapl_stock_get_stock_by_stock_id() -no stock with that stock id sync'd with drupal", 'error');
+	}
+
+	return 0;
+	
+}
+
+/*************************************************************************
+ * @section: Return Multiple Stocks
+ *************************************************************************/
+ 
 /*************************************************************************
  * Purpose: Returns all stocks currently sync'd with drupal
  *
@@ -7,7 +47,8 @@
  *			<stock_id> => <stock object created by node load>
  *		)
  */
-function get_all_chado_stocks() {
+//function get_all_chado_stocks() {
+function tripal_stock_get_all_stocks() {
 	$sql = "SELECT stock_id, nid from {chado_stock}";
 	$resource = db_query($sql);
 	$stocks = array();
@@ -42,8 +83,9 @@ function get_all_chado_stocks() {
  * @return an array of matching stock objects (produced using node_load)
  *   matching the given criteria
  */
-function get_chado_stocks($criteria, $match_type, $organism_id = NULL, $error_checking = FALSE) {
-	
+//function get_chado_stocks($criteria, $match_type, $organism_id = NULL, $error_checking = FALSE) {
+function tripal_stock_get_stocks($criteria, $match_type, $organism_id = NULL, $error_checking = FALSE) {
+
 	//Deal with unknown column----------------------------
 	if (!empty($criteria['unknown'])) {
 		if ($error_checking) { drupal_set_message('Uknown provided','warning');}
@@ -58,8 +100,8 @@ function get_chado_stocks($criteria, $match_type, $organism_id = NULL, $error_ch
 				$new_criteria[$column_name] = array('type'=>'STRING','value' => $criteria['unknown']['value'], 'regex'=>TRUE);
 			}
 		}
-		if ($error_checking) { drupal_set_message('Re-calling get_chado_stocks(<pre>'.print_r($new_criteria,TRUE).'</pre>, ANY, '.$organism_id.')','warning'); }
-		$unknown_stocks = get_chado_stocks($new_criteria, 'ANY', $organism_id, $error_checking);
+		if ($error_checking) { drupal_set_message('Re-calling tripal_stock_get_stocks(<pre>'.print_r($new_criteria,TRUE).'</pre>, ANY, '.$organism_id.')','warning'); }
+		$unknown_stocks = tripal_stock_get_stocks($new_criteria, 'ANY', $organism_id, $error_checking);
 		if ($error_checking) { drupal_set_message(sizeof($unknown_stocks).' Unknown Stocks', 'warning'); }
 	}
 	unset($criteria['unknown']); //so it's not mistaken as a column in the stock table
@@ -80,7 +122,7 @@ function get_chado_stocks($criteria, $match_type, $organism_id = NULL, $error_ch
 			if ($v['regex']) { $operator = '~'; }
 			else { $operator = '='; }
 			
-			$synonym_cvterm = get_chado_cvterm( array('name' => array('type'=>'STRING','exact'=>TRUE,'value'=>'synonym'),
+			$synonym_cvterm = tripal_cv_get_cvterm_by_name('synonym'),
 																								'cv_id' => array('type'=>'INT', 'value'=> variable_get('chado_stock_prop_types_cv', 'null')) ));
 			$where[] = '(stockprop.type_id='.$synonym_cvterm->cvterm_id.' AND stockprop.value'.$operator."'".$v['value']."')";
 			$joins[] = 'LEFT JOIN stockprop stockprop ON stockprop.stock_id=stock.stock_id';
@@ -169,29 +211,3 @@ function get_chado_stocks($criteria, $match_type, $organism_id = NULL, $error_ch
 
 }
 
-/*************************************************************************
- * Purpose: Return a given stock object using the nid or stock id
- *
- * @return stock object created by node load
- */
-function get_chado_stock($nid=0, $stock_id=0) {
-
-	if (!empty($nid)) {
-		return node_load($nid);
-	} else {
-		if (!empty($stock_id)) {
-			$sql = "SELECT nid FROM {chado_stock} WHERE stock_id=%d";
-			$r = db_fetch_object(db_query($sql, $stock_id));
-			if (!empty($r->nid)) {
-				return node_load($r->nid);
-			} else {
-				drupal_set_message("Function: get_chado_stock() -no stock with that stock id sync'd with drupal", 'error');
-			}
-		} else {
-			drupal_set_message("Function: get_chado_stock() -need to supply at least one of node ID or Stock ID",'error');
-		}
-	}
-
-	return 0;
-	
-}
