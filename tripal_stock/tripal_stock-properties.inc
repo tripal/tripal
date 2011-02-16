@@ -12,14 +12,14 @@
 function tripal_stock_add_ALL_property_page($node) {
   $output = '';
 
-  $output .= implement_add_chado_properties_progress('properties').'<br>';
+  $output .= tripal_stock_add_chado_properties_progress('properties').'<br>';
   $output .= '<b>All Properties should strictly pertain to THE CURRENT Individual</b><br>';
   $output .= '<br><b>Current Properties</b><br>';
-  $output .= list_properties_for_node($node->properties, $node->synonyms);
+  $output .= tripal_stock_list_properties_for_node($node->properties, $node->synonyms);
   $output .= '<br><br>';
   $output .= drupal_get_form('tripal_stock_add_ONE_property_form', $node);
   $output .= '<br>';
-  $output .= drupal_get_form('implement_add_chado_properties_navigate', 'properties', $node->nid);
+  $output .= drupal_get_form('tripal_stock_add_chado_properties_navigate', 'properties', $node->nid);
   return $output;
 }
 
@@ -37,11 +37,10 @@ function tripal_stock_add_ONE_property_form($form_state, $node) {
     '#value' => $node->nid
   );
 
-  $tmp_obj = get_chado_cvterm(array('name' => array('type'=>'STRING','exact'=>TRUE, 'value'=>'synonym'),
-  																	'cv_id' => array('type'=>'INT','value'=>variable_get('chado_stock_prop_types_cv', 'null') )));
+	$tmp_obj = tripal_cv_get_cvterm_by_name('synonym', variable_get('chado_stock_prop_types_cv', 'null'));
 	$synonym_id = $tmp_obj->cvterm_id;
 	
-  $prop_type_options = get_chado_cvterm_options( variable_get('chado_stock_prop_types_cv', 'null') ); 
+  $prop_type_options = tripal_cv_get_cvterm_options( variable_get('chado_stock_prop_types_cv', 'null') ); 
   $prop_type_options[0] = 'Select a Type';
   ksort($prop_type_options);
   $form['add_properties']['prop_type_id'] = array(
@@ -99,8 +98,7 @@ function tripal_stock_add_ONE_property_form_validate($form, &$form_state) {
 
     // only check preferred synonym if type is synonym
     if ($form_state['values']['preferred_synonym'] == 1) {
-    $tmp_obj = get_chado_cvterm(array('name' => array('type'=>'STRING','exact'=>TRUE, 'value'=>'synonym'),
-  																	'cv_id' => array('type'=>'INT','value'=>variable_get('chado_stock_prop_types_cv', 'null') )));
+      $tmp_obj = tripal_cv_get_cvterm_by_name('synonym', variable_get('chado_stock_prop_types_cv', 'null'));
       if ($form_state['values']['prop_type_id'] != $tmp_obj->cvterm_id) {
         form_set_error('preferred_synonym', 'Preferred Synonym Checkbox Only Applicable if Type of Property is Synonym');
       }
@@ -165,7 +163,7 @@ function tripal_stock_edit_ALL_properties_page($node) {
   $output .= '<br>';
   $output .= drupal_get_form('tripal_stock_add_ONE_property_form', $node);
   $output .= '<br>';
-  $output .= drupal_get_form('implement_back_to_stock_button', $node->nid);
+  $output .= drupal_get_form('tripal_stock_back_to_stock_button', $node->nid);
 
   return $output;
 }
@@ -204,7 +202,7 @@ function tripal_stock_edit_ALL_properties_form($form_state, $node) {
       '#value' => $property->stockprop_id
     );
 
-    $prop_type_options = get_chado_cvterm_options( variable_get('chado_stock_prop_types_cv', 'null') );
+    $prop_type_options = tripal_cv_get_cvterm_options( variable_get('chado_stock_prop_types_cv', 'null') );
     ksort($prop_type_options);
  
     $default = array_search($property->type, $prop_type_options);
@@ -362,7 +360,7 @@ function theme_tripal_stock_edit_ALL_properties_form ($form) {
 /**
  * 
  */
-function list_properties_for_node($properties, $synonyms) {
+function tripal_stock_list_properties_for_node($properties, $synonyms) {
 
   if (!empty($properties) OR !empty($synonyms) ) {
     $output = '<table>';

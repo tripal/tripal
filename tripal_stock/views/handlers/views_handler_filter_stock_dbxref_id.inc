@@ -53,8 +53,7 @@ class views_handler_filter_stock_dbxref_id extends views_handler_filter {
   /////////// Form Parts/////////////////////////
   function types_form(&$form, &$form_state) {
   
-    $db_options = get_chado_db_options();
-	  $db_options[0] = 'Select a Database';
+    $db_options = tripal_db_get_db_options();
 	  ksort($db_options);
     $form['db'] = array(
       '#type' => 'checkboxes',

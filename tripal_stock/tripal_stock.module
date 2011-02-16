@@ -3,7 +3,7 @@
 
 require("tripal_stock-administration.inc");
 
-require("tripal_stock-api_functions.inc");
+require("tripal_stock.api.inc");
 require("other_module_api_functions.inc");
 
 require("tripal_stock-secondary_tables.inc");
@@ -208,7 +208,7 @@ function tripal_stock_show_stocks () {
 	$sql = "SELECT COUNT(stock_id) FROM {chado_stock}";
    $no_stocks = db_result(db_query($sql));
    if($no_stocks != 0) {
-      $stocks = get_all_chado_stocks();
+      $stocks = tripal_stock_get_all_stocks();
       if($no_stocks != count($stocks)) {
          drupal_set_message("Synchronization needed.");
       }
@@ -297,7 +297,7 @@ function chado_stock_load($node) {
   // Get organism details from chado & add to node-----------------------------------------------
   // get organism if for current stock
   // pull all data from chado for the organism and assign it to the current node
-  $node->organism = get_chado_organism(NULL,$chado_stock->organism_id);
+  $node->organism = tripal_organism_get_organism_by_organism_id($chado_stock->organism_id);
 
   // Add Synonyms for stock----------------------------------------------------------------------
   // These are a special case of property (stockprop table) where cvterm='synonym'
@@ -441,7 +441,7 @@ function chado_stock_form($node, $form_state) {
   if (!isset($node->uniquename)) {
     $form['progress'] = array( 
       '#type' => 'item', 
-      '#value' => implement_add_chado_properties_progress('main')
+      '#value' => tripal_stock_add_chado_properties_progress('main')
     );
   }
 
@@ -474,7 +474,7 @@ function chado_stock_form($node, $form_state) {
     '#title' =>	t('Stock Details')
   );
 
-  $type_options = get_chado_cvterm_options( variable_get('chado_stock_types_cv', 'null') );
+  $type_options = tripal_cv_get_cvterm_options( variable_get('chado_stock_types_cv', 'null') );
   $type_options[0] = 'Select a Type';
   if ($node->nid == '') { $type_default = 0; } else { $type_default = $node->stock_type_id; }
   $form['details']['type_id'] = array(
@@ -485,7 +485,7 @@ function chado_stock_form($node, $form_state) {
     '#required'	  => TRUE,
   );
 
-  $stock_oganism_options = get_chado_organism_options();
+  $stock_oganism_options = tripal_organism_get_organism_options();
   $stock_oganism_options[0] = 'Select An Organism';
   if ($node->nid == '') { $organism_default = 0; } else {  $organism_default = $node->organism->organism_id; }
   $form['details']['organism_id'] = array(
@@ -521,7 +521,7 @@ function chado_stock_form($node, $form_state) {
     '#description' => t('Optionally enter a description about the database accession.')
   );
 
-  $db_options = get_chado_db_options();
+  $db_options = tripal_db_get_db_options();
   $db_options[0] = 'Select a Database';
   if ($node->nid == '') { $db_default = 0; } else { $db_default = $node->main_db_reference->db_id; }
   $form['database_reference']['database'] = array(
@@ -631,15 +631,7 @@ function chado_stock_insert($node) {
 				$node->db_description	
       );
 
-  		$dbxref_options['db_id'] = array(
-  			'value' =>$node->database,
-  			'type' => 'INT',
-  		);
-  		$dbxref_options['accession'] = array(
-  			'value' =>$node->accession,
-  			'type' => 'STRING',
-  		);
-  		$dbxref = get_chado_dbxref($dbxref_options);
+  		$dbxref = tripal_db_get_dbxref_by_accession($node->accession, $node->database);
   	}
   }
   

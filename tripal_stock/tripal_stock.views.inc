@@ -110,9 +110,9 @@ function tripal_stock_views_pre_render	(&$view) {
 				$sql = "SELECT stockprop.*, cvterm.name as type_name FROM stockprop "
 					."INNER JOIN cvterm cvterm ON stockprop.type_id=cvterm.cvterm_id "
 					."WHERE stockprop.stock_id IN (".implode(',',$stock_ids).")";
-				$previous_db = db_set_active('chado');
+				$previous_db = tripal_db_set_active('chado');
 				$resource = db_query($sql);
-				db_set_active($previous_db);
+			 tripal_db_set_active($previous_db);
 		
 				$view->result[$key]->properties = array();
 				while ($r = db_fetch_object($resource)) {
@@ -133,9 +133,9 @@ function tripal_stock_views_pre_render	(&$view) {
 					."LEFT JOIN cvterm cvterm ON stock_relationship.type_id = cvterm.cvterm_id "
 					."WHERE stock_relationship.subject_id IN (".implode(',',$stock_ids).") "
 					."OR stock_relationship.object_id IN (".implode(',',$stock_ids).") ";
-				$previous_db = db_set_active('chado');
+				$previous_db = tripal_db_set_active('chado');
 				$resource = db_query($sql);
-				db_set_active($previous_db);
+			 tripal_db_set_active($previous_db);
 			
 				while ($r = db_fetch_object($resource)) {
 					if (in_array($r->subject_id, $stock_ids)) {
@@ -161,9 +161,9 @@ function tripal_stock_views_pre_render	(&$view) {
 					."LEFT JOIN dbxref dbxref ON stock_dbxref.dbxref_id=dbxref.dbxref_id "
 					."LEFT JOIN db db ON dbxref.db_id=db.db_id "
 					."WHERE stock_dbxref.stock_id IN (".implode(',',$stock_ids).")";
-				$previous_db = db_set_active('chado');
+				$previous_db = tripal_db_set_active('chado');
 				$resource = db_query($sql);
-				db_set_active($previous_db);
+			 tripal_db_set_active($previous_db);
 		
 				$view->result[$key]->dbxref = array();
 				while ($r = db_fetch_object($resource)) {

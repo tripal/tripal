@@ -38,7 +38,7 @@ class views_handler_field_stockprop_by_type extends views_handler_field_prerende
       '#default_value' => array($this->options['stockprop_display_options']['type'], $this->options['stockprop_display_options']['value']),
     );
     
-    $options = get_chado_cvterm_options( variable_get('chado_stock_prop_types_cv', 'null') );
+    $options = tripal_cv_get_cvterm_options( variable_get('chado_stock_prop_types_cv', 'null') );
     $form['stockprop_type_ids'] = array(
       '#prefix' => '<div><div id="edit-options-stockprop_type_ids">',
       '#suffix' => '</div></div>',

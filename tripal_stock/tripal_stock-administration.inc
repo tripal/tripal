@@ -47,7 +47,7 @@ function tripal_stock_admin() {
 		      ." between stocks. Only cvs already loaded into chado can be selected here.")
    );
 
-   $cv_options = get_chado_cv_options();
+   $cv_options = tripal_cv_get_cv_options();
    
    $form['set_cv']['stock_types_cv'] = array(
      '#type' => 'select',
@@ -95,7 +95,7 @@ function tripal_stock_admin() {
       '#type' => 'checkboxes',
       '#title' => t('Organisms for which Stocks should be sync\'d'),
       '#description' => t('Only sync\'d Organisms are listed. Leaving an organism unchecked does not delete already sync\'d Stocks.'),
-      '#options' => get_chado_organism_options(),
+      '#options' => tripal_organism_get_organism_options(),
       '#required'    => FALSE,
       '#prefix'      => '<div id="lib_boxes">',
       '#suffix'      => '</div>'

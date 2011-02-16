@@ -25,28 +25,32 @@ function tripal_organism_get_organism_options() {
 }
 
 /*************************************************************************
- * Purpose: Return a given organism object using the nid or organism id
+ * Purpose: Return a given organism object using the nid
  *
  * @return organism object created by node load
  */
-function tripal_organism_get_organism($nid=0, $organism_id=0) {
+function tripal_organism_get_organism_by_nid ($nid) {
 
-	if (!empty($nid)) {
-		return node_load($nid);
+	return node_load($nid);
+	
+}
+
+/*************************************************************************
+ * Purpose: Return a given organism object using the organism id
+ *
+ * @return organism object created by node load
+ */
+function tripal_organism_get_organism_by_organism_id ($organism_id) {
+
+	$sql = "SELECT nid FROM {chado_organism} WHERE organism_id=%d";
+	$r = db_fetch_object(db_query($sql, $organism_id));
+	if (!empty($r->nid)) {
+		return node_load($r->nid);
 	} else {
-		if (!empty($organism_id)) {
-			$sql = "SELECT nid FROM {chado_organism} WHERE organism_id=%d";
-			$r = db_fetch_object(db_query($sql, $organism_id));
-			if (!empty($r->nid)) {
-				return node_load($r->nid);
-			} else {
-				drupal_set_message("Function: tripal_organism_get_organism() -no organism with that organism id sync'd with drupal", 'error');
-			}
-		} else {
-			drupal_set_message("Function: tripal_organism_get_organism() -need to supply at least one of node ID or Organism ID",'error');
-		}
+		drupal_set_message("Function: tripal_organism_get_organism_by_organism_id() -no organism with that organism id sync'd with drupal", 'error');
 	}
-
+	
 	return 0;
 	
 }
+

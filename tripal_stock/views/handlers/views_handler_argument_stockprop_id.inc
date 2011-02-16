@@ -10,9 +10,9 @@ class views_handler_argument_stockprop_id extends views_handler_argument_string 
     unset($form['require_value']);
     
     //get options & display as options
-	  $previous_db = db_set_active('chado');
+	  $previous_db = tripal_db_set_active('chado');
     $result = db_query("SELECT cvt.cvterm_id as type_id, cvt.name FROM cvterm cvt WHERE cvt.cvterm_id IN (SELECT type_id FROM stockprop)");
-    db_set_active($previous_db);
+    tripal_db_set_active($previous_db);
     $types = array();
     while ($r = db_fetch_object($result)) { $types[$r->type_id] = $r->name; }
 		$form['stockprop_type_id'] = array(

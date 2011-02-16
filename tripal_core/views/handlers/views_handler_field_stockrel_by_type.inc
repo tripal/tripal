@@ -60,7 +60,7 @@ class views_handler_field_stockrel_by_type extends views_handler_field_prerender
       '#default_value' => $this->options['stockrel_display_rels'],
     );
     
-    $options = get_chado_cvterm_options( variable_get('chado_stock_relationship_cv', 'null') );
+    $options = tripal_cv_get_cvterm_options( variable_get('chado_stock_relationship_cv', 'null') );
     $form['stockrel_type_ids'] = array(
       '#type' => 'checkboxes',
       '#title' => t('Relationship Types'),

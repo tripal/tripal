@@ -8,14 +8,14 @@
 function tripal_stock_add_ALL_dbreferences_page($node) {
   $output = '';
 
-  $output .= implement_add_chado_properties_progress('db_references').'<br>';
+  $output .= tripal_stock_add_chado_properties_progress('db_references').'<br>';
   $output .= '<b>All Database References should strictly pertain to THE CURRENT Individual</b><br>';
   $output .= '<br><b>Current Database References</b><br>';
-  $output .= list_dbreferences_for_node($node->db_references);
+  $output .= tripal_stock_list_dbreferences_for_node($node->db_references);
   $output .= '<br><br>';
   $output .= drupal_get_form('tripal_stock_add_ONE_dbreference_form', $node);
   $output .= '<br>';
-  $output .= drupal_get_form('implement_add_chado_properties_navigate', 'db_references', $node->nid);
+  $output .= drupal_get_form('tripal_stock_add_chado_properties_navigate', 'db_references', $node->nid);
   return $output;
 }
 
@@ -56,7 +56,7 @@ function tripal_stock_add_ONE_dbreference_form($form_state, $node) {
     '#description' => t('Optionally enter a description about the database accession.')
   );
 
-  $db_options = get_chado_db_options();
+  $db_options = tripal_db_get_db_options();
   $db_options[0] = 'Select a Database';
   ksort($db_options);
   $form['add_dbreference']['database'] = array(
@@ -129,8 +129,7 @@ function tripal_stock_add_ONE_dbreference_form_submit($form, &$form_state) {
     tripal_db_set_active($previous_db);
 
     //create stock_dbxref
-    $dbxref = get_chado_dbxref( array('db_id'=>array('type'=>'INT','value'=>$form_state['values']['database']), 
-    																	'accession'=>array('type'=>'STRING','exact'=>TRUE,'value'=>$form_state['values']['accession']) ) );
+    $dbxref = tripal_db_get_dbxref_by_accession(form_state['values']['accession'], $form_state['values']['database']);
 		if (!empty($dbxref->dbxref_id)) {
 			$previous_db = tripal_db_set_active('chado');
     	db_query(
@@ -160,7 +159,7 @@ function tripal_stock_edit_ALL_dbreferences_page($node) {
   $output .= '<br>';
   $output .= drupal_get_form('tripal_stock_add_ONE_dbreference_form', $node);
   $output .= '<br>';
-  $output .= drupal_get_form('implement_back_to_stock_button', $node->nid);
+  $output .= drupal_get_form('tripal_stock_back_to_stock_button', $node->nid);
 
   return $output;
 }
@@ -194,7 +193,7 @@ function tripal_stock_edit_ALL_db_references_form($form_state, $node) {
       '#default_value' => $ref->accession
     );
 
-    $db_options = get_chado_db_options();
+    $db_options = tripal_db_get_db_options();
     $db_options[0] = 'Select a Database';
     ksort($db_options);
     $form["database-$i"] = array( 
@@ -259,20 +258,20 @@ function tripal_stock_edit_ALL_db_references_form_submit($form, &$form_state) {
 
 function tripal_stock_update_db_reference($dbxref_id, $database_id, $accession) {
 
-  $previous_db = db_set_active('chado');
+  $previous_db = tripal_db_set_active('chado');
   db_query(
     "UPDATE dbxref SET db_id=%d, accession='%s' WHERE dbxref_id=%d",
     $database_id, 
     $accession,
     $dbxref_id
   );
-  db_set_active($previous_db);
+  tripal_db_set_active($previous_db);
 
 }
 
 function tripal_stock_delete_db_reference($dbxref_id) {
 
-  $previous_db = db_set_active('chado');
+  $previous_db = tripal_db_set_active('chado');
   db_query(
     "DELETE FROM dbxref WHERE dbxref_id=%d",
     $dbxref_id
@@ -282,7 +281,7 @@ function tripal_stock_delete_db_reference($dbxref_id) {
     "DELETE FROM stock_dbxref WHERE dbxref_id=%d",
     $dbxref_id
   );
-  db_set_active($previous_db);
+  tripal_db_set_active($previous_db);
 
 }
 
@@ -318,7 +317,7 @@ function theme_tripal_stock_edit_ALL_db_references_form ($form) {
 /**
  * 
  */
-function list_dbreferences_for_node($db_references) {
+function tripal_stock_list_dbreferences_for_node($db_references) {
 
   if (!empty($db_references) ) {
     $output = '<table>';

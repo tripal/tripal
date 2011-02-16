@@ -8,14 +8,14 @@
 function tripal_stock_add_ALL_relationships_page($node) {
   $output = '';
 
-  $output .= implement_add_chado_properties_progress('relationships').'<br>';
+  $output .= tripal_stock_add_chado_properties_progress('relationships').'<br>';
   $output .= '<b>All Relationships should include the CURRENT Individual ('.$node->uniquename.')</b><br>';
   $output .= '<br><b>Current Relationships</b><br>';
-  $output .= list_relationships_for_node($node->uniquename, $node->subject_relationships, $node->object_relationships);
+  $output .= tripal_stock_list_relationships_for_node($node->uniquename, $node->subject_relationships, $node->object_relationships);
   $output .= '<br><br>';
   $output .= drupal_get_form('tripal_stock_add_ONE_relationship_form', $node);
   $output .= '<br>';
-  $output .= drupal_get_form('implement_add_chado_properties_navigate', 'relationships', $node->nid);
+  $output .= drupal_get_form('tripal_stock_add_chado_properties_navigate', 'relationships', $node->nid);
   return $output;
 }
 
@@ -50,7 +50,7 @@ function tripal_stock_add_ONE_relationship_form($form_state, $node) {
     '#description' => 'The Uniquename, Name, Database Reference or Synonym of a Stock can be used here',
   );
 
-  $type_options = get_chado_cvterm_options( variable_get('chado_stock_relationship_cv', 'null') );
+  $type_options = tripal_cv_get_cvterm_options( variable_get('chado_stock_relationship_cv', 'null') );
   $type_options[0] = 'Select a Type';
   ksort($type_options);
   $form['add_relationships']['type_id'] = array(
@@ -101,7 +101,7 @@ function tripal_stock_add_ONE_relationship_form_validate($form, &$form_state) {
     // check valid stock selected for subject
     $criteria = array('unknown' => array('value'=> $form_state['values']['subject_id'], 
       																		'columns'=>array('name','uniquename','accession','synonym') ));
-    $subject_results = get_chado_stocks($criteria,'ANY',$_SESSION['organism']);
+    $subject_results = tripal_stock_get_stocks($criteria,'ANY',$_SESSION['organism']);
     if (sizeof($subject_results) > 1) {
       $links= array();
       for ($i=0; $i<sizeof($subject_results); $i++) { $links[] = l($i+1, "node/".$subject_results[$i]->nid); }
@@ -119,7 +119,7 @@ function tripal_stock_add_ONE_relationship_form_validate($form, &$form_state) {
     // check valid stock selected for object
     $criteria = array('unknown' => array('value'=> $form_state['values']['object_id'], 
       																		'columns'=>array('name','uniquename','accession','synonym') ));
-    $object_results = get_chado_stocks($criteria,'ANY',$_SESSION['organism']);
+    $object_results = tripal_stock_get_stocks($criteria,'ANY',$_SESSION['organism']);
     if (sizeof($object_results) > 1) {
       $links= array();
       for ($i=0; $i<sizeof($object_results); $i++) { $links[] = l($i+1, "node/".$object_results[$i]->nid); } 
@@ -159,7 +159,7 @@ function tripal_stock_add_ONE_relationship_form_validate($form, &$form_state) {
 function tripal_stock_add_ONE_relationship_form_submit($form, &$form_state) {
 
   if ($form_state['values']['subject_id'] > 0) {
-    $previous_db = db_set_active('chado');
+    $previous_db = tripal_db_set_active('chado');
     db_query(
       "INSERT INTO stock_relationship (subject_id, type_id, object_id, value) VALUES (%d, %d, %d, '%s')",
       $form_state['values']['subject_id'],
@@ -167,7 +167,7 @@ function tripal_stock_add_ONE_relationship_form_submit($form, &$form_state) {
       $form_state['values']['object_id'],
       $form_state['values']['r_description']
     );
-    db_set_active($previous_db);
+    tripal_db_set_active($previous_db);
 
     drupal_set_message('Successfully Added Relationship.');
   } //end of insert relationship
@@ -186,7 +186,7 @@ function tripal_stock_edit_ALL_relationships_page($node) {
   $output .= '<br>';
   $output .= drupal_get_form('tripal_stock_add_ONE_relationship_form', $node);
   $output .= '<br>';
-  $output .= drupal_get_form('implement_back_to_stock_button', $node->nid);
+  $output .= drupal_get_form('tripal_stock_back_to_stock_button', $node->nid);
 
   return $output;
 }
@@ -238,7 +238,7 @@ function tripal_stock_edit_ALL_relationships_form($form_state, $node) {
       '#description' => $description,
     ); 
 
-    $type_options = get_chado_cvterm_options( variable_get('chado_stock_relationship_cv', 'null') );
+    $type_options = tripal_cv_get_cvterm_options( variable_get('chado_stock_relationship_cv', 'null') );
     ksort($type_options);          
     $form["type_id-$i"] = array(  
       '#type' => 'select',    
@@ -291,7 +291,7 @@ function tripal_stock_edit_ALL_relationships_form_validate($form, &$form_state) 
       // check valid stock selected for subject
       $criteria = array('unknown' => array('value'=>$form_state['values']["subject_id-$i"], 
       																		'columns'=>array('name','uniquename','accession','synonym') ));
-      $subject_results = get_chado_stocks($criteria,'ANY',$_SESSION['organism']);
+      $subject_results = tripal_stock_get_stocks($criteria,'ANY',$_SESSION['organism']);
       if (sizeof($subject_results) > 1) {
         $links= array();
         for ($j=0; $j<sizeof($subject_results); $j++) { $links[] = l($j+1, "node/".$subject_results[$j]->nid); }
@@ -309,7 +309,7 @@ function tripal_stock_edit_ALL_relationships_form_validate($form, &$form_state) 
       // check valid stock selected for object
       $criteria = array('unknown' => array('value'=> $form_state['values']["object_id-$i"], 
       																		'columns'=>array('name','uniquename','accession','synonym') ));
-      $object_results = get_chado_stocks($criteria,'ANY',$_SESSION['organism']);
+      $object_results = tripal_stock_get_stocks($criteria,'ANY',$_SESSION['organism']);
       if (sizeof($object_results) > 1) {
         $links= array();
         for ($j=0; $j<sizeof($object_results); $j++) { $links[] = l($j+1, "node/".$object_results[$j]->nid); }
@@ -382,7 +382,7 @@ function tripal_stock_edit_ALL_relationships_form_submit($form, &$form_state) {
 
 function tripal_stock_update_relationship ($stock_relationship_id, $subject_id, $cvterm_id, $object_id) {
 
-  $previous_db = db_set_active('chado');
+  $previous_db = tripal_db_set_active('chado');
   db_query(
     "UPDATE stock_relationship SET subject_id=%d, type_id=%d, object_id=%d WHERE stock_relationship_id=%d",
     $subject_id,
@@ -390,18 +390,18 @@ function tripal_stock_update_relationship ($stock_relationship_id, $subject_id, 
     $object_id,
     $stock_relationship_id
   );
-  db_set_active($previous_db);
+  tripal_db_set_active($previous_db);
 
 }
 
 function tripal_stock_delete_relationship ($stock_relationship_id) {
 
-  $previous_db = db_set_active('chado');
+  $previous_db = tripal_db_set_active('chado');
   db_query(
     "DELETE FROM stock_relationship WHERE stock_relationship_id=%d",
     $stock_relationship_id
   );
-  db_set_active($previous_db);
+  tripal_db_set_active($previous_db);
 
 }
 
@@ -439,7 +439,7 @@ function theme_tripal_stock_edit_ALL_relationships_form ($form) {
 /**
  *
  */
-function list_relationships_for_node($stock_name, $subject_relationships, $object_relationships) {
+function tripal_stock_list_relationships_for_node($stock_name, $subject_relationships, $object_relationships) {
 
   if (!empty($subject_relationships) OR !empty($object_relationships) ) {
     $output = '<table>';

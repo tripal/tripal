@@ -64,9 +64,9 @@ class views_handler_filter_stockprop_id extends views_handler_filter {
 	}
 	
   function types_form(&$form, &$form_state) {
-    $previous_db = db_set_active('chado');
+    $previous_db = tripal_db_set_active('chado');
     $result = db_query("SELECT cvt.cvterm_id as type_id, cvt.name FROM cvterm cvt WHERE cvt.cvterm_id IN (SELECT type_id FROM stockprop)");
-    db_set_active($previous_db);
+    tripal_db_set_active($previous_db);
 
     $types = array();
     while ($r = db_fetch_object($result)) { $types[$r->type_id] = $r->name; }
@@ -88,9 +88,9 @@ class views_handler_filter_stockprop_id extends views_handler_filter {
 		if ($this->options['expose']['display_type'] == 'select') {
 		
 			// Get options
-			$previous_db = db_set_active('chado');
+			$previous_db = tripal_db_set_active('chado');
 			$resource = db_query("SELECT value FROM stockprop WHERE type_id=".$this->type." ORDER BY value");
-			db_set_active($previous_db);
+		 tripal_db_set_active($previous_db);
 			while ($r = db_fetch_object($resource)) {
 				$options[$r->value] = $r->value;
 			}

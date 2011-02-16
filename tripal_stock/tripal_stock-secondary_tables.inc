@@ -1,7 +1,7 @@
 <?php
 // $Id$
 
-function implement_back_to_stock_button($form_state, $nid) {
+function tripal_stock_back_to_stock_button($form_state, $nid) {
   $form = array();
 
   $form['nid'] = array(
@@ -17,11 +17,11 @@ function implement_back_to_stock_button($form_state, $nid) {
   return $form;
 }
 
-function implement_back_to_stock_button_submit($form, $form_state) {
+function tripal_stock_back_to_stock_button_submit($form, $form_state) {
   drupal_goto('node/'.$form_state['values']['nid']);
 }
 
-function implement_add_chado_properties_progress($current) {
+function tripal_stock_add_chado_properties_progress($current) {
 
     $value = '<div class="form_progress"><div class="form_progress-text">'; 
 
@@ -49,7 +49,7 @@ function implement_add_chado_properties_progress($current) {
 
 }
 
-function implement_add_chado_properties_navigate($form_state, $step, $nid) {
+function tripal_stock_add_chado_properties_navigate($form_state, $step, $nid) {
   $form = array();
 
   $form['current_step'] = array(
@@ -110,7 +110,7 @@ function implement_add_chado_properties_navigate($form_state, $step, $nid) {
   return $form;
 }
 
-function implement_add_chado_properties_navigate_submit($form, $form_state) {
+function tripal_stock_add_chado_properties_navigate_submit($form, $form_state) {
 
   $raw_steps = preg_split('/::/', $form_state['values']['steps']); 
 
@@ -179,12 +179,12 @@ function tripal_stock_is_obsolete_form($node, $stock_id) {
 
 function tripal_stock_is_obsolete_form_submit($form, &$form_state) {
 
-  $previous_db = db_set_active('chado');
+  $previous_db = tripal_db_set_active('chado');
   db_query(
     "UPDATE stock SET is_obsolete='t' WHERE stock_id=%d",
     $form_state['values']['make_obsolete_stock_id']
   );
-  db_set_active($previous_db);
+  tripal_db_set_active($previous_db);
 
 }
 

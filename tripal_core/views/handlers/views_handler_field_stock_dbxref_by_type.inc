@@ -42,7 +42,7 @@ class views_handler_field_stock_dbxref_by_type extends views_handler_field_prere
 			'#default_value' => array($this->options['display_options']['accession'], $this->options['display_options']['db_name'], $this->options['display_options']['link']),
 		);
 		
-    $db_options = get_chado_db_options();
+    $db_options = tripal_db_get_db_options();
 	  $db_options[0] = 'Select a Database';
 	  ksort($db_options);
     $form['db_ids'] = array(

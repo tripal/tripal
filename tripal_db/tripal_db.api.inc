@@ -3,6 +3,40 @@
 /*************************************************************************
  * Purpose: To retrieve a chado db object
  *
+ * @params db.db_id
+ * @return chado db object with all fields from the chado db table
+ */
+function tripal_db_get_db_by_db_id ($db_id) {
+
+	$previous_db = tripal_db_set_active('chado');
+  $r = db_fetch_object(db_query(
+    "SELECT * FROM db WHERE db_id=%d", $db_id
+  ));
+  tripal_db_set_active($previous_db);
+
+  return $r;
+}
+
+/*************************************************************************
+ * Purpose: To retrieve a chado db object
+ *
+ * @params db.name
+ * @return chado db object with all fields from the chado db table
+ */
+function tripal_db_get_db_by_name ($name) {
+
+	$previous_db = tripal_db_set_active('chado');
+  $r = db_fetch_object(db_query(
+    "SELECT * FROM db WHERE name='%s'", $name
+  ));
+  tripal_db_set_active($previous_db);
+
+  return $r;
+}
+
+/*************************************************************************
+ * Purpose: To retrieve a chado db object
+ *
  * @params where_options: array(
  *													<column_name> => array(
  *														'type' => <type of column: INT/STRING>,
@@ -49,7 +83,7 @@ function tripal_db_get_db_options() {
   $result = db_query(
     "SELECT db_id, name FROM db"
   );
-  db_set_active($previous_db);
+  tripal_db_set_active($previous_db);
 
   $options = array();
   while ( $r = db_fetch_object($result) ) {
@@ -94,5 +128,33 @@ function tripal_db_get_dbxref ($where_options) {
   
   tripal_db_set_active($previous_db);
 
+  return $r;
+}
+
+/*************************************************************************
+ * Purpose: To retrieve a chado dbxref object with a given accession
+ *
+ * @params dbxref.accession
+ * @params dbxref.db_id
+ * @return chado dbxref object with all fields from the chado dbxref table
+ */
+function tripal_db_get_dbxref_by_accession ($accession, $db_id=0) {
+
+  if (!empty($db_id)) {
+	  $previous_db = tripal_db_set_active('chado');
+    $r = db_fetch_object(db_query(
+      "SELECT * FROM dbxref WHERE accession='%s' AND db_id=%d",
+      $accession, $db_id
+    ));
+    tripal_db_set_active($previous_db);
+  } else {
+	  $previous_db = tripal_db_set_active('chado');
+    $r = db_fetch_object(db_query(
+      "SELECT * FROM dbxref WHERE accession='%s'",
+      $accession
+    ));
+    tripal_db_set_active($previous_db);  
+  }
+  
   return $r;
 }

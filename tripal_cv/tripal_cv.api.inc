@@ -68,7 +68,7 @@ function tripal_cv_get_cv_options() {
   $result = db_query(
     "SELECT cv_id, name FROM cv"
   );
-  db_set_active($previous_db);
+  tripal_db_set_active($previous_db);
 
   $options = array();
   while ( $r = db_fetch_object($result) ) {
@@ -117,6 +117,30 @@ function tripal_cv_get_cvterm ($where_options) {
 }
 
 /*************************************************************************
+ * Purpose: Retrieve a chado cvterm object with a given name
+ *
+ * @params name: the cvterm.name
+ * @params cv_id: the cv_id of the term you are looking for
+ * @return cvterm object
+ */
+function tripal_cv_get_cvterm_by_name ($name, $cv_id=0) {
+
+  if (!empty($cv_id)) {
+    $sql = "SELECT * FROM cvterm WHERE name='%s' AND cv_id=%d";
+    $previous_db = tripal_db_set_active('chado');
+    $r = db_fetch_object(db_query($sql, $name, $cv_id));
+    tripal_db_set_active($previous_db);
+  } else {
+    $sql = "SELECT * FROM cvterm WHERE name='%s'";
+    $previous_db = tripal_db_set_active('chado');
+    $r = db_fetch_object(db_query($sql, $name));
+    tripal_db_set_active($previous_db);
+  }
+  
+  return $r;
+  
+}
+/*************************************************************************
  * Purpose: Create an options array to be used in a form element
  *   which provides a list of all chado cvterms
  * 
@@ -137,7 +161,7 @@ function tripal_cv_get_cvterm_options($cv_id = 0) {
     	"SELECT cvterm_id, name FROM cvterm"
   	);
   }
-  db_set_active($previous_db);
+  tripal_db_set_active($previous_db);
 
   $options = array();
   while ( $r = db_fetch_object($result) ) {
