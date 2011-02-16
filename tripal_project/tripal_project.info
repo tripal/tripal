@@ -1,0 +1,9 @@
+; $Id$
+package = Tripal
+name = Tripal Project
+version = 3.0a
+description = A module for interfacing the GMOD chado database with Drupal, providing viewing of projects
+core = 6.x
+
+dependencies[] = tripal_core
+dependencies[] = cv

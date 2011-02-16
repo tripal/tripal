@@ -1,0 +1,10 @@
+; $Id$
+package = Tripal
+name = Tripal Publication
+version = 0.3a
+description = A module for interfacing the GMOD chado database with Drupal, providing viewing of publications
+core = 6.x
+
+dependencies[] = tripal_core
+dependencies[] = tripal_cv
+dependencies[] = tripal_db

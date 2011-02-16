@@ -1,0 +1,10 @@
+; $Id$
+package = Tripal
+name = Tripal Phenotype
+version = 0.3a
+description = A module for interfacing the GMOD chado database with Drupal, providing viewing of Phenotype Data
+core = 6.x
+
+dependencies[] = tripal_core
+dependencies[] = tripal_cv
+dependencies[] = tripal_feature

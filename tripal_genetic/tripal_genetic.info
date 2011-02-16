@@ -1,0 +1,13 @@
+; $Id$
+package = Tripal
+name = Tripal Genetic
+version = 0.3a
+description = A module for interfacing the GMOD chado database with Drupal, providing viewing of Genetic data
+core = 6.x
+
+dependencies[] = tripal_core
+dependencies[] = tripal_feature
+dependencies[] = tripal_cv
+dependencies[] = tripal_db
+dependencies[] = tripal_publication
+dependencies[] = tripal_phenotype

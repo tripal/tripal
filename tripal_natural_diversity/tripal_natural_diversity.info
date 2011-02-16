@@ -1,0 +1,13 @@
+; $Id$
+package = Tripal
+name = Tripal Natural Diversity
+version = 0.3a
+description = A module for interfacing the GMOD chado database with Drupal, providing viewing of Natural Diversity data
+core = 6.x
+
+dependencies[] = tripal_core
+dependencies[] = tripal_cv
+dependencies[] = tripal_db
+dependencies[] = tripal_genetic
+dependencies[] = tripal_phenotype
+dependencies[] = tripal_project

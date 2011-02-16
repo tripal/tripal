@@ -1,0 +1,22 @@
+<?php
+
+/**
+ *  @file
+ * This file contains the basic functions needed for this drupal module.
+ * The drupal tripal_project module maps directly to the chado general module. 
+ *
+ * For documentation regarding the Chado General module: 
+ * @see http://gmod.org/wiki/Chado_General_Module
+ */
+
+/*************************************************************************
+ * Implements hook_views_api()
+ * Purpose: Essentially this hook tells drupal that there is views support for
+ *  for this module which then includes tripal_project.views.inc where all the
+ *  views integration code is
+ */ 
+function tripal_project_views_api() {
+   return array(
+      'api' => 2.0,
+   );
+}
