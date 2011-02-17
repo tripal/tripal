@@ -122,8 +122,7 @@ function tripal_stock_get_stocks($criteria, $match_type, $organism_id = NULL, $e
 			if ($v['regex']) { $operator = '~'; }
 			else { $operator = '='; }
 			
-			$synonym_cvterm = tripal_cv_get_cvterm_by_name('synonym'),
-																								'cv_id' => array('type'=>'INT', 'value'=> variable_get('chado_stock_prop_types_cv', 'null')) ));
+			$synonym_cvterm = tripal_cv_get_cvterm_by_name('synonym', variable_get('chado_stock_prop_types_cv', 'null'));
 			$where[] = '(stockprop.type_id='.$synonym_cvterm->cvterm_id.' AND stockprop.value'.$operator."'".$v['value']."')";
 			$joins[] = 'LEFT JOIN stockprop stockprop ON stockprop.stock_id=stock.stock_id';
 	

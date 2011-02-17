@@ -129,7 +129,7 @@ function tripal_stock_add_ONE_dbreference_form_submit($form, &$form_state) {
     tripal_db_set_active($previous_db);
 
     //create stock_dbxref
-    $dbxref = tripal_db_get_dbxref_by_accession(form_state['values']['accession'], $form_state['values']['database']);
+    $dbxref = tripal_db_get_dbxref_by_accession($form_state['values']['accession'], $form_state['values']['database']);
 		if (!empty($dbxref->dbxref_id)) {
 			$previous_db = tripal_db_set_active('chado');
     	db_query(
