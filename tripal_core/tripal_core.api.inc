@@ -181,7 +181,59 @@ function tripal_core_chado_insert($table,$values){
    return false;
 }
 /**
-* 
+* Provides a generic routine for updating into any Chado table
+*
+* Use this function to update a record in any Chado table.  The first
+* argument specifies the table for inserting, the second is an array
+* of values to matched for locating the record for updating, and the third 
+* argument give the values to update.  The arrays are mutli-dimensional such 
+* that foreign key lookup values can be specified.  
+*
+* @param $table
+*  The name of the chado table for inserting
+* @param $match
+*  An associative array containing the values for locating a record to update.
+* @param $values
+*  An associative array containing the values for updating.
+*
+* @return
+*  On success this function returns TRUE. On failure, it returns FALSE.
+*
+* Example usage:
+* @code
+   $umatch = array(
+     'organism_id' => array(
+         'genus' => 'Citrus',
+         'species' => 'sinensis',
+      ),
+     'uniquename' => 'orange1.1g000034m.g7',
+     'type_id' => array (
+         'cv_id' => array (
+            'name' => 'sequence',
+         ),
+         'name' => 'gene',
+         'is_obsolete' => 0
+      ),
+   );
+   $uvalues = array(
+      'name' => 'orange1.1g000034m.g',
+      'type_id' => array (
+         'cv_id' => array (
+            'name' => 'sequence',
+         ),
+         'name' => 'mRNA',
+         'is_obsolete' => 0
+      ),
+   );
+*   $result = tripal_core_chado_update('feature',$umatch,$uvalues);
+* @endcode
+* The above code species that a feature with a given uniquename, organism_id,
+* and type_id (the unique constraint for the feature table) will be updated.
+* The organism_id is specified as a nested array that uses the organism_id
+* foreign key constraint to lookup the specified values to find the exact 
+* organism_id. The same nested struture is also used for specifying the 
+* values to update.  The function will find the record that matches the 
+* columns specified and update the record with the avlues in the $uvalues array.
 */
 function tripal_core_chado_update($table,$match,$values){
    $update_values = array();   // contains the values to be updated
