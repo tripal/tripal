@@ -7,6 +7,8 @@ require_once "chado_install.php";
 require_once "gff_loader.php";
 require_once "bulk_loader.php";
 
+require_once "tripal_core.api.inc";
+
 /*************************************************************************
 *
 */
@@ -164,6 +166,14 @@ function tripal_core_menu() {
      'description' => 'Create a bulk loader template for loading data into Chado',
      'page callback' => 'tripal_core_bulk_loader_ahah_step2_feature_type',
      'page arguments' => array(4),
+     'access arguments' => array('access administration pages'),
+     'type' => MENU_CALLBACK,
+   );
+
+   $items['test2'] = array(
+     'title' => 'test',
+     'description' => 'test',
+     'page callback' => 'tripal_core_chado_insert_test',
      'access arguments' => array('access administration pages'),
      'type' => MENU_CALLBACK,
    );
