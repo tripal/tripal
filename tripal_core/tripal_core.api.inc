@@ -73,10 +73,10 @@ function tripal_core_chado_insert_test(){
 * well.
 */
 function tripal_core_chado_insert($table,$values){
-   $chado = tripal_core_get_chado_schema();
    $insert_values = array();
    
    // get the table description
+   $chado = tripal_core_get_chado_schema();
    $table_desc = $chado[$table];
 
    // iterate through the values array and create a new 'insert_values' array
