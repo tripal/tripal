@@ -11,7 +11,7 @@ require_once "chado_tables.schema.inc";
 
 // just a temporary function for debugging
 function tripal_core_chado_insert_test(){
-   $values =  array(
+   $ivalues =  array(
      'organism_id' => array(
          'genus' => 'Citrus',
          'species' => 'sinensis',
@@ -26,8 +26,35 @@ function tripal_core_chado_insert_test(){
          'is_obsolete' => 0
       ),
    );
-   $result = tripal_core_chado_insert('feature',$values);
-   return "$result->feature_id";
+   $umatch = array(
+     'organism_id' => array(
+         'genus' => 'Citrus',
+         'species' => 'sinensis',
+      ),
+     'uniquename' => 'orange1.1g000034m.g7',
+     'type_id' => array (
+         'cv_id' => array (
+            'name' => 'sequence',
+         ),
+         'name' => 'gene',
+         'is_obsolete' => 0
+      ),
+   );
+   $uvalues = array(
+      'name' => 'orange1.1g000034m.g',
+      'type_id' => array (
+         'cv_id' => array (
+            'name' => 'sequence',
+         ),
+         'name' => 'mRNA',
+         'is_obsolete' => 0
+      ),
+   );
+//   $result = tripal_core_chado_insert('feature',$ivalues);
+//   return "$result->feature_id";
+   $result = tripal_core_chado_update('feature',$umatch,$uvalues);
+   return $result;
+
 }
 /**
 * Provides a generic routine for inserting into any Chado table
@@ -43,9 +70,7 @@ function tripal_core_chado_insert_test(){
 *  An associative array containing the values for inserting.
 * 
 * @return
-*  On success this function returns an object containing the serial, or
-*  incremental fields (such as primary keys) for the record that was just
-*  inserted. On failure, it returns FALSE.
+*  On success this function returns TRUE. On failure, it returns FALSE.
 *
 * Example usage:
 * @code
@@ -118,19 +143,14 @@ function tripal_core_chado_insert($table,$values){
       }
    }
 
-   // make sure required fields have a value and get any fields that are of type serial
+   // make sure required fields have a value
    $fields = $table_desc['fields'];
-   $serials = array();
    foreach($fields as $field => $def){
       // a field is considered missing if it cannot be null and there is no default
       // value for it or it is of type 'serial'
       if($def['not null'] == 1 and !$insert_values[$field] and !$def['default'] and strcmp($def['type'],serial)!=0){
          watchdog('tripal_core',"Field $field cannot be null: " . print_r($values,1),array(),'WATCHDOG_ERROR');
          return false;
-      }
-      // get a list of the serial types
-      if(strcmp($fields[$field]['type'],'serial')==0){
-         array_push($serials,$field);
       }
    }
 
@@ -148,23 +168,84 @@ function tripal_core_chado_insert($table,$values){
          array_push($itypes,"'%s'");
       }
    }
-   $sql = "INSERT INTO $table (" . implode(", ",$ifields) . ") VALUES (". implode(", ",$itypes) .")";
+   $sql = "INSERT INTO {$table} (" . implode(", ",$ifields) . ") VALUES (". implode(", ",$itypes) .")";
 
-   // finally perform the insert.  If successful, return an object with the
-   // primary keys (or all serial types) populated with the values from the
-   // insert
-   $object = array();
+   // finally perform the insert.  
    if(db_query($sql,$ivalues)){
-      $object = (object) $object; // convert the array to an object
-      foreach ($serials as $field) {
-         $object->$field = db_last_insert_id($table, $field);
-      }
-      return $object;
+      return true;
    } 
    else {
       watchdog('tripal_core',"Cannot insert record into $table table: " . print_r($values,1),array(),'WATCHDOG_ERROR');
       return false;
    }
+   return false;
+}
+/**
+* 
+*/
+function tripal_core_chado_update($table,$match,$values){
+   $update_values = array();   // contains the values to be updated
+   $update_matches = array();  // contains the values for the where clause
+   
+   // get the table description
+   $chado = tripal_core_get_chado_schema();
+   $table_desc = $chado[$table];
+
+   // get the values needed for matching in the SQL statement
+   foreach ($match as $field => $value){
+      if(is_array($value)){
+         $update_matches[$field] = tripal_core_chado_get_foreign_key($table_desc,$field,$value);
+      }
+      else {
+         $update_matches[$field] = $value;
+      }
+   }
+
+   // get the values used for updating
+   foreach ($values as $field => $value){
+      if(is_array($value)){
+         $update_values[$field] = tripal_core_chado_get_foreign_key($table_desc,$field,$value);
+      }
+      else {
+         $update_values[$field] = $value;
+      }
+   }
+
+   // now build the SQL statement
+   $sql = "UPDATE {$table} SET ";
+   $fields = $table_desc['fields'];
+   $uargs = array();
+   foreach($update_values as $field => $value){
+      if(strcmp($fields[$field]['type'],'serial')==0 or 
+         strcmp($fields[$field]['type'],'int')==0){
+         $sql .= " $field = %d, ";
+      } else {
+         $sql .= " $field = '%s', ";
+      }
+      array_push($uargs,$value);
+   }
+   $sql = substr($sql,0,-2);  // get rid of the trailing comma & space
+   $sql .= " WHERE ";
+   foreach($update_matches as $field => $value){
+      if(strcmp($fields[$field]['type'],'serial')==0 or 
+         strcmp($fields[$field]['type'],'int')==0){
+         $sql .= " $field = %d AND ";
+      } else {
+         $sql .= " $field = '%s' AND ";
+      }
+      array_push($uargs,$value);
+   }
+   $sql = substr($sql,0,-4);  // get rid of the trailing 'AND'
+
+   // finally perform the update.  If successful, return the updated record
+   if(db_query($sql,$uargs)){
+      return true;
+   } 
+   else {
+      watchdog('tripal_core',"Cannot update record in $table table.  Match:" . print_r($match,1) . ". Values: ". print_r($values,1),array(),'WATCHDOG_ERROR');
+      return false;
+   }
+   return false;
 }
 /**
 * Provides a generic routine for selecting data from a Chado table
@@ -237,7 +318,7 @@ function tripal_core_chado_select($table,$columns,$values){
       $sql .= "$field = '%s' AND ";
       $args[] = $value;
    }
-   $sql .= " 1=1"; // just add a 1=1 so we don't have trim off the last 'AND'
+   $sql = substr($sql,0,-4);  // get rid of the trailing 'AND'
    return db_query($sql,$args);
 }
 /**
