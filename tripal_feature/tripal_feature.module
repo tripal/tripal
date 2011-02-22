@@ -1,6 +1,6 @@
 <?php
 
-require_once "admin.php";
+require_once "tripal_feature.admin.inc";
 require_once "syncFeatures.php";
 require_once "indexFeatures.php";
 require_once "fasta_loader.php";

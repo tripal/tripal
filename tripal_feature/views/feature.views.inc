@@ -37,7 +37,7 @@
 	global $db_url;
 	$data = array();
 	
-	// if the chado database is not local to the drupal database
+  // if the chado database is not local to the drupal database
   // then we need to set the database name.  This should always
   // be 'chado'.
   if(is_array($db_url) and array_key_exists('chado',$db_url)){
@@ -45,13 +45,14 @@
   }
 
 	
-  // Basic table definition
-  $data['feature']['table']['group'] = 'Chado Feature';
-  $data['feature']['table']['base'] = array(
-    'field' => 'feature_id',
-    'title' => 'Chado Features',
-    'help' => 'Features are Sequence Data Records in Chado.',
-  );
+   // Basic table definition
+   $data['feature']['table']['group'] = 'Chado Feature';
+   $data['feature']['table']['base'] = array(
+     'field' => 'feature_id',
+     'title' => 'Chado Features',
+     'help' => 'Features are Sequence Data Records in Chado.',
+   );
+
 	if($database){
 		$data['feature']['table']['database'] = $database;
 	}
@@ -147,7 +148,7 @@
     'title' => 'Residues',
     'help' => 'The sequence of a feature.',
     'field' => array(
-      'handler' => 'views_handler_field',
+      'handler' => 'views_handler_field_residues',
       'click sortable' => TRUE,
     ),
     'sort' => array(

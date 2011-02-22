@@ -22,6 +22,7 @@
  */
 require_once('views/feature.views.inc');
 require_once('views/chado_feature.views.inc');
+
 function tripal_feature_views_data()  {
   $data = array();
   
@@ -49,6 +50,9 @@ function tripal_feature_views_handlers() {
        'parent' => 'views_handler_field_numeric',
      ),
      'views_handler_field_readable_date' => array(
+       'parent' => 'views_handler_field',
+     ),
+     'views_handler_field_residues' => array(
        'parent' => 'views_handler_field',
      ),
    ),
