@@ -3398,6 +3398,20 @@ function tripal_core_get_chado_schema (){
        'stock_idx4' => array('uniquename'),
        'stock_name_ind1' => array('name'),
      ),
+    'foreign keys' => array(
+       'organism' => array(
+         'table' => 'organism',
+         'columns' => array('organism_id' => 'organism_id'),
+       ),
+       'dbxref' => array(
+         'table' => 'dbxref',
+         'columns' => array('dbxref_id' => 'dbxref_id'),
+       ),
+       'cvterm' => array(
+         'table' => 'cvterm',
+         'columns' => array('type_id' => 'cvterm_id'),
+       ),
+     ),
    );
    $schema['stock_cvterm'] = array(
      'description' => t('TODO: please describe this table!'),

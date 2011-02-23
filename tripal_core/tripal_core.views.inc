@@ -17,6 +17,9 @@ function tripal_core_views_handlers() {
      'views_handler_field_node_optional' => array(
        'parent' => 'views_handler_field_node',
      ),
+     'views_handler_field_cvterm_name' => array(
+       'parent' => 'views_handler_field',
+     ),
    ),
  );
 }

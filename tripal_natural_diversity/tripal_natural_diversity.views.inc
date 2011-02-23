@@ -20,8 +20,15 @@
  *   includes basic details about the table, fields in that table and
  *   relationships between that table and others (joins)
  */
+require_once('views/nd_experiment.views.inc');
+require_once('views/nd_experimentprop.views.inc');
+require_once('views/nd_geolocation.views.inc');
 function tripal_natural_diversity_views_data()  {
   $data = array();
+  
+  $data = array_merge($data, retrieve_nd_experiment_views_data());
+  $data = array_merge($data, retrieve_nd_experimentprop_views_data());
+  $data = array_merge($data, retrieve_nd_geolocation_views_data());
   
   return $data;
 }

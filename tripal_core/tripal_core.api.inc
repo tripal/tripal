@@ -13,11 +13,11 @@ require_once "chado_tables.schema.inc";
 function tripal_core_chado_insert_test(){
    $ivalues =  array(
      'organism_id' => array(
-         'genus' => 'Citrus',
-         'species' => 'sinensis',
+         'genus' => 'Lens',
+         'species' => 'culinaris',
       ),
      'name' => 'orange1.1g000034m.g',
-     'uniquename' => 'orange1.1g000034m.g7',
+     'uniquename' => 'orange1.1g000034m.g8',
      'type_id' => array (
          'cv_id' => array (
             'name' => 'sequence',
@@ -28,8 +28,8 @@ function tripal_core_chado_insert_test(){
    );
    $umatch = array(
      'organism_id' => array(
-         'genus' => 'Citrus',
-         'species' => 'sinensis',
+         'genus' => 'Lens',
+         'species' => 'culinaris',
       ),
      'uniquename' => 'orange1.1g000034m.g7',
      'type_id' => array (
@@ -50,9 +50,15 @@ function tripal_core_chado_insert_test(){
          'is_obsolete' => 0
       ),
    );
-//   $result = tripal_core_chado_insert('feature',$ivalues);
-//   return "$result->feature_id";
-   $result = tripal_core_chado_update('feature',$umatch,$uvalues);
+   $select_multiple = array(
+     'dbxref_id' => array(
+       'db_id' => 2,
+     )
+   );
+   //$result = tripal_core_chado_insert('feature',$ivalues);
+   //return "$result->feature_id";
+   //$result = tripal_core_chado_update('feature',$umatch,$uvalues);
+   //$result = tripal_core_chado_select('feature',array('type_id', 'uniquename'),$select_multiple);
    return $result;
 
 }
@@ -110,8 +116,15 @@ function tripal_core_chado_insert($table,$values){
    foreach($values as $field => $value){
       if(is_array($value)){
          // select the value from the foreign key relationship for this value
-         $insert_values[$field] = tripal_core_chado_get_foreign_key($table_desc,$field,$value);
-      } 
+         $results = tripal_core_chado_get_foreign_key($table_desc,$field,$value);
+         if (sizeof($results) > 1) {
+           watchdog('tripal_core', 'tripal_core_chado_insert: Too many records match the criteria supplied for !foreign_key foreign key constraint (!criteria)', array('!foreign_key' => $field, '!criteria' => print_r($value,TRUE)), WATCHDOG_ERROR);         
+         } elseif (sizeof($results) < 1) {
+           watchdog('tripal_core', 'tripal_core_chado_insert: no record matches criteria supplied for !foreign_key foreign key constraint (!criteria)', array('!foreign_key' => $field, '!criteria' => print_r($value,TRUE)), WATCHDOG_ERROR);
+         } else {
+           $insert_values[$field] = $results[0];
+         }
+      }  
       else {
          $insert_values[$field] = $value;
       }
@@ -128,8 +141,8 @@ function tripal_core_chado_insert($table,$values){
          $ukselect_vals[$field] = $insert_values[$field];
       }
       // now check the constraint
-      if(db_fetch_object(tripal_core_chado_select($table,$ukselect_cols,$ukselect_vals))){
-         watchdog('tripal_core',"Cannot insert duplicate record into $table table: " . print_r($values,1),array(),'WATCHDOG_ERROR');
+      if(tripal_core_chado_select($table,$ukselect_cols,$ukselect_vals)){
+         watchdog('tripal_core',"tripal_core_chado_insert: Cannot insert duplicate record into $table table: " . print_r($values,1),array(),'WATCHDOG_ERROR');
          return false;
       }
    }
@@ -137,8 +150,8 @@ function tripal_core_chado_insert($table,$values){
    // if trying to insert a field that is the primary key, make sure it also is unique
    $pkey = $table_desc['primary key'][0];
    if($insert_values[$pkey]){
-      if(db_fetch_object(tripal_core_chado_select($table,array($pkey),array($pkey => $insert_values[$pkey])))){
-         watchdog('tripal_core',"Cannot insert duplicate primary key into $table table: " . print_r($values,1),array(),'WATCHDOG_ERROR');
+      if(tripal_core_chado_select($table,array($pkey),array($pkey => $insert_values[$pkey]))){
+         watchdog('tripal_core',"tripal_core_chado_insert: Cannot insert duplicate primary key into $table table: " . print_r($values,1),array(),'WATCHDOG_ERROR');
          return false;
       }
    }
@@ -149,7 +162,7 @@ function tripal_core_chado_insert($table,$values){
       // a field is considered missing if it cannot be null and there is no default
       // value for it or it is of type 'serial'
       if($def['not null'] == 1 and !$insert_values[$field] and !$def['default'] and strcmp($def['type'],serial)!=0){
-         watchdog('tripal_core',"Field $field cannot be null: " . print_r($values,1),array(),'WATCHDOG_ERROR');
+         watchdog('tripal_core',"tripal_core_chado_insert: Field $field cannot be null: " . print_r($values,1),array(),'WATCHDOG_ERROR');
          return false;
       }
    }
@@ -175,7 +188,7 @@ function tripal_core_chado_insert($table,$values){
       return true;
    } 
    else {
-      watchdog('tripal_core',"Cannot insert record into $table table: " . print_r($values,1),array(),'WATCHDOG_ERROR');
+      watchdog('tripal_core',"tripal_core_chado_insert: Cannot insert record into $table table: " . print_r($values,1),array(),'WATCHDOG_ERROR');
       return false;
    }
    return false;
@@ -246,7 +259,14 @@ function tripal_core_chado_update($table,$match,$values){
    // get the values needed for matching in the SQL statement
    foreach ($match as $field => $value){
       if(is_array($value)){
-         $update_matches[$field] = tripal_core_chado_get_foreign_key($table_desc,$field,$value);
+         $results = tripal_core_chado_get_foreign_key($table_desc,$field,$value);
+         if (sizeof($results) > 1) {
+           watchdog('tripal_core', 'tripal_core_chado_update: When trying to find record to update, too many records match the criteria supplied for !foreign_key foreign key constraint (!criteria)', array('!foreign_key' => $field, '!criteria' => print_r($value,TRUE)), WATCHDOG_ERROR);         
+         } elseif (sizeof($results) < 1) {
+           watchdog('tripal_core', 'tripal_core_chado_update: When trying to find record to update, no record matches criteria supplied for !foreign_key foreign key constraint (!criteria)', array('!foreign_key' => $field, '!criteria' => print_r($value,TRUE)), WATCHDOG_ERROR);
+         } else {
+           $update_matches[$field] = $results[0];
+         }
       }
       else {
          $update_matches[$field] = $value;
@@ -256,7 +276,14 @@ function tripal_core_chado_update($table,$match,$values){
    // get the values used for updating
    foreach ($values as $field => $value){
       if(is_array($value)){
-         $update_values[$field] = tripal_core_chado_get_foreign_key($table_desc,$field,$value);
+         $results = tripal_core_chado_get_foreign_key($table_desc,$field,$value);
+         if (sizeof($results) > 1) {
+           watchdog('tripal_core', 'tripal_core_chado_update: When trying to find update values, too many records match the criteria supplied for !foreign_key foreign key constraint (!criteria)', array('!foreign_key' => $field, '!criteria' => print_r($value,TRUE)), WATCHDOG_ERROR);         
+         } elseif (sizeof($results) < 1) {
+           watchdog('tripal_core', 'tripal_core_chado_update: When trying to find update values, no record matches criteria supplied for !foreign_key foreign key constraint (!criteria)', array('!foreign_key' => $field, '!criteria' => print_r($value,TRUE)), WATCHDOG_ERROR);
+         } else {
+           $update_values[$field] = $results[0];
+         }         
       }
       else {
          $update_values[$field] = $value;
@@ -288,7 +315,7 @@ function tripal_core_chado_update($table,$match,$values){
       array_push($uargs,$value);
    }
    $sql = substr($sql,0,-4);  // get rid of the trailing 'AND'
-
+   
    // finally perform the update.  If successful, return the updated record
    if(db_query($sql,$uargs)){
       return true;
@@ -355,7 +382,25 @@ function tripal_core_chado_select($table,$columns,$values){
       $select[] = $field;
       if(is_array($value)){
          // select the value from the foreign key relationship for this value
-         $where[$field] = tripal_core_chado_get_foreign_key($table_desc,$field,$value);
+         $results = tripal_core_chado_get_foreign_key($table_desc,$field,$value);
+         if (sizeof($results) < 1) {
+           // foreign key records are required
+           // thus if none matched then return false and alert the admin through watchdog
+           watchdog('tripal_core', 
+            'tripal_core_chado_select: no record in the table referenced by the foreign key (!field)   exists. tripal_core_chado_select table=!table, columns=!columns, values=!values', 
+            array('!table' => $table, 
+              '!columns' => '<pre>' . print_r($columns, TRUE) . '</pre>', 
+              '!values' => '<pre>' . print_r($values, TRUE) . '</pre>',
+              '!field' => $field,
+            ), 
+            WATCHDOG_WARNING);
+           return false;
+           
+         } elseif (sizeof($results) == 1) {
+           $where[$field] = $results[0];
+         } else {
+           $where[$field] = $results;
+         }
       } 
       else {
          $where[$field] = $value;
@@ -367,11 +412,23 @@ function tripal_core_chado_select($table,$columns,$values){
    $sql .= "FROM {$table} ";
    $sql .= "WHERE ";
    foreach($where as $field => $value){
-      $sql .= "$field = '%s' AND ";
-      $args[] = $value;
+     if (is_array($value)) {
+       $sql .= "$field IN (".db_placeholders($value,'varchar').") AND ";
+       foreach ($value as $v) { $args[] = $v; }
+     } else {
+       $sql .= "$field = '%s' AND ";
+       $args[] = $value;
+     }
    }
    $sql = substr($sql,0,-4);  // get rid of the trailing 'AND'
-   return db_query($sql,$args);
+   
+   $resource = db_query($sql,$args);
+   $results = array();
+   while ($r = db_fetch_object($resource)) {
+     $results[] = $r;    
+   }
+   
+   return $results;
 }
 /**
 * Gets the value of a foreign key relationship
@@ -428,8 +485,12 @@ function tripal_core_chado_get_foreign_key($table_desc,$field,$values){
                // the column name of the foreign key matches the field we want 
                // so this is the right relationship.  Now we want to select
                $select_cols = array($right);
-               $result = db_fetch_object(tripal_core_chado_select($table,$select_cols,$values));
-               return $result->$right;
+               $result = tripal_core_chado_select($table,$select_cols,$values);
+               $fields = array();
+               foreach ($result as $obj) {
+                 $fields[] = $obj->$right;
+               }
+               return $fields;
             }
          }
       } 

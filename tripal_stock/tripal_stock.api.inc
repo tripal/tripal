@@ -9,7 +9,6 @@
  *
  * @return stock object created by node load
  */
-//function get_chado_stock($nid=0, $stock_id=0) {
 function triapl_stock_get_stock_by_nid ($nid) {
 	
 	return node_load($nid);
@@ -21,15 +20,14 @@ function triapl_stock_get_stock_by_nid ($nid) {
  *
  * @return stock object created by node load
  */
-//function get_chado_stock($nid=0, $stock_id=0) {
-function triapl_stock_get_stock_by_stock_id ($stock_id) {
+function tripal_stock_get_stock_by_stock_id ($stock_id) {
 
   $sql = "SELECT nid FROM {chado_stock} WHERE stock_id=%d";
   $r = db_fetch_object(db_query($sql, $stock_id));
   if (!empty($r->nid)) {
     return node_load($r->nid);
   } else {
-    drupal_set_message("Function: triapl_stock_get_stock_by_stock_id() -no stock with that stock id sync'd with drupal", 'error');
+    watchdog('tripal_stock', 'tripal_stock_get_stock_by_stock_id(!stock_id): no stock with that stock_id is sync\'d with drupal', array('!stock_id' => $stock_id), WATCHDOG_WARNING);
 	}
 
 	return 0;
@@ -43,11 +41,9 @@ function triapl_stock_get_stock_by_stock_id ($stock_id) {
 /*************************************************************************
  * Purpose: Returns all stocks currently sync'd with drupal
  *
- * @return array(
- *			<stock_id> => <stock object created by node load>
- *		)
+ * @return 
+     An array of node objects keyed by stock_id
  */
-//function get_all_chado_stocks() {
 function tripal_stock_get_all_stocks() {
 	$sql = "SELECT stock_id, nid from {chado_stock}";
 	$resource = db_query($sql);
@@ -61,152 +57,117 @@ function tripal_stock_get_all_stocks() {
 /*************************************************************************
  * Purpose: Return all stocks that match a given criteria
  *
- * @params Criteria = array(
- *						<column name> => array( 
- *							'value'=> <value of column>, 
- *							'regex' => <False if exact value, TRUE otherwise>,
- *							'type' => <INT or STRING>
- *						)
- *         )
- *			column name can be any of those for the stock table
- *			additional column names include: accession, synonym
- *	if you don't know which column the value is from and want to match
- *		the value against any of name, uniquename, dbxref accessions, and synonyms
- *   	use 'unknown' => array(
- *												'value' => <value to search for>,
- *												'columns' => array of columns to search 
- *											)
- *		where columns can be any combination of 'name', 'uniquename', 'stock','accession', or 'synonym'
- * @params match_type: can be either ALL or ANY
- *	 where ALL= mathcing stocks must match all criteria supplied
- *				 ANY= matching stock need only match ONE of the supplied criteria
- * @return an array of matching stock objects (produced using node_load)
+ * @params $values
+ *   An associative array containing the values for filtering the results.
+ * @return 
+ *   An array of matching stock objects (produced using node_load)
  *   matching the given criteria
+ *
+ * Example usage:
+ * @code
+ *   $values =  array(
+ *     'organism_id' => array(
+ *         'genus' => 'Lens',
+ *         'species' => 'culinaris',
+ *      ),
+ *     'name' => 'CDC Redberry',
+ *     'type_id' => array (
+ *         'cv_id' => array (
+ *            'name' => 'germplasm',
+ *         ),
+ *         'name' => 'registered_cultivar',
+ *         'is_obsolete' => 0
+ *      ),
+ *   );
+ *   $result = tripal_stock_get_stocks($values);
+ * @endcode
+ * The above code selects a record from the chado stock table using three fields with values which
+ * identify a stock or multiple stocks. Then the node for each stock identified is returned, if it
+ * exists. The $values array is nested such that the organism is identified by way of the 
+ * organism_id foreign key constraint by specifying the genus and species.  The cvterm is also 
+ * specified using its foreign key and the cv_id for the cvterm is nested as well.
  */
-//function get_chado_stocks($criteria, $match_type, $organism_id = NULL, $error_checking = FALSE) {
-function tripal_stock_get_stocks($criteria, $match_type, $organism_id = NULL, $error_checking = FALSE) {
+function tripal_stock_get_stocks($values) {
 
-	//Deal with unknown column----------------------------
-	if (!empty($criteria['unknown'])) {
-		if ($error_checking) { drupal_set_message('Uknown provided','warning');}
-		$unknown_provided = TRUE;
-		$new_criteria = array();
-		foreach ($criteria['unknown']['columns'] as $column_name) {
-			if (in_array($column_name, array('stock_id','dbxref_id','organism_id','type_id') )) {
-				if (preg_match('/^\d+$/',$criteria['unknown']['value'])) {
-					$new_criteria[$column_name] = array('type'=>'INT','value' => $criteria['unknown']['value']);
-				}
-			} else {
-				$new_criteria[$column_name] = array('type'=>'STRING','value' => $criteria['unknown']['value'], 'regex'=>TRUE);
-			}
-		}
-		if ($error_checking) { drupal_set_message('Re-calling tripal_stock_get_stocks(<pre>'.print_r($new_criteria,TRUE).'</pre>, ANY, '.$organism_id.')','warning'); }
-		$unknown_stocks = tripal_stock_get_stocks($new_criteria, 'ANY', $organism_id, $error_checking);
-		if ($error_checking) { drupal_set_message(sizeof($unknown_stocks).' Unknown Stocks', 'warning'); }
-	}
-	unset($criteria['unknown']); //so it's not mistaken as a column in the stock table
-	
-	// Determine all criteria------------------------------
-	$where = array(); // parts of the where portion of the SQL query
-	$joins = array(); //joins between the stock table and other tables
-	foreach ($criteria as $column_name => $v) {
-		if (preg_match("/accession/i",$column_name)) {
-			if ($v['regex']) { $operator = '~'; }
-			else { $operator = '='; }
-			
-			$where[] = 'dbxref.accession'.$operator."'".$v['value']."'";
-			$joins[] = 'LEFT JOIN stock_dbxref stock_dbxref ON stock_dbxref.stock_id=stock.stock_id';
-			$joins[] = 'LEFT JOIN dbxref dbxref ON dbxref.dbxref_id=stock_dbxref.dbxref_id';
-			
-		} elseif (preg_match("/synonym/i",$column_name)) {
-			if ($v['regex']) { $operator = '~'; }
-			else { $operator = '='; }
-			
-			$synonym_cvterm = tripal_cv_get_cvterm_by_name('synonym', variable_get('chado_stock_prop_types_cv', 'null'));
-			$where[] = '(stockprop.type_id='.$synonym_cvterm->cvterm_id.' AND stockprop.value'.$operator."'".$v['value']."')";
-			$joins[] = 'LEFT JOIN stockprop stockprop ON stockprop.stock_id=stock.stock_id';
-	
-		} else {
-			if ($v['regex']) { $operator = '~'; }
-			else { $operator = '='; }
-			
-			if (preg_match('/INT/', $v['type'])) {
-				$where[] = 'stock.'.$column_name.'='.$v['value'];
-			} else {
-				$where[] = 'stock.'.$column_name.$operator."'".$v['value']."'";
-			}		
-		}
-	}
-	
-	if ($error_checking) { 
-		drupal_set_message('Where Conditions: <pre>'.print_r($where,TRUE).'</pre>', 'warning'); 
-		drupal_set_message('Left Joins: <pre>'.print_r($joins,TRUE).'</pre>', 'warning');
-	}
-	
-	//Build query-----------------------------------------
-	if (preg_match('/ANY/', $match_type)) {
-		$where_string = implode(' OR ',$where);
-		if ($organism_id) {
-			$where_string = '('.$where_string.') AND organism_id='.$organism_id;
-		}
-	} else {
-		$where_string = implode(' AND ',$where);
-		if ($organism_id) {
-			$where_string .= ' AND organism_id='.$organism_id; }
-	}
-	
-	if (sizeof($where) >= 1) {
-		$execute_query = TRUE;
-		$sql_query = 'SELECT stock.stock_id FROM stock '.implode(' ',$joins).' WHERE '.$where_string;
-		//drupal_set_message('Query='.$sql_query);
-	} elseif (!$unknown_provided) {	
-		$execute_query = TRUE;
-		$sql_query = 'SELECT stock.stock_id FROM stock';
-		drupal_set_message('You did not enter any criteria during the stock selection process. All stocks will be returned.','warning');
-	} else {
-		$execute_query = FALSE;
-	}
-	
-	if ($error_checking) { drupal_set_message('Query: '.$sql_query, 'warning'); }
-	
-	if ($execute_query) {
-		//Get stock_ids---------------------------------------
-		$previous_db = tripal_db_set_active('chado');
-		$resource = db_query($sql_query);
-		tripal_db_set_active($previous_db);
-	
-		$stock_ids = array();	
-		while ($r = db_fetch_object($resource)) {
-			$stock_ids[] = $r->stock_id;
-		}
-		$stock_ids = array_unique($stock_ids);
-		
-		if ($error_checking) { drupal_set_message('Stock IDs: <pre>'.print_r($stock_ids,TRUE).'</pre>', 'warning'); }
-	
-		//Get Stocks------------------------------------------
-		if (!empty($stock_ids)) {
-			$resource = db_query("SELECT nid FROM {chado_stock} WHERE stock_id IN (%s)",implode(',',$stock_ids));
-			$main_stocks = array();
-			while ($r = db_fetch_object($resource)) {
-				$main_stocks[] = node_load($r->nid);
-			}
-		}
-	}
-	
-	if (!empty($main_stocks)) {
-		if(!empty($unknown_stocks)){
-			return array_merge($unknown_stocks,$main_stocks);
-		} else {
-			return $main_stocks;
-		}
-	} else {
-		if(!empty($unknown_stocks)){
-			return $unknown_stocks;
-		} else {
-			//drupal_set_message('No Stocks matched the given criteria','warning');
-			return array();
-		}
-	}
+  $stock_ids = tripal_core_chado_select('stock',array('stock_id'),$values);
 
+  // Change from stock_ids to nodes-----------------------------------
+  $stock_ids = array_filter($stock_ids);
+  $stock_ids = array_unique($stock_ids);
+  
+  $stocks = array();
+  foreach ($stock_ids as $stock_id) {
+    $stocks[] = tripal_stock_get_stock_by_stock_id($stock_id->stock_id);
+  }
+  
+  return $stocks;
 }
 
+/*************************************************************************
+ * Purpose: Return all stocks with a given name identifier
+ *  which might match stock.name, stock.uniquename, dbxref.accession, 
+ *  stockprop.value where stockprop.type='synonym'
+ *
+ * @param $name
+ *   The name identfier to be used
+ * @params $organism_id
+ *   The stock.organism_id of the stock to be selected
+ * @return
+ *   An array of stock node objects
+ */
+function tripal_stock_get_stock_by_name_identifier($name, $organism_id) {
+  $stock_ids = array();
+  
+  // where name_identifier = stock.name-------------------------------
+  $current_stocks = tripal_core_chado_select('stock',array('stock_id'),
+    array(
+      'name' => $name,
+      'organism_id' => $organism_id,
+    )
+  );
+  if (!empty($current_stocks)) {
+    $stock_ids = array_merge($stock_ids, $current_stocks);
+  }
+
+  // where name_identifier = stock.uniquename-------------------------------
+  $current_stocks = tripal_core_chado_select('stock',array('stock_id'),
+    array(
+      'uniquename' => $name,
+      'organism_id' => $organism_id,
+    )
+  );
+  if (!empty($current_stocks)) {
+    $stock_ids = array_merge($stock_ids, $current_stocks);
+  }
+  
+  // where name_identifier = dbxref.accession-------------------------------
+  // linked to stock through stock.dbxref
+  $current_stocks = tripal_core_chado_select('stock',array('stock_id'),
+    array(
+      'dbxref_id' => array(
+        'accession' => $name,
+      ),
+      'organism_id' => $organism_id,
+    )
+  );
+  if (!empty($current_stocks)) {
+    $stock_ids = array_merge($stock_ids, $current_stocks);  
+  }
+  
+  // linked to stock through stock_dbxref?
+  
+  // where name_identifier = stockprop.value-------------------------------
+  // where type='synonym' 
+  
+  
+  // Change from stock_ids to nodes-----------------------------------
+  $stock_ids = array_filter($stock_ids);
+  $stock_ids = array_unique($stock_ids);
+  
+  $stocks = array();
+  foreach ($stock_ids as $stock_id) {
+    $stocks[] = tripal_stock_get_stock_by_stock_id($stock_id->stock_id);
+  }
+  
+  return $stocks;
+}

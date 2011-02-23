@@ -6,4 +6,4 @@ description = A module for interfacing the GMOD chado database with Drupal, prov
 core = 6.x
 
 dependencies[] = tripal_core
-dependencies[] = cv
+dependencies[] = tripal_cv
