@@ -2187,6 +2187,16 @@ function tripal_core_get_chado_schema (){
        'stockprop_idx1' => array('stock_id'),
        'stockprop_idx2' => array('type_id'),
      ),
+     'foreign keys' => array(
+       'stock' => array(
+         'table' => 'stock',
+         'columns' => array('stock_id' => 'stock_id'),
+       ),
+       'cvterm' => array(
+         'table' => 'cvterm',
+         'columns' => array('type_id' => 'cvterm_id'),
+       ),
+     ),
    );
    $schema['stockprop_pub'] = array(
      'description' => t('TODO: please describe this table!'),
@@ -3267,6 +3277,16 @@ function tripal_core_get_chado_schema (){
      'indexes' => array(
        'stock_dbxref_idx1' => array('stock_id'),
        'stock_dbxref_idx2' => array('dbxref_id'),
+     ),
+     'foreign keys' => array(
+       'dbxref' => array(
+         'table' => 'dbxref',
+         'columns' => array('dbxref_id' => 'dbxref_id'),
+       ),
+       'stock' => array(
+         'table' => 'stock',
+         'columns' => array('stock_id' => 'stock_id'),
+       ),
      ),
    );
    $schema['quantificationprop'] = array(
