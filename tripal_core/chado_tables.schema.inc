@@ -3147,6 +3147,16 @@ function tripal_core_get_chado_schema (){
        'stock_relationship_idx2' => array('object_id'),
        'stock_relationship_idx3' => array('type_id'),
      ),
+     'foreign keys' => array(
+       'stock' => array(
+         'table' => 'stock',
+         'columns' => array('subject_id' => 'stock_id'),
+       ),
+       'cvterm' => array(
+         'table' => 'cvterm',
+         'columns' => array('type_id' => 'cvterm_id'),
+       ),
+     ),
    );
    $schema['stock_relationship_pub'] = array(
      'description' => t('TODO: please describe this table!'),

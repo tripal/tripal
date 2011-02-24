@@ -99,9 +99,7 @@ function tripal_stock_add_ONE_relationship_form_validate($form, &$form_state) {
   //Require Validation if adding
   if ($form_state['clicked_button']['#value'] == t('Add a Relationship') ) {
     // check valid stock selected for subject
-    $criteria = array('unknown' => array('value'=> $form_state['values']['subject_id'], 
-      																		'columns'=>array('name','uniquename','accession','synonym') ));
-    $subject_results = tripal_stock_get_stocks($criteria,'ANY',$_SESSION['organism']);
+    $subject_results = tripal_stock_get_stock_by_name_identifier( $form_state['values']['subject_id'], $_SESSION['organism']);
     if (sizeof($subject_results) > 1) {
       $links= array();
       for ($i=0; $i<sizeof($subject_results); $i++) { $links[] = l($i+1, "node/".$subject_results[$i]->nid); }
@@ -117,9 +115,7 @@ function tripal_stock_add_ONE_relationship_form_validate($form, &$form_state) {
     }
 
     // check valid stock selected for object
-    $criteria = array('unknown' => array('value'=> $form_state['values']['object_id'], 
-      																		'columns'=>array('name','uniquename','accession','synonym') ));
-    $object_results = tripal_stock_get_stocks($criteria,'ANY',$_SESSION['organism']);
+    $object_results = tripal_stock_get_stock_by_name_identifier( $form_state['values']['object_id'], $_SESSION['organism']);
     if (sizeof($object_results) > 1) {
       $links= array();
       for ($i=0; $i<sizeof($object_results); $i++) { $links[] = l($i+1, "node/".$object_results[$i]->nid); } 
@@ -289,9 +285,7 @@ function tripal_stock_edit_ALL_relationships_form_validate($form, &$form_state) 
     for ($i=1; $i<=$form_state['values']['num_relationships']; $i++) {
       
       // check valid stock selected for subject
-      $criteria = array('unknown' => array('value'=>$form_state['values']["subject_id-$i"], 
-      																		'columns'=>array('name','uniquename','accession','synonym') ));
-      $subject_results = tripal_stock_get_stocks($criteria,'ANY',$_SESSION['organism']);
+      $subject_results = tripal_stock_get_stock_by_name_identifier( $form_state['values']["subject_id-$i"], $_SESSION['organism']);
       if (sizeof($subject_results) > 1) {
         $links= array();
         for ($j=0; $j<sizeof($subject_results); $j++) { $links[] = l($j+1, "node/".$subject_results[$j]->nid); }
@@ -307,9 +301,7 @@ function tripal_stock_edit_ALL_relationships_form_validate($form, &$form_state) 
       } 
 
       // check valid stock selected for object
-      $criteria = array('unknown' => array('value'=> $form_state['values']["object_id-$i"], 
-      																		'columns'=>array('name','uniquename','accession','synonym') ));
-      $object_results = tripal_stock_get_stocks($criteria,'ANY',$_SESSION['organism']);
+      $object_results = tripal_stock_get_stock_by_name_identifier( $form_state['values']["object_id-$i"], $_SESSION['organism']);
       if (sizeof($object_results) > 1) {
         $links= array();
         for ($j=0; $j<sizeof($object_results); $j++) { $links[] = l($j+1, "node/".$object_results[$j]->nid); }
