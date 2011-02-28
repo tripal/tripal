@@ -54,3 +54,9 @@ function tripal_organism_get_organism_by_organism_id ($organism_id) {
 	
 }
 
+/****************************************************************************
+ * @section Chado Table Descriptions
+ * There should be a default table description for all chado tables included
+ * in core.
+ ****************************************************************************/
+

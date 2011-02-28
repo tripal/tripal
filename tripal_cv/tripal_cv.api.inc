@@ -171,3 +171,35 @@ function tripal_cv_get_cvterm_options($cv_id = 0) {
   return $options;
 
 }
+
+/****************************************************************************
+ * @section Chado Table Descriptions
+ ****************************************************************************/
+
+/****************************************************************************
+ * Implements hook_chado_cvterm_schema()
+ * Purpose: To add descriptions and foreign keys to default table description
+ * Note: This array will be merged with the array from all other implementations
+ *
+ * @return
+ *    Array describing the cvterm table
+ */
+function tripal_stock_chado_cvterm_schema() {
+  $description = array();
+
+  $description['foreign keys']['cv'] = array(
+        'table' => 'cv',
+        'columns' => array(
+          'cv_id' => 'cv_id',
+        ),
+  );
+      
+  $description['foreign keys']['dbxref'] = array(
+        'table' => 'dbxref',
+        'columns' => array(
+          'dbxref_id' => 'dbxref_id',
+        ),
+  ); 
+
+  return $description;
+}

@@ -158,3 +158,28 @@ function tripal_db_get_dbxref_by_accession ($accession, $db_id=0) {
   
   return $r;
 }
+
+/****************************************************************************
+ * @section Chado Table Descriptions
+ ****************************************************************************/
+
+/****************************************************************************
+ * Implements hook_chado_dbxref_schema()
+ * Purpose: To add descriptions and foreign keys to default table description
+ * Note: This array will be merged with the array from all other implementations
+ *
+ * @return
+ *    Array describing the dbxref table
+ */
+function tripal_stock_chado_dbxref_schema() {
+  $description = array();
+
+  $description['foreign keys']['db'] = array(
+        'table' => 'db',
+        'columns' => array(
+          'cv_id' => 'db_id',
+        ),
+  ); 
+
+  return $description;
+}

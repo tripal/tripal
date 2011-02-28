@@ -7,7 +7,7 @@
 * modules.
 */
 
-require_once "chado_tables.schema.inc";
+require_once "tripal_core.schema.api.inc";
 
 // just a temporary function for debugging
 function tripal_core_chado_insert_test(){
@@ -17,7 +17,7 @@ function tripal_core_chado_insert_test(){
          'species' => 'culinaris',
       ),
      'name' => 'orange1.1g000034m.g',
-     'uniquename' => 'orange1.1g000034m.g8',
+     'uniquename' => 'orange1.1g000034m.g9',
      'type_id' => array (
          'cv_id' => array (
             'name' => 'sequence',
@@ -31,7 +31,7 @@ function tripal_core_chado_insert_test(){
          'genus' => 'Lens',
          'species' => 'culinaris',
       ),
-     'uniquename' => 'orange1.1g000034m.g7',
+     'uniquename' => 'orange1.1g000034m.g9',
      'type_id' => array (
          'cv_id' => array (
             'name' => 'sequence',
@@ -57,7 +57,7 @@ function tripal_core_chado_insert_test(){
    );
    //$result = tripal_core_chado_insert('feature',$ivalues);
    //return "$result->feature_id";
-   //$result = tripal_core_chado_update('feature',$umatch,$uvalues);
+   $result = tripal_core_chado_update('feature',$umatch,$uvalues);
    //$result = tripal_core_chado_select('feature',array('type_id', 'uniquename'),$select_multiple);
    return $result;
 
@@ -107,8 +107,7 @@ function tripal_core_chado_insert($table,$values){
    $insert_values = array();
    
    // get the table description
-   $chado = tripal_core_get_chado_schema();
-   $table_desc = $chado[$table];
+   $table_desc = module_invoke_all('chado_'.$table.'_schema');
 
    // iterate through the values array and create a new 'insert_values' array
    // that has all the values needed for insert with all foreign relationsihps
@@ -253,8 +252,7 @@ function tripal_core_chado_update($table,$match,$values){
    $update_matches = array();  // contains the values for the where clause
    
    // get the table description
-   $chado = tripal_core_get_chado_schema();
-   $table_desc = $chado[$table];
+   $table_desc = module_invoke_all('chado_'.$table.'_schema');
 
    // get the values needed for matching in the SQL statement
    foreach ($match as $field => $value){
@@ -371,8 +369,8 @@ function tripal_core_chado_update($table,$match,$values){
 function tripal_core_chado_select($table,$columns,$values){
 
    // get the table description
-   $chado = tripal_core_get_chado_schema();
-   $table_desc = $chado[$table];
+   $table_desc = module_invoke_all('chado_'.$table.'_schema');
+   dpm($table_desc);
 
    $select = '';
    $from = ''; 
@@ -441,7 +439,11 @@ function tripal_core_chado_select($table,$columns,$values){
 *
 * @param $table_desc
 *  A table description in Drupal Schema API format for the table with the
-*  foreign key relationship that needs to be identified.
+*  foreign key relationship that needs to be identified. This field is generated
+*  by hook_chado_<table name>_schema(). If more than one module implements a hook
+*  the two arrays will be merged. (ie: if the same foreign key is defined in two modules
+*  then $table_desc['foreign keys'][<table>]['table'] will be an array as will 
+*  $table_desc['foreign keys'][<table>]['columns'] -use the one with the highest index)
 * @param $field
 *  The field in the table that is the foreign key.
 * @param $values
@@ -476,6 +478,13 @@ function tripal_core_chado_get_foreign_key($table_desc,$field,$values){
    $fkeys = $table_desc['foreign keys'];
    if($fkeys){
       foreach($fkeys as $name => $def){
+         if (is_array($def['table'])) {
+           //foreign key was described 2X
+           $message = "The foreign key ".$name." was defined twice. Please check modules to determine if hook_chado_".$table_desc['table']."_schema() was implemented and defined this foreign key when it wasn't supposed to. Modules this hook was implemented in: ".implode(', ', module_implements("chado_".$table_desc['table']."_schema")).".";
+           watchdog('tripal_core', $message);
+           drupal_set_message($message,'error');
+           continue;
+         }
          $table = $def['table'];
          $columns = $def['columns'];
          // iterate through the columns of the foreign key relationship
@@ -499,6 +508,10 @@ function tripal_core_chado_get_foreign_key($table_desc,$field,$values){
       // TODO: what do we do if we get to this point and we have a fk 
       // relationship expected but we don't have any definition for one in the
       // table schema??
+      $message = "There is no foreign key relationship defined for ".$field.". To define a foreign key relationship, determine the table this foreign key referrs to (<foreign table>) and then implement hook_chado_<foreign table>_schema(). See tripal_feature_chado_feature_schema for an example.";
+      watchdog('tripal_core', $message);
+      drupal_set_message($message,'error');      
    }
    return false;
 }
+
