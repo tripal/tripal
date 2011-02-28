@@ -279,130 +279,168 @@ function chado_stock_load($node) {
   $node->stock_id = $map->stock_id;  
   
   //Get the main stock information from the chado stock table-----------------------------------
-  $previous_db = tripal_db_set_active('chado');
-  $chado_stock = db_fetch_object(db_query(
-    "SELECT s.name, s.uniquename, s.description, c.name as type, c.cvterm_id as type_id, s.is_obsolete, s.organism_id "
-    ."FROM stock s, cvterm c WHERE s.type_id=c.cvterm_id AND stock_id=%d",
-    $map->stock_id
-  ));
-  tripal_db_set_active($previous_db);
-  //add to node
-  $node->stock_name = $chado_stock->name;
-  $node->uniquename = $chado_stock->uniquename;
-  $node->description = $chado_stock->description;
-  $node->stock_type = $chado_stock->type;
-  $node->stock_type_id = $chado_stock->type_id;
-  $node->is_obsolete = $chado_stock->is_obsolete;
+  $columns = array('name', 'uniquename', 'description', 'type_id', 'is_obsolete', 'organism_id', 'dbxref_id');
+  $values = array('stock_id' => $node->stock_id);
+  $results = tripal_core_chado_select('stock', $columns, $values);
+  
+  $node->stock_name = $results[0]->name;
+  $node->uniquename = $results[0]->uniquename;
+  $node->description = $results[0]->description;
+  $node->stock_type_id = $results[0]->type_id;
+  $node->organism->organism_id = $results[0]->organism_id;
+  $node->main_db_reference->dbxref_id = $results[0]->dbxref_id;
+  
+  if (preg_match('/t/', $results[0]->is_obsolete)) {
+    $node->is_obsolete = TRUE;
+  } else {
+    $node->is_obsolete = FALSE;
+  }
 
+  // Get type for current stock------------------------------------------------------------------
+  $columns = array('name');
+  $values = array('cvterm_id' => $node->stock_type_id);
+  $results = tripal_core_chado_select('cvterm', $columns, $values);
+  
+  $node->stock_type = $results[0]->name;
+  
   // Get organism details from chado & add to node-----------------------------------------------
   // get organism if for current stock
   // pull all data from chado for the organism and assign it to the current node
-  $node->organism = tripal_organism_get_organism_by_organism_id($chado_stock->organism_id);
+  $node->organism = tripal_organism_get_organism_by_organism_id($node->organism->organism_id);
 
   // Add Synonyms for stock----------------------------------------------------------------------
   // These are a special case of property (stockprop table) where cvterm='synonym'
-  $previous_db = tripal_db_set_active('chado');
-  $results = db_query(
-    "SELECT sp.stockprop_id, sp.value as value, sp.type_id, 'synonym' as type FROM stockprop sp, cvterm c "
-    ."WHERE sp.stock_id=%d AND sp.type_id=c.cvterm_id AND c.name='synonym'",
-    $map->stock_id
+  $columns = array('stockprop_id', 'type_id', 'value', 'rank');
+  $values = array(
+    'stock_id' => $node->stock_id, 
+    'type_id' => array(
+      'cv_id' => variable_get('chado_stock_prop_types_cv', 'null'), 
+      'name' => 'synonym'
+    ) 
   );
-  tripal_db_set_active($previous_db);
-  $i=0;
-  // Node->synonyms is an array of synonyms(strings)
-  while ($r = db_fetch_object($results) ) {
-    $synonyms[$i++] = $r;
+  $results = tripal_core_chado_select('stockprop', $columns, $values);
+  foreach ($results as $r) {
+    $r->type = 'synonym';
+    $node->synonyms[] = $r;
   }
-  $node->synonyms = $synonyms;
 
   // Add properties for stock (not including synonyms)-------------------------------------------
   // $node->properties is an array of objects where each object describes a single property and has a type and value
-  $previous_db = tripal_db_set_active('chado');
-  $results = db_query(
-    "SELECT sp.stockprop_id, c.name as type, sp.value as value FROM stockprop sp, cvterm c "
-    ."WHERE sp.stock_id=%d AND sp.type_id=c.cvterm_id AND c.name != 'synonym'",
-    $map->stock_id
+  $columns = array('stockprop_id', 'type_id', 'value', 'rank');
+  $values = array(
+    'stock_id' => $node->stock_id, 
   );
-  tripal_db_set_active($previous_db);
-  $i=0;
-  while ($r = db_fetch_object($results) ) {
-    $properties[$i++] = $r;
+  $results = tripal_core_chado_select('stockprop', $columns, $values);
+  foreach ($results as $r) {
+    $columns = array('name');
+    $values = array('cvterm_id' => $r->type_id);
+    $type_results = tripal_core_chado_select('cvterm', $columns, $values);
+    $r->type = $type_results[0]->name;
+    
+    $node->properties[] = $r;
   }
-  $node->properties = $properties;
 
   // Add in main db reference-----------------------------------------------------------------------
   // this is the dbxref_id in the stock table
-  //$node->main_db_reference is an object describing the dbxref and has an accession, version, description, db_name, db_description, & urlprefix
-  $previous_db = tripal_db_set_active('chado');
-  $db_reference = db_fetch_object(db_query(
-    "SELECT dbx.dbxref_id, dbx.accession, dbx.version, dbx.description, db.db_id, db.name as db_name, db.description as db_description, db.urlprefix as db_urlprefix "
-    ."FROM dbxref dbx, db db, stock s WHERE stock_id=%d AND s.dbxref_id=dbx.dbxref_id AND dbx.db_id=db.db_id",
-    $map->stock_id
-  ));
-  tripal_db_set_active($previous_db);
-  $node->main_db_reference = $db_reference;
-
-  // Add in extra references to external databases---------------------------------------------------
-  // this includes all the dbxref entries in stock_dbxref
-  // $node->db_referencesi s an array of objects where each object describes a given dbxref and has the same fields as the main db references
-  $previous_db = tripal_db_set_active('chado');
-  $results = db_query(
-    "SELECT dbx.dbxref_id, dbx.accession, dbx.version,	dbx.description, db.db_id, db.name as db_name, db.description as db_description, db.urlprefix as db_urlprefix "
-    ."FROM dbxref dbx, db db, stock_dbxref s WHERE stock_id=%d AND s.dbxref_id=dbx.dbxref_id AND dbx.db_id=db.db_id",
-    $map->stock_id
-  );
-  tripal_db_set_active($previous_db);
-    $i=0;
-  while ($r = db_fetch_object($results) ) {
-    $db_references[$i++] = $r;
+  if (!empty($node->main_db_reference->dbxref_id)) {
+    $columns = array('dbxref_id', 'accession', 'version', 'description', 'db_id');
+    $values = array('dbxref_id' => $node->main_db_reference->dbxref_id);
+    $results = tripal_core_chado_select('dbxref', $columns, $values);
+    $node->main_db_reference = $results[0];
+    
+    //get db info
+    $columns = array('name', 'description', 'url', 'urlprefix');
+    $values = array('db_id' => $node->main_db_reference->db_id);
+    $results = tripal_core_chado_select('db', $columns, $values);
+    $node->main_db_reference->db_name = $results[0]->name;
+    $node->main_db_reference->db_description = $results[0]->description;
+    $node->main_db_reference->db_url = $results[0]->url;
+    $node->main_db_reference->db_urlprefix = $results[0]->urlprefix;
   }
-  $node->db_references = $db_references;
 
-  // Add relationships for stock---------------------------------------------------------------------
+  // Add in extra references to external databases--------------------------------------------------
+  // this includes all the dbxref entries in stock_dbxref
+  $columns = array('dbxref_id');
+  $values = array('stock_id' => $node->stock_id);
+  $results = tripal_core_chado_select('stock_dbxref',$columns,$values);
+  $node->db_references = array();
+  foreach ($results as $r) {
+    $columns = array('dbxref_id', 'accession', 'version', 'description', 'db_id');
+    $values = array('dbxref_id' => $r->dbxref_id);
+    $sub_results = tripal_core_chado_select('dbxref', $columns, $values);   
+    $dbxref = $sub_results[0];
+    
+    //get db info
+    $columns = array('name', 'description', 'url', 'urlprefix');
+    $values = array('db_id' => $dbxref->db_id);
+    $results = tripal_core_chado_select('db', $columns, $values);
+    $dbxref->db_name = $results[0]->name;
+    $dbxref->db_description = $results[0]->description;
+    $dbxref->db_url = $results[0]->url;
+    $dbxref->db_urlprefix = $results[0]->urlprefix;    
+    
+    $node->db_references[] = $dbxref;
+  }
+  
+  // Add relationships for stock--------------------------------------------------------------------
   // Relationships are broken down into those where the current stock is the subject (other details stored in $node->object_relationships)
   // and those where the current stock is the object (other details stored in $node->subject_relationships)
   // fields available to each include object/subject_name, object/subject_id (stock_id in chado) and object/subject_nid (node id in drupal)
+  
      // where current is subject.............................
-     $previous_db = tripal_db_set_active('chado');
-     $result = db_query(
-       "SELECT sr.stock_relationship_id, c.name as relationship_type, sr.type_id as relationship_type_id, s.uniquename as object_uniquename, s.name as object_name, s.stock_id as object_id "
-       . "FROM stock_relationship sr, stock s, cvterm c "
-       . "WHERE sr.subject_id=%d AND sr.object_id=s.stock_id AND sr.type_id=c.cvterm_id",
-       $map->stock_id
-     );
-     tripal_db_set_active($previous_db);
-     $i=0;
-     $relationships= array();
-     while ($r = db_fetch_object($result) ) {
+    $columns = array('stock_relationship_id', 'subject_id', 'type_id', 'object_id', 'value', 'rank');
+    $values = array('subject_id' => $node->stock_id);
+    $results = tripal_core_chado_select('stock_relationship', $columns, $values);
+    
+    $node->object_relationships = array();
+    foreach ($results as $r) {
+      $columns = array('name', 'uniquename', 'description', 'type_id', 'is_obsolete', 'organism_id', 'dbxref_id');
+      $values = array('stock_id' => $r->object_id);
+      $results = tripal_core_chado_select('stock', $columns, $values);
 
-       //get nid
-       $object = db_fetch_object(db_query("SELECT * FROM {node} n, {chado_stock} c WHERE c.nid=n.nid AND c.vid=n.vid AND c.stock_id=%d", $r->object_id ));
-       $r->object_nid = $object->nid;
+      $r->object->stock_id = $r->object_id;
+      unset($r->object_id);
+      
+      $r->object->stock_name = $results[0]->name;
+      $r->object->uniquename = $results[0]->uniquename;
+      $r->object->description = $results[0]->description;
+      $r->object->stock_type_id = $results[0]->type_id;
+      $r->object->organism->organism_id = $results[0]->organism_id;
+      $r->object->main_db_reference->dbxref_id = $results[0]->dbxref_id;        
 
-       $relationships[$i++] = $r;
-     }
-     $node->object_relationships = $relationships;
+      $sql = "SELECT nid FROM {chado_stock} WHERE stock_id=%d";
+      $object_node = db_fetch_object(db_query($sql, $r->object->stock_id));
+      $r->object->nid = $object_node->nid;
+      
+      $node->object_relationships[] = $r;
+    }
 
      // where current is object.............................
-     $previous_db = tripal_db_set_active('chado');
-     $result = db_query(
-       "SELECT sr.stock_relationship_id, c.name as relationship_type, sr.type_id as relationship_type_id, s.uniquename as subject_uniquename, s.name as subject_name, s.stock_id as subject_id "
-       . "FROM stock_relationship sr, stock s, cvterm c "
-       . "WHERE	sr.object_id=%d AND sr.subject_id=s.stock_id AND sr.type_id=c.cvterm_id",
-       $map->stock_id
-     );
-     tripal_db_set_active($previous_db);
-     $i=0;
-     $relationships= array();
-     while ($r = db_fetch_object($result) ) {
+    $columns = array('stock_relationship_id', 'subject_id', 'type_id', 'object_id', 'value', 'rank');
+    $values = array('object_id' => $node->stock_id);
+    $results = tripal_core_chado_select('stock_relationship', $columns, $values);
 
-       //get nid
-       $subject = db_fetch_object(db_query("SELECT * FROM {node} n, {chado_stock} c WHERE c.nid=n.nid AND c.vid=n.vid AND c.stock_id=%d", $r->subject_id ));
-       $r->subject_nid = $subject->nid;
+    $node->subject_relationships = array();    
+    foreach ($results as $r) {
+      $columns = array('name', 'uniquename', 'description', 'type_id', 'is_obsolete', 'organism_id', 'dbxref_id');
+      $values = array('stock_id' => $r->subject_id);
+      $results = tripal_core_chado_select('stock', $columns, $values);
 
-       $relationships[$i++] = $r;
-     }
-     $node->subject_relationships = $relationships;
+      $r->subject->stock_id = $r->subject_id;
+      unset($r->subject_id);  
+      
+      $r->subject->stock_name = $results[0]->name;
+      $r->subject->uniquename = $results[0]->uniquename;
+      $r->subject->description = $results[0]->description;
+      $r->subject->stock_type_id = $results[0]->type_id;
+      $r->subject->organism->organism_id = $results[0]->organism_id;        $r->subject->main_db_reference->dbxref_id = $results[0]->dbxref_id;        
+
+      $sql = "SELECT nid FROM {chado_stock} WHERE stock_id=%d";
+      $subject_node = db_fetch_object(db_query($sql, $r->subject->stock_id));
+      $r->subject->nid = $subject_node->nid;
+      
+      $node->subject_relationships[] = $r;
+    }
 
      return $node;
 }
