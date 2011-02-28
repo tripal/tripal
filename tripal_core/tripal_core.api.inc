@@ -370,7 +370,6 @@ function tripal_core_chado_select($table,$columns,$values){
 
    // get the table description
    $table_desc = module_invoke_all('chado_'.$table.'_schema');
-   dpm($table_desc);
 
    $select = '';
    $from = ''; 
