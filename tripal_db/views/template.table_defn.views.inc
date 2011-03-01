@@ -73,24 +73,30 @@
 
   
   //Relationship Definitions---------------------------------
-  //Join: XXX => YYY
+  //Join: YYY => XXX
+  // Notice that this relationship tells the primary table to show it's fields to the
+  // table referencing it by a foreign key and thus the relationship is from
+  // primary table to table referenceing it (ie: cvterm => feature)
   $data['XXX']['table']['join']['YYY'] = array(
-    'left_field' => 'primary key in YYY table',
-    'field' => 'foreign key in XXX table',
+    'left_field' => 'foreign key in YYY table',
+    'field' => 'primary key in XXX table',
   );  
   
   //Join: XXX => XY => YYY
+  // This relationship should be described in both directions
+  // in the appropriate files (ie: for feature => library 
+  // describe in both feature.views.inc and library.views.inc)
   $data['XXX']['table']['join']['XY'] = array(
     'left_field' => 'matching XXX key in the XY table',
-    'field' => 'foreign key in XXX table',
+    'field' => 'primary key in XXX table',
   );  
   $data['XXX']['table']['join']['YYY'] => array(
     'left_table' => 'XY',
     'left_field' => 'matching XXX key in the XY table',
-    'field' => 'foreign key in XXX table',
+    'field' => 'primary key in XXX table',
   );
   $data['XY']['table']['join']['YYY'] = array(
-    'left_field' => 'foreign key in YYY table',
+    'left_field' => 'primary key in YYY table',
     'field' => 'matching YYY key in the XY table',
   );
    
