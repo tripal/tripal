@@ -59,6 +59,15 @@ function tripal_analysis_menu() {
 	// Tripal Analysis administrative settings
 	$items['admin/tripal/tripal_analysis'] = array(
       'title' => 'Analyses',
+      'description' => 'Basic Description of Tripal Analysis Module Functionality.',
+      'page callback' => 'tripal_analysis_module_description_page',
+      'access arguments' => array('administer site configuration'),
+      'type' => MENU_NORMAL_ITEM,
+      'file' => 'tripal_analysis.admin.inc',
+	);
+	
+	$items['admin/tripal/tripal_analysis/configuration'] = array(
+      'title' => 'Configuration',
       'description' => 'Settings for the displays of analysis results.',
       'page callback' => 'drupal_get_form',
       'page arguments' => array('tripal_analysis_admin'),

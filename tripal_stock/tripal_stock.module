@@ -25,6 +25,14 @@ function tripal_stock_menu() {
   //Administrative settings menu-----------------
   $items['admin/tripal/tripal_stock'] = array(
     'title' => t('Stocks'),
+    'description' => t('Basic Description of Tripal Stock Module Functionality'),
+    'page callback' => 'tripal_stock_module_description_page',
+    'access arguments' => array('administer site configuration'),
+    'type' => MENU_NORMAL_ITEM
+  );
+  
+  $items['admin/tripal/tripal_stock/configuration'] = array(
+    'title' => t('Configuration'),
     'description' => t('Settings for Chado Stocks'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_stock_admin'),

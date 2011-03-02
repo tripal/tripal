@@ -3,6 +3,27 @@
 // Copyright 2009 Clemson University
 //
 
+/*************************************************************************
+ * Purpose: Provide Guidance to new Tripal Admin
+ *
+ * @return HTML Formatted text
+ */
+function tripal_analysis_module_description_page() {
+  $text = '';
+  
+  $text .= '<h3>Description:</h3>';
+  $text .= '<p>TODO: Basic Description of this module including mention/link to the chado module</p>';
+
+  $text .= '<h3>Post Installation Instructions:</h3>';
+  $text .= '<p>TODO: Describe any post installation intructions here. You shouldalways include setting user permissions.</p>';
+  
+  
+  $text .= '<h3>Features of this Module:</h3>';
+  $text .= '<p>TODO: Discuss the Features of this module including links. Some features to consider are creating content, details pages/node content, editing/deleteing, basic listings and vies integration. See admin/tripal/tripal_stock for an example.</p>';
+  
+  return $text;
+}
+
 /*******************************************************************************
  * Administration page callbacks for the Tripal Analysis module
  * We have defined a hook_get_settings() function. When a sub-module

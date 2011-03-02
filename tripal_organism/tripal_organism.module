@@ -73,12 +73,22 @@ function tripal_organism_menu() {
    // the administative settings menu
    $items['admin/tripal/tripal_organism'] = array(
      'title' => 'Organisms',
+     'description' => 'Basic Description of Tripal Organism Module Functionality',
+     'page callback' => 'tripal_organism_module_description_page',
+     'access arguments' => array('administer site configuration'),
+     'type' => MENU_NORMAL_ITEM,
+   );
+   
+   $items['admin/tripal/tripal_organism/configuration'] = array(
+     'title' => 'Configuration',
      'description' => 'Manage integration of Chado organisms including associated features',
      'page callback' => 'drupal_get_form',
      'page arguments' => array('tripal_organism_admin'),
      'access arguments' => array('administer site configuration'),
      'type' => MENU_NORMAL_ITEM,
    );
+   
+   
   return $items;
 }
 /*******************************************************************************
@@ -120,6 +130,28 @@ function tripal_organism_perm(){
       'edit chado_organism content',
    );
 }
+
+/*************************************************************************
+ * Purpose: Provide Guidance to new Tripal Admin
+ *
+ * @return HTML Formatted text
+ */
+function tripal_organism_module_description_page() {
+  $text = '';
+  
+  $text .= '<h3>Description:</h3>';
+  $text .= '<p>TODO: Basic Description of this module including mention/link to the chado module</p>';
+
+  $text .= '<h3>Post Installation Instructions:</h3>';
+  $text .= '<p>TODO: Describe any post installation intructions here. You shouldalways include setting user permissions.</p>';
+  
+  
+  $text .= '<h3>Features of this Module:</h3>';
+  $text .= '<p>TODO: Discuss the Features of this module including links. Some features to consider are creating content, details pages/node content, editing/deleteing, basic listings and vies integration. See admin/tripal/tripal_stock for an example.</p>';
+  
+  return $text;
+}
+
 /*******************************************************************************
  * Administrative settings for chado_orgnism
  */

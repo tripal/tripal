@@ -18,14 +18,22 @@ function tripal_db_menu() {
    $items = array();
 
    $items['admin/tripal/tripal_db'] = array(
-     'title' => 'External Database Management',
+     'title' => 'External Database References',
+     'description' => 'Basic Description of Tripal DB Module Functionality',
+     'page callback' => 'tripal_db_module_description_page',
+     'access arguments' => array('administer site configuration'),
+     'type' => MENU_NORMAL_ITEM,
+   );
+
+   $items['admin/tripal/tripal_db/edit_db'] = array(
+     'title' => 'Update/Delete Database References',
      'description' => 'Manage External Databases ',
      'page callback' => 'tripal_db_admin_page',
      'access arguments' => array('administer site configuration'),
      'type' => MENU_NORMAL_ITEM,
    );
-
-   $items['admin/tripal/tripal_db/new'] = array(
+   
+   $items['admin/tripal/tripal_db/add_db'] = array(
      'title' => 'Add an External Database',
      'page callback' => 'drupal_get_form',
      'page arguments' => array('tripal_db_form'),
@@ -64,6 +72,27 @@ function tripal_db_perm(){
  */
 function tripal_db_views_api() {
 	return array('api' => 2.0);
+}
+
+/*************************************************************************
+ * Purpose: Provide Guidance to new Tripal Admin
+ *
+ * @return HTML Formatted text
+ */
+function tripal_db_module_description_page() {
+  $text = '';
+  
+  $text .= '<h3>Description:</h3>';
+  $text .= '<p>TODO: Basic Description of this module including mention/link to the chado module</p>';
+
+  $text .= '<h3>Post Installation Instructions:</h3>';
+  $text .= '<p>TODO: Describe any post installation intructions here. You shouldalways include setting user permissions.</p>';
+  
+  
+  $text .= '<h3>Features of this Module:</h3>';
+  $text .= '<p>TODO: Discuss the Features of this module including links. Some features to consider are creating content, details pages/node content, editing/deleteing, basic listings and vies integration. See admin/tripal/tripal_stock for an example.</p>';
+  
+  return $text;
 }
 
 /*************************************************************************
