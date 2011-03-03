@@ -29,6 +29,19 @@ function tripal_feature_update_6000(){
    return $ret;
 }
 /*******************************************************************************
+*  Update for Drupal 6.x, Tripal 0.2b, Feature Module 0.2
+*  This update adjusts the materialized view by adding a 'cvterm_id' column
+*/
+
+function tripal_feature_update_6300(){
+   // add the relationship aggregator table to the database
+   $schema = tripal_feature_get_schemas('tripal_feature_relagg');
+   $ret = array();
+   db_create_table($ret, 'tripal_feature_relagg', $schema['tripal_feature_relagg']);
+   
+   return $ret;
+}
+/*******************************************************************************
 
 */
 function tripal_feature_add_organism_count_mview(){
@@ -112,25 +125,39 @@ function tripal_feature_uninstall(){
 * can easily provide the entire list for hook_install or individual
 * tables for an update.
 */
-function tripal_feature_get_schemas (){  
+function tripal_feature_get_schemas ($table = NULL){  
   $schema = array();
 
-  $schema['chado_feature'] = array(
-      'fields' => array(
-         'vid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
-         'nid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
-         'feature_id' => array('type' => 'int', 'not null' => TRUE, 'default' => 0),
-         'sync_date' => array ('type' => 'int', 'not null' => FALSE, 'description' => 'UNIX integer sync date/time'),
-      ),
-      'indexes' => array(
-         'feature_id' => array('feature_id')
-       ),
-      'unique keys' => array(
-         'nid_vid' => array('nid','vid'),
-         'vid' => array('vid')
-      ),
-      'primary key' => array('nid'),
-  );
+
+  if(!$table or strcmp($table,'chado_feature')==0){
+     $schema['chado_feature'] = array(
+         'fields' => array(
+            'vid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+            'nid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+            'feature_id' => array('type' => 'int', 'not null' => TRUE, 'default' => 0),
+            'sync_date' => array ('type' => 'int', 'not null' => FALSE, 'description' => 'UNIX integer sync date/time'),
+         ),
+         'indexes' => array(
+            'feature_id' => array('feature_id')
+          ),
+         'unique keys' => array(
+            'nid_vid' => array('nid','vid'),
+            'vid' => array('vid')
+         ),
+         'primary key' => array('nid'),
+     );
+  }
+  if(!$table or strcmp($table,'tripal_feature_relagg')==0){
+     $schema['tripal_feature_relagg'] = array(
+        'fields' => array(
+           'type_id' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+           'rel_type_id' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+        ),
+        'indexes' => array(
+           'type_id' => array('type_id')
+        ),
+     );
+  }
 
   return $schema;
 }

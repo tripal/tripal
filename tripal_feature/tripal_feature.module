@@ -85,6 +85,7 @@ function tripal_feature_perm(){
       'create chado_feature content',
       'delete chado_feature content',
       'edit chado_feature content',
+      'manage chado_feature aggregator',
    );
 }
 
@@ -138,6 +139,31 @@ function tripal_feature_menu() {
      'access arguments' => array('administer site configuration'),
      'type' => MENU_NORMAL_ITEM,
    );
+
+   // managing relationship aggregates
+   $items['admin/tripal/tripal_feature/aggregate'] = array(
+     'title' => 'Feature Relationship Aggegators',
+     'description' => t('Features have relationships with other features and it may be desirable to aggregate the content from one ore more child or parent feature.'),
+     'page callback' => 'tripal_feature_aggregator_page',
+     'access arguments' => array('manage chado_feature aggregator'),
+     'type' => MENU_NORMAL_ITEM,
+   );
+
+   $items['admin/tripal/tripal_feature/aggregate/new'] = array(
+     'title' => 'Add an Aggregator',
+     'page callback' => 'drupal_get_form',
+     'page arguments' => array('tripal_feature_aggregator_form'),
+     'access arguments' => array('manage chado_feature aggregator'),
+     'type' => MENU_NORMAL_ITEM,
+   );
+   $items['admin/tripal/tripal_feature/aggregate/edit/js'] = array(
+     'title' => 'Edit an Aggegator',
+     'page callback' => 'tripal_feature_aggregator_ajax_edit',
+     'access arguments' => array('manage chado_feature aggregator'),
+     'type' => MENU_CALLBACK,
+   );
+
+
 
  // Adding Secondary Properties-----------------
   $items['node/%tripal_feature_node/properties'] = array(       
@@ -681,8 +707,6 @@ function chado_feature_validate($node){
       form_set_error('gbaccession',t("Contigs cannot have a genbank accession number.  Please change the feature type or remove the accession number"));
    }
 
-
-
 }
 /************************************************************************
  *  When a node is requested by the user this function is called to allow us
@@ -691,8 +715,8 @@ function chado_feature_validate($node){
 function chado_feature_load($node){
    // add the feature_id for this node:
    $sql = 'SELECT feature_id FROM {chado_feature} WHERE vid = %d';
-   $map = db_fetch_object(db_query($sql, $node->vid));
-
+   $feature = db_fetch_object(db_query($sql, $node->vid));
+   $feature_id = $feature->feature_id;
 
    // get information about this feature and add it to the items in this node
    $sql = "SELECT F.feature_id, F.name as featurename, F.uniquename, ".
@@ -703,10 +727,11 @@ function chado_feature_load($node){
           "  INNER JOIN CVterm CVT ON F.type_id = CVT.cvterm_id ".
           "WHERE F.feature_id = %d";
    $previous_db = tripal_db_set_active('chado');  // use chado database
-   $feature = db_fetch_object(db_query($sql,$map->feature_id));
+   $feature = db_fetch_object(db_query($sql,$feature_id));
    tripal_db_set_active($previous_db);  // now use drupal database
    $additions->feature = $feature;
    $additions->seqlen = $feature->seqlen;
+   $organism_id = $feature->organism_id;
 
    // add organism node nid
    $sql = "SELECT nid FROM {chado_organism} WHERE organism_id = %d";
@@ -714,102 +739,198 @@ function chado_feature_load($node){
    $additions->org_nid = $org_nid;
    $additions->accession =  variable_get('chado_feature_accession_prefix','ID') . $feature->feature_id;
 
+   // add the relationships for which this feature is the subject
+   $additions->subject_relationships = tripal_feature_load_relationships($feature_id,'as_subject');
+   // add the relationships for which this feature is the object
+   $additions->object_relationships = tripal_feature_get_aggregate_relationships($feature_id,0);
+
+ 
+   // add details about the organism
+   $additions->organism = tripal_feature_load_organism($organism_id);
+   // add the list of synomyms
+   $additions->synonyms = tripal_feature_load_synonyms($feature_id);
+   // add the list of refernces
+   $additions->references = tripal_feature_load_references($feature_id);
+   // add the list of children located on this feature
+   $additions->myfeaturelocs = tripal_feature_load_featurelocs($feature_id,'as_parent');
+   // add the list of features on which this feature is located
+   $additions->featurelocs = tripal_feature_load_featurelocs($feature_id,'as_child',0);
+   // add the formatted featureloc sequence with highlighting from relationship sequences
+   $additions->floc_sequences = tripal_feature_load_featureloc_sequence ($feature_id,$additions->featurelocs);   
+
+   return $additions;
+}
+/************************************************************************
+ *  
+ */
+function tripal_feature_load_organism ($organism_id){
    // add organism details
    $sql = "SELECT * FROM {organism} WHERE organism_id = %d";
    $previous_db = tripal_db_set_active('chado');  // use chado database
-   $organism = db_fetch_object(db_query($sql, $additions->feature->organism_id));
+   $organism = db_fetch_object(db_query($sql,$organism_id));
    tripal_db_set_active($previous_db);  // now use drupal database
-   $additions->organism = $organism;
-   
-   // add the feature synonyms
+   return $organism;
+}
+/************************************************************************
+ *  
+ */
+function tripal_feature_load_synonyms ($feature_id){
+
    $sql = "SELECT S.name ".
           "FROM {Feature_Synonym} FS ".
           "  INNER JOIN Synonym S ".
           "    ON FS.synonym_id = S.Synonym_id ".
           "WHERE FS.feature_id = %d";
    $previous_db = tripal_db_set_active('chado');  // use chado database
-   $results = db_query($sql,$map->feature_id);
+   $results = db_query($sql,$feature_id);
    tripal_db_set_active($previous_db);  // now use drupal database
    $synonyms = array();
    $i=0;
    while($synonym = db_fetch_object($results)){
       $synonyms[$i++] = $synonym;
    }
-   $additions->synonyms = $synonyms;
+   return $synonyms;
+}
+/************************************************************************
+ *  
+ */
+function tripal_feature_load_references ($feature_id){
 
-   // add feature references in external databases
    $sql = "SELECT F.uniquename,F.Feature_id,DBX.accession,DB.description as dbdesc, ".
           "   DB.db_id, DB.name as db_name, DB.urlprefix,DBX.dbxref_id ".
-          "FROM {Feature} F ".
+          "FROM {feature} F ".
           "  INNER JOIN Feature_dbxref FDBX on F.feature_id = FDBX.feature_id ".
           "  INNER JOIN Dbxref DBX on DBX.dbxref_id = FDBX.dbxref_id ".
           "  INNER JOIN DB on DB.db_id = DBX.db_id ".
           "WHERE F.feature_id = %d";
    $previous_db = tripal_db_set_active('chado');  // use chado database
-   $results = db_query($sql,$map->feature_id);
+   $results = db_query($sql,$feature_id);
    tripal_db_set_active($previous_db);  // now use drupal database
    $references = array();
    $i=0;
    while($accession = db_fetch_object($results)){
       $references[$i++] = $accession;
    }
-   $additions->references = $references;
+   return $references;
+}
+/************************************************************************
+ *  
+ */
+function tripal_feature_load_featurelocs ($feature_id,$side = 'as_parent',$aggregate = 1){
 
+   $sql = "SELECT 
+             F.name, F.feature_id, F.uniquename,
+             FS.name as src_name, 
+             FS.feature_id as src_feature_id, 
+             FS.uniquename as src_uniquename,
+             CVT.name as cvname, CVT.cvterm_id,
+             CVTS.name as src_cvname, CVTS.cvterm_id as src_cvterm_id,
+             FL.fmin, FL.fmax, FL.is_fmin_partial, FL.is_fmax_partial,FL.strand, 
+             FL.phase
+           FROM {featureloc} FL
+              INNER JOIN {feature} F on FL.feature_id = F.feature_id
+              INNER JOIN {feature} FS on FS.feature_id = FL.srcfeature_id
+              INNER JOIN {cvterm} CVT on F.type_id = CVT.cvterm_id
+              INNER JOIN {cvterm} CVTS on FS.type_id = CVTS.cvterm_id
+           ";
+   if(strcmp($side,'as_parent')==0){
+      $sql .= "WHERE FL.srcfeature_id = %d ";
+   }
+   if(strcmp($side,'as_child')==0){
+      $sql .= "WHERE FL.feature_id = %d ";
+   }
 
-   // add the feature relationsips
+   $previous_db = tripal_db_set_active('chado');  // use chado database
+   $flresults = db_query($sql, $feature_id);
+   tripal_db_set_active($previous_db);  // now use drupal database 
+
+   // copy the results into an array
+   $i=0;
+   $featurelocs = array();
+   while($loc = db_fetch_object($flresults)){
+      // if a drupal node exists for this feature then add the nid to the
+      // results object
+      $sql = 'SELECT nid FROM {chado_feature} WHERE feature_id = %d';
+      if(strcmp($side,'as_parent')==0){
+         $feature = db_fetch_object(db_query($sql, $loc->feature_id));
+      }
+      if(strcmp($side,'as_child')==0){
+         $feature = db_fetch_object(db_query($sql, $loc->src_feature_id));
+      }
+      $loc->nid = $feature->nid;
+      // add the result to the array
+      $featurelocs[$i++] = $loc;
+   }
+
+   // Add the relationship feature locs if aggregate is turned on
+   if($aggregate and strcmp($side,'as_parent')==0){ 
+      // get the relationships for this feature without substituting any children
+      // for the parent. We want all relationships
+      $relationships = tripal_feature_get_aggregate_relationships($feature_id,0);
+      foreach($relationships as $rindex => $rel){ 
+         // get the featurelocs for each of the relationship features
+         $rel_featurelocs = tripal_feature_load_featurelocs ($rel->subject_id,'as_child',0);
+         foreach($rel_featurelocs as $findex => $rfloc){
+            $featurelocs[$i++] = $rfloc;
+         }
+      }
+   }      
+   usort($featurelocs,'tripal_feature_sort_locations');
+   return $featurelocs;
+}
+/************************************************************************
+ *  used to sort the feature locs by start position
+ */
+function tripal_feature_sort_locations($a,$b){
+   return strnatcmp($a->fmin, $b->fmin); 
+}
+/************************************************************************
+ *  
+ */
+function tripal_feature_load_relationships ($feature_id,$side = 'as_subject'){
+   // get the relationships for this feature.  The query below is used for both
+   // querying the object and subject relationships
    $sql = "SELECT 
              FS.name as subject_name, 
              FS.uniquename as subject_uniquename, 
-             FS.residues as subject_residues,
              CVTS.name as subject_type,
+             CVTS.cvterm_id as subject_type_id,
              FR.subject_id,          
              FR.type_id as relationship_type_id,
              CVT.name as rel_type,     
              FO.name as object_name, 
              FO.uniquename as object_uniquename, 
              CVTO.name as object_type,
-             FR.object_id,
-             FLS.name as src_name,
-             FLS.uniquename as src_uniquename,
-             FLS.feature_id as src_featureid,
-             CVTR.name as src_cvname, 
-             CVTR.cvterm_id as src_type_id,
-             FL.fmin, 
-             FL.fmax, 
-             FL.is_fmin_partial, 
-             FL.is_fmax_partial,
-             FL.strand, 
-             FL.phase, 
-             FL.residue_info
+             CVTO.cvterm_id as object_type_id,
+             FR.object_id, 
+             FR.rank
            FROM {feature_relationship} FR
              INNER JOIN {cvterm} CVT ON FR.type_id = CVT.cvterm_id
              INNER JOIN {feature} FS ON FS.feature_id = FR.subject_id
              INNER JOIN {feature} FO ON FO.feature_id = FR.object_id
              INNER JOIN {cvterm} CVTO ON FO.type_id = CVTO.cvterm_id
              INNER JOIN {cvterm} CVTS ON FS.type_id = CVTS.cvterm_id
-             LEFT JOIN {featureloc} FL on FL.feature_id = FS.feature_id 
-             LEFT JOIN {feature} FLS on FLS.feature_id = FL.srcfeature_id
-             LEFT JOIN {cvterm} CVTR on FLS.type_id = CVTR.cvterm_id
    ";
-   $osql = "$sql  WHERE FR.object_id = %d ORDER BY FLS.name, FL.fmin ASC";
-   $ssql = "$sql  WHERE FR.subject_id = %d ORDER BY FLS.name, FL.fmin ASC";
+   if(strcmp($side,'as_object')==0){
+      $sql .= " WHERE FR.object_id = %d";
+   }
+   if(strcmp($side,'as_subject')==0){
+      $sql .= " WHERE FR.subject_id = %d";
+   }
+   $sql .= " ORDER BY FR.rank";
 
-   // first get the relationships where this feature is the object
-   // then where it is the subject 
+   // get the relationships 
    $previous_db = tripal_db_set_active('chado');  // use chado database
-   $oresults = db_query($osql, $map->feature_id);
-   $sresults = db_query($ssql, $map->feature_id);
+   $results = db_query($sql, $feature_id);
    tripal_db_set_active($previous_db);  // now use drupal database
 
-   // identify the drupal node for each feature and add that to the 
-   // relationship records
-   $srelationships = array();
-   $orelationships = array();
+
+   // iterate through the relationships, put these in an array and add
+   // in the Drupal node id if one exists
    $i=0;
    $nodesql = "SELECT nid FROM {chado_feature} WHERE feature_id = %d";
-   $rel_locs;  // holds relationship locations
-   $rel_loc;   // a single relationship location
-   while($rel = db_fetch_object($oresults)){
+   $relationships = array();
+   while($rel = db_fetch_object($results)){
      $node = db_fetch_object(db_query($nodesql,$rel->subject_id));
      if($node){
         $rel->subject_nid = $node->nid;
@@ -818,113 +939,173 @@ function chado_feature_load($node){
      if($node){
         $rel->object_nid = $node->nid;
      }  
-     $orelationships[$i] = $rel; 
-     if($rel->src_uniquename){
-        $rel_loc = $rel->src_uniquename ."|".$rel->src_type_id;
-        $rel_locs[$rel_loc]['uname'] = $rel->src_uniquename;
-        $rel_locs[$rel_loc]['type'] = $rel->src_type_id;
-        if(!$rel_locs[$rel_loc]['source_min']){
-           $rel_locs[$rel_loc]['source_min'] = 99999999999;
-        }
-        if($rel->fmin < $rel_locs[$rel_loc]['source_min']){
-           $rel_locs[$rel_loc]['source_min'] = $rel->fmin;
-        }     
-        if($rel->fmax > $rel_locs[$rel_loc]['source_max']){
-           $rel_locs[$rel_loc]['source_max'] = $rel->fmax;
-        }
-     }
-     $i++;
+     $relationships[$i++] = $rel;      
    }
-   // build the parts array needed for coloring the relationsihps in the
-   // reference sequence
-   foreach($orelationships as $index => $rel){
-      if($rel->src_uniquename){
-         $rel_loc = $rel->src_uniquename ."|".$rel->src_type_id;
-         $rel_locs[$rel_loc]['parts'][$index]['type'] = $rel->subject_type;
-         $rel_locs[$rel_loc]['parts'][$index]['start'] = $rel->fmin - $rel_locs[$rel_loc]['source_min'];
-         $rel_locs[$rel_loc]['parts'][$index]['end'] = $rel->fmax - $rel_locs[$rel_loc]['source_min'];
-      }
-   }
-   $i=0;
-   while($rel = db_fetch_object($sresults)){
-     $node = db_fetch_object(db_query($nodesql,$rel->subject_id));
-     if($node){
-        $rel->subject_nid = $node->nid;
-     }  
-     $node = db_fetch_object(db_query($nodesql,$rel->object_id));
-     if($node){
-        $rel->object_nid = $node->nid;
-     }  
-     $srelationships[$i++] = $rel;      
-   }
-   $additions->object_relationships = $orelationships;
-   $additions->subject_relationships = $srelationships;
-
-   // now get the sequence from the reference for those feature as a 
-   // subject relationship to this feature.
-   $object_context = array();
-   $i=0;
-   foreach ($rel_locs as $rel_loc => $attrs){
-      if($attrs['uname']){
-         $sql = "SELECT residues 
-                 FROM feature 
-                 WHERE uniquename = '%s' AND organism_id = %d and type_id = %d";
-         $context = db_fetch_object(db_query($sql,$attrs['uname'],$additions->feature->organism_id,$attrs['type']));
-         $context->residues = substr($context->residues,$attrs['source_min'],$attrs['source_max'] - $attrs['source_min']);
-         $context->source = $attrs['uname'];
-         $context->fmin = $attrs['source_min'];
-         $context->fmax = $attrs['source_max'];
-         $context->residues = tripal_feature_color_sequence ($context->residues,$attrs['parts']);
-      }
-      $object_context[$i] = $context;
-   }
-   $additions->relationship_object_info = $object_context;
-
-  // get the locations for this feature
-   $sql = "SELECT F.name,F.feature_id, F.uniquename,CVT.name as cvname, CVT.cvterm_id,
-             FL.fmin, FL.fmax, FL.is_fmin_partial, FL.is_fmax_partial,FL.strand, 
-             FL.phase, FL.residue_info
-           FROM featureloc FL
-              INNER JOIN feature F on FL.srcfeature_id = F.feature_id
-              INNER JOIN cvterm CVT on F.type_id = CVT.cvterm_id
-           WHERE FL.feature_id = %d";
-   $previous_db = tripal_db_set_active('chado');  // use chado database
-   $flresults = db_query($sql, $map->feature_id);
-   tripal_db_set_active($previous_db);  // now use drupal database 
-   $i=0;
-   $featurelocs = array();
-   while($loc = db_fetch_object($flresults)){
-      $featurelocs[$i++] = $loc;
-   }
-   $additions->featurelocs = $featurelocs;
-
-   // get features that are aligned to this feature
-   $sql = "SELECT F.name,F.feature_id, F.uniquename,CVT.name as cvname, CVT.cvterm_id,
-             FL.fmin, FL.fmax, FL.is_fmin_partial, FL.is_fmax_partial,FL.strand, 
-             FL.phase, FL.residue_info
-           FROM featureloc FL
-              INNER JOIN feature F on FL.feature_id = F.feature_id
-              INNER JOIN cvterm CVT on F.type_id = CVT.cvterm_id
-           WHERE FL.srcfeature_id = %d";
-   $previous_db = tripal_db_set_active('chado');  // use chado database
-   $flresults = db_query($sql, $map->feature_id);
-   tripal_db_set_active($previous_db);  // now use drupal database 
-   $i=0;
-   $myfeaturelocs = array();
-   while($loc = db_fetch_object($flresults)){
-      $myfeaturelocs[$i++] = $loc;
-   }
-   $additions->myfeaturelocs = $myfeaturelocs;   
-
-   return $additions;
+   return $relationships;
 }
+/************************************************************************
+ *  
+ */
+function tripal_feature_get_aggregate_types($feature_id){
+   // get the feature details
+   $sql = 'SELECT type_id FROM {feature} WHERE feature_id = %d';
+   $previous_db = tripal_db_set_active('chado');  // use chado database
+   $feature = db_fetch_object(db_query($sql, $feature_id));
+   tripal_db_set_active($previous_db);  // now use drupal database
 
+   // check to see if this feature is of a type with an aggregate
+   $sql = "SELECT * FROM {tripal_feature_relagg} WHERE type_id = %d";
+   $types = array();
+   $results = db_query($sql,$feature->type_id);
+   while($agg = db_fetch_object($results)){
+      $types[] = $agg->rel_type_id;
+   }
+   
+   return $types;
+}
+/************************************************************************
+ *  
+ */
+function tripal_feature_get_aggregate_relationships($feature_id, $substitute=1,
+  $levels=0, $base_type_id=NULL, $depth=0)
+{
+
+   // we only want to recurse to as many levels deep as indicated by the 
+   // $levels variable, but only if this variable is > 0. If 0 then we 
+   // recurse until we reach the end of the relationships tree.
+   if($levels > 0 and $levels == $depth){
+      return NULL;
+   }
+
+   // first get the relationships for this feature
+   $relationships = tripal_feature_load_relationships($feature_id,'as_object');
+
+   // next, iterate through these relationships and descend, adding in those
+   // that are specified by the aggregator.
+   $i=0;
+   $new_relationships = array();
+   foreach($relationships as $rindex => $rel){
+
+      // set the base type id 
+      if(!$base_type_id){
+         $base_type_id = $rel->object_type_id;
+      } 
+      // check to see if we have an aggregator for this base type
+      $sql = "SELECT * FROM {tripal_feature_relagg} WHERE type_id = %d and rel_type_id = %d";
+      $agg = db_fetch_object(db_query($sql,$base_type_id,$rel->subject_type_id));
+      if($agg){
+         // if we're not going to substitute the resulting relationships for the
+         // parent then we need to add the parent to our list
+         if(!$substitute){
+            $new_relationships[$i++] = $rel;
+         }
+         // recurse all relationships 
+         $agg_relationships = tripal_feature_get_aggregate_relationships(
+            $rel->subject_id,$levels,$base_type_id,$depth++);
+         // if we have an aggregate defined but we have no relationships beyond
+         // this point then there's nothing we can substitute 
+         if(!$agg_relationships and $substitute){
+            $new_relationships[$i++] = $rel;
+         }
+
+         // merge all relationships into one array
+         foreach($agg_relationships as $aindex => $arel){
+            $new_relationships[$i++] = $arel;
+         }  
+      }  
+      else {
+         // if we don't have an aggregate then keep the current relationship
+         $new_relationships[$i++] = $rel;
+      }    
+   } 
+   return $new_relationships;
+}
+/************************************************************************
+ *  
+ */
+function tripal_feature_load_featureloc_sequence($feature_id,$featurelocs){
+
+   $floc_sequences = array();
+
+   // if we don't have any featurelocs then no point in continuing
+   if(!$featurelocs){
+      return false;
+   }
+
+   // get the list of relationships (including any aggregators) and iterate
+   // through each one to find information needed to color-code the reference sequence
+   $relationships = tripal_feature_get_aggregate_relationships($feature_id);
+   if(!$relationships){
+      return false;
+   }
+   foreach($relationships as $rindex => $rel){
+      // get the featurelocs for each of the relationship features
+      $rel_featurelocs = tripal_feature_load_featurelocs ($rel->subject_id,'as_child',0);   
+      foreach($rel_featurelocs as $rfindex => $rel_featureloc){
+         // keep track of this unique source feature
+         $src = $rel_featureloc->src_feature_id ."-". $rel_featureloc->src_type_id;
+
+         // copy over the results to the relationship object.  Since there can
+         // be more than one feature location for each relationship feature we 
+         // use the '$src' variable to keep track of these.
+         $rel->featurelocs->$src->src_uniquename = $rel_featureloc->src_uniquename;
+         $rel->featurelocs->$src->src_type_id    = $rel_featureloc->src_type_id;
+         $rel->featurelocs->$src->src_cvname     = $rel_featureloc->src_cvname;
+         $rel->featurelocs->$src->fmin           = $rel_featureloc->fmin;
+         $rel->featurelocs->$src->fmax           = $rel_featureloc->fmax;
+         $rel->featurelocs->$src->src_name       = $rel_featureloc->src_name;
+
+         // keep track of the individual parts for each relationship 
+         $start = $rel->featurelocs->$src->fmin;
+         $end   = $rel->featurelocs->$src->fmax;
+         $rel_locs[$src]['parts'][$start]['type']  = $rel->subject_type;
+         $rel_locs[$src]['parts'][$start]['start'] = $start;
+         $rel_locs[$src]['parts'][$start]['end']   = $end;
+      }
+   }
+
+   // now get the sequence for each featureloc and highlight the different 
+   // relationships
+   $sql = "SELECT residues FROM {feature} WHERE feature_id = %d";
+   foreach ($featurelocs as $findex => $featureloc){
+      // get the residues for this feature
+      $previous_db = tripal_db_set_active('chado');  // use chado database
+      $feature = db_fetch_object(db_query($sql,$featureloc->src_feature_id));
+      tripal_db_set_active($previous_db);  // now use drupal database
+
+      $src = $featureloc->src_feature_id ."-". $featureloc->src_type_id;
+      // orient the parts to the beginning of the feature sequence
+      $parts = $rel_locs[$src]['parts'];
+      usort($parts, 'tripal_feature_sort_rel_parts');
+      foreach ($parts as $start => $attrs){
+         $parts[$start]['start'] = $parts[$start]['start'] - $featureloc->fmin;
+         $parts[$start]['end']   = $parts[$start]['end'] - $featureloc->fmin;
+      }      
+      $floc_sequences[$src]['src'] = $src;
+      $floc_sequences[$src]['type'] = $featureloc->cvname;
+      $sequence = substr($feature->residues,$featureloc->fmin,$featureloc->fmax - $featureloc->fmin);
+      $floc_sequences[$src]['formatted_seq'] =  tripal_feature_color_sequence (
+          $sequence,$parts);
+   }
+   return $floc_sequences;
+}
+/************************************************************************
+ *  used to sort the list of relationship objects by start position
+ */
+function tripal_feature_sort_rel_objects($a,$b){
+   return strnatcmp($a->fmin, $b->fmin);
+}
+/************************************************************************
+ *  used to sort the list of relationship parts by start position
+ */
+function tripal_feature_sort_rel_parts($a,$b){
+   return strnatcmp($a['start'], $b['start']); 
+}
 /************************************************************************
  *  
  */
 function tripal_feature_color_sequence ($sequence,$parts){
 
-watchdog('tripal_feature',print_r($parts,1));
    $types = array();
 
    // first get the list of types so we can create a color legend

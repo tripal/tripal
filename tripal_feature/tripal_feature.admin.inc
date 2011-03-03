@@ -283,3 +283,243 @@ function get_tripal_feature_admin_form_sync_set (&$form) {
    );
 
 }
+
+/*************************************************************************
+*
+*/
+function tripal_feature_aggregator_page(){
+   $add_url = url("admin/tripal/tripal_feature/aggregate/new");
+   $output = "<a href=\"$add_url\">Add a new aggregator</a>"; 
+   $output .= drupal_get_form('tripal_feature_aggregator_select_form');
+   $output .= '<div id="db-edit-div">Please select an aggregator base type to view or edit</div>';
+   return $output;
+}
+/*************************************************************************
+*
+*/
+function tripal_feature_aggregator_select_form(){
+
+	// get a list of base terms from chado for user to choose
+	$sql = "SELECT DISTINCT type_id FROM {tripal_feature_relagg} ORDER BY type_id ";
+	$results = db_query ($sql);
+   
+   $sql = "SELECT * FROM {cvterm} WHERE cvterm_id = %d";
+   $previous_db = tripal_db_set_active('chado');
+	$types = array();
+   $types[] = '';
+   while($base = db_fetch_object($results)){
+      $term = db_fetch_object(db_query($sql,$base->type_id));
+		$types[$base->type_id] = $term->name;
+   }
+   tripal_db_set_active($previous_db);
+
+	$form['type_id'] = array(
+      '#title' => t('Aggregator Base Type'),
+      '#type' => 'select',
+      '#options' => $types,
+      '#ahah' => array(
+         'path' => 'admin/tripal/tripal_feature/aggregate/edit/js',
+         'wrapper' => 'db-edit-div',
+         'effect' => 'fade',
+         'event' => 'change',
+         'method' => 'replace',
+      ),
+	);
+
+   return $form;
+}
+/*************************************************************************
+*
+*/
+function tripal_feature_aggregator_form(&$form_state = NULL,$type_id = NULL){
+
+   // get this requested database
+   if($type_id){
+      $sql = "SELECT * FROM {tripal_feature_relagg} WHERE type_id = %d ";
+      $tsql = "SELECT * FROM {cvterm} WHERE cvterm_id = %d ";
+
+      // get the default list of terms
+      $results = db_query($sql,$type_id);
+      while($type = db_fetch_object($results)){
+         $previous_db = tripal_db_set_active('chado');
+         $term = db_fetch_object(db_query($tsql,$type->rel_type_id));
+         tripal_db_set_active($previous_db);
+         $default_others .= $term->name . " ";
+      }
+      $default_base = $base->name;     
+      $action = 'Update';
+      $form['type_id'] = array(
+         '#type' => 'hidden',
+         '#value' => $type_id
+      );
+   } else {
+      $action = 'Add';
+      $form['base']= array(
+         '#type'          => 'textfield',
+         '#title'         => t('Base Feature type'),
+         '#description'   => t('Please enter the Sequence Ontology (SO) term for the base feature type for this aggregator.'),
+         '#default_value' => $default_base,
+         '#required'      => TRUE,
+         '#weight'        => 1
+      );
+   }
+
+   $form['others']= array(
+      '#type'          => 'textarea',
+      '#title'         => t('Aggregate these types if a relationship exists'),
+      '#description'   => t('Please enter the Sequence Ontology (SO) terms that should be aggregated with the base feature type listed above.  Separate each by a space or newline'),
+      '#default_value' => $default_others,
+      '#required'      => TRUE,
+      '#weight'        => 2
+   );
+ 
+   if(strcmp($action,'Update')==0){
+      $form['update'] = array (
+        '#type'         => 'submit',
+        '#value'        => t('Update'),
+        '#weight'       => 5,
+        '#executes_submit_callback' => TRUE,
+      );
+      $form['delete'] = array (
+        '#type'         => 'submit',
+        '#value'        => t('Delete'),
+        '#weight'       => 6,
+        '#executes_submit_callback' => TRUE,
+      );
+   } else {
+      $form['add'] = array (
+        '#type'         => 'submit',
+        '#value'        => t('Add'),
+        '#weight'       => 5,
+        '#executes_submit_callback' => TRUE,
+      );
+   }
+   $form['#redirect'] = 'admin/tripal/tripal_feature/aggregate';
+
+
+   return $form;
+}
+
+/************************************************************************
+*
+*/
+function tripal_feature_aggregator_form_validate($form, &$form_state){
+   $type_id  = $form_state['values']['type_id'];
+   $base     = $form_state['values']['base'];
+   $others   = $form_state['values']['others'];
+   $op      =  $form_state['values']['op'];
+
+   // split apart the feature types to be aggregated
+   $types = preg_split('/\s+/',$others);
+
+   // the SQL for finding the term
+   $tsql = "
+      SELECT * 
+      FROM {cvterm} CVT 
+         INNER JOIN {cv} CV on CVT.cv_id = CV.cv_id 
+      WHERE CVT.name = '%s' and CV.name = 'sequence'";
+
+
+   // make sure the base type exists
+   if($base){
+      $previous_db = tripal_db_set_active('chado');
+      $term = db_fetch_object(db_query($tsql,$base));
+      tripal_db_set_active($previous_db);
+      if(!$term){
+         form_set_error('base',t('The specified base type is not a valid SO term'));
+      }
+
+      // make sure this type doesn't already in the table
+      $sql = "SELECT * FROM {tripal_feature_relagg} WHERE type_id = %d ";
+      $agg = db_fetch_object(db_query($sql,$term->cvterm_id));
+      if($agg){
+         form_set_error('base',t('The specified base type is already used as a base type for another aggregator and cannot be readded.'));
+      }      
+   }
+
+   // iterate through each type to be aggregated and make sure they are valid
+   foreach($types as $type){
+      $previous_db = tripal_db_set_active('chado');
+      $term = db_fetch_object(db_query($tsql,$type));
+      tripal_db_set_active($previous_db);
+      if(!$term){
+         form_set_error('others',t('The specified type ') . $type . t(' is not a valid SO term'));
+      }
+   }   
+}
+/************************************************************************
+*
+*/
+function tripal_feature_aggregator_form_submit($form, &$form_state){
+
+   $type_id  = $form_state['values']['type_id'];
+   $base     = $form_state['values']['base'];
+   $others   = $form_state['values']['others'];
+   $op      =  $form_state['values']['op'];
+
+   // split apart the feature types to be aggregated
+   $types = preg_split('/\s+/',$others);
+
+   // the SQL for finding the term
+   $tsql = "
+      SELECT * 
+      FROM {cvterm} CVT 
+         INNER JOIN {cv} CV on CVT.cv_id = CV.cv_id 
+      WHERE CVT.name = '%s' and CV.name = 'sequence'";
+
+   // the SQL for deleting an aggregator
+   $dsql = "
+      DELETE FROM {tripal_feature_relagg}
+      WHERE type_id = %d
+   ";
+
+   // if this is an insert then we have a base type name.  We
+   // need to get the corresponding term id
+   if($base){
+      $previous_db = tripal_db_set_active('chado');
+      $term = db_fetch_object(db_query($tsql,$base));
+      tripal_db_set_active($previous_db);
+      $type_id = $term->cvterm_id;
+   }
+
+   if(strcmp($op,'Delete')==0){
+      $result = db_query($dsql,$type_id);
+      if($result){
+        drupal_set_message("Aggregator deleted");
+      } else {
+        drupal_set_message("Failed to delete mailing list.");
+      }
+   }
+   else {
+      // for an update, first remove all the current aggregator settings
+      // and we'll add them again
+      $result = db_query($dsql,$type_id);
+
+      // the SQL for inserting the aggregated types
+      $isql = "
+         INSERT INTO {tripal_feature_relagg}
+          (type_id,rel_type_id)
+         VALUES 
+          (%d,%d)
+      ";
+
+      // iterate through each type to be aggregated and add an entry in the table
+      foreach($types as $type){
+         $previous_db = tripal_db_set_active('chado');
+         $term = db_fetch_object(db_query($tsql,$type));
+         tripal_db_set_active($previous_db);
+         $result = db_query($isql,$type_id,$term->cvterm_id);
+      }
+      drupal_set_message("Aggregator added");
+   } 
+   return '';
+}
+/*************************************************************************
+*
+*/
+function tripal_feature_aggregator_ajax_edit (){ 
+   // get the database id, build the form and then return the JSON object
+   $type_id = $_POST['type_id'];
+   $form = drupal_get_form('tripal_feature_aggregator_form',$type_id);
+   drupal_json(array('status' => TRUE, 'data' => $form));
+}

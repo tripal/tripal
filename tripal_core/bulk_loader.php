@@ -68,7 +68,95 @@ function tripal_core_bulk_loader_create_form_step2 (&$form,$form_state){
 
 	$fields = array();
    $fields[''] = '';
+/*
+   $form_fields = array(
+      'Feature details' => array (          
+         'name' => array(
+            'description' => 'Feature Name (human readable)',
+            'table' => array(
+               'table name' => 'feature',
+               'fields' => array('name'),
+            ),
+         ),               
+         'uniquename' => array(
+            'description' => 'Unique Name (must be unique for this organism and feature type)',
+            'table' => array(
+               'table name' => 'feature',
+               'fields' => array('uniquename'),
+            ),
+         ), 
+         'type_id' => array(
+            'description' => 'Feature type (must be a valid SO term',
+            'table' => array(
+               'table name' => 'feature',
+               'fields' => array('uniquename'),
+            ),
+         ), 
+         'residues' => array(
+            'description' => 'Residues',
+            'table' => array(
+               'table name' => 'feature',
+               'fields' => array('residues'),
+            ),
+         ), 
+      ),     
+      'Organism specification' => array (           
+         'organism_id' => array(
+            'description' => 'Organism ID number',
+            'table' => array(
+               'table name' => 'organism',
+               'fields' => array('organism_id'),
+            ),
+         ), 
+         'genus' => array(
+            'description' => 'Genus',
+            'table' => array(
+               'table name' => 'organism',
+               'fields' => array('genus'),
+            ),
+            'valid values' => 'this'
+         ), 
+         'species' => array(
+            'description' => 'Species',
+            'table' => array(
+               'table name' => 'organism',
+               'fields' => array('species'),
+            ),
+         ), 
+         'full_name' => array(
+            'description' => 'Scientific Name (genus + species)',
+            'table' => array(
+               'table name' => 'organism',
+               'fields' => array('genus','species'),
+               'parser' => '/^(.*?)\s+(.*?)$/',
+            ),
+         ), 
+         'common_name' => array(
+            'description' => 'Common Name',
+            'table' => array(
+               'table name' => 'organism',
+               'fields' => array('common_name'),
+            ),
+         ), 
+      ),
+1.  allow the user to specify the term from a specific vocabulary
+2.  allow the user to specify the vocabulary to choose from
+3.  
+      'Feature Property' => array (
+         'property' => array(
+            'description' => 'Feature property value',
+            'table' => array(
+               'table name' => 'featureprop',
+               'fields' => array('value'),
+               'check' => array(
+                  'type_id' => {
+                ),
+            ).
+         ), 
+      ),
+   );
 
+*/
    // these fields correspond with the columns of the feature table and
    // the foreign key contraints for the feature table.
    $fields = array(
