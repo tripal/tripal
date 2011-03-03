@@ -4,6 +4,7 @@ require_once "tripal_feature.admin.inc";
 require_once "syncFeatures.php";
 require_once "indexFeatures.php";
 require_once "fasta_loader.php";
+require_once "gff_loader.php";
 
 require_once "tripal_feature.api.inc";
 
@@ -125,13 +126,20 @@ function tripal_feature_menu() {
    // the administative settings menu
    $items['admin/tripal/tripal_feature'] = array(
      'title' => 'Features',
+     'description' => 'Basic Description of Tripal Organism Module Functionality',
+     'page callback' => 'tripal_feature_module_description_page',
+     'access arguments' => array('administer site configuration'),
+     'type' => MENU_NORMAL_ITEM,
+   );
+   $items['admin/tripal/tripal_feature/configuration'] = array(
+     'title' => 'Configuration',
      'description' => 'Settings for Chado Features',
      'page callback' => 'drupal_get_form',
      'page arguments' => array('tripal_feature_admin'),
      'access arguments' => array('administer site configuration'),
      'type' => MENU_NORMAL_ITEM,
    );
-   $items['admin/tripal/fasta_loader'] = array(
+   $items['admin/tripal/tripal_feature/fasta_loader'] = array(
      'title' => 'Import a multi-FASTA file',
      'description' => 'Load sequences from a multi-FASTA file into Chado',
      'page callback' => 'drupal_get_form',
@@ -139,6 +147,15 @@ function tripal_feature_menu() {
      'access arguments' => array('administer site configuration'),
      'type' => MENU_NORMAL_ITEM,
    );
+   $items['admin/tripal/tripal_feature/gff3_load'] = array(
+     'title' => 'Import a GFF3 file',
+     'description' => 'Import a GFF3 file into Chado',
+     'page callback' => 'drupal_get_form',
+     'page arguments' => array('tripal_core_gff3_load_form'),
+     'access arguments' => array('access administration pages'),
+     'type' => MENU_NORMAL_ITEM,
+   );
+
 
    // managing relationship aggregates
    $items['admin/tripal/tripal_feature/aggregate'] = array(

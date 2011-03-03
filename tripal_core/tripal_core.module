@@ -4,7 +4,6 @@ require_once "jobs.php";
 require_once "mviews.php";
 require_once "cvterms.php";
 require_once "chado_install.php";
-require_once "gff_loader.php";
 require_once "bulk_loader.php";
 
 require_once "tripal_core.api.inc";
@@ -141,14 +140,6 @@ function tripal_core_menu() {
      'description' => 'Installs Chado version 1.11 inside the current Drupal database',
      'page callback' => 'drupal_get_form',
      'page arguments' => array('tripal_core_chado_v1_11_load_form'),
-     'access arguments' => array('access administration pages'),
-     'type' => MENU_NORMAL_ITEM,
-   );
-   $items['admin/tripal/gff3_load'] = array(
-     'title' => 'Import a GFF3 file',
-     'description' => 'Import a GFF3 file into Chado',
-     'page callback' => 'drupal_get_form',
-     'page arguments' => array('tripal_core_gff3_load_form'),
      'access arguments' => array('access administration pages'),
      'type' => MENU_NORMAL_ITEM,
    );
