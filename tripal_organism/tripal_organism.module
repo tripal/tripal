@@ -140,14 +140,40 @@ function tripal_organism_module_description_page() {
   $text = '';
   
   $text .= '<h3>Description:</h3>';
-  $text .= '<p>TODO: Basic Description of this module including mention/link to the chado module</p>';
+  //================================================================================
+  $text .= '<p>The Tripal Organism module allows you to add, edit and/or delete chado organisms. Furthermore, it also provides listing of organisms and details page for each organism. Basically, the chado organism module is designed to hold information about a given species. For more information on the chado organism module see the <a href="http://gmod.org/wiki/Chado_Organism_Module">GMOD wiki page</a></p>';
 
   $text .= '<h3>Post Installation Instructions:</h3>';
-  $text .= '<p>TODO: Describe any post installation intructions here. You shouldalways include setting user permissions.</p>';
+  //================================================================================
+  $text .= '<p>This module also provides <b>User Permissions</b> to control which users or groups of users (roles) can view/access organism content (access chado_organism content), create organisms (create chado_organism content), edit or delete organisms (edit chado_organism content or delete chado_organism content). The default is that only the original administration account has these permissions. To allow additional users/roles any combination of the above permissions:</p>';
+  $text .= '<ol>';
+    $text .= '<li><a href="../user/roles">Add Roles</a> to provide permissions to. For example, you might want a "View Tripal organism Content" and a "Manage Tripal organism Content" Role. If you only want to provide permissions based on whether the user is logged in (authenticated) or not (anonymous) then you don\'t need to create roles.</li>';
+    $text .= '<li><a href="../user/permissions">Assign permissions</a> to roles. Specically focus on those mentioned above, then for each permission add a checkmark to the rolw (columns) that you want to have this permission.</li>';
+    $text .= '<li><a href="../user/user">Assign Users Roles</a>. This is what gives a given user the set of permissions associated with a given role. Notice that you can assign more than one role to a user and that each user is "Authenticated" by default. A user has permission is any of his/her roles have that permission.</li>';
+  $text .= '</ol>';
+  
+  $text .= '<p>Another important step, <b>if you chado database already contains organisms, is to sync\' Chado with Drupal</b>. This creates Drupal Content including detail pages for each organism (known as nodes in Drupal). To sync\' Chado with Drupal simply go to the <a href="tripal_organism/configuration">Configuration Page for organisms</a> and in the "Sync Organisms" Fieldset select the Organisms you would like to sync.</p>';
+
   
   
   $text .= '<h3>Features of this Module:</h3>';
-  $text .= '<p>TODO: Discuss the Features of this module including links. Some features to consider are creating content, details pages/node content, editing/deleteing, basic listings and vies integration. See admin/tripal/tripal_stock for an example.</p>';
+  //================================================================================
+  $text .= '<b><a href="../../node/add/chado_organism">Create an Organism:</a></b>';
+  $text .= '<p>This allows you to create content in your drupal and chado for an organism (only the unique organism identifier is duplicated). An organism must have a genus, species, abreviation, common name. In addition, you can optionally supply a short description.</p>';
+  
+  $text .= '<b>Details Page of a Organism:</b>';
+  $text .= '<p>Each organism get\'s it\'s own page on this website. This page is meant to give an overall picture of the organism and it\'s associated details. To understand where it is -All page content in Drupal is known as a node and is given a unique identifier or nid. Thus every drupal page has a path of node/<nid>. You can get to the Details page for a given organism from either of the organism listings described below.</p>';
+  $text .= '<p>If you want to customize the look of the Organism Details page simply copy the PHP/HTML template node-chado_organism.tpl.php from theme_tripal to the base theme you are currently using. Then edit it as desired. There are plans to integrate this details page with Drupal Panels which will provide a much more user-friendly and no-programming-needed method to customize this page.</p>';
+  
+  $text .= '<b>Updating/Deleting Organisms:</b>';
+  $text .= '<p>The Organisms Details Page also acts as a landing pad for updating/deleting organisms. To <b>update an organism</b>, go to the organism details page and click on the Edit tab near the top of the page. This tab will only be visable if you have permission to edit chado organism content (See post installation steps above for information on setting user permissions). If you want to <b>delete an organism</b>, click the Edit tab and then near the bottom of the form, click the Delete button. This will delete the entire organism and cannot be undone.</p>';
+  
+  $text .= '<b><a href="../../organisms">Basic Listing of Organisms:</a></b>';
+  $text .= '<p>This module also provides a basic listing of all organisms currently sync\'d with Drupal. To access this listing, there should be a Stocks Primary Menu item which links you to <a href="../../organisms">this page</a>. This page lists each organism in it\'s own triapl expandable box and provides a link to each organism by clicking on it\'s common name. Currently there is no way to easily customize this listing.</p>';
+  
+  $text .= '<b><a href="../build/views/">Flexible Listing of Organisms using Drupal Views:</a></b>';
+  $text .= '<p>In order to access a more flexible listing of organisms you must first install the <a href="http://drupal.org/project/views">Drupal Views2 module</a>. You should then be able to access the default views <a href="../build/views/">here</a>. Essentially, Views is a module which allows you to create custom SQL queries completely through the web interface without knowing SQL. Furthermore, it also does some formatting of the results allowing you to display them as HTML lists, tables or grids. You can also expose filters to the user to let them customize the results they see and even implement various sorting.</p>';
+  $text .= '<p>To use one of the Default Views simply click "Enable" and then "Edit" to change it to show exactly what you want. To view the current listing simply clikc "View Page" at the top of the Edit user interface. There are a number of good tutorials out there for Views2, any of which can be used to help you create your own custom listings of biological content. (Note: there aren\'t any tutorials specifically for tripal content but any tutorial for Views2 will show you how to use the views interface.</p>';
   
   return $text;
 }
