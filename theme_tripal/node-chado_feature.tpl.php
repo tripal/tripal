@@ -138,21 +138,26 @@
          if(count($featurelocs) > 0){
       ?>
       <div id="feature-featurelocs" class="tripal_feature-info-box">
-      <div class="tripal_expandableBox"><h3>Locations</h3></div>
+      <div class="tripal_expandableBox"><h3><?php print $feature->featurename;?> is Located on These Features</h3></div>
       <div class="tripal_expandableBoxContent">
       <table class="tripal_feature-locations-table">
          <tr>
-            <th>Feature</th>
+            <th>Name</th>  
             <th>Type</th>
             <th>Position</th>
             <th>Phase</th>
             <th>Strand</th>
          </tr>
-         <?php foreach ($featurelocs as $index => $loc){ ?>
+         <?php foreach ($featurelocs as $index => $loc){ 
+            $locname = $loc->src_name;
+            if($loc->nid){
+              $locname = "<a href=\"" . url("node/$loc->nid") . "\">$loc->src_name</a> ";
+            }
+         ?>
             <tr>
-               <td><?php print $loc->name ?></td>
+               <td><?php print $locname ?></td>
                <td><?php print $loc->cvname ?></td>
-               <td><?php print $loc->fmin . ".." . $loc->fmax ?></td>
+               <td><?php print $loc->src_name .":".$loc->fmin . ".." . $loc->fmax ?></td>
                <td><?php print $loc->phase ?></td>
                <td><?php print $loc->strand ?></td>
             </tr>
@@ -168,19 +173,24 @@
       <div id="feature-myfeaturelocs" class="tripal_feature-info-box">
       <div class="tripal_expandableBox"><h3>Features Located on <?php print $feature->featurename;?></h3></div>
       <div class="tripal_expandableBoxContent">
-      <table>
+      <table class="tripal_feature-locations-table">
          <tr>
-            <th>Feature</th>
+            <th>Name</th>
             <th>Type</th>
             <th>Position</th>
             <th>Phase</th>
             <th>Strand</th>
          </tr>
-         <?php foreach ($myfeaturelocs as $index => $loc){ ?>
+         <?php foreach ($myfeaturelocs as $index => $loc){ 
+            $locname = $loc->name;
+            if($loc->nid){
+              $locname = "<a href=\"" . url("node/$loc->nid") . "\">$loc->name</a> ";
+            }
+         ?>
             <tr>
-               <td><?php print $loc->name ?></td>
+               <td><?php print $locname ?></td>
                <td><?php print $loc->cvname ?></td>
-               <td><?php print $loc->fmin . ".." . $loc->fmax ?></td>
+               <td><?php print $loc->src_name .":".$loc->fmin . ".." . $loc->fmax ?></td>
                <td><?php print $loc->phase ?></td>
                <td><?php print $loc->strand ?></td>
             </tr>
@@ -191,11 +201,10 @@
      <!-- Start of theme_tripal_feature_feature_relationships -->
        <?php
          print "<div id=\"feature-srelationships\" class=\"tripal_feature-info-box\">";
-         print "<div class=\"tripal_expandableBox\"><h3>Relationships</h3></div>";
+         print "<div class=\"tripal_expandableBox\"><h3>Parent Relationships</h3></div>";
          print "<div class=\"tripal_expandableBoxContent\">";
          $srelationships = $node->subject_relationships;
-        if(count($srelationships) > 0){
-            print "<b>Subject Relationships</b><br>";
+         if(count($srelationships) > 0){
             print "
             <table class=\"tripal_feature-relationships-subject-table\">
                <tr>
@@ -216,29 +225,31 @@
                print "</td>";
                print "<td>$result->object_type</td>";
             }
-            print "</table><br>";
+            print "</table>";
          } 
+         print "</div></div>";
        ?>
      <!-- End of theme_tripal_feature_feature_relationships -->
      <!-- Start of theme_tripal_feature_feature_relationships -->
        <?php
+         print "<div id=\"feature-srelationships\" class=\"tripal_feature-info-box\">";
+         print "<div class=\"tripal_expandableBox\"><h3>Child Relationships</h3></div>";
+         print "<div class=\"tripal_expandableBoxContent\">";
          $orelationships = $node->object_relationships;
-         $other_seqs = array();
          if(count($orelationships) > 0){    
-            print "<b>Object Relationships</b><br>";
             print "
             <table class=\"tripal_feature-relationships-object-table\">
                <tr>
-                  <th>Feature</th>
+                  <th>Name</th>
                   <th>Type</th>
                   <th>Relationship</th>
                   <th>Position</th>
                </tr>
             ";
             foreach ($orelationships as $result){
-               $subject_name = $result->subject_uniquename;
-               if($result->subject_name) {
-                  $subject_name = $result->subject_name;
+               $subject_name = $result->subject_name;
+               if(!$subject_name){
+                  $subject_name = $result->subject_uniquename;
                }
                print "<tr>";
                print "<td>";
@@ -250,46 +261,35 @@
                print "</td>";
                print "<td>$result->subject_type</td>";
                print "<td><b>$result->rel_type</b></td>";
-               if($result->src_name){
-                  print "<td>$result->src_name ($result->src_cvname):$result->fmin $result->fmax</td>";
-               } else {
-                  print "<td></td>";
+               print "<td>";
+               $featurelocs = $result->featurelocs;
+               if($featurelocs){
+                  foreach($featurelocs as $src => $attrs){
+                     print "$attrs->src_name ($attrs->src_cvname):$attrs->fmin $attrs->fmax</br>";
+                  } 
                }
+               print "</td>";
                print "</tr>";
-               // anything with a src_name does not have a location on a 
-               // reference sequence, so let's keep track of those and print
-               // the sequences later.  Those that are located elsewhere
-               // will get printed separately.
-               if(!$result->src_name){
-                  $other_seqs[]=$result;
-               }
             }
-            print "</table>";
- 
-            // print the sequences for those that are located on a references
-            // sequence
-            $rel_info = $node->relationship_object_info;
-            foreach($rel_info as $index => $info){
-              if($info->source){
-                 print "<br><b>Sequence Context:</b><br>";
-                 print "$info->source:$info->fmin..$info->fmax<br>"; 
-                 print $info->residues;
-              }       
-            }
-            // now print any remaining sequences
-            foreach($other_seqs as $i => $rel){
-               print "<br><b>$rel->subject_type sequence</b>";
-               print "<pre id=\"tripal_feature-sequence\">";
-               print ereg_replace("(.{100})","\\1<br>",$rel->subject_residues); 
-               print "</pre>";
-            }
+            print "</table>";           
 
            print "</div></div>";
          } 
        ?>
 
      <!-- End of theme_tripal_feature_feature_relationships -->
-  
+     <!-- Start of theme_tripal_feature_feature_floc_sequences -->
+      <?php
+         $floc_sequences = $node->floc_sequences;
+         foreach($floc_sequences as $seq => $attrs){
+           print "<div id=\"feature-floc-squences\" class=\"tripal_feature-info-box\">";
+           print "<div class=\"tripal_expandableBox\"><h3>".$attrs['type']." Sequence </h3></div>";
+           print "<div class=\"tripal_expandableBoxContent\">";
+           print $attrs['formatted_seq'];
+           print "</div></div>";          
+         } 
+       ?>
+     <!-- End of theme_tripal_feature_feature_floc_sequences -->
    <?php endif; ?>
    <?php print $content?>
    </div>
