@@ -1,34 +1,30 @@
-/* styles for the sequence blocks on the feature page */
-pre#tripal_feature-sequence {
-   background-color: #FFFFFF;
-   border: 0;
-   margin: 0;
-   margin-top: 10px;
-   padding: 0;
+#tripal_feature-featureloc_sequence {
+  height: 300px;
+  overflow: scroll;
 }
 
-div#tripal_feature-sequence-legend {
+div#tripal_feature-featureloc_sequence-legend {
    padding: 10px;
    margin: 10px;
 }
 /* styles for cvterm types in sequences */
-div#tripal_feature-sequence-legend span {
+div#tripal_feature-featureloc_sequence-legend span {
    margin: 5px;
    padding: 10px;
 }
-span.tripal_feature-sequence-five_prime_UTR {
+span.tripal_feature-featureloc_sequence-five_prime_UTR {
    background-color: #99FF99;
 }
 
-span.tripal_feature-sequence-three_prime_UTR {
+span.tripal_feature-featureloc_sequence-three_prime_UTR {
    background-color: #FF9999;
 }
 
-span.tripal_feature-sequence-CDS {
+span.tripal_feature-featureloc_sequence-CDS {
    background-color: #FFFF99;
 }
 
-span.tripal_feature-sequence-mRNA {
+span.tripal_feature-featureloc_sequence-mRNA {
    background-color: #FFFF99;
 }
 /* information tables on the feature pages */

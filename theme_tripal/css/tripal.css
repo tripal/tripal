@@ -1,68 +1,68 @@
-
-
-table.tripal_table_vert {
-   width: 0px;  /* reset the table width */
+.tripal-info-box {
+   width: 100%;
+}
+.tripal-table {
+   width: 100%; 
+}
+.tripal-table-horz {
+   border-top: 2px solid #999999;
+   border-bottom: 2px solid #999999; 
 }
 
-tbody.tripal_table_vert, tbody th {
-   border: 0px solid #CCCCCC;
-   padding: 0px;
+/* settings for vertical tables (headers across left-side) */
+.tripal-info-box table.tripal-table-vert .tripal-table-even-row th {
+   background-color: #EEEEEE;
+   font-weight: none;
+   text-align: right;
 }
-
-table.tripal_table_horz {
-   width: 0px;  /* reset the table width */
-}
-
-tbody.tripal_table_horz, tbody th {
-   border: 0px solid #CCCCCC;
-   padding: 5px 15px 10px 0px;
-   margin: 0px;
-}
-
-td.tripal_table_horz, td {  
-   padding: 0px 15px 5px 0px;
-   margin: 0px;
-}
-
-.tripal_expandableBox {
-   padding: 10px 10px 10px 10px;
-   border: 1px solid #CCC5AE;
-   cursor: pointer; /* hand-shaped cursor */
-   background-image: url("../images/arrow-up-48x48.png");
-   background-repeat: no-repeat;
-   background-position: top right; 
-   background-color: #EEEFFF;
-}
-
-.tripal_expandableBoxContent{
-   margin: 0 0 0 0;
-   padding: 5px 5px 5px 5px;
-   clear:both;
-   border-right: 1px solid #CCC5AE;
-   border-bottom: 1px solid #CCC5AE;
-   border-left: 1px solid #CCC5AE;
+.tripal-info-box table.tripal-table-vert .tripal-table-odd-row th {
    background-color: #FFFFFF;
-   font-size: small;
-   overflow: auto;
+   text-align: right;
+}
+.tripal-info-box table.tripal-table-vert .tripal-table-even-row {
+   background-color: #EEEEEE;
+   border-top: 1px solid #CCCCCC;
+   border-bottom: 1px solid #CCCCCC;
+}
+.tripal-info-box table.tripal-table-vert .tripal-table-odd-row {
+   background-color: #FFFFFF;
+   border-top: 1px solid #CCCCCC;
+   border-bottom: 1px solid #CCCCCC;
+}
+/* settings for horizontal tables (headers across top) */
+.tripal-info-box table.tripal-table-horz th {
+   background-color: #EEEEFF;
+   font-weight: none;
+   text-align: left;
+}
+.tripal-info-box table.tripal-table-horz .tripal-table-even-row {
+   background-color: #FFFFFF;
+   font-weight: none;
+   text-align: left;
+   border-top: 1px solid #CCCCCC;
+   border-bottom: 1px solid #CCCCCC;
+}
+.tripal-info-box table.tripal-table-horz .tripal-table-odd-row {
+   background-color: #EEEEEE;
+   text-align: left;
+   border-top: 1px solid #CCCCCC;
+   border-bottom: 1px solid #CCCCCC;
 }
 
-.tripal_expandableSubBoxContent{
-   padding: 5px 5px 5px 5px;
-   clear:both;
-   border-right: 1px solid #CCC5AE;
-   border-bottom: 1px solid #CCC5AE;
-   border-left: 1px solid #CCC5AE;
-   border-top: 1px solid #CCC5AE;
-   background-color: #EEFEEE;
-   overflow: auto;
-   min-height: 150px;
-   font-family: courier;
+.tripal-info-box-title {
+  font-size: 2em;
+  padding-top: 20px;
+
+}
+/* hide the title when inside of a block on a panel */
+.pane-block .tripal-info-box-title {
+   visibility: hidden;
+   padding: 0;
+   margin: 0;
+   height: 0px;
 }
 
-#tripal_expandableBox_toggle_button {
-   cursor: pointer; /* hand-shaped cursor */
-}
-
+/* Ajax loader */
 #tripal_ajaxLoading {
    position: fixed;
    top: 40%;
