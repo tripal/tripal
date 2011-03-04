@@ -1,6 +1,7 @@
 #tripal_feature-featureloc_sequence {
   height: 300px;
   overflow: scroll;
+   background-color: #FFFFFF;
 }
 
 div#tripal_feature-featureloc_sequence-legend {
