@@ -182,7 +182,7 @@ function tripal_feature_menu() {
 
 
 
- // Adding Secondary Properties-----------------
+  // Adding Secondary Properties
   $items['node/%tripal_feature_node/properties'] = array(       
     'title' => t('Add Properties & Synonyms'),                         
     'description' => t('Settings for Features'),
@@ -242,9 +242,10 @@ function tripal_feature_menu() {
 
    return $items;
 }
+
 /*************************************************************************
  * Implements Menu wildcard_load hook
- * Purpose: Allows the node ID of a chado stock to be dynamically 
+ * Purpose: Allows the node ID of a chado feature to be dynamically 
  *   pulled from the path. The node is loaded from this node ID
  *   and supplied to the page as an arguement
  */
@@ -255,8 +256,86 @@ function tripal_feature_node_load($nid) {
       return $node;
     }
   }
-
   return FALSE;
+}
+/*************************************************************************
+*
+*/
+function tripal_feature_block($op = 'list', $delta = 0, $edit=array()){
+   switch($op) {
+      case 'list':
+         $blocks['references']['info'] = t('Tripal Feature References');
+         $blocks['references']['cache'] = BLOCK_NO_CACHE;
+
+         $blocks['base']['info'] = t('Tripal Feature Details');
+         $blocks['base']['cache'] = BLOCK_NO_CACHE;
+
+         $blocks['sequence']['info'] = t('Tripal Feature Sequence');
+         $blocks['sequence']['cache'] = BLOCK_NO_CACHE;
+
+         $blocks['featureloc_sequences']['info'] = t('Tripal Formatted Location Sequence');
+         $blocks['featureloc_sequences']['cache'] = BLOCK_NO_CACHE;
+
+         $blocks['featurelocs_as_parent']['info'] = t('Tripal Feature Locations as Parent');
+         $blocks['featurelocs_as_parent']['cache'] = BLOCK_NO_CACHE;
+
+         $blocks['featurelocs_as_child']['info'] = t('Tripal Feature Locations as Child');
+         $blocks['featurelocs_as_child']['cache'] = BLOCK_NO_CACHE;
+
+         $blocks['relationships_as_object']['info'] = t('Tripal Feature Relationships as Object');
+         $blocks['relationships_as_object']['cache'] = BLOCK_NO_CACHE;
+
+         $blocks['relationships_as_subject']['info'] = t('Tripal Feature Relationships as Subject');
+         $blocks['relationships_as_subject']['cache'] = BLOCK_NO_CACHE;
+
+         return $blocks;
+
+
+      case 'view':
+         if(user_access('access chado_feature content') and arg(0) == 'node' and is_numeric(arg(1))) {
+            $nid = arg(1);
+            $node = node_load($nid);
+ 
+            $block = array();
+            switch($delta){
+               case 'references':
+                  $block['subject'] = t('References');
+                  $block['content'] = theme('tripal_feature_references',$node);
+                  break;
+               case 'base':
+                  $block['subject'] = t('Feature Details');
+                  $block['content'] = theme('tripal_feature_base',$node);
+                  break;
+               case 'sequence':
+                  $block['subject'] = t('Sequence');
+                  $block['content'] = theme('tripal_feature_sequence',$node);
+                  break;
+               case 'featureloc_sequences':
+                  $block['subject'] = t('Formatted Sequences');
+                  $block['content'] = theme('tripal_feature_featureloc_sequences',$node);
+                  break;
+               case 'featurelocs_as_parent':
+                  $block['subject'] = t('Parent Features');
+                  $block['content'] = theme('tripal_feature_featurelocs_as_parent',$node);
+                  break;
+               case 'featurelocs_as_child':
+                  $block['subject'] = t('Child Features');
+                  $block['content'] = theme('tripal_feature_featurelocs_as_child',$node);
+                  break;
+               case 'relationships_as_object':
+                  $block['subject'] = t('Object Relationships');
+                  $block['content'] = theme('tripal_feature_relationships_as_object',$node);
+                  break;
+               case 'relationships_as_subject':
+                  $block['subject'] = t('Subject Relationships');
+                  $block['content'] = theme('tripal_feature_relationships_as_child',$node);
+                  break;
+               default :
+            }
+            return $block;
+         }
+
+   }
 }
 /************************************************************************
  *  When a new chado_feature node is created we also need to add information
@@ -731,8 +810,8 @@ function chado_feature_validate($node){
  */
 function chado_feature_load($node){
    // add the feature_id for this node:
-   $sql = 'SELECT feature_id FROM {chado_feature} WHERE vid = %d';
-   $feature = db_fetch_object(db_query($sql, $node->vid));
+   $sql = 'SELECT feature_id FROM {chado_feature} WHERE nid = %d';
+   $feature = db_fetch_object(db_query($sql, $node->nid));
    $feature_id = $feature->feature_id;
 
    // get information about this feature and add it to the items in this node
@@ -755,25 +834,11 @@ function chado_feature_load($node){
    $org_nid = db_result(db_query($sql, $additions->feature->organism_id));
    $additions->org_nid = $org_nid;
    $additions->accession =  variable_get('chado_feature_accession_prefix','ID') . $feature->feature_id;
-
-   // add the relationships for which this feature is the subject
-   $additions->subject_relationships = tripal_feature_load_relationships($feature_id,'as_subject');
-   // add the relationships for which this feature is the object
-   $additions->object_relationships = tripal_feature_get_aggregate_relationships($feature_id,0);
-
  
    // add details about the organism
    $additions->organism = tripal_feature_load_organism($organism_id);
    // add the list of synomyms
-   $additions->synonyms = tripal_feature_load_synonyms($feature_id);
-   // add the list of refernces
-   $additions->references = tripal_feature_load_references($feature_id);
-   // add the list of children located on this feature
-   $additions->myfeaturelocs = tripal_feature_load_featurelocs($feature_id,'as_parent');
-   // add the list of features on which this feature is located
-   $additions->featurelocs = tripal_feature_load_featurelocs($feature_id,'as_child',0);
-   // add the formatted featureloc sequence with highlighting from relationship sequences
-   $additions->floc_sequences = tripal_feature_load_featureloc_sequence ($feature_id,$additions->featurelocs);   
+//   $additions->synonyms = tripal_feature_load_synonyms($feature_id);
 
    return $additions;
 }
@@ -816,9 +881,9 @@ function tripal_feature_load_references ($feature_id){
    $sql = "SELECT F.uniquename,F.Feature_id,DBX.accession,DB.description as dbdesc, ".
           "   DB.db_id, DB.name as db_name, DB.urlprefix,DBX.dbxref_id ".
           "FROM {feature} F ".
-          "  INNER JOIN Feature_dbxref FDBX on F.feature_id = FDBX.feature_id ".
-          "  INNER JOIN Dbxref DBX on DBX.dbxref_id = FDBX.dbxref_id ".
-          "  INNER JOIN DB on DB.db_id = DBX.db_id ".
+          "  INNER JOIN {feature_dbxref} FDBX on F.feature_id = FDBX.feature_id ".
+          "  INNER JOIN {dbxref} DBX on DBX.dbxref_id = FDBX.dbxref_id ".
+          "  INNER JOIN {db} on DB.db_id = DBX.db_id ".
           "WHERE F.feature_id = %d";
    $previous_db = tripal_db_set_active('chado');  // use chado database
    $results = db_query($sql,$feature_id);
@@ -1040,7 +1105,7 @@ function tripal_feature_get_aggregate_relationships($feature_id, $substitute=1,
 /************************************************************************
  *  
  */
-function tripal_feature_load_featureloc_sequence($feature_id,$featurelocs){
+function tripal_feature_load_featureloc_sequences($feature_id,$featurelocs){
 
    $floc_sequences = array();
 
@@ -1133,22 +1198,22 @@ function tripal_feature_color_sequence ($sequence,$parts){
       }
    }
  
-   $newseq .= "<div id=\"tripal_feature-sequence-legend\">Legend: ";
+   $newseq .= "<div id=\"tripal_feature-featureloc_sequence-legend\">Legend: ";
    foreach($types as $type){
-      $newseq .= "<span class=\"tripal_feature-sequence-$type\">$type</span>";
+      $newseq .= "<span class=\"tripal_feature-featureloc_sequence-$type\">$type</span>";
    }
    $newseq .= "</div>";
    
 
    // set the background color of the rows based on the type
    $pos = 0;
-   $newseq .= "<pre id=\"tripal_feature-sequence\">";
+   $newseq .= "<pre id=\"tripal_feature-featureloc_sequence\">";
    foreach ($parts as $index => $child){
       $type = $child['type'];
       $start = $child['start'];
       $end = $child['end'];
       
-      $class = "class=\"tripal_feature-sequence-$type\"";
+      $class = "class=\"tripal_feature-featureloc_sequence-$type\"";
 
       // iterate through the sequence up to the end of the child
       for ($i = $pos; $i < $end; $i++){ 
@@ -1162,7 +1227,7 @@ function tripal_feature_color_sequence ($sequence,$parts){
          $newseq .= $sequence{$pos};
          $seqcount++;
 
-         if($seqcount % 100 == 0){
+         if($seqcount % 60 == 0){
             $newseq .= "\n";
          } 
          $pos++;  
@@ -1223,6 +1288,47 @@ function tripal_feature_nodeapi(&$node, $op, $teaser, $page) {
          // Set the node types for showing feature information
          $types_to_show = array('chado_organism', 'chado_library');
 
+ 
+         // if this is a feature node then add the boxes of content for the 
+         // ancillary data
+         switch($node->type){
+            case 'chado_feature':
+               $node->content['tripal_feature_base'] = array(
+                  '#value' => theme('tripal_feature_base', $node),
+                  '#weight' => 0
+               );
+               $node->content['tripal_feature_sequence'] = array(
+                  '#value' => theme('tripal_feature_sequence', $node),
+                  '#weight' => 2
+               );
+               $node->content['tripal_feature_references'] = array(
+                  '#value' => theme('tripal_feature_references', $node),
+                  '#weight' => 4
+               );
+               $node->content['tripal_feature_featurelocs_as_parent'] = array(
+                  '#value' => theme('tripal_feature_featurelocs_as_parent', $node),
+                  '#weight' => 6
+               );
+               $node->content['tripal_feature_featurelocs_as_child'] = array(
+                  '#value' => theme('tripal_feature_featurelocs_as_child', $node),
+                  '#weight' => 8
+               );
+               $node->content['tripal_feature_featureloc_sequences'] = array(
+                  '#value' => theme('tripal_feature_featureloc_sequences', $node),
+                  '#weight' => 3
+               );
+               $node->content['tripal_feature_relationships_as_object'] = array(
+                  '#value' => theme('tripal_feature_relationships_as_object', $node),
+                  '#weight' => 9
+               );
+               $node->content['tripal_feature_relationships_as_subject'] = array(
+                  '#value' => theme('tripal_feature_relationships_as_subject', $node),
+                  '#weight' => 10
+               );
+           
+         }
+
+
          // Abort if this node is not one of the types we should show.
          if (!in_array($node->type, $types_to_show, TRUE)) {
             break;
@@ -1261,11 +1367,86 @@ function tripal_feature_theme () {
       ),
       'tripal_feature_counts' => array (
          'arguments' => array('node'),
-      )
+      ),
+      'tripal_feature_base' => array (
+         'arguments' => array('node'=> null),
+         'template' => 'tripal_feature_base',
+      ),
+      'tripal_feature_sequence' => array (
+         'arguments' => array('node'=> null),
+         'template' => 'tripal_feature_sequence',
+      ),
+      'tripal_feature_featureloc_sequences' => array (
+         'arguments' => array('node'=> null),
+         'template' => 'tripal_feature_featureloc_sequences',
+      ),
+      'tripal_feature_references' => array (
+         'arguments' => array('node'=> null),
+         'template' => 'tripal_feature_references',
+      ),
+      'tripal_feature_featurelocs_as_parent' => array (
+         'arguments' => array('node'=> null),
+         'template' => 'tripal_feature_featurelocs_as_parent',
+      ),
+      'tripal_feature_featurelocs_as_child' => array (
+         'arguments' => array('node'=> null),
+         'template' => 'tripal_feature_featurelocs_as_child',
+      ),
+      'tripal_feature_relationships_as_object' => array (
+         'arguments' => array('node'=> null),
+         'template' => 'tripal_feature_relationships_as_object',
+      ),
+      'tripal_feature_relationships_as_subject' => array (
+         'arguments' => array('node'=> null),
+         'template' => 'tripal_feature_relationships_as_subject',
+      ),
    );
 }
 /*******************************************************************************
- *  create a list of features for the organism and pie chart
+ *  
+ */
+function tripal_feature_preprocess_tripal_feature_relationships_as_object(&$variables){
+   $feature = $variables['node']->feature;
+   $variables['object_relationships'] = tripal_feature_get_aggregate_relationships($feature->feature_id,0);
+}
+/*******************************************************************************
+ *  
+ */
+function tripal_feature_preprocess_tripal_feature_relationships_as_subject(&$variables){
+   $feature = $variables['node']->feature;
+   $variables['subject_relationships'] = tripal_feature_load_relationships($feature->feature_id,'as_subject');
+}
+/*******************************************************************************
+*
+*/
+function tripal_feature_preprocess_tripal_feature_featurelocs_as_child(&$variables){
+   $feature = $variables['node']->feature;
+   $variables['featurelocs_as_child'] = tripal_feature_load_featurelocs($feature->feature_id,'as_child',0);
+}
+/*******************************************************************************
+ *  
+ */
+function tripal_feature_preprocess_tripal_feature_featurelocs_as_parent(&$variables){
+   $feature = $variables['node']->feature;
+   $variables['featurelocs_as_parent'] = tripal_feature_load_featurelocs($feature->feature_id,'as_parent');
+}
+/*******************************************************************************
+ *  
+ */
+function tripal_feature_preprocess_tripal_feature_references(&$variables){
+   $feature = $variables['node']->feature;
+   $variables['tripal_feature']['references'] = tripal_feature_load_references($feature->feature_id);
+}
+/*******************************************************************************
+ *  
+ */
+function tripal_feature_preprocess_tripal_feature_featureloc_sequences(&$variables){
+   $feature = $variables['node']->feature;
+   $featurelocs = tripal_feature_load_featurelocs($feature->feature_id,'as_child',0);
+   $variables['featureloc_sequences'] = tripal_feature_load_featureloc_sequences ($feature->feature_id,$featurelocs);   
+}
+/*******************************************************************************
+ *  
  */
 function theme_tripal_feature_counts($node){
 
