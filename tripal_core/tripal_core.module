@@ -21,17 +21,20 @@ function tripal_core_init(){
    $previous = tripal_db_set_active('chado');
    tripal_db_set_active($previous);
 
-   // create the 'tripal' controlled volcabulary in chado but only if it doesn't already exist
-   $previous_db = tripal_db_set_active('chado');  // use chado database
-   if(!db_fetch_object(db_query("SELECT * FROM {cv} WHERE name = 'tripal'"))){
-      $results = db_query("INSERT INTO {cv} (name,definition) ".
- 	                     "VALUES ('tripal','Terms used by Tripal for modules to manage data such as that stored in property tables like featureprop, analysisprop, etc')");
-   } 
-   if(!db_fetch_object(db_query("SELECT * FROM {db} WHERE name = 'tripal'"))){
-      $results = db_query("INSERT INTO {db} (name,description) ". 
-	                     "VALUES ('tripal','Used as a database placeholder for tripal defined objects such as tripal cvterms')");
-   }  
-   tripal_db_set_active($previous_db);  // now use drupal database
+   // create the 'tripal' controlled volcabulary in chado but only if it doesn't already exist, and
+   // only if the chado database is present.
+   if(tripal_core_is_chado_installed()){
+      $previous_db = tripal_db_set_active('chado');  // use chado database
+      if(!db_fetch_object(db_query("SELECT * FROM {cv} WHERE name = 'tripal'"))){
+         $results = db_query("INSERT INTO {cv} (name,definition) ".
+    	                     "VALUES ('tripal','Terms used by Tripal for modules to manage data such as that stored in property tables like featureprop, analysisprop, etc')");
+      } 
+      if(!db_fetch_object(db_query("SELECT * FROM {db} WHERE name = 'tripal'"))){
+         $results = db_query("INSERT INTO {db} (name,description) ". 
+	                        "VALUES ('tripal','Used as a database placeholder for tripal defined objects such as tripal cvterms')");
+      }  
+      tripal_db_set_active($previous_db);  // now use drupal database
+   }
 }
 /*************************************************************************
 *
@@ -252,7 +255,26 @@ function tripal_db_set_active($dbname){
    }
    else return db_set_active($dbname);
 }
+/*************************************************************************
+*
+*/
+function tripal_core_is_chado_installed(){
+   global $db_url, $db_type;
 
+   // first check if chado is in the db_url of the 
+   // settings.php file
+   if(is_array($db_url)){ 
+      if(isset($db_url['chado'])){
+         return true;
+      } 
+   }
+   // check to make sure the chado schema exists
+   $sql = "select nspname from pg_catalog.pg_namespace where nspname = 'chado'";
+   if(db_fetch_object(db_query($sql))){
+      return true;
+   }
+   return false;
+}
 /*************************************************************************
  * Implements hook_views_api()
  * Purpose: Essentially this hook tells drupal that there is views support for
