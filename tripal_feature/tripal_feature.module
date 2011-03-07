@@ -154,10 +154,70 @@ function tripal_feature_menu() {
      'page arguments' => array('tripal_core_gff3_load_form'),
      'access arguments' => array('access administration pages'),
      'type' => MENU_NORMAL_ITEM,
-   );
+   );  
+
+  // Adding Secondary Properties
 
 
-   // managing relationship aggregates
+  $items['node/%tf_node/tf_properties'] = array(       
+    'title' => t('Add Properties & Synonyms'),                         
+    'description' => t('Settings for Features'),
+    'page callback' => 'tripal_feature_add_ALL_property_page',           
+    'page arguments' => array(1), 
+    'access arguments' => array('create chado_feature content'),
+    'type' => MENU_CALLBACK
+  ); 
+
+  $items['node/%tf_node/tf_db_references'] = array(                        
+    'title' => t('Add Database References'),                   
+    'description' => t('Settings for Features'),              
+    'page callback' => 'tripal_feature_add_ALL_dbreferences_page',                         
+    'page arguments' => array(1),
+    'access arguments' => array('create chado_feature content'),
+    'type' => MENU_CALLBACK
+  ); 
+
+  $items['node/%tf_node/tf_relationships'] = array(                      
+    'title' => t('Add Relationships'),                      
+    'description' => t('Settings for Features'),               
+    'page callback' => 'tripal_feature_add_ALL_relationships_page',                          
+    'page arguments' => array(1),
+    'access arguments' => array('create chado_feature content'),
+    'type' => MENU_CALLBACK
+  );
+  //Edit/Deleting Secondary Properties-------------
+/*
+  $items['node/%tf_node/tf_edit_properties'] = array(
+    'title' => t('Edit Properties'),
+    'description' => t('Settings for Features'),
+    'page callback' => 'tripal_feature_edit_ALL_properties_page',
+    'page arguments' => array(1),
+    'access arguments' => array('edit chado_feature content'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 8,
+  );
+
+    $items['node/%tf_node/tf_edit_relationships'] = array(
+    'title' => t('Edit Relationships'),
+    'description' => t('Settings for Feature'), 
+    'page callback' => 'tripal_feature_edit_ALL_relationships_page',
+    'page arguments' => array(1),
+    'access arguments' => array('edit chado_feature content'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 9,
+  );
+*/
+  $items['node/%tf_node/tf_edit_db_references'] = array(
+    'title' => t('Edit References'),
+    'description' => t('Settings for Feature'),
+    'page callback' => 'tripal_feature_edit_ALL_dbreferences_page',
+    'page arguments' => array(1),
+    'access arguments' => array('edit chado_feature content'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 10,
+  );
+
+ // managing relationship aggregates
    $items['admin/tripal/tripal_feature/aggregate'] = array(
      'title' => 'Feature Relationship Aggegators',
      'description' => t('Features have relationships with other features and it may be desirable to aggregate the content from one ore more child or parent feature.'),
@@ -180,66 +240,6 @@ function tripal_feature_menu() {
      'type' => MENU_CALLBACK,
    );
 
-
-
-  // Adding Secondary Properties
-  $items['node/%tripal_feature_node/properties'] = array(       
-    'title' => t('Add Properties & Synonyms'),                         
-    'description' => t('Settings for Features'),
-    'page callback' => 'tripal_feature_add_ALL_property_page',           
-    'page arguments' => array(1), 
-    'access arguments' => array('create chado_feature content'),
-    'type' => MENU_CALLBACK
-  ); 
-
-  $items['node/%tripal_feature_node/db_references'] = array(                        
-    'title' => t('Add Database References'),                   
-    'description' => t('Settings for Features'),              
-    'page callback' => 'tripal_feature_add_ALL_dbreferences_page',                         
-    'page arguments' => array(1),
-    'access arguments' => array('create chado_feature content'),
-    'type' => MENU_CALLBACK
-  ); 
-
-  $items['node/%tripal_feature_node/relationships'] = array(                      
-    'title' => t('Add Relationships'),                      
-    'description' => t('Settings for Features'),               
-    'page callback' => 'tripal_feature_add_ALL_relationships_page',                          
-    'page arguments' => array(1),
-    'access arguments' => array('create chado_feature content'),
-    'type' => MENU_CALLBACK
-  );
-  //Edit/Deleting Secondary Properties-------------
-  $items['node/%tripal_feature_node/edit_properties'] = array(
-    'title' => t('Edit Properties'),
-    'description' => t('Settings for Features'),
-    'page callback' => 'tripal_feature_edit_ALL_properties_page',
-    'page arguments' => array(1),
-    'access arguments' => array('edit chado_feature content'),
-    'type' => MENU_LOCAL_TASK,
-    'weight' => 8,
-  );
-
-    $items['node/%tripal_feature_node/edit_relationships'] = array(
-    'title' => t('Edit Relationships'),
-    'description' => t('Settings for Feature'), 
-    'page callback' => 'tripal_feature_edit_ALL_relationships_page',
-    'page arguments' => array(1),
-    'access arguments' => array('edit chado_feature content'),
-    'type' => MENU_LOCAL_TASK,
-    'weight' => 9,
-  );
-
-  $items['node/%tripal_feature_node/edit_db_references'] = array(
-    'title' => t('Edit References'),
-    'description' => t('Settings for Feature'),
-    'page callback' => 'tripal_feature_edit_ALL_dbreferences_page',
-    'page arguments' => array(1),
-    'access arguments' => array('edit chado_feature content'),
-    'type' => MENU_LOCAL_TASK,
-    'weight' => 10,
-  );
-
    return $items;
 }
 
@@ -249,7 +249,7 @@ function tripal_feature_menu() {
  *   pulled from the path. The node is loaded from this node ID
  *   and supplied to the page as an arguement
  */
-function tripal_feature_node_load($nid) {
+function tf_node_load($nid) {
   if (is_numeric($nid)) {
     $node = node_load($nid);
     if ($node->type == 'chado_feature') {
@@ -272,6 +272,12 @@ function tripal_feature_block($op = 'list', $delta = 0, $edit=array()){
 
          $blocks['sequence']['info'] = t('Tripal Feature Sequence');
          $blocks['sequence']['cache'] = BLOCK_NO_CACHE;
+
+         $blocks['synonyms']['info'] = t('Tripal Feature Synonyms');
+         $blocks['synonyms']['cache'] = BLOCK_NO_CACHE;
+
+         $blocks['properties']['info'] = t('Tripal Feature Properties');
+         $blocks['properties']['cache'] = BLOCK_NO_CACHE;;
 
          $blocks['featureloc_sequences']['info'] = t('Tripal Formatted Location Sequence');
          $blocks['featureloc_sequences']['cache'] = BLOCK_NO_CACHE;
@@ -306,6 +312,14 @@ function tripal_feature_block($op = 'list', $delta = 0, $edit=array()){
                   $block['subject'] = t('Feature Details');
                   $block['content'] = theme('tripal_feature_base',$node);
                   break;
+               case 'synonyms':
+                  $block['subject'] = t('Synonyms');
+                  $block['content'] = theme('tripal_feature_synonyms',$node);
+                  break;
+               case 'properties':
+                  $block['subject'] = t('Properties');
+                  $block['content'] = theme('tripal_feature_properties',$node);
+                  break;;
                case 'sequence':
                   $block['subject'] = t('Sequence');
                   $block['content'] = theme('tripal_feature_sequence',$node);
@@ -860,7 +874,7 @@ function tripal_feature_load_synonyms ($feature_id){
 
    $sql = "SELECT S.name ".
           "FROM {Feature_Synonym} FS ".
-          "  INNER JOIN Synonym S ".
+          "  INNER JOIN {Synonym} S ".
           "    ON FS.synonym_id = S.Synonym_id ".
           "WHERE FS.feature_id = %d";
    $previous_db = tripal_db_set_active('chado');  // use chado database
@@ -872,6 +886,31 @@ function tripal_feature_load_synonyms ($feature_id){
       $synonyms[$i++] = $synonym;
    }
    return $synonyms;
+}
+/************************************************************************
+ *  
+ */
+function tripal_feature_load_properties ($feature_id){
+
+   $sql = "SELECT CVT.name as cvname, FS.type_id, FS.value, FS.rank,
+             CVT.definition, CVT.is_obsolete, 
+             DBX.dbxref_id,DBX.accession,DB.name as dbname, 
+             DB.urlprefix, DB.description as db_description, DB.url
+           FROM {featureprop} FS 
+             INNER JOIN {cvterm} CVT ON FS.type_id = CVT.cvterm_id
+             INNER JOIN {dbxref} DBX ON CVT.dbxref_id = DBX.dbxref_id
+             INNER JOIN {db} DB      ON DB.db_id = DBX.db_id
+           WHERE FS.feature_id = %d
+           ORDER BY FS.rank ASC";
+   $previous_db = tripal_db_set_active('chado');  // use chado database
+   $results = db_query($sql,$feature_id);
+   tripal_db_set_active($previous_db);  // now use drupal database
+   $i=0;
+   $properties = array();
+   while($property = db_fetch_object($results)){
+      $properties[$i++] = $property;
+   }
+   return $properties;
 }
 /************************************************************************
  *  
@@ -1285,9 +1324,6 @@ function tripal_feature_nodeapi(&$node, $op, $teaser, $page) {
       // Note that this function only adds feature view to an organism node.
       // The view of a feature node is controled by the theme *.tpl file
       case 'view':
-         // Set the node types for showing feature information
-         $types_to_show = array('chado_organism', 'chado_library');
-
  
          // if this is a feature node then add the boxes of content for the 
          // ancillary data
@@ -1303,6 +1339,10 @@ function tripal_feature_nodeapi(&$node, $op, $teaser, $page) {
                );
                $node->content['tripal_feature_references'] = array(
                   '#value' => theme('tripal_feature_references', $node),
+                  '#weight' => 4
+               );
+               $node->content['tripal_feature_synonyms'] = array(
+                  '#value' => theme('tripal_feature_synonyms', $node),
                   '#weight' => 4
                );
                $node->content['tripal_feature_featurelocs_as_parent'] = array(
@@ -1325,27 +1365,34 @@ function tripal_feature_nodeapi(&$node, $op, $teaser, $page) {
                   '#value' => theme('tripal_feature_relationships_as_subject', $node),
                   '#weight' => 10
                );
-           
+               break;
+            case 'chado_organism':
+               // Show feature browser
+               $types_to_show = array('chado_organism', 'chado_library');
+               if (in_array($node->type, $types_to_show, TRUE)) {
+                  $node->content['tripal_feature_browser'] = array(
+                     '#value' => theme('tripal_feature_browser', $node),
+                     '#weight' => 5
+                  );
+                  $node->content['tripal_feature_org_counts'] = array(
+                     '#value' => theme('tripal_feature_org_counts', $node),
+                     '#weight' => 4
+                  );
+               }
+               break;
+            case 'chado_library':
+               break;
+            default:           
          }
 
 
          // Abort if this node is not one of the types we should show.
-         if (!in_array($node->type, $types_to_show, TRUE)) {
-            break;
-         }
+
 
          // Add feature to the content item if it's not a teaser
          if (!$teaser) {
 
-            // Show feature browser
-            $node->content['tripal_feature_browser'] = array(
-               '#value' => theme('tripal_feature_browser', $node),
-               '#weight' => 5
-            );
-            $node->content['tripal_feature_org_counts'] = array(
-               '#value' => theme('tripal_feature_counts', $node),
-               '#weight' => 4
-            );
+
          }
    }
 }
@@ -1365,7 +1412,7 @@ function tripal_feature_theme () {
       'tripal_feature_browser' => array (
          'arguments' => array('node'),
       ),
-      'tripal_feature_counts' => array (
+      'tripal_feature_org_counts' => array (
          'arguments' => array('node'),
       ),
       'tripal_feature_base' => array (
@@ -1376,6 +1423,10 @@ function tripal_feature_theme () {
          'arguments' => array('node'=> null),
          'template' => 'tripal_feature_sequence',
       ),
+      'tripal_feature_synonyms' => array (
+         'arguments' => array('node'=> null),
+         'template' => 'tripal_feature_synonyms',
+      ),
       'tripal_feature_featureloc_sequences' => array (
          'arguments' => array('node'=> null),
          'template' => 'tripal_feature_featureloc_sequences',
@@ -1383,6 +1434,10 @@ function tripal_feature_theme () {
       'tripal_feature_references' => array (
          'arguments' => array('node'=> null),
          'template' => 'tripal_feature_references',
+      ),
+      'tripal_feature_properties' => array (
+         'arguments' => array('node'=> null),
+         'template' => 'tripal_feature_properties',
       ),
       'tripal_feature_featurelocs_as_parent' => array (
          'arguments' => array('node'=> null),
@@ -1405,30 +1460,44 @@ function tripal_feature_theme () {
 /*******************************************************************************
  *  
  */
+function tripal_feature_preprocess_tripal_feature_properties(&$variables){
+   $feature = $variables['node']->feature;
+   $variables['tripal_feature']['properties'] = tripal_feature_load_properties($feature->feature_id);
+}
+/*******************************************************************************
+ *  
+ */
+function tripal_feature_preprocess_tripal_feature_synonyms(&$variables){
+   $feature = $variables['node']->feature;
+   $variables['tripal_feature']['synonyms'] = tripal_feature_load_synonyms($feature->feature_id);
+}
+/*******************************************************************************
+ *  
+ */
 function tripal_feature_preprocess_tripal_feature_relationships_as_object(&$variables){
    $feature = $variables['node']->feature;
-   $variables['object_relationships'] = tripal_feature_get_aggregate_relationships($feature->feature_id,0);
+   $variables['tripal_feature']['object_relationships'] = tripal_feature_get_aggregate_relationships($feature->feature_id,0);
 }
 /*******************************************************************************
  *  
  */
 function tripal_feature_preprocess_tripal_feature_relationships_as_subject(&$variables){
    $feature = $variables['node']->feature;
-   $variables['subject_relationships'] = tripal_feature_load_relationships($feature->feature_id,'as_subject');
+   $variables['tripal_feature']['subject_relationships'] = tripal_feature_load_relationships($feature->feature_id,'as_subject');
 }
 /*******************************************************************************
 *
 */
 function tripal_feature_preprocess_tripal_feature_featurelocs_as_child(&$variables){
    $feature = $variables['node']->feature;
-   $variables['featurelocs_as_child'] = tripal_feature_load_featurelocs($feature->feature_id,'as_child',0);
+   $variables['tripal_feature']['featurelocs_as_child'] = tripal_feature_load_featurelocs($feature->feature_id,'as_child',0);
 }
 /*******************************************************************************
  *  
  */
 function tripal_feature_preprocess_tripal_feature_featurelocs_as_parent(&$variables){
    $feature = $variables['node']->feature;
-   $variables['featurelocs_as_parent'] = tripal_feature_load_featurelocs($feature->feature_id,'as_parent');
+   $variables['tripal_feature']['featurelocs_as_parent'] = tripal_feature_load_featurelocs($feature->feature_id,'as_parent');
 }
 /*******************************************************************************
  *  
@@ -1443,12 +1512,14 @@ function tripal_feature_preprocess_tripal_feature_references(&$variables){
 function tripal_feature_preprocess_tripal_feature_featureloc_sequences(&$variables){
    $feature = $variables['node']->feature;
    $featurelocs = tripal_feature_load_featurelocs($feature->feature_id,'as_child',0);
-   $variables['featureloc_sequences'] = tripal_feature_load_featureloc_sequences ($feature->feature_id,$featurelocs);   
+   $variables['tripal_feature']['featureloc_sequences'] = tripal_feature_load_featureloc_sequences ($feature->feature_id,$featurelocs);   
 }
 /*******************************************************************************
  *  
  */
-function theme_tripal_feature_counts($node){
+function theme_tripal_feature_org_counts($node){
+
+   $organism = $node->organism;
 
    // don't show the summary if the settings in the admin page is turned off
    $show_browser = variable_get('tripal_feature_summary_setting',array('show_feature_summary'));
@@ -1460,13 +1531,13 @@ function theme_tripal_feature_counts($node){
    // get the feature counts.  This is dependent on a materialized view
    // installed with the organism module
    $content = '';
-   if ($node->organism_id && $node->type == 'chado_organism') {
+   if ($organism->organism_id && $node->type == 'chado_organism') {
       $sql = "SELECT * FROM {organism_feature_count} ".
       		 "WHERE organism_id = %d AND NOT feature_type = 'EST_match' ".
              "ORDER BY num_features desc";
       $features = array();
       $previous_db = tripal_db_set_active('chado');  // use chado database
-      $results = db_query($sql,$node->organism_id);
+      $results = db_query($sql,$organism->organism_id);
       tripal_db_set_active($previous_db);  // now use drupal database
       $feature = db_fetch_object($results); // retrieve the first result
       if ($feature) {
@@ -1488,7 +1559,7 @@ function theme_tripal_feature_counts($node){
          } while($feature = db_fetch_object($results));
          $content .= "</table>";
          $content .= "
-            <img class=\"tripal_cv_chart\" id=\"tripal_feature_cv_chart_$node->organism_id\" src=\"\" border=\"0\">
+            <img class=\"tripal_cv_chart\" id=\"tripal_feature_cv_chart_$organism->organism_id\" src=\"\" border=\"0\">
          ";
          $content .= "</div></div>";
       }
@@ -1540,6 +1611,7 @@ function tripal_feature_cv_tree($tree_id){
  *  create a simple paged feature browser
  */
 function theme_tripal_feature_browser($node){
+   $organism = $node->organism;
 
    // don't show the browser if the settings in the admin page is turned off
    $show_browser = variable_get('tripal_feature_browse_setting',array('show_feature_browser'));
@@ -1547,7 +1619,7 @@ function theme_tripal_feature_browser($node){
    if(strcmp($show_browser[0],'show_feature_browser')!=0){
       return;
    }
-   if ($node->organism_id && $node->type == 'chado_organism') {
+   if ($organism->organism_id && $node->type == 'chado_organism') {
       # get the list of available sequence ontology terms for which
       # we will build drupal pages from features in chado.  If a feature
       # is not one of the specified typse we won't build a node for it.
@@ -1564,14 +1636,14 @@ function theme_tripal_feature_browser($node){
       $sql  = "SELECT F.name,F.feature_id,F.uniquename,CVT.name as cvname ".
               "FROM {feature} F ".
                  "  INNER JOIN {cvterm} CVT on F.type_id = CVT.cvterm_id ".
-               "WHERE organism_id = $node->organism_id and ($where_cvt) ".
+               "WHERE organism_id = $organism->organism_id and ($where_cvt) ".
                "ORDER BY feature_id ASC";
 
       // the counting SQL
       $csql  = "SELECT count(*) ".
                "FROM {feature} F".
                "  INNER JOIN {cvterm} CVT on F.type_id = CVT.cvterm_id ".
-               "WHERE organism_id = $node->organism_id and ($where_cvt) ".
+               "WHERE organism_id = $organism->organism_id and ($where_cvt) ".
                "GROUP BY organism_id ";
 
       $previous_db = tripal_db_set_active('chado');  // use chado database

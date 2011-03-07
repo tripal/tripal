@@ -163,57 +163,62 @@ function tripal_feature_edit_ALL_db_references_form($form_state, $node) {
 
   $i=0;
 
+  $feature = $node->feature;
+  $references = tripal_feature_load_references ($feature->feature_id);
+
   // pre populate the database options
   $db_options = tripal_db_get_db_options();
   $db_options[0] = 'Select a Database';
   ksort($db_options);
 
-  if (sizeof($node->references) != 0) {
-  foreach ($node->references as $ref) {
-    $i++;
-    $form["num-$i"] = array(
-      '#type' => 'item',
-      '#value' => $i.'.'
-    );
+  if (sizeof($references) != 0) {
+     foreach ($references as $ref) {
+       $i++;
+       $form["num-$i"] = array(
+         '#type' => 'fieldset',
+         '#title' => t("Database Reference")." $i"
+       );
 
-    $form["accession-$i"] = array(
-      '#type' => 'textfield',
-      '#title' => t('Accession'),
-      '#size' => 30,
-      '#required' => TRUE,
-      '#default_value' => $ref->accession
-    );
+       $form["num-$i"]["accession-$i"] = array(
+         '#type' => 'textfield',
+         '#title' => t('Accession'),
+         '#size' => 30,
+         '#required' => TRUE,
+         '#default_value' => $ref->accession
+       );
 
-    $form["db_id-$i"] = array( 
-      '#type' => 'select', 
-      '#title' => t('Database'),
-      '#options' => $db_options, 
-      '#default_value' => $ref->db_id
-    );
+       $form["num-$i"]["db_id-$i"] = array( 
+         '#type' => 'select', 
+         '#title' => t('Database'),
+         '#options' => $db_options,
+         '#required' => TRUE, 
+         '#default_value' => $ref->db_id
+       );
 
 
-    $form["dbxref_id-$i"] = array(
-      '#type' => 'hidden',
-      '#value' => $ref->dbxref_id
-    );
+       $form["num-$i"]["dbxref_id-$i"] = array(
+         '#type' => 'hidden',
+         '#value' => $ref->dbxref_id
+       );
 
-    $form["submit-$i"] = array(
-      '#type' => 'submit',
-      '#value' => t("Delete #$i")
-    );
+       $form["num-$i"]["delete-$i"] = array(
+         '#type' => 'submit',
+         '#value' => t("Delete"),
+         '#name' => "delete-$i",
+       );
 
-  }} //end of foreach db ref
+     }
 
-  $form['num_db_references'] = array(
-    '#type' => 'hidden',
-    '#value' => $i
-  );
+     $form['num_db_references'] = array(
+       '#type' => 'hidden',
+       '#value' => $i
+     );
 
-  $form["submit-edits"] = array(
-    '#type' => 'submit',
-    '#value' => t('Update References')
-  );
-
+     $form["submit-edits"] = array(
+       '#type' => 'submit',
+       '#value' => t('Update All References')
+     );
+  } //end of foreach db ref
   return $form;
 }
 /*******************************************************************************
@@ -223,9 +228,10 @@ function tripal_feature_edit_ALL_db_references_form_submit($form, &$form_state) 
 
   $num_refs = $form_state['values']['num_db_references'];
   $action = $form_state['clicked_button']['#value'];
+  $button = $form_state['clicked_button']['#name'];
   $nid = $form_state['values']['nid'];
 
-  if (strcmp($action,'Update References')==0) {
+  if (strcmp($action,'Update All References')==0) {
      for ($i=1; $i<=$num_refs; $i++) {
 		 $dbxref_id = $form_state['values']["dbxref_id-$i"]; 
 		 $db_id = $form_state['values']["db_id-$i"];
@@ -235,12 +241,16 @@ function tripal_feature_edit_ALL_db_references_form_submit($form, &$form_state) 
      drupal_set_message("Updated all Database References");
      drupal_goto('node/'.$nid);
   } 
-  elseif ( preg_match('/Delete #(\d+)/', $action, $matches) ) {
-     $i = $matches[1];
-	  $dbxref_id = $form_state['values']["dbxref_id-$i"]; 
-     tripal_feature_delete_db_reference($dbxref_id);
-     drupal_set_message("Deleted Database Reference");
-     drupal_goto('node/'.$nid);
+  elseif (strcmp($action,'Delete')==0){
+     if(preg_match('/delete-(\d+)/', $button, $matches) ) {
+        $i = $matches[1];
+	     $dbxref_id = $form_state['values']["dbxref_id-$i"]; 
+        tripal_feature_delete_db_reference($dbxref_id);
+        drupal_set_message("Deleted Database Reference");
+        drupal_goto('node/'.$nid);
+     } else {
+        drupal_set_message("Could not remove database reference: ",'error');
+     }
   } 
   else {
     drupal_set_message("Unrecognized Button Pressed",'error');

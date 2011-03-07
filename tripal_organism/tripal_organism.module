@@ -2,6 +2,16 @@
 
 require_once "tripal_organism.api.inc";
 
+
+/*************************************************************************
+*
+*/
+function tripal_organism_init(){
+
+   // add the jGCharts JS and CSS
+   drupal_add_js (drupal_get_path('theme', 'tripal').'/js/tripal_organism.js'); 
+   drupal_add_css(drupal_get_path('theme', 'tripal').'/css/tripal_organism.css');
+}
 /*******************************************************************************
  *  Provide information to drupal about the node types that we're creating
  *  in this module
@@ -29,30 +39,41 @@ function tripal_organism_node_info() {
  */
 function tripal_organism_block($op = 'list', $delta = '0', $edit = array()){
    switch($op){
-         case 'list':
-            $blocks[0]['info'] = t('Organisms');
-            return $blocks;
+      case 'list':
+         $blocks['base']['info'] = t('Tripal Organism Details');
+         $blocks['base']['cache'] = BLOCK_NO_CACHE;
 
-         case 'view':
-            if(user_access('access chado_organism content')){
-               // Show libraries stored in Drupal's {chado_organism} table
-               $sql = "SELECT COUNT(organism_id) FROM {chado_organism}";
-               $no_orgs = db_result(db_query ($sql));
-               if($no_orgs != 0) {
-                  $organisms = get_chado_organisms();
-                  foreach($organisms as $organism){
-                     // get the node id for this organism
-                     $items[] = l($organism->common_name,
-                                  'node/'.$organism->node_id);
-                  }
-               } else {
-                  $items[] = t("No organism exists.");
-               }
-                $block['subject'] = t('Organisms');
-                //We theme our array of links as an unordered list
-                $block['content'] = theme('item_list', $items);
+         $blocks['description']['info'] = t('Tripal Organism Description');
+         $blocks['description']['cache'] = BLOCK_NO_CACHE;
+
+         $blocks['image']['info'] = t('Tripal Organism Image');
+         $blocks['image']['cache'] = BLOCK_NO_CACHE;
+
+         return $blocks;
+
+      case 'view':
+         if(user_access('access chado_feature content') and arg(0) == 'node' and is_numeric(arg(1))) {
+            $nid = arg(1);
+            $node = node_load($nid);
+
+            $block = array();
+            switch($delta){
+               case 'base':
+                  $block['subject'] = t('Organism Details');
+                  $block['content'] = theme('tripal_organism_base',$node);
+                  break;
+               case 'description':
+                  $block['subject'] = t('Organism Description');
+                  $block['content'] = theme('tripal_organism_description',$node);
+                  break;
+               case 'image':
+                  $block['subject'] = t('Organism Image');
+                  $block['content'] = theme('tripal_organism_image',$node);
+                  break;
+               default:
             }
             return $block;
+      }
    }
 }
 /*******************************************************************************
@@ -495,7 +516,46 @@ function tripal_organism_theme () {
       'tripal_organism_organism_page' => array (
          'arguments' => array('organisms'),
       ),
+      'tripal_organism_base' => array (
+         'arguments' => array('node'=> null),
+         'template' => 'tripal_organism_base',
+      ),
+      'tripal_organism_description' => array (
+         'arguments' => array('node'=> null),
+         'template' => 'tripal_organism_description',
+      ),
+      'tripal_organism_image' => array (
+         'arguments' => array('node'=> null),
+         'template' => 'tripal_organism_image',
+      ),
    );
+}
+/*******************************************************************************
+ * 
+ */
+function tripal_organism_nodeapi(&$node, $op, $teaser, $page) {
+
+   switch ($op) {
+      case 'view':
+         switch($node->type){
+            case 'chado_organism':
+               $node->content['tripal_organism_image'] = array(
+                  '#value' => theme('tripal_organism_image', $node),
+                  '#weight' => 0
+               );
+               $node->content['tripal_organism_base'] = array(
+                  '#value' => theme('tripal_organism_base', $node),
+                  '#weight' => 1
+               );
+               $node->content['tripal_organism_description'] = array(
+                  '#value' => theme('tripal_organism_description', $node),
+                  '#weight' => 2
+               );
+               break;
+            default:          
+           
+         }
+   }
 }
 /*******************************************************************************
  *
@@ -671,6 +731,8 @@ function chado_organism_update($node){
  *  a form.  This function creates the form that will be used for this.
  */
 function chado_organism_form ($node, $param){
+   $organism = $node->organism;
+
    $type = node_get_types('type',$node);
    $form = array();
    $form['#attributes']['enctype'] = 'multipart/form-data';
@@ -679,28 +741,28 @@ function chado_organism_form ($node, $param){
       '#type' => 'textfield',
       '#title' => t('Abbreviation'),
       '#required' => TRUE,
-      '#default_value' => $node->abbreviation,
+      '#default_value' => $organism->abbreviation,
       '#weight' => 3
    );
    $form['genus']= array(
       '#type' => 'textfield',
       '#title' => t('Genus'),
       '#required' => TRUE,
-      '#default_value' => $node->genus,
+      '#default_value' => $organism->genus,
       '#weight' => 1
    );
    $form['species']= array(
       '#type' => 'textfield',
       '#title' => t('Species'),
       '#required' => TRUE,
-      '#default_value' => $node->species,
+      '#default_value' => $organism->species,
       '#weight' => 2
    );
    $form['common_name']= array(
       '#type' => 'textfield',
       '#title' => t('Common Name'),
       '#required' => TRUE,
-      '#default_value' => $node->common_name,
+      '#default_value' => $organism->common_name,
       '#weight' => 4
    );
    $form['description']= array(
@@ -708,7 +770,7 @@ function chado_organism_form ($node, $param){
       '#rows' => 15,
       '#title' => t('Description'),
       '#required' => TRUE,
-      '#default_value' => check_plain($node->description),
+      '#default_value' => check_plain($organism->description),
       '#weight' => 5
    );
    $form['organism-image']= array(
@@ -729,24 +791,16 @@ function chado_organism_load($node){
    $sql = "SELECT organism_id FROM {chado_organism} WHERE vid = %d";
    $org_node = db_fetch_object(db_query($sql, $node->vid));
 
-   $previous_db = tripal_db_set_active('chado');  // use chado database
-
    // get information about this organism and add it to the items in this node
+   $previous_db = tripal_db_set_active('chado');  // use chado database
    if ($org_node->organism_id) {
       $sql = "SELECT O.organism_id,O.genus,O.species, ".
       		 "  O.common_name, O.comment as description, O.abbreviation ".
              "FROM {Organism} O ".
           	 "WHERE O.Organism_id = $org_node->organism_id";
       $organism = db_fetch_object(db_query($sql));
-      $additions->organism_id = $org_node->organism_id;
+      $additions->organism  = $organism;
    }
-   $additions->abbreviation = $organism->abbreviation;
-   $additions->genus = $organism->genus;
-   $additions->species = $organism->species;
-   $additions->common_name = $organism->common_name;
-   $additions->description = $organism->description;
-
-
    tripal_db_set_active($previous_db);  // now use drupal database
 
    return $additions;

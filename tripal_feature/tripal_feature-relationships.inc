@@ -100,6 +100,7 @@ function tripal_feature_add_ONE_relationship_form_validate($form, &$form_state) 
 
   //Require Validation if adding
   if ($form_state['clicked_button']['#value'] == t('Add a Relationship') ) {
+
     // check valid feature selected for subject
     $criteria = array('unknown' => array('value'=> $form_state['values']['subject_id'], 
       																		'columns'=>array('name','uniquename','accession','synonym') ));
@@ -213,23 +214,22 @@ function tripal_feature_edit_ALL_relationships_form($form_state, $node) {
   );
 
   $i=0;
-  $relationships = array();
-  if(is_array($node->object_relationships)){    
-     $relationships = array_merge($relationships,$node->object_relationships);
-  }
-  if(is_array($node->subject_relationships)){    
-     $relationships = array_merge($relationships,$node->subject_relationships);
-  }
+
+  $feature = $node->feature;
+  $orelationships = tripal_feature_load_relationships ($feature->feature_id,'as_object');
+  $srelationships = tripal_feature_load_relationships ($feature->feature_id,'as_subject');
+  $relationships = array_merge($orelationships,$srelationships);
+
   if (sizeof($relationships) != 0) {
      foreach ($relationships as $r) {
 
        $i++;
        $form["num-$i"] = array(
-         '#type' => 'item',
-         '#value' => $i.'.'
+         '#type' => 'fieldset',
+         '#title' => "Relationship $i",
        );
 
-       $form["id-$i"] = array(
+       $form["num-$i"]["id-$i"] = array(
          '#type' => 'hidden',
          '#value' => $r->stock_relationship_id
        );
@@ -239,9 +239,11 @@ function tripal_feature_edit_ALL_relationships_form($form_state, $node) {
          $default = $r->subject_uniquename;
          $description = l($r->subject_name, 'node/'.$r->subject_nid); 
        } else { 
-          $default = $node->uniquename; $description = 'Current Feature'; 
+          $default = $node->uniquename; 
+          $description = "Current Feature"; 
        }
-       $form["subject_id-$i"] = array(
+       $description .= " (".$r->subject_type.")";
+       $form["num-$i"]["subject_id-$i"] = array(
          '#type' => 'textfield',      
          //'#title' => t('Subject'), 
          '#required'   => TRUE,
@@ -253,7 +255,7 @@ function tripal_feature_edit_ALL_relationships_form($form_state, $node) {
        $cv = tripal_cv_get_cv_by_name('relationship');
        $type_options = tripal_cv_get_cvterm_options($cv->cv_id);
        ksort($type_options);          
-       $form["type_id-$i"] = array(  
+       $form["num-$i"]["type_id-$i"] = array(  
          '#type' => 'select',    
          //'#title' => t('Type of Relationship'), 
          '#options' => $type_options,
@@ -261,11 +263,15 @@ function tripal_feature_edit_ALL_relationships_form($form_state, $node) {
          '#default_value' => $r->relationship_type_id
        );
 
-       if ( !empty($r->object_id) ) { 
+       if (!empty($r->object_id) ) { 
          $default = $r->object_uniquename;
          $description = l($r->object_name, 'node/'.$r->object_nid);
-       } else { $default = $node->uniquename; $description = 'Current Feature'; }
-       $form["object_id-$i"] = array(
+       } else { 
+         $default = $node->uniquename; 
+         $description = 'Current Feature'; 
+       }
+       $description .= " (".$r->object_type.")";
+       $form["num-$i"]["object_id-$i"] = array(
          '#type' => 'textfield',          
          //'#title' => t('Object'),      
          '#required'   => TRUE,
@@ -274,9 +280,10 @@ function tripal_feature_edit_ALL_relationships_form($form_state, $node) {
          '#description' => $description
        );
 
-       $form["submit-$i"] = array(
+       $form["num-$i"]["delete-$i"] = array(
          '#type' => 'submit',
-         '#value' => t("Delete #$i")
+         '#value' => t("Delete"),
+         '#name' => "delete-$i",
        );
 
      } //end of foreach relationship
@@ -287,7 +294,7 @@ function tripal_feature_edit_ALL_relationships_form($form_state, $node) {
 
      $form["submit-edits"] = array(
        '#type' => 'submit',
-       '#value' => t('Update Relationships')
+       '#value' => t('Update All Relationships')
      );
   } else {
      $form["info"] = array(
@@ -306,7 +313,7 @@ function tripal_feature_edit_ALL_relationships_form($form_state, $node) {
 function tripal_feature_edit_ALL_relationships_form_validate($form, &$form_state) {
 
   // Only Require if Updating Relationships
-  if ($form_state['clicked_button']['#value'] == t('Update Relationships') ) {
+  if ($form_state['clicked_button']['#value'] == t('Update All Relationships') ) {
 
     for ($i=1; $i<=$form_state['values']['num_relationships']; $i++) {
       

@@ -7,41 +7,38 @@
 
 /**
  * Implements Hook_form()
- * Handles adding of Properties & Synonyms to Stocks
+ * Handles adding of Properties for features
  */
 function tripal_getfeature_add_ALL_property_page($node) {
   $output = '';
 
-  $output .= implement_add_chado_properties_progress('properties').'<br>';
-  $output .= '<b>All Properties should strictly pertain to THE CURRENT Individual</b><br>';
+  $output .= tripal_feature_implement_add_chado_properties_progress('properties').'<br>';
   $output .= '<br><b>Current Properties</b><br>';
-  $output .= list_properties_for_node($node->properties, $node->synonyms);
+  $output .= tripal_feature_list_properties_for_node($node->properties);
   $output .= '<br><br>';
   $output .= drupal_get_form('tripal_feature_add_ONE_property_form', $node);
   $output .= '<br>';
-  $output .= drupal_get_form('implement_add_chado_properties_navigate', 'properties', $node->nid);
+  $output .= drupal_get_form('tripal_feature_implement_add_chado_properties_navigate', 'properties', $node->nid);
   return $output;
 }
-
+/**
+* 
+*/
 function tripal_feature_add_ONE_property_form($form_state, $node) {
   $form = array();
-  $stock_id = $node->stock_id;
+  $feature_id = $node->feature->feature_id;
 
   $form['add_properties'] = array(
     '#type' => 'fieldset',
-    '#title' => t('Add Property') . '<span class="form-optional" title="This field is optional"> (optional)</span>',
+    '#title' => t('Add Property'),
   ); 
 
   $form['prop_nid'] = array(
     '#type' => 'hidden',
     '#value' => $node->nid
   );
-
-  $tmp_obj = tripal_cv_get_cvterm(array('name' => array('type'=>'STRING','exact'=>TRUE, 'value'=>'synonym'),
-  																	'cv_id' => array('type'=>'INT','value'=>variable_get('chado_stock_prop_types_cv', 'null') )));
-	$synonym_id = $tmp_obj->cvterm_id;
 	
-  $prop_type_options = tripal_cv_get_cvterm_options( variable_get('chado_stock_prop_types_cv', 'null') ); 
+  $prop_type_options = tripal_cv_get_cvterm_options( variable_get('chado_feature_prop_types_cv', 'null') ); 
   $prop_type_options[0] = 'Select a Type';
   ksort($prop_type_options);
   $form['add_properties']['prop_type_id'] = array(
@@ -52,17 +49,12 @@ function tripal_feature_add_ONE_property_form($form_state, $node) {
 
   $form['add_properties']['prop_value'] = array(
     '#type' => 'textfield',
-    '#title' => t('Value') . '<span class="form-optional" title="This field is optional">+</span>',
+    '#title' => t('Value'),
   );
 
-  $form['add_properties']['preferred_synonym'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Preferred Synonym (only applicable if type is synonym)'),
-  );
-
-  $form['add_properties']['prop_stock_id'] = array(
+  $form['add_properties']['prop_feature_id'] = array(
     '#type' => 'value',
-    '#value' => $stock_id,
+    '#value' => $feature_id,
     '#required' => TRUE
   );
 
@@ -73,15 +65,18 @@ function tripal_feature_add_ONE_property_form($form_state, $node) {
 
   return $form;
 }
+/**
+* 
+*/
 
 function tripal_feature_add_ONE_property_form_validate($form, &$form_state) {
 
   // Only Require if Adding Property
   if ($form_state['clicked_button']['#value'] == t('Add Property') ) {
 
-		// Check that there is a stock
-		if ( $form_state['values']['prop_stock_id'] <= 0 ) {
-			form_set_error('prop_stock_id', 'There is no associated stock.');
+		// Check that there is a feature
+		if ( $form_state['values']['prop_feature_id'] <= 0 ) {
+			form_set_error('prop_feature_id', 'There is no associated feature.');
 		}
 		
     // Check that Selected a type
@@ -97,34 +92,30 @@ function tripal_feature_add_ONE_property_form_validate($form, &$form_state) {
       } // end of if more or less than 1 row
     } // if no prop type
 
-    // only check preferred synonym if type is synonym
-    if ($form_state['values']['preferred_synonym'] == 1) {
-    $tmp_obj = tripal_cv_get_cvterm(array('name' => array('type'=>'STRING','exact'=>TRUE, 'value'=>'synonym'),
-  																	'cv_id' => array('type'=>'INT','value'=>variable_get('chado_stock_prop_types_cv', 'null') )));
-      if ($form_state['values']['prop_type_id'] != $tmp_obj->cvterm_id) {
-        form_set_error('preferred_synonym', 'Preferred Synonym Checkbox Only Applicable if Type of Property is Synonym');
-      }
-    }
+
 
   } // if add Property
 
 }
+/**
+* 
+*/
 
 function tripal_feature_add_ONE_property_form_submit($form, &$form_state) {
 	
   // if there is a property add it (only won't be a property if clicked next step w/ no property)
   if ($form_state['values']['prop_type_id'] != 0) {
     //determine the rank for this property
-    $max_rank = get_max_chado_rank('stockprop', 
-    															array('stock_id'=>array('type'=>'INT','value'=>$form_state['values']['prop_stock_id']), 
-    																		'type_id'=>array('type'=>'INT','value'=> $form_state['values']['prop_type_id']) ));
+    $max_rank = get_max_chado_rank('featureprop', 
+       array('feature_id'=>array('type'=>'INT','value'=>$form_state['values']['prop_feature_id']), 
+       'type_id'=>array('type'=>'INT','value'=> $form_state['values']['prop_type_id']) ));
     if ($max_rank == -1) { $rank = 0; 
     } else { $rank = $max_rank+1; }
     
     $previous_db = tripal_db_set_active('chado');
     db_query(
-      "INSERT INTO stockprop (stock_id, type_id, value, rank) VALUES (%d, %d, '%s', %d)",
-      $form_state['values']['prop_stock_id'],
+      "INSERT INTO featureprop (feature_id, type_id, value, rank) VALUES (%d, %d, '%s', %d)",
+      $form_state['values']['prop_feature_id'],
       $form_state['values']['prop_type_id'],
       $form_state['values']['prop_value'],
       $rank
@@ -132,23 +123,6 @@ function tripal_feature_add_ONE_property_form_submit($form, &$form_state) {
     tripal_db_set_active($previous_db);
 
     drupal_set_message("Successfully Added Property");
-
-    // Set Preferred Synonym
-    if ($form_state['values']['preferred_synonym'] == 1) {
-
-      //use update node form so that both title and name get set
-      $node = node_load($form_state['values']['prop_nid']);
-      $node->title = $form_state['values']['prop_value'];
-      $node_form_state = array( 
-        'values' => array(
-					'title' => $form_state['values']['prop_value'], 
-					'op' => 'Save'
-				) 
-      );
-      module_load_include('inc', 'node', 'node.pages');
-      drupal_execute('chado_stock_node_form', $node_form_state, $node);
-
-    }
 
   } //end of if property to add
 }
@@ -165,14 +139,14 @@ function tripal_feature_edit_ALL_properties_page($node) {
   $output .= '<br>';
   $output .= drupal_get_form('tripal_feature_add_ONE_property_form', $node);
   $output .= '<br>';
-  $output .= drupal_get_form('implement_back_to_stock_button', $node->nid);
+  $output .= drupal_get_form('tripal_feature_implement_back_to_feature_button', $node->nid);
 
   return $output;
 }
 
 /**
  * Implements Hook_form()
- * Handles adding of Properties & Synonyms to Stocks
+ * Handles adding of Properties for features
  */
 function tripal_feature_edit_ALL_properties_form($form_state, $node) {
   $form = array();
@@ -183,58 +157,47 @@ function tripal_feature_edit_ALL_properties_form($form_state, $node) {
   );
 
   $i=0;
-  if (is_array($node->properties) && is_array($node->synonyms)) { 
-  	$all_properties = array_merge($node->properties, $node->synonyms);
-  } elseif (is_array($node->properties)) { 
-  	$all_properties = $node->properties; 
-  } elseif (is_array($node->synonyms)) { 
-  	$all_properties = $node->synonyms;
-  } else { $all_properties = array(); }
+  $feature = $node->feature;
+  $properties = tripal_feature_load_properties ($feature->feature_id);
 
-  if (sizeof($all_properties) != 0) {
-  foreach ($all_properties as $property) {
-    $i++;
-    $form["num-$i"] = array(
-      '#type' => 'item',
-      '#value' => $i.'.'
-    );
+  if (sizeof($properties) != 0) {
+     foreach ($properties as $property) {
+       $i++;
+       $form["num-$i"] = array(
+         '#type' => 'fieldset',
+         '#value' => "Property $i"
+       );
 
-    $form["id-$i"] = array(
-      '#type' => 'hidden',
-      '#value' => $property->stockprop_id
-    );
+       $form["num-$i"]["id-$i"] = array(
+         '#type' => 'hidden',
+         '#value' => $property->featureprop_id
+       );
 
-    $prop_type_options = tripal_cv_get_cvterm_options( variable_get('chado_stock_prop_types_cv', 'null') );
-    ksort($prop_type_options);
- 
-    $default = array_search($property->type, $prop_type_options);
+       $prop_type_options = tripal_cv_get_cvterm_options( variable_get('chado_feature_prop_types_cv', 'null') );
+       ksort($prop_type_options);
+    
+       $default = array_search($property->type, $prop_type_options);
 
-    $form["type-$i"] = array(
-      '#type' => 'select',
-      //'#title' => t('Type of Property'),
-      '#options' => $prop_type_options,
-      '#default_value' => $default 
-    );
+       $form["num-$i"]["type-$i"] = array(
+         '#type' => 'select',
+         //'#title' => t('Type of Property'),
+         '#options' => $prop_type_options,
+         '#default_value' => $default 
+       );
 
-    $form["value-$i"] = array(
-      '#type' => 'textfield',
-      //'#title' => t('Value'),
-      '#default_value' => $property->value
-    );
+       $form["num-$i"]["value-$i"] = array(
+         '#type' => 'textfield',
+         //'#title' => t('Value'),
+         '#default_value' => $property->value
+       );
 
-    if ($property->type == 'synonym') {
-      $form["preferred-$i"] = array(
-        '#type' => 'checkbox',
-        '#title' => t('Preferred Synonym'),
-      );
-    }
-
-    $form["submit-$i"] = array(
-      '#type' => 'submit',
-      '#value' => t("Delete #$i")
-    );
-
-  }} //end of foreach property
+       $form["num-$i"]["delete-$i"] = array(
+         '#type' => 'submit',
+         '#value' => t("Delete"),
+         '#name' => "delete-$i",
+       );
+     }//end of foreach property
+  } 
 
   $form['num_properties'] = array(
     '#type' => 'hidden',
@@ -243,15 +206,18 @@ function tripal_feature_edit_ALL_properties_form($form_state, $node) {
 
   $form["submit-edits"] = array(
     '#type' => 'submit',
-    '#value' => t('Update Properties')
+    '#value' => t('Update All Properties')
   );
 
   return $form;
 }
+/**
+* 
+*/
 
 function tripal_feature_edit_ALL_properties_form_submit($form, &$form_state) {
 
-  if ($form_state['clicked_button']['#value'] == t('Update Properties') ) {
+  if ($form_state['clicked_button']['#value'] == t('Update All Properties') ) {
      //Update all
      for ($i=1; $i<=$form_state['values']['num_properties']; $i++) {
        tripal_feature_update_property($form_state['values']["id-$i"], $form_state['values']["type-$i"], $form_state['values']["value-$i"], $form_state['values']["preferred-$i"], $form_state['values']["nid"]);
@@ -268,11 +234,14 @@ function tripal_feature_edit_ALL_properties_form_submit($form, &$form_state) {
 
   
 }
+/**
+* 
+*/
 
-function tripal_feature_update_property($stockprop_id, $cvterm_id, $value, $preferred, $nid) {
+function tripal_feature_update_property($featureprop_id, $cvterm_id, $value, $preferred, $nid) {
 
 	$previous_db = tripal_db_set_active('chado');
-	$old_obj = db_fetch_object(db_query("SELECT * FROM stockprop WHERE stockprop_id=%d",$stockprop_id));
+	$old_obj = db_fetch_object(db_query("SELECT * FROM featureprop WHERE featureprop_id=%d",$featureprop_id));
 	tripal_db_set_active($previous_db);
 	
 	// if they changed the type need to check rank
@@ -280,66 +249,59 @@ function tripal_feature_update_property($stockprop_id, $cvterm_id, $value, $pref
 	if ($cvterm_id == $old_obj->type_id) {
 	  $previous_db = tripal_db_set_active('chado');
   	db_query(
-    	"UPDATE stockprop SET type_id=%d, value='%s' WHERE stockprop_id=%d",
+    	"UPDATE featureprop SET type_id=%d, value='%s' WHERE featureprop_id=%d",
     	$cvterm_id, 
     	$value,
-    	$stockprop_id
+    	$featureprop_id
   	);
   	tripal_db_set_active($previous_db);
   } else {
       //determine the rank for this property
-    $max_rank = get_max_chado_rank('stockprop', 
-    															array('stock_id'=>array('type'=>'INT','value'=> $old_obj->stock_id), 
-    																		'type_id'=>array('type'=>'INT','value'=> $cvterm_id ) ));
+    $max_rank = get_max_chado_rank('featureprop', 
+       array('feature_id'=>array('type'=>'INT','value'=> $old_obj->feature_id), 
+    	 'type_id'=>array('type'=>'INT','value'=> $cvterm_id ) ));
     if ($max_rank == -1) { $rank = 0; 
     } else { $rank = $max_rank+1; }
 	  $previous_db = tripal_db_set_active('chado');
   	db_query(
-    	"UPDATE stockprop SET type_id=%d, value='%s', rank=%d WHERE stockprop_id=%d",
+    	"UPDATE featureprop SET type_id=%d, value='%s', rank=%d WHERE featureprop_id=%d",
     	$cvterm_id, 
     	$value,
     	$rank,
-    	$stockprop_id
+    	$featureprop_id
   	);
   	tripal_db_set_active($previous_db);  	
   }
-
-  // Set Preferred Synonym
-  //use update node form so that both title and name get set                                                                                                                                                                       
-  if ($preferred) {
-    $node = node_load($nid);                                                                                                                                                                            
-    $node->title = $value;                                                                                                                                                                              
-    $node_form_state = array(                                                                                                                                                                                                        
-      'values' => array(                                                                                                                                                                                                             
-        'title' => $value,                                                                                                                                               
-        'op' => 'Save'                                                                                                                                                                                
-      )                                                                                                                                                                                                            
-    );                                                                                                                                                                                                                               
+                                                                                                                                                                                                                          
     module_load_include('inc', 'node', 'node.pages');                                                                                                                                                                                
-    drupal_execute('chado_stock_node_form', $node_form_state, $node);  
-  }
-}
+    drupal_execute('chado_feature_node_form', $node_form_state, $node);  
 
-function tripal_feature_delete_property($stockprop_id) {
+}
+/**
+* 
+*/
+
+function tripal_feature_delete_property($featureprop_id) {
 
   $previous_db = tripal_db_set_active('chado');
   db_query(
-    "DELETE FROM stockprop WHERE stockprop_id=%d",
-    $stockprop_id
+    "DELETE FROM featureprop WHERE featureprop_id=%d",
+    $featureprop_id
   );
   tripal_db_set_active($previous_db);
 
 }
+/**
+* 
+*/
 
 function theme_tripal_feature_edit_ALL_properties_form ($form) {
   $output = '';
 
   $output .= '<br><fieldset>';
   $output .= '<legend>Edit Already Existing Properties<span class="form-optional" title="This field is optional">(optional)</span></legend>';
-  $output .= '<p>Below is a list of already existing properties for this stock, one property per line. The type refers to the type of '
-  	     .'property and the value is the value for that property. For example, if this stock has a seed coat colour of green then '
-	     .'the property type=sead coat colour and the value=green. When the type of property is synonym, there is an extra checkbox '
-	     .'allowing you to specify which is the <b>Preferred Synonym</b>. This will change the current name of the stock.</p>';
+  $output .= '<p>Below is a list of already existing properties for this feature, one property per line. The type refers to the type of '
+  	     .'property and the value is the value for that property. </p>';
   $output .= '<table>';
   $output .= '<tr><th>#</th><th>Type</th><th>Value</th><th></th></tr>';
 
@@ -362,17 +324,12 @@ function theme_tripal_feature_edit_ALL_properties_form ($form) {
 /**
  * 
  */
-function list_properties_for_node($properties, $synonyms) {
+function list_properties_for_node($properties) {
 
-  if (!empty($properties) OR !empty($synonyms) ) {
+  if (!empty($properties)) {
     $output = '<table>';
     $output .= '<tr><th>Type</th><th>Value</th></tr>';
 
-    if (!empty($synonyms) ) {
-      foreach ($synonyms as $s) {
-        $output .= '<tr><td>synonym</td><td>'.$s.'</td></tr>';
-      }
-    }
 
     if (!empty($properties) ) {
       foreach ($properties as $p) {
@@ -383,7 +340,7 @@ function list_properties_for_node($properties, $synonyms) {
     $output .= '</table>';
 
   } else {
-    $output = 'No Properties Added to the Current Stock';
+    $output = 'No properties exist forony the current feature';
   }
 
   return $output;
