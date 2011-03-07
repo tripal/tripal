@@ -1,5 +1,5 @@
 <?php
-$featureloc_sequences =  $variables['featureloc_sequences'];
+$featureloc_sequences =  $variables['tripal_feature']['featureloc_sequences'];
 if($featureloc_sequences){
    foreach($featureloc_sequences as $seq => $attrs){ ?>
      <div id="tripal_feature-floc_seq-<?php print $attrs['type']?>-box" class="tripal_feature-info-box tripal-info-box">

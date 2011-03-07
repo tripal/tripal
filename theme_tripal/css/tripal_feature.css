@@ -1,5 +1,5 @@
 #tripal_feature-featureloc_sequence {
-  height: 300px;
+  height: 500px;
   overflow: scroll;
    background-color: #FFFFFF;
 }
@@ -45,4 +45,15 @@ table.tripal_feature-references-table th {
    background-color: #EEEEEE;
    text-align: left;
 
+}
+/* feature relationship edit form */
+#tripal-feature-edit-ALL-relationships-form .form-item,
+#tripal-feature-edit-ALL-db-references-form .form-item {
+   float: left;
+   margin: 0 10px 0 0;
+   
+}
+#tripal-feature-edit-ALL-db-references-form .form-submit {
+   float: none;
+   display: block;
 }

@@ -1,11 +1,11 @@
 <?php
 
-$featurelocs_as_child = $variables['featurelocs_as_child'];
+$featurelocs_as_child = $variables['tripal_feature']['featurelocs_as_child'];
 $feature = $variables['node']->feature;
 
 ?>
 <div id="tripal_feature-featurelocs_as_child-box" class="tripal_feature-info-box tripal-info-box">
-  <div class="tripal_feature-info-box-title tripal-info-box-title">Features where <?php print $feature->featurename;?> is located</div>
+  <div class="tripal_feature-info-box-title tripal-info-box-title">Locations where <?php print $feature->featurename;?> is found</div>
   <div class="tripal_feature-info-box-desc tripal-info-box-desc">The <?php print $feature->featurename;?> feature is located relative to the following features:</div>
   <table class="tripal_feature-table tripal-table tripal-table-horz">
     <tr>

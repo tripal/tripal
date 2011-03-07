@@ -57,5 +57,7 @@ $feature = $variables['node']->feature;
       $i++;  
     } ?>
   </table>
-  <?php } ?>
+  <?php } else { ?>
+    <div class="tripal-no-results">There are no references for this feature</div> 
+  <?php }?>
 </div>

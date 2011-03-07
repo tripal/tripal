@@ -1,5 +1,6 @@
 .tripal-info-box {
    width: 100%;
+   padding-bottom: 10px;
 }
 .tripal-table {
    width: 100%; 
@@ -50,8 +51,8 @@
 }
 
 .tripal-info-box-title {
-  font-size: 2em;
-  padding-top: 20px;
+  font-size: 1.5em;
+  padding-bottom: 5px;
 
 }
 /* hide the title when inside of a block on a panel */
@@ -86,4 +87,11 @@
    height: auto;
    max-height: 300px;
    overflow: auto;
+}
+
+/* no results message */
+.tripal-no-results {
+   font-style: italic;
+   padding: 10px;
+   background-color: #FFEEEE;
 }

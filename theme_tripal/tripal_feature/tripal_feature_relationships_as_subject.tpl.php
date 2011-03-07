@@ -1,6 +1,6 @@
 <?php
 
-$subject_relationships = $variables['subject_relationships'];
+$subject_relationships = $variables['tripal_feature']['subject_relationships'];
 $feature = $variables['node']->feature;
 
 ?>

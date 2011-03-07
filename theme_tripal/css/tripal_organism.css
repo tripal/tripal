@@ -1,14 +1,20 @@
-/*
- Copyright 2009 Clemson University
-*/
 
-.tripal_organism-image {
-   float: right;
+#tripal_organism-image-box {
+   float: left;
    margin-left: 10px;
    margin-bottom: 10px;
+   margin-right: 10px;
+   width: auto;
+}
+#tripal_organism-image-box img {
+   max-height: 200px;
 }
 
-.tripal_organism-details {
-   position: relative;
+#tripal_organism-base-box {
+   float: left;
+   width: 300px;
 }
-
+#tripal_organism-description-box {
+   clear: left;
+   width: auto;
+}
