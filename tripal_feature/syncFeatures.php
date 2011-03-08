@@ -145,6 +145,22 @@ function tripal_feature_sync_feature ($feature_id){
    $feature = db_fetch_object(db_query($fsql,$feature_id));
    tripal_db_set_active($previous_db);  // now use drupal database
 
+   // get the synonyms for this feature
+   $synsql = "SELECT S.name ".
+             "FROM {feature_synonym} FS ".
+             "  INNER JOIN {synonym} S on FS.synonym_id = S.synonym_id ".
+             "WHERE FS.feature_id = %d";
+   $previous_db = tripal_db_set_active('chado');  // use chado database
+   $synonyms = db_query($synsql,$feature_id);
+   tripal_db_set_active($previous_db);  // now use drupal database
+
+   // now add these synonyms to the feature object as a single string   
+   $synstring = '';
+   while($synonym = db_fetch_object($synonyms)){
+      $synstring .= "$synonym->name\n";
+   }        
+   $feature->synonyms = $synstring;
+
    // check to make sure that we don't have any nodes with this feature name as a title
    // but without a corresponding entry in the chado_feature table if so then we want to
    // clean up that node.  (If a node is found we don't know if it belongs to our feature or
@@ -204,12 +220,13 @@ function tripal_feature_sync_feature ($feature_id){
       $new_node->type = 'chado_feature';
       $new_node->uid = $user->uid;
       $new_node->title = "$feature->name, $feature->uniquename ($feature->cvname) $organism->genus $organism->species";
-      $new_node->name = "$feature->name";
+      $new_node->fname = "$feature->name";
       $new_node->uniquename = "$feature->uniquename";
       $new_node->feature_id = $feature->feature_id;
       $new_node->residues = $feature->residues;
       $new_node->organism_id = $feature->organism_id;
       $new_node->feature_type = $feature->cvname;
+      $new_node->synonyms = $feature->synonyms;
 
       // validate the node and if okay then submit
       node_validate($new_node);

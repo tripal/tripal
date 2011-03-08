@@ -387,7 +387,7 @@ function chado_feature_insert($node){
 
       // use chado database
       $previous_db = tripal_db_set_active('chado');
-      db_query($sql,$node->organism_id,$node->name,$node->uniquename,
+      db_query($sql,$node->organism_id,$node->fname,$node->uniquename,
       $residues,strlen($residues),$obsolete,$node->feature_type);
 
       // now that we've added the feature, get the feature id for this feature
@@ -477,7 +477,7 @@ function chado_feature_update($node){
          $obsolete = 'TRUE';
       }
       $previous_db = tripal_db_set_active('chado');  // use chado database
-      db_query($sql,$residues,$node->name,$node->uniquename,
+      db_query($sql,$residues,$node->fname,$node->uniquename,
       strlen($residues),$node->organism_id,$obsolete,$node->feature_type,
       $feature->feature_id);
       tripal_db_set_active($previous_db);  // now use drupal database
@@ -491,6 +491,8 @@ function chado_feature_update($node){
  *
  */
 function chado_feature_add_synonyms($synonyms,$feature_id){
+
+drupal_set_message($synonyms);
 
    // make sure we only have a single space between each synonym
    $synonyms = preg_replace("/[\s\n\r]+/"," ",$synonyms);
@@ -655,7 +657,7 @@ function chado_feature_form ($node,$param){
       '#type' => 'textfield',
       '#title' => t('Title'),
       '#required' => TRUE,
-      '#default_value' => $feature->featurename,
+      '#default_value' => $node->title,
       '#description' => t('The title must be a unique identifier for this feature.  It is recommended to use a combination of uniquename, organism and feature type in the title as this is guranteed to be unique.'),
       '#weight' => 1,
       '#maxlength' => 255
@@ -665,13 +667,13 @@ function chado_feature_form ($node,$param){
       '#type' => 'textfield',
       '#title' => t('Unique Feature Name'),
       '#required' => TRUE,
-      '#default_value' => $feature->featurename,
+      '#default_value' => $feature->uniquename,
       '#description' => t('Enter a unique name for this feature.  This name must be unique for the organism and feature type.'),
       '#weight' => 1,
       '#maxlength' => 255
    );
 
-   $form['name']= array(
+   $form['fname']= array(
       '#type' => 'textfield',
       '#title' => t('Feature Name'),
       '#required' => TRUE,
@@ -852,7 +854,7 @@ function chado_feature_load($node){
    // add details about the organism
    $additions->organism = tripal_feature_load_organism($organism_id);
    // add the list of synomyms
-//   $additions->synonyms = tripal_feature_load_synonyms($feature_id);
+   $additions->synonyms = tripal_feature_load_synonyms($feature_id);
 
    return $additions;
 }
@@ -876,7 +878,8 @@ function tripal_feature_load_synonyms ($feature_id){
           "FROM {Feature_Synonym} FS ".
           "  INNER JOIN {Synonym} S ".
           "    ON FS.synonym_id = S.Synonym_id ".
-          "WHERE FS.feature_id = %d";
+          "WHERE FS.feature_id = %d ".
+          "ORDER BY S.name ";
    $previous_db = tripal_db_set_active('chado');  // use chado database
    $results = db_query($sql,$feature_id);
    tripal_db_set_active($previous_db);  // now use drupal database
@@ -923,7 +926,8 @@ function tripal_feature_load_references ($feature_id){
           "  INNER JOIN {feature_dbxref} FDBX on F.feature_id = FDBX.feature_id ".
           "  INNER JOIN {dbxref} DBX on DBX.dbxref_id = FDBX.dbxref_id ".
           "  INNER JOIN {db} on DB.db_id = DBX.db_id ".
-          "WHERE F.feature_id = %d";
+          "WHERE F.feature_id = %d ".
+          "ORDER BY DB.name ";
    $previous_db = tripal_db_set_active('chado');  // use chado database
    $results = db_query($sql,$feature_id);
    tripal_db_set_active($previous_db);  // now use drupal database

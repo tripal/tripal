@@ -458,19 +458,70 @@ function tripal_core_load_gff3_parents($feature,$cvterm,$parents,$gff_features,$
 *
 */
 function tripal_core_load_gff3_dbxref($feature,$dbxrefs){
+
+   // iterate through each of the dbxrefs
    foreach($dbxrefs as $dbxref){
-      // check to see if this accession reference exists, if not add it
-//      $dbxrefsql = "SELECT * FROM {dbxref} WHERE db_id = %s and accession = '%s'";
-//      $dbxref = db_fetch_object(db_query($dbxrefsql,$db_id,$accession));
-//      if(!$dbxref){
-//         $sql = "INSERT INTO {dbxref} (db_id,accession) VALUES (%d,'%s')";
-//         $result = db_query($sql,$db_id,$accession);
-//         if(!$result){
-//           print "WARNING: could not add external database acession: '$name accession: $accession'\n";
-//         }
-//         $dbxref = db_fetch_object(db_query($dbxrefsql,$db_id,$accession));
-//      }
+
+      // get the database name from the reference.  If it doesn't exist then create one.
+      $ref = explode(":",$dbxref);
+      $dbname = $ref[0];
+      $accession = $ref[1];
+
+      // first look for the database name if it doesn't exist then create one.
+      // first check for the fully qualified URI (e.g. DB:<dbname>. If that
+      // can't be found then look for the name as is.  If it still can't be found
+      // the create the database
+      $db = tripal_core_chado_select('db',array('db_id'),array('name' => "DB:$dbname"));      
+      if(sizeof($db) == 0){
+         $db = tripal_core_chado_select('db',array('db_id'),array('name' => "$dbname"));      
+      }        
+      if(sizeof($db) == 0){
+         $ret = tripal_core_chado_insert('db',array('name' => $dbname, 
+           'description' => 'Added automatically by the GFF loader'));
+         if($ret){ 
+            print "Added new database: $dbname\n";
+            $db = tripal_core_chado_select('db',array('db_id'),array('name' => "$dbname"));      
+         } else {
+            print "ERROR: cannot find or add the database $dbname\n";
+            return 0;
+         }
+      } 
+      $db = $db[0];
+       
+      // now check to see if the accession exists
+      $dbxref = tripal_core_chado_select('dbxref',array('dbxref_id'),array(
+         'accession' => $accession,'db_id' => $db->db_id));
+
+      // if the accession doesn't exist then we want to add it
+      if(sizeof($dbxref) == 0){
+         $ret = tripal_core_chado_insert('dbxref',array('db_id' => $db->db_id,
+            'accession' => $accession,'version' => ''));
+         $dbxref = tripal_core_chado_select('dbxref',array('dbxref_id'),array(
+            'accession' => $accession,'db_id' => $db->db_id));
+      }
+      $dbxref = $dbxref[0];
+
+      // check to see if tihs feature dbxref already exists
+      $fdbx = tripal_core_chado_select('feature_dbxref',array('feature_dbxref_id'),
+         array('dbxref_id' => $dbxref->dbxref_id,'feature_id' => $feature->feature_id));
+
+      // now associate this feature with the database reference if it doesn't
+      // already exist
+      if(sizeof($fdbx)==0){
+         $ret = tripal_core_chado_insert('feature_dbxref',array(
+            'feature_id' => $feature->feature_id,
+            'dbxref_id' => $dbxref->dbxref_id));
+         if($ret){
+            print "Adding dbxref $dbname:$accession\n";
+         } else {
+            print "ERROR: failed to insert dbxref: $dbname:$accession\n";
+            return 0;
+         }
+      } else {
+         print "Dbxref already exists, skipping $dbname:$accession\n";
+      }
    }
+   return 1;
 }
 
 /*************************************************************************
@@ -564,8 +615,9 @@ function tripal_core_load_gff3_alias($feature,$aliases){
             print "ERROR: cannot add alias $alias to feature synonym table\n";
             return 0;
          }
+      } else {
+         print "Synonym $alias already exists. Skipping\n";
       }
-      $fsyn = db_fetch_object(db_query($synsql,$synonym->synonym_id,$feature->feature_id,$pub->pub_id));
    }
    return 1;
 }

@@ -38,7 +38,32 @@ function tripal_analysis_blast_menu() {
 	);
 	return $items;
 }
+/*******************************************************************************
+*
+*/
+function tripal_analysis_blast_block($op = 'list', $delta = 0, $edit=array()){
+   switch($op) {
+      case 'list':
+         $blocks['results']['info'] = t('Tripal Blast Analysis Results');
+         $blocks['results']['cache'] = BLOCK_NO_CACHE;
+       return $blocks;
 
+      case 'view':
+         if(user_access('access chado_analysis_blast content') and arg(0) == 'node' and is_numeric(arg(1))) {
+            $nid = arg(1);
+            $node = node_load($nid);
+            $block = array();
+            switch($delta){
+               case 'results':
+                  $block['subject'] = t('Blast Results');
+                  $block['content'] = theme('tripal_analysis_blast_results', $node);
+                  break;
+                default :
+            }
+            return $block;
+         }
+   }
+}
 
 /*******************************************************************************
  * tripal_analysis_blast_nodeapi()
@@ -84,19 +109,28 @@ function tripal_analysis_blast_theme () {
 	return array(
       'tripal_analysis_blast_results_index_version' => array (
          'arguments' => array('node'),
-	),
+	   ),
       'tripal_analysis_blast_results' => array (
-         'arguments' => array('node'),
-	)
+         'arguments' => array('node'=> null),
+         'template' => 'tripal_analysis_blast_results',
+	   ),
 	);
 }
 /*******************************************************************************
  * Prepare blast result for the feature shown on the page
  */
-function theme_tripal_analysis_blast_results ($node) {
-	$feature = $node->feature;
-	$content = tripal_get_blast_results($feature->feature_id, 0, 10, 0);
-	return $content;
+//function theme_tripal_analysis_blast_results ($node) {
+//	$feature = $node->feature;
+//	$content = tripal_get_blast_results($feature->feature_id, 0, 10, 0);
+//	return $content;
+//}
+
+/*******************************************************************************
+ *  
+ */
+function tripal_analysis_blast_preprocess_tripal_analysis_blast_results(&$variables){
+   $feature = $variables['node']->feature;
+   $variables['tripal_analysis_blast']['results'] = tripal_get_blast_results($feature->feature_id, 0, 10, 0);
 }
 
 /*******************************************************************************
@@ -306,7 +340,7 @@ function parse_NCBI_Blast_XML($xml_string,$db,$max,$feature_id,$ajax, $analysis)
 		foreach ($xml_output->children() as $xml_tag) {
 			if ($xml_tag->getName() == 'Iteration_query-def') {
 				// Here we show the feature name again to check if we pull the correct data
-				$html_out .= "Query: $xml_tag<br>";
+//				$html_out .= "Query: $xml_tag<br>";
 			} else if ($xml_tag->getName() == 'Iteration_hits') {
 				$iteration = $xml_tag;
 			}

@@ -349,7 +349,7 @@ function tripal_feature_load_fasta($dfile, $organism_id, $type,
    // now load the last sequence in the file
    tripal_feature_fasta_loader_insert_feature($name,$uname,$db_id,
       $accession,$subject,$rel_type,$parent_type,$library_id,$organism_id,$type,
-      $source,$residues,$update);
+      $source,$residues,$update,$re_name);
    return '';
 }
 /*************************************************************************
@@ -357,7 +357,7 @@ function tripal_feature_load_fasta($dfile, $organism_id, $type,
 */
 function tripal_feature_fasta_loader_insert_feature($name,$uname,$db_id,$accession,
               $parent,$rel_type,$parent_type,$library_id,$organism_id,$type, 
-              $source,$residues,$update) 
+              $source,$residues,$update,$re_name) 
 {
    $previous_db = tripal_db_set_active('chado');
 
@@ -391,10 +391,22 @@ function tripal_feature_fasta_loader_insert_feature($name,$uname,$db_id,$accessi
       }
    } else {
        if($update){
-         $sql = "UPDATE {feature} 
-                  SET name = '%s', residues = '%s', seqlen = '%s', md5checksum = '%s'
-                  WHERE organism_id = %d and uniquename = '%s' and type_id = %d";
-         $result = db_query($sql,$name,$residues,strlen($residues),md5($residues),$organism_id,$uname,$cvterm->cvterm_id);
+
+         // we do not want to wipe out the name if the user did not intend for this to
+         // happen.  The uniquename must match the sequence but the name may not.  
+         // so, we'll only update the name if the users specified an 're_name' regular
+         // expression.
+         if($re_name){
+            $sql = "UPDATE {feature} 
+                     SET name = '%s', residues = '%s', seqlen = '%s', md5checksum = '%s'
+                     WHERE organism_id = %d and uniquename = '%s' and type_id = %d";
+            $result = db_query($sql,$name,$residues,strlen($residues),md5($residues),$organism_id,$uname,$cvterm->cvterm_id);
+         } else {
+            $sql = "UPDATE {feature} 
+                     SET residues = '%s', seqlen = '%s', md5checksum = '%s'
+                     WHERE organism_id = %d and uniquename = '%s' and type_id = %d";
+            $result = db_query($sql,$residues,strlen($residues),md5($residues),$organism_id,$uname,$cvterm->cvterm_id);
+         }
          if(!$result){
             print "ERROR: failed to update feature '$name ($uname)'\n";
             return 0;
