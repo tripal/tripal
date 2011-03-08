@@ -8,7 +8,7 @@ $feature = $variables['node']->feature;
   <pre id="tripal_feature-sequence-residues"><?php 
      if($feature->residues){
         // format the sequence to break ever 100 residues
-        print ereg_replace("(.{100})","\\1<br>",$feature->residues); 
+        print ereg_replace("(.{60})","\\1<br>",$feature->residues); 
      } else {
         print "sequence currently not available";
      } ?>

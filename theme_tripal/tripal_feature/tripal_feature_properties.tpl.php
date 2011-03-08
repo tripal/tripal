@@ -4,7 +4,7 @@ $feature = $variables['node']->feature;
 ?>
 <div id="tripal_feature-properties-box" class="tripal_feature-info-box tripal-info-box">
   <div class="tripal_feature-info-box-title tripal-info-box-title">Properties</div>
-  <div class="tripal_feature-info-box-desc tripal-info-box-desc">The feature '<?php print $feature->featurename ?>' is also known by these names</div>
+  <div class="tripal_feature-info-box-desc tripal-info-box-desc">The feature '<?php print $feature->featurename ?>' has these properties</div>
   <?php if(count($properties) > 0){ ?>
   <table class="tripal_feature-table tripal-table tripal-table-horz">
     <tr>

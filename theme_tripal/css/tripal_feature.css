@@ -1,7 +1,8 @@
-#tripal_feature-featureloc_sequence {
+#tripal_feature-featureloc_sequence,
+#tripal_feature-sequence-residues {
   height: 500px;
   overflow: scroll;
-   background-color: #FFFFFF;
+  background-color: #FFFFFF;
 }
 
 div#tripal_feature-featureloc_sequence-legend {
@@ -27,6 +28,14 @@ span.tripal_feature-featureloc_sequence-CDS {
 
 span.tripal_feature-featureloc_sequence-mRNA {
    background-color: #FFFF99;
+}
+
+span.tripal_feature-featureloc_sequence-exon {
+   background-color: #9999FF;
+}
+
+span.tripal_feature-featureloc_sequence-intron {
+   background-color: #FF99FF;
 }
 /* information tables on the feature pages */
 table.tripal_feature-relationships-subject-table th {
