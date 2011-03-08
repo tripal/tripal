@@ -99,7 +99,7 @@ function tripal_db_module_description_page() {
 *
 */
 function tripal_db_admin_page(){
-   $add_url = url("admin/tripal/tripal_db/new");
+   $add_url = url("admin/tripal/tripal_db/add_db");
    $output = "<a href=\"$add_url\">Add a new external database</a>"; 
    $output .= drupal_get_form('tripal_db_select_form');
    $output .= '<div id="db-edit-div">Please select a database above to view or edit</div>';
