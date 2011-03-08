@@ -3,6 +3,7 @@
   height: 500px;
   overflow: scroll;
   background-color: #FFFFFF;
+  font-family: monospace;
 }
 
 div#tripal_feature-featureloc_sequence-legend {
