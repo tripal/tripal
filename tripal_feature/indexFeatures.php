@@ -1,8 +1,5 @@
 <?php
 
-//
-// Copyright 2009 Clemson University
-//
 // This script can be run as a stand-alone script to sync all the features from chado to drupal
 //
 // To index a single feature
@@ -34,6 +31,14 @@ if(isset($arguments['i'])){
 
    if($feature_id > 0){ 
       # print "indexing feature $feature_id\n";
+     // We register a shutdown function to ensure that the nodes
+     // that are indexed will have proper entries in the search_totals
+     // table.  Without these entries, the searching doesn't work
+     // properly. This function may run for quite a while since
+     // it must calculate the sum of the scores of all entries in
+     // the search_index table.  In the case of common words like
+     // 'contig', this will take quite a while
+      register_shutdown_function('search_update_totals');
       tripal_feature_index_feature($feature_id, $nid); 
    }
    else{ 
