@@ -77,6 +77,9 @@ function tripal_features_reindex ($max_sync,$job_id = NULL){
 
    // Iterate through features that need to be indexed 
    $interval = intval($count * 0.01);
+   if($interval >= 0){
+      $interval = 1;
+   }
    foreach($chado_features as $chado_feature){
 
       // update the job status every 1% features
