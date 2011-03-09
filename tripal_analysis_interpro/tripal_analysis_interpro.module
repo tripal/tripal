@@ -798,7 +798,7 @@ function tripal_analysis_interpro_theme () {
 
 function tripal_analysis_interpro_preprocess_tripal_analysis_interpro_results(&$variables){
    $feature = $variables['node']->feature;
-	$content = tripal_get_interpro_results($feature->feature_id);
+	$variables['tripal_analysis_interpro']['results'] = tripal_get_interpro_results($feature->feature_id);
 }
 
 /*******************************************************************************
