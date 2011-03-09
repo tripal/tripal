@@ -1,6 +1,4 @@
 <?php
-// $Id:
-// Copyright 2009 Clemson University
 /*******************************************************************************
  * Tripal Interpro lets users show/hide iprscan results associated with a tripal
  * feature
@@ -31,7 +29,32 @@ function tripal_analysis_interpro_node_info() {
 	);
 	return $nodes;
 }
+/*******************************************************************************
+*
+*/
+function tripal_analysis_interpro_block($op = 'list', $delta = 0, $edit=array()){
+   switch($op) {
+      case 'list':
+         $blocks['tai_results']['info'] = t('Tripal InterProScan Analysis Results');
+         $blocks['tai_results']['cache'] = BLOCK_NO_CACHE;
+       return $blocks;
 
+      case 'view':
+         if(user_access('access chado_analysis_interpro content') and arg(0) == 'node' and is_numeric(arg(1))) {
+            $nid = arg(1);
+            $node = node_load($nid);
+            $block = array();
+            switch($delta){
+               case 'tai_results':
+                  $block['subject'] = t('InterProScan Results');
+                  $block['content'] = theme('tripal_analysis_interpro_results', $node);
+                  break;
+                default :
+            }
+            return $block;
+         }
+   }
+}
 /*******************************************************************************
  *  Provide a Interpro Analysis form
  */
@@ -757,19 +780,25 @@ function tripal_analysis_interpro_theme () {
 	return array(
       'parse_EBI_Interpro_XML_index_version' => array (
          'arguments' => array('node'),
-	),
+	   ),
       'tripal_analysis_interpro_results' => array (
-         'arguments' => array('node'),
-	)
+         'arguments' => array('node'=> null),
+         'template' => 'tripal_analysis_interpro_results',
+	   )
 	);
 }
 /*******************************************************************************
  * Prepare interpro result for the feature shown on the page
  */
-function theme_tripal_analysis_interpro_results ($node) {
-	$feature = $node->feature;
+//function theme_tripal_analysis_interpro_results ($node) {
+//	$feature = $node->feature;
+//	$content = tripal_get_interpro_results($feature->feature_id);
+//	return $content;
+//}
+
+function tripal_analysis_interpro_preprocess_tripal_analysis_interpro_results(&$variables){
+   $feature = $variables['node']->feature;
 	$content = tripal_get_interpro_results($feature->feature_id);
-	return $content;
 }
 
 /*******************************************************************************
