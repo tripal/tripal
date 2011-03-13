@@ -18,15 +18,20 @@
 //       specific fields such as stock_name, uniquename, stock_type, synonyms,
 //       properties, db_references, object_relationships, subject_relationships,
 //       organism, etc.
-//   NOTE: For a full listing of fields available in the node object add
-//       <pre><?php print_r($node); ?></pre> to this template or install
-//       the Drupal Devel module which provides an extra tab at the top of
-//       the node page labelled Devel
+//   NOTE: For a full listing of fields available in the node object the
+//       print_r $node line below or install the Drupal Devel module which 
+//       provides an extra tab at the top of the node page labelled Devel
+?>
+
+<?php
+ //uncomment this line to see a full listing of the fields avail. to $node
+ //print '<pre>'.print_r($node,TRUE).'</pre>';
 ?>
 
 <!-- Base Theme -->
 <?php include('tripal_stock/tripal_stock_base.tpl.php'); ?>
 
+<?php if (!$teaser) { ?>
 <!-- Database References -->
 <?php include('tripal_stock/tripal_stock_references.tpl.php'); ?>
 
@@ -41,3 +46,4 @@
 
 <!-- Subject Relationships -->
 <?php include('tripal_stock/tripal_stock_relationships_as_subject.tpl.php'); ?>
+<?php } ?>
