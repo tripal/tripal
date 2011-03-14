@@ -405,19 +405,25 @@ function tripal_core_chado_select($table,$columns,$values){
    }
 
    // now build the SQL select statement
-   $sql  = "SELECT " . implode(',',$columns) . " ";
-   $sql .= "FROM {$table} ";
-   $sql .= "WHERE ";
-   foreach($where as $field => $value){
-     if (is_array($value)) {
-       $sql .= "$field IN (".db_placeholders($value,'varchar').") AND ";
-       foreach ($value as $v) { $args[] = $v; }
-     } else {
-       $sql .= "$field = '%s' AND ";
-       $args[] = $value;
+   if (empty($where)) {
+     // sometimes want to select everything
+     $sql  = "SELECT " . implode(',',$columns) . " ";
+     $sql .= "FROM {$table} ";
+   } else {
+     $sql  = "SELECT " . implode(',',$columns) . " ";
+     $sql .= "FROM {$table} ";
+     $sql .= "WHERE ";
+     foreach($where as $field => $value){
+       if (is_array($value)) {
+         $sql .= "$field IN (".db_placeholders($value,'varchar').") AND ";
+         foreach ($value as $v) { $args[] = $v; }
+       } else {
+         $sql .= "$field = '%s' AND ";
+         $args[] = $value;
+       }
      }
+     $sql = substr($sql,0,-4);  // get rid of the trailing 'AND'
    }
-   $sql = substr($sql,0,-4);  // get rid of the trailing 'AND'
    
    $resource = db_query($sql,$args);
    $results = array();
