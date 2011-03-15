@@ -2,23 +2,20 @@
  Copyright 2009 Clemson University
 */
 
-.tripal_blast-info-box {
-   margin-top: 10px;
-   margin-left: 0px;
-   margin-right: 0px;
-   margin-bottom: 0px;
-   padding-top: 0px;
-   padding-left: 0px;
-   padding-bottom: 0px;
-   padding-right: 0px;
-   border-collapse: collapse;
-   z-index: 10;
+.tripal_analysis_blast-box {
+
 }
 
-.tripal_blast_results_table {
-    width: 100%;  
+.tripal_analysis_blast-table {
+   width:100%;
 }
-
-.tripal_blast_results_table td{
-   vertical-align: top;
+.tripal_analysis_blast-info-hsp-desc {
+	background-color:#EEFEEE;
+	border:1px solid #CCC5AE;
+	display:none;
+	overflow:auto;
+}
+.tripal_analysis_blast-info-hsp-desc pre{
+	background-color:#EEFEEE;
+   border:none;
 }
