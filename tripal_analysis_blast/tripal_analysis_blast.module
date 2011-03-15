@@ -38,32 +38,7 @@ function tripal_analysis_blast_menu() {
 	);
 	return $items;
 }
-/*******************************************************************************
-*
-*/
-function tripal_analysis_blast_block($op = 'list', $delta = 0, $edit=array()){
-   switch($op) {
-      case 'list':
-         $blocks['results']['info'] = t('Tripal Blast Analysis Results');
-         $blocks['results']['cache'] = BLOCK_NO_CACHE;
-       return $blocks;
 
-      case 'view':
-         if(user_access('access chado_analysis_blast content') and arg(0) == 'node' and is_numeric(arg(1))) {
-            $nid = arg(1);
-            $node = node_load($nid);
-            $block = array();
-            switch($delta){
-               case 'results':
-                  $block['subject'] = t('Blast Results');
-                  $block['content'] = theme('tripal_analysis_blast_results', $node);
-                  break;
-                default :
-            }
-            return $block;
-         }
-   }
-}
 
 /*******************************************************************************
  * tripal_analysis_blast_nodeapi()
@@ -109,28 +84,20 @@ function tripal_analysis_blast_theme () {
 	return array(
       'tripal_analysis_blast_results_index_version' => array (
          'arguments' => array('node'),
-	   ),
-      'tripal_analysis_blast_results' => array (
-         'arguments' => array('node'=> null),
-         'template' => 'tripal_analysis_blast_results',
-	   ),
+		),
+		'tripal_analysis_blast_results' => array(
+			'arguments' =>  array('node'=> null),
+		   'template' => 'tripal_analysis_blast_results',
+		)
 	);
 }
-/*******************************************************************************
- * Prepare blast result for the feature shown on the page
- */
-//function theme_tripal_analysis_blast_results ($node) {
-//	$feature = $node->feature;
-//	$content = tripal_get_blast_results($feature->feature_id, 0, 10, 0);
-//	return $content;
-//}
-
 /*******************************************************************************
  *  
  */
 function tripal_analysis_blast_preprocess_tripal_analysis_blast_results(&$variables){
    $feature = $variables['node']->feature;
-   $variables['tripal_analysis_blast']['results'] = tripal_get_blast_results($feature->feature_id, 0, 10, 0);
+   $blast_object = tripal_get_blast_results($feature->feature_id, 0, 10, 0);
+   $variables['blast_object'] = $blast_object;
 }
 
 /*******************************************************************************
@@ -164,11 +131,14 @@ function tripal_get_blast_results($feature_id, $db_id, $max,$ajax){
 	        INNER JOIN analysisfeature AF ON AF.analysisfeature_id = AFP.analysisfeature_id
 	        INNER JOIN analysisprop AP ON AP.analysis_id = AF.analysis_id
 	        WHERE feature_id = %d
-	        AND AFP.type_id = %d ";
+	        AND AFP.type_id = %d 
+	        AND AP.value like '%|%' ";
 	$result = db_query($sql, $feature_id, $type_id);
 	tripal_db_set_active($previous_db);
 
 	// get the HTML content for viewing each of the XML file
+	$blast_obj_array = array ();
+	$blast_obj_counter = 0;
 	while ($analysisfeatureprop = db_fetch_object($result)) {
 
 		// get db_id
@@ -189,9 +159,9 @@ function tripal_get_blast_results($feature_id, $db_id, $max,$ajax){
 			$sql = "SELECT * FROM {db} WHERE db_id=%d";
 			$db = db_fetch_object(db_query($sql, $att_db_id));
 			tripal_db_set_active($previous_db);
-
-			$content .= parse_NCBI_Blast_XML($analysisfeatureprop->afpvalue,$db,$max,$feature_id,$ajax, $analysis);
-
+			$blast_obj = tripal_analysis_blast_get_result_object($analysisfeatureprop->afpvalue,$db,$max,$feature_id, $analysis);
+			$blast_obj_array [$blast_obj_counter] = $blast_obj;
+			$blast_obj_counter ++;
 			// Otherwise, only update expandable box the user has clicked on
 		} else {
 			if ($att_db_id == $db_id) {
@@ -200,7 +170,9 @@ function tripal_get_blast_results($feature_id, $db_id, $max,$ajax){
 				$sql = "SELECT * FROM {db} WHERE db_id=%d";
 				$db = db_fetch_object(db_query($sql, $att_db_id));
 				tripal_db_set_active($previous_db);
-				$content .= parse_NCBI_Blast_XML($analysisfeatureprop->afpvalue,$db,$max,$feature_id,$ajax, $analysis);
+				$blast_obj = tripal_analysis_blast_get_result_object($analysisfeatureprop->afpvalue,$db,$max,$feature_id, $analysis);
+				$blast_obj_array [$blast_obj_counter] = $blast_obj;
+				$blast_obj_counter ++;
 			}
 		}
 	}
@@ -210,9 +182,10 @@ function tripal_get_blast_results($feature_id, $db_id, $max,$ajax){
 	// within the blast hits we need to setup the return
 	// different depending on the request type
 	if($ajax){
+		$content =  theme('tripal_analysis_blast_results', $node);drupal_set_message("CONTENT:".$content);
 		drupal_json(array('update' => $content));
 	} else {
-		return $content;
+		return $blast_obj_array;
 	}
 }
 /*******************************************************************************
@@ -265,308 +238,7 @@ function tripal_get_blast_results_index_version ($feature_id){
 	return $content;
 
 }
-/*******************************************************************************
- * parse_NCBI_Blast_XML()
- * Parse XML BLAST result and generate HTML output
- */
-function parse_NCBI_Blast_XML($xml_string,$db,$max,$feature_id,$ajax, $analysis) {
 
-	// Get the parser using db_id
-	$sql = "SELECT * FROM {tripal_analysis_blast} WHERE db_id = %d";
-	$parser = db_fetch_object(db_query($sql, $db->db_id));
-	$db_name = $parser->displayname;
-	$is_genbank = $parser->genbank_style;
-	$regex_hit_id = $parser->regex_hit_id;
-	$regex_hit_def = $parser->regex_hit_def;
-	$regex_hit_accession = $parser->regex_hit_accession;
-
-	// set default if regular expressions have not been specified
-	if(!$regex_hit_id){
-		$regex_hit_id = '/^(.*?)\s.*$/';
-	} else {
-		$regex_hit_id = '/'.$regex_hit_id.'/';
-	}
-	if(!$regex_hit_def){
-		$regex_hit_def = '/^.*?\s(.*)$/';
-	} else {
-		$regex_hit_def = '/'.$regex_hit_def.'/';
-	}
-	if(!$regex_hit_accession){
-		$regex_hit_accession = '/^(.*?)\s.*$/';
-	} else {
-		$regex_hit_accession = '/'.$regex_hit_accession.'/';
-	}
-	// add a URL for this database if one exists
-	if($db->url && $db_name){
-		$db_name = "<a href=\"$db->url\">$db_name</a>";
-	}
-
-	$url = url("sites/all/themes/theme_tripal/images/ajax-loader.gif");
-	// generate the HTML header for the table of blast results
-	if(!$ajax){  // don't regenerate the header divs if this is an ajax request
-		// add on the ajaxLoading box for use when updating via ajax
-		$html_out .= "<div id=\"tripal_ajaxLoading\" style=\"display:none\">".
-                   "<div id=\"loadingText\">Loading...</div>".
-                   "<img src=\"$url\"></div>";
-		if (!$db_name) {
-		 $html_out .= "<div id=\"blast-hits\" class=\"tripal_blast-info-box\">".
-                          "<div class=\"tripal_expandableBox\">".
-                          "<h3>$analysis->name</h3></div>".
-                          "<div class=\"tripal_expandableBoxContent\" ".
-                         "id=\"blast_db_$db->db_id\">";
-		} else {
-			$html_out .= "<div id=\"blast-hits\" class=\"tripal_blast-info-box\">".
-                             "<div class=\"tripal_expandableBox\">".
-                             "<h3>$db_name</h3></div>".
-                             "<div class=\"tripal_expandableBoxContent\" ".
-                             "id=\"blast_db_$db->db_id\">";
-		}
-	};
-
-	// Find node id for the analysis
-	$ana_nid = db_result(db_query("SELECT nid FROM {chado_analysis} WHERE analysis_id = %d", $analysis->aid));
-	$ana_url = url("node/".$ana_nid);
-	// Show analysis date and name
-	$html_out .= "<strong>Analysis Date: </strong>$analysis->time (<a href=$ana_url>$analysis->name</a>)<br>";
-
-	// Load the file.  This XML file should be an extract
-	// of the original XML file with only a single iteration.
-	// An iteration is essentially all the hits for a single
-	// query sequence.
-	$xml_output = simplexml_load_string($xml_string);
-	$iteration = '';
-	// new XML file parser has added the feature name within <Iteration_query-def> tags.
-	if ($xml_output->getName() == 'Iteration') {
-		foreach ($xml_output->children() as $xml_tag) {
-			if ($xml_tag->getName() == 'Iteration_query-def') {
-				// Here we show the feature name again to check if we pull the correct data
-//				$html_out .= "Query: $xml_tag<br>";
-			} else if ($xml_tag->getName() == 'Iteration_hits') {
-				$iteration = $xml_tag;
-			}
-		}
-		// This is for the file parsed by the old parser
-	} else {
-		$iteration = $xml_output;
-	}
-
-	$number_hits = 0;
-	foreach($iteration->children() as $hits){
-		$number_hits ++;
-	}
-
-	// add the links for updating blast info using Ajax
-	if($max != 10){
-		$url = url("tripal_top_blast/$feature_id/$db->db_id/10");
-		$html_out .= "<span><a onclick=\"return tripal_update_blast(".
-                   "this,$db->db_id)\" href=\"$url\">Show Best 10 Hits</a></span>";
-	} else {
-		$html_out .= "<span>Best 10 Hits Shown</span>";
-	}
-	if($number_hits <= 10){
-		// Do nothing if number of hits <= 10
-	} else if ($max != 25) {
-		$url = url("tripal_top_blast/$feature_id/$db->db_id/25");
-		$html_out .= "<span> | <a onclick=\"return tripal_update_blast(".
-                   "this,$db->db_id)\" href=\"$url\">Show Best 25 Hits</a></span>";
-	}else {
-		$html_out .= "<span> | Best 25 Hits Shown</span>";
-	}
-	if($number_hits <= 25){
-		// Do nothing if number of hits <= 25
-	} else if ($max != 0) {
-		$url = url("tripal_top_blast/$feature_id/$db->db_id/0");
-		$html_out .= "<span> | <a onclick=\"return tripal_update_blast(".
-                   "this,$db->db_id)\" href=\"$url\">Show All Hits</a>  </span>";
-	} else {
-		$html_out .= "<span> | All Hits Shown</span>";
-	}
-
-	$html_out .= '<br><span><i>Note:</i> Click a description for more details.'.
-                '</span>';
-	$html_out .= '<span><table class="tripal_blast_results_table">'.
-                '  <tr>'.
-                '    <th nowrap>Match Name</th>'.
-                '    <th nowrap>E value</th>'.
-                '    <th nowrap>Identity</th>'.
-                '    <th nowrap>Description</th>'.
-                '  </tr>';
-
-
-
-	// now run through the blast hits/hsps of this iteration
-	// and generate the rows of the table
-
-	foreach($iteration->children() as $hits){
-		// if we've hit the maximum number of hits then
-		// return
-		if($max > 0 && $hit_count >= $max){
-			$html_out .= '</table></span>';
-			if(!$ajax){
-				$html_out .= '</div></div>';
-			}
-			return $html_out;
-		}
-		$hit_count++;
-
-		foreach($hits->children() as $hit){
-			$best_evalue = 0;
-			$best_identity = 0;
-			$best_len = 0;
-			$element_name = $hit->getName();
-			if($element_name == 'Hit_id'){
-				// if parsing "name, acc, desc" from three tags (1/3)
-				if ($is_genbank) {
-					$hit_name = $hit;
-				}
-			} else if($element_name == 'Hit_def'){
-				if($is_genbank){
-					$description = $hit;
-				} else {
-					$accession = preg_replace($regex_hit_accession,"$1",$hit);
-					$hit_name = preg_replace($regex_hit_id,"$1",$hit);
-					$description = preg_replace($regex_hit_def,"$1",$hit);
-				}
-			} else if($element_name == 'Hit_accession'){
-				// if parsing "name, acc, desc" from three tags (3/3)
-				if ($is_genbank){
-					$accession = $hit;
-				}
-				// now run through each HSP for this hit
-			} else if($element_name == 'Hit_hsps'){
-				foreach($hit->children() as $hsp){
-					foreach($hsp->children() as $hsp_info){
-						$element_name = $hsp_info->getName();
-						if($element_name == 'Hsp_num'){
-							$hsp_num = $hsp_info;
-						}
-						if($element_name == 'Hsp_bit-score'){
-							$hsp_bit_score = $hsp_info;
-						}
-						if($element_name == 'Hsp_score'){
-							$hsp_score = $hsp_info;
-						}
-						if($element_name == 'Hsp_evalue'){
-							$hsp_evalue = $hsp_info;
-							// use the first evalue for this set of HSPs
-							// as the best evalue. This get's shown as
-							// info for the overall match.
-							if(!$best_evalue){
-								$best_evalue = $hsp_evalue;
-							}
-						}
-						if($element_name == 'Hsp_query-from'){
-							$hsp_query_from = $hsp_info;
-						}
-						if($element_name == 'Hsp_query-to'){
-							$hsp_query_to = $hsp_info;
-						}
-						if($element_name == 'Hsp_hit-from'){
-							$hsp_hit_from = $hsp_info;
-						}
-						if($element_name == 'Hsp_hit-to'){
-							$hsp_hit_to = $hsp_info;
-						}
-						if($element_name == 'Hsp_query-frame'){
-							$hsp_query_frame = $hsp_info;
-						}
-						if($element_name == 'Hsp_identity'){
-							$hsp_identity = $hsp_info;
-							// use the first evalue for this set of HSPs
-							// as the best evalue. This get's shown as
-							// info for the overall match.
-							if(!$best_identity){
-								$best_identity = $hsp_identity;
-							}
-						}
-						if($element_name == 'Hsp_positive'){
-							$hsp_positive = $hsp_info;
-						}
-						if($element_name == 'Hsp_align-len'){
-							$hsp_align_len = $hsp_info;
-							// use the first evalue for this set of HSPs
-							// as the best evalue. This get's shown as
-							// info for the overall match.
-							if(!$best_len){
-								$best_len = $hsp_align_len;
-							}
-						}
-						if($element_name == 'Hsp_qseq'){
-							$hsp_qseq = $hsp_info;
-						}
-						if($element_name == 'Hsp_hseq'){
-							$hsp_hseq = $hsp_info;
-						}
-						if($element_name == 'Hsp_midline'){
-							$hsp_midline = $hsp_info;
-						}
-					}
-					if($hsp_num > 1){
-						//   $html_out .="<br>";
-					}
-					$hsp_html_out .="<b>HSP $hsp_num</b> <pre>Score: ".
-                                     "$hsp_bit_score bits ($hsp_score), ".
-                                     "Expect = $hsp_evalue<br>";
-					$hsp_html_out .= sprintf("Identity = %d/%d (%.2f%%), ".
-                                              "Postives = %d/%d (%.2f%%), ".
-                                              "Query Frame = $hsp_query_frame".
-                                              "</pre>",
-					$hsp_identity, $hsp_align_len,
-					$hsp_identity/$hsp_align_len*100,
-					$hsp_positive, $hsp_align_len,
-					$hsp_positive/$hsp_align_len*100);
-					$hsp_html_out .= sprintf("<pre>Query: %4d $hsp_qseq %d".
-                                              "<br>",
-					$hsp_query_from,$hsp_query_to);
-					$hsp_html_out .= sprintf("            $hsp_midline<br>");
-					$hsp_html_out .= sprintf("Sbjct: %4d $hsp_hseq %d</pre>".
-                                              "<br>",
-					$hsp_hit_from,$hsp_hit_to);
-				}
-			}
-		}
-      $arrowr_url = url(drupal_get_path('theme', 'tripal')."/images/arrow_r.png");
-		$html_out .= "<tr>";
-		if($accession && $db->urlprefix){
-			$html_out .= "<td><a href=\"$db->urlprefix$accession\" target=\"_blank\">$hit_name</a></td>";
-		} else {
-			// Test if this is another feature in the database
-			$sql = "SELECT feature_id FROM {feature} WHERE uniquename = '%s'";
-			$previous_db = db_set_active('chado');
-			$hit_feature_id = db_result(db_query($sql, $hit_name));
-			db_set_active($previous_db);
-			// If it is, add link to that feature
-			if ($hit_feature_id) {
-				$hit_url = url("ID$hit_feature_id");
-				$html_out .= "<td><a href=\"$hit_url\" target=\"_blank\">$hit_name</a></td>";
-			} else {
-				$html_out .= "<td>$hit_name</td>";
-			}
-		}
-		$html_out .= "<td nowrap>$best_evalue</td>";
-		$percent_identity = number_format($best_identity/$best_len*100, 2);
-		$html_out .= "<td nowrap>$percent_identity%</td>";
-		$html_out .= "<td nowrap>$description</td>";
-		$html_out .= "</tr>
-                              <tr>
-                                <td colspan=4>
-                                   <a class=\"blast-hit-arrow-icon\"><img src=$arrowr_url align=\"top\"> View Alignment</a>
-                                   <div class=\"tripal_expandableSubBox\"></div>
-                               </td>
-                              </tr>
-                              <tr>
-                                 <td colspan=4><div class=\"tripal_expandableSubBoxContent\">$hsp_html_out</div><td>
-                             </tr>";
-		$hsp_html_out = '';
-	}
-
-	$html_out .= '</table></span>';
-	if(!$ajax){
-		// we don't have the header div's when ajax is being used to update
-		$html_out .= '</div></div>';
-	}
-	return $html_out;
-}
 /*******************************************************************************
  * Parse NCBI Blast results for indexing so that user can use blast results to
  * find corresponding features
@@ -1675,3 +1347,234 @@ function chado_analysis_blast_access($op, $node, $account){
 	return FALSE;
 }
 
+/********************************************************************************
+ * 
+ */
+function tripal_analysis_blast_get_result_object($xml_string,$db,$max,$feature_id, $analysis) {
+	$blast_object = new stdClass();
+	// Get the parser using db_id
+	$sql = "SELECT * FROM {tripal_analysis_blast} WHERE db_id = %d";
+	$parser = db_fetch_object(db_query($sql, $db->db_id));
+	$db_name = $parser->displayname;
+	$is_genbank = $parser->genbank_style;
+	$regex_hit_id = $parser->regex_hit_id;
+	$regex_hit_def = $parser->regex_hit_def;
+	$regex_hit_accession = $parser->regex_hit_accession;
+
+	// set default if regular expressions have not been specified
+	if(!$regex_hit_id){
+		$regex_hit_id = '/^(.*?)\s.*$/';
+	} else {
+		$regex_hit_id = '/'.$regex_hit_id.'/';
+	}
+	if(!$regex_hit_def){
+		$regex_hit_def = '/^.*?\s(.*)$/';
+	} else {
+		$regex_hit_def = '/'.$regex_hit_def.'/';
+	}
+	if(!$regex_hit_accession){
+		$regex_hit_accession = '/^(.*?)\s.*$/';
+	} else {
+		$regex_hit_accession = '/'.$regex_hit_accession.'/';
+	}
+
+	// Get analysis information
+	$blast_object->analysis = $analysis;
+	$blast_object->db = $db;
+	if (!$db_name) {
+		$blast_object->title = $analysis->name;
+	} else {
+		$blast_object->title = $db_name;
+	}
+
+	// Find node id for the analysis
+	$ana_nid = db_result(db_query("SELECT nid FROM {chado_analysis} WHERE analysis_id = %d", $analysis->aid));
+	$blast_object->ana_nid = $ana_nid;
+	$blast_object->ana_time = $analysis->time;
+	$blast_object->ana_name = $analysis->name;
+
+	// Load the file.  This XML file should be an extract
+	// of the original XML file with only a single iteration.
+	// An iteration is essentially all the hits for a single
+	// query sequence.
+	$xml_output = simplexml_load_string($xml_string);
+	$iteration = '';
+	// new XML file parser has added the feature name within <Iteration_query-def> tags.
+	if ($xml_output->getName() == 'Iteration') {
+		foreach ($xml_output->children() as $xml_tag) {
+			if ($xml_tag->getName() == 'Iteration_query-def') {
+				// Here we show the feature name again to check if we pull the correct data
+				$blast_object->xml_tag = $xml_tag;
+			} else if ($xml_tag->getName() == 'Iteration_hits') {
+				$iteration = $xml_tag;
+			}
+		}
+		// This is for the file parsed by the old parser
+	} else {
+		$iteration = $xml_output;
+	}
+
+	$number_hits = 0;
+	foreach($iteration->children() as $hits){
+		$number_hits ++;
+	}
+
+	// add the links for updating blast info using Ajax
+	$blast_object->max = $max;
+	$blast_object->number_hits = $number_hits;
+	$blast_object->feature_id = $feature_id;
+	
+	$hits_array = array();
+	$hit_count = 0;
+
+	foreach($iteration->children() as $hits){
+		$hsp_array = array();
+		$counter = 0;
+		foreach($hits->children() as $hit){
+			$best_evalue = 0;
+			$best_identity = 0;
+			$best_len = 0;
+			$element_name = $hit->getName();
+			if($element_name == 'Hit_id'){
+				// if parsing "name, acc, desc" from three tags (1/3)
+				if ($is_genbank) {
+					$hit_name = $hit;
+				}
+			} else if($element_name == 'Hit_def'){
+				if($is_genbank){
+					$description = $hit;
+				} else {
+					$accession = preg_replace($regex_hit_accession,"$1",$hit);
+					$hit_name = preg_replace($regex_hit_id,"$1",$hit);
+					$description = preg_replace($regex_hit_def,"$1",$hit);
+				}
+			} else if($element_name == 'Hit_accession'){
+				// if parsing "name, acc, desc" from three tags (3/3)
+				if ($is_genbank){
+					$accession = $hit;
+				}
+				// now run through each HSP for this hit
+			} else if($element_name == 'Hit_hsps'){		
+				foreach($hit->children() as $hsp){
+					foreach($hsp->children() as $hsp_info){
+						$element_name = $hsp_info->getName();
+						if($element_name == 'Hsp_num'){
+							$hsp_num = $hsp_info;
+						}
+						if($element_name == 'Hsp_bit-score'){
+							$hsp_bit_score = $hsp_info;
+						}
+						if($element_name == 'Hsp_score'){
+							$hsp_score = $hsp_info;
+						}
+						if($element_name == 'Hsp_evalue'){
+							$hsp_evalue = $hsp_info;
+							// use the first evalue for this set of HSPs
+							// as the best evalue. This get's shown as
+							// info for the overall match.
+							if(!$best_evalue){
+								$best_evalue = $hsp_evalue;
+							}
+						}
+						if($element_name == 'Hsp_query-from'){
+							$hsp_query_from = $hsp_info;
+						}
+						if($element_name == 'Hsp_query-to'){
+							$hsp_query_to = $hsp_info;
+						}
+						if($element_name == 'Hsp_hit-from'){
+							$hsp_hit_from = $hsp_info;
+						}
+						if($element_name == 'Hsp_hit-to'){
+							$hsp_hit_to = $hsp_info;
+						}
+						if($element_name == 'Hsp_query-frame'){
+							$hsp_query_frame = $hsp_info;
+						}
+						if($element_name == 'Hsp_identity'){
+							$hsp_identity = $hsp_info;
+							// use the first evalue for this set of HSPs
+							// as the best evalue. This get's shown as
+							// info for the overall match.
+							if(!$best_identity){
+								$best_identity = $hsp_identity;
+							}
+						}
+						if($element_name == 'Hsp_positive'){
+							$hsp_positive = $hsp_info;
+						}
+						if($element_name == 'Hsp_align-len'){
+							$hsp_align_len = $hsp_info;
+							// use the first evalue for this set of HSPs
+							// as the best evalue. This get's shown as
+							// info for the overall match.
+							if(!$best_len){
+								$best_len = $hsp_align_len;
+							}
+						}
+						if($element_name == 'Hsp_qseq'){
+							$hsp_qseq = $hsp_info;
+						}
+						if($element_name == 'Hsp_hseq'){
+							$hsp_hseq = $hsp_info;
+						}
+						if($element_name == 'Hsp_midline'){
+							$hsp_midline = $hsp_info;
+						}
+					}
+
+					$hsp_content = array();
+					$hsp_content ['hsp_num'] = $hsp_num;
+					$hsp_content ['bit_score'] = $hsp_bit_score;
+					$hsp_content ['score'] = $hsp_score;
+					$hsp_content ['evalue'] = $hsp_evalue;
+					$hsp_content ['query_frame'] = $hsp_query_frame;
+					$hsp_content ['qseq'] = $hsp_qseq;
+					$hsp_content ['midline'] = $hsp_midline;
+					$hsp_content ['hseq'] = $hsp_hseq;
+					$hsp_content ['hit_from'] = $hsp_hit_from;
+					$hsp_content ['hit_to'] = $hsp_hit_to;
+					$hsp_content['identity'] = $hsp_identity;
+					$hsp_content['align_len'] = $hsp_align_len;
+					$hsp_content['positive'] = $hsp_positive;
+					$hsp_content['query_from'] = $hsp_query_from;
+					$hsp_content['query_to'] = $hsp_query_to;
+					$hsp_array[$counter] = $hsp_content;
+					$counter ++;
+				}
+			}
+		}
+      $arrowr_url = url(drupal_get_path('theme', 'tripal')."/images/arrow_r.png");
+		$hits_array[$hit_count]['arrowr_url'] = $arrowr_url;
+		$hits_array[$hit_count]['accession'] = $accession;
+		$hits_array[$hit_count]['hit_name'] = $hit_name;
+		
+		if($accession && $db->urlprefix){
+			$hits_array[$hit_count]['hit_url'] = "$db->urlprefix$accession";
+		} else {
+			// Test if this is another feature in the database
+			$sql = "SELECT feature_id FROM {feature} WHERE uniquename = '%s'";
+			$previous_db = db_set_active('chado');
+			$hit_feature_id = db_result(db_query($sql, $hit_name));
+			db_set_active($previous_db);
+			// If it is, add link to that feature
+			if ($hit_feature_id) {
+				$hits_array[$hit_count]['hit_url'] = "ID$hit_feature_id";
+			}
+		}
+		
+		$hits_array[$hit_count]['best_evalue'] = $best_evalue;
+		$percent_identity = number_format($best_identity/$best_len*100, 2);
+		$hits_array[$hit_count]['percent_identity'] = $percent_identity;
+		$hits_array[$hit_count]['description'] = $description;
+		$hits_array[$hit_count]['hsp'] = $hsp_array;
+		$hit_count ++;
+		
+		// if we've hit the maximum number of hits then return
+		if($max > 0 && $hit_count >= $max){
+			break;
+		}
+	}
+	$blast_object->hits_array = $hits_array;
+	return $blast_object;
+}
