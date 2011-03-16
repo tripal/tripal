@@ -1,1 +1,0 @@
-../../../tripal_core/views/handlers/views_handler_filter_stockprop_id.inc

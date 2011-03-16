@@ -48,6 +48,10 @@ function retrieve_cvterm_views_data() {
        'left_field' => 'type_id',
        'field' => 'cvterm_id',
      ),
+     'nd_reagent' => array(
+       'left_field' => 'type_id',
+       'field' => 'cvterm_id',
+     ),
    );
 
  // Table Field Definitions----------------------

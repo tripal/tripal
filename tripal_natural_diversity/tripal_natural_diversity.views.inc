@@ -23,12 +23,23 @@
 require_once('views/nd_experiment.views.inc');
 require_once('views/nd_experimentprop.views.inc');
 require_once('views/nd_geolocation.views.inc');
+require_once('views/nd_geolocationprop.views.inc');
+require_once('views/nd_reagent.views.inc');
+require_once('views/nd_reagentprop.views.inc');
 function tripal_natural_diversity_views_data()  {
   $data = array();
   
+  //EXPERIMENT
   $data = array_merge($data, retrieve_nd_experiment_views_data());
   $data = array_merge($data, retrieve_nd_experimentprop_views_data());
+  
+  // GEOLOCATION
   $data = array_merge($data, retrieve_nd_geolocation_views_data());
+  $data = array_merge($data, retrieve_nd_geolocationprop_views_data());
+  
+  // REAGENTS
+  $data = array_merge($data, retrieve_nd_reagent_views_data());
+  $data = array_merge($data, retrieve_nd_reagentprop_views_data());
   
   return $data;
 }
@@ -47,7 +58,12 @@ function tripal_natural_diversity_views_handlers() {
      'path' => drupal_get_path('module', 'tripal_natural_diversity') . '/views/handlers',
    ),
    'handlers' => array(
-
+		'views_handler_field_chado_relationship_all' => array(
+       'parent' => 'views_handler_field_prerender_list',
+     ),
+		'views_handler_field_chado_relationship_by_type' => array(
+       'parent' => 'views_handler_field_prerender_list',
+     ),
    ),
  );
 }

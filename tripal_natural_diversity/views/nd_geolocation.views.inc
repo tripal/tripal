@@ -51,7 +51,7 @@
     'left_field' => 'nd_geolocation_id',
     'field' => 'nd_geolocation_id',
   );  
-   
+  
   //Table Field Definitions----------------------------------
       
   //Field: nd_geolocation_id (primary key)

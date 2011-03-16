@@ -52,6 +52,9 @@
 
   
   //Relationship Definitions---------------------------------
+  //Join: nd_experiment => nd_geolocation
+  // In nd_experiment.views.inc
+  
   //Join: nd_experiment => nd_experiment_contact => contact
   $data['nd_experiment']['table']['join']['nd_experiment_contact'] = array(
     'left_field' => 'nd_experiment_id',
@@ -67,6 +70,96 @@
     'field' => 'contact_id',
   );
   
+  //Join: nd_experiment => nd_experiment_dbxref => dbxref
+  $data['nd_experiment']['table']['join']['nd_experiment_dbxref'] = array(
+    'left_field' => 'nd_experiment_id',
+    'field' => 'nd_experiment_id',
+  );  
+  $data['nd_experiment']['table']['join']['dbxref'] = array(
+    'left_table' => 'nd_experiment_dbxref',
+    'left_field' => 'nd_experiment_id',
+    'field' => 'nd_experiment_id',
+  );
+  $data['nd_experiment_dbxref']['table']['join']['dbxref'] = array(
+    'left_field' => 'dbxref_id',
+    'field' => 'dbxref_id',
+  );
+  
+  //Join: nd_experiment => nd_experiment_genotype => genotype
+  $data['nd_experiment']['table']['join']['nd_experiment_genotype'] = array(
+    'left_field' => 'nd_experiment_id',
+    'field' => 'nd_experiment_id',
+  );  
+  $data['nd_experiment']['table']['join']['genotype'] = array(
+    'left_table' => 'nd_experiment_genotype',
+    'left_field' => 'nd_experiment_id',
+    'field' => 'nd_experiment_id',
+  );
+  $data['nd_experiment_genotype']['table']['join']['genotype'] = array(
+    'left_field' => 'genotype_id',
+    'field' => 'genotype_id',
+  );
+  
+  //Join: nd_experiment => nd_experiment_phenotype => phenotype
+  $data['nd_experiment']['table']['join']['nd_experiment_phenotype'] = array(
+    'left_field' => 'nd_experiment_id',
+    'field' => 'nd_experiment_id',
+  );  
+  $data['nd_experiment']['table']['join']['phenotype'] = array(
+    'left_table' => 'nd_experiment_phenotype',
+    'left_field' => 'nd_experiment_id',
+    'field' => 'nd_experiment_id',
+  );
+  $data['nd_experiment_phenotype']['table']['join']['phenotype'] = array(
+    'left_field' => 'phenotype_id',
+    'field' => 'phenotype_id',
+  );
+  
+  //Join: nd_experiment => nd_experiment_project => project
+  $data['nd_experiment']['table']['join']['nd_experiment_project'] = array(
+    'left_field' => 'nd_experiment_id',
+    'field' => 'nd_experiment_id',
+  );  
+  $data['nd_experiment']['table']['join']['project'] = array(
+    'left_table' => 'nd_experiment_project',
+    'left_field' => 'nd_experiment_id',
+    'field' => 'nd_experiment_id',
+  );
+  $data['nd_experiment_project']['table']['join']['project'] = array(
+    'left_field' => 'project_id',
+    'field' => 'project_id',
+  );
+  
+  //Join: nd_experiment => nd_experiment_pub => pub
+  $data['nd_experiment']['table']['join']['nd_experiment_pub'] = array(
+    'left_field' => 'nd_experiment_id',
+    'field' => 'nd_experiment_id',
+  );  
+  $data['nd_experiment']['table']['join']['pub'] = array(
+    'left_table' => 'nd_experiment_pub',
+    'left_field' => 'nd_experiment_id',
+    'field' => 'nd_experiment_id',
+  );
+  $data['nd_experiment_pub']['table']['join']['pub'] = array(
+    'left_field' => 'pub_id',
+    'field' => 'pub_id',
+  );
+
+  //Join: nd_experiment => nd_experiment_stock => YYY
+  $data['nd_experiment']['table']['join']['nd_experiment_stock'] = array(
+    'left_field' => 'nd_experiment_id',
+    'field' => 'nd_experiment_id',
+  );  
+  $data['nd_experiment']['table']['join']['stock'] = array(
+    'left_table' => 'nd_experiment_stock',
+    'left_field' => 'nd_experiment_id',
+    'field' => 'nd_experiment_id',
+  );
+  $data['nd_experiment_stock']['table']['join']['stock'] = array(
+    'left_field' => 'stock_id',
+    'field' => 'stock_id',
+  );
+
   //Table Field Definitions----------------------------------
       
   //Field: nd_experiment_id (primary key)

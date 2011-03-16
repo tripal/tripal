@@ -942,3 +942,12 @@ function chado_stock_delete($node) {
   );
   tripal_db_set_active($previous_db);
 }
+
+/**************************************************************************
+ * @section 
+ **************************************************************************/
+
+function tripal_stock_preprocess_node_chado_stock (&$variables) {
+	$variables['testing1'] = 'test';
+	drupal_set_message('here');
+}

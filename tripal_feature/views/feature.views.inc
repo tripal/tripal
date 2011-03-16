@@ -57,6 +57,12 @@
 		$data['feature']['table']['database'] = $database;
 	}
 
+  //Relationship Definitions---------------------------------
+  //Join: feature => nd_reagent
+  $data['feature']['table']['join']['nd_reagent'] = array(
+    'left_field' => 'feature_id',
+    'field' => 'feature_id',
+  );  
 
   // Table Field Definitions----------------------
   // Field: feature_id (primary key)

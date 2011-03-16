@@ -1,5 +1,7 @@
 <?php
 
+require_once('tripal_natural_diversity.api.inc');
+
 /**
  *  @file
  * This file contains the basic functions needed for this drupal module.

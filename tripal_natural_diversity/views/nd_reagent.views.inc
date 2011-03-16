@@ -1,31 +1,4 @@
 <?php
-
-/*************************************************************************
- * @file: THIS IS A TEMPLATE AND SHOULD NOT BE INCLUDED IN THE MODULE CODE
- *
- *   - Every instance of nd_reagent should be replaced with the name of your table
- *   - If this is a base table (you want a view where every row is a row from this table)
- *     then change $data['nd_reagent']['table'] to $data['nd_reagent']['table']['base'] 
- *     and $data['nd_reagent']['table']['database'] to $data['nd_reagent']['table']['base']['database']
- *   - Relationships between this table and others: YYY is the table you are trying to join to this
- *     one. You want to join a table to this one if this table contains a foreign key to the other
- *     table. If the join between this table and another is through a linking table
- *     (ie: library-nd_reagent/YYY => library_feature-XY => feature-nd_reagent/YYY) then make the join in both
- *     directions (ie: in the file nd_reagent.views.inc and the file YYY.views.inc
- *   - Create a field definition for each field in this table using the example fields already
- *     listed. Match the type of the database field to the field definition listed below.
- *     (ie: for a text/varchar field from the database use plain_text_field below)
- * 
- *  NOTE: Creating the table definition file is not enough. You also need to call the 
- *        retrieve_nd_reagent_views_data() function from ../tripal_natural_diversity.views.inc:tripal_natural_diversity_views_data()
- *        by adding the following line:
- *           $data = array_merge($data, retrieve_nd_reagent_views_data());
- *        to the function and including the file directly above the function (blow the function 
- *        header by adding:
- *           require_once('views/nd_reagent.views.inc');
- *
- *  REMOVE THIS COMMENT IN THE COPY!
- */ 
  
 /**
  *  @file
@@ -67,44 +40,21 @@
   //Basic table definition-----------------------------------
   $data['nd_reagent']['table']['group'] = t('Chado ND Reagent');
   
-  $data['nd_reagent']['table'] = array(
+  $data['nd_reagent']['table']['base'] = array(
     'field' => 'nd_reagent_id',
-    'title' => t('Chado ND Reagent'),
-    'help' => t('Enter some user-friendly description of this tables purpose to the user.'),
+    'title' => t('Chado Natural Diversity Reagent'),
+    'help' => t('Reagents used in Natural Diversity Experiments.'),
   );
   if($database){
-     $data['nd_reagent']['table']['database'] = $database;
+     $data['nd_reagent']['table']['base']['database'] = $database;
   }
-
-  
-  //Relationship Definitions---------------------------------
-  //Join: nd_reagent => YYY
-  $data['nd_reagent']['table']['join']['YYY'] = array(
-    'left_field' => 'primary key in YYY table',
-    'field' => 'foreign key in nd_reagent table',
-  );  
-  
-  //Join: nd_reagent => XY => YYY
-  $data['nd_reagent']['table']['join']['XY'] = array(
-    'left_field' => 'matching nd_reagent key in the XY table',
-    'field' => 'foreign key in nd_reagent table',
-  );  
-  $data['nd_reagent']['table']['join']['YYY'] => array(
-    'left_table' => 'XY',
-    'left_field' => 'matching nd_reagent key in the XY table',
-    'field' => 'foreign key in nd_reagent table',
-  );
-  $data['XY']['table']['join']['YYY'] = array(
-    'left_field' => 'foreign key in YYY table',
-    'field' => 'matching YYY key in the XY table',
-  );
    
   //Table Field Definitions----------------------------------
       
   //Field: nd_reagent_id (primary key)
-  $data['nd_reagent']['field_name'] = array(
-    'title' => t('nd_reagent Primary Key'),
-    'help' => t('A unique index for every nd_reagent.'),
+  $data['nd_reagent']['nd_reagent_id'] = array(
+    'title' => t('ND Reagent Primary Key'),
+    'help' => t('A unique index for every ND Reagent.'),
     'field' => array(
       'handler' => 'views_handler_field_numeric',
       'click sortable' => TRUE,
@@ -117,15 +67,10 @@
     ),
   );
 
-  /*.......................................................
-   * Beginning of Example Field definitions
-   * Remove this section when done
-   */
-
-  //Field: plain_text_field (chado datatype)   
-  $data['nd_reagent']['plain_text_field'] = array(
-    'title' => t('Human-Readable Name'),
-    'help' => t('Description of this field.'),
+  //Field: name (varchar 255)   
+  $data['nd_reagent']['name'] = array(
+    'title' => t('Name'),
+    'help' => t('The name of the reagent.'),
     'field' => array(
       'handler' => 'views_handler_field',
       'click sortable' => TRUE,
@@ -141,70 +86,36 @@
     ),
   );
 
-  //Field: numeric_field (chado datatype)   
-  $data['nd_reagent']['numeric_field'] = array(
-    'title' => t('Human-Readable Name'),
-    'help' => t('Description of this field.'),
-    'field' => array(
-      'handler' => 'views_handler_field_numeric',
-      'click sortable' => TRUE,
-     ),
-    'sort' => array(
-      'handler' => 'views_handler_sort',
-    ),
-    'filter' => array(
-      'handler' => 'views_handler_filter_numeric',
-    ),
-  );
+  //Field: type_id (foreign key)
+  // Join described in cvterm.views.inc
+  
+  //Field: feature_id (foreign key)
+  // Join described in feature.views.inc
+ 
+ 	//Calculated Field: stock relationships (ALL)
+	// uses a custom field handler which pulls results from the view
+	// actual query performed in chado_stock_views_views_pre_render	(&$view) -file:tripal_stock.views.inc
+	$data['nd_reagent']['all_relationships'] = array(
+  	'title' => t('All Reagent Relationships'),
+  	'help' => t('Relationships including the current reagent.'),
+  	'field' => array(
+    	'title' => t('All Relationships'),
+    	'help' => t('Display all relationships including the current reagent.'),
+    	'handler' => 'views_handler_field_chado_relationship_all',
+  	),
+	);
 
-  //Field: boolean_field (chado datatype)   
-  $data['nd_reagent']['boolean_field'] = array(
-    'title' => t('Human-Readable Name'),
-    'help' => t('Description of this field.'),
+	//Calculated Field: stock relationships
+	// uses a custom field handler which pulls results from the view
+	// actual query performed in chado_stock_views_views_pre_render	(&$view) -file:tripal_stock.views.inc
+	$data['nd_reagent']['relationships'] = array(
+    'title' => t('ND Reagent Relationships'),
+    'help' => t('Relationships including the current reagent.'),
     'field' => array(
-      'handler' => 'views_handler_field_boolean',
-      'click sortable' => TRUE,
-     ),
-    'sort' => array(
-      'handler' => 'views_handler_sort',
-    ),
-    'filter' => array(
-      'handler' => 'views_handler_filter_boolean_operator',
+      'title' => t('Relationships'),
+      'help' => t('Display a given type of relationships including the current reagent.'),
+      'handler' => 'views_handler_field_chado_relationship_by_type',
     ),
   );
-
-  //Field: unix_timestamp (chado datatype)   
-  $data['nd_reagent']['unix_timestamp'] = array(
-    'title' => t('Human-Readable Name'),
-    'help' => t('Description of this field.'),
-    'field' => array(
-      'handler' => 'views_handler_field_date',
-      'click sortable' => TRUE,
-     ),
-    'sort' => array(
-      'handler' => 'views_handler_sort_date',
-    ),
-    'filter' => array(
-      'handler' => 'views_handler_filter_date',
-    ),
-  );
-
-  //Field: human_readable_date (chado datatype)   
-  $data['nd_reagent']['human_readable_date'] = array(
-    'title' => t('Human-Readable Name'),
-    'help' => t('Description of this field.'),
-    'field' => array(
-      'handler' => 'views_handler_field_readble_date',
-      'click sortable' => TRUE,
-     ),
-    'sort' => array(
-      'handler' => 'views_handler_sort_date',
-    ),
-  );
-   
-   /*
-    * End of Example Field definitions
-    *......................................................./
-    
   return $data;
 }

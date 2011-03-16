@@ -13,15 +13,15 @@
 
 /*************************************************************************
  * Purpose: this function returns the portion of the data array 
- *   which describes the nd_experimentprop table, it's fields and any joins between it and other tables
+ *   which describes the nd_geolocationprop table, it's fields and any joins between it and other tables
  * @see tripal_natural_diversity_views_data() --in tripal_natural_diversity.views.inc
  *
- * Table: nd_experimentprop
+ * Table: nd_geolocationprop
  * @code
- * nd_experimentprop-Copy/Paste Table SQL code here-nd_experimentprop
+ * nd_geolocationprop-Copy/Paste Table SQL code here-nd_geolocationprop
  * @endcode
  */
- function retrieve_nd_experimentprop_views_data() {
+ function retrieve_nd_geolocationprop_views_data() {
   global $db_url;
   $data = array();
 
@@ -33,30 +33,30 @@
   }
    
   //Basic table definition-----------------------------------
-  $data['nd_experimentprop']['table'] = array(
-    'group' => t('Chado ND Experiment Properties'),
-    'field' => 'nd_experimentprop_id',
-    'title' => t('Chado ND Experiment Property'),
-    'help' => t('Properties of a given Natural Diversity Experiment.'),
+  $data['nd_geolocationprop']['table'] = array(
+    'field' => 'nd_geolocationprop_id',
+    'title' => t('Chado ND Geolocation Properties'),
+    'help' => t('Properties of Natural Diversity Geolocations.'),
+    'group' => t('Chado ND Geolocation Properties'),
   );
   if($database){
-     $data['nd_experimentprop']['table']['database'] = $database;
+     $data['nd_geolocationprop']['table']['database'] = $database;
   }
 
   
   //Relationship Definitions---------------------------------
-  //Join: nd_experimentprop => nd_experiment
-  $data['nd_experimentprop']['table']['join']['nd_experiment'] = array(
-    'left_field' => 'nd_experiment_id',
-    'field' => 'nd_experiment_id',
+  //Join: nd_geolocation => nd_geolocationprop
+  $data['nd_geolocationprop']['table']['join']['nd_geolocation'] = array(
+    'left_field' => 'nd_geolocation_id',
+    'field' => 'nd_geolocation_id',
   );
   
   //Table Field Definitions----------------------------------
       
-  //Field: nd_experimentprop_id (primary key)
-  $data['nd_experimentprop']['nd_experimentprop_id'] = array(
-    'title' => t('ND Experiment Property Primary Key'),
-    'help' => t('A unique index for every nd_experimentprop.'),
+  //Field: nd_geolocationprop_id (primary key)
+  $data['nd_geolocationprop']['field_name'] = array(
+    'title' => t('ND Geolocation Property Primary Key'),
+    'help' => t('A unique index for every ND Geolocation Property.'),
     'field' => array(
       'handler' => 'views_handler_field_numeric',
       'click sortable' => TRUE,
@@ -68,9 +68,9 @@
       'handler' => 'views_handler_filter_numeric',
     ),
   );
-
+  
   //Field: value (varchar 255)   
-  $data['nd_experimentprop']['value'] = array(
+  $data['nd_geolocationprop']['value'] = array(
     'title' => t('Property Value'),
     'help' => t('The value of a given property.'),
     'field' => array(
@@ -89,7 +89,7 @@
   );
 
   //Field: rank (int)   
-  $data['nd_experimentprop']['rank'] = array(
+  $data['nd_geolocationprop']['rank'] = array(
     'title' => t('Property Rank'),
     'help' => t('The rank of a given propery.'),
     'field' => array(
@@ -105,7 +105,7 @@
   );
 
   //Calculated Field: type/cvterm name (varchar 255)   
-  $data['nd_experimentprop']['nd_experimentprop_cvterm_name'] = array(
+  $data['nd_geolocationprop']['nd_geolocationprop_cvterm_name'] = array(
     'title' => t('Property Type'),
     'help' => t('The type of property.'),
     'field' => array(
@@ -122,6 +122,6 @@
       'handler' => 'views_handler_argument_string',
     ),
   );  
-  
+    
   return $data;
 }

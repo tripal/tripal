@@ -4,7 +4,7 @@
 /**
  * Field handler for terms.
  */
-class views_handler_field_stockrel_by_type extends views_handler_field_prerender_list {
+class views_handler_field_chado_relationship_by_type extends views_handler_field_prerender_list {
   function init(&$view, $options) {
     parent::init($view, $options);
 
