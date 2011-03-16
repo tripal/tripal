@@ -67,7 +67,7 @@ if (Drupal.jsEnabled) {
      elements on this page may not be used for other customizations */
   #tripal_organism_toc {
      float: left;
-     width: 350px;
+     width: 250px;
      background-color: #EEEEEE;
      -moz-border-radius: 15px;
      border-radius: 15px;
@@ -92,7 +92,7 @@ if (Drupal.jsEnabled) {
   }
   #tripal_organism_details {
      float: left;
-     width: 650px;
+     width: 590px;
      background-color: #FFFFFF;
      -moz-border-radius: 15px;
      border-radius: 15px;
@@ -102,6 +102,7 @@ if (Drupal.jsEnabled) {
      padding: 20px;
      min-height: 500px;
      margin-right: 10px;
+     margin-bottom: 10px;
      border-style:solid;
      border-width:1px;
   }
