@@ -1,12 +1,13 @@
 <?php
 $synonyms = $variables['tripal_feature']['synonyms'];
 $feature = $variables['node']->feature;
+
 ?>
 <div id="tripal_feature-synonyms-box" class="tripal_feature-info-box tripal-info-box">
   <div class="tripal_feature-info-box-title tripal-info-box-title">Synonyms</div>
   <div class="tripal_feature-info-box-desc tripal-info-box-desc">The feature '<?php print $feature->featurename ?>' has the following synonyms</div>
   <?php if(count($synonyms) > 0){ ?>
-  <table class="tripal_feature-table tripal-table tripal-table-horz">
+  <table id="tripal_feature-synonyms-table" class="tripal_feature-table tripal-table tripal-table-horz">
     <tr>
       <th>Synonym</th>
     </tr>

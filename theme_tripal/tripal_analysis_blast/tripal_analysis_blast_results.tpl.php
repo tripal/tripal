@@ -5,9 +5,11 @@ $blast_object_array = $variables['blast_object'];
 	<div id="loadingText">Loading...</div>
 	<img src="sites/all/themes/theme_tripal/images/ajax-loader.gif">
 </div>
-<?php foreach ($blast_object_array AS $blast_object) {
-					$hits_array = $blast_object->hits_array;
-					$db = $blast_object->db;
+<?php 
+if($blast_object_array){
+   foreach ($blast_object_array as $blast_object) {
+	  $hits_array = $blast_object->hits_array;
+	  $db = $blast_object->db;
 ?>
 <div id="tripal_analysis_blast-results-box" class="tripal_analysis_blast-box tripal-info-box">
 	<div class="tripal_analysis_blast-info-box-title tripal-info-box-title"><h3><?php print $blast_object->title ?></h3></div>
@@ -83,4 +85,5 @@ $blast_object_array = $variables['blast_object'];
 	</span>
 	</div>
 </div>
+  <?php } ?>
 <?php } ?>

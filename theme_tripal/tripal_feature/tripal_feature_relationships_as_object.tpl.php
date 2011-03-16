@@ -4,11 +4,11 @@ $object_relationships = $variables['tripal_feature']['object_relationships'];
 $feature = $variables['node']->feature;
 
 ?>
-<div id="tripal_feature-subject_relationships-box" class="tripal_feature-info-box tripal-info-box">
+<div id="tripal_feature-object_relationships-box" class="tripal_feature-info-box tripal-info-box">
   <div class="tripal_feature-info-box-title tripal-info-box-title">Object Relationships</div>
   <div class="tripal_feature-info-box-desc tripal-info-box-desc">The feature '<?php print $feature->featurename ?>' has an object relationship with the following</div>
   <?php if(count($object_relationships) > 0){ ?>
-  <table class="tripal_feature-table tripal-table tripal-table-horz">
+  <table id="tripal_feature-object_relationships-table" class="tripal_feature-table tripal-table tripal-table-horz">
     <tr>
       <th>Name</th>
       <th>Type</th>

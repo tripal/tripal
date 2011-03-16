@@ -20,7 +20,6 @@ These variables are avaliable for each reference in the array:
   dbxref_id
 
 */
-
 $references = $variables['tripal_feature']['references'];
 $feature = $variables['node']->feature;
 
@@ -29,7 +28,7 @@ $feature = $variables['node']->feature;
   <div class="tripal_feature-info-box-title tripal-info-box-title">References</div>
   <div class="tripal_feature-info-box-desc tripal-info-box-desc">The feature '<?php print $feature->featurename ?>' is also available at these locations</div>
   <?php if(count($references) > 0){ ?>
-  <table class="tripal_feature-table tripal-table tripal-table-horz">
+  <table id="tripal_feature-references-table" class="tripal_feature-table tripal-table tripal-table-horz">
     <tr>
       <th>Dababase</th>
       <th>Accession</th>

@@ -8,7 +8,7 @@ $feature = $variables['node']->feature;
   <div class="tripal_feature-info-box-title tripal-info-box-title">Subject Relationships</div>
   <div class="tripal_feature-info-box-desc tripal-info-box-desc">The feature '<?php print $feature->featurename ?>' has a subject relationship with the following</div>
   <?php if(count($subject_relationships) > 0){ ?>
-  <table class="tripal_feature-table tripal-table tripal-table-horz">
+  <table id="tripal_feature-subject_relationships-table" class="tripal_feature-table tripal-table tripal-table-horz">
     <tr>
       <th>Relationship</th>
       <th>Feature</th>

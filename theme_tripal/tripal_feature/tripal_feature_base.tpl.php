@@ -13,7 +13,7 @@ $org_nid = $variables['node']->org_nid;
    <?php if($feature->is_obsolete == 't'){ ?>
       <div class="tripal_feature-obsolete">This feature is obsolete and no longer used in analysis, but is here for reference</div>
    <?php }?>
-   <table class="tripal_feature-table tripal-table tripal-table-vert">
+   <table id="tripal_feature-base-table" class="tripal_feature-table tripal-table tripal-table-vert">
       <tr class="tripal_feature-table-odd-row tripal-table-even-row">
         <th>Name</th>
         <td><?php print $feature->featurename; ?></td>
