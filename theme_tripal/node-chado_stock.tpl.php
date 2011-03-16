@@ -28,22 +28,125 @@
  //print '<pre>'.print_r($node,TRUE).'</pre>';
 ?>
 
-<!-- Base Theme -->
-<?php include('tripal_stock/tripal_stock_base.tpl.php'); ?>
+<script type="text/javascript">
+if (Drupal.jsEnabled) {
+   $(document).ready(function() {
+      // hide all tripal info boxes at the start
+      $(".tripal-info-box").hide();
+ 
+      // iterate through all of the info boxes and add their titles
+      // to the table of contents
+      $(".tripal-info-box-title").each(function(){
+        var parent = $(this).parent();
+        var id = $(parent).attr('id');
+        var title = $(this).text();
+        $('#tripal_stock_toc_list').append('<li><a href="#'+id+'" class="tripal_stock_toc_item">'+title+'</a></li>');
+      });
 
-<?php if (!$teaser) { ?>
-<!-- Database References -->
-<?php include('tripal_stock/tripal_stock_references.tpl.php'); ?>
+      // when a title in the table of contents is clicked, then
+      // show the corresponding item in the details box
+      $(".tripal_stock_toc_item").click(function(){
+         $(".tripal-info-box").hide();
+         href = $(this).attr('href');
+         $(href).fadeIn('slow');
+         // we want to make sure our table of contents and the details
+         // box stay the same height
+         $("#tripal_stock_toc").height($(href).parent().height());
+         return false;
+      }); 
 
-<!-- Properties -->
-<?php include('tripal_stock/tripal_stock_properties.tpl.php'); ?>
+      // we want the base details to show up when the page is first shown
+      $("#tripal_stock-base-box").show();
+      $("#tripal_stock_toc").height($("#tripal_stock-base-box").parent().height());
+   });
+}
+</script>
 
-<!-- Synonyms -->
-<?php include('tripal_stock/tripal_stock_synonyms.tpl.php'); ?>
+<style type="text/css">
+  /* these styles are specific for this template and is not included 
+     in the main CSS files for the theme as it is anticipated that the
+     elements on this page may not be used for other customizations */
+  #tripal_stock_toc {
+     float: left;
+     width: 20%;
+     background-color: #EEEEEE;
+     -moz-border-radius: 15px;
+     border-radius: 15px;
+     -moz-box-shadow: 3px 3px 4px #000;
+	  -webkit-box-shadow: 3px 3px 4px #000;
+	  box-shadow: 3px 3px 4px #000;
+     padding: 20px;
+     min-height: 500px;
+     border-style:solid;
+     border-width:1px;
+  }
+  #tripal_stock_toc ul {
+    margin-left: 0px;
+    margin-top: 5px;
+    padding-left: 15px;
+  }
+  #tripal_stock_toc_title {
+     font-size: 1.5em;
+  }
+  #tripal_stock_toc_desc {
+    font-style: italic;
+  }
+  #tripal_stock_details {
+     float: left;
+     width: 70%;
+     background-color: #FFFFFF;
+     -moz-border-radius: 15px;
+     border-radius: 15px;
+     -moz-box-shadow: 3px 3px 4px #000;
+	  -webkit-box-shadow: 3px 3px 4px #000;
+	  box-shadow: 3px 3px 4px #000;
+     padding: 20px;
+     min-height: 500px;
+     margin-right: 10px;
+     border-style:solid;
+     border-width:1px;
+  }
+  #tripal_stock-base-box img {
+    float: left;
+    margin-bottom: 10px;
+  }
+  #tripal_stock-table-base {
+    float: left;
+    width: 400px;
+    margin-left: 10px;
+    margin-bottom: 10px;
+  }
+</style>
 
-<!-- Object Relationships -->
-<?php include('tripal_stock/tripal_stock_relationships_as_object.tpl.php'); ?>
 
-<!-- Subject Relationships -->
-<?php include('tripal_stock/tripal_stock_relationships_as_subject.tpl.php'); ?>
-<?php } ?>
+<div id="tripal_stock_details">
+
+  <!-- Base Theme -->
+  <?php include('tripal_stock/tripal_stock_base.tpl.php'); ?>
+
+  <?php if (!$teaser) { ?>
+  <!-- Database References -->
+  <?php include('tripal_stock/tripal_stock_references.tpl.php'); ?>
+
+  <!-- Properties -->
+  <?php include('tripal_stock/tripal_stock_properties.tpl.php'); ?>
+
+  <!-- Synonyms -->
+  <?php include('tripal_stock/tripal_stock_synonyms.tpl.php'); ?>
+
+  <!-- Object Relationships -->
+  <?php include('tripal_stock/tripal_stock_relationships_as_object.tpl.php'); ?>
+
+  <!-- Subject Relationships -->
+  <?php include('tripal_stock/tripal_stock_relationships_as_subject.tpl.php'); ?>
+  <?php } ?>
+</div>
+
+<!-- Table of contents -->
+<div id="tripal_stock_toc">
+   <div id="tripal_stock_toc_title"><?php print $node->stock_name ?></div>
+   <span id="tripal_stock_toc_desc">Select a link below for more information</span>
+   <ul id="tripal_stock_toc_list">
+
+   </ul>
+</div>

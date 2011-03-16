@@ -206,54 +206,32 @@ function tripal_stock_theme() {
       'arguments' => array('form'),
       'function' => 'theme_tripal_stock_edit_ALL_relationships_form',
     ),
-//    'tripal_stock_base' => array (
-//      'arguments' => array('node'=> null),
-//      'template' => 'tripal_stock_base',
-//    ),
+    // Block Templates------------------------------
+    'tripal_stock_base' => array (
+      'arguments' => array('node'=> null),
+      'template' => 'tripal_stock_base',
+    ),
+    'tripal_stock_properties' => array (
+      'arguments' => array('node'=> null),
+      'template' => 'tripal_stock_properties',
+    ),
+    'tripal_stock_references' => array (
+      'arguments' => array('node'=> null),
+      'template' => 'tripal_stock_references',
+    ),
+    'tripal_stock_relationships_as_object' => array (
+      'arguments' => array('node'=> null),
+      'template' => 'tripal_stock_relationships_as_object',
+    ),    
+    'tripal_stock_relationships_as_subject' => array (
+      'arguments' => array('node'=> null),
+      'template' => 'tripal_stock_relationships_as_subject',
+    ),
+    'tripal_stock_synonyms' => array (
+      'arguments' => array('node'=> null),
+      'template' => 'tripal_stock_synonyms',
+    ),
 	);
-}
-
-/*************************************************************************
- * Purpose: Implement Blocks relating to stock content
- */
-function tripal_stock_block ($op = 'list', $delta = 0, $edit=array()) {
-  switch($op) {
-    case 'list':
-      $blocks['base']['info'] = t('Tripal Stock Details');
-      $blocks['base']['cache'] = BLOCK_NO_CACHE;
-         
-      return $blocks;
-
- 		case 'view':
- 			if(user_access('access chado_feature content') and arg(0) == 'node' and is_numeric(arg(1))) {
-      	$nid = arg(1);
-      	$node = node_load($nid);
- 
-        $block = array();
-        switch($delta){
-					case 'base':
-						$block['subject'] = t('Stock Details');
-//						$block['content'] = theme('tripal_stock_base',$node);
-						break;
-        }
-				return $blocks;
-			}
-	}
-}
-
-/*************************************************************************
- * Purpose:
- */
-function tripal_stock_nodeapi (&$node, $op, $teaser, $page) {
-	if ($node->type == 'chado_stock') {
-		switch ($op) {
-			case 'view':
-				$node->content['tripal_stock_base'] = array(
-//					'#value' => theme('tripal_stock_base', $node),
-					'#weight' => 0
-				);				
-		}	
-	}
 }
 
 /*************************************************************************
@@ -396,7 +374,7 @@ function chado_stock_load($node) {
     
     $node->properties[] = $r;
   }
-
+  
   // Add in main db reference-----------------------------------------------------------------------
   // this is the dbxref_id in the stock table
   if (!empty($node->main_db_reference->dbxref_id)) {
@@ -944,8 +922,77 @@ function chado_stock_delete($node) {
 }
 
 /**************************************************************************
- * @section 
+ * @section Tripal Stock Blocks and Template Preprocessor Functions
  **************************************************************************/
+
+/*************************************************************************
+ * Purpose: Implement Blocks relating to stock content
+ */
+function tripal_stock_block ($op = 'list', $delta = 0, $edit=array()) {
+  switch($op) {
+    case 'list':
+      $blocks['base']['info'] = t('Tripal Stock Details');
+      $blocks['base']['cache'] = BLOCK_NO_CACHE;
+
+      $blocks['properties']['info'] = t('Tripal Stock Properties');
+      $blocks['properties']['cache'] = BLOCK_NO_CACHE;
+         
+      $blocks['references']['info'] = t('Tripal Stock References');
+      $blocks['references']['cache'] = BLOCK_NO_CACHE;
+         
+      $blocks['relationships_as_object']['info'] = t('Tripal Stock Relationships as Object');
+      $blocks['relationships_as_object']['cache'] = BLOCK_NO_CACHE;
+         
+      $blocks['relationships_as_subject']['info'] = t('Tripal Stock Relationships as Subject');
+      $blocks['relationships_as_subject']['cache'] = BLOCK_NO_CACHE;
+         
+      $blocks['synonyms']['info'] = t('Tripal Stock Synonyms');
+      $blocks['synonyms']['cache'] = BLOCK_NO_CACHE;
+                  
+      return $blocks;
+
+ 		case 'view':
+ 			if(user_access('access chado_stock content') and arg(0) == 'node' and is_numeric(arg(1))) {
+      	$nid = arg(1);
+      	$node = node_load($nid);
+ 
+        $block = array();
+        switch($delta){
+					case 'base':
+						$block['subject'] = t('Stock Details');
+						$block['content'] = theme('tripal_stock_base',$node);
+						break;
+						
+					case 'properties':
+						$block['subject'] = t('Properties');
+						$block['content'] = theme('tripal_stock_properties',$node);
+						break;
+						
+					case 'references':
+						$block['subject'] = t('References');
+						$block['content'] = theme('tripal_stock_references',$node);
+						break;
+						
+					case 'relationships_as_object':
+						$block['subject'] = t('Object Relationships');
+						$block['content'] = theme('tripal_stock_relationships_as_object',$node);
+						break;
+						
+					case 'relationships_as_subject':
+						$block['subject'] = t('Subject Relationships');
+						$block['content'] = theme('tripal_stock_relationships_as_subject',$node);
+						break;
+						
+					case 'synonyms':
+						$block['subject'] = t('Synonyms');
+						$block['content'] = theme('tripal_stock_synonyms',$node);
+						break;
+						
+        }
+				return $block;
+			}
+	}
+}
 
 function tripal_stock_preprocess_node_chado_stock (&$variables) {
 	$variables['testing1'] = 'test';

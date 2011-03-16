@@ -35,6 +35,51 @@ function tripal_stock_get_stock_by_stock_id ($stock_id) {
 }
 
 /*************************************************************************
+ * @section: Get Additional Data Associated with a stock
+ *************************************************************************/
+
+/*************************************************************************
+ * Purpose:
+ *
+ * @params $stock_id
+ *   the unique identifier for the stock to load properties of
+ * @return
+ *   an array of properties where each element is a property object with
+ *   the following fields:
+ *     - stockprop_id (stockprop):
+ *     - value (stockprop):
+ *     - rank (stockprop):
+ *     - type_id (stockprop):
+ *     - type_name (cvterm):
+ *     - type_definition (cvterm):
+ *     - type_is_obsolete (cvterm):
+ *     - type_is_relationshiptype (cvterm):
+ *     - type_cv_id (cvterm):
+ *     - type_db_reference_id (cvterm):
+ *     - type_cv_name (cv):
+ *     - type_cv_definition (cv):
+ *     - type_db_reference_acession (dbxref):
+ *     - type_db_reference_version (dbxref):
+ *     - type_db_reference_description (dbxref):
+ *     - type_db_reference_db_id (dbxref):
+ *     - type_db_reference_db_name (db):
+ *     - type_db_reference_db_description (db):
+ *     - type_db_reference_db_url (db):
+ *     - type_db_reference_db_urlprefix (db):
+ */
+function tripal_stock_load_properties($stock_id) {
+
+  $properties = tripal_core_chado_select(
+    'stockprop',
+    array('stockprop_id', 'value', 'rank','type_id'),
+    array('stock_id' => $stock_id)
+  );
+  
+  dpm($properties);
+  return $properties;  
+}
+
+/*************************************************************************
  * @section: Return Multiple Stocks
  *************************************************************************/
  
