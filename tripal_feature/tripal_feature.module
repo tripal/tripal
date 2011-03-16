@@ -1217,6 +1217,64 @@ function tripal_feature_load_featureloc_sequences($feature_id,$featurelocs){
 /************************************************************************
  *  used to sort the list of relationship objects by start position
  */
+function tripal_feature_load_organism_feature_browser($organism){
+
+   // don't show the browser if the settings in the admin page is turned off
+   $show_browser = variable_get('tripal_feature_browse_setting',array('show_feature_browser'));
+   if(strcmp($show_browser[0],'show_feature_browser')!=0){
+      return false;
+   }
+   if ($organism->organism_id) {
+      # get the list of available sequence ontology terms for which
+      # we will build drupal pages from features in chado.  If a feature
+      # is not one of the specified typse we won't build a node for it.
+      $allowed_types = variable_get('chado_feature_types','EST contig');
+      $allowed_types = preg_replace("/[\s\n\r]+/"," ",$allowed_types);
+      $so_terms = split(' ',$allowed_types);
+      $where_cvt = "";
+      foreach ($so_terms as $term){
+         $where_cvt .= "CVT.name = '$term' OR ";
+      }
+      $where_cvt = substr($where_cvt,0,strlen($where_cvt)-3);  # strip trailing 'OR'
+
+      // get the features for this organism
+      $sql  = "SELECT F.name,F.feature_id,F.uniquename,CVT.name as cvname ".
+              "FROM {feature} F ".
+                 "  INNER JOIN {cvterm} CVT on F.type_id = CVT.cvterm_id ".
+               "WHERE organism_id = %s and ($where_cvt) ".
+               "ORDER BY feature_id ASC";
+
+      // the counting SQL
+      $csql  = "SELECT count(*) ".
+               "FROM {feature} F".
+               "  INNER JOIN {cvterm} CVT on F.type_id = CVT.cvterm_id ".
+               "WHERE organism_id = %s and ($where_cvt) ".
+               "GROUP BY organism_id ";
+
+      $previous_db = tripal_db_set_active('chado');  // use chado database
+      $org_features = pager_query($sql,10,0,$csql,$organism->organism_id);
+      tripal_db_set_active($previous_db);  // now use drupal database
+      $pager = theme('pager');
+
+      // prepare the query that will lookup node ids
+      $sql = "SELECT nid FROM {chado_feature} ".
+              "WHERE feature_id = %d";
+      $i=0;
+      $features = array();
+      while($feature = db_fetch_object($org_features)){
+         $node = db_fetch_object(db_query($sql,$feature->feature_id));
+         $feature->nid = $node->nid;
+         $features[$i++] = $feature;
+      }
+drupal_set_message("Pager $pager");
+
+      return array ( 'features' => $features, 'pager' => $pager );
+   }
+   return false;
+}
+/************************************************************************
+ *  used to sort the list of relationship objects by start position
+ */
 function tripal_feature_sort_rel_objects($a,$b){
    return strnatcmp($a->fmin, $b->fmin);
 }
@@ -1333,13 +1391,8 @@ function tripal_feature_nodeapi(&$node, $op, $teaser, $page) {
                // Show feature browser
                $types_to_show = array('chado_organism', 'chado_library');
                if (in_array($node->type, $types_to_show, TRUE)) {
-                  $node->content['tripal_feature_browser'] = array(
-                     '#value' => theme('tripal_feature_browser', $node),
-                     '#weight' => 5
-                  );
                   $node->content['tripal_feature_org_counts'] = array(
-                     '#value' => theme('tripal_feature_org_counts', $node),
-                     '#weight' => 4
+                    '#value' => theme('tripal_feature_org_counts', $node),
                   );
                }
                break;
@@ -1350,6 +1403,16 @@ function tripal_feature_nodeapi(&$node, $op, $teaser, $page) {
          break;
       // we're loading the data for the node
       case 'load':
+         switch($node->type){
+            case 'chado_organism':
+               // Show feature browser
+               $types_to_show = array('chado_organism', 'chado_library');
+               if (in_array($node->type, $types_to_show, TRUE)) {
+                  $variables['tripal_feature']['browser'] = tripal_feature_load_organism_feature_browser($node->organism);
+                  return $variables;
+               }
+            break;
+         }
       break;
    }
 }
@@ -1366,8 +1429,9 @@ function tripal_feature_theme () {
       'tripal_feature_search_results' => array (
          'arguments' => array('node'),
       ),
-      'tripal_feature_browser' => array (
-         'arguments' => array('node'),
+      'tripal_organism_feature_browser' => array (
+         'arguments' => array('node'=> null),
+         'template' => 'tripal_organism_feature_browser',
       ),
       'tripal_feature_org_counts' => array (
          'arguments' => array('node'),
@@ -1432,6 +1496,13 @@ function tripal_feature_preprocess(&$variables){
       $variables['tripal_feature']['references'] = tripal_feature_load_references($feature->feature_id);
       $variables['tripal_feature']['featureloc_sequences'] = tripal_feature_load_featureloc_sequences ($feature->feature_id,$featurelocs);   
    }
+}
+/*******************************************************************************
+ *  
+ */
+function tripal_feature_preprocess_tripal_organism_feature_browser(&$variables){
+   $organism = $variables['node']->organism;
+   $variables['tripal_feature']['browser'] = tripal_feature_load_organism_feature_browser($organism);
 }
 /*******************************************************************************
  *  
@@ -1583,82 +1654,7 @@ function tripal_feature_cv_tree($tree_id){
   );
   return $options;
 }
-/*******************************************************************************
- *  create a simple paged feature browser
- */
-function theme_tripal_feature_browser($node){
-   $organism = $node->organism;
 
-   // don't show the browser if the settings in the admin page is turned off
-   $show_browser = variable_get('tripal_feature_browse_setting',array('show_feature_browser'));
-
-   if(strcmp($show_browser[0],'show_feature_browser')!=0){
-      return;
-   }
-   if ($organism->organism_id && $node->type == 'chado_organism') {
-      # get the list of available sequence ontology terms for which
-      # we will build drupal pages from features in chado.  If a feature
-      # is not one of the specified typse we won't build a node for it.
-      $allowed_types = variable_get('chado_feature_types','EST contig');
-      $allowed_types = preg_replace("/[\s\n\r]+/"," ",$allowed_types);
-      $so_terms = split(' ',$allowed_types);
-      $where_cvt = "";
-      foreach ($so_terms as $term){
-         $where_cvt .= "CVT.name = '$term' OR ";
-      }
-      $where_cvt = substr($where_cvt,0,strlen($where_cvt)-3);  # strip trailing 'OR'
-
-      // get the features for this organism
-      $sql  = "SELECT F.name,F.feature_id,F.uniquename,CVT.name as cvname ".
-              "FROM {feature} F ".
-                 "  INNER JOIN {cvterm} CVT on F.type_id = CVT.cvterm_id ".
-               "WHERE organism_id = $organism->organism_id and ($where_cvt) ".
-               "ORDER BY feature_id ASC";
-
-      // the counting SQL
-      $csql  = "SELECT count(*) ".
-               "FROM {feature} F".
-               "  INNER JOIN {cvterm} CVT on F.type_id = CVT.cvterm_id ".
-               "WHERE organism_id = $organism->organism_id and ($where_cvt) ".
-               "GROUP BY organism_id ";
-
-      $previous_db = tripal_db_set_active('chado');  // use chado database
-      $features = pager_query($sql,10,0,$csql);
-      tripal_db_set_active($previous_db);  // now use drupal database
-
-      $content = "<br><div id=\"tripal_feature_box\" class=\"feature-info-box\">";
-      $content .= "<div class=\"tripal_expandableBox\">".
-                  "<h3>Browse Features</h3>".
-                  "</div>";
-      $content .= "<div class=\"tripal_expandableBoxContent\">";
-      $content .= "Below are the features associated with this organism.\n";
-      $content .= "<table class=\"tripal_table_horz\">";
-      $content .= "  <tr>";
-      $content .= "    <th>Feature Name</th>";
-      $content .= "    <th>Type</th>";
-      $content .= "  </tr>";
-
-      // prepare the query that will lookup node ids
-      $sql = "SELECT nid FROM {chado_feature} ".
-              "WHERE feature_id = %d";
-      while($feature = db_fetch_object($features)){
-         $node = db_fetch_object(db_query($sql,$feature->feature_id));
-         if($node){
-            $name= "<a href=\"" . url("node/$node->nid") . "\">$feature->name</a>";
-         } else {
-            $name= "$feature->name";
-         }
-         $content .= "  <tr>";
-         $content .= "    <td>$name</td>";
-         $content .= "    <td>$feature->cvname</td>";
-         $content .= "  </tr>";
-      }
-      $content .= "</table>";
-      $content .= theme('pager');
-      $content .= "</div></div>";
-      return $content;
-   }
-}
 /************************************************************************
  *  This function is an extension of the chado_feature_view by providing
  *  the markup for the feature object THAT WILL BE INDEXED.

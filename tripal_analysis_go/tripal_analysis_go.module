@@ -1,16 +1,10 @@
 <?php
 
-//
-// Copyright 2009 Clemson University
-//
-
 function tripal_analysis_go_init(){
    // Add style sheet
-   drupal_add_css(drupal_get_path('theme', 'tripal').
-                                  '/css/tripal_analysis_go.css');
+   drupal_add_css(drupal_get_path('theme', 'tripal').'/css/tripal_analysis_go.css');
 
-   drupal_add_js(drupal_get_path('theme', 'tripal').
-       '/js/tripal_analysis_go.js');
+   drupal_add_js(drupal_get_path('theme', 'tripal').'/js/tripal_analysis_go.js');
 }
 
 /*******************************************************************************
@@ -21,14 +15,6 @@ function tripal_analysis_go_init(){
 function tripal_analysis_go_menu() {
    $items = array();
 
-   $items['node/%/goterms'] = array(
-     'title' => t('GO Analysis'),
-     'page callback' => 'tripal_analysis_go_organism_goterms',
-     'page arguments' => array(1),
-     'access callback' => 'tripal_analysis_go_node_has_menu',
-     'access arguments' => array('access chado_analysis_go content',1),
-     'type' => MENU_LOCAL_TASK | MENU_NORMAL_ITEM
-   );
    $items['download_goterm_features'] = array(
       'path' => 'download_goterm_features',
       'title' => t('Get GO Term Features'),
@@ -89,25 +75,34 @@ function chado_analysis_go_access($op, $node, $account){
    return FALSE;
 }
 /*******************************************************************************
- * Dynamic addition/removal of menu item
+ *
  */
-function tripal_analysis_go_node_has_menu($type,$vid){
+function tripal_analysis_go_block($op = 'list', $delta = 0, $edit=array()){
+   switch($op) {
+      case 'list':
+         $blocks['tago_org_sum']['info'] = t('Tripal Organism GO Analysis Report');
+         $blocks['tago_org_sum']['cache'] = BLOCK_NO_CACHE;
 
-   // check to see if this node is an organism node
-   $sql = 'SELECT organism_id FROM {chado_organism} WHERE vid = %d';
-   $result = db_query($sql, $vid);
+         return $blocks;
 
-   // menu status
-   $box_status =variable_get("tripal_analysis_go-box-goterms","menu_off");
 
-   // if this node is not an organism or a feature node then return false
-   // we don't want the menu item to be shown, otherwise get the normal perms
-   if($org_id = db_fetch_object($result)){
-      if(strcmp($box_status,"menu_on")==0){
-         return user_access($type);
-      }
-   } else {
-      return FALSE;
+      case 'view':
+         if(user_access('access chado_analysis_go content') and arg(0) == 'node' and is_numeric(arg(1))) {
+            $nid = arg(1);
+            $node = node_load($nid);
+ 
+            $block = array();
+            switch($delta){
+                 case 'tago_org_sum':
+                  $block['subject'] = t('GO Summary');
+                  $block['content'] = theme('tripal_analysis_go_org_summary',$node);
+                  break;
+
+               default :
+            }
+            return $block;
+         }
+
    }
 }
 /*******************************************************************************
@@ -118,45 +113,40 @@ function tripal_analysis_go_node_has_menu($type,$vid){
 function tripal_analysis_go_nodeapi(&$node, $op, $teaser, $page) {
 
    switch ($op) {
-      // Note that this function only adds library view to an organism/feature
-      // node. The view of a library node is controled by the theme *.tpl file
       case 'view':
-      
-         // Set the node types for showing library information
-         $types_to_show = variable_get('tripal_analysis_go_setting',
-            array('chado_feature','chado_organism'));
-
-         // Abort if this node is not one of the types we should show.
-         if (!in_array($node->type, $types_to_show, TRUE)) {
-            // Turn the menu off if it's on
-            $box_status = variable_get("tripal_analysis_go-box-goterms","menu_off");
-            if (strcmp($box_status,"menu_on")==0 && $node->type =='chado_organism'){
-               variable_set("tripal_analysis_go-box-goterms","menu_off");
-            }
-            break;
+     
+         if ($teaser) {
+            return;
          }
-
-         // Add library to the content item if it's not a teaser
-         if (!$teaser) {
-            // add the library to the organism/feature search indexing
-            if($node->build_mode == NODE_BUILD_SEARCH_INDEX){
-               $node->content['tripal_analysis_go_search_index'] = array(
-						'#value' => theme('tripal_analysis_go_search_index',$node),
-						'#weight' => 5,
-               );
-            } else if ($node->build_mode == NODE_BUILD_SEARCH_RESULT) {
-               $node->content['tripal_analysis_go_search_result'] = array(
-						'#value' => theme('tripal_analysis_go_search_result',$node),
-						'#weight' => 5,
-               );
-            } else {
-               // Show go terms if the organism/feature is not at teaser view               
-               $node->content['tripal_analysis_go_node_add'] = array(
-						'#value' => theme('tripal_analysis_go_node_add', $node),
-					   '#weight' => 5
-               );
+         // add the library to the organism/feature search indexing
+         if($node->build_mode == NODE_BUILD_SEARCH_INDEX){
+            $node->content['tripal_analysis_go_search_index'] = array(
+					'#value' => theme('tripal_analysis_go_search_index',$node),
+					'#weight' => 5,
+            );
+         } else if ($node->build_mode == NODE_BUILD_SEARCH_RESULT) {
+            $node->content['tripal_analysis_go_search_result'] = array(
+					'#value' => theme('tripal_analysis_go_search_result',$node),
+					'#weight' => 5,
+            );
+         } else {
+            // Show go terms if the organism/feature is not at teaser view
+            switch($node->type){
+               case 'chado_organism':    
+                  $node->content['tripal_organism_go_summary'] = array(
+   				      '#value' => theme('tripal_organism_go_summary',$node),
+		      			'#weight' => 5,
+                  );
+                  break;
+               case 'chado_feature':
+                  $node->content['tripal_feature_go_terms'] = array(
+				         '#value' => theme('tripal_feature_go_terms',$node),
+      					'#weight' => 5,
+                  );
+                  break;
             }
          }
+         break;
    }
 }
 
@@ -174,8 +164,13 @@ function tripal_analysis_go_theme () {
       'tripal_analysis_go_search_result' => array (
          'arguments' => array('node'),
       ),
-      'tripal_analysis_go_node_add' => array (
-         'arguments' => array('node'),
+      'tripal_organism_go_summary' => array (
+         'arguments' => array('node'=> null),
+         'template' => 'tripal_organism_go_summary',
+      ),
+      'tripal_feature_go_terms' => array (
+         'arguments' => array('node'=> null),
+         'template' => 'tripal_feature_go_terms',
       )
    );
 }
@@ -192,24 +187,15 @@ function theme_tripal_analysis_go_search_result($node){
 }
 /************************************************************************
 */
-function theme_tripal_analysis_go_node_add($node){
-   $content = '';
-   if(strcmp($node->type,'chado_feature')==0){
-      $content = tripal_analysis_go_feature_add($node);
-   }
-   if(strcmp($node->type,'chado_organism')==0){
-      $box_status = variable_get("tripal_analysis_go-box-goterms","menu_off");
-      if (strcmp($box_status,"menu_off")==0){
-         $content = tripal_analysis_go_organism_add($node);
-      }
-   }
-   return $content;
+function tripal_analysis_go_preprocess_tripal_feature_go_terms(&$variables){
+   $node = $variables['node'];
+   $variables['tripal_analysis_go']['go_terms'] = tripal_analysis_go_feature_add($node);
 }
 /************************************************************************
 */
-function tripal_analysis_go_organism_goterms($node) {
-   $node = node_load($node);
-   return tripal_analysis_go_organism_add($node);
+function tripal_analysis_go_preprocess_tripal_organism_go_summary(&$variables){
+   $node = $variables['node'];
+   $variables['tripal_analysis_go']['form'] = tripal_analysis_go_organism_add($node);
 }
 /************************************************************************
 */
@@ -280,66 +266,30 @@ function tripal_analysis_go_org_charts ($element) {
 /************************************************************************
 */
 function tripal_analysis_go_organism_add($node) {
-   // Show GO information in a expandable box for a organism page.
-   // Make sure we have $node->organism_id. In the case of creating a new
-   // organism, the organism_id is not created until we save. This will cause
-   // an error when users preview the creation without a $node->organism_id
-   $box_status = variable_get("tripal_analysis_go-box-goterms","menu_off");
-      
-   if(strcmp($box_status,"menu_off")==0){
-      $content .= "
-      <div class=\"tripal_go_summary-info-box\">
-        <div class=\"tripal_expandableBox\">
-	       <h3>Gene Ontology Summary</h3>
-	     </div>
-        <div class=\"tripal_expandableBoxContent\">
-      ";
-   } 
+   $organism = $node->organism;
 
    // check to see if we have any analyses
    $sql = "
-     SELECT DISTINCT A.analysis_id, A.name, GCA.organism_id
+     SELECT count(*) as cnt
      FROM {go_count_analysis} GCA
        INNER JOIN Analysis A on GCA.analysis_id = A.analysis_id
      WHERE organism_id = %d
-     ORDER BY analysis_id DESC
    ";
    $previous_db = tripal_db_set_active('chado');
-   $results = db_fetch_object(db_query($sql,$node->organism_id));
+   $num_analyses = db_fetch_object(db_query($sql,$organism->organism_id));
    tripal_db_set_active($previous_db);
 
-   if($results){
-      $select_analysis = drupal_get_form('tripal_analysis_go_select_form',$node);
-
-      $url = url("sites/all/themes/theme_tripal/images/ajax-loader.gif");
-      $content .= "
-        $select_analysis
-        <div id=\"tripal_cv_cvterm_info_box\">
-           <a href=\"#\" onclick=\"$('#tripal_cv_cvterm_info_box').hide()\" style=\"float: right\">Close [X]</a>
-           <h3>Term Information</h3>
-           <div id=\"tripal_cv_cvterm_info\"></div>
-        </div>
-        <div id=\"tripal_ajaxLoading\" style=\"display:none\">
-        <div id=\"loadingText\">Loading...</div>
-        <img src=\"$url\"></div><div id=\"tripal_analysis_go_org_charts\"></div>
-      ";
+   if($num_analyses->cnt > 0){
+      return array (
+         'status' => 1,
+         'value' => drupal_get_form('tripal_analysis_go_select_form',$node),
+      );
    } else {
-      $content .= "There are currently no Gene Ontology (GO) reports for this organism\n";
+      return array(
+         'status' => 0,
+         'value' => t('There are no GO analysis reports'),
+      );
    }
-
-   if(user_access('access administrative pages')){
-      $link = url("tripal_toggle_box_menu/tripal_analysis_go/goterms/$node->nid");
-   	if(strcmp($box_status,"menu_off")==0){
-         $content .= "<br><a href=\"$link\">Show on menu</a>";
-      } else {
-         $content .= "<br><a href=\"$link\">Remove from menu</a>";
-      }
-   }
-   if(strcmp($box_status,"menu_off")==0){
-      $content .= "</div></div>";
-   }
-
-   return $content;
 }
 /************************************************************************
  *

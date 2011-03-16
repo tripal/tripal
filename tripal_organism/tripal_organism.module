@@ -537,22 +537,7 @@ function tripal_organism_nodeapi(&$node, $op, $teaser, $page) {
 
    switch ($op) {
       case 'view':
-         switch($node->type){
-            case 'chado_organism':
-               $node->content['tripal_organism_image'] = array(
-                  '#value' => theme('tripal_organism_image', $node),
-                  '#weight' => 0
-               );
-               $node->content['tripal_organism_base'] = array(
-                  '#value' => theme('tripal_organism_base', $node),
-                  '#weight' => 1
-               );
-               $node->content['tripal_organism_description'] = array(
-                  '#value' => theme('tripal_organism_description', $node),
-                  '#weight' => 2
-               );
-               break;
-            default:          
+         switch($node->type){                   
            
          }
    }
@@ -901,7 +886,9 @@ function tripal_organism_show_organisms (){
                "synchronize organisms.");
    }
 }
-
+/*******************************************************************************
+*
+*/
 function theme_tripal_organism_organism_page($organisms) {
 
 	$output = "<br><a id=\"tripal_expandableBox_toggle_button\" onClick=\"toggleExpandableBoxes()\">[-] Collapse All</a>";
