@@ -24,6 +24,7 @@
 <?php
  //uncomment this line to see a full listing of the fields avail. to $node
  //print '<pre>'.print_r($variables,TRUE).'</pre>';
+$node = $variables['node'];
 $organism = $variables['node']->organism;
 ?>
 <script type="text/javascript">
@@ -122,6 +123,10 @@ if (Drupal.jsEnabled) {
    <!-- Basic Details Theme -->
    <?php include('tripal_organism/tripal_organism_base.tpl.php'); ?>
 
+   <!-- Feature Browser -->
+   <?php include('tripal_organism/tripal_organism_feature_browser.tpl.php'); ?>
+
+   <?php print $content ?>
 </div>
 
 <!-- Table of contents -->
@@ -132,3 +137,5 @@ if (Drupal.jsEnabled) {
 
    </ul>
 </div>
+
+

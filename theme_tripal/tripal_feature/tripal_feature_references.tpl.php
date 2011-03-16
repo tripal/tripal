@@ -22,7 +22,6 @@ These variables are avaliable for each reference in the array:
 */
 $references = $variables['tripal_feature']['references'];
 $feature = $variables['node']->feature;
-
 ?>
 <div id="tripal_feature-references-box" class="tripal_feature-info-box tripal-info-box">
   <div class="tripal_feature-info-box-title tripal-info-box-title">References</div>

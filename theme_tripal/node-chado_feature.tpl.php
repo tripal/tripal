@@ -144,6 +144,8 @@ if (Drupal.jsEnabled) {
 
    <!-- InterProScan Results -->
    <?php include('tripal_analysis_interpro/tripal_analysis_interpro_results.tpl.php'); ?>
+
+   <?php print $content ?>
 </div>
 
 <!-- Table of contents -->
