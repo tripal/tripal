@@ -59,8 +59,13 @@ if (Drupal.jsEnabled) {
          return false;
       }); 
 
-      // we want the base details to show up when the page is first shown
-      $("#tripal_organism-base-box").show();
+      // we want the base details to show up when the page is first shown 
+      // unless we're using the feature browser then we want that page to show
+      if(window.location.href.match(/\?page=\d+/)){
+         $("#tripal_organism-feature_browser-box").show();
+      } else {
+         $("#tripal_organism-base-box").show();
+      }
       $("#tripal_organism_toc").height($("#tripal_organism-base-box").parent().height());
    });
 }
@@ -117,7 +122,7 @@ if (Drupal.jsEnabled) {
   }
   #tripal_organism-table-base {
     float: left;
-    width: 400px;
+    width: 330px;
     margin-left: 10px;
     margin-bottom: 10px;
   }
@@ -128,9 +133,6 @@ if (Drupal.jsEnabled) {
 
    <!-- Basic Details Theme -->
    <?php include('tripal_organism/tripal_organism_base.tpl.php'); ?>
-
-   <!-- Feature Browser -->
-   <?php include('tripal_organism/tripal_organism_feature_browser.tpl.php'); ?>
 
    <?php print $content ?>
 </div>

@@ -2,6 +2,9 @@
 $organism = $variables['node']->organism;
 $features = $variables['tripal_feature']['browser']['features'];
 $pager = $variables['tripal_feature']['browser']['pager'];
+$enabled = $variables['tripal_feature']['browser']['enabled'];
+
+if($enabled == 'show_feature_browser'){
 ?>
 <div id="tripal_organism-feature_browser-box" class="tripal_organism-info-box tripal-info-box">
   <div class="tripal_organism-info-box-title tripal-info-box-title">Feature Browser</div>
@@ -36,10 +39,14 @@ $pager = $variables['tripal_feature']['browser']['pager'];
       $i++;  
     } ?>
    </table>
-  <?php } ?>
+  <?php } else {?>
+    <div class="tripal-no-results">There are no features available for browsing</div> 
+  <?php }?>
   <?php print $pager ?>
-
 </div>
+<?php 
+} 
+?>
 
 
 
