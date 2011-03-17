@@ -26,6 +26,11 @@
  //print '<pre>'.print_r($variables,TRUE).'</pre>';
 $feature  = $variables['node']->feature;
 ?>
+
+<?php if ($teaser) { 
+  include('tripal_feature/tripal_feature_teaser.tpl.php'); 
+} else { ?>
+
 <script type="text/javascript">
 if (Drupal.jsEnabled) {
    $(document).ready(function() {
@@ -156,3 +161,5 @@ if (Drupal.jsEnabled) {
 
    </ul>
 </div>
+
+<?php } ?>

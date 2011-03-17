@@ -24,7 +24,7 @@
  //print '<pre>'.print_r($node,TRUE).'</pre>';
 ?>
 
-<?php $organism = $node->organism; ?>
+<?php $organism = $node->organism->organism; ?>
 
 <div id="tripal_stock-base-box" class="tripal_stock-info-box tripal-info-box">
   <div class="tripal_stock-info-box-title tripal-info-box-title">Stock Details</div>
@@ -69,7 +69,7 @@
       <tr class="tripal_stock-table-odd-row tripal-table-even-row">
         <th>Organism</th>
         <td>
-          <?php if ($organism->nid) { ?>
+          <?php if ($node->organism->nid) { ?>
       	   <a href="<?php print url("node/$organism->nid") ?>"><?php print $organism->genus ." " . $organism->species ." (" .$organism->common_name ." )"?></a>
       	 <?php 
           } else { 

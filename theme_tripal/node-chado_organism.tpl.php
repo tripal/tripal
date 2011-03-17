@@ -27,6 +27,11 @@
 $node = $variables['node'];
 $organism = $variables['node']->organism;
 ?>
+
+<?php if ($teaser) { 
+  include('tripal_organism/tripal_organism_teaser.tpl.php'); 
+} else { ?>
+
 <script type="text/javascript">
 if (Drupal.jsEnabled) {
    $(document).ready(function() {
@@ -139,4 +144,4 @@ if (Drupal.jsEnabled) {
    </ul>
 </div>
 
-
+<?php } ?>
