@@ -106,7 +106,7 @@ function retrieve_organism_views_data() {
        'handler' => 'views_handler_sort',
      ),
      'filter' => array(
-       'handler' => 'views_handler_filter_string',
+       'handler' => 'views_handler_filter_chado_select_string',
      ),
      'argument' => array(
        'handler' => 'views_handler_argument_string',
@@ -129,7 +129,7 @@ function retrieve_organism_views_data() {
        'handler' => 'views_handler_sort',
      ),
      'filter' => array(
-       'handler' => 'views_handler_filter_string',
+       'handler' => 'views_handler_filter_chado_select_string',
      ),
      'argument' => array(
        'handler' => 'views_handler_argument_string',
@@ -148,7 +148,7 @@ function retrieve_organism_views_data() {
        'handler' => 'views_handler_sort',
      ),
      'filter' => array(
-       'handler' => 'views_handler_filter_string',
+       'handler' => 'views_handler_filter_chado_select_string',
      ),
      'argument' => array(
        'handler' => 'views_handler_argument_string',
@@ -167,7 +167,7 @@ function retrieve_organism_views_data() {
        'handler' => 'views_handler_sort',
      ),
      'filter' => array(
-       'handler' => 'views_handler_filter_string',
+       'handler' => 'views_handler_filter_organism_common_name',
      ),
      'argument' => array(
        'handler' => 'views_handler_argument_string',

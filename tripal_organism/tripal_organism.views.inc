@@ -46,6 +46,9 @@ function tripal_organism_views_handlers() {
      'views_handler_field_computed_organism_nid' => array(
        'parent' => 'views_handler_field_numeric',
      ),
+     'views_handler_filter_organism_common_name' => array(
+      'parent' => 'views_handler_filter_string',
+     ),
    ),
  );
 }
