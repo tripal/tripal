@@ -1220,7 +1220,7 @@ function tripal_feature_load_featureloc_sequences($feature_id,$featurelocs){
 function tripal_feature_load_organism_feature_browser($organism){
 
    // don't show the browser if the settings in the admin page is turned off
-   $show_browser = variable_get('tripal_feature_browse_setting',array('show_feature_browser'));
+   $show_browser = variable_get('tripal_feature_browse_setting','show_feature_browser');
    if(strcmp($show_browser,'show_feature_browser')!=0){
       return array ('enabled' => $show_browser );
    }
