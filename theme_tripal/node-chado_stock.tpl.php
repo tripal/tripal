@@ -28,8 +28,12 @@
  //print '<pre>'.print_r($node,TRUE).'</pre>';
 ?>
 
+<?php if ($teaser) { 
+  include('tripal_stock/tripal_stock_teaser.tpl.php'); 
+} else { ?>
+
 <script type="text/javascript">
-if (Drupal.jsEnabled) {
+ if (Drupal.jsEnabled) {
    $(document).ready(function() {
       // hide all tripal info boxes at the start
       $(".tripal-info-box").hide();
@@ -118,13 +122,11 @@ if (Drupal.jsEnabled) {
   }
 </style>
 
-
 <div id="tripal_stock_details">
 
   <!-- Base Theme -->
   <?php include('tripal_stock/tripal_stock_base.tpl.php'); ?>
 
-  <?php if (!$teaser) { ?>
   <!-- Database References -->
   <?php include('tripal_stock/tripal_stock_references.tpl.php'); ?>
 
@@ -139,7 +141,6 @@ if (Drupal.jsEnabled) {
 
   <!-- Subject Relationships -->
   <?php include('tripal_stock/tripal_stock_relationships_as_subject.tpl.php'); ?>
-  <?php } ?>
 </div>
 
 <!-- Table of contents -->
@@ -150,3 +151,4 @@ if (Drupal.jsEnabled) {
 
    </ul>
 </div>
+<?php } ?>
