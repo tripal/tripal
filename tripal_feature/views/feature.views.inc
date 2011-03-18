@@ -189,8 +189,10 @@
     'title' => 'Is Analysis',
     'help' => 'A boolean indicating whether this feature was annotated by means of automated analysis.',
     'field' => array(
-      'handler' => 'views_handler_field',
-      'click sortable' => TRUE,
+       'handler' => 'views_handler_field_chado_tf_boolean',
+       'click sortable' => TRUE,
+       'label' => t('Is Analysis?'),
+       'type' => 'yes-no',
     ),
     'filter' => array(
        'handler' => 'views_handler_filter_chado_boolean',
@@ -207,8 +209,10 @@
     'title' => 'Is Obsolete',
     'help' => 'A boolean indicating whether this feature is obsolete.',
     'field' => array(
-      'handler' => 'views_handler_field',
-      'click sortable' => TRUE,
+       'handler' => 'views_handler_field_chado_tf_boolean',
+       'click sortable' => TRUE,
+       'label' => t('Is Obsolete?'),
+       'type' => 'yes-no',
     ),
     'filter' => array(
        'handler' => 'views_handler_filter_chado_boolean',
@@ -245,6 +249,14 @@
       'handler' => 'views_handler_sort_date',
     ),
   );
+
+  // Calculated Field: Number of Analysis' (Count -Int)
+  // Provides the number of analysis' for a given feature
+  // @see tripal_analysis/views/misc_tables.views.inc
   
+  //Calculated Field: Number of Libraries (Count -Int)
+  // Provides the number of libraries for a given feature
+  // @see tripal_library/views/misc_tables.views.inc 
+
   return $data;
  }

@@ -193,6 +193,18 @@ function retrieve_organism_views_data() {
        'handler' => 'views_handler_argument_string',
      ),
   );
+  
+  //Calculated Field: Count (Int)
+  // Provides the number of features for a given organism
+  // @see tripal_feature/views/misc_tables.views.inc
+
+  //Calculated Field: Count (Int)
+  // Provides the number of stocks for a given organism
+  // @see tripal_stock/views/misc_tables.views.inc
+
+  //Calculated Field: Number of Libraries (Count -Int)
+  // Provides the number of libraries for a given organism
+  // @see tripal_library/views/misc_tables.views.inc
 
   return $data;
 

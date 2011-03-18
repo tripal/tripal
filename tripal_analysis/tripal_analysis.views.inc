@@ -21,11 +21,13 @@
  */
 require('views/analysis.views.inc');
 require('views/chado_analysis.views.inc');
+require('views/misc_tables.views.inc');
 function tripal_analysis_views_data()  {
   $data = array();
 
   $data = array_merge($data, retrieve_analysis_views_data());
   $data = array_merge($data, retrieve_chado_analysis_views_data());
+  $data = array_merge($data, retrieve_analysis_misc_tables_views_data());
 
   return $data;
 }

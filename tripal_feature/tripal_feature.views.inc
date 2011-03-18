@@ -22,12 +22,13 @@
  */
 require_once('views/feature.views.inc');
 require_once('views/chado_feature.views.inc');
-
+require_once('views/misc_tables.views.inc');
 function tripal_feature_views_data()  {
   $data = array();
   
   $data = array_merge($data, retrieve_feature_views_data());
   $data = array_merge($data, retrieve_chado_feature_views_data());
+  $data = array_merge($data, retrieve_feature_misc_tables_views_data());
   
   return $data;
 }

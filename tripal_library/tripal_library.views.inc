@@ -21,11 +21,12 @@
  */
 require_once('views/library.views.inc');
 require_once('views/chado_library.views.inc');
+require_once('views/misc_tables.views.inc');
 function tripal_library_views_data()  {
   $data = array();
   
   $data = array_merge($data, retrieve_library_views_data());
-  $data = array_merge($data, retrieve_chado_library_views_data());
+  $data = array_merge($data, retrieve_library_misc_tables_views_data());
   
   return $data;
 }

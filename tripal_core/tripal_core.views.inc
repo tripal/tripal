@@ -20,6 +20,12 @@ function tripal_core_views_handlers() {
      'views_handler_field_cvterm_name' => array(
        'parent' => 'views_handler_field',
      ),
+     'views_handler_field_chado_tf_boolean' => array(
+      'parent' => 'views_handler_field_boolean',
+     ),
+     'views_handler_field_chado_count' => array(
+      'parent' => 'views_handler_field',
+     ),
      'views_handler_filter_chado_select_string' => array(
       'parent' => 'views_handler_filter_string',
      ),
