@@ -13,7 +13,6 @@ $feature = $variables['node']->feature;
       <th>Name</th>
       <th>Type</th>
       <th>Relationship</th>
-      <th>Position</th>
     </tr>
     <?php
     $i = 0; 
@@ -36,15 +35,6 @@ $feature = $variables['node']->feature;
         </td>
         <td><?php print $result->subject_type?></td>
         <td><b><?php print $result->rel_type?></b></td>
-        <td>
-           <?php
-           $featurelocs = $result->featurelocs;
-           if($featurelocs){
-              foreach($featurelocs as $src => $attrs){
-                 print "$attrs->src_name ($attrs->src_cvname):$attrs->fmin $attrs->fmax</br>";
-              } 
-           }?> 
-        </td>
       </tr>
     <?php } ?>
   </table>

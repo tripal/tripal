@@ -20,7 +20,7 @@ if(count($blast_results_list) > 0){
 	<div class="tripal-info-box-title tripal_analysis_blast-info-box-title">Blast vs. <?php print $db->name ?></div>
 	<div class="tripal-info-box-desc tripal_analysis_blast-info-box-desc">
 	<strong>Analysis Date: </strong><?php print "$blast_result->ana_time (<a href=".url("node/$blast_result->ana_nid").">$blast_result->ana_name</a>)"?><br>
-	Query: <?php print "$blast_result->xml_tag"?><br>
+	<!--Query: <?php print "$blast_result->xml_tag"?><br>-->
 	
 	<?php 
    if($blast_result->max != 10){    

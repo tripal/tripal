@@ -14,7 +14,7 @@ $feature = $variables['node']->feature;
       <th>Type</th>
       <th>Position</th>
       <th>Phase</th>
-      <th>Strand</th>
+      <th>Direction</th>
     </tr>
     <?php
       $i = 0; 
@@ -32,8 +32,23 @@ $feature = $variables['node']->feature;
            <td><?php print $locname ?></td>
            <td><?php print $loc->cvname ?></td>
            <td><?php print $loc->src_name .":".$loc->fmin . ".." . $loc->fmax ?></td>
-           <td><?php print $loc->phase ?></td>
-           <td><?php print $loc->strand ?></td>
+           <td>
+             <?php print $loc->phase ?>
+           </td>
+           <td><?php 
+              if($loc->strand == -1){
+                 print "reverse";
+              } 
+              elseif($loc->strand == 1){
+                 print "forward";
+              } 
+              elseif($loc->strand == 0){
+                 print "N/A";
+              } 
+              else {
+                 print $loc->strand;
+              }?>
+           </td>
          </tr>
          <?php
          $i++;  
