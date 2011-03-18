@@ -193,7 +193,9 @@
       'click sortable' => TRUE,
     ),
     'filter' => array(
-      'handler' => 'views_handler_filter',
+       'handler' => 'views_handler_filter_chado_boolean',
+       'label' => t('Is Analysis?'),
+       'type' => 'yes-no',
     ),
     'sort' => array(
       'handler' => 'views_handler_sort',
@@ -209,7 +211,9 @@
       'click sortable' => TRUE,
     ),
     'filter' => array(
-      'handler' => 'views_handler_filter',
+       'handler' => 'views_handler_filter_chado_boolean',
+       'label' => t('Is Obsolete?'),
+       'type' => 'yes-no',
     ),
     'sort' => array(
       'handler' => 'views_handler_sort',

@@ -121,7 +121,7 @@ function retrieve_cvterm_views_data() {
        'click sortable' => TRUE,
      ),
      'filter' => array(
-       'handler' => 'views_handler_filter_boolean_operator',
+       'handler' => 'views_handler_filter_chado_boolean',
        'label' => t('Is Obsolete?'),
        'type' => 'yes-no',
      ),
@@ -139,8 +139,8 @@ function retrieve_cvterm_views_data() {
        'click sortable' => TRUE,
      ),
      'filter' => array(
-       'handler' => 'views_handler_filter_boolean_operator',
-       'label' => t('Published'),
+       'handler' => 'views_handler_filter_chado_boolean',
+       'label' => t('Is Relationship Type?'),
        'type' => 'yes-no',
      ),
      'sort' => array(
