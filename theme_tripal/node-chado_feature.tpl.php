@@ -71,7 +71,7 @@ if (Drupal.jsEnabled) {
      elements on this page may not be used for other customizations */
   #tripal_feature_toc {
      float: left;
-     width: 250px;
+     width: 20%;
      background-color: #EEEEEE;
      -moz-border-radius: 15px;
      border-radius: 15px;
@@ -97,7 +97,7 @@ if (Drupal.jsEnabled) {
   }
   #tripal_feature_details {
      float: left;
-     width: 590px;
+     width: 70%;
      background-color: #FFFFFF;
      -moz-border-radius: 15px;
      border-radius: 15px;

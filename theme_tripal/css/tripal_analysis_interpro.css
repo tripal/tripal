@@ -1,6 +1,3 @@
-/*
- Copyright 2009 Clemson University
-*/
 
 .tripal_interpro-info-box {
    margin-top: 10px;
@@ -16,7 +13,6 @@
 }
 
 .tripal_interpro_results_table {
-   width: 95%;
    margin-left: auto;
    margin-right: auto;
 }
