@@ -4,7 +4,7 @@ $features = $variables['tripal_feature']['browser']['features'];
 $pager = $variables['tripal_feature']['browser']['pager'];
 $enabled = $variables['tripal_feature']['browser']['enabled'];
 
-if($enabled == 'show_feature_browser'){
+if($enabled){
 ?>
 <div id="tripal_organism-feature_browser-box" class="tripal_organism-info-box tripal-info-box">
   <div class="tripal_organism-info-box-title tripal-info-box-title">Feature Browser</div>
