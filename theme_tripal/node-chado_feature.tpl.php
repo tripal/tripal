@@ -146,12 +146,6 @@ if (Drupal.jsEnabled) {
    <!-- Subject Relationships -->
    <?php include('tripal_feature/tripal_feature_featurelocs_as_parent.tpl.php'); ?>
 
-   <!-- Blast Results -->
-   <?php include('tripal_analysis_blast/tripal_analysis_blast_results.tpl.php'); ?>
-
-   <!-- InterProScan Results -->
-   <?php include('tripal_analysis_interpro/tripal_analysis_interpro_results.tpl.php'); ?>
-
    <?php print $content ?>
 </div>
 
