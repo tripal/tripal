@@ -14,7 +14,9 @@ class views_handler_filter_chado_select_string extends views_handler_filter_stri
     parent::value_form(&$form, &$form_state);
     
     // Get Options
-    $options[''] = '<Any>';
+    if ($this->options['exposed']) {    
+      $options['All'] = '<Any>';
+    }
     $options['<select '.$this->table.'>'] = '<None>';
     $results = tripal_core_chado_select(
       $this->table,

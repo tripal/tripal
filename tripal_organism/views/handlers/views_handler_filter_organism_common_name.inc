@@ -7,6 +7,9 @@ class views_handler_filter_organism_common_name extends views_handler_filter_str
 
     // Get Options
     $options['<select organism>'] = '<None>';
+    if ($this->options['exposed']) {
+      $options['All'] = '<Any>';
+    }
     $results = tripal_core_chado_select(
       'organism',
       array('common_name','abbreviation'),
