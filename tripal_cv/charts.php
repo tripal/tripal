@@ -31,14 +31,14 @@ function tripal_cv_chart($chart_id){
 *  description:  
 */
 function tripal_cv_count_chart($cnt_table, $fk_column,
-   $cnt_column, $filter = null, $title = '', $type = 'p3', $size='400x100') {
+   $cnt_column, $filter = null, $title = '', $type = 'p3', $size='300x75') {
 
    if(!$type){
       $type = 'p3';
    }
 
    if(!$size){
-     $size = '400x100';
+     $size = '300x75';
    }
 
    if(!$filter){

@@ -1214,8 +1214,40 @@ function tripal_feature_load_featureloc_sequences($feature_id,$featurelocs){
    }
    return $floc_sequences;
 }
+/*******************************************************************************
+ *  
+ */
+function tripal_feature_load_organism_feature_counts($organism){
+
+   // don't show the browser if the settings in the admin page is turned off
+   // instead return the array indicating the status of the browser
+   $show_counts = variable_get('tripal_feature_summary_setting','show_feature_summary');
+   if(strcmp($show_counts,'show_feature_summary')!=0){
+      return array ('enabled' => false );
+   }
+
+   // get the feature counts.  This is dependent on a materialized view
+   // installed with the organism module
+   $sql = "
+      SELECT OFC.num_features,OFC.feature_type,CVT.definition
+      FROM {organism_feature_count} OFC
+        INNER JOIN {cvterm} CVT on OFC.cvterm_id = CVT.cvterm_id
+      WHERE organism_id = %d 
+      ORDER BY num_features desc
+   ";
+   $previous_db = tripal_db_set_active('chado');  // use chado database
+   $org_features = db_query($sql,$organism->organism_id);
+   tripal_db_set_active($previous_db);  // now use drupal database
+
+   $i=0;
+   $types = array();
+   while($type = db_fetch_object($org_features)){
+      $types[$i++] = $type;
+   }
+   return array ( 'types' => $types, 'enabled' => true );
+}
 /************************************************************************
- *  used to sort the list of relationship objects by start position
+ * 
  */
 function tripal_feature_load_organism_feature_browser($organism){
 
@@ -1223,7 +1255,7 @@ function tripal_feature_load_organism_feature_browser($organism){
    // instead return the array indicating the status of the browser
    $show_browser = variable_get('tripal_feature_browse_setting','show_feature_browser');
    if(strcmp($show_browser,'show_feature_browser')!=0){
-      return array ('enabled' => $show_browser );
+      return array ('enabled' => false);
    }
 
    # get the list of available sequence ontology terms for which
@@ -1268,8 +1300,7 @@ function tripal_feature_load_organism_feature_browser($organism){
       $features[$i++] = $feature;
    }
 
-   return array ( 'features' => $features, 'pager' => $pager, 'enabled' => $show_browser );
-
+   return array ( 'features' => $features, 'pager' => $pager, 'enabled' => true );
 }
 /************************************************************************
  *  used to sort the list of relationship objects by start position
@@ -1390,8 +1421,8 @@ function tripal_feature_nodeapi(&$node, $op, $teaser, $page) {
                // Show feature browser
                $types_to_show = array('chado_organism', 'chado_library');
                if (in_array($node->type, $types_to_show, TRUE)) {
-                  $node->content['tripal_feature_org_counts'] = array(
-                    '#value' => theme('tripal_feature_org_counts', $node),
+                  $node->content['tripal_organism_feature_counts'] = array(
+                    '#value' => theme('tripal_organism_feature_counts', $node),
                   );
                   $node->content['tripal_organism_feature_browser'] = array(
                     '#value' => theme('tripal_organism_feature_browser', $node),
@@ -1422,10 +1453,10 @@ function tripal_feature_theme () {
          'arguments' => array('node'=> null),
          'template' => 'tripal_organism_feature_browser',
       ),
-      'tripal_feature_org_counts' => array (
-         'arguments' => array('node'),
+      'tripal_organism_feature_counts' => array (
+         'arguments' => array('node'=> null),
+         'template' => 'tripal_organism_feature_counts',
       ),
-
       'tripal_feature_base' => array (
          'arguments' => array('node'=> null),
          'template' => 'tripal_feature_base',
@@ -1485,6 +1516,10 @@ function tripal_feature_preprocess(&$variables){
       $variables['tripal_feature']['references'] = tripal_feature_load_references($feature->feature_id);
       $variables['tripal_feature']['featureloc_sequences'] = tripal_feature_load_featureloc_sequences ($feature->feature_id,$featurelocs);   
    }
+}
+function tripal_feature_preprocess_tripal_organism_feature_counts(&$variables){
+   $organism = $variables['node']->organism;
+   $variables['tripal_feature']['feature_counts'] = tripal_feature_load_organism_feature_counts($organism);
 }
 /*******************************************************************************
  *  
@@ -1550,58 +1585,6 @@ function tripal_feature_preprocess_tripal_feature_featureloc_sequences(&$variabl
    $featurelocs = tripal_feature_load_featurelocs($feature->feature_id,'as_child',0);
    $variables['tripal_feature']['featureloc_sequences'] = tripal_feature_load_featureloc_sequences ($feature->feature_id,$featurelocs);   
 }
-/*******************************************************************************
- *  
- */
-function theme_tripal_feature_org_counts($node){
-
-   $organism = $node->organism;
-
-   // don't show the summary if the settings in the admin page is turned off
-   $show_browser = variable_get('tripal_feature_summary_setting',array('show_feature_summary'));
-
-   if(strcmp($show_browser[0],'show_feature_summary')!=0){
-      return;
-   }
-
-   // get the feature counts.  This is dependent on a materialized view
-   // installed with the organism module
-   $content = '';
-   if ($organism->organism_id && $node->type == 'chado_organism') {
-      $sql = "SELECT * FROM {organism_feature_count} ".
-      		 "WHERE organism_id = %d AND NOT feature_type = 'EST_match' ".
-             "ORDER BY num_features desc";
-      $features = array();
-      $previous_db = tripal_db_set_active('chado');  // use chado database
-      $results = db_query($sql,$organism->organism_id);
-      tripal_db_set_active($previous_db);  // now use drupal database
-      $feature = db_fetch_object($results); // retrieve the first result
-      if ($feature) {
-         $content .= "<div class=\"tripal_feature_summary-info-box\"><br>
-                             <div class=\"tripal_expandableBox\">".
-                     "<h3>Feature Summary</h3>".
-                     "</div>";
-         $content .= "<div class=\"tripal_expandableBoxContent\">";
-         $content .= "<table class=\"tripal_table_horz\">";
-         $content .= "  <tr>";
-         $content .= "    <th class=\"dbfieldname\">Type</th>";
-         $content .= "    <th class=\"dbfieldname\">Number</th>";
-         $content .= "  </tr>";
-         do {
-            $content .= "<tr>";
-            $content .= "  <td>$feature->feature_type</td>";
-            $content .= "  <td>". number_format($feature->num_features) . "</td>";
-            $content .= "</tr>";
-         } while($feature = db_fetch_object($results));
-         $content .= "</table>";
-         $content .= "
-            <img class=\"tripal_cv_chart\" id=\"tripal_feature_cv_chart_$organism->organism_id\" src=\"\" border=\"0\">
-         ";
-         $content .= "</div></div>";
-      }
-   }
-   return $content;
-}
 /************************************************************************
  *
  */
@@ -1617,8 +1600,8 @@ function tripal_feature_cv_chart($chart_id){
      count_mview      => 'organism_feature_count',
      cvterm_id_column => 'cvterm_id',
      count_column     => 'num_features',
-     size             => '650x200',
-     filter           => "CNT.organism_id = $organism_id AND NOT feature_type = 'EST_match' ",
+     size             => '550x200',
+     filter           => "CNT.organism_id = $organism_id",
   );
   return $options;
 }
