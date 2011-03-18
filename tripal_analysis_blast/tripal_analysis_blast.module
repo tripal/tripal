@@ -143,6 +143,7 @@ function tripal_get_feature_blast_results($feature_id, $db_id, $max){
              INNER JOIN {cv} CV on CVT.cv_id = CV.cv_id
 	        WHERE AF.feature_id = %d AND CV.name = '%s' AND
                  CVT.name = '%s' AND AP.value like '%|%' ";
+	$previous_db = tripal_db_set_active('chado');
 	$result = db_query($sql, $feature_id,'tripal','analysis_blast_output_iteration_hits');
 	tripal_db_set_active($previous_db);
 
