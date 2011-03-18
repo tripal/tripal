@@ -1163,18 +1163,16 @@ function tripal_feature_get_aggregate_relationships($feature_id, $substitute=1,
  */
 function tripal_feature_load_featureloc_sequences($feature_id,$featurelocs){
 
-   $floc_sequences = array();
-
    // if we don't have any featurelocs then no point in continuing
    if(!$featurelocs){
-      return false;
+      return array();
    }
 
    // get the list of relationships (including any aggregators) and iterate
    // through each one to find information needed to color-code the reference sequence
    $relationships = tripal_feature_get_aggregate_relationships($feature_id);
    if(!$relationships){
-      return false;
+      return array();
    }
    foreach($relationships as $rindex => $rel){
       // get the featurelocs for each of the relationship features
@@ -1205,6 +1203,7 @@ function tripal_feature_load_featureloc_sequences($feature_id,$featurelocs){
    // now get the sequence for each featureloc and highlight the different 
    // relationships
    $sql = "SELECT residues FROM {feature} WHERE feature_id = %d";
+   $floc_sequences = array();
    foreach ($featurelocs as $findex => $featureloc){
       // get the residues for this feature
       $previous_db = tripal_db_set_active('chado');  // use chado database
