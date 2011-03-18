@@ -763,8 +763,8 @@ function tripal_analysis_interpro_nodeapi(&$node, $op, $teaser, $page) {
 					);
 				} else {
 					// Show interpro result if not at teaser view
-					$node->content['tripal_analysis_interpro_form'] = array(
-                  '#value' => theme('tripal_analysis_interpro_results', $node),
+					$node->content['tripal_feature_interpro_results'] = array(
+                  '#value' => theme('tripal_feature_interpro_results', $node),
                   '#weight' => 7
 					);
 				}
@@ -781,9 +781,9 @@ function tripal_analysis_interpro_theme () {
       'parse_EBI_Interpro_XML_index_version' => array (
          'arguments' => array('node'),
 	   ),
-      'tripal_analysis_interpro_results' => array (
+      'tripal_feature_interpro_results' => array (
          'arguments' => array('node'=> null),
-         'template' => 'tripal_analysis_interpro_results',
+         'template' => 'tripal_feature_interpro_results',
 	   )
 	);
 }
@@ -796,7 +796,7 @@ function tripal_analysis_interpro_theme () {
 //	return $content;
 //}
 
-function tripal_analysis_interpro_preprocess_tripal_analysis_interpro_results(&$variables){
+function tripal_analysis_interpro_preprocess_tripal_feature_interpro_results(&$variables){
    $feature = $variables['node']->feature;
 	$variables['tripal_analysis_interpro']['results'] = tripal_get_interpro_results($feature->feature_id);
 }
@@ -838,13 +838,7 @@ function tripal_get_interpro_results($feature_id){
 
    // Show interpro result ORDER BY time
    if ($hasResult) { // If there is any result, show expandable box
-      $content .= "<div id=\"interpro-hits\" class=\"tripal_interpro-info-box\">
-                     <div class=\"tripal_expandableBox\">
-                       <h3>InterProScan Analysis</h3>
-                     </div>
-                     <div class=\"tripal_expandableBoxContent\">
-                       <span>
-                         <table class=\"tripal_interpro_results_table\">
+      $content .= "<table class=\"tripal_interpro_results_table\">
                          <tr><td>";
 
       while ($ana = db_fetch_object($result)) {
@@ -875,7 +869,7 @@ function tripal_get_interpro_results($feature_id){
       	 	$content .= $afp->afpvalue;
       	 }
       }   
-      $content .= '</td></tr></table></span></div></div>';
+      $content .= '</td></tr></table>';
    }
      
    tripal_db_set_active($previous_db);
