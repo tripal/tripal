@@ -82,13 +82,6 @@ function tripal_analysis_unigene_nodeapi(&$node, $op, $teaser, $page) {
 						'#weight' => 4,
                );
             } else {
-               if(strcmp($node->type,'chado_feature')==0){
-                  // Show unigene content if not at teaser view
-                  $node->content['tripal_analysis_unigene_node_addition'] = array(
-					   	'#value' => theme('tripal_analysis_unigene_feature_alignments', $node),
-						   '#weight' => 4
-                  );
-               }
 
                if(strcmp($node->type,'chado_organism')==0){
                   // Show unigene content if not at teaser view
@@ -112,9 +105,6 @@ function tripal_analysis_unigene_theme () {
          'arguments' => array('node'),
       ),
       'tripal_analysis_unigene_search_result' => array (
-         'arguments' => array('node'),
-      ),
-      'tripal_analysis_unigene_feature_alignments' => array (
          'arguments' => array('node'),
       ),
       'tripal_analysis_unigene_node_add' => array (

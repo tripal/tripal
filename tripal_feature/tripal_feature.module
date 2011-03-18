@@ -294,6 +294,11 @@ function tripal_feature_block($op = 'list', $delta = 0, $edit=array()){
          $blocks['relationships_as_subject']['info'] = t('Tripal Feature Relationships as Subject');
          $blocks['relationships_as_subject']['cache'] = BLOCK_NO_CACHE;
 
+         $blocks['org_feature_counts']['info'] = t('Tripal Organism Feature Counts');
+         $blocks['org_feature_counts']['cache'] = BLOCK_NO_CACHE;
+
+         $blocks['org_feature_browser']['info'] = t('Tripal Organism Feature Browser');
+         $blocks['org_feature_browser']['cache'] = BLOCK_NO_CACHE;
          return $blocks;
 
 
@@ -343,6 +348,14 @@ function tripal_feature_block($op = 'list', $delta = 0, $edit=array()){
                case 'relationships_as_subject':
                   $block['subject'] = t('Subject Relationships');
                   $block['content'] = theme('tripal_feature_relationships_as_child',$node);
+                  break;
+               case 'org_feature_counts':
+                  $block['subject'] = t('Feature Type Summary');
+                  $block['content'] = theme('tripal_organism_feature_counts', $node);
+                  break;
+               case 'org_feature_browser':
+                  $block['subject'] = t('Feature Browser');
+                  $block['content'] = theme('tripal_organism_feature_browser', $node);
                   break;
                default :
             }

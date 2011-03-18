@@ -1,16 +1,12 @@
 <?php
-// $Id:
-// Copyright 2009 Clemson University
 /*******************************************************************************
  * Tripal Blast Result lets users show/hide blast results associated
  * with a tripal feature
  ******************************************************************************/
 function tripal_analysis_blast_init(){
 	// Add javascript and style sheet
-	drupal_add_css(drupal_get_path('theme', 'tripal').
-                                  '/css/tripal_analysis_blast.css');
-	drupal_add_js(drupal_get_path('theme', 'tripal').
-                                 '/js/tripal_analysis_blast.js');
+	drupal_add_css(drupal_get_path('theme', 'tripal').'/css/tripal_analysis_blast.css');
+	drupal_add_js(drupal_get_path('theme', 'tripal').'/js/tripal_analysis_blast.js');
 }
 
 /*******************************************************************************
@@ -19,12 +15,12 @@ function tripal_analysis_blast_init(){
  * Entry points and paths of the module
  */
 function tripal_analysis_blast_menu() {
-	//Show top 10/25/all blast results for ajax calls
+	// Show top 10/25/all blast results for ajax calls
 	$items['tripal_top_blast'] = array(
       'path' => 'top_blast',
       'title' => t('Blast Hits'),
-      'page callback' => 'tripal_get_blast_results',
-      'page arguments' => array(1,2,3,'1'),
+      'page callback' => 'tripal_get_feature_blast_results_ajax',
+      'page arguments' => array(1,2,3),
       'access arguments' => array('access content'),
       'type' => MENU_CALLBACK
 	);
@@ -65,12 +61,13 @@ function tripal_analysis_blast_nodeapi(&$node, $op, $teaser, $page) {
                   '#weight' => 8,
 					);
 				} else {
-
-					// Show blast result if not at teaser view
-					$node->content['tripal_analysis_blast_form'] = array(
-                  '#value' => theme('tripal_analysis_blast_results', $node),
-                  '#weight' => 8
-					);
+               if(strcmp($node->type,'chado_feature')==0){
+					   // Show blast result if not at teaser view
+					   $node->content['tripal_feature_blast_results'] = array(
+                     '#value' => theme('tripal_feature_blast_results', $node),
+                     '#weight' => 8
+					   );
+               }
 				}
 			}
 	}
@@ -85,21 +82,40 @@ function tripal_analysis_blast_theme () {
       'tripal_analysis_blast_results_index_version' => array (
          'arguments' => array('node'),
 		),
-		'tripal_analysis_blast_results' => array(
+		'tripal_feature_blast_results' => array(
 			'arguments' =>  array('node'=> null),
-		   'template' => 'tripal_analysis_blast_results',
+		   'template' => 'tripal_feature_blast_results',
 		)
 	);
 }
 /*******************************************************************************
  *  
  */
-function tripal_analysis_blast_preprocess_tripal_analysis_blast_results(&$variables){
-   $feature = $variables['node']->feature;
-   $blast_object = tripal_get_blast_results($feature->feature_id, 0, 10, 0);
-   $variables['blast_object'] = $blast_object;
-}
+function tripal_get_feature_blast_results_ajax($feature_id, $db_id, $max){
+   $sql = "SELECT nid FROM {chado_feature} WHERE feature_id = %d";
+   $nid = db_fetch_object(db_query($sql,$feature_id));
+   $node = node_load($nid->nid);
 
+   // add the additional variables that the theme needs to generate the output
+   $node->db_id = $db_id;
+   $node->max = $max;
+   // call the theme to rebuild the blast results
+   drupal_json(array('update' => theme('tripal_feature_blast_results',$node)));
+}
+/*******************************************************************************
+ *  
+ */
+function tripal_analysis_blast_preprocess_tripal_feature_blast_results(&$variables){
+   $feature = $variables['node']->feature;
+   $db_id = $variables['node']->db_id;
+  
+   $max = 10;
+   if(isset($variables['node']->max)){
+      $max = $variables['node']->max;
+   }
+   $blast_results = tripal_get_feature_blast_results($feature->feature_id, $db_id, $max);
+   $variables['tripal_analysis_blast']['blast_results_list'] = $blast_results;
+}
 /*******************************************************************************
  * Prepare blast result for the feature shown on the page
  */
@@ -110,30 +126,24 @@ function theme_tripal_analysis_blast_results_index_version ($node) {
 }
 
 /*******************************************************************************
- * tripal_get_blast_results()
+ * tripal_get_feature_blast_results()
  * Get blast result from featureprop table for the feature
  */
-function tripal_get_blast_results($feature_id, $db_id, $max,$ajax){
+function tripal_get_feature_blast_results($feature_id, $db_id, $max){
 
-	// Get cvterm_id for 'analysis_blast_output_iteration_hits' which is required
-	// for inserting into the analysisfeatureprop table
-	$previous_db = tripal_db_set_active('chado');
-	$sql = "SELECT CVT.cvterm_id FROM {cvterm} CVT ".
-          "INNER JOIN cv ON cv.cv_id = CVT.cv_id ".
-          "WHERE CVT.name = 'analysis_blast_output_iteration_hits' ".
-          "AND CV.name = 'tripal'";
-	$type_id = db_result(db_query($sql));
-
-	// Get xml string from analysisfeatureprop value column, get db_id from analysisprop value column
-	// , and get analysis_id from analysisfeature table
+	// Get the blast results stored as XML from the analysisfeatureprop table
+   // the type for the property is named 'analysis_blast_output_iteration_hits'
+   // and is found in the 'tripal' controlled vocabulary.  This CV term was
+   // added by this module.
 	$sql = "SELECT AP.value AS apvalue, AFP.value AS afpvalue, AF.analysis_id AS aid
 	        FROM {analysisfeatureprop} AFP
-	        INNER JOIN analysisfeature AF ON AF.analysisfeature_id = AFP.analysisfeature_id
-	        INNER JOIN analysisprop AP ON AP.analysis_id = AF.analysis_id
-	        WHERE feature_id = %d
-	        AND AFP.type_id = %d 
-	        AND AP.value like '%|%' ";
-	$result = db_query($sql, $feature_id, $type_id);
+	          INNER JOIN {analysisfeature} AF ON AF.analysisfeature_id = AFP.analysisfeature_id
+	          INNER JOIN {analysisprop} AP ON AP.analysis_id = AF.analysis_id
+             INNER JOIN {cvterm} CVT on AFP.type_id = CVT.cvterm_id
+             INNER JOIN {cv} CV on CVT.cv_id = CV.cv_id
+	        WHERE AF.feature_id = %d AND CV.name = '%s' AND
+                 CVT.name = '%s' AND AP.value like '%|%' ";
+	$result = db_query($sql, $feature_id,'tripal','analysis_blast_output_iteration_hits');
 	tripal_db_set_active($previous_db);
 
 	// get the HTML content for viewing each of the XML file
@@ -141,52 +151,46 @@ function tripal_get_blast_results($feature_id, $db_id, $max,$ajax){
 	$blast_obj_counter = 0;
 	while ($analysisfeatureprop = db_fetch_object($result)) {
 
-		// get db_id
+      // the database db_id is stored in the value field of the table
+      // along with the XML.  The two are separated by a bar.  We
+      // will separate these two:
 		$blastsettings = explode("|", $analysisfeatureprop->apvalue);
-		$att_db_id = $blastsettings [0];
+
+      // if we don't have the proper number of fields in the value column then
+      // skip this entry
+      if(count($blastsettings) != 3){
+        continue;
+      }
+      if(!$blastsettings[0]){
+        continue;
+      }
+		$att_db_id = $blastsettings[0];
 
 		// get analysis name and date
 		$previous_db = tripal_db_set_active('chado');
 		$sql = "SELECT analysis_id AS aid, name, to_char(timeexecuted, 'MM-DD-YYYY') AS time
-		        FROM {analysis} 		        WHERE analysis_id = %d";
+		        FROM {analysis}
+ 		        WHERE analysis_id = %d";
 		$analysis = db_fetch_object(db_query($sql, $analysisfeatureprop->aid));
 		tripal_db_set_active($previous_db);
 
-		// If not called by ajax, go through all blast hits
-		if ($ajax == 0) {
-			// Get db object using the db_id
-			$previous_db = tripal_db_set_active('chado');
-			$sql = "SELECT * FROM {db} WHERE db_id=%d";
-			$db = db_fetch_object(db_query($sql, $att_db_id));
-			tripal_db_set_active($previous_db);
+		// Get db object using the db_id
+		$previous_db = tripal_db_set_active('chado');
+		$sql = "SELECT * FROM {db} WHERE db_id=%d";
+		$db = db_fetch_object(db_query($sql, $att_db_id));
+		tripal_db_set_active($previous_db);
+
+      // we want to add this blast result to our list if a database id has
+      // not been specified or if it has been specified and the database id
+      // for this analysis matches that of the one requested
+      if(!$db_id or ($db_id and $att_db_id == $db_id)) {
 			$blast_obj = tripal_analysis_blast_get_result_object($analysisfeatureprop->afpvalue,$db,$max,$feature_id, $analysis);
+         $blast_obj->analysis = $analysis;
 			$blast_obj_array [$blast_obj_counter] = $blast_obj;
 			$blast_obj_counter ++;
-			// Otherwise, only update expandable box the user has clicked on
-		} else {
-			if ($att_db_id == $db_id) {
-				// Get db object using the db_id
-				$previous_db = tripal_db_set_active('chado');
-				$sql = "SELECT * FROM {db} WHERE db_id=%d";
-				$db = db_fetch_object(db_query($sql, $att_db_id));
-				tripal_db_set_active($previous_db);
-				$blast_obj = tripal_analysis_blast_get_result_object($analysisfeatureprop->afpvalue,$db,$max,$feature_id, $analysis);
-				$blast_obj_array [$blast_obj_counter] = $blast_obj;
-				$blast_obj_counter ++;
-			}
-		}
+      }
 	}
-
-	// since this function provides output for addition into
-	// a feature page, as well as an AJAX refresh of content
-	// within the blast hits we need to setup the return
-	// different depending on the request type
-	if($ajax){
-		$content =  theme('tripal_analysis_blast_results', $node);drupal_set_message("CONTENT:".$content);
-		drupal_json(array('update' => $content));
-	} else {
-		return $blast_obj_array;
-	}
+   return $blast_obj_array;
 }
 /*******************************************************************************
  * Scanning the file folder for blast results and prepare content for indexing
@@ -1524,16 +1528,16 @@ function tripal_analysis_blast_get_result_object($xml_string,$db,$max,$feature_i
 					}
 
 					$hsp_content = array();
-					$hsp_content ['hsp_num'] = $hsp_num;
-					$hsp_content ['bit_score'] = $hsp_bit_score;
-					$hsp_content ['score'] = $hsp_score;
-					$hsp_content ['evalue'] = $hsp_evalue;
-					$hsp_content ['query_frame'] = $hsp_query_frame;
-					$hsp_content ['qseq'] = $hsp_qseq;
-					$hsp_content ['midline'] = $hsp_midline;
-					$hsp_content ['hseq'] = $hsp_hseq;
-					$hsp_content ['hit_from'] = $hsp_hit_from;
-					$hsp_content ['hit_to'] = $hsp_hit_to;
+					$hsp_content['hsp_num'] = $hsp_num;
+					$hsp_content['bit_score'] = $hsp_bit_score;
+					$hsp_content['score'] = $hsp_score;
+					$hsp_content['evalue'] = $hsp_evalue;
+					$hsp_content['query_frame'] = $hsp_query_frame;
+					$hsp_content['qseq'] = $hsp_qseq;
+					$hsp_content['midline'] = $hsp_midline;
+					$hsp_content['hseq'] = $hsp_hseq;
+					$hsp_content['hit_from'] = $hsp_hit_from;
+					$hsp_content['hit_to'] = $hsp_hit_to;
 					$hsp_content['identity'] = $hsp_identity;
 					$hsp_content['align_len'] = $hsp_align_len;
 					$hsp_content['positive'] = $hsp_positive;

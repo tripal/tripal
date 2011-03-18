@@ -1,8 +1,5 @@
 <?php
 
-//
-// Copyright 2009 Clemson University
-//
 
 /*******************************************************************************
  * Display help and module information
@@ -121,15 +118,6 @@ function tripal_library_menu() {
       'type' => MENU_NORMAL_ITEM
    );
 
-   $items['node/%/libraries'] = array(
-     'title' => t('Libraries'),
-     'page callback' => 'get_tripal_library_organism_libraries',
-     'page arguments' => array(1),
-     'access callback' => 'tripal_library_node_has_menu',
-     'access arguments' => array('access chado_library content',1),
-     'type' => MENU_LOCAL_TASK | MENU_NORMAL_ITEM
-   );
-
    return $items;
 }
 
@@ -143,28 +131,6 @@ function tripal_library_views_api() {
    return array(
       'api' => 2.0,
    );
-}
-
-/*******************************************************************************
- * Dynamic addition/removal of menu item
- */
-function tripal_library_node_has_menu($type,$vid){
-   // check to see if this node is an organism node
-   $sql = 'SELECT organism_id FROM {chado_organism} WHERE vid = %d';
-   $result = db_query($sql, $vid);
-
-   // menu status
-   $box_status =variable_get("tripal_library-box-libraries","menu_off");
-
-   // if this node is not an organism or a feature node then return false
-   // we don't want the menu item to be shown, otherwise get the normal perms
-   if($org_id = db_fetch_object($result)){
-      if(strcmp($box_status,"menu_on")==0){
-         return user_access($type);
-      }
-   } else {
-      return FALSE;
-   }
 }
 
 /*************************************************************************
@@ -231,37 +197,28 @@ function tripal_library_nodeapi(&$node, $op, $teaser, $page) {
 
    switch ($op) {
       // Note that this function only adds library view to an organism/feature
-      // node. The view of a library node is controled by the theme *.tpl file
+      // node. 
       case 'view':
-         // Set the node types for showing library information
-         $types_to_show = array('chado_organism', 'chado_feature');
-
-         // Abort if this node is not one of the types we should show.
-         if (!in_array($node->type, $types_to_show, TRUE)) {
-            break;
-         }
-
-         // Add library to the content item if it's not a teaser
-         if (!$teaser) {
-            // add the library to the organism/feature search indexing
-            if($node->build_mode == NODE_BUILD_SEARCH_INDEX){
-               $node->content['tripal_library_index_version'] = array(
-						'#value' => theme('tripal_library_search_index',$node),
-						'#weight' => 4,
-               );
-            } else if ($node->build_mode == NODE_BUILD_SEARCH_RESULT) {
-               $node->content['tripal_library_index_version'] = array(
-						'#value' => theme('tripal_library_search_result',$node),
-						'#weight' => 4,
-               );
-            } else {
-               // Show library if the organism/feature is not at teaser view
-               $node->content['tripal_library_node_addition'] = array(
-						'#value' => theme('tripal_library_node_libraries', $node),
-						'#weight' => 4
-               );
+         // add the library to the organism/feature search indexing
+         if($node->build_mode == NODE_BUILD_SEARCH_INDEX){
+            $node->content['tripal_library_index_version'] = array(
+					'#value' => theme('tripal_library_search_index',$node),
+            );
+         } else if ($node->build_mode == NODE_BUILD_SEARCH_RESULT) {
+            $node->content['tripal_library_index_version'] = array(
+					'#value' => theme('tripal_library_search_result',$node),
+            );
+         } else {
+            switch($node->type){
+               case 'chado_organism':
+                  // Show library if the organism/feature is not at teaser view
+                  $node->content['tripal_organism_library_list'] = array(
+					      '#value' => theme('tripal_organism_library_list', $node),
+                  );
+                  break;
             }
          }
+         break;
    }
 }
 
@@ -272,54 +229,75 @@ function tripal_library_nodeapi(&$node, $op, $teaser, $page) {
  */
 function tripal_library_theme () {
    return array(
-   	  'tripal_library_library_table' => array (
+   	 'tripal_library_library_table' => array (
          'arguments' => array('libraries'),
-   ),
+      ),
       'tripal_library_search_index' => array (
          'arguments' => array('node'),
-   ),
+      ),
       'tripal_library_search_result' => array (
          'arguments' => array('node'),
-   ),
-      'tripal_library_node_libraries' => array (
-         'arguments' => array('node'),
-   )
+      ),
+      'tripal_organism_library_list' => array (
+         'arguments' => array('node'=> null),
+         'template' => 'tripal_organism_library_list',
+      )
    );
 }
-
-/************************************************************************
- * This function is an extension of the chado_feature_view and
- * chado_organism_view by providing the markup for the feature/organism object
- * to show on a search result page.
+/*******************************************************************************
+ *  
  */
-function theme_tripal_library_search_result ($node) {
-   if ($node->type == 'chado_organism') {
-      $content = "";
-      // get the libraries for the organism
+function tripal_library_preprocess_tripal_organism_library_list(&$variables){
+   $organism = $variables['node']->organism;
+   $variables['tripal_library']['libraries'] = tripal_library_load_organism_library_list($organism);
+}
+/************************************************************************
+ * 
+ */
+function tripal_library_load_organism_library_list ($organism) {
+
+   // get the libraries for the organism
+   $sql = "SELECT L.library_id, L.organism_id, L.name, L.uniquename, ".
+          "   L.type_id, CVT.name as cvname, CVT.definition ".
+          "FROM {library} L ".
+          "  INNER JOIN CVTerm CVT ON CVT.cvterm_id = L.type_id ".
+    	  	 "WHERE L.Organism_id = %d";
+   $previous_db = tripal_db_set_active('chado');
+   $results = db_query($sql,$organism->organism_id);
+   tripal_db_set_active($previous_db);
+
+
+   // iterate through all of the libraries and add in the node and 
+   // library description
+   $nsql = "SELECT nid FROM {chado_feature} ".
+           "WHERE feature_id = %d";
+   $dsql = "SELECT * FROM {libraryprop} LP ".
+     	    "  INNER JOIN CVTerm CVT ON CVT.cvterm_id = LP.type_id ".
+          "WHERE LP.library_id = %d ".
+          "  AND CVT.name = 'library_description'";
+   $i=0;
+   $libraries = array();
+   while($library = db_fetch_object($results)){
+      // get the description
       $previous_db = tripal_db_set_active('chado');
-      $sql = "SELECT * FROM {library} L ".
-       	     "WHERE L.Organism_id = $node->organism_id";
-      $libraries = array();
-      $results = db_query($sql);
-      while($library = db_fetch_object($results)){
-         // get the description
-         $sql = "SELECT * FROM {libraryprop} LP ".
-           	    "  INNER JOIN CVTerm CVT ON CVT.cvterm_id = LP.type_id ".
-                "WHERE LP.library_id = $library->library_id ".
-                "  AND CVT.name = 'library_description'";
-         $desc = db_fetch_object(db_query($sql));
-         $library->description = $desc->value;
-         $libraries[] = $library;
-      }
+      $desc = db_fetch_object(db_query($dsql,$library->library_id));
       tripal_db_set_active($previous_db);
-      if(count($libraries) > 0){
-         foreach ($libraries as $library){
-            $content .= "Library: $library->name. ";
-            $content .= "$library->description";
-         };
-      }
-      // Provide library names to show in a feature page
-   } else if ($node->type == 'chado_feature') {
+      // get the node
+      $node = db_fetch_object(db_query($nsql,$feature->feature_id));
+      // add the description and the node to the library
+      $library->nid = $node->nid;
+      $library->description = $desc->value;
+      $libraries[$i++] = $library;
+   }
+
+   return $libraries;           
+}
+/************************************************************************
+ * 
+ */
+function tripal_library_load_feature_library_list ($feature) {
+
+
       $content = "";
       $organism_id = $node->feature->organism_id;
       $previous_db = tripal_db_set_active('chado');
@@ -338,7 +316,7 @@ function theme_tripal_library_search_result ($node) {
             $content .= "Library: ".$library->name;
          };
       }
-   }
+
    return $content;
 
 
@@ -445,96 +423,6 @@ function theme_tripal_library_node_libraries($node) {
          $node->lib_additions = $lib_additions;
       }
    }
-   return $content;
-}
-/************************************************************************
- *
- */
-function get_tripal_library_organism_libraries($nid) {
-      $content = "";
-
-      // if this content is intended to be a menu item the 
-      // we need to know so we can format the content slightly different
-      $box_status =variable_get("tripal_library-box-libraries","menu_off");
-
-      // get the organism id for this node
-      $sql = "SELECT organism_id FROM {chado_organism} WHERE nid = %d";
-      $organism_id = db_result(db_query($sql, $nid));
-
-      // get the libraries for the organism
-      $previous_db = tripal_db_set_active('chado');
-      $sql = "SELECT L.library_id, L.organism_id, L.name, L.uniquename, ".
-             "   L.type_id, CVT.name as cvname, CVT.definition ".
-             "FROM {library} L ".
-             "  INNER JOIN CVTerm CVT ON CVT.cvterm_id = L.type_id ".
-       	  	 "WHERE L.Organism_id = $organism_id";
-      $libraries = array();
-      $results = db_query($sql);
-      while($library = db_fetch_object($results)){
-         // get the description
-         $sql = "SELECT * FROM {libraryprop} LP ".
-           	    "  INNER JOIN CVTerm CVT ON CVT.cvterm_id = LP.type_id ".
-                "WHERE LP.library_id = $library->library_id ".
-                "  AND CVT.name = 'library_description'";
-         $desc = db_fetch_object(db_query($sql));
-         $library->description = $desc->value;
-         $libraries[] = $library;
-      }
-      tripal_db_set_active($previous_db);
-      
-      if(strcmp($box_status,"menu_off")==0){
-         $content .= "<div id=\"tripal_library_box\" class=\"tripal_library-info-box\">";
-         $content .= "<br><div class=\"tripal_expandableBox\">".
-       			  	 	"<h3>Libraries associated with this organism</h3>".
-                 	 	"</div>";
-         $content .= "<div class=\"tripal_expandableBoxContent\">";
-      } else {
-   	  $content .= "<h3>Libraries associated with this organism</h3>";
-      }
-      $content .= "<table class=\"organism-libraries\">";
-      if (count($libraries) > 0) {
-         $content .= "  <tr>";
-         $content .= "    <th class=\"dbfieldname\">Name</th>";
-         $content .= "    <th class=\"dbfieldname\">Description</th>";
-         $content .= "    <th class=\"dbfieldname\">Type</th>";
-         $content .= "  </tr>";
-         foreach ($libraries as $library){
-            $content .= "<tr>";
-            $sql = "SELECT nid FROM {chado_library} WHERE library_id = %d";
-            $lib_nid = db_result(db_query($sql, $library->library_id));
-            $lib_url = url("node/$lib_nid");
-            if ($lib_nid) {
-               $content .= "  <td><a href=\"$lib_url\">$library->name</a></td>";
-            } else {
-               $content .= "  <td>$library->name</td>";
-            }
-            $content .= "  <td>$library->description</td>";
-            if ($library->cvname == 'cdna_library') {
-               $display_lib = 'cDNA';
-            } else if ($library->cvname == 'bac_library') {
-               $display_lib = 'BAC';
-            } else {
-               $display_lib = $library->cvname;
-            }
-            $content .= "  <td>$display_lib</td>";
-            $content .= "</tr>";
-         }
-      } else {
-       	$content .= '<tr><td>There are no libraries available for this organism</td></tr>';
-      }
-      $content .= "</table>";
-      if(user_access('access administrative pages')){
-         $link = url("tripal_toggle_box_menu/tripal_library/libraries/$nid");
-      	if(strcmp($box_status,"menu_off")==0){
-           $content .= "<br><a href=\"$link\">Show on menu</a>";
-         } else {
-           $content .= "<br><a href=\"$link\">Remove from menu</a>";
-        }
-      }
-      if(strcmp($box_status,"menu_off")==0){
-        $content .= "</div></div>";
-      }
-
    return $content;
 }
 

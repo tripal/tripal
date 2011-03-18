@@ -1,8 +1,5 @@
 <?php
 
-//
-// Copyright 2009 Clemson University
-//
 
 /*******************************************************************************
  *
@@ -48,14 +45,6 @@ function tripal_analysis_kegg_menu() {
      'page arguments' => array(1, 2),
      'access arguments' => array('access content'),
      'type' => MENU_CALLBACK
-   );
-   $items['node/%/kegg'] = array(
-     'title' => t('KEGG'),
-     'page callback' => 'tripal_analysis_kegg_organism_results',
-     'page arguments' => array(1),
-     'access callback' => 'tripal_analysis_kegg_node_has_menu',
-     'access arguments' => array('access chado_analysis_kegg content',1),
-     'type' => MENU_LOCAL_TASK | MENU_NORMAL_ITEM
    );
    $items['tripal_analysis_kegg_org_report'] = array(
       'path' => 'tripal_analysis_kegg_org_report',
@@ -109,56 +98,25 @@ function chado_analysis_kegg_access($op, $node, $account){
 }
 
 /*******************************************************************************
- * Dynamic addition/removal of menu item
- */
-function tripal_analysis_kegg_node_has_menu($type,$vid){
-
-   // check to see if this node is an organism node
-   $sql = 'SELECT organism_id FROM {chado_organism} WHERE vid = %d';
-   $result = db_query($sql, $vid);
-
-   // menu status
-   $box_status =variable_get("tripal_analysis_kegg-box-results","menu_off");
-
-   // if this node is not an organism or a feature node then return false
-   // we don't want the menu item to be shown, otherwise get the normal perms
-   if($org_id = db_fetch_object($result)){
-      if(strcmp($box_status,"menu_on")==0){
-         return user_access($type);
-      }
-   } else {
-      return FALSE;
-   }
-}
-/*******************************************************************************
  */
 function tripal_analysis_kegg_brite($analysis_id, $type_id, $ajax){
    // If not called by ajax
    if (!$ajax) {
-      // Add ajax loading box
-      $url_ajax = url("sites/all/themes/theme_tripal/images/ajax-loader.gif");
-      $content .= "<div id=\"tripal_ajaxLoading\" style=\"display:none\">".
-                   "<div id=\"loadingText\">Loading...</div>".
-                   "<img src=\"$url_ajax\"></div>";
-      // Generate tripal_expandable box for the content
-      $content .=  "<div id=\"tripal_kegg_brite_results\" class=\"tripal_kegg_brite-info-box\">
-                      <div class=\"tripal_expandableBox\">
-                        <h3>Analysis Results</h3>
-                      </div>
-                      <div class=\"tripal_expandableBoxContent\">
-                        <table>
-                          <tr>
-                            <th>KEGG BRITE</th>
-                            <th id=\"tripal_kegg_brite_header\">Hierarchy:</th>
-                          </tr>
-                          <tr>
-                            <td nowrap valign=\"top\">";
+      $content .=  
+        "<div id=\"tripal_kegg_brite_results\" class=\"tripal_kegg_brite-info-box\">
+          <table>
+            <tr>
+              <th>KEGG BRITE</th>
+              <th id=\"tripal_kegg_brite_header\">Hierarchy:</th>
+            </tr>
+            <tr>
+              <td nowrap valign=\"top\">
+      ";
       // List all BRITE terms on the left
       $sql = "SELECT CVT.name, CVT.cvterm_id
               FROM {cvterm} CVT 
-              INNER JOIN analysisprop AP ON CVT.cvterm_id = AP.type_id
-              WHERE AP.analysis_id = %d
-              AND CVT.definition LIKE 'KEGG BRITE term: %'
+                INNER JOIN analysisprop AP ON CVT.cvterm_id = AP.type_id
+              WHERE AP.analysis_id = %d AND CVT.definition LIKE 'KEGG BRITE term: %'
               ORDER BY CVT.cvterm_id";
       $previous_db = tripal_db_set_active('chado');
       $result = db_query($sql, $analysis_id);
@@ -185,8 +143,8 @@ function tripal_analysis_kegg_brite($analysis_id, $type_id, $ajax){
       // Get BRITE hierarchy tree
       $sql = "SELECT value
            FROM {analysisprop} AP
-           INNER JOIN CVterm CVT on AP.type_id = CVT.cvterm_id
-           INNER JOIN CV on CVT.cv_id = CV.cv_id
+             INNER JOIN CVterm CVT on AP.type_id = CVT.cvterm_id
+             INNER JOIN CV on CVT.cv_id = CV.cv_id
            WHERE CV.name = 'tripal' and CVT.name = '%s' 
            AND AP.analysis_id = %d";
 
@@ -199,7 +157,6 @@ function tripal_analysis_kegg_brite($analysis_id, $type_id, $ajax){
             $content .= "     </td>
                             </tr>
                           </table>
-                        </div>
                       </div>";
    }
    // since this function provides output for addition into
@@ -656,8 +613,8 @@ function tripal_analysis_kegg_parseHierFile ($analysis_id, $hierfile, $base_path
          }
          $no_file ++;
          
-         # $type variable will be set in tripal_analysis_kegg_parse_keg_file()
-         $content = tripal_analysis_kegg_parse_keg_file("$hierdir/$file",$type,$analysis_id, $base_path);
+         # $type variable will be set in tripal_analysis_kegg_parse_kegg_file()
+         $content = tripal_analysis_kegg_parse_kegg_file("$hierdir/$file",$type,$analysis_id, $base_path);
 
          # add the item to the database
          if($content){
@@ -719,7 +676,7 @@ function tripal_analysis_kegg_parseHierFile ($analysis_id, $hierfile, $base_path
  * and added to chado as a cvterm. Tree structure for this cvterm is then 
  * generated and saved to analysisfeature and analysisfeatureprop tables.
  */
-function tripal_analysis_kegg_parse_keg_file ($file,&$type,$analysis_id, $base_path){
+function tripal_analysis_kegg_parse_kegg_file ($file,&$type,$analysis_id, $base_path){
    $handle = fopen($file,'r');
    $depth = array();
    $current = '@';  # this is one character below 'A' in the ASCII table
@@ -861,45 +818,32 @@ function tripal_analysis_kegg_parse_keg_file ($file,&$type,$analysis_id, $base_p
  */
 function tripal_analysis_kegg_nodeapi(&$node, $op, $teaser, $page) {
    switch ($op) {
-      // Note that this function only adds library view to an organism/feature
-      // node. The view of a library node is controled by the theme *.tpl file
       case 'view':
-
-         // Set the node types for showing library information
-         $types_to_show = variable_get('tripal_analysis_kegg_setting',
-            array('chado_feature','chado_analysis_kegg','chado_organism'));
-
-         // Abort if this node is not one of the types we should show.
-         if (!in_array($node->type, $types_to_show, TRUE)) {
-            // Turn the menu off if it's on
-            $box_status = variable_get("tripal_analysis_kegg-box-results","menu_off");
-            if (strcmp($box_status,"menu_on")==0 && $node->type =='chado_organism'){
-               variable_set("tripal_analysis_kegg-box-results","menu_off");
+              
+         // add the library to the organism/feature search indexing
+         if($node->build_mode == NODE_BUILD_SEARCH_INDEX){
+            $node->content['tripal_analysis_kegg_search_index'] = array(
+               '#value' => theme('tripal_analysis_kegg_search_index',$node),
+               '#weight' => 6,
+            );
+         } else if ($node->build_mode == NODE_BUILD_SEARCH_RESULT) {
+            $node->content['tripal_analysis_kegg_search_result'] = array(
+               '#value' => theme('tripal_analysis_kegg_search_result',$node),
+               '#weight' => 6,
+            );
+         } else {
+            switch($node->type){
+               case 'chado_organism':
+                  // Show KEGG BRITE on an analysis page OR KEGG info box on a feature page
+                  $node->content['tripal_organism_kegg_summary'] = array(
+                     '#value' => theme('tripal_organism_kegg_summary', $node),
+                     '#weight' => 6
+                  );
+                  break;
             }
-            break;
+
          }
-         
-         // Add library to the content item if it's not a teaser
-         if (!$teaser) {
-            // add the library to the organism/feature search indexing
-            if($node->build_mode == NODE_BUILD_SEARCH_INDEX){
-               $node->content['tripal_analysis_kegg_search_index'] = array(
-                  '#value' => theme('tripal_analysis_kegg_search_index',$node),
-                  '#weight' => 6,
-               );
-            } else if ($node->build_mode == NODE_BUILD_SEARCH_RESULT) {
-               $node->content['tripal_analysis_kegg_search_result'] = array(
-                  '#value' => theme('tripal_analysis_kegg_search_result',$node),
-                  '#weight' => 6,
-               );
-            } else {
-               // Show KEGG BRITE on an analysis page OR KEGG info box on a feature page
-               $node->content['tripal_analysis_kegg_node_add'] = array(
-                  '#value' => theme('tripal_analysis_kegg_node_add', $node),
-                  '#weight' => 6
-               );
-            }
-         }
+         break;
    }
 }
 
@@ -910,17 +854,24 @@ function tripal_analysis_kegg_nodeapi(&$node, $op, $teaser, $page) {
  */
 function tripal_analysis_kegg_theme () {
    return array(
-
       'tripal_analysis_kegg_search_index' => array (
          'arguments' => array('node'),
-   ),
+      ),
       'tripal_analysis_kegg_search_result' => array (
          'arguments' => array('node'),
-   ),
-      'tripal_analysis_kegg_node_add' => array (
-         'arguments' => array('node'),
-   )
+      ),
+      'tripal_organism_kegg_summary' => array (
+         'arguments' => array('node'=> null),
+         'template' => 'tripal_organism_kegg_summary',
+      ),
    );
+}
+/*******************************************************************************
+ *  
+ */
+function tripal_analysis_kegg_preprocess_tripal_organism_kegg_summary(&$variables){
+   $node = $variables['node'];
+   $variables['tripal_analysis_kegg']['select_form'] = tripal_analysis_kegg_load_organism_kegg_summary($node);
 }
 /************************************************************************
  */
@@ -993,7 +944,32 @@ function theme_tripal_analysis_kegg_search_result($node){
 
 /************************************************************************
  */
-function theme_tripal_analysis_kegg_node_add($node) {
+function tripal_analysis_kegg_load_organism_kegg_summary($node) {
+   $organism = $node->organism;
+
+   // find analyses that have KEGG terms
+   $sql = "
+     SELECT *
+     FROM {kegg_by_organism} KBO
+     WHERE organism_id = %d
+     ORDER BY analysis_id DESC
+   ";
+   $previous_db = tripal_db_set_active('chado');
+   $results = db_fetch_object(db_query($sql,$organism->organism_id));
+   tripal_db_set_active($previous_db);
+
+   $has_results = 0;
+   if($results){
+      $has_results = 1;
+   }
+   return array (
+      'has_results' => $has_results,
+      'form' => drupal_get_form('tripal_analysis_kegg_select_form',$node),
+   );
+}
+/************************************************************************
+ 
+
    // Show Kegg additional information on a KEGG Analysis page
    if ($node->type == 'chado_analysis_kegg') {
       return tripal_analysis_kegg_full_report($node->analysis_id);
@@ -1004,16 +980,8 @@ function theme_tripal_analysis_kegg_node_add($node) {
        return tripal_analysis_kegg_feature_add($node);
    } 
    
-   // Show Kegg full reports on the organism page
-   else if ($node->type == 'chado_organism') {
-      $box_status = variable_get("tripal_analysis_kegg-box-results","menu_off");
-      if (strcmp($box_status,"menu_off")==0){
-         $content .= tripal_analysis_kegg_organism_add($node);
-      }
-   }
    return $content;
 }
-/************************************************************************
  */
 
 function tripal_analysis_kegg_org_report($analysis_id){
@@ -1104,13 +1072,8 @@ function tripal_analysis_kegg_feature_add($node) {
       // Show kegg result ORDER BY time
       if ($hasResult) { // If there is any result, show expandable box
          $content .= "<div id=\"tripal_kegg-hits\" class=\"tripal_kegg-info-box\">
-                        <div class=\"tripal_expandableBox\">
-                          <h3>KEGG Analysis</h3>
-                        </div>
-                        <div class=\"tripal_expandableBoxContent\">
-                          <span>
-                            <table class=\"tripal_kegg_results_table\">
-                            <tr><td>";
+                        <table class=\"tripal_kegg_results_table\">
+                          <tr><td>";
 
          while ($ana = db_fetch_object($result)) {
             // Show analysis date
@@ -1141,53 +1104,9 @@ function tripal_analysis_kegg_feature_add($node) {
             }
             $content .= "<br>";
          }
-         $content .= '</td></tr></table></span></div></div>';
+         $content .= '</td></tr></table></div>';
       }
       tripal_db_set_active($previous_db);
-   return $content;
-}
-/************************************************************************
-*/
-function tripal_analysis_kegg_organism_add($node) {
-   // Show GO information in a expandable box for a organism page.
-   // Make sure we have $node->organism_id. In the case of creating a new
-   // organism, the organism_id is not created until we save. This will cause
-   // an error when users preview the creation without a $node->organism_id
-   $box_status = variable_get("tripal_analysis_kegg-box-results","menu_off");
-      
-   if(strcmp($box_status,"menu_off")==0){
-      $content .= "
-      <div class=\"tripal_kegg_summary-info-box\">
-        <div class=\"tripal_expandableBox\">
-          <h3>KEGG Analysis Results</h3>
-        </div>
-        <div class=\"tripal_expandableBoxContent\">
-      ";
-   } 
-
-   $select_analysis = drupal_get_form('tripal_analysis_kegg_select_form',$node);
-
-   $url = url("sites/all/themes/theme_tripal/images/ajax-loader.gif");
-   $content .= "
-     $select_analysis
-     <div id=\"tripal_ajaxLoading\" style=\"display:none\">
-     <div id=\"loadingText\">Loading...</div>
-     <img src=\"$url\"></div>
-     <div id=\"tripal_analysis_kegg_org_report\"></div>
-   ";
-
-   if(user_access('access administrative pages')){
-      $link = url("tripal_toggle_box_menu/tripal_analysis_kegg/results/$node->nid");
-      if(strcmp($box_status,"menu_off")==0){
-         $content .= "<br><a href=\"$link\">Show on menu</a>";
-      } else {
-         $content .= "<br><a href=\"$link\">Remove from menu</a>";
-      }
-   }
-   if(strcmp($box_status,"menu_off")==0){
-      $content .= "</div></div>";
-   }
-
    return $content;
 }
 /************************************************************************
@@ -1195,7 +1114,7 @@ function tripal_analysis_kegg_organism_add($node) {
 function tripal_analysis_kegg_select_form(&$form_state = NULL,$node){
 
    $form = array();
-   // find analyses that have GO terms
+   // find analyses that have KEGG terms
    $sql = "
      SELECT *
      FROM {kegg_by_organism} KBO
@@ -1203,7 +1122,7 @@ function tripal_analysis_kegg_select_form(&$form_state = NULL,$node){
      ORDER BY analysis_id DESC
    ";
    $previous_db = tripal_db_set_active('chado');
-   $results = db_query($sql,$node->organism_id);
+   $results = db_query($sql,$node->organism->organism_id);
    tripal_db_set_active($previous_db);
 
    $analyses = array();

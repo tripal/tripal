@@ -122,9 +122,9 @@ function tripal_cv_init_tree($cv_id,$cnt_table = null, $fk_column = null,
          if($count > 0){
             $name .= " ($count $label(s))";
          }
-      }
+      } 
       $content[] = array(
-        'attributes' => array (
+           'attributes' => array (
            'id' => $term->cvterm_id,
         ),
         state => 'closed',
@@ -188,25 +188,42 @@ function tripal_cv_get_term_children($cvterm_id,$cnt_table = null,
             $count += $cnt->num_items;
          }
          if($count > 0){
-             $name .= " (".number_format($count)." $label)";
+            $name .= " (".number_format($count)." $label)";
+            // check if we have any children if so then set the value
+            $previous_db = tripal_db_set_active('chado');
+            $children = db_fetch_object(db_query($sql,$term->subject_id));
+            tripal_db_set_active($previous_db);
+            $state = 'leaf';
+            if($children){
+               $state = 'closed';
+            }
+            $content[] = array(
+               'attributes' => array (
+                  'id' => $term->subject_id,
+               ),
+               state => $state,
+               data => $name,
+               children => array(),
+            );
          }
+      } else {
+         // check if we have any children if so then set the value
+         $previous_db = tripal_db_set_active('chado');
+         $children = db_fetch_object(db_query($sql,$term->subject_id));
+         tripal_db_set_active($previous_db);
+         $state = 'leaf';
+         if($children){
+            $state = 'closed';
+         }
+         $content[] = array(
+            'attributes' => array (
+               'id' => $term->subject_id,
+            ),
+            state => $state,
+            data => $name,
+            children => array(),
+         );
       }
-      // check if we have any children if so then set the value
-      $previous_db = tripal_db_set_active('chado');
-      $children = db_fetch_object(db_query($sql,$term->subject_id));
-      tripal_db_set_active($previous_db);
-      $state = 'leaf';
-      if($children){
-         $state = 'closed';
-      }
-      $content[] = array(
-         'attributes' => array (
-            'id' => $term->subject_id,
-         ),
-         state => $state,
-         data => $name,
-         children => array(),
-      );
    }
    $content[] = $cnt_sql;
    return $content;

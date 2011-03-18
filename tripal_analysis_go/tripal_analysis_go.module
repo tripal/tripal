@@ -188,14 +188,14 @@ function theme_tripal_analysis_go_search_result($node){
 /************************************************************************
 */
 function tripal_analysis_go_preprocess_tripal_feature_go_terms(&$variables){
-   $node = $variables['node'];
-   $variables['tripal_analysis_go']['go_terms'] = tripal_analysis_go_feature_add($node);
+   $feature = $variables['node']->feature;
+   $variables['tripal_analysis_go']['terms'] = tripal_analysis_go_load_feature_terms($feature);
 }
 /************************************************************************
 */
 function tripal_analysis_go_preprocess_tripal_organism_go_summary(&$variables){
    $node = $variables['node'];
-   $variables['tripal_analysis_go']['form'] = tripal_analysis_go_organism_add($node);
+   $variables['tripal_analysis_go']['select_form'] = tripal_analysis_go_load_organism_go_summary($node);
 }
 /************************************************************************
 */
@@ -211,7 +211,7 @@ function tripal_analysis_go_select_form(&$form_state = NULL,$node){
      ORDER BY analysis_id DESC
    ";
    $previous_db = tripal_db_set_active('chado');
-   $results = db_query($sql,$node->organism_id);
+   $results = db_query($sql,$node->organism->organism_id);
    tripal_db_set_active($previous_db);
 
    $analyses = array();
@@ -265,7 +265,7 @@ function tripal_analysis_go_org_charts ($element) {
 }
 /************************************************************************
 */
-function tripal_analysis_go_organism_add($node) {
+function tripal_analysis_go_load_organism_go_summary($node) {
    $organism = $node->organism;
 
    // check to see if we have any analyses
@@ -276,20 +276,17 @@ function tripal_analysis_go_organism_add($node) {
      WHERE organism_id = %d
    ";
    $previous_db = tripal_db_set_active('chado');
-   $num_analyses = db_fetch_object(db_query($sql,$organism->organism_id));
+   $results = db_fetch_object(db_query($sql,$organism->organism_id));
    tripal_db_set_active($previous_db);
 
-   if($num_analyses->cnt > 0){
-      return array (
-         'status' => 1,
-         'value' => drupal_get_form('tripal_analysis_go_select_form',$node),
-      );
-   } else {
-      return array(
-         'status' => 0,
-         'value' => t('There are no GO analysis reports'),
-      );
+   $has_results = 0;
+   if($results){
+      $has_results = 1;
    }
+   return array (
+      'has_results' => $has_results,
+      'form' => drupal_get_form('tripal_analysis_go_select_form',$node),
+   );
 }
 /************************************************************************
  *
@@ -339,7 +336,7 @@ function tripal_analysis_go_cv_chart($chart_id){
         )
      ",
      type             => 'p',
-     size             => '680x230',
+     size             => '550x175',
      title            => $title,
   );
   return $options;
@@ -455,11 +452,10 @@ function tripal_analysis_go_get_goterm_features($cvterm_id,$tree_id){
 }
 /************************************************************************
 */
-function tripal_analysis_go_feature_add($node) {
-   $content = "";
+function tripal_analysis_go_load_feature_terms($feature) {
    $sql = "
        SELECT DISTINCT FCVT.feature_id,DBX.accession,CVT.name as goterm, 
-          CVT.cvterm_id as go_id, CV.name as cvname
+          CVT.cvterm_id as go_id, CV.name as cvname, CVT.definition
        FROM {Feature_Cvterm} FCVT  
           INNER JOIN Cvterm CVT           ON CVT.cvterm_ID = FCVT.cvterm_ID
           INNER JOIN CV                   ON CV.cv_id = CVT.cv_id  
@@ -473,32 +469,15 @@ function tripal_analysis_go_feature_add($node) {
    ";
 
    $previous_db = tripal_db_set_active('chado');
-   $results = db_query($sql,$node->feature->feature_id);
+   $results = db_query($sql,$feature->feature_id);
    tripal_db_set_active($previous_db);
-   $term = db_fetch_object($results); // retrive the first result
-   if ($term) {
-      $content .= "<div id=\"tripal_go_box\" class=\"tripal_go-info-box\">";
-      $content .= "<div class=\"tripal_expandableBox\">".
-            	   "<h3>GO terms assigned to this feature</h3>".
-                  "</div>";
-      $content .= "<div class=\"tripal_expandableBoxContent\">";
-      $content .= "<table class=\"feature-go-terms\">";
-      $content .= "  <tr>";
-      $content .= "    <th class=\"dbfieldname\">Accession</th>";
-      $content .= "    <th class=\"dbfieldname\">Category</th>";
-      $content .= "    <th class=\"dbfieldname\">Term</th>";
-      $content .= "  </tr>";
-      do {
-         $content .= "<tr>";
-         $content .= "  <td>GO:$term->accession</td>";
-         $content .= "  <td>$term->cvname</td>";
-         $content .= "  <td>$term->goterm</td>";
-         $content .= "</tr>";      
-      } while($term = db_fetch_object($results));
-      $content .= "</table>";
-      $content .= "</div></div>";
+   $i=0;
+   $terms = array();
+   while($term = db_fetch_object($results)){
+
+      $terms[$i++] = $term;
    }
-   return $content;
+   return $terms;
 }
 
 /*******************************************************************************
