@@ -1,0 +1,64 @@
+<?php
+
+/*******************************************************************************
+* tripal_bulk_loader_install
+*/
+function tripal_bulk_loader_install(){
+   drupal_install_schema('tripal_bulk_loader');
+}
+
+/*******************************************************************************
+* tripal_bulk_loader_uninstall
+*/
+function tripal_bulk_loader_uninstall(){
+   drupal_uninstall_schema('tripal_bulk_loader');
+}
+
+/*******************************************************************************
+* tripal_bulk_loader_schema
+*/
+function tripal_bulk_loader_schema() {
+	$schema = array();
+	$schema['tripal_bulk_loader'] = array(
+      'fields' => array(
+         'nid' => array(
+            'type' => 'int',
+            'unsigned' => TRUE,
+            'not null' => TRUE,
+			),
+         'loader_name' => array(
+            'type' => 'varchar',
+			),
+         'template_id' => array(
+            'type' => 'varchar',
+			),
+			'file' => array(
+				'type' => 'varchar',
+			)
+		),
+  		'primary key' => array('nid'),
+  		'unique keys' => array(
+    		'name' => array('loader_name')
+		),
+	);
+	$schema['tripal_bulk_loader_template'] = array(
+      'fields' => array(
+         'template_id' => array(
+            'type' => 'serial',
+            'unsigned' => TRUE,
+            'not null' => TRUE,
+			),
+			'name' => array(
+            'type' => 'varchar',
+			),
+         'template_array' => array(
+            'type' => 'varchar',
+			)
+		),
+  		'primary key' => array('template_id'),
+		'unique keys' => array(
+    		'name' => array('name')
+		),
+	);
+	return $schema;
+}
