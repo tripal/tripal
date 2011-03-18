@@ -48,6 +48,8 @@ $feature = $variables['node']->feature;
       </tr>
     <?php } ?>
   </table>
-  <?php }?>
+  <?php } else {?>
+    <div class="tripal-no-results">There are no object relationships for this feature</div>
+  <?php } ?> 
 </div>
 

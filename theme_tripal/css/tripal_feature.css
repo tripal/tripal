@@ -1,7 +1,7 @@
 #tripal_feature-featureloc_sequence,
 #tripal_feature-sequence-residues {
-  height: 500px;
-  overflow: scroll;
+  /*height: 500px;*/
+  /*overflow: scroll;*/
   background-color: #FFFFFF;
   font-family: monospace;
 }

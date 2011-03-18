@@ -8,6 +8,7 @@ if($enabled){
 ?>
 <div id="tripal_organism-feature_browser-box" class="tripal_organism-info-box tripal-info-box">
   <div class="tripal_organism-info-box-title tripal-info-box-title">Feature Browser</div>
+  <div class="tripal_organism-info-box-desc tripal-info-box-desc">The following browser provides a quick view for new visitors.  Use the searching mechanism to find specific features.</div>
    <?php if(count($features) > 0){ ?>
    <table id="tripal_organism-table-feature_browser" class="tripal_organism-table tripal-table tripal-table-horz">     
       <tr class="tripal_organism-table-odd-row tripal-table-even-row">

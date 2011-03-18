@@ -5,6 +5,11 @@
 .tripal-table {
    width: 100%; 
 }
+.tripal-table th, 
+.tripal-table td {
+   padding-left: 5px;
+   padding-right: 5px;
+}
 .tripal-table-horz {
    border-top: 2px solid #999999;
    border-bottom: 2px solid #999999; 

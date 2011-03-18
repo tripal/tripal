@@ -7,6 +7,7 @@ $feature = $variables['node']->feature;
 <div id="tripal_feature-featurelocs_as_parent-box" class="tripal_feature-info-box tripal-info-box">
   <div class="tripal_feature-info-box-title tripal-info-box-title">Features located relative to <?php print $feature->featurename;?></div>
   <div class="tripal_feature-info-box-desc tripal-info-box-desc">The features shown below are located relative to <?php print $feature->featurename;?></div>
+  <?php if(count($featurelocs_as_parent) > 0){ ?>
   <table id="tripal_feature-featurelocs_as_parent-table" class="tripal_feature-table tripal-table tripal-table-horz">
     <tr>
       <th>Name</th>
@@ -37,7 +38,10 @@ $feature = $variables['node']->feature;
          <?php
          $i++;  
       } ?>
-    </table>
+  </table>
+  <?php } else { ?>
+    <div class="tripal-no-results">There are no features located relative to <?php print $feature->featurename;?></div> 
+  <?php }?>
 </div>
 
 

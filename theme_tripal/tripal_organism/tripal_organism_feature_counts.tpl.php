@@ -15,7 +15,7 @@ if (Drupal.jsEnabled) {
 </script>
 <div id="tripal_organism-feature_counts-box" class="tripal_organism-info-box tripal-info-box">
   <div class="tripal_organism-info-box-title tripal-info-box-title">Feature Type Summary</div>
-  <div class="tripal_organism-info-box-desc tripal-info-box-desc">Hold your mouse over the feature type for a popup of the description.</div>
+  <div class="tripal_organism-info-box-desc tripal-info-box-desc">The following types of features are currently present in this database. Hold your mouse over the feature type for a popup with a description.</div>
    <?php if(count($types) > 0){ ?>
    <table id="tripal_organism-table-feature_counts" class="tripal_organism-table tripal-table tripal-table-horz">     
       <tr class="tripal_organism-table-odd-row tripal-table-even-row">

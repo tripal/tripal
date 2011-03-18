@@ -1,6 +1,3 @@
-//
-// Copyright 2009 Clemson University
-//
 
 if (Drupal.jsEnabled) {
    
@@ -10,8 +7,9 @@ if (Drupal.jsEnabled) {
 		   tripal_update_regex($("#edit-blastdb")[0]);
 		   tripal_set_genbank_style();
 	   }
-	   // Set blast hit alignment droppable box
-	   tripal_set_blast_subbox();
+      // hide the alignment information on the blast results box
+      $(".tripal_analysis_blast-info-hsp-desc").hide();
+
    });
   
    //------------------------------------------------------------
@@ -24,11 +22,32 @@ if (Drupal.jsEnabled) {
          type: 'POST',
          success: function(data){         
             $("#blast_db_" + db_id).html(data.update);
-            // make sure the newly added expandable boxes are closed
-            tripal_set_blast_subbox(db_id);
+            $(".tripal_analysis_blast-info-hsp-desc").hide();
             tripal_stopAjax();
          }
       });
+      return false;
+   }
+
+   //------------------------------------------------------------
+   // Update the blast results based on the user selection
+   function tripal_blast_toggle_alignment(analysis_id,hit_id){
+      var alignment_box = $("#tripal_analysis_blast-info-hsp-desc-"+analysis_id+"-"+hit_id);
+      var toggle_img = $("#tripal_analysis_blast-info-toggle-image-"+analysis_id+"-"+hit_id);
+	   var icon_url = toggle_img.attr("src");
+
+
+      if (alignment_box.is(':visible')) {
+         alignment_box.fadeOut('fast');
+	      var changed_icon_url = icon_url.replace(/arrow_d.png/,"arrow_r.png");
+	      toggle_img.attr("src", changed_icon_url);
+	   } else {
+         var width = alignment_box.parent().width();
+         alignment_box.css("width", width+'px');
+         alignment_box.fadeIn('slow');
+	      var icon_url = icon_url.replace(/arrow_r.png/,"arrow_d.png");
+	      toggle_img.attr("src", icon_url);
+	   }
       return false;
    }
    
@@ -94,7 +113,7 @@ if (Drupal.jsEnabled) {
 		tripal_set_genbank_style();  
    }
    // ------------------------------------------------------------
-   // Use genbank style parser. Hid regular expression text feilds
+   // Use genbank style parser. Hide regular expression text feilds
    function tripal_set_genbank_style (){
 	  // Disable regular expressions if genbank style parser is used (checked)
 	  if ($("#edit-gb-style-parser").is(":checked")) {
@@ -125,55 +144,8 @@ if (Drupal.jsEnabled) {
 	        $(this).css("cursor", "pointer");
 	     }
 	  );
-	  if (!db_id){
-		 $('.tripal_expandableSubBoxContent').hide();
-	     $('.blast-hit-arrow-icon').click(
-	        function() {
-   	        // Find the width of the table column for the tripal_expandableSubBoxContent
-	           var width = $(this).parent().parent().width();
-	           width -= 40;
- 	           // Traverse through html DOM objects to find tripal_expandableSubBoxContent and change its settings
-              var subbox = $(this).parent().parent().next().children().children();
-	           subbox.css("width", width + 'px');
-	           subbox.slideToggle('fast', function () {
-              var image = $(this).parent().parent().prev().children().children().children();
-	        	  var icon_url = image.attr("src");
-	        	  if (subbox.is(':visible')) {
-	        		 var changed_icon_url = icon_url.replace(/arrow_r.png/,"arrow_d.png");
-	        		 image.attr("src", changed_icon_url);
-	        	  } else {
-	        		 var icon_url = icon_url.replace(/arrow_d.png/,"arrow_r.png");
-	        		 image.attr("src", icon_url);
-	        	  }
-	           });
-	        }
-	     );
-	  // Update only the part of DOM objects that have been changed by ajax. This is a solution
-	  // to solve the problem that droppable subbox opened then closed immediately.
-	  } else {
-		  $("#blast_db_" + db_id + ' div.tripal_expandableSubBoxContent').hide();
-		  var changedObject = $("#blast_db_" + db_id + " img.blast-hit-arrow-icon");
-		  changedObject.click(
-		     function() {
-		        // Find the width of the table column for the tripal_expandableSubBoxContent
-				var width = $(this).parent().parent().width();
-			    width -= 40;
-			    // Traverse through html DOM objects to find tripal_expandableSubBoxContent and change its settings
-		        var subbox = $(this).parent().parent().next().next().children().children();
-		        subbox.css("width", width + 'px');
-		        subbox.slideToggle('fast', function () {
-		        	var image = $(this).parent().parent().prev().prev().children().children();
-		        	var icon_url = image.attr("src");
-		        	if (subbox.is(':visible')) {
-		        		var changed_icon_url = icon_url.replace(/arrow_r.png/,"arrow_d.png");
-		        		image.attr("src", changed_icon_url);
-		        	} else {
-		        		var icon_url = icon_url.replace(/arrow_d.png/,"arrow_r.png");
-		        		image.attr("src", icon_url);
-		        	}
-		        });
-		     }
-		  );
-	  }
+     $('.blast-hit-arrow-icon').click(function() {
+	        
+     });
    }
 }

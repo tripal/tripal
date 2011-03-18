@@ -1,14 +1,14 @@
 <?php
-  $form = $variables['tripal_analysis_go']['form']['value'];
-  $form_status = $variables['tripal_analysis_go']['form']['status'];
+  $form = $variables['tripal_analysis_go']['select_form']['form'];
+  $has_results = $variables['tripal_analysis_go']['select_form']['has_results'];
 ?>
 <div id="tripal_organism-go_summary-box" class="tripal_organism-info-box tripal-info-box">
   <div  class="tripal_organism-info-box-title tripal-info-box-title">GO Analysis Reports</div>
   <?php 
-     if($form_status){
+     if($has_results){
         print $form;
      } else {
-       ?><div class="tripal-no-results"><?php print $form?></div><?php
+       ?><div class="tripal-no-results">There are no GO reports avaialble</div><?php
      }
   ?>
   <div id="tripal_analysis_go_org_charts"></div>    

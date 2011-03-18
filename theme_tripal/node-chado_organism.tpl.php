@@ -96,6 +96,7 @@ if (Drupal.jsEnabled) {
   }
   #tripal_organism_toc_title {
      font-size: 1.5em;
+     line-height: 110%;
   }
   #tripal_organism_toc_desc {
     font-style: italic;
@@ -139,7 +140,7 @@ if (Drupal.jsEnabled) {
 
 <!-- Table of contents -->
 <div id="tripal_organism_toc">
-   <div id="tripal_organism_toc_title"><?php print $organism->genus ?> <?php print $organism->species ?> Resources</div>
+   <div id="tripal_organism_toc_title">Resources for <br><?php print $organism->genus ?> <?php print $organism->species ?></div>
    <span id="tripal_organism_toc_desc">Select a link below for more information</span>
    <ul id="tripal_organism_toc_list">
 

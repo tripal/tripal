@@ -90,6 +90,7 @@ if (Drupal.jsEnabled) {
   }
   #tripal_feature_toc_title {
      font-size: 1.5em;
+     line-height: 110%;
   }
   #tripal_feature_toc_desc {
     font-style: italic;
@@ -106,6 +107,7 @@ if (Drupal.jsEnabled) {
      padding: 20px;
      min-height: 500px;
      margin-right: 10px;
+     margin-bottom: 10px;
      border-style:solid;
      border-width:1px;
   }
@@ -155,7 +157,7 @@ if (Drupal.jsEnabled) {
 
 <!-- Table of contents -->
 <div id="tripal_feature_toc">
-   <div id="tripal_feature_toc_title"><?php print $feature->featurename ?> Resources</div>
+   <div id="tripal_feature_toc_title">Resources for <?php print $feature->cvname?><br><?php print $feature->featurename ?></div>
    <span id="tripal_feature_toc_desc">Select a link below for more information</span>
    <ul id="tripal_feature_toc_list">
 

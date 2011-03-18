@@ -36,6 +36,8 @@ $feature = $variables['node']->feature;
       $i++;  
     }?>
   </table>
-  <?php } ?> 
+  <?php } else { ?>
+    <div class="tripal-no-results">There are no subject relationships for this feature</div> 
+  <?php }?>
 </div>
 
