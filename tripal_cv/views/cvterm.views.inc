@@ -86,7 +86,7 @@ function retrieve_cvterm_views_data() {
        'handler' => 'views_handler_sort',
      ),
      'filter' => array(
-       'handler' => 'views_handler_filter_chado_select_string',
+       'handler' => 'views_handler_filter_chado_select_cvterm_name',
      ),
      'argument' => array(
        'handler' => 'views_handler_argument_string',

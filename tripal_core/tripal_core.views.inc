@@ -29,6 +29,9 @@ function tripal_core_views_handlers() {
      'views_handler_filter_chado_select_string' => array(
       'parent' => 'views_handler_filter_string',
      ),
+     'views_handler_filter_chado_select_cvterm_name' => array(
+      'parent' => 'views_handler_filter_string',
+     ),
      'views_handler_filter_chado_boolean' => array(
       'parent' => 'views_handler_filter_boolean_operator',
      ),

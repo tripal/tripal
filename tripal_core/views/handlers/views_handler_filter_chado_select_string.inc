@@ -73,16 +73,4 @@ class views_handler_filter_chado_select_string extends views_handler_filter_stri
 
   }
 
-
-  /**
-   * Handle the 'right' side fo the exposed options form.
-   * Removing the option to make this field Optional. Instead it is always optional.
-   * This was done because the optional field didn't allow you to select <Any> as the default
-   *   which was a needed feature.
-   */
-  function expose_form_right(&$form, &$form_state) {
-    parent::expose_form_right($form, $form_state);
-    
-    unset($form['expose']['optional']);
-  }
 }
