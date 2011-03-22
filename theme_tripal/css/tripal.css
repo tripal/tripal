@@ -16,39 +16,39 @@
 }
 
 /* settings for vertical tables (headers across left-side) */
-.tripal-info-box table.tripal-table-vert .tripal-table-even-row th {
+table.tripal-table-vert .tripal-table-even-row th {
    background-color: #EEEEEE;
    font-weight: none;
    text-align: right;
 }
-.tripal-info-box table.tripal-table-vert .tripal-table-odd-row th {
+table.tripal-table-vert .tripal-table-odd-row th {
    background-color: #FFFFFF;
    text-align: right;
 }
-.tripal-info-box table.tripal-table-vert .tripal-table-even-row {
+table.tripal-table-vert .tripal-table-even-row {
    background-color: #EEEEEE;
    border-top: 1px solid #CCCCCC;
    border-bottom: 1px solid #CCCCCC;
 }
-.tripal-info-box table.tripal-table-vert .tripal-table-odd-row {
+table.tripal-table-vert .tripal-table-odd-row {
    background-color: #FFFFFF;
    border-top: 1px solid #CCCCCC;
    border-bottom: 1px solid #CCCCCC;
 }
 /* settings for horizontal tables (headers across top) */
-.tripal-info-box table.tripal-table-horz th {
+table.tripal-table-horz th {
    background-color: #EEEEFF;
    font-weight: none;
    text-align: left;
 }
-.tripal-info-box table.tripal-table-horz .tripal-table-even-row {
+table.tripal-table-horz .tripal-table-even-row {
    background-color: #FFFFFF;
    font-weight: none;
    text-align: left;
    border-top: 1px solid #CCCCCC;
    border-bottom: 1px solid #CCCCCC;
 }
-.tripal-info-box table.tripal-table-horz .tripal-table-odd-row {
+table.tripal-table-horz .tripal-table-odd-row {
    background-color: #EEEEEE;
    text-align: left;
    border-top: 1px solid #CCCCCC;

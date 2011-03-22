@@ -14,9 +14,9 @@ $feature = $variables['node']->feature;
     <?php
     $i = 0; 
     foreach ($synonyms as $result){
-      $class = 'tripal_feature-table-odd-row tripal-table-odd-row';
+      $class = 'tripal-table-odd-row';
       if($i % 2 == 0 ){
-         $class = 'tripal_feature-table-odd-row tripal-table-even-row';
+         $class = 'tripal-table-even-row';
       }
       ?>
       <tr class="<?php print $class ?>">
