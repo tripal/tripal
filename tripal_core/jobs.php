@@ -1,12 +1,10 @@
 <?php
-//
-// Copyright 2009 Clemson University
-//
 
 /**
 *
 *
 * @ingroup tripal_core
+* @ingroup tripal_api
 */
 function tripal_add_job ($job_name,$modulename,$callback,$arguments,$uid,
    $priority = 10){
@@ -35,6 +33,7 @@ function tripal_add_job ($job_name,$modulename,$callback,$arguments,$uid,
 *   
 *
 * @ingroup tripal_core
+* @ingroup tripal_api
 */
 function tripal_job_set_progress($job_id,$percentage){
 
@@ -186,6 +185,7 @@ function tripal_jobs_launch (){
 *
 *
 * @ingroup tripal_core
+* @ingroup tripal_api
 */
 function tripal_jobs_check_running () {
    // iterate through each job that has not ended
@@ -217,6 +217,8 @@ function tripal_jobs_check_running () {
 
 /**
 *
+* @ingroup tripal_core
+* @ingroup tripal_api
 */
 function tripal_jobs_rerun ($job_id){
    global $user;
@@ -233,6 +235,8 @@ function tripal_jobs_rerun ($job_id){
 
 /**
 *
+* @ingroup tripal_core
+* @ingroup tripal_api
 */
 function tripal_jobs_cancel ($job_id){
    $sql = "select * from {tripal_jobs} where job_id = %d";
