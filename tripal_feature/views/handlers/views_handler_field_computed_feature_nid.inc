@@ -1,5 +1,11 @@
 <?php
 
+/**
+ *
+ *
+ * @ingroup tripal_feature
+ * @ingroup views_field_handlers
+ */
 class views_handler_field_computed_feature_nid extends views_handler_field_numeric {
 	function construct() {
 		parent::construct();

@@ -30,8 +30,10 @@ if(isset($arguments['f'])){
 }
    
 
-/************************************************************************
+/**
  *
+ *
+ * @ingroup tripal_feature
  */
 function tripal_feature_sync_features ($max_sync = 0, $job_id = NULL){
    //print "Syncing features (max of $max_sync)\n";
@@ -115,6 +117,11 @@ function tripal_feature_sync_features ($max_sync = 0, $job_id = NULL){
    return '';
 }
 
+/**
+ *
+ *
+ * @ingroup tripal_feature
+ */
 function tripal_feature_sync_feature ($feature_id){
 //   print "\tfeature $feature_id\n";
 
@@ -264,8 +271,10 @@ function tripal_feature_sync_feature ($feature_id){
 
 
 
-/*******************************************************************************
+/**
  *  Returns a list of organisms that are currently synced with Drupal
+ *
+ * @ingroup tripal_feature
  */
 function organism_get_synced() {
 

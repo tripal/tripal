@@ -1,16 +1,14 @@
 <?php
-
-/****************************************************************************
- * @section Chado Table Descriptions
- ****************************************************************************/
  
-/****************************************************************************
+/**
  * Implements hook_chado_feature_schema()
  * Purpose: To add descriptions and foreign keys to default table description
  * Note: This array will be merged with the array from all other implementations
  *
  * @return
  *    Array describing the feature table
+ *
+ * @ingroup tripal_feature
  */
 function tripal_stock_chado_feature_schema() {
   $description = array();

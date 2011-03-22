@@ -1,9 +1,12 @@
 <?php
 
-/*************************************************************************
+/**
  * Purpose: Provide Guidance to new Tripal Admin
  *
- * @return HTML Formatted text
+ * @return 
+ *   HTML Formatted text
+ *
+ * @ingroup tripal_feature
  */
 function tripal_feature_module_description_page() {
 
@@ -29,8 +32,10 @@ function tripal_feature_module_description_page() {
   return $text;
 }
 
-/************************************************************************
+/**
  *
+ *
+ * @ingroup tripal_feature
  */
 function tripal_feature_admin () {
 
@@ -134,8 +139,10 @@ function tripal_feature_admin () {
    return system_settings_form($form);
 }
 
-/************************************************************************
+/**
  *
+ *
+ * @ingroup tripal_feature
  */
 function tripal_feature_admin_validate($form, &$form_state) {
    global $user;  // we need access to the user info
@@ -171,8 +178,10 @@ function tripal_feature_admin_validate($form, &$form_state) {
       variable_set('tripal_feature_summary_setting',$form_state['values']['feature_summary']);
    }
 }
-/************************************************************************
+/**
  *
+ *
+ * @ingroup tripal_feature
  */
 function get_tripal_feature_admin_form_cleanup_set(&$form) {
    $form['cleanup'] = array(
@@ -198,8 +207,11 @@ function get_tripal_feature_admin_form_cleanup_set(&$form) {
       '#weight' => 2,
    );
 }
-/************************************************************************
+
+/**
  *
+ *
+ * @ingroup tripal_feature
  */
 function get_tripal_feature_admin_form_reindex_set(&$form) {
    $form['reindex'] = array(
@@ -222,8 +234,11 @@ function get_tripal_feature_admin_form_reindex_set(&$form) {
       '#weight' => 2,
    );
 }
-/************************************************************************
+
+/**
  *
+ *
+ * @ingroup tripal_feature
  */
 function get_tripal_feature_admin_form_taxonomy_set (&$form) {
 
@@ -265,8 +280,11 @@ function get_tripal_feature_admin_form_taxonomy_set (&$form) {
    );
 
 }
-/************************************************************************
+
+/**
  *
+ *
+ * @ingroup tripal_feature
  */
 function get_tripal_feature_admin_form_sync_set (&$form) {
 
@@ -313,9 +331,11 @@ function get_tripal_feature_admin_form_sync_set (&$form) {
 
 }
 
-/*************************************************************************
-*
-*/
+/**
+ *
+ *
+ * @ingroup tripal_feature
+ */
 function tripal_feature_aggregator_page(){
    $add_url = url("admin/tripal/tripal_feature/aggregate/new");
    $output = "<a href=\"$add_url\">Add a new aggregator</a>"; 
@@ -323,9 +343,12 @@ function tripal_feature_aggregator_page(){
    $output .= '<div id="db-edit-div">Please select an aggregator base type to view or edit</div>';
    return $output;
 }
-/*************************************************************************
-*
-*/
+
+/**
+ *
+ *
+ * @ingroup tripal_feature
+ */
 function tripal_feature_aggregator_select_form(){
 
 	// get a list of base terms from chado for user to choose
@@ -357,9 +380,12 @@ function tripal_feature_aggregator_select_form(){
 
    return $form;
 }
-/*************************************************************************
-*
-*/
+
+/**
+ *
+ *
+ * @ingroup tripal_feature
+ */
 function tripal_feature_aggregator_form(&$form_state = NULL,$type_id = NULL){
 
    // get this requested database
@@ -429,9 +455,11 @@ function tripal_feature_aggregator_form(&$form_state = NULL,$type_id = NULL){
    return $form;
 }
 
-/************************************************************************
-*
-*/
+/**
+ *
+ *
+ * @ingroup tripal_feature
+ */
 function tripal_feature_aggregator_form_validate($form, &$form_state){
    $type_id  = $form_state['values']['type_id'];
    $base     = $form_state['values']['base'];
@@ -476,9 +504,12 @@ function tripal_feature_aggregator_form_validate($form, &$form_state){
       }
    }   
 }
-/************************************************************************
-*
-*/
+
+/**
+ *
+ *
+ * @ingroup tripal_feature
+ */
 function tripal_feature_aggregator_form_submit($form, &$form_state){
 
    $type_id  = $form_state['values']['type_id'];
@@ -543,9 +574,12 @@ function tripal_feature_aggregator_form_submit($form, &$form_state){
    } 
    return '';
 }
-/*************************************************************************
-*
-*/
+
+/**
+ *
+ *
+ * @ingroup tripal_feature
+ */
 function tripal_feature_aggregator_ajax_edit (){ 
    // get the database id, build the form and then return the JSON object
    $type_id = $_POST['type_id'];

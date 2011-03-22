@@ -1,13 +1,10 @@
 <?php
 
-/*************************************************************************************************************
- * @section
- * Deals with Adding Properties
- */
-
 /**
  * Implements Hook_form()
  * Handles adding of Properties for features
+ *
+ * @ingroup tripal_feature
  */
 function tripal_getfeature_add_ALL_property_page($node) {
   $output = '';
@@ -21,9 +18,12 @@ function tripal_getfeature_add_ALL_property_page($node) {
   $output .= drupal_get_form('tripal_feature_implement_add_chado_properties_navigate', 'properties', $node->nid);
   return $output;
 }
+
 /**
-* 
-*/
+ * 
+ *
+ * @ingroup tripal_feature
+ */
 function tripal_feature_add_ONE_property_form($form_state, $node) {
   $form = array();
   $feature_id = $node->feature->feature_id;
@@ -65,10 +65,12 @@ function tripal_feature_add_ONE_property_form($form_state, $node) {
 
   return $form;
 }
-/**
-* 
-*/
 
+/**
+ * 
+ *
+ * @ingroup tripal_feature
+ */
 function tripal_feature_add_ONE_property_form_validate($form, &$form_state) {
 
   // Only Require if Adding Property
@@ -97,10 +99,12 @@ function tripal_feature_add_ONE_property_form_validate($form, &$form_state) {
   } // if add Property
 
 }
-/**
-* 
-*/
 
+/**
+ * 
+ *
+ * @ingroup tripal_feature
+ */
 function tripal_feature_add_ONE_property_form_submit($form, &$form_state) {
 	
   // if there is a property add it (only won't be a property if clicked next step w/ no property)
@@ -127,11 +131,11 @@ function tripal_feature_add_ONE_property_form_submit($form, &$form_state) {
   } //end of if property to add
 }
 
-/*************************************************************************************************************
- * @section
- * Deals with Editing and Deleting Properties
+/**
+ *
+ *
+ * @ingroup tripal_feature
  */
-
 function tripal_feature_edit_ALL_properties_page($node) {
   $output = '';
 
@@ -147,6 +151,8 @@ function tripal_feature_edit_ALL_properties_page($node) {
 /**
  * Implements Hook_form()
  * Handles adding of Properties for features
+ *
+ * @ingroup tripal_feature
  */
 function tripal_feature_edit_ALL_properties_form($form_state, $node) {
   $form = array();
@@ -211,10 +217,12 @@ function tripal_feature_edit_ALL_properties_form($form_state, $node) {
 
   return $form;
 }
-/**
-* 
-*/
 
+/**
+ * 
+ *
+ * @ingroup tripal_feature
+ */
 function tripal_feature_edit_ALL_properties_form_submit($form, &$form_state) {
 
   if ($form_state['clicked_button']['#value'] == t('Update All Properties') ) {
@@ -234,10 +242,12 @@ function tripal_feature_edit_ALL_properties_form_submit($form, &$form_state) {
 
   
 }
-/**
-* 
-*/
 
+/**
+ * 
+ *
+ * @ingroup tripal_feature
+ */
 function tripal_feature_update_property($featureprop_id, $cvterm_id, $value, $preferred, $nid) {
 
 	$previous_db = tripal_db_set_active('chado');
@@ -277,10 +287,12 @@ function tripal_feature_update_property($featureprop_id, $cvterm_id, $value, $pr
     drupal_execute('chado_feature_node_form', $node_form_state, $node);  
 
 }
-/**
-* 
-*/
 
+/**
+ * 
+ *
+ * @ingroup tripal_feature
+ */
 function tripal_feature_delete_property($featureprop_id) {
 
   $previous_db = tripal_db_set_active('chado');
@@ -291,10 +303,12 @@ function tripal_feature_delete_property($featureprop_id) {
   tripal_db_set_active($previous_db);
 
 }
-/**
-* 
-*/
 
+/**
+ * 
+ *
+ * @ingroup tripal_feature
+ */
 function theme_tripal_feature_edit_ALL_properties_form ($form) {
   $output = '';
 
@@ -316,13 +330,10 @@ function theme_tripal_feature_edit_ALL_properties_form ($form) {
   return $output;
 }
 
-/*************************************************************************************************************
- * @section
- * Supplimentary functions
- */
-
 /**
  * 
+ *
+ * @ingroup tripal_feature
  */
 function list_properties_for_node($properties) {
 

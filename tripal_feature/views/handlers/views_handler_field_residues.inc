@@ -2,6 +2,7 @@
 /**
  * A handler to provide proper displays for sequence residues.
  *
+ * @ingroup tripal_feature
  * @ingroup views_field_handlers
  */
 class views_handler_field_residues extends views_handler_field {

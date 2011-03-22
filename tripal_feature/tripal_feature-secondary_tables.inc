@@ -1,6 +1,11 @@
 <?php
 // $Id$
 
+/**
+ *
+ *
+ * @ingroup tripal_feature
+ */
 function tripal_feature_implement_back_to_feature_button($form_state, $nid) {
   $form = array();
 
@@ -16,15 +21,21 @@ function tripal_feature_implement_back_to_feature_button($form_state, $nid) {
 
   return $form;
 }
-/*******************************************************************************
-*
-*/
+
+/**
+ *
+ *
+ * @ingroup tripal_feature
+ */
 function tripal_feature_implement_back_to_feature_button_submit($form, $form_state) {
   drupal_goto('node/'.$form_state['values']['nid']);
 }
-/*******************************************************************************
-*
-*/
+
+/**
+ *
+ *
+ * @ingroup tripal_feature
+ */
 function tripal_feature_implement_add_chado_properties_progress($current) {
 
     $value = '<div class="form_progress"><div class="form_progress-text">'; 
@@ -52,9 +63,12 @@ function tripal_feature_implement_add_chado_properties_progress($current) {
     return $value;
 
 }
-/*******************************************************************************
-*
-*/
+
+/**
+ *
+ *
+ * @ingroup tripal_feature
+ */
 function tripal_feature_implement_add_chado_properties_navigate($form_state, $step, $nid) {
   $form = array();
 
@@ -115,9 +129,12 @@ function tripal_feature_implement_add_chado_properties_navigate($form_state, $st
 
   return $form;
 }
-/*******************************************************************************
-*
-*/
+
+/**
+ *
+ *
+ * @ingroup tripal_feature
+ */
 function tripal_feature_implement_add_chado_properties_navigate_submit($form, $form_state) {
 
   $raw_steps = preg_split('/::/', $form_state['values']['steps']); 
@@ -165,9 +182,11 @@ function tripal_feature_implement_add_chado_properties_navigate_submit($form, $f
 
 }
 
-/*************************************************************************************************************
+/**
  * Implements Hook_form()
  * Handles setting the is_obsolete property of stocks
+ *
+ * @ingroup tripal_feature
  */
 function tripal_feature_is_obsolete_form($node, $stock_id) {
 
@@ -184,9 +203,12 @@ function tripal_feature_is_obsolete_form($node, $stock_id) {
 
   return $form;
 }
-/*******************************************************************************
-*
-*/
+
+/**
+ *
+ *
+ * @ingroup tripal_feature
+ */
 function tripal_feature_is_obsolete_form_submit($form, &$form_state) {
 
   $previous_db = db_set_active('chado');

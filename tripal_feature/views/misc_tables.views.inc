@@ -15,6 +15,8 @@
         ),
       ); 
  *   @endcode
+ *
+ * @ingroup tripal_feature
  */
 function retrieve_feature_misc_tables_views_data() {
   $data = array();

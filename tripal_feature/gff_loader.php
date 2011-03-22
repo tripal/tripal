@@ -1,14 +1,22 @@
 <?php
 
-
+/**
+ * @defgroup gff3_loader GFF3 Feature Loader
+ * @{
+ * Provides gff3 loading functionality. Creates features based on their specification in a GFF3 file.
+ * @}
+ */
 // TODO: The rank column on the feature_relationship table needs to be used to
 //       make sure the ordering of CDS (exons) is correct.
 
 // The entries in the GFF file are not in order so the order of the relationships
 // is not put in correctly.
-/*************************************************************************
-*
-*/
+/**
+ *
+ *
+ * @ingroup tripal_feature
+ * @ingroup gff3_loader
+ */
 function tripal_core_gff3_load_form (){
 
    $form['gff_file']= array(
@@ -124,9 +132,13 @@ function tripal_core_gff3_load_form (){
 
    return $form;
 }
-/*************************************************************************
-*
-*/
+
+/**
+ *
+ *
+ * @ingroup tripal_feature
+ * @ingroup gff3_loader
+ */
 function tripal_core_gff3_load_form_validate ($form, &$form_state){
 
    $gff_file = $form_state['values']['gff_file'];
@@ -154,9 +166,12 @@ function tripal_core_gff3_load_form_validate ($form, &$form_state){
        form_set_error('add_only',t("Please select only one checkbox from the import options section"));
    }
 }
-/*************************************************************************
-*
-*/
+
+/**
+ *
+ * @ingroup tripal_feature
+ * @ingroup gff3_loader
+ */
 function tripal_core_gff3_load_form_submit ($form, &$form_state){
    global $user;
 
@@ -187,9 +202,13 @@ function tripal_core_gff3_load_form_submit ($form, &$form_state){
 
    return '';
 }
-/*************************************************************************
-*
-*/
+
+/**
+ *
+ *
+ * @ingroup tripal_feature
+ * @ingroup gff3_loader
+ */
 function tripal_core_load_gff3($gff_file, $organism_id,$analysis_id,$add_only =0, 
    $update = 0, $refresh = 0, $remove = 0, $job = NULL)
 {
@@ -442,9 +461,13 @@ function tripal_core_load_gff3($gff_file, $organism_id,$analysis_id,$add_only =0
    tripal_db_set_active($previous_db);
    return '';
 }
-/*************************************************************************
-*
-*/
+
+/**
+ *
+ *
+ * @ingroup tripal_feature
+ * @ingroup gff3_loader
+ */
 function tripal_core_load_gff3_parents($feature,$cvterm,$parents,$gff_features,$organism_id){
 
    $uname = $feature->uniquename;
@@ -493,9 +516,13 @@ function tripal_core_load_gff3_parents($feature,$cvterm,$parents,$gff_features,$
       }
    }
 }
-/*************************************************************************
-*
-*/
+
+/**
+ *
+ *
+ * @ingroup tripal_feature
+ * @ingroup gff3_loader
+ */
 function tripal_core_load_gff3_dbxref($feature,$dbxrefs){
 
    // iterate through each of the dbxrefs
@@ -563,9 +590,12 @@ function tripal_core_load_gff3_dbxref($feature,$dbxrefs){
    return 1;
 }
 
-/*************************************************************************
-*
-*/
+/**
+ *
+ *
+ * @ingroup tripal_feature
+ * @ingroup gff3_loader
+ */
 function tripal_core_load_gff3_alias($feature,$aliases){
 
    // make sure we have a 'synonym_type' vocabulary
@@ -660,9 +690,13 @@ function tripal_core_load_gff3_alias($feature,$aliases){
    }
    return 1;
 }
-/*************************************************************************
-*
-*/
+
+/**
+ *
+ *
+ * @ingroup tripal_feature
+ * @ingroup gff3_loader
+ */
 function tripal_core_load_gff3_feature($organism,$analysis_id,$cvterm,$uniquename,$name,
    $residues,$is_analysis='f',$is_obsolete='f',$add_only,$generate_name)  {
 
@@ -747,9 +781,13 @@ function tripal_core_load_gff3_feature($organism,$analysis_id,$cvterm,$uniquenam
 
    return $feature;
 }
-/*************************************************************************
-*
-*/
+
+/**
+ *
+ *
+ * @ingroup tripal_feature
+ * @ingroup gff3_loader
+ */
 function tripal_core_load_gff3_featureloc($feature,$organism,$landmark,$fmin,
    $fmax,$strand,$phase,$is_fmin_partial,$is_fmax_partial,$residue_info,$locgroup)
 {
@@ -827,7 +865,5 @@ exit;
    }
    return 1;
 }
-/*************************************************************************
-*
-*/
+
 

@@ -1,5 +1,18 @@
 <?php
 
+/**
+ * @defgroup fasta_loader FASTA Feature Loader
+ * @{
+ * Provides fasta loading functionality. Creates features based on their specification in a fasta file.
+ * @}
+ */
+ 
+/**
+ *
+ *
+ * @ingroup tripal_feature
+ * @ingroup fasta_loader
+ */
 function tripal_feature_fasta_load_form (){
 
    $form['fasta_file']= array(
@@ -183,9 +196,13 @@ function tripal_feature_fasta_load_form (){
    );
    return $form;   
 }
-/*************************************************************************
-*
-*/
+
+/**
+ *
+ *
+ * @ingroup tripal_feature
+ * @ingroup fasta_loader
+ */
 function tripal_feature_fasta_load_form_validate($form, &$form_state){
    $fasta_file = trim($form_state['values']['fasta_file']);
    $organism_id  = $form_state['values']['organism_id'];
@@ -251,9 +268,13 @@ function tripal_feature_fasta_load_form_validate($form, &$form_state){
    // check to make sure the 'relationship' and 'sequence' ontologies are loaded
    $form_state['storage']['dfile'] = $dfile;
 }
-/*************************************************************************
-*
-*/
+
+/**
+ *
+ *
+ * @ingroup tripal_feature
+ * @ingroup fasta_loader
+ */
 function tripal_feature_fasta_load_form_submit ($form, &$form_state){
    global $user;
 
@@ -276,9 +297,13 @@ function tripal_feature_fasta_load_form_submit ($form, &$form_state){
    tripal_add_job("Import FASTA file: $dfile",'tripal_core',
       'tripal_feature_load_fasta',$args,$user->uid);
 }
-/*************************************************************************
-*
-*/
+
+/**
+ *
+ *
+ * @ingroup tripal_feature
+ * @ingroup fasta_loader
+ */
 function tripal_feature_load_fasta($dfile, $organism_id, $type,
    $library_id, $re_name, $re_uname, $re_accession, $db_id, $rel_type,
    $re_subject, $parent_type, $update,$uid, $job = NULL)
@@ -352,9 +377,13 @@ function tripal_feature_load_fasta($dfile, $organism_id, $type,
       $source,$residues,$update,$re_name);
    return '';
 }
-/*************************************************************************
-*
-*/
+
+/**
+ *
+ *
+ * @ingroup tripal_feature
+ * @ingroup fasta_loader
+ */
 function tripal_feature_fasta_loader_insert_feature($name,$uname,$db_id,$accession,
               $parent,$rel_type,$parent_type,$library_id,$organism_id,$type, 
               $source,$residues,$update,$re_name) 

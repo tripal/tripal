@@ -48,8 +48,10 @@ if(isset($arguments['i'])){
 
 }
 
-/************************************************************************
+/**
  *
+ *
+ * @ingroup tripal_feature
  */
 function tripal_features_reindex ($max_sync,$job_id = NULL){
    $i = 0;
@@ -120,8 +122,10 @@ function tripal_features_reindex ($max_sync,$job_id = NULL){
    return '';
 }
 
-/************************************************************************
+/**
  *
+ *
+ * @ingroup tripal_feature
  */
 function tripal_feature_index_feature ($feature_id,$nid){
    #print "\tfeature $feature_id nid $nid\n";

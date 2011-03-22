@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * @defgroup tripal_feature Feature Module
+ * @{
+ * Provides functions for managing chado features including creating details pages for each feature
+ */
+ 
 require_once "tripal_feature.admin.inc";
 require_once "syncFeatures.php";
 require_once "indexFeatures.php";
@@ -14,9 +20,10 @@ require_once "tripal_feature-relationships.inc";
 require_once "tripal_feature-db_references.inc";
 
 
-/*************************************************************************
-*
-*/
+/**
+ *
+ * @ingroup tripal_feature
+ */
 function tripal_feature_init(){
 
    // add the jGCharts JS and CSS
@@ -27,11 +34,14 @@ function tripal_feature_init(){
                                   '/css/tripal_feature.css');
 }
 
-/*************************************************************************
+/**
  * Implements hook_views_api()
+ *
  * Purpose: Essentially this hook tells drupal that there is views support for
  *  for this module which then includes tripal_db.views.inc where all the
  *  views integration code is
+ *
+ * @ingroup tripal_feature
  */ 
 function tripal_feature_views_api() {
    return array(
@@ -39,11 +49,18 @@ function tripal_feature_views_api() {
    );
 }
 
-/************************************************************************
+/**
  * Display help and module information
- * @param path which path of the site we're displaying help
- * @param arg array that holds the current path as would be returned from arg() function
- * @return help text for the path
+ *
+ * @param 
+ *   path which path of the site we're displaying help
+ * @param 
+ *   arg array that holds the current path as would be returned from arg() function
+ *
+ * @return 
+ *   help text for the path
+ *
+ * @ingroup tripal_feature
  */
 function tripal_feature_help($path, $arg) {
    $output = '';
@@ -55,9 +72,11 @@ function tripal_feature_help($path, $arg) {
    return $output;
 }
 
-/************************************************************************
+/**
  *  Provide information to drupal about the node types that we're creating
  *  in this module
+ *
+ * @ingroup tripal_feature
  */
 function tripal_feature_node_info() {
    $nodes = array();
@@ -75,10 +94,12 @@ function tripal_feature_node_info() {
    return $nodes;
 }
 
-/************************************************************************
+/**
  *  Set the permission types that the chado module uses.  Essentially we
  *  want permissionis that protect creation, editing and deleting of chado
  *  data objects
+ *
+ * @ingroup tripal_feature
  */
 function tripal_feature_perm(){
    return array(
@@ -90,8 +111,10 @@ function tripal_feature_perm(){
    );
 }
 
-/************************************************************************
+/**
  *  Set the permission types that the module uses.
+ *
+ * @ingroup tripal_feature
  */
 function chado_feature_access($op, $node, $account) {
    if ($op == 'create') {
@@ -115,10 +138,12 @@ function chado_feature_access($op, $node, $account) {
    }
    return FALSE;
 }
-/************************************************************************
+/**
  *  Menu items are automatically added for the new node types created
  *  by this module to the 'Create Content' Navigation menu item.  This function
  *  adds more menu items needed for this module.
+ *
+ * @ingroup tripal_feature
  */
 function tripal_feature_menu() {
    $items = array();
@@ -186,7 +211,7 @@ function tripal_feature_menu() {
     'type' => MENU_CALLBACK
   );
   //Edit/Deleting Secondary Properties-------------
-/*
+/**
   $items['node/%tf_node/tf_edit_properties'] = array(
     'title' => t('Edit Properties'),
     'description' => t('Settings for Features'),
@@ -243,11 +268,13 @@ function tripal_feature_menu() {
    return $items;
 }
 
-/*************************************************************************
+/**
  * Implements Menu wildcard_load hook
  * Purpose: Allows the node ID of a chado feature to be dynamically 
  *   pulled from the path. The node is loaded from this node ID
  *   and supplied to the page as an arguement
+ *
+ * @ingroup tripal_feature
  */
 function tf_node_load($nid) {
   if (is_numeric($nid)) {
@@ -258,9 +285,11 @@ function tf_node_load($nid) {
   }
   return FALSE;
 }
-/*************************************************************************
-*
-*/
+/**
+ *
+ *
+ * @ingroup tripal_feature
+ */
 function tripal_feature_block($op = 'list', $delta = 0, $edit=array()){
    switch($op) {
       case 'list':
@@ -364,10 +393,12 @@ function tripal_feature_block($op = 'list', $delta = 0, $edit=array()){
 
    }
 }
-/************************************************************************
+/**
  *  When a new chado_feature node is created we also need to add information
  *  to our chado_feature table.  This function is called on insert of a new node
  *  of type 'chado_feature' and inserts the necessary information.
+ *
+ * @ingroup tripal_feature
  */
 function chado_feature_insert($node){
    // remove spaces, newlines from residues
@@ -425,7 +456,10 @@ function chado_feature_insert($node){
       db_query($sql,$node->nid,$node->vid,$feature->feature_id);
    }
 }
-/************************************************************************
+/**
+ *
+ *
+ * @ingroup tripal_feature
  */
 function chado_feature_delete($node){
    // get feature_id so we can remove it from chado database
@@ -460,7 +494,10 @@ function chado_feature_delete($node){
       "chado");
 
 }
-/************************************************************************
+/**
+ *
+ *
+ * @ingroup tripal_feature
  */
 function chado_feature_update($node){
    if($node->revision){
@@ -500,8 +537,10 @@ function chado_feature_update($node){
       chado_feature_add_synonyms($node->synonyms,$feature->feature_id);
    }
 }
-/************************************************************************
+/**
  *
+ *
+ * @ingroup tripal_feature
  */
 function chado_feature_add_synonyms($synonyms,$feature_id){
 
@@ -567,8 +606,10 @@ drupal_set_message($synonyms);
    return $error;
 
 }
-/************************************************************************
+/**
  *
+ *
+ * @ingroup tripal_feature
  */
 function chado_feature_add_gbaccession($accession,$feature_id){
 
@@ -627,8 +668,10 @@ function chado_feature_add_gbaccession($accession,$feature_id){
    return $error;
 }
 
-/************************************************************************
+/**
  *
+ *
+ * @ingroup tripal_feature
  */
 function chado_feature_form ($node,$param){
    $type = node_get_types('type', $node);
@@ -778,8 +821,10 @@ function chado_feature_form ($node,$param){
    );
    return $form;
 }
-/************************************************************************
+/**
  *
+ *
+ * @ingroup tripal_feature
  */
 function chado_feature_validate($node){
    $result = 0;
@@ -833,9 +878,11 @@ function chado_feature_validate($node){
    }
 
 }
-/************************************************************************
+/**
  *  When a node is requested by the user this function is called to allow us
  *  to add auxiliary data to the node object.
+ *
+ * @ingroup tripal_feature
  */
 function chado_feature_load($node){
    // add the feature_id for this node:
@@ -871,8 +918,10 @@ function chado_feature_load($node){
 
    return $additions;
 }
-/************************************************************************
+/**
  *  
+ *
+ * @ingroup tripal_feature
  */
 function tripal_feature_load_organism ($organism_id){
    // add organism details
@@ -882,8 +931,10 @@ function tripal_feature_load_organism ($organism_id){
    tripal_db_set_active($previous_db);  // now use drupal database
    return $organism;
 }
-/************************************************************************
+/**
  *  
+ *
+ * @ingroup tripal_feature
  */
 function tripal_feature_load_synonyms ($feature_id){
 
@@ -903,8 +954,10 @@ function tripal_feature_load_synonyms ($feature_id){
    }
    return $synonyms;
 }
-/************************************************************************
- *  
+/**
+ * 
+ *
+ * @ingroup tripal_feature
  */
 function tripal_feature_load_properties ($feature_id){
 
@@ -928,8 +981,10 @@ function tripal_feature_load_properties ($feature_id){
    }
    return $properties;
 }
-/************************************************************************
+/**
  *  
+ *
+ * @ingroup tripal_feature
  */
 function tripal_feature_load_references ($feature_id){
 
@@ -951,8 +1006,10 @@ function tripal_feature_load_references ($feature_id){
    }
    return $references;
 }
-/************************************************************************
+/**
  *  
+ *
+ * @ingroup tripal_feature
  */
 function tripal_feature_load_featurelocs ($feature_id,$side = 'as_parent',$aggregate = 1){
 
@@ -1016,14 +1073,18 @@ function tripal_feature_load_featurelocs ($feature_id,$side = 'as_parent',$aggre
    usort($featurelocs,'tripal_feature_sort_locations');
    return $featurelocs;
 }
-/************************************************************************
+/**
  *  used to sort the feature locs by start position
+ *
+ * @ingroup tripal_feature
  */
 function tripal_feature_sort_locations($a,$b){
    return strnatcmp($a->fmin, $b->fmin); 
 }
-/************************************************************************
+/**
  *  
+ *
+ * @ingroup tripal_feature
  */
 function tripal_feature_load_relationships ($feature_id,$side = 'as_subject'){
    // get the relationships for this feature.  The query below is used for both
@@ -1081,8 +1142,10 @@ function tripal_feature_load_relationships ($feature_id,$side = 'as_subject'){
    }
    return $relationships;
 }
-/************************************************************************
+/**
  *  
+ *
+ * @ingroup tripal_feature
  */
 function tripal_feature_get_aggregate_types($feature_id){
    // get the feature details
@@ -1101,8 +1164,10 @@ function tripal_feature_get_aggregate_types($feature_id){
    
    return $types;
 }
-/************************************************************************
+/**
  *  
+ *
+ * @ingroup tripal_feature
  */
 function tripal_feature_get_aggregate_relationships($feature_id, $substitute=1,
   $levels=0, $base_type_id=NULL, $depth=0)
@@ -1158,8 +1223,10 @@ function tripal_feature_get_aggregate_relationships($feature_id, $substitute=1,
    } 
    return $new_relationships;
 }
-/************************************************************************
+/**
  *  
+ *
+ * @ingroup tripal_feature
  */
 function tripal_feature_load_featureloc_sequences($feature_id,$featurelocs){
 
@@ -1226,8 +1293,10 @@ function tripal_feature_load_featureloc_sequences($feature_id,$featurelocs){
    }
    return $floc_sequences;
 }
-/*******************************************************************************
+/**
  *  
+ *
+ * @ingroup tripal_feature
  */
 function tripal_feature_load_organism_feature_counts($organism){
 
@@ -1258,8 +1327,10 @@ function tripal_feature_load_organism_feature_counts($organism){
    }
    return array ( 'types' => $types, 'enabled' => true );
 }
-/************************************************************************
+/**
  * 
+ *
+ * @ingroup tripal_feature
  */
 function tripal_feature_load_organism_feature_browser($organism){
 
@@ -1314,20 +1385,29 @@ function tripal_feature_load_organism_feature_browser($organism){
 
    return array ( 'features' => $features, 'pager' => $pager, 'enabled' => true );
 }
-/************************************************************************
+
+/**
  *  used to sort the list of relationship objects by start position
+ *
+ * @ingroup tripal_feature
  */
 function tripal_feature_sort_rel_objects($a,$b){
    return strnatcmp($a->fmin, $b->fmin);
 }
-/************************************************************************
+
+/**
  *  used to sort the list of relationship parts by start position
+ *
+ * @ingroup tripal_feature
  */
 function tripal_feature_sort_rel_parts($a,$b){
    return strnatcmp($a['start'], $b['start']); 
 }
-/************************************************************************
- *  
+
+/**
+ * 
+ *
+ * @ingroup tripal_feature
  */
 function tripal_feature_color_sequence ($sequence,$parts){
 
@@ -1384,9 +1464,12 @@ function tripal_feature_color_sequence ($sequence,$parts){
    $newseq .= "</pre>";
    return $newseq;
 }
-/************************************************************************
+
+/**
  *  This function customizes the view of the chado_feature node.  It allows
  *  us to generate the markup.
+ *
+ * @ingroup tripal_feature
  */
 function chado_feature_view ($node, $teaser = FALSE, $page = FALSE) {
 
@@ -1418,9 +1501,11 @@ function chado_feature_view ($node, $teaser = FALSE, $page = FALSE) {
    return $node;
 }
 
-/*******************************************************************************
+/**
  * Display feature information for associated organisms. This function also
  * provides contents for indexing
+ *
+ * @ingroup tripal_feature
  */
 function tripal_feature_nodeapi(&$node, $op, $teaser, $page) {
 
@@ -1448,10 +1533,13 @@ function tripal_feature_nodeapi(&$node, $op, $teaser, $page) {
          break;
    }
 }
-/************************************************************************
+
+/**
  *  We need to let drupal know about our theme functions and their arguments.
  *  We create theme functions to allow users of the module to customize the
  *  look and feel of the output generated in this module
+ *
+ * @ingroup tripal_feature
  */
 function tripal_feature_theme () {
    return array(
@@ -1511,8 +1599,11 @@ function tripal_feature_theme () {
       ),
    );
 }
-/*******************************************************************************
+
+/**
  *  
+ *
+ * @ingroup tripal_feature
  */
 function tripal_feature_preprocess(&$variables){
 
@@ -1529,76 +1620,112 @@ function tripal_feature_preprocess(&$variables){
       $variables['tripal_feature']['featureloc_sequences'] = tripal_feature_load_featureloc_sequences ($feature->feature_id,$featurelocs);   
    }
 }
+
+/**
+ *
+ *
+ * @ingroup tripal_feature
+ */
 function tripal_feature_preprocess_tripal_organism_feature_counts(&$variables){
    $organism = $variables['node']->organism;
    $variables['tripal_feature']['feature_counts'] = tripal_feature_load_organism_feature_counts($organism);
 }
-/*******************************************************************************
+
+/**
  *  
+ *
+ * @ingroup tripal_feature
  */
 function tripal_feature_preprocess_tripal_organism_feature_browser(&$variables){
    $organism = $variables['node']->organism;
    $variables['tripal_feature']['browser'] = tripal_feature_load_organism_feature_browser($organism);
 }
-/*******************************************************************************
+
+/**
  *  
+ *
+ * @ingroup tripal_feature
  */
 function tripal_feature_preprocess_tripal_feature_properties(&$variables){
    $feature = $variables['node']->feature;
    $variables['tripal_feature']['properties'] = tripal_feature_load_properties($feature->feature_id);
 }
-/*******************************************************************************
+
+/**
  *  
+ *
+ * @ingroup tripal_feature
  */
 function tripal_feature_preprocess_tripal_feature_synonyms(&$variables){
    $feature = $variables['node']->feature;
    $variables['tripal_feature']['synonyms'] = tripal_feature_load_synonyms($feature->feature_id);
 }
-/*******************************************************************************
+
+/**
  *  
+ *
+ * @ingroup tripal_feature
  */
 function tripal_feature_preprocess_tripal_feature_relationships_as_object(&$variables){
    $feature = $variables['node']->feature;
    $variables['tripal_feature']['object_relationships'] = tripal_feature_get_aggregate_relationships($feature->feature_id,0);
 }
-/*******************************************************************************
+
+/**
  *  
+ *
+ * @ingroup tripal_feature
  */
 function tripal_feature_preprocess_tripal_feature_relationships_as_subject(&$variables){
    $feature = $variables['node']->feature;
    $variables['tripal_feature']['subject_relationships'] = tripal_feature_load_relationships($feature->feature_id,'as_subject');
 }
-/*******************************************************************************
-*
-*/
+
+/**
+ *
+ *
+ * @ingroup tripal_feature
+ */
 function tripal_feature_preprocess_tripal_feature_featurelocs_as_child(&$variables){
    $feature = $variables['node']->feature;
    $variables['tripal_feature']['featurelocs_as_child'] = tripal_feature_load_featurelocs($feature->feature_id,'as_child',0);
 }
-/*******************************************************************************
+
+/**
  *  
+ *
+ * @ingroup tripal_feature
  */
 function tripal_feature_preprocess_tripal_feature_featurelocs_as_parent(&$variables){
    $feature = $variables['node']->feature;
    $variables['tripal_feature']['featurelocs_as_parent'] = tripal_feature_load_featurelocs($feature->feature_id,'as_parent');
 }
-/*******************************************************************************
+
+/**
  *  
+ *
+ * @ingroup tripal_feature
  */
 function tripal_feature_preprocess_tripal_feature_references(&$variables){
    $feature = $variables['node']->feature;
    $variables['tripal_feature']['references'] = tripal_feature_load_references($feature->feature_id);
 }
-/*******************************************************************************
+
+/**
  *  
+ *
+ * @ingroup tripal_feature
  */
 function tripal_feature_preprocess_tripal_feature_featureloc_sequences(&$variables){
    $feature = $variables['node']->feature;
    $featurelocs = tripal_feature_load_featurelocs($feature->feature_id,'as_child',0);
    $variables['tripal_feature']['featureloc_sequences'] = tripal_feature_load_featureloc_sequences ($feature->feature_id,$featurelocs);   
 }
-/************************************************************************
+
+/**
  *
+ *
+ * @ingroup tripal_feature
  */
 function tripal_feature_cv_chart($chart_id){
 
@@ -1617,8 +1744,11 @@ function tripal_feature_cv_chart($chart_id){
   );
   return $options;
 }
-/************************************************************************
+
+/**
  *
+ *
+ * @ingroup tripal_feature
  */
 function tripal_feature_cv_tree($tree_id){
 
@@ -1639,9 +1769,11 @@ function tripal_feature_cv_tree($tree_id){
   return $options;
 }
 
-/************************************************************************
+/**
  *  This function is an extension of the chado_feature_view by providing
  *  the markup for the feature object THAT WILL BE INDEXED.
+ *
+ * @ingroup tripal_feature
  */
 function theme_tripal_feature_search_index ($node) {
    $feature = $node->feature;
@@ -1665,9 +1797,12 @@ function theme_tripal_feature_search_index ($node) {
 
    return $content;
 }
-/************************************************************************
+
+/**
  *  This function is an extension of the chado_feature_view by providing
  *  the markup for the feature object THAT WILL BE INDEXED.
+ *
+ * @ingroup tripal_feature
  */
 function theme_tripal_feature_search_results ($node) {
    $feature = $node->feature;
@@ -1692,8 +1827,11 @@ function theme_tripal_feature_search_results ($node) {
 
    return $content;
 }
-/************************************************************************
+
+/**
  *
+ *
+ * @ingroup tripal_feature
  */
 function tripal_feature_set_vocabulary (){
 
@@ -1800,8 +1938,11 @@ function tripal_feature_set_vocabulary (){
       drupal_execute('taxonomy_form_vocabulary', $form_state);
    }
 }
-/************************************************************************
+
+/**
  *
+ *
+ * @ingroup tripal_feature
  */
 function tripal_feature_del_vocabulary(){
    //include the file containing the required functions for adding taxonomy vocabs
@@ -1831,8 +1972,11 @@ function tripal_feature_del_vocabulary(){
    }
 
 }
-/************************************************************************
+
+/**
  *
+ *
+ * @ingroup tripal_feature
  */
 function tripal_features_set_taxonomy($max_sync = 0,$job_id = NULL){
 
@@ -1868,8 +2012,11 @@ function tripal_features_set_taxonomy($max_sync = 0,$job_id = NULL){
       $i++;
    }
 }
-/************************************************************************
+
+/**
  *
+ *
+ * @ingroup tripal_feature
  */
 function tripal_feature_set_taxonomy ($node,$feature_id){
 
@@ -1972,8 +2119,11 @@ function tripal_feature_set_taxonomy ($node,$feature_id){
    }
 
 }
-/************************************************************************
+
+/**
  *
+ *
+ * @ingroup tripal_feature
  */
 function tripal_features_cleanup($dummy = NULL, $job_id = NULL) {
 
@@ -2061,8 +2211,11 @@ function tripal_features_cleanup($dummy = NULL, $job_id = NULL) {
    }
    return '';
 }
-/************************************************************************
+
+/**
  *
+ *
+ * @ingroup tripal_feature
  */
 function tripal_feature_return_fasta($feature,$desc){   
    $fasta  = ">" . variable_get('chado_feature_accession_prefix','ID') . "$feature->feature_id|$feature->name";

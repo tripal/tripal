@@ -1,10 +1,10 @@
 <?php
 
-/*************************************************************************************************************
- * @section 
- * Deals with Adding DB references
+/**
+ * 
+ *
+ * @ingroup tripal_feature
  */
-
 function tripal_feature_add_ALL_dbreferences_page($node) {
   $output = '';
 
@@ -19,9 +19,11 @@ function tripal_feature_add_ALL_dbreferences_page($node) {
   return $output;
 }
 
-/*******************************************************************************
+/**
  * Implements Hook_form()
  * Handles adding of Database References to features
+ *
+ * @ingroup tripal_feature
  */
 function tripal_feature_add_ONE_dbreference_form($form_state, $node) {
 
@@ -69,9 +71,12 @@ function tripal_feature_add_ONE_dbreference_form($form_state, $node) {
 
   return $form;
 }
-/*******************************************************************************
-*
-*/
+
+/**
+ *
+ *
+ * @ingroup tripal_feature
+ */
 function tripal_feature_add_ONE_dbreference_form_validate($form, &$form_state) {
 
    $db_id = $form_state['values']['db_id'];
@@ -99,9 +104,12 @@ function tripal_feature_add_ONE_dbreference_form_validate($form, &$form_state) {
    }
 
 } 
-/*******************************************************************************
-*
-*/
+
+/**
+ *
+ *
+ * @ingroup tripal_feature
+ */
 function tripal_feature_add_ONE_dbreference_form_submit($form, &$form_state) {
 
    $db_id = $form_state['values']['db_id'];
@@ -133,11 +141,12 @@ function tripal_feature_add_ONE_dbreference_form_submit($form, &$form_state) {
 
 }
 
-/************************************************************************************************************* 
- * @section                                    
- * Deals with Editing and Deleting Properties  
- */                                            
 
+/**
+ *
+ *
+ * @ingroup tripal_feature
+ */
 function tripal_feature_edit_ALL_dbreferences_page($node) {
   $output = '';
 
@@ -149,9 +158,12 @@ function tripal_feature_edit_ALL_dbreferences_page($node) {
 
   return $output;
 }
-/*******************************************************************************                                           
+
+/**                                           
  * Implements Hook_form()                      
- * Handles adding of Properties & Synonyms to Features
+ * Handles adding of DB References to Features
+ *
+ * @ingroup tripal_feature
  */                                        
 function tripal_feature_edit_ALL_db_references_form($form_state, $node) {
   $form = array();
@@ -221,9 +233,12 @@ function tripal_feature_edit_ALL_db_references_form($form_state, $node) {
   } //end of foreach db ref
   return $form;
 }
-/*******************************************************************************
-*
-*/
+
+/**
+ *
+ *
+ * @ingroup tripal_feature
+ */
 function tripal_feature_edit_ALL_db_references_form_submit($form, &$form_state) {
 
   $num_refs = $form_state['values']['num_db_references'];
@@ -257,9 +272,12 @@ function tripal_feature_edit_ALL_db_references_form_submit($form, &$form_state) 
   }
 
 }
-/*******************************************************************************
-*
-*/
+
+/**
+ *
+ *
+ * @ingroup tripal_feature
+ */
 function tripal_feature_update_db_reference($dbxref_id, $db_id, $accession) {
 
   $previous_db = tripal_db_set_active('chado');
@@ -268,9 +286,12 @@ function tripal_feature_update_db_reference($dbxref_id, $db_id, $accession) {
   tripal_db_set_active($previous_db);
 
 }
-/*******************************************************************************
-*
-*/
+
+/**
+ *
+ *
+ * @ingroup tripal_feature
+ */
 function tripal_feature_delete_db_reference($dbxref_id) {
 
   $previous_db = tripal_db_set_active('chado');
@@ -286,9 +307,12 @@ function tripal_feature_delete_db_reference($dbxref_id) {
   tripal_db_set_active($previous_db);
 
 }
-/*******************************************************************************
-*
-*/
+
+/**
+ *
+ *
+ * @ingroup tripal_feature
+ */
 function theme_tripal_feature_edit_ALL_db_references_form ($form) {
   $output = '';
 
@@ -313,13 +337,10 @@ function theme_tripal_feature_edit_ALL_db_references_form ($form) {
   return $output;
 }
 
-/*************************************************************************************************************
- * @section
- * Supplimentary functions
- */
-
 /**
  * 
+ *
+ * @ingroup tripal_feature
  */
 function list_dbreferences_for_node($db_references) {
 
