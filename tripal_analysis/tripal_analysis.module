@@ -1,6 +1,5 @@
 <?php
 // $Id:
-// Copyright 2009 Clemson University
 /*******************************************************************************
  * Note: When we pull information for an analysis from chado database. We use
  * 'analysisname' instead of just 'name' to avoid name collision with drupal's
@@ -28,12 +27,9 @@ function tripal_analysis_unregister_child($modulename){
    }
 }
 /******************************************************************************
- * Tripal Analysis lets users display/hide analysis results associated
- * with a tripal feature. Load javascript when module initialized
  */
 function tripal_analysis_init(){
-   drupal_add_js(drupal_get_path('theme', 'tripal').
-                                 '/js/tripal_analysis.js');
+   drupal_add_js(drupal_get_path('theme', 'tripal').'/js/tripal_analysis.js');
 }
 /*******************************************************************************
  * tripal_analysis_menu()
@@ -283,6 +279,8 @@ function chado_analysis_form ($node){
       '#title' => t('Analysis Name'),
       '#required' => FALSE,
       '#default_value' => $node->analysisname,
+      '#description' => t("This should be a handy short identifier that 
+         describes the analysis succintly as possible which helps the user find analyses."),
       '#weight' => 1
 	);
 	$form['program']= array(
@@ -290,6 +288,7 @@ function chado_analysis_form ($node){
       '#title' => t('Program'),
       '#required' => TRUE,
       '#default_value' => $node->program,
+      '#description' => t("Program name, e.g. blastx, blastp, sim4, genscan."),
       '#weight' => 2
 	);
 	$form['programversion']= array(
@@ -297,6 +296,7 @@ function chado_analysis_form ($node){
       '#title' => t('Program Version'),
       '#required' => TRUE,
       '#default_value' => $node->programversion,
+      '#description' => t("Version description, e.g. TBLASTX 2.0MP-WashU [09-Nov-2000]"),
       '#weight' => 3
 	);
 	$form['algorithm']= array(
@@ -304,13 +304,17 @@ function chado_analysis_form ($node){
       '#title' => t('Algorithm'),
       '#required' => FALSE,
       '#default_value' => $node->algorithm,
+      '#description' => t("Algorithm name, e.g. blast."),
       '#weight' => 4
 	);
 	$form['sourcename']= array(
       '#type' => 'textfield',
       '#title' => t('Source Name'),
-      '#required' => FALSE,
+      '#required' => TRUE,
       '#default_value' => $node->sourcename,
+      '#description' => t('The name of the source data.  This could be a file name, data set name or a 
+           small description for how the data was collected.  For long descriptions use the description field below'),
+
       '#weight' => 5
 	);
 	$form['sourceversion']= array(
@@ -318,6 +322,7 @@ function chado_analysis_form ($node){
       '#title' => t('Source Version'),
       '#required' => FALSE,
       '#default_value' => $node->sourceversion,
+      '#description' => t('If the source dataset has a version, include it here'),
       '#weight' => 6
 	);
 	$form['sourceuri']= array(
@@ -325,6 +330,9 @@ function chado_analysis_form ($node){
       '#title' => t('Source URI'),
       '#required' => FALSE,
       '#default_value' => $node->sourceuri,
+      '#description' => t("This is a permanent URL or URI for the source of the analysis. 
+         Someone could recreate the analysis directly by going to this URI and 
+         fetching the source data (e.g. the blast database, or the training model)."),
       '#weight' => 7
 	);
 	// Get time saved in chado
@@ -356,6 +364,9 @@ function chado_analysis_form ($node){
       '#title' => t('Description and/or Program Settings'),
       '#required' => FALSE,
       '#default_value' => check_plain($node->description),
+      '#description' => t('Please provide all necessary information to allow
+         someone to recreate the analysis, including materials and methods
+         for collection of the source data and performing the analysis'),
       '#weight' => 9
 	);
 	
@@ -380,11 +391,12 @@ function chado_analysis_load($node){
              "WHERE Analysis_id = $ana_node->analysis_id";
 		$previous_db = tripal_db_set_active('chado');  // use chado database
 		$additions = db_fetch_object(db_query($sql));
-        // get number of features assc with this analysis
-        $sql = "SELECT count(feature_id) as featurecount ".
-             "FROM {Analysisfeature} ".
-             "WHERE Analysis_id = %d";
-        $additions->featurecount = db_result(db_query($sql, $ana_node->analysis_id));
+
+      // get number of features assc with this analysis
+//     $sql = "SELECT count(feature_id) as featurecount ".
+//            "FROM {Analysisfeature} ".
+//            "WHERE Analysis_id = %d";
+//      $additions->featurecount = db_result(db_query($sql, $ana_node->analysis_id));
 
 		tripal_db_set_active($previous_db);  // now use drupal database
 	}
@@ -613,7 +625,7 @@ function tripal_analysis_theme () {
 	return array(
       'tripal_analysis_analysis_page' => array (
          'arguments' => array('analyses'),
-	),
+	    ),
 	);
 }
 
@@ -771,11 +783,12 @@ function tripal_analyses_cleanup($dummy = NULL, $job_id = NULL) {
 /*******************************************************************************
  *
  */
+/*
 function tripal_analysis_reindex_features ($analysis_id = NULL, $job_id = NULL){
 	$i = 0;
 
 	// if the caller provided a analysis_id then get all of the features
-	// associated with the analysis. Otherwise get all sequences assoicated
+	// associated with the analysis. Otherwise get all sequences associated
 	// with all libraries.
 	if(!$analysis_id){
 		$sql = "SELECT Analysis_id, Feature_id ".
@@ -811,10 +824,11 @@ function tripal_analysis_reindex_features ($analysis_id = NULL, $job_id = NULL){
 		tripal_feature_sync_feature ($feature_id);
 		$i++;
 	}
-}
+} */
 /*******************************************************************************
  *
  */
+/*
 function tripal_analysis_taxonify_features ($analysis_id = NULL, $job_id = NULL){
 	$i = 0;
 
@@ -866,7 +880,7 @@ function tripal_analysis_taxonify_features ($analysis_id = NULL, $job_id = NULL)
 		$i++;
 	}
 }
-
+*/
 /*************************************************************************
  * Implements hook_views_api()
  * Purpose: Essentially this hook tells drupal that there is views support for

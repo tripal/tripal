@@ -13,6 +13,10 @@ function tripal_feature_install(){
   
    // add the materialized view
    tripal_feature_add_organism_count_mview();
+
+   // Register this module as having an analysis type
+   tripal_analysis_register_child('tripal_feature');
+
 }
 /*******************************************************************************
 *  Update for Drupal 6.x, Tripal 0.2b, Feature Module 0.2
@@ -29,15 +33,16 @@ function tripal_feature_update_6000(){
    return $ret;
 }
 /*******************************************************************************
-*  Update for Drupal 6.x, Tripal 0.2b, Feature Module 0.2
-*  This update adjusts the materialized view by adding a 'cvterm_id' column
-*/
 
+*/
 function tripal_feature_update_6300(){
    // add the relationship aggregator table to the database
    $schema = tripal_feature_get_schemas('tripal_feature_relagg');
    $ret = array();
    db_create_table($ret, 'tripal_feature_relagg', $schema['tripal_feature_relagg']);
+
+   // Register this module as having an analysis type
+   tripal_analysis_register_child('tripal_feature');
    
    return $ret;
 }
@@ -169,6 +174,7 @@ function tripal_feature_get_schemas ($table = NULL){
 function tripal_feature_requirements($phase) {
    $requirements = array();
    if ($phase == 'install') {
+      // make sure the core module is installed...
       if (!function_exists('tripal_create_moddir')) {
          $requirements ['tripal_feature'] = array(
             'title' => "tripal_feature",

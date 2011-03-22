@@ -132,7 +132,7 @@ function tripal_feature_menu() {
      'type' => MENU_NORMAL_ITEM,
    );
    $items['admin/tripal/tripal_feature/configuration'] = array(
-     'title' => 'Configuration',
+     'title' => 'Feature Configuration',
      'description' => 'Settings for Chado Features',
      'page callback' => 'drupal_get_form',
      'page arguments' => array('tripal_feature_admin'),

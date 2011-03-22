@@ -48,8 +48,8 @@ function tripal_analysis_admin() {
 	if(!$active_jobs){
 		// add the field set for syncing analyses
 		get_tripal_analysis_admin_form_sync_set($form);
-		get_tripal_analysis_admin_form_reindex_set($form);
-		get_tripal_analysis_admin_form_taxonomy_set($form);
+//		get_tripal_analysis_admin_form_reindex_set($form);
+//		get_tripal_analysis_admin_form_taxonomy_set($form);
 		get_tripal_analysis_admin_form_cleanup_set($form);
 	} else {
 		$form['notice'] = array(

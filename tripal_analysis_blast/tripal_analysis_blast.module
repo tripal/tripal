@@ -790,86 +790,12 @@ function chado_analysis_blast_form ($node){
       '#type' => 'hidden',
       '#default_value' => $node->title,
 	);
-	$form['analysisname']= array(
-      '#type' => 'textfield',
-      '#title' => t('Analysis Name'),
-      '#required' => FALSE,
-      '#default_value' => $node->analysisname,
-      '#weight' => 1
-	);
-	$form['program']= array(
-      '#type' => 'textfield',
-      '#title' => t('Program'),
-      '#required' => TRUE,
-      '#default_value' => $node->program,
-      '#weight' => 2
-	);
-	$form['programversion']= array(
-      '#type' => 'textfield',
-      '#title' => t('Program Version'),
-      '#required' => TRUE,
-      '#default_value' => $node->programversion,
-      '#weight' => 3
-	);
-	$form['algorithm']= array(
-      '#type' => 'textfield',
-      '#title' => t('Algorithm'),
-      '#required' => FALSE,
-      '#default_value' => $node->algorithm,
-      '#weight' => 4
-	);
-	$form['sourcename']= array(
-      '#type' => 'textfield',
-      '#title' => t('Source Name'),
-      '#required' => FALSE,
-      '#default_value' => $node->sourcename,
-      '#weight' => 5
-	);
-	$form['sourceversion']= array(
-      '#type' => 'textfield',
-      '#title' => t('Source Version'),
-      '#required' => FALSE,
-      '#default_value' => $node->sourceversion,
-      '#weight' => 6
-	);
-	$form['sourceuri']= array(
-      '#type' => 'textfield',
-      '#title' => t('Source URI'),
-      '#required' => FALSE,
-      '#default_value' => $node->sourceuri,
-      '#weight' => 7
-	);
-	// Get time saved in chado
-	$default_time = $node->timeexecuted;
-	$year = preg_replace("/^(\d+)-\d+-\d+ .*/", "$1", $default_time);
-	$month = preg_replace("/^\d+-0?(\d+)-\d+ .*/", "$1", $default_time);
-	$day = preg_replace("/^\d+-\d+-0?(\d+) .*/", "$1", $default_time);
-	// If the time is not set, use current time
-	if (!$default_time) {
-		$default_time = time();
-		$year = format_date($default_time, 'custom', 'Y');
-		$month = format_date($default_time, 'custom', 'n');
-		$day = format_date($default_time, 'custom', 'j');
-	}
-	$form['timeexecuted']= array(
-      '#type' => 'date',
-      '#title' => t('Time Executed'),
-      '#required' => TRUE,
-      '#default_value' => array(
-         'year' => $year,
-         'month' => $month,
-         'day' => $day,
-	),
-      '#weight' => 8
-	);
-	$form['description']= array(
-      '#type' => 'textarea',
-      '#rows' => 15,
-      '#title' => t('Description and/or Program Settings'),
-      '#required' => FALSE,
-      '#default_value' => check_plain($node->description),
-      '#weight' => 9
-	);
+	
+   // add in the analysis fields
+   $analysis_form_elements = chado_analysis_form(null);
+   foreach ($analysis_form_elements as $key => $element){
+      $form = $element;
+   }
 
 	// Blast specific settings
 	if (preg_match("/.*\|.*\|.*/",$node->blastdb)) {

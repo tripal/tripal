@@ -77,6 +77,44 @@ function tripal_core_gff3_load_form (){
                            will be removed rather than imported'),
       '#weight' => 5
    );
+
+   $form['analysis'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Analysis Used to Derive Features'),
+      '#weight'=> 6,
+      '#collapsed' => TRUE
+   ); 
+   $form['analysis']['desc'] = array(
+      '#type' => 'markup',
+      '#value' => t("Why specify an analysis for a data load?  All data comes 
+         from some place, even if downloaded from Genbank. By specifying
+         analysis details for all data uploads, it allows an end user to reproduce the
+         data set.  In some cases some of the fields may not apply.  For 
+         data downloaded from Genbank, the 'program' field does not apply but is
+         required.  In this case, simply provide the name of the data source 
+         (e.g. NCBI Genbank) for the program and use the date accessed for the
+         program version. For the description, be sure to include the search
+         criteria used for selecting data from GenBank."), 
+   );
+
+   // get the list of organisms
+   $sql = "SELECT * FROM {analysis} ORDER BY name";
+   $previous_db = tripal_db_set_active('chado');  // use chado database
+   $org_rset = db_query($sql);
+   tripal_db_set_active($previous_db);  // now use drupal database
+   $analyses = array();
+   $analyses[''] = '';
+   while($analysis = db_fetch_object($org_rset)){
+      $analyses[$analysis->analysis_id] = "$analysis->name ($analysis->program $analysis->programversion, $analysis->sourcename)";
+   }
+   $form['analysis']['analysis_id'] = array (
+     '#title'       => t('Analysis'),
+     '#type'        => t('select'),
+     '#description' => t("Choose the analysis to which these features are associated "),
+     '#required'    => TRUE,
+     '#options'     => $analyses,
+   );
+
    $form['button'] = array(
       '#type' => 'submit',
       '#value' => t('Import GFF3 file'),
@@ -128,8 +166,9 @@ function tripal_core_gff3_load_form_submit ($form, &$form_state){
    $update   = $form_state['values']['update'];
    $refresh  = $form_state['values']['refresh'];
    $remove   = $form_state['values']['remove'];
+   $analysis = $form_state['values']['analysis_id'];
 
-   $args = array($gff_file,$organism_id,$add_only,$update,$refresh,$remove);
+   $args = array($gff_file,$organism_id,$analysis_id,$add_only,$update,$refresh,$remove);
    $type = '';
    if($add_only){
      $type = 'import only new features';
@@ -143,7 +182,7 @@ function tripal_core_gff3_load_form_submit ($form, &$form_state){
    if($remove){
      $type = 'delete features';
    }
-   tripal_add_job("$type GFF3 file $dfile",'tripal_core',
+   tripal_add_job("$type GFF3 file $gff_file",'tripal_core',
       'tripal_core_load_gff3',$args,$user->uid);
 
    return '';
@@ -151,7 +190,7 @@ function tripal_core_gff3_load_form_submit ($form, &$form_state){
 /*************************************************************************
 *
 */
-function tripal_core_load_gff3($gff_file, $organism_id,$add_only =0, 
+function tripal_core_load_gff3($gff_file, $organism_id,$analysis_id,$add_only =0, 
    $update = 0, $refresh = 0, $remove = 0, $job = NULL)
 {
 
@@ -365,7 +404,7 @@ function tripal_core_load_gff3($gff_file, $organism_id,$add_only =0,
     
 
          // add/update the feature
-         $feature = tripal_core_load_gff3_feature($organism,$cvterm,
+         $feature = tripal_core_load_gff3_feature($organism,$analysis_id,$cvterm,
             $attr_uniquename,$attr_name,$residues,$attr_is_analysis,
             $attr_is_obsolete, $add_only,$generate_name);
 
@@ -624,7 +663,7 @@ function tripal_core_load_gff3_alias($feature,$aliases){
 /*************************************************************************
 *
 */
-function tripal_core_load_gff3_feature($organism,$cvterm,$uniquename,$name,
+function tripal_core_load_gff3_feature($organism,$analysis_id,$cvterm,$uniquename,$name,
    $residues,$is_analysis='f',$is_obsolete='f',$add_only,$generate_name)  {
 
    if($generate_name){
@@ -676,7 +715,18 @@ function tripal_core_load_gff3_feature($organism,$cvterm,$uniquename,$name,
       print "Skipping existing feature: '$uniquename' ($cvterm->name).\n";
       return 0;
    }
+   // get the newly added feature
    $feature = db_fetch_object(db_query($feature_sql,$organism->organism_id,$uniquename,$cvterm->cvterm_id));
+
+   // add the analysisfeature entry to the analysisfeature table if it doesn't already exist
+   $af_values = array('analysis_id' => $analysis_id, 'feature_id' => $feature->feature_id);
+   if(tripal_core_chado_select('analysisfeature','analysisfeature_id',$af,true)){
+      if(!tripal_core_chado_insert('analysisfeature',$af_values)){
+         print "ERROR: could not add analysisfeature record: $analysis_id, $feature->feature_id\n";
+         return 0;
+      }
+   }
+
    // now that we've added the feature let's reset it's uniquename to be
    // the feature id
    if($generate_name){

@@ -6,9 +6,17 @@
  * @return HTML Formatted text
  */
 function tripal_feature_module_description_page() {
-  $text = '';
-  
-  $text .= '<h3>Description:</h3>';
+
+  $text .= '<h3>Tripal Feature Administrative Tools Quick Links:</h3>';
+  $text .= "<ul>";
+  $text .= "<li><a href=\"".url("admin/tripal/tripal_feature/configuration") . "\">Feature Configuration</a></li>";
+  $text .= "<li><a href=\"".url("admin/tripal/tripal_feature/fasta_loader"). "\">Import a multi-FASTA file</a></li>";
+  $text .= "<li><a href=\"".url("admin/tripal/tripal_feature/gff3_load"). "\">Import a GFF3 file</a></li>";
+  $text .= "<li><a href=\"".url("admin/tripal/tripal_feature/aggregate"). "\">Feature Relationship Aggegators</a></li>";
+  $text .= "</ul>";
+ 
+
+  $text .= '<h3>Module Description:</h3>';
   $text .= '<p>TODO: Basic Description of this module including mention/link to the chado module</p>';
 
   $text .= '<h3>Post Installation Instructions:</h3>';

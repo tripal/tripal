@@ -335,10 +335,14 @@ function tripal_core_chado_update($table,$match,$values){
 *  An array of column names
 * @param $values
 *  An associative array containing the values for filtering the results.
+* @param $has_record
+*  Set this argument to 'true' to have this function return a numeric 
+*  value for the number of recrods rather than the array of records.  this
+*  can be useful in 'if' statements to check the presence of particula records.
 * 
 * @return
-*  A database query result resource, or FALSE if the query was not executed 
-*  correctly. 
+*  A database query result resource, FALSE if the query was not executed 
+*  correctly, or the number of records in the dataset if $has_record is set.
 *
 * Example usage:
 * @code
@@ -366,7 +370,7 @@ function tripal_core_chado_update($table,$match,$values){
 * species.  The cvterm is also specified using its foreign key and the cv_id 
 * for the cvterm is nested as well.
 */
-function tripal_core_chado_select($table,$columns,$values){
+function tripal_core_chado_select($table,$columns,$values,$has_record = 0){
 
    // get the table description
    $table_desc = module_invoke_all('chado_'.$table.'_schema');
@@ -431,7 +435,11 @@ function tripal_core_chado_select($table,$columns,$values){
      $results[] = $r;    
    }
    
-   return $results;
+   if(!$has_record){
+      return $results;
+   } else{
+      return scalar($results);
+   }
 }
 /**
 * Gets the value of a foreign key relationship
