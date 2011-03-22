@@ -457,7 +457,7 @@ function tripal_core_chado_select($table,$columns,$values,$has_record = 0){
    if(!$has_record){
       return $results;
    } else{
-      return scalar($results);
+      return count($results);
    }
 }
 /**

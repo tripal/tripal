@@ -66,15 +66,20 @@ function tripal_get_module_active_jobs ($modulename){
 */
 function tripal_jobs_report () {
    //$jobs = db_query("SELECT * FROM {tripal_jobs} ORDER BY job_id DESC");
-   $jobs = pager_query("SELECT * FROM {tripal_jobs} TJ INNER JOIN users U on TJ.uid = U.uid ORDER BY job_id DESC",
-      10,0,"SELECT count(*) FROM {tripal_jobs}");
+   $jobs = pager_query(
+      "SELECT TJ.job_id,TJ.uid,TJ.job_name,TJ.modulename,TJ.progress,
+              TJ.status as job_status, TJ,submit_date,TJ.start_time,
+              TJ.end_time,TJ.priority
+       FROM {tripal_jobs} TJ 
+         INNER JOIN users U on TJ.uid = U.uid 
+       ORDER BY job_id DESC", 10,0,"SELECT count(*) FROM {tripal_jobs}");
 	
    // create a table with each row containig stats for 
    // an individual job in the results set.
    $output .= "Waiting jobs are executed first by priority level (the lower the ".
               "number the higher the priority) and second by the order they ".
               "were entered";
-   $output .= "<table class=\"border-table\">". 
+   $output .= "<table class=\"tripal-table tripal-table-horz\">". 
               "  <tr>".
               "    <th>Job ID</th>".
               "    <th>User</th>".
@@ -83,21 +88,35 @@ function tripal_jobs_report () {
 			     "    <th>Priority</th>".
 			     "    <th>Progress</th>".
               "    <th>Status</th>".
+              "    <th>Actions</th>".
               "  </tr>";
-   
+   $i = 0;
    while($job = db_fetch_object($jobs)){
+      $class = 'tripal_feature-table-odd-row tripal-table-odd-row';
+      if($i % 2 == 0 ){
+         $class = 'tripal_feature-table-odd-row tripal-table-even-row';
+      }
       $submit = format_date($job->submit_date);
       if($job->start_time > 0){
          $start = format_date($job->start_time);
       } else {
-         $start = 'Not Yet Started';
+         if(strcmp($job->job_status,'Cancelled')==0){
+            $start = 'Cancelled';
+         } else {
+            $start = 'Not Yet Started';
+         }
       }
       if($job->end_time > 0){
          $end = format_date($job->end_time);
       } else {
          $end = '';
       }
-      $output .= "  <tr>";
+      $cancel_link = '';
+      if($job->start_time == 0 and $job->end_time == 0){
+         $cancel_link = "<a href=\"".url("admin/tripal/tripal_jobs/cancel/".$job->job_id)."\">Cancel</a>";
+      }
+      $rerun_link = "<a href=\"".url("admin/tripal/tripal_jobs/rerun/".$job->job_id)."\">Re-run</a>";
+      $output .= "  <tr $class>";
       $output .= "    <td>$job->job_id</td>".
                  "    <td>$job->name</td>".
                  "    <td>$job->job_name</td>".
@@ -106,8 +125,10 @@ function tripal_jobs_report () {
                  "    <br>End Time: $end</td>".
                  "    <td>$job->priority</td>".
 				     "    <td>$job->progress%</td>".
-                 "    <td>$job->status</td>".
+                 "    <td>$job->job_status</td>".
+                 "    <td>$cancel_link $rerun_link</td>".
                  "  </tr>";
+      $i++;
    }
    $output .= "</table>";
 	$output .= theme_pager();
@@ -130,7 +151,7 @@ function tripal_jobs_launch (){
    // get all jobs that have not started and order them such that
    // they are processed in a FIFO manner. 
    $sql =  "SELECT * FROM {tripal_jobs} TJ ".
-           "WHERE TJ.start_time IS NULL ".
+           "WHERE TJ.start_time IS NULL and TJ.end_time IS NULL ".
            "ORDER BY priority ASC,job_id ASC";
    $job_res = db_query($sql);
    while($job = db_fetch_object($job_res)){
@@ -193,4 +214,41 @@ function tripal_jobs_check_running () {
    // return 1 to indicate that no jobs are currently running.
    return 0;
 }
-?>
+
+/**
+*
+*/
+function tripal_jobs_rerun ($job_id){
+   global $user;
+
+   $sql = "select * from {tripal_jobs} where job_id = %d";
+   $job = db_fetch_object(db_query($sql,$job_id));
+
+   $args = explode("::",$job->arguments);
+   tripal_add_job ($job->job_name,$job->modulename,$job->callback,$args,$user->uid,
+      $job->priority);
+
+   drupal_goto("admin/tripal/tripal_jobs");
+}
+
+/**
+*
+*/
+function tripal_jobs_cancel ($job_id){
+   $sql = "select * from {tripal_jobs} where job_id = %d";
+   $job = db_fetch_object(db_query($sql,$job_id));
+
+   // set the end time for this job
+   if($job->start_time == 0){
+      $record = new stdClass();
+      $record->job_id = $job->job_id;
+	   $record->end_time = time();
+	   $record->status = 'Cancelled';
+	   $record->progress = '0';
+	   drupal_write_record('tripal_jobs',$record,'job_id');
+      drupal_set_message("Job #$job_id cancelled");
+   } else {
+      drupal_set_message("Job #$job_id cannot be cancelled. It is in progress or has finished.");
+   }
+   drupal_goto("admin/tripal/tripal_jobs");
+}

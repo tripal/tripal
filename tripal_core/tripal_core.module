@@ -110,6 +110,22 @@ function tripal_core_menu() {
      'access arguments' => array('access administration pages'),
      'type' => MENU_NORMAL_ITEM,
    );
+   $items['admin/tripal/tripal_jobs/cancel/%'] = array(
+     'title' => 'Jobs',
+     'description' => 'Cancel a pending job',
+     'page callback' => 'tripal_jobs_cancel',
+     'page arguments' => array(4),
+     'access arguments' => array('access administration pages'),
+     'type' => MENU_CALLBACK,
+   );
+   $items['admin/tripal/tripal_jobs/rerun/%'] = array(
+     'title' => 'Jobs',
+     'description' => 'Re-run an existing job.',
+     'page callback' => 'tripal_jobs_rerun',
+     'page arguments' => array(4),
+     'access arguments' => array('access administration pages'),
+     'type' => MENU_CALLBACK,
+   );
    $items['admin/tripal/tripal_mview/%'] = array(
      'title' => 'Materialized View',
      'description' => 'Materialized views are used to improve speed of large or complex queries.',

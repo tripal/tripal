@@ -332,7 +332,6 @@ function tripal_core_load_gff3($gff_file, $organism_id,$analysis_id,$add_only =0
       $attr_is_analysis = 'f';
       $attr_others = '';
       $residues = '';
-      $generate_name = 0;
       foreach($attrs as $attr){
          $attr = rtrim($attr);
          $attr = ltrim($attr);
@@ -366,7 +365,13 @@ function tripal_core_load_gff3($gff_file, $organism_id,$analysis_id,$add_only =0
 
       // if neither name nor uniquename are provided then generate one
       if(!$attr_uniquename and !$attr_name){
-         $generate_name = 1;
+         if(array_key_exists('Parent',$tags)){
+            $attr_uniquename = $tags['Parent'][0]."-$type-$landmark:$fmin..$max";
+         } else { 
+           print "ERROR: cannot generate a uniquename for feature on line $i\n";
+           exit;
+         }
+         $attr_name = $attr_uniquename;
       }
 
       // if a name is not specified then use the unique name
@@ -407,7 +412,7 @@ function tripal_core_load_gff3($gff_file, $organism_id,$analysis_id,$add_only =0
       
       // if the option is to remove or refresh then we want to remove
       // the feature from the database.
-      if(!$generate_name and ($remove or $refresh)){
+      if($remove or $refresh){
          print "Removing feature '$attr_uniquename'\n";
          $sql = "DELETE FROM {feature}
                  WHERE organism_id = %d and uniquename = '%s' and type_id = %d";
@@ -425,17 +430,14 @@ function tripal_core_load_gff3($gff_file, $organism_id,$analysis_id,$add_only =0
          // add/update the feature
          $feature = tripal_core_load_gff3_feature($organism,$analysis_id,$cvterm,
             $attr_uniquename,$attr_name,$residues,$attr_is_analysis,
-            $attr_is_obsolete, $add_only,$generate_name);
+            $attr_is_obsolete, $add_only);
 
          // store all of the features so far use later by parent and target
          // relationships
          $gff_features[$feature->uniquename]['type'] = $type;
 
          if($feature){
-            if($generate_name){
-               $attr_uniquename = $feature->uniquename;
-            }
- 
+
             // add/update the featureloc if the landmark and the ID are not the same
             // if they are the same then this entry in the GFF is probably a landmark identifier
             if(strcmp($landmark,$attr_uniquename)!=0){
@@ -698,11 +700,7 @@ function tripal_core_load_gff3_alias($feature,$aliases){
  * @ingroup gff3_loader
  */
 function tripal_core_load_gff3_feature($organism,$analysis_id,$cvterm,$uniquename,$name,
-   $residues,$is_analysis='f',$is_obsolete='f',$add_only,$generate_name)  {
-
-   if($generate_name){
-      $uniquename = 'tripal_temp_loading_name' . rand(1,99999999);
-   }
+   $residues,$is_analysis='f',$is_obsolete='f',$add_only)  {
 
    // check to see if the feature already exists
    $feature_sql = "SELECT * FROM {feature} 
@@ -761,24 +759,6 @@ function tripal_core_load_gff3_feature($organism,$analysis_id,$cvterm,$uniquenam
       }
    }
 
-   // now that we've added the feature let's reset it's uniquename to be
-   // the feature id
-   if($generate_name){
-      $usql = "UPDATE {feature} 
-               SET name = '%s', uniquename = '%s'
-               WHERE feature_id = %d";
-      print "   Renaming feature '$uniquename' => ";
-      $uniquename = "$feature->feature_id";
-      print "$uniquename\n";
-      $result = db_query($usql,$uniquename,$uniquename,$feature_id);
-      if(!$result){
-         print "ERROR: failed to update unnamed feature '$uniquename' with generic name\n";
-         return 0;
-      }
-      $feature->name = $uniquename;
-      $feature->uniquename = $uniquename;
-   }
-
    return $feature;
 }
 
@@ -810,9 +790,7 @@ function tripal_core_load_gff3_featureloc($feature,$organism,$landmark,$fmin,
    // last rank value
    $rank = -1;  
    $exists = 0;  
-   $featureloc_sql = "SELECT FL.featureloc_id,FL.fmin,FL.fmax, FL.is_fmin_partial,
-                         FL.is_fmax_partial, FL.strand, FL.phase, FL.residue_info,
-                         FL.locgroup, F.uniquename as srcname
+   $featureloc_sql = "SELECT FL.featureloc_id,FL.fmin,FL.fmax,F.uniquename as srcname
                       FROM {featureloc} FL
                         INNER JOIN {feature} F on F.feature_id = FL.srcfeature_id
                       WHERE FL.feature_id = %d
@@ -820,11 +798,7 @@ function tripal_core_load_gff3_featureloc($feature,$organism,$landmark,$fmin,
    $recs = db_query($featureloc_sql,$feature->feature_id);
    while ($featureloc = db_fetch_object($recs)){
       if(strcmp($featureloc->srcname,$landmark)==0 and
-         $featureloc->fmin == $fmin and strcmp($featureloc->is_fmin_partial,$is_fmin_partial)==0 and
-         $featureloc->fmax == $fmax and strcmp($featureloc->is_fmax_partial,$is_fmax_partial)==0 and
-         $featureloc->phase == $phase and $featureloc->strand == $strand and
-         strcmp($featureloc->residue_info,$residue_info)==0 and 
-         $featureloc->locgroup == $locgroup){
+         $featureloc->fmin == $fmin and $featureloc->fmax == $fmax){
          // this is the same featureloc, so do nothing... no need to update
          //TODO: need more checks here
          print "   No change to featureloc\n";
@@ -859,7 +833,7 @@ function tripal_core_load_gff3_featureloc($feature,$organism,$landmark,$fmin,
                $strand,$phase,$residue_info,$locgroup,$rank);
       if(!$result){
          print "ERROR: failed to insert featureloc\n";
-exit;
+         exit;
          return 0;
       }
    }
