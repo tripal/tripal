@@ -1,9 +1,10 @@
 <?php
-// $Id: views_handler_field_date.inc,v 1.3 2009/06/02 18:20:18 merlinofchaos Exp $
+
 /**
  * A handler to provide proper displays for dates.
  *
  * @ingroup views_field_handlers
+ * @ingroup tripal_core
  */
 class views_handler_field_readable_date extends views_handler_field {
   function option_definition() {

@@ -3,8 +3,10 @@
 // Copyright 2009 Clemson University
 //
 
-/************************************************************************
+/**
 *
+*
+* @ingroup tripal_core
 */
 function tripal_add_job ($job_name,$modulename,$callback,$arguments,$uid,
    $priority = 10){
@@ -29,8 +31,10 @@ function tripal_add_job ($job_name,$modulename,$callback,$arguments,$uid,
 
    return 1;
 }
-/************************************************************************
+/**
 *   
+*
+* @ingroup tripal_core
 */
 function tripal_job_set_progress($job_id,$percentage){
 
@@ -44,8 +48,10 @@ function tripal_job_set_progress($job_id,$percentage){
    }
    return 0;
 }
-/************************************************************************
+/**
 *   Returns a list of jobs associated with the given module
+*
+* @ingroup tripal_core
 */
 function tripal_get_module_active_jobs ($modulename){
    $sql =  "SELECT * FROM {tripal_jobs} TJ ".
@@ -53,8 +59,10 @@ function tripal_get_module_active_jobs ($modulename){
   return db_fetch_object(db_query($sql,$modulename));
 
 }
-/************************************************************************
+/**
 *
+*
+* @ingroup tripal_core
 */
 function tripal_jobs_report () {
    //$jobs = db_query("SELECT * FROM {tripal_jobs} ORDER BY job_id DESC");
@@ -105,8 +113,10 @@ function tripal_jobs_report () {
 	$output .= theme_pager();
    return $output;
 }
-/************************************************************************
+/**
 *
+*
+* @ingroup tripal_core
 */
 function tripal_jobs_launch (){
    
@@ -151,8 +161,10 @@ function tripal_jobs_launch (){
 		// send an email to the user advising that the job has finished
    }
 }
-/************************************************************************
+/**
 *
+*
+* @ingroup tripal_core
 */
 function tripal_jobs_check_running () {
    // iterate through each job that has not ended

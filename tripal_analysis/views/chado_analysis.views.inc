@@ -7,6 +7,8 @@
  *
  * The main need for description of this table to views is to join chado data with drupal nodes
  *
+ *
+ * @ingroup tripal_analysis
  */
 function retrieve_chado_analysis_views_data () {
 	global $db_url;

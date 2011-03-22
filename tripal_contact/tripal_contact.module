@@ -9,6 +9,13 @@
  * @see http://gmod.org/wiki/Chado_General_Module
  */
 
+/**
+ * @defgroup tripal_contact Contact Module
+ * @{
+ * Provides functions for managing chado contacts
+ * @}
+ */
+
 require('tripal_contact.api.inc');
 
 /*************************************************************************
@@ -16,6 +23,8 @@ require('tripal_contact.api.inc');
  * Purpose: Essentially this hook tells drupal that there is views support for
  *  for this module which then includes tripal_contact.views.inc where all the
  *  views integration code is
+ *
+ * @ingroup tripal_contact
  */ 
 function tripal_contact_views_api() {
    return array(

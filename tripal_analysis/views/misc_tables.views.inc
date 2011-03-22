@@ -15,6 +15,8 @@
         ),
       ); 
  *   @endcode
+ *
+ * @ingroup tripal_analysis
  */
 function retrieve_analysis_misc_tables_views_data() {
   $data = array();

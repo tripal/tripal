@@ -8,9 +8,18 @@ require_once "bulk_loader.php";
 
 require_once "tripal_core.api.inc";
 
-/*************************************************************************
-*
-*/
+/**
+ * @defgroup tripal_core Core Tripal Module
+ * @{
+ * Provides basic functions for interacting with chado
+ * @}
+ */
+ 
+/**
+ *
+ *
+ * @ingroup tripal_core
+ */
 function tripal_core_init(){
    // the two lines below are necessary to ensure that the search_path
    // variable is always set.  In the case where a view needs to query the
@@ -36,9 +45,12 @@ function tripal_core_init(){
       tripal_db_set_active($previous_db);  // now use drupal database
    }
 }
-/*************************************************************************
-*
-*/
+
+/**
+ *
+ *
+ * @ingroup tripal_core
+ */
 function tripal_create_moddir($module_name){
    // make the data directory for this module
    $data_dir = file_directory_path() . "/tripal/$module_name";
@@ -50,16 +62,22 @@ function tripal_create_moddir($module_name){
       watchdog('tripal_core',$message,array(),WATCHDOG_ERROR);
    }
 }
-/*************************************************************************
-*
-*/
+
+/**
+ *
+ *
+ * @ingroup tripal_core
+ */
 function tripal_get_moddir($module_name){
    $data_dir = file_directory_path() . "/tripal/$module_name";
    return $data_dir;
 }
-/*************************************************************************
-*
-*/
+
+/**
+ *
+ *
+ * @ingroup tripal_core
+ */
 function tripal_core_menu() {
    $items = array();
    
@@ -84,7 +102,7 @@ function tripal_core_menu() {
      'access arguments' => array('access administration pages'),
      'type' => MENU_NORMAL_ITEM,
    );
-*/
+ */
    $items['admin/tripal/tripal_jobs'] = array(
      'title' => 'Jobs',
      'description' => 'Jobs managed by Tripal',
@@ -174,15 +192,20 @@ function tripal_core_menu() {
 
   return $items;
 }
-/************************************************************************
-*  The typical display for information on feature, organism, library, etc
-*  pages is to use the Tripal expandable boxes.  However, some sites may
-*  prefer to use a menu system to keep the pages less cluttered.  This
-*  function provides a common interface for setting a Drupal variable
-*  that indicates whether or not the content is displayed in a box or as
-*  a menu item.  This function just reverses the setting each time it is
-*  called
-*/
+
+/**
+ * Provides the tripal box menu functionality
+ *
+ *  The typical display for information on feature, organism, library, etc
+ *  pages is to use the Tripal expandable boxes.  However, some sites may
+ *  prefer to use a menu system to keep the pages less cluttered.  This
+ *  function provides a common interface for setting a Drupal variable
+ *  that indicates whether or not the content is displayed in a box or as
+ *  a menu item.  This function just reverses the setting each time it is
+ *  called
+ *
+ * @ingroup tripal_core
+ */
 function tripal_toggle_box_menu($module,$box_name,$nid){
    // if the content is not in a menu then we wnat to turn on the
    // menu. If the content is in a menu item then we want to turn
@@ -194,9 +217,12 @@ function tripal_toggle_box_menu($module,$box_name,$nid){
    }
    drupal_goto("node/$nid");
 }
-/************************************************************************
-*
-*/
+
+/**
+ *
+ *
+ * @ingroup tripal_core
+ */
 function tripal_core_admin () {
 
 
@@ -210,12 +236,17 @@ function tripal_core_admin () {
    
    return system_settings_form($form);
 }
-/************************************************************************
-* The tripal_db_set_active function is used to prevent namespace collisions
-* when chado and drupal are installed in the same database but in different
-* schemas.  It is also used for backwards compatibility with older versions
-* of tripal or in cases where chado is located outside of the Drupal database.
-*/
+
+/**
+ * Set the Tripal Database
+ *
+ * The tripal_db_set_active function is used to prevent namespace collisions
+ * when chado and drupal are installed in the same database but in different
+ * schemas.  It is also used for backwards compatibility with older versions
+ * of tripal or in cases where chado is located outside of the Drupal database.
+ *
+ * @ingroup tripal_core
+ */
 function tripal_db_set_active($dbname){
    global $db_url, $db_type;
    $chado_exists = 0;
@@ -255,9 +286,12 @@ function tripal_db_set_active($dbname){
    }
    else return db_set_active($dbname);
 }
-/*************************************************************************
-*
-*/
+
+/**
+ *
+ *
+ * @ingroup tripal_core
+ */
 function tripal_core_is_chado_installed(){
    global $db_url, $db_type;
 
@@ -275,11 +309,15 @@ function tripal_core_is_chado_installed(){
    }
    return false;
 }
-/*************************************************************************
+
+/**
  * Implements hook_views_api()
+ *
  * Purpose: Essentially this hook tells drupal that there is views support for
  *  for this module which then includes tripal_core.views.inc where all the
  *  views integration code is
+ *
+ * @ingroup tripal_core
  */ 
 function tripal_core_views_api() {
    return array(
@@ -287,23 +325,28 @@ function tripal_core_views_api() {
    );
 }
 
-/*************************************************************************
+/**
  * Purpose: Get max rank for a given set of criteria
  *   This function was developed with the many property tables in chado in mind
  *
- * @params tablename: the name of the chado table you want to select the max rank from
- *    this table must contain a rank column of type integer
- * @params where_options: array(
+ * @param $tablename
+ *    The name of the chado table you want to select the max rank from this table must contain a 
+ *    rank column of type integer
+ * @param $where_options
+ *   where options should include the id and type for that table to correctly
+ *     group a set of records together where the only difference are the value and rank
+ * @code 
+ *  array(
  *													<column_name> => array(
  *														'type' => <type of column: INT/STRING>,
  *														'value' => <the value you want to filter on>,
  *														'exact' => <if TRUE use =; if FALSE use ~>,
  *													)
  *				)
- *     where options should include the id and type for that table to correctly
- *     group a set of records together where the only difference are the value and rank
+ * @endcode
  * @return the maximum rank
  *
+ * @ingroup tripal_core
  */
 function tripal_get_max_chado_rank ($tablename, $where_options) {
 

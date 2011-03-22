@@ -1,9 +1,13 @@
 <?php
 
-/* @file
+/**
  * Purpose: This Handler provides a select list for the type field
+ *
  *  NOTE: This handler only works when applied to the type_id field in the base_table of
  *  this view.
+ *
+ * @ingroup views_filter_handlers
+ * @ingroup tripal_core
  */
 class views_handler_filter_chado_select_cvterm_name extends views_handler_filter_string {
 

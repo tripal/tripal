@@ -13,11 +13,14 @@
 /*************************************************************************
  * Implements hook_views_data()
  * Purpose: Describe chado/tripal tables & fields to views
+ *
  * @return: a data array which follows the structure outlined in the
  *   views2 documentation for this hook. Essentially, it's an array of table
  *   definitions keyed by chado/tripal table name. Each table definition 
  *   includes basic details about the table, fields in that table and
  *   relationships between that table and others (joins)
+ *
+ * @ingroup tripal_analysis
  */
 require('views/analysis.views.inc');
 require('views/chado_analysis.views.inc');
@@ -38,6 +41,8 @@ function tripal_analysis_views_data()  {
  *   where a handler describes either "the type of field", 
  *   "how a field should be filtered", "how a field should be sorted"
  * @return: An array of handler definitions
+ *
+ * @ingroup tripal_analysis
  */
 function chado_analysis_views_views_handlers() {
   return array(

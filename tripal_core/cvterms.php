@@ -3,8 +3,10 @@
 // Copyright 2009 Clemson University
 //
 
-/************************************************************************
+/**
 *
+*
+* @ingroup tripal_core
 */
 function tripal_add_cvterms ($name,$definition,$cv_name = 'tripal',$db_name='tripal'){
    
@@ -49,8 +51,10 @@ function tripal_add_cvterms ($name,$definition,$cv_name = 'tripal',$db_name='tri
      // TODO -- ERROR HANDLING
    }
 }
-/************************************************************************
+/**
 *
+*
+* @ingroup tripal_core
 */
 function tripal_add_db($db_name,$description,$urlprefix,$url){
    $previous_db = tripal_db_set_active('chado');  // use chado database
@@ -75,8 +79,10 @@ function tripal_add_db($db_name,$description,$urlprefix,$url){
    return $db->db_id;
 }
 
-/************************************************************************
+/**
 *
+*
+* @ingroup tripal_core
 */
 function tripal_delete_db($db_name){
    $previous_db = tripal_db_set_active('chado');  // use chado database
@@ -86,8 +92,10 @@ function tripal_delete_db($db_name){
    
 }
 
-/************************************************************************
+/**
 *
+*
+* @ingroup tripal_core
 */
 function tripal_add_cv($cv_name,$definition){
    $previous_db = tripal_db_set_active('chado');  // use chado database

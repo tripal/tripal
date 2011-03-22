@@ -7,7 +7,7 @@
  *        hook_chado_<table name>_schema().
  */
  
-/****************************************************************************
+/**
  * Implements hook_organism_dbxref_schema()
  * Purpose: To describe the structure of organism_dbxref to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -16,7 +16,11 @@
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_organism_dbxref_schema () {
   $description = array();
   
@@ -64,7 +68,7 @@ function tripal_core_chado_organism_dbxref_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_organismprop_schema()
  * Purpose: To describe the structure of organismprop to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -73,7 +77,11 @@ function tripal_core_chado_organism_dbxref_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_organismprop_schema () {
   $description = array();
   
@@ -133,7 +141,7 @@ function tripal_core_chado_organismprop_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_phendesc_schema()
  * Purpose: To describe the structure of phendesc to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -142,7 +150,11 @@ function tripal_core_chado_organismprop_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_phendesc_schema () {
   $description = array();
   
@@ -210,7 +222,7 @@ function tripal_core_chado_phendesc_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_phenotype_schema()
  * Purpose: To describe the structure of phenotype to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -219,7 +231,11 @@ function tripal_core_chado_phendesc_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_phenotype_schema () {
   $description = array();
   
@@ -289,7 +305,7 @@ function tripal_core_chado_phenotype_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_organism_schema()
  * Purpose: To describe the structure of organism to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -298,7 +314,11 @@ function tripal_core_chado_phenotype_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_organism_schema () {
   $description = array();
   
@@ -359,7 +379,7 @@ function tripal_core_chado_organism_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_materialized_view_schema()
  * Purpose: To describe the structure of materialized_view to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -368,7 +388,11 @@ function tripal_core_chado_organism_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_materialized_view_schema () {
   $description = array();
   
@@ -446,7 +470,7 @@ function tripal_core_chado_materialized_view_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_libraryprop_schema()
  * Purpose: To describe the structure of libraryprop to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -455,7 +479,11 @@ function tripal_core_chado_materialized_view_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_libraryprop_schema () {
   $description = array();
   
@@ -515,7 +543,7 @@ function tripal_core_chado_libraryprop_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_libraryprop_pub_schema()
  * Purpose: To describe the structure of libraryprop_pub to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -524,7 +552,11 @@ function tripal_core_chado_libraryprop_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_libraryprop_pub_schema () {
   $description = array();
   
@@ -572,7 +604,7 @@ function tripal_core_chado_libraryprop_pub_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_magedocumentation_schema()
  * Purpose: To describe the structure of magedocumentation to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -581,7 +613,11 @@ function tripal_core_chado_libraryprop_pub_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_magedocumentation_schema () {
   $description = array();
   
@@ -638,7 +674,7 @@ function tripal_core_chado_magedocumentation_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_mageml_schema()
  * Purpose: To describe the structure of mageml to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -647,7 +683,11 @@ function tripal_core_chado_magedocumentation_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_mageml_schema () {
   $description = array();
   
@@ -685,7 +725,7 @@ function tripal_core_chado_mageml_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_phenotype_comparison_schema()
  * Purpose: To describe the structure of phenotype_comparison to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -694,7 +734,11 @@ function tripal_core_chado_mageml_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_phenotype_comparison_schema () {
   $description = array();
   
@@ -779,7 +823,7 @@ function tripal_core_chado_phenotype_comparison_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_phenotype_comparison_cvterm_schema()
  * Purpose: To describe the structure of phenotype_comparison_cvterm to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -788,7 +832,11 @@ function tripal_core_chado_phenotype_comparison_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_phenotype_comparison_cvterm_schema () {
   $description = array();
   
@@ -847,7 +895,7 @@ function tripal_core_chado_phenotype_comparison_cvterm_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_phylonode_relationship_schema()
  * Purpose: To describe the structure of phylonode_relationship to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -856,7 +904,11 @@ function tripal_core_chado_phenotype_comparison_cvterm_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_phylonode_relationship_schema () {
   $description = array();
   
@@ -923,7 +975,7 @@ function tripal_core_chado_phylonode_relationship_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_phylonodeprop_schema()
  * Purpose: To describe the structure of phylonodeprop to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -932,7 +984,11 @@ function tripal_core_chado_phylonode_relationship_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_phylonodeprop_schema () {
   $description = array();
   
@@ -994,7 +1050,7 @@ function tripal_core_chado_phylonodeprop_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_phylotree_schema()
  * Purpose: To describe the structure of phylotree to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -1003,7 +1059,11 @@ function tripal_core_chado_phylonodeprop_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_phylotree_schema () {
   $description = array();
   
@@ -1060,7 +1120,7 @@ function tripal_core_chado_phylotree_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_phylotree_pub_schema()
  * Purpose: To describe the structure of phylotree_pub to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -1069,7 +1129,11 @@ function tripal_core_chado_phylotree_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_phylotree_pub_schema () {
   $description = array();
   
@@ -1117,7 +1181,7 @@ function tripal_core_chado_phylotree_pub_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_phylonode_pub_schema()
  * Purpose: To describe the structure of phylonode_pub to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -1126,7 +1190,11 @@ function tripal_core_chado_phylotree_pub_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_phylonode_pub_schema () {
   $description = array();
   
@@ -1174,7 +1242,7 @@ function tripal_core_chado_phylonode_pub_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_phylonode_organism_schema()
  * Purpose: To describe the structure of phylonode_organism to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -1183,7 +1251,11 @@ function tripal_core_chado_phylonode_pub_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_phylonode_organism_schema () {
   $description = array();
   
@@ -1230,7 +1302,7 @@ function tripal_core_chado_phylonode_organism_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_phenotype_cvterm_schema()
  * Purpose: To describe the structure of phenotype_cvterm to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -1239,7 +1311,11 @@ function tripal_core_chado_phylonode_organism_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_phenotype_cvterm_schema () {
   $description = array();
   
@@ -1294,7 +1370,7 @@ function tripal_core_chado_phenotype_cvterm_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_phenstatement_schema()
  * Purpose: To describe the structure of phenstatement to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -1303,7 +1379,11 @@ function tripal_core_chado_phenotype_cvterm_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_phenstatement_schema () {
   $description = array();
   
@@ -1369,7 +1449,7 @@ function tripal_core_chado_phenstatement_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_phylonode_schema()
  * Purpose: To describe the structure of phylonode to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -1378,7 +1458,11 @@ function tripal_core_chado_phenstatement_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_phylonode_schema () {
   $description = array();
   
@@ -1456,7 +1540,7 @@ function tripal_core_chado_phylonode_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_phylonode_dbxref_schema()
  * Purpose: To describe the structure of phylonode_dbxref to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -1465,7 +1549,11 @@ function tripal_core_chado_phylonode_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_phylonode_dbxref_schema () {
   $description = array();
   
@@ -1513,7 +1601,7 @@ function tripal_core_chado_phylonode_dbxref_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_library_synonym_schema()
  * Purpose: To describe the structure of library_synonym to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -1522,7 +1610,11 @@ function tripal_core_chado_phylonode_dbxref_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_library_synonym_schema () {
   $description = array();
   
@@ -1591,7 +1683,7 @@ function tripal_core_chado_library_synonym_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_library_pub_schema()
  * Purpose: To describe the structure of library_pub to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -1600,7 +1692,11 @@ function tripal_core_chado_library_synonym_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_library_pub_schema () {
   $description = array();
   
@@ -1648,7 +1744,7 @@ function tripal_core_chado_library_pub_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_featureprop_pub_schema()
  * Purpose: To describe the structure of featureprop_pub to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -1657,7 +1753,11 @@ function tripal_core_chado_library_pub_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_featureprop_pub_schema () {
   $description = array();
   
@@ -1705,7 +1805,7 @@ function tripal_core_chado_featureprop_pub_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_featureprop_schema()
  * Purpose: To describe the structure of featureprop to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -1714,7 +1814,11 @@ function tripal_core_chado_featureprop_pub_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_featureprop_schema () {
   $description = array();
   
@@ -1774,7 +1878,7 @@ function tripal_core_chado_featureprop_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_featurerange_schema()
  * Purpose: To describe the structure of featurerange to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -1783,7 +1887,11 @@ function tripal_core_chado_featureprop_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_featurerange_schema () {
   $description = array();
   
@@ -1865,7 +1973,7 @@ function tripal_core_chado_featurerange_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_featureset_meets_schema()
  * Purpose: To describe the structure of featureset_meets to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -1874,7 +1982,11 @@ function tripal_core_chado_featurerange_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_featureset_meets_schema () {
   $description = array();
   
@@ -1906,7 +2018,7 @@ function tripal_core_chado_featureset_meets_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_fnr_type_schema()
  * Purpose: To describe the structure of fnr_type to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -1915,7 +2027,11 @@ function tripal_core_chado_featureset_meets_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_fnr_type_schema () {
   $description = array();
   
@@ -1990,7 +2106,7 @@ function tripal_core_chado_fnr_type_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_featurepos_schema()
  * Purpose: To describe the structure of featurepos to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -1999,7 +2115,11 @@ function tripal_core_chado_fnr_type_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_featurepos_schema () {
   $description = array();
   
@@ -2057,7 +2177,7 @@ function tripal_core_chado_featurepos_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_featuremap_pub_schema()
  * Purpose: To describe the structure of featuremap_pub to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -2066,7 +2186,11 @@ function tripal_core_chado_featurepos_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_featuremap_pub_schema () {
   $description = array();
   
@@ -2110,7 +2234,7 @@ function tripal_core_chado_featuremap_pub_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_feature_union_schema()
  * Purpose: To describe the structure of feature_union to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -2119,7 +2243,11 @@ function tripal_core_chado_featuremap_pub_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_feature_union_schema () {
   $description = array();
   
@@ -2178,7 +2306,7 @@ function tripal_core_chado_feature_union_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_featureloc_schema()
  * Purpose: To describe the structure of featureloc to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -2187,7 +2315,11 @@ function tripal_core_chado_feature_union_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_featureloc_schema () {
   $description = array();
   
@@ -2298,7 +2430,7 @@ function tripal_core_chado_featureloc_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_featureloc_pub_schema()
  * Purpose: To describe the structure of featureloc_pub to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -2307,7 +2439,11 @@ function tripal_core_chado_featureloc_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_featureloc_pub_schema () {
   $description = array();
   
@@ -2355,7 +2491,7 @@ function tripal_core_chado_featureloc_pub_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_featuremap_schema()
  * Purpose: To describe the structure of featuremap to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -2364,7 +2500,11 @@ function tripal_core_chado_featureloc_pub_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_featuremap_schema () {
   $description = array();
   
@@ -2411,7 +2551,7 @@ function tripal_core_chado_featuremap_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_fp_key_schema()
  * Purpose: To describe the structure of fp_key to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -2420,7 +2560,11 @@ function tripal_core_chado_featuremap_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_fp_key_schema () {
   $description = array();
   
@@ -2458,7 +2602,7 @@ function tripal_core_chado_fp_key_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_genotype_schema()
  * Purpose: To describe the structure of genotype to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -2467,7 +2611,11 @@ function tripal_core_chado_fp_key_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_genotype_schema () {
   $description = array();
   
@@ -2520,7 +2668,7 @@ function tripal_core_chado_genotype_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_library_cvterm_schema()
  * Purpose: To describe the structure of library_cvterm to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -2529,7 +2677,11 @@ function tripal_core_chado_genotype_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_library_cvterm_schema () {
   $description = array();
   
@@ -2586,7 +2738,7 @@ function tripal_core_chado_library_cvterm_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_library_dbxref_schema()
  * Purpose: To describe the structure of library_dbxref to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -2595,7 +2747,11 @@ function tripal_core_chado_library_cvterm_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_library_dbxref_schema () {
   $description = array();
   
@@ -2649,7 +2805,7 @@ function tripal_core_chado_library_dbxref_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_library_feature_schema()
  * Purpose: To describe the structure of library_feature to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -2658,7 +2814,11 @@ function tripal_core_chado_library_dbxref_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_library_feature_schema () {
   $description = array();
   
@@ -2706,7 +2866,7 @@ function tripal_core_chado_library_feature_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_library_feature_count_schema()
  * Purpose: To describe the structure of library_feature_count to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -2715,7 +2875,11 @@ function tripal_core_chado_library_feature_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_library_feature_count_schema () {
   $description = array();
   
@@ -2762,7 +2926,7 @@ function tripal_core_chado_library_feature_count_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_library_schema()
  * Purpose: To describe the structure of library to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -2771,7 +2935,11 @@ function tripal_core_chado_library_feature_count_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_library_schema () {
   $description = array();
   
@@ -2855,7 +3023,7 @@ function tripal_core_chado_library_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_intronloc_view_schema()
  * Purpose: To describe the structure of intronloc_view to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -2864,7 +3032,11 @@ function tripal_core_chado_library_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_intronloc_view_schema () {
   $description = array();
   
@@ -2917,7 +3089,7 @@ function tripal_core_chado_intronloc_view_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_gff3atts_schema()
  * Purpose: To describe the structure of gff3atts to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -2926,7 +3098,11 @@ function tripal_core_chado_intronloc_view_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_gff3atts_schema () {
   $description = array();
   
@@ -2963,7 +3139,7 @@ function tripal_core_chado_gff3atts_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_gff3view_schema()
  * Purpose: To describe the structure of gff3view to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -2972,7 +3148,11 @@ function tripal_core_chado_gff3atts_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_gff3view_schema () {
   $description = array();
   
@@ -3060,7 +3240,7 @@ function tripal_core_chado_gff3view_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_gffatts_schema()
  * Purpose: To describe the structure of gffatts to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -3069,7 +3249,11 @@ function tripal_core_chado_gff3view_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_gffatts_schema () {
   $description = array();
   
@@ -3106,7 +3290,7 @@ function tripal_core_chado_gffatts_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_intron_combined_view_schema()
  * Purpose: To describe the structure of intron_combined_view to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -3115,7 +3299,11 @@ function tripal_core_chado_gffatts_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_intron_combined_view_schema () {
   $description = array();
   
@@ -3178,7 +3366,7 @@ function tripal_core_chado_intron_combined_view_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_project_schema()
  * Purpose: To describe the structure of project to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -3187,7 +3375,11 @@ function tripal_core_chado_intron_combined_view_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_project_schema () {
   $description = array();
   
@@ -3230,7 +3422,7 @@ function tripal_core_chado_project_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_protein_coding_gene_schema()
  * Purpose: To describe the structure of protein_coding_gene to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -3239,7 +3431,11 @@ function tripal_core_chado_project_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_protein_coding_gene_schema () {
   $description = array();
   
@@ -3328,7 +3524,7 @@ function tripal_core_chado_protein_coding_gene_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_studyfactorvalue_schema()
  * Purpose: To describe the structure of studyfactorvalue to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -3337,7 +3533,11 @@ function tripal_core_chado_protein_coding_gene_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_studyfactorvalue_schema () {
   $description = array();
   
@@ -3397,7 +3597,7 @@ function tripal_core_chado_studyfactorvalue_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_studyfactor_schema()
  * Purpose: To describe the structure of studyfactor to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -3406,7 +3606,11 @@ function tripal_core_chado_studyfactorvalue_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_studyfactor_schema () {
   $description = array();
   
@@ -3460,7 +3664,7 @@ function tripal_core_chado_studyfactor_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_studyprop_schema()
  * Purpose: To describe the structure of studyprop to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -3469,7 +3673,11 @@ function tripal_core_chado_studyfactor_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_studyprop_schema () {
   $description = array();
   
@@ -3529,7 +3737,7 @@ function tripal_core_chado_studyprop_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_studyprop_feature_schema()
  * Purpose: To describe the structure of studyprop_feature to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -3538,7 +3746,11 @@ function tripal_core_chado_studyprop_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_studyprop_feature_schema () {
   $description = array();
   
@@ -3591,7 +3803,7 @@ function tripal_core_chado_studyprop_feature_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_synonym_schema()
  * Purpose: To describe the structure of synonym to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -3600,7 +3812,11 @@ function tripal_core_chado_studyprop_feature_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_synonym_schema () {
   $description = array();
   
@@ -3652,7 +3868,7 @@ function tripal_core_chado_synonym_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_studydesignprop_schema()
  * Purpose: To describe the structure of studydesignprop to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -3661,7 +3877,11 @@ function tripal_core_chado_synonym_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_studydesignprop_schema () {
   $description = array();
   
@@ -3721,7 +3941,7 @@ function tripal_core_chado_studydesignprop_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_studydesign_schema()
  * Purpose: To describe the structure of studydesign to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -3730,7 +3950,11 @@ function tripal_core_chado_studydesignprop_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_studydesign_schema () {
   $description = array();
   
@@ -3771,7 +3995,7 @@ function tripal_core_chado_studydesign_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_stockprop_schema()
  * Purpose: To describe the structure of stockprop to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -3780,7 +4004,11 @@ function tripal_core_chado_studydesign_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_stockprop_schema () {
   $description = array();
   
@@ -3840,7 +4068,7 @@ function tripal_core_chado_stockprop_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_stockprop_pub_schema()
  * Purpose: To describe the structure of stockprop_pub to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -3849,7 +4077,11 @@ function tripal_core_chado_stockprop_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_stockprop_pub_schema () {
   $description = array();
   
@@ -3897,7 +4129,7 @@ function tripal_core_chado_stockprop_pub_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_study_schema()
  * Purpose: To describe the structure of study to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -3906,7 +4138,11 @@ function tripal_core_chado_stockprop_pub_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_study_schema () {
   $description = array();
   
@@ -3971,7 +4207,7 @@ function tripal_core_chado_study_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_study_assay_schema()
  * Purpose: To describe the structure of study_assay to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -3980,7 +4216,11 @@ function tripal_core_chado_study_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_study_assay_schema () {
   $description = array();
   
@@ -4028,7 +4268,7 @@ function tripal_core_chado_study_assay_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_tableinfo_schema()
  * Purpose: To describe the structure of tableinfo to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -4037,7 +4277,11 @@ function tripal_core_chado_study_assay_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_tableinfo_schema () {
   $description = array();
   
@@ -4108,7 +4352,7 @@ function tripal_core_chado_tableinfo_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_treatment_schema()
  * Purpose: To describe the structure of treatment to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -4117,7 +4361,11 @@ function tripal_core_chado_tableinfo_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_treatment_schema () {
   $description = array();
   
@@ -4180,7 +4428,7 @@ function tripal_core_chado_treatment_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_tripal_obo_schema()
  * Purpose: To describe the structure of tripal_obo to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -4189,7 +4437,11 @@ function tripal_core_chado_treatment_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_tripal_obo_schema () {
   $description = array();
   
@@ -4234,7 +4486,7 @@ function tripal_core_chado_tripal_obo_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_tripal_organism_views_common_name_schema()
  * Purpose: To describe the structure of tripal_organism_views_common_name to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -4243,7 +4495,11 @@ function tripal_core_chado_tripal_obo_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_tripal_organism_views_common_name_schema () {
   $description = array();
   
@@ -4279,7 +4535,7 @@ function tripal_core_chado_tripal_organism_views_common_name_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_type_feature_count_schema()
  * Purpose: To describe the structure of type_feature_count to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -4288,7 +4544,11 @@ function tripal_core_chado_tripal_organism_views_common_name_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_type_feature_count_schema () {
   $description = array();
   
@@ -4322,7 +4582,7 @@ function tripal_core_chado_type_feature_count_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_stockcollectionprop_schema()
  * Purpose: To describe the structure of stockcollectionprop to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -4331,7 +4591,11 @@ function tripal_core_chado_type_feature_count_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_stockcollectionprop_schema () {
   $description = array();
   
@@ -4391,7 +4655,7 @@ function tripal_core_chado_stockcollectionprop_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_stockcollection_stock_schema()
  * Purpose: To describe the structure of stockcollection_stock to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -4400,7 +4664,11 @@ function tripal_core_chado_stockcollectionprop_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_stockcollection_stock_schema () {
   $description = array();
   
@@ -4448,7 +4716,7 @@ function tripal_core_chado_stockcollection_stock_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_public_feature_schema()
  * Purpose: To describe the structure of public_feature to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -4457,7 +4725,11 @@ function tripal_core_chado_stockcollection_stock_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_public_feature_schema () {
   $description = array();
   
@@ -4515,7 +4787,7 @@ function tripal_core_chado_public_feature_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_public_library_schema()
  * Purpose: To describe the structure of public_library to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -4524,7 +4796,11 @@ function tripal_core_chado_public_feature_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_public_library_schema () {
   $description = array();
   
@@ -4577,7 +4853,7 @@ function tripal_core_chado_public_library_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_public_organism_schema()
  * Purpose: To describe the structure of public_organism to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -4586,7 +4862,11 @@ function tripal_core_chado_public_library_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_public_organism_schema () {
   $description = array();
   
@@ -4639,7 +4919,7 @@ function tripal_core_chado_public_organism_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_pubprop_schema()
  * Purpose: To describe the structure of pubprop to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -4648,7 +4928,11 @@ function tripal_core_chado_public_organism_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_pubprop_schema () {
   $description = array();
   
@@ -4707,7 +4991,7 @@ function tripal_core_chado_pubprop_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_pubauthor_schema()
  * Purpose: To describe the structure of pubauthor to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -4716,7 +5000,11 @@ function tripal_core_chado_pubprop_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_pubauthor_schema () {
   $description = array();
   
@@ -4785,7 +5073,7 @@ function tripal_core_chado_pubauthor_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_pub_relationship_schema()
  * Purpose: To describe the structure of pub_relationship to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -4794,7 +5082,11 @@ function tripal_core_chado_pubauthor_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_pub_relationship_schema () {
   $description = array();
   
@@ -4851,7 +5143,7 @@ function tripal_core_chado_pub_relationship_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_protocol_schema()
  * Purpose: To describe the structure of protocol to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -4860,7 +5152,11 @@ function tripal_core_chado_pub_relationship_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_protocol_schema () {
   $description = array();
   
@@ -4940,7 +5236,7 @@ function tripal_core_chado_protocol_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_protocolparam_schema()
  * Purpose: To describe the structure of protocolparam to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -4949,7 +5245,11 @@ function tripal_core_chado_protocol_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_protocolparam_schema () {
   $description = array();
   
@@ -5017,7 +5317,7 @@ function tripal_core_chado_protocolparam_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_pub_schema()
  * Purpose: To describe the structure of pub to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -5026,7 +5326,11 @@ function tripal_core_chado_protocolparam_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_pub_schema () {
   $description = array();
   
@@ -5134,7 +5438,7 @@ function tripal_core_chado_pub_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_pub_dbxref_schema()
  * Purpose: To describe the structure of pub_dbxref to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -5143,7 +5447,11 @@ function tripal_core_chado_pub_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_pub_dbxref_schema () {
   $description = array();
   
@@ -5197,7 +5505,7 @@ function tripal_core_chado_pub_dbxref_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_quantification_schema()
  * Purpose: To describe the structure of quantification to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -5206,7 +5514,11 @@ function tripal_core_chado_pub_dbxref_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_quantification_schema () {
   $description = array();
   
@@ -5286,7 +5598,7 @@ function tripal_core_chado_quantification_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_quantification_relationship_schema()
  * Purpose: To describe the structure of quantification_relationship to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -5295,7 +5607,11 @@ function tripal_core_chado_quantification_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_quantification_relationship_schema () {
   $description = array();
   
@@ -5352,7 +5668,7 @@ function tripal_core_chado_quantification_relationship_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_stock_pub_schema()
  * Purpose: To describe the structure of stock_pub to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -5361,7 +5677,11 @@ function tripal_core_chado_quantification_relationship_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_stock_pub_schema () {
   $description = array();
   
@@ -5409,7 +5729,7 @@ function tripal_core_chado_stock_pub_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_stock_relationship_schema()
  * Purpose: To describe the structure of stock_relationship to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -5418,7 +5738,11 @@ function tripal_core_chado_stock_pub_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_stock_relationship_schema () {
   $description = array();
   
@@ -5487,7 +5811,7 @@ function tripal_core_chado_stock_relationship_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_stock_relationship_pub_schema()
  * Purpose: To describe the structure of stock_relationship_pub to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -5496,7 +5820,11 @@ function tripal_core_chado_stock_relationship_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_stock_relationship_pub_schema () {
   $description = array();
   
@@ -5544,7 +5872,7 @@ function tripal_core_chado_stock_relationship_pub_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_stockcollection_schema()
  * Purpose: To describe the structure of stockcollection to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -5553,7 +5881,11 @@ function tripal_core_chado_stock_relationship_pub_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_stockcollection_schema () {
   $description = array();
   
@@ -5618,7 +5950,7 @@ function tripal_core_chado_stockcollection_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_stock_genotype_schema()
  * Purpose: To describe the structure of stock_genotype to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -5627,7 +5959,11 @@ function tripal_core_chado_stockcollection_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_stock_genotype_schema () {
   $description = array();
   
@@ -5675,7 +6011,7 @@ function tripal_core_chado_stock_genotype_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_stock_dbxref_schema()
  * Purpose: To describe the structure of stock_dbxref to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -5684,7 +6020,11 @@ function tripal_core_chado_stock_genotype_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_stock_dbxref_schema () {
   $description = array();
   
@@ -5738,7 +6078,7 @@ function tripal_core_chado_stock_dbxref_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_quantificationprop_schema()
  * Purpose: To describe the structure of quantificationprop to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -5747,7 +6087,11 @@ function tripal_core_chado_stock_dbxref_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_quantificationprop_schema () {
   $description = array();
   
@@ -5807,7 +6151,7 @@ function tripal_core_chado_quantificationprop_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_stats_paths_to_root_schema()
  * Purpose: To describe the structure of stats_paths_to_root to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -5816,7 +6160,11 @@ function tripal_core_chado_quantificationprop_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_stats_paths_to_root_schema () {
   $description = array();
   
@@ -5866,7 +6214,7 @@ function tripal_core_chado_stats_paths_to_root_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_stock_schema()
  * Purpose: To describe the structure of stock to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -5875,7 +6223,11 @@ function tripal_core_chado_stats_paths_to_root_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_stock_schema () {
   $description = array();
   
@@ -5960,7 +6312,7 @@ function tripal_core_chado_stock_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_stock_cvterm_schema()
  * Purpose: To describe the structure of stock_cvterm to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -5969,7 +6321,11 @@ function tripal_core_chado_stock_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_stock_cvterm_schema () {
   $description = array();
   
@@ -6026,7 +6382,7 @@ function tripal_core_chado_stock_cvterm_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_feature_synonym_schema()
  * Purpose: To describe the structure of feature_synonym to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -6035,7 +6391,11 @@ function tripal_core_chado_stock_cvterm_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_feature_synonym_schema () {
   $description = array();
   
@@ -6104,7 +6464,7 @@ function tripal_core_chado_feature_synonym_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_feature_relationshipprop_pub_schema()
  * Purpose: To describe the structure of feature_relationshipprop_pub to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -6113,7 +6473,11 @@ function tripal_core_chado_feature_synonym_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_feature_relationshipprop_pub_schema () {
   $description = array();
   
@@ -6161,7 +6525,7 @@ function tripal_core_chado_feature_relationshipprop_pub_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_cell_line_relationship_schema()
  * Purpose: To describe the structure of cell_line_relationship to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -6170,7 +6534,11 @@ function tripal_core_chado_feature_relationshipprop_pub_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_cell_line_relationship_schema () {
   $description = array();
   
@@ -6218,7 +6586,7 @@ function tripal_core_chado_cell_line_relationship_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_cell_line_pub_schema()
  * Purpose: To describe the structure of cell_line_pub to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -6227,7 +6595,11 @@ function tripal_core_chado_cell_line_relationship_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_cell_line_pub_schema () {
   $description = array();
   
@@ -6269,7 +6641,7 @@ function tripal_core_chado_cell_line_pub_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_cell_line_synonym_schema()
  * Purpose: To describe the structure of cell_line_synonym to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -6278,7 +6650,11 @@ function tripal_core_chado_cell_line_pub_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_cell_line_synonym_schema () {
   $description = array();
   
@@ -6338,7 +6714,7 @@ function tripal_core_chado_cell_line_synonym_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_cell_lineprop_schema()
  * Purpose: To describe the structure of cell_lineprop to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -6347,7 +6723,11 @@ function tripal_core_chado_cell_line_synonym_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_cell_lineprop_schema () {
   $description = array();
   
@@ -6401,7 +6781,7 @@ function tripal_core_chado_cell_lineprop_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_cell_lineprop_pub_schema()
  * Purpose: To describe the structure of cell_lineprop_pub to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -6410,7 +6790,11 @@ function tripal_core_chado_cell_lineprop_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_cell_lineprop_pub_schema () {
   $description = array();
   
@@ -6452,7 +6836,7 @@ function tripal_core_chado_cell_lineprop_pub_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_cell_line_library_schema()
  * Purpose: To describe the structure of cell_line_library to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -6461,7 +6845,11 @@ function tripal_core_chado_cell_lineprop_pub_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_cell_line_library_schema () {
   $description = array();
   
@@ -6509,7 +6897,7 @@ function tripal_core_chado_cell_line_library_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_cell_line_feature_schema()
  * Purpose: To describe the structure of cell_line_feature to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -6518,7 +6906,11 @@ function tripal_core_chado_cell_line_library_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_cell_line_feature_schema () {
   $description = array();
   
@@ -6566,7 +6958,7 @@ function tripal_core_chado_cell_line_feature_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_cell_line_schema()
  * Purpose: To describe the structure of cell_line to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -6575,7 +6967,11 @@ function tripal_core_chado_cell_line_feature_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_cell_line_schema () {
   $description = array();
   
@@ -6636,7 +7032,7 @@ function tripal_core_chado_cell_line_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_cell_line_cvterm_schema()
  * Purpose: To describe the structure of cell_line_cvterm to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -6645,7 +7041,11 @@ function tripal_core_chado_cell_line_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_cell_line_cvterm_schema () {
   $description = array();
   
@@ -6700,7 +7100,7 @@ function tripal_core_chado_cell_line_cvterm_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_cell_line_cvtermprop_schema()
  * Purpose: To describe the structure of cell_line_cvtermprop to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -6709,7 +7109,11 @@ function tripal_core_chado_cell_line_cvterm_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_cell_line_cvtermprop_schema () {
   $description = array();
   
@@ -6763,7 +7167,7 @@ function tripal_core_chado_cell_line_cvtermprop_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_cell_line_dbxref_schema()
  * Purpose: To describe the structure of cell_line_dbxref to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -6772,7 +7176,11 @@ function tripal_core_chado_cell_line_cvtermprop_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_cell_line_dbxref_schema () {
   $description = array();
   
@@ -6820,7 +7228,7 @@ function tripal_core_chado_cell_line_dbxref_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_channel_schema()
  * Purpose: To describe the structure of channel to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -6829,7 +7237,11 @@ function tripal_core_chado_cell_line_dbxref_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_channel_schema () {
   $description = array();
   
@@ -6870,7 +7282,7 @@ function tripal_core_chado_channel_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_common_ancestor_cvterm_schema()
  * Purpose: To describe the structure of common_ancestor_cvterm to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -6879,7 +7291,11 @@ function tripal_core_chado_channel_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_common_ancestor_cvterm_schema () {
   $description = array();
   
@@ -6931,7 +7347,7 @@ function tripal_core_chado_common_ancestor_cvterm_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_cv_cvterm_count_with_obs_schema()
  * Purpose: To describe the structure of cv_cvterm_count_with_obs to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -6940,7 +7356,11 @@ function tripal_core_chado_common_ancestor_cvterm_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_cv_cvterm_count_with_obs_schema () {
   $description = array();
   
@@ -6974,7 +7394,7 @@ function tripal_core_chado_cv_cvterm_count_with_obs_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_cv_leaf_schema()
  * Purpose: To describe the structure of cv_leaf to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -6983,7 +7403,11 @@ function tripal_core_chado_cv_cvterm_count_with_obs_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_cv_leaf_schema () {
   $description = array();
   
@@ -7015,7 +7439,7 @@ function tripal_core_chado_cv_leaf_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_cv_link_count_schema()
  * Purpose: To describe the structure of cv_link_count to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -7024,7 +7448,11 @@ function tripal_core_chado_cv_leaf_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_cv_link_count_schema () {
   $description = array();
   
@@ -7070,7 +7498,7 @@ function tripal_core_chado_cv_link_count_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_cv_path_count_schema()
  * Purpose: To describe the structure of cv_path_count to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -7079,7 +7507,11 @@ function tripal_core_chado_cv_link_count_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_cv_path_count_schema () {
   $description = array();
   
@@ -7125,7 +7557,7 @@ function tripal_core_chado_cv_path_count_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_cv_cvterm_count_schema()
  * Purpose: To describe the structure of cv_cvterm_count to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -7134,7 +7566,11 @@ function tripal_core_chado_cv_path_count_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_cv_cvterm_count_schema () {
   $description = array();
   
@@ -7168,7 +7604,7 @@ function tripal_core_chado_cv_cvterm_count_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_cv_schema()
  * Purpose: To describe the structure of cv to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -7177,7 +7613,11 @@ function tripal_core_chado_cv_cvterm_count_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_cv_schema () {
   $description = array();
   
@@ -7219,7 +7659,7 @@ function tripal_core_chado_cv_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_common_descendant_cvterm_schema()
  * Purpose: To describe the structure of common_descendant_cvterm to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -7228,7 +7668,11 @@ function tripal_core_chado_cv_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_common_descendant_cvterm_schema () {
   $description = array();
   
@@ -7280,7 +7724,7 @@ function tripal_core_chado_common_descendant_cvterm_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_contact_schema()
  * Purpose: To describe the structure of contact to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -7289,7 +7733,11 @@ function tripal_core_chado_common_descendant_cvterm_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_contact_schema () {
   $description = array();
   
@@ -7337,7 +7785,7 @@ function tripal_core_chado_contact_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_contact_relationship_schema()
  * Purpose: To describe the structure of contact_relationship to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -7346,7 +7794,11 @@ function tripal_core_chado_contact_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_contact_relationship_schema () {
   $description = array();
   
@@ -7403,7 +7855,7 @@ function tripal_core_chado_contact_relationship_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_control_schema()
  * Purpose: To describe the structure of control to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -7412,7 +7864,11 @@ function tripal_core_chado_contact_relationship_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_control_schema () {
   $description = array();
   
@@ -7488,7 +7944,7 @@ function tripal_core_chado_control_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_biomaterialprop_schema()
  * Purpose: To describe the structure of biomaterialprop to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -7497,7 +7953,11 @@ function tripal_core_chado_control_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_biomaterialprop_schema () {
   $description = array();
   
@@ -7557,7 +8017,7 @@ function tripal_core_chado_biomaterialprop_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_biomaterial_treatment_schema()
  * Purpose: To describe the structure of biomaterial_treatment to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -7566,7 +8026,11 @@ function tripal_core_chado_biomaterialprop_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_biomaterial_treatment_schema () {
   $description = array();
   
@@ -7633,7 +8097,7 @@ function tripal_core_chado_biomaterial_treatment_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_acquisition_relationship_schema()
  * Purpose: To describe the structure of acquisition_relationship to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -7642,7 +8106,11 @@ function tripal_core_chado_biomaterial_treatment_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_acquisition_relationship_schema () {
   $description = array();
   
@@ -7711,7 +8179,7 @@ function tripal_core_chado_acquisition_relationship_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_acquisition_schema()
  * Purpose: To describe the structure of acquisition to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -7720,7 +8188,11 @@ function tripal_core_chado_acquisition_relationship_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_acquisition_schema () {
   $description = array();
   
@@ -7791,7 +8263,7 @@ function tripal_core_chado_acquisition_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_acquisitionprop_schema()
  * Purpose: To describe the structure of acquisitionprop to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -7800,7 +8272,11 @@ function tripal_core_chado_acquisition_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_acquisitionprop_schema () {
   $description = array();
   
@@ -7860,7 +8336,7 @@ function tripal_core_chado_acquisitionprop_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_all_feature_names_schema()
  * Purpose: To describe the structure of all_feature_names to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -7869,7 +8345,11 @@ function tripal_core_chado_acquisitionprop_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_all_feature_names_schema () {
   $description = array();
   
@@ -7907,7 +8387,7 @@ function tripal_core_chado_all_feature_names_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_analysis_schema()
  * Purpose: To describe the structure of analysis to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -7916,7 +8396,11 @@ function tripal_core_chado_all_feature_names_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_analysis_schema () {
   $description = array();
   
@@ -8001,7 +8485,7 @@ function tripal_core_chado_analysis_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_analysisfeature_schema()
  * Purpose: To describe the structure of analysisfeature to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -8010,7 +8494,11 @@ function tripal_core_chado_analysis_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_analysisfeature_schema () {
   $description = array();
   
@@ -8082,7 +8570,7 @@ function tripal_core_chado_analysisfeature_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_analysisfeatureprop_schema()
  * Purpose: To describe the structure of analysisfeatureprop to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -8091,7 +8579,11 @@ function tripal_core_chado_analysisfeature_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_analysisfeatureprop_schema () {
   $description = array();
   
@@ -8144,7 +8636,7 @@ function tripal_core_chado_analysisfeatureprop_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_assayprop_schema()
  * Purpose: To describe the structure of assayprop to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -8153,7 +8645,11 @@ function tripal_core_chado_analysisfeatureprop_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_assayprop_schema () {
   $description = array();
   
@@ -8213,7 +8709,7 @@ function tripal_core_chado_assayprop_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_biomaterial_schema()
  * Purpose: To describe the structure of biomaterial to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -8222,7 +8718,11 @@ function tripal_core_chado_assayprop_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_biomaterial_schema () {
   $description = array();
   
@@ -8287,7 +8787,7 @@ function tripal_core_chado_biomaterial_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_biomaterial_dbxref_schema()
  * Purpose: To describe the structure of biomaterial_dbxref to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -8296,7 +8796,11 @@ function tripal_core_chado_biomaterial_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_biomaterial_dbxref_schema () {
   $description = array();
   
@@ -8344,7 +8848,7 @@ function tripal_core_chado_biomaterial_dbxref_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_biomaterial_relationship_schema()
  * Purpose: To describe the structure of biomaterial_relationship to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -8353,7 +8857,11 @@ function tripal_core_chado_biomaterial_dbxref_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_biomaterial_relationship_schema () {
   $description = array();
   
@@ -8410,7 +8918,7 @@ function tripal_core_chado_biomaterial_relationship_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_assay_project_schema()
  * Purpose: To describe the structure of assay_project to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -8419,7 +8927,11 @@ function tripal_core_chado_biomaterial_relationship_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_assay_project_schema () {
   $description = array();
   
@@ -8467,7 +8979,7 @@ function tripal_core_chado_assay_project_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_assay_biomaterial_schema()
  * Purpose: To describe the structure of assay_biomaterial to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -8476,7 +8988,11 @@ function tripal_core_chado_assay_project_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_assay_biomaterial_schema () {
   $description = array();
   
@@ -8540,7 +9056,7 @@ function tripal_core_chado_assay_biomaterial_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_analysisprop_schema()
  * Purpose: To describe the structure of analysisprop to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -8549,7 +9065,11 @@ function tripal_core_chado_assay_biomaterial_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_analysisprop_schema () {
   $description = array();
   
@@ -8609,7 +9129,7 @@ function tripal_core_chado_analysisprop_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_arraydesign_schema()
  * Purpose: To describe the structure of arraydesign to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -8618,7 +9138,11 @@ function tripal_core_chado_analysisprop_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_arraydesign_schema () {
   $description = array();
   
@@ -8749,7 +9273,7 @@ function tripal_core_chado_arraydesign_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_arraydesignprop_schema()
  * Purpose: To describe the structure of arraydesignprop to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -8758,7 +9282,11 @@ function tripal_core_chado_arraydesign_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_arraydesignprop_schema () {
   $description = array();
   
@@ -8818,7 +9346,7 @@ function tripal_core_chado_arraydesignprop_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_assay_schema()
  * Purpose: To describe the structure of assay to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -8827,7 +9355,11 @@ function tripal_core_chado_arraydesignprop_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_assay_schema () {
   $description = array();
   
@@ -8916,7 +9448,7 @@ function tripal_core_chado_assay_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_cv_root_schema()
  * Purpose: To describe the structure of cv_root to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -8925,7 +9457,11 @@ function tripal_core_chado_assay_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_cv_root_schema () {
   $description = array();
   
@@ -8957,7 +9493,7 @@ function tripal_core_chado_cv_root_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_cvterm_schema()
  * Purpose: To describe the structure of cvterm to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -8966,7 +9502,11 @@ function tripal_core_chado_cv_root_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_cvterm_schema () {
   $description = array();
   
@@ -9044,7 +9584,7 @@ function tripal_core_chado_cvterm_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_feature_dbxref_schema()
  * Purpose: To describe the structure of feature_dbxref to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -9053,7 +9593,11 @@ function tripal_core_chado_cvterm_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_feature_dbxref_schema () {
   $description = array();
   
@@ -9107,7 +9651,7 @@ function tripal_core_chado_feature_dbxref_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_feature_cvtermprop_schema()
  * Purpose: To describe the structure of feature_cvtermprop to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -9116,7 +9660,11 @@ function tripal_core_chado_feature_dbxref_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_feature_cvtermprop_schema () {
   $description = array();
   
@@ -9176,7 +9724,7 @@ function tripal_core_chado_feature_cvtermprop_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_feature_difference_schema()
  * Purpose: To describe the structure of feature_difference to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -9185,7 +9733,11 @@ function tripal_core_chado_feature_cvtermprop_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_feature_difference_schema () {
   $description = array();
   
@@ -9238,7 +9790,7 @@ function tripal_core_chado_feature_difference_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_feature_disjoint_schema()
  * Purpose: To describe the structure of feature_disjoint to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -9247,7 +9799,11 @@ function tripal_core_chado_feature_difference_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_feature_disjoint_schema () {
   $description = array();
   
@@ -9279,7 +9835,7 @@ function tripal_core_chado_feature_disjoint_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_feature_distance_schema()
  * Purpose: To describe the structure of feature_distance to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -9288,7 +9844,11 @@ function tripal_core_chado_feature_disjoint_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_feature_distance_schema () {
   $description = array();
   
@@ -9342,7 +9902,7 @@ function tripal_core_chado_feature_distance_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_feature_cvterm_pub_schema()
  * Purpose: To describe the structure of feature_cvterm_pub to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -9351,7 +9911,11 @@ function tripal_core_chado_feature_distance_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_feature_cvterm_pub_schema () {
   $description = array();
   
@@ -9399,7 +9963,7 @@ function tripal_core_chado_feature_cvterm_pub_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_feature_cvterm_dbxref_schema()
  * Purpose: To describe the structure of feature_cvterm_dbxref to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -9408,7 +9972,11 @@ function tripal_core_chado_feature_cvterm_pub_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_feature_cvterm_dbxref_schema () {
   $description = array();
   
@@ -9456,7 +10024,7 @@ function tripal_core_chado_feature_cvterm_dbxref_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_f_type_schema()
  * Purpose: To describe the structure of f_type to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -9465,7 +10033,11 @@ function tripal_core_chado_feature_cvterm_dbxref_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_f_type_schema () {
   $description = array();
   
@@ -9540,7 +10112,7 @@ function tripal_core_chado_f_type_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_feature_schema()
  * Purpose: To describe the structure of feature to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -9549,7 +10121,11 @@ function tripal_core_chado_f_type_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_feature_schema () {
   $description = array();
   
@@ -9663,7 +10239,7 @@ function tripal_core_chado_feature_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_feature_contains_schema()
  * Purpose: To describe the structure of feature_contains to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -9672,7 +10248,11 @@ function tripal_core_chado_feature_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_feature_contains_schema () {
   $description = array();
   
@@ -9704,7 +10284,7 @@ function tripal_core_chado_feature_contains_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_feature_cvterm_schema()
  * Purpose: To describe the structure of feature_cvterm to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -9713,7 +10293,11 @@ function tripal_core_chado_feature_contains_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_feature_cvterm_schema () {
   $description = array();
   
@@ -9783,7 +10367,7 @@ function tripal_core_chado_feature_cvterm_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_feature_expression_schema()
  * Purpose: To describe the structure of feature_expression to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -9792,7 +10376,11 @@ function tripal_core_chado_feature_cvterm_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_feature_expression_schema () {
   $description = array();
   
@@ -9849,7 +10437,7 @@ function tripal_core_chado_feature_expression_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_feature_expressionprop_schema()
  * Purpose: To describe the structure of feature_expressionprop to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -9858,7 +10446,11 @@ function tripal_core_chado_feature_expression_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_feature_expressionprop_schema () {
   $description = array();
   
@@ -9918,7 +10510,7 @@ function tripal_core_chado_feature_expressionprop_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_feature_pubprop_schema()
  * Purpose: To describe the structure of feature_pubprop to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -9927,7 +10519,11 @@ function tripal_core_chado_feature_expressionprop_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_feature_pubprop_schema () {
   $description = array();
   
@@ -9984,7 +10580,7 @@ function tripal_core_chado_feature_pubprop_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_feature_relationship_schema()
  * Purpose: To describe the structure of feature_relationship to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -9993,7 +10589,11 @@ function tripal_core_chado_feature_pubprop_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_feature_relationship_schema () {
   $description = array();
   
@@ -10062,7 +10662,7 @@ function tripal_core_chado_feature_relationship_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_feature_relationship_pub_schema()
  * Purpose: To describe the structure of feature_relationship_pub to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -10071,7 +10671,11 @@ function tripal_core_chado_feature_relationship_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_feature_relationship_pub_schema () {
   $description = array();
   
@@ -10119,7 +10723,7 @@ function tripal_core_chado_feature_relationship_pub_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_feature_relationshipprop_schema()
  * Purpose: To describe the structure of feature_relationshipprop to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -10128,7 +10732,11 @@ function tripal_core_chado_feature_relationship_pub_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_feature_relationshipprop_schema () {
   $description = array();
   
@@ -10188,7 +10796,7 @@ function tripal_core_chado_feature_relationshipprop_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_feature_pub_schema()
  * Purpose: To describe the structure of feature_pub to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -10197,7 +10805,11 @@ function tripal_core_chado_feature_relationshipprop_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_feature_pub_schema () {
   $description = array();
   
@@ -10245,7 +10857,7 @@ function tripal_core_chado_feature_pub_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_feature_phenotype_schema()
  * Purpose: To describe the structure of feature_phenotype to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -10254,7 +10866,11 @@ function tripal_core_chado_feature_pub_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_feature_phenotype_schema () {
   $description = array();
   
@@ -10302,7 +10918,7 @@ function tripal_core_chado_feature_phenotype_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_feature_genotype_schema()
  * Purpose: To describe the structure of feature_genotype to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -10311,7 +10927,11 @@ function tripal_core_chado_feature_phenotype_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_feature_genotype_schema () {
   $description = array();
   
@@ -10383,7 +11003,7 @@ function tripal_core_chado_feature_genotype_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_feature_intersection_schema()
  * Purpose: To describe the structure of feature_intersection to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -10392,7 +11012,11 @@ function tripal_core_chado_feature_genotype_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_feature_intersection_schema () {
   $description = array();
   
@@ -10451,7 +11075,7 @@ function tripal_core_chado_feature_intersection_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_feature_meets_schema()
  * Purpose: To describe the structure of feature_meets to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -10460,7 +11084,11 @@ function tripal_core_chado_feature_intersection_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_feature_meets_schema () {
   $description = array();
   
@@ -10492,7 +11120,7 @@ function tripal_core_chado_feature_meets_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_feature_meets_on_same_strand_schema()
  * Purpose: To describe the structure of feature_meets_on_same_strand to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -10501,7 +11129,11 @@ function tripal_core_chado_feature_meets_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_feature_meets_on_same_strand_schema () {
   $description = array();
   
@@ -10533,7 +11165,7 @@ function tripal_core_chado_feature_meets_on_same_strand_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_f_loc_schema()
  * Purpose: To describe the structure of f_loc to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -10542,7 +11174,11 @@ function tripal_core_chado_feature_meets_on_same_strand_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_f_loc_schema () {
   $description = array();
   
@@ -10596,7 +11232,7 @@ function tripal_core_chado_f_loc_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_expressionprop_schema()
  * Purpose: To describe the structure of expressionprop to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -10605,7 +11241,11 @@ function tripal_core_chado_f_loc_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_expressionprop_schema () {
   $description = array();
   
@@ -10665,7 +11305,7 @@ function tripal_core_chado_expressionprop_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_db_dbxref_count_schema()
  * Purpose: To describe the structure of db_dbxref_count to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -10674,7 +11314,11 @@ function tripal_core_chado_expressionprop_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_db_dbxref_count_schema () {
   $description = array();
   
@@ -10708,7 +11352,7 @@ function tripal_core_chado_db_dbxref_count_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_dbxref_schema()
  * Purpose: To describe the structure of dbxref to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -10717,7 +11361,11 @@ function tripal_core_chado_db_dbxref_count_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_dbxref_schema () {
   $description = array();
   
@@ -10782,7 +11430,7 @@ function tripal_core_chado_dbxref_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_dbxrefprop_schema()
  * Purpose: To describe the structure of dbxrefprop to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -10791,7 +11439,11 @@ function tripal_core_chado_dbxref_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_dbxrefprop_schema () {
   $description = array();
   
@@ -10852,7 +11504,7 @@ function tripal_core_chado_dbxrefprop_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_dfeatureloc_schema()
  * Purpose: To describe the structure of dfeatureloc to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -10861,7 +11513,11 @@ function tripal_core_chado_dbxrefprop_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_dfeatureloc_schema () {
   $description = array();
   
@@ -10944,7 +11600,7 @@ function tripal_core_chado_dfeatureloc_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_db_schema()
  * Purpose: To describe the structure of db to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -10953,7 +11609,11 @@ function tripal_core_chado_dfeatureloc_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_db_schema () {
   $description = array();
   
@@ -11008,7 +11668,7 @@ function tripal_core_chado_db_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_cvtermsynonym_schema()
  * Purpose: To describe the structure of cvtermsynonym to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -11017,7 +11677,11 @@ function tripal_core_chado_db_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_cvtermsynonym_schema () {
   $description = array();
   
@@ -11068,7 +11732,7 @@ function tripal_core_chado_cvtermsynonym_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_cvterm_dbxref_schema()
  * Purpose: To describe the structure of cvterm_dbxref to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -11077,7 +11741,11 @@ function tripal_core_chado_cvtermsynonym_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_cvterm_dbxref_schema () {
   $description = array();
   
@@ -11131,7 +11799,7 @@ function tripal_core_chado_cvterm_dbxref_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_cvterm_relationship_schema()
  * Purpose: To describe the structure of cvterm_relationship to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -11140,7 +11808,11 @@ function tripal_core_chado_cvterm_dbxref_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_cvterm_relationship_schema () {
   $description = array();
   
@@ -11197,7 +11869,7 @@ function tripal_core_chado_cvterm_relationship_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_cvtermpath_schema()
  * Purpose: To describe the structure of cvtermpath to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -11206,7 +11878,11 @@ function tripal_core_chado_cvterm_relationship_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_cvtermpath_schema () {
   $description = array();
   
@@ -11277,7 +11953,7 @@ function tripal_core_chado_cvtermpath_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_cvtermprop_schema()
  * Purpose: To describe the structure of cvtermprop to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -11286,7 +11962,11 @@ function tripal_core_chado_cvtermpath_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_cvtermprop_schema () {
   $description = array();
   
@@ -11348,7 +12028,7 @@ function tripal_core_chado_cvtermprop_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_eimage_schema()
  * Purpose: To describe the structure of eimage to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -11357,7 +12037,11 @@ function tripal_core_chado_cvtermprop_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_eimage_schema () {
   $description = array();
   
@@ -11402,7 +12086,7 @@ function tripal_core_chado_eimage_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_element_schema()
  * Purpose: To describe the structure of element to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -11411,7 +12095,11 @@ function tripal_core_chado_eimage_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_element_schema () {
   $description = array();
   
@@ -11475,7 +12163,7 @@ function tripal_core_chado_element_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_expression_cvterm_schema()
  * Purpose: To describe the structure of expression_cvterm to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -11484,7 +12172,11 @@ function tripal_core_chado_element_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_expression_cvterm_schema () {
   $description = array();
   
@@ -11547,7 +12239,7 @@ function tripal_core_chado_expression_cvterm_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_expression_cvtermprop_schema()
  * Purpose: To describe the structure of expression_cvtermprop to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -11556,7 +12248,11 @@ function tripal_core_chado_expression_cvterm_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_expression_cvtermprop_schema () {
   $description = array();
   
@@ -11616,7 +12312,7 @@ function tripal_core_chado_expression_cvtermprop_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_expression_image_schema()
  * Purpose: To describe the structure of expression_image to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -11625,7 +12321,11 @@ function tripal_core_chado_expression_cvtermprop_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_expression_image_schema () {
   $description = array();
   
@@ -11673,7 +12373,7 @@ function tripal_core_chado_expression_image_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_expression_pub_schema()
  * Purpose: To describe the structure of expression_pub to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -11682,7 +12382,11 @@ function tripal_core_chado_expression_image_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_expression_pub_schema () {
   $description = array();
   
@@ -11730,7 +12434,7 @@ function tripal_core_chado_expression_pub_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_expression_schema()
  * Purpose: To describe the structure of expression to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -11739,7 +12443,11 @@ function tripal_core_chado_expression_pub_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_expression_schema () {
   $description = array();
   
@@ -11786,7 +12494,7 @@ function tripal_core_chado_expression_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_environment_cvterm_schema()
  * Purpose: To describe the structure of environment_cvterm to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -11795,7 +12503,11 @@ function tripal_core_chado_expression_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_environment_cvterm_schema () {
   $description = array();
   
@@ -11843,7 +12555,7 @@ function tripal_core_chado_environment_cvterm_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_element_relationship_schema()
  * Purpose: To describe the structure of element_relationship to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -11852,7 +12564,11 @@ function tripal_core_chado_environment_cvterm_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_element_relationship_schema () {
   $description = array();
   
@@ -11924,7 +12640,7 @@ function tripal_core_chado_element_relationship_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_elementresult_schema()
  * Purpose: To describe the structure of elementresult to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -11933,7 +12649,11 @@ function tripal_core_chado_element_relationship_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_elementresult_schema () {
   $description = array();
   
@@ -11990,7 +12710,7 @@ function tripal_core_chado_elementresult_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_elementresult_relationship_schema()
  * Purpose: To describe the structure of elementresult_relationship to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -11999,7 +12719,11 @@ function tripal_core_chado_elementresult_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_elementresult_relationship_schema () {
   $description = array();
   
@@ -12071,7 +12795,7 @@ function tripal_core_chado_elementresult_relationship_schema () {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_environment_schema()
  * Purpose: To describe the structure of environment to tripal
  * @see tripal_core.api.inc: tripal_core_chado_insert()
@@ -12080,7 +12804,11 @@ function tripal_core_chado_elementresult_relationship_schema () {
  *
  * @return
  *    An array describing the current table
- */
+ *
+ * @ingroup tripal_api
+ *
+* @ingroup tripal_core
+*/
 function tripal_core_chado_environment_schema () {
   $description = array();
   

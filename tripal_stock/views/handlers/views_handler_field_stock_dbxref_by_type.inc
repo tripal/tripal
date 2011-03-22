@@ -1,8 +1,14 @@
 <?php
-// $Id: views_handler_field_term_node_tid.inc,v 1.4 2009/07/01 23:07:14 merlinofchaos Exp $
 
 /**
- * Field handler for terms.
+ * Field handler allowing all database references of a specified db for a given stock to be 
+ * displayed in a single cell.
+ *
+ * This handler only deals with database references joined to the stock through stock_dbxref. For 
+ * the database reference joined to the stock by stock.dbxref_id simply join to the dbxref table.
+ *
+ * @ingroup tripal_stock
+ * @ingroup views_field_handlers
  */
 class views_handler_field_stock_dbxref_by_type extends views_handler_field_prerender_list {
   function init(&$view, $options) {

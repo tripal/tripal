@@ -1,12 +1,10 @@
 <?php
-// $Id: views_handler_field_node.inc,v 1.7.2.2 2010/03/16 23:09:05 merlinofchaos Exp $
-/**
- * @file
- * Contains the basic 'node' field handler.
- */
 
 /**
  * Field handler to provide simple renderer that allows linking to a node.
+ *
+ * @ingroup views_field_handlers
+ * @ingroup tripal_core
  */
 class views_handler_field_node_optional extends views_handler_field_node {
 

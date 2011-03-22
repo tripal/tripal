@@ -11,22 +11,24 @@
  *
  * BASE TABLE: stock
  * @code
- *     create table stock (
- *             stock_id serial not null,
- *             primary key (stock_id),
- *     R       dbxref_id int,
- *             foreign key (dbxref_id) references dbxref (dbxref_id) on delete set null INITIALLY DEFERRED,
- *     R       organism_id int,
- *             foreign key (organism_id) references organism (organism_id) on delete cascade INITIALLY DEFERRED,
- *     F       name varchar(255),
- *     F       uniquename text not null,
- *     F       description text,
- *     R       type_id int not null,
- *             foreign key (type_id) references cvterm (cvterm_id) on delete cascade INITIALLY DEFERRED,
- *     F       is_obsolete boolean not null default 'false',
- *             constraint stock_c1 unique (organism_id,uniquename,type_id)
- *     );
+      create table stock (
+        stock_id serial not null,
+        primary key (stock_id),
+        dbxref_id int,
+        foreign key (dbxref_id) references dbxref (dbxref_id) on delete set null INITIALLY DEFERRED,
+        organism_id int,
+        foreign key (organism_id) references organism (organism_id) on delete cascade INITIALLY DEFERRED,
+        name varchar(255),
+        uniquename text not null,
+        description text,
+        type_id int not null,
+        foreign key (type_id) references cvterm (cvterm_id) on delete cascade INITIALLY DEFERRED,
+        is_obsolete boolean not null default 'false',
+        constraint stock_c1 unique (organism_id,uniquename,type_id)
+      );
  * @endcode
+ *
+ * @ingroup tripal_stock
  */
 function retrieve_stock_views_data() {
   global $db_url;

@@ -1,10 +1,19 @@
 <?php
 
-/*************************************************************************************************************
- * @section 
- * Deals with Adding DB references
- */
 
+/**
+ * Display the ADD Database References to Stock Page
+ *
+ * This page is displayed after the stock is created as part of a simulated multi-part form
+ *
+ * @param $node
+ *   The stock node to add the database references to
+ *
+ * @return
+ *   HTML formatted output
+ *
+ * @ingroup tripal_stock
+ */
 function tripal_stock_add_ALL_dbreferences_page($node) {
   $output = '';
 
@@ -21,8 +30,17 @@ function tripal_stock_add_ALL_dbreferences_page($node) {
 
 
 /**
- * Implements Hook_form()
- * Handles adding of Database References to Stocks
+ * Implements Hook_form(): Handles adding of Database References to Stocks
+ *
+ * @param $form_state
+ *   An array describing the current state of the form
+ * @param $node
+ *   The stock node to add the database reference to
+ *
+ * @return
+ *   An array describing the form to be rendered
+ *
+ * @ingroup tripal_stock
  */
 function tripal_stock_add_ONE_dbreference_form($form_state, $node) {
 
@@ -73,6 +91,16 @@ function tripal_stock_add_ONE_dbreference_form($form_state, $node) {
   return $form;
 }
 
+/**
+ * Implements hook_form_validate(): Validates the input from tripal_stock_add_ONE_dbreference_form()
+ *
+ * @param $form
+ *   An array describing the form that was rendered
+ * @param $form_state
+ *   An array describing the current state of the form including user input
+ *
+ * @ingroup tripal_stock
+ */
 function tripal_stock_add_ONE_dbreference_form_validate($form, &$form_state) {
 
   // Only ensure db reference valid if adding
@@ -108,6 +136,16 @@ function tripal_stock_add_ONE_dbreference_form_validate($form, &$form_state) {
 
 } 
 
+/**
+ * Implements hoook_form_submit(): Actually adds the db reference to the stock
+ *
+ * @param $form
+ *   An array describing the form that was rendered
+ * @param $form_state
+ *   An array describing the current state of the form including user input
+ *
+ * @ingroup tripal_stock
+ */
 function tripal_stock_add_ONE_dbreference_form_submit($form, &$form_state) {
 
   // FIX: Sometimes on programatic submission of form (drupal_execute) values in the form state get lost
@@ -147,11 +185,19 @@ function tripal_stock_add_ONE_dbreference_form_submit($form, &$form_state) {
 
 }
 
-/************************************************************************************************************* 
- * @section                                    
- * Deals with Editing and Deleting Properties  
+/**
+ * Display the EDIT Database References to Stock Page
+ *
+ * This page is displayed as a tab on each stock details page (by default)
+ *
+ * @param $node
+ *   The stock node to add the database references to
+ *
+ * @return
+ *   HTML formatted output
+ *
+ * @ingroup tripal_stock
  */                                            
-
 function tripal_stock_edit_ALL_dbreferences_page($node) {
   $output = '';
 
@@ -165,8 +211,19 @@ function tripal_stock_edit_ALL_dbreferences_page($node) {
 }
                                                
 /**                                            
- * Implements Hook_form()                      
- * Handles adding of Properties & Synonyms to Stocks
+ * Implements Hook_form(): Handles adding of Database References to Stocks
+ * 
+ * Specifically this adds dbxrefs to a current stock using the stock_dbxref table
+ *
+ * @param $form_state
+ *   An array describing the current state of the form
+ * @param $node
+ *   The stock node whose database references should be edited
+ *
+ * @return
+ *   An array describing the form to be rendered
+ *
+ * @ingroup tripal_stock
  */                                        
 function tripal_stock_edit_ALL_db_references_form($form_state, $node) {
   $form = array();
@@ -229,6 +286,16 @@ function tripal_stock_edit_ALL_db_references_form($form_state, $node) {
   return $form;
 }
 
+/**
+ * Implements hook_form_submit(): Actually edits the database references
+ *
+ * @param $form
+ *   An array representing the form
+ * @param $form_state
+ *   An array representing the current state of the form including user input
+ *
+ * @ingroup tripal_stock
+ */
 function tripal_stock_edit_ALL_db_references_form_submit($form, &$form_state) {
 
   if ($form_state['clicked_button']['#value'] == t('Update DB References') ) {
@@ -256,6 +323,20 @@ function tripal_stock_edit_ALL_db_references_form_submit($form, &$form_state) {
 
 }
 
+/**
+ * Updates a Database Reference
+ *
+ * @todo Make this function more generic ie: update all parts of the dbxref and db
+ *
+ * @param $dbxref_id
+ *   The unique chado identifier of the database reference to be updated
+ * @param $database_id
+ *   The new database ID
+ * @param $accession
+ *   The new accession
+ *
+ * @ingroup tripal_stock
+ */
 function tripal_stock_update_db_reference($dbxref_id, $database_id, $accession) {
 
   $previous_db = tripal_db_set_active('chado');
@@ -269,6 +350,17 @@ function tripal_stock_update_db_reference($dbxref_id, $database_id, $accession) 
 
 }
 
+/**
+ * Deletes a given database reference
+ *
+ * @param $dbxref_id
+ *   The chado unique idenfier for the database reference to be deleted
+ *
+ * @return
+ *   TRUE on success; FALSE otherwise
+ *
+ * @ingroup tripal_stock
+ */
 function tripal_stock_delete_db_reference($dbxref_id) {
 
   $previous_db = tripal_db_set_active('chado');
@@ -285,6 +377,17 @@ function tripal_stock_delete_db_reference($dbxref_id) {
 
 }
 
+/**
+ * Themes the Edit All Database References for a stock form
+ *
+ * @param $form
+ *   An array describing the form to be themed
+ *
+ * @return 
+ *   An HTML rendering of the form
+ *
+ * @ingroup tripal_stock
+ */
 function theme_tripal_stock_edit_ALL_db_references_form ($form) {
   $output = '';
 
@@ -309,13 +412,19 @@ function theme_tripal_stock_edit_ALL_db_references_form ($form) {
   return $output;
 }
 
-/*************************************************************************************************************
- * @section
- * Supplimentary functions
- */
 
 /**
- * 
+ *  List all database references for a given node
+ *
+ * @todo Make this function a theme function
+ *
+ * @param $db_references
+ *   An array of database references to be listed
+ *
+ * @return
+ *   HTML representation of the list
+ *
+ * @ingroup tripal_stock
  */
 function tripal_stock_list_dbreferences_for_node($db_references) {
 

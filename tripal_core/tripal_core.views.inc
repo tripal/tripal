@@ -1,12 +1,44 @@
 <?php
 
-/*************************************************************************
+/**
+ * @defgroup views_field_handlers Views Field Handlers
+ * @{
+ * Provide rules for formatting and composition of fields
+ * @}
+ */
+
+/**
+ * @defgroup views_filter_handlers Views Filter Handlers
+ * @{
+ * Provide the ability to filter based on specified data
+ * @}
+ */
+
+/**
+ * @defgroup views_sort_handlers Views Sort Handlers
+ * @{
+ * Provide methods describing how specific data should be sorted
+ * @}
+ */
+
+/**
+ * @defgroup views_argument_handlers Views Sort Handlers
+ * @{
+ * Provide the ability to filter pased on arguments in the path of the view
+ * @}
+ */
+ 
+/**
  * Implements hook_views_handlers()
+ *
  * Purpose: Register all custom handlers with views
  *   where a handler describes either "the type of field", 
  *   "how a field should be filtered", "how a field should be sorted"
  *
- * @return: An array of handler definitions
+ * @return
+ *   An array of handler definitions
+ *
+ * @ingroup tripal_core
  */
 function tripal_core_views_handlers() {
  return array(
@@ -39,14 +71,17 @@ function tripal_core_views_handlers() {
  );
 }
     
-/*************************************************************************
+/**
  * Implements hook_views_pre_render
+ *
  * Purpose: Intercepts the view after the query has been executed
  *   All the results are stored in $view->result
  *   Looking up the NID here ensures the query is only executed once
  *   for all stocks in the table.
  *
  * @todo add if !<chado/drupal same db> around NID portion
+ *
+ * @ingroup tripal_core
  */
 function tripal_core_views_pre_render	(&$view) {
 		
@@ -56,15 +91,22 @@ function tripal_core_views_pre_render	(&$view) {
 		
 }
 
-/*************************************************************************
+/**
+ * Adds nid fields to all pertinent view results
+ *
  * Purpose: To add basetable_nid fields to all result arrays of a view
  *   only if the basetable_nid field is added. This function will only be
  *   called if chado/drupal are not in the same database (ie: only if 
  *   a join between the base and node table isn't possible.
+ *
  * Note: Supports adding Node IDs to analysis, feature, library, organism, stock
  *
- * @params the view object passed to hook_views_pre_render
+ * @param $view
+ *   the view object passed to hook_views_pre_render
+ *
  * @return the views object with nids added to the result array
+ *
+ * @ingroup tripal_core
  */
 function tripal_core_add_node_ids_to_view (&$view) {
 	

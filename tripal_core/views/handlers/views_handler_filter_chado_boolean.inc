@@ -1,8 +1,11 @@
 <?php
 
-/* @file
+/**
  * Purpose: This handler provides a TRUE/FALSE or YES/NO select for chado fields
  *  of type boolean (includes both 0/1 and t/f booleans)
+ *
+ * @ingroup views_filter_handlers
+ * @ingroup tripal_core
  */
 class views_handler_filter_chado_boolean extends views_handler_filter_boolean_operator {
  /**

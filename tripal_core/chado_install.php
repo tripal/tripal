@@ -1,7 +1,9 @@
 <?php
 
-/*************************************************************************
+/**
 *
+*
+* @ingroup tripal_core
 */
 function tripal_core_chado_v1_11_load_form (){
    $form['description'] = array(
@@ -17,8 +19,9 @@ using chado in a database external to the Drupal database with a 'chado' entry i
    );
    return $form;
 }
-/*************************************************************************
+/**
 *
+* @ingroup tripal_core
 */
 function tripal_core_chado_v1_11_load_form_submit ($form, &$form_state){
    global $user;
@@ -29,8 +32,10 @@ function tripal_core_chado_v1_11_load_form_submit ($form, &$form_state){
 
    return '';
 }
-/*************************************************************************
+/**
 *
+*
+* @ingroup tripal_core
 */
 function tripal_core_install_chado ($dummy = NULL, $job = NULL){
    $schema_file = drupal_get_path('module', 'tripal_core').'/default_schema.sql';
@@ -39,8 +44,10 @@ function tripal_core_install_chado ($dummy = NULL, $job = NULL){
    tripal_core_install_sql($schema_file);
    tripal_core_install_sql($init_file);      
 }
-/*************************************************************************
+/**
 *
+*
+* @ingroup tripal_core
 */
 function tripal_core_reset_chado_schema (){
    global $active_db;
@@ -53,8 +60,10 @@ function tripal_core_reset_chado_schema (){
    pg_query($active_db,"create schema chado");
    pg_query($active_db,"create language plpgsql");
 }
-/*************************************************************************
+/**
 *
+*
+* @ingroup tripal_core
 */
 function tripal_core_install_sql ($sql_file){
    global $active_db;
@@ -216,8 +225,10 @@ function tripal_core_install_sql ($sql_file){
    print "Installation Complete!\n";
    tripal_core_chado_install_done(); 
 }
-/*************************************************************************
+/**
 *
+*
+* @ingroup tripal_core
 */
 function tripal_core_chado_install_done (){
    // return the search path to normal

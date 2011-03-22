@@ -1,6 +1,26 @@
 <?php
 // $Id$
 
+/**
+ * @file
+ * Implements Tripal Stock Module hooks
+ */
+
+/**
+ * @defgroup tripal_stock Stock Module
+ * @{
+ * Provides functions for managing chado stocks including creating details pages for each stock
+ *
+ * The Tripal Stock Module provides functionality for adding, editing, deleting and accessing chado 
+ * stocks. The stock module was designed to store information about stock collections in a 
+ * laboratory. What is called a stock could also be called a strain or an accession. There is a lot 
+ * in common between a Drosophila stock and a Saccharomyces strain and an Arabidopsis line. They all 
+ * come from some taxon, have genotypes, physical locations in the lab, some conceivable 
+ * relationship with a publication, some conceivable relationship with a sequence feature (such as a 
+ * transgene), and could be described by some ontology term. For more information about the chado 
+ * Stock Module see the GMOD Wiki Page (http://gmod.org/wiki/Chado_Stock_Module)
+ * @}
+ */
 require("tripal_stock-administration.inc");
 
 require("tripal_stock.api.inc");
@@ -11,13 +31,13 @@ require("tripal_stock-properties.inc");
 require("tripal_stock-relationships.inc");
 require("tripal_stock-db_references.inc");
 
-/*************************************************************************
- * Implementation of hook_menu()
- * Purpose: Add menu items for this module
- * Note: A Menu item for the Create chado_stock form is automatically
- *   added to the 'Create Content' Navigation menu
+/**
+ * Implements hook_menu(): Adds menu items for the tripal_stock
  *
- * @return and array for menu descriptions
+ * @return
+ *   Menu definitions for the tripal_stock
+ *
+ * @ingroup tripal_stock
  */
 function tripal_stock_menu() {
   $items = array();
@@ -110,11 +130,21 @@ function tripal_stock_menu() {
   return $items;
 }
 
-/*************************************************************************
+/**
  * Implements Menu wildcard_load hook
+ *
  * Purpose: Allows the node ID of a chado stock to be dynamically 
  *   pulled from the path. The node is loaded from this node ID
- *   and supplied to the page as an arguement
+ *   and supplied to the page as an arguement. This is an example 
+ *   of dynamic argument replacement using wildcards in the path.
+ *
+ * @param $nid
+ *   The node ID passed in from the path
+ *
+ * @return
+ *   The node object with the passed in nid
+ *
+ * @ingroup tripal_stock
  */
 function cs_node_load($nid) {
   if (is_numeric($nid)) {
@@ -127,11 +157,15 @@ function cs_node_load($nid) {
   return FALSE;
 }
 
-/*************************************************************************
+/**
  * Implementation of hook_perm()
+ *
  * Purpose: Set the permission types that the chado stock module uses
  *
- * @return an array listing the possible permission catagories
+ * @return
+ *   Listing of the possible permission catagories
+ *
+ * @ingroup tripal_stock
  */
 function tripal_stock_perm() {
   return array(
@@ -142,10 +176,20 @@ function tripal_stock_perm() {
   );
 }
 
-/*************************************************************************
- * Implements hook_access()
- * Purpose: Maps permission catagories to actions; 
+/**
+ * Implements hook_access(): Maps permission catagories to actions
+ *
+ * @param $op
+ *   The operation current operation: one of create, update, delete
+ * @param $node
+ *   The node object the current operation is being performed on
+ * @param $account
+ *   A user object representing the user for whom the operation is to be performed
+ *
+ * @return
  *   TRUE grants access; FALSE denies it
+ *
+ * @ingroup tripal_stock
  */
 function chado_stock_access($op, $node, $account) {
    if ($op == 'create') {
@@ -170,11 +214,17 @@ function chado_stock_access($op, $node, $account) {
    return FALSE;
 }
 
-/*************************************************************************
+/**
  * Implements hook_views_api()
+ *
  * Purpose: Essentially this hook tells drupal that there is views support for
  *  for this module which then includes tripal_stock.views.inc where all the
  *  views integration code is
+ *
+ * @return
+ *   An array with fields important for views integration
+ *
+ * @ingroup tripal_stock
  */ 
 function tripal_stock_views_api() {
    return array(
@@ -182,11 +232,13 @@ function tripal_stock_views_api() {
    );
 }
 
-/*************************************************************************
- * Implements hook_theme()
- * Purpose: Register themeing functions for this module
+/**
+ * Implements hook_theme(): Register themeing functions for this module
  *
- * @return an array of themeing functions to register
+ * @return
+ *   An array of themeing functions to register
+ *
+ * @ingroup tripal_stock
  */
 function tripal_stock_theme() {
 	return array(
@@ -234,8 +286,17 @@ function tripal_stock_theme() {
 	);
 }
 
-/*************************************************************************
+/**
  * Purpose: show stocks stored in drupals chado_stock table
+ *
+ * This function provides the default html representation of the stock table. This
+ * representation can be overridden using Drupal Views2 to create more flexible tables
+ * listing stocks.
+ *
+ * @return
+ *   HTML representation of a table of stocks
+ *
+ * @ingroup tripal_stock
  */
 function tripal_stock_show_stocks () {
 	$sql = "SELECT COUNT(stock_id) FROM {chado_stock}";
@@ -252,6 +313,17 @@ function tripal_stock_show_stocks () {
    }
 }
 
+/**
+ * A themeing funtion for the default tripal stock table
+ *
+ * @param $stocks
+ *   An array of all stock nodes
+ *
+ * @return
+ *   HTML representation of a table of stocks
+ *
+ * @ingroup tripal_stock
+ */
 function theme_tripal_stock_stock_table (&$stocks) {
 
 	// cycle through the stocks and build the stocks page
@@ -278,13 +350,13 @@ function theme_tripal_stock_stock_table (&$stocks) {
    return $output;
 }
 
-/*************************************************************************
- * @section Implementation of stock Node
- * including node_load, form, insert, update, delete(by nid and vid)
- *************************************************************************/
-
-/*************************************************************************
- * Implements hook_node_info() 
+/**
+ * Implements hook_node_info(): registers a stock node type
+ *
+ * @return
+ *   An array describing various details of the node
+ *
+ * @ingroup tripal_stock
  */
 function tripal_stock_node_info() {
   return array(
@@ -298,9 +370,16 @@ function tripal_stock_node_info() {
   );
 }
 
-/*************************************************************************
- * Implements hook_load()
- * Everytime a chado_stock node is viewed or manipulated this hook is called first to prepare the data
+/**
+ * Implements hook_load(): Prepares the chado_stock node
+ *
+ * @param $node
+ *   The basic node containing all variables common to all nodes
+ *
+ * @return
+ *   A stock node containing all the variables from the basic node and all stock specific variables
+ *
+ * @ingroup tripal_stock
  */
 function chado_stock_load($node) {
 
@@ -493,9 +572,8 @@ function chado_stock_load($node) {
 }
 
 
-/*************************************************************************
- * Implements hook_form()	
- * Creates the main Add/Edit/Delete Form for chado stocks
+/**
+ * Implements hook_form(): Creates the main Add/Edit/Delete Form for chado stocks
  *
  * Parts to be added by this form
  *     name, 
@@ -504,6 +582,16 @@ function chado_stock_load($node) {
  *     type => select from cvterm with key cvterm_id,
  *     organism => select from available with key organism_id
  *     main_db_reference => accession, version, description, db_name(select from dropdown) 
+ *
+ * @param $node
+ *   An empty node object on insert OR the current stock node object on update
+ * @param $form_state
+ *   The current state of the form
+ *
+ * @return
+ *   A description of the form to be rendered by drupal_get_form()
+ *
+ * @ingroup tripal_stock
  */
 function chado_stock_form($node, $form_state) {
   $type = node_get_types('type', $node);
@@ -619,8 +707,15 @@ function chado_stock_form($node, $form_state) {
   return $form;
 }
 
-/*************************************************************************
- * Implements hook_validate()
+/**
+ * Implements hook_validate(): Validate the input from the chado_stock node form
+ *
+ * @param $node
+ *   The current node including fields with the form element names and submitted values
+ * @param $form
+ *   A description of the form to be rendered by drupal_get_form()
+ *
+ * @ingroup tripal_stock
  */
 function chado_stock_validate($node, &$form) {
 
@@ -699,9 +794,16 @@ function chado_stock_validate($node, &$form) {
 
 }
 
-/*************************************************************************
- * Implements hook_insert()
- * Inserts data from chado_stock_form() into drupal and chado
+/**
+ * Implements hook_insert(): Inserts data from chado_stock_form() into drupal and chado
+ *
+ * @param $node
+ *   The current node including fields with the form element names and submitted values
+ *
+ * @return
+ *   TRUE if the node was successfully inserted into drupal/chado; FALSE otherwise
+ *
+ * @ingroup tripal_stock
  */
 function chado_stock_insert($node) {
 
@@ -796,10 +898,18 @@ function chado_stock_insert($node) {
 
 }
 
-/*************************************************************************
- * Implements hook_update()
- * Handles Editing/Updating of main stock info (that in the chado stock table)
- * Currently just writes over all old data
+/**
+ * Implements hook_update(): Handles Editing/Updating of main stock info
+ *
+ * NOTE: Currently just writes over all old data
+ *
+ * @param $node
+ *   The current node including fields with the form element names and submitted values
+ *
+ * @return
+ *   TRUE if the node was successfully updated in drupal/chado; FALSE otherwise
+ *
+ * @ingroup tripal_stock
  */
 function chado_stock_update($node) {
 
@@ -900,9 +1010,18 @@ function chado_stock_update($node) {
 
 }
 
-/*************************************************************************
- * Implements hook_delete()
- * Handles deleting of chado_stocks
+/**
+ * Implements hook_delete(): Handles deleting of chado_stocks
+ *
+ * NOTE: Currently deletes data -no undo or record-keeping functionality
+ *
+ * @param $node
+ *   The current node including fields with the form element names and submitted values
+ *
+ * @return
+ *   TRUE if the node was successfully deleted from drupal/chado; FALSE otherwise
+ *
+ * @ingroup tripal_stock
  */
 function chado_stock_delete($node) {
 
@@ -921,12 +1040,23 @@ function chado_stock_delete($node) {
   tripal_db_set_active($previous_db);
 }
 
-/**************************************************************************
- * @section Tripal Stock Blocks and Template Preprocessor Functions
- **************************************************************************/
-
-/*************************************************************************
+/**
  * Purpose: Implement Blocks relating to stock content
+ *
+ * @param $op
+ *   What kind of information to retrieve about the block or blocks. 
+ *   Possible values include list, configure, save, view.
+ * @param $delta
+ *   Which block to return (not applicable if $op is 'list').
+ * @param $edit
+ *   If $op is 'save', the submitted form data from the configuration form.
+ *
+ * @return
+ *   One of the following depending on $op: An array of block descriptions (list), the configuration 
+ *   form (configure), nothing (save), an array defining subject and content for the block indexed 
+ *   by $delta (view)
+ *
+ * @ingroup tripal_stock
  */
 function tripal_stock_block ($op = 'list', $delta = 0, $edit=array()) {
   switch($op) {
@@ -992,9 +1122,4 @@ function tripal_stock_block ($op = 'list', $delta = 0, $edit=array()) {
 				return $block;
 			}
 	}
-}
-
-function tripal_stock_preprocess_node_chado_stock (&$variables) {
-	$variables['testing1'] = 'test';
-	drupal_set_message('here');
 }

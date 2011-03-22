@@ -1,8 +1,10 @@
 <?php
-// $Id: views_handler_field_term_node_tid.inc,v 1.4 2009/07/01 23:07:14 merlinofchaos Exp $
 
 /**
- * Field handler for terms.
+ * Field handler allowing all properties for a given stock to be displayed in a single cell
+ *
+ * @ingroup tripal_stock
+ * @ingroup views_field_handlers
  */
 class views_handler_field_stockprop_all extends views_handler_field_prerender_list {
   function init(&$view, $options) {

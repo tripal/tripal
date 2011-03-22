@@ -42,9 +42,11 @@ in order to pick up all necessary dependencies
 
   tripal_jobs_launch();
 
-/************************************************************************
-*
-*/
+/**
+ *
+ *
+ * @ingroup tripal_core
+ */
 function print_usage ($stdout){
   fwrite($stdout,"Usage:\n");
   fwrite($stdout,"  php ./sites/all/modules/tripal_core/tripal_launch_jobs <username> \n\n");

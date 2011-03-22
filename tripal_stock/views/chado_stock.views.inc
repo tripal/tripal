@@ -1,12 +1,14 @@
 <?php
 
 /**
- * Purpose: this function returns the portion of the data array 
- *   which describes the chado_stock drupal table, it's fields and any joins between it and other tables
- * @see tripal_stock_views_data() --in tripal_stock.views.inc
+ * Purpose: this function returns the portion of the data array which describes the chado_stock 
+ * drupal table, it's fields and any joins between it and other tables
  *
  * The main need for description of this table to views is to join chado data with drupal nodes
  *
+ * @see tripal_stock_views_data() --in tripal_stock.views.inc
+ *
+ * @ingroup tripal_stock
  */
 function retrieve_chado_stock_views_data () {
 	global $db_url;

@@ -78,7 +78,11 @@ if (sizeof($opts) > 0) {
 
 runjob($hostname, $username);
 
-
+/**
+ *
+ *
+ * @ingroup tripal_core
+ */
 function runjob($sitename, $username) {
 
     $_SERVER['SCRIPT_NAME'] = '/sites/all/modules/tripal_jobs/tripal_launch_jobs_multi.php';

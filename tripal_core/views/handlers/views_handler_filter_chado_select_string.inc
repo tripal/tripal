@@ -1,8 +1,11 @@
 <?php
 
-/* @file
+/**
  * Purpose: This Handler provides a generic select list for any chado field that is a string
- *  The select list includes all distinct values for that field
+ *  The select list includes all distinct values for that field.
+ *
+ * @ingroup views_filter_handlers
+ * @ingroup tripal_core
  */
 class views_handler_filter_chado_select_string extends views_handler_filter_string {
 

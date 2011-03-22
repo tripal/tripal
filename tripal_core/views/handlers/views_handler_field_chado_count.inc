@@ -1,11 +1,15 @@
 <?php
-
-// @file
-// Purpose: Provide a field that counts the number of records in the current table
-//   are connected to the base table. For example, this field could be used to count
-//   the number of features connected to a given organism -base table=organism, 
-//   current table=feature: for each record in the organism view count feature records where 
-//   feature.organism_id=organism_id of current organism record
+ 
+/**
+ * Purpose: Provide a field that counts the number of records in the current table
+ *   are connected to the base table. For example, this field could be used to count
+ *   the number of features connected to a given organism -base table=organism, 
+ *   current table=feature: for each record in the organism view count feature records where 
+ *   feature.organism_id=organism_id of current organism record
+ *
+ * @ingroup views_field_handlers
+ * @ingroup tripal_core
+ */
 class views_handler_field_chado_count extends views_handler_field {
 
   function init(&$view, $options) {

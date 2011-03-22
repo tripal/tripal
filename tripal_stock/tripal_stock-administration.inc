@@ -1,10 +1,13 @@
 <?php
 // $Id$
 
-/*************************************************************************
+/**
  * Purpose: Provide Guidance to new Tripal Admin
  *
- * @return HTML Formatted text
+ * @return
+ *   HTML Formatted text
+ *
+ * @ingroup tripal_stock
  */
 function tripal_stock_module_description_page() {
   $text = '';
@@ -70,10 +73,13 @@ function tripal_stock_module_description_page() {
   return $text;
 }
 
-/*************************************************************************
+/**
  * Purpose: Provide administration options for chado_stocks
  *
- * @return form array (as described by the drupal form api)
+ * @return
+ *   Form array (as described by the drupal form api)
+ *
+ * @ingroup tripal_stock
  */
 function tripal_stock_admin() {
   $form = array();
@@ -181,9 +187,14 @@ function tripal_stock_admin() {
 }
 
 /**
- * Implements hook_form_submit()
+ * Implements hook_form_validate(): Validates user input
  *
- * Handles Submit actions of all subforms
+ * @param $form
+ *   An array describing the form that was rendered
+ * @param $form_state
+ *   An array describing the current state of the form including user input
+ *
+ * @ingroup tripal_stock
  */
 function tripal_stock_admin_validate($form, &$form_state) {
    global $user;  // we need access to the user info
@@ -213,12 +224,20 @@ function tripal_stock_admin_validate($form, &$form_state) {
     }
 }
 
-/**************************************************************************************************************/
 /** 
  * Syncs all Stocks associated with an organism
+ *
  * Note: Handling of multiple organisms is done in tripal_stock_admin_validate()
  *
- * @params $organisms
+ * @param $organism_id
+ *   The chado primary key of the organism for which stocks should be sync'd
+ * @param $job_id
+ *   The tripal job ID
+ *
+ * @return
+ *   TRUE if successful; FALSE otherwise
+ *
+ * @ingroup tripal_stock
  */
  function tripal_stock_sync_stock_set($organism_id, $job_id) {
 	global $user;

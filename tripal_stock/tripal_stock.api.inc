@@ -1,13 +1,15 @@
 <?php
  
-/*************************************************************************
- * @section: Return a Single Stock
- *************************************************************************/
-
-/*************************************************************************
- * Purpose: Return a given stock object using the nid
+/**
+ * Purpose: Return a given stock node using the nid
  *
- * @return stock object created by node load
+ * @param $nid
+ *   The node ID of the stock you want to load
+ *
+ * @return
+ *   stock node with the passed in node ID
+ *
+ * @ingroup tripal_api
  */
 function triapl_stock_get_stock_by_nid ($nid) {
 	
@@ -15,10 +17,13 @@ function triapl_stock_get_stock_by_nid ($nid) {
 	
 }
 
-/*************************************************************************
+/**
  * Purpose: Return a given stock object using the stock id
  *
- * @return stock object created by node load
+ * @return 
+ *   Stock object created by node load
+ *
+ * @ingroup tripal_api
  */
 function tripal_stock_get_stock_by_stock_id ($stock_id) {
 
@@ -34,15 +39,12 @@ function tripal_stock_get_stock_by_stock_id ($stock_id) {
 	
 }
 
-/*************************************************************************
- * @section: Get Additional Data Associated with a stock
- *************************************************************************/
-
-/*************************************************************************
+/**
  * Purpose:
  *
- * @params $stock_id
+ * @param $stock_id
  *   the unique identifier for the stock to load properties of
+ *
  * @return
  *   an array of properties where each element is a property object with
  *   the following fields:
@@ -66,6 +68,8 @@ function tripal_stock_get_stock_by_stock_id ($stock_id) {
  *     - type_db_reference_db_description (db):
  *     - type_db_reference_db_url (db):
  *     - type_db_reference_db_urlprefix (db):
+ *
+ * @ingroup tripal_api
  */
 function tripal_stock_load_properties($stock_id) {
 
@@ -79,15 +83,13 @@ function tripal_stock_load_properties($stock_id) {
   return $properties;  
 }
 
-/*************************************************************************
- * @section: Return Multiple Stocks
- *************************************************************************/
- 
-/*************************************************************************
+/**
  * Purpose: Returns all stocks currently sync'd with drupal
  *
  * @return 
-     An array of node objects keyed by stock_id
+ *   An array of node objects keyed by stock_id
+ *
+ * @ingroup tripal_api
  */
 function tripal_stock_get_all_stocks() {
 	$sql = "SELECT stock_id, nid from {chado_stock}";
@@ -102,11 +104,12 @@ function tripal_stock_get_all_stocks() {
 	return $stocks;
 }
 
-/*************************************************************************
+/**
  * Purpose: Return all stocks that match a given criteria
  *
- * @params $values
+ * @param $values
  *   An associative array containing the values for filtering the results.
+ *
  * @return 
  *   An array of matching stock objects (produced using node_load)
  *   matching the given criteria
@@ -134,6 +137,8 @@ function tripal_stock_get_all_stocks() {
  * exists. The $values array is nested such that the organism is identified by way of the 
  * organism_id foreign key constraint by specifying the genus and species.  The cvterm is also 
  * specified using its foreign key and the cv_id for the cvterm is nested as well.
+ *
+ * @ingroup tripal_api
  */
 function tripal_stock_get_stocks($values) {
 
@@ -154,17 +159,18 @@ function tripal_stock_get_stocks($values) {
   return $stocks;
 }
 
-/*************************************************************************
+/**
  * Purpose: Retrieve stocks based on associated stock properties
  *
- * @params $stockprop_values
+ * @param $stockprop_values
  *   An array of column_name => value where column_name is any column in the stockprop table
  *   and value is the value you want that column to be. This is used as a tripal_core_chado_select
  *   values array so nesting is allowed.
- * @params $stock_values
+ * @param $stock_values
  *   An array of column_name => value where column_name is any column in the stock table
  *   and value is the value you want that column to be. This is used as a tripal_core_chado_select
  *   values array so nesting is allowed. 
+ *
  * @return
  *   An array of stock node objects
  *
@@ -190,6 +196,8 @@ function tripal_stock_get_stocks($values) {
  * @endcode
  * The above code selects all Lens culinaris stocks with the synonym (stock property) CDC Redberry.
  * The nodes for each stock selected are loaded and returned in an array.
+ *
+ * @ingroup tripal_api
  */
 function tripal_stock_get_stocks_by_stockprop($stockprop_values, $stock_values) {
 
@@ -216,17 +224,20 @@ function tripal_stock_get_stocks_by_stockprop($stockprop_values, $stock_values) 
   return $stocks;
 }
 
-/*************************************************************************
+/**
  * Purpose: Return all stocks with a given name identifier
  *  which might match stock.name, stock.uniquename, dbxref.accession, 
  *  stockprop.value where stockprop.type='synonym'
  *
  * @param $name
  *   The name identfier to be used
- * @params $organism_id
+ * @param $organism_id
  *   The stock.organism_id of the stock to be selected
+ *
  * @return
  *   An array of stock node objects
+ *
+ * @ingroup tripal_api
  */
 function tripal_stock_get_stock_by_name_identifier($name, $organism_id) {
   $stock_ids = array();
@@ -314,21 +325,17 @@ function tripal_stock_get_stock_by_name_identifier($name, $organism_id) {
   
   return $stocks;
 }
-
-/****************************************************************************
- * @section Chado Table Descriptions
- * Please Add Descriptions to the fields ($description['fields'][<field name>]['description]) 
- * and table ($description['description']). Also add any foreign key relelationships that
- * arn't already added.
- ****************************************************************************/
  
-/****************************************************************************
+/**
  * Implements hook_chado_stock_schema()
+ *
  * Purpose: To add descriptions and foreign keys to default table description
  * Note: This array will be merged with the array from all other implementations
  *
  * @return
  *    Array describing the stock table
+ *
+ * @ingroup tripal_api
  */
 function tripal_stock_chado_stock_schema() {
   $description = array();
@@ -359,13 +366,16 @@ function tripal_stock_chado_stock_schema() {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_chado_stockprop_schema()
+ *
  * Purpose: To add descriptions and foreign keys to default table description
  * Note: This array will be merged with the array from all other implementations
  *
  * @return
  *    Array describing the stockprop table
+ *
+ * @ingroup tripal_api
  */
 function tripal_stock_chado_stockprop_schema() {
   $description = array();
@@ -387,13 +397,16 @@ function tripal_stock_chado_stockprop_schema() {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_chado_stockprop_pub_schema()
+ *
  * Purpose: To add descriptions and foreign keys to default table description
  * Note: This array will be merged with the array from all other implementations
  *
  * @return
  *    Array describing the stockprop_pub table
+ *
+ * @ingroup tripal_api
  */
 function tripal_stock_chado_stockprop_pub_schema() {
   $description = array();
@@ -415,13 +428,16 @@ function tripal_stock_chado_stockprop_pub_schema() {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_chado_stock_cvterm_schema()
+ *
  * Purpose: To add descriptions and foreign keys to default table description
  * Note: This array will be merged with the array from all other implementations
  *
  * @return
  *    Array describing the stock_cvterm table
+ *
+ * @ingroup tripal_api
  */
 function tripal_stock_chado_stock_cvterm_schema() {
   $description = array();
@@ -450,13 +466,16 @@ function tripal_stock_chado_stock_cvterm_schema() {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_chado_stock_dbxref_schema()
+ *
  * Purpose: To add descriptions and foreign keys to default table description
  * Note: This array will be merged with the array from all other implementations
  *
  * @return
  *    Array describing the stock_dbxref table
+ *
+ * @ingroup tripal_api
  */
 function tripal_stock_chado_stock_dbxref_schema() {
   $description = array();
@@ -478,13 +497,16 @@ function tripal_stock_chado_stock_dbxref_schema() {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_chado_stock_genotype_schema()
+ *
  * Purpose: To add descriptions and foreign keys to default table description
  * Note: This array will be merged with the array from all other implementations
  *
  * @return
  *    Array describing the stock_genotype table
+ *
+ * @ingroup tripal_api
  */
 function tripal_stock_chado_stock_genotype_schema() {
   $description = array();
@@ -506,13 +528,16 @@ function tripal_stock_chado_stock_genotype_schema() {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_chado_stock_pub_schema()
+ *
  * Purpose: To add descriptions and foreign keys to default table description
  * Note: This array will be merged with the array from all other implementations
  *
  * @return
  *    Array describing the stock_pub table
+ *
+ * @ingroup tripal_api
  */
 function tripal_stock_chado_stock_pub_schema() {
   $description = array();
@@ -534,13 +559,16 @@ function tripal_stock_chado_stock_pub_schema() {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_chado_stock_relationship_schema()
+ *
  * Purpose: To add descriptions and foreign keys to default table description
  * Note: This array will be merged with the array from all other implementations
  *
  * @return
  *    Array describing the stock_relationship table
+ *
+ * @ingroup tripal_api
  */
 function tripal_stock_chado_stock_relationship_schema() {
   $description = array();
@@ -563,13 +591,16 @@ function tripal_stock_chado_stock_relationship_schema() {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_chado_stock_relationship_pub_schema()
+ *
  * Purpose: To add descriptions and foreign keys to default table description
  * Note: This array will be merged with the array from all other implementations
  *
  * @return
  *    Array describing the stock_relationship_pub table
+ *
+ * @ingroup tripal_api
  */
 function tripal_stock_chado_stock_relationship_pub_schema() {
   $description = array();
@@ -591,13 +622,16 @@ function tripal_stock_chado_stock_relationship_pub_schema() {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_chado_stockcollection_schema()
+ *
  * Purpose: To add descriptions and foreign keys to default table description
  * Note: This array will be merged with the array from all other implementations
  *
  * @return
  *    Array describing the stockcollection table
+ *
+ * @ingroup tripal_api
  */
 function tripal_stock_chado_stockcollection_schema() {
   $description = array();
@@ -619,13 +653,16 @@ function tripal_stock_chado_stockcollection_schema() {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_chado_stockcollection_stock_schema()
+ *
  * Purpose: To add descriptions and foreign keys to default table description
  * Note: This array will be merged with the array from all other implementations
  *
  * @return
  *    Array describing the stockcollection_stock table
+ *
+ * @ingroup tripal_api
  */
 function tripal_stock_chado_stockcollection_stock_schema() {
   $description = array();
@@ -647,13 +684,16 @@ function tripal_stock_chado_stockcollection_stock_schema() {
   return $description;
 }
 
-/****************************************************************************
+/**
  * Implements hook_chado_stockcollectionprop_schema()
+ *
  * Purpose: To add descriptions and foreign keys to default table description
  * Note: This array will be merged with the array from all other implementations
  *
  * @return
  *    Array describing the stockcollectionprop table
+ *
+ * @ingroup tripal_api
  */
 function tripal_stock_chado_stockcollectionprop_schema() {
   $description = array();

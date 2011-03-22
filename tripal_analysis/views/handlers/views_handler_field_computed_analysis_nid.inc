@@ -1,5 +1,10 @@
 <?php
 
+/**
+ *
+ *
+ * @ingroup tripal_analysis
+ */
 class views_handler_field_computed_analysis_nid extends views_handler_field_numeric {
 	function construct() {
 		parent::construct();

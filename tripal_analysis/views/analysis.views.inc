@@ -25,6 +25,8 @@
  *       constraint analysis_c1 unique (program,programversion,sourcename)
  *   );
  * @endcode
+ *
+ * @ingroup tripal_analysis
  */
 function retrieve_analysis_views_data() {
 	global $db_url;

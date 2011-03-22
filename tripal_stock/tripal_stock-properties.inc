@@ -1,13 +1,9 @@
 <?php
 
-/*************************************************************************************************************
- * @section
- * Deals with Adding Properties
- */
-
 /**
- * Implements Hook_form()
- * Handles adding of Properties & Synonyms to Stocks
+ * 
+ *
+ * @ingroup tripal_stock
  */
 function tripal_stock_add_ALL_property_page($node) {
   $output = '';
@@ -23,6 +19,11 @@ function tripal_stock_add_ALL_property_page($node) {
   return $output;
 }
 
+/**
+ * 
+ *
+ * @ingroup tripal_stock
+ */
 function tripal_stock_add_ONE_property_form($form_state, $node) {
   $form = array();
   $stock_id = $node->stock_id;
@@ -73,6 +74,11 @@ function tripal_stock_add_ONE_property_form($form_state, $node) {
   return $form;
 }
 
+/**
+ * 
+ *
+ * @ingroup tripal_stock
+ */
 function tripal_stock_add_ONE_property_form_validate($form, &$form_state) {
 
   // Only Require if Adding Property
@@ -108,6 +114,11 @@ function tripal_stock_add_ONE_property_form_validate($form, &$form_state) {
 
 }
 
+/**
+ * 
+ *
+ * @ingroup tripal_stock
+ */
 function tripal_stock_add_ONE_property_form_submit($form, &$form_state) {
 	
   // if there is a property add it (only won't be a property if clicked next step w/ no property)
@@ -151,11 +162,11 @@ function tripal_stock_add_ONE_property_form_submit($form, &$form_state) {
   } //end of if property to add
 }
 
-/*************************************************************************************************************
- * @section
- * Deals with Editing and Deleting Properties
+/**
+ * 
+ *
+ * @ingroup tripal_stock
  */
-
 function tripal_stock_edit_ALL_properties_page($node) {
   $output = '';
 
@@ -169,8 +180,9 @@ function tripal_stock_edit_ALL_properties_page($node) {
 }
 
 /**
- * Implements Hook_form()
- * Handles adding of Properties & Synonyms to Stocks
+ * Implements Hook_form(): Handles adding of Properties & Synonyms to Stocks
+ *
+ * @ingroup tripal_stock
  */
 function tripal_stock_edit_ALL_properties_form($form_state, $node) {
   $form = array();
@@ -247,6 +259,11 @@ function tripal_stock_edit_ALL_properties_form($form_state, $node) {
   return $form;
 }
 
+/**
+ * 
+ *
+ * @ingroup tripal_stock
+ */
 function tripal_stock_edit_ALL_properties_form_submit($form, &$form_state) {
 
   if ($form_state['clicked_button']['#value'] == t('Update Properties') ) {
@@ -267,6 +284,11 @@ function tripal_stock_edit_ALL_properties_form_submit($form, &$form_state) {
   
 }
 
+/**
+ * 
+ *
+ * @ingroup tripal_stock
+ */
 function tripal_stock_update_property($stockprop_id, $cvterm_id, $value, $preferred, $nid) {
 
 	$previous_db = tripal_db_set_active('chado');
@@ -318,6 +340,11 @@ function tripal_stock_update_property($stockprop_id, $cvterm_id, $value, $prefer
   }
 }
 
+/**
+ * 
+ *
+ * @ingroup tripal_stock
+ */
 function tripal_stock_delete_property($stockprop_id) {
 
   $previous_db = tripal_db_set_active('chado');
@@ -329,6 +356,11 @@ function tripal_stock_delete_property($stockprop_id) {
 
 }
 
+/**
+ * 
+ *
+ * @ingroup tripal_stock
+ */
 function theme_tripal_stock_edit_ALL_properties_form ($form) {
   $output = '';
 
@@ -352,13 +384,10 @@ function theme_tripal_stock_edit_ALL_properties_form ($form) {
   return $output;
 }
 
-/*************************************************************************************************************
- * @section
- * Supplimentary functions
- */
-
 /**
  * 
+ *
+ * @ingroup tripal_stock
  */
 function tripal_stock_list_properties_for_node($properties, $synonyms) {
 

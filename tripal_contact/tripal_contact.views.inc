@@ -19,6 +19,8 @@
  *   definitions keyed by chado/tripal table name. Each table definition 
  *   includes basic details about the table, fields in that table and
  *   relationships between that table and others (joins)
+ *
+ * @ingroup tripal_contact
  */
 function tripal_contact_views_data()  {
   $data = array();
@@ -33,6 +35,8 @@ function tripal_contact_views_data()  {
  *   "how a field should be filtered", "how a field should be sorted"
  *
  * @return: An array of handler definitions
+ *
+ * @ingroup tripal_contact
  */
 function tripal_contact_views_handlers() {
  return array(

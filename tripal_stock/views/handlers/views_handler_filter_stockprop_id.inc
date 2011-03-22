@@ -1,7 +1,10 @@
 <?php
 
 /**
- * Filter by stockprop type id
+ * Allows stocks to be filtered by proeprty values
+ *
+ * @ingroup tripal_stock
+ * @ingroup views_filter_handlers
  */
 class views_handler_filter_stockprop_id extends views_handler_filter {
 

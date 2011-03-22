@@ -1,7 +1,11 @@
 <?php
-// $Id$
 
-
+/**
+ * Allows stocks to be filtered by associated database reference accession
+ *
+ * @ingroup tripal_stock
+ * @ingroup views_filter_handlers
+ */
 class views_handler_filter_stock_dbxref_id extends views_handler_filter {
 
   function init(&$view, $options) {

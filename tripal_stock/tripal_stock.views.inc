@@ -11,10 +11,10 @@
  */
  
 /*************************************************************************
- * Implements hook_views_data()
- * Purpose: Describe chado/tripal tables & fields to views
+ * Implements hook_views_data(): Describe chado/tripal tables & fields to views
  *
- * @return: a data array which follows the structure outlined in the
+ * @return array
+ *   A data array which follows the structure outlined in the
  *   views2 documentation for this hook. Essentially, it's an array of table
  *   definitions keyed by chado/tripal table name. Each table definition 
  *   includes basic details about the table, fields in that table and
@@ -35,11 +35,13 @@ function tripal_stock_views_data()  {
 
 /*************************************************************************
  * Implements hook_views_handlers()
+ *
  * Purpose: Register all custom handlers with views
  *   where a handler describes either "the type of field", 
  *   "how a field should be filtered", "how a field should be sorted"
  *
- * @return: An array of handler definitions
+ * @return array
+ *   An array of handler definitions
  */
 function tripal_stock_views_handlers() {
  return array(
@@ -83,6 +85,7 @@ function tripal_stock_views_handlers() {
 
 /*************************************************************************
  * Implements hook_views_pre_render
+ *
  * Purpose: Intercepts the view after the query has been executed
  *   All the results are stored in $view->result
  *   Looking up the NID here ensures the query is only executed once

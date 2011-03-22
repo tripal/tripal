@@ -3,7 +3,7 @@
 // Copyright 2009 Clemson University
 //
 
-/************************************************************************
+/**
  * Add a materialized view to the chado database to help speed data access.
  * @param name The name of the materialized view.
  * @param modulename The name of the module submitting the materialized view (e.g. 'tripal_library')
@@ -14,7 +14,9 @@
  * @param special_index  
  * function
  * @return nothing
- */
+ *
+* @ingroup tripal_core
+*/
 function tripal_add_mview ($name,$modulename,$mv_table,$mv_specs,$indexed,$query,$special_index){
 
    $record = new stdClass();
@@ -59,8 +61,10 @@ function tripal_add_mview ($name,$modulename,$mv_table,$mv_specs,$indexed,$query
       }
    }
 }
-/************************************************************************
+/**
 *
+*
+* @ingroup tripal_core
 */
 function tripal_mviews_get_mview_id ($view_name){
 
@@ -74,8 +78,10 @@ function tripal_mviews_get_mview_id ($view_name){
    }
    return 0;
 }
-/************************************************************************
+/**
 *
+*
+* @ingroup tripal_core
 */
 function tripal_mviews_action ($op,$mview_id){
    global $user;
@@ -110,8 +116,10 @@ function tripal_mviews_action ($op,$mview_id){
    }
    return '';
 }
-/************************************************************************
+/**
 *
+*
+* @ingroup tripal_core
 */
 function tripal_update_mview ($mview_id){
    $sql = "SELECT * FROM {tripal_mviews} WHERE mview_id = %d ";
@@ -133,8 +141,10 @@ function tripal_update_mview ($mview_id){
 	  }
    }
 }
-/************************************************************************
+/**
 *
+*
+* @ingroup tripal_core
 */
 function tripal_mview_report ($mview_id) {
    // get this mview details
@@ -218,8 +228,10 @@ function tripal_mview_report ($mview_id) {
 
    return $output;
 }
-/************************************************************************
+/**
 *
+*
+* @ingroup tripal_core
 */
 function tripal_mviews_report () {
    $mviews = db_query("SELECT * FROM {tripal_mviews} ORDER BY name");
@@ -260,8 +272,10 @@ function tripal_mviews_report () {
    $output .= "<p><a href=\"$new_url\">Create a new materialized view.</a></p>";
    return $output;
 }
-/************************************************************************
+/**
 *
+*
+* @ingroup tripal_core
 */
 function tripal_mviews_form(&$form_state = NULL,$mview_id = NULL){
 
@@ -355,7 +369,7 @@ function tripal_mviews_form(&$form_state = NULL,$mview_id = NULL){
       '#default_value' => $default_mvquery,
       '#weight'        => 6
    );
-/*
+/**
    $form['special_index']= array(
       '#type'          => 'textarea',
       '#title'         => t('View Name'),
@@ -375,8 +389,10 @@ function tripal_mviews_form(&$form_state = NULL,$mview_id = NULL){
    $form['#redirect'] = 'admin/tripal/tripal_mviews';
    return $form;
 }
-/************************************************************************
+/**
 *
+*
+* @ingroup tripal_core
 */
 function tripal_mviews_form_submit($form, &$form_state){
    

@@ -1,10 +1,10 @@
 <?php
 
-/*************************************************************************************************************
- * @section
- * Deals with Adding Relationships
+/**
+ * 
+ *
+ * @ingroup tripal_stock
  */
-
 function tripal_stock_add_ALL_relationships_page($node) {
   $output = '';
 
@@ -20,8 +20,9 @@ function tripal_stock_add_ALL_relationships_page($node) {
 }
 
 /**
- * Implements Hook_form()
- * Handles adding of Relationships to Stocks
+ * Implements Hook_form(): Handles adding of Relationships to Stocks
+ *
+ * @ingroup tripal_stock
  */
 function tripal_stock_add_ONE_relationship_form($form_state, $node) {
 
@@ -94,6 +95,11 @@ function tripal_stock_add_ONE_relationship_form($form_state, $node) {
 
 }
 
+/**
+ * 
+ *
+ * @ingroup tripal_stock
+ */
 function tripal_stock_add_ONE_relationship_form_validate($form, &$form_state) {
 
   //Require Validation if adding
@@ -152,6 +158,11 @@ function tripal_stock_add_ONE_relationship_form_validate($form, &$form_state) {
   } //end of require validation if adding relationship
 }
 
+/**
+ * 
+ *
+ * @ingroup tripal_stock
+ */
 function tripal_stock_add_ONE_relationship_form_submit($form, &$form_state) {
 
   if ($form_state['values']['subject_id'] > 0) {
@@ -170,11 +181,11 @@ function tripal_stock_add_ONE_relationship_form_submit($form, &$form_state) {
 
 }
 
-/************************************************************************************************************* 
- * @section                                           
- * Deals with Editing and Deleting Properties         
+/**
+ * 
+ *
+ * @ingroup tripal_stock
  */
-
 function tripal_stock_edit_ALL_relationships_page($node) {
   $output = '';
 	
@@ -189,7 +200,8 @@ function tripal_stock_edit_ALL_relationships_page($node) {
                                                       
 /**                                                   
  * Implements Hook_form()                             
- * Handles adding of Properties & Synonyms to Stocks  
+ *
+ * @ingroup tripal_stock
  */                                                   
 function tripal_stock_edit_ALL_relationships_form($form_state, $node) {
   $form = array();
@@ -277,6 +289,11 @@ function tripal_stock_edit_ALL_relationships_form($form_state, $node) {
   return $form;
 }
 
+/**
+ * 
+ *
+ * @ingroup tripal_stock
+ */
 function tripal_stock_edit_ALL_relationships_form_validate($form, &$form_state) {
 
   // Only Require if Updating Relationships
@@ -341,6 +358,11 @@ function tripal_stock_edit_ALL_relationships_form_validate($form, &$form_state) 
 
 }
 
+/**
+ * 
+ *
+ * @ingroup tripal_stock
+ */
 function tripal_stock_edit_ALL_relationships_form_submit($form, &$form_state) {
 
   if ($form_state['clicked_button']['#value'] == t('Update Relationships') ) {
@@ -372,6 +394,11 @@ function tripal_stock_edit_ALL_relationships_form_submit($form, &$form_state) {
 
 }
 
+/**
+ * 
+ *
+ * @ingroup tripal_stock
+ */
 function tripal_stock_update_relationship ($stock_relationship_id, $subject_id, $cvterm_id, $object_id) {
 
   $previous_db = tripal_db_set_active('chado');
@@ -386,6 +413,11 @@ function tripal_stock_update_relationship ($stock_relationship_id, $subject_id, 
 
 }
 
+/**
+ * 
+ *
+ * @ingroup tripal_stock
+ */
 function tripal_stock_delete_relationship ($stock_relationship_id) {
 
   $previous_db = tripal_db_set_active('chado');
@@ -397,6 +429,11 @@ function tripal_stock_delete_relationship ($stock_relationship_id) {
 
 }
 
+/**
+ * 
+ *
+ * @ingroup tripal_stock
+ */
 function theme_tripal_stock_edit_ALL_relationships_form ($form) {
   $output = '';
   
@@ -423,13 +460,11 @@ function theme_tripal_stock_edit_ALL_relationships_form ($form) {
   return $output;
 }
 
-/*************************************************************************************************************
- * @section
- * Supplementary Functions
- */
 
 /**
  *
+ *
+ * @ingroup tripal_stock
  */
 function tripal_stock_list_relationships_for_node($stock_name, $subject_relationships, $object_relationships) {
 

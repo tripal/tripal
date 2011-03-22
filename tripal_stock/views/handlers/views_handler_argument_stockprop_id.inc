@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * Allows a stock property in the path to be used to filter a view
+ *
+ * @ingroup tripal_stock
+ * @ingroup views_argument_handlers
+ */
 class views_handler_argument_stockprop_id extends views_handler_argument_string {
 
 	function options_form(&$form, &$form_state) {
