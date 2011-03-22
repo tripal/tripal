@@ -25,10 +25,10 @@ function tripal_analysis_blast_menu() {
       'type' => MENU_CALLBACK
 	);
 	// Show regular expressions for selected database in Blast admin page
-	$items['admin/tripal/tripal_blast_regex'] = array(
+	$items['admin/tripal/tripal_analysis/tripal_blast_regex/%'] = array(
       'title' => t('Blast Regex'),
       'page callback' => 'tripal_get_blast_regex',
-      'page arguments' => array(3),
+      'page arguments' => array(4),
       'access arguments' => array('administer site configuration'),
       'type' => MENU_CALLBACK
 	);
@@ -748,14 +748,12 @@ function tripal_analysis_blast_parseXMLFile ($analysis_id, $blastdb, $blastfile,
 function tripal_get_blast_regex ($db_id) {
 	$sql = "SELECT * FROM {tripal_analysis_blast} WHERE db_id = %d";
 	$blast_regexs = db_fetch_object(db_query($sql, $db_id));
-	drupal_json(
-	array(
+	drupal_json(array(
 	     'name' => $blast_regexs->displayname,
 	     'genbank_style' => $blast_regexs->genbank_style,
 	     'reg1' => $blast_regexs->regex_hit_id,
 	     'reg2' => $blast_regexs->regex_hit_def,
-	     'reg3' => $blast_regexs->regex_hit_accession,
-	)
+	     'reg3' => $blast_regexs->regex_hit_accession)
 	);
 }
 
