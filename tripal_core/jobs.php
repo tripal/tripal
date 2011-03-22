@@ -68,7 +68,7 @@ function tripal_jobs_report () {
    $jobs = pager_query(
       "SELECT TJ.job_id,TJ.uid,TJ.job_name,TJ.modulename,TJ.progress,
               TJ.status as job_status, TJ,submit_date,TJ.start_time,
-              TJ.end_time,TJ.priority
+              TJ.end_time,TJ.priority,U.name as username
        FROM {tripal_jobs} TJ 
          INNER JOIN users U on TJ.uid = U.uid 
        ORDER BY job_id DESC", 10,0,"SELECT count(*) FROM {tripal_jobs}");
@@ -91,9 +91,9 @@ function tripal_jobs_report () {
               "  </tr>";
    $i = 0;
    while($job = db_fetch_object($jobs)){
-      $class = 'tripal_feature-table-odd-row tripal-table-odd-row';
+      $class = 'tripal-table-odd-row';
       if($i % 2 == 0 ){
-         $class = 'tripal_feature-table-odd-row tripal-table-even-row';
+         $class = 'tripal-table-even-row';
       }
       $submit = format_date($job->submit_date);
       if($job->start_time > 0){
@@ -115,9 +115,9 @@ function tripal_jobs_report () {
          $cancel_link = "<a href=\"".url("admin/tripal/tripal_jobs/cancel/".$job->job_id)."\">Cancel</a>";
       }
       $rerun_link = "<a href=\"".url("admin/tripal/tripal_jobs/rerun/".$job->job_id)."\">Re-run</a>";
-      $output .= "  <tr $class>";
+      $output .= "  <tr class=\"$class\">";
       $output .= "    <td>$job->job_id</td>".
-                 "    <td>$job->name</td>".
+                 "    <td>$job->username</td>".
                  "    <td>$job->job_name</td>".
                  "    <td nowrap>Submit Date: $submit".
                  "    <br>Start Time: $start".
