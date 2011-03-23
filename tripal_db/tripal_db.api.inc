@@ -284,7 +284,7 @@ function tripal_stock_chado_dbxref_schema() {
   $description['foreign keys']['db'] = array(
         'table' => 'db',
         'columns' => array(
-          'cv_id' => 'db_id',
+          'db_id' => 'db_id',
         ),
   ); 
 

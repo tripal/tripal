@@ -551,3 +551,150 @@ function tripal_core_chado_get_foreign_key($table_desc,$field,$values){
    return false;
 }
 
+/** 
+ * Generates an object containing the full details of a record(s) in chado. 
+ *
+ * @todo Enable specified fields to be excluded by default. Fields can be selected based on 
+ *       table.name or type and criteria
+ * @todo Add expand_x arrays
+ * @todo Ensure expand_x arrays appear only in the base object and are cumulative (contain fields 
+ *       from all nested objects
+ *
+ * This differs from the objects returned by tripal_core_chado_select in so far as all foreign key 
+ * relationships have been followed meaning you have more complete details. Thus this function 
+ * should be used whenever you need a full variable and tripal_core_chado_select should be used if 
+ * you only case about a few columns.
+ *
+ * @param $table
+ *   The name of the base table to generate a variable for
+ * @param $values
+ *   A select values array that selects the records you want from the base table
+ *   (this has the same form as tripal_core_chado_select)
+ * @return
+ *   Either an object (if only one record was selected from the base table) 
+ *   or an array of objects (if more than one record was selected from the base table).
+ *
+ * Example Usage:
+ * @code
+      $values = array(
+        'name' => 'Medtr4g030710'
+      );
+      $features = tripal_core_generate_chado_var('feature', $values);
+ * @endcode
+ * This will return an object of the following form if there is only one feature with the name 
+ * Medtr4g030710:
+ * @code
+ 
+ * @endcode
+ * Or it will return an array of feature objects if more than one feature has that name:
+ * @code
+ 
+ * @endcode
+ *
+ * Note to Module Designers: Fields can be excluded by default from these objects by implementing 
+ * one of the following hooks:
+ *  - hook_exclude_field_from_tablename_by_default (where tablename is the name of the table):
+ *      This hook allows you to add fields to be excluded on a per table basis. Simply implement 
+ *      this hook to return an array of fields to be excluded. For example:  
+ * @code
+          mymodule_exclude_field_from_feature_by_default() {
+            return array('residues');
+          }
+ * @endcode
+ *      will ensure that feature.residues is ecluded from a feature object by default.
+ *  - hook_exclude_type_by_default:
+ *      This hook allows you to exclude fields from all tables that are of a given postgresql field 
+ *      type. Simply implement this hook to return an array of postgresql types mapped to criteria.
+ *      Then all fields of that type where the criteria supplied returns TRUE will be excluded from 
+ *      any table. Tokens available in criteria are <field_value> and <field_name>. For example:
+ * @code
+          mymodule_exclude_type_by_default() {
+            return array('text' => 'length(<field_value>) > 50');
+          }
+ * @endcode
+ *      will exclude all text fields with a length > 50. Thus if $feature.residues is longer than 50 *      it will be excluded, otherwise it will be added.
+ *
+ * @ingroup tripal_api
+ */
+function tripal_core_generate_chado_var($table, $values) {
+  
+  // get description for the current table
+  $table_desc = module_invoke_all('chado_'.$table.'_schema');
+  $table_primary_key = $table_desc['primary key'][0];
+  $table_columns = array_keys($table_desc['fields']);
+  
+  // get the values for the record in the current table
+  $results = tripal_core_chado_select($table, $table_columns, $values);   
+
+  foreach ($results as $key => $object) {
+    // check if the current table maps to a node type
+    // if this table is connected to a node there will be a chado_tablename table in drupal
+    if (db_table_exists('chado_'.$table)) {
+      // that has a foreign key to this one ($table_desc['primary key'][0] 
+      // and to the node table (nid)
+      $sql = "SELECT %s, nid FROM chado_%s WHERE %s=%d";
+      $mapping = db_fetch_object(db_query(
+        $sql,
+        $table_primary_key,
+        $table,
+        $table_primary_key, 
+        $object->{$table_primary_key}
+      ));
+      if ($mapping->{$table_primary_key}) {
+        $object->nid = $mapping->nid;
+        $object->expandable_nodes[] = $table;
+      }
+    }
+    
+    // recursively follow foreign key relationships nesting objects as we go
+    foreach ($table_desc['foreign keys'] as $foreign_key_array) {
+      $foreign_table = $foreign_key_array['table'];
+      foreach ($foreign_key_array['columns'] as $foreign_key => $primary_key) {
+        // Note: Foreign key is the field in the current table whereas primary_key is the field in 
+        // the table referenced by the foreign key
+        
+        // get the record from the foreign table
+        $foreign_values = array($primary_key => $object->{$foreign_key});
+        $foreign_object = tripal_core_generate_chado_var($foreign_table, $foreign_values);
+  
+        // add the foreign record to the current object in a nested manner
+        $object->{$foreign_key} = $foreign_object;
+        $object->{$foreign_key}->tablename = $foreign_table;
+      }
+    }
+    
+    // remove any fields based on exceptions hooks
+    
+
+    // Flatten expandable_x arrays so only in the bottom object
+    
+    
+    $results[$key] = $object;
+  }
+  
+    // check only one result returned
+  if (sizeof($results) == 1) {
+    // add results to object
+    return $results[0];
+
+  } elseif (!empty($results)) {
+    return $results;
+  } else {
+    // no results returned
+    watchdog('tripal_core',
+      'tripal_core_generate_chado_var for %table: No record matches criteria values:%values',
+      array('%table'=>$table, '%values'=>print_r($values,TRUE)),
+      WATCHDOG_ERROR
+    );  
+  } 
+  
+}
+
+/**
+ *
+ *
+ * @ingroup tripal_api
+ */
+function tripal_core_expand_chado_vars () {
+
+}
