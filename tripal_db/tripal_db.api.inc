@@ -1,10 +1,83 @@
 <?php
 
-/*************************************************************************
+/**
+ * @defgroup tripal_db_api External Database Module API
+ * @ingroup tripal_api
+ * @ingroup tripal_db
+ * Provides an application programming interface (API) to manage databases
+ */
+
+/**
+ * Purpose: To retrieve a chado database object
+ *
+ * @param $select_values
+ *   An array meant to uniquely select a given database
+ *
+ * @return
+ *   Chado database object
+ *
+ * The database is selected using tripal_core_chado select and as such the
+ * $select_values array parameter meant to uniquely identify the database to be 
+ * returned follows the same form as when using tripal_core_chado_select directly.
+ *
+ * Example Usage:
+ * @code
+    $select_values = array(
+      'name' => 'SOFP'
+    );
+    $db_object = tripal_db_get_db($select_values);
+ * @endcode
+ *  The above code selects the SOFP db and returns the following object:
+ * @code
+    $db_object = stdClass Object ( 
+      [db_id] => 49
+      [name] => SOFP
+      [description] => 
+      [urlprefix] => 
+      [url] =>     
+    ); 
+ * @endcode
+ *
+ * @ingroup tripal_db_api
+ */
+function tripal_db_get_db ($select_values) {
+/**
+  $columns = array(
+    'db_id', 
+    'name', 
+    'description',
+    'urlprefix',
+    'url'
+  );
+  $results = tripal_core_chado_select('db', $columns, $select_values);
+  if (sizeof($results) == 1) {
+    return $results[0];
+  } elseif (empty($results)) {
+    watchdog('tripal_cdb', 
+      'tripal_db_get_db: No db matches criteria values:%values',
+      array('%values' => print_r($select_values, TRUE)),
+      WATCHDOG_WARNING
+    );
+    return FALSE;
+  } else {
+    watchdog('tripal_db', 
+      'tripal_db_get_db: 2+ dbs match criteria values:%values',
+      array('%values' => print_r($select_values, TRUE)),
+      WATCHDOG_WARNING
+    );
+  }
+*/  
+}
+
+/**
  * Purpose: To retrieve a chado db object
  *
- * @params db.db_id
- * @return chado db object with all fields from the chado db table
+ * @param $db_id
+ *   db.db_id
+ * @return 
+ *   Chado db object with all fields from the chado db table
+ *
+ * @ingroup tripal_db_api
  */
 function tripal_db_get_db_by_db_id ($db_id) {
 
@@ -17,11 +90,15 @@ function tripal_db_get_db_by_db_id ($db_id) {
   return $r;
 }
 
-/*************************************************************************
+/**
  * Purpose: To retrieve a chado db object
  *
- * @params db.name
- * @return chado db object with all fields from the chado db table
+ * @param $name
+ *   db.name
+ * @return 
+ *   chado db object with all fields from the chado db table
+ *
+ * @ingroup tripal_db_api
  */
 function tripal_db_get_db_by_name ($name) {
 
@@ -34,48 +111,27 @@ function tripal_db_get_db_by_name ($name) {
   return $r;
 }
 
-/*************************************************************************
- * Purpose: To retrieve a chado db object
- *
- * @params where_options: array(
- *													<column_name> => array(
- *														'type' => <type of column: INT/STRING>,
- *														'value' => <the vlaue you want to filter on>,
- *														'exact' => <if TRUE use =; if FALSE use ~>,
- *													)
- *				)
- * @return chado db object with all fields from the chado db table
- */
-function tripal_db_get_db ($where_options) {
-	$previous_db = tripal_db_set_active('chado');
+// Purpose: To retrieve a chado db object
+//
+// @params where_options: array(
+//													<column_name> => array(
+//														'type' => <type of column: INT/**STRING>,
+//														'value' => <the vlaue you want to filter on>,
+//														'exact' => <if TRUE use =; if FALSE use ~>,
+//													)
+//				)
+// @return chado db object with all fields from the chado db table
+//
+//function tripal_db_get_db ($where_options) {
 
-	$where= array();
-	//generate the where clause from supplied options
-	// the key is the column name
-	foreach ($where_options as $key => $val_array) {
-		if (preg_match('/INT/', $val_array['type'])) {
-			$where[] = $key."=".$val_array['value'];
-		} else {
-			if ($val_array['exact']) { $operator='='; }
-			else { $operator='~'; }
-			$where[] = $key.$operator."'".$val_array['value']."'";
-		}
-	}
-	
-  $r = db_fetch_object(db_query(
-    "SELECT * FROM db WHERE ".implode(' AND ',$where)
-  ));
-  
-  tripal_db_set_active($previous_db);
-
-  return $r;
-}
-
-/*************************************************************************
+/**
  * Purpose: Create an options array to be used in a form element
  *   which provides a list of all chado dbs
  *
- * @return an array(db_id => name) for each db in the chado db table
+ * @return 
+ *   An array(db_id => name) for each db in the chado db table
+ *
+ * @ingroup tripal_db_api
  */
 function tripal_db_get_db_options() {
 
@@ -94,49 +150,102 @@ function tripal_db_get_db_options() {
 
 }
 
-/*************************************************************************
- * Purpose: To retrieve a chado dbxref object
+// Purpose: To retrieve a chado dbxref object
+//
+// @param where_options: array(
+//													<column_name> => array(
+//														'type' => <type of column: INT/**STRING>,
+//														'value' => <the vlaue you want to filter on>,
+//														'exact' => <if TRUE use =; if FALSE use ~>,
+//													)
+//				)
+// @return chado dbxref object with all fields from the chado dbxref table
+//
+//function tripal_db_get_dbxref ($where_options) {
+
+/**
+ * Purpose: To retrieve a chado database reference object
  *
- * @params where_options: array(
- *													<column_name> => array(
- *														'type' => <type of column: INT/STRING>,
- *														'value' => <the vlaue you want to filter on>,
- *														'exact' => <if TRUE use =; if FALSE use ~>,
- *													)
- *				)
- * @return chado dbxref object with all fields from the chado dbxref table
+ * @param $select_values
+ *   An array meant to uniquely select a given database reference
+ *
+ * @return
+ *   Chado database reference object
+ *
+ * The database reference is selected using tripal_core_chado select and as such the
+ * $select_values array parameter meant to uniquely identify the database reference to be 
+ * returned follows the same form as when using tripal_core_chado_select directly.
+ *
+ * Example Usage:
+ * @code
+    $select_values = array(
+      'accession' => 'synonym',
+      'db_id' => array(
+        'name' => 'SOFP'
+      )
+    );
+    $dbxref_object = tripal_db_get_dbxref($select_values);
+ * @endcode
+ *  The above code selects the synonym database reference and returns the following object:
+ * @code
+    $dbxref_object = stdClass Object ( 
+      [dbxref_id] => 2581
+      [accession] => synonym
+      [description] => 
+      [version] => 
+      [db_db_id] => 49
+      [db_name] => SOFP
+      [db_description] => 
+      [db_urlprefix] => 
+      [db_url] =>     
+    ); 
+ * @endcode
+ *
+ * @ingroup tripal_db_api
  */
-function tripal_db_get_dbxref ($where_options) {
-	$previous_db = tripal_db_set_active('chado');
+function tripal_db_get_dbxref ($select_values) {
+/**
+  $columns = array(
+    'dbxref_id',
+    'db_id', 
+    'accession', 
+    'description',
+    'version'
+  );
+  $results = tripal_core_chado_select('dbxref', $columns, $select_values);
+  if (sizeof($results) == 1) {
+    $dbxref = tripal_db_add_db_to_object(array('db_id' => $results[0]->db_id), $results[0], array());
+    unset($dbxref->db_id);
 
-	$where= array();
-	//generate the where clause from supplied options
-	// the key is the column name
-	foreach ($where_options as $key => $val_array) {
-		if (preg_match('/INT/', $val_array['type'])) {
-			$where[] = $key."=".$val_array['value'];
-		} else {
-			if ($val_array['exact']) { $operator='='; }
-			else { $operator='~'; }
-			$where[] = $key.$operator."'".$val_array['value']."'";
-		}
-	}
-	
-  $r = db_fetch_object(db_query(
-    "SELECT * FROM dbxref WHERE ".implode(' AND ',$where)
-  ));
-  
-  tripal_db_set_active($previous_db);
-
-  return $r;
+    return $dbxref;
+  } elseif (empty($results)) {
+    watchdog('tripal_db', 
+      'tripal_db_get_dbxref: No dbxref matches criteria values:%values',
+      array('%values' => print_r($select_values, TRUE)),
+      WATCHDOG_WARNING
+    );
+    return FALSE;
+  } else {
+    watchdog('tripal_db', 
+      'tripal_db_get_dbxref: 2+ dbxrefs match criteria values:%values',
+      array('%values' => print_r($select_values, TRUE)),
+      WATCHDOG_WARNING
+    );
+  }
+  */
 }
 
-/*************************************************************************
+/**
  * Purpose: To retrieve a chado dbxref object with a given accession
  *
- * @params dbxref.accession
- * @params dbxref.db_id
- * @return chado dbxref object with all fields from the chado dbxref table
+ * @param $accession
+ *   dbxref.accession
+ * @param $db_id
+ *   dbxref.db_id
+ * @return 
+ *   chado dbxref object with all fields from the chado dbxref table
+ *
+ * @ingroup tripal_db_api
  */
 function tripal_db_get_dbxref_by_accession ($accession, $db_id=0) {
 
@@ -159,17 +268,15 @@ function tripal_db_get_dbxref_by_accession ($accession, $db_id=0) {
   return $r;
 }
 
-/****************************************************************************
- * @section Chado Table Descriptions
- ****************************************************************************/
-
-/****************************************************************************
+/**
  * Implements hook_chado_dbxref_schema()
  * Purpose: To add descriptions and foreign keys to default table description
  * Note: This array will be merged with the array from all other implementations
  *
  * @return
  *    Array describing the dbxref table
+ *
+ * @ingroup tripal_schema_api
  */
 function tripal_stock_chado_dbxref_schema() {
   $description = array();

@@ -17,10 +17,9 @@
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
-*/
+ */
 function tripal_core_chado_organism_dbxref_schema () {
   $description = array();
   
@@ -78,9 +77,8 @@ function tripal_core_chado_organism_dbxref_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_organismprop_schema () {
   $description = array();
@@ -151,9 +149,8 @@ function tripal_core_chado_organismprop_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_phendesc_schema () {
   $description = array();
@@ -232,9 +229,8 @@ function tripal_core_chado_phendesc_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_phenotype_schema () {
   $description = array();
@@ -315,9 +311,8 @@ function tripal_core_chado_phenotype_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_organism_schema () {
   $description = array();
@@ -389,9 +384,8 @@ function tripal_core_chado_organism_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_materialized_view_schema () {
   $description = array();
@@ -480,9 +474,8 @@ function tripal_core_chado_materialized_view_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_libraryprop_schema () {
   $description = array();
@@ -553,9 +546,8 @@ function tripal_core_chado_libraryprop_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_libraryprop_pub_schema () {
   $description = array();
@@ -614,9 +606,8 @@ function tripal_core_chado_libraryprop_pub_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_magedocumentation_schema () {
   $description = array();
@@ -684,9 +675,8 @@ function tripal_core_chado_magedocumentation_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_mageml_schema () {
   $description = array();
@@ -735,9 +725,8 @@ function tripal_core_chado_mageml_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_phenotype_comparison_schema () {
   $description = array();
@@ -833,9 +822,8 @@ function tripal_core_chado_phenotype_comparison_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_phenotype_comparison_cvterm_schema () {
   $description = array();
@@ -905,9 +893,8 @@ function tripal_core_chado_phenotype_comparison_cvterm_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_phylonode_relationship_schema () {
   $description = array();
@@ -985,9 +972,8 @@ function tripal_core_chado_phylonode_relationship_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_phylonodeprop_schema () {
   $description = array();
@@ -1060,9 +1046,8 @@ function tripal_core_chado_phylonodeprop_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_phylotree_schema () {
   $description = array();
@@ -1130,9 +1115,8 @@ function tripal_core_chado_phylotree_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_phylotree_pub_schema () {
   $description = array();
@@ -1191,9 +1175,8 @@ function tripal_core_chado_phylotree_pub_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_phylonode_pub_schema () {
   $description = array();
@@ -1252,9 +1235,8 @@ function tripal_core_chado_phylonode_pub_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_phylonode_organism_schema () {
   $description = array();
@@ -1312,9 +1294,8 @@ function tripal_core_chado_phylonode_organism_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_phenotype_cvterm_schema () {
   $description = array();
@@ -1380,9 +1361,8 @@ function tripal_core_chado_phenotype_cvterm_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_phenstatement_schema () {
   $description = array();
@@ -1459,9 +1439,8 @@ function tripal_core_chado_phenstatement_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_phylonode_schema () {
   $description = array();
@@ -1550,9 +1529,8 @@ function tripal_core_chado_phylonode_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_phylonode_dbxref_schema () {
   $description = array();
@@ -1611,9 +1589,8 @@ function tripal_core_chado_phylonode_dbxref_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_library_synonym_schema () {
   $description = array();
@@ -1693,9 +1670,8 @@ function tripal_core_chado_library_synonym_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_library_pub_schema () {
   $description = array();
@@ -1754,9 +1730,8 @@ function tripal_core_chado_library_pub_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_featureprop_pub_schema () {
   $description = array();
@@ -1815,9 +1790,8 @@ function tripal_core_chado_featureprop_pub_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_featureprop_schema () {
   $description = array();
@@ -1888,9 +1862,8 @@ function tripal_core_chado_featureprop_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_featurerange_schema () {
   $description = array();
@@ -1983,9 +1956,8 @@ function tripal_core_chado_featurerange_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_featureset_meets_schema () {
   $description = array();
@@ -2028,9 +2000,8 @@ function tripal_core_chado_featureset_meets_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_fnr_type_schema () {
   $description = array();
@@ -2116,9 +2087,8 @@ function tripal_core_chado_fnr_type_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_featurepos_schema () {
   $description = array();
@@ -2187,9 +2157,8 @@ function tripal_core_chado_featurepos_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_featuremap_pub_schema () {
   $description = array();
@@ -2244,9 +2213,8 @@ function tripal_core_chado_featuremap_pub_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_feature_union_schema () {
   $description = array();
@@ -2316,9 +2284,8 @@ function tripal_core_chado_feature_union_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_featureloc_schema () {
   $description = array();
@@ -2440,9 +2407,8 @@ function tripal_core_chado_featureloc_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_featureloc_pub_schema () {
   $description = array();
@@ -2501,9 +2467,8 @@ function tripal_core_chado_featureloc_pub_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_featuremap_schema () {
   $description = array();
@@ -2561,9 +2526,8 @@ function tripal_core_chado_featuremap_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_fp_key_schema () {
   $description = array();
@@ -2612,9 +2576,8 @@ function tripal_core_chado_fp_key_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_genotype_schema () {
   $description = array();
@@ -2678,9 +2641,8 @@ function tripal_core_chado_genotype_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_library_cvterm_schema () {
   $description = array();
@@ -2748,9 +2710,8 @@ function tripal_core_chado_library_cvterm_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_library_dbxref_schema () {
   $description = array();
@@ -2815,9 +2776,8 @@ function tripal_core_chado_library_dbxref_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_library_feature_schema () {
   $description = array();
@@ -2876,9 +2836,8 @@ function tripal_core_chado_library_feature_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_library_feature_count_schema () {
   $description = array();
@@ -2936,9 +2895,8 @@ function tripal_core_chado_library_feature_count_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_library_schema () {
   $description = array();
@@ -3033,9 +2991,8 @@ function tripal_core_chado_library_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_intronloc_view_schema () {
   $description = array();
@@ -3099,9 +3056,8 @@ function tripal_core_chado_intronloc_view_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_gff3atts_schema () {
   $description = array();
@@ -3149,9 +3105,8 @@ function tripal_core_chado_gff3atts_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_gff3view_schema () {
   $description = array();
@@ -3250,9 +3205,8 @@ function tripal_core_chado_gff3view_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_gffatts_schema () {
   $description = array();
@@ -3300,9 +3254,8 @@ function tripal_core_chado_gffatts_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_intron_combined_view_schema () {
   $description = array();
@@ -3376,9 +3329,8 @@ function tripal_core_chado_intron_combined_view_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_project_schema () {
   $description = array();
@@ -3432,9 +3384,8 @@ function tripal_core_chado_project_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_protein_coding_gene_schema () {
   $description = array();
@@ -3534,9 +3485,8 @@ function tripal_core_chado_protein_coding_gene_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_studyfactorvalue_schema () {
   $description = array();
@@ -3607,9 +3557,8 @@ function tripal_core_chado_studyfactorvalue_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_studyfactor_schema () {
   $description = array();
@@ -3674,9 +3623,8 @@ function tripal_core_chado_studyfactor_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_studyprop_schema () {
   $description = array();
@@ -3747,9 +3695,8 @@ function tripal_core_chado_studyprop_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_studyprop_feature_schema () {
   $description = array();
@@ -3813,9 +3760,8 @@ function tripal_core_chado_studyprop_feature_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_synonym_schema () {
   $description = array();
@@ -3878,9 +3824,8 @@ function tripal_core_chado_synonym_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_studydesignprop_schema () {
   $description = array();
@@ -3951,9 +3896,8 @@ function tripal_core_chado_studydesignprop_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_studydesign_schema () {
   $description = array();
@@ -4005,9 +3949,8 @@ function tripal_core_chado_studydesign_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_stockprop_schema () {
   $description = array();
@@ -4078,9 +4021,8 @@ function tripal_core_chado_stockprop_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_stockprop_pub_schema () {
   $description = array();
@@ -4139,9 +4081,8 @@ function tripal_core_chado_stockprop_pub_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_study_schema () {
   $description = array();
@@ -4217,9 +4158,8 @@ function tripal_core_chado_study_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_study_assay_schema () {
   $description = array();
@@ -4278,9 +4218,8 @@ function tripal_core_chado_study_assay_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_tableinfo_schema () {
   $description = array();
@@ -4362,9 +4301,8 @@ function tripal_core_chado_tableinfo_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_treatment_schema () {
   $description = array();
@@ -4438,9 +4376,8 @@ function tripal_core_chado_treatment_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_tripal_obo_schema () {
   $description = array();
@@ -4496,9 +4433,8 @@ function tripal_core_chado_tripal_obo_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_tripal_organism_views_common_name_schema () {
   $description = array();
@@ -4545,9 +4481,8 @@ function tripal_core_chado_tripal_organism_views_common_name_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_type_feature_count_schema () {
   $description = array();
@@ -4592,9 +4527,8 @@ function tripal_core_chado_type_feature_count_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_stockcollectionprop_schema () {
   $description = array();
@@ -4665,9 +4599,8 @@ function tripal_core_chado_stockcollectionprop_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_stockcollection_stock_schema () {
   $description = array();
@@ -4726,9 +4659,8 @@ function tripal_core_chado_stockcollection_stock_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_public_feature_schema () {
   $description = array();
@@ -4797,9 +4729,8 @@ function tripal_core_chado_public_feature_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_public_library_schema () {
   $description = array();
@@ -4863,9 +4794,8 @@ function tripal_core_chado_public_library_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_public_organism_schema () {
   $description = array();
@@ -4929,9 +4859,8 @@ function tripal_core_chado_public_organism_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_pubprop_schema () {
   $description = array();
@@ -5001,9 +4930,8 @@ function tripal_core_chado_pubprop_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_pubauthor_schema () {
   $description = array();
@@ -5083,9 +5011,8 @@ function tripal_core_chado_pubauthor_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_pub_relationship_schema () {
   $description = array();
@@ -5153,9 +5080,8 @@ function tripal_core_chado_pub_relationship_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_protocol_schema () {
   $description = array();
@@ -5246,9 +5172,8 @@ function tripal_core_chado_protocol_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_protocolparam_schema () {
   $description = array();
@@ -5327,9 +5252,8 @@ function tripal_core_chado_protocolparam_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_pub_schema () {
   $description = array();
@@ -5448,9 +5372,8 @@ function tripal_core_chado_pub_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_pub_dbxref_schema () {
   $description = array();
@@ -5515,9 +5438,8 @@ function tripal_core_chado_pub_dbxref_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_quantification_schema () {
   $description = array();
@@ -5608,9 +5530,8 @@ function tripal_core_chado_quantification_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_quantification_relationship_schema () {
   $description = array();
@@ -5678,9 +5599,8 @@ function tripal_core_chado_quantification_relationship_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_stock_pub_schema () {
   $description = array();
@@ -5739,9 +5659,8 @@ function tripal_core_chado_stock_pub_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_stock_relationship_schema () {
   $description = array();
@@ -5821,9 +5740,8 @@ function tripal_core_chado_stock_relationship_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_stock_relationship_pub_schema () {
   $description = array();
@@ -5882,9 +5800,8 @@ function tripal_core_chado_stock_relationship_pub_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_stockcollection_schema () {
   $description = array();
@@ -5960,9 +5877,8 @@ function tripal_core_chado_stockcollection_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_stock_genotype_schema () {
   $description = array();
@@ -6021,9 +5937,8 @@ function tripal_core_chado_stock_genotype_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_stock_dbxref_schema () {
   $description = array();
@@ -6088,9 +6003,8 @@ function tripal_core_chado_stock_dbxref_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_quantificationprop_schema () {
   $description = array();
@@ -6161,9 +6075,8 @@ function tripal_core_chado_quantificationprop_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_stats_paths_to_root_schema () {
   $description = array();
@@ -6224,9 +6137,8 @@ function tripal_core_chado_stats_paths_to_root_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_stock_schema () {
   $description = array();
@@ -6322,9 +6234,8 @@ function tripal_core_chado_stock_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_stock_cvterm_schema () {
   $description = array();
@@ -6392,9 +6303,8 @@ function tripal_core_chado_stock_cvterm_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_feature_synonym_schema () {
   $description = array();
@@ -6474,9 +6384,8 @@ function tripal_core_chado_feature_synonym_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_feature_relationshipprop_pub_schema () {
   $description = array();
@@ -6535,9 +6444,8 @@ function tripal_core_chado_feature_relationshipprop_pub_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_cell_line_relationship_schema () {
   $description = array();
@@ -6596,9 +6504,8 @@ function tripal_core_chado_cell_line_relationship_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_cell_line_pub_schema () {
   $description = array();
@@ -6651,9 +6558,8 @@ function tripal_core_chado_cell_line_pub_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_cell_line_synonym_schema () {
   $description = array();
@@ -6724,9 +6630,8 @@ function tripal_core_chado_cell_line_synonym_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_cell_lineprop_schema () {
   $description = array();
@@ -6791,9 +6696,8 @@ function tripal_core_chado_cell_lineprop_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_cell_lineprop_pub_schema () {
   $description = array();
@@ -6846,9 +6750,8 @@ function tripal_core_chado_cell_lineprop_pub_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_cell_line_library_schema () {
   $description = array();
@@ -6907,9 +6810,8 @@ function tripal_core_chado_cell_line_library_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_cell_line_feature_schema () {
   $description = array();
@@ -6968,9 +6870,8 @@ function tripal_core_chado_cell_line_feature_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_cell_line_schema () {
   $description = array();
@@ -7042,9 +6943,8 @@ function tripal_core_chado_cell_line_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_cell_line_cvterm_schema () {
   $description = array();
@@ -7110,9 +7010,8 @@ function tripal_core_chado_cell_line_cvterm_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_cell_line_cvtermprop_schema () {
   $description = array();
@@ -7177,9 +7076,8 @@ function tripal_core_chado_cell_line_cvtermprop_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_cell_line_dbxref_schema () {
   $description = array();
@@ -7238,9 +7136,8 @@ function tripal_core_chado_cell_line_dbxref_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_channel_schema () {
   $description = array();
@@ -7292,9 +7189,8 @@ function tripal_core_chado_channel_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_common_ancestor_cvterm_schema () {
   $description = array();
@@ -7357,9 +7253,8 @@ function tripal_core_chado_common_ancestor_cvterm_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_cv_cvterm_count_with_obs_schema () {
   $description = array();
@@ -7404,9 +7299,8 @@ function tripal_core_chado_cv_cvterm_count_with_obs_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_cv_leaf_schema () {
   $description = array();
@@ -7449,9 +7343,8 @@ function tripal_core_chado_cv_leaf_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_cv_link_count_schema () {
   $description = array();
@@ -7508,9 +7401,8 @@ function tripal_core_chado_cv_link_count_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_cv_path_count_schema () {
   $description = array();
@@ -7567,9 +7459,8 @@ function tripal_core_chado_cv_path_count_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_cv_cvterm_count_schema () {
   $description = array();
@@ -7614,9 +7505,8 @@ function tripal_core_chado_cv_cvterm_count_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_cv_schema () {
   $description = array();
@@ -7669,9 +7559,8 @@ function tripal_core_chado_cv_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_common_descendant_cvterm_schema () {
   $description = array();
@@ -7734,9 +7623,8 @@ function tripal_core_chado_common_descendant_cvterm_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_contact_schema () {
   $description = array();
@@ -7795,9 +7683,8 @@ function tripal_core_chado_contact_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_contact_relationship_schema () {
   $description = array();
@@ -7865,9 +7752,8 @@ function tripal_core_chado_contact_relationship_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_control_schema () {
   $description = array();
@@ -7954,9 +7840,8 @@ function tripal_core_chado_control_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_biomaterialprop_schema () {
   $description = array();
@@ -8027,9 +7912,8 @@ function tripal_core_chado_biomaterialprop_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_biomaterial_treatment_schema () {
   $description = array();
@@ -8107,9 +7991,8 @@ function tripal_core_chado_biomaterial_treatment_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_acquisition_relationship_schema () {
   $description = array();
@@ -8189,9 +8072,8 @@ function tripal_core_chado_acquisition_relationship_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_acquisition_schema () {
   $description = array();
@@ -8273,9 +8155,8 @@ function tripal_core_chado_acquisition_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_acquisitionprop_schema () {
   $description = array();
@@ -8346,9 +8227,8 @@ function tripal_core_chado_acquisitionprop_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_all_feature_names_schema () {
   $description = array();
@@ -8397,9 +8277,8 @@ function tripal_core_chado_all_feature_names_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_analysis_schema () {
   $description = array();
@@ -8495,9 +8374,8 @@ function tripal_core_chado_analysis_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_analysisfeature_schema () {
   $description = array();
@@ -8580,9 +8458,8 @@ function tripal_core_chado_analysisfeature_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_analysisfeatureprop_schema () {
   $description = array();
@@ -8646,9 +8523,8 @@ function tripal_core_chado_analysisfeatureprop_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_assayprop_schema () {
   $description = array();
@@ -8719,9 +8595,8 @@ function tripal_core_chado_assayprop_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_biomaterial_schema () {
   $description = array();
@@ -8797,9 +8672,8 @@ function tripal_core_chado_biomaterial_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_biomaterial_dbxref_schema () {
   $description = array();
@@ -8858,9 +8732,8 @@ function tripal_core_chado_biomaterial_dbxref_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_biomaterial_relationship_schema () {
   $description = array();
@@ -8928,9 +8801,8 @@ function tripal_core_chado_biomaterial_relationship_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_assay_project_schema () {
   $description = array();
@@ -8989,9 +8861,8 @@ function tripal_core_chado_assay_project_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_assay_biomaterial_schema () {
   $description = array();
@@ -9066,9 +8937,8 @@ function tripal_core_chado_assay_biomaterial_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_analysisprop_schema () {
   $description = array();
@@ -9139,9 +9009,8 @@ function tripal_core_chado_analysisprop_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_arraydesign_schema () {
   $description = array();
@@ -9283,9 +9152,8 @@ function tripal_core_chado_arraydesign_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_arraydesignprop_schema () {
   $description = array();
@@ -9356,9 +9224,8 @@ function tripal_core_chado_arraydesignprop_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_assay_schema () {
   $description = array();
@@ -9458,9 +9325,8 @@ function tripal_core_chado_assay_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_cv_root_schema () {
   $description = array();
@@ -9503,9 +9369,8 @@ function tripal_core_chado_cv_root_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_cvterm_schema () {
   $description = array();
@@ -9594,9 +9459,8 @@ function tripal_core_chado_cvterm_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_feature_dbxref_schema () {
   $description = array();
@@ -9661,9 +9525,8 @@ function tripal_core_chado_feature_dbxref_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_feature_cvtermprop_schema () {
   $description = array();
@@ -9734,9 +9597,8 @@ function tripal_core_chado_feature_cvtermprop_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_feature_difference_schema () {
   $description = array();
@@ -9800,9 +9662,8 @@ function tripal_core_chado_feature_difference_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_feature_disjoint_schema () {
   $description = array();
@@ -9845,9 +9706,8 @@ function tripal_core_chado_feature_disjoint_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_feature_distance_schema () {
   $description = array();
@@ -9912,9 +9772,8 @@ function tripal_core_chado_feature_distance_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_feature_cvterm_pub_schema () {
   $description = array();
@@ -9973,9 +9832,8 @@ function tripal_core_chado_feature_cvterm_pub_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_feature_cvterm_dbxref_schema () {
   $description = array();
@@ -10034,9 +9892,8 @@ function tripal_core_chado_feature_cvterm_dbxref_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_f_type_schema () {
   $description = array();
@@ -10122,9 +9979,8 @@ function tripal_core_chado_f_type_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_feature_schema () {
   $description = array();
@@ -10249,9 +10105,8 @@ function tripal_core_chado_feature_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_feature_contains_schema () {
   $description = array();
@@ -10294,9 +10149,8 @@ function tripal_core_chado_feature_contains_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_feature_cvterm_schema () {
   $description = array();
@@ -10377,9 +10231,8 @@ function tripal_core_chado_feature_cvterm_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_feature_expression_schema () {
   $description = array();
@@ -10447,9 +10300,8 @@ function tripal_core_chado_feature_expression_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_feature_expressionprop_schema () {
   $description = array();
@@ -10520,9 +10372,8 @@ function tripal_core_chado_feature_expressionprop_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_feature_pubprop_schema () {
   $description = array();
@@ -10590,9 +10441,8 @@ function tripal_core_chado_feature_pubprop_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_feature_relationship_schema () {
   $description = array();
@@ -10672,9 +10522,8 @@ function tripal_core_chado_feature_relationship_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_feature_relationship_pub_schema () {
   $description = array();
@@ -10733,9 +10582,8 @@ function tripal_core_chado_feature_relationship_pub_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_feature_relationshipprop_schema () {
   $description = array();
@@ -10806,9 +10654,8 @@ function tripal_core_chado_feature_relationshipprop_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_feature_pub_schema () {
   $description = array();
@@ -10867,9 +10714,8 @@ function tripal_core_chado_feature_pub_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_feature_phenotype_schema () {
   $description = array();
@@ -10928,9 +10774,8 @@ function tripal_core_chado_feature_phenotype_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_feature_genotype_schema () {
   $description = array();
@@ -11013,9 +10858,8 @@ function tripal_core_chado_feature_genotype_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_feature_intersection_schema () {
   $description = array();
@@ -11085,9 +10929,8 @@ function tripal_core_chado_feature_intersection_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_feature_meets_schema () {
   $description = array();
@@ -11130,9 +10973,8 @@ function tripal_core_chado_feature_meets_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_feature_meets_on_same_strand_schema () {
   $description = array();
@@ -11175,9 +11017,8 @@ function tripal_core_chado_feature_meets_on_same_strand_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_f_loc_schema () {
   $description = array();
@@ -11242,9 +11083,8 @@ function tripal_core_chado_f_loc_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_expressionprop_schema () {
   $description = array();
@@ -11315,9 +11155,8 @@ function tripal_core_chado_expressionprop_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_db_dbxref_count_schema () {
   $description = array();
@@ -11362,9 +11201,8 @@ function tripal_core_chado_db_dbxref_count_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_dbxref_schema () {
   $description = array();
@@ -11440,9 +11278,8 @@ function tripal_core_chado_dbxref_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_dbxrefprop_schema () {
   $description = array();
@@ -11514,9 +11351,8 @@ function tripal_core_chado_dbxrefprop_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_dfeatureloc_schema () {
   $description = array();
@@ -11610,9 +11446,8 @@ function tripal_core_chado_dfeatureloc_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_db_schema () {
   $description = array();
@@ -11678,9 +11513,8 @@ function tripal_core_chado_db_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_cvtermsynonym_schema () {
   $description = array();
@@ -11742,9 +11576,8 @@ function tripal_core_chado_cvtermsynonym_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_cvterm_dbxref_schema () {
   $description = array();
@@ -11809,9 +11642,8 @@ function tripal_core_chado_cvterm_dbxref_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_cvterm_relationship_schema () {
   $description = array();
@@ -11879,9 +11711,8 @@ function tripal_core_chado_cvterm_relationship_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_cvtermpath_schema () {
   $description = array();
@@ -11963,9 +11794,8 @@ function tripal_core_chado_cvtermpath_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_cvtermprop_schema () {
   $description = array();
@@ -12038,9 +11868,8 @@ function tripal_core_chado_cvtermprop_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_eimage_schema () {
   $description = array();
@@ -12096,9 +11925,8 @@ function tripal_core_chado_eimage_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_element_schema () {
   $description = array();
@@ -12173,9 +12001,8 @@ function tripal_core_chado_element_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_expression_cvterm_schema () {
   $description = array();
@@ -12249,9 +12076,8 @@ function tripal_core_chado_expression_cvterm_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_expression_cvtermprop_schema () {
   $description = array();
@@ -12322,9 +12148,8 @@ function tripal_core_chado_expression_cvtermprop_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_expression_image_schema () {
   $description = array();
@@ -12383,9 +12208,8 @@ function tripal_core_chado_expression_image_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_expression_pub_schema () {
   $description = array();
@@ -12444,9 +12268,8 @@ function tripal_core_chado_expression_pub_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_expression_schema () {
   $description = array();
@@ -12504,9 +12327,8 @@ function tripal_core_chado_expression_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_environment_cvterm_schema () {
   $description = array();
@@ -12565,9 +12387,8 @@ function tripal_core_chado_environment_cvterm_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_element_relationship_schema () {
   $description = array();
@@ -12650,9 +12471,8 @@ function tripal_core_chado_element_relationship_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_elementresult_schema () {
   $description = array();
@@ -12720,9 +12540,8 @@ function tripal_core_chado_elementresult_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_elementresult_relationship_schema () {
   $description = array();
@@ -12805,9 +12624,8 @@ function tripal_core_chado_elementresult_relationship_schema () {
  * @return
  *    An array describing the current table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  *
-* @ingroup tripal_core
 */
 function tripal_core_chado_environment_schema () {
   $description = array();

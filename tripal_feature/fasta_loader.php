@@ -5,12 +5,12 @@
  * @{
  * Provides fasta loading functionality. Creates features based on their specification in a fasta file.
  * @}
+ * @ingroup tripal_feature
  */
  
 /**
  *
  *
- * @ingroup tripal_feature
  * @ingroup fasta_loader
  */
 function tripal_feature_fasta_load_form (){
@@ -200,7 +200,6 @@ function tripal_feature_fasta_load_form (){
 /**
  *
  *
- * @ingroup tripal_feature
  * @ingroup fasta_loader
  */
 function tripal_feature_fasta_load_form_validate($form, &$form_state){
@@ -272,7 +271,6 @@ function tripal_feature_fasta_load_form_validate($form, &$form_state){
 /**
  *
  *
- * @ingroup tripal_feature
  * @ingroup fasta_loader
  */
 function tripal_feature_fasta_load_form_submit ($form, &$form_state){
@@ -301,7 +299,6 @@ function tripal_feature_fasta_load_form_submit ($form, &$form_state){
 /**
  *
  *
- * @ingroup tripal_feature
  * @ingroup fasta_loader
  */
 function tripal_feature_load_fasta($dfile, $organism_id, $type,
@@ -381,7 +378,6 @@ function tripal_feature_load_fasta($dfile, $organism_id, $type,
 /**
  *
  *
- * @ingroup tripal_feature
  * @ingroup fasta_loader
  */
 function tripal_feature_fasta_loader_insert_feature($name,$uname,$db_id,$accession,

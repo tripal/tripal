@@ -19,7 +19,15 @@
  * across a missing function that you think should be included go to the sourceforge feature request * page and request it's inclusion in the API. Such feature requests with a working function * definition will be given priority.
  * @}
  */
- 
+
+/** 
+ * @defgroup tripal_schema_api Tripal Schema API
+ * @{
+ * Provides an application programming interface (API) used to describe chado tables to 
+ * drupal/tripal
+ * @}
+ * @ingroup tripal_api
+ */
 require_once "tripal_core.schema.api.inc";
 
 // just a temporary function for debugging

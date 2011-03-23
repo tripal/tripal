@@ -5,6 +5,7 @@
  * @{
  * Provides gff3 loading functionality. Creates features based on their specification in a GFF3 file.
  * @}
+ * @ingroup tripal_feature
  */
 // TODO: The rank column on the feature_relationship table needs to be used to
 //       make sure the ordering of CDS (exons) is correct.
@@ -14,7 +15,6 @@
 /**
  *
  *
- * @ingroup tripal_feature
  * @ingroup gff3_loader
  */
 function tripal_core_gff3_load_form (){
@@ -136,7 +136,6 @@ function tripal_core_gff3_load_form (){
 /**
  *
  *
- * @ingroup tripal_feature
  * @ingroup gff3_loader
  */
 function tripal_core_gff3_load_form_validate ($form, &$form_state){
@@ -169,7 +168,6 @@ function tripal_core_gff3_load_form_validate ($form, &$form_state){
 
 /**
  *
- * @ingroup tripal_feature
  * @ingroup gff3_loader
  */
 function tripal_core_gff3_load_form_submit ($form, &$form_state){
@@ -206,7 +204,6 @@ function tripal_core_gff3_load_form_submit ($form, &$form_state){
 /**
  *
  *
- * @ingroup tripal_feature
  * @ingroup gff3_loader
  */
 function tripal_core_load_gff3($gff_file, $organism_id,$analysis_id,$add_only =0, 
@@ -467,7 +464,6 @@ function tripal_core_load_gff3($gff_file, $organism_id,$analysis_id,$add_only =0
 /**
  *
  *
- * @ingroup tripal_feature
  * @ingroup gff3_loader
  */
 function tripal_core_load_gff3_parents($feature,$cvterm,$parents,$gff_features,$organism_id){
@@ -522,7 +518,6 @@ function tripal_core_load_gff3_parents($feature,$cvterm,$parents,$gff_features,$
 /**
  *
  *
- * @ingroup tripal_feature
  * @ingroup gff3_loader
  */
 function tripal_core_load_gff3_dbxref($feature,$dbxrefs){
@@ -595,7 +590,6 @@ function tripal_core_load_gff3_dbxref($feature,$dbxrefs){
 /**
  *
  *
- * @ingroup tripal_feature
  * @ingroup gff3_loader
  */
 function tripal_core_load_gff3_alias($feature,$aliases){
@@ -696,7 +690,6 @@ function tripal_core_load_gff3_alias($feature,$aliases){
 /**
  *
  *
- * @ingroup tripal_feature
  * @ingroup gff3_loader
  */
 function tripal_core_load_gff3_feature($organism,$analysis_id,$cvterm,$uniquename,$name,
@@ -765,7 +758,6 @@ function tripal_core_load_gff3_feature($organism,$analysis_id,$cvterm,$uniquenam
 /**
  *
  *
- * @ingroup tripal_feature
  * @ingroup gff3_loader
  */
 function tripal_core_load_gff3_featureloc($feature,$organism,$landmark,$fmin,
