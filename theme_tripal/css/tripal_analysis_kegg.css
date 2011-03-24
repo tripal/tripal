@@ -39,7 +39,7 @@
    padding: 0px 0px 0px 22px;
 }
 
-#tripal_kegg_brite_results .tripal_expandableBoxContent {
+#tripal_kegg_brite_results {
    height: 600px;
    overflow: auto;   
 }
