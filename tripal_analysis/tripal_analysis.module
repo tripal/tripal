@@ -540,13 +540,13 @@ function tripal_analysis_sync_analyses ($analysis_id = NULL, $job_id = NULL){
 				if ($analysis_type->value == 'tripal_analysis_unigene') {
 					$new_node->type = 'chado_analysis_unigene';
 				// This is a blast analysis
-				} else if ($result->name == 'tripal_analysis_blast') {
+				} else if ($analysis_type->value == 'tripal_analysis_blast') {
 					$new_node->type = 'chado_analysis_blast';
 			   // This is a interpro analysis
-				} else if ($result->name == 'tripal_analysis_interpro') {
+				} else if ($analysis_type->value == 'tripal_analysis_interpro') {
 					$new_node->type = 'chado_analysis_interpro';
 			   // This is a kegg analysis
-				} else if ($result->name == 'tripal_analysis_kegg' ){
+				} else if ($analysis_type->value == 'tripal_analysis_kegg' ){
 				   $new_node->type = 'chado_analysis_kegg';
 				} else {
 				   $new_node->type = 'chado_analysis';
