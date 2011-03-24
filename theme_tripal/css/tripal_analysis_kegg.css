@@ -20,7 +20,7 @@
    text-align: left;
 }
 
-#tripal_kegg_brite_results .tripal_expandableBoxContent table {
+#tripal_kegg_brite_hierarchy {
    border-collapse: separate;
 }
 
