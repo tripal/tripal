@@ -26,7 +26,7 @@ function tripal_analysis_unigene_node_info() {
  * want permissionis that protect creation, editing and deleting of chado
  * data objects
  */
-function chado_analysis_unigene_perm(){
+function tripal_analysis_unigene_perm(){
    return array(
       'access chado_analysis_unigene content',
       'create chado_analysis_unigene content',
