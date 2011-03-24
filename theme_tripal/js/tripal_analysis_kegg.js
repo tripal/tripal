@@ -101,7 +101,7 @@ if (Drupal.jsEnabled) {
         ui      : {
            dots        : true,     // BOOL - dots or no dots
            rtl         : false,    // BOOL - is the tree right-to-left
-           animation   : 30,        // INT - duration of open/close animations in miliseconds
+           animation   : 0,        // INT - duration of open/close animations in miliseconds
            hover_mode  : true,     // SHOULD get_* functions chage focus or change hovered item
            scroll_spd  : 4,
            theme_path  : link,    // Path to themes
@@ -141,7 +141,10 @@ if (Drupal.jsEnabled) {
            beforedelete: function(NODE,TREE_OBJ) { return true }, 
 
            onJSONdata  : function(DATA,TREE_OBJ) { return DATA; },
-           onselect    : function(NODE,TREE_OBJ) { tripal_cv_cvterm_info( $(NODE).attr("id"),vars )},                  // node selected
+           onselect    : function(NODE,TREE_OBJ) {        	   
+               window.onerror = function(){return true;};
+        	   throw 'exit';
+        	},                  // node selected
            ondeselect  : function(NODE,TREE_OBJ) { },                  // node deselected
            onchange    : function(NODE,TREE_OBJ) { },                  // focus changed
            onrename    : function(NODE,LANG,TREE_OBJ,RB) { },              // node renamed ISNEW - TRUE|FALSE, current language

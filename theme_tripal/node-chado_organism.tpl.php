@@ -68,6 +68,20 @@ if (Drupal.jsEnabled) {
          $("#tripal_organism-base-box").show();
       }
       $("#tripal_organism_toc").height($("#tripal_organism-base-box").parent().height());
+
+      // we want to select the first GO/KEGG report by default
+		$('.form-select').each(function() {
+        var default_option = this.getElementsByTagName('option')[1];
+        if (default_option) {
+           this.selectedIndex =default_option.index ;
+           if (this.onchange.toString().match('tripal_analysis_go_org_charts')) {   
+              tripal_analysis_go_org_charts(default_option.value);
+           } else if (this.onchange.toString().match('tripal_analysis_kegg_org_report')) {            
+              tripal_analysis_kegg_org_report(default_option.value);
+           }
+        }
+		});
+      
    });
 }
 </script>
