@@ -64,13 +64,16 @@ $unigene = $node->analysis->tripal_analysis_unigene;
       </tr>  
       <tr class="tripal_analysis_unigene-table-odd-row tripal-table-odd-row">
         <th>Organisms</th>
-        <td><?php foreach($unigene->organisms as $organism){
-               if($organism->nid){
-                  print "<i><a href=\"".url("node/$organism->nid")."\">$organism->genus $organism->species</i></a><br>";
-               } else {
-                  print "<i>$organism->genus $organism->species</i><br>";
+        <td><?php 
+            if($unigene->organisms and is_array($unigene->organisms)){
+               foreach($unigene->organisms as $organism){
+                  if($organism->nid){
+                     print "<i><a href=\"".url("node/$organism->nid")."\">$organism->genus $organism->species</i></a><br>";
+                  } else {
+                     print "<i>$organism->genus $organism->species</i><br>";
+                  }
                }
-            }
+            } 
             ?>
         </td>
       </tr>       	                                
