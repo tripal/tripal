@@ -205,8 +205,11 @@ function tripal_core_chado_insert($table,$values){
    }
    $sql = "INSERT INTO {$table} (" . implode(", ",$ifields) . ") VALUES (". implode(", ",$itypes) .")";
 
-   // finally perform the insert.  
-   if(db_query($sql,$ivalues)){
+   // finally perform the insert. 
+   $previous_db = tripal_db_set_active('chado');  // use chado database
+   $result = db_query($sql,$ivalues);
+   tripal_db_set_active($previous_db);  // now use drupal database 
+   if($result){
       return true;
    } 
    else {
@@ -340,7 +343,10 @@ function tripal_core_chado_update($table,$match,$values){
    $sql = substr($sql,0,-4);  // get rid of the trailing 'AND'
    
    // finally perform the update.  If successful, return the updated record
-   if(db_query($sql,$uargs)){
+   $previous_db = tripal_db_set_active('chado');  // use chado database
+   $result = db_query($sql,$uargs);
+   tripal_db_set_active($previous_db);  // now use drupal database 
+   if($result){
       return true;
    } 
    else {
@@ -398,7 +404,6 @@ function tripal_core_chado_update($table,$match,$values){
 * @ingroup tripal_api
 */
 function tripal_core_chado_select($table,$columns,$values,$has_record = 0){
-
 
    if (!is_array($columns)){
       watchdog('tripal_feature', 'the $columns argument for tripal_core_chado_select must be an array.');
@@ -467,7 +472,10 @@ function tripal_core_chado_select($table,$columns,$values,$has_record = 0){
      $sql = substr($sql,0,-4);  // get rid of the trailing 'AND'
    }
 
+   $previous_db = tripal_db_set_active('chado');  // use chado database
    $resource = db_query($sql,$args);
+   tripal_db_set_active($previous_db);  // now use drupal database   
+
    $results = array();
    while ($r = db_fetch_object($resource)) {
      $results[] = $r;    
