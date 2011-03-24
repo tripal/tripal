@@ -1197,7 +1197,7 @@ function chado_library_view ($node, $teaser = FALSE, $page = FALSE) {
  **  <theme_name>_tripal_library_library_table(&$libraries)
  */
 
-function theme_tripal_library_library_table (&$libraries) {
+function theme_tripal_library_library_table ($libraries) {
 
    // cycle through the libraries and build the libraries page
    $output = "<div id=\"libraries\">";
