@@ -24,6 +24,7 @@
 <?php
  //uncomment this line to see a full listing of the fields avail. to $node
  //print '<pre>'.print_r($variables,TRUE).'</pre>';
+
 $node = $variables['node'];
 $organism = $variables['node']->organism;
 ?>

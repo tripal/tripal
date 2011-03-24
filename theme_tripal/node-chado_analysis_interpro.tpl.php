@@ -1,7 +1,5 @@
 <?php
-//
-// Copyright 2009 Clemson University
-//
+
 ?>
 
    <?php if ($picture) {
