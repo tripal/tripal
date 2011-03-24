@@ -792,7 +792,7 @@ function chado_analysis_blast_form ($node){
    // add in the analysis fields
    $analysis_form_elements = chado_analysis_form(null);
    foreach ($analysis_form_elements as $key => $element){
-      $form = $element;
+      $form[$key] = $element;
    }
 
 	// Blast specific settings
@@ -1151,8 +1151,8 @@ function chado_analysis_blast_update($node){
  */
 function chado_analysis_blast_load($node){
 	// get the analysis_id for this node:
-	$sql = "SELECT analysis_id FROM {chado_analysis} WHERE vid = %d";
-	$ana_node = db_fetch_object(db_query($sql, $node->vid));
+	$sql = "SELECT analysis_id FROM {chado_analysis} WHERE nid = %d";
+	$ana_node = db_fetch_object(db_query($sql, $node->nid));
 	$additions = new stdClass();
 	if ($ana_node) {
 		// get analysis information

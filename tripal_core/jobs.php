@@ -138,12 +138,12 @@ function tripal_jobs_report () {
 *
 * @ingroup tripal_core
 */
-function tripal_jobs_launch (){
+function tripal_jobs_launch ($do_parallel = 0){
    
    // first check if any jobs are currently running
    // if they are, don't continue, we don't want to have
    // more than one job script running at a time
-   if(tripal_jobs_check_running()){
+   if(!$do_parallel and tripal_jobs_check_running()){
       return;
    }
    

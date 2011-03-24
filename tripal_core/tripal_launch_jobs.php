@@ -33,6 +33,7 @@ in order to pick up all necessary dependencies
 
   // check to make sure the username is valid
   $username = $argv[1];
+  $do_parallel = $argv[2];
   if(!db_fetch_object(db_query("SELECT * FROM {users} WHERE name = '$username'"))){
      fwrite($stdout, "'$username' is not a valid Drupal username. exiting...\n");
      exit;
@@ -40,7 +41,7 @@ in order to pick up all necessary dependencies
   global $user;
   $user = user_load(array('name' => $username));
 
-  tripal_jobs_launch();
+  tripal_jobs_launch($do_parallel);
 
 /**
  *

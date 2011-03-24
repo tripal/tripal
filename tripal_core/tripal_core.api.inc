@@ -399,6 +399,17 @@ function tripal_core_chado_update($table,$match,$values){
 */
 function tripal_core_chado_select($table,$columns,$values,$has_record = 0){
 
+
+   if (!is_array($columns)){
+      watchdog('tripal_feature', 'the $columns argument for tripal_core_chado_select must be an array.');
+      return false;
+   }
+
+   if (!is_array($values)){
+      watchdog('tripal_feature', 'the $values argument for tripal_core_chado_select must be an array.');
+      return false;
+   }
+
    // get the table description
    $table_desc = module_invoke_all('chado_'.$table.'_schema');
 
@@ -455,7 +466,7 @@ function tripal_core_chado_select($table,$columns,$values,$has_record = 0){
      }
      $sql = substr($sql,0,-4);  // get rid of the trailing 'AND'
    }
-   
+
    $resource = db_query($sql,$args);
    $results = array();
    while ($r = db_fetch_object($resource)) {

@@ -13,14 +13,6 @@
  * @}
  */
 
-/*******************************************************************************
- * Note: When we pull information for an analysis from chado database. We use
- * 'analysisname' instead of just 'name' to avoid name collision with drupal's
- * node->name variable. Therefore, the SQL statement used is 'SELECT name AS
- * analysisname FROM Analysis', instead of 'SELECT name FROM Analysis'. All
- * other node variables have exact same name as the column name.
- ******************************************************************************/
-
 require('tripal_analysis.api.inc');
 
 /*************************************************************************
@@ -163,17 +155,22 @@ function chado_analysis_insert($node){
 
 	// If the analysis doesn't exist then let's create it in chado.
 	if(!$analysis){
-		// First add the item to the chado analysis table
-		$sql = "INSERT INTO {analysis} ".
-             "  (name, description, program, programversion, algorithm, ".
-             "   sourcename, sourceversion, sourceuri, timeexecuted) ".
-             "VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s')";
-		$previous_db = tripal_db_set_active('chado');  // use chado database
-		db_query($sql,$node->analysisname, $node->description,
-		$node->program,$node->programversion,$node->algorithm,
-		$node->sourcename, $node->sourceversion, $node->sourceuri,
-		$timestamp);
-      tripal_db_set_active($previous_db);
+      // insert and then get the newly inserted analysis record
+      $values = array(
+          'name' => $node->analysisname, 
+          'description' => $node->description,
+          'program' => $node->program,
+          'programversion' => $node->programversion,
+          'algorithm' => $node->algorithm,
+          'sourcename' => $node->sourcename,
+          'sourceversion' => $node->sourceversion,
+          'sourceuri' => $node->sourceuri,
+          'timeexecuted' => $timestamp
+      );
+      if(tripal_core_chado_insert('analysis',$values)){
+         $analysis = tripal_core_chado_select('analysis',array('*'),$values);
+         $analysis_id = $analysis[0]->analysis_id;
+      }
 	}
 
 	// Make sure the entry for this analysis doesn't already exist in the
@@ -201,6 +198,10 @@ function chado_analysis_insert($node){
 		drupal_write_record('node',$record,'nid');
 		drupal_write_record('node_revisions',$record,'nid');
 	}
+
+   // add the analysis to the node object for
+   // use by other analysis modules that may be using this function
+   $node->analysis = $analysis;
 }
 /*******************************************************************************
  *
@@ -301,17 +302,20 @@ function chado_analysis_update($node){
  */
 function chado_analysis_form ($node){
 
-	$type = node_get_types('type', $node);
 	$form = array();
 	$form['title']= array(
       '#type' => 'hidden',
       '#default_value' => $node->title,
 	);
+	$form['analysis_id']= array(
+      '#type' => 'hidden',
+      '#default_value' => $node->analysis->analysis_id,
+	);
 	$form['analysisname']= array(
       '#type' => 'textfield',
       '#title' => t('Analysis Name'),
       '#required' => FALSE,
-      '#default_value' => $node->analysisname,
+      '#default_value' => $node->analysis->name,
       '#description' => t("This should be a handy short identifier that 
          describes the analysis succintly as possible which helps the user find analyses."),
       '#weight' => 1
@@ -320,7 +324,7 @@ function chado_analysis_form ($node){
       '#type' => 'textfield',
       '#title' => t('Program'),
       '#required' => TRUE,
-      '#default_value' => $node->program,
+      '#default_value' => $node->analysis->program,
       '#description' => t("Program name, e.g. blastx, blastp, sim4, genscan."),
       '#weight' => 2
 	);
@@ -328,7 +332,7 @@ function chado_analysis_form ($node){
       '#type' => 'textfield',
       '#title' => t('Program Version'),
       '#required' => TRUE,
-      '#default_value' => $node->programversion,
+      '#default_value' => $node->analysis->programversion,
       '#description' => t("Version description, e.g. TBLASTX 2.0MP-WashU [09-Nov-2000]"),
       '#weight' => 3
 	);
@@ -336,7 +340,7 @@ function chado_analysis_form ($node){
       '#type' => 'textfield',
       '#title' => t('Algorithm'),
       '#required' => FALSE,
-      '#default_value' => $node->algorithm,
+      '#default_value' => $node->analysis->algorithm,
       '#description' => t("Algorithm name, e.g. blast."),
       '#weight' => 4
 	);
@@ -344,7 +348,7 @@ function chado_analysis_form ($node){
       '#type' => 'textfield',
       '#title' => t('Source Name'),
       '#required' => TRUE,
-      '#default_value' => $node->sourcename,
+      '#default_value' => $node->analysis->sourcename,
       '#description' => t('The name of the source data.  This could be a file name, data set name or a 
            small description for how the data was collected.  For long descriptions use the description field below'),
 
@@ -354,7 +358,7 @@ function chado_analysis_form ($node){
       '#type' => 'textfield',
       '#title' => t('Source Version'),
       '#required' => FALSE,
-      '#default_value' => $node->sourceversion,
+      '#default_value' => $node->analysis->sourceversion,
       '#description' => t('If the source dataset has a version, include it here'),
       '#weight' => 6
 	);
@@ -362,14 +366,14 @@ function chado_analysis_form ($node){
       '#type' => 'textfield',
       '#title' => t('Source URI'),
       '#required' => FALSE,
-      '#default_value' => $node->sourceuri,
+      '#default_value' => $node->analysis->sourceuri,
       '#description' => t("This is a permanent URL or URI for the source of the analysis. 
          Someone could recreate the analysis directly by going to this URI and 
          fetching the source data (e.g. the blast database, or the training model)."),
       '#weight' => 7
 	);
 	// Get time saved in chado
-	$default_time = $node->timeexecuted;
+	$default_time = $node->analysis->timeexecuted;
 	$year = preg_replace("/^(\d+)-\d+-\d+ .*/", "$1", $default_time);
 	$month = preg_replace("/^\d+-0?(\d+)-\d+ .*/", "$1", $default_time);
 	$day = preg_replace("/^\d+-\d+-0?(\d+) .*/", "$1", $default_time);
@@ -396,7 +400,7 @@ function chado_analysis_form ($node){
       '#rows' => 15,
       '#title' => t('Description and/or Program Settings'),
       '#required' => FALSE,
-      '#default_value' => check_plain($node->description),
+      '#default_value' => check_plain($node->analysis->description),
       '#description' => t('Please provide all necessary information to allow
          someone to recreate the analysis, including materials and methods
          for collection of the source data and performing the analysis'),
@@ -413,19 +417,20 @@ function chado_analysis_form ($node){
  * @ingroup tripal_analysis
  */
 function chado_analysis_load($node){
-	// get the analysis_id for this node:
-	$sql = "SELECT analysis_id FROM {chado_analysis} WHERE vid = %d";
-	$ana_node = db_fetch_object(db_query($sql, $node->vid));
 	$additions = new stdClass();
+
+	// get the analysis_id for this node:
+	$sql = "SELECT analysis_id FROM {chado_analysis} WHERE nid = %d";
+	$ana_node = db_fetch_object(db_query($sql, $node->nid));
 	if ($ana_node) {
 		// get analysis information
-		$sql = "SELECT Analysis_id, name AS analysisname, description, program, ".
+		$sql = "SELECT Analysis_id, name, description, program, ".
              "  programversion, algorithm, sourcename, sourceversion, ".
              "  sourceuri, timeexecuted ".
              "FROM {Analysis} ".
              "WHERE Analysis_id = $ana_node->analysis_id";
 		$previous_db = tripal_db_set_active('chado');  // use chado database
-		$additions = db_fetch_object(db_query($sql));
+		$additions->analysis = db_fetch_object(db_query($sql));
 
       // get number of features assc with this analysis
 //     $sql = "SELECT count(feature_id) as featurecount ".
@@ -437,11 +442,11 @@ function chado_analysis_load($node){
 	}
 	// If the analysis has a name, use it as the node title. If not, construct
 	// the title using program programversion, and sourcename
-	if ($additions->analysisname) {
-		$additions->title = $additions->analysisname;
+	if ($additions->analysis->name) {
+		$additions->title = $additions->analysis->name;
 	} else {
 		// Construct node title as "program version (source)
-		$additions->title = "$additions->program ($additions->programversion)";
+		$additions->title = "$additions->analysis->program ($additions->analysis->programversion)";
 	}
 	return $additions;
 }
@@ -480,7 +485,7 @@ function tripal_analysis_sync_analyses ($analysis_id = NULL, $job_id = NULL){
 	$page_content = '';
     
 	if(!$analysis_id){
-		$sql = "SELECT Analysis_id, name AS analysisname, description, program, ".
+		$sql = "SELECT Analysis_id, name, description, program, ".
    		 "  programversion, algorithm, sourcename, sourceversion, sourceuri, ".
           "  timeexecuted ".
           "FROM {Analysis} ";
@@ -488,7 +493,7 @@ function tripal_analysis_sync_analyses ($analysis_id = NULL, $job_id = NULL){
 		$results = db_query($sql);
 		tripal_db_set_active($previous_db);  // now use drupal database
 	} else {
-		$sql = "SELECT Analysis_id, name AS analysisname, description, program, ".
+		$sql = "SELECT Analysis_id, name, description, program, ".
    		  "  programversion, algorithm, sourcename, sourceversion, sourceuri, ".
           "  timeexecuted ".
           "FROM {Analysis} ".
@@ -506,7 +511,7 @@ function tripal_analysis_sync_analyses ($analysis_id = NULL, $job_id = NULL){
 
 	while($analysis = db_fetch_object($results)){
         print "syncing analysis ";
-        print $analysis->analysisname;
+        print $analysis->name;
         print ", ";
         print $analysis->analysis_id;
         print "\n";
@@ -555,7 +560,7 @@ function tripal_analysis_sync_analyses ($analysis_id = NULL, $job_id = NULL){
 
 			$new_node->uid = $user->uid;
 			$new_node->analysis_id = $analysis->analysis_id;
-			$new_node->analysisname = $analysis->analysisname;
+			$new_node->analysisname = $analysis->name;
 			$new_node->description = $analysis->description;
 			$new_node->program = $analysis->program;
 			$new_node->programversion = $analysis->programversion;
@@ -693,7 +698,7 @@ function get_chado_analyses() {
 		$sql = "SELECT analysis_id, CA.nid, type FROM {chado_analysis} CA INNER JOIN node ON CA.nid = node.nid";
 		$result = db_query($sql);
 		$previous_db = tripal_db_set_active('chado');
-		$sql = "SELECT Analysis_id, name AS analysisname, description, program, 
+		$sql = "SELECT Analysis_id, name, description, program, 
 		                       programversion, algorithm, sourcename, sourceversion, 
 		                       sourceuri, timeexecuted
 		           FROM {Analysis} 		           WHERE analysis_id=%d";
@@ -738,13 +743,13 @@ function theme_tripal_analysis_analysis_page($analyses) {
       // Generate html output
 		$output .= "<div class=\"tripal_chado_analysis-info-box\" style=\"padding:5px\">
                          <div class=\"tripal_expandableBox\">
-                           <h3>$analysis->analysisname ($date)</h3>
+                           <h3>$analysis->name ($date)</h3>
                          </div>
                          <div class=\"tripal_expandableBoxContent\">
                            <span>
                              <table class=\"tripal_chado_analysis_content\">
                                <tr><td>
-                                 Name: <a href=\"$ana_node_url\">$analysis->analysisname</a>
+                                 Name: <a href=\"$ana_node_url\">$analysis->name</a>
                                </td></tr>
                                <tr><td>
                                  Program: $analysis->program ($analysis->programversion)

@@ -179,7 +179,7 @@ function tripal_core_gff3_load_form_submit ($form, &$form_state){
    $update   = $form_state['values']['update'];
    $refresh  = $form_state['values']['refresh'];
    $remove   = $form_state['values']['remove'];
-   $analysis = $form_state['values']['analysis_id'];
+   $analysis_id = $form_state['values']['analysis_id'];
 
    $args = array($gff_file,$organism_id,$analysis_id,$add_only,$update,$refresh,$remove);
    $type = '';
@@ -363,7 +363,7 @@ function tripal_core_load_gff3($gff_file, $organism_id,$analysis_id,$add_only =0
       // if neither name nor uniquename are provided then generate one
       if(!$attr_uniquename and !$attr_name){
          if(array_key_exists('Parent',$tags)){
-            $attr_uniquename = $tags['Parent'][0]."-$type-$landmark:$fmin..$max";
+            $attr_uniquename = $tags['Parent'][0]."-$type-$landmark:$fmin..$fmax";
          } else { 
            print "ERROR: cannot generate a uniquename for feature on line $i\n";
            exit;
@@ -425,6 +425,7 @@ function tripal_core_load_gff3($gff_file, $organism_id,$analysis_id,$add_only =0
     
 
          // add/update the feature
+         print "$i ";
          $feature = tripal_core_load_gff3_feature($organism,$analysis_id,$cvterm,
             $attr_uniquename,$attr_name,$residues,$attr_is_analysis,
             $attr_is_obsolete, $add_only);
@@ -745,10 +746,11 @@ function tripal_core_load_gff3_feature($organism,$analysis_id,$cvterm,$uniquenam
 
    // add the analysisfeature entry to the analysisfeature table if it doesn't already exist
    $af_values = array('analysis_id' => $analysis_id, 'feature_id' => $feature->feature_id);
-   if(tripal_core_chado_select('analysisfeature','analysisfeature_id',$af,true)){
+   if(tripal_core_chado_select('analysisfeature',array('analysisfeature_id'),$af_values,true)){
       if(!tripal_core_chado_insert('analysisfeature',$af_values)){
          print "ERROR: could not add analysisfeature record: $analysis_id, $feature->feature_id\n";
-         return 0;
+      } else {
+         print "   Added analysisfeature record\n";
       }
    }
 

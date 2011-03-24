@@ -306,7 +306,7 @@ function tripal_cv_get_cvterm_options($cv_id = 0) {
  *
  * @ingroup tripal_schema_api 
  */
-function tripal_stock_chado_cvterm_schema() {
+function tripal_cv_chado_cvterm_schema() {
   $description = array();
 
   $description['foreign keys']['cv'] = array(
