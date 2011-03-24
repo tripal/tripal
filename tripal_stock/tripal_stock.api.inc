@@ -362,7 +362,18 @@ function tripal_stock_chado_stock_schema() {
           'type_id' => 'cvterm_id',
         ),
   );
-      
+     
+  $referring_tables = array(
+    'stock_cvterm',
+    'stock_dbxref',
+    'stock_genotype',
+    'stock_pub',
+    'stock_relationship',
+    'stockcollection_stock',
+    'stockprop'  
+  );
+  $description['referring_tables'] = $referring_tables;
+  
   return $description;
 }
 

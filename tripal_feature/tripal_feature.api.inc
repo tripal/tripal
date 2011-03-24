@@ -33,6 +33,26 @@ function tripal_stock_chado_feature_schema() {
           'type_id' => 'cvterm_id',
         ),
   );
+  
+  $referring_tables = array('analysisfeature',
+    'element',
+    'feature_cvterm',
+    'feature_dbxref',
+    'feature_expression',
+    'feature_genotype',
+    'feature_phenotype',
+    'feature_pub',
+    'feature_relationship',
+    'feature_synonym',
+    'featureloc',
+    'featurepos',
+    'featureprop',
+    'featurerange',
+    'library_feature',
+    'phylonode',
+    'wwwuser_feature'
+  );
+  $description['referring_tables'] = $referring_tables;
 
   return $description;
 }

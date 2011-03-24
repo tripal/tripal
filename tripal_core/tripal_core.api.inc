@@ -573,11 +573,7 @@ function tripal_core_chado_get_foreign_key($table_desc,$field,$values){
 /** 
  * Generates an object containing the full details of a record(s) in chado. 
  *
- * @todo Enable specified fields to be excluded by default. Fields can be selected based on 
- *       table.name or type and criteria
- * @todo Add expand_x arrays
- * @todo Ensure expand_x arrays appear only in the base object and are cumulative (contain fields 
- *       from all nested objects
+ * @todo Add expand_tables arrays
  *
  * This differs from the objects returned by tripal_core_chado_select in so far as all foreign key 
  * relationships have been followed meaning you have more complete details. Thus this function 
@@ -600,15 +596,8 @@ function tripal_core_chado_get_foreign_key($table_desc,$field,$values){
       );
       $features = tripal_core_generate_chado_var('feature', $values);
  * @endcode
- * This will return an object of the following form if there is only one feature with the name 
- * Medtr4g030710:
- * @code
- 
- * @endcode
- * Or it will return an array of feature objects if more than one feature has that name:
- * @code
- 
- * @endcode
+ * This will return an object if there is only one feature with the name Medtr4g030710 or it will 
+ * return an array of feature objects if more than one feature has that name.
  *
  * Note to Module Designers: Fields can be excluded by default from these objects by implementing 
  * one of the following hooks:
@@ -617,7 +606,7 @@ function tripal_core_chado_get_foreign_key($table_desc,$field,$values){
  *      this hook to return an array of fields to be excluded. For example:  
  * @code
           mymodule_exclude_field_from_feature_by_default() {
-            return array('residues');
+            return array('residues' => TRUE);
           }
  * @endcode
  *      will ensure that feature.residues is ecluded from a feature object by default.
@@ -637,16 +626,86 @@ function tripal_core_chado_get_foreign_key($table_desc,$field,$values){
  */
 function tripal_core_generate_chado_var($table, $values) {
   
-  // get description for the current table
+  // get description for the current table----------------------------------------------------------
   $table_desc = module_invoke_all('chado_'.$table.'_schema');
   $table_primary_key = $table_desc['primary key'][0];
   $table_columns = array_keys($table_desc['fields']);
-  
-  // get the values for the record in the current table
-  $results = tripal_core_chado_select($table, $table_columns, $values);   
 
+  // Expandable fields without value needed for criteria--------------------------------------------
+  $all->expandable_fields = array();
+  $all->expandable_tables = $table_desc['referring_tables'];
+  $all->expandable_nodes = array();
+    
+  // Get fields to be removed by name.................................
+  $fields_to_remove = module_invoke_all('exclude_field_from_'.$table.'_by_default');
+  foreach ($fields_to_remove as $field_name => $criteria) {
+    //replace <field_name> with the current field name & 
+    $criteria = preg_replace('/<field_name>/', $field_name, $criteria);
+
+    // if field_value needed we can't deal with this field yet
+    if (preg_match('/<field_value>/', $criteria)) { break; }
+
+    //if criteria then remove from query
+    $success = drupal_eval('<?php return '.$criteria.'; ?>');
+    watchdog('tripal_core', 
+      'Evaluating criteria (%criteria) for field %field in tripal_core_generate_chado_var for %table evaluated to %success',
+      array('%table' => $table, '%criteria'=>$criteria, '%field' => $field_name, '%success'=>$success),
+      WATCHDOG_NOTICE
+    );
+    if ($success) {
+      unset($table_columns[array_search($field_name, $table_columns)]);
+      unset($fields_to_remove[$field_name]);
+      $all->expandable_fields[] = $table . '.' . $field_name;
+    }
+  }
+  
+  //Get fields to be removed by type................................
+  $types_to_remove = module_invoke_all('exclude_type_by_default');
+  $field_types = array();
+  foreach ($table_desc['fields'] as $field_name => $field_array) {
+    $field_types[$field_array['type']][] = $field_name; 
+  }
+  foreach ($types_to_remove as $field_type => $criteria) {
+    // if there are fields of that type to remove
+    if (is_array($field_types[$field_type])) {
+      //replace <field_name> with the current field name & 
+      $criteria = preg_replace('/<field_name>/', $field_name, $criteria);
+      
+      foreach ($field_types[$field_type] as $field_name) {
+        // if field_value needed we can't deal with this field yet
+        if (preg_match('/<field_value>/', $criteria)) { 
+          $fields_to_remove[$field_name] = $criteria;
+          continue; 
+        }
+
+        // if field_value needed we can't deal with this field yet
+        if (preg_match('/<field_value>/', $criteria)) { break; }
+
+        //if criteria then remove from query
+        $success = drupal_eval('<?php return '.$criteria.'; ?>');
+        watchdog('tripal_core', 
+          'Evaluating criteria (%criteria) for field %field of $type in tripal_core_generate_chado_var for %table evaluated to %success',
+          array('%table'=>$table, '%criteria'=>$criteria, '%field'=>$field_name, '%type'=>$field_type, '%success'=>$success),
+          WATCHDOG_NOTICE
+        );
+        if ($success) {
+          unset($table_columns[array_search($field_name, $table_columns)]);
+          $all->expandable_fields[] = $table . '.' . $field_name;
+        }
+      } //end of foreach field of that type
+    }
+  } //end of foreach type to be removed
+  
+  // get the values for the record in the current table---------------------------------------------
+  $results = tripal_core_chado_select($table, $table_columns, $values);   
+  
   foreach ($results as $key => $object) {
-    // check if the current table maps to a node type
+    // Add empty expandable_x arrays
+    $object->expandable_fields = $all->expandable_fields;
+    $object->expandable_tables = $all->expandable_tables;
+    $object->expandable_nodes = $all->expandable_nodes;
+    
+    // check if the current table maps to a node type-----------------------------------------------
     // if this table is connected to a node there will be a chado_tablename table in drupal
     if (db_table_exists('chado_'.$table)) {
       // that has a foreign key to this one ($table_desc['primary key'][0] 
@@ -664,13 +723,35 @@ function tripal_core_generate_chado_var($table, $values) {
         $object->expandable_nodes[] = $table;
       }
     }
+
+    // remove any fields where criteria need to be evalulated---------------------------------------
+    foreach ($fields_to_remove as $field_name => $criteria) {
+      if (!isset($object->{$field_name})) { break; }
+      $criteria = preg_replace('/<field_value>/', $object->{$field_name}, $criteria);
+      //if criteria then remove from query
+      $success = drupal_eval('<?php return '.$criteria.'; ?>');
+      watchdog('tripal_core', 
+        'Evaluating criteria (%criteria) for field %field in tripal_core_generate_chado_var for   %table evaluated to %success',
+        array('%table' => $table, '%criteria'=>$criteria, '%field' => $field_name, '%success'=>$success),
+        WATCHDOG_NOTICE
+      );
+      if ($success) {
+        unset($object->{$field_name});
+        $object->expandable_fields[] = $table . '.' . $field_name;
+      }      
+    }
     
-    // recursively follow foreign key relationships nesting objects as we go
+    // recursively follow foreign key relationships nesting objects as we go------------------------
     foreach ($table_desc['foreign keys'] as $foreign_key_array) {
       $foreign_table = $foreign_key_array['table'];
       foreach ($foreign_key_array['columns'] as $foreign_key => $primary_key) {
         // Note: Foreign key is the field in the current table whereas primary_key is the field in 
         // the table referenced by the foreign key
+        
+        //Dont do anything if the foreign key is empty
+        if (empty($object->{$foreign_key})) {
+          break;
+        }
         
         // get the record from the foreign table
         $foreign_values = array($primary_key => $object->{$foreign_key});
@@ -679,14 +760,31 @@ function tripal_core_generate_chado_var($table, $values) {
         // add the foreign record to the current object in a nested manner
         $object->{$foreign_key} = $foreign_object;
         $object->{$foreign_key}->tablename = $foreign_table;
+        
+        // Flatten expandable_x arrays so only in the bottom object
+        if (is_array($object->{$foreign_key}->expandable_fields)) {
+          $object->expandable_fields = array_merge(
+            $object->expandable_fields, 
+            $object->{$foreign_key}->expandable_fields
+          );
+          unset($object->{$foreign_key}->expandable_fields);
+        }
+        if (is_array($object->{$foreign_key}->expandable_tables)) {
+          $object->expandable_tables = array_merge(
+            $object->expandable_tables, 
+            $object->{$foreign_key}->expandable_tables
+          );
+          unset($object->{$foreign_key}->expandable_tables);
+        }
+        if (is_array($object->{$foreign_key}->expandable_nodes)) {
+          $object->expandable_nodes = array_merge(
+            $object->expandable_nodes, 
+            $object->{$foreign_key}->expandable_nodes
+          );
+          unset($object->{$foreign_key}->expandable_nodes);
+        }
       }
-    }
-    
-    // remove any fields based on exceptions hooks
-    
-
-    // Flatten expandable_x arrays so only in the bottom object
-    
+    }    
     
     $results[$key] = $object;
   }
@@ -695,7 +793,6 @@ function tripal_core_generate_chado_var($table, $values) {
   if (sizeof($results) == 1) {
     // add results to object
     return $results[0];
-
   } elseif (!empty($results)) {
     return $results;
   } else {
@@ -710,10 +807,72 @@ function tripal_core_generate_chado_var($table, $values) {
 }
 
 /**
+ * Retrieves fields/tables/nodes that were excluded by default from a variable and adds them
  *
+ * This function exists to allow tripal_core_generate_chado_var() to excldue some 
+ * fields/tables/nodes from the default form of a variable without making it extremely difficult for 
+ * the tripal admin to get at these variables if he/she wants them.
  *
  * @ingroup tripal_api
  */
 function tripal_core_expand_chado_vars () {
 
+}
+
+/**
+ * Implements hook_exclude_type_by_default()
+ *
+ * This hooks allows fields of a specified type that match a specified criteria to be excluded by 
+ * default from any table when tripal_core_generate_chado_var() is called. Keep in mind that if
+ * fields are excluded by default they can always be expanded at a later date using 
+ * tripal_core_expand_chado_vars(). 
+ *
+ * Criteria are php strings that evaluate to either TRUE or FALSE. These strings are evaluated using 
+ * drupal_eval() which suppresses syntax errors and throws watchdog entries of type php. There are 
+ * also watchdog entries of type tripal_core stating the exact criteria evaluated. Criteria can 
+ * contain the following tokens:
+ *   - <field_name>
+ *       Replaced by the name of the field to be excluded
+ *   - <field_value>
+ *       Replaced by the value of the field in the current record
+ * Also keep in mind that if your criteria doesn't contain the <field_value> token then it will be 
+ * evaluated before the query is executed and if the field is excluded it won't be included in the 
+ * query.
+ *
+ * @return
+ *   An array of type => criteria where the type is excluded if the criteria evaluates to TRUE
+ *
+ * @ingroupt tripal_api
+ */
+function tripal_core_exclude_type_by_default() {
+  return array('text' => "strlen('<field_value>') > 100");
+}
+
+/**
+ * Implements hook_exclude_field_from_<tablename>_by_default()
+ *
+ * This hooks allows fields from a specified table that match a specified criteria to be excluded by 
+ * default from any table when tripal_core_generate_chado_var() is called. Keep in mind that if
+ * fields are excluded by default they can always be expanded at a later date using 
+ * tripal_core_expand_chado_vars(). 
+ *
+ * Criteria are php strings that evaluate to either TRUE or FALSE. These strings are evaluated using 
+ * drupal_eval() which suppresses syntax errors and throws watchdog entries of type php. There are 
+ * also watchdog entries of type tripal_core stating the exact criteria evaluated. Criteria can 
+ * contain the following tokens:
+ *   - <field_name>
+ *       Replaced by the name of the field to be excluded
+ *   - <field_value>
+ *       Replaced by the value of the field in the current record
+ * Also keep in mind that if your criteria doesn't contain the <field_value> token then it will be 
+ * evaluated before the query is executed and if the field is excluded it won't be included in the 
+ * query.
+ *
+ * @return
+ *   An array of type => criteria where the type is excluded if the criteria evaluates to TRUE
+ *
+ * @ingroupt tripal_api
+ */
+function tripal_core_exclude_field_from_feature_by_default() {
+  return array();
 }
