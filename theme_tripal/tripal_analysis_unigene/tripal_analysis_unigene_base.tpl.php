@@ -2,6 +2,8 @@
 $node = $variables['node'];
 $analysis = $variables['node']->analysis;
 $unigene = $node->analysis->tripal_analysis_unigene;
+//dpm($node);
+
 
 ?>
 <div id="tripal_analysis_unigene-base-box" class="tripal_analysis_unigene-info-box tripal-info-box">
@@ -51,7 +53,7 @@ $unigene = $node->analysis->tripal_analysis_unigene;
         <th nowrap>Description</th>
         <td><?php print $analysis->description; ?></td>
       </tr> 
-      <tr class="tripal_analysis_unigene-table-even-row tripal-table-odd-row">
+      <tr class="tripal_analysis_unigene-table-even-row tripal-table-even-row">
         <th nowrap>Stats</th>
         <td>
              <?php if($unigene->num_reads){print "Number of reads: $unigene->num_reads<br>";} ?>
