@@ -365,7 +365,9 @@ function tripal_core_chado_update($table,$match,$values){
 * @param $columns
 *  An array of column names
 * @param $values
-*  An associative array containing the values for filtering the results.
+*  An associative array containing the values for filtering the results. In the 
+*  case where multiple values for the same time are to be selected an additional
+*  entry for the field should appear for each value
 * @param $has_record
 *  Set this argument to 'true' to have this function return a numeric 
 *  value for the number of recrods rather than the array of records.  this
@@ -381,7 +383,7 @@ function tripal_core_chado_update($table,$match,$values){
 *   $values =  array(
 *     'organism_id' => array(
 *         'genus' => 'Citrus',
-*         'species' => 'sinensis',
+*         'species' => array('sinensis','clementina'),
 *      ),
 *     'uniquename' => 'orange1.1g000034m.g',
 *     'type_id' => array (
@@ -399,11 +401,12 @@ function tripal_core_chado_update($table,$match,$values){
 * to select. The $values array is nested such that the organism is identified by 
 * way of the organism_id foreign key constraint by specifying the genus and 
 * species.  The cvterm is also specified using its foreign key and the cv_id 
-* for the cvterm is nested as well.
+* for the cvterm is nested as well.  In the example above, two different species
+* are allowed to match
 *
 * @ingroup tripal_api
 */
-function tripal_core_chado_select($table,$columns,$values,$has_record = 0){
+function tripal_core_chado_select($table,$columns,$values,$has_record = 0,$return_sql = 0){
 
    if (!is_array($columns)){
       watchdog('tripal_feature', 'the $columns argument for tripal_core_chado_select must be an array.');
@@ -425,29 +428,33 @@ function tripal_core_chado_select($table,$columns,$values,$has_record = 0){
    foreach($values as $field => $value){
       $select[] = $field;
       if(is_array($value)){
-         // select the value from the foreign key relationship for this value
-         $results = tripal_core_chado_get_foreign_key($table_desc,$field,$value);
-         if (sizeof($results) < 1) {
-           // foreign key records are required
-           // thus if none matched then return false and alert the admin through watchdog
-           watchdog('tripal_core', 
-            'tripal_core_chado_select: no record in the table referenced by the foreign key (!field)   exists. tripal_core_chado_select table=!table, columns=!columns, values=!values', 
-            array('!table' => $table, 
-              '!columns' => '<pre>' . print_r($columns, TRUE) . '</pre>', 
-              '!values' => '<pre>' . print_r($values, TRUE) . '</pre>',
-              '!field' => $field,
-            ), 
-            WATCHDOG_WARNING);
-           return false;
-           
-         } elseif (sizeof($results) == 1) {
-           $where[$field] = $results[0];
+         // if the user has specified multiple values for matching then this we
+         // want to catch that and save them in our $where array, otherwise
+         // we'll descend for a foreign key relationship
+         if(array_values($value) === $value){
+            $where[$field] = $value;
          } else {
-           $where[$field] = $results;
+            // select the value from the foreign key relationship for this value
+            $results = tripal_core_chado_get_foreign_key($table_desc,$field,$value);
+            if (sizeof($results) < 1) {
+              // foreign key records are required
+              // thus if none matched then return false and alert the admin through watchdog
+              watchdog('tripal_core', 
+               'tripal_core_chado_select: no record in the table referenced by the foreign key (!field)   exists. tripal_core_chado_select table=!table, columns=!columns, values=!values', 
+               array('!table' => $table, 
+                 '!columns' => '<pre>' . print_r($columns, TRUE) . '</pre>', 
+                 '!values' => '<pre>' . print_r($values, TRUE) . '</pre>',
+                 '!field' => $field,
+               ), 
+               WATCHDOG_WARNING);
+              return false;           
+            } else {
+              $where[$field] = $results;
+            }
          }
       } 
       else {
-         $where[$field] = $value;
+         $where[$field][] = $value;
       }
    }
 
@@ -461,15 +468,21 @@ function tripal_core_chado_select($table,$columns,$values,$has_record = 0){
      $sql .= "FROM {$table} ";
      $sql .= "WHERE ";
      foreach($where as $field => $value){
-       if (is_array($value)) {
+       if (count($value) > 1) {
          $sql .= "$field IN (".db_placeholders($value,'varchar').") AND ";
          foreach ($value as $v) { $args[] = $v; }
        } else {
          $sql .= "$field = '%s' AND ";
-         $args[] = $value;
+         $args[] = $value[0];
        }
      }
      $sql = substr($sql,0,-4);  // get rid of the trailing 'AND'
+   }
+
+   // if the caller has requested the SQL rather than the results...
+   // which happens in the case of wanting to use the Drupal pager, then do so
+   if($return_sql){
+      return array('sql'=> $sql, 'args' => $args);
    }
 
    $previous_db = tripal_db_set_active('chado');  // use chado database

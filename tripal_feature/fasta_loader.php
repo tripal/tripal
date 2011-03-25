@@ -292,7 +292,7 @@ function tripal_feature_fasta_load_form_submit ($form, &$form_state){
    $args = array($dfile,$organism_id,$type,$library_id,$re_name,$re_uname,
             $re_accession,$db_id,$rel_type,$re_subject,$parent_type,$update,$user->uid);
 
-   tripal_add_job("Import FASTA file: $dfile",'tripal_core',
+   tripal_add_job("Import FASTA file: $dfile",'tripal_feature',
       'tripal_feature_load_fasta',$args,$user->uid);
 }
 

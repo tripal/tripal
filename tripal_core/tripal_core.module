@@ -126,6 +126,14 @@ function tripal_core_menu() {
      'access arguments' => array('access administration pages'),
      'type' => MENU_CALLBACK,
    );
+   $items['admin/tripal/tripal_jobs/view/%'] = array(
+     'title' => 'Jobs Details',
+     'description' => 'View job details.',
+     'page callback' => 'tripal_jobs_view',
+     'page arguments' => array(4),
+     'access arguments' => array('access administration pages'),
+     'type' => MENU_CALLBACK,
+   );
    $items['admin/tripal/tripal_mview/%'] = array(
      'title' => 'Materialized View',
      'description' => 'Materialized views are used to improve speed of large or complex queries.',
@@ -207,31 +215,6 @@ function tripal_core_menu() {
    );
 
   return $items;
-}
-
-/**
- * Provides the tripal box menu functionality
- *
- *  The typical display for information on feature, organism, library, etc
- *  pages is to use the Tripal expandable boxes.  However, some sites may
- *  prefer to use a menu system to keep the pages less cluttered.  This
- *  function provides a common interface for setting a Drupal variable
- *  that indicates whether or not the content is displayed in a box or as
- *  a menu item.  This function just reverses the setting each time it is
- *  called
- *
- * @ingroup tripal_core
- */
-function tripal_toggle_box_menu($module,$box_name,$nid){
-   // if the content is not in a menu then we wnat to turn on the
-   // menu. If the content is in a menu item then we want to turn
-   // on the box. 
-   if(strcmp(variable_get("$module-box-$box_name","menu_off"),"menu_off")==0){
-      variable_set("$module-box-$box_name","menu_on");
-   } else {
-      variable_set("$module-box-$box_name","menu_off");
-   }
-   drupal_goto("node/$nid");
 }
 
 /**
@@ -392,4 +375,13 @@ function tripal_get_max_chado_rank ($tablename, $where_options) {
 	} else {
 		return -1;
 	}
+}
+
+function tripal_core_theme () {
+   return array(      
+      'tripal_core_job_view' => array (
+         'arguments' => array('job_id'=> null),
+         'template' => 'tripal_core_job_view',
+      ),
+   );
 }

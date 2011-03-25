@@ -10,7 +10,7 @@
  *
  * @ingroup tripal_feature
  */
-function tripal_stock_chado_feature_schema() {
+function tripal_feature_chado_feature_schema() {
   $description = array();
 
   $description['foreign keys']['organism'] = array(

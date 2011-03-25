@@ -95,26 +95,16 @@ function tripal_jobs_report () {
       if($i % 2 == 0 ){
          $class = 'tripal-table-even-row';
       }
-      $submit = format_date($job->submit_date);
-      if($job->start_time > 0){
-         $start = format_date($job->start_time);
-      } else {
-         if(strcmp($job->job_status,'Cancelled')==0){
-            $start = 'Cancelled';
-         } else {
-            $start = 'Not Yet Started';
-         }
-      }
-      if($job->end_time > 0){
-         $end = format_date($job->end_time);
-      } else {
-         $end = '';
-      }
+      $submit = tripal_jobs_get_submit_date($job);
+      $start = tripal_jobs_get_start_time($job);
+      $end = tripal_jobs_get_end_time($job);
+
       $cancel_link = '';
       if($job->start_time == 0 and $job->end_time == 0){
          $cancel_link = "<a href=\"".url("admin/tripal/tripal_jobs/cancel/".$job->job_id)."\">Cancel</a>";
       }
       $rerun_link = "<a href=\"".url("admin/tripal/tripal_jobs/rerun/".$job->job_id)."\">Re-run</a>";
+      $view_link ="<a href=\"".url("admin/tripal/tripal_jobs/view/".$job->job_id)."\">View</a>";
       $output .= "  <tr class=\"$class\">";
       $output .= "    <td>$job->job_id</td>".
                  "    <td>$job->username</td>".
@@ -125,13 +115,45 @@ function tripal_jobs_report () {
                  "    <td>$job->priority</td>".
 				     "    <td>$job->progress%</td>".
                  "    <td>$job->job_status</td>".
-                 "    <td>$cancel_link $rerun_link</td>".
+                 "    <td>$cancel_link $rerun_link $view_link</td>".
                  "  </tr>";
       $i++;
    }
    $output .= "</table>";
 	$output .= theme_pager();
    return $output;
+}
+/**
+*
+*/
+function tripal_jobs_get_start_time($job){
+   if($job->start_time > 0){
+      $start = format_date($job->start_time);
+   } else {
+      if(strcmp($job->job_status,'Cancelled')==0){
+         $start = 'Cancelled';
+      } else {
+         $start = 'Not Yet Started';
+      }
+   }
+   return $start;
+}
+/**
+*
+*/
+function tripal_jobs_get_end_time($job){
+   if($job->end_time > 0){
+      $end = format_date($job->end_time);
+   } else {
+      $end = '';
+   }
+   return $end;
+}
+/**
+*
+*/
+function tripal_jobs_get_submit_date($job){
+   return format_date($job->submit_date);
 }
 /**
 *
@@ -215,6 +237,50 @@ function tripal_jobs_check_running () {
    return 0;
 }
 
+/**
+*
+*/
+function tripal_jobs_view ($job_id){
+   return theme('tripal_core_job_view',$job_id);
+}
+/**
+*
+*/
+function tripal_core_preprocess_tripal_core_job_view (&$variables){
+   // get the job record
+   $job_id = $variables['job_id'];
+   $sql = 
+      "SELECT TJ.job_id,TJ.uid,TJ.job_name,TJ.modulename,TJ.progress,
+              TJ.status as job_status, TJ,submit_date,TJ.start_time,
+              TJ.end_time,TJ.priority,U.name as username,TJ.arguments,
+              TJ.callback,TJ.error_msg,TJ.pid
+       FROM {tripal_jobs} TJ 
+         INNER JOIN users U on TJ.uid = U.uid 
+       WHERE TJ.job_id = %d";
+   $job = db_fetch_object(db_query($sql,$job_id));
+
+   // we do not know what the arguments are for and we want to provide a 
+   // meaningful description to the end-user. So we use a callback function
+   // deinfed in the module that created the job to describe in an array
+   // the arguments provided.  If the callback fails then just use the 
+   // arguments as they are
+   $args = preg_split("/::/",$job->arguments);
+   $arg_hook = $job->modulename."_job_describe_args";
+   $new_args = call_user_func_array($arg_hook,array($job->callback,$args));
+   if(is_array($new_args) and count($new_args)){
+      $job->arguments = $new_args;
+   } else {
+      $job->arguments = $args;
+   }
+
+   // make our start and end times more legible
+   $job->submit_date = tripal_jobs_get_submit_date($job);
+   $job->start_time = tripal_jobs_get_start_time($job);
+   $job->end_time = tripal_jobs_get_end_time($job);
+
+   // add the job to the variables that get exported to the template
+   $variables['job'] = $job;
+}
 /**
 *
 * @ingroup tripal_core

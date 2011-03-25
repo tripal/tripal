@@ -2224,4 +2224,37 @@ function tripal_feature_return_fasta($feature,$desc){
    $fasta .= "\n\n";
    return $fasta;
 }
+/**
+ *
+ *
+ * @ingroup tripal_feature
+ */
+function tripal_feature_job_describe_args($callback,$args){
 
+   $new_args = array();
+   if($callback == 'tripal_feature_load_fasta'){
+      $new_args['FASTA file'] = $args[0];
+      $organism = tripal_core_chado_select('organism',array('genus','species'),array('organism_id' => $args[1]));
+      $new_args['Organism'] = $organism[0]->genus." ". $organism[0]->species;
+      $new_args['Sequence Type'] = $args[2];
+      $new_args['Name RE'] = $args[4];
+      $new_args['Unique Name RE'] = $args[5];
+
+      // add in the relationship arguments
+      $new_args['Relationship Type'] = $args[8];
+      $new_args['Relationship Subject RE'] = $args[9];
+      $new_args['Relationship Parent RE'] = $args[10];
+
+      // add in the database reference arguments
+      $db = tripal_core_chado_select('db',array('name'),array('db_id' => $args[7]));
+      $new_args['Database Reference'] = $db[0]->name;
+      $new_args['Accession RE'] = $args[6];
+      if($args[11]){
+         $new_args['Update and Insert'] = 'Yes';
+      }
+      else {
+         $new_args['Insert Only New Features'] = 'Yes';
+      }
+   }
+   return $new_args;
+}
