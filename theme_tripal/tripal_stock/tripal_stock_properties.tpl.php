@@ -28,22 +28,33 @@
  //print '<pre>'.print_r($node,TRUE).'</pre>';
 ?>
 
+<?php
+  $properties = $node->stock->stockprop;
+  if (!$properties) {
+    $properties = array();
+  } elseif (!is_array($properties)) { 
+    $properties = array($properties); 
+  }
+?>
+
 <div id="tripal_stock-properties-box" class="tripal_stock-info-box tripal-info-box">
   <div class="tripal_stock-info-box-title tripal-info-box-title">Properties</div>
-  <div class="tripal_stock-info-box-desc tripal-info-box-desc">Properties for the stock '<?php print $node->stock_name ?>' include:</div>
-	<?php if(count($node->properties) > 0){ ?>
+  <div class="tripal_stock-info-box-desc tripal-info-box-desc">Properties for the stock '<?php print $node->stock->name ?>' include:</div>
+	<?php if(count($properties) > 0){ ?>
   <table class="tripal_stock-table tripal-table tripal-table-horz">
   <tr><th>Type</th><th>Value</th></tr>
 	<?php	// iterate through each property
 		$i = 0;
-		foreach ($node->properties as $result){
+		foreach ($properties as $result){
 		  $class = 'tripal_stock-table-odd-row tripal-table-odd-row';
       if($i % 2 == 0 ){
          $class = 'tripal_stock-table-odd-row tripal-table-even-row';
       }
-			print '<tr class="'.$class.'"><td>'.$result->type.'</td><td>'.$result->value.'</td></tr>';
+			print '<tr class="'.$class.'"><td>'.$result->type_id->name.'</td><td>'.$result->value.'</td></tr>';
 			$i++;
 		} ?>
 		</table>
-	<?php } ?>
+	<?php } else {
+	  print '<b>There are no properties for the current stock.</b>';
+	} ?>
 </div>

@@ -79,7 +79,6 @@ function tripal_stock_load_properties($stock_id) {
     array('stock_id' => $stock_id)
   );
   
-  dpm($properties);
   return $properties;  
 }
 

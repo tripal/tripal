@@ -31,10 +31,19 @@
  //print '<pre>'.print_r($node,TRUE).'</pre>';
 ?>
 
+<?php
+  $relationships = $node->stock->stock_subject_relationships;
+  if (!$relationships) {
+    $relationships = array();
+  } elseif (!is_array($relationships)) { 
+    $relationships = array($relationships); 
+  }
+?>
+
 <div id="tripal_stock-subject_relationships-box" class="tripal_stock-info-box tripal-info-box">
   <div class="tripal_stock-info-box-title tripal-info-box-title">Subject Relationships</div>
-  <div class="tripal_stock-info-box-desc tripal-info-box-desc">The stock '<?php print $node->stock_name ?>' is the object in the following relationships:</div>
-  <?php if(count($node->subject_relationships) > 0){ ?>
+  <div class="tripal_stock-info-box-desc tripal-info-box-desc">The stock '<?php print $node->stock->name ?>' is the object in the following relationships:</div>
+  <?php if(count($relationships) > 0){ ?>
   <table class="tripal_stock-table tripal-table tripal-table-horz">
     <tr>
       <th>Subject</th>
@@ -43,22 +52,24 @@
     </tr>
     <?php
     $i = 0; 
-    foreach ($node->subject_relationships as $result){   
+    foreach ($relationships as $result){   
       $class = 'tripal_stock-table-odd-row tripal-table-odd-row';
       if($i % 2 == 0 ){
          $class = 'tripal_stock-table-odd-row tripal-table-even-row';
       } ?>
       <tr class="<?php print $class ?>">
-				<?php $subject = $result->subject;
+				<?php $subject = $result->subject_id;
 					if ($subject->nid) {?>
-					<td><?php print l($subject->stock_name.' ('.$subject->uniquename.')', 'node/'.$subject->nid); ?></td>
+					<td><?php print l($subject->name.' ('.$subject->uniquename.')', 'node/'.$subject->nid); ?></td>
 				<?php } else { ?>
-					<td><?php print $subject->stock_name.' ('.$subject->uniquename.')'; ?></td>
+					<td><?php print $subject->name.' ('.$subject->uniquename.')'; ?></td>
 				<?php } ?>
-				<td><?php print $result->type; ?></td>
-				<td><?php print $node->stock_name; ?></td>
+				<td><?php print $result->type_id->name; ?></td>
+				<td><?php print $node->stock->name; ?></td>
       </tr>
     <?php } //end of foreach?>
   </table>
-  <?php } //end of if there are subject relationships ?>
+  <?php } else {
+    print '<b>There are no relationships where the current stock is the object.</b>';
+  } //end of if there are subject relationships ?>
 </div>

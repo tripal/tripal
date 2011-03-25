@@ -30,10 +30,19 @@
  //print '<pre>'.print_r($node,TRUE).'</pre>';
 ?>
 
+<?php
+  $db_references = $node->stock->stock_dbxref;
+  if (!$db_references) {
+    $db_references = array();
+  } elseif (!is_array($db_references)) {
+    $db_references = array($db_references);
+  }
+?>
+
 <div id="tripal_stock-references-box" class="tripal_stock-info-box tripal-info-box">
   <div class="tripal_stock-info-box-title tripal-info-box-title">References</div>
-  <div class="tripal_stock-info-box-desc tripal-info-box-desc">The stock '<?php print $node->stock_name ?>' is also available at these locations</div>
-  <?php if(count($node->db_references) > 0){ ?>
+  <div class="tripal_stock-info-box-desc tripal-info-box-desc">The stock '<?php print $node->stock->name ?>' is also available at these locations</div>
+  <?php if(count($db_references) > 0){ ?>
   <table class="tripal_stock-table tripal-table tripal-table-horz">
     <tr>
       <th>Dababase</th>
@@ -41,19 +50,20 @@
     </tr>
     <?php
     $i = 0; 
-    foreach ($node->db_references as $result){ 
+    foreach ($db_references as $result){ 
+      $dbxref = $result->dbxref_id;
       $class = 'tripal_stock-table-odd-row tripal-table-odd-row';
       if($i % 2 == 0 ){
          $class = 'tripal_stock-table-odd-row tripal-table-even-row';
       }
       ?>
       <tr class="<?php print $class ?>">
-        <td><?php print $result->db_name?></td>
+        <td><?php print $dbxref->db_id->name?></td>
         <td><?php 
-           if($result->db_urlprefix){ 
-           	 print l($result->accession, $result->db_urlprefix.$result->accession);
+           if($dbxref->db_id->urlprefix){ 
+           	 print l($dbxref->accession, $dbxref->db_id->urlprefix.$dbxref->accession);
            } else { 
-             print $result->accession; 
+             print $dbxref->accession; 
            } 
            ?>
         </td>
@@ -62,5 +72,7 @@
       $i++;  
     } ?>
   </table>
-  <?php } ?>
+  <?php } else {
+    print '<b>There are no external database references for the current stock.</b>';
+  }?>
 </div>

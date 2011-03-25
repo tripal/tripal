@@ -19,8 +19,8 @@ function tripal_stock_add_ALL_dbreferences_page($node) {
 
   $output .= tripal_stock_add_chado_properties_progress('db_references').'<br>';
   $output .= '<b>All Database References should strictly pertain to THE CURRENT Individual</b><br>';
-  $output .= '<br><b>Current Database References</b><br>';
-  $output .= tripal_stock_list_dbreferences_for_node($node->db_references);
+  $output .= '<br>';
+  $output .= theme('tripal_stock_references', $node);
   $output .= '<br><br>';
   $output .= drupal_get_form('tripal_stock_add_ONE_dbreference_form', $node);
   $output .= '<br>';
@@ -44,7 +44,7 @@ function tripal_stock_add_ALL_dbreferences_page($node) {
  */
 function tripal_stock_add_ONE_dbreference_form($form_state, $node) {
 
-  $stock_id = $node->stock_id;
+  $stock_id = $node->stock->stock_id;
 
   $form['db_nid'] = array(
     '#type' => 'hidden',
@@ -225,8 +225,14 @@ function tripal_stock_edit_ALL_dbreferences_page($node) {
  *
  * @ingroup tripal_stock
  */                                        
-function tripal_stock_edit_ALL_db_references_form($form_state, $node) {
+function tripal_stock_edit_ALL_db_references_form($form_state, &$node) {
   $form = array();
+
+  // Add database references to the node
+  $node->stock->stock_dbxref = tripal_core_generate_chado_var(
+    'stock_dbxref', 
+    array('stock_id'=>$node->stock->stock_id)
+  );
 
   $form['nid'] = array(
     '#type' => 'hidden',
@@ -234,8 +240,13 @@ function tripal_stock_edit_ALL_db_references_form($form_state, $node) {
   );
 
   $i=0;
-  if (sizeof($node->db_references) != 0) {
-  foreach ($node->db_references as $ref) {
+  if (!$node->stock->stock_dbxref) { 
+    $node->stock->stock_dbxref = array(); 
+  } elseif (!is_array($node->stock->stock_dbxref)) { 
+    $node->stock->stock_dbxref = array($node->stock->stock_dbxref); 
+  }  
+  if (sizeof($node->stock->stock_dbxref) != 0) {
+  foreach ($node->stock->stock_dbxref as $ref) {
     $i++;
     $form["num-$i"] = array(
       '#type' => 'item',
@@ -247,7 +258,7 @@ function tripal_stock_edit_ALL_db_references_form($form_state, $node) {
       //'#title' => t('Accession'),
       '#size' => 30,
       '#required' => TRUE,
-      '#default_value' => $ref->accession
+      '#default_value' => $ref->dbxref_id->accession
     );
 
     $db_options = tripal_db_get_db_options();
@@ -257,13 +268,13 @@ function tripal_stock_edit_ALL_db_references_form($form_state, $node) {
       '#type' => 'select', 
       //'#title' => t('Database'),
       '#options' => $db_options, 
-      '#default_value' => $ref->db_id
+      '#default_value' => $ref->dbxref_id->db_id->db_id
     );
 
 
     $form["id-$i"] = array(
       '#type' => 'hidden',
-      '#value' => $ref->dbxref_id
+      '#value' => $ref->dbxref_id->dbxref_id
     );
 
     $form["submit-$i"] = array(

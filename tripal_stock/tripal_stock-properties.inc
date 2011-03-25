@@ -10,8 +10,8 @@ function tripal_stock_add_ALL_property_page($node) {
 
   $output .= tripal_stock_add_chado_properties_progress('properties').'<br>';
   $output .= '<b>All Properties should strictly pertain to THE CURRENT Individual</b><br>';
-  $output .= '<br><b>Current Properties</b><br>';
-  $output .= tripal_stock_list_properties_for_node($node->properties, $node->synonyms);
+  $output .= '<br>';
+  $output .= theme('tripal_stock_properties', $node);
   $output .= '<br><br>';
   $output .= drupal_get_form('tripal_stock_add_ONE_property_form', $node);
   $output .= '<br>';
@@ -26,7 +26,7 @@ function tripal_stock_add_ALL_property_page($node) {
  */
 function tripal_stock_add_ONE_property_form($form_state, $node) {
   $form = array();
-  $stock_id = $node->stock_id;
+  $stock_id = $node->stock->stock_id;
 
   $form['add_properties'] = array(
     '#type' => 'fieldset',
@@ -184,8 +184,14 @@ function tripal_stock_edit_ALL_properties_page($node) {
  *
  * @ingroup tripal_stock
  */
-function tripal_stock_edit_ALL_properties_form($form_state, $node) {
+function tripal_stock_edit_ALL_properties_form($form_state, &$node) {
   $form = array();
+
+  // Add properties and synonyms
+  $node->stock->stockprop = tripal_core_generate_chado_var(
+    'stockprop', 
+    array('stock_id'=>$node->stock->stock_id)
+  );
 
   $form['nid'] = array(
     '#type' => 'hidden',
@@ -193,16 +199,13 @@ function tripal_stock_edit_ALL_properties_form($form_state, $node) {
   );
 
   $i=0;
-  if (is_array($node->properties) && is_array($node->synonyms)) { 
-  	$all_properties = array_merge($node->properties, $node->synonyms);
-  } elseif (is_array($node->properties)) { 
-  	$all_properties = $node->properties; 
-  } elseif (is_array($node->synonyms)) { 
-  	$all_properties = $node->synonyms;
-  } else { $all_properties = array(); }
-
-  if (sizeof($all_properties) != 0) {
-  foreach ($all_properties as $property) {
+  if (!$node->stock->stockprop) { 
+    $node->stock->stockprop = array(); 
+  } elseif (!is_array($node->stock->stockprop)) { 
+    $node->stock->stockprop = array($node->stock->stockprop); 
+  }
+  if (sizeof($node->stock->stockprop) != 0) {
+  foreach ($node->stock->stockprop as $property) {
     $i++;
     $form["num-$i"] = array(
       '#type' => 'item',
@@ -216,14 +219,11 @@ function tripal_stock_edit_ALL_properties_form($form_state, $node) {
 
     $prop_type_options = tripal_cv_get_cvterm_options( variable_get('chado_stock_prop_types_cv', 'null') );
     ksort($prop_type_options);
- 
-    $default = array_search($property->type, $prop_type_options);
-
     $form["type-$i"] = array(
       '#type' => 'select',
       //'#title' => t('Type of Property'),
       '#options' => $prop_type_options,
-      '#default_value' => $default 
+      '#default_value' => $property->type_id->cvterm_id
     );
 
     $form["value-$i"] = array(
@@ -231,13 +231,6 @@ function tripal_stock_edit_ALL_properties_form($form_state, $node) {
       //'#title' => t('Value'),
       '#default_value' => $property->value
     );
-
-    if ($property->type == 'synonym') {
-      $form["preferred-$i"] = array(
-        '#type' => 'checkbox',
-        '#title' => t('Preferred Synonym'),
-      );
-    }
 
     $form["submit-$i"] = array(
       '#type' => 'submit',

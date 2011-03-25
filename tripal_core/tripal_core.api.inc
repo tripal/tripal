@@ -633,7 +633,11 @@ function tripal_core_generate_chado_var($table, $values) {
 
   // Expandable fields without value needed for criteria--------------------------------------------
   $all->expandable_fields = array();
-  $all->expandable_tables = $table_desc['referring_tables'];
+  if ($table_desc['referring_tables']) {
+    $all->expandable_tables = $table_desc['referring_tables'];
+  } else {
+    $all->expandable_tables = array();
+  }
   $all->expandable_nodes = array();
     
   // Get fields to be removed by name.................................

@@ -27,15 +27,26 @@
  //print '<pre>'.print_r($node,TRUE).'</pre>';
 ?>
 
+<?php
+  $synonyms = $node->stock->stock_synonyms;
+  if (!$synonyms) {
+    $synonyms = array();
+  } elseif (!is_array($synonyms)) { 
+    $synonyms = array($synonyms); 
+  }
+?>
+
 <div id="tripal_stock-synonyms-box" class="tripal_stock-info-box tripal-info-box">
   <div class="tripal_stock-info-box-title tripal-info-box-title">Synonyms</div>
-  <div class="tripal_stock-info-box-desc tripal-info-box-desc">Synonyms for the stock '<?php print $node->stock_name ?>' include:</div>
-	<?php if(count($node->synonyms) > 0){
+  <div class="tripal_stock-info-box-desc tripal-info-box-desc">Synonyms for the stock '<?php print $node->stock->name ?>' include:</div>
+	<?php if(count($synonyms) > 0){
 		print '<ul>';
 			// iterate through each synonym
-			foreach ($node->synonyms as $result){
+			foreach ($synonyms as $result){
 				print '<li>'.$result->value.'</li>';
 			}
 		print '</ul>';
+	} else {
+	  print '<b>There are no synonyms for the current stock.</b>';
 	} ?>
 </div>

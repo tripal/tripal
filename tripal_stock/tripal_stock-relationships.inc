@@ -9,9 +9,11 @@ function tripal_stock_add_ALL_relationships_page($node) {
   $output = '';
 
   $output .= tripal_stock_add_chado_properties_progress('relationships').'<br>';
-  $output .= '<b>All Relationships should include the CURRENT Individual ('.$node->uniquename.')</b><br>';
-  $output .= '<br><b>Current Relationships</b><br>';
-  $output .= tripal_stock_list_relationships_for_node($node->uniquename, $node->subject_relationships, $node->object_relationships);
+  $output .= '<b>All Relationships should include the CURRENT Individual ('.$node->stock->uniquename.')</b><br>';
+  $output .= '<br>';
+  $output .= theme('tripal_stock_relationships_as_object', $node);
+  $output .= '<br>';
+  $output .= theme('tripal_stock_relationships_as_subject', $node);
   $output .= '<br><br>';
   $output .= drupal_get_form('tripal_stock_add_ONE_relationship_form', $node);
   $output .= '<br>';
@@ -26,8 +28,8 @@ function tripal_stock_add_ALL_relationships_page($node) {
  */
 function tripal_stock_add_ONE_relationship_form($form_state, $node) {
 
-  $stock_id = $node->stock_id;
-  $organism_id = $node->organism->organism_id;
+  $stock_id = $node->stock->stock_id;
+  $organism_id = $node->stock->organism_id->organism_id;
   $_SESSION['organism'] = $organism_id; //needed for autocomplete enter stock to work
 
   $form['rel_nid'] = array(
@@ -87,7 +89,7 @@ function tripal_stock_add_ONE_relationship_form($form_state, $node) {
 
   $form['add_relationships']['r_stock_uniquename'] = array( 
     '#type' => 'value',
-    '#value' => $node->uniquename,
+    '#value' => $node->stock->uniquename,
     '#required' => TRUE
   );
 
@@ -117,7 +119,7 @@ function tripal_stock_add_ONE_relationship_form_validate($form, &$form_state) {
     } elseif (sizeof($subject_results) < 1) {
       form_set_error('subject_id', "There are no stocks matching your input. Please check your input for typos and/or lookup the stock ".l('here', 'stocks'));
     } elseif (sizeof($subject_results) == 1) {
-      $form_state['values']['subject_id'] = $subject_results[0]->stock_id;
+      $form_state['values']['subject_id'] = $subject_results[0]->stock->stock_id;
     }
 
     // check valid stock selected for object
@@ -133,7 +135,7 @@ function tripal_stock_add_ONE_relationship_form_validate($form, &$form_state) {
     } elseif (sizeof($object_results) < 1) {
       form_set_error('object_id', "There are no stocks matching your input. Please check your input for typos and/or lookup the stock ".l('here', 'stocks'));                                                                         
     } elseif (sizeof($object_results) == 1) {
-      $form_state['values']['object_id'] = $object_results[0]->stock_id;
+      $form_state['values']['object_id'] = $object_results[0]->stock->stock_id;
     }
 
     // check valid type selected
@@ -164,7 +166,7 @@ function tripal_stock_add_ONE_relationship_form_validate($form, &$form_state) {
  * @ingroup tripal_stock
  */
 function tripal_stock_add_ONE_relationship_form_submit($form, &$form_state) {
-
+  
   if ($form_state['values']['subject_id'] > 0) {
     $previous_db = tripal_db_set_active('chado');
     db_query(
@@ -206,6 +208,28 @@ function tripal_stock_edit_ALL_relationships_page($node) {
 function tripal_stock_edit_ALL_relationships_form($form_state, $node) {
   $form = array();
 
+  // Stock Object Relationships
+  $node->stock->stock_object_relationships = tripal_core_generate_chado_var(
+    'stock_relationship', 
+    array('subject_id'=>$node->stock->stock_id)
+  );    
+  if (!$node->stock->stock_object_relationships) { 
+    $node->stock->stock_object_relationships = array(); 
+  } elseif (!is_array($node->stock->stock_object_relationships)) { 
+    $node->stock->stock_object_relationships = array($node->stock->stock_object_relationships); 
+  }  
+  
+  // Stock Subject Relationships
+  $node->stock->stock_subject_relationships = tripal_core_generate_chado_var(
+    'stock_relationship', 
+    array('object_id'=>$node->stock->stock_id)
+  ); 
+  if (!$node->stock->stock_subject_relationships) { 
+    $node->stock->stock_subject_relationships = array(); 
+  } elseif (!is_array($node->stock->stock_subject_relationships)) { 
+    $node->stock->stock_subject_relationships = array($node->stock->stock_subject_relationships); 
+  }  
+    
   $form['nid'] = array(
     '#type' => 'hidden',
     '#value' => $node->nid
@@ -213,11 +237,12 @@ function tripal_stock_edit_ALL_relationships_form($form_state, $node) {
   
   $form['r_stock_uniquename'] = array(
     '#type' => 'hidden',
-    '#value' => $node->uniquename
+    '#value' => $node->stock->uniquename
   );
 
   $i=0;
-  $relationships = array_merge($node->object_relationships, $node->subject_relationships);
+  $relationships = array_merge($node->stock->stock_object_relationships, $node->stock->stock_subject_relationships);
+  dpm($relationships, 'relationships');
   if (sizeof($relationships) != 0) {
   foreach ($relationships as $r) {
 
@@ -233,10 +258,10 @@ function tripal_stock_edit_ALL_relationships_form($form_state, $node) {
     );
 
     //Enter relationship specific fields
-    if ( !empty($r->subject_id) ) { 
-      $default = $r->subject_uniquename;
-      $description = l($r->subject_name, 'node/'.$r->subject_nid); 
-    } else { $default = $node->uniquename; $description = 'Current Stock'; }
+    if ( $node->stock->stock_id != $r->subject_id->stock_id ) { 
+      $default = $r->subject_id->uniquename;
+      $description = l($r->subject_id->name, 'node/'.$r->subject_id->nid); 
+    } else { $default = $node->stock->uniquename; $description = 'Current Stock'; }
     $form["subject_id-$i"] = array(
       '#type' => 'textfield',      
       //'#title' => t('Subject'), 
@@ -253,13 +278,13 @@ function tripal_stock_edit_ALL_relationships_form($form_state, $node) {
       //'#title' => t('Type of Relationship'), 
       '#options' => $type_options,
       '#required' => TRUE,
-      '#default_value' => $r->relationship_type_id
+      '#default_value' => $r->type_id->cvterm_id
     );
 
-    if ( !empty($r->object_id) ) { 
-      $default = $r->object_uniquename;
-      $description = l($r->object_name, 'node/'.$r->object_nid);
-    } else { $default = $node->uniquename; $description = 'Current Stock'; }
+    if ( $node->stock->stock_id != $r->object_id->stock_id ) { 
+      $default = $r->object_id->uniquename;
+      $description = l($r->object_id->name, 'node/'.$r->object_id->nid);
+    } else { $default = $node->stock->uniquename; $description = 'Current Stock'; }
     $form["object_id-$i"] = array(
       '#type' => 'textfield',          
       //'#title' => t('Object'),      
@@ -314,7 +339,7 @@ function tripal_stock_edit_ALL_relationships_form_validate($form, &$form_state) 
       } elseif (sizeof($subject_results) < 1) { 
         form_set_error("subject_id-$i", "There are no stocks matching your input. Please check your input for typos and/or lookup the stock ".l('here', 'stocks'));
       } elseif (sizeof($subject_results) == 1) {
-        $form_state['values']["subject_id-$i"] = $subject_results[0]->stock_id;
+        $form_state['values']["subject_id-$i"] = $subject_results[0]->stock->stock_id;
       } 
 
       // check valid stock selected for object
@@ -330,7 +355,7 @@ function tripal_stock_edit_ALL_relationships_form_validate($form, &$form_state) 
       } elseif (sizeof($object_results) < 1) {
         form_set_error("object_id-$i", "There are no stocks matching your input. Please check your input for typos and/or lookup the stock ".l('here', 'stocks'));
       } elseif (sizeof($object_results) == 1) {
-        $form_state['values']["object_id-$i"] = $object_results[0]->stock_id;
+        $form_state['values']["object_id-$i"] = $object_results[0]->stock->stock_id;
       } 
 
       // check valid type selected

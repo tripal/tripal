@@ -383,192 +383,17 @@ function tripal_stock_node_info() {
  */
 function chado_stock_load($node) {
 
-  // Gets the stock_id from the drupal chado_stock table---------------------------------------
+  // Get stock_id from chado_stock linking table
   $map = db_fetch_object(db_query(
     "SELECT stock_id as stock_id FROM {chado_stock} WHERE vid=%d",
     $node->vid
   ));
-  $node->stock_id = $map->stock_id;  
   
-  //Get the main stock information from the chado stock table-----------------------------------
-  $columns = array('name', 'uniquename', 'description', 'type_id', 'is_obsolete', 'organism_id', 'dbxref_id');
-  $values = array('stock_id' => $node->stock_id);
-  $results = tripal_core_chado_select('stock', $columns, $values);
+  // Get stock content and add to node
+  $stock = tripal_core_generate_chado_var('stock', array('stock_id'=>$map->stock_id));
+  $node->stock = $stock;
   
-  $node->stock_name = $results[0]->name;
-  $node->uniquename = $results[0]->uniquename;
-  $node->description = $results[0]->description;
-  $node->stock_type_id = $results[0]->type_id;
-  $node->organism->organism_id = $results[0]->organism_id;
-  $node->main_db_reference->dbxref_id = $results[0]->dbxref_id;
-  
-  if (preg_match('/t/', $results[0]->is_obsolete)) {
-    $node->is_obsolete = TRUE;
-  } else {
-    $node->is_obsolete = FALSE;
-  }
-
-  // Get type for current stock------------------------------------------------------------------
-  $columns = array('name');
-  $values = array('cvterm_id' => $node->stock_type_id);
-  $results = tripal_core_chado_select('cvterm', $columns, $values);
-  
-  $node->stock_type = $results[0]->name;
-  
-  // Get organism details from chado & add to node-----------------------------------------------
-  // get organism if for current stock
-  // pull all data from chado for the organism and assign it to the current node
-  $node->organism = tripal_organism_get_organism_by_organism_id($node->organism->organism_id);
-
-  // Add Synonyms for stock----------------------------------------------------------------------
-  // These are a special case of property (stockprop table) where cvterm='synonym'
-  $columns = array('stockprop_id', 'type_id', 'value', 'rank');
-  $values = array(
-    'stock_id' => $node->stock_id, 
-    'type_id' => array(
-      'cv_id' => variable_get('chado_stock_prop_types_cv', 'null'), 
-      'name' => 'synonym'
-    ) 
-  );
-  $results = tripal_core_chado_select('stockprop', $columns, $values);
-  if (!empty($results)) {
-  	foreach ($results as $r) {
-    	$r->type = 'synonym';
-    	$node->synonyms[] = $r;
-  	}
-	}
-	
-  // Add properties for stock (not including synonyms)-------------------------------------------
-  // $node->properties is an array of objects where each object describes a single property and has a type and value
-  $columns = array('stockprop_id', 'type_id', 'value', 'rank');
-  $values = array(
-    'stock_id' => $node->stock_id, 
-  );
-  $results = tripal_core_chado_select('stockprop', $columns, $values);
-  foreach ($results as $r) {
-    $columns = array('name');
-    $values = array('cvterm_id' => $r->type_id);
-    $type_results = tripal_core_chado_select('cvterm', $columns, $values);
-    $r->type = $type_results[0]->name;
-    
-    $node->properties[] = $r;
-  }
-  
-  // Add in main db reference-----------------------------------------------------------------------
-  // this is the dbxref_id in the stock table
-  if (!empty($node->main_db_reference->dbxref_id)) {
-    $columns = array('dbxref_id', 'accession', 'version', 'description', 'db_id');
-    $values = array('dbxref_id' => $node->main_db_reference->dbxref_id);
-    $results = tripal_core_chado_select('dbxref', $columns, $values);
-    $node->main_db_reference = $results[0];
-    
-    //get db info
-    $columns = array('name', 'description', 'url', 'urlprefix');
-    $values = array('db_id' => $node->main_db_reference->db_id);
-    $results = tripal_core_chado_select('db', $columns, $values);
-    $node->main_db_reference->db_name = $results[0]->name;
-    $node->main_db_reference->db_description = $results[0]->description;
-    $node->main_db_reference->db_url = $results[0]->url;
-    $node->main_db_reference->db_urlprefix = $results[0]->urlprefix;
-  }
-
-  // Add in extra references to external databases--------------------------------------------------
-  // this includes all the dbxref entries in stock_dbxref
-  $columns = array('dbxref_id');
-  $values = array('stock_id' => $node->stock_id);
-  $results = tripal_core_chado_select('stock_dbxref',$columns,$values);
-  $node->db_references = array();
-  foreach ($results as $r) {
-    $columns = array('dbxref_id', 'accession', 'version', 'description', 'db_id');
-    $values = array('dbxref_id' => $r->dbxref_id);
-    $sub_results = tripal_core_chado_select('dbxref', $columns, $values);   
-    $dbxref = $sub_results[0];
-    
-    //get db info
-    $columns = array('name', 'description', 'url', 'urlprefix');
-    $values = array('db_id' => $dbxref->db_id);
-    $results = tripal_core_chado_select('db', $columns, $values);
-    $dbxref->db_name = $results[0]->name;
-    $dbxref->db_description = $results[0]->description;
-    $dbxref->db_url = $results[0]->url;
-    $dbxref->db_urlprefix = $results[0]->urlprefix;    
-    
-    $node->db_references[] = $dbxref;
-  }
-  
-  // Add relationships for stock--------------------------------------------------------------------
-  // Relationships are broken down into those where the current stock is the subject (other details stored in $node->object_relationships)
-  // and those where the current stock is the object (other details stored in $node->subject_relationships)
-  // fields available to each include object/subject_name, object/subject_id (stock_id in chado) and object/subject_nid (node id in drupal)
-  
-     // where current is subject.............................
-    $columns = array('stock_relationship_id', 'subject_id', 'type_id', 'object_id', 'value', 'rank');
-    $values = array('subject_id' => $node->stock_id);
-    $results = tripal_core_chado_select('stock_relationship', $columns, $values);
-    
-    $node->object_relationships = array();
-    foreach ($results as $r) {
-      $columns = array('name', 'uniquename', 'description', 'type_id', 'is_obsolete', 'organism_id', 'dbxref_id');
-
-      $values = array('stock_id' => $r->object_id);
-      $results = tripal_core_chado_select('stock', $columns, $values);
-
-			// Type
-			$type_results = tripal_core_chado_select('cvterm', array('name'), array('cvterm_id' => $r->type_id));
-			$r->type = $type_results[0]->name;
-			
-			// Object
-      $r->object->stock_id = $r->object_id;
-      unset($r->object_id);
-      
-      $r->object->stock_name = $results[0]->name;
-      $r->object->uniquename = $results[0]->uniquename;
-      $r->object->description = $results[0]->description;
-      $r->object->stock_type_id = $results[0]->type_id;
-      $r->object->organism->organism_id = $results[0]->organism_id;
-      $r->object->main_db_reference->dbxref_id = $results[0]->dbxref_id;        
-
-      $sql = "SELECT nid FROM {chado_stock} WHERE stock_id=%d";
-      $object_node = db_fetch_object(db_query($sql, $r->object->stock_id));
-      $r->object->nid = $object_node->nid;
-      
-      $node->object_relationships[] = $r;
-    }
-
-     // where current is object.............................
-    $columns = array('stock_relationship_id', 'subject_id', 'type_id', 'object_id', 'value', 'rank');
-    $values = array('object_id' => $node->stock_id);
-    $results = tripal_core_chado_select('stock_relationship', $columns, $values);
-
-    $node->subject_relationships = array();    
-    foreach ($results as $r) {
-      $columns = array('name', 'uniquename', 'description', 'type_id', 'is_obsolete', 'organism_id', 'dbxref_id');
-      $values = array('stock_id' => $r->subject_id);
-      $results = tripal_core_chado_select('stock', $columns, $values);
-
-			// Type
-			$type_results = tripal_core_chado_select('cvterm', array('name'), array('cvterm_id' => $r->type_id));
-			$r->type = $type_results[0]->name;
-			
-			// Subject
-      $r->subject->stock_id = $r->subject_id;
-      unset($r->subject_id);  
-      
-      $r->subject->stock_name = $results[0]->name;
-      $r->subject->uniquename = $results[0]->uniquename;
-      $r->subject->description = $results[0]->description;
-      $r->subject->stock_type_id = $results[0]->type_id;
-      $r->subject->organism->organism_id = $results[0]->organism_id;        
-      $r->subject->main_db_reference->dbxref_id = $results[0]->dbxref_id;        
-
-      $sql = "SELECT nid FROM {chado_stock} WHERE stock_id=%d";
-      $subject_node = db_fetch_object(db_query($sql, $r->subject->stock_id));
-      $r->subject->nid = $subject_node->nid;
-      
-      $node->subject_relationships[] = $r;
-    }
-
-     return $node;
+  return $node;
 }
 
 
@@ -611,7 +436,7 @@ function chado_stock_form($node, $form_state) {
     '#default_value' => TRUE
   );
 
-  if (!isset($node->uniquename)) {
+  if (!isset($node->stock->uniquename)) {
     $form['progress'] = array( 
       '#type' => 'item', 
       '#value' => tripal_stock_add_chado_properties_progress('main')
@@ -626,20 +451,20 @@ function chado_stock_form($node, $form_state) {
   $form['names']['title'] = array(
     '#type' => 'textfield',
     '#title' => t('Name'),
-    '#default_value' => $node->title,
+    '#default_value' => $node->stock->name,
     '#required'	     => TRUE
   );
 
   $form['names']['uniquename'] = array(
     '#type' => 'textfield',
     '#title' => t('Unique Name'),
-    '#default_value' => $node->uniquename,
+    '#default_value' => $node->stock->uniquename,
     '#required'	     => TRUE
   );
 
   $form['names']['stock_id'] = array(
     '#type' => 'hidden',
-    '#value' => $node->stock_id
+    '#value' => $node->stock->stock_id
   );
 
   $form['details'] = array(
@@ -649,7 +474,7 @@ function chado_stock_form($node, $form_state) {
 
   $type_options = tripal_cv_get_cvterm_options( variable_get('chado_stock_types_cv', 'null') );
   $type_options[0] = 'Select a Type';
-  if ($node->nid == '') { $type_default = 0; } else { $type_default = $node->stock_type_id; }
+  if ($node->nid == '') { $type_default = 0; } else { $type_default = $node->stock->type_id->cvterm_id; }
   $form['details']['type_id'] = array(
     '#type' => 'select',
     '#title' => t('Type of Stock'),
@@ -660,7 +485,7 @@ function chado_stock_form($node, $form_state) {
 
   $stock_oganism_options = tripal_organism_get_organism_options();
   $stock_oganism_options[0] = 'Select An Organism';
-  if ($node->nid == '') { $organism_default = 0; } else {  $organism_default = $node->organism->organism_id; }
+  if ($node->nid == '') { $organism_default = 0; } else {  $organism_default = $node->stock->organism_id->organism_id; }
   $form['details']['organism_id'] = array(
     '#type' => 'select',
     '#title' => t('Source Organism for stock'),
@@ -672,7 +497,7 @@ function chado_stock_form($node, $form_state) {
   $form['details']['stock_description'] = array(
     '#type' => 'textarea',
     '#title' => t('Notes'),
-    '#default_value' => $node->description,
+    '#default_value' => $node->stock->description,
     '#description' => t('Briefly enter any notes on the above stock. This should not include phenotypes or genotypes.'),
   );
 
@@ -684,19 +509,19 @@ function chado_stock_form($node, $form_state) {
   $form['database_reference']['accession'] = array(
     '#type' => 'textfield',
     '#title' => t('Accession'),
-    '#default_value' => $node->main_db_reference->accession
+    '#default_value' => $node->stock->dbxref_id->accession
   );
 
   $form['database_reference']['db_description'] = array(
     '#type' => 'textarea',
     '#title' => t('Description of Database Reference'),
-    '#default_value' => $node->main_db_reference->db_description,
+    '#default_value' => $node->stock->dbxref_id->description,
     '#description' => t('Optionally enter a description about the database accession.')
   );
 
   $db_options = tripal_db_get_db_options();
   $db_options[0] = 'Select a Database';
-  if ($node->nid == '') { $db_default = 0; } else { $db_default = $node->main_db_reference->db_id; }
+  if ($node->nid == '') { $db_default = 0; } else { $db_default = $node->stock->dbxref_id->db_id->db_id; }
   $form['database_reference']['database'] = array(
     '#type' => 'select',
     '#title' => t('Database'),
@@ -781,15 +606,6 @@ function chado_stock_validate($node, &$form) {
     tripal_db_set_active($previous_db);
     if ($num_rows->count != 1) {
       form_set_error('database', 'The database you selected is not valid. Please choose another one.'); }
-  }
-
-  // Check Accession is unique for database ( $form['values']['database_reference']['accession'] )
-  if ( $node->accession != '') {
-  	$previous_db = tripal_db_set_active('chado');
-    $num_rows = db_fetch_object(db_query($string_in_chado_sql, 'dbxref', 'accession', $node->accession));
-    tripal_db_set_active($previous_db);
-    if ($num_rows->count > 0) {
-      form_set_error('accession', 'This accession ('.$node->accession.') has already been assigned to another stock.'); }
   }
 
 }
@@ -1122,4 +938,123 @@ function tripal_stock_block ($op = 'list', $delta = 0, $edit=array()) {
 				return $block;
 			}
 	}
+}
+
+/**
+ *  
+ *
+ * @ingroup tripal_stock
+ */
+function tripal_stock_preprocess(&$variables){
+
+  // if the template file is the default node template file then we want
+  // to add all of our variables.
+  if($variables['template_files'][0] == 'node-chado_stock'){
+    // stock properties
+    $variables['node']->stock->stockprop = tripal_core_generate_chado_var(
+      'stockprop', 
+      array('stock_id'=>$variables['node']->stock->stock_id)
+    );
+
+    // stock synonyms
+    $variables['node']->stock->stock_synonyms = tripal_core_generate_chado_var(
+      'stockprop', 
+      array(
+        'stock_id'=>$variables['node']->stock->stock_id,
+        'type_id' => array(
+          'cv_id' => variable_get('chado_stock_prop_types_cv', 'null'),
+          'name' => 'synonym'
+        ),
+      )
+    );
+    
+    // Stock database references
+    $variables['node']->stock->stock_dbxref = tripal_core_generate_chado_var(
+      'stock_dbxref', 
+      array('stock_id'=>$variables['node']->stock->stock_id)
+    );
+
+    // Stock Object Relationships
+    $variables['node']->stock->stock_object_relationships = tripal_core_generate_chado_var(
+      'stock_relationship', 
+      array('subject_id'=>$variables['node']->stock->stock_id)
+    );    
+
+    // Stock Subject Relationships
+    $variables['node']->stock->stock_subject_relationships = tripal_core_generate_chado_var(
+      'stock_relationship', 
+      array('object_id'=>$variables['node']->stock->stock_id)
+    );  
+  }
+}
+
+/**
+ *  
+ *
+ * @ingroup tripal_stock
+ */
+function tripal_stock_preprocess_tripal_stock_properties(&$variables){
+    // stock properties
+    $variables['node']->stock->stockprop = tripal_core_generate_chado_var(
+      'stockprop', 
+      array('stock_id'=>$variables['node']->stock->stock_id)
+    );
+}
+
+/**
+ *  
+ *
+ * @ingroup tripal_stock
+ */
+function tripal_stock_preprocess_tripal_stock_synonyms(&$variables){
+    // stock synonyms
+    $variables['node']->stock->stock_synonyms = tripal_core_generate_chado_var(
+      'stockprop', 
+      array(
+        'stock_id'=>$variables['node']->stock->stock_id,
+        'type_id' => array(
+          'cv_id' => variable_get('chado_stock_prop_types_cv', 'null'),
+          'name' => 'synonym'
+        ),
+      )
+    );
+}
+
+/**
+ *  
+ *
+ * @ingroup tripal_stock
+ */
+function tripal_stock_preprocess_tripal_stock_references(&$variables){
+    // Stock database references
+    $variables['node']->stock->stock_dbxref = tripal_core_generate_chado_var(
+      'stock_dbxref', 
+      array('stock_id'=>$variables['node']->stock->stock_id)
+    );
+}
+
+/**
+ *  
+ *
+ * @ingroup tripal_stock
+ */
+function tripal_stock_preprocess_tripal_stock_relationships_as_object(&$variables){
+    // Stock Object Relationships
+    $variables['node']->stock->stock_object_relationships = tripal_core_generate_chado_var(
+      'stock_relationship', 
+      array('subject_id'=>$variables['node']->stock->stock_id)
+    ); 
+}
+
+/**
+ *  
+ *
+ * @ingroup tripal_stock
+ */
+function tripal_stock_preprocess_tripal_stock_relationships_as_subject(&$variables){
+    // Stock Subject Relationships
+    $variables['node']->stock->stock_subject_relationships = tripal_core_generate_chado_var(
+      'stock_relationship', 
+      array('object_id'=>$variables['node']->stock->stock_id)
+    ); 
 }

@@ -24,37 +24,41 @@
  //print '<pre>'.print_r($node,TRUE).'</pre>';
 ?>
 
-<?php $organism = $node->organism->organism; ?>
+<?php 
+  $stock = $node->stock;
+  $organism = $node->stock->organism_id; 
+  $main_db_reference = $stock->dbxref_id;
+?>
 
 <div id="tripal_stock-base-box" class="tripal_stock-info-box tripal-info-box">
   <div class="tripal_stock-info-box-title tripal-info-box-title">Stock Details</div>
   <div class="tripal_stock-info-box-desc tripal-info-box-desc"></div>
 
-   <?php if($node->is_obsolete == 't'){ ?>
+   <?php if($stock->is_obsolete == 't'){ ?>
       <div class="tripal_stock-obsolete">This stock is obsolete and no longer used in analysis, but is here for reference</div>
    <?php }?>
    <table class="tripal_stock-table tripal-table tripal-table-vert">
       <tr class="tripal_stock-table-odd-row tripal-table-even-row">
         <th>Name</th>
-        <td><?php print $node->stock_name; ?></td>
+        <td><?php print $stock->name; ?></td>
       </tr>
       <tr class="tripal_stock-table-odd-row tripal-table-odd-row">
         <th nowrap>Unique Name</th>
-        <td><?php print $node->uniquename; ?></td>
+        <td><?php print $stock->uniquename; ?></td>
       </tr>
       <tr class="tripal_stock-table-odd-row tripal-table-even-row">
         <th>Internal ID</th>
-        <?php if (!empty($node->main_db_reference->dbxref_id)) { ?>
+        <?php if (!empty($main_db_reference->dbxref_id)) { ?>
         	<?php 
-        		if ($node->main_db_reference->db_urlprefix) {
-        			$accession = l($node->main_db_reference->accession, $node->main_db_reference->db_urlprefix.$node->main_db_reference->accession);
+        		if ($main_db_reference->db_id->urlprefix) {
+        			$accession = l($main_db_reference->accession, $main_db_reference->db_id->urlprefix.$main_db_reference->accession);
         		} else {
-        			$accession = $node->main_db_reference->accession;
+        			$accession = $main_db_reference->accession;
         		}
-        		if ($node->main_db_reference->db_url) {
-        			$accession .= ' ('.l($node->main_db_reference->db_name, $node->main_db_reference->db_url).')';
+        		if ($main_db_reference->db_id->url) {
+        			$accession .= ' ('.l($main_db_reference->db_id->name, $main_db_reference->db_id->url).')';
         		} else {
-        			$accession .= ' ('.$node->main_db_reference->db_name.')';
+        			$accession .= ' ('.$main_db_reference->db_id->name.')';
         		}
         	?>
         	<td><?php print $accession; ?></td>
@@ -64,12 +68,12 @@
       </tr>
       <tr class="tripal_stock-table-odd-row tripal-table-odd-row">
         <th>Type</th>
-        <td><?php print $node->stock_type; ?></td>
+        <td><?php print $stock->type_id->name; ?></td>
       </tr>
       <tr class="tripal_stock-table-odd-row tripal-table-even-row">
         <th>Organism</th>
         <td>
-          <?php if ($node->organism->nid) { ?>
+          <?php if ($organism->nid) { ?>
       	   <a href="<?php print url("node/$organism->nid") ?>"><?php print $organism->genus ." " . $organism->species ." (" .$organism->common_name ." )"?></a>
       	 <?php 
           } else { 
