@@ -17,14 +17,8 @@ function tripal_analysis_blast_install() {
    // Register the analysis type
    tripal_analysis_register_child('tripal_analysis_blast');
    
-   // Add cvterm 'analysis_blast_output_iteration_hits' for inserting into featureprop table
-   tripal_add_cvterms('analysis_blast_output_iteration_hits', 'Hits of a blast '.
-      'output iteration. Each iteration corresponds to a chado feature, and is '.
-      'the content between <iteration> and </iteration> tags in the blast xml '.
-      'output file. This cvterm represents all hits in the iteration');
-   // Add cveterm 'analysis_blast_settings' for inserting into analysisprop table   
-   tripal_add_cvterms('analysis_blast_settings', 'Settings of a blast analysis, '.
-      'including db_id, output file, and run parameters separated by a bar |');
+   // Add cvterms
+   tripal_analysis_blast_add_cvterms();
    
    // Create a tripal_analysis_blast table to store parsers
    drupal_install_schema('tripal_analysis_blast');
@@ -143,4 +137,53 @@ function tripal_analysis_blast_requirements($phase) {
       }
    }
    return $requirements;
+}
+
+/*******************************************************************************
+ * Provide update script for adding new cvterms
+ */
+function tripal_analysis_blast_update_6000(){
+
+   // we have some new cvterms to add
+   tripal_analysis_blast_add_cvterms();
+
+   $ret = array(
+      '#finished' => 1,
+   );
+   
+   return $ret;
+}
+
+/*******************************************************************************
+ * Function for adding cvterms
+ */
+function tripal_analysis_blast_add_cvterms () {
+	
+ // Add cvterm 'analysis_blast_output_iteration_hits' for inserting into featureprop table
+   tripal_add_cvterms('analysis_blast_output_iteration_hits', 'Hits of a blast '.
+      'output iteration. Each iteration corresponds to a chado feature, and is '.
+      'the content between <iteration> and </iteration> tags in the blast xml '.
+      'output file. This cvterm represents all hits in the iteration');
+   
+   tripal_add_cvterms('analysis_blast_besthit_query', 'query name of the best hit 
+   associated with a feature and a blast analysis ');
+
+   tripal_add_cvterms('analysis_blast_besthit_match', 'match name of the best hit 
+   associated with a feature and a blast analysis ');
+    
+   tripal_add_cvterms('analysis_blast_besthit_description', 'description of the best hit 
+   associated with a feature and a blast analysis ');
+   
+   tripal_add_cvterms('analysis_blast_besthit_evalue', 'evalue of the best hit 
+   associated with a feature and a blast analysis ');
+    
+   tripal_add_cvterms('analysis_blast_besthit_identity', 'identity (%) of the best hit 
+   associated with a feature and a blast analysis ');
+   
+   tripal_add_cvterms('analysis_blast_besthit_length', 'length of the best hit 
+   associated with a feature and a blast analysis ');
+   
+   // Add cveterm 'analysis_blast_settings' for inserting into analysisprop table   
+   tripal_add_cvterms('analysis_blast_settings', 'Settings of a blast analysis, '.
+      'including db_id, output file, and run parameters separated by a bar |');
 }

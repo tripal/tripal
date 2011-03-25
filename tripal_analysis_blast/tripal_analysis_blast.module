@@ -32,6 +32,14 @@ function tripal_analysis_blast_menu() {
       'access arguments' => array('administer site configuration'),
       'type' => MENU_CALLBACK
 	);
+	$items['tripal_blast_report'] = array(
+      'title' => t('Homology Report'),
+      'page callback' => 'tripal_get_blast_report',
+      'page arguments' => array(1,2,3,4,5),
+      'access arguments' => array('access chado_analysis_blast content'),
+      'type' => MENU_CALLBACK,
+	   'file' => 'tripal_analysis_blast_htmlreport.inc'
+	);
 	return $items;
 }
 
@@ -421,7 +429,7 @@ function tripal_analysis_blast_get_settings() {
 /*******************************************************************************
  * Parse Blast XML Output file into analysisfeatureprop table
  */
-function tripal_analysis_blast_parseXMLFile ($analysis_id, $blastdb, $blastfile, $job_id) {
+function tripal_analysis_blast_parseXMLFile ($analysis_id, $blastdb, $blastfile, $no_parsed, $job_id) {
 
 	// Prepare log
 	$filename = preg_replace("/.*\/(.*)/", "$1", $blastfile);
@@ -433,7 +441,12 @@ function tripal_analysis_blast_parseXMLFile ($analysis_id, $blastdb, $blastfile,
 		// Parsing started
 		print "Parsing File:".$blastfile." ...\n";
 		fwrite($log, date("D M j G:i:s Y").". Loading $blastfile\n");
-
+		if ($no_parsed == 'all') {
+			print "Parsing all hits...\n";
+		} else {
+			print "Parsing top $no_parsed hits...\n";
+		}
+		
 		// Get cvterm_id for 'analysis_blast_output_iteration_hits' which is required
 		// for inserting into the analysisfeatureprop table
 		$previous_db = tripal_db_set_active('chado'); // use chado database
@@ -536,7 +549,26 @@ function tripal_analysis_blast_parseXMLFile ($analysis_id, $blastdb, $blastfile,
 
 									$result = db_query($sql, $feature_id, $analysis_id, $type_id);
 									$analysisfeatureprop = db_fetch_object($result);
-									$xml_content = "<Iteration>\n".$featurename_xml."\n".$iteration_tags->asXML()."\n</Iteration>";
+									$xml_content =  "<Iteration>\n".$featurename_xml."\n";
+									// parse all hits
+									if ($no_parsed == 'all') {
+										$xml_content .= $iteration_tags->asXML();
+									
+									// parse only top hits
+									} else {
+										$counter = 0;
+										$xml_content .= "<Iteration_hits>\n";
+										foreach ($iteration_tags->children() As $hit) {
+											if ($counter < $no_parsed) {
+												$xml_content .= $hit->asXML();
+											} else {
+												break;
+											}
+											$counter ++;
+										}
+										$xml_content .= "</Iteration_hits>";
+									}
+									$xml_content .= "\n</Iteration>";
 
 									// If this Iteration_hits already exists, update it
 									if ($analysisfeatureprop) {
@@ -581,6 +613,11 @@ function tripal_analysis_blast_parseXMLFile ($analysis_id, $blastdb, $blastfile,
 		$pattern = sql_regcase($blastfile . "/*.XML");
 		$total_files = count(glob($pattern));
 		print "$total_files file(s) to be parsed.\n";
+		if ($no_parsed == 'all') {
+			print "Parsing all hits...\n";
+		} else {
+			print "Parsing top $no_parsed hits...\n";
+		}
 		$interval = intval($total_files * 0.01);
 		$no_file = 0;
 
@@ -692,7 +729,26 @@ function tripal_analysis_blast_parseXMLFile ($analysis_id, $blastdb, $blastfile,
 
 											$result = db_query($sql, $feature_id, $analysis_id, $type_id);
 											$analysisfeatureprop = db_fetch_object($result);
-											$xml_content = "<Iteration>\n".$featurename_xml."\n".$iteration_tags->asXML()."\n</Iteration>";
+											$xml_content =  "<Iteration>\n".$featurename_xml."\n";
+											// parse all hits
+											if ($no_parsed == 'all') {
+												$xml_content .= $iteration_tags->asXML();
+									
+											// parse only top hits
+											} else {
+												$counter = 0;
+												$xml_content .= "<Iteration_hits>\n";
+												foreach ($iteration_tags->children() As $hit) {
+													if ($counter < $no_parsed) {
+														$xml_content .= $hit->asXML();
+													} else {
+														break;
+													}
+													$counter ++;
+												}
+												$xml_content .= "</Iteration_hits>";
+											}
+											$xml_content .= "\n</Iteration>";
 
 											// If this Iteration_hits already exists, update it
 											if ($analysisfeatureprop) {
@@ -788,12 +844,86 @@ function chado_analysis_blast_form ($node){
       '#type' => 'hidden',
       '#default_value' => $node->title,
 	);
-	
-   // add in the analysis fields
-   $analysis_form_elements = chado_analysis_form(null);
-   foreach ($analysis_form_elements as $key => $element){
-      $form[$key] = $element;
-   }
+	$form['analysisname']= array(
+      '#type' => 'textfield',
+      '#title' => t('Analysis Name'),
+      '#required' => FALSE,
+      '#default_value' => $node->analysisname,
+      '#weight' => 1
+	);
+	$form['program']= array(
+      '#type' => 'textfield',
+      '#title' => t('Program'),
+      '#required' => TRUE,
+      '#default_value' => $node->program,
+      '#weight' => 2
+	);
+	$form['programversion']= array(
+      '#type' => 'textfield',
+      '#title' => t('Program Version'),
+      '#required' => TRUE,
+      '#default_value' => $node->programversion,
+      '#weight' => 3
+	);
+	$form['algorithm']= array(
+      '#type' => 'textfield',
+      '#title' => t('Algorithm'),
+      '#required' => FALSE,
+      '#default_value' => $node->algorithm,
+      '#weight' => 4
+	);
+	$form['sourcename']= array(
+      '#type' => 'textfield',
+      '#title' => t('Source Name'),
+      '#required' => FALSE,
+      '#default_value' => $node->sourcename,
+      '#weight' => 5
+	);
+	$form['sourceversion']= array(
+      '#type' => 'textfield',
+      '#title' => t('Source Version'),
+      '#required' => FALSE,
+      '#default_value' => $node->sourceversion,
+      '#weight' => 6
+	);
+	$form['sourceuri']= array(
+      '#type' => 'textfield',
+      '#title' => t('Source URI'),
+      '#required' => FALSE,
+      '#default_value' => $node->sourceuri,
+      '#weight' => 7
+	);
+	// Get time saved in chado
+	$default_time = $node->timeexecuted;
+	$year = preg_replace("/^(\d+)-\d+-\d+ .*/", "$1", $default_time);
+	$month = preg_replace("/^\d+-0?(\d+)-\d+ .*/", "$1", $default_time);
+	$day = preg_replace("/^\d+-\d+-0?(\d+) .*/", "$1", $default_time);
+	// If the time is not set, use current time
+	if (!$default_time) {
+		$default_time = time();
+		$year = format_date($default_time, 'custom', 'Y');
+		$month = format_date($default_time, 'custom', 'n');
+		$day = format_date($default_time, 'custom', 'j');
+	}
+	$form['timeexecuted']= array(
+      '#type' => 'date',
+      '#title' => t('Time Executed'),
+      '#required' => TRUE,
+      '#default_value' => array(
+         'year' => $year,
+         'month' => $month,
+         'day' => $day,
+	),
+      '#weight' => 8
+	);
+	$form['description']= array(
+      '#type' => 'textarea',
+      '#rows' => 15,
+      '#title' => t('Description and/or Program Settings'),
+      '#required' => FALSE,
+      '#default_value' => check_plain($node->description),
+      '#weight' => 9
+	);
 
 	// Blast specific settings
 	if (preg_match("/.*\|.*\|.*/",$node->blastdb)) {
@@ -838,15 +968,32 @@ function chado_analysis_blast_form ($node){
       '#description' => t('The xml output file generated by blast in full path.'),
       '#default_value' => $node->blastfile,
 	);
+	
+	$form['blast']['no_parsed'] = array(
+	  '#title' => t('Number of hits to be parsed'),
+      '#type' => 'textfield',
+      '#description' => t("The number of hits to be parsed. Tripal will parse only top 10 hits if you input '10'' in this field."),
+      '#default_value' => 'all',
+	);
+	
 	$form['blast']['blastjob'] = array(
       '#type' => 'checkbox',
       '#title' => t('Submit a job to parse the xml output into analysisfeatureprop table'),
       '#description' => t('Note: features associated with the blast results must '.
                           'exist in chado before parsing the file. Otherwise, blast '.
                           'results that cannot be linked to a feature will be '.
-                          'discarded. Also, Triapl Blast module needs to be enabled.'),
+                          'discarded. '),
       '#default_value' => $node->blastjob
 	);
+	
+	$form['blast']['blastbesthit'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Submit a job to parse the best hit from the  xml output so a best hit report can be created'),
+      '#description' => t('Note: the xml parser for this blast database  needs to be set first.  '.
+                          'Otherwise, the hit description may contain undesirable content.'),
+      '#default_value' => $node->blastbesthit
+	);
+	
 	$form['blast']['blastparameters'] = array(
       '#title' => t('Parameters'),
       '#type' => 'textfield',
@@ -987,9 +1134,24 @@ function chado_analysis_blast_insert($node){
             "VALUES (%d, %d, '%s')";
 	$blastsettings = $node->blastdb."|".$node->blastfile."|".$node->blastparameters;
 	db_query($sql, $analysis_id, $type_id, $blastsettings);
-
-	tripal_db_set_active($previous_db);  // switch back to drupal database
-
+	
+	    // Get cvterm_id for 'analysis_type'
+	    $sql = "SELECT CVT.cvterm_id FROM {cvterm} CVT ".
+                "INNER JOIN cv ON cv.cv_id = CVT.cv_id ".
+                "WHERE CVT.name = 'analysis_type' ".
+                "AND CV.name = 'tripal'";
+	    $type_id = db_result(db_query($sql));
+    
+        //---------------------------------------------------
+	    // Insert into chado {analysisprop} table
+        //---------------------------------------------------
+	    $sql = "INSERT INTO {analysisprop} (analysis_id, type_id, value) ".
+                "VALUES (%d, %d, '%s')";
+	    $analysis_type = "tripal_analysis_blast";
+	    db_query($sql, $analysis_id, $type_id, $analysis_type);
+    
+	    tripal_db_set_active($previous_db);  // switch back to drupal database
+	    	
     //---------------------------------------------------
 	// Add a job if the user wants to parse the xml output
     //---------------------------------------------------
@@ -997,6 +1159,7 @@ function chado_analysis_blast_insert($node){
 		$job_args[0] = $analysis_id;
 		$job_args[1] = $node->blastdb;
 		$job_args[2] = $node->blastfile;
+		$job_args[3] = $node->no_parsed;
 		if (is_readable($node->blastfile)) {
 			$fname = preg_replace("/.*\/(.*)/", "$1", $node->blastfile);
 			tripal_add_job("Parse blast: $fname",'tripal_analysis_blast',
@@ -1005,7 +1168,12 @@ function chado_analysis_blast_insert($node){
 			drupal_set_message("Can not open blast output file. Job not scheduled.");
 		}
 	}
-
+	if($node->blastbesthit) {
+			$j_args[0] = $analysis_id;	
+			tripal_add_job("Parse best hit: $node->analysisname",'tripal_analysis_blast',
+                           'tripal_analysis_blast_parse_best_hit', $j_args, $user->uid);			
+		}
+		
 	// next add the item to the drupal table
 	$sql = "INSERT INTO {chado_analysis} (nid, vid, analysis_id) ".
             "VALUES (%d, %d, %d)";
@@ -1120,6 +1288,7 @@ function chado_analysis_blast_update($node){
 			$job_args[0] = $analysis_id;
 			$job_args[1] = $node->blastdb;
 			$job_args[2] = $node->blastfile;
+			$job_args[3] = $node->no_parsed;
 			if (is_readable($node->blastfile)) {
 				$fname = preg_replace("/.*\/(.*)/", "$1", $node->blastfile);
 				tripal_add_job("Parse blast: $fname",'tripal_analysis_blast',
@@ -1127,6 +1296,11 @@ function chado_analysis_blast_update($node){
 			} else {
 				drupal_set_message("Can not open blast output file. Job not scheduled.");
 			}
+		}
+		if($node->blastbesthit) {
+			$j_args[0] = $analysis_id;	
+			tripal_add_job("Parse best hit: $node->analysisname",'tripal_analysis_blast',
+                           'tripal_analysis_blast_parse_best_hit', $j_args, $user->uid);			
 		}
 
 		// Create a title for the analysis node using the unique keys so when the
@@ -1506,4 +1680,303 @@ function tripal_analysis_blast_get_result_object($xml_string,$db,$max,$feature_i
 	}
 	$blast_object->hits_array = $hits_array;
 	return $blast_object;
+}
+
+/********************************************************************************
+ * Parse the best hit to generate the best hit homology report 
+ */
+function tripal_analysis_blast_parse_best_hit ($analysis_id) {
+
+	// Select all features for this blast analysis, and save them to the 'featureSet' array
+	$sql = "SELECT feature_id
+	             FROM {analysisfeature} AF  
+	             WHERE analysis_id = %d";
+	$previous_db = tripal_db_set_active('chado');
+	$result = db_query($sql, $analysis_id);
+	$featureSet = array ();
+	$counter = 0;
+	while ($feature = db_fetch_object($result)) {
+		$featureSet [$counter] = $feature->feature_id;
+		$counter ++;
+	}
+
+	// Get analysis information including 'Time', 'Name', and 'DB Settings'
+	$sql = "SELECT value, name, to_char(timeexecuted, 'MM-DD-YYYY') AS time
+                FROM {analysis}  A
+                INNER JOIN {analysisprop} AP ON  A.analysis_id = AP.analysis_id 
+                WHERE A.analysis_id = %d
+                AND type_id= (SELECT cvterm_id 
+                                           FROM {cvterm} 
+                                           WHERE name = 'analysis_blast_settings')";
+	$analysis = db_fetch_object(db_query($sql, $analysis_id));
+	
+	// Parse the blast settings
+	$blastsettings = explode("|", $analysis->value);
+	$db_id = $blastsettings [0];
+	
+	// Get the xml description parser using db_id
+	tripal_db_set_active($previous_db);
+	$sql = "SELECT * FROM {tripal_analysis_blast} WHERE db_id = %d";
+	$parser = db_fetch_object(db_query($sql, $db_id));
+
+	$db_name = $parser->displayname;
+	$is_genbank = $parser->genbank_style;
+	$regex_hit_id = $parser->regex_hit_id;
+	$regex_hit_def = $parser->regex_hit_def;
+	$regex_hit_accession = $parser->regex_hit_accession;
+
+	// set default description parser  if regular expressions have not been specified
+	if(!$regex_hit_id){
+		$regex_hit_id = '/^(.*?)\s.*$/';
+	} else {
+		$regex_hit_id = '/'.$regex_hit_id.'/';
+	}
+	if(!$regex_hit_def){
+		$regex_hit_def = '/^.*?\s(.*)$/';
+	} else {
+		$regex_hit_def = '/'.$regex_hit_def.'/';
+	}
+	if(!$regex_hit_accession){
+		$regex_hit_accession = '/^(.*?)\s.*$/';
+	} else {
+		$regex_hit_accession = '/'.$regex_hit_accession.'/';
+	}
+	
+   $interval = intval($counter * 0.01);
+	for ($i = 0; $i < $counter; $i ++) {
+		
+		if ($i !=0 && $i % $interval == 0) {
+			$percentage = (int) ($i / $counter * 100);
+			tripal_job_set_progress($job_id, $percentage);	
+			print $percentage."% ";
+		}
+
+		$sql = "SELECT value
+		             FROM {analysisfeatureprop} AFP 
+		             INNER JOIN {analysisfeature} AF ON AFP.analysisfeature_id = AF.analysisfeature_id 
+		             WHERE analysis_id = %d 
+		             AND feature_id = %d
+		             AND type_id = (SELECT cvterm_id FROM cvterm WHERE name='analysis_blast_output_iteration_hits' AND cv_id = (SELECT cv_id FROM cv WHERE name='tripal'))";
+		$previous_db = tripal_db_set_active('chado');
+		$xml_output = simplexml_load_string(db_result(db_query($sql, $analysis_id, $featureSet[$i])));
+		
+		$iteration = '';
+		// new XML file parser has added the feature name within <Iteration_query-def> tags.
+		if ($xml_output->getName() == 'Iteration') {
+			$query = "";
+			foreach ($xml_output->children() as $xml_tag) {
+				if ($xml_tag->getName() == 'Iteration_query-def') {
+					// Here we show the feature name again to check if we pull the correct data
+					$query = $xml_tag;
+				} else if ($xml_tag->getName() == 'Iteration_hits') {
+					$iteration = $xml_tag;
+				}
+			}
+	   // This is for the file parsed by the old parser
+		} else {
+			$iteration = $xml_output;
+		}
+
+		$number_hits = 0;
+		foreach($iteration->children() as $hits){
+			$number_hits ++;
+		}
+
+		$query = explode(" ", $query) ;
+		$query = $query [0];
+		if ($number_hits == 0) {
+			continue;
+		} 
+
+		// now run through the blast hits/hsps of this iteration
+		// and generate the rows of the table
+
+		foreach($iteration->children() as $hits){
+			$hit_count++;
+			foreach($hits->children() as $hit){
+				$best_evalue = 0;
+				$best_identity = 0;
+				$best_len = 0;
+				$element_name = $hit->getName();
+				if($element_name == 'Hit_id'){
+					// if parsing "name, acc, desc" from three tags (1/3)
+					if ($is_genbank) {
+						$hit_name = $hit;
+					}
+				} else if($element_name == 'Hit_def'){
+					if($is_genbank){
+						$description = $hit;
+					} else {
+						$accession = preg_replace($regex_hit_accession,"$1",$hit);
+						$hit_name = preg_replace($regex_hit_id,"$1",$hit);
+						$description = preg_replace($regex_hit_def,"$1",$hit);
+					}
+				} else if($element_name == 'Hit_accession'){
+					// if parsing "name, acc, desc" from three tags (3/3)
+					if ($is_genbank){
+						$accession = $hit;
+					}
+					// now run through each HSP for this hit
+				} else if($element_name == 'Hit_hsps'){
+					foreach($hit->children() as $hsp){
+						foreach($hsp->children() as $hsp_info){
+							$element_name = $hsp_info->getName();
+							if($element_name == 'Hsp_num'){
+								$hsp_num = $hsp_info;
+							}
+							if($element_name == 'Hsp_bit-score'){
+								$hsp_bit_score = $hsp_info;
+							}
+							if($element_name == 'Hsp_score'){
+								$hsp_score = $hsp_info;
+							}
+							if($element_name == 'Hsp_evalue'){
+								$hsp_evalue = $hsp_info;
+								// use the first evalue for this set of HSPs
+								// as the best evalue. This get's shown as
+								// info for the overall match.
+								if(!$best_evalue){
+									$best_evalue = $hsp_evalue;
+								}
+							}
+							if($element_name == 'Hsp_query-from'){
+								$hsp_query_from = $hsp_info;
+							}
+							if($element_name == 'Hsp_query-to'){
+								$hsp_query_to = $hsp_info;
+							}
+							if($element_name == 'Hsp_hit-from'){
+								$hsp_hit_from = $hsp_info;
+							}
+							if($element_name == 'Hsp_hit-to'){
+								$hsp_hit_to = $hsp_info;
+							}
+							if($element_name == 'Hsp_query-frame'){
+								$hsp_query_frame = $hsp_info;
+							}
+							if($element_name == 'Hsp_identity'){
+								$hsp_identity = $hsp_info;
+								// use the first evalue for this set of HSPs
+								// as the best evalue. This get's shown as
+								// info for the overall match.
+								if(!$best_identity){
+									$best_identity = $hsp_identity;
+								}
+							}
+							if($element_name == 'Hsp_positive'){
+								$hsp_positive = $hsp_info;
+							}
+							if($element_name == 'Hsp_align-len'){
+								$hsp_align_len = $hsp_info;
+								// use the first evalue for this set of HSPs
+								// as the best evalue. This get's shown as
+								// info for the overall match.
+								if(!$best_len){
+									$best_len = $hsp_align_len;
+								}
+							}
+							if($element_name == 'Hsp_qseq'){
+								$hsp_qseq = $hsp_info;
+							}
+							if($element_name == 'Hsp_hseq'){
+								$hsp_hseq = $hsp_info;
+							}
+							if($element_name == 'Hsp_midline'){
+								$hsp_midline = $hsp_info;
+							}
+						}
+					}
+				}
+			}
+			
+			// Get analysisfeature_id
+			$sql = "SELECT analysisfeature_id FROM {analysisfeature} WHERE analysis_id = %d AND feature_id = %d";
+			$af_id = db_result(db_query($sql, $analysis_id, $featureSet[$i]));
+			
+			// Get type_id
+			$sql = "SELECT cvterm_id FROM {cvterm} WHERE name = '%s' AND cv_id = (SELECT cv_id FROM {cv} WHERE name = 'tripal')"; 
+			$type_id = db_result(db_query($sql, 'analysis_blast_besthit_query'));
+			
+			$sql_test ="SELECT analysisfeatureprop_id FROM {analysisfeatureprop} WHERE analysisfeature_id = $af_id AND type_id = %d";
+			$test_afpid = db_result(db_query($sql_test, $type_id));
+			
+			//Insert only if this blast query not exists. 
+			if (!$test_afpid) {
+				$afp_sql = "INSERT INTO {analysisfeatureprop} (analysisfeature_id, type_id, value, rank) VALUES (%d, %d, '%s', 0)";
+				
+				//$query;
+				db_query($afp_sql, $af_id, $type_id, $query);
+
+				//$hit_name;
+				$type_id = db_result(db_query($sql, 'analysis_blast_besthit_match'));
+				db_query($afp_sql, $af_id, $type_id, $hit_name);
+					
+				//$description;
+				$type_id = db_result(db_query($sql, 'analysis_blast_besthit_description'));
+				db_query($afp_sql, $af_id, $type_id, $description);
+					
+				//$best_evalue;
+				$type_id = db_result(db_query($sql, 'analysis_blast_besthit_evalue'));
+				$e_digit = explode("e-", $best_evalue);
+				if (count($e_digit) == 2) {
+					$evalue_shown = number_format($e_digit [0],1);
+					$best_evalue = $evalue_shown."e-".$e_digit[1];
+				} 
+				db_query($afp_sql, $af_id, $type_id, $best_evalue);
+					
+				//$best_identity;
+				$type_id = db_result(db_query($sql, 'analysis_blast_besthit_identity'));
+				$percent_identity = number_format($best_identity/$best_len*100, 1);
+				db_query($afp_sql, $af_id, $type_id, $percent_identity);
+					
+				//$best_len;
+				$type_id = db_result(db_query($sql, 'analysis_blast_besthit_length'));
+				db_query($afp_sql, $af_id, $type_id, $best_len);
+				
+			// Otherwise, update all instead
+			} else {
+				$afp_sql = "UPDATE {analysisfeatureprop} SET analysisfeature_id = %d, type_id = %d, value = '%s', rank = 0 WHERE analysisfeatureprop_id = %d";
+
+				//$query;
+				db_query($afp_sql, $af_id, $type_id, $query, $test_afpid);
+				
+				//$hit_name;
+				$type_id = db_result(db_query($sql, 'analysis_blast_besthit_match'));
+				$test_afpid = db_result(db_query($sql_test, $type_id));
+				db_query($afp_sql, $af_id, $type_id, $hit_name, $test_afpid);
+
+				//$description;
+				$type_id = db_result(db_query($sql, 'analysis_blast_besthit_description'));
+				$test_afpid = db_result(db_query($sql_test, $type_id));
+				db_query($afp_sql, $af_id, $type_id, $description, $test_afpid);
+					
+				//$best_evalue;
+				$type_id = db_result(db_query($sql, 'analysis_blast_besthit_evalue'));
+				$test_afpid = db_result(db_query($sql_test, $type_id));
+				$e_digit = explode("e-", $best_evalue);
+				if (count($e_digit) == 2) {
+					$evalue_shown = number_format($e_digit [0],1);
+					$best_evalue = $evalue_shown."e-".$e_digit[1];
+				} 
+				db_query($afp_sql, $af_id, $type_id, $best_evalue, $test_afpid);
+					
+				//$best_identity;
+				$type_id = db_result(db_query($sql, 'analysis_blast_besthit_identity'));
+				$test_afpid = db_result(db_query($sql_test, $type_id));
+				$percent_identity = number_format($best_identity/$best_len*100, 1);
+				db_query($afp_sql, $af_id, $type_id, $percent_identity, $test_afpid);
+					
+				//$best_len;
+				$type_id = db_result(db_query($sql, 'analysis_blast_besthit_length'));
+				$test_afpid = db_result(db_query($sql_test, $type_id));
+				db_query($afp_sql, $af_id, $type_id, $best_len, $test_afpid);
+				
+			}
+			tripal_db_set_active($previous_db);
+			
+			break;
+		}
+	}
+   print "100%\n";
+	return;
 }
