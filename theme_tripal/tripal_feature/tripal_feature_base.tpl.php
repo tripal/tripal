@@ -4,7 +4,6 @@ $feature  = $variables['node']->feature;
 $accession = $variables['node']->accession;
 $organism = $variables['node']->organism;
 $org_nid = $variables['node']->org_nid;
-
 ?>
 <div id="tripal_feature-base-box" class="tripal_feature-info-box tripal-info-box">
   <div class="tripal_feature-info-box-title tripal-info-box-title">Feature Details</div>

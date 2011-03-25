@@ -4,7 +4,6 @@ $analysis = $variables['node']->analysis;
 $unigene = $node->analysis->tripal_analysis_unigene;
 //dpm($node);
 
-
 ?>
 <div id="tripal_analysis_unigene-base-box" class="tripal_analysis_unigene-info-box tripal-info-box">
   <div class="tripal_analysis_unigene-info-box-title tripal-info-box-title">Unigene Details</div>
@@ -73,7 +72,9 @@ $unigene = $node->analysis->tripal_analysis_unigene;
                      print "<i>$organism->genus $organism->species</i><br>";
                   }
                }
-            } 
+            } else {
+                // add message here with instructions for administrators to make this work.
+            }
             ?>
         </td>
       </tr>       	                                
