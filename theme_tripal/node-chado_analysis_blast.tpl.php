@@ -56,6 +56,25 @@
                   ?>
               </td>
             </tr>
+            <tr><th>Report</th>
+            <?php
+            	$sql = "SELECT AFP.analysisfeature_id
+	                         FROM {analysisfeature} AF 
+	                         INNER JOIN {analysisfeatureprop} AFP ON AF.analysisfeature_id = AFP.analysisfeature_id
+	                         WHERE analysis_id = %d
+	                         AND AFP.type_id = (SELECT cvterm_id FROM {cvterm} WHERE name = '%s' AND cv_id = (SELECT cv_id FROM {cv} WHERE name = 'tripal'))";
+            	$previous_db = db_set_active('chado');
+            	$exists = db_result(db_query($sql, $node->analysis_id, 'analysis_blast_besthit_query'));
+            	db_set_active($previous_db);
+            	if ($exists) {
+                   $report_url = url("tripal_blast_report/".$node->analysis_id."/1/0/0/20");
+                   print "<td><a href=$report_url>View the best hit homology report</a></td>";
+            	} else {
+            		print "<td>The homology report is not available. Please submit a job to parse the best hit first.</td>";
+            	}
+             ?>
+            
+            </tr>
          </table>
       <!-- End of tripal_analysis_blast theme-->
 	  </div> 

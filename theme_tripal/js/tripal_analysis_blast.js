@@ -148,4 +148,36 @@ if (Drupal.jsEnabled) {
 	        
      });
    }
+   
+   	//------------------------------------------------------------
+	// Update the blast best hit report for selected page and sorting
+	function tripal_update_best_hit_report(obj, analysis_id, sort, descending, per_page){
+		var page = obj.selectedIndex + 1;
+		var baseurl = location.href.substring(0,location.href.lastIndexOf('/tripal_blast_report/'));
+		var link = baseurl + '/tripal_blast_report/' + analysis_id + "/" + page + "/" + sort + "/" + descending + "/" + per_page;
+
+		tripal_startAjax();
+		$.ajax({
+			url: link,
+			dataType: 'html',
+			type: 'POST',
+			success: function(data){
+				var d = document.createElement('div');
+				d.innerHTML = data;
+				var divs = d.getElementsByTagName("div");
+				for (var i = 0; i < divs.length; i ++) {
+					if (divs[i].getAttribute('id') == 'blast-hits-report') {	
+						var report_table = document.getElementById('blast-hits-report');
+						report_table.innerHTML = divs[i].innerHTML;
+						var table_breport = document.getElementById('tripal_blast_report_table');
+						var sel = document.getElementById('tripal_blast_report_page_selector');
+						sel.options[page - 1].selected = true;
+						tripal_stopAjax();
+					}
+				}
+			}
+		});
+		
+		return false;
+	}
 }
