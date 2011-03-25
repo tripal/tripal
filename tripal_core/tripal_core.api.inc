@@ -709,6 +709,9 @@ function tripal_core_generate_chado_var($table, $values) {
     $object->expandable_tables = $all->expandable_tables;
     $object->expandable_nodes = $all->expandable_nodes;
     
+    // add curent table
+    $object->tablename = $table;
+    
     // check if the current table maps to a node type-----------------------------------------------
     // if this table is connected to a node there will be a chado_tablename table in drupal
     if (db_table_exists('chado_'.$table)) {
@@ -763,7 +766,6 @@ function tripal_core_generate_chado_var($table, $values) {
   
         // add the foreign record to the current object in a nested manner
         $object->{$foreign_key} = $foreign_object;
-        $object->{$foreign_key}->tablename = $foreign_table;
         
         // Flatten expandable_x arrays so only in the bottom object
         if (is_array($object->{$foreign_key}->expandable_fields)) {
@@ -817,10 +819,192 @@ function tripal_core_generate_chado_var($table, $values) {
  * fields/tables/nodes from the default form of a variable without making it extremely difficult for 
  * the tripal admin to get at these variables if he/she wants them.
  *
+ * @param $object
+ *   This must be an object generated using tripal_core_generate_chado_var()
+ * @param $type
+ *   Must be one of 'field', 'table', 'node'. Indicates what is being expanded.
+ * @param $to_expand
+ *   The name of the field/table/node to be expanded
+ *
+ * @return
+ *   A chado object supplemented with the field/table/node requested to be expanded
+ *
+ * Example Usage:
+ * @code
+      // Get a chado object to be expanded
+      $values = array(
+        'name' => 'Medtr4g030710'
+      );
+      $features = tripal_core_generate_chado_var('feature', $values);
+      
+      // Expand the organism node
+      $feature = tripal_core_expand_chado_vars($feature, 'node', 'organism');
+      
+      // Expand the feature.residues field
+      $feature = tripal_core_expand_chado_vars($feature, 'field', 'feature.residues');
+      
+      // Expand the feature properties (featureprop table)
+      $feature = tripal_core_expand_chado_vars($feature, 'table', 'featureprop');
+ * @endcode
+ *
  * @ingroup tripal_api
  */
-function tripal_core_expand_chado_vars () {
+function tripal_core_expand_chado_vars ($object, $type, $to_expand) {
+  $base_table = $object->tablename;
+  
+  switch ($type) {
+    case "field": //--------------------------------------------------------------------------------
+      if (preg_match('/(\w+)\.(\w+)/', $to_expand, $matches)) {
+        $tablename = $matches[1];
+        $fieldname = $matches[2];
+        $table_desc = module_invoke_all('chado_'.$tablename.'_schema');
 
+        $values = array();
+        foreach($table_desc['primary key'] as $key) {
+          $values[$key] = $object->{$key};
+        }
+        
+        if ($base_table == $tablename) {
+          //get the field
+          $results = tripal_core_chado_select(
+            $tablename, 
+            array($fieldname), 
+            $values
+          );
+          $object->{$fieldname} = $results[0]->{$fieldname};
+          $object->expanded = $to_expand;
+        } else {
+          //We need to recurse -the field is in a nested object
+          foreach ((array) $object as $field_name => $field_value) {
+            if (is_object($field_value)) {
+              $object->{$field_name} = tripal_core_expand_chado_vars(
+                $field_value,
+                'field',
+                $to_expand
+              );
+            }
+          } //end of for each field in the current object          
+        }
+      } else {
+        watchdog(
+          'tripal_core',
+          'tripal_core_expand_chado_vars: Field (%field) not in the right format. It should be <tablename>.<fieldname>',
+          WATCHDOG_ERROR
+        );
+      }
+    
+    break;
+    case "table": //--------------------------------------------------------------------------------
+      $foreign_table = $to_expand;
+      $foreign_table_desc = module_invoke_all('chado_'.$foreign_table.'_schema');
+      
+      // If it's connected to the base table
+      if ($foreign_table_desc['foreign keys'][$base_table]) {
+        foreach ($foreign_table_desc['foreign keys'][$base_table]['columns'] as $left => $right) {
+          if (!$object->{$right}) { break; }
+          
+          $foreign_object = tripal_core_generate_chado_var(
+            $foreign_table,
+            array($left => $object->{$right})
+          );
+  
+          if ($foreign_object) {
+            $object->{$foreign_table} = $foreign_object;
+            $object->expanded = $to_expand;
+          }
+        }
+      } else {
+        //We need to recurse -the table has a relationship to one of the nested objects
+        foreach ((array) $object as $field_name => $field_value) {
+          if (is_object($field_value)) {
+            $object->{$field_name} = tripal_core_expand_chado_vars(
+              $field_value,
+              'table',
+              $foreign_table
+            );
+          }
+        }
+        
+      }
+      
+    break;
+    case "node": //---------------------------------------------------------------------------------
+      //if the node to be expanded is for our base table, then just expand it
+      if ($object->tablename == $to_expand) {
+        $node = node_load($object->nid);
+        if ($node) {
+          $object->expanded = $to_expand;
+          $node->expandable_fields = $object->expandable_fields;
+          unset($object->expandable_fields);
+          $node->expandable_tables = $object->expandable_tables;
+          unset($object->expandable_tables);
+          $node->expandable_nodes = $object->expandable_nodes;
+          unset($object->expandable_nodes);
+          $node->{$base_table} = $object;
+          $object = $node;
+        } else {
+          watchdog(
+            'tripal_core',
+            'tripal_core_expand_chado_vars: No node matches the nid (%nid) supplied.',
+            array('%nid'=>$object->nid),
+            WATCHDOG_ERROR
+          );
+        } //end of if node
+      } else {
+        //We need to recurse -the node to expand is one of the nested objects
+        foreach ((array) $object as $field_name => $field_value) {
+          if (is_object($field_value)) {
+            $object->{$field_name} = tripal_core_expand_chado_vars(
+              $field_value,
+              'node',
+              $to_expand
+            );
+          }
+        } //end of for each field in the current object
+      }
+      
+    break;
+    default:
+     watchdog('tripal_core',
+      'tripal_core_expand_chado_vars: Unrecognized type (%type). Should be one of "field", "table", "node".',
+      array('%type'=>$type),
+      WATCHDOG_ERROR
+    );
+    return FALSE;
+  }
+
+  //move extended array downwards-------------------------------------------------------------------
+  if (!$object->expanded) {
+    //if there's no extended field then go hunting for it
+    foreach ( (array)$object as $field_name => $field_value) {
+      if (is_object($field_value)) {
+        if (isset($field_value->expanded)) {
+          $object->expanded = $field_value->expanded;
+          unset($field_value->expanded);
+        }
+      }
+    }  
+  }
+  //try again becasue now we might have moved it down
+  if ($object->expanded) {
+    $expandable_name = 'expandable_'.$type.'s';
+    if ($object->{$expandable_name}) {
+      $key_to_remove = array_search($object->expanded, $object->{$expandable_name});
+      unset($object->{$expandable_name}[$key_to_remove]);
+      unset($object->expanded);
+    } else {
+      // if there is an expandable array then we've reached the base object
+      // if we get here and don't have anything expanded then something went wrong
+      watchdog(
+        'tripal_core',
+        'tripal_core_expand_chado_vars: Unable to expand the %type %to_expand',
+        array('%type'=>$type, '%to_expand'=>$to_expand),
+        WATCHDOG_ERROR
+      );
+    } //end of it we've reached the base object
+  }
+  
+  return $object;
 }
 
 /**
