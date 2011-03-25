@@ -208,27 +208,14 @@ function tripal_stock_edit_ALL_relationships_page($node) {
 function tripal_stock_edit_ALL_relationships_form($form_state, $node) {
   $form = array();
 
-  // Stock Object Relationships
-  $node->stock->stock_object_relationships = tripal_core_generate_chado_var(
-    'stock_relationship', 
-    array('subject_id'=>$node->stock->stock_id)
-  );    
-  if (!$node->stock->stock_object_relationships) { 
-    $node->stock->stock_object_relationships = array(); 
-  } elseif (!is_array($node->stock->stock_object_relationships)) { 
-    $node->stock->stock_object_relationships = array($node->stock->stock_object_relationships); 
+  // All Stock Relationships
+  $node = tripal_core_expand_chado_vars($node, 'table', 'stock_relationship');    
+  if (!$node->stock->stock_relationship) { 
+    $node->stock->stock_relationship = array(); 
+  } elseif (!is_array($node->stock->stock_relationship)) { 
+    $node->stock->stock_relationship = array($node->stock->stock_relationship); 
   }  
   
-  // Stock Subject Relationships
-  $node->stock->stock_subject_relationships = tripal_core_generate_chado_var(
-    'stock_relationship', 
-    array('object_id'=>$node->stock->stock_id)
-  ); 
-  if (!$node->stock->stock_subject_relationships) { 
-    $node->stock->stock_subject_relationships = array(); 
-  } elseif (!is_array($node->stock->stock_subject_relationships)) { 
-    $node->stock->stock_subject_relationships = array($node->stock->stock_subject_relationships); 
-  }  
     
   $form['nid'] = array(
     '#type' => 'hidden',
@@ -241,10 +228,8 @@ function tripal_stock_edit_ALL_relationships_form($form_state, $node) {
   );
 
   $i=0;
-  $relationships = array_merge($node->stock->stock_object_relationships, $node->stock->stock_subject_relationships);
-  dpm($relationships, 'relationships');
-  if (sizeof($relationships) != 0) {
-  foreach ($relationships as $r) {
+  if (sizeof($node->stock->stock_relationship) != 0) {
+  foreach ($node->stock->stock_relationship as $r) {
 
     $i++;
     $form["num-$i"] = array(

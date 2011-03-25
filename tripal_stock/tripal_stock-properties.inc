@@ -188,10 +188,7 @@ function tripal_stock_edit_ALL_properties_form($form_state, &$node) {
   $form = array();
 
   // Add properties and synonyms
-  $node->stock->stockprop = tripal_core_generate_chado_var(
-    'stockprop', 
-    array('stock_id'=>$node->stock->stock_id)
-  );
+  $node = tripal_core_expand_chado_vars($node, 'table', 'stockprop');
 
   $form['nid'] = array(
     '#type' => 'hidden',

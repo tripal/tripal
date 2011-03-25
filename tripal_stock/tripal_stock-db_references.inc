@@ -229,10 +229,7 @@ function tripal_stock_edit_ALL_db_references_form($form_state, &$node) {
   $form = array();
 
   // Add database references to the node
-  $node->stock->stock_dbxref = tripal_core_generate_chado_var(
-    'stock_dbxref', 
-    array('stock_id'=>$node->stock->stock_id)
-  );
+  $node = tripal_core_expand_chado_vars($node, 'table', 'stock_dbxref');
 
   $form['nid'] = array(
     '#type' => 'hidden',
