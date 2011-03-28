@@ -40,49 +40,6 @@ function tripal_stock_get_stock_by_stock_id ($stock_id) {
 }
 
 /**
- * Purpose:
- *
- * @param $stock_id
- *   the unique identifier for the stock to load properties of
- *
- * @return
- *   an array of properties where each element is a property object with
- *   the following fields:
- *     - stockprop_id (stockprop):
- *     - value (stockprop):
- *     - rank (stockprop):
- *     - type_id (stockprop):
- *     - type_name (cvterm):
- *     - type_definition (cvterm):
- *     - type_is_obsolete (cvterm):
- *     - type_is_relationshiptype (cvterm):
- *     - type_cv_id (cvterm):
- *     - type_db_reference_id (cvterm):
- *     - type_cv_name (cv):
- *     - type_cv_definition (cv):
- *     - type_db_reference_acession (dbxref):
- *     - type_db_reference_version (dbxref):
- *     - type_db_reference_description (dbxref):
- *     - type_db_reference_db_id (dbxref):
- *     - type_db_reference_db_name (db):
- *     - type_db_reference_db_description (db):
- *     - type_db_reference_db_url (db):
- *     - type_db_reference_db_urlprefix (db):
- *
- * @ingroup tripal_api
- */
-function tripal_stock_load_properties($stock_id) {
-
-  $properties = tripal_core_chado_select(
-    'stockprop',
-    array('stockprop_id', 'value', 'rank','type_id'),
-    array('stock_id' => $stock_id)
-  );
-  
-  return $properties;  
-}
-
-/**
  * Purpose: Returns all stocks currently sync'd with drupal
  *
  * @return 
@@ -241,11 +198,18 @@ function tripal_stock_get_stocks_by_stockprop($stockprop_values, $stock_values) 
 function tripal_stock_get_stock_by_name_identifier($name, $organism_id) {
   $stock_ids = array();
   
+  $options = array(
+    'regex_columns' => array('name', 'uniquename', 'accession', 'value')
+  );
+  
   // where name_identifier = stock.name-------------------------------
   $current_stocks = tripal_core_chado_select('stock',array('stock_id'),
     array(
       'name' => $name,
       'organism_id' => $organism_id,
+    ),
+    array(
+      'regex_columns' => array('name'),
     )
   );
   if (!empty($current_stocks)) {
@@ -257,6 +221,9 @@ function tripal_stock_get_stock_by_name_identifier($name, $organism_id) {
     array(
       'uniquename' => $name,
       'organism_id' => $organism_id,
+    ),
+    array(
+      'regex_columns' => array('uniquename'),
     )
   );
   if (!empty($current_stocks)) {
@@ -271,6 +238,9 @@ function tripal_stock_get_stock_by_name_identifier($name, $organism_id) {
         'accession' => $name,
       ),
       'organism_id' => $organism_id,
+    ),
+    array(
+      'regex_columns' => array('accession'),
     )
   );
   if (!empty($current_stocks)) {
@@ -286,6 +256,9 @@ function tripal_stock_get_stock_by_name_identifier($name, $organism_id) {
       'stock_id' => array(
         'organism_id' => $organism_id,
       ),
+    ),
+    array(
+      'regex_columns' => array('accession'),
     )
   );
   if (!empty($current_stocks)) {
@@ -304,6 +277,9 @@ function tripal_stock_get_stock_by_name_identifier($name, $organism_id) {
         'name' => 'synonym',
       ),
       'value' => $name,
+    ),
+    array(
+      'regex_columns' => array('value'),
     )
   );
   if (!empty($current_stocks)) {

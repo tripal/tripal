@@ -336,12 +336,12 @@ function theme_tripal_stock_stock_table (&$stocks) {
   $output .= "<th>Description</th>";
   $output .= "</tr>";
 
-  foreach($stocks as $stock){
+  foreach($stocks as $node){
 		$output .= "<tr>";
-		$output .= "<td>".l($stock->stock_name, "node/".$stock->nid)."</td>";
-		$output .= "<td>".$stock->stock_type."</td>";
-		$output .= "<td nowrap>".$stock->organism->common_name."</td>";
-		$output .= "<td>".$stock->description."</td>";
+		$output .= "<td>".l($node->stock->name, "node/".$node->nid)."</td>";
+		$output .= "<td>".$node->stock->type_id->name."</td>";
+		$output .= "<td nowrap>".$node->stock->organism_id->common_name."</td>";
+		$output .= "<td>".$node->stock->description."</td>";
 		$output .= "</tr>";
 	}
 	$output .= "</table>";
@@ -427,15 +427,16 @@ function chado_stock_load($node) {
  * @ingroup tripal_stock
  */
 function chado_stock_form($node, $form_state) {
-  $type = node_get_types('type', $node);
 
   // Expand all fields needed
   $fields_needed = array('stock.uniquename', 'stock.name', 'stock.stock_id', 'stock.type_id', 'stock.organism_id', 'stock.description', 'stock.dbxref_id', 'dbxref.accession', 'dbxref.description', 'dbxref.db_id', 'db.db_id');
   foreach ($fields_needed as $field_name) {
     // Check to see if it's excluded and expand it if so
-    if (in_array($field_name, $node->expandable_fields)) {
-      $node = tripal_core_expand_chado_vars($node, 'field', $field_name);
-    }    
+    if ($node->expandable_fields) {
+      if (in_array($field_name, $node->expandable_fields)) {
+        $node = tripal_core_expand_chado_vars($node, 'field', $field_name);
+      }
+    }
   }
 
   // This defines the path for the next step in a simulated multipart form

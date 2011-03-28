@@ -368,10 +368,22 @@ function tripal_core_chado_update($table,$match,$values){
 *  An associative array containing the values for filtering the results. In the 
 *  case where multiple values for the same time are to be selected an additional
 *  entry for the field should appear for each value
-* @param $has_record
-*  Set this argument to 'true' to have this function return a numeric 
-*  value for the number of recrods rather than the array of records.  this
-*  can be useful in 'if' statements to check the presence of particula records.
+* @param $options
+*  An associative array of additional options where the key is the option 
+*  and the value is the value of that option.
+*
+* Additional Options Include:
+*  - has_record
+*     Set this argument to 'true' to have this function return a numeric 
+*     value for the number of recrods rather than the array of records.  this
+*     can be useful in 'if' statements to check the presence of particula records.
+*  - return_sql
+*     Set this to 'true' to have this function return an array where the first element is the sql 
+*     that would have been run and the second is an array of arguments.
+*  - case_insensitive_columns
+*     An array of columns to do a case insensitive search on.
+*  - regex_columns
+*     An array of columns where the value passed in should be treated as a regular expression
 * 
 * @return
 *  A database query result resource, FALSE if the query was not executed 
@@ -406,8 +418,11 @@ function tripal_core_chado_update($table,$match,$values){
 *
 * @ingroup tripal_api
 */
-function tripal_core_chado_select($table,$columns,$values,$has_record = 0,$return_sql = 0){
-
+function tripal_core_chado_select($table,$columns,$values,$options = null){
+    if (!is_array($options)) { $options = array(); }
+    if (!$options['case_insensitive_columns']) { $options['case_insensitive_columns'] = array(); }
+    if (!$options['regex_columns']) { $options['regex_columns'] = array(); }
+    
    if (!is_array($columns)){
       watchdog('tripal_feature', 'the $columns argument for tripal_core_chado_select must be an array.');
       return false;
@@ -435,7 +450,11 @@ function tripal_core_chado_select($table,$columns,$values,$has_record = 0,$retur
             $where[$field] = $value;
          } else {
             // select the value from the foreign key relationship for this value
-            $results = tripal_core_chado_get_foreign_key($table_desc,$field,$value);
+            $foreign_options = array(
+              'regex_columns' => $options['regex_columns'],
+              'case_insensitive_columns' => $options['case_insensitive_columns']
+            );
+            $results = tripal_core_chado_get_foreign_key($table_desc,$field,$value, $foreign_options);
             if (sizeof($results) < 1) {
               // foreign key records are required
               // thus if none matched then return false and alert the admin through watchdog
@@ -472,8 +491,17 @@ function tripal_core_chado_select($table,$columns,$values,$has_record = 0,$retur
          $sql .= "$field IN (".db_placeholders($value,'varchar').") AND ";
          foreach ($value as $v) { $args[] = $v; }
        } else {
-         $sql .= "$field = '%s' AND ";
-         $args[] = $value[0];
+         $operator = '=';
+         if (in_array($field, $options['regex_columns'])) {
+           $operator = '~*';
+         }
+         if (in_array($field, $options['case_insensitive_columns'])) {
+           $sql .= "lower($field) $operator lower('%s') AND ";
+           $args[] = $value[0];
+         }  else {
+           $sql .= "$field $operator '%s' AND ";
+           $args[] = $value[0];
+         }
        }
      }
      $sql = substr($sql,0,-4);  // get rid of the trailing 'AND'
@@ -481,7 +509,7 @@ function tripal_core_chado_select($table,$columns,$values,$has_record = 0,$retur
 
    // if the caller has requested the SQL rather than the results...
    // which happens in the case of wanting to use the Drupal pager, then do so
-   if($return_sql){
+   if($options['return_sql']){
       return array('sql'=> $sql, 'args' => $args);
    }
 
@@ -494,7 +522,7 @@ function tripal_core_chado_select($table,$columns,$values,$has_record = 0,$retur
      $results[] = $r;    
    }
    
-   if(!$has_record){
+   if(!$options['has_record']){
       return $results;
    } else{
       return count($results);
@@ -539,8 +567,11 @@ function tripal_core_chado_select($table,$columns,$values,$has_record = 0,$retur
 *
 * @ingroup tripal_api
 */
-function tripal_core_chado_get_foreign_key($table_desc,$field,$values){
-
+function tripal_core_chado_get_foreign_key($table_desc,$field,$values, $options = null){
+    if (!is_array($options)) { $options = array(); }
+    if (!$options['case_insensitive_columns']) { $options['case_insensitive_columns'] = array(); }
+    if (!$options['regex_columns']) { $options['regex_columns'] = array(); }
+    
    // get the list of foreign keys for this table description and
    // iterate through those until we find the one we're looking for
    $fkeys = $table_desc['foreign keys'];
@@ -562,7 +593,7 @@ function tripal_core_chado_get_foreign_key($table_desc,$field,$values){
                // the column name of the foreign key matches the field we want 
                // so this is the right relationship.  Now we want to select
                $select_cols = array($right);
-               $result = tripal_core_chado_select($table,$select_cols,$values);
+               $result = tripal_core_chado_select($table,$select_cols,$values, $options);
                $fields = array();
                foreach ($result as $obj) {
                  $fields[] = $obj->$right;
@@ -627,10 +658,10 @@ function tripal_core_chado_get_foreign_key($table_desc,$field,$values){
  *      This hook allows you to exclude fields from all tables that are of a given postgresql field 
  *      type. Simply implement this hook to return an array of postgresql types mapped to criteria.
  *      Then all fields of that type where the criteria supplied returns TRUE will be excluded from 
- *      any table. Tokens available in criteria are <field_value> and <field_name>. For example:
+ *      any table. Tokens available in criteria are &gt;field_value&lt;  and &gt;field_name&lt; . For example:
  * @code
           mymodule_exclude_type_by_default() {
-            return array('text' => 'length(<field_value>) > 50');
+            return array('text' => 'length(&gt;field_value&lt; ) > 50');
           }
  * @endcode
  *      will exclude all text fields with a length > 50. Thus if $feature.residues is longer than 50 *      it will be excluded, otherwise it will be added.
@@ -656,11 +687,11 @@ function tripal_core_generate_chado_var($table, $values) {
   // Get fields to be removed by name.................................
   $fields_to_remove = module_invoke_all('exclude_field_from_'.$table.'_by_default');
   foreach ($fields_to_remove as $field_name => $criteria) {
-    //replace <field_name> with the current field name & 
-    $criteria = preg_replace('/<field_name>/', $field_name, $criteria);
+    //replace &gt;field_name&lt;  with the current field name & 
+    $criteria = preg_replace('/&gt;field_name&lt; /', $field_name, $criteria);
 
     // if field_value needed we can't deal with this field yet
-    if (preg_match('/<field_value>/', $criteria)) { break; }
+    if (preg_match('/&gt;field_value&lt; /', $criteria)) { break; }
 
     //if criteria then remove from query
     $success = drupal_eval('<?php return '.$criteria.'; ?>');
@@ -685,18 +716,18 @@ function tripal_core_generate_chado_var($table, $values) {
   foreach ($types_to_remove as $field_type => $criteria) {
     // if there are fields of that type to remove
     if (is_array($field_types[$field_type])) {
-      //replace <field_name> with the current field name & 
-      $criteria = preg_replace('/<field_name>/', $field_name, $criteria);
+      //replace &gt;field_name&lt;  with the current field name & 
+      $criteria = preg_replace('/&gt;field_name&lt; /', $field_name, $criteria);
       
       foreach ($field_types[$field_type] as $field_name) {
         // if field_value needed we can't deal with this field yet
-        if (preg_match('/<field_value>/', $criteria)) { 
+        if (preg_match('/&gt;field_value&lt; /', $criteria)) { 
           $fields_to_remove[$field_name] = $criteria;
           continue; 
         }
 
         // if field_value needed we can't deal with this field yet
-        if (preg_match('/<field_value>/', $criteria)) { break; }
+        if (preg_match('/&gt;field_value&lt; /', $criteria)) { break; }
 
         //if criteria then remove from query
         $success = drupal_eval('<?php return '.$criteria.'; ?>');
@@ -747,7 +778,7 @@ function tripal_core_generate_chado_var($table, $values) {
     // remove any fields where criteria need to be evalulated---------------------------------------
     foreach ($fields_to_remove as $field_name => $criteria) {
       if (!isset($object->{$field_name})) { break; }
-      $criteria = preg_replace('/<field_value>/', $object->{$field_name}, $criteria);
+      $criteria = preg_replace('/&gt;field_value&lt; /', $object->{$field_name}, $criteria);
       //if criteria then remove from query
       $success = drupal_eval('<?php return '.$criteria.'; ?>');
       watchdog('tripal_core', 
@@ -1032,21 +1063,21 @@ function tripal_core_expand_chado_vars ($object, $type, $to_expand) {
  * drupal_eval() which suppresses syntax errors and throws watchdog entries of type php. There are 
  * also watchdog entries of type tripal_core stating the exact criteria evaluated. Criteria can 
  * contain the following tokens:
- *   - <field_name>
+ *   - &gt;field_name&lt; 
  *       Replaced by the name of the field to be excluded
- *   - <field_value>
+ *   - &gt;field_value&lt; 
  *       Replaced by the value of the field in the current record
- * Also keep in mind that if your criteria doesn't contain the <field_value> token then it will be 
+ * Also keep in mind that if your criteria doesn't contain the &gt;field_value&lt;  token then it will be 
  * evaluated before the query is executed and if the field is excluded it won't be included in the 
  * query.
  *
  * @return
  *   An array of type => criteria where the type is excluded if the criteria evaluates to TRUE
  *
- * @ingroupt tripal_api
+ * @ingroup tripal_api
  */
 function tripal_core_exclude_type_by_default() {
-  return array('text' => "strlen('<field_value>') > 100");
+  return array('text' => "strlen('&gt;field_value&lt; ') > 100");
 }
 
 /**
@@ -1061,18 +1092,18 @@ function tripal_core_exclude_type_by_default() {
  * drupal_eval() which suppresses syntax errors and throws watchdog entries of type php. There are 
  * also watchdog entries of type tripal_core stating the exact criteria evaluated. Criteria can 
  * contain the following tokens:
- *   - <field_name>
+ *   - &gt;field_name&lt; 
  *       Replaced by the name of the field to be excluded
- *   - <field_value>
+ *   - &gt;field_value&lt; 
  *       Replaced by the value of the field in the current record
- * Also keep in mind that if your criteria doesn't contain the <field_value> token then it will be 
+ * Also keep in mind that if your criteria doesn't contain the &gt;field_value&lt;  token then it will be 
  * evaluated before the query is executed and if the field is excluded it won't be included in the 
  * query.
  *
  * @return
  *   An array of type => criteria where the type is excluded if the criteria evaluates to TRUE
  *
- * @ingroupt tripal_api
+ * @ingroup tripal_api
  */
 function tripal_core_exclude_field_from_feature_by_default() {
   return array();
