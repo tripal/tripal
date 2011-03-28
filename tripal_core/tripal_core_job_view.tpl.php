@@ -12,7 +12,7 @@ $rerun_link = url("admin/tripal/tripal_jobs/rerun/".$job->job_id);
 <div id="tripal_core-job_view-box" class="tripal_core-info-box tripal-info-box">
   <div class="tripal_core-info-box-title tripal-info-box-title">Details for Job <?php print $job->job_id?></div>
   <div class="tripal_core-info-box-desc tripal-info-box-desc"></div>
-   <a href="/admin/tripal/tripal_jobs/">Return to jobs list</a> | 
+   <a href="<?php print url("admin/tripal/tripal_jobs/") ?>">Return to jobs list</a> | 
    <a href="<?php print $rerun_link?>">Re-run this job</a> | 
    <a href="<?php print $cancel_link?>">Cancel this Job</a><br>
    <table id="tripal_core-job_view-table" class="tripal_core-table tripal-table tripal-table-vert">
