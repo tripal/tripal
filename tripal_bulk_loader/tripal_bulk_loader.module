@@ -27,7 +27,7 @@ function tripal_bulk_loader_menu() {
     	'page callback' => 'tripal_bulk_loader_admin_template',
       'access arguments' => array('administer site configuration'),
       'type' => MENU_NORMAL_ITEM,   
-		'file' => 'tripal_bulk_loader.admin.inc',
+		  'file' => 'tripal_bulk_loader.admin.inc',
 	);
 	$items['admin/tripal/tripal_bulk_loader_template/add'] = array(
       'title' => 'Create Bulk Loader Template',
@@ -37,12 +37,11 @@ function tripal_bulk_loader_menu() {
       'type' => MENU_NORMAL_ITEM,   
 		'file' => 'tripal_bulk_loader.admin.inc',
 	);
-		$items['admin/tripal/tripal_bulk_loader_template/add/chado_column'] = array(
-      'page callback' => 'tripal_bulk_loader_chado_column_ajax',
-		'page arguments' => array(5),
+		$items['admin/tripal/tripal_bulk_loader_template/add/chado_column_ahah'] = array(
+      'page callback' => 'tripal_bulk_loader_chado_column_ahah',
       'access arguments' => array('administer site configuration'),
       'type' => MENU_CALLBACK,   
-		'file' => 'tripal_bulk_loader.admin.inc',
+		  'file' => 'tripal_bulk_loader.admin.inc',
 	);
 	$items['admin/tripal/tripal_bulk_loader_template/delete'] = array(
       'title' => 'Delete Bulk Loader Template',
