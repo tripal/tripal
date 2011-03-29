@@ -87,7 +87,7 @@ function tripal_core_views_pre_render	(&$view) {
 		
 		//Add Node IDs in to every table that needs them
 		// @see file: tripal_core.views.inc
-		tripal_core_add_node_ids_to_view (&$view);
+		tripal_core_add_node_ids_to_view ($view);
 		
 }
 
