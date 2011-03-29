@@ -37,8 +37,14 @@ function tripal_bulk_loader_menu() {
       'type' => MENU_NORMAL_ITEM,   
 		'file' => 'tripal_bulk_loader.admin.inc',
 	);
-		$items['admin/tripal/tripal_bulk_loader_template/add/chado_column_ahah'] = array(
+	$items['admin/tripal/tripal_bulk_loader_template/add/chado_column_ahah'] = array(
       'page callback' => 'tripal_bulk_loader_chado_column_ahah',
+      'access arguments' => array('administer site configuration'),
+      'type' => MENU_CALLBACK,   
+		  'file' => 'tripal_bulk_loader.admin.inc',
+	);
+	$items['admin/tripal/tripal_bulk_loader_template/add/field_type_ahah'] = array(
+      'page callback' => 'tripal_bulk_loader_field_type_ahah',
       'access arguments' => array('administer site configuration'),
       'type' => MENU_CALLBACK,   
 		  'file' => 'tripal_bulk_loader.admin.inc',

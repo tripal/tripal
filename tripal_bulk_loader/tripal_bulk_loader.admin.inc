@@ -97,6 +97,8 @@ function tripal_bulk_loader_create_template_base_form (&$form_state = NULL) {
     $form['add_fields'] = array(
       '#type' => 'fieldset',
       '#title' => t('Step 2: Add Fields'),
+      '#prefix' => '<div id="tripal-bulk-loader-field">',
+      '#suffix' => '</div>',
     );
 
     $field_type = ($form_state['storage']['field_type'])? $form_state['storage']['field_type'] : 'column';
@@ -108,6 +110,11 @@ function tripal_bulk_loader_create_template_base_form (&$form_state = NULL) {
         'constant' => t('Field which remains Constant throughout the Spreadsheet'),
       ),
       '#default_value' => $field_type,
+      '#ahah' => array(
+        'path' => 'admin/tripal/tripal_bulk_loader_template/add/field_type_ahah',
+        'wrapper' => 'tripal-bulk-loader-field',
+        'effect' => 'fade'
+        ),
     );
     
     $form['add_fields']['field_title'] = array(
@@ -336,6 +343,32 @@ function tripal_bulk_loader_chado_column_ahah () {
   $form = drupal_rebuild_form($form_id, $form_state, $args, $form_build_id);
   
   $form_element = $form['add_fields']['chado'];
+  // Remove the wrapper so we don't double it up.
+  unset($form_element['#prefix'], $form_element['#suffix']);
+
+  $output = theme('status_messages');
+  $output .= drupal_render($form_element);
+
+  // Final rendering callback.
+  print drupal_json(array('status' => TRUE, 'data' => $output));
+  exit();
+}
+
+function tripal_bulk_loader_field_type_ahah () {
+
+  $form_state = array('storage' => NULL, 'submitted' => FALSE);
+  $form_build_id = $_POST['form_build_id'];
+  $form = form_get_cache($form_build_id, $form_state);
+  $args = $form['#parameters'];
+  $form_id = array_shift($args);
+  $form_state['post'] = $form['#post'] = $_POST;
+  // Enable the submit/validate handlers to determine whether AHAH-submittted.
+  $form_state['ahah_submission'] = TRUE;
+  $form['#programmed'] = $form['#redirect'] = FALSE;
+  drupal_process_form($form_id, $form, $form_state);
+  $form = drupal_rebuild_form($form_id, $form_state, $args, $form_build_id);
+  
+  $form_element = $form['add_fields'];
   // Remove the wrapper so we don't double it up.
   unset($form_element['#prefix'], $form_element['#suffix']);
 
