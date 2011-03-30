@@ -13,10 +13,6 @@ $unigene = $node->analysis->tripal_analysis_unigene;
         <th>Analysis Name</th>
         <td><?php print $analysis->name; ?></td>
       </tr>
-      <tr class="tripal_analysis_unigene-table-odd-row tripal-table-odd-row">
-        <th nowrap>Unigene Name</th>
-        <td><?php print $unigene->unigene_name; ?></td>
-      </tr>
       <tr class="tripal_analysis_unigene-table-odd-row tripal-table-even-row">
         <th nowrap>Software</th>
         <td><?php 
