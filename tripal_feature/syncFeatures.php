@@ -28,8 +28,47 @@ if(isset($arguments['f'])){
       tripal_feature_sync_features();
    }   
 }
-   
+/**
+*
+*/   
+function tripal_feature_set_urls($job_id = NULL){
+   // first get the list of features that have been synced
+   $sql = "SELECT * FROM {chado_feature}";
+   $nodes = db_query($sql);
+   while($node = db_fetch_object($nodes)){
+      // now get the feature details
+      $feature_arr = tripal_core_chado_select('feature',
+         array('feature_id','name','uniquename'),
+         array('feature_id' => $node->feature_id));
+      $feature = $feature_arr[0];
 
+      tripal_feature_set_feature_url($node,$feature);
+   }
+}
+/**
+*
+*/
+function tripal_feature_set_feature_url($node,$feature){
+
+   // determine which URL alias to use
+   $alias_type = variable_get('chado_feature_url','internal ID');
+   $aprefix = variable_get('chado_feature_accession_prefix','ID');
+   switch ($alias_type) {
+      case 'feature name':
+         $url_alias = $feature->name;
+         break;
+      case 'feature unique name':
+         $url_alias = $feature->uniquename;
+         break;
+      default:
+         $url_alias = "$aprefix$feature->feature_id";
+   }
+   print "Setting $alias_type as URL alias for $feature->name: node/$node->nid => $url_alias\n";
+   // remove any previous alias
+   db_query("DELETE FROM {url_alias} WHERE src = '%s'", "node/$node->nid");
+   // add the new alias
+   path_set_alias("node/$node->nid",$url_alias);
+}
 /**
  *
  *
@@ -261,10 +300,9 @@ function tripal_feature_sync_feature ($feature_id){
    // drupal_set_message(t("$feature_id( $node->nid): indexing"));
    // tripal_feature_index_feature ($feature_id,$node->nid);
 
-   // remove any URL alias that may already exist and recreate
-   drupal_set_message(t("$feature_id ($node->nid): setting URL alias"));
-   db_query("DELETE FROM {url_alias} WHERE dst = '%s'", "$aprefix$feature_id");
-   path_set_alias("node/$node->nid","$aprefix$feature_id");
+   // set the URL alias for this node
+   tripal_feature_set_feature_url($node,$feature);
+
 
    return '';
 }

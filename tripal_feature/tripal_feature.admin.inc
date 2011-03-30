@@ -72,6 +72,9 @@ function tripal_feature_admin () {
          '#default_value' => variable_get('chado_feature_types','EST contig'),
       );
 
+      get_tripal_feature_admin_form_sync_set($form);
+      get_tripal_feature_admin_form_url_set($form);
+
       $form['browser'] = array(
          '#type' => 'fieldset',
          '#title' => t('Feature Browser')
@@ -119,7 +122,6 @@ function tripal_feature_admin () {
          '#weight' => 2,
       );
 
-      get_tripal_feature_admin_form_sync_set($form);
       get_tripal_feature_admin_form_taxonomy_set($form);
       get_tripal_feature_admin_form_reindex_set($form);
       get_tripal_feature_admin_form_cleanup_set($form);
@@ -150,32 +152,41 @@ function tripal_feature_admin_validate($form, &$form_state) {
 
    // if the user wants to sync up the chado features then
    // add the job to the management queue
-   if ($form_state['values']['op'] == t('Sync all Features')) {
-      tripal_add_job('Sync all features','tripal_feature',
-         'tripal_feature_sync_features',$job_args,$user->uid);
-   }
+   switch ($form_state['values']['op']){
 
-   if ($form_state['values']['op'] == t('Set/Reset Taxonomy for all feature nodes')) {
-      tripal_add_job('Set all feature taxonomy','tripal_feature',
-         'tripal_features_set_taxonomy',$job_args,$user->uid);
-   }
+      case  t('Sync all Features') :
+         tripal_add_job('Sync all features','tripal_feature',
+            'tripal_feature_sync_features',$job_args,$user->uid);
+         break;
 
-   if ($form_state['values']['op'] == t('Reindex all feature nodes')) {
-      tripal_add_job('Reindex all features','tripal_feature',
-         'tripal_features_reindex',$job_args,$user->uid);
-   }
+      case t('Set/Reset Taxonomy for all feature nodes') :
+         tripal_add_job('Set all feature taxonomy','tripal_feature',
+            'tripal_features_set_taxonomy',$job_args,$user->uid);
+         break;
 
-   if ($form_state['values']['op'] == t('Clean up orphaned features')) {
-      tripal_add_job('Cleanup orphaned features','tripal_feature',
-         'tripal_features_cleanup',$job_args,$user->uid);
-   }
+      case t('Reindex all feature nodes') :
+         tripal_add_job('Reindex all features','tripal_feature',
+            'tripal_features_reindex',$job_args,$user->uid);
+         break;
 
-   if ($form_state['values']['op'] == t('Set Browser')) {
-      variable_set('tripal_feature_browse_setting',$form_state['values']['browse_features']);
-   }
+      case t('Clean up orphaned features') :
+         tripal_add_job('Cleanup orphaned features','tripal_feature',
+            'tripal_features_cleanup',$job_args,$user->uid);
+         break;
 
-   if ($form_state['values']['op'] == t('Set Summary')) {
-      variable_set('tripal_feature_summary_setting',$form_state['values']['feature_summary']);
+      case t('Set Browser') :
+         variable_set('tripal_feature_browse_setting',$form_state['values']['browse_features']);
+         break;
+
+      case t('Set Summary') :
+         variable_set('tripal_feature_summary_setting',$form_state['values']['feature_summary']);
+         break;
+
+      case t('Set Feature URLs') :
+         variable_set('chado_feature_url',$form_state['values']['feature_url']);
+         tripal_add_job('Set Feature URLs','tripal_feature',
+            'tripal_feature_set_urls',$job_args,$user->uid);
+         break;
    }
 }
 /**
@@ -330,7 +341,37 @@ function get_tripal_feature_admin_form_sync_set (&$form) {
    );
 
 }
+function get_tripal_feature_admin_form_url_set (&$form) {
 
+   $form['url'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Feature URL Path')
+   );
+
+   $form['url']['chado_feature_url'] = array(
+      '#title'       => t('Feature URL'),
+      '#type'        => 'radios',
+      '#description' => t('Each synced feature will have a unique URL which consists of '.
+                          'the site domain followed by a unique identifer: for '.
+                          'example http://my-tripal-site.org/ID1034, where the '.
+                          'element just after the final slash is the unique '.
+                          'identifier for the feature.  Choose a feature descriptor '.
+                          'from the list that is guaranteed to be unique in your synced '.
+                          'dataset. If in doubt it is safest to coose the internal ID. '.
+                          'The descrpitor need not be unique amont the total dataset. '.
+                          'It only need be unique among the synced dataset.'),
+      '#required'    => FALSE,
+      '#options'     => array('internal ID' => 'internal ID',
+                              'feature unique name' => 'feature unique name', 
+                              'feature name' => 'feature name'),
+      '#default_value' => variable_get('chado_feature_url','internal ID'),
+   );
+   $form['url']['button'] = array(
+      '#type' => 'submit',
+      '#value' => t('Set Feature URLs'),
+      '#weight' => 3,
+   );
+}
 /**
  *
  *
