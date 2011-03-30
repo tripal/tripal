@@ -1,8 +1,18 @@
-//
-// Copyright 2009 Clemson University
-//
+
 
 if (Drupal.jsEnabled) {
+
+
+   $(document).ready(function() {
+       // Select default GO analysis when available
+       var selectbox = $('#edit-tripal-analysis-go-select');
+       if(selectbox){ 
+          selectbox[0].selectedIndex = 1;
+          tripal_analysis_go_org_charts(selectbox.val());
+       }
+   });
+
+
    function tripal_analysis_go_org_charts(item){
       if(!item){
          $("#tripal_analysis_go_org_charts").html('');

@@ -143,7 +143,7 @@ function chado_analysis_interpro_form ($node){
       '#rows' => 15,
       '#title' => t('Description and/or Program Settings'),
       '#required' => FALSE,
-      '#default_value' => check_plain($node->description),
+      '#default_value' => $node->description,
       '#weight' => 9
 	);
 

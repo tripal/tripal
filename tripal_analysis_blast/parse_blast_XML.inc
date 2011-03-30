@@ -207,9 +207,6 @@ function tripal_analysis_blast_parseXML($analysis_id, $blastdb, $blastfile,
 					$feature_id = 0;
 					foreach($iterations->children() as $iteration_tags) {
 
-
-
-
 						// Match chado feature uniquename with <Iteration_query-def>
 						// and get the feature_id
 						$featurenaem_xml = '';
@@ -219,7 +216,6 @@ function tripal_analysis_blast_parseXML($analysis_id, $blastdb, $blastfile,
                      // user's regular expression 
 							if ($query_re and preg_match("/$query_re/", $iteration_tags, $matches)) {
 								$feature = $matches[1];
-								
 							} 
                      // If not in above format then pull up to the first space
                      else {
@@ -230,7 +226,13 @@ function tripal_analysis_blast_parseXML($analysis_id, $blastdb, $blastfile,
                         else {
                            $feature = $iteration_tags;
                         }
+                     }   
+
+                     if(!$feature and $query_re){
+                        print "ERROR: cannot find feature for $iteration_tags using the regular expression: $query_re\n";
+                        exit;
                      }
+
                      // now find the feature in chado
                      $select = array();
                      if($query_uniquename){
@@ -246,29 +248,28 @@ function tripal_analysis_blast_parseXML($analysis_id, $blastdb, $blastfile,
                           'name' => $query_type,
                         );
                      }
+
                      $feature_arr = tripal_core_chado_select('feature',array('feature_id'),$select);
                      if(count($feature_arr) > 1){
   							   fwrite($log, "Ambiguous: '$feature' matches more than one feature and is being skipped.\n");
 								continue;
                      }
-                     if(count($feature_arr) < 1){
+                     if(count($feature_arr) == 0){
 								fwrite($log, "Failed: '$feature' cannot find a matching feature in the database.\n");
                         continue;
                      }
                      $feature_id = $feature_arr[0]->feature_id;
+
     						fwrite($log, "Matched: '$feature' => feature id:".$feature_id);
 							$featurename_xml = $iteration_tags->asXML();
-
-							
 						} 
                   // Insert Iteration_hits into analysisfeatureprop and analysisfeature tables
                   else if($iteration_tags->getName() == 'Iteration_hits'){
 							if ($feature_id) {
-
 								// Make sure this iteration doesn't exist in analysisfeatureprop. If it does, update but not insert
 								$sql = "SELECT analysisfeatureprop_id FROM {analysisfeatureprop} AFP ".
-                            "INNER JOIN analysisfeature AF ON AF.analysisfeature_id = AFP.analysisfeature_id ".       
-                            "WHERE feature_id=%d ".
+                               "INNER JOIN analysisfeature AF ON AF.analysisfeature_id = AFP.analysisfeature_id ".       
+                               "WHERE feature_id=%d ".
                             "AND analysis_id=%d ".
                             "AND type_id=%d ";
 
@@ -278,7 +279,6 @@ function tripal_analysis_blast_parseXML($analysis_id, $blastdb, $blastfile,
 								// parse all hits
 								if ($no_parsed == 'all') {
 									$xml_content .= $iteration_tags->asXML();
-								
 								// parse only top hits
 								} else {
 									$counter = 0;
@@ -297,6 +297,7 @@ function tripal_analysis_blast_parseXML($analysis_id, $blastdb, $blastfile,
 
 								// If this Iteration_hits already exists, update it
 								if ($analysisfeatureprop) {
+
 									$sql = "UPDATE {analysisfeatureprop} ".
                                "SET value = '%s' ".
                                "WHERE analysisfeatureprop_id = %d ";

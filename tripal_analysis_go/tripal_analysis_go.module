@@ -221,7 +221,7 @@ function tripal_analysis_go_select_form(&$form_state = NULL,$node){
    }
   
    # create the select box
-   $form['analysis_select'] = array(
+   $form['tripal_analysis_go_select'] = array(
       '#title' => t('Select a GO report to view'),
       '#description' => t('Any analysis with GO results related to this organism are available for viewing. For further information, see the analysis information page.'),
       '#type'  => 'select',

@@ -393,6 +393,7 @@ function chado_analysis_blast_form ($node){
    $blast = $node->analysis->tripal_analysis_blast;
    $blastdb = $blast->blastdb;
    $blastfile    = $blast->blastfile;
+   $blastfile_ext    = $blast->blastfile_ext;
    $blastparameters = $blast->blastparameters;
 
    $query_re = $blast->query_re;
@@ -697,7 +698,8 @@ function chado_analysis_blast_submit_jobs($node){
 
    // add a job if the user wants to parse the XML	    	
 	if($node->blastjob) {
-      $job_args = array($analysis_id,
+      $job_args = array(
+          $node->analysis_id,
           $node->blastdb,
           $node->blastfile,
           $node->no_parsed,
@@ -716,7 +718,7 @@ function chado_analysis_blast_submit_jobs($node){
 	}
    // add a job if the user wants to create a best hits report.
 	if($node->blastbesthit) {
-      $j_args[0] = $analysis_id;	
+      $j_args[0] = $node->analysis_id;	
 		tripal_add_job("Parse best hit: $node->blastfile",'tripal_analysis_blast',
                      'tripal_analysis_blast_parse_best_hit', $j_args, $user->uid);			
    }

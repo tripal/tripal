@@ -755,7 +755,7 @@ function chado_organism_form ($node, $param){
       '#rows' => 15,
       '#title' => t('Description'),
       '#required' => TRUE,
-      '#default_value' => check_plain($organism->description),
+      '#default_value' => $organism->description,
       '#weight' => 5
    );
    $form['organism-image']= array(

@@ -260,7 +260,7 @@ function chado_analysis_kegg_form ($node){
       '#rows' => 15,
       '#title' => t('Description and/or Program Settings'),
       '#required' => FALSE,
-      '#default_value' => check_plain($node->description),
+      '#default_value' => $node->description,
       '#weight' => 9
    );
 
@@ -1132,7 +1132,7 @@ function tripal_analysis_kegg_select_form(&$form_state = NULL,$node){
    }
   
    # create the select box
-   $form['analysis_select'] = array(
+   $form['tripal_analysis_kegg_select'] = array(
       '#title' => t('Select a KEGG report to view'),
       '#description' => t('Any analysis with KEGG results related to this organism are available for viewing. For further information, see the analysis information page.'),
       '#type'  => 'select',

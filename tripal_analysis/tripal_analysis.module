@@ -400,7 +400,7 @@ function chado_analysis_form ($node){
       '#rows' => 15,
       '#title' => t('Description and/or Program Settings'),
       '#required' => FALSE,
-      '#default_value' => check_plain($node->analysis->description),
+      '#default_value' => $node->analysis->description,
       '#description' => t('Please provide all necessary information to allow
          someone to recreate the analysis, including materials and methods
          for collection of the source data and performing the analysis'),

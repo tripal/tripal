@@ -1,12 +1,18 @@
-//
-// Copyright 2009 Clemson University
-//
+
 
 if (Drupal.jsEnabled) {
    $(document).ready(function() {
       $(".tripal_kegg_brite_tree").attr("id", function(){
 			init_kegg_tree($(this).attr("id"));    
       });
+
+       // Select default KEGG analysis when available
+       var selectbox = $('#edit-tripal-analysis-kegg-select');
+       if(selectbox){ 
+          selectbox[0].selectedIndex = 1;
+          tripal_analysis_kegg_org_report(selectbox.val());
+       }
+
    });
 
    //------------------------------------------------------------

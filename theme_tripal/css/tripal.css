@@ -7,8 +7,7 @@
 }
 .tripal-table th, 
 .tripal-table td {
-   padding-left: 5px;
-   padding-right: 5px;
+   padding: 5px;
 }
 .tripal-table-horz {
    border-top: 2px solid #999999;
@@ -57,8 +56,11 @@ table.tripal-table-horz .tripal-table-odd-row {
 
 .tripal-info-box-title {
   font-size: 1.5em;
-  padding-bottom: 5px;
+  padding-bottom: 15px;
 
+}
+.tripal-info-box-desc {
+  padding-bottom: 15px;
 }
 /* hide the title when inside of a block on a panel */
 .pane-block .tripal-info-box-title {
