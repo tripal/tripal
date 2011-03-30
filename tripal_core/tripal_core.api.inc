@@ -219,6 +219,58 @@ function tripal_core_chado_insert($table,$values){
    return false;
 }
 /**
+*
+*/
+function tripal_core_chado_delete($table,$match){
+   $delete_matches = array();  // contains the values for the where clause
+   
+   // get the table description
+   $table_desc = module_invoke_all('chado_'.$table.'_schema');
+
+   // get the values needed for matching in the SQL statement
+   foreach ($match as $field => $value){
+      if(is_array($value)){
+         $results = tripal_core_chado_get_foreign_key($table_desc,$field,$value);
+         if (sizeof($results) > 1) {
+           watchdog('tripal_core', 'tripal_core_chado_delete: When trying to find record to delete, too many records match the criteria supplied for !foreign_key foreign key constraint (!criteria)', array('!foreign_key' => $field, '!criteria' => print_r($value,TRUE)), WATCHDOG_ERROR);         
+         } elseif (sizeof($results) < 1) {
+           watchdog('tripal_core', 'tripal_core_chado_delete: When trying to find record to delete, no record matches criteria supplied for !foreign_key foreign key constraint (!criteria)', array('!foreign_key' => $field, '!criteria' => print_r($value,TRUE)), WATCHDOG_ERROR);
+         } else {
+           $delete_matches[$field] = $results[0];
+         }
+      }
+      else {
+         $delete_matches[$field] = $value;
+      }
+   }
+   // now build the SQL statement
+   $sql = "DELETE FROM {$table} WHERE ";
+   $dargs = array();
+   foreach($delete_matches as $field => $value){
+      if(strcmp($fields[$field]['type'],'serial')==0 or 
+         strcmp($fields[$field]['type'],'int')==0){
+         $sql .= " $field = %d AND ";
+      } else {
+         $sql .= " $field = '%s' AND ";
+      }
+      array_push($dargs,$value);
+   }
+   $sql = substr($sql,0,-4);  // get rid of the trailing 'AND'
+   
+   // finally perform the delete.  If successful, return the updated record
+   $previous_db = tripal_db_set_active('chado');  // use chado database
+   $result = db_query($sql,$dargs);
+   tripal_db_set_active($previous_db);  // now use drupal database 
+   if($result){
+      return true;
+   } 
+   else {
+      watchdog('tripal_core',"Cannot delete record in $table table.  Match:" . print_r($match,1) . ". Values: ". print_r($values,1),array(),'WATCHDOG_ERROR');
+      return false;
+   }
+   return false;
+}
+/**
 * Provides a generic routine for updating into any Chado table
 *
 * Use this function to update a record in any Chado table.  The first

@@ -2242,8 +2242,8 @@ function tripal_feature_job_describe_args($callback,$args){
 
       // add in the relationship arguments
       $new_args['Relationship Type'] = $args[8];
-      $new_args['Relationship Subject RE'] = $args[9];
-      $new_args['Relationship Parent RE'] = $args[10];
+      $new_args['Relationship Parent RE'] = $args[9];
+      $new_args['Relationship Parent Type'] = $args[10];
 
       // add in the database reference arguments
       $db = tripal_core_chado_select('db',array('name'),array('db_id' => $args[7]));

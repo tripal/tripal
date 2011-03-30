@@ -6,8 +6,7 @@
 * @ingroup tripal_core
 * @ingroup tripal_api
 */
-function tripal_add_job ($job_name,$modulename,$callback,$arguments,$uid,
-   $priority = 10){
+function tripal_add_job ($job_name,$modulename,$callback,$arguments,$uid,$priority = 10){
 
    # convert the arguments into a string for storage in the database
    $args = implode("::",$arguments);
@@ -23,9 +22,12 @@ function tripal_add_job ($job_name,$modulename,$callback,$arguments,$uid,
    if($args){
       $record->arguments = $args;
    }
-   drupal_write_record('tripal_jobs',$record);
-   $jobs_url = url("admin/tripal/tripal_jobs");
-   drupal_set_message(t("Job '$job_name' submitted.  Check the <a href='$jobs_url'>jobs page</a> for status"));
+   if(drupal_write_record('tripal_jobs',$record)){
+      $jobs_url = url("admin/tripal/tripal_jobs");
+      drupal_set_message(t("Job '$job_name' submitted.  Check the <a href='$jobs_url'>jobs page</a> for status"));
+   } else {
+      drupal_set_message("Failed to add job $job_name.");
+   }
 
    return 1;
 }

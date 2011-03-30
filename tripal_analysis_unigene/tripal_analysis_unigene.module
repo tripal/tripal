@@ -132,6 +132,7 @@ function chado_analysis_unigene_insert($node){
    chado_analysis_insert($node);
 
    // add the unigene name as a property of the anslysis
+   tripal_analysis_insert_property($node->analysis->analysis_id,'analysis_type','tripal_analysis_unigene');	
    tripal_analysis_insert_property($node->analysis->analysis_id,'analysis_unigene_name',$node->unigene_name);	
    tripal_analysis_insert_property($node->analysis->analysis_id,'analysis_unigene_num_contigs',$node->num_contigs);	
    tripal_analysis_insert_property($node->analysis->analysis_id,'analysis_unigene_num_reads',$node->num_reads);	
@@ -144,47 +145,11 @@ function chado_analysis_unigene_insert($node){
 function chado_analysis_unigene_update($node){
    chado_analysis_update($node); 
 
-   // check to see if the property exists first if not then insert, if it does then update
-   $unigene_name = tripal_analysis_get_property($node->analysis_id,'analysis_unigene_name');
-   $num_contigs  = tripal_analysis_get_property($node->analysis_id,'analysis_unigene_num_contigs');
-   $num_reads    = tripal_analysis_get_property($node->analysis_id,'analysis_unigene_num_reads');
-   $num_clusters = tripal_analysis_get_property($node->analysis_id,'analysis_unigene_num_clusters');
-   $num_singlets = tripal_analysis_get_property($node->analysis_id,'analysis_unigene_num_singlets');
-
-
-   // update the unigene name as a property of the anslysis, but if for some
-   // reason it's missing then add it (do the same for all properties)
-   if(count($unigene_name)==0){
-      tripal_analysis_insert_property($node->analysis_id,'analysis_unigene_name',$node->unigene_name);	
-   } else {
-      tripal_analysis_update_property($node->analysis_id,'analysis_unigene_name',$node->unigene_name);	
-   }
-
-   if(count($num_contigs)==0){
-      tripal_analysis_insert_property($node->analysis_id,'analysis_unigene_num_contigs',$node->num_contigs);	
-   } else {
-      tripal_analysis_update_property($node->analysis_id,'analysis_unigene_num_contigs',$node->num_contigs);	
-   }
-
-   if(count($num_reads)==0){
-      tripal_analysis_insert_property($node->analysis_id,'analysis_unigene_num_reads',$node->num_reads);	
-   } else {
-      tripal_analysis_update_property($node->analysis_id,'analysis_unigene_num_reads',$node->num_reads);	
-   }
-
-   if(count($num_clusters)==0){
-      tripal_analysis_insert_property($node->analysis_id,'analysis_unigene_num_clusters',$node->num_clusters);	
-   } else {
-      tripal_analysis_update_property($node->analysis_id,'analysis_unigene_num_clusters',$node->num_clusters);	
-   }
-
-   if(count($num_singlets)==0){
-      tripal_analysis_insert_property($node->analysis_id,'analysis_unigene_num_singlets',$node->num_singlets);	
-   } else {
-      tripal_analysis_update_property($node->analysis_id,'analysis_unigene_num_singlets',$node->num_singlets);	
-   }
-
-   
+   tripal_analysis_update_property($node->analysis_id,'analysis_unigene_name',$node->unigene_name,1);
+   tripal_analysis_update_property($node->analysis_id,'analysis_unigene_num_contigs',$node->num_contigs,1);
+   tripal_analysis_update_property($node->analysis_id,'analysis_unigene_num_reads',$node->num_reads,1);
+   tripal_analysis_update_property($node->analysis_id,'analysis_unigene_num_clusters',$node->num_clusters,1);
+   tripal_analysis_update_property($node->analysis_id,'analysis_unigene_num_singlets',$node->num_singlets,1);   
 }
 /**
 *
@@ -222,11 +187,11 @@ function chado_analysis_unigene_load($node){
    $num_clusters = tripal_analysis_get_property($analysis_id,'analysis_unigene_num_clusters');
    $num_singlets = tripal_analysis_get_property($analysis_id,'analysis_unigene_num_singlets');
 
-   $analysis->tripal_analysis_unigene->unigene_name = $unigene_name[0]->value;
-   $analysis->tripal_analysis_unigene->num_contigs = $num_contigs[0]->value;
-   $analysis->tripal_analysis_unigene->num_reads = $num_reads[0]->value;
-   $analysis->tripal_analysis_unigene->num_clusters = $num_clusters[0]->value;
-   $analysis->tripal_analysis_unigene->num_singlets = $num_singlets[0]->value;
+   $analysis->tripal_analysis_unigene->unigene_name = $unigene_name->value;
+   $analysis->tripal_analysis_unigene->num_contigs = $num_contigs->value;
+   $analysis->tripal_analysis_unigene->num_reads = $num_reads->value;
+   $analysis->tripal_analysis_unigene->num_clusters = $num_clusters->value;
+   $analysis->tripal_analysis_unigene->num_singlets = $num_singlets->value;
 
    // add in organism information using the materialized view
    $sql = "SELECT * FROM {organism_unigene_mview} OUM ".
@@ -314,6 +279,7 @@ function tripal_analysis_unigene_theme () {
       ),
    );
 }
+
 /*******************************************************************************
  *  
  */
@@ -670,11 +636,11 @@ function tripal_analysis_unigene_load_organism_unigenes($organism){
       $num_clusters = tripal_analysis_get_property($analysis_id,'analysis_unigene_num_clusters');
       $num_singlets = tripal_analysis_get_property($analysis_id,'analysis_unigene_num_singlets');
       
-      $unigene->unigene_name = $unigene_name[0]->value;
-      $unigene->num_reads = $num_reads[0]->value;
-      $unigene->num_clusters = $num_clusters[0]->value;
-      $unigene->num_contigs = $num_contigs[0]->value;     
-      $unigene->num_singlets = $num_singlets[0]->value;
+      $unigene->unigene_name = $unigene_name->value;
+      $unigene->num_reads = $num_reads->value;
+      $unigene->num_clusters = $num_clusters->value;
+      $unigene->num_contigs = $num_contigs->value;     
+      $unigene->num_singlets = $num_singlets->value;
 
       $unigenes[$i++] = $unigene;
    }

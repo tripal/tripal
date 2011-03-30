@@ -159,7 +159,19 @@ function tripal_analysis_blast_update_6000(){
  */
 function tripal_analysis_blast_add_cvterms () {
 	
- // Add cvterm 'analysis_blast_output_iteration_hits' for inserting into featureprop table
+   // Add the cvterms for the anlysisprop table
+   tripal_add_cvterms('analysis_blast_settings', 'Settings of a blast analysis, '.
+      'including db_id, output file, and run parameters separated by a bar |');
+   tripal_add_cvterms('analysis_blast_blastdb','The database used for blasting');
+   tripal_add_cvterms('analysis_blast_blastfile','The input file or directory that contains the XML blast output');
+   tripal_add_cvterms('analysis_blast_blastparameters','The parameters used when performing blast.');
+   tripal_add_cvterms('analysis_blast_no_parsed','Indicates if the input file should be parsed to map results to features');
+   tripal_add_cvterms('analysis_blast_query_re','The regular expression for finding the feature name in the query definition line of the blast results');
+   tripal_add_cvterms('analysis_blast_query_type','The feature type (e.g. mRNA, polypeptide) of the query input file. This type is used to identify the query feature when multiple features have the same name');
+   tripal_add_cvterms('analysis_blast_query_uniquename','Indicates if the matched name in the query definition line of the blast results is feature uniquename');
+   tripal_add_cvterms('analysis_blast_blastfile_ext','Indicates the extension of the blast files. This is required if the blastfile setting is a directory.');
+
+   // Add cvterm 'analysis_blast_output_iteration_hits' for inserting into featureprop table
    tripal_add_cvterms('analysis_blast_output_iteration_hits', 'Hits of a blast '.
       'output iteration. Each iteration corresponds to a chado feature, and is '.
       'the content between <iteration> and </iteration> tags in the blast xml '.
@@ -183,7 +195,4 @@ function tripal_analysis_blast_add_cvterms () {
    tripal_add_cvterms('analysis_blast_besthit_length', 'length of the best hit 
    associated with a feature and a blast analysis ');
    
-   // Add cveterm 'analysis_blast_settings' for inserting into analysisprop table   
-   tripal_add_cvterms('analysis_blast_settings', 'Settings of a blast analysis, '.
-      'including db_id, output file, and run parameters separated by a bar |');
 }

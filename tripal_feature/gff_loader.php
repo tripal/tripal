@@ -746,7 +746,7 @@ function tripal_core_load_gff3_feature($organism,$analysis_id,$cvterm,$uniquenam
 
    // add the analysisfeature entry to the analysisfeature table if it doesn't already exist
    $af_values = array('analysis_id' => $analysis_id, 'feature_id' => $feature->feature_id);
-   if(tripal_core_chado_select('analysisfeature',array('analysisfeature_id'),$af_values,true)){
+   if(tripal_core_chado_select('analysisfeature',array('analysisfeature_id'),$af_values,array('has_record'))){
       if(!tripal_core_chado_insert('analysisfeature',$af_values)){
          print "ERROR: could not add analysisfeature record: $analysis_id, $feature->feature_id\n";
       } else {
