@@ -747,11 +747,11 @@ function tripal_core_generate_chado_var($table, $values) {
 
     //if criteria then remove from query
     $success = drupal_eval('<?php return '.$criteria.'; ?>');
-    watchdog('tripal_core', 
-      'Evaluating criteria (%criteria) for field %field in tripal_core_generate_chado_var for %table evaluated to %success',
-      array('%table' => $table, '%criteria'=>$criteria, '%field' => $field_name, '%success'=>$success),
-      WATCHDOG_NOTICE
-    );
+//    watchdog('tripal_core', 
+//      'Evaluating criteria (%criteria) for field %field in tripal_core_generate_chado_var for %table evaluated to %success',
+//      array('%table' => $table, '%criteria'=>$criteria, '%field' => $field_name, '%success'=>$success),
+//      WATCHDOG_NOTICE
+//    );
     if ($success) {
       unset($table_columns[array_search($field_name, $table_columns)]);
       unset($fields_to_remove[$field_name]);
@@ -783,11 +783,11 @@ function tripal_core_generate_chado_var($table, $values) {
 
         //if criteria then remove from query
         $success = drupal_eval('<?php return '.$criteria.'; ?>');
-        watchdog('tripal_core', 
-          'Evaluating criteria (%criteria) for field %field of $type in tripal_core_generate_chado_var for %table evaluated to %success',
-          array('%table'=>$table, '%criteria'=>$criteria, '%field'=>$field_name, '%type'=>$field_type, '%success'=>$success),
-          WATCHDOG_NOTICE
-        );
+//        watchdog('tripal_core', 
+//          'Evaluating criteria (%criteria) for field %field of $type in tripal_core_generate_chado_var for %table evaluated to %success',
+//          array('%table'=>$table, '%criteria'=>$criteria, '%field'=>$field_name, '%type'=>$field_type, '%success'=>$success),
+//          WATCHDOG_NOTICE
+//        );
         if ($success) {
           unset($table_columns[array_search($field_name, $table_columns)]);
           $all->expandable_fields[] = $table . '.' . $field_name;
@@ -833,11 +833,11 @@ function tripal_core_generate_chado_var($table, $values) {
       $criteria = preg_replace('/&gt;field_value&lt; /', $object->{$field_name}, $criteria);
       //if criteria then remove from query
       $success = drupal_eval('<?php return '.$criteria.'; ?>');
-      watchdog('tripal_core', 
-        'Evaluating criteria (%criteria) for field %field in tripal_core_generate_chado_var for   %table evaluated to %success',
-        array('%table' => $table, '%criteria'=>$criteria, '%field' => $field_name, '%success'=>$success),
-        WATCHDOG_NOTICE
-      );
+//      watchdog('tripal_core', 
+//        'Evaluating criteria (%criteria) for field %field in tripal_core_generate_chado_var for   %table evaluated to %success',
+//        array('%table' => $table, '%criteria'=>$criteria, '%field' => $field_name, '%success'=>$success),
+//        WATCHDOG_NOTICE
+//      );
       if ($success) {
         unset($object->{$field_name});
         $object->expandable_fields[] = $table . '.' . $field_name;

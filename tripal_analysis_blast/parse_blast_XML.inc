@@ -338,6 +338,7 @@ function tripal_analysis_blast_parseXML($analysis_id, $blastdb, $blastfile,
  */
 function tripal_analysis_blast_get_result_object($xml_string,$db,$max,$feature_id, $analysis) {
 	$blast_object = new stdClass();
+
 	// Get the parser using db_id
 	$sql = "SELECT * FROM {tripal_analysis_blast} WHERE db_id = %d";
 	$parser = db_fetch_object(db_query($sql, $db->db_id));
@@ -374,10 +375,9 @@ function tripal_analysis_blast_get_result_object($xml_string,$db,$max,$feature_i
 	}
 
 	// Find node id for the analysis
-	$ana_nid = db_result(db_query("SELECT nid FROM {chado_analysis} WHERE analysis_id = %d", $analysis->aid));
-	$blast_object->ana_nid = $ana_nid;
-	$blast_object->ana_time = $analysis->time;
-	$blast_object->ana_name = $analysis->name;
+	$ana_nid = db_result(db_query("SELECT nid FROM {chado_analysis} WHERE analysis_id = %d", $analysis->analysis_id));
+   $analysis->nid = $ana_nid;
+
 
 	// Load the file.  This XML file should be an extract
 	// of the original XML file with only a single iteration.

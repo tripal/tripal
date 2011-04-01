@@ -57,6 +57,10 @@ function tripal_analysis_blast_nodeapi(&$node, $op, $teaser, $page) {
 
 	switch ($op) {
 		case 'view':
+
+         if($teaser){
+            return '';
+         }
 			// Find out which node types for showing the blast
 			$types_to_show = variable_get('tripal_analysis_blast_setting',
 			array('chado_feature'));
@@ -65,23 +69,22 @@ function tripal_analysis_blast_nodeapi(&$node, $op, $teaser, $page) {
 			if (!in_array($node->type, $types_to_show, TRUE)) {
 				break;
 			}
-			// Add blast to the content item if it's not a teaser
-			if (!$teaser && $node->feature->feature_id) {
+
+         if(strcmp($node->type,'chado_feature')==0){
 				if($node->build_mode == NODE_BUILD_SEARCH_INDEX){
 					$node->content['tripal_analysis_blast_index_version'] = array(
                   '#value' => theme('tripal_analysis_blast_results_index_version',$node),
                   '#weight' => 8,
 					);
 				} else {
-               if(strcmp($node->type,'chado_feature')==0){
-					   // Show blast result if not at teaser view
-					   $node->content['tripal_feature_blast_results'] = array(
-                     '#value' => theme('tripal_feature_blast_results', $node),
-                     '#weight' => 8
-					   );
-               }
+				   // Show blast result if not at teaser view
+				   $node->content['tripal_feature_blast_results'] = array(
+                  '#value' => theme('tripal_feature_blast_results', $node),
+                  '#weight' => 8
+				   );
 				}
 			}
+         break;
 	}
 }
 /************************************************************************
@@ -119,12 +122,13 @@ function tripal_get_feature_blast_results_ajax($feature_id, $db_id, $max){
  */
 function tripal_analysis_blast_preprocess_tripal_feature_blast_results(&$variables){
    $feature = $variables['node']->feature;
-   $db_id = $variables['node']->db_id;
+   $db_id = $variables['node']->db_id; // this value only gets set on an ajax call
   
    $max = 10;
    if(isset($variables['node']->max)){
       $max = $variables['node']->max;
    }
+
    $blast_results = tripal_get_feature_blast_results($feature->feature_id, $db_id, $max);
    $variables['tripal_analysis_blast']['blast_results_list'] = $blast_results;
 }
@@ -147,61 +151,74 @@ function tripal_get_feature_blast_results($feature_id, $db_id, $max){
    // the type for the property is named 'analysis_blast_output_iteration_hits'
    // and is found in the 'tripal' controlled vocabulary.  This CV term was
    // added by this module.
-	$sql = "SELECT AP.value AS apvalue, AFP.value AS afpvalue, AF.analysis_id AS aid
-	        FROM {analysisfeatureprop} AFP
-	          INNER JOIN {analysisfeature} AF ON AF.analysisfeature_id = AFP.analysisfeature_id
-	          INNER JOIN {analysisprop} AP ON AP.analysis_id = AF.analysis_id
-             INNER JOIN {cvterm} CVT on AFP.type_id = CVT.cvterm_id
-             INNER JOIN {cv} CV on CVT.cv_id = CV.cv_id
-	        WHERE AF.feature_id = %d AND CV.name = '%s' AND
-                 CVT.name = '%s' AND AP.value like '%|%' ";
-	$previous_db = tripal_db_set_active('chado');
-	$result = db_query($sql, $feature_id,'tripal','analysis_blast_output_iteration_hits');
-	tripal_db_set_active($previous_db);
+   $select = array(
+      'analysisfeature_id' => array(
+         'feature_id' => $feature_id,
+      ), 
+      'type_id' => array(
+         'name' => 'analysis_blast_output_iteration_hits',
+         'cv_id' => array(
+            'name' => 'tripal'
+         ),
+      ),         
+   );
+   $blast_results = tripal_core_chado_select('analysisfeatureprop',array('*'),$select);
 
 	// get the HTML content for viewing each of the XML file
 	$blast_obj_array = array ();
 	$blast_obj_counter = 0;
-	while ($analysisfeatureprop = db_fetch_object($result)) {
+	foreach ($blast_results as $index => $analysisfeatureprop) {
+      // get the blast XML for this feature
+      $blast_xml = $analysisfeatureprop->value;
 
-      // the database db_id is stored in the value field of the table
-      // along with the XML.  The two are separated by a bar.  We
-      // will separate these two:
-		$blastsettings = explode("|", $analysisfeatureprop->apvalue);
+      // get the analysis record
+      $analysisfeature_arr = tripal_core_chado_select('analysisfeature',array('analysis_id'),
+         array('analysisfeature_id' => $analysisfeatureprop->analysisfeature_id));
+      $analysis_arr = tripal_core_chado_select('analysis',array('*'),
+         array('analysis_id' => $analysisfeature_arr[0]->analysis_id));
+      $analysis = $analysis_arr[0];
+      $analysis_id = $analysis->analysis_id;
 
-      // if we don't have the proper number of fields in the value column then
-      // skip this entry
-      if(count($blastsettings) != 3){
-        continue;
+      // the old style was to store all parameters in a single CV term in the analysisprop 
+      // table. However now each property has it's own CV term in that table. But,
+      // we still need to support the old method for backwards compatibility.
+      // so, first get the old style variable and see if it has values. In
+      // particular we need the database setting
+      $blast_settings  = tripal_analysis_get_property($analysis_id,'analysis_blast_settings');	
+      if($blast_settings){
+		   $blastsettings = explode("|", $blast_settings[0]->value);
+         // if we don't have the proper number of fields in the value column then
+         // skip this entry
+         if(count($blastsettings) != 3){
+           continue;
+         }
+		   $adb_id = $blastsettings[0];
       }
-      if(!$blastsettings[0]){
-        continue;
+      // if we're not using the old style then try the new method to get the 
+      // database id
+      else {
+         $blastdb = tripal_analysis_get_property($analysis_id,'analysis_blast_blastdb');
+         $adb_id = $blastdb->value;
       }
-		$att_db_id = $blastsettings[0];
+      // if the callee specified a database to show then we want to check that
+      // with the database id of the analysis we're looking at.  If they
+      // don't match then skip this blast.  If a database id was not specified
+      // then continue
+      if($db_id and $adb_id != $db_id){
+         continue;
+      } 
 
-		// get analysis name and date
-		$previous_db = tripal_db_set_active('chado');
-		$sql = "SELECT analysis_id AS aid, name, to_char(timeexecuted, 'MM-DD-YYYY') AS time
-		        FROM {analysis}
- 		        WHERE analysis_id = %d";
-		$analysis = db_fetch_object(db_query($sql, $analysisfeatureprop->aid));
-		tripal_db_set_active($previous_db);
-
-		// Get db object using the db_id
-		$previous_db = tripal_db_set_active('chado');
-		$sql = "SELECT * FROM {db} WHERE db_id=%d";
-		$db = db_fetch_object(db_query($sql, $att_db_id));
-		tripal_db_set_active($previous_db);
-
-      // we want to add this blast result to our list if a database id has
-      // not been specified or if it has been specified and the database id
-      // for this analysis matches that of the one requested
-      if(!$db_id or ($db_id and $att_db_id == $db_id)) {
-			$blast_obj = tripal_analysis_blast_get_result_object($analysisfeatureprop->afpvalue,$db,$max,$feature_id, $analysis);
-         $blast_obj->analysis = $analysis;
-			$blast_obj_array [$blast_obj_counter] = $blast_obj;
-			$blast_obj_counter ++;
+      // get the database
+      if($adb_id){
+        $db_arr = tripal_core_chado_select('db',array('*'),array('db_id' => $adb_id)); 
+        $db = $db_arr[0];
       }
+
+      // parse the XML and add it to the array of blast results to be returned
+		$blast_obj = tripal_analysis_blast_get_result_object($blast_xml,$db,$max,$feature_id, $analysis);
+      $blast_obj->analysis = $analysis;
+		$blast_obj_array [$blast_obj_counter] = $blast_obj;
+		$blast_obj_counter ++;
 	}
    return $blast_obj_array;
 }
@@ -505,89 +522,12 @@ function chado_analysis_blast_form ($node){
 	
 	return $form;
 }
-
+/**
+*
+*/
 function chado_analysis_blast_validate($node, &$form){
-    ##dprint_r($node);
-
-    // This validation is being used for three activities:
-    // CASE A: Update a node that exists in both drupal and chado
-    // CASE B: Synchronizing a node from chado to drupal
-    // CASE C: Inserting a new node that exists in niether drupal nor chado
-
-    // Only nodes being updated will have an nid already
-    if($node->nid){
-        //---------------------------------------------------
-        // CASE A: We are validating a form for updating an existing node
-        //---------------------------------------------------
-
-        // TO DO: check that the new fields don't yield a non-unique primary key in chado
-    }
-    else{
-        // To differentiate if we are syncing or creating a new analysis altogther, see if an
-        // analysis_id already exists
-
-        if($node->analysis_id){
-
-            //---------------------------------------------------
-            // CASE B: Synchronizing a node from chado to drupal
-            //---------------------------------------------------
-
-        }
-        else{
-
-            //---------------------------------------------------
-            // CASE C: We are validating a form for inserting a new node
-            //---------------------------------------------------
-            // The primary key for the chado analysis table is 
-            // program, programversion, sourcename
-            // Check to see if this analysis really is new -ie, it doesn't have the same
-            // primary key as any other analysis 
-	        $sql = "SELECT analysis_id ".
-                "FROM {analysis} ".
-                "WHERE program='%s'".
-                "AND programversion='%s'".
-                "AND sourcename='%s'";
-	        $previous_db = tripal_db_set_active('chado');
-	        $analysis_id = db_result(db_query($sql, $node->program, $node->programversion, $node->sourcename));
-            tripal_db_set_active($previous_db);
-        
-            if($analysis_id){
-                //---------------------------------------------------
-                // this primary key already exists in chado analysis table!
-                //---------------------------------------------------
-        
-                // check to see if it has also been synced with drupal
-	            $sql = "SELECT nid FROM {chado_analysis} ".
-                                "WHERE analysis_id = %d";
-	            $node_id = db_result(db_query($sql, $analysis_id));
-	            if($node_id){
-                    //---------------------------------------------------
-                    // the analysis has already been synced with drupal, redirect the user
-                    // to modify that node or start over
-                    //---------------------------------------------------
-                    $error = 'This analysis already exists in the chado database (analysis id ';
-                    $error .= $analysis_id.') and has been synchronized ';
-                        $error .= 'with drupal. See node '.$node_id.' if you wish to update that analysis.  ';
-                    $error .= ' For a new analysis, please select a unique primary key ';
-                    $error .= '(primary key consists of sourcename, program and programversion).';
-                    form_set_error('sourcename', t($error));
-                }
-        
-                else{
-                    //---------------------------------------------------
-                    // the analysis does not exist in drupal - tell the user 
-                    // to sync from chado or create a new unique primary key
-                    //---------------------------------------------------
-                    $error = 'This analysis already exists in the chado database (analysis id ';
-                    $error .= $analysis_id.') but has not been synchronized ';
-                    $error .= 'with drupal. See the tripal admin pages to synchronize. ';
-                    $error .= ' For a new analysis, please select a unique primary key ';
-                    $error .= '(primary key consists of sourcename, program and programversion).';
-                    form_set_error('sourcename', t($error));
-                }
-            }
-        }
-    }
+   // use the analysis parent to validate the node
+   tripal_analysis_validate($node, $form); 
 }
 
 /*******************************************************************************
@@ -643,7 +583,7 @@ function chado_analysis_blast_load($node){
 */
 function chado_analysis_blast_insert($node){
 
-   // insert the analysis
+   // insert the analysistripal_core_generate_chado_var
    chado_analysis_insert($node);
 
    // set the type for this analysis

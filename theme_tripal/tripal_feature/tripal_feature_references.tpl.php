@@ -44,7 +44,7 @@ $feature = $variables['node']->feature;
         <td><?php print $result->db_name?></td>
         <td><?php 
            if($result->urlprefix){ 
-              ?><a href="<?php print $result->urlprefix.$result->accession?>"><?php print $result->accession?></a><?php 
+              ?><a href="<?php print $result->urlprefix.$result->accession?>" target="_blank"><?php print $result->accession?></a><?php 
            } else { 
              print $result->accession; 
            } 

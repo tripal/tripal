@@ -202,6 +202,7 @@ function chado_analysis_insert($node){
    // add the analysis to the node object for
    // use by other analysis modules that may be using this function
    $node->analysis = $analysis;
+   $node->analysis_id = $analysis_id; // we need to set this for children
 }
 /*******************************************************************************
  *
@@ -601,6 +602,92 @@ function tripal_analysis_sync_analyses ($analysis_id = NULL, $job_id = NULL){
 	}
 	return $page_content;
 }
+/**
+*
+*/
+function tripal_analysis_validate($node, &$form){
+##dprint_r($node);
+
+    // This validation is being used for three activities:
+    // CASE A: Update a node that exists in both drupal and chado
+    // CASE B: Synchronizing a node from chado to drupal
+    // CASE C: Inserting a new node that exists in niether drupal nor chado
+
+    // Only nodes being updated will have an nid already
+    if($node->nid){
+        //---------------------------------------------------
+        // CASE A: We are validating a form for updating an existing node
+        //---------------------------------------------------
+
+        // TO DO: check that the new fields don't yield a non-unique primary key in chado
+    }
+    else{
+        // To differentiate if we are syncing or creating a new analysis altogther, see if an
+        // analysis_id already exists
+
+        if($node->analysis_id){
+
+            //---------------------------------------------------
+            // CASE B: Synchronizing a node from chado to drupal
+            //---------------------------------------------------
+
+        }
+        else{
+
+            //---------------------------------------------------
+            // CASE C: We are validating a form for inserting a new node
+            //---------------------------------------------------
+            // The primary key for the chado analysis table is 
+            // program, programversion, sourcename
+            // Check to see if this analysis really is new -ie, it doesn't have the same
+            // primary key as any other analysis 
+	        $sql = "SELECT analysis_id ".
+                "FROM {analysis} ".
+                "WHERE program='%s'".
+                "AND programversion='%s'".
+                "AND sourcename='%s'";
+	        $previous_db = tripal_db_set_active('chado');
+	        $analysis_id = db_result(db_query($sql, $node->program, $node->programversion, $node->sourcename));
+            tripal_db_set_active($previous_db);
+        
+            if($analysis_id){
+                //---------------------------------------------------
+                // this primary key already exists in chado analysis table!
+                //---------------------------------------------------
+        
+                // check to see if it has also been synced with drupal
+	            $sql = "SELECT nid FROM {chado_analysis} ".
+                                "WHERE analysis_id = %d";
+	            $node_id = db_result(db_query($sql, $analysis_id));
+	            if($node_id){
+                    //---------------------------------------------------
+                    // the analysis has already been synced with drupal, redirect the user
+                    // to modify that node or start over
+                    //---------------------------------------------------
+                    $error = 'This analysis already exists in the chado database (analysis id ';
+                    $error .= $analysis_id.') and has been synchronized ';
+                        $error .= 'with drupal. See node '.$node_id.' if you wish to update that analysis.  ';
+                    $error .= ' For a new analysis, please select a unique primary key ';
+                    $error .= '(primary key consists of sourcename, program and programversion).';
+                    form_set_error('sourcename', t($error));
+                }
+        
+                else{
+                    //---------------------------------------------------
+                    // the analysis does not exist in drupal - tell the user 
+                    // to sync from chado or create a new unique primary key
+                    //---------------------------------------------------
+                    $error = 'This analysis already exists in the chado database (analysis id ';
+                    $error .= $analysis_id.') but has not been synchronized ';
+                    $error .= 'with drupal. See the tripal admin pages to synchronize. ';
+                    $error .= ' For a new analysis, please select a unique primary key ';
+                    $error .= '(primary key consists of sourcename, program and programversion).';
+                    form_set_error('sourcename', t($error));
+                }
+            }
+        }
+    }
+}
 /*******************************************************************************
  * Display help and module information
  * @param path which path of the site we're displaying help
@@ -699,9 +786,9 @@ function get_chado_analyses() {
 		$result = db_query($sql);
 		$previous_db = tripal_db_set_active('chado');
 		$sql = "SELECT Analysis_id, name, description, program, 
-		                       programversion, algorithm, sourcename, sourceversion, 
-		                       sourceuri, timeexecuted
-		           FROM {Analysis} 		           WHERE analysis_id=%d";
+		               programversion, algorithm, sourcename, sourceversion, 
+		               sourceuri, timeexecuted
+		        FROM {Analysis} WHERE analysis_id=%d";
 		$analyses = array();
 		$count = 0;
 		while ($data = db_fetch_object($result)) {

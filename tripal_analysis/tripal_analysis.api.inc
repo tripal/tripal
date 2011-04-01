@@ -33,6 +33,34 @@ function tripal_analysis_chado_analysisfeature_schema() {
 }
 
  /****************************************************************************
+ * Implements hook_chado_analysisfeatureprop_schema()
+ * Purpose: To add descriptions and foreign keys to default table description
+ * Note: This array will be merged with the array from all other implementations
+ *
+ * @return
+ *    Array describing the analysisfeatureprop table
+ */
+function tripal_analysis_chado_analysisfeatureprop_schema() {
+  $description = array();
+
+  $description['foreign keys']['analysisfeature_id'] = array(
+        'table' => 'analysisfeature',
+        'columns' => array(
+          'analysisfeature_id' => 'analysisfeature_id',
+        ),
+  );
+
+  $description['foreign keys']['cvterm'] = array(
+        'table' => 'cvterm',
+        'columns' => array(
+          'type_id' => 'cvterm_id',
+        ),
+  );
+  return $description;
+}
+
+
+ /****************************************************************************
  * Implements hook_chado_analysisprop_schema()
  * Purpose: To add descriptions and foreign keys to default table description
  * Note: This array will be merged with the array from all other implementations
@@ -85,7 +113,7 @@ function tripal_analysis_get_property($analysis_id,$property){
 * @ingroup tripal_api
 */
 function tripal_analysis_insert_property($analysis_id,$property,$value,$update_if_present = 0){
-   // first see if the property already exists, if so we can't 
+   // first see if the property already exists, if so we can't insert
    $prop = tripal_analysis_get_property($analysis_id,$property);
    if(count($prop)>0){
       if($update_if_present){

@@ -31,7 +31,7 @@ if (Drupal.jsEnabled) {
       }
       if (!baseurl) {
          // The last possibility is we've assigned an alias path, get base_url till the last /
-         var baseurl = location.href.substring(0,location.href.lastIndexOf('/'));
+         var baseurl = location.href.substring(0,location.href.indexOf('/',10));
       }
       
       // Form the link for the following ajax call       

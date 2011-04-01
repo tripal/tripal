@@ -19,7 +19,7 @@ if(count($blast_results_list) > 0){
 <div id="tripal_analysis_blast-results-<?php print "$db->db_id" ?>-box" class="tripal_analysis_blast-box tripal-info-box">
 	<div class="tripal-info-box-title tripal_analysis_blast-info-box-title">Blast vs. <?php print $db->name ?></div>
 	<div class="tripal-info-box-desc tripal_analysis_blast-info-box-desc">
-	<strong>Analysis Date: </strong><?php print "$blast_result->ana_time (<a href=".url("node/$blast_result->ana_nid").">$blast_result->ana_name</a>)"?><br>
+	<strong>Analysis Date: </strong><?php print preg_replace("/^(\d+-\d+-\d+) .*/","$1",$analysis->timeexecuted) . " (<a href=".url("node/$analysis->nid").">$analysis->name</a>)"?><br>
 	<!--Query: <?php print "$blast_result->xml_tag"?><br>-->
 	
 	<?php 
@@ -79,7 +79,7 @@ if(count($blast_results_list) > 0){
 		   </tr>
 	      <tr class="<?php print $class ?>">
 		      <td colspan=5>
-			      <a class="blast-hit-arrow-icon" onclick="return tripal_blast_toggle_alignment(<?php print $analysis->aid ?>,<?php print $i?>)"><img id="tripal_analysis_blast-info-toggle-image-<?php print $analysis->aid ?>-<?php print $i?>" src=<?php print $hit['arrowr_url']?> align="top"> View Alignment</a>
+			      <a class="blast-hit-arrow-icon" onclick="return tripal_blast_toggle_alignment(<?php print $analysis->analysis_id ?>,<?php print $i?>)"><img id="tripal_analysis_blast-info-toggle-image-<?php print $analysis->analysis_id ?>-<?php print $i?>" src=<?php print $hit['arrowr_url']?> align="top"> View Alignment</a>
 			      <div class="tripal_analysis_blast-info-hsp-title"></div>
 		      </td>
 	      </tr>
@@ -88,7 +88,7 @@ if(count($blast_results_list) > 0){
 		      <?php 
 		      $hsps_array = $hit['hsp'];
 		      foreach ($hsps_array AS $hsp) { ?>
-			      <div class="tripal_analysis_blast-info-hsp-desc" id="tripal_analysis_blast-info-hsp-desc-<?php print $analysis->aid ?>-<?php print $i?>">
+			      <div class="tripal_analysis_blast-info-hsp-desc" id="tripal_analysis_blast-info-hsp-desc-<?php print $analysis->analysis_id ?>-<?php print $i?>">
 				      &nbsp;HSP <?php  print $hsp['hsp_num'] ?>
 				      <pre>Score: <?php print $hsp['bit_score'] ?> bits (<?php print $hsp['score'] ?>), Expect = <?php print $hsp['evalue'] ?><br>Identity = <?php print sprintf("%d/%d (%.2f%%)", $hsp['identity'], $hsp['align_len'], $hsp['identity']/$hsp['align_len']*100) ?>, Postives = <?php print sprintf("%d/%d (%.2f%%)", $hsp['positive'], $hsp['align_len'], $hsp['positive']/$hsp['align_len']*100)?>, Query Frame = <?php print $hsp['query_frame']?></a><br><br></a>Query: <?php print sprintf("%4d", $hsp['query_from'])?> <?php print $hsp['qseq'] ?> <?php print sprintf("%d", $hsp['query_to']); ?><br>            <?php print $hsp['midline'] ?><br>Sbjct: <?php print sprintf("%4d", $hsp['hit_from']) ?> <?php print $hsp['hseq']?> <?php print sprintf("%d",$hsp['hit_to']) ?></pre><br>
 			      </div>

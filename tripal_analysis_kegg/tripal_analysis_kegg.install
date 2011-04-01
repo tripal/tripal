@@ -15,13 +15,10 @@ function tripal_analysis_kegg_install(){
    
    // Inert into drupal's {tripal_analysis}
    tripal_analysis_register_child('tripal_analysis_kegg');
-
-   // Add cvterm 'analysis_interpro_settings' for inserting into analysisprop table
-   tripal_add_cvterms('analysis_kegg_settings', 'Settings of a KEGG analysis, '.
-      'Currently include only the heir.tar.gz file name & path.');
-   tripal_add_cvterms('kegg_brite_data', 'This term is intended for use '.
-      'in the analysisfeatureprop table to store the KAAS results data.');
    
+   // add the cvterms needed for this module
+   tripal_analysis_kegg_add_cvterms ();
+
    // add the db and the cv for the KEGG terms
    tripal_add_db('KEGG','KEGG: Kyoto Encyclopedia of Genes and Genomes.',
       'http://www.genome.jp',
@@ -52,7 +49,30 @@ function tripal_analysis_kegg_install(){
       ''
    );
 }
+/*******************************************************************************
+ * Provide update script for adding new cvterms
+ */
+function tripal_analysis_kegg_update_6000(){
 
+   // we have some new cvterms to add
+   tripal_analysis_kegg_add_cvterms();
+
+   $ret = array(
+      '#finished' => 1,
+   );
+   
+   return $ret;
+}
+/**
+*
+*/
+function tripal_analysis_kegg_add_cvterms () {
+   tripal_add_cvterms('analysis_kegg_settings', 'Settings of a KEGG analysis, Currently include only the heir.tar.gz file name & path.');
+   tripal_add_cvterms('kegg_brite_data', 'This term is intended for use in the analysisfeatureprop table to store the KAAS results data.');
+   tripal_add_cvterms('analysis_kegg_query_re','The regular expression for finding the feature name in the query definition line of the blast results');
+   tripal_add_cvterms('analysis_kegg_query_type','The feature type (e.g. mRNA, polypeptide) of the query input file. This type is used to identify the query feature when multiple features have the same name');
+   tripal_add_cvterms('analysis_kegg_query_uniquename','Indicates if the matched name in the query definition line of the blast results is feature uniquename');
+}
 /*******************************************************************************
 * Implementation of hook_uninstall()
 */

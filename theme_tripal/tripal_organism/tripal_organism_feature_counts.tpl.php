@@ -6,13 +6,6 @@ $enabled = $variables['tripal_feature']['feature_counts']['enabled'];
 
 if($enabled){
 ?>
-<script type="text/javascript">
-if (Drupal.jsEnabled) {
-   $(document).ready(function() {
-      $("[title]").tooltip();
-   });
-}
-</script>
 <div id="tripal_organism-feature_counts-box" class="tripal_organism-info-box tripal-info-box">
   <div class="tripal_organism-info-box-title tripal-info-box-title">Feature Type Summary</div>
   <div class="tripal_organism-info-box-desc tripal-info-box-desc">The following types of features are currently present in this database. Hold your mouse over the feature type for a popup with a description.</div>

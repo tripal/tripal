@@ -29,12 +29,12 @@ if (Drupal.jsEnabled) {
   	     var baseurl = location.href.substring(0,location.href.lastIndexOf('/node'));
       }
       if (!baseurl) {
-         // This base_url is obtained when Clena URL function is off
+         // This base_url is obtained when Clean URL function is off
          var baseurl = location.href.substring(0,location.href.lastIndexOf('/?q=node'));
       }
       if (!baseurl) {
          // The last possibility is we've assigned an alias path, get base_url till the last /
-         var baseurl = location.href.substring(0,location.href.lastIndexOf('/'));
+         var baseurl = location.href.substring(0,location.href.indexOf('/',10));
       }
      
       // Form the link for the following ajax call  

@@ -46,10 +46,10 @@ function tripal_analysis_kegg_menu() {
      'access arguments' => array('access content'),
      'type' => MENU_CALLBACK
    );
-   $items['tripal_analysis_kegg_org_report'] = array(
+   $items['tripal_analysis_kegg_org_report/%'] = array(
       'path' => 'tripal_analysis_kegg_org_report',
       'title' => t('Analysis KEGG report'),
-      'page callback' => 'f',
+      'page callback' => 'tripal_analysis_kegg_org_report',
       'page arguments' => array(1),
       'access arguments' => array('access chado_analysis_kegg content'),
       'type' => MENU_CALLBACK
@@ -181,6 +181,10 @@ function chado_analysis_kegg_form ($node){
 
    // set the defaults
    $kegg = $node->analysis->tripal_analysis_kegg;
+   $query_re = $kegg->query_re;
+   $query_type = $kegg->query_type;
+   $query_uniquename = $kegg->query_uniquename;
+
    $hierfile = $kegg->hierfile;
 
    $moreSettings ['kegg'] = 'KEGG Analysis Settings';
@@ -200,6 +204,34 @@ function chado_analysis_kegg_form ($node){
                            that contains decompressed kegg files.'),
       '#default_value' => $hierfile,
    );
+	$form['kegg']['query_re'] = array(
+      '#title' => t('Query Name RE'),
+      '#type' => 'textfield',
+      '#description' => t('Enter the regular expression that will extract the '.
+         'feature name from the results line in the KEGG heir results. This will be '.
+         'the same as the definition line in the query FASTA file used for the analysis.  This option is '.
+         'is only required when the query does not identically match a feature '.
+         'in the database.'),
+      '#default_value' => $query_re,
+	);
+
+	$form['kegg']['query_type'] = array(
+      '#title' => t('Query Type'),
+      '#type' => 'textfield',
+      '#description' => t('Please enter the Sequence Ontology term that describes '.
+         'the query sequences used for KEGG.  This is only necessary if two '.
+         'or more sequences have the same name.'),
+      '#default_value' => $query_type,
+	);
+
+	$form['kegg']['query_uniquename'] = array(
+      '#title' => t('Use Unique Name'),
+      '#type' => 'checkbox',
+      '#description' => t('Select this checboxk if the feature name in the KEGG heir file '.
+        'matches the uniquename in the database.  By default, the feature will '.
+        'be mapped to the "name" of the feature.'),
+      '#default_value' => $query_uniquename,
+	);
    $form['kegg']['keggjob'] = array(
       '#type' => 'checkbox',
       '#title' => t('Submit a job to parse the kegg output into analysisfeatureprop table'),
@@ -218,10 +250,13 @@ function chado_analysis_kegg_insert($node){
    chado_analysis_insert($node);
 
    // set the type for this analysis
-   tripal_analysis_insert_property($node->analysis->analysis_id,'analysis_type','tripal_analysis_kegg');
+   tripal_analysis_insert_property($node->analysis_id,'analysis_type','tripal_analysis_kegg');
 
    // now add in the remaining settings as a single property but separated by bars
    tripal_analysis_insert_property($node->analysis_id,'analysis_kegg_settings',$node->hierfile);
+   tripal_analysis_insert_property($node->analysis_id,'analysis_kegg_query_re',$node->query_re);	
+   tripal_analysis_insert_property($node->analysis_id,'analysis_kegg_query_type',$node->query_type);	
+   tripal_analysis_insert_property($node->analysis_id,'analysis_kegg_query_uniquename',$node->query_uniquename);	
      
    // Add a job if the user wants to parse the html output
    chado_analysis_kegg_submit_job($node);
@@ -233,9 +268,13 @@ function chado_analysis_kegg_submit_job($node){
    global $user;
 
    if($node->keggjob) {
-      $job_args[0] = $analysis_id;
+      $job_args[0] = $node->analysis_id;
       $job_args[1] = $node->hierfile;
       $job_args[2] = base_path();
+      $job_args[3] = $node->query_re;
+      $job_args[4] = $node->query_type;
+      $job_args[5] = $node->query_uniquename;
+
       if (is_readable($node->hierfile)) {
       	$fname = preg_replace("/.*\/(.*)/", "$1", $node->hierfile);
          tripal_add_job("Parse KAAS output: $fname",'tripal_analysis_kegg',
@@ -260,10 +299,14 @@ function chado_analysis_kegg_update($node){
    chado_analysis_update($node);
 
    // set the type for this analysis
-   tripal_analysis_update_property($node->analysis->analysis_id,'analysis_type','tripal_analysis_kegg',1);
+   tripal_analysis_update_property($node->analysis_id,'analysis_type','tripal_analysis_kegg',1);
 
    // now add in the remaining settings as a single property but separated by bars
    tripal_analysis_update_property($node->analysis_id,'analysis_kegg_settings',$node->hierfile,1);
+   tripal_analysis_update_property($node->analysis_id,'analysis_kegg_query_re',$node->query_re,1);	
+   tripal_analysis_update_property($node->analysis_id,'analysis_kegg_query_type',$node->query_type,1);	
+   tripal_analysis_update_property($node->analysis_id,'analysis_kegg_query_uniquename',$node->query_uniquename,1);	
+
      
    // Add a job if the user wants to parse the html output
    chado_analysis_kegg_submit_job($node);
@@ -282,16 +325,22 @@ function chado_analysis_kegg_load($node){
    $analysis_id = $analysis->analysis_id;
 
    // get the heirfile name
-   $hierfile  = tripal_analysis_get_property($analysis_id,'analysis_kegg_settings');	
+   $hierfile        = tripal_analysis_get_property($analysis_id,'analysis_kegg_settings');	
+   $query_re        = tripal_analysis_get_property($analysis->analysis_id,'analysis_kegg_query_re');	
+   $query_type      = tripal_analysis_get_property($analysis->analysis_id,'analysis_kegg_query_type');	
+   $query_uniquename= tripal_analysis_get_property($analysis->analysis_id,'analysis_kegg_query_uniquename');	
+
    $analysis->tripal_analysis_kegg->hierfile = $hierfile->value;
+   $analysis->tripal_analysis_kegg->query_re        = $query_re->value;	
+   $analysis->tripal_analysis_kegg->query_type      = $query_type->value;	
+   $analysis->tripal_analysis_kegg->query_uniquename= $query_uniquename->value;	
 
    return $additions;
 }
 
-/*******************************************************************************
- *  This function customizes the view of the chado_analysis node.  It allows
- *  us to generate the markup.
- */
+/**
+*
+*/
 function chado_analysis_kegg_view ($node, $teaser = FALSE, $page = FALSE) {
    // use drupal's default node view:
    if (!$teaser) {
@@ -311,8 +360,9 @@ function chado_analysis_kegg_view ($node, $teaser = FALSE, $page = FALSE) {
 }
 /********************************************************************************
  */
-function tripal_analysis_kegg_parseHierFile ($analysis_id, $hierfile, $base_path, $job_id) {
-   
+function tripal_analysis_kegg_parseHierFile ($analysis_id, $hierfile, $base_path, 
+   $query_re,$query_type,$query_uniquename,$job_id) {
+ 
    // If user input a file (e.g. hier.tar.gz), decompress it first
    if (is_file($hierfile)) {
       $data_dir = file_directory_path() . "/tripal/tripal_analysis_kegg";
@@ -340,7 +390,7 @@ function tripal_analysis_kegg_parseHierFile ($analysis_id, $hierfile, $base_path
          $no_file ++;
          
          # $type variable will be set in tripal_analysis_kegg_parse_kegg_file()
-         $content = tripal_analysis_kegg_parse_kegg_file("$hierdir/$file",$type,$analysis_id, $base_path);
+         $content = tripal_analysis_kegg_parse_kegg_file("$hierdir/$file",$type,$analysis_id, $base_path, $query_re,$query_type,$query_uniquename);
 
          # add the item to the database
          if($content){
@@ -402,7 +452,7 @@ function tripal_analysis_kegg_parseHierFile ($analysis_id, $hierfile, $base_path
  * and added to chado as a cvterm. Tree structure for this cvterm is then 
  * generated and saved to analysisfeature and analysisfeatureprop tables.
  */
-function tripal_analysis_kegg_parse_kegg_file ($file,&$type,$analysis_id, $base_path){
+function tripal_analysis_kegg_parse_kegg_file ($file,&$type,$analysis_id, $base_path, $query_re,$query_type,$query_uniquename){
    $handle = fopen($file,'r');
    $depth = array();
    $current = '@';  # this is one character below 'A' in the ASCII table
@@ -410,7 +460,8 @@ function tripal_analysis_kegg_parse_kegg_file ($file,&$type,$analysis_id, $base_
    $id = 0;
    $type_id = 0;
    $no_line = 0;
-   $prefix = variable_get('chado_feature_accession_prefix','ID');
+
+
    while($line = fgets($handle)){
       $no_line ++;
       // Find out what kind of file we're looking at.
@@ -460,7 +511,7 @@ function tripal_analysis_kegg_parse_kegg_file ($file,&$type,$analysis_id, $base_
       $matches[2] = preg_replace("/<a href=\"/i","<a id=\"tripal_kegg_brite_links\" target=\"_blank\" href=\"",$matches[2]);
 
       // extract the features that have been mapped to the KEGG IDs
-      if(preg_match("/^(.*?);\s*(\<a.+)/",$matches[2],$mat)){
+      if(preg_match("/^(.*?);\s*(\<a.+)/",$matches[2],$defline)){
          // Find cvterm_id for 'kegg_brite_data'
          $sql = "SELECT cvterm_id 
                  FROM {cvterm} CVT
@@ -470,13 +521,54 @@ function tripal_analysis_kegg_parse_kegg_file ($file,&$type,$analysis_id, $base_
          $previous_db = tripal_db_set_active('chado');
          $brite_data_type_id = db_result(db_query($sql, 'kegg_brite_data'));
          tripal_db_set_active($previous_db);
-         
-         $uniquename = $mat[1];
-         // Find feature_id using uniquename
-         $sql = "SELECT feature_id FROM {feature} WHERE uniquename = '%s'";
-         $previous_db = tripal_db_set_active('chado');
-         $feature_id = db_result(db_query($sql, $uniquename)); // retrive first returned feature_id (assuming uniquename is unique)
-         tripal_db_set_active($previous_db);
+
+			// get the feature name using the user's regular expression
+			if ($query_re and preg_match("/$query_re/", $defline[1], $parts)) {
+				$feature = $parts[1];
+			} 
+         // If not in above format then pull up to the first space
+         else {
+				if (preg_match('/^(.*?)\s.*$/', $defline[1], $parts)) {
+					$feature = $parts[1];
+            } 
+            // if no match up to the first space then just use the entire string
+            else {
+               $feature = $defline[1];
+            }
+         } 
+
+         // now find the feature in chado
+         $select = array();
+         if($query_uniquename){
+            $select['uniquename'] = $feature;
+         } else {
+            $select['name'] = $feature;
+         }
+         if($query_type){
+            $select['type_id'] = array(
+              'cv_id' => array(
+                 'name' => 'sequence'
+              ),
+              'name' => $query_type,
+            );
+         }
+         $feature_arr = tripal_core_chado_select('feature',array('feature_id'),$select);
+
+         if(count($feature_arr) > 1){
+			   print "Ambiguous: '$feature' matches more than one feature and is being skipped.\n";
+				continue;
+         }
+         if(count($feature_arr) == 0){
+				print "Failed: '$feature' cannot find a matching feature in the database.\n";
+            continue;
+         }
+         print "Adding KEGG results for $feature ($feature_id,$analysis_id)\n";
+         $feature_id = $feature_arr[0]->feature_id;
+
+         // get the node ID of the feature if one exists
+         $sql = "SELECT nid FROM {chado_feture} WHERE feature_id = %d";
+         $nid = db_result(db_query($sql, $feature_id)); 
+
          // Get the higest rank for this feature_id in analysisfeatureprop table
          $sql = "SELECT MAX(rank) FROM {analysisfeatureprop} AFP ".
                 "INNER JOIN analysisfeature AF ON AF.analysisfeature_id = AFP.analysisfeature_id ".       
@@ -506,7 +598,7 @@ function tripal_analysis_kegg_parse_kegg_file ($file,&$type,$analysis_id, $base_
          //------------------------------------------------------
          // Insert into analysisfeatureprop table
          //------------------------------------------------------
-         // Before inserting, make sure it's not a duplicate
+         // Before inserting, make sure it's not a duplicatefs
          $sql = "SELECT value FROM {analysisfeatureprop} WHERE analysisfeature_id = %d AND type_id = %d";
          $previous_db = tripal_db_set_active('chado');
          $result = db_query($sql, $analysisfeature_id, $brite_data_type_id);
@@ -527,8 +619,7 @@ function tripal_analysis_kegg_parse_kegg_file ($file,&$type,$analysis_id, $base_
             tripal_db_set_active($previous_db);
          }
          // Add link to each matched feature
-         $feature_url = url("$prefix$feature_id");
-         $matches[2] = preg_replace("/^(.*?)(;\s*\<a)/","<a id=\"tripal_kegg_feature_links\" target=\"_blank\" href=\"$base_path$prefix$feature_id\">"."$1"."</a>"."$2",$matches[2]);
+         $matches[2] = preg_replace("/^(.*?)(;\s*\<a)/","<a id=\"tripal_kegg_feature_links\" target=\"_blank\" href=\"".url("/node/$nid")."\">"."$1"."</a>"."$2",$matches[2]);
       }
       $content .= "<li id=\"term_$id\"><a></a>$matches[2]\n";
       $id++;
