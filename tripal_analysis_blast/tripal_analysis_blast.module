@@ -587,7 +587,7 @@ function chado_analysis_blast_insert($node){
    chado_analysis_insert($node);
 
    // set the type for this analysis
-   tripal_analysis_insert_property($node->analysis->analysis_id,'analysis_type','tripal_analysis_blast');
+   tripal_analysis_insert_property($node->analysis_id,'analysis_type','tripal_analysis_blast');
 
    // now add in the remaining settings as a single property but separated by bars
    tripal_analysis_insert_property($node->analysis_id,'analysis_blast_blastdb',$node->blastdb);
