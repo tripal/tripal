@@ -68,9 +68,11 @@ if (Drupal.jsEnabled) {
       }); 
 
       // we want the base details to show up when the page is first shown 
-      // unless we're using the feature browser then we want that page to show
-      if(window.location.href.match(/\?page=\d+/)){
-         $("#tripal_analysis_unigene-feature_browser-box").show();
+      // unless the user specified a specific block
+      var block = window.location.href.match(/\?block=.*/);
+      if(block != null){
+         block_title = block.toString().replace(/\?block=/g,'');
+         $("#tripal_analysis_unigene-"+block_title+"-box").show();
       } else {
          $("#tripal_analysis_unigene-base-box").show();
       }

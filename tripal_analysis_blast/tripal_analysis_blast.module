@@ -728,43 +728,8 @@ function chado_analysis_blast_submit_jobs($node){
  * Delete blast anlysis
  */
 function chado_analysis_blast_delete($node){
-	// Before removing, get analysis_id so we can remove it from chado database
-	// later
-	$sql_drupal = "SELECT analysis_id ".
-                 "FROM {chado_analysis} ".
-                 "WHERE nid = %d ".
-                 "AND vid = %d";
-	$analysis_id = db_result(db_query($sql_drupal, $node->nid, $node->vid));
-
-	// Remove data from the {chado_analysis}, {node}, and {node_revisions} tables
-	$sql_del = "DELETE FROM {chado_analysis} ".
-              "WHERE nid = %d ".
-              "AND vid = %d";
-	db_query($sql_del, $node->nid, $node->vid);
-	$sql_del = "DELETE FROM {node} ".
-              "WHERE nid = %d ".
-              "AND vid = %d";
-	db_query($sql_del, $node->nid, $node->vid);
-	$sql_del = "DELETE FROM {node_revisions} ".
-              "WHERE nid = %d ".
-              "AND vid = %d";
-	db_query($sql_del, $node->nid, $node->vid);
-
-	//Remove from analysisfeatureprop, analysisfeature, analysis, and analysisprop tables
-	$previous_db = tripal_db_set_active('chado');
-	$sql = "SELECT analysisfeature_id FROM {analysisfeature} WHERE analysis_id=%d";
-	$results = db_query($sql, $analysis_id);
-	while ($af = db_fetch_object($results)) {
-		db_query("DELETE FROM {analysisfeatureprop} WHERE analysisfeature_id = %d", $af->analysisfeature_id);
-	}
-	db_query("DELETE FROM {analysisfeature} WHERE analysis_id = %d", $analysis_id);
-	db_query("DELETE FROM {analysisprop} WHERE analysis_id = %d", $analysis_id);
-	db_query("DELETE FROM {analysis} WHERE analysis_id = %d", $analysis_id);
-	tripal_db_set_active($previous_db);
+	chado_analysis_delete($node);
 }
-
-
-
 
 /*******************************************************************************
  *  This function customizes the view of the chado_analysis node.  It allows

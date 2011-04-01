@@ -66,7 +66,8 @@ function chado_analysis_unigene_access($op, $node, $account){
 */
 function chado_analysis_unigene_form ($node){
 
-	$form = array();
+   // add in the default fields
+   $form = chado_analysis_form($node);
 
    $unigene = $node->analysis->tripal_analysis_unigene;
    $unigene_name = $unigene->unigene_name;
@@ -114,15 +115,6 @@ function chado_analysis_unigene_form ($node){
       '#description' => t('Provide the number of singlets remaining in the assembly'),
       '#default_value' => $num_singlets,
 	);
-
-
-
-   // add in the analysis fields
-   $analysis_form_elements = chado_analysis_form($node);
-   foreach ($analysis_form_elements as $key => $element){
-      $form[$key] = $element;
-   }
-   return $form;
 }
 /**
 *
@@ -155,9 +147,6 @@ function chado_analysis_unigene_update($node){
 *
 */
 function chado_analysis_unigene_delete($node){
-  // delete the unigene name as a property of the anslysis
-//  tripal_analysis_delete_property($node->analysis_id,'analysis_unigene_name',$node->unigene_name);	
-
   chado_analysis_delete($node);
 }
 /**

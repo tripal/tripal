@@ -117,26 +117,16 @@ function tripal_organism_menu() {
  *  perform actions on data managed by this module
  */
 function chado_organism_access($op, $node, $account){
-  if ($op == 'create') {
-      return user_access('create chado_organism content', $account);
+   switch ($op){
+      case 'create': 
+        return user_access('create chado_organism content', $account);
+      case 'update':
+        return user_access('edit chado_organism content', $account);
+      case 'delete':
+        return user_access('delete chado_organism content', $account);
+      case 'view' :
+        return user_access('access chado_organism content', $account);
    }
-
-   if ($op == 'update') {
-      if (user_access('edit chado_organism content', $account)) {
-         return TRUE;
-      }
-   }
-   if ($op == 'delete') {
-      if (user_access('delete chado_organism content', $account)) {
-         return TRUE;
-      }
-   }
-   if ($op == 'view') {
-      if (user_access('access chado_organism content', $account)) {
-         return TRUE;
-      }
-   }
-   return FALSE;
 }
 /*******************************************************************************
 *  Set the permission types that the chado module uses.  Essentially we

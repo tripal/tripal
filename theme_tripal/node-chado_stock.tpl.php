@@ -59,8 +59,16 @@
          return false;
       }); 
 
-      // we want the base details to show up when the page is first shown
-      $("#tripal_stock-base-box").show();
+      // we want the base details to show up when the page is first shown 
+      // unless the user specified a specific block
+      var block = window.location.href.match(/\?block=.*/);
+      if(block != null){
+         block_title = block.toString().replace(/\?block=/g,'');
+         $("#tripal_stock-"+block_title+"-box").show();
+      } else {
+         $("#tripal_stock-base-box").show();
+      }
+
       $("#tripal_stock_toc").height($("#tripal_stock-base-box").parent().height());
    });
 }

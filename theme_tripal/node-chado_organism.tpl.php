@@ -62,25 +62,18 @@ if (Drupal.jsEnabled) {
 
       // we want the base details to show up when the page is first shown 
       // unless we're using the feature browser then we want that page to show
-      if(window.location.href.match(/\?page=\d+/)){
+      var block = window.location.href.match(/\?block=.*/);
+      if(block != null){
+         block_title = block.toString().replace(/\?block=/g,'');
+         $("#tripal_orgnism-"+block_title+"-box").show();
+      } 
+      else if(window.location.href.match(/\?page=\d+/)){
          $("#tripal_organism-feature_browser-box").show();
-      } else {
+      } 
+      else {
          $("#tripal_organism-base-box").show();
       }
       $("#tripal_organism_toc").height($("#tripal_organism-base-box").parent().height());
-
-      // we want to select the first GO/KEGG report by default
-		$('.form-select').each(function() {
-        var default_option = this.getElementsByTagName('option')[1];
-        if (default_option) {
-           this.selectedIndex =default_option.index ;
-           if (this.onchange.toString().match('tripal_analysis_go_org_charts')) {   
-              tripal_analysis_go_org_charts(default_option.value);
-           } else if (this.onchange.toString().match('tripal_analysis_kegg_org_report')) {            
-              tripal_analysis_kegg_org_report(default_option.value);
-           }
-        }
-		});
       
    });
 }

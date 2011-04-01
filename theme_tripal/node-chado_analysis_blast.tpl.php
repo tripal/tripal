@@ -61,26 +61,16 @@ if (Drupal.jsEnabled) {
       }); 
 
       // we want the base details to show up when the page is first shown 
-      // unless we're using the feature browser then we want that page to show
-      if(window.location.href.match(/\?page=\d+/)){
-         $("#tripal_analysis_blast-feature_browser-box").show();
+      // unless the user specified a specific block
+      var block = window.location.href.match(/\?block=.*/);
+      if(block != null){
+         block_title = block.toString().replace(/\?block=/g,'');
+         $("#tripal_analysis_blast-"+block_title+"-box").show();
       } else {
          $("#tripal_analysis_blast-base-box").show();
       }
-      $("#tripal_analysis_blast_toc").height($("#tripal_analysis_blast-base-box").parent().height());
 
-      // we want to select the first GO/KEGG report by default
-		$('.form-select').each(function() {
-        var default_option = this.getElementsByTagName('option')[1];
-        if (default_option) {
-           this.selectedIndex =default_option.index ;
-           if (this.onchange.toString().match('tripal_analysis_go_org_charts')) {   
-              tripal_analysis_go_org_charts(default_option.value);
-           } else if (this.onchange.toString().match('tripal_analysis_kegg_org_report')) {            
-              tripal_analysis_kegg_org_report(default_option.value);
-           }
-        }
-		});
+      $("#tripal_analysis_blast_toc").height($("#tripal_analysis_blast-base-box").parent().height());
       
    });
 }
