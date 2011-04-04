@@ -1046,13 +1046,11 @@ function tripal_feature_load_featurelocs ($feature_id,$side = 'as_parent',$aggre
       // if a drupal node exists for this feature then add the nid to the
       // results object
       $sql = 'SELECT nid FROM {chado_feature} WHERE feature_id = %d';
-      if(strcmp($side,'as_parent')==0){
-         $feature = db_fetch_object(db_query($sql, $loc->feature_id));
-      }
-      if(strcmp($side,'as_child')==0){
-         $feature = db_fetch_object(db_query($sql, $loc->src_feature_id));
-      }
-      $loc->nid = $feature->nid;
+
+      $ffeature = db_fetch_object(db_query($sql, $loc->feature_id));
+      $sfeature = db_fetch_object(db_query($sql, $loc->src_feature_id));
+      $loc->fnid = $ffeature->nid;
+      $loc->snid = $sfeature->nid;
       // add the result to the array
       $featurelocs[$i++] = $loc;
    }
@@ -1241,6 +1239,10 @@ function tripal_feature_load_featureloc_sequences($feature_id,$featurelocs){
    if(!$relationships){
       return array();
    }
+
+
+   // iterate through each of the realtionships features and get their 
+   // locations
    foreach($relationships as $rindex => $rel){
       // get the featurelocs for each of the relationship features
       $rel_featurelocs = tripal_feature_load_featurelocs ($rel->subject_id,'as_child',0);   
@@ -1267,8 +1269,10 @@ function tripal_feature_load_featureloc_sequences($feature_id,$featurelocs){
       }
    }
 
-   // now get the sequence for each featureloc and highlight the different 
-   // relationships
+   // the featurelocs array provided to the function contains the locations
+   // where this feature is found.   We want to get the sequence for each 
+   // location and then annotate it with the parts found from the relationships
+   // locations determiend above. 
    $sql = "SELECT residues FROM {feature} WHERE feature_id = %d";
    $floc_sequences = array();
    foreach ($featurelocs as $findex => $featureloc){
@@ -1617,6 +1621,7 @@ function tripal_feature_preprocess(&$variables){
       $variables['tripal_feature']['featurelocs_as_child'] = tripal_feature_load_featurelocs($feature->feature_id,'as_child',0);
       $variables['tripal_feature']['featurelocs_as_parent'] = tripal_feature_load_featurelocs($feature->feature_id,'as_parent');
       $variables['tripal_feature']['references'] = tripal_feature_load_references($feature->feature_id);
+      $featurelocs = $variables['tripal_feature']['featurelocs_as_child'];
       $variables['tripal_feature']['featureloc_sequences'] = tripal_feature_load_featureloc_sequences ($feature->feature_id,$featurelocs);   
    }
 }

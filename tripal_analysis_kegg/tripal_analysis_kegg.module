@@ -113,7 +113,7 @@ function tripal_analysis_kegg_brite($analysis_id, $type_id, $ajax){
               <td nowrap valign=\"top\">
       ";
       // List all BRITE terms on the left
-      $sql = "SELECT CVT.name, CVT.cvterm_id
+      $sql = "SELECT DISTINCT CVT.name, CVT.cvterm_id
               FROM {cvterm} CVT 
                 INNER JOIN analysisprop AP ON CVT.cvterm_id = AP.type_id
               WHERE AP.analysis_id = %d AND CVT.definition LIKE 'KEGG BRITE term: %'
@@ -378,6 +378,14 @@ function tripal_analysis_kegg_parseHierFile ($analysis_id, $hierfile, $base_path
    print "There are $total_files keg file(s).\n";
    $interval = intval($total_files * 0.01);
    $no_file = 0;
+
+   // Remove the analysis features for this analysis
+   // we will rebuild them from just this parsing
+   if(!tripal_core_chado_delete('analysisfeature',array('analysis_id' => $analysis_id))){
+      print "ERROR: Cannot prepare the analysis for addint features\n";
+      exit;
+   }
+
    while ($file = readdir($dir_handle)) {
 
       if(preg_match("/^.*\.keg/",$file)){
@@ -390,7 +398,8 @@ function tripal_analysis_kegg_parseHierFile ($analysis_id, $hierfile, $base_path
          $no_file ++;
          
          # $type variable will be set in tripal_analysis_kegg_parse_kegg_file()
-         $content = tripal_analysis_kegg_parse_kegg_file("$hierdir/$file",$type,$analysis_id, $base_path, $query_re,$query_type,$query_uniquename);
+         $content = tripal_analysis_kegg_parse_kegg_file("$hierdir/$file",$type,
+            $analysis_id, $base_path, $query_re,$query_type,$query_uniquename);
 
          # add the item to the database
          if($content){
@@ -460,12 +469,14 @@ function tripal_analysis_kegg_parse_kegg_file ($file,&$type,$analysis_id, $base_
    $id = 0;
    $type_id = 0;
    $no_line = 0;
-
+   $ul_content = array();
+   $has_feature = 0;
+   $level = -1;
 
    while($line = fgets($handle)){
       $no_line ++;
       // Find out what kind of file we're looking at.
-      if(preg_match("/#DEFINITION\s+(.*)\s+.+?$/",$line,$matches)){
+      if(preg_match("/#.*nbsp;\s(.*)<\/h2>$/",$line,$matches)){
          // Set type as the matched term in the DEFINITION line and add it as a new cvterm
          $type = $matches[1];
          // Before inserting, make sure this cvterm doesn't exist
@@ -492,16 +503,33 @@ function tripal_analysis_kegg_parse_kegg_file ($file,&$type,$analysis_id, $base_
       }
       // get the depth of the hierarch (e.g. A,B,C or D);
       preg_match("/^([ABCDEFGHIJKLMNOP])\s*(.*)/",$line,$matches);
-      # skip lines that aren't data or are empty
+
+      // skip lines that aren't data or are empty
       if(!$matches[1] or !$matches[2]){continue;}
+ 
+      // set the current level and keep track of the previous level (e.g. A,B,C...)
       $prev = $current;
       $current = $matches[1];
 
-      for($i = (ord($current) - ord($prev)); $i < 0; $i++){
-         $content .= "</li></ul>\n";
+      // if we have matches and we are going down to a lower level then we 
+      // want to close off each <ul> until we hit the level we are currently at
+      // and at the same time we want to keep the text. If we don't have a 
+      // match then we'll throw out the text.
+      if($has_feature){
+         for($i = (ord($current) - ord($prev)); $i < 0; $i++){
+            $ul_content[$level] .= "</ul>\n";
+            $content .= $ul_content[$level];
+            $ul_content[$level--] = '';
+         }
+         $has_feature = 0;
+      } else {
+         for($i = (ord($current) - ord($prev)); $i < 0; $i++){
+            $ul_content[$level--] = '';
+         }
       }
+      // if we've gone up a level then add a new <ul> block
       for($i = 0; $i < (ord($current) - ord($prev)); $i++){
-         $content .= "<ul>\n";
+         $ul_content[++$level] .= "<ul>\n";
       }
       
       // change all relative paths to absolute paths pointing to KEGG (www.genome.jp)
@@ -511,7 +539,9 @@ function tripal_analysis_kegg_parse_kegg_file ($file,&$type,$analysis_id, $base_
       $matches[2] = preg_replace("/<a href=\"/i","<a id=\"tripal_kegg_brite_links\" target=\"_blank\" href=\"",$matches[2]);
 
       // extract the features that have been mapped to the KEGG IDs
-      if(preg_match("/^(.*?);\s*(\<a.+)/",$matches[2],$defline)){
+      if(preg_match("/^(.*?);\s*(\<a.+)/",$matches[2],$keggline)){
+         $has_feature = 1;
+
          // Find cvterm_id for 'kegg_brite_data'
          $sql = "SELECT cvterm_id 
                  FROM {cvterm} CVT
@@ -523,17 +553,17 @@ function tripal_analysis_kegg_parse_kegg_file ($file,&$type,$analysis_id, $base_
          tripal_db_set_active($previous_db);
 
 			// get the feature name using the user's regular expression
-			if ($query_re and preg_match("/$query_re/", $defline[1], $parts)) {
+			if ($query_re and preg_match("/$query_re/", $keggline[1], $parts)) {
 				$feature = $parts[1];
 			} 
          // If not in above format then pull up to the first space
          else {
-				if (preg_match('/^(.*?)\s.*$/', $defline[1], $parts)) {
+				if (preg_match('/^(.*?)\s.*$/', $keggline[1], $parts)) {
 					$feature = $parts[1];
             } 
             // if no match up to the first space then just use the entire string
             else {
-               $feature = $defline[1];
+               $feature = $keggline[1];
             }
          } 
 
@@ -562,66 +592,58 @@ function tripal_analysis_kegg_parse_kegg_file ($file,&$type,$analysis_id, $base_
 				print "Failed: '$feature' cannot find a matching feature in the database.\n";
             continue;
          }
-         print "Adding KEGG results for $feature ($feature_id,$analysis_id)\n";
+         print "Adding KEGG results for $feature ($feature_id,$analysis_id): $type\n";
          $feature_id = $feature_arr[0]->feature_id;
 
-         // get the node ID of the feature if one exists
-         $sql = "SELECT nid FROM {chado_feture} WHERE feature_id = %d";
-         $nid = db_result(db_query($sql, $feature_id)); 
-
-         // Get the higest rank for this feature_id in analysisfeatureprop table
-         $sql = "SELECT MAX(rank) FROM {analysisfeatureprop} AFP ".
-                "INNER JOIN analysisfeature AF ON AF.analysisfeature_id = AFP.analysisfeature_id ".       
-                "WHERE feature_id=%d ".
-                "AND analysis_id=%d ".
-                "AND type_id=%d ";
-         $previous_db = tripal_db_set_active('chado');
-         $afp =  db_fetch_object(db_query($sql, $feature_id, $analysis_id, $brite_data_type_id));
-         tripal_db_set_active($prevous_db);
-         $hi_rank = 0;
-         if ($afp) {
-            $hi_rank = $afp->max + 1;
-         }
-         //------------------------------------------------------
-         // Insert into analysisfeature table
-         //------------------------------------------------------
-         $sql = "INSERT INTO {analysisfeature} (feature_id, analysis_id) ".
-                "VALUES (%d, %d)";
-         $previous_db = tripal_db_set_active('chado');
-         db_query ($sql, $feature_id, $analysis_id);
-         tripal_db_set_active($previous_db);
-         // Get the newly inserted analysisfeature_id
-         $sql = "SELECT analysisfeature_id FROM {analysisfeature} WHERE feature_id = %d AND analysis_id = %d";
-         $previous_db = tripal_db_set_active('chado');
-         $analysisfeature_id = db_result(db_query($sql, $feature_id, $analysis_id));
-         tripal_db_set_active($previous_db);
-         //------------------------------------------------------
-         // Insert into analysisfeatureprop table
-         //------------------------------------------------------
-         // Before inserting, make sure it's not a duplicatefs
-         $sql = "SELECT value FROM {analysisfeatureprop} WHERE analysisfeature_id = %d AND type_id = %d";
-         $previous_db = tripal_db_set_active('chado');
-         $result = db_query($sql, $analysisfeature_id, $brite_data_type_id);
-         tripal_db_set_active($previous_db);
-         $duplicate = 0;
-         while ($afp_value = db_fetch_object($result)) {
-            preg_match("/<a.+?>(.+)<\/a>/",$afp_value->value,$old_ids);
-            preg_match("/<a.+?>(.+)<\/a>/",$mat[2], $new_ids);
-            if ($old_ids[1] && $old_ids[1] == $new_ids[1]) {
-               $duplicate = 1;
+         if($feature_id){
+            // get the node ID of the feature if one exists
+            $sql = "SELECT nid FROM {chado_feature} WHERE feature_id = %d";
+            $nid = db_result(db_query($sql, $feature_id)); 
+    
+            //------------------------------------------------------
+            // Insert into analysisfeature table
+            //------------------------------------------------------
+            // Get the higest rank for this feature_id in analysisfeatureprop table
+            $sql = "SELECT MAX(rank) FROM {analysisfeatureprop} AFP ".
+                   "INNER JOIN analysisfeature AF ON AF.analysisfeature_id = AFP.analysisfeature_id ".       
+                   "WHERE feature_id=%d ".
+                   "AND analysis_id=%d ".
+                   "AND type_id=%d ";
+            $previous_db = tripal_db_set_active('chado');
+            $afp =  db_fetch_object(db_query($sql, $feature_id, $analysis_id, $brite_data_type_id));
+            tripal_db_set_active($prevous_db);
+            $hi_rank = 0;
+            if ($afp) {
+               $hi_rank = $afp->max + 1;
             }
-         }
-         if (!$duplicate) {
+
+            $sql = "INSERT INTO {analysisfeature} (feature_id, analysis_id) ".
+                   "VALUES (%d, %d)";
+            $previous_db = tripal_db_set_active('chado');
+            db_query ($sql, $feature_id, $analysis_id);
+            tripal_db_set_active($previous_db);
+
+            // Get the newly inserted analysisfeature_id
+            $sql = "SELECT analysisfeature_id FROM {analysisfeature} WHERE feature_id = %d AND analysis_id = %d";
+            $previous_db = tripal_db_set_active('chado');
+            $analysisfeature_id = db_result(db_query($sql, $feature_id, $analysis_id));
+            tripal_db_set_active($previous_db);
+            
+            // Insert into analysisfeatureprop table
             $sql = "INSERT INTO {analysisfeatureprop} (analysisfeature_id, type_id, value, rank)".
                    "VALUES (%d, %d, '%s', %d)";
             $previous_db = tripal_db_set_active('chado');
-            db_query($sql, $analysisfeature_id, $brite_data_type_id, $mat[2], $hi_rank);
+            db_query($sql, $analysisfeature_id, $brite_data_type_id, $keggline[2], $hi_rank);
             tripal_db_set_active($previous_db);
+
+            // Add link to each matched feature
+            if($nid){
+               $matches[2] = preg_replace("/^(.*?)(;\s*\<a)/","<a id=\"tripal_kegg_feature_links\" target=\"_blank\" href=\"".url("/node/$nid")."\">"."$1"."</a>"."$2",$matches[2]);
+            }
          }
-         // Add link to each matched feature
-         $matches[2] = preg_replace("/^(.*?)(;\s*\<a)/","<a id=\"tripal_kegg_feature_links\" target=\"_blank\" href=\"".url("/node/$nid")."\">"."$1"."</a>"."$2",$matches[2]);
-      }
-      $content .= "<li id=\"term_$id\"><a></a>$matches[2]\n";
+         // we only want to store results with features
+         $ul_content[$level] .= "<li id=\"term_$id\">$matches[2]</li>\n";
+      }     
       $id++;
    }
    $content .= "</ul>";

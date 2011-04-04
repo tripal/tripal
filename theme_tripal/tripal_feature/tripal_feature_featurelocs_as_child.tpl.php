@@ -24,8 +24,8 @@ $feature = $variables['node']->feature;
             $class = 'tripal_feature-table-odd-row tripal-table-even-row';
          } 
          $locname = $loc->name;
-         if($loc->nid){
-           $locname = "<a href=\"" . url("node/$loc->nid") . "\">$loc->name</a> ";
+         if($loc->snid){
+           $locname = "<a href=\"" . url("node/$loc->snid") . "\">$loc->name</a> ";
          }
          ?>
          <tr class="<?php print $class ?>">

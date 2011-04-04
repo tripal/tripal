@@ -89,9 +89,9 @@ if (Drupal.jsEnabled) {
      background-color: #EEEEEE;
      -moz-border-radius: 15px;
      border-radius: 15px;
-     -moz-box-shadow: 3px 3px 4px #000;
-	  -webkit-box-shadow: 3px 3px 4px #000;
-	  box-shadow: 3px 3px 4px #000;
+     -moz-box-shadow: 3px 3px 4px #888888;
+	  -webkit-box-shadow: 3px 3px 4px #888888;
+	  box-shadow: 3px 3px 4px #888888;
      padding: 20px;
      min-height: 500px;
      border-style:solid;
@@ -115,9 +115,9 @@ if (Drupal.jsEnabled) {
      background-color: #FFFFFF;
      -moz-border-radius: 15px;
      border-radius: 15px;
-     -moz-box-shadow: 3px 3px 4px #000;
-	  -webkit-box-shadow: 3px 3px 4px #000;
-	  box-shadow: 3px 3px 4px #000;
+     -moz-box-shadow: 3px 3px 4px #888888;
+	  -webkit-box-shadow: 3px 3px 4px #888888;
+	  box-shadow: 3px 3px 4px #888888;
      padding: 20px;
      min-height: 500px;
      margin-right: 10px;
