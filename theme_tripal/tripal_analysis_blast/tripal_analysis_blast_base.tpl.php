@@ -57,6 +57,15 @@ $blast = $node->analysis->tripal_analysis_blast;
       </tr>  
       <tr class="tripal_analysis_blast-table-odd-row tripal-table-odd-row">
         <th>Report</th>
+        <td>
+        	<?php 
+        		if ($analysis->blast_report) {					
+        			print "<a href=$analysis->blast_report>View the best hit report</a>";
+        		} else {
+        			print "not available";
+        		}
+        	?>
+        	</td>
       </tr>       	                                
    </table>   
 </div>
