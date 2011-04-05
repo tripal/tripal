@@ -1,6 +1,8 @@
 
 <div id="tripal_bulk_loader-base-box" class="tripal_bulk_loader-info-box tripal-info-box">
-  <div class="tripal_bulk_loader-info-box-title tripal-info-box-title"></div>
+  <div class="tripal_bulk_loader-info-box-title tripal-info-box-title">
+  	<?php if ($teaser) { print l($node->title, 'node/'.$node->nid); } ?>
+  </div>
   <div class="tripal_bulk_loader-info-box-desc tripal-info-box-desc"></div>
   
 	<table id="tripal_bulk_loader-base-table" class="tripal_bulk_loader-table tripal-table tripal-table-vert">
@@ -35,5 +37,7 @@
 	</table>  
 </div>
 
-<h3>Template</h3>
-<?php print theme('tripal_bulk_loader_template', $node->template->template_id); ?>
+<?php if (!$teaser) { ?>
+	<?php print drupal_get_form('tripal_bulk_loader_add_loader_job_form', $node); ?>
+	<?php print theme('tripal_bulk_loader_template', $node->template->template_id); ?>
+<?php } ?>

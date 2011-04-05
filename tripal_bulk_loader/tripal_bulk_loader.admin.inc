@@ -1,4 +1,10 @@
 <?php
+
+/**
+ * @file
+ * Handles Create/Edit/Delete Template Admin Forms
+ */
+ 
 /**
  * tripal_bulk_loader_admin_template
  */

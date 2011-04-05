@@ -1,5 +1,8 @@
 <?php
-/*******************************************************************************
+
+include('tripal_bulk_loader.loader.inc');
+
+/**
  * tripal_bulk_loader_init
  */
 function tripal_bulk_loader_init(){
@@ -7,7 +10,7 @@ function tripal_bulk_loader_init(){
 	drupal_add_css(drupal_get_path('theme', 'tripal').'/css/tripal_bulk_loader.css');
 	drupal_add_js(drupal_get_path('theme', 'tripal').'/js/tripal_bulk_loader.js');
 }
-/*******************************************************************************
+/**
  * tripal_bulk_loader_menu
  */
 function tripal_bulk_loader_menu() {
@@ -90,14 +93,14 @@ function tripal_bulk_loader_menu() {
   return $items;
 }
 
-/*******************************************************************************
+/**
  * tripal_bulk_loader_list
  */
 function tripal_bulk_loader_list () {
 	return "Loaders";
 }
 
-/*******************************************************************************
+/**
  *  tripal_bulk_loader_access
  */
 function tripal_bulk_loader_access($op, $node, $account){
@@ -122,7 +125,7 @@ function tripal_bulk_loader_access($op, $node, $account){
 	return FALSE;
 }
 
-/*******************************************************************************
+/**
  * tripal_bulk_loader_perm
  */
 function tripal_bulk_loader_perm(){
@@ -134,7 +137,7 @@ function tripal_bulk_loader_perm(){
 	);
 }
 
-/*******************************************************************************
+/**
  * tripal_bulk_loader_node_info
  */
 function tripal_bulk_loader_node_info() {
@@ -150,7 +153,7 @@ function tripal_bulk_loader_node_info() {
 	return $nodes;
 }
 
-/*******************************************************************************
+/**
  * tripal_bulk_loader_form
  */
 function tripal_bulk_loader_form ($node){
@@ -201,7 +204,7 @@ function tripal_bulk_loader_form ($node){
    return $form;
 }
 
-/*******************************************************************************
+/**
  * tripal_bulk_loader_theme
  */
 function tripal_bulk_loader_theme() {
@@ -220,7 +223,7 @@ function tripal_bulk_loader_theme() {
   );
 }
 
-/*******************************************************************************
+/**
  * theme_tripal_bulk_loader_node_form
  */
 function theme_tripal_bulk_loader_node_form($form) {
@@ -232,7 +235,7 @@ function theme_tripal_bulk_loader_node_form($form) {
 	return drupal_render($form);
 }
 
-/*******************************************************************************
+/**
  * tripal_bulk_loader_load
  */
 function tripal_bulk_loader_load($node){
@@ -251,7 +254,7 @@ function tripal_bulk_loader_load($node){
 	return $node;
 }
 
-/*******************************************************************************
+/**
  * tripal_bulk_loader_insert
  */
 function tripal_bulk_loader_insert ($node) {
@@ -275,7 +278,7 @@ function tripal_bulk_loader_insert ($node) {
 	}
 }
 
-/*******************************************************************************
+/**
  * tripal_bulk_loader_delete
  */
 function tripal_bulk_loader_delete ($node) {
@@ -283,7 +286,7 @@ function tripal_bulk_loader_delete ($node) {
 	db_query($sql, $node->nid);
 }
 
-/*******************************************************************************
+/**
  * tripal_bulk_loader_update
  */
 function tripal_bulk_loader_update ($node) {
@@ -302,14 +305,6 @@ function tripal_bulk_loader_update ($node) {
 			drupal_set_message("Can not open $node->file. Job not scheduled.");
 		}
 	}
-}
-
-/*******************************************************************************
- * tripal_bulk_loader_load_data
- */
-function tripal_bulk_loader_load_data ($loader_name, $template_id, $file) {
-	
-
 }
 
 function tripal_bulk_loader_preprocess_tripal_bulk_loader_template (&$variables) {

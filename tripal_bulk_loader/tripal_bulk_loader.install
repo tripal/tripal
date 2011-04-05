@@ -14,6 +14,20 @@ function tripal_bulk_loader_uninstall(){
    drupal_uninstall_schema('tripal_bulk_loader');
 }
 
+/**
+ * Update
+ * Add status, file_has_header columns to tripal_bulk_loader
+ */
+function tripal_bulk_loader_update_1 () {
+	$update = array();
+	
+	$update[] = update_sql("ALTER TABLE {tripal_bulk_loader} ADD COLUMN job_status varchar(500) DEFAULT 'initialized'");
+	$update[] = update_sql("ALTER TABLE {tripal_bulk_loader} ADD COLUMN file_has_header boolean DEFAULT TRUE");
+	
+	return $update;
+}
+
+
 /*******************************************************************************
 * tripal_bulk_loader_schema
 */
