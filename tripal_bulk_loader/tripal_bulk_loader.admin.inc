@@ -529,7 +529,7 @@ function tripal_bulk_loader_add_template_field_form ($form_state) {
  * @endcode
  */
 function tripal_bulk_loader_add_template_field_form_submit ($form_state) {
-  dpm($form_state, 'form state in add submit');
+  //dpm($form_state, 'form state in add submit');
   
   $form_state['storage']['add']['field_title'] = $form_state['values']['add-field_title'];
   $form_state['storage']['add']['field_type'] = $form_state['values']['add-type'];
@@ -598,7 +598,7 @@ function tripal_bulk_loader_add_template_field_form_submit ($form_state) {
     }
   }  
   
-  dpm($form_state['storage']['template'], 'template array from add submit');
+  //dpm($form_state['storage']['template'], 'template array from add submit');
   return $form_state;
 }
 
