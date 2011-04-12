@@ -13,6 +13,8 @@
 function tripal_feature_chado_feature_schema() {
   $description = array();
 
+  // Default table description in tripal_core.schema.api.inc: tripal_core_chado_feature_schema()
+
   $description['foreign keys']['organism'] = array(
         'table' => 'organism',
         'columns' => array(
@@ -57,3 +59,39 @@ function tripal_feature_chado_feature_schema() {
   return $description;
 }
 
+/**
+ * Implements hook_chado_featureprop_schema()
+ * Purpose: To add descriptions and foreign keys to default table description
+ * Note: This array will be merged with the array from all other implementations
+ *
+ * @return
+ *    Array describing the featureprop table
+ *
+ * @ingroup tripal_feature
+ */
+function tripal_feature_chado_featureprop_schema() {
+  $description = array();
+
+  // Default table description in tripal_core.schema.api.inc: tripal_core_chado_featureprop_schema()
+
+  $description['foreign keys']['feature'] = array(
+        'table' => 'feature',
+        'columns' => array(
+          'feature_id' => 'feature_id',
+        ),
+  );
+  
+  $description['foreign keys']['cvterm'] = array(
+        'table' => 'cvterm',
+        'columns' => array(
+          'type_id' => 'cvterm_id',
+        ),
+  );
+  
+  $referring_tables = array('analysisfeature',
+    'featureprop_pub',
+  );
+  $description['referring_tables'] = $referring_tables;
+
+  return $description;
+}

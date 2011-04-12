@@ -1,5 +1,6 @@
 <?php
 
+require('tripal_library.api.inc');
 
 /*******************************************************************************
  * Display help and module information

@@ -3,7 +3,32 @@
 /****************************************************************************
  * @section Chado Table Descriptions
  ****************************************************************************/
+/**
+ * Implements hook_chado_analysis_schema()
+ * Purpose: To add descriptions and foreign keys to default table description
+ * Note: This array will be merged with the array from all other implementations
+ *
+ * @return
+ *    Array describing the analysis table
+ *
+ * @ingroup tripal_analysis
+ */
+function tripal_analysis_chado_analysis_schema() {
+  $description = array();
   
+  // Default table description in tripal_core.schema.api.inc: tripal_core_chado_analysis_schema()
+  
+  $referring_tables = array(
+      'analysisfeature',
+      'analysisprop',
+      'phylotree',
+      'quantification'
+  );
+  $description['referring_tables'] = $referring_tables;
+  
+  return $description;
+}
+
  /****************************************************************************
  * Implements hook_chado_analysisfeature_schema()
  * Purpose: To add descriptions and foreign keys to default table description

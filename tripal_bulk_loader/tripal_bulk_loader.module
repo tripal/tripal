@@ -1,6 +1,7 @@
 <?php
 
 include('tripal_bulk_loader.loader.inc');
+include('tripal_bulk_loader.info_hooks.inc');
 
 /**
  * tripal_bulk_loader_init

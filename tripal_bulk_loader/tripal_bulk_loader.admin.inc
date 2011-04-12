@@ -16,42 +16,6 @@ function tripal_bulk_loader_admin_template () {
    return $output;
 }
 
-/**
- * Implements hook_tripal_bulk_loader_supported_modules
- * 
- * @return 
- *   An array of <chado table> => <Human-readable Name> describing the modules supported
- */
-function tripal_bulk_loader_tripal_bulk_loader_supported_modules() {
-  return array(
-    'feature' => 'Feature',
-    'organism' => 'Organism',
-    'library' => 'Library',
-    'analysis' => 'Analysis',
-  );
-}
-
-function tripal_bulk_loader_tripal_bulk_loader_feature_related_tables () {
-  return array(
-    'feature' => 'Feature',
-    'analysis' => 'Analysis',
-    'element' => 'Element',
-    'cvterm' => 'CV Terms',
-    'dbxref' => 'External Database References',
-    'genotype' => 'Genotypes',
-    'phenotype' => 'Phenotypes',
-    'pub' => 'Publications',
-    'feature_relationship' => 'Relationships between Features',
-    'synonym' => 'Synonyms',
-    'featureloc' => 'Feature Locations',
-    'featurepos' => 'Feature Positions',
-    'featureprop' => 'Feature Properties',
-    'featurerange' => 'Feature Ranges',
-    'library' => 'Library',
-    'phylonode' => 'Polynode'
-  );
-}
-
 //////////////////////////////////////////////////////////////////////////////////////
 // Create Template
 //////////////////////////////////////////////////////////////////////////////////////
@@ -177,7 +141,7 @@ function tripal_bulk_loader_create_template_base_form_submit($form, &$form_state
       
       // Add Field to Template----------------------------------------------
     } elseif ($form_state['values']['op'] ==  'Add Field') {
-      
+      $form_state = tripal_bulk_loader_add_template_field_form_submit($form_state);
       
       // Save Template ----------------------------------------------------
     } 
@@ -196,6 +160,9 @@ function tripal_bulk_loader_create_template_base_form_submit($form, &$form_state
 			drupal_write_record('tripal_bulk_loader_template', $record);
 		}
   } //end of if not ahah submission
+  else {
+    $form_state = tripal_bulk_loader_add_template_field_form_submit($form_state);
+  }
 }
 
 //////////////////////////////////////////////////////////////////////////////////////
@@ -342,9 +309,9 @@ function tripal_bulk_loader_edit_template_base_form_submit($form, &$form_state){
       $table = $form_state['values']["chado_table_hidden-".$matches[1]];
       $field_key = $form_state['values']["field_index-".$matches[1]];
       unset($form_state['storage']['template'][$table]['field'][$field_key]);
-      
-      $set_default = TRUE;
-      $field_template = $form_state['storage']['edit_field'];      
+      if (!$form_state['storage']['template'][$table]['field']) {
+        unset($form_state['storage']['template'][$table]);
+      }   
     }
     
     // Save Template ----------------------------------------------------
@@ -398,7 +365,7 @@ function tripal_bulk_loader_delete_template_base_form_submit ($form, &$form_stat
 }
 
 //////////////////////////////////////////////////////////////////////////////////////
-// Add/Edit Field Forms (meant to be returned as part of a larger form
+// Add/Edit Field Forms (meant to be returned as part of a larger form)
 //////////////////////////////////////////////////////////////////////////////////////
 
 /**
@@ -509,10 +476,26 @@ function tripal_bulk_loader_add_template_field_form ($form_state) {
 			),
 	);
 
-	$table_description = module_invoke_all('chado_'.$table.'_schema');
-	$chado_fields = array();
-	foreach($table_description['fields'] as $field_name => $field_array) {
-		$chado_fields[$field_name] = $field_name;
+  if ($related_tables['Indirect Relations'][$table]) {
+    //Display fields for current table plus related tables
+    $table_description = module_invoke_all('chado_'.$table.'_schema');
+    $tables2list = array_keys($table_description['foreign keys']);
+    unset($tables2list[array_search($base_table, $tables2list)]);
+    $tables2list[] = $table;
+
+    $form['field_is_indirect'] = array(
+      '#type' => 'hidden',
+      '#value' => implode('#',$tables2list),
+    );
+  } else {
+    $tables2list = array($table);
+  }
+  $chado_fields = array();
+  foreach ($tables2list as $table) {
+  	$table_description = module_invoke_all('chado_'.$table.'_schema');
+	  foreach($table_description['fields'] as $field_name => $field_array) {
+		  $chado_fields[$field_name] = $field_name;
+	  }
 	}
 	$form['add_fields']['chado']['add-chado_field'] = array(
 		'#type' => 'select',
@@ -546,6 +529,8 @@ function tripal_bulk_loader_add_template_field_form ($form_state) {
  * @endcode
  */
 function tripal_bulk_loader_add_template_field_form_submit ($form_state) {
+  dpm($form_state, 'form state in add submit');
+  
   $form_state['storage']['add']['field_title'] = $form_state['values']['add-field_title'];
   $form_state['storage']['add']['field_type'] = $form_state['values']['add-type'];
   $form_state['storage']['add']['sheet_name'] = $form_state['values']['add-sheet'];
@@ -559,6 +544,27 @@ function tripal_bulk_loader_add_template_field_form_submit ($form_state) {
       $template = $form_state['storage']['template'];
       
       $template['module'] = $form_state['storage']['base_table'];
+      
+      //if table relationship to base is indirect, fields from 2+ tables are listed in the fields select
+      if ($form_state['values']['field_is_indirect']) {
+        $listed_tables = preg_split('/#/', $form_state['values']['field_is_indirect']);
+        $field = $form_state['storage']['add']['chado_field'];
+        foreach ($listed_tables as $table) {
+          $table_desc = module_invoke_all('chado_'.$table.'_schema');
+          if ($table_desc['fields'][$field]) {
+              if (preg_match('/'.$table.'/', $form_state['storage']['add']['chado_table'])) {
+                //ensure linking table is added
+                if (!$template[$form_state['storage']['add']['chado_table']]) {
+                  $template[$form_state['storage']['add']['chado_table']]['field'] = array();
+                }
+              }
+        
+             $form_state['storage']['add']['chado_table'] = $table;
+             break;
+          }
+        }
+        
+      }
       
       if ($form_state['storage']['add']['field_type'] == 'table field') {
         $template[$form_state['storage']['add']['chado_table']]['field'][] = array(
@@ -591,7 +597,8 @@ function tripal_bulk_loader_add_template_field_form_submit ($form_state) {
       $form_state['storage']['template'] = $template;
     }
   }  
-
+  
+  dpm($form_state['storage']['template'], 'template array from add submit');
   return $form_state;
 }
 
@@ -617,7 +624,7 @@ function tripal_bulk_loader_edit_template_field_form($form_state) {
  	$base_table = $form_state['storage']['base_table'];
  	
 	$form['edit_fields'] = array(
-		'#type' => 'fieldset',
+		'#type' => ($form_state['storage']['edit_field']) ? 'fieldset' : 'hidden',
 		'#title' => t('Edit Fields'),
 		'#prefix' => '<div id="tripal_bulk_loader-edit_field">',
 		'#suffix' => '</div>',
@@ -774,7 +781,6 @@ function tripal_bulk_loader_edit_template_field_form_submit ($form_state) {
   
   if (!$form_state['ahah_submission']) {
     if ($form_state['values']['op'] ==  'Edit Field') {
-      dpm($form_state, 'form_state before');
       if ($form_state['storage']['edit']['field_type'] == 'table field') {
         $field = array(
           'type' => 'table field',
@@ -955,7 +961,7 @@ function tripal_bulk_loader_edit_field_type_ahah () {
  *  JSON Data printed to the screen
  */
 function tripal_bulk_loader_edit_chado_column_ahah () {
-
+  
   $form_state = array('storage' => NULL, 'submitted' => FALSE);
   $form_build_id = $_POST['form_build_id'];
   $form = form_get_cache($form_build_id, $form_state);

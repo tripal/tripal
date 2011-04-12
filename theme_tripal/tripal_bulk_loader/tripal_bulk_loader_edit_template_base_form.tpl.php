@@ -4,8 +4,8 @@
 <?php print drupal_render($form['template_name']); ?>
 
 <!-- For each field display details plus edit/delete buttons-->
-<fieldset><legend>Current Fields</legend>
 <?php if ($form['fields']['total_fields']['#value'] > 0) {?>
+<fieldset><legend>Current Fields</legend>
   <table>
     <tr>
       <th>Field Name</th>

@@ -525,7 +525,12 @@ function tripal_core_chado_select($table,$columns,$values,$options = null){
          }
       } 
       else {
-         $where[$field][] = $value;
+        //need to catch a 0 and make int if integer field
+        if ($table_desc['fields'][$field]['type'] == 'int') {
+          $where[$field][] = (int) $value;
+        } else {
+          $where[$field][] = $value;
+        }
       }
    }
 
