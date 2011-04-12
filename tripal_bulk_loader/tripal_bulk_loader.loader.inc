@@ -133,7 +133,8 @@ function tripal_bulk_loader_load_data($nid) {
   $file_handle = fopen($node->file, 'r');
   if (preg_match('/(t|true|1)/', $node->file_has_header)) { fgets($file_handle, 4096); }
   $num_records = 0;
-  $num_lines;
+  $num_lines = 0;
+  $num_errors = 0;
   while (!feof($file_handle)) {
     $line = array();
     $raw_line = fgets($file_handle, 4096);
@@ -151,6 +152,8 @@ function tripal_bulk_loader_load_data($nid) {
       $success = tripal_bulk_loader_ensure_record ($table, $values[$table]);   
       if ($success) {
         $num_records++;
+      } else {
+        $num_errors++;
       }
       
       //Add to base values array
@@ -168,6 +171,7 @@ function tripal_bulk_loader_load_data($nid) {
     if (!$success) {
       print "ERROR: Unable to insert base record where base table: ".$base_table.
         " and values array: ".tripal_bulk_loader_flatten_array($values[$base_table])."\n";
+      $num_errors++;
     } else {
       $num_records++;
     }
@@ -185,6 +189,8 @@ function tripal_bulk_loader_load_data($nid) {
       $success = tripal_bulk_loader_ensure_record ($table, $values[$table]);
       if ($success) {
         $num_records++;
+      } else {
+        $num_errors++;
       }
       unset($tables[$table]);
     } 
@@ -198,6 +204,8 @@ function tripal_bulk_loader_load_data($nid) {
         $success = tripal_bulk_loader_ensure_record ($table, $values[$table]);    
         if ($success) {
           $num_records++;
+        } else {
+          $num_errors++;
         }
       }
     }
@@ -216,14 +224,22 @@ function tripal_bulk_loader_load_data($nid) {
       $success = tripal_bulk_loader_ensure_record ($table, $values[$table]);      
       if ($success) {
         $num_records++;
+      } else {
+        $num_errors++;
       }
     }
     
   } //end of file
   
   print "\nNumber of Records Inserted:".$num_records."\n";
-  print "Number of Lines in File:".$num_lines."\n\n";
+  print "Number of Lines in File:".$num_lines."\n";
+  print "Number of Errors: ".$num_errors."\n\n";
   
+  if (!$num_errors) {
+    db_query("UPDATE {tripal_bulk_loader} SET job_status='%s' WHERE nid=%d", 'successfully loaded', $nid);
+  } else {
+    db_query("UPDATE {tripal_bulk_loader} SET job_status='%s' WHERE nid=%d", 'load attempted', $nid);
+  }
 }
 
 /**
