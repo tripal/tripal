@@ -17,3 +17,15 @@
    clear: left;
    width: auto;
 }
+
+#tripal_organism-base-box img {
+ float: left;
+ margin-bottom: 10px;
+}
+#tripal_organism-table-base {
+ float: left;
+ width: 330px;
+ margin-left: 10px;
+ margin-bottom: 10px;
+}
+

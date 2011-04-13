@@ -24,7 +24,7 @@
 <?php
  //uncomment this line to see a full listing of the fields avail. to $node
  //print '<pre>'.print_r($variables,TRUE).'</pre>';
-
+drupal_add_css('./tripal-node-templates.css');
 $node = $variables['node'];
 $organism = $variables['node']->organism;
 ?>
@@ -79,66 +79,9 @@ if (Drupal.jsEnabled) {
 }
 </script>
 
-<style type="text/css">
-  /* these styles are specific for this template and is not included 
-     in the main CSS files for the theme as it is anticipated that the
-     elements on this page may not be used for other customizations */
-  #tripal_organism_toc {
-     float: left;
-     width: 20%;
-     background-color: #EEEEEE;
-     -moz-border-radius: 15px;
-     border-radius: 15px;
-     -moz-box-shadow: 3px 3px 4px #888888;
-	  -webkit-box-shadow: 3px 3px 4px #888888;
-	  box-shadow: 3px 3px 4px #888888;
-     padding: 20px;
-     min-height: 500px;
-     border-style:solid;
-     border-width:1px;
-  }
-  #tripal_organism_toc ul {
-    margin-left: 0px;
-    margin-top: 5px;
-    padding-left: 15px;
-  }
-  #tripal_organism_toc_title {
-     font-size: 1.5em;
-     line-height: 110%;
-  }
-  #tripal_organism_toc_desc {
-    /*font-style: italic; */
-  }
-  #tripal_organism_details {
-     float: left;
-     width: 70%;
-     background-color: #FFFFFF;
-     -moz-border-radius: 15px;
-     border-radius: 15px;
-     -moz-box-shadow: 3px 3px 4px #888888;
-	  -webkit-box-shadow: 3px 3px 4px #888888;
-	  box-shadow: 3px 3px 4px #888888;
-     padding: 20px;
-     min-height: 500px;
-     margin-right: 10px;
-     margin-bottom: 10px;
-     border-style:solid;
-     border-width:1px;
-  }
-  #tripal_organism-base-box img {
-    float: left;
-    margin-bottom: 10px;
-  }
-  #tripal_organism-table-base {
-    float: left;
-    width: 330px;
-    margin-left: 10px;
-    margin-bottom: 10px;
-  }
-</style>
 
 
-<div id="tripal_organism_details">
+<div id="tripal_organism_details" class="tripal_details">
 
    <!-- Basic Details Theme -->
    <?php include('tripal_organism/tripal_organism_base.tpl.php'); ?>
@@ -147,10 +90,10 @@ if (Drupal.jsEnabled) {
 </div>
 
 <!-- Table of contents -->
-<div id="tripal_organism_toc">
-   <div id="tripal_organism_toc_title">Resources for <br><i><?php print $organism->genus ?> <?php print $organism->species ?></i></div>
-   <span id="tripal_organism_toc_desc">Select a link below for more information</span>
-   <ul id="tripal_organism_toc_list">
+<div id="tripal_organism_toc" class="tripal_toc">
+   <div id="tripal_organism_toc_title" class="tripal_toc_title">Resources for <br><i><?php print $organism->genus ?> <?php print $organism->species ?></i></div>
+   <span id="tripal_organism_toc_desc" class="tripal_toc_desc">Select a link below for more information</span>
+   <ul id="tripal_organism_toc_list" class="tripal_toc_list">
 
    </ul>
 </div>

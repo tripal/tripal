@@ -32,3 +32,13 @@
 .tripal_interpro_results_table tbody tr td table tr td{
    background: #FFFFFF;
 }
+/* feature node sepcific template */
+.tripal_feature_interpro-results-table {
+   padding-top: 10px;
+   padding-bottom: 10px;
+}
+.tripal_feature-interpro_results_subtitle{
+   padding-top: 10px;
+   padding-bottom: 10px;
+   font-weight: bold;
+}

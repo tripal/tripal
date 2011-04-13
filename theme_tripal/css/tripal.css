@@ -106,3 +106,58 @@ table.tripal-table-horz .tripal-table-odd-row {
    padding: 10px;
    background-color: #FFEEEE;
 }
+
+.tripal_toc {
+  float: left;
+  width: 20%;
+  background-color: #EEEEEE;
+
+  -moz-border-radius: 15px;
+  -webkit-border-radius: 15px;
+  -khtml-border-radius: 15px;
+  border-radius: 15px;
+
+  -moz-box-shadow: 3px 3px 4px #888888;
+  -webkit-box-shadow: 3px 3px 4px #888888;
+  box-shadow: 3px 3px 4px #888888;
+
+
+
+  padding: 20px;
+  min-height: 500px;
+  border-style:solid;
+  border-width:1px;
+}
+.tripal_toc ul {
+ margin-left: 0px;
+ margin-top: 5px;
+ padding-left: 15px;
+}
+.tripal_toc_title {
+  font-size: 1.5em;
+  line-height: 110%;
+  padding-bottom: 10px;
+}
+.tripal_toc_desc {
+ /*font-style: italic; */
+}
+.tripal_details {
+  float: left;
+  width: 69%;
+  background-color: #FFFFFF;
+
+  -moz-border-radius: 15px;
+  -webkit-border-radius: 15px;
+  -khtml-border-radius: 15px;
+  border-radius: 15px;
+
+  -moz-box-shadow: 3px 3px 4px #888888;
+  -webkit-box-shadow: 3px 3px 4px #888888;
+  box-shadow: 3px 3px 4px #888888;
+  padding: 20px;
+  min-height: 500px;
+  margin-right: 10px;
+  margin-bottom: 10px;
+  border-style:solid;
+  border-width:1px;
+}

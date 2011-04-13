@@ -1,6 +1,7 @@
 
 
 if (Drupal.jsEnabled) {
+
    //------------------------------------------------------------
    // On document load we want to make sure the analysis result is shown
    var path = '';
@@ -108,4 +109,6 @@ if (Drupal.jsEnabled) {
        }
        return baseurl;
    }
+
+   
 }

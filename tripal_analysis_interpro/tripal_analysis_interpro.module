@@ -1,15 +1,16 @@
 <?php
+
+require_once "parseInterpro.inc";
+
 /*******************************************************************************
  * Tripal Interpro lets users show/hide iprscan results associated with a tripal
  * feature
  ******************************************************************************/
 function tripal_analysis_interpro_init(){
 	// Add javascript and style sheet
-	drupal_add_css(drupal_get_path('theme', 'tripal').
-                                  '/css/tripal_analysis_interpro.css');
+	drupal_add_css(drupal_get_path('theme', 'tripal').'/css/tripal_analysis_interpro.css');
 	// Add javascript and style sheet
-   drupal_add_js(drupal_get_path('theme', 'tripal').
-                                  '/js/tripal_analysis_interpro.js');
+   drupal_add_js(drupal_get_path('theme', 'tripal').'/js/tripal_analysis_interpro.js');
 }
 /*******************************************************************************
  *  Provide information to drupal about the node types that we're creating
@@ -60,99 +61,19 @@ function tripal_analysis_interpro_block($op = 'list', $delta = 0, $edit=array())
  */
 function chado_analysis_interpro_form ($node){
 
-	$type = node_get_types('type', $node);
-	$form = array();
-	$form['title']= array(
-      '#type' => 'hidden',
-      '#default_value' => $node->title,
-	);
-	$form['analysisname']= array(
-      '#type' => 'textfield',
-      '#title' => t('Analysis Name'),
-      '#required' => FALSE,
-      '#default_value' => $node->analysisname,
-      '#weight' => 1
-	);
-	$form['program']= array(
-      '#type' => 'textfield',
-      '#title' => t('Program'),
-      '#required' => TRUE,
-      '#default_value' => $node->program,
-      '#weight' => 2
-	);
-	$form['programversion']= array(
-      '#type' => 'textfield',
-      '#title' => t('Program Version'),
-      '#required' => TRUE,
-      '#default_value' => $node->programversion,
-      '#weight' => 3
-	);
-	$form['algorithm']= array(
-      '#type' => 'textfield',
-      '#title' => t('Algorithm'),
-      '#required' => FALSE,
-      '#default_value' => $node->algorithm,
-      '#weight' => 4
-	);
-	$form['sourcename']= array(
-      '#type' => 'textfield',
-      '#title' => t('Source Name'),
-      '#required' => FALSE,
-      '#default_value' => $node->sourcename,
-      '#weight' => 5
-	);
-	$form['sourceversion']= array(
-      '#type' => 'textfield',
-      '#title' => t('Source Version'),
-      '#required' => FALSE,
-      '#default_value' => $node->sourceversion,
-      '#weight' => 6
-	);
-	$form['sourceuri']= array(
-      '#type' => 'textfield',
-      '#title' => t('Source URI'),
-      '#required' => FALSE,
-      '#default_value' => $node->sourceuri,
-      '#weight' => 7
-	);
-	// Get time saved in chado
-	$default_time = $node->timeexecuted;
-	$year = preg_replace("/^(\d+)-\d+-\d+ .*/", "$1", $default_time);
-	$month = preg_replace("/^\d+-0?(\d+)-\d+ .*/", "$1", $default_time);
-	$day = preg_replace("/^\d+-\d+-0?(\d+) .*/", "$1", $default_time);
-	// If the time is not set, use current time
-	if (!$default_time) {
-		$default_time = time();
-		$year = format_date($default_time, 'custom', 'Y');
-		$month = format_date($default_time, 'custom', 'n');
-		$day = format_date($default_time, 'custom', 'j');
-	}
-	$form['timeexecuted']= array(
-      '#type' => 'date',
-      '#title' => t('Time Executed'),
-      '#required' => TRUE,
-      '#default_value' => array(
-         'year' => $year,
-         'month' => $month,
-         'day' => $day,
-	),
-      '#weight' => 8
-	);
-	$form['description']= array(
-      '#type' => 'textarea',
-      '#rows' => 15,
-      '#title' => t('Description and/or Program Settings'),
-      '#required' => FALSE,
-      '#default_value' => $node->description,
-      '#weight' => 9
-	);
+   // add in the default fields for the analysis
+   $form = chado_analysis_form($node);
 
-	//----InterProScan Settings (Shown only when Tripal Interpro is enabled) ----
-	if (preg_match("/.*\|.*/",$node->interprofile)) {
-		$prop_values = explode("|", $node->interprofile);
-		$node->interprofile = $prop_values[0];
-		$node->interproparameters = $prop_values[1];
-	}
+   $analysis = $node->analysis;
+
+   $interprofile = $analysis->tripal_analysis_interpro->interprofile;
+   $interproparameters = $analysis->tripal_analysis_interpro->interproparameters;
+   $parsego = $analysis->tripal_analysis_interpro->parsego;
+   $query_re = $analysis->tripal_analysis_interpro->query_re;
+   $query_type = $analysis->tripal_analysis_interpro->query_type;
+   $query_uniquename = $analysis->tripal_analysis_interpro->query_uniquename;
+
+
 	$moreSettings ['interpro'] = 'Interpro Settings';
 	$form['interpro'] = array(
       '#title' => t('Interpro Settings'),
@@ -163,19 +84,19 @@ function chado_analysis_interpro_form ($node){
       '#weight' => 11
 	);
 	$form['interpro']['interprofile'] = array(
-      '#title' => t('Interproscan Output File (in html format)'),
+      '#title' => t('Interproscan Output File (in XML format)'),
       '#type' => 'textfield',
-      '#description' => t('The html output file generated by Interproscan in full path.'),
-      '#default_value' => $node->interprofile,
+      '#description' => t('Please provide the full path to the XML output file generated by InterProScan.'),
+      '#default_value' => $interprofile,
 	);
 	$form['interpro']['interprojob'] = array(
       '#type' => 'checkbox',
-      '#title' => t('Submit a job to parse the Interpro html output'),
+      '#title' => t('Submit a job to parse the InterProScan XML file'),
       '#description' => t('Note: features associated with the interpro results must '.
                              'exist in chado before parsing the file. Otherwise, interpro '.
                              'results that cannot be linked to a feature will be '.
-                             'discarded. Also, Triapl Interpro module needs to be enabled.'),
-      '#default_value' => $node->interprojob,
+                             'discarded.'),
+      '#default_value' => $interprojob,
 	   '#attributes' => array(
         'onclick' => 'return isSubmittingJob(this)'
       )
@@ -184,290 +105,167 @@ function chado_analysis_interpro_form ($node){
       '#type' => 'checkbox',
       '#title' => t('Load GO terms to the database'),
       '#description' => t('Check the box to load GO terms to chado database'),
-      '#default_value' => $node->parsego
+      '#default_value' => $parsego
    );
 	$form['interpro']['interproparameters'] = array(
       '#title' => t('Parameters'),
       '#type' => 'textfield',
-      '#description' => t('The parameters for running the interpro analysis.'),
-      '#default_value' => $node->interproparameters,
+      '#description' => t('The parameters used when running the InterProScan analysis.'),
+      '#default_value' => $interproparameters,
+	);
+
+	$form['interpro']['query_re'] = array(
+      '#title' => t('Query Name RE'),
+      '#type' => 'textfield',
+      '#description' => t('Enter the regular expression that will extract the '.
+         'feature name from the query line in the interpro results. This should be '.
+         'the same as the definition line in the query FASTA file.  This option is '.
+         'is only required when the query does not identically match a feature '.
+         'in the database.'),
+      '#default_value' => $query_re,
+	);
+
+	$form['interpro']['query_type'] = array(
+      '#title' => t('Query Type'),
+      '#type' => 'textfield',
+      '#description' => t('Please enter the Sequence Ontology term that describes '.
+         'the query sequences used for InterProScan.  This is only necessary if two '.
+         'or more sequences have the same name.'),
+      '#default_value' => $query_type,
+	);
+
+	$form['interpro']['query_uniquename'] = array(
+      '#title' => t('Use Unique Name'),
+      '#type' => 'checkbox',
+      '#description' => t('Select this checboxk if the query name in the results file '.
+        'matches the uniquename of the feature.  By default, the blast results will '.
+        'mapped to the "name" of the feature.'),
+      '#default_value' => $query_uniquename,
 	);
 	return $form;
 }
-/*******************************************************************************
+/**
+ * 
+ * 
+ */
+function chado_analysis_interpro_load($node){
+
+   // load the default set of analysis fields
+	$additions = chado_analysis_load($node);
+
+   // create some variables for easier lookup
+   $analysis = $additions->analysis;
+   $analysis_id = $analysis->analysis_id;
+
+   $intepro_settings  = tripal_analysis_get_property($analysis->analysis_id,'analysis_interpro_settings');	
+   $interprofile      = tripal_analysis_get_property($analysis->analysis_id,'analysis_interpro_interprofile');
+   $interproparameters= tripal_analysis_get_property($analysis->analysis_id,'analysis_interpro_interproparameters');
+   $parsego           = tripal_analysis_get_property($analysis->analysis_id,'analysis_interpro_parsego');		
+   $query_re          = tripal_analysis_get_property($analysis->analysis_id,'analysis_interpro_query_re');	
+   $query_type        = tripal_analysis_get_property($analysis->analysis_id,'analysis_interpro_query_type');	
+   $query_uniquename  = tripal_analysis_get_property($analysis->analysis_id,'analysis_interpro_query_uniquename');	
+
+   $analysis->tripal_analysis_interpro->interprofile      = $interprofile->value;
+   $analysis->tripal_analysis_interpro->interproparameters= $interproparameters->value;
+   $analysis->tripal_analysis_interpro->parsego           = $parsego->value;
+   $analysis->tripal_analysis_interpro->query_re          = $query_re->value;
+   $analysis->tripal_analysis_interpro->query_type        = $query_type->value;
+   $analysis->tripal_analysis_interpro->query_uniquename  = $query_uniquename->value;
+
+   // if there is an old style 'interpro_settings' array, then break these out for
+   // use in the new format
+   if(count($interpro_settings)>0){
+	   $prop_values = explode ("|", $interpro_settings->value);
+      $analysis->tripal_analysis_interpro->interprofile       = $prop_values[0];
+      $analysis->tripal_analysis_interpro->interproparameters = $prop_values[1];
+   }
+	return $additions;
+}
+/**
  *  
  */
 function chado_analysis_interpro_insert($node){
-	global $user;
-	// Create a timestamp so we can insert it into the chado database
-	$time = $node->timeexecuted;
-	$month = $time['month'];
-	$day = $time['day'];
-	$year = $time['year'];
-	$timestamp = $month.'/'.$day.'/'.$year;
+  // insert the analysistripal_core_generate_chado_var
+   chado_analysis_insert($node);
 
-	// If this analysis already exists then don't recreate it in chado
-	$analysis_id = $node->analysis_id;
-	if ($analysis_id) {
-		$sql = "SELECT analysis_id ".
-               "FROM {Analysis} ".
-               "WHERE analysis_id = %d ";
-		$previous_db = tripal_db_set_active('chado');
-		$analysis = db_fetch_object(db_query($sql, $node->analysis_id));
-		tripal_db_set_active($previous_db);
-	}
+   // set the type for this analysis
+   tripal_analysis_insert_property($node->analysis_id,'analysis_type','tripal_analysis_interpro');
 
-	// If the analysis doesn't exist then let's create it in chado.
-	if(!$analysis){
-		// First add the item to the chado analysis table
-		$sql = "INSERT INTO {analysis} ".
-             "  (name, description, program, programversion, algorithm, ".
-             "   sourcename, sourceversion, sourceuri, timeexecuted) ".
-             "VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s')";
-		$previous_db = tripal_db_set_active('chado');  // use chado database
-		db_query($sql,$node->analysisname, $node->description,
-		$node->program,$node->programversion,$node->algorithm,
-		$node->sourcename, $node->sourceversion, $node->sourceuri,
-		$timestamp);
+   // now add in the remaining settings as a single property but separated by bars
+   tripal_analysis_insert_property($node->analysis_id,'analysis_interpro_interprofile',$node->interprofile);
+   tripal_analysis_insert_property($node->analysis_id,'analysis_interpro_interproparameters',$node->interproparameters);
+   tripal_analysis_insert_property($node->analysis_id,'analysis_interpro_parsego',$node->parsego);		
+   tripal_analysis_insert_property($node->analysis_id,'analysis_interpro_query_re',$node->query_re);	
+   tripal_analysis_insert_property($node->analysis_id,'analysis_interpro_query_type',$node->query_type);	
+   tripal_analysis_insert_property($node->analysis_id,'analysis_interpro_query_uniquename',$node->query_uniquename);	
+  
+   // submit the parsing jobs
+   chado_analysis_interpro_submit_job($node);
 
-		// find the newly entered analysis_id
-		$sql = "SELECT analysis_id ".
-             "FROM {Analysis} ".
-             "WHERE program='%s'".
-             "AND programversion='%s'".
-             "AND sourcename='%s'";
-		$analysis_id = db_result(db_query($sql, $node->program,
-		$node->programversion, $node->sourcename));
+}
+/**
+ * 
+ */
+function chado_analysis_interpro_update($node){
+  // insert the analysistripal_core_generate_chado_var
+   chado_analysis_update($node);
 
-		// Get cvterm_id for 'analysis_interpro_settings'
-		$sql = "SELECT CVT.cvterm_id FROM {cvterm} CVT ".
-             "INNER JOIN cv ON cv.cv_id = CVT.cv_id ".
-             "WHERE CVT.name = 'analysis_interpro_settings' ".
-             "AND CV.name = 'tripal'";
-		$type_id = db_result(db_query($sql));
+   // set the type for this analysis
+   tripal_analysis_update_property($node->analysis_id,'analysis_type','tripal_analysis_interpro',1);
 
-		// Insert into chado {analysisprop} table
-		$sql = "INSERT INTO {analysisprop} (analysis_id, type_id, value) ".
-             "VALUES (%d, %d, '%s')";
-		$interprosettings = $node->interprofile."|".$node->interproparameters;
-		db_query($sql, $analysis_id, $type_id, $interprosettings);
+   // now add in the remaining settings as a single property but separated by bars
+   tripal_analysis_update_property($node->analysis_id,'analysis_interpro_interprofile',$node->interprofile,1);
+   tripal_analysis_update_property($node->analysis_id,'analysis_interpro_interproparameters',$node->interproparameters,1);
+   tripal_analysis_update_property($node->analysis_id,'analysis_interpro_parsego',$node->parsego,1);		
+   tripal_analysis_update_property($node->analysis_id,'analysis_interpro_query_re',$node->query_re,1);	
+   tripal_analysis_update_property($node->analysis_id,'analysis_interpro_query_type',$node->query_type,1);	
+   tripal_analysis_update_property($node->analysis_id,'analysis_interpro_query_uniquename',$node->query_uniquename,1);	
 
-		tripal_db_set_active($previous_db);  // switch back to drupal database
-		// Add a job if the user wants to parse the html output
-		if($node->interprojob) {
-			$job_args[0] = $analysis_id;
-			$job_args[1] = $node->interprofile;
-			if ($node->parsego) {
-			   $job_args[2] = 1;
-			} else {
-            $job_args[2] = 0;
-         }
-			if (is_readable($node->interprofile)) {
-				$fname = preg_replace("/.*\/(.*)/", "$1", $node->interprofile);
-				tripal_add_job("Parse interpro: $fname",'tripal_analysis_interpro',
-                           'tripal_analysis_interpro_parseHTMLFile', $job_args, $user->uid);
-			} else {
-				drupal_set_message("Can not open interpro output file. Job not scheduled.");
-			}
-		}
-	}
-
-	// Make sure the entry for this analysis doesn't already exist in the
-	// chado_analysis table if it doesn't exist then we want to add it.
-	$node_check_sql = "SELECT * FROM {chado_analysis} ".
-                     "WHERE analysis_id = %d";
-	$node_check = db_fetch_object(db_query($node_check_sql, $analysis_id));
-	if(!$node_check){
-		// next add the item to the drupal table
-		$sql = "INSERT INTO {chado_analysis} (nid, vid, analysis_id) ".
-             "VALUES (%d, %d, %d)";
-		db_query($sql,$node->nid,$node->vid,$analysis_id);
-		// Create a title for the analysis node using the unique keys so when the
-		// node is saved, it will have a title
-		$record = new stdClass();
-		// If the analysis has a name, use it as the node title. If not, construct
-		// the title using program, programversion, and sourcename
-		if ($node->analysisname) {
-			$record->title = $node->analysisname;
-		} else {
-			//Construct node title as "program (version)
-			$record->title = "$node->program ($node->programversion)";
-		}
-		$record->nid = $node->nid;
-		drupal_write_record('node',$record,'nid');
-		drupal_write_record('node_revisions',$record,'nid');
-	}
+   // if this analysis uses the old style settings cvterm then remove that term
+   $old = tripal_analysis_get_property($node->analysis_id,'analysis_interpro_settings');
+   if(count($old) > 0){
+      tripal_analysis_delete_property($node->analysis_id,'analysis_interpro_settings');
+   }
+  
+   // submit the parsing jobs
+   chado_analysis_interpro_submit_job($node);
 }
 /*******************************************************************************
  * Delete interpro anlysis
  */
 function chado_analysis_interpro_delete($node){
-	// Before removing, get analysis_id so we can remove it from chado database
-	// later
-	$sql_drupal = "SELECT analysis_id ".
-                 "FROM {chado_analysis} ".
-                 "WHERE nid = %d ".
-                 "AND vid = %d";
-	$analysis_id = db_result(db_query($sql_drupal, $node->nid, $node->vid));
-
-	// Remove data from the {chado_analysis}, {node}, and {node_revisions} tables
-	$sql_del = "DELETE FROM {chado_analysis} ".
-              "WHERE nid = %d ".
-              "AND vid = %d";
-	db_query($sql_del, $node->nid, $node->vid);
-	$sql_del = "DELETE FROM {node} ".
-              "WHERE nid = %d ".
-              "AND vid = %d";
-	db_query($sql_del, $node->nid, $node->vid);
-	$sql_del = "DELETE FROM {node_revisions} ".
-              "WHERE nid = %d ".
-              "AND vid = %d";
-	db_query($sql_del, $node->nid, $node->vid);
-
-	//Remove from analysisfeatureprop, analysisfeature, analysis, and analysisprop tables
-   $previous_db = tripal_db_set_active('chado');
-   $sql = "SELECT analysisfeature_id FROM {analysisfeature} WHERE analysis_id=%d";
-   $results = db_query($sql, $analysis_id);
-   while ($af = db_fetch_object($results)) {
-      db_query("DELETE FROM {analysisfeatureprop} WHERE analysisfeature_id = %d", $af->analysisfeature_id);
-   }
-   db_query("DELETE FROM {analysisfeature} WHERE analysis_id = %d", $analysis_id);
-   db_query("DELETE FROM {analysisprop} WHERE analysis_id = %d", $analysis_id);
-   db_query("DELETE FROM {analysis} WHERE analysis_id = %d", $analysis_id);
-   tripal_db_set_active($previous_db);
+	chado_analysis_delete($node);
 }
 
-/*******************************************************************************
- * Update interpro analysis
- */
-function chado_analysis_interpro_update($node){
-	global $user;
-	if($node->revision){
-		// TODO -- decide what to do about revisions
-	} else {
-		// Create a timestamp so we can insert it into the chado database
-		$time = $node->timeexecuted;
-		$month = $time['month'];
-		$day = $time['day'];
-		$year = $time['year'];
-		$timestamp = $month.'/'.$day.'/'.$year;
+/**
+*
+*/
+function chado_analysis_interpro_submit_job($node){
+   global $user;
 
-		// get the analysis_id for this node:
-		$sql = "SELECT analysis_id ".
-             "FROM {chado_analysis} ".
-             "WHERE vid = %d";
-		$analysis_id = db_fetch_object(db_query($sql, $node->vid))->analysis_id;
-
-		$sql = "UPDATE {analysis} ".
-             "SET name = '%s', ".
-             "    description = '%s', ".
-             "    program = '%s', ".
-             "    programversion = '%s', ".
-             "    algorithm = '%s', ".
-             "    sourcename = '%s', ".
-             "    sourceversion = '%s', ".
-             "    sourceuri = '%s', ".
-             "    timeexecuted = '%s' ".
-             "WHERE analysis_id = %d ";
-
-		$previous_db = tripal_db_set_active('chado');  // use chado database
-		db_query($sql, $node->analysisname, $node->description, $node->program,
-		$node->programversion,$node->algorithm,$node->sourcename,
-		$node->sourceversion, $node->sourceuri, $timestamp, $analysis_id);
-
-		// Get cvterm_id for 'analysis_interpro_settings'
-		$sql = "SELECT CVT.cvterm_id FROM {cvterm} CVT ".
-             "INNER JOIN cv CV ON CV.cv_id = CVT.cv_id ".
-             "WHERE CVT.name = 'analysis_interpro_settings' ".
-             "AND CV.name = 'tripal'";
-		$type_id = db_result(db_query($sql));
-		 
-		$sql = "UPDATE {analysisprop} ".
-             "SET value = '%s' ".
-             "WHERE analysis_id = %d AND type_id = %d";
-		$interprosettings = $node->interprofile."|".$node->interproparameters;
-		db_query($sql, $interprosettings, $analysis_id, $type_id);
-		tripal_db_set_active($previous_db);  // switch back to drupal database
-		// Add a job if the user wants to parse the html output
-		if($node->interprojob) {
-			$job_args[0] = $analysis_id;
-			$job_args[1] = $node->interprofile;
-		   if ($node->parsego) {
-            $job_args[2] = 1;
-         } else {
-            $job_args[2] = 0;
-         }
-			if (is_readable($node->interprofile)) {
-				$fname = preg_replace("/.*\/(.*)/", "$1", $node->interprofile);
-				tripal_add_job("Parse interpro: $fname",'tripal_analysis_interpro',
-                           'tripal_analysis_interpro_parseHTMLFile', $job_args, $user->uid);
-			} else {
-				drupal_set_message("Can not open interpro output file. Job not scheduled.");
-			}
-		}
-
-		// Create a title for the analysis node using the unique keys so when the
-		// node is saved, it will have a title
-		$record = new stdClass();
-		// If the analysis has a name, use it as the node title. If not, construct
-		// the title using program, programversion, and sourcename
-		if ($node->analysisname) {
-			$record->title = $node->analysisname;
+	// Add a job if the user wants to parse the html output
+	if($node->interprojob) {
+		$job_args[0] = $node->analysis_id;
+		$job_args[1] = $node->interprofile;
+		if ($node->parsego) {
+		   $job_args[2] = 1;
 		} else {
-			//Construct node title as "program (version)
-			$record->title = "$node->program ($node->programversion)";
+         $job_args[2] = 0;
+      }
+		$job_args[3] = $node->query_re;
+		$job_args[4] = $node->query_type;
+		$job_args[5] = $node->query_uniquename;
+
+		if (is_readable($node->interprofile)) {
+			$fname = preg_replace("/.*\/(.*)/", "$1", $node->interprofile);
+			tripal_add_job("Parse interpro: $fname",'tripal_analysis_interpro',
+                        'tripal_analysis_interpro_parseXMLFile', $job_args, $user->uid);
+		} else {
+			drupal_set_message("Can not open interpro output file. Job not scheduled.");
 		}
-		$record->nid = $node->nid;
-		drupal_write_record('node',$record,'nid');
-		drupal_write_record('node_revisions',$record,'nid');
 	}
 }
-/*******************************************************************************
- *  When a node is requested by the user this function is called to allow us
- *  to add auxiliary data to the node object.
- */
-function chado_analysis_interpro_load($node){
-	// get the analysis_id for this node:
-	$sql = "SELECT analysis_id FROM {chado_analysis} WHERE vid = %d";
-	$ana_node = db_fetch_object(db_query($sql, $node->vid));
-	$additions = new stdClass();
-	if ($ana_node) {
-		// get analysis information
-		$sql = "SELECT Analysis_id, name AS analysisname, description, program, ".
-             "  programversion, algorithm, sourcename, sourceversion, ".
-             "  sourceuri, timeexecuted ".
-             "FROM {Analysis} ".
-             "WHERE Analysis_id = $ana_node->analysis_id";
-		$previous_db = tripal_db_set_active('chado');  // use chado database
-		$additions = db_fetch_object(db_query($sql));
 
-		// get cvterm_id for 'analysis_interpro_settings'
-		$sql = "SELECT CVT.cvterm_id FROM {cvterm} CVT ".
-             "INNER JOIN cv ON cv.cv_id = CVT.cv_id ".
-             "WHERE CVT.name = 'analysis_interpro_settings' ".
-             "AND CV.name = 'tripal'";
-		$type_id = db_result(db_query($sql));
-		// get analysisprop information
-		$sql = "SELECT value FROM {analysisprop} ".
-             "WHERE analysis_id = %d ".
-             "AND type_id = %d";
-		$analysisprop = db_result(db_query($sql, $ana_node->analysis_id, $type_id));
-		$prop_values = explode ("|", $analysisprop, 1);
-		$additions->interprofile = $prop_values[0];
-		$additions->interproparameters = $prop_values[1];
-
-		tripal_db_set_active($previous_db);  // now use drupal database
-	}
-	// If the analysis has a name, use it as the node title. If not, construct
-	// the title using program programversion, and sourcename
-	if ($additions->analysisname) {
-		$additions->title = $additions->analysisname;
-	} else {
-		// Construct node title as "program version (source)
-		$additions->title = "$additions->program ($additions->programversion)";
-	}
-	return $additions;
-}
 
 /*******************************************************************************
  *  This function customizes the view of the chado_analysis node.  It allows
@@ -498,244 +296,6 @@ function chado_analysis_interpro_view ($node, $teaser = FALSE, $page = FALSE) {
 	return $node;
 }
 
-/*******************************************************************************
- * Parse Interpro HTML Output file into analysisfeatureprop table
- */
-function tripal_analysis_interpro_parseHTMLFile ($analysis_id, $interprofile, $parsego, $job_id) {
-
-	// Prepare log
-	$filename = preg_replace("/.*\/(.*)/", "$1", $interprofile);
-	$logfile = file_directory_path() . "/tripal/tripal_analysis_interpro/load_$filename.log";
-	$log = fopen($logfile, 'a'); // append parsing results to log file
-
-	// Parsing started
-	print "Parsing File:".$interprofile." ...\n";
-	fwrite($log, date("D M j G:i:s Y").". Loading $interprofile\n");
-
-	// Get cvterm_id for 'analysis_interpro_output_iteration_hits' which is required
-	// for inserting into the analysisfeatureprop table
-	$previous_db = tripal_db_set_active('chado'); // use chado database
-	$sql = "SELECT CVT.cvterm_id FROM {cvterm} CVT ".
-          "INNER JOIN cv ON cv.cv_id = CVT.cv_id ".
-          "WHERE CVT.name = 'analysis_interpro_output_hit' ".
-          "AND CV.name = 'tripal'";
-	$type_id = db_result(db_query($sql));
-	print "cvterm_id for analysis_interpro_output_iteration_hits is $type_id\n";
-
-	// Load the HTML file and convert it into XML for loading
-	$dom = new domDocument;
-	$dom->loadHTMLFile($interprofile);
-	$xml = $dom->saveXML();
-	$interproput = simplexml_load_string($xml);
-
-	// Get html tables for parsing
-	$tables = $interproput->children()->children();
-
-	// Count the number of tables to be processed
-	$no_iterations = 0;
-	foreach($tables as $tmp) {
-		if ($tmp->getName() == 'table') {
-			$no_iterations ++;
-		}
-	}
-	print "$no_iterations html tables to be processed.\n";
-	$interval = intval($no_iterations * 0.01);
-	$idx_iterations = 0;
-
-	// Processed the tables
-	foreach ($tables as $table) {
-        //if (preg_match('/No hits reported/', $table->asXML()) ) {
-            //print "skipping this table b/c no hits are reported\n";
-        //}
-        // make sure we are looking at a table and its not an empty table
-        if ($table->getName() == 'table' && !preg_match('/No hits reported/', $table->asXML()) ) {
-            $idx_iterations ++;
-            if ($idx_iterations % $interval == 0) {
-                    $percentage = (int) ($idx_iterations / $no_iterations * 100);
-                    tripal_db_set_active($previous_db);
-                    tripal_job_set_progress($job_id, $percentage);
-                    $previous_db = tripal_db_set_active('chado');
-                    print $percentage."% ";
-            }
-
-            // Set job status
-            // Get the first row and match its name with the feature name
-            $firsttd = $table->children()->children()->children();
-            $feature_id = 0;
-            foreach($firsttd as $b) {
-                foreach($b->children() as $a) {
-                    if ($a->getName() == 'a') {
-                        // Remove _ORF from the sequence name
-                        $seqname = preg_replace('/^(.+?)_\d_.+/', "$1", $a);
-                        print "seqname is $seqname\n";
-    
-                        // Find out how many features match this uniquename
-                        $sql = "SELECT count(feature_id) FROM {feature} ".
-                        "WHERE uniquename = '%s' ";
-                        $no_features = db_result(db_query($sql, $seqname));
-						    
-                        // If there is only one match, get the feature_id
-                        if ($no_features == 1) {
-                            $sql = "SELECT feature_id FROM {feature} ".
-                                    "WHERE uniquename = '%s' ";
-                            $feature_id = db_result(db_query($sql, $seqname));
-                            print "\tfeature id is $feature_id\n";
-    
-                            // If the uniquename matches more than one features then skip and print 'Ambiguous'
-                        } else if ($no_features > 1) {
-                            fwrite($log, "Ambiguous: ".$seqname." matches more than one feature and is not processed.\n");
-                            continue;
-    
-                        // If the uniquename did not match, skip and print 'Failed'
-                        } else {
-                            fwrite($log, "Failed: ".$seqname."\n");
-                        }
-    
-                    }
-                }
-            }
-
-            // Successfully matched. print 'Succeeded'. Add analysis_id and
-            // feature_id to analysisfeature. Add the table as XML to analysisfeatureprop
-            if ($feature_id) {
-
-                //------------------------------------
-                // Clease unwanted rows from the table
-                //------------------------------------
-
-                $parent_row =   "/<tr><td valign=\"top\"><b>Parent<\/b><\/td>\s*<td valign=\"top\">\s*no.*?parent<\/td>\s*<\/tr>/";
-                $children_row = "/<tr><td valign=\"top\"><b>Children<\/b><\/td>\s*<td valign=\"top\">\s*no.*?children<\/td>\s*<\/tr>/";
-                $found_row    = "/<tr><td valign=\"top\"><b>Found.*?in<\/b><\/td>\s*<td valign=\"top\">\s*no.*?entries<\/td>\s*<\/tr>/";
-                $contains_row = "/<tr><td valign=\"top\"><b>Contains<\/b><\/td>\s*<td valign=\"top\">\s*no.*?entries<\/td>\s*<\/tr>/";
-                $go_row       = "/<tr><td valign=\"top\"><b>GO.*?terms<\/b><\/td>\s*<td valign=\"top\">\s*none<\/td>\s*<\/tr>/";
-    
-                $table_txt = $table->asXML();
-                $table_txt = preg_replace($parent_row, "", $table_txt);
-                $table_txt = preg_replace($children_row, "", $table_txt);
-                $table_txt = preg_replace($found_row, "", $table_txt);
-                $table_txt = preg_replace($contains_row, "", $table_txt);
-                $table_txt = preg_replace($go_row, "", $table_txt);
-
-                //------------------------------------
-                // Clease unwanted ORF link from table 
-                //------------------------------------
-                $orf_link = "/<b><a href=\"\/iprscan\/wget.*?\">(.*?)<\/a><\/b>/";
-                $table_txt = preg_replace($orf_link, "$1", $table_txt);
-
-                //print "----------------------------\n";
-                //print "old: ".$table->asXML()."\n\n\n";
-                //print "----------------------------\n";
-                //print "Fixed: $table_txt\n";
-                //print "----------------------------\n";
-
-                //------------------------------------
-                // If this feature has already been associated with this analysis, do not reinsert
-                // Otherwise, Insert into analysisfeature table
-                //------------------------------------
-                $sql = "Select analysisfeature_id as id from {analysisfeature} where feature_id = %d and analysis_id = %d";
-                $analysisfeature =  db_fetch_object(db_query($sql, $feature_id, $analysis_id));
-                if($analysisfeature){ $analysisfeature_id = $analysisfeature->id; }
-                if(!$analysisfeature_id){
-                    print "inserting analysisfeature\n";
-                   $sql = "INSERT INTO {analysisfeature} (feature_id, analysis_id) ".
-                        "VALUES (%d, %d)";
-                   db_query ($sql, $feature_id, $analysis_id);
-                   $sql = "Select analysisfeature_id from {analysisfeature} where feature_id = %d and analysis_id = %d";
-                   $analysisfeature =  db_fetch_object(db_query($sql, $feature_id, $analysis_id));
-                   $analysisfeature_id = $analysisfeature->id;
-                }
-
-                print "analysisfeature_id is $analysisfeature_id (analysis_id = $analysis_id; feature_id = $feature_id)\n";
-
-
-                // Get the higest rank for this feature_id in analysisfeatureprop table.
-                // If the value of the inserting content is not duplicate, add it to  
-                // analysisfeaturepro with 'higest_rank + 1'
-                $sql = "SELECT MAX(rank) FROM {analysisfeatureprop} AFP ".
-                        "INNER JOIN analysisfeature AF ON AF.analysisfeature_id = AFP.analysisfeature_id ".       
-                        "WHERE feature_id=%d ".
-                        "AND analysis_id=%d ".
-                        "AND type_id=%d ";
-
-                $afp =  db_fetch_object(db_query($sql, $feature_id, $analysis_id, $type_id));
-                $hi_rank = 0;
-                if ($afp) {
-                    $hi_rank = $afp->max + 1;
-                }
-            
-				//------------------------------------------------------------
-				// Insert interpro html tags into analysisfeatureprop table
-				//------------------------------------------------------------
-				// Before inserting, make sure it's not a duplicate
-				$sql = "SELECT value FROM {analysisfeatureprop} WHERE analysisfeature_id = %d AND type_id = %d";
-				$result = db_query($sql, $analysisfeature_id, $type_id);
-				$duplicate = 0;
-				while ($afp_value = db_fetch_object($result)) {
-				    if ($table_txt == $afp_value->value) {
-                        $duplicate = 1;
-				    }
-				}
-				if (!$duplicate) {
-				    $sql = "INSERT INTO {analysisfeatureprop} (analysisfeature_id, type_id, value, rank)".
-                            "VALUES (%d, %d, '%s', %d)";
-				    db_query($sql, $analysisfeature_id, $type_id, $table_txt, $hi_rank);
-				    fwrite($log, " (Insert)\n"); // write to log
-                    print "\twriting table\n";
-				} else {
-				   fwrite($log, " (Skipped)\n");
-                    print "\tskipping table - dup\n";
-				}
-				
-                // Parse GO terms. Make sure GO database schema is installed in chado
-                $go_db_id = db_result(db_query("SELECT db_id FROM {db} WHERE name='GO'"));
-                if (!$go_db_id) {
-                    print 'GO schema not installed in chado. GO terms are not processed.';
-                }
-                if ($go_db_id && $parsego) {
-                    $trs = $table->children();
-                    foreach ($trs as $tr) {
-                        $tds = $tr->children();
-                        foreach($tds as $td) {
-                            $gotags = $td->children();
-                            foreach ($gotags as $gotag) {
-                                // Look for 'GO:accession#'
-                                if (preg_match("/^.*?GO:(\d+).*$/", $gotag, $matches)) {
-                        	
-                                    // Find cvterm_id for the matched GO term
-                                    $sql = "SELECT cvterm_id FROM {cvterm} CVT 
-                                            INNER JOIN dbxref DBX ON CVT.dbxref_id = DBX.dbxref_id
-                                            WHERE DBX.accession = '%s' AND DBX.db_id = %d";
-                                    $goterm_id = db_result(db_query($sql, $matches[1], $go_db_id));
-                           
-                                    //-------------------------------------------
-                                    // Insert GO terms into feature_cvterm table
-                                    //-------------------------------------------
-                                    // Default pub_id = 1 (NULL) was used
-                                    $sql = "INSERT INTO {feature_cvterm} (feature_id, cvterm_id, pub_id)
-                                            VALUES (%d, %d, 1)";
-                                    db_query($sql, $feature_id, $goterm_id);
-
-                                    //------------------------------------------------
-                                    // Insert GO terms into analysisfeatureprop table
-                                    //------------------------------------------------
-                                    $sql = "INSERT INTO {analysisfeatureprop} (analysisfeature_id, type_id, value, rank) ".
-                                            "VALUES (%d, %d, '%s', 0)";
-                                    db_query($sql, $analysisfeature_id, $goterm_id, $matches[1]);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-    tripal_db_set_active ($previous_db); // Use drupal database
-    print "Done.\nSuccessful and failed entries have been saved in the log file:\n $logfile\n";
-	
-    fwrite($log, "\n");
-    fclose($log);
-    return;
-}
 
 /*******************************************************************************
  * tripal_analysis_interpro_nodeapi()
@@ -798,7 +358,7 @@ function tripal_analysis_interpro_theme () {
 
 function tripal_analysis_interpro_preprocess_tripal_feature_interpro_results(&$variables){
    $feature = $variables['node']->feature;
-	$variables['tripal_analysis_interpro']['results'] = tripal_get_interpro_results($feature->feature_id);
+	$variables['tripal_analysis_interpro']['results'] = tripal_get_interpro_XML_results($feature->feature_id);
 }
 
 /*******************************************************************************
@@ -809,12 +369,67 @@ function theme_parse_EBI_Interpro_XML_index_version ($node) {
 	$content = tripal_get_interpro_results_index_version($feature->feature_id);
 	return $content;
 }
+/**
+ * 
+ */
+function tripal_get_interpro_XML_results($feature_id){
 
+	// Get the blast results stored as XML from the analysisfeatureprop table
+   // the type for the property is named 'analysis_blast_output_iteration_hits'
+   // and is found in the 'tripal' controlled vocabulary.  This CV term was
+   // added by this module.
+   $select = array(
+      'analysisfeature_id' => array(
+         'feature_id' => $feature_id,
+      ), 
+      'type_id' => array(
+         'name' => 'analysis_interpro_xmloutput_hit',
+         'cv_id' => array(
+            'name' => 'tripal'
+         ),
+      ),         
+   );
+   $afeatureprops = tripal_core_chado_select('analysisfeatureprop',array('*'),$select);
+
+   // iterate through all of the interpro XML properties for this feature
+	$results = array ();
+	foreach ($afeatureprops as $index => $afeatureprop) {
+
+      // get the analysis feature record
+      $analysisfeature_arr = tripal_core_chado_select('analysisfeature',array('analysis_id'),
+         array('analysisfeature_id' => $afeatureprop->analysisfeature_id));
+      $analysisfeature = $analysisfeature_arr[0];
+
+      // get the analysis record and the analysis_id
+      $analysis = tripal_core_generate_chado_var('analysis',
+         array('analysis_id' => $analysisfeature->analysis_id));
+      $analysis_id = $analysis->analysis_id;
+
+
+      // parse the XML and add it to the array of blast results to be returned
+      $interpro_xml = $afeatureprop->value;
+      $orf = tripal_analysis_interpro_get_result_object($interpro_xml,$feature_id);
+		$results[$analysis->analysis_id]['protein_ORFs'][] = $orf;
+      $results[$analysis->analysis_id]['analysis'] = $analysis;
+
+      // iterate through all of the protein ORFs and combine the terms into one large list
+      if(!is_array($results[$analysis->analysis_id]['allterms'])){
+        $results[$analysis->analysis_id]['allterms'] = array();
+      }
+      if(!is_array($results[$analysis->analysis_id]['goterms'])){
+        $results[$analysis->analysis_id]['goterms'] = array();
+      }
+      $results[$analysis->analysis_id]['allterms'] = array_merge($results[$analysis->analysis_id]['allterms'],$orf['iprterms']);
+      $results[$analysis->analysis_id]['goterms'] = array_merge($results[$analysis->analysis_id]['goterms'],$orf['goterms']);
+      $i++;
+	}
+   return $results;
+}
 /*******************************************************************************
  * tripal_get_interpro_results()
  * Get interpro result from featureprop table for the feature
  */
-function tripal_get_interpro_results($feature_id){
+function tripal_get_interpro_HTML_results($feature_id){
 	// Get cvterm_id for 'analysis_interpro_output_hit' which is required
 	// for inserting into the analysisfeatureprop table
 	$previous_db = tripal_db_set_active('chado');

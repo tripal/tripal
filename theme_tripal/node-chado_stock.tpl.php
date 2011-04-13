@@ -26,6 +26,7 @@
 <?php
  //uncomment this line to see a full listing of the fields avail. to $node
  //print '<pre>'.print_r($node,TRUE).'</pre>';
+drupal_add_css('./tripal-node-templates.css');
 ?>
 
 <?php if ($teaser) { 
@@ -130,7 +131,7 @@
   }
 </style>
 
-<div id="tripal_stock_details">
+<div id="tripal_stock_details" class="tripal_details">
 
   <!-- Base Theme -->
   <?php include('tripal_stock/tripal_stock_base.tpl.php'); ?>
@@ -152,10 +153,10 @@
 </div>
 
 <!-- Table of contents -->
-<div id="tripal_stock_toc">
-   <div id="tripal_stock_toc_title"><?php print $node->stock_name ?></div>
-   <span id="tripal_stock_toc_desc">Select a link below for more information</span>
-   <ul id="tripal_stock_toc_list">
+<div id="tripal_stock_toc" class="tripal_toc">
+   <div id="tripal_stock_toc_title" class="tripal_toc_title"><?php print $node->stock_name ?></div>
+   <span id="tripal_stock_toc_desc" class="tripal_toc_desc">Select a link below for more information</span>
+   <ul id="tripal_stock_toc_list" class="tripal_toc_list">
 
    </ul>
 </div>
