@@ -1291,7 +1291,7 @@ function tripal_feature_load_featureloc_sequences($feature_id,$featurelocs){
       }      
       $floc_sequences[$src]['src'] = $src;
       $floc_sequences[$src]['type'] = $featureloc->cvname;
-      $sequence = substr($feature->residues,$featureloc->fmin,$featureloc->fmax - $featureloc->fmin);
+      $sequence = substr($feature->residues,$featureloc->fmin-1,($featureloc->fmax - $featureloc->fmin)+1);
       $floc_sequences[$src]['formatted_seq'] =  tripal_feature_color_sequence (
           $sequence,$parts);
    }
@@ -1438,7 +1438,7 @@ function tripal_feature_color_sequence ($sequence,$parts){
    foreach ($parts as $index => $child){
       $type = $child['type'];
       $start = $child['start'];
-      $end = $child['end'];
+      $end = $child['end']+1;
       
       $class = "class=\"tripal_feature-featureloc_sequence-$type\"";
 

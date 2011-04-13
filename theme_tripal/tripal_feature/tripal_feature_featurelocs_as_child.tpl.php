@@ -2,7 +2,7 @@
 
 $featurelocs_as_child = $variables['tripal_feature']['featurelocs_as_child'];
 $feature = $variables['node']->feature;
-
+dpm($featurelocs_as_child);
 ?>
 <div id="tripal_feature-featurelocs_as_child-box" class="tripal_feature-info-box tripal-info-box">
   <div class="tripal_feature-info-box-title tripal-info-box-title">Locations where <?php print $feature->featurename;?> is found</div>
@@ -23,15 +23,15 @@ $feature = $variables['node']->feature;
          if($i % 2 == 0 ){
             $class = 'tripal_feature-table-odd-row tripal-table-even-row';
          } 
-         $locname = $loc->name;
+         $src_name = $loc->src_name;
          if($loc->snid){
-           $locname = "<a href=\"" . url("node/$loc->snid") . "\">$loc->name</a> ";
+           $src_name = "<a href=\"" . url("node/$loc->snid") . "\">".$loc->src_name .":".$loc->fmin . ".." . $loc->fmax ."</a> ";
          }
          ?>
          <tr class="<?php print $class ?>">
-           <td><?php print $locname ?></td>
+           <td><?php print $loc->name ?></td>
            <td><?php print $loc->cvname ?></td>
-           <td><?php print $loc->src_name .":".$loc->fmin . ".." . $loc->fmax ?></td>
+           <td><?php print $src_name</td>
            <td><?php print $loc->phase ?></td>
            <td><?php 
               if($loc->strand == -1){

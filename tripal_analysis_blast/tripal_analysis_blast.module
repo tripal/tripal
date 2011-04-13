@@ -556,24 +556,6 @@ function chado_analysis_blast_load($node){
    $query_type      = tripal_analysis_get_property($analysis->analysis_id,'analysis_blast_query_type');	
    $query_uniquename= tripal_analysis_get_property($analysis->analysis_id,'analysis_blast_query_uniquename');	
    $blastfile_ext   = tripal_analysis_get_property($analysis->analysis_id,'analysis_blast_blastfile_ext');	
-	
-   // check if there exists a best hit report. if yes, reuturn the report url
-   $select = array(
-      'analysisfeature_id' => array(
-         'analysis_id' => $analysis_id,
-      ), 
-      'type_id' => array(
-         'name' => 'analysis_blast_besthit_query',
-         'cv_id' => array(
-            'name' => 'tripal'
-         ),
-      ),         
-   );
-   $blast_report = tripal_core_chado_select('analysisfeatureprop',array('analysisfeatureprop_id'),$select);
-	if ($blast_report) {
-		$report_url = url("tripal_blast_report/".$analysis->analysis_id."/1/0/0/20");
-		$analysis->blast_report = $report_url;
-	}
 
    $analysis->tripal_analysis_blast->blastdb         = $blastdb->value;
    $analysis->tripal_analysis_blast->blastfile       = $blastfile->value;	
@@ -597,6 +579,27 @@ function chado_analysis_blast_load($node){
       $analysis->tripal_analysis_blast->blastfile = $prop_values[1];
       $analysis->tripal_analysis_blast->blastparameters = $prop_values[2];
    }
+
+return $additions;
+
+   // check if there exists a best hit report. if yes, reuturn the report url
+   $select = array(
+      'analysisfeature_id' => array(
+         'analysis_id' => $analysis_id,
+      ), 
+      'type_id' => array(
+         'name' => 'analysis_blast_besthit_query',
+         'cv_id' => array(
+            'name' => 'tripal'
+         ),
+      ),         
+   );
+   $blast_report = tripal_core_chado_select('analysisfeatureprop',array('analysisfeatureprop_id'),$select);
+	if ($blast_report) {
+		$report_url = url("tripal_blast_report/".$analysis->analysis_id."/1/0/0/20");
+		$analysis->blast_report = $report_url;
+	}
+
 	return $additions;
 }
 /**
