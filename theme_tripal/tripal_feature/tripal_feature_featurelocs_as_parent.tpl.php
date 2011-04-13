@@ -2,7 +2,7 @@
 
 $featurelocs_as_parent = $variables['tripal_feature']['featurelocs_as_parent'];
 $feature = $variables['node']->feature;
-
+dpm($featurelocs_as_parent);
 ?>
 <div id="tripal_feature-featurelocs_as_parent-box" class="tripal_feature-info-box tripal-info-box">
   <div class="tripal_feature-info-box-title tripal-info-box-title">Features located relative to <?php print $feature->featurename;?></div>
