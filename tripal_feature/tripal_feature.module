@@ -1054,9 +1054,7 @@ function tripal_feature_load_featurelocs ($feature_id,$side = 'as_parent',$aggre
       // add the result to the array
       $featurelocs[$i++] = $loc;
    }
-if($side == 'as_parent'){
-  dpm($featurelocs);  
-}
+
    // Add the relationship feature locs if aggregate is turned on
    if($aggregate and strcmp($side,'as_parent')==0){ 
       // get the relationships for this feature without substituting any children
