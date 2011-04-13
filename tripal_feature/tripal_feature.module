@@ -1067,7 +1067,8 @@ function tripal_feature_load_featurelocs ($feature_id,$side = 'as_parent',$aggre
             $featurelocs[$i++] = $rfloc;
          }
       }
-   }      
+   } 
+dpm($featurelocs);     
    usort($featurelocs,'tripal_feature_sort_locations');
    return $featurelocs;
 }
