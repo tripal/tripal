@@ -9,7 +9,8 @@
   <table>
     <tr>
       <th>Field Name</th>
-      <th> Chado Table</th>
+      <th>Record Group</th>
+      <th>Chado Table</th>
       <th>Chado Field</th>
       <th>Worksheet</th>
       <th>Column</th>
@@ -19,6 +20,7 @@
   <?php for($i=1; $i<$form['fields']['total_fields']['#value']; $i++) { ?>
     <tr>
       <td><?php print drupal_render($form['fields']["field_name-$i"]);?></td>
+      <td><?php print drupal_render($form['fields']["field_group-$i"]);?></td>
       <td><?php print drupal_render($form['fields']["chado_table_name-$i"]);?></td>
       <td><?php print drupal_render($form['fields']["chado_field_name-$i"]);?></td>
       <td><?php print drupal_render($form['fields']["sheet_name-$i"]);?></td>

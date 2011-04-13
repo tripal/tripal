@@ -77,53 +77,46 @@ function tripal_bulk_loader_load_data($nid) {
   $field2column = array();
   $relationships2base = array();
   $all_tables = array();
-  foreach ($node->template->template_array as $table => $table_array) {
-    if (is_array($table_array)) {
-      $all_tables[$table] = $table;
-    
-      foreach ($table_array['field'] as $field_array) {
-        if (preg_match('/table field/', $field_array['type'])) {
-          $default_values_array[$table][$field_array['field']] = '';
-          $field2column[$table][$field_array['field']] = $field_array['spreadsheet column'];
-        } elseif (preg_match('/constant/', $field_array['type'])) {
-          $default_values_array[$table][$field_array['field']] = $field_array['constant value'];
-        } else {
-          print 'WARNING: Unsupported type: '. $field_array['type'] . ' for ' . $table . '.' . $field_array['field']."!\n";
-        }
-      }
-      
-      // Determine what relation is between this table and the base table-----------------------
-      // This is used later to link the various records
-      //print "===\n";
-      // Is there a foreign key to this table in the base table? 
-      // ie: feature.type_id (base) for cvterm (current)
-      //print "A) Is there fkey to ".$table." table in ".$base_table."?\n";
-      if ($related_tables['Foreign Key Relations'][$table]) {
-          //print "YES!\n";
-          $relationships2base['foreign key'][$table] = $base_table_desc['foreign keys'][$table];
-      }
-      
-      // Is there a foreign key in this table to the base table? 
-      // ie: featureloc.feature_id (current) for feature (base)
-      
-      //print "B) Does ".$table." contain a fkey to ".$base_table."?\n";
-      if ($related_tables['Direct Relations'][$table]) {
-          $table_desc = module_invoke_all('chado_'.$table.'_schema');
-          //print "YES!\n";
-          $relationships2base['direct'][$table] = $table_desc['foreign keys'][$base_table];
-      }
-      
-      // Is there a linking table which links this table with the base table
-      // ie: analysisfeature (current) links analysis and feature (base)
-      //print "C) Is ".$table." a linking table?\n";
-      if ($related_tables['Indirect Relations'][$table]) {
-        //print "YES!\n";
-        $table_desc = module_invoke_all('chado_'.$table.'_schema');
-        $relationships2base['indirect'][$table] = $table_desc['foreign keys'];
-      }
-
-    }
-  }
+  foreach ($node->template->template_array as $table => $table_groups) {
+  	foreach ($table_groups as $group => $table_array) {
+			if (is_array($table_array)) {
+				$all_tables[$table] = $table;
+			
+				foreach ($table_array['field'] as $field_array) {
+					if (preg_match('/table field/', $field_array['type'])) {
+						$default_values_array[$table][$group][$field_array['field']] = '';
+						$field2column[$table][$group][$field_array['field']] = $field_array['spreadsheet column'];
+					} elseif (preg_match('/constant/', $field_array['type'])) {
+						$default_values_array[$table][$group][$field_array['field']] = $field_array['constant value'];
+					} else {
+						print 'WARNING: Unsupported type: '. $field_array['type'] . ' for ' . $table . '.' . $field_array['field']."!\n";
+					}
+				}
+				
+				// Determine what relation is between this table and the base table-----------------------
+				// This is used later to link the various records
+				
+				// Is there a foreign key to this table in the base table? 
+				if ($related_tables['Foreign Key Relations'][$table]) {
+						$relationships2base['foreign key'][$table] = $base_table_desc['foreign keys'][$table];
+				}
+				
+				// Is there a foreign key in this table to the base table? 
+				// ie: featureloc.feature_id (current) for feature (base)
+				if ($related_tables['Direct Relations'][$table]) {
+						$table_desc = module_invoke_all('chado_'.$table.'_schema');
+						$relationships2base['direct'][$table] = $table_desc['foreign keys'][$base_table];
+				}
+				
+				// Is there a linking table which links this table with the base table
+				if ($related_tables['Indirect Relations'][$table]) {
+					$table_desc = module_invoke_all('chado_'.$table.'_schema');
+					$relationships2base['indirect'][$table] = $table_desc['foreign keys'];
+				}
+	
+			}
+		}
+  } //end of preprocessing
   
   //print "\nDefault Values Array: ".print_r($default_values_array, TRUE)."\n";
   //print "\nField to Column Mapping: ".print_r($field2column, TRUE)."\n";
@@ -147,9 +140,18 @@ function tripal_bulk_loader_load_data($nid) {
     
     // Insert base record-----------------------------------------------------------------------
     foreach ($relationships2base['foreign key'] as $table => $desc) {
+  		// check there is only 1 group & if more than one use first and warn
+  		if (sizeof($values[$table]) > 1) {
+  			print "WARNING: ".$table." has more than one group. There can only be one group for a "
+  				."table related to the base by a foreign key. Only the first will be used.\n";
+  		}
+  		
       // Ensure foreign key is present
-      $values[$table] = tripal_bulk_loader_supplement_values_array ($values[$table], $line, $field2column[$table]);
-      $success = tripal_bulk_loader_ensure_record ($table, $values[$table]);   
+      $group = key($values[$table]);
+      $sub_values = $values[$table][$group];
+      $sub_values = tripal_bulk_loader_supplement_values_array ($sub_values, $line, $field2column[$table][$group]);
+      $values[$table][$group] = $sub_values;
+      $success = tripal_bulk_loader_ensure_record ($table, $sub_values);   
       if ($success) {
         $num_records++;
       } else {
@@ -158,19 +160,25 @@ function tripal_bulk_loader_load_data($nid) {
       
       //Add to base values array
       foreach ($desc['columns'] as $foreign_key => $primary_key) {
-        $values[$base_table][$foreign_key] = $values[$table];
+				// check there is only 1 group & if more than one use first and warn
+				if (sizeof($values[$base_table]) > 1) {
+					print "WARNING: ".$table." has more than one group. There can only be one group for a "
+						."table related to the base by a foreign key. Only the first will be used.\n";
+				}   
+				$base_group = key($values[$base_table]);
+        $values[$base_table][$base_group][$foreign_key] = $values[$table][$group];
       }
       
       unset($tables[$table]);
     }
     
     // base table
-    $values[$base_table] = tripal_bulk_loader_supplement_values_array ($values[$base_table], $line, $field2column[$base_table]);
-    $success = tripal_bulk_loader_ensure_record ($base_table, $values[$base_table]);     
+    $values[$base_table][$base_group] = tripal_bulk_loader_supplement_values_array ($values[$base_table][$base_group], $line, $field2column[$base_table][$base_group]);
+    $success = tripal_bulk_loader_ensure_record ($base_table, $values[$base_table][$base_group]);     
     //print 'Base Table values array: '.print_r($values[$base_table], TRUE)."\n";
     if (!$success) {
       print "ERROR: Unable to insert base record where base table: ".$base_table.
-        " and values array: ".tripal_bulk_loader_flatten_array($values[$base_table])."\n";
+        " and values array: ".tripal_bulk_loader_flatten_array($values[$base_table][$base_group])."\n";
       $num_errors++;
     } else {
       $num_records++;
@@ -179,56 +187,62 @@ function tripal_bulk_loader_load_data($nid) {
     
     // Insert all tables with direct relationship to base ----------------------------------------
     foreach ($relationships2base['direct'] as $table => $desc) {
-      //Add base to values array
-      foreach ($desc['columns'] as $foreign_key => $primary_key) {
-        $values[$table][$foreign_key] = $values[$base_table];
-      }
+			foreach ($values[$table] as $group => $sub_values) {
+	      //Add base to values array
+  	    foreach ($desc['columns'] as $foreign_key => $primary_key) {  	
+        	$values[$table][$group][$foreign_key] = $values[$base_table][$base_group];
+        }
 
-      // Supplement and Add record
-      $values[$table] = tripal_bulk_loader_supplement_values_array ($values[$table], $line, $field2column[$table]);
-      $success = tripal_bulk_loader_ensure_record ($table, $values[$table]);
-      if ($success) {
-        $num_records++;
-      } else {
-        $num_errors++;
-      }
-      unset($tables[$table]);
+				// Supplement and Add record
+				$values[$table][$group] = tripal_bulk_loader_supplement_values_array ($values[$table][$group], $line, $field2column[$table][$group]);
+				$success = tripal_bulk_loader_ensure_record ($table, $values[$table][$group]);
+				if ($success) {
+					$num_records++;
+				} else {
+					$num_errors++;
+				}
+				unset($tables[$table]);
+			}
     } 
     
     // Add in all other tables -----------------------------------------------------------------
     foreach ($tables as $table) {
       // Don't insert if its an indirect relationship linking table
       if (!$relationships2base['indirect'][$table]) {
-        // Supplement and Add record
-        $values[$table] = tripal_bulk_loader_supplement_values_array ($values[$table], $line, $field2column[$table]);
-        $success = tripal_bulk_loader_ensure_record ($table, $values[$table]);    
-        if ($success) {
-          $num_records++;
-        } else {
-          $num_errors++;
-        }
+      	foreach ($values[$table] as $group => $sub_values) {
+					// Supplement and Add record
+					$values[$table][$group] = tripal_bulk_loader_supplement_values_array ($values[$table][$group], $line, $field2column[$table][$group]);
+					$success = tripal_bulk_loader_ensure_record ($table, $values[$table][$group]);    
+					if ($success) {
+						$num_records++;
+					} else {
+						$num_errors++;
+					}
+				}
       }
     }
     
     // Add in indirect relationships -----------------------------------------------------------
     foreach ($relationships2base['indirect'] as $table => $desc) {
-      // Add foreign keys to values array
-      foreach ($desc as $subtable => $subdesc) {
-        foreach ($subdesc['columns'] as $foreign_key => $primary_key) {
-          $values[$table][$foreign_key] = $values[$subtable];
-        }
-      }
-      
-      // Supplement and Add record
-      $values[$table] = tripal_bulk_loader_supplement_values_array ($values[$table], $line, $field2column[$table]);
-      $success = tripal_bulk_loader_ensure_record ($table, $values[$table]);      
-      if ($success) {
-        $num_records++;
-      } else {
-        $num_errors++;
-      }
-    }
-    
+    	foreach ($values[$table] as $group => $sub_values) {
+				// Add foreign keys to values array
+				foreach ($desc as $subtable => $subdesc) {
+					foreach ($subdesc['columns'] as $foreign_key => $primary_key) {
+						$values[$table][$group][$foreign_key] = $values[$subtable][$group];
+					}
+				}
+				
+				// Supplement and Add record
+				$values[$group][$table] = tripal_bulk_loader_supplement_values_array ($values[$table][$group], $line, $field2column[$table][$group]);
+				$success = tripal_bulk_loader_ensure_record ($table, $values[$table][$group]);      
+				if ($success) {
+					$num_records++;
+				} else {
+					$num_errors++;
+				}
+			}
+		}
+		
   } //end of file
   
   print "\nNumber of Records Inserted:".$num_records."\n";

@@ -201,10 +201,21 @@ function tripal_bulk_loader_edit_template_base_form($form_state = NULL){
     
     // List Current Fields -------------------------------------------------------------
     $i=1;
-    foreach ($form_state['storage']['template'] as $table => $table_array) {
-      if (!is_array($table_array)) { continue; }
+    foreach ($form_state['storage']['template'] as $table => $table_groups) {
+      if (!is_array($table_groups)) { continue; }
       
-      foreach ($table_array['field'] as $field_index => $field) {
+      foreach ($table_groups as $group => $table_array) {
+        foreach ($table_array['field'] as $field_index => $field) {
+          $form['fields']["field_group-$i"] = array(
+            '#type' => 'item',
+            '#value' => $group
+          );
+
+          $form['fields']["field_group_hidden-$i"] = array(
+            '#type' => 'hidden',
+            '#value' => $group
+          );
+          
           $form['fields']["field_name-$i"] = array(
             '#type' => 'item',
             '#value' => $field['title'],
@@ -261,6 +272,7 @@ function tripal_bulk_loader_edit_template_base_form($form_state = NULL){
           );
           
           $i++;
+        }
       }
     }
     $form['fields']['total_fields'] = array(
@@ -307,10 +319,14 @@ function tripal_bulk_loader_edit_template_base_form_submit($form, &$form_state){
       $form_state = tripal_bulk_loader_edit_template_field_form_submit($form_state);
     } elseif (preg_match('/Delete Field #(\d+)/', $form_state['values']['op'], $matches)) {
       $table = $form_state['values']["chado_table_hidden-".$matches[1]];
+      $group = $form_state['values']["field_group_hidden-".$matches[1]];
       $field_key = $form_state['values']["field_index-".$matches[1]];
-      unset($form_state['storage']['template'][$table]['field'][$field_key]);
-      if (!$form_state['storage']['template'][$table]['field']) {
-        unset($form_state['storage']['template'][$table]);
+      unset($form_state['storage']['template'][$table][$group]['field'][$field_key]);
+      if (!$form_state['storage']['template'][$table][$group]['field']) {
+        unset($form_state['storage']['template'][$table][$group]);
+        if (!$form_state['storage']['template'][$table]) {
+          unset($form_state['storage']['template'][$table]);
+        }
       }   
     }
     
@@ -389,6 +405,7 @@ function tripal_bulk_loader_add_template_field_form ($form_state) {
   $form = array();
  
  	$base_table = $form_state['storage']['base_table'];
+ 	$table = ($form_state['storage']['add']['chado_table'])? $form_state['storage']['add']['chado_table'] : $base_table;
  	
 	$form['add_fields'] = array(
 		'#type' => 'fieldset',
@@ -412,12 +429,26 @@ function tripal_bulk_loader_add_template_field_form ($form_state) {
 			'effect' => 'fade'
 			),
 	);
-	
+
+  // check template array for groups already used for this table then add one more
+  if ($form_state['storage']['template'][$table]) {
+    $groups = array_keys($form_state['storage']['template'][$table]);
+  }
+  $groups[] = 'New Group';
+  $form['add_fields']['add-field_group']  = array(
+    '#type' => 'select',
+    '#title' => 'Group',
+    '#description' => 'This is used to group a set of fields together allowing '
+      .'multiple records to be inserted into the same table per line of the spreadsheet',
+    '#options' => $groups,
+    '#default_value' => 0
+  );
+  
 	$form['add_fields']['add-field_title'] = array(
 		'#type' => 'textfield',
 		'#title' => t('Human-readable Title for Field')
 	);
-
+  
 	// Spreadsheet column
 	$form['add_fields']['columns'] = array(
 		'#type' => ($field_type == 'table field')? 'fieldset' : 'hidden',
@@ -463,7 +494,6 @@ function tripal_bulk_loader_add_template_field_form ($form_state) {
 	);
 	
 	$related_tables = module_invoke_all('tripal_bulk_loader_'.$base_table.'_related_tables');
-	$table = ($form_state['storage']['add']['chado_table'])? $form_state['storage']['add']['chado_table'] : $base_table;
 	$form['add_fields']['chado']['add-chado_table'] = array(
 		'#type' => 'select',
 		'#title' => t('Chado Table'),
@@ -531,6 +561,7 @@ function tripal_bulk_loader_add_template_field_form ($form_state) {
 function tripal_bulk_loader_add_template_field_form_submit ($form_state) {
   //dpm($form_state, 'form state in add submit');
   
+  $form_state['storage']['add']['field_group'] = $form_state['values']['add-field_group'];
   $form_state['storage']['add']['field_title'] = $form_state['values']['add-field_title'];
   $form_state['storage']['add']['field_type'] = $form_state['values']['add-type'];
   $form_state['storage']['add']['sheet_name'] = $form_state['values']['add-sheet'];
@@ -566,8 +597,10 @@ function tripal_bulk_loader_add_template_field_form_submit ($form_state) {
         
       }
       
+      $group = $form_state['storage']['add']['field_group'];
+      $table = $form_state['storage']['add']['chado_table'];
       if ($form_state['storage']['add']['field_type'] == 'table field') {
-        $template[$form_state['storage']['add']['chado_table']]['field'][] = array(
+        $template[$table][$group]['field'][] = array(
           'type' => 'table field',
           'title' => $form_state['storage']['add']['field_title'],
           'field' => $form_state['storage']['add']['chado_field'],
@@ -582,7 +615,7 @@ function tripal_bulk_loader_add_template_field_form_submit ($form_state) {
           //),        
         );
       } elseif ($form_state['storage']['add']['field_type'] == 'constant') {
-        $template[$form_state['storage']['add']['chado_table']]['field'][] = array(
+        $template[$table][$group]['field'][] = array(
           'type' => 'constant',
           'title' => $form_state['storage']['add']['field_title'],
           'field' => $form_state['storage']['add']['chado_field'],
@@ -622,6 +655,7 @@ function tripal_bulk_loader_edit_template_field_form($form_state) {
   $form = array();
   
  	$base_table = $form_state['storage']['base_table'];
+ 	$table = ($form_state['storage']['edit']['chado_table'])? $form_state['storage']['edit']['chado_table'] : $base_table;
  	
 	$form['edit_fields'] = array(
 		'#type' => ($form_state['storage']['edit_field']) ? 'fieldset' : 'hidden',
@@ -645,7 +679,26 @@ function tripal_bulk_loader_edit_template_field_form($form_state) {
 			'effect' => 'fade'
 			),
 	);
-	
+
+  // check template array for groups already used for this table then add one more
+  if ($form_state['storage']['template'][$table]) {
+    $groups = array_keys($form_state['storage']['template'][$table]);
+  }
+  $groups[] = 'New Group';
+  $form['edit_fields']['edit-field_group']  = array(
+    '#type' => 'select',
+    '#title' => 'Group',
+    '#description' => 'This is used to group a set of fields together allowing '
+      .'multiple records to be inserted into the same table per line of the spreadsheet',
+    '#options' => $groups,
+    '#default_value' => ($form_state['storage']['edit']['field_group']) ? $form_state['storage']['edit']['field_group'] : 0
+  );
+  
+  $form['edit_fields']['edit-old_field_group'] = array(
+    '#type' => 'hidden',
+    '#value' => $form_state['storage']['edit_field']['group'],
+  );
+  
 	$form['edit_fields']['edit-field_title'] = array(
 		'#type' => 'textfield',
 		'#title' => t('Human-readable Title for Field'),
@@ -697,7 +750,6 @@ function tripal_bulk_loader_edit_template_field_form($form_state) {
 	);
 	
 	$related_tables = module_invoke_all('tripal_bulk_loader_'.$base_table.'_related_tables');
-	$table = ($form_state['storage']['edit']['chado_table'])? $form_state['storage']['edit']['chado_table'] : $base_table;
 	$form['edit_fields']['chado']['edit-chado_table'] = array(
 		'#type' => 'select',
 		'#title' => t('Chado Table'),
@@ -751,8 +803,10 @@ function tripal_bulk_loader_edit_template_field_form_submit ($form_state) {
   if (preg_match('/Edit Field #(\d+)/', $form_state['values']['op'], $matches)) {
     $table = $form_state['values']["chado_table_hidden-".$matches[1]];
     $field_key = $form_state['values']["field_index-".$matches[1]];
-    $form_state['storage']['edit_field'] = $form_state['storage']['template'][$table]['field'][$field_key];
+    $old_group = $form_state['values']["field_group_hidden-".$matches[1]];
+    $form_state['storage']['edit_field'] = $form_state['storage']['template'][$table][$old_group]['field'][$field_key];
     $form_state['storage']['edit_field']['table'] = $table;
+    $form_state['storage']['edit_field']['group'] = $old_group;
     $form_state['storage']['edit_field']['field_index'] = $field_key;
     
     $set_default = TRUE;
@@ -762,6 +816,7 @@ function tripal_bulk_loader_edit_template_field_form_submit ($form_state) {
   }
   
   if ($set_default) {
+    $form_state['storage']['edit']['field_group'] = $old_group;
     $form_state['storage']['edit']['field_title'] = $field_template['title'];
     $form_state['storage']['edit']['field_type'] = $field_template['type'];
     $form_state['storage']['edit']['sheet_name'] = $field_template['spreadsheet sheet'];
@@ -770,6 +825,7 @@ function tripal_bulk_loader_edit_template_field_form_submit ($form_state) {
     $form_state['storage']['edit']['chado_table'] = $field_template['table'];
     $form_state['storage']['edit']['chado_field'] = $field_template['field'];
   } else {
+    $form_state['storage']['edit']['field_group'] = $form_state['values']['edit-field_group'];
     $form_state['storage']['edit']['field_title'] = $form_state['values']['edit-field_title'];
     $form_state['storage']['edit']['field_type'] = $form_state['values']['edit-type'];
     $form_state['storage']['edit']['sheet_name'] = $form_state['values']['edit-sheet'];
@@ -809,8 +865,13 @@ function tripal_bulk_loader_edit_template_field_form_submit ($form_state) {
       }
       
       $table = $form_state['storage']['edit_field']['table'];
+      $group = $form_state['values']['edit-field_group'];
+      $old_group = $form_state['values']['edit-old_field_group'];
       $field_index = $form_state['storage']['edit_field']['field_index'];
-      $form_state['storage']['template'][$table]['field'][$field_index] = $field;
+      $form_state['storage']['template'][$table][$group]['field'][$field_index] = $field;
+      if ($group != $old_group) {
+        unset($form_state['storage']['template'][$table][$old_group]['field'][$field_index]);
+      }
       drupal_set_message('Successfully Updated Field'); 
       
       //reset form
@@ -818,6 +879,8 @@ function tripal_bulk_loader_edit_template_field_form_submit ($form_state) {
       unset($form_state['storage']['edit']);
     }
   } 
+  
+  //dpm($form_state, 'form state from end of edit submit');
   
   return $form_state;
 }
