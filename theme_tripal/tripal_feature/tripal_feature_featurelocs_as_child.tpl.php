@@ -31,7 +31,7 @@ $feature = $variables['node']->feature;
          <tr class="<?php print $class ?>">
            <td><?php print $loc->name ?></td>
            <td><?php print $loc->cvname ?></td>
-           <td><?php print $src_name</td>
+           <td><?php print $src_name ?></td>
            <td><?php print $loc->phase ?></td>
            <td><?php 
               if($loc->strand == -1){
