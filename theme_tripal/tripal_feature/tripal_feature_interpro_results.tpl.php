@@ -1,8 +1,9 @@
 <?php
-$results = $variables['tripal_analysis_interpro']['results'];
+$results = $variables['tripal_analysis_interpro']['results']['xml'];
+$resultsHTML = $variables['tripal_analysis_interpro']['results']['html'];
 $feature  = $variables['node']->feature;
-//dpm($results);
-if($feature->cvname != 'gene' and count($results) > 0){ 
+
+if(count($results) > 0){ 
    $i = 0;
    foreach($results as $analysis_id => $analysisprops){ 
      $analysis = $analysisprops['analysis'];
@@ -100,5 +101,21 @@ if($feature->cvname != 'gene' and count($results) > 0){
      </div> <?php
    } // end for each analysis 
 } // end if
+if($resultsHTML){  ?>
+   <div id="tripal_feature-interpro_results_<?php print $i?>-box" class="tripal_analysis_interpro-box tripal-info-box">
+     <div class="tripal_feature-info-box-title tripal-info-box-title">InterPro Report <?php print preg_replace("/^(\d+-\d+-\d+) .*/","$1",$analysis->timeexecuted); ?></div>
+     <div class="tripal_feature-info-box-desc tripal-info-box-desc"><?php 
+         if($analysis->nid){ ?>
+            Analysis name: <a href="<?php print url('node/'.$analysis->nid) ?>"><?php print $analysis->name?></a><?php
+         } else { ?>
+            Analysis name: <?php print $analysis->name;
+         } ?><br>
+         Date Performed: <?php print preg_replace("/^(\d+-\d+-\d+) .*/","$1",$analysis->timeexecuted); ?>
+     </div>
+
+   <div class="tripal_feature-interpro_results_subtitle">Summary of Annotated IPR terms</div> <?php 
+   print $resultsHTML;?>
+   </div> <?php
+}
 ?>
 

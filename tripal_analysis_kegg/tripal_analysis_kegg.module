@@ -365,12 +365,15 @@ function tripal_analysis_kegg_parseHierFile ($analysis_id, $hierfile, $base_path
  
    // If user input a file (e.g. hier.tar.gz), decompress it first
    if (is_file($hierfile)) {
-      $data_dir = file_directory_path() . "/tripal/tripal_analysis_kegg";
+      // generate a unique directory name for extracting and parsing the file
+      $data_dir = sys_get_temp_dir() . "/" . uniqid();
+      mkdir($data_dir);
       $stderr = shell_exec("cd $data_dir; tar -zxf $hierfile;");
       print "$stderr\n";
-      $hierdir = $data_dir."/hier";
+      $hierdir = $data_dir . "/hier";
+   } 
    // Otherwise, treat it as a directory
-   } else {
+   else {
       $hierdir = $hierfile;
    }
    $dir_handle = @opendir($hierdir) or die("Unable to open $hierdir");
@@ -451,11 +454,12 @@ function tripal_analysis_kegg_parseHierFile ($analysis_id, $hierfile, $base_path
       }
    }
    print "Done.\n";
+   tripal_job_set_progress($job_id,100);
    closedir($dir_handle);
 
    // If user input a file, remove decompressed files after parsing
    if (is_file($hierfile)) {
-      $stderr = shell_exec("rm -r $hierdir;");
+      $stderr = shell_exec("rm -r $data_dir;");
       print "$stderr\n";
    }
    return;
@@ -672,6 +676,7 @@ function tripal_analysis_kegg_check_line_handle_feature($query_re,
            'name' => $query_type,
          );
       }
+
       $feature_arr = tripal_core_chado_select('feature',array('feature_id'),$select);
 
       if(count($feature_arr) > 1){

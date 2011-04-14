@@ -49,7 +49,7 @@ function tripal_cv_load_obo_v1_2_url($obo_name,$url,$jobid = NULL,$is_new = 1){
    $newcvs = array();
 
    // first download the OBO
-   $temp = tempnam(tripal_get_moddir('tripal_cv'),'obo_');
+   $temp = tempnam(sys_get_temp_dir(),'obo_');
    print "Opening URL $url\n";
    $url_fh = fopen($url,"r");
    $obo_fh = fopen($temp,"w");

@@ -50,6 +50,7 @@ function tripal_analysis_interpro_add_cvterms(){
    tripal_add_cvterms('analysis_interpro_interproparameters','The parameters used when executing an InterProScan job');
    tripal_add_cvterms('analysis_interpro_interprofile','Used to hold the name of the XML file containing the InterProScan results');
    tripal_add_cvterms('analysis_interpro_parsego','Indicates whether or not the GO terms should be extracted when parsing the InterProScan XML file');
+   tripal_add_cvterms('analysis_interpro_parseHTML','Indicates that the input file is in HTML format. This functionality is deprecated and may not work, but is provided for backwards compatability.');
    tripal_add_cvterms('analysis_interpro_query_re','The regular expression for finding the feature name in the query definition line of the InterPro results');
    tripal_add_cvterms('analysis_interpro_query_type','The feature type (e.g. mRNA, polypeptide) of the query input file. This type is used to identify the query feature when multiple features have the same name');
    tripal_add_cvterms('analysis_interpro_query_uniquename','Indicates if the matched name in the query definition line of the blast results is feature uniquename');
