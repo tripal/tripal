@@ -44,10 +44,6 @@ function tripal_core_init(){
       }  
       tripal_db_set_active($previous_db);  // now use drupal database
    }
-
-   // the tripal themeing uses rounded corners. We could use CSS but IE8 doesn't supprt
-   // rouneded corners so we will use the JQuery method.
-   drupal_add_js (drupal_get_path('theme', 'tripal').'/js/jquery-corners-0.3/jquery.corners.min.js');
 }
 
 /**
