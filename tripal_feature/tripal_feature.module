@@ -1055,19 +1055,19 @@ function tripal_feature_load_featurelocs ($feature_id,$side = 'as_parent',$aggre
       $featurelocs[$i++] = $loc;
    }
 
-//   // Add the relationship feature locs if aggregate is turned on
-//   if($aggregate and strcmp($side,'as_parent')==0){ 
-//      // get the relationships for this feature without substituting any children
-//      // for the parent. We want all relationships
-//      $relationships = tripal_feature_get_aggregate_relationships($feature_id,0);
-//      foreach($relationships as $rindex => $rel){ 
-//         // get the featurelocs for each of the relationship features
-//         $rel_featurelocs = tripal_feature_load_featurelocs ($rel->subject_id,'as_child',0);
-//         foreach($rel_featurelocs as $findex => $rfloc){
-//            $featurelocs[$i++] = $rfloc;
-//         }
-//      }
-//   } 
+   // Add the relationship feature locs if aggregate is turned on
+   if($aggregate and strcmp($side,'as_parent')==0){ 
+      // get the relationships for this feature without substituting any children
+      // for the parent. We want all relationships
+      $relationships = tripal_feature_get_aggregate_relationships($feature_id,0);
+      foreach($relationships as $rindex => $rel){ 
+         // get the featurelocs for each of the relationship features
+         $rel_featurelocs = tripal_feature_load_featurelocs ($rel->subject_id,'as_child',0);
+         foreach($rel_featurelocs as $findex => $rfloc){
+            $featurelocs[$i++] = $rfloc;
+         }
+      }
+   } 
    
    usort($featurelocs,'tripal_feature_sort_locations');
    return $featurelocs;
