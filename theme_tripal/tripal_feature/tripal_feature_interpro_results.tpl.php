@@ -65,35 +65,35 @@ if(count($results) > 0){
               <th>Method</th>
               <th>Identifier</th>
               <th>Description</th>
-              <th>Matches</th>
+              <th>Matches<sup>*</sup></th>
             </tr>
             <?php $j = 0; 
             foreach ($matches as $match){
                $match_id = $match['match_id'];
                $match_name = $match['match_name'];
                $match_dbname = $match['match_dbname'];
-               $match_start = $match['match_start'];
-               $match_end = $match['match_end'];
-               $match_score = $match['match_score'];
-               $match_status = $match['match_status'];
-               $match_evidence =  $match['match_evidence'];
+
 
                $class = 'tripal_feature-table-odd-row tripal-table-odd-row';
                if($j % 2 == 0 ){
                   $class = 'tripal_feature-table-even-row tripal-table-even-row';
                }?>
                <tr class="<?php print $class ?>">
-                <td><?php print $match_dbname ?></td>
-                <td><?php print $match_id ?></td>
-                <td><?php print $match_name ?></td>
-                <td nowrap>Score: <?php print $match_score ?> <br>
-                    Position: <?php print $match_start ?>..<?php print $match_end ?><br>
-                    Status: <?php print $match_status ?></td>
+                 <td><?php print $match_dbname ?></td>
+                 <td><?php print $match_id ?></td>
+                 <td><?php print $match_name ?></td>
+                 <td nowrap><?php
+                    $locations = $match['locations'];
+                    foreach($locations as $location){
+                      print $location['match_score']." [".$location['match_start']."-".$location['match_end']."] " . $location['match_status'] ."<br>";
+                      #$match_evidence =  $location['match_evidence'];
+                    } ?>
+                 </td>
                </tr>
                <?php
                $j++;  
             } // end foreach matches ?>
-            <tr><td colspan="4">&nbsp;</td></tr> <?php
+            <tr><td colspan="4"><sup>* score [start-end] status</sup></td></tr> <?php
         } // end foreach terms
         $i++;
      } // end foreach orfs ?>
