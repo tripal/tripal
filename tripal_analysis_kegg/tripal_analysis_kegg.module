@@ -240,6 +240,11 @@ function chado_analysis_kegg_form ($node){
                           'results that cannot be linked to a feature will be '.
                           'discarded.'),
    );
+   $form['kegg']['keggkeywordjob'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Submit a job to extract keywords from the KEGG html output'),
+      '#description' => t('Note: KEGG results are only searchable after keywords are extracted. Do not run this twice if you have already done so.'),
+	);
    return $form;
 }
 /*******************************************************************************
@@ -283,6 +288,13 @@ function chado_analysis_kegg_submit_job($node){
          drupal_set_message("Can not open KAAS hier.tar.gz output file. Job not scheduled.");
       }
    }
+	// Add a job if the user wants to the keywords from the HTML output
+	if ($node->keggkeywordjob) {
+		$analysis_id =chado_get_id_for_node('analysis', $node);
+		$job_args[0] = $analysis_id;
+		tripal_add_job("Extract keywords for search: $node->analysisname",'tripal_analysis_kegg',
+                           'tripal_analysis_kegg_extract_keywords', $job_args, $user->uid);
+	}
 }
 /*******************************************************************************
  * Delete KEGG anlysis
@@ -1116,4 +1128,56 @@ function tripal_analysis_kegg_select_form(&$form_state = NULL,$node){
       ),
    );
    return $form;
+}
+
+/*******************************************************************************
+ * Parsing KEGG HTML results that are stored in analysisfeatureprop for 
+ * searching 
+ * */
+function tripal_analysis_kegg_extract_keywords ($analysis_id) {	
+	
+	print "Extracting keywords...\n";
+	// Get all interpro output hits except for records with 'No hits reported', 'parent', 'children'.
+	$output_type_id = tripal_get_cvterm_id('kegg_brite_data');
+	$sql = "SELECT AFP.analysisfeature_id, AFP.value FROM {analysisfeatureprop} AFP 
+					 INNER JOIN {analysisfeature} AF ON AF.analysisfeature_id = AFP.analysisfeature_id
+					 WHERE type_id = $output_type_id 
+					 AND AF.analysis_id = $analysis_id";
+	$results = chado_query($sql);
+	$keyword_type_id = tripal_get_cvterm_id('analysis_kegg_output_keywords');
+	// Define what to be extracted in the array
+	$search = array (
+                 		"'<[/!]*?[^<>]*?>'si",          // replace HTML tags with a space
+							"'\n'", // replace newlines with a space
+	);
+	$replace = array (
+					  			" ",
+                 			" ",
+	);
+	while ($record = db_fetch_object($results)) {
+		$af_id = $record->analysisfeature_id;
+		$value = $record->value;
+
+		// Retrive keywords for this analysisfeature_id if there is any
+		$sql = "SELECT value FROM {analysisfeatureprop} WHERE analysisfeature_id =$af_id AND type_id = $keyword_type_id";
+		$keywords = db_result(chado_query($sql));
+		
+		// Extract new keywords from the interpro html output
+		$text = preg_replace($search, $replace, $value); 
+		$new_keywords = trim(ereg_replace(' +', ' ', $text)); // remove extra spaces
+		
+		// Append the new keywords 
+		if ($keywords) {
+			$new_keywords = "$keywords $new_keywords";
+			$sql = "UPDATE {analysisfeatureprop} SET value = '$new_keywords' WHERE analysisfeature_id =$af_id AND type_id = $keyword_type_id ";
+		} else {
+			// Insert the keyword into the analysisfeatureprop table
+			$sql = "INSERT INTO {analysisfeatureprop} (analysisfeature_id, type_id, value, rank) VALUES ($af_id, $keyword_type_id, '$new_keywords', 0)";
+		}
+		chado_query($sql);
+
+	}
+	
+	print "Finished.\n";
+	
 }

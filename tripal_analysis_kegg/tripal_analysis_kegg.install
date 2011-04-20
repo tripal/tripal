@@ -72,6 +72,7 @@ function tripal_analysis_kegg_add_cvterms () {
    tripal_add_cvterms('analysis_kegg_query_re','The regular expression for finding the feature name in the query definition line of the blast results');
    tripal_add_cvterms('analysis_kegg_query_type','The feature type (e.g. mRNA, polypeptide) of the query input file. This type is used to identify the query feature when multiple features have the same name');
    tripal_add_cvterms('analysis_kegg_query_uniquename','Indicates if the matched name in the query definition line of the blast results is feature uniquename');
+   tripal_add_cvterms('analysis_kegg_output_keywords', 'Selected keywords for kegg html output which are indexed for search.');
 }
 /*******************************************************************************
 * Implementation of hook_uninstall()
