@@ -188,7 +188,7 @@
 		</div>
     
     <div class="tripal-search-feature-exposed-widget">
-    	<input TYPE="Button" value="Reset" onClick="window.location = '<?php global $base_url; print "$base_url/est_search"?>';">
+    	<input type="Button" class="form-submit" value="Reset" onClick="window.location = '<?php global $base_url; print "$base_url/est_search"?>';">
       <?php $button = preg_replace("'Apply'", "Search", $button); print $button ?>
     </div>
   </div>
