@@ -268,9 +268,13 @@ function tripal_core_preprocess_tripal_core_job_view (&$variables){
    // arguments as they are
    $args = preg_split("/::/",$job->arguments);
    $arg_hook = $job->modulename."_job_describe_args";
-   $new_args = call_user_func_array($arg_hook,array($job->callback,$args));
-   if(is_array($new_args) and count($new_args)){
-      $job->arguments = $new_args;
+   if(is_callable($arg_hook)){
+      $new_args = call_user_func_array($arg_hook,array($job->callback,$args));
+      if(is_array($new_args) and count($new_args)){
+         $job->arguments = $new_args;
+      } else {
+         $job->arguments = $args;
+      }
    } else {
       $job->arguments = $args;
    }
