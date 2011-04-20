@@ -119,3 +119,15 @@ function tripal_add_cv($cv_name,$definition){
    tripal_db_set_active($previous_db);  // now use drupal database	
    return $cv->cv_id;
 }
+
+/************************************************************************
+* Get cvterm_id for a tripal cvterm by passing its name
+*/
+function tripal_get_cvterm_id ($cvterm){
+	$sql = "SELECT CVT.cvterm_id FROM {cvterm} CVT
+         	    INNER JOIN cv ON cv.cv_id = CVT.cv_id 
+            	 WHERE CVT.name = '$cvterm' 
+                AND CV.name = 'tripal'";
+	return db_result(chado_query($sql));
+}
+

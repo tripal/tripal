@@ -1165,3 +1165,46 @@ function tripal_core_exclude_type_by_default() {
 function tripal_core_exclude_field_from_feature_by_default() {
   return array();
 }
+
+/************************************************************************
+ *  Use this function instead of db_query() to avoid switching databases
+ *  when making query to the chado database
+ */
+function chado_query($sql) {
+	$args = func_get_args();
+	array_shift($args);
+	$sql = db_prefix_tables($sql);
+	if (isset($args[0]) and is_array($args[0])) { // 'All arguments in one array' syntax
+		$args = $args[0];
+	}
+	_db_query_callback($args, TRUE);
+	$sql = preg_replace_callback(DB_QUERY_REGEXP, '_db_query_callback', $sql);
+	$previous_db = db_set_active('chado');
+	$results = _db_query($sql);
+	db_set_active($previous_db);
+	return $results;
+}
+
+/************************************************************************
+ * Get chado id for a node. E.g, if you want to get 'analysis_id' from the 
+ * 'analysis' table for a synced 'chado_analysis' node, use:
+ * $analysis_id = chado_get_id_for_node ('analysis', $node)
+ * Likewise,
+ * $organism_id = chado_get_id_for_node ('organism', $node)
+ * $feature_id = chado_get_id_for_node ('feature', $node)
+ */
+function chado_get_id_for_node ($table, $node) {
+	 return db_result(db_query("SELECT $table"."_id FROM {chado_".$table."} WHERE nid = $node->nid"));
+}
+
+/************************************************************************
+ *  Get node id for a chado feature/organism/analysis. E.g, if you want to
+ *  get the node id for an analysis, use:
+ *  $nid = chado_get_node_id ('analysis', $analysis_id)
+ *  Likewise,
+ *  $nid = chado_get_node_id ('organism', $organism_id)
+ *  $nid = chado_get_node_id ('feature', $feature_id) 
+ */
+function chado_get_node_id ($table, $id) {
+	 return db_result(db_query("SELECT nid FROM {chado_".$table."} WHERE $table"."_id = $id"));
+}
