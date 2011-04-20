@@ -1,0 +1,13 @@
+; $Id$
+package = Tripal
+name = Tripal Search Feature
+version = 6.x-0.2b-m0.2
+description = A module to provide advanced search functionalities for the features
+core = 6.x
+
+dependencies[] = tripal_core
+dependencies[] = tripal_organism
+dependencies[] = tripal_cv
+dependencies[] = tripal_feature
+dependencies[] = tripal_analysis
+dependencies[] = views

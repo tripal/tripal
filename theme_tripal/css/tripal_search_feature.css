@@ -1,0 +1,35 @@
+.view-est-search .views-exposed-form {
+	margin: 10px;
+	padding:10px;
+	background: #FFFFFF;
+	border: 1px solid #CCCCCC;
+}
+
+.view-est-search .tripal-search-feature-exposed-widget {
+	clear:both;
+	padding: 5px;
+}
+
+.view-est-search .tripal-search-feature-form-labels {
+	float:left;
+}
+
+.view-est-search .views-operator {
+	float:left;
+	clear:none;
+	margin-left: 5px;
+}
+
+.view-est-search .views-widget {
+	float:left;
+	clear:none;
+	margin-left: 5px;
+}
+
+.view-est-search .view-content .views-table {
+	margin-left: 10px;
+}
+ 
+ .tripal-search-feature-exposed-widgets-fields legend{
+   color:green;
+ }
