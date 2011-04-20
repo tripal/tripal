@@ -348,14 +348,14 @@ function tripal_feature_load_fasta($dfile, $organism_id, $type,
             }
             $name = trim($matches[1]);
          } else {
-            preg_match("/^(.*?)[\s\|].*$/",$line,$matches);
+            preg_match("/^\s*(.*?)[\s\|].*$/",$line,$matches);
             $name = trim($matches[1]);
          }
          if($re_uname){
             preg_match("/$re_uname/",$line,$matches);
             $uname = trim($matches[1]);
          } else {
-            preg_match("/^(.*?)[\s\|].*$/",$line,$matches);
+            preg_match("/^\s*(.*?)[\s\|].*$/",$line,$matches);
             $uname = trim($matches[1]);
          }         
          preg_match("/$re_accession/",$line,$matches);
