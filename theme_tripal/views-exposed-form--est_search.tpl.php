@@ -30,7 +30,7 @@
     	$feature_type_id =  $widgets['filter-feature_type']; 
     	$orgnism_common_name =  $widgets['filter-organism_common_name'];
     	$analysis_name =  $widgets['filter-unigene'];
-    	$feature_name =  $widgets['filter-name'];
+    	$feature_name =  $widgets['filter-feature_name'];
     	$feature_seqlen =  $widgets['filter-feature_seqlen'];
     	$cvterm_name =  $widgets['filter-go_term'];
     	$blast_value =  $widgets['filter-blast_value'];
