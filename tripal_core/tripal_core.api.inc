@@ -904,11 +904,6 @@ function tripal_core_generate_chado_var($table, $values) {
     return $results;
   } else {
     // no results returned
-    watchdog('tripal_core',
-      'tripal_core_generate_chado_var for %table: No record matches criteria values:%values',
-      array('%table'=>$table, '%values'=>print_r($values,TRUE)),
-      WATCHDOG_ERROR
-    );  
   } 
   
 }
@@ -1096,12 +1091,12 @@ function tripal_core_expand_chado_vars ($object, $type, $to_expand) {
     } else {
       // if there is an expandable array then we've reached the base object
       // if we get here and don't have anything expanded then something went wrong
-      watchdog(
-        'tripal_core',
-        'tripal_core_expand_chado_vars: Unable to expand the %type %to_expand',
-        array('%type'=>$type, '%to_expand'=>$to_expand),
-        WATCHDOG_ERROR
-      );
+//      watchdog(
+//        'tripal_core',
+//        'tripal_core_expand_chado_vars: Unable to expand the %type %to_expand',
+//        array('%type'=>$type, '%to_expand'=>$to_expand),
+//        WATCHDOG_ERROR
+//      );
     } //end of it we've reached the base object
   }
   

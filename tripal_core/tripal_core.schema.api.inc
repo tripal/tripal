@@ -6,6 +6,28 @@
  *        (specifically to add missing foreign key definitions) by implementing
  *        hook_chado_<table name>_schema().
  */
+
+/**
+ *
+ */
+function tripal_core_get_chado_tables() {
+  if(is_array($db_url) and array_key_exists('chado',$db_url)){
+    $previous_db = tripal_db_set_active('chado');
+    $sql = 'SELECT tablename FROM pg_tables';
+    $resource = db_query($sql);
+    tripal_db_set_active($previous_db);
+  } else {
+    $sql = "SELECT tablename FROM pg_tables WHERE schemaname='chado'";
+    $resource = db_query($sql);
+  }
+  
+  $tables = array();
+  while ($r = db_fetch_object($resource)) {
+    $tables[$r->tablename] = $r->tablename;
+  }
+  asort($tables);
+  return $tables;
+}
  
 /**
  * Implements hook_organism_dbxref_schema()

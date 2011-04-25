@@ -29,7 +29,7 @@ function tripal_add_job ($job_name,$modulename,$callback,$arguments,$uid,$priori
       drupal_set_message("Failed to add job $job_name.");
    }
 
-   return 1;
+   return $record->job_id;
 }
 /**
 *   

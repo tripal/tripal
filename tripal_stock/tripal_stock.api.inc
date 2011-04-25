@@ -199,7 +199,7 @@ function tripal_stock_get_stock_by_name_identifier($name, $organism_id) {
   $stock_ids = array();
   
   $options = array(
-    'regex_columns' => array('name', 'uniquename', 'accession', 'value')
+    'case_insensitive_columns' => array('name', 'uniquename', 'accession', 'value')
   );
   
   // where name_identifier = stock.name-------------------------------
@@ -209,7 +209,7 @@ function tripal_stock_get_stock_by_name_identifier($name, $organism_id) {
       'organism_id' => $organism_id,
     ),
     array(
-      'regex_columns' => array('name'),
+      'case_insensitive_columns' => array('name'),
     )
   );
   if (!empty($current_stocks)) {
@@ -223,7 +223,7 @@ function tripal_stock_get_stock_by_name_identifier($name, $organism_id) {
       'organism_id' => $organism_id,
     ),
     array(
-      'regex_columns' => array('uniquename'),
+      'case_insensitive_columns' => array('uniquename'),
     )
   );
   if (!empty($current_stocks)) {
@@ -240,7 +240,7 @@ function tripal_stock_get_stock_by_name_identifier($name, $organism_id) {
       'organism_id' => $organism_id,
     ),
     array(
-      'regex_columns' => array('accession'),
+      'case_insensitive_columns' => array('accession'),
     )
   );
   if (!empty($current_stocks)) {
@@ -258,7 +258,7 @@ function tripal_stock_get_stock_by_name_identifier($name, $organism_id) {
       ),
     ),
     array(
-      'regex_columns' => array('accession'),
+      'case_insensitive_columns' => array('accession'),
     )
   );
   if (!empty($current_stocks)) {
@@ -279,7 +279,7 @@ function tripal_stock_get_stock_by_name_identifier($name, $organism_id) {
       'value' => $name,
     ),
     array(
-      'regex_columns' => array('value'),
+      'case_insensitive_columns' => array('value'),
     )
   );
   if (!empty($current_stocks)) {

@@ -9,6 +9,8 @@
  * @see http://gmod.org/wiki/Chado_General_Module
  */
 
+require('tripal_genetic.api.inc');
+
 /*************************************************************************
  * Implements hook_views_api()
  * Purpose: Essentially this hook tells drupal that there is views support for

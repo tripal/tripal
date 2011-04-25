@@ -3,42 +3,69 @@
 
 <?php print drupal_render($form['template_name']); ?>
 
+<!-- For each table display details in a draggable table -->
+<?php if (!$form['records']['no_records']['#value']) { ?>
+  <fieldset><legend><?php print $form['records']['#title']; ?></legend>
+  <?php 
+    print drupal_render($form['records']['description']);
+    
+    // generate table
+    drupal_add_tabledrag('draggable-table', 'order', 'sibling', 'records-reorder');
+    $header = array('Record Name', 'Chado Table', 'Order');
+    $rows = array();
+    foreach (element_children($form['records']['records-data']) as $key) {
+      $element = &$form['records']['records-data'][$key];
+      $element['new_priority']['#attributes']['class'] = 'records-reorder';
+      
+      $row = array();
+      $row[] = drupal_render($element['title']);
+      $row[] = drupal_render($element['chado_table']);
+      $row[] = drupal_render($element['new_priority']) . drupal_render($element['id']);
+      $rows[] = array('data' => $row, 'class' => 'draggable');
+    }
+    
+    print theme('table', $header, $rows, array('id' => 'draggable-table'));
+  
+    // Render submit
+    print drupal_render($form['records']['submit-reorder']);
+    unset($form['records']);
+  ?>
+  </fieldset>
+<?php } ?>
+
 <!-- For each field display details plus edit/delete buttons-->
-<?php if ($form['fields']['total_fields']['#value'] > 0) {?>
-<fieldset><legend>Current Fields</legend>
-  <table>
-    <tr>
-      <th>Field Name</th>
-      <th>Record Group</th>
-      <th>Chado Table</th>
-      <th>Chado Field</th>
-      <th>Worksheet</th>
-      <th>Column</th>
-      <th>Constant Value</th>
-      <th></th>
-    </tr>
-  <?php for($i=1; $i<$form['fields']['total_fields']['#value']; $i++) { ?>
-    <tr>
-      <td><?php print drupal_render($form['fields']["field_name-$i"]);?></td>
-      <td><?php print drupal_render($form['fields']["field_group-$i"]);?></td>
-      <td><?php print drupal_render($form['fields']["chado_table_name-$i"]);?></td>
-      <td><?php print drupal_render($form['fields']["chado_field_name-$i"]);?></td>
-      <td><?php print drupal_render($form['fields']["sheet_name-$i"]);?></td>
-      <td><?php print drupal_render($form['fields']["column_num-$i"]);?></td>
-      <td><?php print drupal_render($form['fields']["constant_value-$i"]);?></td>
-      <td>
-        <?php print drupal_render($form['fields']["edit-$i"]);?>
-        <?php print drupal_render($form['fields']["delete-$i"]);?>
-        <?php print drupal_render($form['fields']["field_index-$i"]);?>
-      </td>
-    </tr>
-  <?php } ?>
-  </table>
-<?php 
-  } 
-  unset($form['fields']);
-?>
-</fieldset>
+<?php if ($form['fields']['total_fields']['#value'] > 0) { ?>
+  <fieldset><legend><?php print $form['fields']['#title']; ?></legend>
+
+  <?php 
+    // generate table
+    $header = array('Record Name', 'Field Name', 'Chado Table', 'Chado Field', 'Worksheet', 'Column', 'Constant Value', 'Foreign Record', '');
+    $rows = array();
+    foreach ($form['fields']['fields-data'] as $key => $element) {
+      if (preg_match('/^#/', $key)) { continue; }
+      
+      $row = array();
+      $row[] = drupal_render($element['record_id']);
+      $row[] = drupal_render($element['field_name']);
+      $row[] = drupal_render($element['chado_table_name']);
+      $row[] = drupal_render($element['chado_field_name']);
+      $row[] = drupal_render($element['sheet_name']);
+      $row[] = drupal_render($element['column_num']);
+      $row[] = drupal_render($element['constant_value']);
+      $row[] = drupal_render($element['foreign_record_id']);
+      $row[] = drupal_render($element['edit_submit']) . '<br>' . drupal_render($element['delete_submit']);
+      
+      $rows[] = $row;
+    }
+    print theme('table', $header, $rows, array());
+    
+    // Render other elements
+    print drupal_render($form['fields']['add_field']);
+    unset($form['fields']);
+  ?>
+  </fieldset>
+<?php } ?>
+
 <!-- Display Rest of form -->
 <?php print drupal_render($form); ?>
 </div>
