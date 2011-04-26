@@ -475,7 +475,6 @@ function tripal_bulk_loader_import_export_template_form_submit ($form, &$form_st
       }
     break;
   }
-  dpm($form_state, 'form state');
 }
 
 //////////////////////////////////////////////////////////////////////////////////////
