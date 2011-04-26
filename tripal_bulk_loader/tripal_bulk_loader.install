@@ -27,6 +27,17 @@ function tripal_bulk_loader_update_1 () {
 	return $update;
 }
 
+/**
+ * Update
+ * Add job_id column to tripal_bulk_loader
+ */
+function tripal_bulk_loader_update_2 () {
+	$update = array();
+	
+	$update[] = update_sql("ALTER TABLE {tripal_bulk_loader} ADD COLUMN job_id int");
+	
+	return $update;
+}
 
 /*******************************************************************************
 * tripal_bulk_loader_schema

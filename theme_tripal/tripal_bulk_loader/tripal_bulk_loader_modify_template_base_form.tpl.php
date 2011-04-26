@@ -1,6 +1,5 @@
 
 <div id="tripal-bulk-loader-fields">
-
 <?php print drupal_render($form['template_name']); ?>
 
 <!-- For each table display details in a draggable table -->
@@ -28,6 +27,7 @@
     print theme('table', $header, $rows, array('id' => 'draggable-table'));
     
     // Render submit
+    print drupal_render($form['records']['submit-new_record']);
     print drupal_render($form['records']['submit-reorder']);
     unset($form['records']);
   ?>

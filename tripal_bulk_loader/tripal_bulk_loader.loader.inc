@@ -19,11 +19,21 @@ function tripal_bulk_loader_add_loader_job_form ($form_state, $node) {
   	'#value' => $node->file
   );
   
+  $form['job_id'] = array(
+    '#type' => 'hidden',
+    '#value' => $node->job_id,
+  );
+  
   $form['submit'] = array(
     '#type' => 'submit',
-    '#value' => 'Submit Job'
+    '#value' => ($node->job_id) ? 'Re-Submit Job' : 'Submit Job',
   );
 
+  $form['submit-cancel'] = array(
+    '#type' => ($node->job_id)? 'submit' : 'hidden',
+    '#value' => 'Cancel Job',
+  );
+  
   return $form;
 }
 
@@ -41,10 +51,20 @@ function tripal_bulk_loader_add_loader_job_form_submit ($form, $form_state) {
 			$job_id = tripal_add_job("Bulk Loading Job: $fname",'tripal_bulk_loader', 'tripal_bulk_loader_load_data', $job_args, $user->uid);
 			
 			// add job_id to bulk_loader node
-			
+      $record = node_load($form_state['values']['nid']);
+      $record->job_id = $job_id;
+      drupal_write_record('tripal_bulk_loader', $record, 'nid');
+
+      // Add Sync Features Job
+      tripal_add_job('Sync all features','tripal_feature',
+        'tripal_feature_sync_features',$job_args,$user->uid);			
 		} else {
 			drupal_set_message("Can not open ".$form_state['values']['file'].". Job not scheduled.");
 		}    
+  } elseif (preg_match('/Re-Submit Job/', $form_state['values']['op'])) {
+    tripal_jobs_rerun($form_state['values']['job_id']);
+  } elseif (preg_match('/Cancel Job/', $form_state['values']['op'])) {
+    tripal_jobs_cancel($form_state['values']['job_id']);
   }
 
 }
@@ -225,5 +245,5 @@ function tripal_bulk_loader_flatten_array ($values) {
     $flattened_values[] = $k .'=>'. $v;
   }
   
-  return $flattened_values;
+  return implode(', ',$flattened_values);
 }
