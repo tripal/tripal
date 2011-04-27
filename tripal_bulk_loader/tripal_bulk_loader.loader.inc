@@ -96,6 +96,7 @@ function tripal_bulk_loader_load_data($nid) {
     
     foreach ($record_array['fields'] as $field_index => $field_array) {
       $default_data[$priority]['table'] = $record_array['table'];
+      $default_data[$priority]['mode'] = ($record_array['mode']) ? $record_array['mode'] : 'insert';
       $record2priority[$record_array['record_id']] = $priority;
       
       if (preg_match('/table field/', $field_array['type'])) {
@@ -149,20 +150,30 @@ function tripal_bulk_loader_load_data($nid) {
       // first check if it already exists
       $exists = tripal_core_chado_select($table, array_keys($values), $values, array('has_record'=>TRUE));
       if ($exists) {
+        if (!preg_match('/select/',$table_data['mode'])) {
           watchdog('T_bulk_loader', 
             'Record already exists in %table: %record',
             array('%table' => $table, '%record' => tripal_bulk_loader_flatten_array($values)),
             'WATCHDOG_WARNING'
-          );      
+          );  
+        }
+      } elseif ($exists > 1) { 
+          watchdog('T_bulk_loader', 
+            'More than 1 record exists in %table: %record',
+            array('%table' => $table, '%record' => tripal_bulk_loader_flatten_array($values)),
+            'WATCHDOG_WARNING'
+          );          
       } else {
         // if it doesn't exist already then insert it
-        $success = tripal_core_chado_insert($table, $values);
-        if (!$success) {
-          watchdog('T_bulk_loader', 
-            'Unable to insert the following record into %table: %record',
-            array('%table' => $table, '%record' => tripal_bulk_loader_flatten_array($values)),
-            'WATCHDOG_ERROR'
-          );
+        if (preg_match('/insert/',$table_data['mode'])) {
+          $success = tripal_core_chado_insert($table, $values);
+          if (!$success) {
+            watchdog('T_bulk_loader', 
+              'Unable to insert the following record into %table: %record',
+              array('%table' => $table, '%record' => tripal_bulk_loader_flatten_array($values)),
+              'WATCHDOG_ERROR'
+            );
+          }
         }
       }// end of if/not record exists
     } // end of foreach table in default data array
