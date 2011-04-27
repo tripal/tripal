@@ -160,6 +160,11 @@ function tripal_bulk_loader_modify_template_base_form ($form_state = NULL, $mode
             '#type' => 'hidden',
             '#value' => $priority,
           ),
+          'submit-edit_record' => array(
+            '#type' => 'submit',
+            '#name' => (string)$priority,
+            '#value' => 'Edit Record',
+          ),          
           'submit-add_field' => array(
             '#type' => 'submit',
             '#name' => (string)$priority,
@@ -327,6 +332,14 @@ function tripal_bulk_loader_modify_template_base_form_submit($form, &$form_state
       );
       drupal_goto('admin/tripal/tripal_bulk_loader_template/add_field', $query);    
     break;
+
+    case 'Edit Record':
+      $query = array(
+        'template_id'=> $form_state['storage']['template_id'], 
+        'record_id' => $form_state['clicked_button']['#name'],
+      );
+      drupal_goto('admin/tripal/tripal_bulk_loader_template/edit_record', $query);
+    break;
     
     case 'Add Field':
       $query = array(
@@ -373,6 +386,10 @@ function tripal_bulk_loader_modify_template_base_form_submit($form, &$form_state
 // Delete Template
 //////////////////////////////////////////////////////////////////////////////////////
 
+/**
+ * Delete Template Form
+ * This form allows admin to delete already existing templates
+ */
 function tripal_bulk_loader_delete_template_base_form () {
 	$form = array();
 
@@ -400,11 +417,35 @@ function tripal_bulk_loader_delete_template_base_form () {
 	return $form;
 }
 
+/**
+ * Delete Template Form Submit
+ *
+ * @param $form
+ *   The form that was submitted
+ * @param $form_state
+ *   The values and storage that were submitted
+ */
 function tripal_bulk_loader_delete_template_base_form_submit ($form, &$form_state) {
 	$sql = "DELETE FROM {tripal_bulk_loader_template} WHERE template_id=%d";
 	db_query($sql, $form_state['values']['template_name']);
 }
 
+/**
+ * Import/Export Template Form
+ *
+ * On export, simply selects the serialized array from the db for a given template 
+ * and presents it to the user. On import, a serialized template array and a name is 
+ * supplied and a template record is created.
+ *
+ * @todo Make array presented to the user more readable. (ie: unserialize and print to the screen)
+ *
+ * @param $form_state
+ *   The values and storage for the form
+ * @param $mode
+ *   Either 'import' or 'export' to indicate which function is being performed
+ * @return
+ *   A form array to be rendered by drupal_get_form
+ */
 function tripal_bulk_loader_import_export_template_form ($form_state = NULL, $mode) {
   $form = array();
 
@@ -456,13 +497,20 @@ function tripal_bulk_loader_import_export_template_form ($form_state = NULL, $mo
   return $form;
 }
 
+/**
+ * Import/Export Template Form Submit
+ *
+ * @param $form
+ *   The form that was submitted
+ * @param $form_state
+ *   The values and storage that were submitted
+ */
 function tripal_bulk_loader_import_export_template_form_submit ($form, &$form_state) {
   switch ($form_state['values']['mode']) {
     case 'export':
       $record = db_fetch_object(db_query("SELECT * FROM {tripal_bulk_loader_template} WHERE template_id=%d", $form_state['values']['template_id']));
       $form_state['storage']['template_array'] = $record->template_array;
       $form_state['storage']['template_id'] = $form_state['values']['template_id'];
-      dpm($record, 'record');
     break;
     case 'import':
       $record = array(
@@ -478,25 +526,213 @@ function tripal_bulk_loader_import_export_template_form_submit ($form, &$form_st
 }
 
 //////////////////////////////////////////////////////////////////////////////////////
-// Add/Edit Field Forms (meant to be returned as part of a larger form)
+// Add/Edit Field/Record Forms
 //////////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * Edit Record Form
+ *
+ * This form is meant to be called from a bulk loader form. The following should be set 
+ * in the query section of the path:
+ *  - template_id=\d+: the template which the edited record is part of
+ *  - record_id=\d+: the priority or key in the template array of the record to be edited
+ *
+ * @param $form_state
+ *   Contains the values and storage for the form
+ * @return
+ *   A form array to be rendered by drupal_get_form
+ */
+function tripal_bulk_loader_edit_template_record_form (&$form_state = NULL) {
+ 	$form['#cache'] = TRUE; // Make sure the form is cached.
+  
+ 	// get template id from path
+ 	$template_id = ($_GET['template_id'] !== NULL) ? $_GET['template_id'] : $form_state['values']['template_id'];
+ 	
+ 	// if there is no template supplied don't return rest of form
+ 	if (!$template_id) {
+ 	  return $form;
+ 	}
+
+  // Pre-process values/defaults ---------------------------
+
+ 	// If this is the first load of the form (no form state) we need to initialize some variables
+ 	if (!$form_state['storage']['template']) {
+    $sql = "SELECT * FROM {tripal_bulk_loader_template} WHERE template_id=%d";
+    $template = db_fetch_object(db_query($sql, $template_id));
+    $form_state['storage']['template_array'] = unserialize($template->template_array);
+    $form_state['storage']['template'] = $template;
+    
+    $form_state['storage']['record2priority'] = array();
+    foreach ($form_state['storage']['template_array'] as $priority => $record_array) {
+      if (!is_array($record_array)) { continue; }
+      $form_state['storage']['record2priority'][$record_array['record_id']] = $priority;
+    }
+    
+    $form_state['storage']['referring URL'] = $_SERVER["HTTP_REFERER"];
+  } else {
+    $template = $form_state['storage']['template'];
+  }
+
+ 	// get the record_id from the path
+ 	if ($_GET['record_id'] !== NULL) {
+   	$form_state['values']['field_group'] = $_GET['record_id'];
+   	$form_state['storage']['original_priority'] = $_GET['record_id'];
+  }
+  
+  
+  // Tables and default table
+  $tables = tripal_core_get_chado_tables();
+  if ($form_state['values']['chado_table']) {
+    $table = $form_state['values']['chado_table'];
+  } else {
+    $table = $form_state['storage']['template_array'][$form_state['storage']['original_priority']]['table'];  
+  }
+
+  //dpm($form_state, 'form state');
+  
+ 	// Form Proper ------------------------------------------- 	
+  $form['template_name'] = array(
+    '#type' => 'item',
+    '#title' => 'Template',
+    '#value' => $template->name,
+  );
+
+  $form['template_id'] = array(
+    '#type' => 'hidden',
+    '#value' => $template_id,
+  );
+  
+  $form['edit_record'] = array(
+    '#type' => 'fieldset',
+  );
+
+  // check template array for records then add one more
+  if (!$form_state['storage']['record2priority']) { 
+    $groups = array();
+  } else {
+    $groups = array_flip($form_state['storage']['record2priority']);
+  }
+  $priority_default = $form_state['values']['field_group'];
+  $form['edit_record']['field_group']  = array(
+    '#type' => 'select',
+    '#title' => 'Record',
+    '#description' => 'By Changing the record here, you can move all the fields from the current record into the selected record.',
+    '#options' => $groups,
+    '#default_value' => $priority_default,
+    '#required' => TRUE,
+  );
+  
+  $form['edit_record']['record_name'] = array(
+    '#type' => 'textfield',
+    '#title' => 'Unique Record Name',
+    '#default_value' => $groups[$priority_default],
+  );
+
+  $form['edit_record']['chado_table'] = array(
+    '#type' => 'select',
+    '#title' => t('Chado Table'),
+    '#description' => 'This changes the chado table for all fields in this record.',
+    '#options' => $tables,
+    '#default_value' => $table,
+  );
+  
+  $form['edit_record']['mode'] = array(
+    '#type' => 'radios',
+    '#title' => 'Action to take when Loading Record',
+    '#options' => array(
+      'insert' => 'Insert the record if it doesn\'t already exist',
+      'select' => 'Don\'t insert this record: it\'s used to define a foreign key in another record',
+    ),
+    '#default_value' => 'insert'
+  );
+  
+  $form['edit_record']['submit-edit_record'] = array(
+      '#type' => 'submit',
+      '#value' => 'Edit Record'
+  );
+
+  $form['edit_record']['submit-cancel'] = array(
+      '#type' => 'submit',
+      '#value' => 'Cancel'
+  );
+  
+  return $form;
+}
+
+
+/**
+ * Edit Record Form Submit
+ *
+ * @param $form
+ *   The form that was submitted
+ * @param $form_state
+ *   Contains the values and storage for the form
+ */
+function tripal_bulk_loader_edit_template_record_form_submit ($form, &$form_state) {
+  //dpm($form_state, 'form state -start submit');
+  
+  if (!$form_state['ahah_submission']) {
+    if ($form_state['values']['op'] ==  'Edit Record') {
+
+      $template = $form_state['storage']['template_array'];
+      
+      // Edit Record
+      $record = $template[ $form_state['storage']['original_priority'] ];
+      $record['record_id'] = $form_state['values']['record_name'];
+      $record['mode'] = $form_state['values']['mode'];
+      $record['table'] = $form_state['values']['chado_table'];
+      
+      if ($form_state['storage']['original_priority'] != $form_state['values']['field_group']) {
+        $record['fields'] = array_merge($record['fields'], $template[ $form_state['values']['field_group'] ]['fields']);
+        $template[ $form_state['values']['field_group'] ] = $record;
+        unset($template[ $form_state['storage']['original_priority'] ]);
+      } else {
+        $template[ $form_state['storage']['original_priority'] ] = $record;
+      }
+
+      // Save Template
+      $form_state['storage']['template']->template_array = serialize($template);
+      $success = drupal_write_record('tripal_bulk_loader_template', $form_state['storage']['template'], array('template_id'));
+  
+      if ($success) {
+        drupal_set_message('Successfully Updated Template Record');
+        drupal_set_message('Template Saved.'); 
+        
+        $path = explode('?',$form_state['storage']['referring URL']);
+        parse_str($path[1], $query);
+        $query['template_id'] = $form_state['storage']['template']->template_id;
+        drupal_goto($path[0], $query);
+      } else {
+        drupal_set_message('Unable to Save Template!', 'error');
+        watchdog('T_bulk_loader',
+          'Unable to save bulk loader template: %template',
+          array('%template' => print_r($form_state['storage']['template'], TRUE)),
+          WATCHDOG_ERROR
+        );
+      }
+    } elseif ($form_state['values']['op'] ==  'Cancel') {
+        $path = explode('?',$form_state['storage']['referring URL']);
+        parse_str($path[1], $query);
+        $query['template_id'] = $form_state['storage']['template']->template_id;
+        //dpm('Redirecting to: '.$path[0].'?'.print_r($query,TRUE).' where the referring URL:'.$form_state['storage']['referring URL']);
+        drupal_goto($path[0], $query);    
+    }
+  }  
+  
+}
 
 /**
  * Add Field Form
  *
- * This form meant to be part of a larger form. Currently it is part of the following:
- *  - tripal_bulk_loader_add_template_base_form
- *  - tripal_bulk_loader_edit_template_base_form
+ * This form is meant to be called from a bulk loader form. Blank Defaults are in place but you
+ * can use the following in the query of the path to set defaults for a given template:
+ *  - template_id=\d+: the template to add the field to
+ *  - record_id=\d+: the priority or key in the template array of the record to add the field to
  * 
  * @param $form_state
- *   The $form_state from the parent form
+ *   Contains the values and storage for the form
  * @return
- *   The parent form with the edit field fieldset added
- *
- * Usage:
- * @code
-    $form = array_merge($form, tripal_bulk_loader_add_template_field_form($form_state));
- * @endcode
+ *   A form array to be rendered by drupal_get_form
  */
 function tripal_bulk_loader_add_template_field_form (&$form_state = NULL) {
   $form = array();
@@ -551,7 +787,7 @@ function tripal_bulk_loader_add_template_field_form (&$form_state = NULL) {
   }
 
  	// get the record_id from the path
- 	if ($_GET['record_id']) {
+ 	if ($_GET['record_id'] !== NULL) {
    	$form_state['values']['field_group'] = $_GET['record_id'];
     if (preg_match('/\d+/', $_GET['record_id'])) {
       $priority = $form_state['values']['field_group'];
@@ -676,6 +912,7 @@ function tripal_bulk_loader_add_template_field_form (&$form_state = NULL) {
     '#title' => 'Unique Record Name',
     '#prefix' => '<div id="tripal_bulk_loader_template-add_record">',
     '#suffix' => '</div>',
+    '#default_value' => $form_state['values']['record_name'],
   );
   
   $form['add_fields']['field_title'] = array(
@@ -785,11 +1022,10 @@ function tripal_bulk_loader_add_template_field_form (&$form_state = NULL) {
 /**
  * Add Field Submit
  * 
+ * @param $form
+ *   The form that was submitted
  * @param $form_state
- *   The $form_state from the parent submit
- * @return
- *   The parent form_state with any changes made
- *
+ *   The values and storage for the form
  */
 function tripal_bulk_loader_add_template_field_form_submit ($form, &$form_state) {
   
@@ -879,11 +1115,19 @@ function tripal_bulk_loader_add_template_field_form_submit ($form, &$form_state)
 
 /**
  * Edit Field Form
+ *
+ * This form is meant to be called from a bulk loader form. The following should be set 
+ * in the query section of the path:
+ *  - template_id=\d+: the template which the edited field is part of
+ *  - record_id=\d+: the priority or key in the template array of the record the field 
+ *      is currently part of
+ *  - field_index=\d+: the key of the field in the fields array of the previously
+ *      specified record
  * 
  * @param $form_state
- *   The $form_state from the parent form
+ *   Contains the values and storage for the form
  * @return
- *   The parent form with the edit field fieldset added
+ *   A form array to be rendered by drupal_get_form
  */
 function tripal_bulk_loader_edit_template_field_form (&$form_state = NULL) {
   $form = array();
@@ -1045,6 +1289,7 @@ function tripal_bulk_loader_edit_template_field_form (&$form_state = NULL) {
     '#title' => 'Unique Record Name',
     '#prefix' => '<div id="tripal_bulk_loader_template-edit_record">',
     '#suffix' => '</div>',
+    '#default_value' => $form_state['values']['record_name'],
   );
   
   $form['edit_fields']['field_title'] = array(
@@ -1155,10 +1400,10 @@ function tripal_bulk_loader_edit_template_field_form (&$form_state = NULL) {
 /**
  * Edit Field Form Submit
  * 
+ * @param $form
+ *   The form that was submitted
  * @param $form_state
- *   The $form_state from the parent form
- * @return
- *   The parent form with the edit field fieldset added
+ *   The values and storage for the form
  */
 function tripal_bulk_loader_edit_template_field_form_submit ($form, &$form_state) {
 

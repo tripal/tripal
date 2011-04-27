@@ -20,7 +20,7 @@
       $row[] = drupal_render($element['title']);
       $row[] = drupal_render($element['chado_table']);
       $row[] = drupal_render($element['new_priority']) . drupal_render($element['id']);
-      $row[] = drupal_render($element['submit-add_field']);
+      $row[] = drupal_render($element['submit-edit_record']) . '<br>' . drupal_render($element['submit-add_field']);
       $rows[] = array('data' => $row, 'class' => 'draggable');
     }
     

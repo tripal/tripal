@@ -33,6 +33,7 @@ function tripal_bulk_loader_menu() {
       'type' => MENU_NORMAL_ITEM,   
 		  'file' => 'tripal_bulk_loader.admin.inc',
 	);
+	// Create/Edit Template -------
   $items['admin/tripal/tripal_bulk_loader_template/create'] = array(
       'title' => 'Create Bulk Loader Template',
       'description' => 'Create loader template for loading tab-delimited data',
@@ -51,6 +52,15 @@ function tripal_bulk_loader_menu() {
       'type' => MENU_NORMAL_ITEM,   
 		  'file' => 'tripal_bulk_loader.admin.inc',  
   );
+	$items['admin/tripal/tripal_bulk_loader_template/edit_record'] = array(
+      'title' => 'Edit Template Record',
+      'description' => 'Edit a record in an existing tripal bulk loader template.',
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array('tripal_bulk_loader_edit_template_record_form'),
+      'access arguments' => array('administer site configuration'),
+      'type' => MENU_CALLBACK,   
+		'file' => 'tripal_bulk_loader.admin.inc',
+	);
 	$items['admin/tripal/tripal_bulk_loader_template/add_field'] = array(
       'title' => 'Add Template Field',
       'description' => 'Add a template field to an existing tripal bulk loader template.',
