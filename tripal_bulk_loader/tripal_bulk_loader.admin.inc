@@ -1011,6 +1011,49 @@ function tripal_bulk_loader_add_template_field_form (&$form_state = NULL) {
     ),
   );
 
+  $form['add_fields']['additional'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'Additional Options',
+  );
+
+  $form['add_fields']['additional']['required'] = array(
+    '#type' => 'checkbox',
+    '#title' => 'Make this file required',
+    '#default_value' => $template_field['required'],
+  );
+  
+  $form['add_fields']['additional']['regex_transform'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'Transform Spreadsheet Value Rule'
+  );
+  
+  $form['add_fields']['additional']['regex_transform']['transform'] = array(
+    '#type' => 'checkbox',
+    '#title' => 'Apply transformation to this field'
+  );
+  
+  $form['add_fields']['additional']['regex_transform']['pattern'] = array(
+    '#type' => 'textfield',
+    '#title' => 'Match Pattern',
+    '#description' => 'You can use standard php regular expressions in this field to specify a '
+      .'pattern. Only if this pattern matches the value in the spreadsheet does the replacement '
+      .'pattern get applied to the value. To capture a section of your value for use in the '
+      .'replacement patten surround with round brackets. For example, <i>GI:(\d+)</i> will match '
+      .' NCBI gi numbers and will capture the numerical digits for use in the replacement pattern. '
+      .' To match and capture any value use <i>.*</i>',
+    '#default_value' => ($template_field['regex']['pattern']) ? $template_field['regex']['pattern'] : '^(.*)$',
+  );
+  
+  $form['add_fields']['additional']['regex_transform']['replace'] = array(
+    '#type' => 'textfield',
+    '#title' => 'Replacement Pattern',
+    '#description' => 'This pattern should contain the text you want to replace the match pattern '
+    .'mentioned above. It can include references of the form \n where n is the number of the '
+    .'capture in the match pattern. For example, \1 will be replaced with the text matched in your '
+    .'first set of round brackets.',
+    '#default_value' => ($template_field['regex']['replace']) ? $template_field['regex']['replace'] : '\1'
+  ); 
+  
   $form['add_fields']['submit-add_field'] = array(
       '#type' => 'submit',
       '#value' => 'Add Field'
@@ -1054,41 +1097,44 @@ function tripal_bulk_loader_add_template_field_form_submit ($form, &$form_state)
       
       // Add field to template array
       if ($form_state['values']['field_type'] == 'table field') {
-        $template[$priority]['fields'][] = array(
+        $field = array(
           'type' => 'table field',
           'title' => $form_state['values']['field_title'],
           'field' => $form_state['values']['chado_field'],
-          //'required' => <true|false>,
+          'required' => $form_state['values']['required'],
           //'allowed values' => empty by default,
           'spreadsheet sheet' => $form_state['values']['sheet_name'],
           'spreadsheet column' => $form_state['values']['column_number'],
-          //'exposed' => 'true|false'  If exposed, will give a select box first from allowed values if set, second from database if values not set.
-          //'mapping' => array(
-          //   'from' => 'to'
-          //   '/from re/' => 'to'
-          //),        
+          //'exposed' => 'true|false'  If exposed, will give a select box first from allowed values if set, second from database if values not set.     
         );
       } elseif ($form_state['values']['field_type'] == 'constant') {
-        $template[$priority]['fields'][] = array(
+        $field = array(
           'type' => 'constant',
           'title' => $form_state['values']['field_title'],
           'field' => $form_state['values']['chado_field'],
-          //'required' => <true|false>,
+          'required' => $form_state['values']['required'],
           //'allowed values' => empty by default,
           'constant value' => $form_state['values']['constant_value'],
           //'exposed' => 'true|false'  If exposed, will give a select box first from allowed values if set, second from database if values not set.     
         );      
       } elseif ($form_state['values']['field_type'] == 'foreign key') {
-        $template[$priority]['fields'][] = array(
+        $field = array(
           'type' => 'foreign key',
           'title' => $form_state['values']['field_title'],
           'field' => $form_state['values']['chado_field'],
           'foreign key' => $form_state['values']['foreign_record'],
-          //'required' => <true|false>,   
+          'required' => $form_state['values']['required'],
         );        
       }
 
+      // Deal with any additional options
+      if ($form_state['values']['transform']) {
+        $field['regex']['pattern'] = $form_state['values']['pattern'];
+        $field['regex']['replace'] = $form_state['values']['replace'];
+      }
+
       // Save Template
+      $template[$priority]['fields'][] = $field;
       $form_state['storage']['template']->template_array = serialize($template);
       $success = drupal_write_record('tripal_bulk_loader_template', $form_state['storage']['template'], array('template_id'));
   
@@ -1396,8 +1442,40 @@ function tripal_bulk_loader_edit_template_field_form (&$form_state = NULL) {
   $form['edit_fields']['additional']['required'] = array(
     '#type' => 'checkbox',
     '#title' => 'Make this file required',
-    '#default_value' => FALSE,
+    '#default_value' => $template_field['required'],
   );
+  
+  $form['edit_fields']['additional']['regex_transform'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'Transform Spreadsheet Value Rule'
+  );
+  
+  $form['edit_fields']['additional']['regex_transform']['transform'] = array(
+    '#type' => 'checkbox',
+    '#title' => 'Apply transformation to this field'
+  );
+  
+  $form['edit_fields']['additional']['regex_transform']['pattern'] = array(
+    '#type' => 'textfield',
+    '#title' => 'Match Pattern',
+    '#description' => 'You can use standard php regular expressions in this field to specify a '
+      .'pattern. Only if this pattern matches the value in the spreadsheet does the replacement '
+      .'pattern get applied to the value. To capture a section of your value for use in the '
+      .'replacement patten surround with round brackets. For example, <i>GI:(\d+)</i> will match '
+      .' NCBI gi numbers and will capture the numerical digits for use in the replacement pattern. '
+      .' To match and capture any value use <i>.*</i>',
+    '#default_value' => ($template_field['regex']['pattern']) ? $template_field['regex']['pattern'] : '^(.*)$',
+  );
+  
+  $form['edit_fields']['additional']['regex_transform']['replace'] = array(
+    '#type' => 'textfield',
+    '#title' => 'Replacement Pattern',
+    '#description' => 'This pattern should contain the text you want to replace the match pattern '
+    .'mentioned above. It can include references of the form \n where n is the number of the '
+    .'capture in the match pattern. For example, \1 will be replaced with the text matched in your '
+    .'first set of round brackets.',
+    '#default_value' => ($template_field['regex']['replace']) ? $template_field['regex']['replace'] : '\1'
+  );  
   
   $form['edit_fields']['submit-edit_field'] = array(
       '#type' => 'submit',
@@ -1452,11 +1530,7 @@ function tripal_bulk_loader_edit_template_field_form_submit ($form, &$form_state
           //'allowed values' => empty by default,
           'spreadsheet sheet' => $form_state['values']['sheet_name'],
           'spreadsheet column' => $form_state['values']['column_number'],
-          //'exposed' => 'true|false'  If exposed, will give a select box first from allowed values if set, second from database if values not set.
-          //'mapping' => array(
-          //   'from' => 'to'
-          //   '/from re/' => 'to'
-          //),        
+          //'exposed' => 'true|false'  If exposed, will give a select box first from allowed values if set, second from database if values not set.  
         );
       } elseif ($form_state['values']['field_type'] == 'constant') {
         $field = array(
@@ -1479,7 +1553,10 @@ function tripal_bulk_loader_edit_template_field_form_submit ($form, &$form_state
       }
 
       // Deal with any additional options
-      dpm($form_state['values'], 'values');
+      if ($form_state['values']['transform']) {
+        $field['regex']['pattern'] = $form_state['values']['pattern'];
+        $field['regex']['replace'] = $form_state['values']['replace'];
+      }
       
       // if the record has changed...
       $form_state['storage']['template_array'][$priority]['table'] = $form_state['values']['chado_table'];

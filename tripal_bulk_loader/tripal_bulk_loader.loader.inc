@@ -95,7 +95,11 @@ function tripal_bulk_loader_load_data($nid) {
       $default_data[$priority]['record_id'] = $record_array['record_id'];
       $record2priority[$record_array['record_id']] = $priority;
       $default_data[$priority]['required'][$field_array['field']] = $field_array['required'];
-        
+      
+      if (isset($field_array['regex'])) {
+        $default_data[$priority]['regex_transform'][$field_array['field']] = $field_array['regex'];
+      }
+      
       if (preg_match('/table field/', $field_array['type'])) {
         $default_data[$priority]['values_array'][$field_array['field']] = '';
         $default_data[$priority]['need_further_processing'] = TRUE;
@@ -141,7 +145,8 @@ function tripal_bulk_loader_load_data($nid) {
         $values = tripal_bulk_loader_add_spreadsheetdata_to_values ($values, $line, $field2column[$priority]);
         $values = tripal_bulk_loader_add_foreignkey_to_values($values, $data, $record2priority);
       }
-      
+      $values = tripal_bulk_loader_regex_tranform_values($values, $table_data);
+
       if (!$values) {
         $msg = $table_data['record_id'].' ('.$table_data['mode'].') Aborted due to error in previous record.';
         watchdog('T_bulk_loader', $msg, array(), WATCHDOG_WARNING); 
@@ -268,13 +273,35 @@ function tripal_bulk_loader_add_foreignkey_to_values($values, $data, $record2pri
       $foreign_priority = $record2priority[$foreign_record];
       $foreign_values = $data[$foreign_priority]['values_array'];
       
-      //add to current values array
-      if (!$data[$foreign_priority]['error']) {
-        $values[$field] = $foreign_values;
-      } else {
+      // add to current values array
+      // only if there was no error found when the foreign record was processed
+      if (isset($data[$foreign_priority]['error']) and $data[$foreign_priority]['error']) {
         return FALSE;
+      } else {
+        $values[$field] = $foreign_values;
       }
     }
+  }
+
+  return $values;
+}
+
+/**
+ * Uses a supplied regex to transform spreadsheet values
+ *
+ * @param $values
+ *   The select/insert values array for the given table
+ * @param $table_data
+ *   The data array for the given table
+ */
+function tripal_bulk_loader_regex_tranform_values ($values, $table_data) {
+
+  foreach ($table_data['regex_transform'] as $field => $regex_array) {
+    if (!is_array($regex_array)) { continue; }
+    
+    $old_value = $values[$field];
+    $new_value = preg_replace('/'.$regex_array['pattern'].'/', $regex_array['replace'], $old_value);
+    $values[$field] = $new_value;
   }
 
   return $values;
