@@ -53,9 +53,6 @@ function tripal_bulk_loader_add_loader_job_form_submit ($form, $form_state) {
 			// add job_id to bulk_loader node
       $success = db_query("UPDATE {tripal_bulk_loader} SET job_id=%d WHERE nid=%d", $job_id, $form_state['values']['nid']);
       
-      // Add Sync Features Job
-//      tripal_add_job('Sync all features','tripal_feature',
-//        'tripal_feature_sync_features',$job_args,$user->uid);			
 		} else {
 			drupal_set_message("Can not open ".$form_state['values']['file'].". Job not scheduled.");
 		}    
