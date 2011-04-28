@@ -201,7 +201,7 @@ function tripal_bulk_loader_form ($node){
    	$form['label'] = array(
    	'#type' => 'item',
       '#description' => t("Loader template needs to be created before any bulk loader can be added. Go to 'Tripal Management > Bulk Loader Template' to create the template."),
-      '#weight'        => 0,
+      '#weight'        => -10,
 		);
 		
 		return $form;
@@ -210,7 +210,7 @@ function tripal_bulk_loader_form ($node){
    $form['loader_name'] = array(
    	'#type'          => 'textfield',
       '#title'         => t('Loading Job Name'),
-      '#weight'        => -3,
+      '#weight'        => -10,
       '#required'      => TRUE,
    	'#default_value' => $node->loader_name
    );
@@ -220,7 +220,7 @@ function tripal_bulk_loader_form ($node){
       '#title' => t('Template'),
    	'#description'   => t('Please specify a template for this loader'),
     	'#options'       => $templates,
-   	'#weight'        => -2,
+   	'#weight'        => -9,
       '#required'      => TRUE,
    	'#default_value' => $node->template_id
    );
@@ -229,8 +229,16 @@ function tripal_bulk_loader_form ($node){
       '#type'          => 'textfield',
       '#title'         => t('Data File'),
       '#description'   => t('Please specify the data file to be loaded.'),
-      '#weight'        => -1,
+      '#weight'        => -8,
    	'#default_value' => $node->file
+   );
+   
+   $form['has_header'] = array(
+    '#type' => 'radios',
+    '#title' => 'File has a Header',
+    '#options' => array( 't' => 'Yes', 'f' => 'No'),
+    '#weight' => -7,
+    '#default_value' => $node->file_has_header,
    );
 
    return $form;
@@ -290,24 +298,13 @@ function tripal_bulk_loader_load($node){
  * tripal_bulk_loader_insert
  */
 function tripal_bulk_loader_insert ($node) {
-	$sql = "INSERT INTO {tripal_bulk_loader} (nid, loader_name, template_id, file) VALUES (%d, '%s', %d, '%s')";
-	db_query($sql, $node->nid, $node->loader_name, $node->template_id, $node->file);
+  
+	$sql = "INSERT INTO {tripal_bulk_loader} (nid, loader_name, template_id, file, file_has_header) VALUES (%d, '%s', %d, '%s', %d)";
+	db_query($sql, $node->nid, $node->loader_name, $node->template_id, $node->file, $node->has_header);
 	$node->title =$node->loader_name;
 	drupal_write_record('node',$node,'nid');
 	drupal_write_record('node_revision',$node,'nid');	
-	// Add a job if the user want to load the data
-	global $user;
-	if($node->job) {
-		$job_args[0] =$node->loader_name;
-		$job_args[1] = $node->template_id;
-		$job_args[2] = $node->file;
-		if (is_readable($node->file)) {
-			$fname = preg_replace("/.*\/(.*)/", "$1", $node->file);
-			tripal_add_job("Bulk Load: $fname",'tripal_bulk_loader', 'tripal_bulk_loader_load_data', $job_args, $user->uid);
-		} else {
-			drupal_set_message("Can not open $node->file. Job not scheduled.");
-		}
-	}
+
 }
 
 /**
@@ -322,8 +319,8 @@ function tripal_bulk_loader_delete ($node) {
  * tripal_bulk_loader_update
  */
 function tripal_bulk_loader_update ($node) {
-	$sql = "UPDATE {tripal_bulk_loader} SET nid = %d, loader_name = '%s', template_id = %d, file = '%s' WHERE nid = %d";
-	db_query($sql, $node->nid, $node->loader_name, $node->template_id, $node->file, $node->nid);
+	$sql = "UPDATE {tripal_bulk_loader} SET nid = %d, loader_name = '%s', template_id = %d, file = '%s', file_has_header = '%s' WHERE nid = %d";
+	db_query($sql, $node->nid, $node->loader_name, $node->template_id, $node->file, $node->has_header, $node->nid);
 	// Add a job if the user want to load the data
 	global $user;
 	if($node->job) {

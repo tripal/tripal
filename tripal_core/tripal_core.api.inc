@@ -183,7 +183,7 @@ function tripal_core_chado_insert($table,$values){
    foreach($fields as $field => $def){
       // a field is considered missing if it cannot be null and there is no default
       // value for it or it is of type 'serial'
-      if($def['not null'] == 1 and !array_key_exists($field,$insert_values) and !$def['default'] and strcmp($def['type'],serial)!=0){
+      if($def['not null'] == 1 and !array_key_exists($field,$insert_values) and !isset($def['default']) and strcmp($def['type'],serial)!=0){
          watchdog('tripal_core',"tripal_core_chado_insert: Field $table.$field cannot be null: " . print_r($values,1),array(),'WATCHDOG_ERROR');
          return false;
       }

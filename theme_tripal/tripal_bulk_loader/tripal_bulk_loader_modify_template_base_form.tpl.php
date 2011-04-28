@@ -10,7 +10,7 @@
     
     // generate table
     drupal_add_tabledrag('draggable-table', 'order', 'sibling', 'records-reorder');
-    $header = array('Record Name', 'Chado Table', 'Order', '');
+    $header = array('Record Name', 'Chado Table', 'Action', 'Order', '');
     $rows = array();
     foreach (element_children($form['records']['records-data']) as $key) {
       $element = &$form['records']['records-data'][$key];
@@ -19,6 +19,7 @@
       $row = array();
       $row[] = drupal_render($element['title']);
       $row[] = drupal_render($element['chado_table']);
+      $row[] = drupal_render($element['mode']);
       $row[] = drupal_render($element['new_priority']) . drupal_render($element['id']);
       $row[] = drupal_render($element['submit-edit_record']) . '<br>' . drupal_render($element['submit-add_field']);
       $rows[] = array('data' => $row, 'class' => 'draggable');

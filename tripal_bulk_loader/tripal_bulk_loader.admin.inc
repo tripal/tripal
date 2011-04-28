@@ -147,6 +147,10 @@ function tripal_bulk_loader_modify_template_base_form ($form_state = NULL, $mode
             '#type' => 'markup',
             '#value' => $table_array['table'],
           ),
+          'mode' => array(
+            '#type' => 'item',
+            '#value' => ($table_array['mode']) ? $table_array['mode'] : 'insert',
+          ),
           'new_priority' => array(
             '#type' => 'select',
             '#options' => range(1, sizeof($form_state['storage']['template'])),
@@ -642,6 +646,7 @@ function tripal_bulk_loader_edit_template_record_form (&$form_state = NULL) {
     '#options' => array(
       'insert' => 'Insert the record if it doesn\'t already exist',
       'select' => 'Don\'t insert this record: it\'s used to define a foreign key in another record',
+      'optional' => 'Record will only be inserted if all required data is filled in'
     ),
     '#default_value' => 'insert'
   );
@@ -1383,7 +1388,17 @@ function tripal_bulk_loader_edit_template_field_form (&$form_state = NULL) {
     ),
   );
 
+  $form['edit_fields']['additional'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'Additional Options',
+  );
 
+  $form['edit_fields']['additional']['required'] = array(
+    '#type' => 'checkbox',
+    '#title' => 'Make this file required',
+    '#default_value' => FALSE,
+  );
+  
   $form['edit_fields']['submit-edit_field'] = array(
       '#type' => 'submit',
       '#value' => 'Edit Field'
@@ -1433,7 +1448,7 @@ function tripal_bulk_loader_edit_template_field_form_submit ($form, &$form_state
           'type' => 'table field',
           'title' => $form_state['values']['field_title'],
           'field' => $form_state['values']['chado_field'],
-          //'required' => <true|false>,
+          'required' => $form_state['values']['required'],
           //'allowed values' => empty by default,
           'spreadsheet sheet' => $form_state['values']['sheet_name'],
           'spreadsheet column' => $form_state['values']['column_number'],
@@ -1448,7 +1463,7 @@ function tripal_bulk_loader_edit_template_field_form_submit ($form, &$form_state
           'type' => 'constant',
           'title' => $form_state['values']['field_title'],
           'field' => $form_state['values']['chado_field'],
-          //'required' => <true|false>,
+          'required' => $form_state['values']['required'],
           //'allowed values' => empty by default,
           'constant value' => $form_state['values']['constant_value'],
           //'exposed' => 'true|false'  If exposed, will give a select box first from allowed values if set, second from database if values not set.     
@@ -1459,10 +1474,12 @@ function tripal_bulk_loader_edit_template_field_form_submit ($form, &$form_state
           'title' => $form_state['values']['field_title'],
           'field' => $form_state['values']['chado_field'],
           'foreign key' => $form_state['values']['foreign_record'],
-          //'required' => <true|false>,
+          'required' => $form_state['values']['required'],
         );      
       }
 
+      // Deal with any additional options
+      dpm($form_state['values'], 'values');
       
       // if the record has changed...
       $form_state['storage']['template_array'][$priority]['table'] = $form_state['values']['chado_table'];
