@@ -145,7 +145,7 @@ function tripal_bulk_loader_load_data($nid) {
         $values = tripal_bulk_loader_add_spreadsheetdata_to_values ($values, $line, $field2column[$priority]);
         $values = tripal_bulk_loader_add_foreignkey_to_values($values, $data, $record2priority);
       }
-      $values = tripal_bulk_loader_regex_tranform_values($values, $table_data);
+      $values = tripal_bulk_loader_regex_tranform_values($values, $table_data, $line);
 
       if (!$values) {
         $msg = $table_data['record_id'].' ('.$table_data['mode'].') Aborted due to error in previous record.';
@@ -294,11 +294,23 @@ function tripal_bulk_loader_add_foreignkey_to_values($values, $data, $record2pri
  * @param $table_data
  *   The data array for the given table
  */
-function tripal_bulk_loader_regex_tranform_values ($values, $table_data) {
+function tripal_bulk_loader_regex_tranform_values ($values, $table_data, $line) {
 
   foreach ($table_data['regex_transform'] as $field => $regex_array) {
     if (!is_array($regex_array)) { continue; }
     
+    // Check for <#column:\d+#> notation
+    // if present replace with that column in the current line
+    foreach ($regex_array['replace'] as $key => $replace) {
+      if (preg_match_all('/<#column:(\d+)#>/', $replace, $matches)) {
+        foreach ($matches[1] as $k => $column_num) {
+          $replace = preg_replace('/'.$matches[0][$k].'/', $line[$column_num-1], $replace);
+        }
+        $regex_array['replace'][$key] = $replace;
+      }
+    }
+    
+    // do the full replacement
     $old_value = $values[$field];
     $new_value = preg_replace($regex_array['pattern'], $regex_array['replace'], $old_value);
     $values[$field] = $new_value;

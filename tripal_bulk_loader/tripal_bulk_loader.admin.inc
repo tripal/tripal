@@ -1106,6 +1106,19 @@ function tripal_bulk_loader_add_template_field_form (&$form_state = NULL) {
     .'capture in the match pattern. For example, \1 will be replaced with the text matched in your '
     .'first set of round brackets.',
   ); 
+
+  if ($field_type == 'table field') {
+    $tab = '&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp';
+    $form['add_fields']['additional']['regex_transform']['new_regex']['replace']['#description'] .= '<p>'
+      .'The following references are also available for spreadsheet fields: <b><#column:<i>number</i>#></b>. '
+      .'This allows you to substitute other spreadsheet values into the current field. For example, '
+      .'if you had the following line:<br>'
+      .$tab.'SNP'.$tab.'15-Jan-2011'.$tab.'1'.$tab.'54'.$tab.'Contig34355'
+      .'<br> and your current field is for column #1 and you\'re inserting into the chado field '
+      .'feature.uniquename then you might want to add in the data to ensure your uniquename is '
+      .'unique. The Match Pattern is (.*) to select all the first column and the Replacement '
+      .'Pattern could be \1_<#column:2#> which would insert SNP_15-Jan-2011 into the database.</p>';
+  }
   
   $form['add_fields']['additional']['regex_transform']['new_regex']['submit-add_transform'] = array(
     '#type' => 'submit',
@@ -1571,18 +1584,19 @@ function tripal_bulk_loader_edit_template_field_form (&$form_state = NULL) {
     '#type' => 'fieldset',
     '#title' => 'Transform Spreadsheet Value Rules',
     '#collapsible' => TRUE, 
-    '#collapsed' => TRUE,
+    '#collapsed' => (!$template_field['regex']['pattern']) ? TRUE : FALSE,
   );
   
-  $form['edit_fields']['additional']['regex_transform']['regex_description'] = array(
-    '#type' => 'item',
-    '#value' => 'A transformation rule allows you to transform the original value '
+  $transformation_msg = '<p>A transformation rule allows you to transform the original value '
       .'(usually from a user submitted spreadsheet) into the form you would like it stored '
       .'in the chado database. Each rule consists of a match pattern (a php regular expression '
       .'which determines which replacement patterns are applied and captures regions of the '
       .'original value) and a replacement pattern (a string which may contain capture references '
       .'that describes what the new value should be). Each rule is applied to the result of the '
-      .'previous rule.'
+      .'previous rule.<p>'; 
+  $form['edit_fields']['additional']['regex_transform']['regex_description'] = array(
+    '#type' => 'item',
+    '#value' => $transformation_msg,
   );
 
   $form['edit_fields']['additional']['regex_transform']['regex-data'] = array(
@@ -1633,7 +1647,7 @@ function tripal_bulk_loader_edit_template_field_form (&$form_state = NULL) {
   $form['edit_fields']['additional']['regex_transform']['new_regex']['pattern'] = array(
     '#type' => 'textfield',
     '#title' => 'Match Pattern',
-    '#description' => 'You can use standard php regular expressions in this field to specify a '
+    '#description' => 'You can use standard <b>php regular expressions</b> in this field to specify a '
       .'pattern. Only if this pattern matches the value in the spreadsheet does the replacement '
       .'pattern get applied to the value. To capture a section of your value for use in the '
       .'replacement patten surround with round brackets. For example, <i>GI:(\d+)</i> will match '
@@ -1644,11 +1658,24 @@ function tripal_bulk_loader_edit_template_field_form (&$form_state = NULL) {
   $form['edit_fields']['additional']['regex_transform']['new_regex']['replace'] = array(
     '#type' => 'textfield',
     '#title' => 'Replacement Pattern',
-    '#description' => 'This pattern should contain the text you want to replace the match pattern '
-    .'mentioned above. It can include references of the form \n where n is the number of the '
+    '#description' => '<p>This pattern should contain the text you want to replace the match pattern '
+    .'mentioned above. It can include references of the form <b>\n</b> where n is the number of the '
     .'capture in the match pattern. For example, \1 will be replaced with the text matched in your '
-    .'first set of round brackets.',
+    .'first set of round brackets.</p>',
   ); 
+  
+  if ($field_type == 'table field') {
+    $tab = '&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp';
+    $form['edit_fields']['additional']['regex_transform']['new_regex']['replace']['#description'] .= '<p>'
+      .'The following references are also available for spreadsheet fields: <b><#column:<i>number</i>#></b>. '
+      .'This allows you to substitute other spreadsheet values into the current field. For example, '
+      .'if you had the following line:<br>'
+      .$tab.'SNP'.$tab.'15-Jan-2011'.$tab.'1'.$tab.'54'.$tab.'Contig34355'
+      .'<br> and your current field is for column #1 and you\'re inserting into the chado field '
+      .'feature.uniquename then you might want to add in the data to ensure your uniquename is '
+      .'unique. The Match Pattern is (.*) to select all the first column and the Replacement '
+      .'Pattern could be \1_<#column:2#> which would insert SNP_15-Jan-2011 into the database.</p>';
+  }
   
   $form['edit_fields']['additional']['regex_transform']['new_regex']['submit-add_transform'] = array(
     '#type' => 'submit',
