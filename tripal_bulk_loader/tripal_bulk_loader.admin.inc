@@ -855,6 +855,8 @@ function tripal_bulk_loader_add_template_field_form (&$form_state = NULL) {
   //dpm($variables, 'variables');
     
   // Start of Form Proper--------------------------------------------------------------
+  dpm($form_state, 'Form State');
+  
   $form['template_name'] = array(
     '#type' => 'item',
     '#title' => 'Template',
@@ -1019,20 +1021,73 @@ function tripal_bulk_loader_add_template_field_form (&$form_state = NULL) {
   $form['add_fields']['additional']['required'] = array(
     '#type' => 'checkbox',
     '#title' => 'Make this file required',
-    '#default_value' => $template_field['required'],
   );
   
   $form['add_fields']['additional']['regex_transform'] = array(
     '#type' => 'fieldset',
-    '#title' => 'Transform Spreadsheet Value Rule'
+    '#title' => 'Transform Spreadsheet Value Rules',
+    '#collapsible' => TRUE, 
+    '#collapsed' => (!$form_state['storage']['regex']['pattern']) ? TRUE : FALSE,
   );
   
-  $form['add_fields']['additional']['regex_transform']['transform'] = array(
-    '#type' => 'checkbox',
-    '#title' => 'Apply transformation to this field'
+  $form['add_fields']['additional']['regex_transform']['regex_description'] = array(
+    '#type' => 'item',
+    '#value' => 'A transformation rule allows you to transform the original value '
+      .'(usually from a user submitted spreadsheet) into the form you would like it stored '
+      .'in the chado database. Each rule consists of a match pattern (a php regular expression '
+      .'which determines which replacement patterns are applied and captures regions of the '
+      .'original value) and a replacement pattern (a string which may contain capture references '
+      .'that describes what the new value should be). Each rule is applied to the result of the '
+      .'previous rule.'
+  );
+
+  $form['add_fields']['additional']['regex_transform']['regex-data'] = array(
+    '#tree' => TRUE,
+  );
+  if (!$form_state['storage']['regex']['pattern']) { $form_state['storage']['regex']['pattern'] = array(); }
+  foreach ($form_state['storage']['regex']['pattern'] as $index => $pattern) {
+    $data_element = array(
+      'pattern' => array(
+        '#type' => 'item',
+        '#value' => $pattern,
+      ),
+      'replace' => array(
+        '#type' => 'item',
+        '#value' => $form_state['storage']['regex']['replace'][$index],
+      ),
+      'old_index' => array(
+        '#type' => 'hidden',
+        '#value' => $index,
+      ),
+      'new_index' => array(
+        '#type' => 'select',
+        '#options' => range(0,sizeof($form_state['storage']['regex']['pattern'])-1),
+        '#default_value' => $index,
+      ),
+      'id' => array(
+        '#type' => 'hidden',
+        '#value' => $index,
+      ),
+      'submit-delete' => array(
+        '#type' => 'submit',
+        '#value' => 'Delete Transformation',
+        '#name' => $index,
+      ),
+    );
+    $form['add_fields']['additional']['regex_transform']['regex-data'][$index] = $data_element;
+  }
+
+  $form['add_fields']['additional']['regex_transform']['submit-reorder_regex'] = array(
+    '#type' => ($form_state['storage']['regex']['pattern']) ? 'submit' : 'hidden',
+    '#value' => 'Save Transformation Rule Order'
   );
   
-  $form['add_fields']['additional']['regex_transform']['pattern'] = array(
+  $form['add_fields']['additional']['regex_transform']['new_regex'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'Add a new Transformation Rule',
+  );
+  
+  $form['add_fields']['additional']['regex_transform']['new_regex']['pattern'] = array(
     '#type' => 'textfield',
     '#title' => 'Match Pattern',
     '#description' => 'You can use standard php regular expressions in this field to specify a '
@@ -1041,18 +1096,47 @@ function tripal_bulk_loader_add_template_field_form (&$form_state = NULL) {
       .'replacement patten surround with round brackets. For example, <i>GI:(\d+)</i> will match '
       .' NCBI gi numbers and will capture the numerical digits for use in the replacement pattern. '
       .' To match and capture any value use <i>.*</i>',
-    '#default_value' => ($template_field['regex']['pattern']) ? $template_field['regex']['pattern'] : '^(.*)$',
   );
   
-  $form['add_fields']['additional']['regex_transform']['replace'] = array(
+  $form['add_fields']['additional']['regex_transform']['new_regex']['replace'] = array(
     '#type' => 'textfield',
     '#title' => 'Replacement Pattern',
     '#description' => 'This pattern should contain the text you want to replace the match pattern '
     .'mentioned above. It can include references of the form \n where n is the number of the '
     .'capture in the match pattern. For example, \1 will be replaced with the text matched in your '
     .'first set of round brackets.',
-    '#default_value' => ($template_field['regex']['replace']) ? $template_field['regex']['replace'] : '\1'
   ); 
+  
+  $form['add_fields']['additional']['regex_transform']['new_regex']['submit-add_transform'] = array(
+    '#type' => 'submit',
+    '#value' => 'Add Transformation',
+  );
+  
+  $form['add_fields']['additional']['regex_transform']['test_regex'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'Test Transformation Rules',
+  );
+  
+  $form['add_fields']['additional']['regex_transform']['test_regex']['test_string'] = array(
+    '#type' => 'textfield',
+    '#title' => 'Test Value',
+    '#description' => 'This should be a value that you expect the above transformation rules '
+      .'to be applied to.',
+    '#default_value' => $form_state['storage']['test_regex_test'],
+  );
+  
+  $form['add_fields']['additional']['regex_transform']['test_regex']['test_result'] = array(
+    '#type' => 'textfield',
+    '#title' => 'Test Result',
+    '#description' => 'This is the value that would be saved to the database after the above transformation '
+      .'riles were applied to the Test Value.',
+    '#default_value' => $form_state['storage']['test_regex_result'],
+  );
+  
+  $form['add_fields']['additional']['regex_transform']['test_regex']['submit-test'] = array(
+    '#type' => 'submit',
+    '#value' => 'Test Transformation Rules'
+  );
   
   $form['add_fields']['submit-add_field'] = array(
       '#type' => 'submit',
@@ -1077,8 +1161,10 @@ function tripal_bulk_loader_add_template_field_form (&$form_state = NULL) {
  */
 function tripal_bulk_loader_add_template_field_form_submit ($form, &$form_state) {
   
+  $op = $form_state['values'][ $form_state['clicked_button']['#name'] ];
+  
   if (!$form_state['ahah_submission']) {
-    if ($form_state['values']['op'] ==  'Add Field') {
+    if ($op ==  'Add Field') {
 
       $template = $form_state['storage']['template_array'];
 
@@ -1128,9 +1214,8 @@ function tripal_bulk_loader_add_template_field_form_submit ($form, &$form_state)
       }
 
       // Deal with any additional options
-      if ($form_state['values']['transform']) {
-        $field['regex']['pattern'] = $form_state['values']['pattern'];
-        $field['regex']['replace'] = $form_state['values']['replace'];
+      if ($form_state['storage']['regex']) {
+        $field['regex'] = $form_state['storage']['regex'];
       }
 
       // Save Template
@@ -1154,11 +1239,47 @@ function tripal_bulk_loader_add_template_field_form_submit ($form, &$form_state)
           WATCHDOG_ERROR
         );
       }
-    } elseif ($form_state['values']['op'] ==  'Cancel') {
+    } elseif ($op ==  'Cancel') {
         $path = explode('?',$form_state['storage']['referring URL']);
         parse_str($path[1], $query);
         $query['template_id'] = $form_state['storage']['template']->template_id;
         drupal_goto($path[0], $query);    
+    } elseif ($op == 'Add Transformation') {
+
+      // Add transformation rule to original field
+      $form_state['storage']['regex']['pattern'][] = '/' . $form_state['values']['pattern'] . '/';
+      $form_state['storage']['regex']['replace'][] = $form_state['values']['replace'];      
+      drupal_set_message('Successfully Added Transformation Rule');
+      
+    } elseif ($op == 'Save Transformation Rule Order') {
+      
+      // Generate new regex array
+      $new_regex = array();
+      $old_regex = $form_state['storage']['regex'];
+      foreach ($form_state['values']['regex-data'] as $key => $element) {
+        $new_regex['pattern'][ $element['new_index'] ] = $old_regex['pattern'][ $element['old_index'] ];
+        $new_regex['replace'][ $element['new_index'] ] = $old_regex['replace'][ $element['old_index'] ];
+      }
+      
+      // sort new regex arrays
+      asort($new_regex['pattern']);
+      asort($new_regex['replace']);
+
+      $form_state['storage']['regex'] = $new_regex;
+    } elseif ($op == 'Delete Transformation') {
+    
+      // Unset regex rule
+      $index = $form_state['clicked_button']['#name'];
+      unset($form_state['storage']['regex']['pattern'][$index]);
+      unset($form_state['storage']['regex']['replace'][$index]);
+      
+    } elseif ($op == 'Test Transformation Rules') {
+    
+      $patterns = $form_state['storage']['regex']['pattern'];
+      $replaces = $form_state['storage']['regex']['replace'];
+      $test_string = $form_state['values']['test_string'];
+      $form_state['storage']['test_regex_result'] = preg_replace($patterns, $replaces, $test_string);
+      $form_state['storage']['test_regex_test'] = $test_string;
     }
   }  
 
@@ -1278,6 +1399,7 @@ function tripal_bulk_loader_edit_template_field_form (&$form_state = NULL) {
 //    ), 'Variables');
   
   // Start of Form Proper--------------------------------------------------------------
+  
   $form['template_name'] = array(
     '#type' => 'item',
     '#title' => 'Template',
@@ -1447,15 +1569,68 @@ function tripal_bulk_loader_edit_template_field_form (&$form_state = NULL) {
   
   $form['edit_fields']['additional']['regex_transform'] = array(
     '#type' => 'fieldset',
-    '#title' => 'Transform Spreadsheet Value Rule'
+    '#title' => 'Transform Spreadsheet Value Rules',
+    '#collapsible' => TRUE, 
+    '#collapsed' => TRUE,
   );
   
-  $form['edit_fields']['additional']['regex_transform']['transform'] = array(
-    '#type' => 'checkbox',
-    '#title' => 'Apply transformation to this field'
+  $form['edit_fields']['additional']['regex_transform']['regex_description'] = array(
+    '#type' => 'item',
+    '#value' => 'A transformation rule allows you to transform the original value '
+      .'(usually from a user submitted spreadsheet) into the form you would like it stored '
+      .'in the chado database. Each rule consists of a match pattern (a php regular expression '
+      .'which determines which replacement patterns are applied and captures regions of the '
+      .'original value) and a replacement pattern (a string which may contain capture references '
+      .'that describes what the new value should be). Each rule is applied to the result of the '
+      .'previous rule.'
+  );
+
+  $form['edit_fields']['additional']['regex_transform']['regex-data'] = array(
+    '#tree' => TRUE,
+  );
+  foreach ($template_field['regex']['pattern'] as $index => $pattern) {
+    $data_element = array(
+      'pattern' => array(
+        '#type' => 'item',
+        '#value' => $pattern,
+      ),
+      'replace' => array(
+        '#type' => 'item',
+        '#value' => $template_field['regex']['replace'][$index],
+      ),
+      'old_index' => array(
+        '#type' => 'hidden',
+        '#value' => $index,
+      ),
+      'new_index' => array(
+        '#type' => 'select',
+        '#options' => range(0,sizeof($template_field['regex']['pattern'])-1),
+        '#default_value' => $index,
+      ),
+      'id' => array(
+        '#type' => 'hidden',
+        '#value' => $index,
+      ),
+      'submit-delete' => array(
+        '#type' => 'submit',
+        '#value' => 'Delete Transformation',
+        '#name' => $index,
+      ),
+    );
+    $form['edit_fields']['additional']['regex_transform']['regex-data'][$index] = $data_element;
+  }
+  
+  $form['edit_fields']['additional']['regex_transform']['submit-reorder_regex'] = array(
+    '#type' => 'submit',
+    '#value' => 'Save Transformation Rule Order'
   );
   
-  $form['edit_fields']['additional']['regex_transform']['pattern'] = array(
+  $form['edit_fields']['additional']['regex_transform']['new_regex'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'Add a new Transformation Rule',
+  );
+  
+  $form['edit_fields']['additional']['regex_transform']['new_regex']['pattern'] = array(
     '#type' => 'textfield',
     '#title' => 'Match Pattern',
     '#description' => 'You can use standard php regular expressions in this field to specify a '
@@ -1464,18 +1639,47 @@ function tripal_bulk_loader_edit_template_field_form (&$form_state = NULL) {
       .'replacement patten surround with round brackets. For example, <i>GI:(\d+)</i> will match '
       .' NCBI gi numbers and will capture the numerical digits for use in the replacement pattern. '
       .' To match and capture any value use <i>.*</i>',
-    '#default_value' => ($template_field['regex']['pattern']) ? $template_field['regex']['pattern'] : '^(.*)$',
   );
   
-  $form['edit_fields']['additional']['regex_transform']['replace'] = array(
+  $form['edit_fields']['additional']['regex_transform']['new_regex']['replace'] = array(
     '#type' => 'textfield',
     '#title' => 'Replacement Pattern',
     '#description' => 'This pattern should contain the text you want to replace the match pattern '
     .'mentioned above. It can include references of the form \n where n is the number of the '
     .'capture in the match pattern. For example, \1 will be replaced with the text matched in your '
     .'first set of round brackets.',
-    '#default_value' => ($template_field['regex']['replace']) ? $template_field['regex']['replace'] : '\1'
-  );  
+  ); 
+  
+  $form['edit_fields']['additional']['regex_transform']['new_regex']['submit-add_transform'] = array(
+    '#type' => 'submit',
+    '#value' => 'Add Transformation',
+  );
+  
+  $form['edit_fields']['additional']['regex_transform']['test_regex'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'Test Transformation Rules',
+  );
+  
+  $form['edit_fields']['additional']['regex_transform']['test_regex']['test_string'] = array(
+    '#type' => 'textfield',
+    '#title' => 'Test Value',
+    '#description' => 'This should be a value that you expect the above transformation rules '
+      .'to be applied to.',
+    '#default_value' => $form_state['storage']['test_regex_test'],
+  );
+  
+  $form['edit_fields']['additional']['regex_transform']['test_regex']['test_result'] = array(
+    '#type' => 'textfield',
+    '#title' => 'Test Result',
+    '#description' => 'This is the value that would be saved to the database after the above transformation '
+      .'riles were applied to the Test Value.',
+    '#default_value' => $form_state['storage']['test_regex_result'],
+  );
+  
+  $form['edit_fields']['additional']['regex_transform']['test_regex']['submit-test'] = array(
+    '#type' => 'submit',
+    '#value' => 'Test Transformation Rules'
+  );
   
   $form['edit_fields']['submit-edit_field'] = array(
       '#type' => 'submit',
@@ -1500,8 +1704,15 @@ function tripal_bulk_loader_edit_template_field_form (&$form_state = NULL) {
  */
 function tripal_bulk_loader_edit_template_field_form_submit ($form, &$form_state) {
 
+  $op = $form_state['values'][ $form_state['clicked_button']['#name'] ];
+  //dpm($op, 'Operation Submitted');
+  
+  //Clear Test
+  $form_state['storage']['test_regex_result'] = NULL;
+  $form_state['storage']['test_regex_test'] = NULL;
+  
   if (!$form_state['ahah_submission']) {
-    if ($form_state['values']['op'] ==  'Edit Field') {
+    if ($op ==  'Edit Field') {
 
       // If new record
       if (preg_match('/NEW/',$form_state['values']['field_group'])) {
@@ -1521,42 +1732,33 @@ function tripal_bulk_loader_edit_template_field_form_submit ($form, &$form_state
         $record_name = $form_state['storage']['record2priority'][$priority];
       }
       
+      $field = $form_state['storage']['original_field'];
       if ($form_state['values']['field_type'] == 'table field') {
-        $field = array(
-          'type' => 'table field',
-          'title' => $form_state['values']['field_title'],
-          'field' => $form_state['values']['chado_field'],
-          'required' => $form_state['values']['required'],
-          //'allowed values' => empty by default,
-          'spreadsheet sheet' => $form_state['values']['sheet_name'],
-          'spreadsheet column' => $form_state['values']['column_number'],
-          //'exposed' => 'true|false'  If exposed, will give a select box first from allowed values if set, second from database if values not set.  
-        );
+          $field['type'] = 'table field';
+          $field['title'] = $form_state['values']['field_title'];
+          $field['field'] = $form_state['values']['chado_field'];
+          $field['required'] = $form_state['values']['required'];
+          //$field['allowed values'] = empty by default;
+          $field['spreadsheet sheet'] = $form_state['values']['sheet_name'];
+          $field['spreadsheet column'] = $form_state['values']['column_number'];
+          //$field['exposed'] = 'true|false';  If exposed, will give a select box first from allowed values if set, second from database if values not set.  
       } elseif ($form_state['values']['field_type'] == 'constant') {
-        $field = array(
-          'type' => 'constant',
-          'title' => $form_state['values']['field_title'],
-          'field' => $form_state['values']['chado_field'],
-          'required' => $form_state['values']['required'],
-          //'allowed values' => empty by default,
-          'constant value' => $form_state['values']['constant_value'],
-          //'exposed' => 'true|false'  If exposed, will give a select box first from allowed values if set, second from database if values not set.     
-        );      
+          $field['type'] = 'constant';
+          $field['title'] = $form_state['values']['field_title'];
+          $field['field'] = $form_state['values']['chado_field'];
+          $field['required'] = $form_state['values']['required'];
+          //$field['allowed values'] = empty by default;
+          $field['constant value'] = $form_state['values']['constant_value'];
+          //$field['exposed'] = 'true|false';  If exposed, will give a select box first from allowed values if set, second from database if values not set.      
       } elseif ($form_state['values']['field_type'] == 'foreign key') {
-        $field = array(
-          'type' => 'foreign key',
-          'title' => $form_state['values']['field_title'],
-          'field' => $form_state['values']['chado_field'],
-          'foreign key' => $form_state['values']['foreign_record'],
-          'required' => $form_state['values']['required'],
-        );      
+          $field['type'] = 'foreign key';
+          $field['title'] = $form_state['values']['field_title'];
+          $field['field'] = $form_state['values']['chado_field'];
+          $field['foreign key'] = $form_state['values']['foreign_record'];
+          $field['required'] = $form_state['values']['required'];     
       }
-
+      
       // Deal with any additional options
-      if ($form_state['values']['transform']) {
-        $field['regex']['pattern'] = $form_state['values']['pattern'];
-        $field['regex']['replace'] = $form_state['values']['replace'];
-      }
       
       // if the record has changed...
       $form_state['storage']['template_array'][$priority]['table'] = $form_state['values']['chado_table'];
@@ -1593,11 +1795,108 @@ function tripal_bulk_loader_edit_template_field_form_submit ($form, &$form_state
         );
       }
       
-    } elseif ($form_state['values']['op'] ==  'Cancel') {
+    } elseif ($op ==  'Cancel') {
+    
         $path = explode('?',$form_state['storage']['referring URL']);
         parse_str($path[1], $query);
         $query['template_id'] = $form_state['storage']['template']->template_id;
         drupal_goto($path[0], $query);    
+
+    } elseif ($op == 'Add Transformation') {
+
+      // Add transformation rule to original field
+      $form_state['storage']['original_field']['regex']['pattern'][] = '/' . $form_state['values']['pattern'] . '/';
+      $form_state['storage']['original_field']['regex']['replace'][] = $form_state['values']['replace'];      
+
+      // Add original field back into template
+      $priority = $form_state['storage']['original_field']['priority'];
+      $field_index = $form_state['storage']['original_field']['field_index'];
+      $form_state['storage']['template_array'][$priority]['fields'][$field_index] = $form_state['storage']['original_field'];
+      
+      // Save Template
+      $form_state['storage']['template']->template_array = serialize($form_state['storage']['template_array']);
+      $success = drupal_write_record('tripal_bulk_loader_template', $form_state['storage']['template'], array('template_id'));
+  
+      if ($success) {
+        drupal_set_message('Successfully Added Transformation Rule');
+        drupal_set_message('Template Saved.'); 
+      } else {
+        drupal_set_message('Unable to Save Template!', 'error');
+        watchdog('T_bulk_loader',
+          'Unable to save bulk loader template: %template',
+          array('%template' => print_r($form_state['storage']['template'], TRUE)),
+          WATCHDOG_ERROR
+        );
+      }
+    } elseif ($op == 'Save Transformation Rule Order') {
+      
+      // Generate new regex array
+      $new_regex = array();
+      $old_regex = $form_state['storage']['original_field']['regex'];
+      foreach ($form_state['values']['regex-data'] as $key => $element) {
+        $new_regex['pattern'][ $element['new_index'] ] = $old_regex['pattern'][ $element['old_index'] ];
+        $new_regex['replace'][ $element['new_index'] ] = $old_regex['replace'][ $element['old_index'] ];
+      }
+      
+      // sort new regex arrays
+      asort($new_regex['pattern']);
+      asort($new_regex['replace']);
+      
+      // Add back to original field
+      $form_state['storage']['original_field']['regex'] = $new_regex;
+      $priority = $form_state['storage']['original_field']['priority'];
+      $field_index = $form_state['storage']['original_field']['field_index'];
+      $form_state['storage']['template_array'][$priority]['fields'][$field_index] = $form_state['storage']['original_field'];
+      
+      // Save Template
+      $form_state['storage']['template']->template_array = serialize($form_state['storage']['template_array']);
+      $success = drupal_write_record('tripal_bulk_loader_template', $form_state['storage']['template'], array('template_id'));
+  
+      if ($success) {
+        drupal_set_message('Successfully Reordered Transformation Rules');
+        drupal_set_message('Template Saved.'); 
+      } else {
+        drupal_set_message('Unable to Save Template!', 'error');
+        watchdog('T_bulk_loader',
+          'Unable to save bulk loader template: %template',
+          array('%template' => print_r($form_state['storage']['template'], TRUE)),
+          WATCHDOG_ERROR
+        );
+      }
+    } elseif ($op == 'Delete Transformation') {
+    
+      // Unset regex rule
+      $index = $form_state['clicked_button']['#name'];
+      unset($form_state['storage']['original_field']['regex']['pattern'][$index]);
+      unset($form_state['storage']['original_field']['regex']['replace'][$index]);
+      
+      $priority = $form_state['storage']['original_field']['priority'];
+      $field_index = $form_state['storage']['original_field']['field_index'];
+      $form_state['storage']['template_array'][$priority]['fields'][$field_index] = $form_state['storage']['original_field'];
+      
+      // Save Template
+      $form_state['storage']['template']->template_array = serialize($form_state['storage']['template_array']);
+      $success = drupal_write_record('tripal_bulk_loader_template', $form_state['storage']['template'], array('template_id'));
+  
+      if ($success) {
+        drupal_set_message('Successfully Reordered Transformation Rules');
+        drupal_set_message('Template Saved.'); 
+      } else {
+        drupal_set_message('Unable to Save Template!', 'error');
+        watchdog('T_bulk_loader',
+          'Unable to save bulk loader template: %template',
+          array('%template' => print_r($form_state['storage']['template'], TRUE)),
+          WATCHDOG_ERROR
+        );
+      }
+      
+    } elseif ($op == 'Test Transformation Rules') {
+    
+      $patterns = $form_state['storage']['original_field']['regex']['pattern'];
+      $replaces = $form_state['storage']['original_field']['regex']['replace'];
+      $test_string = $form_state['values']['test_string'];
+      $form_state['storage']['test_regex_result'] = preg_replace($patterns, $replaces, $test_string);
+      $form_state['storage']['test_regex_test'] = $test_string;
     }
   } 
   

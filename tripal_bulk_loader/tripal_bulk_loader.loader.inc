@@ -300,7 +300,7 @@ function tripal_bulk_loader_regex_tranform_values ($values, $table_data) {
     if (!is_array($regex_array)) { continue; }
     
     $old_value = $values[$field];
-    $new_value = preg_replace('/'.$regex_array['pattern'].'/', $regex_array['replace'], $old_value);
+    $new_value = preg_replace($regex_array['pattern'], $regex_array['replace'], $old_value);
     $values[$field] = $new_value;
   }
 

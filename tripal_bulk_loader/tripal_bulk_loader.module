@@ -260,6 +260,14 @@ function tripal_bulk_loader_theme() {
     	'arguments' => array('form' => NULL),
     	'template' => 'tripal_bulk_loader_modify_template_base_form',
     ),
+    'tripal_bulk_loader_edit_template_field_form' => array(
+      'arguments' => array('form' => NULL),
+      'template' => 'tripal_bulk_loader_edit_template_field_form',
+    ),
+    'tripal_bulk_loader_add_template_field_form' => array(
+      'arguments' => array('form' => NULL),
+      'template' => 'tripal_bulk_loader_add_template_field_form',
+    ),
   );
 }
 
