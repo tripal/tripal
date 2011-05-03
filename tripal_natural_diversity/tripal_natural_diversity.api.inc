@@ -654,7 +654,7 @@ function tripal_natural_diversity_chado_nd_protocol_schema () {
   $description = array();
   
   $description = array(
-    'table' => ,
+    'table' => 'nd_protocol',
     'fields' => array(
       'nd_protocol_id' => array(
         'type' => 'serial',
@@ -682,7 +682,7 @@ function tripal_natural_diversity_chado_nd_protocol_reagent_schema () {
   $description = array();
   
   $description = array(
-    'table' => ,
+    'table' => 'nd_protocol_reagent',
     'fields' => array(
       'nd_protocol_reagent_id' => array(
         'type' => 'serial',

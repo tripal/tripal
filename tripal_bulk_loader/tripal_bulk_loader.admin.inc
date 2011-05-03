@@ -174,6 +174,11 @@ function tripal_bulk_loader_modify_template_base_form ($form_state = NULL, $mode
             '#name' => (string)$priority,
             '#value' => 'Add Field',
           ),
+          'submit-duplicate_record' => array(
+            '#type' => 'submit',
+            '#name' => (string)$priority,
+            '#value' => 'Duplicate Record'
+          ),
         );
 
         foreach ($table_array['fields'] as $field_index => $field) {
