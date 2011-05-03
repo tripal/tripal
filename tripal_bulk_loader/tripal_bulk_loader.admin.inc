@@ -644,9 +644,9 @@ function tripal_bulk_loader_edit_template_record_form (&$form_state = NULL) {
     '#type' => 'radios',
     '#title' => 'Action to take when Loading Record',
     '#options' => array(
-      'insert' => 'Insert the record if it doesn\'t already exist',
-      'select' => 'Don\'t insert this record: it\'s used to define a foreign key in another record',
-      'optional' => 'Record will only be inserted if all required data is filled in'
+      'insert' => 'INSERT: Insert the record if it doesn\'t already exist',
+      'select' => 'SELECT: Don\'t insert this record: it\'s used to define a foreign key in another record',
+      'optional' => 'OPTIONAL: Record will only be inserted if all required data is filled in'
     ),
     '#default_value' => 'insert'
   );
@@ -1957,7 +1957,7 @@ function tripal_bulk_loader_add_field_ahah () {
   
   $form_element = $form['add_fields'];
   // Remove the wrapper so we don't double it up.
-  unset($form_element['#prefix'], $form_element['#suffix']);
+  //unset($form_element['#prefix'], $form_element['#suffix']);
 
   $output = theme('status_messages');
   $output .= drupal_render($form_element);

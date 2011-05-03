@@ -1,4 +1,6 @@
 
+<?php print $form['edit_fields']['#prefix']; ?>
+<fieldset><legend> <?php print $form['edit_fields']['#title']; ?> </legend>
 <?php
   print drupal_render($form['template_name']);
 
@@ -70,7 +72,12 @@
     }
   }
   unset($form['edit_fields']);
-  
+?>
+
+</fieldset>
+</div>
+
+<?php
   //Render remaining -Needed to submit
   print drupal_render($form);
 ?>

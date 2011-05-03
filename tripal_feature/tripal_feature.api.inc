@@ -126,3 +126,35 @@ function tripal_feature_chado_featureloc_schema() {
 
   return $description;
 }
+
+/**
+ * Implements hook_chado_feature_dbxref_schema()
+ * Purpose: To add descriptions and foreign keys to default table description
+ * Note: This array will be merged with the array from all other implementations
+ *
+ * @return
+ *    Array describing the feature_dbxref table
+ *
+ * @ingroup tripal_feature
+ */
+function tripal_feature_chado_feature_dbxref_schema() {
+  $description = array();
+
+  // Default table description in tripal_core.schema.api.inc: tripal_core_chado_feature_dbxref_schema()
+
+  $description['foreign keys']['feature'] = array(
+        'table' => 'feature',
+        'columns' => array(
+          'feature_id' => 'feature_id',
+        ),
+  );
+
+  $description['foreign keys']['dbxref'] = array(
+        'table' => 'dbxref',
+        'columns' => array(
+          'dbxref_id' => 'dbxref_id',
+        ),
+  );
+
+  return $description;
+}
