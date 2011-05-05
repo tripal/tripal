@@ -141,11 +141,19 @@ function tripal_bulk_loader_load_data($nid) {
     foreach ($data as $priority => $table_data) {
       $table = $table_data['table'];
       $values = $table_data['values_array'];
+
+//print 'Table: '.$table."\n";      
+//print 'Default Values:'.print_r($values,TRUE)."\n";
+      
       if ($table_data['need_further_processing']) {
         $values = tripal_bulk_loader_add_spreadsheetdata_to_values ($values, $line, $field2column[$priority]);
+//print 'W/ Spreadsheet Values:'.print_r($values,TRUE)."\n";
         $values = tripal_bulk_loader_add_foreignkey_to_values($values, $data, $record2priority);
+//print 'W/ Foreign Key Values:'.print_r($values,TRUE)."\n";
       }
       $values = tripal_bulk_loader_regex_tranform_values($values, $table_data, $line);
+
+//print 'W/ Regex Values:'.print_r($values,TRUE)."\n";
 
       if (!$values) {
         $msg = $table_data['record_id'].' ('.$table_data['mode'].') Aborted due to error in previous record.';
@@ -183,12 +191,22 @@ function tripal_bulk_loader_load_data($nid) {
       }
       
       if ($data[$priority]['error']) {
+        // print debugging information
+        print 'Default Table Data: '.print_r($table_data,TRUE)."\n";
+        print 'Supplemented Values: '.print_r($values,TRUE)."\n";
+        
+        // continue to next record
         continue;
       }
       
       // add new values array into the data array
       $data[$priority]['values_array'] = $values;
-       
+      
+      // check if it is already inserted
+      if ($table_data['inserted']) {
+        continue;
+      }
+      
       // first check if it already exists
       $exists = tripal_core_chado_select($table, array_keys($values), $values, array('has_record'=>TRUE));
       //print "Number of Records:".$exists.".\n";
@@ -214,7 +232,10 @@ function tripal_bulk_loader_load_data($nid) {
             print "ERROR: ".$msg."\n";  
             $data[$priority]['error'] = TRUE;
           } else {
-            //print "Inserted ".$table_data['record_id']." into ".$table."\n";
+            // if mode=insert_once then ensure we only insert it once
+            if (preg_match('/insert_once/',$table_data['mode'])) {
+              $default_data[$priority]['inserted'] = TRUE;
+            }
           }
         } else {
           $msg = $table_data['record_id'].' ('.$table_data['mode'].') No Matching record in '.$table.' where values:'.print_r($values,TRUE);
@@ -223,6 +244,13 @@ function tripal_bulk_loader_load_data($nid) {
           $data[$priority]['error'] = TRUE;        
         }
       }// end of if/not record exists
+
+      if ($data[$priority]['error']) {
+        // print debugging information
+        print 'Table Data: '.print_r($table_data,TRUE)."\n";
+        print 'Default Table Data: '.print_r($default_data[$priority],TRUE)."\n";
+        print 'Supplemented Values: '.print_r($values,TRUE)."\n";
+      }
     } // end of foreach table in default data array
 
   } //end of foreach line of file
@@ -247,6 +275,8 @@ function tripal_bulk_loader_add_spreadsheetdata_to_values ($values, $line, $fiel
     if (is_array($value)) { continue; }
     
     $column = $field2column[$field] - 1;
+    if ($column < 0) { continue; }
+    
     if (preg_match('/\w+/',$line[$column])) {
       $values[$field] = $line[$column];
     } else {
@@ -297,7 +327,7 @@ function tripal_bulk_loader_add_foreignkey_to_values($values, $data, $record2pri
 function tripal_bulk_loader_regex_tranform_values ($values, $table_data, $line) {
 
   foreach ($table_data['regex_transform'] as $field => $regex_array) {
-    if (!is_array($regex_array)) { continue; }
+    if (!is_array($regex_array['replace'])) { continue; }
     
     // Check for <#column:\d+#> notation
     // if present replace with that column in the current line

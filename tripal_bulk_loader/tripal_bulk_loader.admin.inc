@@ -357,6 +357,17 @@ function tripal_bulk_loader_modify_template_base_form_submit($form, &$form_state
       );
       drupal_goto('admin/tripal/tripal_bulk_loader_template/add_field', $query);
     break;
+
+    case 'Duplicate Record':
+      // original record (one to be duplicated)
+      $orig_priority = $form_state['clicked_button']['#name'];
+      $record = $form_state['storage']['template'][ $orig_priority ];
+      
+      // new record
+      $new_priority = sizeof($form_state['storage']['template']) + 1;
+      $record['record_id'] = $record['record_id'] . '_' . date('YzHi');
+      $form_state['storage']['template'][ $new_priority ] = $record;
+    break;
     
     case 'Edit Field':
       $field_data_index = $form_state['clicked_button']['#name'];
@@ -649,9 +660,10 @@ function tripal_bulk_loader_edit_template_record_form (&$form_state = NULL) {
     '#type' => 'radios',
     '#title' => 'Action to take when Loading Record',
     '#options' => array(
-      'insert' => 'INSERT: Insert the record if it doesn\'t already exist',
       'select' => 'SELECT: Don\'t insert this record: it\'s used to define a foreign key in another record',
-      'optional' => 'OPTIONAL: Record will only be inserted if all required data is filled in'
+      'insert' => 'INSERT: Insert the record if it doesn\'t already exist',
+      'optional' => 'OPTIONAL: Record will only be inserted if all required data is filled in',
+      'insert_once' => 'INSERT ONCE: Record will be inserted once for the entire spreadsheet'
     ),
     '#default_value' => 'insert'
   );
