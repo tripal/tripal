@@ -248,13 +248,18 @@ function tripal_core_load_gff3($gff_file, $organism_id,$analysis_id,$add_only =0
 
    $num_lines = sizeof($lines);
    $interval = intval($num_lines * 0.01);
+   $in_fasta = 0;
    foreach ($lines as $line_num => $line) {
       $i++;  // update the line count
       // update the job status every 1% features
       if($job and $i % $interval == 0){
          tripal_job_set_progress($job,intval(($i/$num_lines)*100));
       }
-
+      // check to see if we have FASTA section, if so then set the variable
+      // to start parsing
+      if(preg_match('/^##FASTA/i',$line)){
+         $in_fasta = 1;
+      }
       // skip comments
       if(preg_match('/^#/',$line)){
          continue; 
@@ -263,6 +268,9 @@ function tripal_core_load_gff3($gff_file, $organism_id,$analysis_id,$add_only =0
       if(preg_match('/^\s*$/',$line)){
          continue; 
       }
+      
+
+      // handle FASTA section
       
 
       // TODO: remove URL encoding
@@ -455,6 +463,9 @@ function tripal_core_load_gff3($gff_file, $organism_id,$analysis_id,$add_only =0
             if(array_key_exists('Parent',$tags)){
                tripal_core_load_gff3_parents($feature,$cvterm,$tags['Parent'],$gff_features,$organism_id);
             }
+            // add in the GFF3_source dbxref so that GBrowse can find the feature using the source column
+            $source_ref = array('GFF_source:'.$source);
+            tripal_core_load_gff3_dbxref($feature,$source_ref);
          }
       }
    }
@@ -521,6 +532,7 @@ function tripal_core_load_gff3_parents($feature,$cvterm,$parents,$gff_features,$
  *
  * @ingroup gff3_loader
  */
+
 function tripal_core_load_gff3_dbxref($feature,$dbxrefs){
 
    // iterate through each of the dbxrefs
