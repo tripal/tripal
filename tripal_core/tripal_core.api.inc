@@ -156,17 +156,19 @@ function tripal_core_chado_insert($table,$values){
    $ukeys = $table_desc['unique keys'];
    $ukselect_cols = array();
    $ukselect_vals = array();
-   foreach($ukeys as $name => $fields){
-      foreach($fields as $index => $field){
-         // build the arrays for performing a select that will check the contraint
-         array_push($ukselect_cols,$field);
-         $ukselect_vals[$field] = $insert_values[$field];
-      }
-      // now check the constraint
-      if(tripal_core_chado_select($table,$ukselect_cols,$ukselect_vals)){
-         watchdog('tripal_core',"tripal_core_chado_insert: Cannot insert duplicate record into $table table: " . print_r($values,1),array(),'WATCHDOG_ERROR');
-         return false;
-      }
+   if ($ukeys) {
+     foreach($ukeys as $name => $fields){
+        foreach($fields as $index => $field){
+           // build the arrays for performing a select that will check the contraint
+           array_push($ukselect_cols,$field);
+           $ukselect_vals[$field] = $insert_values[$field];
+        }
+        // now check the constraint
+        if(tripal_core_chado_select($table,$ukselect_cols,$ukselect_vals)){
+           watchdog('tripal_core',"tripal_core_chado_insert: Cannot insert duplicate record into $table table: " . print_r($values,1),array(),'WATCHDOG_ERROR');
+           return false;
+        }
+     }
    }
 
    // if trying to insert a field that is the primary key, make sure it also is unique
@@ -210,7 +212,13 @@ function tripal_core_chado_insert($table,$values){
    $result = db_query($sql,$ivalues);
    tripal_db_set_active($previous_db);  // now use drupal database 
    if($result){
-      return true;
+      // add primary keys to values before return
+      $primary_key = array();
+      foreach ($table_desc['primary key'] as $field) {
+        $value = db_last_insert_id($table, $field);
+        $values[$field] = $value;
+      }
+      return $values;
    } 
    else {
       watchdog('tripal_core',"tripal_core_chado_insert: Cannot insert record into $table table: " . print_r($values,1),array(),'WATCHDOG_ERROR');

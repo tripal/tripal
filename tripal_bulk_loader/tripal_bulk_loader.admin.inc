@@ -663,7 +663,8 @@ function tripal_bulk_loader_edit_template_record_form (&$form_state = NULL) {
       'select' => 'SELECT: Don\'t insert this record: it\'s used to define a foreign key in another record',
       'insert' => 'INSERT: Insert the record if it doesn\'t already exist',
       'optional' => 'OPTIONAL: Record will only be inserted if all required data is filled in',
-      'insert_once' => 'INSERT ONCE: Record will be inserted once for the entire spreadsheet'
+      'insert_once' => 'INSERT ONCE: Record will be inserted once for the entire spreadsheet',
+      'insert_unique' => 'INSERT UNIQUE: Only insert record if there isn\'t a record with the same values',
     ),
     '#default_value' => 'insert'
   );
@@ -872,7 +873,7 @@ function tripal_bulk_loader_add_template_field_form (&$form_state = NULL) {
   //dpm($variables, 'variables');
     
   // Start of Form Proper--------------------------------------------------------------
-  dpm($form_state, 'Form State');
+  //dpm($form_state, 'Form State');
   
   $form['template_name'] = array(
     '#type' => 'item',

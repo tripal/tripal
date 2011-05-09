@@ -57,7 +57,7 @@ function tripal_genetic_chado_feature_genotype_schema () {
   $description['foreign keys']['cvterm'] = array(
         'table' => 'cvterm',
         'columns' => array(
-          'type_id' => 'cvterm_id',
+          'cvterm_id' => 'cvterm_id',
         ),
   );
   

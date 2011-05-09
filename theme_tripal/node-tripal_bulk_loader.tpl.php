@@ -39,5 +39,22 @@
 
 <?php if (!$teaser) { ?>
 	<?php print drupal_get_form('tripal_bulk_loader_add_loader_job_form', $node); ?>
+
+  <?php if ($node->inserted_records) { 
+    print '<h3>Loading Summary</h3>';
+    $rows = array();
+    $total = 0;
+    foreach ($node->inserted_records as $r) {
+      $row = array();
+      $row[] = $r->table_inserted_into;
+      $row[] = $r->num_inserted;
+      $rows[] = $row;
+      $total = $total + $r->num_inserted;
+    }
+    $rows[] = array('<b>TOTAL</b>','<b>'.$total.'</b>');
+    print theme_table(array('Chado Table', 'Number of Records Inserted'), $rows);
+  } ?>
+  <br>
+  
 	<?php print theme('tripal_bulk_loader_template', $node->template->template_id); ?>
 <?php } ?>

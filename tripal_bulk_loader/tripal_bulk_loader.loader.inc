@@ -34,6 +34,11 @@ function tripal_bulk_loader_add_loader_job_form ($form_state, $node) {
     '#value' => 'Cancel Job',
   );
   
+  $form['submit-revert'] = array(
+    '#type' => ($node->job_id) ? 'submit' : 'hidden',
+    '#value' => 'Revert',
+  );  
+  
   return $form;
 }
 
@@ -60,6 +65,16 @@ function tripal_bulk_loader_add_loader_job_form_submit ($form, $form_state) {
     tripal_jobs_rerun($form_state['values']['job_id']);
   } elseif (preg_match('/Cancel Job/', $form_state['values']['op'])) {
     tripal_jobs_cancel($form_state['values']['job_id']);
+  } elseif (preg_match('/Revert/', $form_state['values']['op'])) {
+  
+    // Remove the records from the database that were already inserted
+    $resource = db_query('SELECT * FROM {tripal_bulk_loader_inserted} WHERE nid=%d', $form_state['values']['nid']);
+    while ($r = db_fetch_object($resource)) {
+      $ids = preg_split('/,/',$r->ids_inserted);
+      db_query('DELETE FROM %s WHERE %s IN (%s)',$r->table_inserted_into, $r->table_primary_key, $r->ids_inserted);
+      db_query('DELETE FROM {tripal_bulk_loader_inserted} WHERE tripal_bulk_loader_inserted_id=%d',$r->tripal_bulk_loader_inserted_id);
+    }
+  
   }
 
 }
@@ -141,19 +156,16 @@ function tripal_bulk_loader_load_data($nid) {
     foreach ($data as $priority => $table_data) {
       $table = $table_data['table'];
       $values = $table_data['values_array'];
-
-//print 'Table: '.$table."\n";      
-//print 'Default Values:'.print_r($values,TRUE)."\n";
       
+      //print 'default values:'.print_r($values,TRUE)."\n";
       if ($table_data['need_further_processing']) {
         $values = tripal_bulk_loader_add_spreadsheetdata_to_values ($values, $line, $field2column[$priority]);
-//print 'W/ Spreadsheet Values:'.print_r($values,TRUE)."\n";
+        //print 'after spreadsheet values:'.print_r($values,TRUE)."\n";
         $values = tripal_bulk_loader_add_foreignkey_to_values($values, $data, $record2priority);
-//print 'W/ Foreign Key Values:'.print_r($values,TRUE)."\n";
+        //print 'after fk values:'.print_r($values,TRUE)."\n";
       }
       $values = tripal_bulk_loader_regex_tranform_values($values, $table_data, $line);
-
-//print 'W/ Regex Values:'.print_r($values,TRUE)."\n";
+      //print 'after regex values:'.print_r($values,TRUE)."\n";
 
       if (!$values) {
         $msg = $table_data['record_id'].' ('.$table_data['mode'].') Aborted due to error in previous record.';
@@ -162,18 +174,17 @@ function tripal_bulk_loader_load_data($nid) {
         $data[$priority]['error'] = TRUE;
       }
       
+      $table_desc = module_invoke_all('chado_'.$table.'_schema');
       if (preg_match('/optional/', $table_array['mode'])) {
-        // Check all required fields are set
-        $table_desc = module_invoke_all('chado_'.$table.'_schema');
+        // Check all db required fields are set
         $fields = $table_desc['fields'];
         foreach($fields as $field => $def){
           // a field is considered missing if it cannot be null and there is no default
           // value for it or it is of type 'serial'
           if($def['not null'] == 1 and !array_key_exists($field,$insert_values) and !isset($def['default']) and strcmp($def['type'],serial)!=0){
              $msg = $table_data['record_id'].' ('.$table_data['mode'].') Missing Database Required Value: '.$table.'.'.$field;
-             watchdog('T_bulk_loader', $msg, array(), WATCHDOG_WARNING); 
-            print "ERROR: ".$msg."\n";
-            $data[$priority]['error'] = TRUE;
+             watchdog('T_bulk_loader', $msg, array(), WATCHDOG_NOTICE); 
+             $data[$priority]['error'] = TRUE;
           }
         }
       } //end of if optional record
@@ -183,20 +194,10 @@ function tripal_bulk_loader_load_data($nid) {
         if ($required) {
           if (!isset($values[$field])) {
             $msg = $table_data['record_id'].' ('.$table_data['mode'].') Missing Template Required Value: '.$table.'.'.$field;
-            watchdog('T_bulk_loader', $msg, array(), WATCHDOG_WARNING); 
-            print "ERROR: ".$msg."\n";
+            watchdog('T_bulk_loader', $msg, array(), WATCHDOG_NOTICE); 
             $data[$priority]['error'] = TRUE;            
           }
         }
-      }
-      
-      if ($data[$priority]['error']) {
-        // print debugging information
-        print 'Default Table Data: '.print_r($table_data,TRUE)."\n";
-        print 'Supplemented Values: '.print_r($values,TRUE)."\n";
-        
-        // continue to next record
-        continue;
       }
       
       // add new values array into the data array
@@ -207,54 +208,77 @@ function tripal_bulk_loader_load_data($nid) {
         continue;
       }
       
-      // first check if it already exists
-      $exists = tripal_core_chado_select($table, array_keys($values), $values, array('has_record'=>TRUE));
-      //print "Number of Records:".$exists.".\n";
-      if ($exists === 1) {
-        if (!preg_match('/select/',$table_data['mode'])) {
-          $msg = $table_data['record_id'].' ('.$table_data['mode'].') Record already exists in '.$table.' where values:'.print_r($values,TRUE);
-          watchdog('T_bulk_loader', $msg, array(), WATCHDOG_WARNING); 
-          print "ERROR: ".$msg."\n";
-          $data[$priority]['error'] = TRUE;
-        }
-      } elseif ($exists > 1) { 
-          $msg = $table_data['record_id'].' ('.$table_data['mode'].') 2+ Records exists in '.$table.' where values:'.print_r($values,TRUE);
-          watchdog('T_bulk_loader', $msg, array(), WATCHDOG_WARNING); 
-          print "ERROR: ".$msg."\n";   
-          $data[$priority]['error'] = TRUE;
-      } else {
-        // if it doesn't exist already then insert it
-        if (!preg_match('/select/',$table_data['mode'])) {
-          $success = tripal_core_chado_insert($table, $values);
-          if (!$success) {
-            $msg = $table_data['record_id'].' ('.$table_data['mode'].') Unable to insert record into '.$table.' where values:'.print_r($values,TRUE);
-            watchdog('T_bulk_loader', $msg, array(), WATCHDOG_ERROR); 
-            print "ERROR: ".$msg."\n";  
-            $data[$priority]['error'] = TRUE;
-          } else {
-            // if mode=insert_once then ensure we only insert it once
-            if (preg_match('/insert_once/',$table_data['mode'])) {
-              $default_data[$priority]['inserted'] = TRUE;
-            }
-          }
-        } else {
-          $msg = $table_data['record_id'].' ('.$table_data['mode'].') No Matching record in '.$table.' where values:'.print_r($values,TRUE);
-          watchdog('T_bulk_loader', $msg, array(), WATCHDOG_WARNING); 
-          print "ERROR: ".$msg."\n";
-          $data[$priority]['error'] = TRUE;        
-        }
-      }// end of if/not record exists
-
+      // if there was an error already -> don't insert
       if ($data[$priority]['error']) {
-        // print debugging information
-        print 'Table Data: '.print_r($table_data,TRUE)."\n";
-        print 'Default Table Data: '.print_r($default_data[$priority],TRUE)."\n";
-        print 'Supplemented Values: '.print_r($values,TRUE)."\n";
+        continue;
       }
+      
+      // if insert unique then check to ensure unique
+      if (preg_match('/insert_unique/',$table_data['mode'])) {
+        $unique = tripal_core_chado_select($table, array_keys($table_desc['fields']), $values, array('has_record'=>TRUE));
+        if ($unique > 0) {
+          continue;
+        }
+      }
+      
+        
+      if (!preg_match('/select/',$table_data['mode'])) {
+        $record = tripal_core_chado_insert($table, $values);
+        if (!$record) {
+          $msg = $table_data['record_id'].' ('.$table_data['mode'].') Unable to insert record into '.$table.' where values:'.print_r($values,TRUE);
+          watchdog('T_bulk_loader', $msg, array(), WATCHDOG_ERROR); 
+          print "ERROR: ".$msg."\n";  
+          $data[$priority]['error'] = TRUE;
+        } else {
+          //add changes back to values array
+          $data[$priority]['values_array'] = $record;
+          $values = $record;
+          
+          // if mode=insert_once then ensure we only insert it once
+          if (preg_match('/insert_once/',$table_data['mode'])) {
+            $default_data[$priority]['inserted'] = TRUE;
+          }
+          
+          // add to tripal_bulk_loader_inserted
+          $insert_record = db_fetch_object(db_query(
+            "SELECT * FROM {tripal_bulk_loader_inserted} WHERE table_inserted_into='%s' AND nid=%d",
+            $table,
+            $nid
+          ));
+          if ($insert_record) {
+            $insert_record->ids_inserted .= ',' . $values[ $table_desc['primary key'][0] ];
+            drupal_write_record('tripal_bulk_loader_inserted', $insert_record, 'tripal_bulk_loader_inserted_id');
+            //print 'Update: '.print_r($insert_record,TRUE)."\n";
+          } else {
+            $insert_record = array(
+              'nid' => $nid,
+              'table_inserted_into' => $table,
+              'table_primary_key' => $table_desc['primary key'][0],
+              'ids_inserted' => $values[ $table_desc['primary key'][0] ],
+            );
+            //print 'New: '.print_r($insert_record,TRUE)."\n";
+            $success = drupal_write_record('tripal_bulk_loader_inserted', $insert_record);
+          }//end of if insert record
+          
+        } //end of if insert was successful
+      } else {
+        // No record on select
+        $msg = $table_data['record_id'].' ('.$table_data['mode'].') No Matching record in '.$table.' where values:'.print_r($values,TRUE);
+        watchdog('T_bulk_loader', $msg, array(), WATCHDOG_WARNING); 
+        $data[$priority]['error'] = TRUE;        
+      }
+
     } // end of foreach table in default data array
 
   } //end of foreach line of file
   
+  // check that data was inserted and update job_status
+  $sql = 'SELECT count(*) as num_tables FROM {tripal_bulk_loader_inserted} WHERE nid=%d GROUP BY nid';
+  $result = db_fetch_object(db_query($sql, $nid));
+  if ($result->num_tables > 0) {
+    $node->job_status = 'Data Inserted';
+    drupal_write_record('node',$node,'nid');
+  }
 }
 
 /**
@@ -304,12 +328,7 @@ function tripal_bulk_loader_add_foreignkey_to_values($values, $data, $record2pri
       $foreign_values = $data[$foreign_priority]['values_array'];
       
       // add to current values array
-      // only if there was no error found when the foreign record was processed
-      if (isset($data[$foreign_priority]['error']) and $data[$foreign_priority]['error']) {
-        return FALSE;
-      } else {
-        $values[$field] = $foreign_values;
-      }
+      $values[$field] = $foreign_values;
     }
   }
 
@@ -326,6 +345,8 @@ function tripal_bulk_loader_add_foreignkey_to_values($values, $data, $record2pri
  */
 function tripal_bulk_loader_regex_tranform_values ($values, $table_data, $line) {
 
+  if (empty($table_data['regex_transform']) OR !is_array($table_data['regex_transform'])) { return $values; }
+  
   foreach ($table_data['regex_transform'] as $field => $regex_array) {
     if (!is_array($regex_array['replace'])) { continue; }
     
@@ -344,6 +365,10 @@ function tripal_bulk_loader_regex_tranform_values ($values, $table_data, $line) 
     $old_value = $values[$field];
     $new_value = preg_replace($regex_array['pattern'], $regex_array['replace'], $old_value);
     $values[$field] = $new_value;
+    
+    if ($values[$field] === '') {
+      unset($values[$field]); 
+    }
   }
 
   return $values;

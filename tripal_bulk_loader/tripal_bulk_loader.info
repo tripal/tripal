@@ -4,4 +4,4 @@ core = 6.x
 project = tripal_bulk_loader
 package = Tripal
 dependencies[] = tripal_core
-version = "0.5a"
+version = "0.6a"

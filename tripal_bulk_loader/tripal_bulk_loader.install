@@ -14,31 +14,6 @@ function tripal_bulk_loader_uninstall(){
    drupal_uninstall_schema('tripal_bulk_loader');
 }
 
-/**
- * Update
- * Add status, file_has_header columns to tripal_bulk_loader
- */
-function tripal_bulk_loader_update_1 () {
-	$update = array();
-	
-	$update[] = update_sql("ALTER TABLE {tripal_bulk_loader} ADD COLUMN job_status varchar(500) DEFAULT 'initialized'");
-	$update[] = update_sql("ALTER TABLE {tripal_bulk_loader} ADD COLUMN file_has_header boolean DEFAULT TRUE");
-	
-	return $update;
-}
-
-/**
- * Update
- * Add job_id column to tripal_bulk_loader
- */
-function tripal_bulk_loader_update_2 () {
-	$update = array();
-	
-	$update[] = update_sql("ALTER TABLE {tripal_bulk_loader} ADD COLUMN job_id int");
-	
-	return $update;
-}
-
 /*******************************************************************************
 * tripal_bulk_loader_schema
 */
@@ -58,8 +33,21 @@ function tripal_bulk_loader_schema() {
             'type' => 'varchar',
 			),
 			'file' => array(
-				'type' => 'varchar',
-			)
+        'type' => 'varchar',
+        'not null' => TRUE
+			),
+			'job_id' => array(
+			  'type' => 'int',
+			),
+			'job_status' => array(
+			  'type' => 'varchar',
+			),
+			'file_has_header' => array(
+				'type' => 'int',
+				'size' => 'tiny',
+				'not null' => TRUE,
+        'default' => 0,
+			),
 		),
   		'primary key' => array('nid'),
   		'unique keys' => array(
@@ -84,6 +72,32 @@ function tripal_bulk_loader_schema() {
 		'unique keys' => array(
     		'name' => array('name')
 		),
+	);
+	$schema['tripal_bulk_loader_inserted'] = array(
+	  'fields' => array(
+	    'tripal_bulk_loader_inserted_id' => array(
+	      'type' => 'serial',
+	      'not null' => TRUE
+	    ),
+      'nid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+			),
+			'table_inserted_into' => array(
+			  'type' => 'varchar',
+			  'not null' => TRUE,
+			),
+			'table_primary_key' => array(
+			  'type' => 'varchar',
+			  'not null' => TRUE,
+			),
+			'ids_inserted' => array(
+			  'type' => 'text',
+			  'not null' => TRUE
+			),
+	  ),
+	  'primary key' => array('tripal_bulk_loader_inserted_id'),
 	);
 	return $schema;
 }

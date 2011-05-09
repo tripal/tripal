@@ -299,6 +299,13 @@ function tripal_bulk_loader_load($node){
 	$node->template = $results;
 	$node->template->template_array = $template;
 
+  // Add inserted records
+  $sql = 'SELECT * FROM {tripal_bulk_loader_inserted} WHERE nid=%d';
+  $resource = db_query($sql,$node->nid);
+  while ($r = db_fetch_object($resource)) {
+    $r->num_inserted = sizeof(preg_split('/,/',$r->ids_inserted)); 
+    $node->inserted_records->{$r->table_inserted_into} = $r;
+  }
 	return $node;
 }
 
