@@ -149,7 +149,7 @@ function tripal_bulk_loader_modify_template_base_form ($form_state = NULL, $mode
           ),
           'mode' => array(
             '#type' => 'item',
-            '#value' => ($table_array['mode']) ? $table_array['mode'] : 'insert',
+            '#value' => ($table_array['mode']) ? $table_array['mode'] : 'insert_unique',
           ),
           'new_priority' => array(
             '#type' => 'select',
@@ -661,12 +661,12 @@ function tripal_bulk_loader_edit_template_record_form (&$form_state = NULL) {
     '#title' => 'Action to take when Loading Record',
     '#options' => array(
       'select' => 'SELECT: Don\'t insert this record: it\'s used to define a foreign key in another record',
-      'insert' => 'INSERT: Insert the record if it doesn\'t already exist',
+      'insert' => 'INSERT: Insert the record',
       'optional' => 'OPTIONAL: Record will only be inserted if all required data is filled in',
       'insert_once' => 'INSERT ONCE: Record will be inserted once for the entire spreadsheet',
       'insert_unique' => 'INSERT UNIQUE: Only insert record if there isn\'t a record with the same values',
     ),
-    '#default_value' => 'insert'
+    '#default_value' => 'insert_unique'
   );
   
   $form['edit_record']['submit-edit_record'] = array(

@@ -26,9 +26,14 @@ class views_handler_filter_chado_select_cvterm_name extends views_handler_filter
 			}    	
     } else {
     	//get a list of cvs currently used
-    	$sql = 'select distinct(cv.cv_id) FROM '.$this->view->base_table
-    		.' LEFT JOIN cvterm cvterm ON cvterm.cvterm_id='.$this->view->base_table.'.type_id '
-    		.'LEFT JOIN cv cv ON cv.cv_id=cvterm.cv_id';
+    	if ($this->view->base_table == 'cvterm') {
+      	$sql = 'SELECT distinct(cv.cv_id) FROM '.$this->view->base_table
+      		.' LEFT JOIN cv cv ON cv.cv_id=cvterm.cv_id';	
+    	} else {
+      	$sql = 'SELECT distinct(cv.cv_id) FROM '.$this->view->base_table
+      		.' LEFT JOIN cvterm cvterm ON cvterm.cvterm_id='.$this->view->base_table.'.type_id '
+      		.'LEFT JOIN cv cv ON cv.cv_id=cvterm.cv_id';
+      }
     	$previous_db = tripal_db_set_active('chado');
     	$resource = db_query($sql);
     	tripal_db_set_active($previous_db);
@@ -48,14 +53,35 @@ class views_handler_filter_chado_select_cvterm_name extends views_handler_filter
     $this->cvterm_options = $cvterms;
   }
 
+ /**
+  * Defines options for the option forms
+  */
+  function options_form(&$form, &$form_state) {
+    parent::options_form($form, $form_state);
 
+    $form['values_form_type'] = array(
+      '#type' => 'radios',
+      '#title' => 'Filter Type',
+      '#options' => array(
+        'textfield' => 'Text Field',
+        'select' => 'Drop-Down Box',
+      ),
+      '#default_value' => $this->options['values_form_type'],
+    );
+  }
+  
  /**
   * Alters the query so that WHERE cvterm.cvterm_id=212 is used
   */
   function query() {
     $this->ensure_table;
     
-    $where = 'cvterm.cvterm_id=%d';
+    if (preg_match('/^\d+$/', $this->value)) {
+      $where = 'cvterm.cvterm_id=%d';
+    } else {
+      $where = "cvterm.name" . $this->operator . "'%s'";
+    }
+
     $this->query->add_where($this->options['group'], $where, $this->value);
   }
   
@@ -66,27 +92,35 @@ class views_handler_filter_chado_select_cvterm_name extends views_handler_filter
   function value_form(&$form, &$form_state) {
     parent::value_form(&$form, &$form_state);
     
-    // Get Options
-    if ($this->options['exposed']) {    
-      $options['All'] = '<Any>';
-    }
-    $options['<select '.$this->table.'>'] = '<None>';
-    $max_length = 40;
-    foreach ($this->cvterm_options as $cvterm_id => $cvterm_name) {
-      if (strlen($cvterm_name) > $max_length) {
-        $options[$cvterm_id] = substr($cvterm_name,0,$max_length) . '...';
-      } else {
-        $options[$cvterm_id] = $cvterm_name;    
+    if (preg_match('/select/', $this->options['values_form_type'])) {
+      // Get Options
+      if ($this->options['exposed']) {    
+        $options['All'] = '<Any>';
       }
-    }
-    
-    //Select List
-    $form['value'] = array(
-        '#type' => 'select',
+      $options['<select '.$this->table.'>'] = '<None>';
+      $max_length = 40;
+      foreach ($this->cvterm_options as $cvterm_id => $cvterm_name) {
+        if (strlen($cvterm_name) > $max_length) {
+          $options[$cvterm_id] = substr($cvterm_name,0,$max_length) . '...';
+        } else {
+          $options[$cvterm_id] = $cvterm_name;    
+        }
+      }
+      
+      //Select List
+      $form['value'] = array(
+          '#type' => 'select',
+          '#title' => $this->options['label'],
+          '#options' => $options,
+          '#default_value' => $this->value,
+      );
+    } else {
+      $form['value'] = array(
+        '#type' => 'textfield',
         '#title' => $this->options['label'],
-        '#options' => $options,
         '#default_value' => $this->value,
-    );
+      );
+    }
   }
 
  /**
@@ -121,4 +155,33 @@ class views_handler_filter_chado_select_cvterm_name extends views_handler_filter
 
   }
 
+  /**
+   * This kind of construct makes it relatively easy for a child class
+   * to add or remove functionality by overriding this function and
+   * adding/removing items from this array.
+   */
+  function operators() {
+    $operators = array(
+      '=' => array(
+        'title' => t('Is equal to'),
+        'short' => t('='),
+        'method' => 'op_equal',
+        'values' => 1,
+      ),
+      '!=' => array(
+        'title' => t('Is not equal to'),
+        'short' => t('!='),
+        'method' => 'op_equal',
+        'values' => 1,
+      ),
+      '~' => array(
+        'title' => t('Contains'),
+        'short' => t('contains'),
+        'method' => 'op_contains',
+        'values' => 1,
+      ),
+    );
+    
+    return $operators;
+  }
 }

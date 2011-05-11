@@ -858,50 +858,52 @@ function tripal_core_generate_chado_var($table, $values) {
     }
     
     // recursively follow foreign key relationships nesting objects as we go------------------------
-    foreach ($table_desc['foreign keys'] as $foreign_key_array) {
-      $foreign_table = $foreign_key_array['table'];
-      foreach ($foreign_key_array['columns'] as $foreign_key => $primary_key) {
-        // Note: Foreign key is the field in the current table whereas primary_key is the field in 
-        // the table referenced by the foreign key
-        
-        //Dont do anything if the foreign key is empty
-        if (empty($object->{$foreign_key})) {
-          break;
-        }
-        
-        // get the record from the foreign table
-        $foreign_values = array($primary_key => $object->{$foreign_key});
-        $foreign_object = tripal_core_generate_chado_var($foreign_table, $foreign_values);
-  
-        // add the foreign record to the current object in a nested manner
-        $object->{$foreign_key} = $foreign_object;
-        
-        // Flatten expandable_x arrays so only in the bottom object
-        if (is_array($object->{$foreign_key}->expandable_fields)) {
-          $object->expandable_fields = array_merge(
-            $object->expandable_fields, 
-            $object->{$foreign_key}->expandable_fields
-          );
-          unset($object->{$foreign_key}->expandable_fields);
-        }
-        if (is_array($object->{$foreign_key}->expandable_tables)) {
-          $object->expandable_tables = array_merge(
-            $object->expandable_tables, 
-            $object->{$foreign_key}->expandable_tables
-          );
-          unset($object->{$foreign_key}->expandable_tables);
-        }
-        if (is_array($object->{$foreign_key}->expandable_nodes)) {
-          $object->expandable_nodes = array_merge(
-            $object->expandable_nodes, 
-            $object->{$foreign_key}->expandable_nodes
-          );
-          unset($object->{$foreign_key}->expandable_nodes);
-        }
-      }
-    }    
+    if ($table_desc['foreign keys']) {
+      foreach ($table_desc['foreign keys'] as $foreign_key_array) {
+        $foreign_table = $foreign_key_array['table'];
+        foreach ($foreign_key_array['columns'] as $foreign_key => $primary_key) {
+          // Note: Foreign key is the field in the current table whereas primary_key is the field in 
+          // the table referenced by the foreign key
+          
+          //Dont do anything if the foreign key is empty
+          if (empty($object->{$foreign_key})) {
+            break;
+          }
+          
+          // get the record from the foreign table
+          $foreign_values = array($primary_key => $object->{$foreign_key});
+          $foreign_object = tripal_core_generate_chado_var($foreign_table, $foreign_values);
     
-    $results[$key] = $object;
+          // add the foreign record to the current object in a nested manner
+          $object->{$foreign_key} = $foreign_object;
+          
+          // Flatten expandable_x arrays so only in the bottom object
+          if (is_array($object->{$foreign_key}->expandable_fields)) {
+            $object->expandable_fields = array_merge(
+              $object->expandable_fields, 
+              $object->{$foreign_key}->expandable_fields
+            );
+            unset($object->{$foreign_key}->expandable_fields);
+          }
+          if (is_array($object->{$foreign_key}->expandable_tables)) {
+            $object->expandable_tables = array_merge(
+              $object->expandable_tables, 
+              $object->{$foreign_key}->expandable_tables
+            );
+            unset($object->{$foreign_key}->expandable_tables);
+          }
+          if (is_array($object->{$foreign_key}->expandable_nodes)) {
+            $object->expandable_nodes = array_merge(
+              $object->expandable_nodes, 
+              $object->{$foreign_key}->expandable_nodes
+            );
+            unset($object->{$foreign_key}->expandable_nodes);
+          }
+        }
+      }    
+      
+      $results[$key] = $object;
+    }
   }
   
     // check only one result returned
@@ -953,8 +955,17 @@ function tripal_core_generate_chado_var($table, $values) {
  *
  * @ingroup tripal_api
  */
-function tripal_core_expand_chado_vars ($object, $type, $to_expand) {
+function tripal_core_expand_chado_vars ($object, $type, $to_expand, $values = NULL) {
   $base_table = $object->tablename;
+  
+  // check to see if they are expanding an array of objects
+  if (is_array($object)) {
+    foreach ($object as $index => $o) {
+      $object[$index] = tripal_core_expand_chado_vars($o,$type,$to_expand);
+    }
+    return $object;
+  }
+  
   
   switch ($type) {
     case "field": //--------------------------------------------------------------------------------
@@ -1007,9 +1018,14 @@ function tripal_core_expand_chado_vars ($object, $type, $to_expand) {
         foreach ($foreign_table_desc['foreign keys'][$base_table]['columns'] as $left => $right) {
           if (!$object->{$right}) { break; }
           
+          if (is_array($values)) { 
+            $values = array_merge($values, array($left => $object->{$right}) );
+          } else {
+            $values = array($left => $object->{$right});
+          }
           $foreign_object = tripal_core_generate_chado_var(
             $foreign_table,
-            array($left => $object->{$right})
+            $values
           );
   
           if ($foreign_object) {
@@ -1020,6 +1036,7 @@ function tripal_core_expand_chado_vars ($object, $type, $to_expand) {
       } else {
         //We need to recurse -the table has a relationship to one of the nested objects
         foreach ((array) $object as $field_name => $field_value) {
+          // if we have a nested object ->expand the table in it
           if (is_object($field_value)) {
             $object->{$field_name} = tripal_core_expand_chado_vars(
               $field_value,

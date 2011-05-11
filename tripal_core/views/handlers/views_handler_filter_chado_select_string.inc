@@ -76,4 +76,22 @@ class views_handler_filter_chado_select_string extends views_handler_filter_stri
 
   }
 
+ /**
+  *
+  */
+  function query() {
+    $this->ensure_my_table();
+    $field = "$this->table_alias.$this->real_field";
+    $upper = $this->case_transform();
+
+    // Deal with All/Any as value
+    if (preg_match('/All/', $this->value)) {
+      // Don't do anything    
+    } else {
+      $info = $this->operators();
+      if (!empty($info[$this->operator]['method'])) {
+        $this->{$info[$this->operator]['method']}($field, $upper);
+      }
+    }
+  }
 }

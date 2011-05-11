@@ -106,7 +106,7 @@ function tripal_bulk_loader_load_data($nid) {
     
     foreach ($record_array['fields'] as $field_index => $field_array) {
       $default_data[$priority]['table'] = $record_array['table'];
-      $default_data[$priority]['mode'] = ($record_array['mode']) ? $record_array['mode'] : 'insert';
+      $default_data[$priority]['mode'] = ($record_array['mode']) ? $record_array['mode'] : 'insert_unique';
       $default_data[$priority]['record_id'] = $record_array['record_id'];
       $record2priority[$record_array['record_id']] = $priority;
       $default_data[$priority]['required'][$field_array['field']] = $field_array['required'];
@@ -216,6 +216,7 @@ function tripal_bulk_loader_load_data($nid) {
       // if insert unique then check to ensure unique
       if (preg_match('/insert_unique/',$table_data['mode'])) {
         $unique = tripal_core_chado_select($table, array_keys($table_desc['fields']), $values, array('has_record'=>TRUE));
+        //print 'Unique?'.print_r(array('table' => $table, 'columns' => array_keys($table_desc['fields']), 'values' => $values),TRUE).' returns '.$unique."\n";
         if ($unique > 0) {
           continue;
         }
@@ -262,10 +263,13 @@ function tripal_bulk_loader_load_data($nid) {
           
         } //end of if insert was successful
       } else {
-        // No record on select
-        $msg = $table_data['record_id'].' ('.$table_data['mode'].') No Matching record in '.$table.' where values:'.print_r($values,TRUE);
-        watchdog('T_bulk_loader', $msg, array(), WATCHDOG_WARNING); 
-        $data[$priority]['error'] = TRUE;        
+        $exists = tripal_core_chado_select($table, array_keys($table_desc['fields']), $values, array('has_record'=>TRUE));
+        if (!$exists) {
+          // No record on select
+          $msg = $table_data['record_id'].' ('.$table_data['mode'].') No Matching record in '.$table.' where values:'.print_r($values,TRUE);
+          watchdog('T_bulk_loader', $msg, array(), WATCHDOG_WARNING); 
+          $data[$priority]['error'] = TRUE;        
+        }
       }
 
     } // end of foreach table in default data array
