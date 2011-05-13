@@ -26,6 +26,7 @@ function tripal_library_views_data()  {
   $data = array();
   
   $data = array_merge($data, retrieve_library_views_data());
+  $data = array_merge($data, retrieve_chado_library_views_data());
   $data = array_merge($data, retrieve_library_misc_tables_views_data());
   
   return $data;
@@ -57,3 +58,302 @@ function tripal_library_views_handlers() {
  );
 }
 
+function tripal_library_views_default_views () {
+  $views = array();
+  
+  // Main default view
+  // List all cvterms based on cv
+  $view = new view;
+  $view->name = 'all_libraries';
+  $view->description = 'A listing of all libraries';
+  $view->tag = 'chado';
+  $view->view_php = '';
+  $view->base_table = 'library';
+  $view->is_cacheable = FALSE;
+  $view->api_version = 2;
+  $view->disabled = FALSE; /* Edit this to true to make a default view disabled initially */
+  $handler = $view->new_display('default', 'Defaults', 'default');
+  $handler->override_option('fields', array(
+    'uniquename' => array(
+      'label' => 'Unique Name',
+      'alter' => array(
+        'alter_text' => 0,
+        'text' => '',
+        'make_link' => 0,
+        'path' => '',
+        'link_class' => '',
+        'alt' => '',
+        'prefix' => '',
+        'suffix' => '',
+        'target' => '',
+        'help' => '',
+        'trim' => 0,
+        'max_length' => '',
+        'word_boundary' => 1,
+        'ellipsis' => 1,
+        'html' => 0,
+        'strip_tags' => 0,
+      ),
+      'empty' => '',
+      'hide_empty' => 0,
+      'empty_zero' => 0,
+      'link_to_node' => 1,
+      'exclude' => 0,
+      'id' => 'uniquename',
+      'table' => 'library',
+      'field' => 'uniquename',
+      'relationship' => 'none',
+    ),
+    'name_1' => array(
+      'label' => 'Name',
+      'alter' => array(
+        'alter_text' => 0,
+        'text' => '',
+        'make_link' => 0,
+        'path' => '',
+        'link_class' => '',
+        'alt' => '',
+        'prefix' => '',
+        'suffix' => '',
+        'target' => '',
+        'help' => '',
+        'trim' => 0,
+        'max_length' => '',
+        'word_boundary' => 1,
+        'ellipsis' => 1,
+        'html' => 0,
+        'strip_tags' => 0,
+      ),
+      'empty' => '',
+      'hide_empty' => 0,
+      'empty_zero' => 0,
+      'link_to_node' => 1,
+      'exclude' => 0,
+      'id' => 'name_1',
+      'table' => 'library',
+      'field' => 'name',
+      'relationship' => 'none',
+    ),
+    'common_name' => array(
+      'label' => 'Organism',
+      'alter' => array(
+        'alter_text' => 0,
+        'text' => '',
+        'make_link' => 0,
+        'path' => '',
+        'link_class' => '',
+        'alt' => '',
+        'prefix' => '',
+        'suffix' => '',
+        'target' => '',
+        'help' => '',
+        'trim' => 0,
+        'max_length' => '',
+        'word_boundary' => 1,
+        'ellipsis' => 1,
+        'html' => 0,
+        'strip_tags' => 0,
+      ),
+      'empty' => '',
+      'hide_empty' => 0,
+      'empty_zero' => 0,
+      'link_to_node' => 1,
+      'exclude' => 0,
+      'id' => 'common_name',
+      'table' => 'organism',
+      'field' => 'common_name',
+      'relationship' => 'none',
+    ),
+    'name' => array(
+      'label' => 'Type',
+      'alter' => array(
+        'alter_text' => 0,
+        'text' => '',
+        'make_link' => 0,
+        'path' => '',
+        'link_class' => '',
+        'alt' => '',
+        'prefix' => '',
+        'suffix' => '',
+        'target' => '',
+        'help' => '',
+        'trim' => 0,
+        'max_length' => '',
+        'word_boundary' => 1,
+        'ellipsis' => 1,
+        'html' => 0,
+        'strip_tags' => 0,
+      ),
+      'empty' => '',
+      'hide_empty' => 0,
+      'empty_zero' => 0,
+      'exclude' => 0,
+      'id' => 'name',
+      'table' => 'cvterm',
+      'field' => 'name',
+      'relationship' => 'none',
+    ),
+    'is_obsolete' => array(
+      'label' => 'Is Obsolete?',
+      'alter' => array(
+        'alter_text' => 0,
+        'text' => '',
+        'make_link' => 0,
+        'path' => '',
+        'link_class' => '',
+        'alt' => '',
+        'prefix' => '',
+        'suffix' => '',
+        'target' => '',
+        'help' => '',
+        'trim' => 0,
+        'max_length' => '',
+        'word_boundary' => 1,
+        'ellipsis' => 1,
+        'html' => 0,
+        'strip_tags' => 0,
+      ),
+      'empty' => '',
+      'hide_empty' => 0,
+      'empty_zero' => 0,
+      'type' => 'yes-no',
+      'not' => 0,
+      'exclude' => 0,
+      'id' => 'is_obsolete',
+      'table' => 'library',
+      'field' => 'is_obsolete',
+      'relationship' => 'none',
+    ),
+    'num_features' => array(
+      'label' => 'Number of Features',
+      'alter' => array(
+        'alter_text' => 0,
+        'text' => '',
+        'make_link' => 0,
+        'path' => '',
+        'link_class' => '',
+        'alt' => '',
+        'prefix' => '',
+        'suffix' => '',
+        'target' => '',
+        'help' => '',
+        'trim' => 0,
+        'max_length' => '',
+        'word_boundary' => 1,
+        'ellipsis' => 1,
+        'html' => 0,
+        'strip_tags' => 0,
+      ),
+      'empty' => '',
+      'hide_empty' => 0,
+      'empty_zero' => 0,
+      'exclude' => 0,
+      'id' => 'num_features',
+      'table' => 'library',
+      'field' => 'num_features',
+      'relationship' => 'none',
+    ),
+  ));
+  $handler->override_option('filters', array(
+    'common_name' => array(
+      'operator' => '=',
+      'value' => 'All',
+      'group' => '0',
+      'exposed' => TRUE,
+      'expose' => array(
+        'use_operator' => 0,
+        'operator' => 'common_name_op',
+        'identifier' => 'organism_common_name',
+        'label' => 'Organism',
+        'optional' => 1,
+        'remember' => 0,
+      ),
+      'case' => 1,
+      'id' => 'common_name',
+      'table' => 'organism',
+      'field' => 'common_name',
+      'relationship' => 'none',
+    ),
+  ));
+  $handler->override_option('access', array(
+    'type' => 'perm',
+    'perm' => 'access chado_library content',
+  ));
+  $handler->override_option('cache', array(
+    'type' => 'none',
+  ));
+  $handler->override_option('title', 'Libraries');
+  $handler->override_option('empty', 'There are no libraries matching the current criteria. If you think there should be, check that all chado libraries are sync\'d with your website.');
+  $handler->override_option('empty_format', '1');
+  $handler->override_option('use_pager', '1');
+  $handler->override_option('style_plugin', 'table');
+  $handler->override_option('style_options', array(
+    'grouping' => '',
+    'override' => 1,
+    'sticky' => 0,
+    'order' => 'asc',
+    'columns' => array(
+      'name' => 'name',
+      'timeaccessioned' => 'timeaccessioned',
+      'timelastmodified' => 'timelastmodified',
+      'is_obsolete' => 'is_obsolete',
+      'name_1' => 'name_1',
+      'uniquename' => 'uniquename',
+      'common_name' => 'common_name',
+      'num_libraries' => 'num_libraries',
+    ),
+    'info' => array(
+      'name' => array(
+        'sortable' => 0,
+        'separator' => '',
+      ),
+      'timeaccessioned' => array(
+        'sortable' => 0,
+        'separator' => '',
+      ),
+      'timelastmodified' => array(
+        'sortable' => 0,
+        'separator' => '',
+      ),
+      'is_obsolete' => array(
+        'sortable' => 0,
+        'separator' => '',
+      ),
+      'name_1' => array(
+        'sortable' => 0,
+        'separator' => '',
+      ),
+      'uniquename' => array(
+        'sortable' => 0,
+        'separator' => '',
+      ),
+      'common_name' => array(
+        'sortable' => 0,
+        'separator' => '',
+      ),
+      'num_libraries' => array(
+        'separator' => '',
+      ),
+    ),
+    'default' => '-1',
+  ));
+  $handler = $view->new_display('page', 'Page', 'page_1');
+  $handler->override_option('path', 'libraries');
+  $handler->override_option('menu', array(
+    'type' => 'normal',
+    'title' => 'Sequence Libraries',
+    'description' => '',
+    'weight' => '0',
+    'name' => 'primary-links',
+  ));
+  $handler->override_option('tab_options', array(
+    'type' => 'none',
+    'title' => '',
+    'description' => '',
+    'weight' => 0,
+    'name' => 'navigation',
+  ));
+  $views[$view->name] = $view;
+  
+  return $views;
+}

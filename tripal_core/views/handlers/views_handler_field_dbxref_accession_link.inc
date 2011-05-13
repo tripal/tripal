@@ -23,7 +23,7 @@ class views_handler_field_dbxref_accession_link extends views_handler_field {
    $accession = $values->{$this->aliases['accession']}; 
    $db_id = $values->{$this->aliases['db_id']};
 
-   if (!empty($db_id)) {
+   if (!empty($db_id) AND !empty($accession)) {
      $previous_db = tripal_db_set_active('chado');
      $result = db_fetch_object(db_query('SELECT urlprefix FROM db WHERE db_id=%d', $db_id));
      tripal_db_set_active($previous_db);   

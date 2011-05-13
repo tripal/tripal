@@ -2,7 +2,6 @@
 <?php
 $feature = $variables['node']->feature;
 $genotypes = $variables['tripal_feature']['genotype_experiments'];
-dpm($feature, 'feature');
 ?>
 
 <?php if(count($genotypes) > 0){ ?>

@@ -57,8 +57,10 @@ class views_handler_field_node_optional extends views_handler_field_node {
 
       if ($this->query->table_queue['node']['join']) {
         $drupal_node_table_join['join'] = clone($this->query->table_queue['node']['join']);
-      } else {
+      } elseif ($this->query->table_queue[$drupal_chado_table_name]['join']) {
         $drupal_node_table_join['join'] = clone($this->query->table_queue[$drupal_chado_table_name]['join']);
+      } else {
+        
       }
       $drupal_node_table_join['join']->table = 'node';
       $drupal_node_table_join['join']->field = 'nid';
@@ -83,7 +85,6 @@ class views_handler_field_node_optional extends views_handler_field_node {
     } else {
       $this->aliases['nid'] = 'node_nid';
     }
-
   }
 
   /**
