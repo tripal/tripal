@@ -248,6 +248,9 @@ function tripal_core_load_gff3($gff_file, $organism_id,$analysis_id,$add_only =0
 
    $num_lines = sizeof($lines);
    $interval = intval($num_lines * 0.01);
+   if($interval == 0){
+      $interval = $num_lines;
+   }
    $in_fasta = 0;
    foreach ($lines as $line_num => $line) {
       $i++;  // update the line count
@@ -278,6 +281,7 @@ function tripal_core_load_gff3($gff_file, $organism_id,$analysis_id,$add_only =0
       $cols = explode("\t",$line);
       if(sizeof($cols) != 9){
          print "ERROR: improper number of columns on line $i\n";
+         print_r($cols);
          return '';
       }
       // get the column values
@@ -438,9 +442,10 @@ function tripal_core_load_gff3($gff_file, $organism_id,$analysis_id,$add_only =0
             $attr_uniquename,$attr_name,$residues,$attr_is_analysis,
             $attr_is_obsolete, $add_only);
 
-         // store all of the features so far use later by parent and target
+         // store all of the features for use later by parent and target
          // relationships
          $gff_features[$feature->uniquename]['type'] = $type;
+         $gff_features[$feature->uniquename]['strand'] = $strand;
 
          if($feature){
 
@@ -459,16 +464,72 @@ function tripal_core_load_gff3($gff_file, $organism_id,$analysis_id,$add_only =0
             if(array_key_exists('Dbxref',$tags)){
                tripal_core_load_gff3_dbxref($feature,$tags['Dbxref']);
             }
+            // add any aliases for this feature
+            if(array_key_exists('Ontology_term',$tags)){
+               tripal_core_load_gff3_ontology($feature,$tags['Ontology_term']);
+            }
             // add parent relationships
             if(array_key_exists('Parent',$tags)){
-               tripal_core_load_gff3_parents($feature,$cvterm,$tags['Parent'],$gff_features,$organism_id);
+               tripal_core_load_gff3_parents($feature,$cvterm,$tags['Parent'],$gff_features,$organism_id,$fmin);
             }
             // add in the GFF3_source dbxref so that GBrowse can find the feature using the source column
             $source_ref = array('GFF_source:'.$source);
             tripal_core_load_gff3_dbxref($feature,$source_ref);
          }
+      }      
+   }
+   // now set the rank of any parent/child relationships.  The order is based
+   // on the fmin.  The start rank is 1.  This allows features with other
+   // relationships to be '0' (the default), and doesn't interfer with the
+   // ordering defined here.
+   foreach($gff_features as $parent => $details){
+      // only iterate through parents that have children
+
+      if($details['children']){
+         // get the parent
+         $values = array(
+            'uniquename' => $parent,
+            'type_id' => array(
+               'cv_id' => array(
+                  'name' => 'sequence'
+               ),
+               'name' => $details['type'],
+            ),
+            'organism_id' => $organism->organism_id,
+         );
+         $pfeature = tripal_core_chado_select('feature',array('*'),$values);
+
+         // sort the children by order of their fmin positions (values of assoc. array)
+         // if the parent is on the reverse strand then sort in reverse
+         if($details['strand'] == -1){
+            arsort($details['children']); 
+         } else {
+            asort($details['children']); 
+         }
+
+         // now iterate through the children and set their rank
+         $rank = 1;
+         print "Updating child ranks for $parent (".$details['type'].")\n";
+         foreach($details['children'] as $kfeature_id => $kfmin){
+            $match = array(
+               'object_id' => $pfeature[0]->feature_id,
+               'subject_id' => $kfeature_id,
+               'type_id' => array(
+                  'cv_id' => array(
+                     'name' => 'relationship'
+                  ),
+                  'name' => 'part_of',
+               ),
+            );
+            $values = array(
+               'rank' => $rank,          
+            );
+            tripal_core_chado_update('feature_relationship',$match,$values);
+            $rank++;
+         }
       }
    }
+
    tripal_db_set_active($previous_db);
    return '';
 }
@@ -478,7 +539,7 @@ function tripal_core_load_gff3($gff_file, $organism_id,$analysis_id,$add_only =0
  *
  * @ingroup gff3_loader
  */
-function tripal_core_load_gff3_parents($feature,$cvterm,$parents,$gff_features,$organism_id){
+function tripal_core_load_gff3_parents($feature,$cvterm,$parents,&$gff_features,$organism_id,$fmin){
 
    $uname = $feature->uniquename;
    $type = $cvterm->name;
@@ -499,10 +560,17 @@ function tripal_core_load_gff3_parents($feature,$cvterm,$parents,$gff_features,$
    foreach($parents as $parent){  
       $parent_type = $gff_features[$parent]['type'];
 
+      // try to find the parent
       $parentcvterm = db_fetch_object(db_query($cvtermsql,'sequence',$parent_type,$parent_type));
       $relcvterm = db_fetch_object(db_query($cvtermsql,'relationship',$rel_type,$rel_type));
       $parent_feature = db_fetch_object(db_query($feature_sql,$organism_id,$parent,$parentcvterm->cvterm_id));
 
+      // we want to add this feature to the child list for the parent
+      // when the loader finishes, it will go back through the parent
+      // features and rank the children by position
+      $gff_features[$parent]['children'][$feature->feature_id] = $fmin;
+
+      // if the parent exists then add the relationship otherwise print error and skip
       if($parent_feature){
 
          // check to see if the relationship already exists
@@ -510,7 +578,8 @@ function tripal_core_load_gff3_parents($feature,$cvterm,$parents,$gff_features,$
          $rel = db_fetch_object(db_query($sql,$feature->feature_id,$parent_feature->feature_id,$relcvterm->cvterm_id));
          if($rel){
             print "   Relationship already exists, skipping '$uname' ($type) $rel_type '$parent' ($parent_type)\n";
-         } else {      
+         } else {  
+            // the relationship doesn't already exist, so add it.    
             $sql = "INSERT INTO {feature_relationship} (subject_id,object_id,type_id)
                     VALUES (%d,%d,%d)";
             $result = db_query($sql,$feature->feature_id,$parent_feature->feature_id,$relcvterm->cvterm_id);
@@ -519,7 +588,7 @@ function tripal_core_load_gff3_parents($feature,$cvterm,$parents,$gff_features,$
             } else {
                print "   Inserted relationship relationship: '$uname' ($type) $rel_type '$parent' ($parent_type)\n";
             }
-         } 
+         }          
       }
       else {
          print "WARNING: cannot establish relationship '$uname' ($type) $rel_type '$parent' ($parent_type): Cannot find the parent\n";
@@ -547,7 +616,7 @@ function tripal_core_load_gff3_dbxref($feature,$dbxrefs){
       // first check for the fully qualified URI (e.g. DB:<dbname>. If that
       // can't be found then look for the name as is.  If it still can't be found
       // the create the database
-      $db = tripal_core_chado_select('db',array('db_id'),array('name' => "DB:$dbname"));      
+      $db = tripal_core_chado_select('db',array('db_id'),array('name' => "DB:$dbname"));  
       if(sizeof($db) == 0){
          $db = tripal_core_chado_select('db',array('db_id'),array('name' => "$dbname"));      
       }        
@@ -555,7 +624,7 @@ function tripal_core_load_gff3_dbxref($feature,$dbxrefs){
          $ret = tripal_core_chado_insert('db',array('name' => $dbname, 
            'description' => 'Added automatically by the GFF loader'));
          if($ret){ 
-            print "Added new database: $dbname\n";
+            print "   Added new database: $dbname\n";
             $db = tripal_core_chado_select('db',array('db_id'),array('name' => "$dbname"));      
          } else {
             print "ERROR: cannot find or add the database $dbname\n";
@@ -577,7 +646,7 @@ function tripal_core_load_gff3_dbxref($feature,$dbxrefs){
       }
       $dbxref = $dbxref[0];
 
-      // check to see if tihs feature dbxref already exists
+      // check to see if this feature dbxref already exists
       $fdbx = tripal_core_chado_select('feature_dbxref',array('feature_dbxref_id'),
          array('dbxref_id' => $dbxref->dbxref_id,'feature_id' => $feature->feature_id));
 
@@ -588,18 +657,94 @@ function tripal_core_load_gff3_dbxref($feature,$dbxrefs){
             'feature_id' => $feature->feature_id,
             'dbxref_id' => $dbxref->dbxref_id));
          if($ret){
-            print "Adding dbxref $dbname:$accession\n";
+            print "   Adding Dbxref $dbname:$accession\n";
          } else {
-            print "ERROR: failed to insert dbxref: $dbname:$accession\n";
+            print "ERROR: failed to insert Dbxref: $dbname:$accession\n";
             return 0;
          }
       } else {
-         print "Dbxref already exists, skipping $dbname:$accession\n";
+         print "   Dbxref already associated, skipping $dbname:$accession\n";
       }
    }
    return 1;
 }
+/**
+ *
+ *
+ * @ingroup gff3_loader
+ */
+function tripal_core_load_gff3_ontology($feature,$dbxrefs){
 
+   // iterate through each of the dbxrefs
+   foreach($dbxrefs as $dbxref){
+
+      // get the database name from the reference.  If it doesn't exist then create one.
+      $ref = explode(":",$dbxref);
+      $dbname = $ref[0];
+      $accession = $ref[1];
+
+      // first look for the database name 
+      $db = tripal_core_chado_select('db',array('db_id'),array('name' => "DB:$dbname"));  
+      if(sizeof($db) == 0){
+         $db = tripal_core_chado_select('db',array('db_id'),array('name' => "$dbname"));      
+      }        
+      if(sizeof($db) == 0){
+         print "ERROR: Database, $dbname is missing for reference: $dbname:$accession\n";
+         return 0;
+      } 
+      $db = $db[0];
+       
+      // now check to see if the accession exists
+      $dbxref = tripal_core_chado_select('dbxref',array('dbxref_id'),array(
+         'accession' => $accession,'db_id' => $db->db_id));
+      if(sizeof($dbxref) == 0){
+         print "ERROR: Accession, $accession is missing for reference: $dbname:$accession\n";
+         return 0;
+      }
+      $dbxref = $dbxref[0];
+
+      // now check to see if the cvterm exists
+      $cvterm = tripal_core_chado_select('cvterm',array('cvterm_id'),array(
+         'dbxref_id' => $dbxref->dbxref_id));
+      // if it doesn't exist in the cvterm table, look for an alternate id
+      if(sizeof($cvterm) == 0){
+         $cvterm = tripal_core_chado_select('cvterm_dbxref',array('cvterm_id'),array(
+            'dbxref_id' => $dbxref->dbxref_id));
+      }
+      if(sizeof($cvterm) == 0){
+         print "ERROR: CVTerm is missing for reference: $dbname:$accession\n";
+         return 0;
+      }
+      $cvterm = $cvterm[0];
+      
+
+      // check to see if this feature cvterm already exists
+      $fcvt = tripal_core_chado_select('feature_cvterm',array('feature_cvterm_id'),
+         array('cvterm_id' => $cvterm->cvterm_id,'feature_id' => $feature->feature_id));
+
+      // now associate this feature with the cvterm if it doesn't already exist
+      if(sizeof($fcvt)==0){
+         $values = array(
+            'feature_id' => $feature->feature_id,
+            'cvterm_id' => $cvterm->cvterm_id,
+            'pub_id' => array(
+               'uniquename' => 'null',
+            ),
+         );
+         $ret = tripal_core_chado_insert('feature_cvterm',$values);
+
+         if($ret){
+            print "   Adding ontology term $dbname:$accession\n";
+         } else {
+            print "ERROR: failed to insert ontology term: $dbname:$accession\n";
+            return 0;
+         }
+      } else {
+         print "   Ontology term already associated, skipping $dbname:$accession\n";
+      }
+   }
+   return 1;
+}
 /**
  *
  *

@@ -549,44 +549,41 @@ function tripal_organism_cron (){
  */
 function chado_organism_insert($node){
 
-   // If this organism already exists then don't recreate it in chado
-   $o_sql = "SELECT organism_id ".
-            "FROM {Organism} ".
-            "WHERE genus = '%s' ".
-            "AND species = '%s'";
-   $previous_db = tripal_db_set_active('chado');
-   $organism = db_fetch_object(db_query($o_sql, $node->genus,$node->species));
-   tripal_db_set_active($previous_db);
+   $values = array(
+      'genus' => $node->genus,
+      'species' => $node->species,
+      'abbreviation' => $node->abbreviation,
+      'common_name' => $node->common_name,
+      'comment' => $node->description
+   );
+   $istatus = tripal_core_chado_insert('organism', $values);
+   if (!$istatus) {
+		drupal_set_message('Unable to add organism.', 'warning');
+		watchdog('tripal_organism', 
+			'Insert Organism: Unable to create organism where values:%values', 
+			array('%values' => print_r($values, TRUE)),
+			WATCHDOG_WARNING
+		);
+	}   
 
-   // if the feature doesn't exist then let's create it in chado.
-   if(!$organism){
-      // First add the item to the chado oganism table
-      $sql = "INSERT INTO {organism} ".
-             " (abbreviation, genus, species,common_name,comment) VALUES ".
-             " ('%s','%s','%s','%s','%s')";
-     $previous_db = tripal_db_set_active('chado');  // use chado database
-     db_query($sql,$node->abbreviation, $node->genus,
-     $node->species,$node->common_name,$node->description);
+   // get the newly add organism
+   $values = array(
+      'genus' => $node->genus,
+      'species' => $node->species,
+   );
+   $organism = tripal_core_chado_select('organism',array('organism_id'),$values);
 
-     // find the newly entered organism_id
-     $organism = db_fetch_object(db_query($o_sql, $node->genus,$node->species));
-     tripal_db_set_active($previous_db);  // switch back to drupal database
-
-   }
-
-   // Make sure the entry for this feature doesn't already exist in the
-   // chado_feature table if it doesn't exist then we want to add it.
-   $node_check_sql = "SELECT * FROM {chado_organism} ".
-                     "WHERE organism_id = %d";
-   $node_check = db_fetch_object(db_query($node_check_sql,
-                                          $organism->organism_id));
-   if(!$node_check){
+   // Make sure the entry for this organism doesn't already exist in the
+   // chado_organism table if it doesn't exist then we want to add it.
+   $organism_id = chado_get_id_for_node('organism',$node);
+   if(!$organism_id){
       // next add the item to the drupal table
       $sql = "INSERT INTO {chado_organism} (nid, vid, organism_id) ".
              "VALUES (%d, %d, %d)";
-      db_query($sql,$node->nid,$node->vid,$organism->organism_id);
+      chado_query($sql,$node->nid,$node->vid,$organism[0]->organism_id);
    }
 
+   // set the title for the node
    $record = new stdClass();
    $record->title = "$node->genus $node->species";
    $record->nid = $node->nid;
@@ -594,18 +591,38 @@ function chado_organism_insert($node){
    drupal_write_record('node_revisions',$record,'nid');
 }
 /*******************************************************************************
+ * Update organisms
+ */
+function chado_organism_update($node){
+   if($node->revision){
+      // TODO -- decide what to do about revisions
+   } else {
+      $match = array(
+         'organism_id' => chado_get_id_for_node('organism',$node),
+      );
+      $values = array(
+         'genus' => $node->genus,
+         'species' => $node->species,
+         'abbreviation' => $node->abbreviation,
+         'common_name' => $node->common_name,
+         'comment' => $node->description
+      );
+      $org_status = tripal_core_chado_update('organism', $match,$values);
+
+      // set the title for the node
+      $record = new stdClass();
+      $record->title = "$node->genus $node->species";
+      $record->nid = $node->nid;
+      drupal_write_record('node',$record,'nid');
+      drupal_write_record('node_revisions',$record,'nid');
+   }
+}
+/*******************************************************************************
  * Delete organism from both drupal and chado databases. Check dependency before
  * deleting from chado.
  */
 function chado_organism_delete($node){
-
-   // Before removing, get organism_id so we can remove it from chado database
-   // later
-   $sql_drupal = "SELECT organism_id ".
-                 "FROM {chado_organism} ".
-                 "WHERE nid = %d ".
-                 "AND vid = %d";
-   $organism_id = db_result(db_query($sql_drupal, $node->nid, $node->vid));
+   $organism_id = chado_get_id_for_node('organism',$node);
 
    // Remove data from the {chado_organism}, {node}, and {node_revisions} tables
    $sql_del = "DELETE FROM {chado_organism} ".
@@ -623,6 +640,7 @@ function chado_organism_delete($node){
 
    // Test dependency before deleting from chado database. If a library or
    // feature depends on this organism, don't delete it
+
    $sql = "SELECT feature_id FROM {feature} WHERE organism_id = %d";
    $previous_db = tripal_db_set_active('chado');
    $check_feature = db_result(db_query($sql, $organism_id));
@@ -630,14 +648,7 @@ function chado_organism_delete($node){
    $check_lib = db_result(db_query($sql, $organism_id));
 
    if ($check_lib == 0 && $check_feature == 0) {
-      // Remove from organism/organism_dbxref/organismprop tables of chado
-      // database as well
-      db_query("DELETE FROM {organism} WHERE organism_id = %d", $organism_id);
-      db_query("DELETE FROM {organism_dbxref} WHERE organism_id = %d",
-               $organism_id);
-      db_query("DELETE FROM {organismprop} WHERE organism_id = %d",
-               $organism_id);
-
+      tripal_core_chado_delete('organism',array('organism_id' => $organism_id));
    } else {
       drupal_set_message("Organism deleted from drupal. Warning: at least one ".
                          "library or feature depends on this organism. It was ".
@@ -665,41 +676,7 @@ function chado_organism_validate($node){
       file_move($file->filepath,$dest . "/".$node->genus."_".$node->species.".jpg",FILE_EXISTS_REPLACE);
    }
 }
-/*******************************************************************************
- * Update organisms
- */
-function chado_organism_update($node){
-   if($node->revision){
-      // TODO -- decide what to do about revisions
-   } else {
-      // get the organism_id for this node:
-      $sql = "SELECT organism_id ".
-             "FROM {chado_organism} ".
-             "WHERE nid = %d";
-      $org = db_fetch_object(db_query($sql, $node->nid));
 
-      $sql = "UPDATE {organism} ".
-             " SET comment = '%s', ".
-             "    abbreviation = '%s', ".
-             "    genus = '%s', ".
-             "    species = '%s', ".
-             "    common_name = '%s' ".
-             "WHERE organism_id = %d ";
-
-      $previous_db = tripal_db_set_active('chado');  // use chado database
-      db_query($sql,$node->description, $node->abbreviation, $node->genus,
-          $node->species,$node->common_name,$org->organism_id);
-      tripal_db_set_active($previous_db);  // now use drupal database
-
-      //$sql = "UPDATE {node} SET title = '$node->genus $node->species' WHERE nid = $node->nid";
-      //db_query($sql);
-      $record = new stdClass();
-      $record->title = "$node->genus $node->species";
-      $record->nid = $node->nid;
-      drupal_write_record('node',$record,'nid');
-      drupal_write_record('node_revisions',$record,'nid');
-   }
-}
 
 /*******************************************************************************
  *  When editing or creating a new node of type 'chado_organism' we need
@@ -745,7 +722,7 @@ function chado_organism_form ($node, $param){
       '#rows' => 15,
       '#title' => t('Description'),
       '#required' => TRUE,
-      '#default_value' => $organism->description,
+      '#default_value' => $organism->comment,
       '#weight' => 5
    );
    $form['organism-image']= array(
@@ -762,22 +739,15 @@ function chado_organism_form ($node, $param){
  *  to add auxiliary data to the node object.
  */
 function chado_organism_load($node){
-   // get the organism_id for this node:
-   $sql = "SELECT organism_id FROM {chado_organism} WHERE vid = %d";
-   $org_node = db_fetch_object(db_query($sql, $node->vid));
+   // find the organism and add in the details
+   $organism_id = chado_get_id_for_node('organism',$node);
+   $values = array('organism_id' => $organism_id);
+   $organism = tripal_core_generate_chado_var('organism',$values);
 
-   // get information about this organism and add it to the items in this node
-   $previous_db = tripal_db_set_active('chado');  // use chado database
-   if ($org_node->organism_id) {
-      $sql = "SELECT O.organism_id,O.genus,O.species, ".
-      		 "  O.common_name, O.comment as description, O.abbreviation ".
-             "FROM {Organism} O ".
-          	 "WHERE O.Organism_id = $org_node->organism_id";
-      $organism = db_fetch_object(db_query($sql));
-      $additions->organism  = $organism;
-   }
-   tripal_db_set_active($previous_db);  // now use drupal database
+   // add in the description field
+   $organism = tripal_core_expand_chado_vars($organism,'field','organism.comment');
 
+   $additions->organism = $organism;
    return $additions;
 }
 

@@ -438,12 +438,17 @@ function tripal_core_chado_update($table,$match,$values){
 *     value for the number of recrods rather than the array of records.  this
 *     can be useful in 'if' statements to check the presence of particula records.
 *  - return_sql
-*     Set this to 'true' to have this function return an array where the first element is the sql 
-*     that would have been run and the second is an array of arguments.
+*     Set this to 'true' to have this function return an array where the first 
+*     element is the sql that would have been run and the second is an array of 
+*     arguments.
 *  - case_insensitive_columns
 *     An array of columns to do a case insensitive search on.
 *  - regex_columns
 *     An array of columns where the value passed in should be treated as a regular expression
+*  - order_by
+*     An associative array containing the column names of the table as keys
+*     and the type of sort (i.e. ASC, DESC) as the values.  The results in the
+*     query will be sorted by the key values in the direction listed by the value
 * 
 * @return
 *  A database query result resource, FALSE if the query was not executed 
@@ -482,6 +487,7 @@ function tripal_core_chado_select($table,$columns,$values,$options = null){
     if (!is_array($options)) { $options = array(); }
     if (!$options['case_insensitive_columns']) { $options['case_insensitive_columns'] = array(); }
     if (!$options['regex_columns']) { $options['regex_columns'] = array(); }
+    if (!$options['order_by']) { $options['order_by'] = array(); }
     
    if (!is_array($columns)){
       watchdog('tripal_feature', 'the $columns argument for tripal_core_chado_select must be an array.');
@@ -569,8 +575,17 @@ function tripal_core_chado_select($table,$columns,$values,$options = null){
          }
        }
      }
-     $sql = substr($sql,0,-4);  // get rid of the trailing 'AND'
+     $sql = substr($sql,0,-4);  // get rid of the trailing 'AND '
    }
+   // finally add any ordering of the results to the SQL statement
+   if(count($options['order_by']) > 0){
+      $sql .= " ORDER BY ";
+      foreach($options['order_by'] as $field => $dir){
+         $sql .= "$field $dir, ";
+      }
+      $sql = substr($sql,0,-2);  // get rid of the trailing ', '
+   }
+
 
    // if the caller has requested the SQL rather than the results...
    // which happens in the case of wanting to use the Drupal pager, then do so
@@ -694,6 +709,11 @@ function tripal_core_chado_get_foreign_key($table_desc,$field,$values, $options 
  * @param $values
  *   A select values array that selects the records you want from the base table
  *   (this has the same form as tripal_core_chado_select)
+ * @param $base_options
+ *   An array containing options for the base table.  For example, an
+ *   option of 'order_by' may be used to sort results in the base table
+ *   if more than one are returned.  The options must be compatible with
+ *   the options accepted by the tripal_core_chado_select() function.
  * @return
  *   Either an object (if only one record was selected from the base table) 
  *   or an array of objects (if more than one record was selected from the base table).
@@ -733,7 +753,7 @@ function tripal_core_chado_get_foreign_key($table_desc,$field,$values, $options 
  *
  * @ingroup tripal_api
  */
-function tripal_core_generate_chado_var($table, $values) {
+function tripal_core_generate_chado_var($table, $values, $base_options=array()) {
   
   // get description for the current table----------------------------------------------------------
   $table_desc = module_invoke_all('chado_'.$table.'_schema');
@@ -810,7 +830,7 @@ function tripal_core_generate_chado_var($table, $values) {
   } //end of foreach type to be removed
   
   // get the values for the record in the current table---------------------------------------------
-  $results = tripal_core_chado_select($table, $table_columns, $values);   
+  $results = tripal_core_chado_select($table, $table_columns, $values,$base_options);   
   
   foreach ($results as $key => $object) {
     // Add empty expandable_x arrays
@@ -931,7 +951,11 @@ function tripal_core_generate_chado_var($table, $values) {
  *   Must be one of 'field', 'table', 'node'. Indicates what is being expanded.
  * @param $to_expand
  *   The name of the field/table/node to be expanded
- *
+ * @param $table_options
+ *   An array containing options for the base table.  For example, an
+ *   option of 'order_by' may be used to sort results in the base table
+ *   if more than one are returned.  The options must be compatible with
+ *   the options accepted by the tripal_core_chado_select() function.
  * @return
  *   A chado object supplemented with the field/table/node requested to be expanded
  *
@@ -955,7 +979,7 @@ function tripal_core_generate_chado_var($table, $values) {
  *
  * @ingroup tripal_api
  */
-function tripal_core_expand_chado_vars ($object, $type, $to_expand, $values = NULL) {
+function tripal_core_expand_chado_vars ($object, $type, $to_expand,$table_options = array()) {
   $base_table = $object->tablename;
   
   // check to see if they are expanding an array of objects
@@ -1025,12 +1049,21 @@ function tripal_core_expand_chado_vars ($object, $type, $to_expand, $values = NU
           }
           $foreign_object = tripal_core_generate_chado_var(
             $foreign_table,
-            $values
+            array($left => $object->{$right}),
+            $table_options
           );
   
           if ($foreign_object) {
-            $object->{$foreign_table} = $foreign_object;
-            $object->expanded = $to_expand;
+            // in the case where the a foreign key relationships exists more 
+            // than once with the same table we want to alter the 
+            // array structure
+            if(count($foreign_table_desc['foreign keys'][$base_table]['columns']) > 1){
+               $object->{$foreign_table}->{$left} = $foreign_object;
+               $object->expanded = $to_expand;
+            } else {
+               $object->{$foreign_table} = $foreign_object;
+               $object->expanded = $to_expand;
+            }
           }
         }
       } else {

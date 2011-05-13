@@ -403,57 +403,110 @@ function tripal_feature_block($op = 'list', $delta = 0, $edit=array()){
 function chado_feature_insert($node){
    // remove spaces, newlines from residues
    $residues = preg_replace("/[\n\r\s]/","",$node->residues);
-
-   // If this feature already exists then don't recreate it in chado
-   // TODO: the unique index in chado for this also includes the type_id. If the site
-   // ever needs to have the same feature name for different types then this will break.
-   $feature_sql = "SELECT * 
-                   FROM {Feature} F
-                     INNER JOIN {cvterm} CVT ON F.type_id = CVT.cvterm_id
-                   WHERE uniquename = '%s' and organism_id = %d and CVT.name = '%s'";
-   $previous_db = tripal_db_set_active('chado');
-   $feature = db_fetch_object(db_query($feature_sql,$node->uniquename,$node->organism_id,$node->feature_type));
-   tripal_db_set_active($previous_db);
-
-   // if the feature doesn't exist then let's create it in chado.
-   if(!$feature){
-      $sql = "INSERT INTO {feature} (organism_id, name, uniquename, residues, seqlen,".
-             "    is_obsolete, type_id)".
-             " VALUES(%d,'%s','%s','%s',%d, %s, ".
-             "   (SELECT cvterm_id ".
-             "    FROM {CVTerm} CVT ".
-             "    INNER JOIN CV ON CVT.cv_id = CV.cv_id ".
-             "    WHERE CV.name = 'sequence' and CVT.name = '%s'))";
-      $obsolete = 'FALSE';
-      if($node->is_obsolete){
-         $obsolete = 'TRUE';
-      }
-
-      // use chado database
-      $previous_db = tripal_db_set_active('chado');
-      db_query($sql,$node->organism_id,$node->fname,$node->uniquename,
-      $residues,strlen($residues),$obsolete,$node->feature_type);
-
-      // now that we've added the feature, get the feature id for this feature
-      $feature = db_fetch_object(db_query($feature_sql,$node->uniquename,$node->organism_id,$node->feature_type));
-
-      // now use drupal database
-      tripal_db_set_active($previous_db);
+   $obsolete = 'FALSE';
+   if($node->is_obsolete){
+      $obsolete = 'TRUE';
    }
+   $values = array(
+      'cv_id' => array(
+         'name' => 'sequence'
+      ),
+      'name' => $node->feature_type
+   );
+   $type = tripal_core_chado_select('cvterm',array('cvterm_id'),$values);
+   $values = array(
+      'organism_id' => $node->organism_id,
+      'name' => $node->fname,
+      'uniquename' => $node->uniquename,
+      'residues' => $residues,
+      'seqlen' => strlen($residues),
+      'is_obsolete' => $obsolete,
+      'type_id' => $type[0]->cvterm_id,
+      'md5checksum' => md5($residues)
+   );
 
+   $istatus = tripal_core_chado_insert('feature', $values);
+   if (!$istatus) {
+		drupal_set_message('Unable to add feature.', 'warning');
+		watchdog('tripal_organism', 
+			'Insert feature: Unable to create feature where values: %values', 
+			array('%values' => print_r($values, TRUE)),
+			WATCHDOG_WARNING
+		);
+	}  
+   $values = array(
+      'organism_id' => $node->organism_id,
+      'uniquename' => $node->uniquename,
+      'type_id' => $type[0]->cvterm_id,
+   );
+   $feature = tripal_core_chado_select('feature',array('feature_id'),$values);   
    // add the genbank accession and synonyms
-   chado_feature_add_synonyms($node->synonyms,$feature->feature_id);
+   chado_feature_add_synonyms($node->synonyms,$feature[0]->feature_id);
 
    // make sure the entry for this feature doesn't already exist in the chado_feature table
    // if it doesn't exist then we want to add it.
    $node_check_sql = "SELECT * FROM {chado_feature} ".
                      "WHERE feature_id = '%s'";
-   $node_check = db_fetch_object(db_query($node_check_sql,$feature->feature_id));
+   $node_check = db_fetch_object(db_query($node_check_sql,$feature[0]->feature_id));
    if(!$node_check){
       // next add the item to the drupal table
       $sql = "INSERT INTO {chado_feature} (nid, vid, feature_id, sync_date) ".
              "VALUES (%d, %d, %d, " . time() . ")";
-      db_query($sql,$node->nid,$node->vid,$feature->feature_id);
+      db_query($sql,$node->nid,$node->vid,$feature[0]->feature_id);
+   }
+}
+/**
+ *
+ *
+ * @ingroup tripal_feature
+ */
+function chado_feature_update($node){
+   if($node->revision){
+      // TODO -- decide what to do about revisions
+   } else {
+      $residues = preg_replace("/[\n\r\s]/","",$node->residues);
+      $obsolete = 'FALSE';
+      if($node->is_obsolete){
+         $obsolete = 'TRUE';
+      }
+
+      // get the feature type id
+      $values = array(
+         'cv_id' => array(
+            'name' => 'sequence'
+         ),
+         'name' => $node->feature_type
+      );
+      $type = tripal_core_chado_select('cvterm',array('cvterm_id'),$values);
+
+      $feature_id = chado_get_id_for_node('feature',$node) ;
+
+      if(sizeof($type) > 0){
+         $match = array(
+            'feature_id' => $feature_id,
+         );     
+         $values = array(
+            'organism_id' => $node->organism_id,
+            'name' => $node->fname,
+            'uniquename' => $node->uniquename,
+            'residues' => $residues,
+            'seqlen' => strlen($residues),
+            'is_obsolete' => $obsolete,
+            'type_id' => $type[0]->cvterm_id,
+            'md5checksum' => md5($residues)
+         );
+         $org_status = tripal_core_chado_update('feature', $match,$values); 
+         // add the genbank synonyms
+         chado_feature_add_synonyms($node->synonyms,$feature_id);
+      }    
+      else {
+		   drupal_set_message('Unable to update feature.', 'warning');
+		   watchdog('tripal_organism', 
+			   'Update feature: Unable to update feature where values: %values', 
+			   array('%values' => print_r($values, TRUE)),
+			   WATCHDOG_WARNING
+		   );
+      }
    }
 }
 /**
@@ -462,11 +515,8 @@ function chado_feature_insert($node){
  * @ingroup tripal_feature
  */
 function chado_feature_delete($node){
-   // get feature_id so we can remove it from chado database
-   $sql_drupal = "SELECT feature_id ".
-                 "FROM {chado_feature} ".
-                 "WHERE nid = %d AND vid = %d";
-   $feature_id = db_result(db_query($sql_drupal, $node->nid, $node->vid));
+
+   $feature_id  = chado_get_id_for_node('feature',$node);
 
    // remove the drupal content  
    $sql_del = "DELETE FROM {chado_feature} ".
@@ -499,52 +549,7 @@ function chado_feature_delete($node){
  *
  * @ingroup tripal_feature
  */
-function chado_feature_update($node){
-   if($node->revision){
-      // TODO -- decide what to do about revisions
-   } else {
-      // get the feature for this node:
-      $sql = 'SELECT feature_id FROM {chado_feature} WHERE vid = %d';
-      $feature = db_fetch_object(db_query($sql, $node->vid));
-
-      // remove spaces, newlines from residues
-      $residues = preg_replace("/[\n\r\s]/","",$node->residues);
-
-      $sql = "UPDATE {feature} ".
-             " SET residues = '%s', ".
-             "   name = '%s', ".
-             "   uniquename = '%s', ".
-             "   seqlen = %d, ".
-             "   organism_id = %d, ".
-             "   is_obsolete = %s, ".
-             "   type_id = (SELECT cvterm_id ".
-             "              FROM {CVTerm} CVT ".
-             "              INNER JOIN CV ON CVT.cv_id = CV.cv_id ".
-             "              WHERE CV.name = 'sequence' and CVT.name = '%s') ".
-             "WHERE feature_id = %d ";
-      $obsolete = 'FALSE';
-      if($node->is_obsolete){
-         $obsolete = 'TRUE';
-      }
-      $previous_db = tripal_db_set_active('chado');  // use chado database
-      db_query($sql,$residues,$node->fname,$node->uniquename,
-      strlen($residues),$node->organism_id,$obsolete,$node->feature_type,
-      $feature->feature_id);
-      tripal_db_set_active($previous_db);  // now use drupal database
-
-      // add the genbank accession & synonyms
-      // chado_feature_add_gbaccession($node->gbaccession,$feature->feature_id);
-      chado_feature_add_synonyms($node->synonyms,$feature->feature_id);
-   }
-}
-/**
- *
- *
- * @ingroup tripal_feature
- */
 function chado_feature_add_synonyms($synonyms,$feature_id){
-
-drupal_set_message($synonyms);
 
    // make sure we only have a single space between each synonym
    $synonyms = preg_replace("/[\s\n\r]+/"," ",$synonyms);
@@ -674,10 +679,29 @@ function chado_feature_add_gbaccession($accession,$feature_id){
  * @ingroup tripal_feature
  */
 function chado_feature_form ($node,$param){
+
    $type = node_get_types('type', $node);
    $form = array();
+
    $feature = $node->feature;
+
+
+   // if the node has synonyms then use that as the form may be returning
+   // from an error.  Otherwise try to find synonyms from the database
    $synonyms = $node->synonyms;
+   $feature = tripal_core_expand_chado_vars($feature,'table','feature_synonym');
+   $feature_synonyms = $feature->feature_synonym;
+   if(!$synonyms){
+      if (!is_array($feature_synonyms)) {
+         $synonyms = $feature_synonyms->synonym_id->name;
+      } 
+      elseif(is_array($feature_synonyms)) { 
+         foreach($feature_synonyms as $index => $synonym){
+            $synonyms .= $synonym->synonym_id->name ."\n";
+         }
+      }
+   }
+
    $analyses = $node->analyses;
    $references = $node->references;
 
@@ -733,7 +757,7 @@ function chado_feature_form ($node,$param){
       '#type' => 'textfield',
       '#title' => t('Feature Name'),
       '#required' => TRUE,
-      '#default_value' => $feature->featurename,
+      '#default_value' => $feature->name,
       '#description' => t('Enter the name used by humans to refer to this feature.'),
       '#weight' => 1,
       '#maxlength' => 255
@@ -752,7 +776,7 @@ function chado_feature_form ($node,$param){
      '#type'        => t('select'),
      '#description' => t("Choose the feature type."),
      '#required'    => TRUE,
-     '#default_value' => $feature->cvname,
+     '#default_value' => $feature->type_id->name,
      '#options'     => $ftypes,
      '#weight'      => 2
    );
@@ -774,7 +798,7 @@ function chado_feature_form ($node,$param){
      '#type'        => t('select'),
      '#description' => t("Choose the organism with which this feature is associated "),
      '#required'    => TRUE,
-     '#default_value' => $feature->organism_id,
+     '#default_value' => $feature->organism_id->organism_id,
      '#options'     => $organisms,
      '#weight'      => 3,
    );
@@ -885,37 +909,12 @@ function chado_feature_validate($node){
  * @ingroup tripal_feature
  */
 function chado_feature_load($node){
-   // add the feature_id for this node:
-   $sql = 'SELECT feature_id FROM {chado_feature} WHERE nid = %d';
-   $feature = db_fetch_object(db_query($sql, $node->nid));
-   $feature_id = $feature->feature_id;
+   // find the organism and add in the details
+   $feature_id = chado_get_id_for_node('feature',$node);
+   $values = array('feature_id' => $feature_id);
+   $feature = tripal_core_generate_chado_var('feature',$values);
 
-   // get information about this feature and add it to the items in this node
-   $sql = "SELECT F.feature_id, F.name as featurename, F.uniquename, ".
-          "F.residues, F.seqlen, O.genus, O.species, O.common_name, ".
-          "  CVT.name as cvname, O.organism_id, F.type_id, F.is_obsolete  ".
-          "FROM {Feature} F ".
-          "  INNER JOIN Organism O ON F.organism_id = O.organism_id ".
-          "  INNER JOIN CVterm CVT ON F.type_id = CVT.cvterm_id ".
-          "WHERE F.feature_id = %d";
-   $previous_db = tripal_db_set_active('chado');  // use chado database
-   $feature = db_fetch_object(db_query($sql,$feature_id));
-   tripal_db_set_active($previous_db);  // now use drupal database
    $additions->feature = $feature;
-   $additions->seqlen = $feature->seqlen;
-   $organism_id = $feature->organism_id;
-
-   // add organism node nid
-   $sql = "SELECT nid FROM {chado_organism} WHERE organism_id = %d";
-   $org_nid = db_result(db_query($sql, $additions->feature->organism_id));
-   $additions->org_nid = $org_nid;
-   $additions->accession =  variable_get('chado_feature_accession_prefix','ID') . $feature->feature_id;
- 
-   // add details about the organism
-   $additions->organism = tripal_feature_load_organism($organism_id);
-   // add the list of synomyms
-   $additions->synonyms = tripal_feature_load_synonyms($feature_id);
-
    return $additions;
 }
 /**
@@ -1616,12 +1615,18 @@ function tripal_feature_preprocess(&$variables){
    // to add all of our variables.
    if($variables['template_files'][0] == 'node-chado_feature'){
       $feature = $variables['node']->feature;
-      $variables['tripal_feature']['synonyms'] = tripal_feature_load_synonyms($feature->feature_id);
-      $variables['tripal_feature']['object_relationships'] = tripal_feature_get_aggregate_relationships($feature->feature_id,0);
-      $variables['tripal_feature']['subject_relationships'] = tripal_feature_load_relationships($feature->feature_id,'as_subject');
-      $variables['tripal_feature']['featurelocs_as_child'] = tripal_feature_load_featurelocs($feature->feature_id,'as_child',0);
-      $variables['tripal_feature']['featurelocs_as_parent'] = tripal_feature_load_featurelocs($feature->feature_id,'as_parent');
-      $variables['tripal_feature']['references'] = tripal_feature_load_references($feature->feature_id);
+
+//      $variables['tripal_feature']['object_relationships'] = tripal_feature_get_aggregate_relationships($feature->feature_id,0);
+//      $variables['tripal_feature']['subject_relationships'] = tripal_feature_load_relationships($feature->feature_id,'as_subject');
+//      $variables['tripal_feature']['featurelocs_as_child'] = tripal_feature_load_featurelocs($feature->feature_id,'as_child',0);
+//      $variables['tripal_feature']['featurelocs_as_parent'] = tripal_feature_load_featurelocs($feature->feature_id,'as_parent');
+
+      $variables['node']->feature = tripal_core_expand_chado_vars($feature,'table','feature_dbxref');
+      $variables['node']->feature = tripal_core_expand_chado_vars($feature,'table','feature_synonym');
+      $variables['node']->feature = tripal_core_expand_chado_vars($feature,'table','featureloc');
+      $variables['node']->feature = tripal_core_expand_chado_vars($feature,'table','feature_relationship',
+         array('order_by'=>array('rank' => 'ASC')));
+
       $featurelocs = $variables['tripal_feature']['featurelocs_as_child'];
       $variables['tripal_feature']['featureloc_sequences'] = tripal_feature_load_featureloc_sequences ($feature->feature_id,$featurelocs);   
    }
@@ -2252,7 +2257,9 @@ function tripal_feature_job_describe_args($callback,$args){
       $new_args['Relationship Parent Type'] = $args[10];
 
       // add in the database reference arguments
-      $db = tripal_core_chado_select('db',array('name'),array('db_id' => $args[7]));
+      if($args[7]){
+         $db = tripal_core_chado_select('db',array('name'),array('db_id' => $args[7]));
+      }
       $new_args['Database Reference'] = $db[0]->name;
       $new_args['Accession RE'] = $args[6];
       if($args[11]){
@@ -2264,3 +2271,4 @@ function tripal_feature_job_describe_args($callback,$args){
    }
    return $new_args;
 }
+

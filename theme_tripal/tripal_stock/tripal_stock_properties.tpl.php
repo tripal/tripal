@@ -55,6 +55,6 @@
 		} ?>
 		</table>
 	<?php } else {
-	  print '<b>There are no properties for the current stock.</b>';
+	  print '<div class="tripal-no-results">There are no properties for the current stock.</div>';
 	} ?>
 </div>

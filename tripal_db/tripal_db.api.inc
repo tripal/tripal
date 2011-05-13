@@ -278,7 +278,7 @@ function tripal_db_get_dbxref_by_accession ($accession, $db_id=0) {
  *
  * @ingroup tripal_schema_api
  */
-function tripal_stock_chado_dbxref_schema() {
+function tripal_db_chado_dbxref_schema() {
   $description = array();
 
   $description['foreign keys']['db'] = array(

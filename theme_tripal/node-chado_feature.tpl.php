@@ -26,6 +26,7 @@
  //print '<pre>'.print_r($variables,TRUE).'</pre>';
 drupal_add_css('./tripal-node-templates.css');
 $feature  = $variables['node']->feature;
+dpm($feature);
 ?>
 
 <?php if ($teaser) { 
@@ -89,30 +90,44 @@ if (Drupal.jsEnabled) {
    <?php include('tripal_feature/tripal_feature_synonyms.tpl.php'); ?>
 
    <!-- Sequence -->
-   <?php include('tripal_feature/tripal_feature_sequence.tpl.php'); ?>
+   <?php 
+   if($feature->type_id->name == 'scaffold' or 
+      $feature->type_id->name == 'chromosome' or
+      $feature->type_id->name == 'pseudomolecule')
+   {
+      // don't even try to load the sequence for really big feature types.
+   } 
+   else {
+      include('tripal_feature/tripal_feature_sequence.tpl.php'); 
+   }
+   ?>
 
    <!-- Formatted Sequences -->
    <?php include('tripal_feature/tripal_feature_featureloc_sequences.tpl.php'); ?>
 
-   <!-- Object Relationships -->
-   <?php include('tripal_feature/tripal_feature_relationships_as_object.tpl.php'); ?>
+   <!-- Relationships -->
+   <?php include('tripal_feature/tripal_feature_relationships.tpl.php'); ?>
 
-   <!-- Subject Relationships -->
-   <?php include('tripal_feature/tripal_feature_relationships_as_subject.tpl.php'); ?>
-
-   <!-- Feature locations as Child -->
-   <?php include('tripal_feature/tripal_feature_featurelocs_as_child.tpl.php'); ?>
-
-   <!-- Subject Relationships -->
-   <?php include('tripal_feature/tripal_feature_featurelocs_as_parent.tpl.php'); ?>
+   <!-- Feature locations -->
+   <?php 
+   if($feature->type_id->name == 'scaffold' or 
+      $feature->type_id->name == 'chromosome' or
+      $feature->type_id->name == 'pseudomolecule')
+   {
+      // don't even try to load the feature locations for features that are typically
+      // very large landmarks
+   } 
+   else {
+      include('tripal_feature/tripal_feature_featurelocs.tpl.php'); 
+   }
+   ?>
 
    <?php print $content ?>
 </div>
 
 <!-- Table of contents -->
 <div id="tripal_feature_toc" class="tripal_toc">
-   <div id="tripal_feature_toc_title" class="tripal_toc_title">Resources for <?php print $feature->cvname?><br><?php print $feature->featurename ?></div>
-   <span id="tripal_feature_toc_desc" class="tripal_toc_desc">Select a link below for more information</span>
+   <div id="tripal_feature_toc_title" class="tripal_toc_title">Resources</div>
    <ul id="tripal_feature_toc_list" class="tripal_toc_list">
 
    </ul>

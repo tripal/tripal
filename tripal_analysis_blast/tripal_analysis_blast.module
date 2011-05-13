@@ -167,6 +167,9 @@ function tripal_get_feature_blast_results($feature_id, $db_id, $max){
       ),         
    );
    $blast_results = tripal_core_chado_select('analysisfeatureprop',array('*'),$select);
+   if (!$blast_results){
+      return;
+   }
 
 	// get the HTML content for viewing each of the XML file
 	$blast_obj_array = array ();

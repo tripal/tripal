@@ -67,4 +67,10 @@ table.tripal_feature-references-table th {
    float: none;
    display: block;
 }
-
+.tripal_feature-obsolete {
+   color: red;
+   font-weight: bold;
+   font-style: italic;
+   padding-bottom: 15px; 
+   text-align: center;
+}
