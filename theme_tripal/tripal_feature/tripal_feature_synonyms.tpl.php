@@ -1,6 +1,10 @@
 <?php
 $feature = $variables['node']->feature;
 
+// expand the feature object to include the synonyms from the feature_synonym 
+// table in chado.
+$feature = tripal_core_expand_chado_vars($feature,'table','feature_synonym');
+
 // get the references. if only one reference exists then we want to convert
 // the object into an array, otherwise the value is an array
 $synonyms = $feature->feature_synonym;

@@ -213,8 +213,14 @@ function tripal_library_nodeapi(&$node, $op, $teaser, $page) {
             switch($node->type){
                case 'chado_organism':
                   // Show library if the organism/feature is not at teaser view
-                  $node->content['tripal_organism_library_list'] = array(
-					      '#value' => theme('tripal_organism_library_list', $node),
+                  $node->content['tripal_organism_libraries'] = array(
+					      '#value' => theme('tripal_organism_libraries', $node),
+                  );
+                  break;
+               case 'chado_feature':
+                  // Show library if the organism/feature is not at teaser view
+                  $node->content['tripal_feature_libraries'] = array(
+					      '#value' => theme('tripal_feature_libraries', $node),
                   );
                   break;
             }
@@ -239,88 +245,15 @@ function tripal_library_theme () {
       'tripal_library_search_result' => array (
          'arguments' => array('node'),
       ),
-      'tripal_organism_library_list' => array (
+      'tripal_organism_libraries' => array (
          'arguments' => array('node'=> null),
-         'template' => 'tripal_organism_library_list',
+         'template' => 'tripal_organism_libraries',
+      ),
+      'tripal_feature_libraries' => array (
+         'arguments' => array('node'=> null),
+         'template' => 'tripal_feature_libraries',
       )
    );
-}
-/*******************************************************************************
- *  
- */
-function tripal_library_preprocess_tripal_organism_library_list(&$variables){
-   $organism = $variables['node']->organism;
-   $variables['tripal_library']['libraries'] = tripal_library_load_organism_library_list($organism);
-}
-/************************************************************************
- * 
- */
-function tripal_library_load_organism_library_list ($organism) {
-
-   // get the libraries for the organism
-   $sql = "SELECT L.library_id, L.organism_id, L.name, L.uniquename, ".
-          "   L.type_id, CVT.name as cvname, CVT.definition ".
-          "FROM {library} L ".
-          "  INNER JOIN CVTerm CVT ON CVT.cvterm_id = L.type_id ".
-    	  	 "WHERE L.Organism_id = %d";
-   $previous_db = tripal_db_set_active('chado');
-   $results = db_query($sql,$organism->organism_id);
-   tripal_db_set_active($previous_db);
-
-
-   // iterate through all of the libraries and add in the node and 
-   // library description
-   $nsql = "SELECT nid FROM {chado_feature} ".
-           "WHERE feature_id = %d";
-   $dsql = "SELECT * FROM {libraryprop} LP ".
-     	    "  INNER JOIN CVTerm CVT ON CVT.cvterm_id = LP.type_id ".
-          "WHERE LP.library_id = %d ".
-          "  AND CVT.name = 'library_description'";
-   $i=0;
-   $libraries = array();
-   while($library = db_fetch_object($results)){
-      // get the description
-      $previous_db = tripal_db_set_active('chado');
-      $desc = db_fetch_object(db_query($dsql,$library->library_id));
-      tripal_db_set_active($previous_db);
-      // get the node
-      $node = db_fetch_object(db_query($nsql,$feature->feature_id));
-      // add the description and the node to the library
-      $library->nid = $node->nid;
-      $library->description = $desc->value;
-      $libraries[$i++] = $library;
-   }
-
-   return $libraries;           
-}
-/************************************************************************
- * 
- */
-function tripal_library_load_feature_library_list ($feature) {
-
-
-      $content = "";
-      $organism_id = $node->feature->organism_id;
-      $previous_db = tripal_db_set_active('chado');
-      $sql = "SELECT * FROM {library} L ".
-             "  INNER JOIN Library_feature LF ON L.library_id = LF.library_id ".
-       	  	 "WHERE LF.feature_id = " . $node->feature->feature_id;
-      $libraries = array();
-      $results = db_query($sql);
-      while($library = db_fetch_object($results)){
-         $libraries[] = $library;
-      }
-      tripal_db_set_active($previous_db);
-      if(count($libraries) > 0){
-         $lib_additions = array();
-         foreach ($libraries as $library){
-            $content .= "Library: ".$library->name;
-         };
-      }
-
-   return $content;
-
-
 }
 
 /************************************************************************

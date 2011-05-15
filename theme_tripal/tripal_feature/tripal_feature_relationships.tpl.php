@@ -2,6 +2,12 @@
 
 $feature = $variables['node']->feature;
 
+// expand the feature object to include the feature relationships.
+// since there two foreign keys (object_id and subject_id) in the 
+// feature_relationship table, we will access each one separately 
+$feature = tripal_core_expand_chado_vars($feature,
+   'table','feature_relationship', array('order_by'=>array('rank' => 'ASC')));
+
 // get the featurelocs. if only one featureloc exists then we want to convert
 // the object into an array, otherwise the value is an array
 $orelationships = $feature->feature_relationship->object_id;

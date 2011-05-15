@@ -25,8 +25,8 @@
  //uncomment this line to see a full listing of the fields avail. to $node
  //print '<pre>'.print_r($variables,TRUE).'</pre>';
 drupal_add_css('./tripal-node-templates.css');
-$node = $variables['node'];
 $organism = $variables['node']->organism;
+//dpm($organism);
 ?>
 
 <?php if ($teaser) { 
@@ -91,8 +91,8 @@ if (Drupal.jsEnabled) {
 
 <!-- Table of contents -->
 <div id="tripal_organism_toc" class="tripal_toc">
-   <div id="tripal_organism_toc_title" class="tripal_toc_title">Resources for <br><i><?php print $organism->genus ?> <?php print $organism->species ?></i></div>
-   <span id="tripal_organism_toc_desc" class="tripal_toc_desc">Select a link below for more information</span>
+   <div id="tripal_organism_toc_title" class="tripal_toc_title">Resources</i></div>
+   <span id="tripal_organism_toc_desc" class="tripal_toc_desc"></span>
    <ul id="tripal_organism_toc_list" class="tripal_toc_list">
 
    </ul>

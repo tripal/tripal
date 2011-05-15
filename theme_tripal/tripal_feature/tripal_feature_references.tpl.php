@@ -1,6 +1,10 @@
 <?php
 $feature = $variables['node']->feature;
 
+// expand the feature object to include the external references stored
+// in the feature_dbxref table
+$feature = tripal_core_expand_chado_vars($feature,'table','feature_dbxref');
+
 // get the references. if only one reference exists then we want to convert
 // the object into an array, otherwise the value is an array
 $references = $feature->feature_dbxref;

@@ -2,6 +2,11 @@
 
 $feature = $variables['node']->feature;
 
+// expand the feature object to include the featureloc records.  there are
+// two foreign key relationships with featureloc and feature (srcefeature_id and
+// feature_id).  This will expand both
+$feature = tripal_core_expand_chado_vars($feature,'table','featureloc');
+
 // get the featurelocs. if only one featureloc exists then we want to convert
 // the object into an array, otherwise the value is an array
 $ffeaturelocs = $feature->featureloc->feature_id;
@@ -40,16 +45,11 @@ if (!$sfeaturelocs) {
          } 
          $location = $featureloc->srcfeature_id->name .":".$featureloc->fmin . ".." . $featureloc->fmax;
          if($location->srcfeature_id->nid){
-           $location = "<a href=\"" . url("node/$location->srcfeature_id->nid") . "\">".$featureloc->srcfeature_id->name .":".$featureloc->fmin . ".." . $featureloc->fmax ."</a> ";
+           $location = "<a href=\"" . url("node/".$location->srcfeature_id->nid) . "\">".$featureloc->srcfeature_id->name .":".$featureloc->fmin . ".." . $featureloc->fmax ."</a> ";
          }
          ?>
          <tr class="<?php print $class ?>">
-           <td><?php 
-              if($featureloc->feature_id->nid){
-                 print "<a href=\"" . url("node/".$featureloc->feature_id->name) . "\">".$featureloc->feature_id->name."</a>";
-              } else {
-                 print $featureloc->feature_id->name;
-              }?>
+           <td><?php print $featureloc->feature_id->name;?>
            </td>
            <td><?php print $featureloc->feature_id->type_id->name ?></td>
            <td><?php print $location ?></td>

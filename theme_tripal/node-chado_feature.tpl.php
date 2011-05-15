@@ -26,7 +26,7 @@
  //print '<pre>'.print_r($variables,TRUE).'</pre>';
 drupal_add_css('./tripal-node-templates.css');
 $feature  = $variables['node']->feature;
-dpm($feature);
+//dpm($feature);
 ?>
 
 <?php if ($teaser) { 
@@ -91,13 +91,11 @@ if (Drupal.jsEnabled) {
 
    <!-- Sequence -->
    <?php 
-   if($feature->type_id->name == 'scaffold' or 
-      $feature->type_id->name == 'chromosome' or
-      $feature->type_id->name == 'pseudomolecule')
+   if(strcmp($feature->type_id->name,'scaffold')!=0 and 
+      strcmp($feature->type_id->name,'chromosome')!=0 and
+      strcmp($feature->type_id->name,'supercontig')!=0 and
+      strcmp($feature->type_id->name,'pseudomolecule')!=0)
    {
-      // don't even try to load the sequence for really big feature types.
-   } 
-   else {
       include('tripal_feature/tripal_feature_sequence.tpl.php'); 
    }
    ?>
@@ -110,14 +108,11 @@ if (Drupal.jsEnabled) {
 
    <!-- Feature locations -->
    <?php 
-   if($feature->type_id->name == 'scaffold' or 
-      $feature->type_id->name == 'chromosome' or
-      $feature->type_id->name == 'pseudomolecule')
+   if(strcmp($feature->type_id->name,'scaffold')!=0 and 
+      strcmp($feature->type_id->name,'chromosome')!=0 and
+      strcmp($feature->type_id->name,'supercontig')!=0 and
+      strcmp($feature->type_id->name,'pseudomolecule')!=0)
    {
-      // don't even try to load the feature locations for features that are typically
-      // very large landmarks
-   } 
-   else {
       include('tripal_feature/tripal_feature_featurelocs.tpl.php'); 
    }
    ?>

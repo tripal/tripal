@@ -1,5 +1,10 @@
 <?php
 $feature = $variables['node']->feature;
+
+// add the residues to the feature object.  Fields of type 'text' in Chado
+// are not automatically added, so we must add them manually
+$feature = tripal_core_expand_chado_vars($feature,'field','feature.residues');
+
 ?>
 <div id="tripal_feature-sequence-box" class="tripal_feature-info-box tripal-info-box">
   <div class="tripal_feature-info-box-title tripal-info-box-title"><?php print $feature->type_id->name ?> Sequence</div>

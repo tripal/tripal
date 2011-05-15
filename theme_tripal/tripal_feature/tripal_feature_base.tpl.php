@@ -34,9 +34,8 @@ $feature  = $variables['node']->feature;
       <tr class="tripal_feature-table-odd-row tripal-table-odd-row">
         <th>Organism</th>
         <td>
-          <?php if ($node->org_nid) { ?>
-      	   <a href="<?php print url("node/$org_nid") ?>"><?php print $organism->genus ." " . $organism->species ." (" .$organism->common_name ." )"?></a>
-      	 <?php 
+          <?php if ($feature->organism_id->nid) { 
+      	   print "<a href=\"".url("node/".$feature->organism_id->nid)."\">".$feature->organism_id->genus ." " . $feature->organism_id->species ." (" .$feature->organism_id->common_name ." )</a>";      	 
           } else { 
             print $feature->organism_id->genus ." " . $feature->organism_id->species ." (" .$feature->organism_id->common_name .")";
           } ?>

@@ -685,6 +685,8 @@ function chado_feature_form ($node,$param){
 
    $feature = $node->feature;
 
+   // add the residues to the feature object
+   $feature = tripal_core_expand_chado_vars($feature,'field','feature.residues');
 
    // if the node has synonyms then use that as the form may be returning
    // from an error.  Otherwise try to find synonyms from the database
@@ -909,8 +911,9 @@ function chado_feature_validate($node){
  * @ingroup tripal_feature
  */
 function chado_feature_load($node){
-   // find the organism and add in the details
+   // get the feature details from chado
    $feature_id = chado_get_id_for_node('feature',$node);
+
    $values = array('feature_id' => $feature_id);
    $feature = tripal_core_generate_chado_var('feature',$values);
 
@@ -1248,13 +1251,13 @@ function tripal_feature_load_featureloc_sequences($feature_id,$featurelocs){
       $rel_featurelocs = tripal_feature_load_featurelocs ($rel->subject_id,'as_child',0);   
       foreach($rel_featurelocs as $rfindex => $rel_featureloc){
          // keep track of this unique source feature
-         $src = $rel_featureloc->src_feature_id ."-". $rel_featureloc->src_type_id;
+         $src = $rel_featureloc->src_feature_id ."-". $rel_featureloc->src_cvterm_id;
 
          // copy over the results to the relationship object.  Since there can
          // be more than one feature location for each relationship feature we 
          // use the '$src' variable to keep track of these.
          $rel->featurelocs->$src->src_uniquename = $rel_featureloc->src_uniquename;
-         $rel->featurelocs->$src->src_type_id    = $rel_featureloc->src_type_id;
+         $rel->featurelocs->$src->src_cvterm_id  = $rel_featureloc->src_cvterm_id;
          $rel->featurelocs->$src->src_cvname     = $rel_featureloc->src_cvname;
          $rel->featurelocs->$src->fmin           = $rel_featureloc->fmin;
          $rel->featurelocs->$src->fmax           = $rel_featureloc->fmax;
@@ -1275,13 +1278,14 @@ function tripal_feature_load_featureloc_sequences($feature_id,$featurelocs){
    // locations determiend above. 
    $sql = "SELECT residues FROM {feature} WHERE feature_id = %d";
    $floc_sequences = array();
-   foreach ($featurelocs as $findex => $featureloc){
+   foreach ($featurelocs as $featureloc){
       // get the residues for this feature
       $previous_db = tripal_db_set_active('chado');  // use chado database
-      $feature = db_fetch_object(db_query($sql,$featureloc->src_feature_id));
+      $feature = db_fetch_object(db_query($sql,$featureloc->srcfeature_id->feature_id));
       tripal_db_set_active($previous_db);  // now use drupal database
 
-      $src = $featureloc->src_feature_id ."-". $featureloc->src_type_id;
+      $src = $featureloc->srcfeature_id->feature_id ."-". $featureloc->srcfeature_id->type_id->cvterm_id;
+
       // orient the parts to the beginning of the feature sequence
       $parts = $rel_locs[$src]['parts'];
       usort($parts, 'tripal_feature_sort_rel_parts');
@@ -1290,7 +1294,7 @@ function tripal_feature_load_featureloc_sequences($feature_id,$featurelocs){
          $parts[$start]['end']   = $parts[$start]['end'] - $featureloc->fmin;
       }      
       $floc_sequences[$src]['src'] = $src;
-      $floc_sequences[$src]['type'] = $featureloc->cvname;
+      $floc_sequences[$src]['type'] = $featureloc->feature_id->type_id->name;
       $sequence = substr($feature->residues,$featureloc->fmin-1,($featureloc->fmax - $featureloc->fmin)+1);
       $floc_sequences[$src]['formatted_seq'] =  tripal_feature_color_sequence (
           $sequence,$parts);
@@ -1604,33 +1608,6 @@ function tripal_feature_theme () {
    );
 }
 
-/**
- *  
- *
- * @ingroup tripal_feature
- */
-function tripal_feature_preprocess(&$variables){
-
-   // if the template file is the default node template file then we want
-   // to add all of our variables.
-   if($variables['template_files'][0] == 'node-chado_feature'){
-      $feature = $variables['node']->feature;
-
-//      $variables['tripal_feature']['object_relationships'] = tripal_feature_get_aggregate_relationships($feature->feature_id,0);
-//      $variables['tripal_feature']['subject_relationships'] = tripal_feature_load_relationships($feature->feature_id,'as_subject');
-//      $variables['tripal_feature']['featurelocs_as_child'] = tripal_feature_load_featurelocs($feature->feature_id,'as_child',0);
-//      $variables['tripal_feature']['featurelocs_as_parent'] = tripal_feature_load_featurelocs($feature->feature_id,'as_parent');
-
-      $variables['node']->feature = tripal_core_expand_chado_vars($feature,'table','feature_dbxref');
-      $variables['node']->feature = tripal_core_expand_chado_vars($feature,'table','feature_synonym');
-      $variables['node']->feature = tripal_core_expand_chado_vars($feature,'table','featureloc');
-      $variables['node']->feature = tripal_core_expand_chado_vars($feature,'table','feature_relationship',
-         array('order_by'=>array('rank' => 'ASC')));
-
-      $featurelocs = $variables['tripal_feature']['featurelocs_as_child'];
-      $variables['tripal_feature']['featureloc_sequences'] = tripal_feature_load_featureloc_sequences ($feature->feature_id,$featurelocs);   
-   }
-}
 
 /**
  *
@@ -1652,86 +1629,6 @@ function tripal_feature_preprocess_tripal_organism_feature_browser(&$variables){
    $variables['tripal_feature']['browser'] = tripal_feature_load_organism_feature_browser($organism);
 }
 
-/**
- *  
- *
- * @ingroup tripal_feature
- */
-function tripal_feature_preprocess_tripal_feature_properties(&$variables){
-   $feature = $variables['node']->feature;
-   $variables['tripal_feature']['properties'] = tripal_feature_load_properties($feature->feature_id);
-}
-
-/**
- *  
- *
- * @ingroup tripal_feature
- */
-function tripal_feature_preprocess_tripal_feature_synonyms(&$variables){
-   $feature = $variables['node']->feature;
-   $variables['tripal_feature']['synonyms'] = tripal_feature_load_synonyms($feature->feature_id);
-}
-
-/**
- *  
- *
- * @ingroup tripal_feature
- */
-function tripal_feature_preprocess_tripal_feature_relationships_as_object(&$variables){
-   $feature = $variables['node']->feature;
-   $variables['tripal_feature']['object_relationships'] = tripal_feature_get_aggregate_relationships($feature->feature_id,0);
-}
-
-/**
- *  
- *
- * @ingroup tripal_feature
- */
-function tripal_feature_preprocess_tripal_feature_relationships_as_subject(&$variables){
-   $feature = $variables['node']->feature;
-   $variables['tripal_feature']['subject_relationships'] = tripal_feature_load_relationships($feature->feature_id,'as_subject');
-}
-
-/**
- *
- *
- * @ingroup tripal_feature
- */
-function tripal_feature_preprocess_tripal_feature_featurelocs_as_child(&$variables){
-   $feature = $variables['node']->feature;
-   $variables['tripal_feature']['featurelocs_as_child'] = tripal_feature_load_featurelocs($feature->feature_id,'as_child',0);
-}
-
-/**
- *  
- *
- * @ingroup tripal_feature
- */
-function tripal_feature_preprocess_tripal_feature_featurelocs_as_parent(&$variables){
-   $feature = $variables['node']->feature;
-   $variables['tripal_feature']['featurelocs_as_parent'] = tripal_feature_load_featurelocs($feature->feature_id,'as_parent');
-}
-
-/**
- *  
- *
- * @ingroup tripal_feature
- */
-function tripal_feature_preprocess_tripal_feature_references(&$variables){
-   $feature = $variables['node']->feature;
-   $variables['tripal_feature']['references'] = tripal_feature_load_references($feature->feature_id);
-}
-
-/**
- *  
- *
- * @ingroup tripal_feature
- */
-function tripal_feature_preprocess_tripal_feature_featureloc_sequences(&$variables){
-   $feature = $variables['node']->feature;
-   $featurelocs = tripal_feature_load_featurelocs($feature->feature_id,'as_child',0);
-   $variables['tripal_feature']['featureloc_sequences'] = tripal_feature_load_featureloc_sequences ($feature->feature_id,$featurelocs);   
-}
 
 /**
  *

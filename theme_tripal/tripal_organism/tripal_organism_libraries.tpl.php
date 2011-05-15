@@ -1,6 +1,20 @@
 <?php
 $organism = $variables['node']->organism;
-$libraries = $variables['tripal_library']['libraries'];
+
+// expand the organism object to include the libraries from the library
+// table in chado.
+$organism = tripal_core_expand_chado_vars($organism,'table','library');
+
+
+// get the references. if only one reference exists then we want to convert
+// the object into an array, otherwise the value is an array
+$libraries = $organism->library;
+if (!$libraries) {
+   $libraries = array();
+} elseif (!is_array($libraries)) { 
+   $libraries = array($libraries); 
+}
+
 ?>
 <div id="tripal_organism-library_list-box" class="tripal_organism-info-box tripal-info-box">
   <div class="tripal_organism-info-box-title tripal-info-box-title">Libraries</div>
@@ -14,6 +28,10 @@ $libraries = $variables['tripal_library']['libraries'];
       </tr>
       <?php
       foreach ($libraries as $library){ 
+      // expand the library to include the properties.
+      $library = tripal_core_expand_chado_vars($library,'table','libraryprop');
+      $library = tripal_core_expand_chado_vars($library,'field','libraryprop.value');
+
       $class = 'tripal_organism-table-odd-row tripal-table-odd-row';
       if($i % 2 == 0 ){
          $class = 'tripal_organism-table-odd-row tripal-table-even-row';
@@ -22,22 +40,28 @@ $libraries = $variables['tripal_library']['libraries'];
       <tr class="<?php print $class ?>">
         <td><?php 
            if($library->nid){    
-              $link =   url("node/$library->nid");        
+              $link =  url("node/$library->nid");        
               print "<a href=\"$link\">$library->name</a>";
            } else {
               print $library->name;
            }
            ?>
         </td>
-        <td><?php print $library->description?></td>
+        <td><?php 
+           // right now we only have one property for libraries. So we can just
+           // refernece it directly.  If we had more than one property
+           // we would need to convert this to an if statment and loop
+           // until we found the right one.
+           print $library->libraryprop->value?>
+        </td>
         <td>
           <?php 
-            if ($library->cvname == 'cdna_library') {
+            if ($library->type_id->name == 'cdna_library') {
                print 'cDNA';
-            } else if ($library->cvname == 'bac_library') {
+            } else if ($library->type_id->name == 'bac_library') {
                print 'BAC';
             } else {
-               print $library->cvname;
+               print $library->type_id->name;
             }
           ?>
         </td>
