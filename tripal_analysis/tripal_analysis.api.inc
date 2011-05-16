@@ -130,6 +130,7 @@ function tripal_analysis_get_property($analysis_id,$property){
       ),
    );
    $results = tripal_core_generate_chado_var('analysisprop',$values);
+   $results = tripal_core_expand_chado_vars($results,'field','analysisprop.value');
    return $results;
 }
 /**

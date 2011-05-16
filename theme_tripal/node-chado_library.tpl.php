@@ -1,45 +1,104 @@
 <?php
-
+// Purpose: This template provides the layout of the library node (page)
+//   using the same templates used for the various library content blocks.
+//
+// To Customize the Libray Node Page:
+//   - This Template: customize basic layout and which elements are included
+//   - Using Panels: Override the node page using Panels3 and place the blocks
+//       of content as you please. This method requires no programming. See
+//       the Tripal User Guide for more details
+//   - Block Templates: customize the content/layout of each block of stock 
+//       content. These templates are found in the tripal_stock subdirectory
+//
+// Variables Available:
+//   - $node: a standard object which contains all the fields associated with
+//       nodes including nid, type, title, taxonomy. It also includes stock
+//       specific fields such as stock_name, uniquename, stock_type, synonyms,
+//       properties, db_references, object_relationships, subject_relationships,
+//       organism, etc.
+//   NOTE: For a full listing of fields available in the node object the
+//       print_r $node line below or install the Drupal Devel module which 
+//       provides an extra tab at the top of the node page labelled Devel
 ?>
 
-   <?php if ($picture) { print $picture; }?>
-    
-   <div class="node<?php if ($sticky) { print " sticky"; } ?><?php if (!$status) { print " node-unpublished"; } ?>">
+<?php
+ //uncomment this line to see a full listing of the fields avail. to $node
+ //print '<pre>'.print_r($variables,TRUE).'</pre>';
+drupal_add_css('./tripal-node-templates.css');
+$library  = $variables['node']->library;
+//dpm($library);
+?>
 
-   <?php if ($page == 0) { ?><h2 class="nodeTitle"><a href="<?php print $node_url?>"><?php print $title?></a>
-	<?php global $base_url;
-	if ($sticky) { print '<img src="'.base_path(). drupal_get_path('theme','sanqreal').'/img/sticky.gif" alt="sticky icon" class="sticky" />'; } ?>
-	</h2><?php }; ?>
-    
-	<?php if (!$teaser): ?>
-   	<?php if ($submitted): ?>
-        <div class="metanode"><p><?php print t('') .'<span class="author">'. theme('username', $node).'</span>' . t(' - Posted on ') . '<span class="date">'.format_date($node->created, 'custom', "d F Y").'</span>'; ?></p></div>
-      <?php endif;?>
-      <div>
-      <!-- tripal library theme -->
-         <table>
-            <tr><th>Unique Name</th><td><?php print $node->uniquename;?></td></tr>
-            <tr><th>Organism</th><td><?php print $node->genus.' '.$node->species.' ('.$node->common_name.')';?></td></tr>
-            <tr><th>Libraray Type</th><td><?php print $node->library_type?></td></tr>
-            <!--<tr><th>Number of ESTs</th><td><?php print $node->sequence_num?></td></tr>-->
-            <tr><th>Description</th><td><?php print $node->library_description?></td></tr>
-         </table>
-      <!-- End of tripal library theme-->
-	  </div> 
-    <?php endif; ?>
-    
-    <div class="content"><?php print $content?></div>
-    
-    <?php if (!$teaser): ?>
-    <?php if ($links) { ?><div class="links"><?php print $links?></div><?php }; ?>
-    <?php endif; ?>
-    
-    <?php if ($teaser): ?>
-    <?php if ($links) { ?><div class="linksteaser"><div class="links"><?php print $links?></div></div><?php }; ?>
-    <?php endif; ?>
-    
-    <?php if (!$teaser): ?>
-    <?php if ($terms) { ?><div class="taxonomy"><span><?php print t('tags') ?></span> <?php print $terms?></div><?php } ?>
-    <?php endif; ?>
-  </div>
+<?php if ($teaser) { 
+  include('tripal_library/tripal_library_teaser.tpl.php'); 
+} else { ?>
 
+<script type="text/javascript">
+if (Drupal.jsEnabled) {
+   $(document).ready(function() {
+      // hide all tripal info boxes at the start
+      $(".tripal-info-box").hide();
+ 
+      // iterate through all of the info boxes and add their titles
+      // to the table of contents
+      $(".tripal-info-box-title").each(function(){
+        var parent = $(this).parent();
+        var id = $(parent).attr('id');
+        var title = $(this).text();
+        $('#tripal_library_toc_list').append('<li><a href="#'+id+'" class="tripal_library_toc_item">'+title+'</a></li>');
+      });
+
+      // when a title in the table of contents is clicked, then
+      // show the corresponding item in the details box
+      $(".tripal_library_toc_item").click(function(){
+         $(".tripal-info-box").hide();
+         href = $(this).attr('href');
+         $(href).fadeIn('slow');
+         // we want to make sure our table of contents and the details
+         // box stay the same height
+         $("#tripal_library_toc").height($(href).parent().height());
+         return false;
+      }); 
+
+      // we want the base details to show up when the page is first shown 
+      // unless the user specified a specific block
+      var block = window.location.href.match(/\?block=.*/);
+      if(block != null){
+         block_title = block.toString().replace(/\?block=/g,'');
+         $("#tripal_library-"+block_title+"-box").show();
+      } else {
+         $("#tripal_library-base-box").show();
+      }
+
+      $("#tripal_organism_toc").height($("#tripal_library-base-box").parent().height());
+   });
+}
+</script>
+
+<div id="tripal_library_details" class="tripal_details">
+
+   <!-- Basic Details Theme -->
+   <?php include('tripal_library/tripal_library_base.tpl.php'); ?>
+
+   <!-- External References -->
+   <?php include('tripal_library/tripal_library_references.tpl.php'); ?>
+
+   <!-- Properties -->
+   <?php include('tripal_library/tripal_library_properties.tpl.php'); ?>
+
+   <!-- Synonyms -->
+   <?php include('tripal_library/tripal_library_synonyms.tpl.php'); ?>
+
+
+   <?php print $content ?>
+</div>
+
+<!-- Table of contents -->
+<div id="tripal_library_toc" class="tripal_toc">
+   <div id="tripal_library_toc_title" class="tripal_toc_title">Resources</div>
+   <ul id="tripal_library_toc_list" class="tripal_toc_list">
+
+   </ul>
+</div>
+
+<?php } ?>

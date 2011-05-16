@@ -744,49 +744,44 @@ function chado_library_validate($node){
  *  of type 'chado_library' and inserts the necessary information.
  */
 function chado_library_insert($node){
-   // If this library already exists then don't create it in chado
-   // e.g. when tripal_library_sync_libraries call this function
-   $l_sql= "SELECT library_id ".
-           "FROM {Library} ".
-           "WHERE organism_id = %d ".
-           "AND uniquename = '%s' ".
-           "AND type_id = %d";
-   $previous_db = tripal_db_set_active('chado');
-   $library = db_fetch_object(db_query($l_sql, $node->organism_id,
-   $node->uniquename, $node->type_id));
-   $libid = $node->library_id;
-   
-   // Create the chado library entry only if it doesn't exist
-   if (!$library) {
-      $sql = "INSERT INTO {library} (organism_id, name, uniquename, type_id)".
-             "VALUES(%d,'%s','%s', ".
-             "  (SELECT cvterm_id ".
-             "   FROM {CVTerm} CVT ".
-             "   INNER JOIN CV ON CVT.cv_id = CV.cv_id ".
-             "   WHERE CV.name = 'tripal' and CVT.name = '%s'))";
-      db_query($sql,$node->organism_id,$node->title,$node->uniquename,
-      $node->library_type);
 
-      // get the library id for this library
-      $sql = "SELECT library_id ".
-             "FROM {library} ".
-             "WHERE uniquename = '%s'";
-      $lib = db_fetch_object(db_query($sql, $node->uniquename));
-      $libid = $lib->library_id;
-   }
+   // get the library type id
+   $values = array(
+      'cv_id' => array(
+         'name' => 'tripal'
+      ),
+      'name' => $node->library_type
+   );
+   $type = tripal_core_chado_select('cvterm',array('cvterm_id'),$values);
 
-   // Now use drupal database
-   tripal_db_set_active($previous_db);
+   $values = array(
+      'name' => $node->title,
+      'uniquename' => $node->uniquename,
+      'organism_id' => $node->organism_id,
+      'type_id' => $type[0]->cvterm_id
+   );
+   $library = tripal_core_chado_insert('library', $values);
+   if ($library) {
+       // add the description property
+      tripal_library_insert_property($library['library_id'],'library_description',$node->library_description);
 
-   // Next add the node to the drupal table
-   $sql = "INSERT INTO {chado_library} (nid, vid, library_id) ".
-          "VALUES (%d, %d, %d)";
-   db_query($sql, $node->nid, $node->vid, $libid);
-
-   // Finally add the remaining properties if the library doesn't exist in Chado
-   if (!$library) {
-      tripal_library_add_properties($node,$libid);
-   }
+      // make sure the entry for this feature doesn't already exist in the chado_feature table
+      // if it doesn't exist then we want to add it.
+      $library_id = chado_get_id_for_node('library',$node) ;
+      if(!$library_id){
+         // next add the item to the drupal table
+         $sql = "INSERT INTO {chado_library} (nid, vid, library_id) ".
+                "VALUES (%d, %d, %d)";
+         db_query($sql,$node->nid,$node->vid,$library['library_id']);
+      }
+   } else {
+		drupal_set_message('Unable to add library.', 'warning');
+		watchdog('tripal_library', 
+			'Insert feature: Unable to create library where values: %values', 
+			array('%values' => print_r($values, TRUE)),
+			WATCHDOG_WARNING
+		);
+	}
 }
 /*******************************************************************************
  * Update nodes
@@ -795,59 +790,34 @@ function chado_library_update($node){
    if($node->revision){
       // TODO -- decide what to do about revisions
    } else {
-      // Get the library_id for this node:
-      $sql = "SELECT library_id ".
-             "FROM {chado_library} ".
-             "WHERE vid = %d";
-      $lib = db_fetch_object(db_query($sql, $node->vid));
+      $library_id = chado_get_id_for_node('library',$node) ;
 
-      // Update the chado library table
-      $sql = "UPDATE {library} ".
-             "  SET name = '%s', uniquename = '%s', organism_id = %d, ".
-             "    type_id = (SELECT cvterm_id ".
-             "               FROM {CVTerm} CVT ".
-             "               INNER JOIN CV ON CVT.cv_id = CV.cv_id ".
-             "               WHERE CV.name = 'local' and CVT.name = '%s') ".
-             "WHERE library_id = %d ";
-      $previous_db = tripal_db_set_active('chado');  // use chado database
-      db_query($sql, $node->title, $node->uniquename, $node->organism_id,
-      $node->library_type, $lib->library_id);
-      tripal_db_set_active($previous_db);  // now use drupal database
-      tripal_library_add_properties($node,$lib->library_id);
-      tripal_library_add_taxonomy($node,$lib->library_id);
+      // get the library type id
+      $values = array(
+         'cv_id' => array(
+            'name' => 'tripal'
+         ),
+         'name' => $node->library_type
+      );
+      $type = tripal_core_chado_select('cvterm',array('cvterm_id'),$values);
+
+      // update the library record
+      $match = array(
+         'library_id' => $library_id,
+      );
+      $values = array(
+         'name' => $node->title,
+         'uniquename' => $node->uniquename,
+         'organism_id' => $node->organism_id,
+         'type_id' => $type[0]->cvterm_id
+      );
+      $status = tripal_core_chado_update('library', $match,$values); 
+
+      tripal_library_insert_property($library_id,'library_description',$node->library_description);
    }
 }
 
-/*******************************************************************************
- * Add properties to the specified library.
- */
-function tripal_library_add_properties ($node,$library_id){
-   // Use chado database
-   $previous_db = tripal_db_set_active('chado');
 
-   // Now remove any properties for this library and add the new properties
-   // provided by the this posting.
-   $sql = "DELETE FROM {libraryprop} ".
-          "WHERE library_id = %d";
-   db_query($sql,$library_id);
-
-   // Now add each property one at a time
-   $sql = "INSERT INTO {libraryprop} (library_id, type_id, value) ".
-          "VALUES (%d,".
-          "        (SELECT cvterm_id ".
-          "         FROM {CVTerm} CVT ".
-          "           INNER JOIN CV ON CVT.cv_id = CV.cv_id ".
-          "         WHERE CV.name = 'tripal' and CVT.name = '%s'), ".
-          "        '%s')";
-
-   if($node->library_description){
-      db_query($sql,$library_id,'library_description',
-      $node->library_description);
-   }
-
-   // now use drupal database
-   tripal_db_set_active($previous_db);
-}
 /*******************************************************************************
  * Add the library as a taxonomy term for associating with library_features
  */
@@ -902,14 +872,34 @@ function tripal_library_add_taxonomy ($node,$library_id){
  *  a form.  This function creates the form that will be used for this.
  */
 function chado_library_form ($node){
-   $type = node_get_types('type',$node);
    $form = array();
+
+   $library = $node->library;
+   
+   // get the default values
+   $uniquename = $node->uniquename;
+   if(!$uniquename){
+     $uniquename = $library->uniquename;
+   }
+   $library_type = $node->library_type;
+   if(!$library_type){
+      $library_type = $library->type_id->name;
+   }
+   $organism_id = $node->organism_id;
+   if(!$organism_id){
+      $organism_id = $library->organism_id->organism_id;
+   }
+   $library_description = $node->library_description;
+   if(!$library_description){
+     $libprop = tripal_library_get_property($library->library_id,'library_description');
+     $library_description = $libprop->value;
+   }
 
    // keep track of the library id if we have.  If we do have one then
    // this is an update as opposed to an insert.
    $form['library_id'] = array(
       '#type' => 'value',
-      '#value' => $node->library_id,
+      '#value' => $library->library_id,
    );
 
    $form['title']= array(
@@ -927,7 +917,7 @@ function chado_library_form ($node){
       '#title'         => t('Unique Library Name'),
       '#description'   => t('Please enter a unique name for this library'),
       '#required'      => TRUE,
-      '#default_value' => $node->uniquename,
+      '#default_value' => $uniquename,
       '#weight'        => 2
    );
 
@@ -946,7 +936,7 @@ function chado_library_form ($node){
       '#type'        => t('select'),
       '#description' => t("Choose the library type."),
       '#required'    => TRUE,
-      '#default_value' => $node->library_type,
+      '#default_value' => $library_type,
       '#options'     => $library_types,
       '#weight'      => 3
    );
@@ -970,7 +960,7 @@ function chado_library_form ($node){
      '#description' => t("Choose the organism with which this library is ".
                          "associated."),
      '#required'    => TRUE,
-     '#default_value' => $node->organism_id,
+     '#default_value' => $organism_id,
      '#options'     => $organisms,
      '#weight'      => 4,
    );
@@ -980,15 +970,10 @@ function chado_library_form ($node){
       '#title'         => t('Library Description'),
       '#description'   => t('A brief description of the library'),
       '#required'      => TRUE,
-      '#default_value' => $node->library_description,
+      '#default_value' => $library_description,
       '#weight'        => 5
    );
 
-   //Save the number of EST so it will show up in preview
-   $form['sequence_num'] = array(
-      '#type' => 'value',
-      '#value' => $node->sequence_num,
-   );
    return $form;
 }
 /************************************************************************
@@ -1051,50 +1036,13 @@ function tripal_library_sync_libraries ($library_id = NULL, $job_id = NULL){
  *  to add auxiliary data to the node object.
  */
 function chado_library_load($node){
-   $sql = 'SELECT library_id FROM {chado_library} WHERE vid = %d';
-   $map = db_fetch_object(db_query($sql, $node->vid));
-   $additions->library_id = $map->library_id;
-   $previous_db = tripal_db_set_active('chado');  // use chado database
+   // get the feature details from chado
+   $library_id = chado_get_id_for_node('library',$node);
 
-   // get information about this library
-   $sql = "SELECT L.organism_id, L.uniquename, CVT.name as type_name ".
-          "FROM {Library} L ".
-          "INNER JOIN CVTerm CVT ON CVT.cvterm_id = L.type_id ".
-          "WHERE library_id = %d";
-   $library = db_fetch_object(db_query($sql, $map->library_id));
-   $additions->uniquename = $library->uniquename;
-   $additions->library_type = $library->type_name;
-   $additions->organism_id = $library->organism_id;
+   $values = array('library_id' => $library_id);
+   $library = tripal_core_generate_chado_var('library',$values);
 
-   $sql = "SELECT genus, species, common_name ".
-          "FROM {organism} O ".
-          "INNER JOIN library L ".
-          "ON L.organism_id = O.organism_id ".
-          "WHERE L.library_id = %d";
-   $organism = db_fetch_object(db_query($sql,$map->library_id));
-   $additions->genus = $organism->genus;
-   $additions->species = $organism->species;
-   $additions->common_name = $organism->common_name;
-
-   $sql = "SELECT LP.value ".
-          "FROM {libraryProp} LP ".
-          "WHERE LP.library_id = %d ";
-   $desc = db_fetch_object(db_query($sql, $map->library_id))->value;
-   if ($desc) {
-      $additions->library_description = $desc;
-   } else {
-      $additions->library_description = "NA";
-   }
-
-   // get the feature counts.  This is dependent on a materialized view
-   // installed with the library module
-   if ($map->library_id) {
-      $sql = "SELECT num_features FROM {library_feature_count} ".
-      		 "WHERE Library_id = $map->library_id";
-      $additions->num_features = db_fetch_object(db_query($sql, $map->library_id))->num_features;
-   }
-
-   tripal_db_set_active($previous_db);  // now use drupal database
+   $additions->library = $library;
    return $additions;
 
 }

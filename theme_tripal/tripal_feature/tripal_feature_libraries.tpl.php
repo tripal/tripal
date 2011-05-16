@@ -41,7 +41,16 @@ if (!$library_features) {
           }
         ?>
         </td>
-        <td><?php print $library_feature->library_id->type_id->name?></td>
+        <td><?php 
+            if ($library_feature->library_id->type_id->name == 'cdna_library') {
+               print 'cDNA';
+            } else if ($library_feature->library_id->type_id->name == 'bac_library') {
+               print 'BAC';
+            } else {
+               print $library_feature->library_id->type_id->name;
+            }
+          ?>
+        </td>
       </tr>
       <?php
       $i++;  

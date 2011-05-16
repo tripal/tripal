@@ -11,7 +11,7 @@ $feature  = $variables['node']->feature;
       <div class="tripal_feature-obsolete">This feature is obsolete</div>
    <?php }?>
    <table id="tripal_feature-base-table" class="tripal_feature-table tripal-table tripal-table-vert">
-      <tr class="tripal_feature-table-odd-row tripal-table-even-row">
+      <tr class="tripal_feature-table-even-row tripal-table-even-row">
         <th>Name</th>
         <td><?php print $feature->name; ?></td>
       </tr>
@@ -19,7 +19,7 @@ $feature  = $variables['node']->feature;
         <th nowrap>Unique Name</th>
         <td><?php print $feature->uniquename; ?></td>
       </tr>
-      <tr class="tripal_feature-table-odd-row tripal-table-even-row">
+      <tr class="tripal_feature-table-even-row tripal-table-even-row">
         <th>Internal ID</th>
         <td><?php print $feature->feature_id; ?></td>
       </tr>
@@ -27,7 +27,7 @@ $feature  = $variables['node']->feature;
         <th>Length</th>
         <td><?php print $feature->seqlen ?></td>
       </tr>
-      <tr class="tripal_feature-table-odd-row tripal-table-even-row">
+      <tr class="tripal_feature-table-even-row tripal-table-even-row">
         <th>Type</th>
         <td><?php print $feature->type_id->name; ?></td>
       </tr>

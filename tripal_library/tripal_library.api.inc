@@ -103,3 +103,108 @@ function tripal_library_chado_libraryprop_schema() {
   
   return $description;
 }
+/**
+* Adds a single property to an existing library record.
+*
+* @ingroup tripal_api
+*/
+function tripal_library_get_property($library_id,$property){
+   // construct the array of values to be inserted  
+   $values = array (
+      'library_id' => $library_id,
+      'type_id' => array ( 
+         'cv_id' => array (
+            'name' => 'tripal',
+         ),
+         'name' => $property,
+         'is_obsolete' => 0
+      ),
+   );
+   $results = tripal_core_generate_chado_var('libraryprop',$values);
+   $results = tripal_core_expand_chado_vars($results,'field','libraryprop.value');
+   return $results;
+}
+/**
+* Adds a single property to an existing library record.
+*
+* @ingroup tripal_api
+*/
+function tripal_library_insert_property($library_id,$property,$value,$update_if_present = 0){
+   // first see if the property already exists, if so we can't insert
+   $prop = tripal_library_get_property($library_id,$property);
+   if(count($prop)>0){
+      if($update_if_present){
+        return tripal_library_update_property($library_id,$property,$value) ;
+      } else {
+        return FALSE;
+      }
+   }
+
+   // construct the array of values to be inserted  
+   $values = array (
+      'library_id' => $library_id,
+      'type_id' => array ( 
+         'cv_id' => array (
+            'name' => 'tripal',
+         ),
+         'name' => $property,
+         'is_obsolete' => 0
+      ),
+      'value' => $value, 
+      'rank' => 0,
+   );
+   return tripal_core_chado_insert('libraryprop',$values);
+}
+/**
+* Adds a single property to an existing library record.
+*
+* @ingroup tripal_api
+*/
+function tripal_library_update_property($library_id,$property,$value,$insert_if_missing = 0){
+
+   // first see if the property is missing (we can't update a missing property
+   $prop = tripal_library_get_property($library_id,$property);
+   if(count($prop)==0){
+      if($insert_if_missing){
+        return tripal_library_insert_property($library_id,$property,$value);
+      } else {
+        return FALSE;
+      }
+   }
+
+   // construct the array that will match the exact record to update
+   $match = array (
+      'library_id' => $library_id,
+      'type_id' => array ( 
+         'cv_id' => array (
+            'name' => 'tripal',
+         ),
+         'name' => $property,
+      ),
+   );
+   // construct the array of values to be updated
+   $values = array (      
+      'value' => $value, 
+   );
+   return tripal_core_chado_update('libraryprop',$match,$values);
+}
+/**
+* Adds a single property to an existing library record.
+*
+* @ingroup tripal_api
+*/
+function tripal_library_delete_property($library_id,$property){
+
+
+   // construct the array that will match the exact record to update
+   $match = array (
+      'library_id' => $library_id,
+      'type_id' => array ( 
+         'cv_id' => array (
+            'name' => 'tripal',
+         ),
+         'name' => $property,
+      ),
+   );
+   return tripal_core_chado_delete('libraryprop',$match);
+}
