@@ -832,98 +832,100 @@ function tripal_core_generate_chado_var($table, $values, $base_options=array()) 
   // get the values for the record in the current table---------------------------------------------
   $results = tripal_core_chado_select($table, $table_columns, $values,$base_options);   
   
-  foreach ($results as $key => $object) {
-    // Add empty expandable_x arrays
-    $object->expandable_fields = $all->expandable_fields;
-    $object->expandable_tables = $all->expandable_tables;
-    $object->expandable_nodes = $all->expandable_nodes;
-    
-    // add curent table
-    $object->tablename = $table;
-    
-    // check if the current table maps to a node type-----------------------------------------------
-    // if this table is connected to a node there will be a chado_tablename table in drupal
-    if (db_table_exists('chado_'.$table)) {
-      // that has a foreign key to this one ($table_desc['primary key'][0] 
-      // and to the node table (nid)
-      $sql = "SELECT %s, nid FROM chado_%s WHERE %s=%d";
-      $mapping = db_fetch_object(db_query(
-        $sql,
-        $table_primary_key,
-        $table,
-        $table_primary_key, 
-        $object->{$table_primary_key}
-      ));
-      if ($mapping->{$table_primary_key}) {
-        $object->nid = $mapping->nid;
-        $object->expandable_nodes[] = $table;
-      }
-    }
+  if($results){
+     foreach ($results as $key => $object) {
+       // Add empty expandable_x arrays
+       $object->expandable_fields = $all->expandable_fields;
+       $object->expandable_tables = $all->expandable_tables;
+       $object->expandable_nodes = $all->expandable_nodes;
+       
+       // add curent table
+       $object->tablename = $table;
+       
+       // check if the current table maps to a node type-----------------------------------------------
+       // if this table is connected to a node there will be a chado_tablename table in drupal
+       if (db_table_exists('chado_'.$table)) {
+         // that has a foreign key to this one ($table_desc['primary key'][0] 
+         // and to the node table (nid)
+         $sql = "SELECT %s, nid FROM chado_%s WHERE %s=%d";
+         $mapping = db_fetch_object(db_query(
+           $sql,
+           $table_primary_key,
+           $table,
+           $table_primary_key, 
+           $object->{$table_primary_key}
+         ));
+         if ($mapping->{$table_primary_key}) {
+           $object->nid = $mapping->nid;
+           $object->expandable_nodes[] = $table;
+         }
+       }
 
-    // remove any fields where criteria need to be evalulated---------------------------------------
-    foreach ($fields_to_remove as $field_name => $criteria) {
-      if (!isset($object->{$field_name})) { break; }
-      $criteria = preg_replace('/&gt;field_value&lt; /', $object->{$field_name}, $criteria);
-      //if criteria then remove from query
-      $success = drupal_eval('<?php return '.$criteria.'; ?>');
-//      watchdog('tripal_core', 
-//        'Evaluating criteria (%criteria) for field %field in tripal_core_generate_chado_var for   %table evaluated to %success',
-//        array('%table' => $table, '%criteria'=>$criteria, '%field' => $field_name, '%success'=>$success),
-//        WATCHDOG_NOTICE
-//      );
-      if ($success) {
-        unset($object->{$field_name});
-        $object->expandable_fields[] = $table . '.' . $field_name;
-      }      
-    }
-    
-    // recursively follow foreign key relationships nesting objects as we go------------------------
-    if ($table_desc['foreign keys']) {
-      foreach ($table_desc['foreign keys'] as $foreign_key_array) {
-        $foreign_table = $foreign_key_array['table'];
-        foreach ($foreign_key_array['columns'] as $foreign_key => $primary_key) {
-          // Note: Foreign key is the field in the current table whereas primary_key is the field in 
-          // the table referenced by the foreign key
-          
-          //Dont do anything if the foreign key is empty
-          if (empty($object->{$foreign_key})) {
-            break;
-          }
-          
-          // get the record from the foreign table
-          $foreign_values = array($primary_key => $object->{$foreign_key});
-          $foreign_object = tripal_core_generate_chado_var($foreign_table, $foreign_values);
-    
-          // add the foreign record to the current object in a nested manner
-          $object->{$foreign_key} = $foreign_object;
-          
-          // Flatten expandable_x arrays so only in the bottom object
-          if (is_array($object->{$foreign_key}->expandable_fields)) {
-            $object->expandable_fields = array_merge(
-              $object->expandable_fields, 
-              $object->{$foreign_key}->expandable_fields
-            );
-            unset($object->{$foreign_key}->expandable_fields);
-          }
-          if (is_array($object->{$foreign_key}->expandable_tables)) {
-            $object->expandable_tables = array_merge(
-              $object->expandable_tables, 
-              $object->{$foreign_key}->expandable_tables
-            );
-            unset($object->{$foreign_key}->expandable_tables);
-          }
-          if (is_array($object->{$foreign_key}->expandable_nodes)) {
-            $object->expandable_nodes = array_merge(
-              $object->expandable_nodes, 
-              $object->{$foreign_key}->expandable_nodes
-            );
-            unset($object->{$foreign_key}->expandable_nodes);
-          }
-        }
-      }    
-      
-      $results[$key] = $object;
-    }
+       // remove any fields where criteria need to be evalulated---------------------------------------
+       foreach ($fields_to_remove as $field_name => $criteria) {
+         if (!isset($object->{$field_name})) { break; }
+         $criteria = preg_replace('/&gt;field_value&lt; /', $object->{$field_name}, $criteria);
+         //if criteria then remove from query
+         $success = drupal_eval('<?php return '.$criteria.'; ?>');
+   //      watchdog('tripal_core', 
+   //        'Evaluating criteria (%criteria) for field %field in tripal_core_generate_chado_var for   %table evaluated to %success',
+   //        array('%table' => $table, '%criteria'=>$criteria, '%field' => $field_name, '%success'=>$success),
+   //        WATCHDOG_NOTICE
+   //      );
+         if ($success) {
+           unset($object->{$field_name});
+           $object->expandable_fields[] = $table . '.' . $field_name;
+         }      
+       }
+       
+       // recursively follow foreign key relationships nesting objects as we go------------------------
+       if ($table_desc['foreign keys']) {
+         foreach ($table_desc['foreign keys'] as $foreign_key_array) {
+           $foreign_table = $foreign_key_array['table'];
+           foreach ($foreign_key_array['columns'] as $foreign_key => $primary_key) {
+             // Note: Foreign key is the field in the current table whereas primary_key is the field in 
+             // the table referenced by the foreign key
+             
+             //Dont do anything if the foreign key is empty
+             if (empty($object->{$foreign_key})) {
+               break;
+             }
+             
+             // get the record from the foreign table
+             $foreign_values = array($primary_key => $object->{$foreign_key});
+             $foreign_object = tripal_core_generate_chado_var($foreign_table, $foreign_values);
+       
+             // add the foreign record to the current object in a nested manner
+             $object->{$foreign_key} = $foreign_object;
+             
+             // Flatten expandable_x arrays so only in the bottom object
+             if (is_array($object->{$foreign_key}->expandable_fields)) {
+               $object->expandable_fields = array_merge(
+                 $object->expandable_fields, 
+                 $object->{$foreign_key}->expandable_fields
+               );
+               unset($object->{$foreign_key}->expandable_fields);
+             }
+             if (is_array($object->{$foreign_key}->expandable_tables)) {
+               $object->expandable_tables = array_merge(
+                 $object->expandable_tables, 
+                 $object->{$foreign_key}->expandable_tables
+               );
+               unset($object->{$foreign_key}->expandable_tables);
+             }
+             if (is_array($object->{$foreign_key}->expandable_nodes)) {
+               $object->expandable_nodes = array_merge(
+                 $object->expandable_nodes, 
+                 $object->{$foreign_key}->expandable_nodes
+               );
+               unset($object->{$foreign_key}->expandable_nodes);
+             }
+           }
+         }    
+         
+         $results[$key] = $object;
+       }
+     }
   }
   
     // check only one result returned
