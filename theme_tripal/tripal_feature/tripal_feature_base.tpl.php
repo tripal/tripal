@@ -4,7 +4,7 @@ $feature  = $variables['node']->feature;
 
 ?>
 <div id="tripal_feature-base-box" class="tripal_feature-info-box tripal-info-box">
-  <div class="tripal_feature-info-box-title tripal-info-box-title">Feature Details</div>
+  <div class="tripal_feature-info-box-title tripal-info-box-title"><?php print $feature->type_id->name ?>Details</div>
   <div class="tripal_feature-info-box-desc tripal-info-box-desc"></div>
 
    <?php if(strcmp($feature->is_obsolete,'t')==0){ ?>
