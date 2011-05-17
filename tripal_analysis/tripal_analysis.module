@@ -319,7 +319,6 @@ function chado_analysis_form ($node){
       '#default_value' => $node->analysis->name,
       '#description' => t("This should be a handy short identifier that 
          describes the analysis succintly as possible which helps the user find analyses."),
-      '#weight' => 1
 	);
 	$form['program']= array(
       '#type' => 'textfield',
@@ -327,7 +326,6 @@ function chado_analysis_form ($node){
       '#required' => TRUE,
       '#default_value' => $node->analysis->program,
       '#description' => t("Program name, e.g. blastx, blastp, sim4, genscan."),
-      '#weight' => 2
 	);
 	$form['programversion']= array(
       '#type' => 'textfield',
@@ -335,7 +333,6 @@ function chado_analysis_form ($node){
       '#required' => TRUE,
       '#default_value' => $node->analysis->programversion,
       '#description' => t("Version description, e.g. TBLASTX 2.0MP-WashU [09-Nov-2000]"),
-      '#weight' => 3
 	);
 	$form['algorithm']= array(
       '#type' => 'textfield',
@@ -343,7 +340,6 @@ function chado_analysis_form ($node){
       '#required' => FALSE,
       '#default_value' => $node->analysis->algorithm,
       '#description' => t("Algorithm name, e.g. blast."),
-      '#weight' => 4
 	);
 	$form['sourcename']= array(
       '#type' => 'textfield',
@@ -353,7 +349,6 @@ function chado_analysis_form ($node){
       '#description' => t('The name of the source data.  This could be a file name, data set name or a 
            small description for how the data was collected.  For long descriptions use the description field below'),
 
-      '#weight' => 5
 	);
 	$form['sourceversion']= array(
       '#type' => 'textfield',
@@ -361,7 +356,6 @@ function chado_analysis_form ($node){
       '#required' => FALSE,
       '#default_value' => $node->analysis->sourceversion,
       '#description' => t('If the source dataset has a version, include it here'),
-      '#weight' => 6
 	);
 	$form['sourceuri']= array(
       '#type' => 'textfield',
@@ -371,7 +365,6 @@ function chado_analysis_form ($node){
       '#description' => t("This is a permanent URL or URI for the source of the analysis. 
          Someone could recreate the analysis directly by going to this URI and 
          fetching the source data (e.g. the blast database, or the training model)."),
-      '#weight' => 7
 	);
 	// Get time saved in chado
 	$default_time = $node->analysis->timeexecuted;
@@ -393,8 +386,7 @@ function chado_analysis_form ($node){
          'year' => $year,
          'month' => $month,
          'day' => $day,
-	),
-      '#weight' => 8
+	    ),
 	);
 	$form['description']= array(
       '#type' => 'textarea',
@@ -405,7 +397,6 @@ function chado_analysis_form ($node){
       '#description' => t('Please provide all necessary information to allow
          someone to recreate the analysis, including materials and methods
          for collection of the source data and performing the analysis'),
-      '#weight' => 9
 	);
 	
 	return $form;

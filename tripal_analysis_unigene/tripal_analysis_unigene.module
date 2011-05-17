@@ -66,9 +66,6 @@ function chado_analysis_unigene_access($op, $node, $account){
 */
 function chado_analysis_unigene_form ($node){
 
-   // add in the default fields
-   $form = chado_analysis_form($node);
-
    $unigene = $node->analysis->tripal_analysis_unigene;
 
    // set the form defaults
@@ -92,6 +89,10 @@ function chado_analysis_unigene_form ($node){
    if(!$num_singlets){
       $num_singlets = $unigene->num_singlets;
    }
+
+
+   // add in the default fields for an analysis
+   $form = chado_analysis_form($node);
 
 	$form['unigene_name'] = array(
       '#title' => t('Unigene Name'),
