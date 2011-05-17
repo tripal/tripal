@@ -237,13 +237,13 @@ function tripal_analysis_unigene_nodeapi(&$node, $op, $teaser, $page) {
                if(strcmp($node->type,'chado_organism')==0){
                   $node->content['tripal_organism_unigenes'] = array(
 					   	'#value' => theme('tripal_organism_unigenes', $node),
-						   '#weight' => 4
+						'#weight' => 4
                   );
                }
                if(strcmp($node->type,'chado_feature')==0){
                   $node->content['tripal_feature_unigenes'] = array(
 					   	'#value' => theme('tripal_feature_unigenes', $node),
-						   '#weight' => 4
+						'#weight' => 4
                   );
                }
             }
@@ -267,6 +267,10 @@ function tripal_analysis_unigene_theme () {
       'tripal_organism_unigenes' => array (
          'arguments' => array('node'=> null),
          'template' => 'tripal_organism_unigenes',
+      ),
+      'tripal_feature_unigenes' => array (
+         'arguments' => array('node'=> null),
+         'template' => 'tripal_feature_unigenes',
       ),
       'tripal_analysis_unigene_base' => array (
          'arguments' => array('node'=> null),
@@ -672,7 +676,7 @@ function tripal_analysis_unigene_load_feature_unigenes($feature){
       $analysis_id = $unigene->analysis_id;
 
       // check if this feature is present in the unigene
-      $values = (
+      $values = array(
          'feature_id' => $feature->feature_id,
          'analysis_id' => $analysis_id,
       );

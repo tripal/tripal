@@ -193,7 +193,7 @@ function tripal_get_feature_blast_results($feature_id, $db_id, $max){
       // particular we need the database setting
       $blast_settings  = tripal_analysis_get_property($analysis_id,'analysis_blast_settings');	
       if($blast_settings){
-		   $blastsettings = explode("|", $blast_settings[0]->value);
+		   $blastsettings = explode("|", $blast_settings->value);
          // if we don't have the proper number of fields in the value column then
          // skip this entry
          if(count($blastsettings) != 3){

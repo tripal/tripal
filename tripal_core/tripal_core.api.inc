@@ -1269,7 +1269,7 @@ function chado_get_node_id ($table, $id) {
 *
 * @ingroup tripal_api
 */
-function tripal_core_get_property($basetable, $record_id, $property,$cv_name,){
+function tripal_core_get_property($basetable, $record_id, $property,$cv_name){
 
    $table_desc = module_invoke_all('chado_'.$basetable.'prop_schema');
    $fkcol = key($table_desc['foreign_keys'][$basetable]['columns']);
