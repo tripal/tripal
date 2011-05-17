@@ -427,35 +427,37 @@ function tripal_get_interpro_XML_results($feature_id){
 
    // iterate through all of the interpro XML properties for this feature
 	$results = array ();
-	foreach ($afeatureprops as $index => $afeatureprop) {
+   if($afeatureprops){
+	   foreach ($afeatureprops as $index => $afeatureprop) {
 
-      // get the analysis feature record
-      $analysisfeature_arr = tripal_core_chado_select('analysisfeature',array('analysis_id'),
-         array('analysisfeature_id' => $afeatureprop->analysisfeature_id));
-      $analysisfeature = $analysisfeature_arr[0];
+         // get the analysis feature record
+         $analysisfeature_arr = tripal_core_chado_select('analysisfeature',array('analysis_id'),
+            array('analysisfeature_id' => $afeatureprop->analysisfeature_id));
+         $analysisfeature = $analysisfeature_arr[0];
 
-      // get the analysis record and the analysis_id
-      $analysis = tripal_core_generate_chado_var('analysis',
-         array('analysis_id' => $analysisfeature->analysis_id));
-      $analysis_id = $analysis->analysis_id;
+         // get the analysis record and the analysis_id
+         $analysis = tripal_core_generate_chado_var('analysis',
+            array('analysis_id' => $analysisfeature->analysis_id));
+         $analysis_id = $analysis->analysis_id;
 
-      // parse the XML and add it to the array of blast results to be returned
-      $interpro_xml = $afeatureprop->value;
-      $orf = tripal_analysis_interpro_get_result_object($interpro_xml,$feature_id);
-		$results[$analysis->analysis_id]['protein_ORFs'][] = $orf;
-      $results[$analysis->analysis_id]['analysis'] = $analysis;
+         // parse the XML and add it to the array of blast results to be returned
+         $interpro_xml = $afeatureprop->value;
+         $orf = tripal_analysis_interpro_get_result_object($interpro_xml,$feature_id);
+		   $results[$analysis->analysis_id]['protein_ORFs'][] = $orf;
+         $results[$analysis->analysis_id]['analysis'] = $analysis;
 
-      // iterate through all of the protein ORFs and combine the terms into one large list
-      if(!is_array($results[$analysis->analysis_id]['allterms'])){
-        $results[$analysis->analysis_id]['allterms'] = array();
-      }
-      if(!is_array($results[$analysis->analysis_id]['goterms'])){
-        $results[$analysis->analysis_id]['goterms'] = array();
-      }
-      $results[$analysis->analysis_id]['allterms'] = array_merge($results[$analysis->analysis_id]['allterms'],$orf['iprterms']);
-      $results[$analysis->analysis_id]['goterms'] = array_merge($results[$analysis->analysis_id]['goterms'],$orf['goterms']);
-      $i++;
-	}
+         // iterate through all of the protein ORFs and combine the terms into one large list
+         if(!is_array($results[$analysis->analysis_id]['allterms'])){
+           $results[$analysis->analysis_id]['allterms'] = array();
+         }
+         if(!is_array($results[$analysis->analysis_id]['goterms'])){
+           $results[$analysis->analysis_id]['goterms'] = array();
+         }
+         $results[$analysis->analysis_id]['allterms'] = array_merge($results[$analysis->analysis_id]['allterms'],$orf['iprterms']);
+         $results[$analysis->analysis_id]['goterms'] = array_merge($results[$analysis->analysis_id]['goterms'],$orf['goterms']);
+         $i++;
+	   }
+   }
    return $results;
 }
 /*******************************************************************************
