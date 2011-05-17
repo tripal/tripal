@@ -70,11 +70,28 @@ function chado_analysis_unigene_form ($node){
    $form = chado_analysis_form($node);
 
    $unigene = $node->analysis->tripal_analysis_unigene;
-   $unigene_name = $unigene->unigene_name;
-   $num_reads    = $unigene->num_reads;
-   $num_clusters = $unigene->num_clusters;
-   $num_contigs = $unigene->num_contigs;
-   $num_singlets = $unigene->num_singlets;
+
+   // set the form defaults
+   $unigene_name = $node->unigene_name;
+   if(!$unigene_name){
+      $unigene_name = $unigene->unigene_name;
+   }
+   $num_reads = $node->num_reads;
+   if(!$num_reads){
+      $num_reads    = $unigene->num_reads;
+   }
+   $num_clusters = $node->num_clusters;
+   if(!$num_clusters){
+      $num_clusters = $unigene->num_clusters;
+   }
+   $num_contigs = $node->num_contigs;
+   if(!$num_contigs){
+      $num_contigs = $unigene->num_contigs;
+   }
+   $num_singlets = $node->num_singlets;
+   if(!$num_singlets){
+      $num_singlets = $unigene->num_singlets;
+   }
 
 	$form['unigene_name'] = array(
       '#title' => t('Unigene Name'),
@@ -115,6 +132,7 @@ function chado_analysis_unigene_form ($node){
       '#description' => t('Provide the number of singlets remaining in the assembly'),
       '#default_value' => $num_singlets,
 	);
+   return $form;
 }
 /**
 *
