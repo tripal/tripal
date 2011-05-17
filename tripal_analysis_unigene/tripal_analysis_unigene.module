@@ -240,6 +240,12 @@ function tripal_analysis_unigene_nodeapi(&$node, $op, $teaser, $page) {
 						   '#weight' => 4
                   );
                }
+               if(strcmp($node->type,'chado_feature')==0){
+                  $node->content['tripal_feature_unigenes'] = array(
+					   	'#value' => theme('tripal_feature_unigenes', $node),
+						   '#weight' => 4
+                  );
+               }
             }
          }
       break;   
@@ -277,6 +283,15 @@ function tripal_analysis_unigene_preprocess_tripal_organism_unigenes(&$variables
    $organism = $node->organism;
    $unigenes = tripal_analysis_unigene_load_organism_unigenes($organism);
    $node->organism->tripal_analysis_unigene->unigenes =  $unigenes;
+}
+/*******************************************************************************
+ *  
+ */
+function tripal_analysis_unigene_preprocess_tripal_feature_unigenes(&$variables){
+   $node = $variables['node'];
+   $feature = $node->feature;
+   $unigenes = tripal_analysis_unigene_load_feature_unigenes($feature);
+   $node->feature->tripal_analysis_unigene->unigenes =  $unigenes;
 }
 /************************************************************************
  *  This function is an extension of the chado_feature_view by providing
@@ -632,6 +647,53 @@ function tripal_analysis_unigene_load_organism_unigenes($organism){
       $unigene->num_singlets = $num_singlets->value;
 
       $unigenes[$i++] = $unigene;
+   }
+   return $unigenes;
+}
+/************************************************************************
+*
+*/   
+function tripal_analysis_unigene_load_feature_unigenes($feature){
+
+   // first get all the unigene analyses for this organism
+   $sql = "SELECT * FROM {organism_unigene_mview} OUM ".
+          "  INNER JOIN {analysis} A  ON A.analysis_id = OUM.analysis_id ".
+          "WHERE OUM.organism_id = %d ".
+          "ORDER BY A.timeexecuted DESC";
+   $previous_db = tripal_db_set_active('chado');  // use chado database
+   $results = db_query($sql,$feature->organism_id->organism_id);
+   tripal_db_set_active($previous_db);  // now use drupal database
+
+   // iterate through the unigenes and find those that use this feature
+   $unigenes = array();
+   $i=0;
+   $sql = "SELECT nid FROM {chado_analysis} WHERE analysis_id = %d";
+   while($unigene = db_fetch_object($results)){
+      $analysis_id = $unigene->analysis_id;
+
+      // check if this feature is present in the unigene
+      $values = (
+         'feature_id' => $feature->feature_id,
+         'analysis_id' => $analysis_id,
+      );
+      $hasFeature = tripal_core_chado_select('featureprop',array('*'),$values);
+      
+      // if the feature is present then get information about it
+      if(sizeof($hasFeature) > 0){
+         // see if there is a drupal node for this unigene
+         $c_node = db_fetch_object(db_query($sql,$analysis_id));
+         if($c_node){  
+            $unigene->nid = $c_node->nid;
+         }
+         // add in the properties
+         $unigene_name = tripal_analysis_get_property($analysis_id,'analysis_unigene_name');
+         $singlet = tripal_core_get_property('analysisfeature',$analysis_id,'singlet','tripal');       
+         
+         $unigene->unigene_name = $unigene_name->value;    
+         $unigene->singlet = $num_singlets->value;
+
+         $unigenes[$i++] = $unigene;
+      }
    }
    return $unigenes;
 }

@@ -1263,3 +1263,112 @@ function chado_get_id_for_node ($table, $node) {
 function chado_get_node_id ($table, $id) {
 	 return db_result(db_query("SELECT nid FROM {chado_".$table."} WHERE $table"."_id = $id"));
 }
+
+/**
+* Adds a single property to an existing library record.
+*
+* @ingroup tripal_api
+*/
+function tripal_core_get_property($basetable, $record_id, $property,$cv_name,){
+
+   $table_desc = module_invoke_all('chado_'.$basetable.'prop_schema');
+   $fkcol = key($table_desc['foreign_keys'][$basetable]['columns']);
+
+   // construct the array of values to be inserted  
+   $values = array (
+      $fkcol => $record_id,
+      'type_id' => array ( 
+         'cv_id' => array (
+            'name' => $cv_name,
+         ),
+         'name' => $property,
+         'is_obsolete' => 0
+      ),
+   );
+   $results = tripal_core_generate_chado_var($basetable.'prop',$values);
+   $results = tripal_core_expand_chado_vars($results,'field',$basetable.'prop.value');
+   return $results;
+}
+/**
+* Adds a single property to an existing record.
+*
+* @ingroup tripal_core.api
+*/
+function tripal_core_insert_property($proptable, $feature_id,$property,$value,$update_if_present = 0){
+   // first see if the property already exists, if so we can't insert
+   $prop = tripal_feature_get_property($feature_id,$property);
+   if(count($prop)>0){
+      if($update_if_present){
+        return tripal_feature_update_property($feature_id,$property,$value) ;
+      } else {
+        return FALSE;
+      }
+   }
+
+   // construct the array of values to be inserted  
+   $values = array (
+      'feature_id' => $feature_id,
+      'type_id' => array ( 
+         'cv_id' => array (
+            'name' => 'tripal',
+         ),
+         'name' => $property,
+         'is_obsolete' => 0
+      ),
+      'value' => $value, 
+      'rank' => 0,
+   );
+   return tripal_core_chado_insert('featureprop',$values);
+}
+/**
+* Adds a single property to an existing feature record.
+*
+* @ingroup tripal_api
+*/
+function tripal_core_update_property($proptable, $feature_id,$property,$value,$insert_if_missing = 0){
+
+   // first see if the property is missing (we can't update a missing property
+   $prop = tripal_feature_get_property($feature_id,$property);
+   if(count($prop)==0){
+      if($insert_if_missing){
+        return tripal_feature_insert_property($feature_id,$property,$value);
+      } else {
+        return FALSE;
+      }
+   }
+
+   // construct the array that will match the exact record to update
+   $match = array (
+      'feature_id' => $feature_id,
+      'type_id' => array ( 
+         'cv_id' => array (
+            'name' => 'tripal',
+         ),
+         'name' => $property,
+      ),
+   );
+   // construct the array of values to be updated
+   $values = array (      
+      'value' => $value, 
+   );
+   return tripal_core_chado_update('featureprop',$match,$values);
+}
+/**
+* Adds a single property to an existing feature record.
+*
+* @ingroup tripal_api
+*/
+function tripal_core_delete_property($proptable, $feature_id,$property){
+
+   // construct the array that will match the exact record to update
+   $match = array (
+      'feature_id' => $feature_id,
+      'type_id' => array ( 
+         'cv_id' => array (
+            'name' => 'tripal',
+         ),
+         'name' => $property,
+      ),
+   );
+   return tripal_core_chado_delete('featureprop',$match);
+}
