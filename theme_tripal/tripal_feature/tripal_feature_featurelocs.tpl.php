@@ -23,7 +23,7 @@ if (!$sfeaturelocs) {
 }
 
 ?>
-<div id="tripal_feature-featurelocs_as_child-box" class="tripal_feature-info-box tripal-info-box">
+<div id="tripal_feature-featurelocs-box" class="tripal_feature-info-box tripal-info-box">
   <div class="tripal_feature-info-box-title tripal-info-box-title">Alignments</div>
   <div class="tripal_feature-info-box-desc tripal-info-box-desc"><?php print $feature->name;?> is aligined to the following</div>
   <?php if(count($ffeaturelocs) > 0){ ?>
