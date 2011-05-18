@@ -9,11 +9,15 @@ $unigene = $node->analysis->tripal_analysis_unigene;
   <div class="tripal_analysis_unigene-info-box-title tripal-info-box-title">Unigene Details</div>
   <div class="tripal_analysis_unigene-info-box-desc tripal-info-box-desc"></div>
    <table id="tripal_analysis_unigene-table-base" class="tripal_analysis_unigene-table tripal-table tripal-table-vert">
-      <tr class="tripal_analysis_unigene-table-odd-row tripal-table-even-row">
+      <tr class="tripal_analysis_unigene-table-even-row tripal-table-even-row">
         <th>Analysis Name</th>
         <td><?php print $analysis->name; ?></td>
       </tr>
-      <tr class="tripal_analysis_unigene-table-odd-row tripal-table-even-row">
+      <tr class="tripal_analysis_unigene-table-odd-row tripal-table-odd-row">
+        <th>Unigene Name</th>
+        <td><?php print $unigene->unigene_name; ?></td>
+      </tr>
+      <tr class="tripal_analysis_unigene-table-even-row tripal-table-even-row">
         <th nowrap>Software</th>
         <td><?php 
           print $analysis->program; 
@@ -40,7 +44,7 @@ $unigene = $node->analysis->tripal_analysis_unigene;
           ?>
           </td>
       </tr>
-      <tr class="tripal_analysis_unigene-table-odd-row tripal-table-even-row">
+      <tr class="tripal_analysis_unigene-table-even-row tripal-table-even-row">
         <th nowrap>Date constructed</th>
         <td><?php print preg_replace("/^(\d+-\d+-\d+) .*/","$1",$analysis->timeexecuted); ?></td>
       </tr>
