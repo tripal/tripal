@@ -91,8 +91,8 @@ if (Drupal.jsEnabled) {
 
 <!-- Table of contents -->
 <div id="tripal_analysis_unigene_toc" class="tripal_toc">
-   <div id="tripal_analysis_unigene_toc_title" class="tripal_toc_title">Resources for Unigene <?php print $unigene_name ?></div>
-   <span id="tripal_analysis_unigene_toc_desc" class="tripal_toc_desc">Select a link below for more information</span>
+   <div id="tripal_analysis_unigene_toc_title" class="tripal_toc_title">Resources</div>
+   <span id="tripal_analysis_unigene_toc_desc" class="tripal_toc_desc"></span>
    <ul id="tripal_analysis_unigene_toc_list" class="tripal_toc_list">
 
    </ul>

@@ -2,6 +2,10 @@
 $node = $variables['node'];
 $analysis = $variables['node']->analysis;
 
+// the description is a text field so we want to expand that
+$analysis = tripal_core_expand_chado_vars($analysis,'field','analysis.description');
+
+
 ?>
 <div id="tripal_analysis_kegg-base-box" class="tripal_analysis_kegg-info-box tripal-info-box">
   <div class="tripal_analysis_kegg-info-box-title tripal-info-box-title">KEGG Analysis Details</div>

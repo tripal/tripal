@@ -154,8 +154,8 @@ drupal_add_css('./tripal-node-templates.css');
 
 <!-- Table of contents -->
 <div id="tripal_stock_toc" class="tripal_toc">
-   <div id="tripal_stock_toc_title" class="tripal_toc_title"><?php print $node->stock_name ?></div>
-   <span id="tripal_stock_toc_desc" class="tripal_toc_desc">Select a link below for more information</span>
+   <div id="tripal_stock_toc_title" class="tripal_toc_title">Resources</div>
+   <span id="tripal_stock_toc_desc" class="tripal_toc_desc"></span>
    <ul id="tripal_stock_toc_list" class="tripal_toc_list">
 
    </ul>

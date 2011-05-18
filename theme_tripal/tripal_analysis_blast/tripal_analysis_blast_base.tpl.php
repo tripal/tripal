@@ -1,7 +1,14 @@
 <?php
 $node = $variables['node'];
 $analysis = $variables['node']->analysis;
+
+// the description is a text field so we want to expand that
+$analysis = tripal_core_expand_chado_vars($analysis,'field','analysis.description');
+
+// get the blast data 
 $blast = $node->analysis->tripal_analysis_blast;
+
+//dpm($analysis);
 
 ?>
 <div id="tripal_analysis_blast-base-box" class="tripal_analysis_blast-info-box tripal-info-box">

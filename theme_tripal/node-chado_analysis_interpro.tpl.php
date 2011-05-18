@@ -89,7 +89,7 @@ if (Drupal.jsEnabled) {
 <!-- Table of contents -->
 <div id="tripal_analysis_interpro_toc" class="tripal_toc">
    <div id="tripal_analysis_interpro_toc_title" class="tripal_toc_title">Resources</i></div>
-   <span id="tripal_analysis_interpro_toc_desc" class="tripal_toc_desc">Select a link below for more information</span>
+   <span id="tripal_analysis_interpro_toc_desc" class="tripal_toc_desc"></span>
    <ul id="tripal_analysis_interpro_toc_list" class="tripal_toc_list">
 
    </ul>

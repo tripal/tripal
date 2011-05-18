@@ -1,6 +1,10 @@
 <?php
 $node = $variables['node'];
 $analysis = $variables['node']->analysis;
+
+// the description is a text field so we want to expand that
+$analysis = tripal_core_expand_chado_vars($analysis,'field','analysis.description');
+
 $interpro = $node->analysis->tripal_analysis_interpro;
 
 ?>
