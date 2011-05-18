@@ -1272,8 +1272,7 @@ function chado_get_node_id ($table, $id) {
 function tripal_core_get_property($basetable, $record_id, $property,$cv_name){
 
    $table_desc = module_invoke_all('chado_'.$basetable.'prop_schema');
-   $fkcol = key($table_desc['foreign_keys'][$basetable]['columns']);
-
+   $fkcol = key($table_desc['foreign keys'][$basetable]['columns']);
    // construct the array of values to be inserted  
    $values = array (
       $fkcol => $record_id,

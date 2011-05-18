@@ -715,7 +715,7 @@ function tripal_analysis_unigene_load_feature_unigenes($feature){
          'feature_id' => $feature->feature_id,
          'analysis_id' => $analysis_id,
       );
-      $hasFeature = tripal_core_chado_select('analysisfeatureprop',array('*'),$values);
+      $hasFeature = tripal_core_chado_select('analysisfeature',array('*'),$values);
       
       // if the feature is present then get information about it
       if(sizeof($hasFeature) > 0){

@@ -10,7 +10,7 @@ if($unigenes){
 <div id="tripal_feature-unigenes-box" class="tripal_feature-info-box tripal-info-box">
   <div class="tripal_feature-info-box-title tripal-info-box-title">Unigenes</div>
   <div class="tripal_feature-info-box-desc tripal-info-box-desc">This <?php print $feature->type_id->name ?> is part of the following unigenes:</div>
-  <?php if(count($unigenes) > 0){ ?>h
+  <?php if(count($unigenes) > 0){ ?>
   <table id="tripal_feature-unigenes-table" class="tripal_feature-table tripal-table tripal-table-horz">
     <tr>
       <th>Unigene Name</th>
