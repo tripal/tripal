@@ -5,7 +5,7 @@ $unigenes = $feature->tripal_analysis_unigene->unigenes;
 
 // if this feature has a unigene then we want to show the box
 if($unigenes){
-  dpm($unigenes);
+  //dpm($unigenes);
 ?>
 <div id="tripal_feature-unigenes-box" class="tripal_feature-info-box tripal-info-box">
   <div class="tripal_feature-info-box-title tripal-info-box-title">Unigenes</div>
