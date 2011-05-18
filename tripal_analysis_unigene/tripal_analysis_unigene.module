@@ -106,7 +106,16 @@ function chado_analysis_unigene_form ($node){
       '#default_value' => $unigene_name,
 	);
 
-	$form['num_reads'] = array(
+
+	$form['unigene_stats'] = array(
+      '#title' => t('Unigene Stats'),
+      '#type' => 'fieldset',
+      '#description' => t('Unigene, contig and singlet statistics'),
+      '#collapsible' => TRUE,
+	);
+
+   
+	$form['unigene_stats']['num_reads'] = array(
       '#title' => t('Number of Reads'),
       '#type' => 'textfield',
       '#required' => FALSE,
@@ -114,15 +123,15 @@ function chado_analysis_unigene_form ($node){
       '#default_value' => $num_reads,
 	);
 
-	$form['avg_length'] = array(
+	$form['unigene_stats']['avg_length'] = array(
       '#title' => t('Average Contig Length'),
       '#type' => 'textfield',
       '#required' => FALSE,
-      '#description' => t('Provide the average contig length.'),
+      '#description' => t('Provide the average sequence length in the ungiene (average of contigs and signlets).'),
       '#default_value' => $avg_length,
 	);
 
-	$form['num_clusters'] = array(
+	$form['unigene_stats']['num_clusters'] = array(
       '#title' => t('Number of Clusters'),
       '#type' => 'textfield',
       '#required' => FALSE,
@@ -130,7 +139,7 @@ function chado_analysis_unigene_form ($node){
       '#default_value' => $num_clusters,
 	);
 
-	$form['num_contigs'] = array(
+	$form['unigene_stats']['num_contigs'] = array(
       '#title' => t('Number of Contigs'),
       '#type' => 'textfield',
       '#required' => FALSE,
@@ -138,7 +147,7 @@ function chado_analysis_unigene_form ($node){
       '#default_value' => $num_contigs,
 	);
 
-	$form['num_singlets'] = array(
+	$form['unigene_stats']['num_singlets'] = array(
       '#title' => t('Number of Singlets'),
       '#type' => 'textfield',
       '#required' => FALSE,
