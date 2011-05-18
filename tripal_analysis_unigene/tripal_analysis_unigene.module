@@ -93,6 +93,30 @@ function chado_analysis_unigene_form ($node){
    if(!$num_singlets){
       $num_singlets = $unigene->num_singlets;
    }
+   $contig_min_len= $node->contig_min_len;
+   if(!$contig_min_len){
+      $contig_min_len = $unigene->contig_min_len;
+   }
+   $contig_max_len= $node->contig_max_len;
+   if(!$contig_max_len){
+      $contig_max_len = $unigene->contig_max_len;
+   }
+   $contig_avg_len= $node->contig_avg_len;
+   if(!$contig_avg_len){
+      $contig_avg_len = $unigene->contig_avg_len;
+   }
+   $singlet_min_len= $node->singlet_min_len;
+   if(!$singlet_min_len){
+      $singlet_min_len = $unigene->singlet_min_len;
+   }
+   $singlet_max_len= $node->singlet_max_len;
+   if(!$singlet_max_len){
+      $singlet_max_len = $unigene->singlet_max_len;
+   }
+   $singlet_avg_len= $node->singlet_avg_len;
+   if(!$singlet_avg_len){
+      $singlet_avg_len = $unigene->singlet_avg_len;
+   }
 
 
    // add in the default fields for an analysis
@@ -153,6 +177,64 @@ function chado_analysis_unigene_form ($node){
       '#required' => FALSE,
       '#description' => t('Provide the number of singlets remaining in the assembly'),
       '#default_value' => $num_singlets,
+	);
+
+
+	$form['contig_stats'] = array(
+      '#title' => t('Contig Stats'),
+      '#type' => 'fieldset',
+      '#description' => t('Unigene Contig statistics'),
+      '#collapsible' => TRUE,
+	);
+	$form['unigene_stats']['contig_min_len'] = array(
+      '#title' => t('Minimum Contig Length'),
+      '#type' => 'textfield',
+      '#required' => FALSE,
+      '#description' => t('Provide the length of the smallest contig'),
+      '#default_value' => $contig_min_len,
+	);
+	$form['unigene_stats']['contig_max_len'] = array(
+      '#title' => t('Maximum Contig Length'),
+      '#type' => 'textfield',
+      '#required' => FALSE,
+      '#description' => t('Provide the length of the largest contig'),
+      '#default_value' => $contig_max_len,
+	);
+	$form['unigene_stats']['contig_avg_len'] = array(
+      '#title' => t('Average Contig Length'),
+      '#type' => 'textfield',
+      '#required' => FALSE,
+      '#description' => t('Provide the average contig length'),
+      '#default_value' => $contig_avg_len,
+	);
+
+
+	$form['singlet_stats'] = array(
+      '#title' => t('Singlet Stats'),
+      '#type' => 'fieldset',
+      '#description' => t('Unigene Singlet statistics'),
+      '#collapsible' => TRUE,
+	);
+	$form['singlet_stats']['singlet_min_len'] = array(
+      '#title' => t('Minimum Singlet Length'),
+      '#type' => 'textfield',
+      '#required' => FALSE,
+      '#description' => t('Provide the length of the smallest singlet'),
+      '#default_value' => $singlet_min_len,
+	);
+	$form['singlet_stats']['singlet_max_len'] = array(
+      '#title' => t('Maximum Singlet Length'),
+      '#type' => 'textfield',
+      '#required' => FALSE,
+      '#description' => t('Provide the length of the largest singlet'),
+      '#default_value' => $singlet_max_len,
+	);
+	$form['singlet_stats']['singlet_avg_len'] = array(
+      '#title' => t('Average Singlet Length'),
+      '#type' => 'textfield',
+      '#required' => FALSE,
+      '#description' => t('Provide the average singlet length'),
+      '#default_value' => $singlet_avg_len,
 	);
    return $form;
 }
