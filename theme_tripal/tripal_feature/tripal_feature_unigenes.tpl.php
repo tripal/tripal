@@ -26,15 +26,20 @@ if($unigenes){
       }
       ?>
       <tr class="<?php print $class ?>">
-        <td>
-           <?php 
+        <td><?php 
            if($unigene->nid){
               print "<a href=\"".url("node/$unigene->nid")."\">$unigene->unigene_name</a>";
            } else {
               print $unigene->unigene_name;
            }?>
         </td>
-        <td><?php print $unigene->name; ?></td>
+        <td><?php 
+           if($analysis->nid){
+              print "<a href=\"".url("node/$analysis->nid")."\">$analysis->name</a>";
+           } else {
+              print $analysis->name;
+           }?>
+        </td>
         <td nowrap><?php 
            if($unigene->singlet){
               print "Singlet";
