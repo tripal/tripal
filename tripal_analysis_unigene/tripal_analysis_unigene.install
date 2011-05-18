@@ -45,6 +45,20 @@ function tripal_analysis_unigene_update_6000(){
    }
    tripal_analysis_unigene_add_organism_unigene_mview();
 
+
+   // next, add the cvterm 'analysis_unigene_name' to all existing 
+   // unigenes that are already in the database. This will allow the 
+   // materialized view to work.
+   $sql = "SELECT N.nid,N.title,CN.analysis_id
+           FROM {node} N
+             INNER JOIN {chado_analysis} CN on CN.nid = N.nid
+           WHERE type = 'chado_analysis_unigene'";
+   $analyses = db_query($sql);
+   while($analysis = db_fetch_object($analyses)){
+      tripal_analysis_insert_property($analysis->analysis_id,'analysis_unigene_name',$analysis->title);	
+   }
+   
+
    $ret = array(
       '#finished' => 1,
    );
