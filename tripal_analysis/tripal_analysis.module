@@ -305,6 +305,10 @@ function chado_analysis_form ($node){
 
    $analysis = $node->analysis;
 
+   // add in the description column. It is a text field and may not be included
+   // if the text is too big.
+   $analysis = tripal_core_expand_chado_vars($analysis,'field','analysis.description');
+
    // get form defaults
    $analysis_id = $node->analysis_id;
    if(!$analysis_id){
