@@ -68,7 +68,7 @@ function tripal_analysis_chado_analysisfeature_schema() {
 function tripal_analysis_chado_analysisfeatureprop_schema() {
   $description = array();
 
-  $description['foreign keys']['analysisfeature_id'] = array(
+  $description['foreign keys']['analysisfeature'] = array(
         'table' => 'analysisfeature',
         'columns' => array(
           'analysisfeature_id' => 'analysisfeature_id',
