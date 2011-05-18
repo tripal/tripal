@@ -57,7 +57,6 @@ function tripal_analysis_unigene_update_6000(){
    while($analysis = db_fetch_object($analyses)){
       tripal_analysis_insert_property($analysis->analysis_id,'analysis_unigene_name',$analysis->title);	
    }
-   
 
    $ret = array(
       '#finished' => 1,
