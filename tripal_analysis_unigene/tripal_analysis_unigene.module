@@ -75,7 +75,11 @@ function chado_analysis_unigene_form ($node){
    }
    $num_reads = $node->num_reads;
    if(!$num_reads){
-      $num_reads    = $unigene->num_reads;
+      $num_reads = $unigene->num_reads;
+   }
+   $avg_length = $node->avg_length;
+   if(!$avg_length){
+      $avg_length = $unigene->avg_length;
    }
    $num_clusters = $node->num_clusters;
    if(!$num_clusters){
@@ -108,6 +112,14 @@ function chado_analysis_unigene_form ($node){
       '#required' => FALSE,
       '#description' => t('Provide the number of reads, after filtering that were used for input into the assembly'),
       '#default_value' => $num_reads,
+	);
+
+	$form['avg_length'] = array(
+      '#title' => t('Average Contig Length'),
+      '#type' => 'textfield',
+      '#required' => FALSE,
+      '#description' => t('Provide the average contig length.'),
+      '#default_value' => $avg_length,
 	);
 
 	$form['num_clusters'] = array(
@@ -147,6 +159,7 @@ function chado_analysis_unigene_insert($node){
    tripal_analysis_insert_property($node->analysis->analysis_id,'analysis_unigene_name',$node->unigene_name);	
    tripal_analysis_insert_property($node->analysis->analysis_id,'analysis_unigene_num_contigs',$node->num_contigs);	
    tripal_analysis_insert_property($node->analysis->analysis_id,'analysis_unigene_num_reads',$node->num_reads);	
+   tripal_analysis_insert_property($node->analysis->analysis_id,'analysis_unigene_avg_length',$node->avg_length);
    tripal_analysis_insert_property($node->analysis->analysis_id,'analysis_unigene_num_clusters',$node->num_clusters);	
    tripal_analysis_insert_property($node->analysis->analysis_id,'analysis_unigene_num_singlets',$node->num_clusters);	
 }
@@ -159,6 +172,7 @@ function chado_analysis_unigene_update($node){
    tripal_analysis_update_property($node->analysis_id,'analysis_unigene_name',$node->unigene_name,1);
    tripal_analysis_update_property($node->analysis_id,'analysis_unigene_num_contigs',$node->num_contigs,1);
    tripal_analysis_update_property($node->analysis_id,'analysis_unigene_num_reads',$node->num_reads,1);
+   tripal_analysis_update_property($node->analysis_id,'analysis_unigene_avg_length',$node->avg_length,1);
    tripal_analysis_update_property($node->analysis_id,'analysis_unigene_num_clusters',$node->num_clusters,1);
    tripal_analysis_update_property($node->analysis_id,'analysis_unigene_num_singlets',$node->num_singlets,1);   
 }
@@ -192,12 +206,14 @@ function chado_analysis_unigene_load($node){
    $unigene_name = tripal_analysis_get_property($analysis_id,'analysis_unigene_name');
    $num_contigs  = tripal_analysis_get_property($analysis_id,'analysis_unigene_num_contigs');
    $num_reads    = tripal_analysis_get_property($analysis_id,'analysis_unigene_num_reads');
+   $avg_length   = tripal_analysis_get_property($analysis_id,'analysis_unigene_avg_length');
    $num_clusters = tripal_analysis_get_property($analysis_id,'analysis_unigene_num_clusters');
    $num_singlets = tripal_analysis_get_property($analysis_id,'analysis_unigene_num_singlets');
 
    $analysis->tripal_analysis_unigene->unigene_name = $unigene_name->value;
    $analysis->tripal_analysis_unigene->num_contigs = $num_contigs->value;
    $analysis->tripal_analysis_unigene->num_reads = $num_reads->value;
+   $analysis->tripal_analysis_unigene->avg_length = $avg_length->value;
    $analysis->tripal_analysis_unigene->num_clusters = $num_clusters->value;
    $analysis->tripal_analysis_unigene->num_singlets = $num_singlets->value;
 

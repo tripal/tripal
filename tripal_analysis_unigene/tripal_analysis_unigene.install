@@ -75,6 +75,7 @@ function tripal_analysis_unigene_add_cvterms(){
    tripal_add_cvterms('analysis_unigene_num_singlets','The number of singlets remaining in the unigene assembly');
    tripal_add_cvterms('analysis_unigene_num_clusters','The number of clusters in the unigene assembly');
    tripal_add_cvterms('analysis_unigene_num_reads','The number of reads, after filtering, used as input for the assembly');
+   tripal_add_cvterms('analysis_unigene_avg_length','The average contig length');
    tripal_add_cvterms('singlet',"Indicates the feature is a singlet in a ".
      "specific unigene version (e.g. v1, v2, etc...). The value specified ".
      "should match that of the unigene_version");
