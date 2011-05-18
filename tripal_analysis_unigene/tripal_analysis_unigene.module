@@ -186,21 +186,21 @@ function chado_analysis_unigene_form ($node){
       '#description' => t('Unigene Contig statistics'),
       '#collapsible' => TRUE,
 	);
-	$form['unigene_stats']['contig_min_len'] = array(
+	$form['contig_stats']['contig_min_len'] = array(
       '#title' => t('Minimum Contig Length'),
       '#type' => 'textfield',
       '#required' => FALSE,
       '#description' => t('Provide the length of the smallest contig'),
       '#default_value' => $contig_min_len,
 	);
-	$form['unigene_stats']['contig_max_len'] = array(
+	$form['contig_stats']['contig_max_len'] = array(
       '#title' => t('Maximum Contig Length'),
       '#type' => 'textfield',
       '#required' => FALSE,
       '#description' => t('Provide the length of the largest contig'),
       '#default_value' => $contig_max_len,
 	);
-	$form['unigene_stats']['contig_avg_len'] = array(
+	$form['contig_stats']['contig_avg_len'] = array(
       '#title' => t('Average Contig Length'),
       '#type' => 'textfield',
       '#required' => FALSE,
