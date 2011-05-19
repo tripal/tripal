@@ -149,43 +149,131 @@ function tripal_organism_perm(){
  */
 function tripal_organism_module_description_page() {
   $text = '';
-  
-  $text .= '<h3>Description:</h3>';
-  //================================================================================
-  $text .= '<p>The Tripal Organism module allows you to add, edit and/or delete chado organisms. Furthermore, it also provides listing of organisms and details page for each organism. Basically, the chado organism module is designed to hold information about a given species. For more information on the chado organism module see the <a href="http://gmod.org/wiki/Chado_Organism_Module">GMOD wiki page</a></p>';
 
-  $text .= '<h3>Post Installation Instructions:</h3>';
-  //================================================================================
-  $text .= '<p>This module also provides <b>User Permissions</b> to control which users or groups of users (roles) can view/access organism content (access chado_organism content), create organisms (create chado_organism content), edit or delete organisms (edit chado_organism content or delete chado_organism content). The default is that only the original administration account has these permissions. To allow additional users/roles any combination of the above permissions:</p>';
-  $text .= '<ol>';
-    $text .= '<li><a href="../user/roles">Add Roles</a> to provide permissions to. For example, you might want a "View Tripal organism Content" and a "Manage Tripal organism Content" Role. If you only want to provide permissions based on whether the user is logged in (authenticated) or not (anonymous) then you don\'t need to create roles.</li>';
-    $text .= '<li><a href="../user/permissions">Assign permissions</a> to roles. Specically focus on those mentioned above, then for each permission add a checkmark to the rolw (columns) that you want to have this permission.</li>';
-    $text .= '<li><a href="../user/user">Assign Users Roles</a>. This is what gives a given user the set of permissions associated with a given role. Notice that you can assign more than one role to a user and that each user is "Authenticated" by default. A user has permission is any of his/her roles have that permission.</li>';
-  $text .= '</ol>';
-  
-  $text .= '<p>Another important step, <b>if you chado database already contains organisms, is to sync\' Chado with Drupal</b>. This creates Drupal Content including detail pages for each organism (known as nodes in Drupal). To sync\' Chado with Drupal simply go to the <a href="tripal_organism/configuration">Configuration Page for organisms</a> and in the "Sync Organisms" Fieldset select the Organisms you would like to sync.</p>';
+  $text .= '<h3>Tripal Organism Administrative Tools Quick Links:</h3>';
+  $text .= "<ul>
+             <li><a href=\"".url("admin/tripal/tripal_organism/configuration") . "\">Organism Configuration</a></li>
+           </ul>";
 
-  
+  $text .= '<h3>Module Description:</h3>';
+  $text .= '<p>The Tripal Organism module allows you to add, edit and/or delete chado organisms. 
+            Furthermore, it also provides listing of organisms and details page for each organism. 
+            Basically, the chado organism module is designed to hold information about a given species. 
+            For more information on the chado organism module see the 
+             <a href="http://gmod.org/wiki/Chado_Organism_Module">GMOD wiki page</a></p>';
+
+  $text .= '<h3>Setup Instructions:</h3>';
+  $text .= '<p>After installation of the organism module.  The following tasks should be performed.
+            <ol>
+              <li><p><b>Set Permissions</b>: The organism module supports the Drupal user permissions interface for 
+               controlling access to organism content and functions. These permissions include viewing, 
+               creating, editing or administering of
+               organism content. The default is that only the original site administrator has these 
+               permissions.  You can <a href="'.url('admin/user/roles').'">add roles</a> for classifying users, 
+               <a href="'.url('admin/user/user').'">assign users to roles</a> and
+               <a href="'.url('admin/user/permissions').'">assign permissions</a> for the organism content to 
+               those roles. For a simple setup, allow anonymous users access to view organism content and 
+               allow the site administrator all other permissions.</p></li>
+
+              <li><p><b>Create Organisms</b>: Organism pages can be created in two ways:
+                 <ol>
+                  <li><b>Sync Organisms</b>: If your organism has been pre-loaded into Chado then you need to sync the organism.
+                   This process is what creates the pages for viewing online.  Not all organisms need be synced, only those
+                   that you want shown on the site.  Use the the 
+                   <a href="'.url('admin/tripal/tripal_organism/configuration').'">Organism Configuration page</a> 
+                   to sync organisms. </li>
+                   <li><b>Manually Add An Organism</b>: If your organism is not already present in the Chado database
+                   you can create an organism using the <a href="'.url('node/add/chado-organism').'">Create Organism page</a>.  
+                   Once saved, the organism will be present in Chado and also "synced".
+                 </ol></p></li>
+
+               <li><p><b>Indexing</b>:  Once organism pages are ready for public access,
+               you can index the organism pages for searching if you want to ues the Drupal default search mechanism. 
+               Use the <a href="'.url('admin/tripal/tripal_organism/configuration').'">Organism Configuration page</a> 
+               to either Index (for the first time) or "Reindex" (after updating data)
+               the organism pages for searching.  Once the site is 100% indexed the pages will be searchable using Drupal\'s
+               full text searching.  You can find the percent indexed for the entire site by visiting the 
+               <a href="'.url('admin/settings/search').'">Search settings page</a>. Indexing
+               can take quite a while if you have a lot of data</p></li>
+
+               <li><p><b>Set Taxonomy</b>:  Drupal provides a mechanism for categorizing content to allow 
+               for advanced searching.  Drupal calls this "Taxonomy", but is essentially categorizing the pages.  
+               You can categorize feature pages by the 
+               organism to which they belong.  This allows for filtering of search results by organism. 
+               Use the <a href="'.url('admin/tripal/tripal_organism/configuration').'">Organism Configuration page</a> to
+               set the Taxonomy.</p></li>
+             </ol>';
   
   $text .= '<h3>Features of this Module:</h3>';
-  //================================================================================
-  $text .= '<b><a href="../../node/add/chado_organism">Create an Organism:</a></b>';
-  $text .= '<p>This allows you to create content in your drupal and chado for an organism (only the unique organism identifier is duplicated). An organism must have a genus, species, abreviation, common name. In addition, you can optionally supply a short description.</p>';
-  
-  $text .= '<b>Details Page of a Organism:</b>';
-  $text .= '<p>Each organism get\'s it\'s own page on this website. This page is meant to give an overall picture of the organism and it\'s associated details. To understand where it is -All page content in Drupal is known as a node and is given a unique identifier or nid. Thus every drupal page has a path of node/<nid>. You can get to the Details page for a given organism from either of the organism listings described below.</p>';
-  $text .= '<p>If you want to customize the look of the Organism Details page simply copy the PHP/HTML template node-chado_organism.tpl.php from theme_tripal to the base theme you are currently using. Then edit it as desired. There are plans to integrate this details page with Drupal Panels which will provide a much more user-friendly and no-programming-needed method to customize this page.</p>';
-  
-  $text .= '<b>Updating/Deleting Organisms:</b>';
-  $text .= '<p>The Organisms Details Page also acts as a landing pad for updating/deleting organisms. To <b>update an organism</b>, go to the organism details page and click on the Edit tab near the top of the page. This tab will only be visable if you have permission to edit chado organism content (See post installation steps above for information on setting user permissions). If you want to <b>delete an organism</b>, click the Edit tab and then near the bottom of the form, click the Delete button. This will delete the entire organism and cannot be undone.</p>';
-  
-  $text .= '<b><a href="../../organisms">Basic Listing of Organisms:</a></b>';
-  $text .= '<p>This module also provides a basic listing of all organisms currently sync\'d with Drupal. To access this listing, there should be a Stocks Primary Menu item which links you to <a href="../../organisms">this page</a>. This page lists each organism in it\'s own triapl expandable box and provides a link to each organism by clicking on it\'s common name. Currently there is no way to easily customize this listing.</p>';
-  
-  $text .= '<b><a href="../build/views/">Flexible Listing of Organisms using Drupal Views:</a></b>';
-  $text .= '<p>In order to access a more flexible listing of organisms you must first install the <a href="http://drupal.org/project/views">Drupal Views2 module</a>. You should then be able to access the default views <a href="../build/views/">here</a>. Essentially, Views is a module which allows you to create custom SQL queries completely through the web interface without knowing SQL. Furthermore, it also does some formatting of the results allowing you to display them as HTML lists, tables or grids. You can also expose filters to the user to let them customize the results they see and even implement various sorting.</p>';
-  $text .= '<p>To use one of the Default Views simply click "Enable" and then "Edit" to change it to show exactly what you want. To view the current listing simply clikc "View Page" at the top of the Edit user interface. There are a number of good tutorials out there for Views2, any of which can be used to help you create your own custom listings of biological content. (Note: there aren\'t any tutorials specifically for tripal content but any tutorial for Views2 will show you how to use the views interface.</p>';
-  
+  $text .= '<p>Aside from organism page setup (as described in the Setup section above), 
+            The Tripal organism module also provides the following functionality
+            <ul>       
+              <li><p><b>Integration with Drupal Views</b>: <a href="http://drupal.org/project/views">Drupal Views</a> is
+              a powerful tool that allows the site administrator to create lists or basic searching forms of Chado content.
+              It provides a graphical interface within Drupal to allow the site admin to directly query the Chado database
+              and create custom lists without PHP programming or customization of Tripal source code.  Views can also
+              be created to filter content that has not yet been synced with Druapl in order to protect access to non
+              published data (only works if Chado was installed using Tripal).  You can see a list of available pre-existing
+              Views <a href="'.url('admin/build/views/').'">here</a>, as well as create your own. </p></li>
+
+              <li><p><b>Basic Organism List</b>: This module provides a basic <a href="'.url('organisms').'">organism list</a> 
+              for showing the list of organisms in Chado. <a href="http://drupal.org/project/views">Drupal Views</a> must be 
+              installed. You can use the Views interface to alter the appearance of this list.</p></li>              
+            </ul>
+            </p>';
+
+   $text .= '<h3>Page Customizations</h3>';
+   $text .= '<p>There are several ways to customize the look-and-feel for the way Chado data is presented through Tripal. 
+             Below is a description of several methods.  These methods may be used in conjunction with one another to
+             provide fine-grained control. 
+             <ul>
+
+             <li><p><b>Integration with Drupal Panels</b>:  <a href="http://drupal.org/project/views">Drupal Panels</a> 
+              allows for customization of a page layout if you don\'t want to do PHP/Javascript/CSS programming.  Tripal comes with pre-set layouts for organism pages.  However, 
+              Panels become useful if you prefer a layout that is different from the pre-set layouts.  Chado content
+              is provided to Panels in the form of Drupal "blocks" which you can then place anywhere on a page using the 
+              Panel\'s GUI.</p></li>
+
+             <li><p><b>Drupal\'s Content Construction Kit (CCK)</b>: the 
+             <a href="http://drupal.org/project/cck">Content Construction Kit (CCK) </a> is a powerful way to add non-Chado content
+             to any page without need to edit template files or knowing PHP.  You must first download and install CCK.
+             With CCK, the site administartor can create a new field to appear on the page.  For example, currently,
+             the Chado publication module is not yet supported by Tripal.  Therefore, the site administrator can add a text 
+             field to the organism pages.  This content is not stored in Chado, but will appear on the organism page.  A field
+             added by CCK will also appear in the form when editing a organism to allow users to manually enter the appropriate
+             text.  If the default pre-set layout and themeing for Tripal is used, it is better to create the CCK element,
+             indicate that it is not to be shown (using the CCK interface), then manually add the new content type 
+             where desired by editing the templates (as described below).  If using Panels, the CCK field can be added to the
+             location desired using the Panels interface.</p></li>
+
+             <li><p><b>Drupal Node Templates</b>:  The Tripal packages comes with a "theme_tripal" directory that contains the
+             themeing for Chado content.    The organism module has a template file for organism "nodes" (Tripal organism pages).  This file
+             is named "node-chado_organism.tpl.php", and provides javascript, HTML and PHP code for display of the organism
+             pages.  You can edit this file to control which types of information (or which organism "blocks") are displayed for organisms. Be sure to 
+             copy these template to your primary theme directory for editing. Do not edit them in the "theme_tripal" directory as
+             future Tripal updates may overwrite your customizations. See the <a href="http://tripal.sourceforge.net/">Tripal website </a>
+             for instructions on how to access variables and other Chado content within the template file.</p></li>
+
+             <li><p><b>Organism "Block" Templates</b>:  In the "theme_tripal" directory is a subdirectory named "tripal_organism".
+             Inside this directory is a set of templates that control distinct types of information for organisms.  For example,
+             there is a "base" template for displaying of data directly from the Chado organism table, and a "references" 
+             template for showing external site references for a organism (data from the organism_dbxref table).  These templates are used both by Drupal blocks
+             for use in Drupal Panels (as described above) or for use in the default pre-set layout that the node template 
+             provides (also desribed above).  You can customize this template as you desire.  Be sure to copy the
+             template to your primary theme directory for editing. Do not edit them in the "theme_tripal" directory as
+             future Tripal updates may overwrite your customizations.  See the <a href="http://tripal.sourceforge.net/">Tripal website </a>
+             for instructions on how to access variables and other Chado content within the template files.</p></li>
+             </li>
+
+             <li><p><b>Adding Links to the "Resources" Sidebar</b>: If you use the pre-set default Tripal layout for theming, you
+             will see a "Resources" sidebar on each page.  The links that appear on the sidebar are automatically generated
+             using Javascript for all of the organism "Blocks" that appear on the page. If you want to add additional links 
+             (e.g. a dynamic link to GBrowse for the organism) and you want that link to appear in the 
+             "Resources" sidebar, simply edit the Drupal Node Template (as described above) and add the link to the 
+             section at the bottom of the template file where the resources section is found.</p></li>
+
+             </ul>
+             </p>'; 
   return $text;
 }
 
@@ -541,7 +629,23 @@ function tripal_organism_cron (){
    // nodes created for themselves in drupal.
 //   tripal_organism_sync_organisms();
 }
-
+/**
+*
+*/
+function chado_organism_validate($node,&$form){
+   // check to see if the organism already exists, but only for an insert
+   if(!$node->nid){
+      $values = array(
+         'genus' => $node->genus,
+         'species' => $node->species,
+      );
+      $organism = tripal_core_chado_select('organism', array('organism_id'),$values);
+      if(sizeof($organism) > 0){
+         form_set_error('genus','Cannot add the organism with this genus and species.
+            The organism already exists.');
+      }
+   }
+}
 /*******************************************************************************
  *  When a new chado_organism node is created we also need to add information
  *  to our chado_organism table.  This function is called on insert of a new node
@@ -556,31 +660,25 @@ function chado_organism_insert($node){
       'common_name' => $node->common_name,
       'comment' => $node->description
    );
-   $istatus = tripal_core_chado_insert('organism', $values);
-   if (!$istatus) {
+   $organism = tripal_core_chado_insert('organism', $values);
+   if (!$organism) {
 		drupal_set_message('Unable to add organism.', 'warning');
 		watchdog('tripal_organism', 
 			'Insert Organism: Unable to create organism where values:%values', 
 			array('%values' => print_r($values, TRUE)),
 			WATCHDOG_WARNING
 		);
+      return;
 	}   
-
-   // get the newly add organism
-   $values = array(
-      'genus' => $node->genus,
-      'species' => $node->species,
-   );
-   $organism = tripal_core_chado_select('organism',array('organism_id'),$values);
 
    // Make sure the entry for this organism doesn't already exist in the
    // chado_organism table if it doesn't exist then we want to add it.
-   $organism_id = chado_get_id_for_node('organism',$node);
-   if(!$organism_id){
+   $organism_id = $organism['organism_id'];
+   if(!chado_get_id_for_node('organism',$node) ){
       // next add the item to the drupal table
       $sql = "INSERT INTO {chado_organism} (nid, vid, organism_id) ".
              "VALUES (%d, %d, %d)";
-      chado_query($sql,$node->nid,$node->vid,$organism[0]->organism_id);
+      chado_query($sql,$node->nid,$node->vid,$organism_id);
    }
 
    // set the title for the node
@@ -589,6 +687,9 @@ function chado_organism_insert($node){
    $record->nid = $node->nid;
    drupal_write_record('node',$record,'nid');
    drupal_write_record('node_revisions',$record,'nid');
+
+   // add the image 
+   chado_organism_add_image($node);
 }
 /*******************************************************************************
  * Update organisms
@@ -615,6 +716,10 @@ function chado_organism_update($node){
       $record->nid = $node->nid;
       drupal_write_record('node',$record,'nid');
       drupal_write_record('node_revisions',$record,'nid');
+
+      // add the image 
+      chado_organism_add_image($node);
+
    }
 }
 /*******************************************************************************
@@ -659,7 +764,7 @@ function chado_organism_delete($node){
 /*******************************************************************************
 *
 */
-function chado_organism_validate($node){
+function chado_organism_add_image($node){
    // check to see if a file was uploaded. If so then copy it to the images
    // directory for display with the organism
    if (isset($_FILES['files']) && $_FILES['files']['name']['organism_image'] && 
@@ -673,7 +778,7 @@ function chado_organism_validate($node){
          drupal_set_message("Organism image was not uploaded.");
       }
       // move this image into the images directory
-      file_move($file->filepath,$dest . "/".$node->genus."_".$node->species.".jpg",FILE_EXISTS_REPLACE);
+      file_move($file->filepath,$dest . "/".$node->nid.".jpg",FILE_EXISTS_REPLACE);
    }
 }
 
