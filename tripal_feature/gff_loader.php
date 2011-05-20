@@ -97,12 +97,7 @@ function tripal_core_gff3_load_form (){
       '#value' => t("Why specify an analysis for a data load?  All data comes 
          from some place, even if downloaded from Genbank. By specifying
          analysis details for all data uploads, it allows an end user to reproduce the
-         data set.  In some cases some of the fields may not apply.  For 
-         data downloaded from Genbank, the 'program' field does not apply but is
-         required.  In this case, simply provide the name of the data source 
-         (e.g. NCBI Genbank) for the program and use the date accessed for the
-         program version. For the description, be sure to include the search
-         criteria used for selecting data from GenBank."), 
+         data set, but at least indicates the source of the data."), 
    );
 
    // get the list of organisms

@@ -54,10 +54,20 @@ function tripal_feature_module_description_page() {
                   <li>Gene Ontology (if loading GO terms for features)</li>
                </ul></p></li>
 
-               <li><p><b>Create Orgnisms</b>:  Before adding feature data you must already have the 
+               <li><p><b>Create Organisms</b>:  Before adding feature data you must already have the 
                organisms loaded in the database.  See the 
                <a href="'.url('admin/tripal/tripal_organism').'">Tripal Organism Admin page</a> for 
                instructions for adding and Syncing organisms.</p></li>
+
+               <li><p><b>Create Analysis</b>:  Tripal requires that feature data loaded using the Tripal loaders
+               be associated with an analyis.  This provides a grouping for the feature data and can be used
+               later to visualize data pipelines.  Before loading feature data through the FASTA or GFF loaders
+               you will need to <a href="'.url('node/add').'">create an analysis</a> for the data.</p></li>
+
+               <li><p><b>Create Database</b>:  If you would like to associate your feature data with an 
+               external reference database, check to ensure that the <a href="'.url('admin/tripal/tripal_db/edit_db').'">
+               database record already exists</a>.  If not you should <a href="'.url('admin/tripal/tripal_db/add_db').'">add a new database record</a> before importing
+               feature data.</p></li>
 
                <li><p><b>Data Import</b>:  if you do not already have an existing Chado database with preloaded data 
                then you will want

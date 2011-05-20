@@ -81,6 +81,39 @@ function tripal_feature_fasta_load_form (){
       '#weight' => 6
    );
 
+
+   $form['analysis'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Analysis Used to Derive Features'),
+      '#weight'=> 6,
+      '#collapsed' => TRUE
+   ); 
+   $form['analysis']['desc'] = array(
+      '#type' => 'markup',
+      '#value' => t("Why specify an analysis for a data load?  All data comes 
+         from some place, even if downloaded from Genbank. By specifying
+         analysis details for all data uploads, it allows an end user to reproduce the
+         data set, but at least indicates the source of the data."), 
+   );
+
+   // get the list of organisms
+   $sql = "SELECT * FROM {analysis} ORDER BY name";
+   $previous_db = tripal_db_set_active('chado');  // use chado database
+   $org_rset = db_query($sql);
+   tripal_db_set_active($previous_db);  // now use drupal database
+   $analyses = array();
+   $analyses[''] = '';
+   while($analysis = db_fetch_object($org_rset)){
+      $analyses[$analysis->analysis_id] = "$analysis->name ($analysis->program $analysis->programversion, $analysis->sourcename)";
+   }
+   $form['analysis']['analysis_id'] = array (
+     '#title'       => t('Analysis'),
+     '#type'        => t('select'),
+     '#description' => t("Choose the analysis to which these features are associated "),
+     '#required'    => TRUE,
+     '#options'     => $analyses,
+   );
+
    // Advanced Options
    $form['advanced'] = array(
       '#type' => 'fieldset',
@@ -288,9 +321,11 @@ function tripal_feature_fasta_load_form_submit ($form, &$form_state){
    $rel_type     = $form_state['values']['rel_type'];
    $re_subject   = trim($form_state['values']['re_subject']);
    $parent_type   = trim($form_state['values']['parent_type']);
+   $analysis_id = $form_state['values']['analysis_id'];
 
    $args = array($dfile,$organism_id,$type,$library_id,$re_name,$re_uname,
-            $re_accession,$db_id,$rel_type,$re_subject,$parent_type,$update,$user->uid);
+            $re_accession,$db_id,$rel_type,$re_subject,$parent_type,$update,
+            $user->uid,$analysis_id);
 
    tripal_add_job("Import FASTA file: $dfile",'tripal_feature',
       'tripal_feature_load_fasta',$args,$user->uid);
@@ -303,7 +338,7 @@ function tripal_feature_fasta_load_form_submit ($form, &$form_state){
  */
 function tripal_feature_load_fasta($dfile, $organism_id, $type,
    $library_id, $re_name, $re_uname, $re_accession, $db_id, $rel_type,
-   $re_subject, $parent_type, $update,$uid, $job = NULL)
+   $re_subject, $parent_type, $update,$uid, $analysis_id, $job = NULL)
 {
 
    print "Opening FASTA file $dfile\n";
@@ -336,7 +371,7 @@ function tripal_feature_load_fasta($dfile, $organism_id, $type,
          if($name){
            tripal_feature_fasta_loader_insert_feature($name,$uname,$db_id,
               $accession,$subject,$rel_type,$parent_type,$library_id,$organism_id,$type,
-              $source,$residues,$update);
+              $source,$residues,$update,$re_name);
            $residues = '';
            $name = '';
          }

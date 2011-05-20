@@ -2166,6 +2166,12 @@ function tripal_feature_job_describe_args($callback,$args){
       else {
          $new_args['Insert Only New Features'] = 'Yes';
       }
+
+      // add in the analysis 
+      if($args[13]){
+         $analysis = tripal_core_chado_select('analysis',array('name'),array('analysis_id' => $args[13]));
+      }
+      $new_args['Analysis'] = $analysis[0]->name;
    }
    return $new_args;
 }
