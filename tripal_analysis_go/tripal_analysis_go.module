@@ -189,13 +189,14 @@ function theme_tripal_analysis_go_search_result($node){
 */
 function tripal_analysis_go_preprocess_tripal_feature_go_terms(&$variables){
    $feature = $variables['node']->feature;
-   $variables['tripal_analysis_go']['terms'] = tripal_analysis_go_load_feature_terms($feature);
+   $feature->tripal_analysis_go->terms = tripal_analysis_go_load_feature_terms($feature);
 }
 /************************************************************************
 */
 function tripal_analysis_go_preprocess_tripal_organism_go_summary(&$variables){
    $node = $variables['node'];
-   $variables['tripal_analysis_go']['select_form'] = tripal_analysis_go_load_organism_go_summary($node);
+   $organism = $node->organism;
+   $organism->tripal_analysis_go->select_form = tripal_analysis_go_load_organism_go_summary($node);
 }
 /************************************************************************
 */

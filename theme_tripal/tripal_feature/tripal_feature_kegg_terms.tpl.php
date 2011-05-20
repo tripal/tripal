@@ -1,6 +1,8 @@
 <?php
-$results = $variables['tripal_analysis_kegg']['results'];
+
 $feature  = $variables['node']->feature;
+$results = $feature->tripal_analysis_kegg->results;
+
 if($feature->cvname != 'gene' and count($results) > 0){ 
    $i = 0;
    foreach($results as $analysis_id => $analysisprops){ 

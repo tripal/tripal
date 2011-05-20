@@ -1,6 +1,6 @@
 <?php
 $feature  = $variables['node']->feature;
-$blast_results_list = $variables['tripal_analysis_blast']['blast_results_list'];
+$blast_results_list = $feature->tripal_analysis_blast->blast_results_list;
 
 ?>
 <div id="tripal_ajaxLoading" style="display:none">
@@ -61,6 +61,13 @@ if(count($blast_results_list) > 0){
 		
 		<?php 
       $i = 0; 
+      if(sizeof($hits_array)==0){?>
+        <tr>
+          <td colspan="5">    
+            <div class="tripal-no-results">There are no matches against <?php print $db->name?> for this <?php print $feature->type_id->name?>.</div> 
+          </td>
+        </tr><?php
+      }
 		foreach($hits_array AS $hit) { 
          $class = 'tripal-table-odd-row tripal_analysis_blast-table-odd-row';
          if($i % 2 == 0 ){

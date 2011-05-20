@@ -391,8 +391,8 @@ function tripal_analysis_interpro_preprocess_tripal_feature_interpro_results(&$v
 
    // we don't know how many analysis are the old style HTML version and how many are the newer
    // XML format.  So, to be backwards compatible we should get both.
-   $variables['tripal_analysis_interpro']['results']['html'] = tripal_get_interpro_HTML_results($feature->feature_id);
-	$variables['tripal_analysis_interpro']['results']['xml'] = tripal_get_interpro_XML_results($feature->feature_id);
+   $feature->tripal_analysis_interpro->results->html = tripal_get_interpro_HTML_results($feature->feature_id);
+	$feature->tripal_analysis_interpro->results->xml = tripal_get_interpro_XML_results($feature->feature_id);
 }
 
 /*******************************************************************************

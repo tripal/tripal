@@ -94,7 +94,8 @@ function parse_NCBI_Blast_XML_index_version($xml_string,$db,$feature_id) {
  * Parse Blast XML Output file into analysisfeatureprop table
  */
 function tripal_analysis_blast_parseXMLFile ($analysis_id, $blastdb, $blastfile, 
-   $no_parsed, $blastfile_ext, $query_re, $query_type, $query_uniquename,$job_id) {
+   $no_parsed, $blastfile_ext, $query_re, $query_type, $query_uniquename,
+   $is_concat,$job_id,$is_concat) {
 
 	// Prepare log
 	$filename = preg_replace("/.*\/(.*)/", "$1", $blastfile);
@@ -105,7 +106,7 @@ function tripal_analysis_blast_parseXMLFile ($analysis_id, $blastdb, $blastfile,
 	if (is_file($blastfile)) {
       tripal_analysis_blast_parseXML($analysis_id, $blastdb, $blastfile, 
          $no_parsed, $blastfile_ext, $query_re, $query_type, $query_uniquename,
-         $job_id,1,$log);
+         $job_id,1,$log,$is_concat);
 	} 
    // Otherwise, $blastfile is a directory. Iterate through all xml files in it
    else {
@@ -150,7 +151,7 @@ function tripal_analysis_blast_parseXMLFile ($analysis_id, $blastdb, $blastfile,
  */
 function tripal_analysis_blast_parseXML($analysis_id, $blastdb, $blastfile, 
    $no_parsed, $blastfile_ext, $query_re, $query_type, $query_uniquename,
-  $job_id,$set_progress,$log){
+  $job_id,$set_progress,$log,$is_concat){
 
 	// Parsing started
 	print "Parsing File:".$blastfile." ...\n";
@@ -171,9 +172,49 @@ function tripal_analysis_blast_parseXML($analysis_id, $blastdb, $blastfile,
 	$type_id = db_result(db_query($sql));
 
 	// Load the XML file.
+   if (!is_readable($blastfile)) {
+      exit("Could not open the XML file '$blastfile'.  Check that file exists and that permissions are correct.\n");
+   }
+   
+   // if the file is a set of concatenated files then we want to split it up
+   // and run each one individually
+   if($is_concat){
+
+      // generate a temporary file name
+      $temp = tempnam(sys_get_temp_dir(),'blast_');
+      print "Blast XML file is concatenated.  Breaking apart and parsing each individually: $temp\n";
+      $out_fh = fopen($temp,"w");
+
+      // run through the lines of the XML file
+      $in_fh = fopen($blastfile,"r");
+      while(!feof($in_fh)){
+         $line = fgets($in_fh);
+         $line = trim($line);
+         if(!$line){
+            continue;
+         }
+         fwrite($out_fh,"$line\n");
+         // if the line begins a set of blast output XML then parse the
+         // preceeding set.
+         if(preg_match("/<\/BlastOutput>/",$line)){
+            // close the temp file
+            fclose($out_fh);
+            // now parse this new temp file
+            tripal_analysis_blast_parseXML($analysis_id, $blastdb, $temp, 
+               $no_parsed, $blastfile_ext, $query_re, $query_type, $query_uniquename,
+               $job_id,$set_progress,$log,0);
+            // reopen the file for the next set of results
+            $out_fh = fopen($temp,"w");
+         }
+      }
+      fclose($in_fh);
+
+      return;
+   } 
+
 	$blastoutput = simplexml_load_file($blastfile);
    if(!$blastoutput){
-      exit("Failed to open file '$blastfile'\n");
+      exit("Could not read the XML file '$blastfile'.  Check that the XML file is not corrupted.\n");
    }
 	$no_iterations = 0;
 	foreach($blastoutput->children() as $tmp) {

@@ -1,7 +1,7 @@
 <?php
-$results = $variables['tripal_analysis_interpro']['results']['xml'];
-$resultsHTML = $variables['tripal_analysis_interpro']['results']['html'];
 $feature  = $variables['node']->feature;
+$results = $feature->tripal_analysis_interpro->results->xml;
+$resultsHTML = $feature->tripal_analysis_interpro->results->html;
 
 if(count($results) > 0){ 
    $i = 0;

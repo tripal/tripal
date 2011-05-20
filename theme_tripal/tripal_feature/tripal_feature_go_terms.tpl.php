@@ -1,7 +1,6 @@
 <?php
-$terms = $variables['tripal_analysis_go']['terms'];
 $feature = $variables['node']->feature;
-
+$terms = $feature->tripal_analysis_go->terms;
 ?>
 <div id="tripal_feature-go_terms-box" class="tripal_feature-info-box tripal-info-box">
   <div class="tripal_feature-info-box-title tripal-info-box-title">GO Assignments</div>

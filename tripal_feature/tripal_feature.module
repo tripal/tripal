@@ -1915,6 +1915,7 @@ function tripal_features_set_taxonomy($max_sync = 0,$job_id = NULL){
       if($job_id and $i % $interval == 0){
          tripal_job_set_progress($job_id,intval(($i/$count)*100));
       }
+      print "$i of $count: ";
       $node = db_fetch_object(db_query($nsql,$chado_feature->nid));
       tripal_feature_set_taxonomy($node,$chado_feature->feature_id);
 

@@ -853,7 +853,8 @@ function tripal_analysis_kegg_preprocess(&$variables){
  */
 function tripal_analysis_kegg_preprocess_tripal_organism_kegg_summary(&$variables){
    $node = $variables['node'];
-   $variables['tripal_analysis_kegg']['select_form'] = tripal_analysis_kegg_load_organism_kegg_summary($node);
+   $organism = $node->organism;
+   $organism->tripal_analysis_kegg->select_form = tripal_analysis_kegg_load_organism_kegg_summary($node);
 }
 /**
 *
@@ -861,7 +862,7 @@ function tripal_analysis_kegg_preprocess_tripal_organism_kegg_summary(&$variable
 function tripal_analysis_kegg_preprocess_tripal_feature_kegg_terms(&$variables){
    $node = $variables['node'];
    $feature = $node->feature;
-   $variables['tripal_analysis_kegg']['results'] = tripal_analysis_kegg_load_feature_terms($feature);
+   $feature->tripal_analysis_kegg->results = tripal_analysis_kegg_load_feature_terms($feature);
 }
 /************************************************************************
  */

@@ -134,7 +134,7 @@ function tripal_analysis_blast_preprocess_tripal_feature_blast_results(&$variabl
    }
 
    $blast_results = tripal_get_feature_blast_results($feature->feature_id, $db_id, $max);
-   $variables['tripal_analysis_blast']['blast_results_list'] = $blast_results;
+   $feature->tripal_analysis_blast->blast_results_list = $blast_results;
 }
 /*******************************************************************************
  * Prepare blast result for the feature shown on the page
@@ -422,6 +422,7 @@ function chado_analysis_blast_form ($node){
    $query_re = $blast->query_re;
    $query_type = $blast->query_type;
    $query_uniquename = $blast->query_uniquename;
+   $is_concat = $blast->is_concat;
 
 		
 	$form['blast'] = array(
@@ -465,6 +466,13 @@ function chado_analysis_blast_form ($node){
       '#type' => 'textfield',
       '#description' => t('If a directory is provide for the blast file setting above, then a file extension can be provided here. Files with this extension in the directory will be parsed.  If no extension is provided then files with a .xml extension will be parsed within the directory. Please provide the extension without the preceeding period (e.g. "out" rather than ".out"'),
       '#default_value' => $blastfile_ext,
+	);
+	$form['blast']['is_concat'] = array(
+      '#title' => t('Is the XML file concatenated?'),
+      '#type' => 'checkbox',
+      '#description' => t('Is the XML file a set of concatenated XML results?  Such is the case, for instance, if
+                          <a href="http://www.blast2go.org/">Blast2GO</a> was used to generate the blast results.'),
+      '#default_value' => $is_concat,
 	);
 	$form['blast']['no_parsed'] = array(
 	  '#title' => t('Number of hits to be parsed'),
@@ -511,7 +519,7 @@ function chado_analysis_blast_form ($node){
 	
 	$form['blast']['blastjob'] = array(
       '#type' => 'checkbox',
-      '#title' => t('Submit a job to parse the xml output into analysisfeatureprop table'),
+      '#title' => t('Submit a job to parse the xml output into Chado'),
       '#description' => t('Note: features associated with the blast results must '.
                           'exist in chado before parsing the file. Otherwise, blast '.
                           'results that cannot be linked to a feature will be '.
@@ -519,12 +527,12 @@ function chado_analysis_blast_form ($node){
       '#default_value' => $blastjob
 	);
 	
-	$form['blast']['blastbesthit'] = array(
-      '#type' => 'checkbox',
-      '#title' => t('Submit a job to generate a "best hits" report.'),
-      '#description' => t('Note: the checkbox above must also be selected.'),
-      '#default_value' => $blastbesthit
-	);
+//	$form['blast']['blastbesthit'] = array(
+//      '#type' => 'checkbox',
+//      '#title' => t('Submit a job to generate a "best hits" report.'),
+//      '#description' => t('Note: the checkbox above must also be selected.'),
+//      '#default_value' => $blastbesthit
+//	);
 	
 	return $form;
 }
@@ -558,6 +566,7 @@ function chado_analysis_blast_load($node){
    $query_type      = tripal_analysis_get_property($analysis->analysis_id,'analysis_blast_query_type');	
    $query_uniquename= tripal_analysis_get_property($analysis->analysis_id,'analysis_blast_query_uniquename');	
    $blastfile_ext   = tripal_analysis_get_property($analysis->analysis_id,'analysis_blast_blastfile_ext');	
+   $is_concat       = tripal_analysis_get_property($analysis->analysis_id,'analysis_blast_is_concat');	
 
    $analysis->tripal_analysis_blast->blastdb         = $blastdb->value;
    $analysis->tripal_analysis_blast->blastfile       = $blastfile->value;	
@@ -567,6 +576,7 @@ function chado_analysis_blast_load($node){
    $analysis->tripal_analysis_blast->query_type      = $query_type->value;	
    $analysis->tripal_analysis_blast->query_uniquename= $query_uniquename->value;	
    $analysis->tripal_analysis_blast->blastfile_ext   = $blastfile_ext->value;	
+   $analysis->tripal_analysis_blast->is_concat       = $is_concat->value;	
 
    // get the database information so that we don't have to require callers
    // to do the lookup
@@ -624,6 +634,7 @@ function chado_analysis_blast_insert($node){
    tripal_analysis_insert_property($node->analysis_id,'analysis_blast_query_type',$node->query_type);	
    tripal_analysis_insert_property($node->analysis_id,'analysis_blast_query_uniquename',$node->query_uniquename);	
    tripal_analysis_insert_property($node->analysis_id,'analysis_blast_blastfile_ext',$node->blastfile_ext);	
+   tripal_analysis_insert_property($node->analysis_id,'analysis_blast_is_concat',$node->is_concat);	
   
    // submit the parsing jobs
    chado_analysis_blast_submit_jobs($node);
@@ -646,6 +657,7 @@ function chado_analysis_blast_update($node){
    tripal_analysis_update_property($node->analysis_id,'analysis_blast_query_type',$node->query_type,1);	
    tripal_analysis_update_property($node->analysis_id,'analysis_blast_query_uniquename',$node->query_uniquename,1);	
    tripal_analysis_update_property($node->analysis_id,'analysis_blast_blastfile_ext',$node->blastfile_ext,1);	
+   tripal_analysis_update_property($node->analysis_id,'analysis_blast_is_concat',$node->is_concat,1);	
 
    // if this analysis uses the old style blast settings cvterm then remove that term
    $old = tripal_analysis_get_property($node->analysis_id,'analysis_blast_settings');
@@ -672,14 +684,17 @@ function chado_analysis_blast_submit_jobs($node){
           $node->blastfile_ext,
           $node->query_re,
 		    $node->query_type, 
-          $node->query_uniquename
+          $node->query_uniquename,
+          $node->is_concat
       );
 
 		if (is_readable($node->blastfile)) {
 			tripal_add_job("Parse blast: $node->blastfile",'tripal_analysis_blast',
                           'tripal_analysis_blast_parseXMLFile', $job_args, $user->uid);
 		} else {
-			drupal_set_message("Can not open blast output file. Job not scheduled.");
+			drupal_set_message("Blast output file, $node->blastfile, is not readable 
+           by the server.  Check existence of file and file permissions. 
+           Job not scheduled.");
 		}
 	}
    // add a job if the user wants to create a best hits report.
@@ -769,4 +784,45 @@ function chado_analysis_blast_access($op, $node, $account){
 	return FALSE;
 }
 
+/**
+ *
+ *
+ * @ingroup tripal_feature
+ */
+function tripal_analysis_blast_job_describe_args($callback,$args){
 
+   $new_args = array();
+   if($callback == 'tripal_analysis_blast_parseXMLFile'){
+
+      // add in the analysis 
+      if($args[0]){
+         $analysis = tripal_core_chado_select('analysis',array('name'),array('analysis_id' => $args[0]));
+      }
+      $new_args['Analysis'] = $analysis[0]->name;
+
+      // add in the database 
+      if($args[1]){
+         $db = tripal_core_chado_select('db',array('name'),array('db_id' => $args[1]));
+      }
+      $new_args['Database'] = $db[0]->name;
+
+      $new_args['File or Directory Name'] = $args[2];
+      if($args[7] == 1){
+        $new_args['Is XML file concatenated'] = 'Yes';
+      } else {
+        $new_args['Is XML file concatenated'] = 'No';
+      }
+      $new_args['File Extension (if directory)'] = $args[4];
+      $new_args['Number matches parsed per query'] = $args[3];
+      $new_args['Query name regular expression'] = $args[5];
+      $new_args['Query type'] = $args[6];
+      if($args[7] == 1){
+        $new_args['Feature identifier'] = 'feature unique name';
+      } else {
+        $new_args['Feature identifier'] = 'feature name';
+      }
+      
+
+   }
+   return $new_args;
+}

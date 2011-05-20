@@ -103,9 +103,9 @@ function tripal_jobs_report () {
 
       $cancel_link = '';
       if($job->start_time == 0 and $job->end_time == 0){
-         $cancel_link = "<a href=\"".url("admin/tripal/tripal_jobs/cancel/".$job->job_id)."\">Cancel</a>";
+         $cancel_link = "<a href=\"".url("admin/tripal/tripal_jobs/cancel/".$job->job_id)."\">Cancel</a><br>";
       }
-      $rerun_link = "<a href=\"".url("admin/tripal/tripal_jobs/rerun/".$job->job_id)."\">Re-run</a>";
+      $rerun_link = "<a href=\"".url("admin/tripal/tripal_jobs/rerun/".$job->job_id)."\">Re-run</a><br>";
       $view_link ="<a href=\"".url("admin/tripal/tripal_jobs/view/".$job->job_id)."\">View</a>";
       $output .= "  <tr class=\"$class\">";
       $output .= "    <td>$job->job_id</td>".

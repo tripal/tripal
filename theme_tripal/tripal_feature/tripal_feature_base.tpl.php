@@ -35,7 +35,7 @@ $feature  = $variables['node']->feature;
         <th>Organism</th>
         <td>
           <?php if ($feature->organism_id->nid) { 
-      	   print "<a href=\"".url("node/".$feature->organism_id->nid)."\">".$feature->organism_id->genus ." " . $feature->organism_id->species ." (" .$feature->organism_id->common_name ." )</a>";      	 
+      	   print "<a href=\"".url("node/".$feature->organism_id->nid)."\">".$feature->organism_id->genus ." " . $feature->organism_id->species ." (" .$feature->organism_id->common_name .")</a>";      	 
           } else { 
             print $feature->organism_id->genus ." " . $feature->organism_id->species ." (" .$feature->organism_id->common_name .")";
           } ?>

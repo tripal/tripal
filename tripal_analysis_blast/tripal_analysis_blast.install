@@ -170,6 +170,7 @@ function tripal_analysis_blast_add_cvterms () {
    tripal_add_cvterms('analysis_blast_query_type','The feature type (e.g. mRNA, polypeptide) of the query input file. This type is used to identify the query feature when multiple features have the same name');
    tripal_add_cvterms('analysis_blast_query_uniquename','Indicates if the matched name in the query definition line of the blast results is feature uniquename');
    tripal_add_cvterms('analysis_blast_blastfile_ext','Indicates the extension of the blast files. This is required if the blastfile setting is a directory.');
+   tripal_add_cvterms('analysis_blast_is_concat','Indicates if the blast results XML file is a series of concatenated XML results.  Such is the case, for example, if Blast2GO was used to perform the analysis.');
 
    // Add cvterm 'analysis_blast_output_iteration_hits' for inserting into featureprop table
    tripal_add_cvterms('analysis_blast_output_iteration_hits', 'Hits of a blast '.
