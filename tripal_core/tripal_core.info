@@ -4,4 +4,4 @@ description = The core module for the Tripal package that integrates Drupal and 
 core = 6.x
 project = tripal_core
 package = Tripal
-version = "6.x-0.2b-m0.2"
+version = 6.x-0.3b

@@ -1,7 +1,7 @@
 ; $Id$
 package = Tripal
 name = Tripal Genetic
-version = 0.3a
+version = 6.x-0.3b
 description = A module for interfacing the GMOD chado database with Drupal, providing viewing of Genetic data
 core = 6.x
 

@@ -8,4 +8,4 @@ dependencies[] = tripal_core
 dependencies[] = tripal_organism
 dependencies[] = search
 dependencies[] = path
-version = "6.x-0.2b-m0.2"
+version = 6.x-0.3b
