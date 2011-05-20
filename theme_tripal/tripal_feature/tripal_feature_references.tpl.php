@@ -19,6 +19,7 @@ if (!$references) {
 if($references[0]->dbxref_id->db_id->name == 'GFF_source' and count($references)==1){
    $references = array();
 }
+
 ?>
 <div id="tripal_feature-references-box" class="tripal_feature-info-box tripal-info-box">
   <div class="tripal_feature-info-box-title tripal-info-box-title">References</div>
@@ -37,14 +38,14 @@ if($references[0]->dbxref_id->db_id->name == 'GFF_source' and count($references)
       }
       $class = 'tripal_feature-table-odd-row tripal-table-odd-row';
       if($i % 2 == 0 ){
-         $class = 'tripal_feature-table-odd-row tripal-table-even-row';
+         $class = 'tripal_feature-table-even-row tripal-table-even-row';
       }
       ?>
       <tr class="<?php print $class ?>">
         <td><?php print $feature_dbxref->dbxref_id->db_id->name?></td>
         <td><?php 
-           if($feature_dbxref->db_id->urlprefix){ 
-              ?><a href="<?php print $feature_dbxref->db_id->urlprefix.$feature_dbxref->dbxref_id->accession?>" target="_blank"><?php print $feature_dbxref->dbxref_id->accession?></a><?php 
+           if($feature_dbxref->dbxref_id->db_id->urlprefix){ 
+              ?><a href="<?php print $feature_dbxref->dbxref_id->db_id->urlprefix.$feature_dbxref->dbxref_id->accession?>" target="_blank"><?php print $feature_dbxref->dbxref_id->accession?></a><?php 
            } else { 
              print $feature_dbxref->dbxref_id->accession; 
            } 
