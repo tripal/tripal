@@ -94,7 +94,7 @@ if (Drupal.jsEnabled) {
    <div id="tripal_organism_toc_title" class="tripal_toc_title">Resources</i></div>
    <span id="tripal_organism_toc_desc" class="tripal_toc_desc"></span>
    <ul id="tripal_organism_toc_list" class="tripal_toc_list">
-
+   <?php // ADD CUSTOMIZED LINKS HERE ?>
    </ul>
 </div>
 

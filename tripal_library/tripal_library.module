@@ -813,7 +813,7 @@ function chado_library_update($node){
       );
       $status = tripal_core_chado_update('library', $match,$values); 
 
-      tripal_library_insert_property($library_id,'library_description',$node->library_description);
+      tripal_library_update_property($library_id,'library_description',$node->library_description);
    }
 }
 

@@ -113,107 +113,30 @@ function tripal_analysis_chado_analysisprop_schema() {
   return $description;
 }
 /**
-* Adds a single property to an existing analysis record.
 *
 * @ingroup tripal_api
 */
 function tripal_analysis_get_property($analysis_id,$property){
-   // construct the array of values to be inserted  
-   $values = array (
-      'analysis_id' => $analysis_id,
-      'type_id' => array ( 
-         'cv_id' => array (
-            'name' => 'tripal',
-         ),
-         'name' => $property,
-         'is_obsolete' => 0
-      ),
-   );
-   $results = tripal_core_generate_chado_var('analysisprop',$values);
-   $results = tripal_core_expand_chado_vars($results,'field','analysisprop.value');
-   return $results;
+   return tripal_core_get_property('analysis',$analysis_id,$property,'tripal');
 }
 /**
-* Adds a single property to an existing analysis record.
 *
 * @ingroup tripal_api
 */
 function tripal_analysis_insert_property($analysis_id,$property,$value,$update_if_present = 0){
-   // first see if the property already exists, if so we can't insert
-   $prop = tripal_analysis_get_property($analysis_id,$property);
-   if(count($prop)>0){
-      if($update_if_present){
-        return tripal_analysis_update_property($analysis_id,$property,$value) ;
-      } else {
-        return FALSE;
-      }
-   }
-
-   // construct the array of values to be inserted  
-   $values = array (
-      'analysis_id' => $analysis_id,
-      'type_id' => array ( 
-         'cv_id' => array (
-            'name' => 'tripal',
-         ),
-         'name' => $property,
-         'is_obsolete' => 0
-      ),
-      'value' => $value, 
-      'rank' => 0,
-   );
-   return tripal_core_chado_insert('analysisprop',$values);
+    return tripal_core_insert_property('analysis',$analysis_id,$property,'tripal',$value,$update_if_present);
 }
 /**
-* Adds a single property to an existing analysis record.
 *
 * @ingroup tripal_api
 */
 function tripal_analysis_update_property($analysis_id,$property,$value,$insert_if_missing = 0){
-
-   // first see if the property is missing (we can't update a missing property
-   $prop = tripal_analysis_get_property($analysis_id,$property);
-   if(count($prop)==0){
-      if($insert_if_missing){
-        return tripal_analysis_insert_property($analysis_id,$property,$value);
-      } else {
-        return FALSE;
-      }
-   }
-
-   // construct the array that will match the exact record to update
-   $match = array (
-      'analysis_id' => $analysis_id,
-      'type_id' => array ( 
-         'cv_id' => array (
-            'name' => 'tripal',
-         ),
-         'name' => $property,
-      ),
-   );
-   // construct the array of values to be updated
-   $values = array (      
-      'value' => $value, 
-   );
-   return tripal_core_chado_update('analysisprop',$match,$values);
+   return tripal_core_update_property('analysis',$analysis_id,$property,'tripal',$value, $insert_if_missing);
 }
 /**
-* Adds a single property to an existing analysis record.
 *
 * @ingroup tripal_api
 */
 function tripal_analysis_delete_property($analysis_id,$property){
-
-
-   // construct the array that will match the exact record to update
-   $match = array (
-      'analysis_id' => $analysis_id,
-      'type_id' => array ( 
-         'cv_id' => array (
-            'name' => 'tripal',
-         ),
-         'name' => $property,
-      ),
-   );
-   return tripal_core_chado_delete('analysisprop',$match);
+   return tripal_core_delete_property('analysis',$analysis_id,$property,'tripal');
 }

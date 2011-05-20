@@ -490,12 +490,12 @@ function tripal_core_chado_select($table,$columns,$values,$options = null){
     if (!$options['order_by']) { $options['order_by'] = array(); }
     
    if (!is_array($columns)){
-      watchdog('tripal_feature', 'the $columns argument for tripal_core_chado_select must be an array.');
+      watchdog('tripal_core', 'the $columns argument for tripal_core_chado_select must be an array.');
       return false;
    }
 
    if (!is_array($values)){
-      watchdog('tripal_feature', 'the $values argument for tripal_core_chado_select must be an array.');
+      watchdog('tripal_core', 'the $values argument for tripal_core_chado_select must be an array.');
       return false;
    }
 
@@ -687,7 +687,11 @@ function tripal_core_chado_get_foreign_key($table_desc,$field,$values, $options 
       // TODO: what do we do if we get to this point and we have a fk 
       // relationship expected but we don't have any definition for one in the
       // table schema??
-      $message = "There is no foreign key relationship defined for ".$field.". To define a foreign key relationship, determine the table this foreign key referrs to (<foreign table>) and then implement hook_chado_<foreign table>_schema(). See tripal_feature_chado_feature_schema for an example.";
+      $message = "There is no foreign key relationship defined for ".$field.". 
+         To define a foreign key relationship, determine the table this foreign 
+         key referrs to (<foreign table>) and then implement 
+         hook_chado_<foreign table>_schema(). See 
+         tripal_feature_chado_feature_schema for an example.";
       watchdog('tripal_core', $message);
       drupal_set_message($message,'error');      
    }
@@ -1269,10 +1273,12 @@ function chado_get_node_id ($table, $id) {
 *
 * @ingroup tripal_api
 */
-function tripal_core_get_property($basetable, $record_id, $property,$cv_name){
+function tripal_core_get_property($basetable, $record_id, $property, $cv_name){
 
+   // get the foreign key for this property table
    $table_desc = module_invoke_all('chado_'.$basetable.'prop_schema');
    $fkcol = key($table_desc['foreign keys'][$basetable]['columns']);
+
    // construct the array of values to be inserted  
    $values = array (
       $fkcol => $record_id,
@@ -1293,23 +1299,29 @@ function tripal_core_get_property($basetable, $record_id, $property,$cv_name){
 *
 * @ingroup tripal_core.api
 */
-function tripal_core_insert_property($proptable, $feature_id,$property,$value,$update_if_present = 0){
+function tripal_core_insert_property($basetable, $record_id, $property, 
+   $cv_name, $value, $update_if_present = 0)
+{
    // first see if the property already exists, if so we can't insert
-   $prop = tripal_feature_get_property($feature_id,$property);
-   if(count($prop)>0){
+   $prop = tripal_core_get_property($basetable,$record_id,$property,$cv_name);
+   if(count($prop)>0){ 
       if($update_if_present){
-        return tripal_feature_update_property($feature_id,$property,$value) ;
+        return tripal_core_update_property($basetable,$record_id,$property,$cv_name,$value) ;
       } else {
         return FALSE;
       }
    }
 
+   // get the foreign key for this property table
+   $table_desc = module_invoke_all('chado_'.$basetable.'prop_schema');
+   $fkcol = key($table_desc['foreign keys'][$basetable]['columns']);
+
    // construct the array of values to be inserted  
    $values = array (
-      'feature_id' => $feature_id,
+      $fkcol => $record_id,
       'type_id' => array ( 
          'cv_id' => array (
-            'name' => 'tripal',
+            'name' => $cv_name,
          ),
          'name' => $property,
          'is_obsolete' => 0
@@ -1317,31 +1329,37 @@ function tripal_core_insert_property($proptable, $feature_id,$property,$value,$u
       'value' => $value, 
       'rank' => 0,
    );
-   return tripal_core_chado_insert('featureprop',$values);
+   return tripal_core_chado_insert($basetable.'prop',$values);
 }
 /**
-* Adds a single property to an existing feature record.
+* Adds a single property to an existing record.
 *
 * @ingroup tripal_api
 */
-function tripal_core_update_property($proptable, $feature_id,$property,$value,$insert_if_missing = 0){
+function tripal_core_update_property($basetable, $record_id,$property,$cv_name,
+   $value,$insert_if_missing = 0)
+{
 
    // first see if the property is missing (we can't update a missing property
-   $prop = tripal_feature_get_property($feature_id,$property);
+   $prop = tripal_core_get_property($basetable,$record_id,$property,$cv_name);
    if(count($prop)==0){
       if($insert_if_missing){
-        return tripal_feature_insert_property($feature_id,$property,$value);
+        return tripal_core_insert_property($basetable,$record_id,$property,$cv_name,$value);
       } else {
         return FALSE;
       }
    }
 
+   // get the foreign key for this property table
+   $table_desc = module_invoke_all('chado_'.$basetable.'prop_schema');
+   $fkcol = key($table_desc['foreign keys'][$basetable]['columns']);
+
    // construct the array that will match the exact record to update
    $match = array (
-      'feature_id' => $feature_id,
+      $fkcol => $record_id,
       'type_id' => array ( 
          'cv_id' => array (
-            'name' => 'tripal',
+            'name' => $cv_name,
          ),
          'name' => $property,
       ),
@@ -1350,24 +1368,27 @@ function tripal_core_update_property($proptable, $feature_id,$property,$value,$i
    $values = array (      
       'value' => $value, 
    );
-   return tripal_core_chado_update('featureprop',$match,$values);
+   return tripal_core_chado_update($basetable.'prop',$match,$values);
 }
 /**
-* Adds a single property to an existing feature record.
+* Adds a single property to an existing record.
 *
 * @ingroup tripal_api
 */
-function tripal_core_delete_property($proptable, $feature_id,$property){
+function tripal_core_delete_property($basetable, $record_id,$property,$cv_name){
+   // get the foreign key for this property table
+   $table_desc = module_invoke_all('chado_'.$basetable.'prop_schema');
+   $fkcol = key($table_desc['foreign keys'][$basetable]['columns']);
 
    // construct the array that will match the exact record to update
    $match = array (
-      'feature_id' => $feature_id,
+      $fkcol => $record_id,
       'type_id' => array ( 
          'cv_id' => array (
-            'name' => 'tripal',
+            'name' => $cv_name,
          ),
          'name' => $property,
       ),
    );
-   return tripal_core_chado_delete('featureprop',$match);
+   return tripal_core_chado_delete($basetable.'prop',$match);
 }
