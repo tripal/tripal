@@ -18,7 +18,7 @@ function tripal_db_menu() {
    $items = array();
 
    $items['admin/tripal/tripal_db'] = array(
-     'title' => 'External Database References',
+     'title' => 'Databases',
      'description' => 'Basic Description of Tripal DB Module Functionality',
      'page callback' => 'tripal_db_module_description_page',
      'access arguments' => array('administer site configuration'),
@@ -27,21 +27,21 @@ function tripal_db_menu() {
 
    $items['admin/tripal/tripal_db/edit_db'] = array(
      'title' => 'Update/Delete Database References',
-     'description' => 'Manage External Databases ',
+     'description' => 'Manage Databases ',
      'page callback' => 'tripal_db_admin_page',
      'access arguments' => array('administer site configuration'),
      'type' => MENU_NORMAL_ITEM,
    );
    
    $items['admin/tripal/tripal_db/add_db'] = array(
-     'title' => 'Add an External Database',
+     'title' => 'Add a Database',
      'page callback' => 'drupal_get_form',
      'page arguments' => array('tripal_db_form'),
      'access arguments' => array('access administration pages'),
      'type' => MENU_NORMAL_ITEM,
    );
    $items['admin/tripal/tripal_db/edit/js'] = array(
-     'title' => 'Edit External Databases',
+     'title' => 'Edit Databases',
      'page callback' => 'tripal_ajax_db_edit',
      'access arguments' => array('access administration pages'),
      'type' => MENU_CALLBACK,

@@ -221,8 +221,7 @@ function tripal_feature_admin () {
          '#type'        => t('textfield'),
          '#description' => t("Internal ID numbers for features consist of the ".
             "chado feature_id and a site specific prefix.  Set the prefix that ".
-            "will be incorporated in front of each feature_id to form a unique ".
-            "accession number for this site."),
+            "will be incorporated in front of each feature_id."),
          '#required'    => TRUE,
          '#default_value' => variable_get('chado_feature_accession_prefix','ID'),
       );

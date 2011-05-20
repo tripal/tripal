@@ -20,7 +20,6 @@ if(isset($arguments['f'])){
    $feature_id = $arguments['f'];
 
    if($feature_id > 0 ){ 
-      print "syncing feature $feature_id\n";
       tripal_feature_sync_feature($feature_id); 
    }
    else{ 
@@ -83,6 +82,9 @@ function tripal_feature_sync_features ($max_sync = 0, $job_id = NULL){
    // is not one of the specified typse we won't build a node for it.
    $allowed_types = variable_get('chado_feature_types','EST contig');
    $allowed_types = preg_replace("/[\s\n\r]+/"," ",$allowed_types);
+
+   print "Looking for features of type: $allowed_types\n";
+
    $so_terms = split(' ',$allowed_types);
    $where_cvt = "";
    foreach ($so_terms as $term){
@@ -95,16 +97,20 @@ function tripal_feature_sync_features ($max_sync = 0, $job_id = NULL){
    $orgs = organism_get_synced();
    $where_org = "";
    foreach($orgs as $org){
-      $where_org .= "F.organism_id = $org->organism_id OR ";
+      if($org->organism_id){
+         $where_org .= "F.organism_id = $org->organism_id OR ";
+      }
    }
    $where_org = substr($where_org,0,strlen($where_org)-3);  # strip trailing 'OR'
 
    // use this SQL statement to get the features that we're going to upload
    $sql = "SELECT feature_id ".
           "FROM {FEATURE} F ".
-          "   INNER JOIN Cvterm CVT ON F.type_id = CVT.cvterm_id ".
-          "WHERE ($where_cvt) AND ($where_org) ".
+          "  INNER JOIN Cvterm CVT ON F.type_id = CVT.cvterm_id ".
+          "  INNER JOIN CV on CV.cv_id = CVT.cv_id ".
+          "WHERE ($where_cvt) AND ($where_org) AND CV.name = 'sequence' ".
           "ORDER BY feature_id";
+
    // get the list of features
    $previous_db = tripal_db_set_active('chado');  // use chado database
    $results = db_query($sql);
@@ -129,6 +135,8 @@ function tripal_feature_sync_features ($max_sync = 0, $job_id = NULL){
 
    // Iterate through features that need to be synced
    $interval = intval($count * 0.01);
+   $num_ids = sizeof($ids);
+   $i = 0;
    foreach($ids as $feature_id){
       // update the job status every 1% features
       if($job_id and $i % $interval == 0){
@@ -145,7 +153,7 @@ function tripal_feature_sync_features ($max_sync = 0, $job_id = NULL){
          # we are not sure why PHP does not clean up the memory as it goes
          # to avoid this problem we will call this script through an
          # independent system call
-
+         print "$i of $num_ids Syncing feature id: $feature_id\n";
          $cmd = "php " . drupal_get_path('module', 'tripal_feature') . "/syncFeatures.php -f $feature_id ";
          system($cmd);
 
@@ -162,7 +170,7 @@ function tripal_feature_sync_features ($max_sync = 0, $job_id = NULL){
  * @ingroup tripal_feature
  */
 function tripal_feature_sync_feature ($feature_id){
-//   print "\tfeature $feature_id\n";
+//   print "\tSyncing feature $feature_id\n";
 
    $mem = memory_get_usage(TRUE);
    $mb = $mem/1048576;
