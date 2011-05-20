@@ -165,10 +165,11 @@ function tripal_analysis_blast_parseXML($analysis_id, $blastdb, $blastfile,
 	// Get cvterm_id for 'analysis_blast_output_iteration_hits' which is required
 	// for inserting into the analysisfeatureprop table
 	$previous_db = tripal_db_set_active('chado'); // use chado database
-	$sql = "SELECT CVT.cvterm_id FROM {cvterm} CVT ".
-       "INNER JOIN cv ON cv.cv_id = CVT.cv_id ".
-       "WHERE CVT.name = 'analysis_blast_output_iteration_hits' ".
-       "AND CV.name = 'tripal'";
+	$sql = "SELECT CVT.cvterm_id ".
+          "FROM {cvterm} CVT ".
+          "   INNER JOIN {cv} ON cv.cv_id = CVT.cv_id ".
+          "WHERE CVT.name = 'analysis_blast_output_iteration_hits' ".
+          "   AND CV.name = 'tripal'";
 	$type_id = db_result(db_query($sql));
 
 	// Load the XML file.

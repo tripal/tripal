@@ -1,5 +1,7 @@
 <?php
 
+require_once "gaf_loader.inc";
+
 function tripal_analysis_go_init(){
    // Add style sheet
    drupal_add_css(drupal_get_path('theme', 'tripal').'/css/tripal_analysis_go.css');
@@ -31,9 +33,43 @@ function tripal_analysis_go_menu() {
       'access arguments' => array('access chado_analysis_go content'),
       'type' => MENU_CALLBACK
    );
-
+   $items['admin/tripal/tripal_analysis_go'] = array(
+     'title' => 'Gene Ontology',
+     'description' => 'Administrative tools for managing Gene Ontology data.',
+     'page callback' => 'tripal_analysis_go_module_description_page',
+     'access arguments' => array('administer site configuration'),
+     'type' => MENU_NORMAL_ITEM,
+   );
+   $items['admin/tripal/tripal_analysis_go/gaf_load'] = array(
+     'title' => t('Import GO terms with GAF file'),
+     'description' => t("Import GO terms into Chado using the Gene Ontology's GAF 2.0 file format"),
+     'page callback' => 'drupal_get_form',
+     'page arguments' => array('tripal_analysis_go_gaf_load_form'),
+     'access arguments' => array('access administration pages'),
+     'type' => MENU_NORMAL_ITEM,
+   );
 
    return $items;
+}
+/*************************************************************************
+ * Purpose: Provide Guidance to new Tripal Admin
+ *
+ * @return HTML Formatted text
+ */
+function tripal_analysis_go_module_description_page() {
+  $text = '';
+  
+  $text .= '<h3>Description:</h3>';
+  $text .= '<p>TODO: Basic Description of this module including mention/link to the chado module</p>';
+
+  $text .= '<h3>Post Installation Instructions:</h3>';
+  $text .= '<p>TODO: Describe any post installation intructions here. You shouldalways include setting user permissions.</p>';
+  
+  
+  $text .= '<h3>Features of this Module:</h3>';
+  $text .= '<p>TODO: Discuss the Features of this module including links. Some features to consider are creating content, details pages/node content, editing/deleteing, basic listings and vies integration. See admin/tripal/tripal_stock for an example.</p>';
+  
+  return $text;
 }
 /*******************************************************************************
  * Set the permission types that the chado module uses.  Essentially we
@@ -509,4 +545,43 @@ function tripal_analysis_go_get_settings() {
    $settings->form = $form;
    $settings->title = "Tripal GO";
    return $settings;
+}
+/**
+ *
+ *
+ * @ingroup tripal_feature
+ */
+function tripal_analysis_go_job_describe_args($callback,$args){
+
+   $new_args = array();
+   if($callback == 'tripal_analysis_go_load_gaf'){
+      
+      $new_args['GAF 2.0 file'] = $args[0];
+
+      $organism = tripal_core_chado_select('organism',array('genus','species'),array('organism_id' => $args[1]));
+      $new_args['Organism'] = $organism[0]->genus." ". $organism[0]->species;
+      $new_args['Sequence Type'] = $args[8];
+
+      // add in the analysis 
+      if($args[2]){
+         $analysis = tripal_core_chado_select('analysis',array('name'),array('analysis_id' => $args[2]));
+      }
+      $new_args['Analysis'] = $analysis[0]->name;
+
+      if($args[3]){
+        $new_args['Function to perform'] = 'Add GO terms';
+      }
+      if($args[4]){
+        $new_args['Function to perform'] = 'Replace GO terms';
+      }
+      if($args[5]){
+        $new_args['Function to perform'] = 'Delete GO terms';
+      }
+
+      $new_args['Regular expression for the feature name'] = $args[6];
+      $new_args['Regular expression for the feature unique name'] = $args[7];
+
+
+   }
+   return $new_args;
 }

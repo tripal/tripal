@@ -23,7 +23,7 @@ function tripal_core_gff3_load_form (){
       '#type'          => 'textfield',
       '#title'         => t('GFF3 File'),
       '#description'   => t('Please enter the full system path for the GFF file, or a path within the Drupal
-                             installation (e.g. /sites/default/files/xyz.obo).  The path must be accessible to the
+                             installation (e.g. /sites/default/files/xyz.gff).  The path must be accessible to the
                              server on which this Drupal instance is running.'),
       '#required' => TRUE,
       '#weight'        => 1

@@ -4,7 +4,7 @@ $terms = $feature->tripal_analysis_go->terms;
 ?>
 <div id="tripal_feature-go_terms-box" class="tripal_feature-info-box tripal-info-box">
   <div class="tripal_feature-info-box-title tripal-info-box-title">GO Assignments</div>
-  <div class="tripal_feature-info-box-desc tripal-info-box-desc">The feature '<?php print $feature->featurename ?>' is annotated with the following GO terms. Hover your mouse over the term name for a popup description.</div>
+  <div class="tripal_feature-info-box-desc tripal-info-box-desc">This <?php print $feature->type_id->name ?> is annotated with the following GO terms.</div>
   <?php if(count($terms) > 0){ ?>
   <table id="tripal_feature-go_terms-table" class="tripal_feature-table tripal-table tripal-table-horz">
     <tr>
