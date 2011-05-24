@@ -142,15 +142,44 @@ function tripal_library_views_api() {
 function tripal_library_module_description_page() {
   $text = '';
   
-  $text .= '<h3>Description:</h3>';
-  $text .= '<p>TODO: Basic Description of this module including mention/link to the chado module</p>';
+  $text .= '<h3>Module Description:</h3>';
+  $text .= '<p>The Tripal Library module is an interface for the Chado Library module which groups features (sequences) into genetic libraries. 
+    This module provides support for visualization of "library" pages, editing and updating.</p>';
 
-  $text .= '<h3>Post Installation Instructions:</h3>';
-  $text .= '<p>TODO: Describe any post installation intructions here. You shouldalways include setting user permissions.</p>';
+  $text .= '<h3>Setup Instructions:</h3>';
+  $text .= '<ol>';
+  $text .= '<li><p><b>Set Permissions</b>: The library module supports the Drupal user permissions interface for 
+               controlling access to library content and functions. These permissions include viewing, 
+               creating, editing or administering of
+               library content. The default is that only the original site administrator has these 
+               permissions.  You can <a href="'.url('admin/user/roles').'">add roles</a> for classifying users, 
+               <a href="'.url('admin/user/user').'">assign users to roles</a> and
+               <a href="'.url('admin/user/permissions').'">assign permissions</a> for the library content to 
+               those roles.  For a simple setup, allow anonymous users access to view organism content and 
+               allow the site administrator all other permissions.</p></li>';
+  $text .= '<li><p><b>Sync any Existing Libraries</b>: Near the top of the '.l('Library Configuration page','admin/tripal/tripal_library/configuration').' there is 
+              a Sync Libraries section which provides list of libraries currently in chado which can be sync\'d. 
+              Simply select the libraries you would like to create Drupal/Tripal pages for and click Sync Libraries.</p></li>';          
+  $text .= '</ol>';
   
   
   $text .= '<h3>Features of this Module:</h3>';
-  $text .= '<p>TODO: Discuss the Features of this module including links. Some features to consider are creating content, details pages/node content, editing/deleteing, basic listings and vies integration. See admin/tripal/tripal_stock for an example.</p>';
+  $text .= '<ul>';
+    $text .= '<li><b>Add/Edit/Delete Libraries</b>: Libraries with no associated features can be created '.l('here', 'node/add/chado-library').' but it is 
+              recommended to create the library using the feature loader. For example, when you load FASTA files using the Tripal loader you are
+              given the option of specifying a library for all created features. Existing Libraries (regardless of the method used to create them) can be 
+              edited or deleted by clicking the Edit tab at the top of the Library Page.</li>';  
+    $text .= '<li><p><b>Integration with Drupal Views</b>: <a href="http://drupal.org/project/views">Drupal Views</a> is
+              a powerful tool that allows the site administrator to create lists or basic searching forms of Chado content.
+              It provides a graphical interface within Drupal to allow the site admin to directly query the Chado database
+              and create custom lists without PHP programming or customization of Tripal source code.  Views can also
+              be created to filter content that has not yet been synced with Druapl in order to protect access to non
+              published data (only works if Chado was installed using Tripal).  You can see a list of available pre-existing
+              Views <a href="'.url('admin/build/views/').'">here</a>, as well as create your own. </p></li>';  
+    $text .= '<li><b>Basic Listing</b>: This module provides a basic <a href="'.url('libraries').'">library display 
+              tool</a> for finding or listing libraries in Chado. It does not require indexing for Drupal searching but relies
+              on Drupal Views.  <a href="http://drupal.org/project/views">Drupal Views</a> must be installed.</li>';  
+  $text .= '</ul>';
   
   return $text;
 }

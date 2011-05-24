@@ -89,22 +89,36 @@ function tripal_db_module_description_page() {
       $text .= '<li>'.l('Database References Listing', 'admin/tripal/tripal_db/list_dbxrefs').'</li>';
     $text .= '</ul>';
     
-  $text .= '<h3>Description:</h3>';
+  $text .= '<h3>Module Description:</h3>';
   $text .= '<p>The Tripal DB Module provides functionality for linking the data in your Tripal Website with other biological websites out there. Essentially you register an enternal database with your website and then associate any of your data (usually sequence features) with that external database by providing the accession for your data in the other database. If the other database is online and you provided a URL prefix when you registered the external database with your site then there will be a link on the details page for your data that takes the user to the same record in the external database.</p>';
 
-  $text .= '<h3>Post Installation Instructions:</h3>';
-  $text .= '<p>Simply register any external databases with data pertinent to your site. Then as you load in your data, create database references linking your data to the external database.</p>';
+  $text .= '<h3>Setup Instructions:</h3>';
+  $text .= '<ol>';
+  $text .= '<li><p><b>Set Permissions</b>: The feature module supports the Drupal user permissions interface for 
+               controlling access to feature content and functions. These permissions include viewing, 
+               creating, editing or administering of
+               feature content. The default is that only the original site administrator has these 
+               permissions.  You can <a href="'.url('admin/user/roles').'">add roles</a> for classifying users, 
+               <a href="'.url('admin/user/user').'">assign users to roles</a> and
+               <a href="'.url('admin/user/permissions').'">assign permissions</a> for the feature content to 
+               those roles.  For a simple setup, allow anonymous users access to view organism content and 
+               allow the site administrator all other permissions.</p></li>';
+  $text .= '<li><b>Register any external databases</b> with data pertinent to your site.</li>';
+  $text .= '<li><b>Create Database References</b>: Then as you load in your data, create database references linking your data to the external database.</li>';
+  $text .= '</ol>';
   
   
   $text .= '<h3>Features of this Module:</h3>';
-  $text .= '<b>Add/Register External Databases</b>';
-  $text .= '<p>By entering the name and any additional details into the <a href="tripal_db/add_db">add database form</a> you register an external database with your website. This allows you to specify that a sequence feature or other data is also stored in an external database. This is escpecially useful if the external database may contain additional details not stored in yours. If the external database is online you can even provide a URL prefix which will automatically link any data in your website to theirs via a web link.</p>';
+  $text .= '<ul>';
+  $text .= '<li><b>Add/Register External Databases</b>:';
+  $text .= 'By entering the name and any additional details into the <a href="tripal_db/add_db">add database form</a> you register an external database with your website. This allows you to specify that a sequence feature or other data is also stored in an external database. This is escpecially useful if the external database may contain additional details not stored in yours. If the external database is online you can even provide a URL prefix which will automatically link any data in your website to theirs via a web link.</li>';
   
-  $text .= '<b>Update/Delete External Databases</b>';
-  $text .= '<p>To edit the details of an external database record or to delete an already existing external database, go to the <a href="tripal_db/edit_db">Update/Delete DBs form</a>. This will allow you to change details or enter new details.</p>';
+  $text .= '<li><b>Update/Delete External Databases</b>';
+  $text .= 'To edit the details of an external database record or to delete an already existing external database, go to the <a href="tripal_db/edit_db">Update/Delete DBs form</a>. This will allow you to change details or enter new details.</li>';
 
-  $text .= '<b>List all External Database References</b>';
-  $text .= '<p>If you have views installed, there will be a link to a default listing of all database references currently in your database. This listing can be accessed <a href="tripal_db/list_dbxrefs">here</a>. It requires the Drupal Module Views version 2 to be installed (<a href="http://drupal.org/project/views">Drupal Views</a>)</p>';
+  $text .= '<li><b>List all External Database References</b>';
+  $text .= 'If you have views installed, there will be a link to a default listing of all database references currently in your database. This listing can be accessed <a href="tripal_db/list_dbxrefs">here</a>. It requires the Drupal Module Views version 2 to be installed (<a href="http://drupal.org/project/views">Drupal Views</a>)</li>';
+  $text .= '</ul>';  
   
   return $text;
 }

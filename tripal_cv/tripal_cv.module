@@ -235,7 +235,7 @@ function tripal_cv_module_description_page() {
     $text .= '</ul>';
     
     
-  $text .= '<h3>Description:</h3>';
+  $text .= '<h3>Module Description:</h3>';
   $text .= '<p>The Tripal CV (Controlled Vocabularies) Module provides 
   	functionality for managing controlled vocabularies and the terms they are
   	comprised of. The flexibility and extendibility of the chado schema depends
@@ -243,54 +243,64 @@ function tripal_cv_module_description_page() {
   	feature types the chado schema can describe features of any type, even those
   	we have not concieved of yet.</p>';
 
-  $text .= '<h3>Post Installation Instructions:</h3>';
-  $text .= '<p>The main post installation step is <b>load any controlled 
-  	vocabularies/ontologies needed for you content</b>. It is suggested that you
-  	use community developed ontologes whenever possible. These ontologies
-  	are often very well thought out and cover possibilities you may not have
-  	thought of yet.</p>';
-  $text .= '<p>However, in some cases, community developed ontologies for your
-  	data may not yet be developed. In this case, it is suggested that you begin
-  	developement of an ontology using one of the online tools. You might find
-  	that many researchers are trying to deal with the same data and are willing
-  	to help you in this endevor. You can create a controlled vocabulary and
-  	add terms to it to provide functionality to your site while you are waiting
-  	for the ontology to be developed.</p>';
-  
+  $text .= '<h3>Setup Instructions:</h3>';
+  $text .= '<p>After installation of the controlled vocabulary module, the following tasks should be performed:</p>';
+    $text .= '<ol>';
+      $text .= '<li><p><b>Set Permissions</b>: The cv module supports the Drupal user permissions interface for 
+               controlling access to cv content and functions. These permissions include viewing, 
+               creating, editing or administering of
+               cv content. The default is that only the original site administrator has these 
+               permissions.  You can <a href="'.url('admin/user/roles').'">add roles</a> for classifying users, 
+               <a href="'.url('admin/user/user').'">assign users to roles</a> and
+               <a href="'.url('admin/user/permissions').'">assign permissions</a> for the cv content to 
+               those roles.  For a simple setup, allow anonymous users access to view organism content and 
+               allow the site administrator all other permissions.</p></li>';
+      $text .= '<li><b>Loading of Ontologies/Controlled Vocabularies</b>: You can access this loader at '.
+        l('Admin->Tripal Management->Tripal CV->Add/Update Ontology With OBO File', 'admin/tripal/tripal_cv/obo_loader')
+        .'. This loader allows you to choose from a list of common ontologies or
+        enter the URL or location to an OBO file. Even the list of common
+        ontologies is using a URL ensuring you get the most up to date ontology.</p>';
+      $text .= '<p>This loader adds a Tripal Job which then waits in a queue to
+        be launched. To launch Tripal Jobs either navidate to the root of your
+        drupal installation and execute "php sites/all/modules/tripal/tripal_core/
+        tripal_launch_jobs.php <drupal user>" or set up a cron job (See user manual
+        for more details).</p>';
+      $text .= '<p>NOTE: in some cases, community developed ontologies for your
+        data may not yet be developed. In this case, it is suggested that you begin
+        developement of an ontology using one of the online tools. You might find
+        that many researchers are trying to deal with the same data and are willing
+        to help you in this endevor. You can '.l('create a controlled vocabulary','admin/tripal/tripal_cv/add_cv').' and '
+        . l('add terms to it', 'admin/tripal/tripal_cv/add_cvterm') .' to provide functionality to your site while you are waiting
+        for the ontology to be developed.</p></li>';
+    $text .= '</ol>';
   
   $text .= '<h3>Features of this Module:</h3>';
-  $text .= '<b>'.l('Load an already Existing Ontology/Controlled Vocabulary', 'admin/tripal/tripal_cv/obo_loader').'</b>';
-  $text .= '<p>This module provides an ontology loader to load already existing
-  	ontologies into chado. You can access this loader at '.
-  	l('Admin->Tripal Management->Tripal CV->Add/Update Ontology With OBO File', 'admin/tripal/tripal_cv/obo_loader')
-  	.'. This loader allows you to choose from a list of common ontologies or
-  	enter the URL or location to an OBO file. Even the list of common
-  	ontologies is using a URL ensuring you get the most up to date ontology.</p>';
-  $text .= '<p>This loader adds a Tripal Job which then waits in a queue to
-  	be launched. To launch Tripal Jobs either navidate to the root of your
-  	drupal installation and execute "php sites/all/modules/tripal/tripal_core/
-  	tripal_launch_jobs.php <drupal user>" or set up a cron job (See user manual
-  	for more details).</p>';
-  
-  $text .= '<b>Create/Update/Delete A Controlled Vocaulbulary</b>';
-  $text .= '<p>As mentioned above, there are some cases where you might need 
-  	to create your own controlled vocabulary. To do this go to '.
-  	l('Admin->Tripal Management->Tripal CV->Add a Controlled Vocabulary','admin/tripal/tripal_cv/add_cv')
-  	.' and fill out the form provided.</p>';
-  $text .= '<p>Sometimes you might want to update or even delete an already
-  	existing controlled vocabulary. To Update/Delete a controlled vocabulary
-  	go to '.l('Admin->Tripal Management->Tripal CV->Update/Delete Controlled Vocabulary', 'admin/tripal/tripal_cv/edit_cv')
-  	.', select the existing controlled vocabulary you want to modify and then 
-  	edit it as desired. This only modifies the name, description of a
-  	controlled vocabulary. See the next section for adding, removing, editing
-  	the term a controlled vocabulary contains.</p>';
-  
-  $text .= '<b>Create a Controlled Vocaulbulary Term</b>';
-  $text .= '<p>To Add a term to an already existing controlled vocabulary
-  	go to '.l('Admin->Tripal Management->Tripal CV->Add a Controlled Vocabulary Term','admin/tripal/tripal_cv/add_cvterm')
-  	.', select the controlled vocabulary you want to add terms to and then fill
-  	out the form.</p>';
-  
+  $text .= '<p>Aside from the data loading described above, the Tripal Controlled Vocabulary (CV) module also provides the following functionality:</p>';
+    $text .= '<ul>';  
+      $text .= '<li><b>Create/Update/Delete A Controlled Vocaulbulary</b>: to create your own controlled vocabulary go to '.
+        l('Admin->Tripal Management->Tripal CV->Add a Controlled Vocabulary','admin/tripal/tripal_cv/add_cv')
+        .' and fill out the form provided.To Update/Delete a controlled vocabulary
+        go to '.l('Admin->Tripal Management->Tripal CV->Update/Delete Controlled Vocabulary', 'admin/tripal/tripal_cv/edit_cv')
+        .', select the existing controlled vocabulary you want to modify and then 
+        edit it as desired. This only modifies the name, description of a
+        controlled vocabulary. See the next section for adding, removing, editing
+        the term a controlled vocabulary contains.</li>';
+      
+      $text .= '<li><b>Create a Controlled Vocaulbulary Term</b>: To Add a term to an already existing controlled vocabulary
+        go to '.l('Admin->Tripal Management->Tripal CV->Add a Controlled Vocabulary Term','admin/tripal/tripal_cv/add_cvterm')
+        .', select the controlled vocabulary you want to add terms to and then fill
+        out the form.</li>';
+      $text .= '<li><b>Controlled Vocabulary Term Browser</b>: This module provides a '.l('basic listing','admin/tripal/tripal_cv/list_cvterms').' of controlled vocabulry terms for
+              for all vocabularies currently in chado. It does not require indexing for Drupal searching but relies on Drupal Views. 
+              <a href="http://drupal.org/project/views">Drupal Views</a> must be installed.</li>';
+      $text .= '<li><p><b>Integration with Drupal Views</b>: <a href="http://drupal.org/project/views">Drupal Views</a> is
+              a powerful tool that allows the site administrator to create lists or basic searching forms of Chado content.
+              It provides a graphical interface within Drupal to allow the site admin to directly query the Chado database
+              and create custom lists without PHP programming or customization of Tripal source code.  Views can also
+              be created to filter content that has not yet been synced with Druapl in order to protect access to non
+              published data (only works if Chado was installed using Tripal).  You can see a list of available pre-existing
+              Views <a href="'.url('admin/build/views/').'">here</a>, as well as create your own. </p></li>';
+    $text .= '</ul>';  
   return $text;
 }
 
