@@ -71,7 +71,7 @@ class views_handler_filter_stock_dbxref_id extends views_handler_filter {
   }
 
   function value_form(&$form, &$form_state) {
-    parent::value_form(&$form, &$form_state);
+    parent::value_form($form, $form_state);
     
 		$form['value'] = array(
   	  '#type' => 'textfield',

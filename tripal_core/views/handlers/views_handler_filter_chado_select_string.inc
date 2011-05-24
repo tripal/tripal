@@ -14,7 +14,7 @@ class views_handler_filter_chado_select_string extends views_handler_filter_stri
   *   and the exposed form
   */
   function value_form(&$form, &$form_state) {
-    parent::value_form(&$form, &$form_state);
+    parent::value_form($form, $form_state);
     
     // Get Options
     if ($this->options['exposed']) {    

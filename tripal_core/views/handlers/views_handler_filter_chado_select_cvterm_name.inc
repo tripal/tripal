@@ -90,7 +90,7 @@ class views_handler_filter_chado_select_cvterm_name extends views_handler_filter
   *   and the exposed form
   */
   function value_form(&$form, &$form_state) {
-    parent::value_form(&$form, &$form_state);
+    parent::value_form($form, $form_state);
     
     if (preg_match('/select/', $this->options['values_form_type'])) {
       // Get Options

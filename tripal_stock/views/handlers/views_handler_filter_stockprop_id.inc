@@ -34,7 +34,7 @@ class views_handler_filter_stockprop_id extends views_handler_filter {
   }
 
   function options_validate(&$form, &$form_state) {
-    parent::options_validate(&$form, &$form_state);
+    parent::options_validate($form, $form_state);
 
     if (preg_match('/NULL/',$form_state['values']['options']['operator'])) {
       $value = $form_state['values']['options']['value'];
@@ -86,7 +86,7 @@ class views_handler_filter_stockprop_id extends views_handler_filter {
   }
 
   function value_form(&$form, &$form_state) {
-    parent::value_form(&$form, &$form_state);
+    parent::value_form($form, $form_state);
 	
 		if ($this->options['expose']['display_type'] == 'select') {
 		

@@ -3,7 +3,7 @@
 class views_handler_filter_organism_common_name extends views_handler_filter_string {
 
   function value_form(&$form, &$form_state) {
-    parent::value_form(&$form, &$form_state);
+    parent::value_form($form, $form_state);
 
     // Get Options
     $options['<select organism>'] = '<None>';
