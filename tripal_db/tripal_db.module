@@ -81,16 +81,30 @@ function tripal_db_views_api() {
  */
 function tripal_db_module_description_page() {
   $text = '';
-  
+
+  $text = '<h3>Tripal External Database Administrative Tools Quick Links</h3>';
+    $text .= '<ul>';
+      $text .= '<li>'.l('Add External DB', 'admin/tripal/tripal_db/add_db').'</li>';
+      $text .= '<li>'.l('Update/Delete External DBs', 'admin/tripal/tripal_db/edit_db').'</li>';
+      $text .= '<li>'.l('Database References Listing', 'admin/tripal/tripal_db/list_dbxrefs').'</li>';
+    $text .= '</ul>';
+    
   $text .= '<h3>Description:</h3>';
-  $text .= '<p>TODO: Basic Description of this module including mention/link to the chado module</p>';
+  $text .= '<p>The Tripal DB Module provides functionality for linking the data in your Tripal Website with other biological websites out there. Essentially you register an enternal database with your website and then associate any of your data (usually sequence features) with that external database by providing the accession for your data in the other database. If the other database is online and you provided a URL prefix when you registered the external database with your site then there will be a link on the details page for your data that takes the user to the same record in the external database.</p>';
 
   $text .= '<h3>Post Installation Instructions:</h3>';
-  $text .= '<p>TODO: Describe any post installation intructions here. You shouldalways include setting user permissions.</p>';
+  $text .= '<p>Simply register any external databases with data pertinent to your site. Then as you load in your data, create database references linking your data to the external database.</p>';
   
   
   $text .= '<h3>Features of this Module:</h3>';
-  $text .= '<p>TODO: Discuss the Features of this module including links. Some features to consider are creating content, details pages/node content, editing/deleteing, basic listings and vies integration. See admin/tripal/tripal_stock for an example.</p>';
+  $text .= '<b>Add/Register External Databases</b>';
+  $text .= '<p>By entering the name and any additional details into the <a href="tripal_db/add_db">add database form</a> you register an external database with your website. This allows you to specify that a sequence feature or other data is also stored in an external database. This is escpecially useful if the external database may contain additional details not stored in yours. If the external database is online you can even provide a URL prefix which will automatically link any data in your website to theirs via a web link.</p>';
+  
+  $text .= '<b>Update/Delete External Databases</b>';
+  $text .= '<p>To edit the details of an external database record or to delete an already existing external database, go to the <a href="tripal_db/edit_db">Update/Delete DBs form</a>. This will allow you to change details or enter new details.</p>';
+
+  $text .= '<b>List all External Database References</b>';
+  $text .= '<p>If you have views installed, there will be a link to a default listing of all database references currently in your database. This listing can be accessed <a href="tripal_db/list_dbxrefs">here</a>. It requires the Drupal Module Views version 2 to be installed (<a href="http://drupal.org/project/views">Drupal Views</a>)</p>';
   
   return $text;
 }

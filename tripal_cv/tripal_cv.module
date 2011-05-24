@@ -223,7 +223,18 @@ function tripal_cv_theme () {
  */
 function tripal_cv_module_description_page() {
   $text = '';
-  
+
+  $text = '<h3>Tripal Controlled Vocabulary Administrative Tools Quick Links</h3>';
+    $text .= '<ul>';
+      $text .= '<li>'.l('Add CV', 'admin/tripal/tripal_cv/add_cv').'</li>';
+      $text .= '<li>'.l('Update/Delete CV', 'admin/tripal/tripal_cv/edit_cv').'</li>';
+      $text .= '<li>'.l('Add/Update Ontology', 'admin/tripal/tripal_cv/obo_loader').'</li>';
+      $text .= '<li>'.l('Add CV term', 'admin/tripal/tripal_cv/add_cvterm').'</li>';
+      $text .= '<li>'.l('Term Listing', 'admin/tripal/tripal_cv/list_cvterms').'</li>';
+      $text .= '<li>'.l('Update cvtermpath', 'admin/tripal/tripal_cv/cvtermpath').'</li>';
+    $text .= '</ul>';
+    
+    
   $text .= '<h3>Description:</h3>';
   $text .= '<p>The Tripal CV (Controlled Vocabularies) Module provides 
   	functionality for managing controlled vocabularies and the terms they are

@@ -12,6 +12,12 @@
 function tripal_stock_module_description_page() {
   $text = '';
   
+  $text = '<h3>Tripal Stock Administrative Tools Quick Links</h3>';
+    $text .= '<ul>';
+      $text .= '<li>'.l('Configuration', 'admin/tripal/tripal_stock/configuration').'</li>';
+      $text .= '<li>'.l('Stock Listing', 'stocks').'</li>';
+    $text .= '</ul>';
+    
   $text .= '<h3>Description:</h3>';
   //================================================================================
   $text .= '<p>The Tripal Stock Module provides functionality for adding, editing, deleting and accessing chado stocks. The stock module was designed to store information about stock collections in a laboratory. What is called a stock could also be called a strain or an accession. There is a lot in common between a Drosophila stock and a Saccharomyces strain and an Arabidopsis line. They all come from some taxon, have genotypes, physical locations in the lab, some conceivable relationship with a publication, some conceivable relationship with a sequence feature (such as a transgene), and could be described by some ontology term. For more information about the chado Stock Module <a href="http://gmod.org/wiki/Chado_Stock_Module">see the GMOD Wiki Page</a></p>';
