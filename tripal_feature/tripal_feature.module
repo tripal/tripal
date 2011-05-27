@@ -308,20 +308,14 @@ function tripal_feature_block($op = 'list', $delta = 0, $edit=array()){
          $blocks['properties']['info'] = t('Tripal Feature Properties');
          $blocks['properties']['cache'] = BLOCK_NO_CACHE;;
 
-         $blocks['featureloc_sequences']['info'] = t('Tripal Formatted Location Sequence');
+         $blocks['featureloc_sequences']['info'] = t('Tripal Formatted Sequence');
          $blocks['featureloc_sequences']['cache'] = BLOCK_NO_CACHE;
 
-         $blocks['featurelocs_as_parent']['info'] = t('Tripal Feature Locations as Parent');
-         $blocks['featurelocs_as_parent']['cache'] = BLOCK_NO_CACHE;
+         $blocks['alignments']['info'] = t('Tripal Feature Alignments');
+         $blocks['alignments']['cache'] = BLOCK_NO_CACHE;
 
-         $blocks['featurelocs_as_child']['info'] = t('Tripal Feature Locations as Child');
-         $blocks['featurelocs_as_child']['cache'] = BLOCK_NO_CACHE;
-
-         $blocks['relationships_as_object']['info'] = t('Tripal Feature Relationships as Object');
-         $blocks['relationships_as_object']['cache'] = BLOCK_NO_CACHE;
-
-         $blocks['relationships_as_subject']['info'] = t('Tripal Feature Relationships as Subject');
-         $blocks['relationships_as_subject']['cache'] = BLOCK_NO_CACHE;
+         $blocks['relationships']['info'] = t('Tripal Feature Relationships');
+         $blocks['relationships']['cache'] = BLOCK_NO_CACHE;
 
          $blocks['org_feature_counts']['info'] = t('Tripal Organism Feature Counts');
          $blocks['org_feature_counts']['cache'] = BLOCK_NO_CACHE;
@@ -362,21 +356,13 @@ function tripal_feature_block($op = 'list', $delta = 0, $edit=array()){
                   $block['subject'] = t('Formatted Sequences');
                   $block['content'] = theme('tripal_feature_featureloc_sequences',$node);
                   break;
-               case 'featurelocs_as_parent':
-                  $block['subject'] = t('Parent Features');
-                  $block['content'] = theme('tripal_feature_featurelocs_as_parent',$node);
+               case 'alignments':
+                  $block['subject'] = t('Alignments');
+                  $block['content'] = theme('tripal_feature_featurelocs',$node);
                   break;
-               case 'featurelocs_as_child':
-                  $block['subject'] = t('Child Features');
-                  $block['content'] = theme('tripal_feature_featurelocs_as_child',$node);
-                  break;
-               case 'relationships_as_object':
-                  $block['subject'] = t('Object Relationships');
-                  $block['content'] = theme('tripal_feature_relationships_as_object',$node);
-                  break;
-               case 'relationships_as_subject':
-                  $block['subject'] = t('Subject Relationships');
-                  $block['content'] = theme('tripal_feature_relationships_as_child',$node);
+               case 'relationships':
+                  $block['subject'] = t('Relationships');
+                  $block['content'] = theme('tripal_feature_relationships',$node);
                   break;
                case 'org_feature_counts':
                   $block['subject'] = t('Feature Type Summary');
@@ -1590,21 +1576,13 @@ function tripal_feature_theme () {
          'arguments' => array('node'=> null),
          'template' => 'tripal_feature_properties',
       ),
-      'tripal_feature_featurelocs_as_parent' => array (
+      'tripal_feature_featurelocs' => array (
          'arguments' => array('node'=> null),
-         'template' => 'tripal_feature_featurelocs_as_parent',
+         'template' => 'tripal_feature_featurelocs',
       ),
-      'tripal_feature_featurelocs_as_child' => array (
+      'tripal_feature_relationships' => array (
          'arguments' => array('node'=> null),
-         'template' => 'tripal_feature_featurelocs_as_child',
-      ),
-      'tripal_feature_relationships_as_object' => array (
-         'arguments' => array('node'=> null),
-         'template' => 'tripal_feature_relationships_as_object',
-      ),
-      'tripal_feature_relationships_as_subject' => array (
-         'arguments' => array('node'=> null),
-         'template' => 'tripal_feature_relationships_as_subject',
+         'template' => 'tripal_feature_relationships',
       ),
    );
 }

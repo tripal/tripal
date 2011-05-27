@@ -244,40 +244,89 @@ function tripal_analysis_interpro_parseHTMLFile ($analysis_id, $interprofile, $p
 function tripal_analysis_interpro_parseXMLFile ($analysis_id, $interproxmlfile, 
    $parsego, $query_re, $query_type, $query_uniquename, $job_id) 
 {
-
    // clear out the anslysisfeature table for this analysis before getting started
    tripal_core_chado_delete('analysisfeature',array('analysis_id' => $analysis_id));
 
-   // Prepare log
-   $filename = preg_replace("/.*\/(.*)/", "$1", $interproxmlfile);
-   $logfile = file_directory_path() . "/tripal/tripal_analysis_interpro/load_$filename.log";
-   $log = fopen($logfile, 'a'); // append parsing results to log file
+   // If user input a file (e.g. blast.xml)
+	if (is_file($interproxmlfile)) {
+      tripal_analysis_interpro_parseSingleXMLFile ($analysis_id, $interproxmlfile, 
+         $parsego, $query_re, $query_type, $query_uniquename, $job_id);
+   } 
+   else {
+		$dir_handle = @opendir($interproxmlfile) or die("Unable to open $interproxmlfile");
+		$pattern = sql_regcase($interproxmlfile . "/*.xml");
+		$total_files = count(glob($pattern));
+		print "$total_files file(s) to be parsed.\n";
+		
+		$interval = intval($total_files * 0.01);
+      if($interval == 0){
+         $interval = 1;
+      }
+		$no_file = 0;
+			
+		// Parsing all files in the directory
+		while ($file = readdir($dir_handle)) {
+			if(preg_match("/^.*\.xml/i",$file)){
+
+            tripal_analysis_interpro_parseSingleXMLFile ($analysis_id, "$interproxmlfile/$file", 
+               $parsego, $query_re, $query_type, $query_uniquename, $job_id,0);
+
+			   // Set job status
+			   if ($no_file % $interval == 0) {
+			      $percentage = (int) (($no_file / $total_files) * 100);
+				   tripal_job_set_progress($job_id, $percentage);
+				   print $percentage."% ";
+			   }				
+         }
+   	   $no_file ++;
+		}
+	}
+
+	print "Done.";
+}
+/**
+*
+*/
+function tripal_analysis_interpro_parseSingleXMLFile ($analysis_id, $interproxmlfile, 
+   $parsego, $query_re, $query_type, $query_uniquename, $job_id,$uptate_status = 1) 
+{
 
    // Parsing started
    print "Parsing File:".$interproxmlfile." ...\n";
-   fwrite($log, date("D M j G:i:s Y").". Loading $interproxmlfile\n");
+
 
    // Get cvterm_id for 'analysis_interpro_xmloutput_hits' which is required
    // for inserting into the analysisfeatureprop table
    $previous_db = db_set_active('chado'); // use chado database
    $sql = "SELECT CVT.cvterm_id FROM {cvterm} CVT ".
-   "INNER JOIN cv ON cv.cv_id = CVT.cv_id ".
-   "WHERE CVT.name = 'analysis_interpro_xmloutput_hit' ".
-   "AND CV.name = 'tripal'";
+          "   INNER JOIN cv ON cv.cv_id = CVT.cv_id ".
+          "WHERE CVT.name = 'analysis_interpro_xmloutput_hit' ".
+          "   AND CV.name = 'tripal'";
    $type_id = db_result(db_query($sql));
 
    // Load the XML file
    $interproput =  simplexml_load_file($interproxmlfile);
 
    // Get entries parsing
-   $proteins = $interproput->children();
+   $xml = $interproput->children();
+
+   // If there is an EBI header then we need to skip that
+   // and set our proteins array to be the second element of the array. This
+   // occurs if results were generated with the online InterProScan tool.
+   // if the XML starts in with the results then this happens when InterProScan
+   // is used command-line and we can just use the object as is
+   if(preg_match('/^Header$/',$xml[0]->getname())){
+      $proteins = $xml[1];  
+   } else {
+      $proteins = $xml[0];
+   }
 
    // Count the number of entires to be processed
    $no_iterations = 0;
-   foreach($proteins as $tmp) {
+   foreach($proteins as $protein) {
       $no_iterations ++;
    }
-   print "$no_iterations proteins to be processed.\n";
+   print "  Found results for $no_iterations sequences\n";
    $interval = intval($no_iterations * 0.01);
    $idx_iterations = 0;
 
@@ -290,9 +339,10 @@ function tripal_analysis_interpro_parseXMLFile ($analysis_id, $interproxmlfile,
 
    // Processed each protein
    foreach ($proteins as $protein) {
+
       // Set job status
       $idx_iterations ++;
-      if ($idx_iterations % $interval == 0) {
+      if ($idx_iterations % $interval == 0 and $update_status) {
          $percentage = (int) ($idx_iterations / $no_iterations * 100);
          db_set_active($previous_db);
          tripal_job_set_progress($job_id, $percentage);
@@ -304,6 +354,17 @@ function tripal_analysis_interpro_parseXMLFile ($analysis_id, $interproxmlfile,
       $feature_id = 0;
       $attr = $protein->attributes();
       $seqname =$attr ['id'];
+
+      // is the sequence name a generic name (i.e. 'Sequence_1') then the 
+      // blast results do not contain the original sequence names.  The only
+      // option we have is to use the filename.  This will work in the case of
+      // Blast2GO which stores the XML for each sequence in a file with the
+      // the filename the name of the sequence
+      if(preg_match('/Sequence_\d+/',$seqname)){
+         $filename = preg_replace('/^.*\/(.*).xml$/', '$1', $interproxmlfile);
+         print "  Sequence name is not specific, using filename: $filename\n";
+         $seqname = $filename;   
+      }
 
       // Remove _ORF from the sequence name
       $seqname = preg_replace('/^(.+)_\d+_ORF\d+.*/', '$1', $seqname);
@@ -324,7 +385,7 @@ function tripal_analysis_interpro_parseXMLFile ($analysis_id, $interproxmlfile,
       }   
 
       if(!$feature and $query_re){
-         print fwrite($log, "Failed: Cannot find feature for '$seqname' using the regular expression: $query_re\n");
+         print "Failed: Cannot find feature for '$seqname' using the regular expression: $query_re\n";
          continue;
       }
 
@@ -346,11 +407,11 @@ function tripal_analysis_interpro_parseXMLFile ($analysis_id, $interproxmlfile,
 
       $feature_arr = tripal_core_chado_select('feature',array('feature_id'),$select);
       if(count($feature_arr) > 1){
-		   fwrite($log, "Ambiguous: '$feature' matches more than one feature and is being skipped.\n");
+		   print "Ambiguous: '$feature' matches more than one feature and is being skipped.\n";
 			continue;
       }
       if(count($feature_arr) == 0){
-			fwrite($log, "Failed: '$feature' cannot find a matching feature in the database.\n");
+			print "Failed: '$feature' cannot find a matching feature in the database.\n";
          continue;
       }
       $feature_id = $feature_arr[0]->feature_id;
@@ -360,14 +421,9 @@ function tripal_analysis_interpro_parseXMLFile ($analysis_id, $interproxmlfile,
       // feature_id to analysisfeature. Add the table as XML to analysisfeatureprop
       if ($feature_id) {
 
-         print "$idx_iterations Adding InterPro results for feature '$seqname' ($feature_id)\n";
+         print "  Adding InterPro results for feature '$seqname' ($feature_id)\n";
 
-         // If a matched feature is found, write to log.
-         fwrite($log, "Succeeded: ".$seqname." => feature id:".$feature_id);
-
-         //------------------------------------
          // Insert into analysisfeature table
-         //------------------------------------
          $sql = "INSERT INTO {analysisfeature} (feature_id, analysis_id) ".
                 "VALUES (%d, %d)";
          db_query ($sql, $feature_id, $analysis_id);                     
@@ -376,9 +432,7 @@ function tripal_analysis_interpro_parseXMLFile ($analysis_id, $interproxmlfile,
          $sql = "SELECT analysisfeature_id FROM {analysisfeature} WHERE feature_id = %d AND analysis_id = %d";
          $analysisfeature_id = db_result(db_query($sql, $feature_id, $analysis_id));
 
-         //------------------------------------------------------------
          // Insert interpro xml results into analysisfeatureprop table
-         //------------------------------------------------------------
          // Check to see if we have an existing entry
          $sql = "SELECT analysisfeatureprop_id,rank 
                  FROM {analysisfeatureprop} 
@@ -393,7 +447,6 @@ function tripal_analysis_interpro_parseXMLFile ($analysis_id, $interproxmlfile,
          $sql = "INSERT INTO {analysisfeatureprop} (analysisfeature_id, type_id, value, rank)".
                 "VALUES (%d, %d, '%s', %d)";
          db_query($sql, $analysisfeature_id, $type_id, $protein->asXML(), $rank);
-         fwrite($log, " (Insert)\n"); // write to log
 
          // parse the XML for each protein if GO terms are requested
 
@@ -431,10 +484,7 @@ function tripal_analysis_interpro_parseXMLFile ($analysis_id, $interproxmlfile,
       } // end if($feature_id)            
    } // end foreach ($proteins as $protein)
    db_set_active ($previous_db); // Use drupal database
-   print "Done.\nSuccessful and failed entries have been saved in the log file:\n $logfile\n";
 
-   fwrite($log, "\n");
-   fclose($log);
    return;
 }
 /********************************************************************************
