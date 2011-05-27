@@ -327,6 +327,51 @@ function chado_analysis_unigene_load($node){
 
    return $additions;
 }
+/**
+ *
+ *
+ * @ingroup tripal_analysis_unigene
+ */
+function tripal_analysis_unigene_block($op = 'list', $delta = 0, $edit=array()){
+   switch($op) {
+      case 'list':
+         $blocks['base_ugene']['info'] = t('Analysis: Unigene Details');
+         $blocks['base_ugene']['cache'] = BLOCK_NO_CACHE;
+
+         $blocks['feature_ugene']['info'] = t('Tripal Feature Unigene');
+         $blocks['feature_ugene']['cache'] = BLOCK_NO_CACHE;
+
+         $blocks['org_ugene']['info'] = t('Tripal Organism Unigene');
+         $blocks['org_ugene']['cache'] = BLOCK_NO_CACHE;
+         
+         return $blocks;
+
+
+      case 'view':
+         if(user_access('access chado_analysis_unigene content') and arg(0) == 'node' and is_numeric(arg(1))) {
+            $nid = arg(1);
+            $node = node_load($nid);
+ 
+            $block = array();
+            switch($delta){
+               case 'base_ugene':
+                  $block['subject'] = t('Unigene Details');
+                  $block['content'] = theme('tripal_analysis_unigene_base',$node);
+                  break;
+               case 'feature_ugene':
+                  $block['subject'] = t('Unigene');
+                  $block['content'] = theme('tripal_feature_unigenes',$node);
+                  break;
+               case 'org_ugene':
+                  $block['subject'] = t('Unigene');
+                  $block['content'] = theme('tripal_organism_unigenes',$node);
+                  break;
+               default :
+            }
+            return $block;
+         }
+   }
+}
 /*******************************************************************************
  * tripal_analysis_unigene_nodeapi()
  * HOOK: Implementation of hook_nodeapi()

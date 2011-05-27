@@ -31,32 +31,6 @@ function tripal_analysis_interpro_node_info() {
 	return $nodes;
 }
 /*******************************************************************************
-*
-*/
-function tripal_analysis_interpro_block($op = 'list', $delta = 0, $edit=array()){
-   switch($op) {
-      case 'list':
-         $blocks['tai_results']['info'] = t('Tripal InterProScan Analysis Results');
-         $blocks['tai_results']['cache'] = BLOCK_NO_CACHE;
-       return $blocks;
-
-      case 'view':
-         if(user_access('access chado_analysis_interpro content') and arg(0) == 'node' and is_numeric(arg(1))) {
-            $nid = arg(1);
-            $node = node_load($nid);
-            $block = array();
-            switch($delta){
-               case 'tai_results':
-                  $block['subject'] = t('InterProScan Results');
-                  $block['content'] = theme('tripal_analysis_interpro_results', $node);
-                  break;
-                default :
-            }
-            return $block;
-         }
-   }
-}
-/*******************************************************************************
  *  Provide a Interpro Analysis form
  */
 function chado_analysis_interpro_form ($node){
@@ -325,7 +299,46 @@ function chado_analysis_interpro_view ($node, $teaser = FALSE, $page = FALSE) {
 	}
 	return $node;
 }
+/**
+ *
+ *
+ * @ingroup tripal_analysis_interpro
+ */
+function tripal_analysis_interpro_block($op = 'list', $delta = 0, $edit=array()){
+   switch($op) {
+      case 'list':
+         $blocks['ipr_base']['info'] = t('Analysis: Interpro Details');
+         $blocks['ipr_base']['cache'] = BLOCK_NO_CACHE;
 
+         $blocks['featureipr']['info'] = t('Tripal Feature Interpro Results');
+         $blocks['featureipr']['cache'] = BLOCK_NO_CACHE;
+
+         
+         return $blocks;
+
+
+      case 'view':
+         if(user_access('access chado_analysis_interpro content') and arg(0) == 'node' and is_numeric(arg(1))) {
+            $nid = arg(1);
+            $node = node_load($nid);
+ 
+            $block = array();
+            switch($delta){
+               case 'ipr_base':
+                  $block['subject'] = t('Interpro Details');
+                  $block['content'] = theme('tripal_analysis_interpro_base',$node);
+                  break;
+               case 'featureipr':
+                  $block['subject'] = t('Interpro Results');
+                  $block['content'] = theme('tripal_feature_interpro_results',$node);
+                  break;
+              
+               default :
+            }
+            return $block;
+         }
+   }
+}
 
 /*******************************************************************************
  * tripal_analysis_interpro_nodeapi()
@@ -374,6 +387,10 @@ function tripal_analysis_interpro_theme () {
       'tripal_feature_interpro_results' => array (
          'arguments' => array('node'=> null),
          'template' => 'tripal_feature_interpro_results',
+	   ),
+      'tripal_analysis_interpro_base' => array (
+         'arguments' => array('node'=> null),
+         'template' => 'tripal_analysis_interpro_base',
 	   )
 	);
 }

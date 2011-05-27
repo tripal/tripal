@@ -46,7 +46,46 @@ function tripal_analysis_blast_menu() {
 	);
 	return $items;
 }
+/**
+ *
+ *
+ * @ingroup tripal_analysis_blast
+ */
+function tripal_analysis_blast_block($op = 'list', $delta = 0, $edit=array()){
+   switch($op) {
+      case 'list':
+         $blocks['blast_base']['info'] = t('Analysis: Blast Details');
+         $blocks['blast_base']['cache'] = BLOCK_NO_CACHE;
 
+
+         $blocks['featureblast']['info'] = t('Tripal Feature Blast Results');
+         $blocks['featureblast']['cache'] = BLOCK_NO_CACHE;
+
+         
+         return $blocks;
+
+
+      case 'view':
+         if(user_access('access chado_analysis_blast content') and arg(0) == 'node' and is_numeric(arg(1))) {
+            $nid = arg(1);
+            $node = node_load($nid);
+ 
+            $block = array();
+            switch($delta){
+               case 'blast_base':
+                  $block['subject'] = t('Blast Details');
+                  $block['content'] = theme('tripal_analysis_blast_base',$node);
+                  break;
+               case 'featureblast':
+                  $block['subject'] = t('Homology');
+                  $block['content'] = theme('tripal_feature_blast_results',$node);
+                  break;  
+               default :
+            }
+            return $block;
+         }
+   }
+}
 
 /*******************************************************************************
  * tripal_analysis_blast_nodeapi()
@@ -104,6 +143,10 @@ function tripal_analysis_blast_theme () {
 		'tripal_analysis_blast_report' => array(
 			'arguments' =>  array('report_object'=> null),
 		   'template' => 'tripal_analysis_blast_report',
+		),
+		'tripal_analysis_blast_base' => array(
+			'arguments' =>  array('report_object'=> null),
+		   'template' => 'tripal_analysis_blast_base',
 		)
 	);
 }

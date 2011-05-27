@@ -766,6 +766,55 @@ function tripal_analysis_kegg_insert_featureprop ($feature_id, $analysis_id,
       return 0;
    }
 }
+/**
+ *
+ *
+ * @ingroup tripal_analysis_kegg
+ */
+function tripal_analysis_kegg_block($op = 'list', $delta = 0, $edit=array()){
+   switch($op) {
+      case 'list':
+         $blocks['featurekegg']['info'] = t('Tripal Feature KEGG Terms');
+         $blocks['featurekegg']['cache'] = BLOCK_NO_CACHE;
+
+         $blocks['orgkegg']['info'] = t('Organism KEGG Summary');
+         $blocks['orgkegg']['cache'] = BLOCK_NO_CACHE;
+
+         $blocks['kegg_base']['info'] = t('Analsyis: KEGG Details');
+         $blocks['kegg_base']['cache'] = BLOCK_NO_CACHE;
+
+         
+         return $blocks;
+
+
+      case 'view':
+         if(user_access('access chado_analysis_kegg content') and arg(0) == 'node' and is_numeric(arg(1))) {
+            $nid = arg(1);
+            $node = node_load($nid);
+ 
+            $block = array();
+            switch($delta){
+               case 'featurekegg':
+                  $block['subject'] = t('KEGG Terms');
+                  $block['content'] = theme('tripal_feature_kegg_terms',$node);
+                  break;
+
+               case 'orgkegg':
+                  $block['subject'] = t('KEGG Terms');
+                  $block['content'] = theme('tripal_organism_kegg_summary',$node);
+                  break;
+
+               case 'kegg_base':
+                  $block['subject'] = t('KEGG Terms');
+                  $block['content'] = theme('tripal_analysis_kegg_report',$node);
+                  break;
+              
+               default :
+            }
+            return $block;
+         }
+   }
+}
 /*******************************************************************************
  * HOOK: Implementation of hook_nodeapi()
  * Display library information for associated features or organisms
