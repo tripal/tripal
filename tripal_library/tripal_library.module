@@ -274,6 +274,7 @@ function tripal_library_theme () {
       'tripal_library_search_result' => array (
          'arguments' => array('node'),
       ),
+
       'tripal_organism_libraries' => array (
          'arguments' => array('node'=> null),
          'template' => 'tripal_organism_libraries',
@@ -281,7 +282,24 @@ function tripal_library_theme () {
       'tripal_feature_libraries' => array (
          'arguments' => array('node'=> null),
          'template' => 'tripal_feature_libraries',
-      )
+      ),
+
+      'tripal_library_base' => array (
+         'arguments' => array('node'=> null),
+         'template' => 'tripal_library_base',
+      ),
+      'tripal_library_synonyms' => array (
+         'arguments' => array('node'=> null),
+         'template' => 'tripal_library_synonyms',
+      ),
+      'tripal_library_references' => array (
+         'arguments' => array('node'=> null),
+         'template' => 'tripal_library_references',
+      ),
+      'tripal_library_properties' => array (
+         'arguments' => array('node'=> null),
+         'template' => 'tripal_library_properties',
+      ),
    );
 }
 
@@ -1349,28 +1367,62 @@ function chado_library_delete(&$node){
 function tripal_library_block($op = 'list', $delta = '0', $edit = array()){
    switch($op){
       case 'list':
-         $blocks[0]['info'] = t('Libraries');
+
+         $blocks['libreferences']['info'] = t('Tripal Library References');
+         $blocks['libreferences']['cache'] = BLOCK_NO_CACHE;
+
+         $blocks['libbase']['info'] = t('Tripal Library Details');
+         $blocks['libbase']['cache'] = BLOCK_NO_CACHE;
+
+         $blocks['libsynonyms']['info'] = t('Tripal Library Synonyms');
+         $blocks['libsynonyms']['cache'] = BLOCK_NO_CACHE;
+
+         $blocks['libproperties']['info'] = t('Tripal Library Properties');
+         $blocks['libproperties']['cache'] = BLOCK_NO_CACHE;
+
+         $blocks['featurelibs']['info'] = t('Tripal Feature Libraries');
+         $blocks['featurelibs']['cache'] = BLOCK_NO_CACHE;
+
+         $blocks['orglibs']['info'] = t('Tripal Organism Libraries');
+         $blocks['orglibs']['cache'] = BLOCK_NO_CACHE;
+
          return $blocks;
 
       case 'view':
-         if(user_access('access chado_library content')){
-            // Show libraries stored in Drupal's {chado_library} table
-            $sql = "SELECT COUNT(library_id) FROM {chado_library}";
-            $no_libs = db_result(db_query ($sql));
-            if($no_libs != 0) {
-               $libraries = get_chado_libraries();
-               foreach($libraries as $library){
-                  // get the node id for this organism
-                  $items[] = l($library->name, 'node/' . $library->node_id);
-               }
-            } else {
-               $items[] = t("No library exists.");
+         if(user_access('access chado_library content') and arg(0) == 'node' and is_numeric(arg(1))) {
+            $nid = arg(1);
+            $node = node_load($nid);
+ 
+            $block = array();
+            switch($delta){
+               case 'libreferences':
+                  $block['subject'] = t('References');
+                  $block['content'] = theme('tripal_library_references',$node);
+                  break;
+               case 'libbase':
+                  $block['subject'] = t('Library Details');
+                  $block['content'] = theme('tripal_library_base',$node);
+                  break;
+               case 'libsynonyms':
+                  $block['subject'] = t('Synonyms');
+                  $block['content'] = theme('tripal_library_synonyms',$node);
+                  break;
+               case 'libproperties':
+                  $block['subject'] = t('Properties');
+                  $block['content'] = theme('tripal_library_properties',$node);
+                  break;
+               case 'featurelibs':
+                  $block['subject'] = t('Libraries');
+                  $block['content'] = theme('tripal_feature_libraries',$node);
+                  break;
+               case 'orglibs':
+                  $block['subject'] = t('Libraries');
+                  $block['content'] = theme('tripal_organism_libraries',$node);
+                  break;
+               default :
             }
-            $block['subject'] = t('Libraries');
-            //We theme our array of links as an unordered list
-            $block['content'] = theme('item_list', $items);
+            return $block;
          }
-         return $block;
    }
 }
 
