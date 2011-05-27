@@ -50,7 +50,7 @@ function retrieve_stock_views_data() {
     'help' => t('Chado Stocks are a record of any material upon which an experiment can be done. For example, a DNA sample, an individual or a population.'),
   );
   if($database){
-     $data['stock']['table']['database'] = $database;
+     $data['stock']['table']['base']['database'] = $database;
   }
 
 	// Define relationships between this table and others

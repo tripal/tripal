@@ -463,23 +463,6 @@ function tripal_stock_views_default_views() {
       'field' => 'name',
       'relationship' => 'none',
     ),
-    'status' => array(
-      'operator' => '=',
-      'value' => '1',
-      'group' => '0',
-      'exposed' => FALSE,
-      'expose' => array(
-        'operator' => FALSE,
-        'label' => '',
-      ),
-      'id' => 'status',
-      'table' => 'node',
-      'field' => 'status',
-      'override' => array(
-        'button' => 'Override',
-      ),
-      'relationship' => 'none',
-    ),
   ));
   $handler->override_option('access', array(
     'type' => 'perm',

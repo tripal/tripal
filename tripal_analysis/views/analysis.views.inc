@@ -47,7 +47,7 @@ function retrieve_analysis_views_data() {
  		'help' => t("An analysis is a particular type of a computational analysis; it may be a blast of one sequence against another, or an all by all blast, or a different kind of analysis altogether. It is a single unit of computation."),
  	);
   if($database){
-     $data['analysis']['table']['database'] = $database;
+     $data['analysis']['table']['base']['database'] = $database;
   }
 
   // Define relationships between this table and others

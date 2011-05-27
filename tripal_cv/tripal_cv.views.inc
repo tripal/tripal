@@ -55,7 +55,7 @@ function tripal_cv_views_handlers() {
  );
 }
 
-function tripal_genetic_views_default_views () {
+function tripal_cv_views_default_views () {
   $views = array();
   
   // Main default view

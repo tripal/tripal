@@ -56,8 +56,9 @@
    );
 
 	if($database){
-		$data['feature']['table']['database'] = $database;
+		$data['feature']['table']['base']['database'] = $database;
 	}
+	
 
   //Relationship Definitions---------------------------------
   //Join: feature => nd_reagent

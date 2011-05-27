@@ -45,7 +45,7 @@ function retrieve_library_views_data() {
 	  'help' => 'Library existing in the Chado Database',                                                                                                                                                                          
 	);
 	if($database){
-	  $data['library']['table']['database'] = $database;
+	  $data['library']['table']['base']['database'] = $database;
 	}
 	
 	// Define relationships between this table and others

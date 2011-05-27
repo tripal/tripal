@@ -42,7 +42,7 @@ function retrieve_organism_views_data() {
     'help' => 'Organisms existing in the Chado Database',                                                                                                                                                                          
   );
   if($database){
-     $data['organism']['table']['database'] = $database;
+     $data['organism']['table']['base']['database'] = $database;
   }
 
   // Define relationships between this table and others
