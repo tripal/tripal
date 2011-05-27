@@ -131,6 +131,13 @@ function chado_analysis_interpro_form ($node){
 	return $form;
 }
 /**
+*
+*/
+function chado_analysis_interpro_validate($node, &$form){
+   // use the analysis parent to validate the node
+   tripal_analysis_validate($node, $form); 
+}
+/**
  * 
  * 
  */

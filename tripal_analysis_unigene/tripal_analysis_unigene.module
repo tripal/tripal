@@ -241,6 +241,13 @@ function chado_analysis_unigene_form ($node){
 /**
 *
 */
+function chado_analysis_unigene_validate($node, &$form){
+   // use the analysis parent to validate the node
+   tripal_analysis_validate($node, $form); 
+}
+/**
+*
+*/
 function chado_analysis_unigene_insert($node){
    // insert the analysis
    chado_analysis_insert($node);

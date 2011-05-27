@@ -247,6 +247,13 @@ function chado_analysis_kegg_form ($node){
 	);
    return $form;
 }
+/**
+*
+*/
+function chado_analysis_kegg_validate($node, &$form){
+   // use the analysis parent to validate the node
+   tripal_analysis_validate($node, $form); 
+}
 /*******************************************************************************
  *
  */

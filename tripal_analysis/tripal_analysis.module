@@ -15,6 +15,8 @@
 
 require('tripal_analysis.api.inc');
 
+
+
 /*************************************************************************
 *
  *
@@ -620,6 +622,13 @@ function tripal_analysis_sync_analyses ($analysis_id = NULL, $job_id = NULL){
 /**
 *
 */
+function chado_analysis_validate($node,&$form){
+   // use the analysis parent to validate the node
+   tripal_analysis_validate($node, $form); 
+}
+/**
+*
+*/
 function tripal_analysis_validate($node, &$form){
 ##dprint_r($node);
 
@@ -654,51 +663,18 @@ function tripal_analysis_validate($node, &$form){
             //---------------------------------------------------
             // The primary key for the chado analysis table is 
             // program, programversion, sourcename
-            // Check to see if this analysis really is new -ie, it doesn't have the same
-            // primary key as any other analysis 
-	        $sql = "SELECT analysis_id ".
-                "FROM {analysis} ".
-                "WHERE program='%s'".
-                "AND programversion='%s'".
-                "AND sourcename='%s'";
-	        $previous_db = tripal_db_set_active('chado');
-	        $analysis_id = db_result(db_query($sql, $node->program, $node->programversion, $node->sourcename));
-            tripal_db_set_active($previous_db);
-        
-            if($analysis_id){
-                //---------------------------------------------------
-                // this primary key already exists in chado analysis table!
-                //---------------------------------------------------
-        
-                // check to see if it has also been synced with drupal
-	            $sql = "SELECT nid FROM {chado_analysis} ".
-                                "WHERE analysis_id = %d";
-	            $node_id = db_result(db_query($sql, $analysis_id));
-	            if($node_id){
-                    //---------------------------------------------------
-                    // the analysis has already been synced with drupal, redirect the user
-                    // to modify that node or start over
-                    //---------------------------------------------------
-                    $error = 'This analysis already exists in the chado database (analysis id ';
-                    $error .= $analysis_id.') and has been synchronized ';
-                        $error .= 'with drupal. See node '.$node_id.' if you wish to update that analysis.  ';
-                    $error .= ' For a new analysis, please select a unique primary key ';
-                    $error .= '(primary key consists of sourcename, program and programversion).';
-                    form_set_error('sourcename', t($error));
-                }
-        
-                else{
-                    //---------------------------------------------------
-                    // the analysis does not exist in drupal - tell the user 
-                    // to sync from chado or create a new unique primary key
-                    //---------------------------------------------------
-                    $error = 'This analysis already exists in the chado database (analysis id ';
-                    $error .= $analysis_id.') but has not been synchronized ';
-                    $error .= 'with drupal. See the tripal admin pages to synchronize. ';
-                    $error .= ' For a new analysis, please select a unique primary key ';
-                    $error .= '(primary key consists of sourcename, program and programversion).';
-                    form_set_error('sourcename', t($error));
-                }
+
+
+            $values = array(
+               'program' => $node->program,
+               'programversion' => $node->programversion,
+               'sourcename' => $node->sourcename,
+            );
+            $analysis = tripal_core_chado_select('analysis', array('analysis_id'),$values);
+            if(sizeof($analysis) > 0){
+               form_set_error('program','Cannot add the analysis with this program,  
+                  program version and source name. An analysis with these values already exists.');
+               return;
             }
         }
     }
