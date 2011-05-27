@@ -26,17 +26,18 @@
 ?>
 
 <?php
- //uncomment this line to see a full listing of the fields avail. to $node
- //print '<pre>'.print_r($node,TRUE).'</pre>';
-?>
-
-<?php
+  $node = tripal_core_expand_chado_vars($node, 'table', 'stock_dbxref');
   $db_references = $node->stock->stock_dbxref;
   if (!$db_references) {
     $db_references = array();
   } elseif (!is_array($db_references)) {
     $db_references = array($db_references);
   }
+?>
+
+<?php
+ //uncomment this line to see a full listing of the fields avail. to $node
+ //print '<pre>'.print_r($node,TRUE).'</pre>';
 ?>
 
 <div id="tripal_stock-references-box" class="tripal_stock-info-box tripal-info-box">

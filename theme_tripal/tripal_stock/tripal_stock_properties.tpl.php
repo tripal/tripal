@@ -24,17 +24,18 @@
 ?>
 
 <?php
- //uncomment this line to see a full listing of the fields avail. to $node
- //print '<pre>'.print_r($node,TRUE).'</pre>';
-?>
-
-<?php
+  $node = tripal_core_expand_chado_vars($node, 'table', 'stockprop');
   $properties = $node->stock->stockprop;
   if (!$properties) {
     $properties = array();
   } elseif (!is_array($properties)) { 
     $properties = array($properties); 
   }
+?>
+
+<?php
+ //uncomment this line to see a full listing of the fields avail. to $node
+ //print '<pre>'.print_r($node,TRUE).'</pre>';
 ?>
 
 <div id="tripal_stock-properties-box" class="tripal_stock-info-box tripal-info-box">

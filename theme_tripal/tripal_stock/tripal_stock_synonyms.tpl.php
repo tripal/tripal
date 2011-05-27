@@ -23,17 +23,27 @@
 ?>
 
 <?php
- //uncomment this line to see a full listing of the fields avail. to $node
- //print '<pre>'.print_r($node,TRUE).'</pre>';
-?>
-
-<?php
+  $node->stock->stock_synonyms = tripal_core_generate_chado_var(
+    'stockprop', 
+    array(
+      'stock_id'=>$node->stock->stock_id,
+      'type_id' => array(
+        'cv_id' => variable_get('chado_stock_prop_types_cv', 'null'),
+        'name' => 'synonym'
+      ),
+    )
+  );
   $synonyms = $node->stock->stock_synonyms;
   if (!$synonyms) {
     $synonyms = array();
   } elseif (!is_array($synonyms)) { 
     $synonyms = array($synonyms); 
   }
+?>
+
+<?php
+ //uncomment this line to see a full listing of the fields avail. to $node
+ //print '<pre>'.print_r($node,TRUE).'</pre>';
 ?>
 
 <div id="tripal_stock-synonyms-box" class="tripal_stock-info-box tripal-info-box">

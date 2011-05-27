@@ -145,11 +145,9 @@ drupal_add_css('./tripal-node-templates.css');
   <!-- Synonyms -->
   <?php include('tripal_stock/tripal_stock_synonyms.tpl.php'); ?>
 
-  <!-- Object Relationships -->
-  <?php include('tripal_stock/tripal_stock_relationships_as_object.tpl.php'); ?>
+  <!-- Relationships -->
+  <?php include('tripal_stock/tripal_stock_relationships.tpl.php'); ?>
 
-  <!-- Subject Relationships -->
-  <?php include('tripal_stock/tripal_stock_relationships_as_subject.tpl.php'); ?>
 </div>
 
 <!-- Table of contents -->
