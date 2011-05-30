@@ -1,11 +1,35 @@
 <?php
 
+/** 
+ * @defgroup tripal_jobs_api Tripal Jobs API
+ * @{
+ * Provides an application programming interface (API) to interact with the Tripal Jobs
+ * @}
+ * @ingroup tripal_api
+ */
+ 
 /**
-*
-*
-* @ingroup tripal_core
-* @ingroup tripal_api
-*/
+ * Adds a job to the Tripal Jbo queue
+ *
+ * @param $job_name
+ *    The human readable name for the job
+ * @param $modulename
+ *    The name of the module adding the job
+ * @param $callback
+ *    The name of a function to be called when the job is executed
+ * @param $arguments
+ *    An array of arguements to be passed on to the callback
+ * @param $uid
+ *    The uid of the user adding the job
+ * @param $priority
+ *    The priority at which to run the job where the highest priority is 10 and the lowest priority 
+ *    is 1. The default priority is 10.
+ *
+ * @return
+ *    The job_id of the registered job
+ *
+ * @ingroup tripal_jobs_api
+ */
 function tripal_add_job ($job_name,$modulename,$callback,$arguments,$uid,$priority = 10){
 
    # convert the arguments into a string for storage in the database
@@ -31,12 +55,20 @@ function tripal_add_job ($job_name,$modulename,$callback,$arguments,$uid,$priori
 
    return $record->job_id;
 }
+
 /**
-*   
-*
-* @ingroup tripal_core
-* @ingroup tripal_api
-*/
+ * An internal function for setting the progress for a current job
+ *
+ * @param $job_id
+ *   The job_id to set the progress for
+ * @param $percentage
+ *   The progress to set the job to
+ *
+ * @return
+ *   True on success and False otherwise
+ *
+ * @ingroup tripal_core
+ */
 function tripal_job_set_progress($job_id,$percentage){
 
    if(preg_match("/^(\d\d|100)$/",$percentage)){
@@ -49,11 +81,18 @@ function tripal_job_set_progress($job_id,$percentage){
    }
    return 0;
 }
+
 /**
-*   Returns a list of jobs associated with the given module
-*
-* @ingroup tripal_core
-*/
+ * Returns a list of jobs associated with the given module
+ *
+ * @param $modulename
+ *    The module to return a list of jobs for
+ *
+ * @return
+ *    An array of objects where each object describes a tripal job
+ *
+ * @ingroup tripal_jobs_api
+ */
 function tripal_get_module_active_jobs ($modulename){
    $sql =  "SELECT * FROM {tripal_jobs} TJ ".
            "WHERE TJ.end_time IS NULL and TJ.modulename = '%s' ";
@@ -61,10 +100,13 @@ function tripal_get_module_active_jobs ($modulename){
 
 }
 /**
-*
-*
-* @ingroup tripal_core
-*/
+ * Returns the Tripal Job Report
+ *
+ * @return
+ *   The HTML to be rendered which describes the job report
+ *
+ * @ingroup tripal_core
+ */
 function tripal_jobs_report () {
    //$jobs = db_query("SELECT * FROM {tripal_jobs} ORDER BY job_id DESC");
    $jobs = pager_query(
@@ -125,9 +167,18 @@ function tripal_jobs_report () {
 	$output .= theme_pager();
    return $output;
 }
+
 /**
-*
-*/
+ * Returns the start time for a given job
+ * 
+ * @param $job
+ *   An object describing the job
+ *
+ * @return
+ *   The start time of the job if it was already run and either "Cancelled" or "Not Yet Started" otherwise
+ *
+ * @ingroup tripal_jobs_api
+ */
 function tripal_jobs_get_start_time($job){
    if($job->start_time > 0){
       $start = format_date($job->start_time);
@@ -140,9 +191,18 @@ function tripal_jobs_get_start_time($job){
    }
    return $start;
 }
+
 /**
-*
-*/
+ * Returns the end time for a given job
+ * 
+ * @param $job
+ *   An object describing the job
+ *
+ * @return
+ *   The end time of the job if it was already run and empty otherwise
+ *
+ * @ingroup tripal_jobs_api
+ */
 function tripal_jobs_get_end_time($job){
    if($job->end_time > 0){
       $end = format_date($job->end_time);
@@ -151,17 +211,30 @@ function tripal_jobs_get_end_time($job){
    }
    return $end;
 }
+
 /**
-*
-*/
+ * Returns the date the job was added to the queue
+ *
+ * @param $job
+ *   An object describing the job
+ *
+ * @return
+ *   The date teh job was submitted
+ *
+ * @ingroup tripal_jobs_api
+ */
 function tripal_jobs_get_submit_date($job){
    return format_date($job->submit_date);
 }
+
 /**
-*
-*
-* @ingroup tripal_core
-*/
+ * A function used to manually launch all queued tripal jobs
+ *
+ * @param $do_parallel
+ *   A boolean indicating whether jobs should be attempted to run in parallel
+ *
+ * @ingroup tripal_jobs_api
+ */
 function tripal_jobs_launch ($do_parallel = 0){
    
    // first check if any jobs are currently running
@@ -205,12 +278,15 @@ function tripal_jobs_launch ($do_parallel = 0){
 		// send an email to the user advising that the job has finished
    }
 }
+
 /**
-*
-*
-* @ingroup tripal_core
-* @ingroup tripal_api
-*/
+ * Returns a list of running tripal jobs
+ *
+ * @return
+ *    and array of objects where each object describes a running job or false if no jobs are running
+ *
+ * @ingroup tripal_jobs_api
+ */
 function tripal_jobs_check_running () {
    // iterate through each job that has not ended
    // and see if it is still running. If it is not
@@ -240,14 +316,27 @@ function tripal_jobs_check_running () {
 }
 
 /**
-*
-*/
+ * Returns the HTML code to display a given job
+ *
+ * @param $job_id
+ *   The job_id of the job to display
+ * 
+ * @return
+ *   The HTML describing the indicated job
+ * @ingroup tripal_core
+ */
 function tripal_jobs_view ($job_id){
    return theme('tripal_core_job_view',$job_id);
 }
+
 /**
-*
-*/
+ * Registers variables for the tripal_core_job_view themeing function
+ *
+ * @param $variables
+ *   An array containing all variables supplied to this template
+ *
+ * @ingroup tripal_core
+ */
 function tripal_core_preprocess_tripal_core_job_view (&$variables){
    // get the job record
    $job_id = $variables['job_id'];
@@ -288,10 +377,13 @@ function tripal_core_preprocess_tripal_core_job_view (&$variables){
    $variables['job'] = $job;
 }
 /**
-*
-* @ingroup tripal_core
-* @ingroup tripal_api
-*/
+ * Set a job to be re-ran (ie: add it back into the job queue)
+ * 
+ * @param $job_id
+ *   The job_id of the job to be re-ran
+ * 
+ * @ingroup tripal_jobs_api
+ */
 function tripal_jobs_rerun ($job_id){
    global $user;
 
@@ -306,10 +398,13 @@ function tripal_jobs_rerun ($job_id){
 }
 
 /**
-*
-* @ingroup tripal_core
-* @ingroup tripal_api
-*/
+ * Cancel a Tripal Job currently waiting in the job queue
+ *
+ * @param $job_id
+ *   The job_id of the job to be cancelled
+ *
+ * @ingroup tripal_jobs_api
+ */
 function tripal_jobs_cancel ($job_id){
    $sql = "select * from {tripal_jobs} where job_id = %d";
    $job = db_fetch_object(db_query($sql,$job_id));

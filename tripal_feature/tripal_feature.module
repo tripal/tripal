@@ -1,9 +1,11 @@
 <?php
 
 /**
- * @defgroup tripal_feature Feature Module
+ * @defgroup tripal_feature Feature
  * @{
  * Provides functions for managing chado features including creating details pages for each feature
+ * @}
+ * @ingroup tripal_modules
  */
  
 require_once "tripal_feature.admin.inc";

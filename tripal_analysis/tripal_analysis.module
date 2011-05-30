@@ -11,14 +11,15 @@
  * @{
  * Provides functions for managing chado analysis' including creating details pages for each one
  * @}
+ * @ingroup tripal_modules
  */
 
 require('tripal_analysis.api.inc');
 
 
 
-/*************************************************************************
-*
+/**
+ *
  *
  * @ingroup tripal_analysis
  */
@@ -26,8 +27,8 @@ function tripal_analysis_register_child($modulename){
    $sql = "INSERT INTO {tripal_analysis} (modulename) VALUES ('%s')";
    db_query($sql, $modulename);
 }
-/*************************************************************************
-*
+/**
+ *
  *
  * @ingroup tripal_analysis
  */
@@ -37,14 +38,16 @@ function tripal_analysis_unregister_child($modulename){
       db_query($sql, $modulename);
    }
 }
-/******************************************************************************
+
+/**
  *
  * @ingroup tripal_analysis
  */
 function tripal_analysis_init(){
    drupal_add_js(drupal_get_path('theme', 'tripal').'/js/tripal_analysis.js');
 }
-/*******************************************************************************
+
+/**
  * tripal_analysis_menu()
  * HOOK: Implementation of hook_menu()
  * Entry points and paths of the module
@@ -89,7 +92,7 @@ function tripal_analysis_menu() {
 	return $items;
 }
 
-/*******************************************************************************
+/** 
  * Display the summary view of analyses when click on the 'Analyses'
  * primary-link
  *
@@ -108,7 +111,7 @@ function tripal_analysis_show_analyses (){
 
 }
 
-/*******************************************************************************
+/** 
  *  Provide information to drupal about the node types that we're creating
  *  in this module
  *
@@ -128,7 +131,7 @@ function tripal_analysis_node_info() {
 	);
 	return $nodes;
 }
-/*******************************************************************************
+/** 
  *  When a new chado_analysis node is created we also need to add information
  *  to our chado_analysis table.  This function is called on insert of a new
  *  node of type 'chado_analysis' and inserts the necessary information.
@@ -206,7 +209,7 @@ function chado_analysis_insert($node){
    $node->analysis = $analysis;
    $node->analysis_id = $analysis_id; // we need to set this for children
 }
-/*******************************************************************************
+/** 
  *
  * @ingroup tripal_analysis
  */
@@ -239,7 +242,7 @@ function chado_analysis_delete($node){
 	tripal_db_set_active($previous_db);
 }
 
-/*******************************************************************************
+/**
  * Update analyses
  *
  * @ingroup tripal_analysis
@@ -297,7 +300,7 @@ function chado_analysis_update($node){
 	}
 }
 
-/*******************************************************************************
+/**
  *  When editing or creating a new node of type 'chado_analysis' we need
  *  a form.  This function creates the form that will be used for this.
  *
@@ -451,7 +454,7 @@ function chado_analysis_form ($node){
 	return $form;
 }
 
-/*******************************************************************************
+/**
  *  When a node is requested by the user this function is called to allow us
  *  to add auxiliary data to the node object.
  *
@@ -469,7 +472,7 @@ function chado_analysis_load($node){
    return $additions;
 }
 
-/*******************************************************************************
+/**
  *  This function customizes the view of the chado_analysis node.  It allows
  *  us to generate the markup.
  *
@@ -493,7 +496,7 @@ function chado_analysis_view ($node, $teaser = FALSE, $page = FALSE) {
 	return $node;
 }
 
-/*******************************************************************************
+/**
  * Synchronize analyses from chado to drupal
  *
  * @ingroup tripal_analysis
@@ -605,7 +608,7 @@ function tripal_analysis_sync_analyses ($analysis_id = NULL, $job_id = NULL){
                 print_r($errors);
             }
             else{
-			##if(!form_get_errors()){
+			// if(!form_get_errors()){
 				$node = node_submit($new_node);
 				node_save($node);
 
@@ -619,16 +622,19 @@ function tripal_analysis_sync_analyses ($analysis_id = NULL, $job_id = NULL){
 	}
 	return $page_content;
 }
+
 /**
-*
-*/
+ *
+ * @ingroup tripal_analysis
+ */
 function chado_analysis_validate($node,&$form){
    // use the analysis parent to validate the node
    tripal_analysis_validate($node, $form); 
 }
 /**
-*
-*/
+ *
+ *@ingroup tripal_analysis
+ */
 function tripal_analysis_validate($node, &$form){
 ##dprint_r($node);
 
@@ -679,7 +685,7 @@ function tripal_analysis_validate($node, &$form){
         }
     }
 }
-/*******************************************************************************
+/**
  * Display help and module information
  * @param path which path of the site we're displaying help
  * @param arg array that holds the current path as would be returned from arg()
@@ -699,7 +705,7 @@ function tripal_analysis_help($path, $arg) {
 	}
 	return $output;
 }
-/*******************************************************************************
+/**
  *  The following function proves access control for users trying to
  *  perform actions on data managed by this module
  *
@@ -728,7 +734,7 @@ function chado_analysis_access($op, $node, $account){
 	return FALSE;
 }
 
-/*******************************************************************************
+/**
  *  Set the permission types that the chado module uses.  Essentially we
  *  want permissionis that protect creation, editing and deleting of chado
  #  data objects
@@ -744,7 +750,7 @@ function tripal_analysis_perm(){
 	);
 }
 
-/*******************************************************************************
+/**
  *  We need to let drupal know about our theme functions and their arguments.
  *  We create theme functions to allow users of the module to customize the
  *  look and feel of the output generated in this module
@@ -759,7 +765,7 @@ function tripal_analysis_theme () {
 	);
 }
 
-/*******************************************************************************
+/**
  * This function uses analysis_id's of all drupal analysis nodes as input and
  * pull the analysis information (name, description, program, programversion,
  * algorithm, sourcename, sourceversion, sourceuri, timeexecuted) from
@@ -801,7 +807,7 @@ function get_chado_analyses() {
 		return $analyses;
 	}
 }
-/************************************************************************
+/**
  *
  *
  * @ingroup tripal_analysis
@@ -856,7 +862,7 @@ function theme_tripal_analysis_analysis_page($analyses) {
 	return $output;
 }
 
-/************************************************************************
+/**
  *
  *
  * @ingroup tripal_analysis
@@ -916,12 +922,8 @@ function tripal_analyses_cleanup($dummy = NULL, $job_id = NULL) {
 	}
 	return '';
 }
-/*******************************************************************************
- *
- *
- * @ingroup tripal_analysis
- */
-/*
+ 
+/**
 function tripal_analysis_reindex_features ($analysis_id = NULL, $job_id = NULL){
 	$i = 0;
 
@@ -963,12 +965,8 @@ function tripal_analysis_reindex_features ($analysis_id = NULL, $job_id = NULL){
 		$i++;
 	}
 } */
-/*******************************************************************************
- *
- *
- * @ingroup tripal_analysis
- */
-/*
+ 
+/**
 function tripal_analysis_taxonify_features ($analysis_id = NULL, $job_id = NULL){
 	$i = 0;
 
@@ -1021,7 +1019,7 @@ function tripal_analysis_taxonify_features ($analysis_id = NULL, $job_id = NULL)
 	}
 }
 */
-/*************************************************************************
+/**
  * Implements hook_views_api()
  * Purpose: Essentially this hook tells drupal that there is views support for
  *  for this module which then includes tripal_analysis.views.inc where all the

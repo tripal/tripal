@@ -20,6 +20,7 @@
  * transgene), and could be described by some ontology term. For more information about the chado 
  * Stock Module see the GMOD Wiki Page (http://gmod.org/wiki/Chado_Stock_Module)
  * @}
+ * @ingroup tripal_modules
  */
 require("tripal_stock-administration.inc");
 

@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @defgroup tripal_analysis_api Analysis Module API
+ * @ingroup tripal_analysis
+ * @ingroup tripal_api
+ */
 /****************************************************************************
  * @section Chado Table Descriptions
  ****************************************************************************/
@@ -11,7 +16,7 @@
  * @return
  *    Array describing the analysis table
  *
- * @ingroup tripal_analysis
+ * @ingroup tripal_analysis_api
  */
 function tripal_analysis_chado_analysis_schema() {
   $description = array();
@@ -36,6 +41,8 @@ function tripal_analysis_chado_analysis_schema() {
  *
  * @return
  *    Array describing the analysisfeature table
+ *
+ * @ingroup tripal_analysis_api
  */
 function tripal_analysis_chado_analysisfeature_schema() {
   $description = array();
@@ -64,6 +71,8 @@ function tripal_analysis_chado_analysisfeature_schema() {
  *
  * @return
  *    Array describing the analysisfeatureprop table
+ *
+ * @ingroup tripal_analysis_api
  */
 function tripal_analysis_chado_analysisfeatureprop_schema() {
   $description = array();
@@ -92,6 +101,8 @@ function tripal_analysis_chado_analysisfeatureprop_schema() {
  *
  * @return
  *    Array describing the analysisprop table
+ *
+ * @ingroup tripal_analysis_api
  */
 function tripal_analysis_chado_analysisprop_schema() {
   $description = array();
@@ -114,28 +125,32 @@ function tripal_analysis_chado_analysisprop_schema() {
 }
 /**
 *
-* @ingroup tripal_api
+ *
+ * @ingroup tripal_analysis_api
 */
 function tripal_analysis_get_property($analysis_id,$property){
    return tripal_core_get_property('analysis',$analysis_id,$property,'tripal');
 }
 /**
 *
-* @ingroup tripal_api
+ *
+ * @ingroup tripal_analysis_api
 */
 function tripal_analysis_insert_property($analysis_id,$property,$value,$update_if_present = 0){
     return tripal_core_insert_property('analysis',$analysis_id,$property,'tripal',$value,$update_if_present);
 }
 /**
 *
-* @ingroup tripal_api
+ *
+ * @ingroup tripal_analysis_api
 */
 function tripal_analysis_update_property($analysis_id,$property,$value,$insert_if_missing = 0){
    return tripal_core_update_property('analysis',$analysis_id,$property,'tripal',$value, $insert_if_missing);
 }
 /**
 *
-* @ingroup tripal_api
+ *
+ * @ingroup tripal_analysis_api
 */
 function tripal_analysis_delete_property($analysis_id,$property){
    return tripal_core_delete_property('analysis',$analysis_id,$property,'tripal');

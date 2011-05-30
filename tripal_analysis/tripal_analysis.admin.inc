@@ -136,6 +136,8 @@ function tripal_analysis_module_description_page() {
  * We have defined a hook_get_settings() function. When a sub-module
  * is enabled, we'll look for this function to provide a form for the
  * administrative setting.
+ *
+ * @ingroup tripal_analysis
  */
 function tripal_analysis_admin() {
 	// Create a new administrative form. We'll add main functions to the form
@@ -200,8 +202,9 @@ function tripal_analysis_admin() {
 	return system_settings_form($form);
 }
 
-/************************************************************************
+/**
  *
+ * @ingroup tripal_analysis
  */
 function get_tripal_analysis_admin_form_taxonomy_set(&$form) {
 	$form['taxonify'] = array(
@@ -245,8 +248,9 @@ function get_tripal_analysis_admin_form_taxonomy_set(&$form) {
       '#weight'      => 3
 	);
 }
-/************************************************************************
+/** 
  *
+ * @ingroup tripal_analysis
  */
 function get_tripal_analysis_admin_form_reindex_set(&$form) {
 	// define the fieldsets
@@ -288,8 +292,9 @@ function get_tripal_analysis_admin_form_reindex_set(&$form) {
       '#weight' => 3,
 	);
 }
-/************************************************************************
+/** 
  *
+ * @ingroup tripal_analysis
  */
 function get_tripal_analysis_admin_form_cleanup_set(&$form) {
 	$form['cleanup'] = array(
@@ -311,8 +316,9 @@ function get_tripal_analysis_admin_form_cleanup_set(&$form) {
       '#weight' => 2,
 	);
 }
-/************************************************************************
+/** 
  *
+ * @ingroup tripal_analysis
  */
 function get_tripal_analysis_admin_form_sync_set (&$form) {
 	// define the fieldsets
@@ -388,8 +394,9 @@ function get_tripal_analysis_admin_form_sync_set (&$form) {
 		);
 	}
 }
-/************************************************************************
+/**
  *
+ * @ingroup tripal_analysis
  */
 function tripal_analysis_admin_validate($form, &$form_state) {
 	global $user;  // we need access to the user info

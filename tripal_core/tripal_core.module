@@ -9,10 +9,15 @@ require_once "bulk_loader.php";
 require_once "tripal_core.api.inc";
 
 /**
- * @defgroup tripal_core Core Tripal Module
+ * @defgroup tripal_modules Tripal Modules
  * @{
- * Provides basic functions for interacting with chado
+ * All documented functions for the various Tripal Modules
  * @}
+ */
+
+/**
+ * @defgroup tripal_core Core Tripal Module
+ * @ingroup tripal_modules
  */
  
 /**
@@ -244,7 +249,14 @@ function tripal_core_admin () {
  * schemas.  It is also used for backwards compatibility with older versions
  * of tripal or in cases where chado is located outside of the Drupal database.
  *
- * @ingroup tripal_core
+ * @param $dbname
+ *   The name of the database to switch to as indicated in settings.php
+ *   Should be either default or chado
+ *
+ * @return 
+ *   The name of the previously set database
+ *
+ * @ingroup tripal_chado_api
  */
 function tripal_db_set_active($dbname){
    global $db_url, $db_type;
@@ -377,6 +389,10 @@ function tripal_get_max_chado_rank ($tablename, $where_options) {
 	}
 }
 
+/**
+ *
+ * @ingroup tripal_core
+ */
 function tripal_core_theme () {
    return array(      
       'tripal_core_job_view' => array (

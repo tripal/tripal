@@ -30,6 +30,14 @@
  */
 require_once "tripal_core.schema.api.inc";
 
+/** 
+ * @defgroup tripal_chado_api Tripal Chado DB API
+ * @{
+ * Provides an application programming interface (API) to interact with the Chado database.
+ * @}
+ * @ingroup tripal_api
+ */
+ 
 // just a temporary function for debugging
 function tripal_core_chado_insert_test(){
    $ivalues =  array(
@@ -83,6 +91,7 @@ function tripal_core_chado_insert_test(){
    return $result;
 
 }
+
 /**
 * Provides a generic routine for inserting into any Chado table
 *
@@ -124,7 +133,7 @@ function tripal_core_chado_insert_test(){
 * specified using its foreign key and the cv_id for the cvterm is nested as
 * well.
 *
-* @ingroup tripal_api
+* @ingroup tripal_chado_api
 */
 function tripal_core_chado_insert($table,$values){
    $insert_values = array();
@@ -226,9 +235,61 @@ function tripal_core_chado_insert($table,$values){
    }
    return false;
 }
+
 /**
-*
-*/
+ * Provides a generic function for deleting a record(s) from any chado table
+ *
+ * Use this function to delete a record(s) in any Chado table.  The first
+ * argument specifies the table to delete from and the second is an array
+ * of values to match for locating the record(s) to be deleted.  The arrays 
+ * are mutli-dimensional such that foreign key lookup values can be specified.
+ *
+ * @param $table
+ *  The name of the chado table for inserting
+ * @param $match
+ *  An associative array containing the values for locating a record to update.
+ *
+ * @return 
+ *   On success this function returns TRUE. On failure, it returns FALSE.
+ *
+ * Example usage:
+ * @code
+   $umatch = array(
+     'organism_id' => array(
+         'genus' => 'Citrus',
+         'species' => 'sinensis',
+      ),
+     'uniquename' => 'orange1.1g000034m.g7',
+     'type_id' => array (
+         'cv_id' => array (
+            'name' => 'sequence',
+         ),
+         'name' => 'gene',
+         'is_obsolete' => 0
+      ),
+   );
+   $uvalues = array(
+      'name' => 'orange1.1g000034m.g',
+      'type_id' => array (
+         'cv_id' => array (
+            'name' => 'sequence',
+         ),
+         'name' => 'mRNA',
+         'is_obsolete' => 0
+      ),
+   );
+ *   $result = tripal_core_chado_update('feature',$umatch,$uvalues);
+ * @endcode
+ * The above code species that a feature with a given uniquename, organism_id,
+ * and type_id (the unique constraint for the feature table) will be deleted.
+ * The organism_id is specified as a nested array that uses the organism_id
+ * foreign key constraint to lookup the specified values to find the exact 
+ * organism_id. The same nested struture is also used for specifying the 
+ * values to update.  The function will find all records that match the 
+ * columns specified and delete them.
+ *
+ * @ingroup tripal_chado_api
+ */
 function tripal_core_chado_delete($table,$match){
    $delete_matches = array();  // contains the values for the where clause
    
@@ -278,6 +339,7 @@ function tripal_core_chado_delete($table,$match){
    }
    return false;
 }
+
 /**
 * Provides a generic routine for updating into any Chado table
 *
@@ -333,7 +395,7 @@ function tripal_core_chado_delete($table,$match){
 * values to update.  The function will find the record that matches the 
 * columns specified and update the record with the avlues in the $uvalues array.
 *
-* @ingroup tripal_api
+* @ingroup tripal_chado_api
 */
 function tripal_core_chado_update($table,$match,$values){
    $update_values = array();   // contains the values to be updated
@@ -415,6 +477,7 @@ function tripal_core_chado_update($table,$match,$values){
    }
    return false;
 }
+
 /**
 * Provides a generic routine for selecting data from a Chado table
 *
@@ -481,7 +544,7 @@ function tripal_core_chado_update($table,$match,$values){
 * for the cvterm is nested as well.  In the example above, two different species
 * are allowed to match
 *
-* @ingroup tripal_api
+* @ingroup tripal_chado_api
 */
 function tripal_core_chado_select($table,$columns,$values,$options = null){
     if (!is_array($options)) { $options = array(); }
@@ -608,6 +671,7 @@ function tripal_core_chado_select($table,$columns,$values,$options = null){
       return count($results);
    }
 }
+
 /**
 * Gets the value of a foreign key relationship
 *
@@ -624,6 +688,15 @@ function tripal_core_chado_select($table,$columns,$values,$options = null){
 *  The field in the table that is the foreign key.
 * @param $values
 *  An associative array containing the values 
+* @param $options
+*  An associative array of additional options where the key is the option 
+*  and the value is the value of that option. These options are passed on to tripal_core_chado_select.
+*
+* Additional Options Include:
+*  - case_insensitive_columns
+*     An array of columns to do a case insensitive search on.
+*  - regex_columns
+*     An array of columns where the value passed in should be treated as a regular expression
 * 
 * @return
 *  A string containg the results of the foreign key lookup, or FALSE if failed.
@@ -645,7 +718,7 @@ function tripal_core_chado_select($table,$columns,$values,$options = null){
 * species.  The cvterm is also specified using its foreign key and the cv_id 
 * for the cvterm is nested as well.
 *
-* @ingroup tripal_api
+* @ingroup tripal_chado_api
 */
 function tripal_core_chado_get_foreign_key($table_desc,$field,$values, $options = null){
     if (!is_array($options)) { $options = array(); }
@@ -701,8 +774,6 @@ function tripal_core_chado_get_foreign_key($table_desc,$field,$values, $options 
 /** 
  * Generates an object containing the full details of a record(s) in chado. 
  *
- * @todo Add expand_tables arrays
- *
  * This differs from the objects returned by tripal_core_chado_select in so far as all foreign key 
  * relationships have been followed meaning you have more complete details. Thus this function 
  * should be used whenever you need a full variable and tripal_core_chado_select should be used if 
@@ -755,9 +826,9 @@ function tripal_core_chado_get_foreign_key($table_desc,$field,$values, $options 
  * @endcode
  *      will exclude all text fields with a length > 50. Thus if $feature.residues is longer than 50 *      it will be excluded, otherwise it will be added.
  *
- * @ingroup tripal_api
+ * @ingroup tripal_chado_api
  */
-function tripal_core_generate_chado_var($table, $values, $base_options=array()) {
+ function tripal_core_generate_chado_var($table, $values, $base_options=array()) {
   
   // get description for the current table----------------------------------------------------------
   $table_desc = module_invoke_all('chado_'.$table.'_schema');
@@ -983,7 +1054,7 @@ function tripal_core_generate_chado_var($table, $values, $base_options=array()) 
       $feature = tripal_core_expand_chado_vars($feature, 'table', 'featureprop');
  * @endcode
  *
- * @ingroup tripal_api
+ * @ingroup tripal_chado_api
  */
 function tripal_core_expand_chado_vars ($object, $type, $to_expand,$table_options = array()) {
   $base_table = $object->tablename;
@@ -1190,7 +1261,7 @@ function tripal_core_expand_chado_vars ($object, $type, $to_expand,$table_option
  * @return
  *   An array of type => criteria where the type is excluded if the criteria evaluates to TRUE
  *
- * @ingroup tripal_api
+ * @ingroup tripal_chado_api
  */
 function tripal_core_exclude_type_by_default() {
   return array('text' => "strlen('&gt;field_value&lt; ') > 100");
@@ -1219,7 +1290,7 @@ function tripal_core_exclude_type_by_default() {
  * @return
  *   An array of type => criteria where the type is excluded if the criteria evaluates to TRUE
  *
- * @ingroup tripal_api
+ * @ingroup tripal_chado_api
  */
 function tripal_core_exclude_field_from_feature_by_default() {
   return array();
@@ -1269,10 +1340,23 @@ function chado_get_node_id ($table, $id) {
 }
 
 /**
-* Adds a single property to an existing library record.
-*
-* @ingroup tripal_api
-*/
+ * Retrieve a property for a given base table record
+ *
+ * @param $basetable
+ *   The base table for which the property should be retrieved. Thus to retrieve a property
+ *   for a feature the basetable=feature and property is retrieved from featureprop
+ * @param $record_id
+ *   The primary key of the basetable to retrieve properties for. This should be in integer.
+ * @param $property
+ *   The cvterm name describing the type of properties to be retrieved
+ * @param $cv_name
+ *   The name of the cv that the above cvterm is part of
+ *
+ * @return
+ *   A chado variable with the specified properties expanded
+ *
+ * @ingroup tripal_chado_api
+ */
 function tripal_core_get_property($basetable, $record_id, $property, $cv_name){
 
    // get the foreign key for this property table
@@ -1295,10 +1379,27 @@ function tripal_core_get_property($basetable, $record_id, $property, $cv_name){
    return $results;
 }
 /**
-* Adds a single property to an existing record.
-*
-* @ingroup tripal_core.api
-*/
+ * Insert a property for a given basetable record
+ *
+ * @param $basetable
+ *   The base table for which the property should be inserted. Thus to insert a property
+ *   for a feature the basetable=feature and property is inserted into featureprop
+ * @param $record_id
+ *   The primary key of the basetable to insert a property for. This should be in integer.
+ * @param $property
+ *   The cvterm name describing the type of properties to be inserted
+ * @param $cv_name
+ *   The name of the cv that the above cvterm is part of
+ * @param $value
+ *   The value of the property to be inserted (can be empty)
+ * @param $update_if_present
+ *   A boolean indicating whether an existing record should be updated or an error thrown
+ *
+ * @return
+ *   Return True on Insert/Update and False otherwise
+ *
+ * @ingroup tripal_chado_api
+ */
 function tripal_core_insert_property($basetable, $record_id, $property, 
    $cv_name, $value, $update_if_present = 0)
 {
@@ -1331,11 +1432,32 @@ function tripal_core_insert_property($basetable, $record_id, $property,
    );
    return tripal_core_chado_insert($basetable.'prop',$values);
 }
+
 /**
-* Adds a single property to an existing record.
-*
-* @ingroup tripal_api
-*/
+ * Update a property for a given basetable record
+ *
+ * @param $basetable
+ *   The base table for which the property should be updated. Thus to update a property
+ *   for a feature the basetable=feature and property is updated in featureprop
+ * @param $record_id
+ *   The primary key of the basetable to update a property for. This should be in integer.
+ * @param $property
+ *   The cvterm name describing the type of property to be updated
+ * @param $cv_name
+ *   The name of the cv that the above cvterm is part of
+ * @param $value
+ *   The value of the property to be inserted (can be empty)
+ * @param $insert_if_missing
+ *   A boolean indicating whether a record should be inserted if one doesn't exist to update
+ *
+ * Note: The property to be updated is select via theu nique combination of $record_id and
+ * $property and then it is updated with the supplied value
+ *
+ * @return
+ *   Return True on Update/Insert and False otherwise
+ *
+ * @ingroup tripal_chado_api
+ */
 function tripal_core_update_property($basetable, $record_id,$property,$cv_name,
    $value,$insert_if_missing = 0)
 {
@@ -1370,11 +1492,27 @@ function tripal_core_update_property($basetable, $record_id,$property,$cv_name,
    );
    return tripal_core_chado_update($basetable.'prop',$match,$values);
 }
+
 /**
-* Adds a single property to an existing record.
-*
-* @ingroup tripal_api
-*/
+ * Deletes a property for a given basetable record
+ *
+ * @param $basetable
+ *   The base table for which the property should be deleted. Thus to deleted a property
+ *   for a feature the basetable=feature and property is deleted from featureprop
+ * @param $record_id
+ *   The primary key of the basetable to delete a property for. This should be in integer.
+ * @param $property
+ *   The cvterm name describing the type of property to be deleted
+ * @param $cv_name
+ *   The name of the cv that the above cvterm is part of
+ *
+ * Note: The property to be deleted is select via theu nique combination of $record_id and $property 
+ *
+ * @return
+ *   Return True on Delete and False otherwise
+ *
+ * @ingroup tripal_chado_api
+ */
 function tripal_core_delete_property($basetable, $record_id,$property,$cv_name){
    // get the foreign key for this property table
    $table_desc = module_invoke_all('chado_'.$basetable.'prop_schema');
