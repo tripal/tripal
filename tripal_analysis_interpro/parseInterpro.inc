@@ -305,20 +305,25 @@ function tripal_analysis_interpro_parseSingleXMLFile ($analysis_id, $interproxml
    $type_id = db_result(db_query($sql));
 
    // Load the XML file
-   $interproput =  simplexml_load_file($interproxmlfile);
-
-   // Get entries parsing
-   $xml = $interproput->children();
+   $xml =  simplexml_load_file($interproxmlfile);
 
    // If there is an EBI header then we need to skip that
    // and set our proteins array to be the second element of the array. This
    // occurs if results were generated with the online InterProScan tool.
    // if the XML starts in with the results then this happens when InterProScan
    // is used command-line and we can just use the object as is
-   if(preg_match('/^Header$/',$xml[0]->getname())){
-      $proteins = $xml[1];  
-   } else {
-      $proteins = $xml[0];
+   if(preg_match('/^EBIInterProScanResults/',$xml->getname())){
+      $children = $xml->children();
+      $header = $children[0];
+      $proteins = $children[1];
+   } 
+   // if the XML starts with the <interpro_matches> tag
+   elseif(preg_match('/^interpro_matches/',$xml->getname())) {
+      $proteins = $xml;
+   }
+   else {
+      print "ERROR: cannot parse XML file format is not recognized\n";
+      return;
    }
 
    // Count the number of entires to be processed
@@ -411,7 +416,7 @@ function tripal_analysis_interpro_parseSingleXMLFile ($analysis_id, $interproxml
 			continue;
       }
       if(count($feature_arr) == 0){
-			print "Failed: '$feature' cannot find a matching feature in the database.\n";
+			print "Failed: cannot find a matching feature for '$feature' in the database.\n";
          continue;
       }
       $feature_id = $feature_arr[0]->feature_id;

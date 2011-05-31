@@ -1597,7 +1597,7 @@ function tripal_feature_theme () {
  */
 function tripal_feature_preprocess_tripal_organism_feature_counts(&$variables){
    $organism = $variables['node']->organism;
-   $variables['tripal_feature']['feature_counts'] = tripal_feature_load_organism_feature_counts($organism);
+   $organism->feature_counts = tripal_feature_load_organism_feature_counts($organism);
 }
 
 /**
@@ -1607,7 +1607,7 @@ function tripal_feature_preprocess_tripal_organism_feature_counts(&$variables){
  */
 function tripal_feature_preprocess_tripal_organism_feature_browser(&$variables){
    $organism = $variables['node']->organism;
-   $variables['tripal_feature']['browser'] = tripal_feature_load_organism_feature_browser($organism);
+   $organism->feature_browser = tripal_feature_load_organism_feature_browser($organism);
 }
 
 

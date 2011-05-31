@@ -716,3 +716,38 @@ function tripal_analysis_interpro_extract_keywords ($analysis_id) {
 	print "Finished.\n";
 	
 }
+/**
+ *
+ *
+ * @ingroup tripal_analysis_interpro
+ */
+function tripal_analysis_interpro_job_describe_args($callback,$args){
+
+
+   $new_args = array();
+   if($callback == 'tripal_analysis_interpro_parseXMLFile'){
+
+      // add in the analysis 
+      if($args[0]){
+         $analysis = tripal_core_chado_select('analysis',array('name'),array('analysis_id' => $args[0]));
+      }
+      $new_args['Analysis'] = $analysis[0]->name;
+
+      $new_args['File or Directory Name'] = $args[1];
+
+      if($args[2]){
+         $new_args['Parse GO terms'] = 'Yes';
+      } else {
+         $new_args['Parse GO terms'] = 'No';
+      }
+
+      $new_args['Query name regular expression'] = $args[3];
+      $new_args['Query type'] = $args[4];
+      if($args[5] == 1){
+        $new_args['Feature identifier'] = 'feature unique name';
+      } else {
+        $new_args['Feature identifier'] = 'feature name';
+      }      
+   }
+   return $new_args;
+}

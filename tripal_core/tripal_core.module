@@ -255,5 +255,17 @@ function tripal_core_theme () {
       ),
    );
 }
-
-
+/**
+ *
+ * @ingroup tripal_core
+ */
+function tripal_core_job_describe_args($callback,$args){
+   $new_args = array();
+   if($callback == 'tripal_update_mview'){
+      // get this mview details
+      $sql = "SELECT * FROM {tripal_mviews} WHERE mview_id = %d ";
+      $mview = db_fetch_object(db_query($sql,$args[0]));     
+      $new_args['View Name'] = $mview->name;
+   }
+   return $new_args;
+}
