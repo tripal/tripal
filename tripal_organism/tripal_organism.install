@@ -1,7 +1,9 @@
 <?php
 
-/*******************************************************************************
+/**
 *  Implementation of hook_install();
+*
+* @ingroup tripal_organism
 */
 function tripal_organism_install(){
 
@@ -22,16 +24,20 @@ function tripal_organism_install(){
 
 }
 
-/*******************************************************************************
+/**
 * Implementation of hook_schema().
+*
+* @ingroup tripal_organism
 */
 function tripal_organism_schema() {
    $schema = tripal_organism_get_schemas();
 	return $schema;
 }
 
-/*******************************************************************************
+/**
 * Implementation of hook_uninstall()
+*
+* @ingroup tripal_organism
 */
 function tripal_organism_uninstall(){
    drupal_uninstall_schema('tripal_organism');
@@ -54,11 +60,13 @@ function tripal_organism_uninstall(){
    }
 }
 
-/************************************************************************
+/**
 * This function simply defines all tables needed for the module to work
 * correctly.  By putting the table definitions in a separate function we
 * can easily provide the entire list for hook_install or individual
 * tables for an update.
+*
+* @ingroup tripal_organism
 */
 function tripal_organism_get_schemas (){
   $schema = array();
@@ -95,9 +103,11 @@ function tripal_organism_get_schemas (){
   return $schema;
 }
 
-/*******************************************************************************
+/**
  * Implementation of hook_requirements(). Make sure 'Tripal Core' is enabled
  * before installation
+ *
+ * @ingroup tripal_organism
  */
 function tripal_organism_requirements($phase) {
    $requirements = array();

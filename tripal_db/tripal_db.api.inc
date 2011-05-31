@@ -41,7 +41,7 @@
  * @ingroup tripal_db_api
  */
 function tripal_db_get_db ($select_values) {
-/**
+
   $columns = array(
     'db_id', 
     'name', 
@@ -66,7 +66,7 @@ function tripal_db_get_db ($select_values) {
       WATCHDOG_WARNING
     );
   }
-*/  
+  
 }
 
 /**
@@ -204,7 +204,7 @@ function tripal_db_get_db_options() {
  * @ingroup tripal_db_api
  */
 function tripal_db_get_dbxref ($select_values) {
-/**
+
   $columns = array(
     'dbxref_id',
     'db_id', 
@@ -232,7 +232,7 @@ function tripal_db_get_dbxref ($select_values) {
       WATCHDOG_WARNING
     );
   }
-  */
+
 }
 
 /**

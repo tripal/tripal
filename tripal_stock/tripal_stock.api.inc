@@ -1,4 +1,10 @@
 <?php
+
+/**
+ * @defgroup tripal_stock_api Stock Module API
+ * @ingroup tripal_api
+ * @ingroup tripal_stock
+ */
  
 /**
  * Purpose: Return a given stock node using the nid
@@ -9,9 +15,9 @@
  * @return
  *   stock node with the passed in node ID
  *
- * @ingroup tripal_api
+ * @ingroup tripal_stock_api
  */
-function triapl_stock_get_stock_by_nid ($nid) {
+function tripal_stock_get_stock_by_nid ($nid) {
 	
 	return node_load($nid);
 	
@@ -23,7 +29,7 @@ function triapl_stock_get_stock_by_nid ($nid) {
  * @return 
  *   Stock object created by node load
  *
- * @ingroup tripal_api
+ * @ingroup tripal_stock_api
  */
 function tripal_stock_get_stock_by_stock_id ($stock_id) {
 
@@ -45,7 +51,7 @@ function tripal_stock_get_stock_by_stock_id ($stock_id) {
  * @return 
  *   An array of node objects keyed by stock_id
  *
- * @ingroup tripal_api
+ * @ingroup tripal_stock_api
  */
 function tripal_stock_get_all_stocks() {
 	$sql = "SELECT stock_id, nid from {chado_stock}";
@@ -94,7 +100,7 @@ function tripal_stock_get_all_stocks() {
  * organism_id foreign key constraint by specifying the genus and species.  The cvterm is also 
  * specified using its foreign key and the cv_id for the cvterm is nested as well.
  *
- * @ingroup tripal_api
+ * @ingroup tripal_stock_api
  */
 function tripal_stock_get_stocks($values) {
 
@@ -153,7 +159,7 @@ function tripal_stock_get_stocks($values) {
  * The above code selects all Lens culinaris stocks with the synonym (stock property) CDC Redberry.
  * The nodes for each stock selected are loaded and returned in an array.
  *
- * @ingroup tripal_api
+ * @ingroup tripal_stock_api
  */
 function tripal_stock_get_stocks_by_stockprop($stockprop_values, $stock_values) {
 
@@ -193,7 +199,7 @@ function tripal_stock_get_stocks_by_stockprop($stockprop_values, $stock_values) 
  * @return
  *   An array of stock node objects
  *
- * @ingroup tripal_api
+ * @ingroup tripal_stock_api
  */
 function tripal_stock_get_stock_by_name_identifier($name, $organism_id) {
   $stock_ids = array();
@@ -310,7 +316,7 @@ function tripal_stock_get_stock_by_name_identifier($name, $organism_id) {
  * @return
  *    Array describing the stock table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  */
 function tripal_stock_chado_stock_schema() {
   $description = array();
@@ -361,7 +367,7 @@ function tripal_stock_chado_stock_schema() {
  * @return
  *    Array describing the stockprop table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  */
 function tripal_stock_chado_stockprop_schema() {
   $description = array();
@@ -392,7 +398,7 @@ function tripal_stock_chado_stockprop_schema() {
  * @return
  *    Array describing the stockprop_pub table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  */
 function tripal_stock_chado_stockprop_pub_schema() {
   $description = array();
@@ -423,7 +429,7 @@ function tripal_stock_chado_stockprop_pub_schema() {
  * @return
  *    Array describing the stock_cvterm table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  */
 function tripal_stock_chado_stock_cvterm_schema() {
   $description = array();
@@ -461,7 +467,7 @@ function tripal_stock_chado_stock_cvterm_schema() {
  * @return
  *    Array describing the stock_dbxref table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  */
 function tripal_stock_chado_stock_dbxref_schema() {
   $description = array();
@@ -492,7 +498,7 @@ function tripal_stock_chado_stock_dbxref_schema() {
  * @return
  *    Array describing the stock_genotype table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  */
 function tripal_stock_chado_stock_genotype_schema() {
   $description = array();
@@ -523,7 +529,7 @@ function tripal_stock_chado_stock_genotype_schema() {
  * @return
  *    Array describing the stock_pub table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  */
 function tripal_stock_chado_stock_pub_schema() {
   $description = array();
@@ -554,7 +560,7 @@ function tripal_stock_chado_stock_pub_schema() {
  * @return
  *    Array describing the stock_relationship table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  */
 function tripal_stock_chado_stock_relationship_schema() {
   $description = array();
@@ -586,7 +592,7 @@ function tripal_stock_chado_stock_relationship_schema() {
  * @return
  *    Array describing the stock_relationship_pub table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  */
 function tripal_stock_chado_stock_relationship_pub_schema() {
   $description = array();
@@ -617,7 +623,7 @@ function tripal_stock_chado_stock_relationship_pub_schema() {
  * @return
  *    Array describing the stockcollection table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  */
 function tripal_stock_chado_stockcollection_schema() {
   $description = array();
@@ -648,7 +654,7 @@ function tripal_stock_chado_stockcollection_schema() {
  * @return
  *    Array describing the stockcollection_stock table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  */
 function tripal_stock_chado_stockcollection_stock_schema() {
   $description = array();
@@ -679,7 +685,7 @@ function tripal_stock_chado_stockcollection_stock_schema() {
  * @return
  *    Array describing the stockcollectionprop table
  *
- * @ingroup tripal_api
+ * @ingroup tripal_schema_api
  */
 function tripal_stock_chado_stockcollectionprop_schema() {
   $description = array();

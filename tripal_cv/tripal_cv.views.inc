@@ -9,18 +9,29 @@
  *  Documentation on views integration can be found at 
  *  http://views2.logrus.com/doc/html/index.html.
  */
- 
-/*************************************************************************
+
+/**
+ * @defgroup tripal_cv_views Controlled Vocabulary Views Integration
+ * @ingroup views
+ * @ingroup tripal_cv
+ */
+
+require_once('views/cvterm.views.inc');
+require_once('views/cv.views.inc'); 
+/**
  * Implements hook_views_data()
+ *
  * Purpose: Describe chado/tripal tables & fields to views
- * @return: a data array which follows the structure outlined in the
+ *
+ * @return
+ *   a data array which follows the structure outlined in the
  *   views2 documentation for this hook. Essentially, it's an array of table
  *   definitions keyed by chado/tripal table name. Each table definition 
  *   includes basic details about the table, fields in that table and
  *   relationships between that table and others (joins)
+ *
+ * @ingroup tripal_cv_views
  */
-require_once('views/cvterm.views.inc');
-require_once('views/cv.views.inc');
 function tripal_cv_views_data() {
   $data = array();
   
@@ -35,12 +46,16 @@ function tripal_cv_views_data() {
   return $data;
 }
  
-/*************************************************************************
+/**
  * Implements hook_views_handlers()
+ *
  * Purpose: Register all custom handlers with views
  *   where a handler describes either "the type of field", 
  *   "how a field should be filtered", "how a field should be sorted"
+ *
  * @return: An array of handler definitions
+ *
+ * @ingroup tripal_cv_views
  */
 function tripal_cv_views_handlers() {
  return array(
@@ -55,6 +70,10 @@ function tripal_cv_views_handlers() {
  );
 }
 
+/**
+ *
+ * @ingroup tripal_cv_views
+ */
 function tripal_cv_views_default_views () {
   $views = array();
   

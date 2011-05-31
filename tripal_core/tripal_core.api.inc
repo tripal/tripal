@@ -21,6 +21,11 @@
  */
 
 /** 
+ * @defgroup tripal_core_api Tripal Core API
+ * @ingroup tripal_api
+ */
+
+/** 
  * @defgroup tripal_schema_api Tripal Schema API
  * @{
  * Provides an application programming interface (API) used to describe chado tables to 
@@ -1296,7 +1301,7 @@ function tripal_core_exclude_field_from_feature_by_default() {
   return array();
 }
 
-/************************************************************************
+/**
  *  Use this function instead of db_query() to avoid switching databases
  *  when making query to the chado database
  */
@@ -1315,7 +1320,7 @@ function chado_query($sql) {
 	return $results;
 }
 
-/************************************************************************
+/**
  * Get chado id for a node. E.g, if you want to get 'analysis_id' from the 
  * 'analysis' table for a synced 'chado_analysis' node, use:
  * $analysis_id = chado_get_id_for_node ('analysis', $node)
@@ -1327,7 +1332,7 @@ function chado_get_id_for_node ($table, $node) {
 	 return db_result(db_query("SELECT $table"."_id FROM {chado_".$table."} WHERE nid = $node->nid"));
 }
 
-/************************************************************************
+/**
  *  Get node id for a chado feature/organism/analysis. E.g, if you want to
  *  get the node id for an analysis, use:
  *  $nid = chado_get_node_id ('analysis', $analysis_id)

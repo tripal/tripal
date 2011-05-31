@@ -16,7 +16,7 @@
  * @return
  *    Array describing the analysis table
  *
- * @ingroup tripal_analysis_api
+ * @ingroup tripal_schema_api
  */
 function tripal_analysis_chado_analysis_schema() {
   $description = array();
@@ -42,7 +42,7 @@ function tripal_analysis_chado_analysis_schema() {
  * @return
  *    Array describing the analysisfeature table
  *
- * @ingroup tripal_analysis_api
+ * @ingroup tripal_schema_api
  */
 function tripal_analysis_chado_analysisfeature_schema() {
   $description = array();
@@ -72,7 +72,7 @@ function tripal_analysis_chado_analysisfeature_schema() {
  * @return
  *    Array describing the analysisfeatureprop table
  *
- * @ingroup tripal_analysis_api
+ * @ingroup tripal_schema_api
  */
 function tripal_analysis_chado_analysisfeatureprop_schema() {
   $description = array();
@@ -95,15 +95,15 @@ function tripal_analysis_chado_analysisfeatureprop_schema() {
 
 
  /****************************************************************************
- * Implements hook_chado_analysisprop_schema()
- * Purpose: To add descriptions and foreign keys to default table description
- * Note: This array will be merged with the array from all other implementations
- *
- * @return
- *    Array describing the analysisprop table
- *
- * @ingroup tripal_analysis_api
- */
+  * Implements hook_chado_analysisprop_schema()
+  * Purpose: To add descriptions and foreign keys to default table description
+  * Note: This array will be merged with the array from all other implementations
+  *
+  * @return
+  *    Array describing the analysisprop table
+  *
+  * @ingroup tripal_schema_api
+  */
 function tripal_analysis_chado_analysisprop_schema() {
   $description = array();
 
@@ -123,35 +123,85 @@ function tripal_analysis_chado_analysisprop_schema() {
 
   return $description;
 }
+
 /**
-*
+ * Retrieve properties of a given type for a given analysis
+ *
+ * @param $analysis_id
+ *    The analysis_id of the properties you would like to retrieve
+ * @param $property
+ *    The cvterm name of the properties to retrieve
+ *
+ * @return
+ *    An analysis chado variable with the specified properties expanded
  *
  * @ingroup tripal_analysis_api
-*/
+ */
 function tripal_analysis_get_property($analysis_id,$property){
    return tripal_core_get_property('analysis',$analysis_id,$property,'tripal');
 }
+
 /**
-*
+ * Insert a given property
+ *
+ * @param $analysis_id
+ *   The analysis_id of the property to insert
+ * @param $property
+ *   The cvterm name of the property to insert
+ * @param $value
+ *   The value of the property to insert
+ * @param $update_if_present
+ *   A boolean indicated whether to update the record if it's already present
+ *
+ * @return
+ *   True of success, False otherwise
  *
  * @ingroup tripal_analysis_api
-*/
+ */
 function tripal_analysis_insert_property($analysis_id,$property,$value,$update_if_present = 0){
     return tripal_core_insert_property('analysis',$analysis_id,$property,'tripal',$value,$update_if_present);
 }
+
 /**
-*
+ * Update a given property
+ *
+ * @param $analysis_id
+ *   The analysis_id of the property to update
+ * @param $property
+ *   The cvterm name of the property to update
+ * @param $value
+ *   The value of the property to update
+ * @param $insert_if_missing 
+ *   A boolean indicated whether to insert the record if it's absent
+ *
+ * Note: The property will be identified using the unique combination of the $analysis_id and $property
+ * and then it will be updated with the supplied value
+ *
+ * @return
+ *   True of success, False otherwise
  *
  * @ingroup tripal_analysis_api
-*/
+ */
 function tripal_analysis_update_property($analysis_id,$property,$value,$insert_if_missing = 0){
    return tripal_core_update_property('analysis',$analysis_id,$property,'tripal',$value, $insert_if_missing);
 }
+
 /**
-*
+ * Delete a given property
+ *
+ * @param $analysis_id
+ *   The analysis_id of the property to delete
+ * @param $property
+ *   The cvterm name of the property to delete
+ *
+ * Note: The property will be identified using the unique combination of the $analysis_id and $property
+ * and then it will be deleted
+ *
+ * @return
+ *   True of success, False otherwise 
  *
  * @ingroup tripal_analysis_api
-*/
+ */
 function tripal_analysis_delete_property($analysis_id,$property){
    return tripal_core_delete_property('analysis',$analysis_id,$property,'tripal');
 }

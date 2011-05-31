@@ -18,6 +18,8 @@
  *    constraint dbxref_c1 unique (db_id,accession,version)
  * );
  * @endcode
+ *
+ * @ingroup tripal_db_views
  */
 function retrieve_dbxref_views_data() {
 

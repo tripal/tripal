@@ -1,7 +1,13 @@
 <?php
 
-/*************************************************************************
+/** 
+ * @defgroup tripal_obo_loader Tripal Ontology Loader
+ * @ingroup tripal_cv
+ */
+ 
+/**
 *
+* @ingroup tripal_obo_loader
 */
 function tripal_cv_load_obo_v1_2_id($obo_id,$jobid = NULL){
 
@@ -27,8 +33,9 @@ function tripal_cv_load_obo_v1_2_id($obo_id,$jobid = NULL){
       }
    }  
 }
-/*************************************************************************
+/**
 *
+* @ingroup tripal_obo_loader
 */
 function tripal_cv_load_obo_v1_2_file($obo_name,$file,$jobid = NULL,$is_new = 1){
    $newcvs = array();
@@ -41,8 +48,9 @@ function tripal_cv_load_obo_v1_2_file($obo_name,$file,$jobid = NULL,$is_new = 1)
    tripal_cv_load_update_cvtermpath($newcvs,$jobid);
    print "Ontology Sucessfully loaded!\n";  
 }
-/*************************************************************************
+/**
 *
+* @ingroup tripal_obo_loader
 */
 function tripal_cv_load_obo_v1_2_url($obo_name,$url,$jobid = NULL,$is_new = 1){
 
@@ -74,8 +82,9 @@ function tripal_cv_load_obo_v1_2_url($obo_name,$url,$jobid = NULL,$is_new = 1){
 
    print "Ontology Sucessfully loaded!\n";
 }
-/*************************************************************************
+/**
 *
+* @ingroup tripal_obo_loader
 */
 function tripal_cv_load_update_cvtermpath($newcvs,$jobid){
 
@@ -84,15 +93,16 @@ function tripal_cv_load_update_cvtermpath($newcvs,$jobid){
       tripal_cv_update_cvtermpath($cvid, $jobid);
    }
 }
-/*************************************************************************
+/**
 *
 */
 function tripal_cv_load_obo_add_ref($name,$path){
    $isql = "INSERT INTO tripal_cv_obo (name,path) VALUES ('%s','%s')";
    db_query($isql,$name,$path);
 }
-/*************************************************************************
+/**
 *
+* @ingroup tripal_obo_loader
 */
 function tripal_cv_load_obo_v1_2($file,$jobid = NULL,&$newcvs) {
 
@@ -137,16 +147,18 @@ function tripal_cv_load_obo_v1_2($file,$jobid = NULL,&$newcvs) {
    }
    return tripal_cv_obo_loader_done();
 }
-/*************************************************************************
+/**
 *
+* @ingroup tripal_obo_loader
 */
 function tripal_cv_obo_quiterror ($message){
    print "ERROR: $message\n";
    db_query("set search_path to public");  
    exit;
 }
-/*************************************************************************
+/**
 *
+* @ingroup tripal_obo_loader
 */
 function tripal_cv_obo_loader_done (){
    // return the search path to normal
@@ -154,8 +166,9 @@ function tripal_cv_obo_loader_done (){
    db_query("set search_path to public");  
    return '';
 }
-/*************************************************************************
+/**
 *
+* @ingroup tripal_obo_loader
 */
 function tripal_cv_obo_process_terms($terms,$defaultcv,$obo,$jobid=null,&$newcvs){
 
@@ -178,10 +191,11 @@ function tripal_cv_obo_process_terms($terms,$defaultcv,$obo,$jobid=null,&$newcvs
    }
    return 1;
 }
-/*************************************************************************
-*
-*/
 
+/**
+*
+* @ingroup tripal_obo_loader
+*/
 function tripal_cv_obo_process_term($term,$defaultcv,$obo,$is_relationship=0,&$newcvs){
 
    // add the cvterm
@@ -300,8 +314,9 @@ function tripal_cv_obo_process_term($term,$defaultcv,$obo,$is_relationship=0,&$n
    }
    return 1;
 }
-/*************************************************************************
+/**
 *
+* @ingroup tripal_obo_loader
 */
 function tripal_cv_obo_add_db($dbname){
 
@@ -315,8 +330,9 @@ function tripal_cv_obo_add_db($dbname){
    }
    return $db;
 }
-/*************************************************************************
+/**
 *
+* @ingroup tripal_obo_loader
 */
 function tripal_cv_obo_add_cv($name,$comment){
 
@@ -342,8 +358,9 @@ function tripal_cv_obo_add_cv($name,$comment){
    }
    return $cv;
 }
-/*************************************************************************
+/**
 *
+* @ingroup tripal_obo_loader
 */
 function tripal_cv_obo_add_cvterm_prop($cvterm,$property,$value,$rank){
 
@@ -388,8 +405,9 @@ function tripal_cv_obo_add_cvterm_prop($cvterm,$property,$value,$rank){
    }
    return 1;
 }
-/*************************************************************************
+/**
 *
+* @ingroup tripal_obo_loader
 */
 function tripal_cv_obo_add_relationship($cvterm,$defaultcv,$obo,$rel,$objname,$object_is_relationship=0){
 
@@ -427,8 +445,9 @@ function tripal_cv_obo_add_relationship($cvterm,$defaultcv,$obo,$rel,$objname,$o
 
    return 1;
 }
-/*************************************************************************
+/**
 *
+* @ingroup tripal_obo_loader
 */
 function tripal_cv_obo_get_term($obo,$id){
    foreach ($obo as $type){
@@ -441,8 +460,9 @@ function tripal_cv_obo_get_term($obo,$id){
    }
    return;
 }
-/*************************************************************************
+/**
 *
+* @ingroup tripal_obo_loader
 */
 function tripal_cv_obo_add_synonyms($term,$cvterm){
 
@@ -517,8 +537,9 @@ function tripal_cv_obo_add_synonyms($term,$cvterm){
    }
    return 1;
 }
-/*************************************************************************
+/**
 *
+* @ingroup tripal_obo_loader
 */
 function tripal_cv_obo_add_cv_term($term,$defaultcv,$is_relationship = 0,$update = 1){
 
@@ -634,8 +655,9 @@ function tripal_cv_obo_add_cv_term($term,$defaultcv,$is_relationship = 0,$update
    // return the cvterm
    return $cvterm;
 }
-/*************************************************************************
+/**
 *
+* @ingroup tripal_obo_loader
 */
 function tripal_cv_obo_add_cvterm_dbxref($cvterm,$xref){
 
@@ -677,8 +699,9 @@ function tripal_cv_obo_add_cvterm_dbxref($cvterm,$xref){
    }
    return 1;
 }
-/*************************************************************************
+/**
 *
+* @ingroup tripal_obo_loader
 */
 function tripal_cv_obo_add_dbxref($db_id,$accession,$version='',$description=''){
 
@@ -699,8 +722,9 @@ function tripal_cv_obo_add_dbxref($db_id,$accession,$version='',$description='')
    return $dbxref;
 
 }
-/*************************************************************************
+/**
 *
+* @ingroup tripal_obo_loader
 */
 function tripal_cv_obo_parse($obo_file,&$obo,&$header){
    $i = 0;

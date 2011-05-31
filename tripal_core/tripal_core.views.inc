@@ -1,10 +1,18 @@
 <?php
 
 /**
+ * @defgroup views Views Integration
+ * @{
+ * Provide rules for formatting and composition of fields
+ * @}
+ */
+ 
+/**
  * @defgroup views_field_handlers Views Field Handlers
  * @{
  * Provide rules for formatting and composition of fields
  * @}
+ * @ingroup views
  */
 
 /**
@@ -12,6 +20,7 @@
  * @{
  * Provide the ability to filter based on specified data
  * @}
+ * @ingroup views
  */
 
 /**
@@ -19,13 +28,15 @@
  * @{
  * Provide methods describing how specific data should be sorted
  * @}
+ * @ingroup views
  */
 
 /**
- * @defgroup views_argument_handlers Views Sort Handlers
+ * @defgroup views_argument_handlers Views Arguement Handlers
  * @{
  * Provide the ability to filter pased on arguments in the path of the view
  * @}
+ * @ingroup views
  */
  
 /**

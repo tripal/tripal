@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * Retrieves the schema for all tables
+ * This function is deprecated
+ *
+ * @ingroup tripal_schema_api
+ */
 function tripal_core_get_chado_schema (){
 
    $schema['organism_dbxref'] = array(

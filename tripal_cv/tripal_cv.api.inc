@@ -39,7 +39,7 @@
  * @ingroup tripal_cv_api
  */
 function tripal_cv_get_cv ($select_values) {
-/**
+
   $columns = array(
     'cv_id', 
     'name', 
@@ -62,7 +62,7 @@ function tripal_cv_get_cv ($select_values) {
       WATCHDOG_WARNING
     );
   }
-*/  
+  
 }
 
 // Purpose: To retrieve a chado cv object
@@ -85,7 +85,7 @@ function tripal_cv_get_cv ($select_values) {
 //function tripal_cv_get_cv ($where_options)
 
 /**
- *
+ * Retrieve a cv given the cv name
  *
  * @param $name
  *  The name of the cv to be returned
@@ -103,7 +103,16 @@ function tripal_cv_get_cv_by_name ($name) {
 }
 
 /**
- * return the cv object for the specified CV id
+ * Retrieve the cv object for the specified CV id
+ *
+ * NOTE: This function is deprecated.
+ * @see tripal_core_chado_generate_vars
+ *
+ * @param $cv_id
+ *   The unique identifier for the cv retrieve
+ *
+ * @return
+ *   An object describing the cv
  *
  * @ingroup tripal_cv_api
  */
@@ -116,8 +125,7 @@ function tripal_cv_get_cv_by_id ($cv_id) {
 }
 
 /**
- * Purpose: Create an options array to be used in a form element
- *   which provides a list of all chado cvs
+ * Create an options array to be used in a form element which provides a list of all chado cvs
  *
  * @return 
  *   An array(cv_id => name) for each cv in the chado cv table
@@ -142,7 +150,7 @@ function tripal_cv_get_cv_options() {
 }
 
 /**
- * Purpose: To retrieve a chado controlled vocabulary term object
+ * To retrieve a chado controlled vocabulary term object
  *
  * @param $select_values
  *   An array meant to uniquely select a given controlled vocabulary term
@@ -191,7 +199,7 @@ function tripal_cv_get_cv_options() {
  * @ingroup tripal_cv_api
  */
 function tripal_cv_get_cvterm ($select_values) {
-/**
+
   $columns = array(
     'cvterm_id', 
     'cv_id', 
@@ -226,11 +234,11 @@ function tripal_cv_get_cvterm ($select_values) {
       WATCHDOG_WARNING
     );
   }
-*/  
+ 
 }
 
 /**
- * Purpose: Retrieve a chado cvterm object with a given name
+ * Retrieve a chado cvterm object with a given name
  *
  * @param $name
  *   the cvterm.name
@@ -261,7 +269,7 @@ function tripal_cv_get_cvterm_by_name ($name, $cv_id=0) {
 }
 
 /**
- * Purpose: Create an options array to be used in a form element
+ * Create an options array to be used in a form element
  *   which provides a list of all chado cvterms
  * 
  * @param $cv_id 

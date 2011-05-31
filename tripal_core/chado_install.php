@@ -19,6 +19,7 @@ using chado in a database external to the Drupal database with a 'chado' entry i
    );
    return $form;
 }
+
 /**
 *
 * @ingroup tripal_core

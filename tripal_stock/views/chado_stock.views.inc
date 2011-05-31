@@ -8,7 +8,7 @@
  *
  * @see tripal_stock_views_data() --in tripal_stock.views.inc
  *
- * @ingroup tripal_stock
+ * @ingroup tripal_stock_views
  */
 function retrieve_chado_stock_views_data () {
 	global $db_url;

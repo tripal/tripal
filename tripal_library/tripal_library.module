@@ -1,13 +1,23 @@
 <?php
 
+/**
+ * @defgroup tripal_library Library
+ * @{
+ * Provides functions for managing chado libraries including creating details pages for each library
+ * @}
+ * @ingroup tripal_modules
+ */
+ 
 require('tripal_library.api.inc');
 
-/*******************************************************************************
+/**
  * Display help and module information
  * @param path which path of the site we're displaying help
  * @param arg array that holds the current path as would be returned from arg()
  * function
  * @return help text for the path
+ *
+ * @ingroup tripal_library
  */
 function tripal_library_help($path, $arg) {
    $output = '';
@@ -21,9 +31,11 @@ function tripal_library_help($path, $arg) {
    return $output;
 }
 
-/*******************************************************************************
+/**
  * Provide information to drupal about the node types that we're creating
  * in this module
+ *
+ * @ingroup tripal_library
  */
 function tripal_library_node_info() {
    $nodes = array();
@@ -40,10 +52,12 @@ function tripal_library_node_info() {
    return $nodes;
 }
 
-/*******************************************************************************
+/**
  * Set the permission types that the chado module uses.  Essentially we
  * want permissionis that protect creation, editing and deleting of chado
  * data objects
+ *
+ * @ingroup tripal_library
  */
 function tripal_library_perm(){
    return array(
@@ -53,8 +67,10 @@ function tripal_library_perm(){
       'edit chado_library content',
    );
 }
-/************************************************************************
+/**
  *  Set the permission types that the module uses.
+ *
+ * @ingroup tripal_library
  */
 function chado_library_access($op, $node, $account) {
    if ($op == 'create') {
@@ -78,10 +94,12 @@ function chado_library_access($op, $node, $account) {
    }
    return FALSE;
 }
-/*******************************************************************************
+/**
  * Menu items are automatically added for the new node types created
  * by this module to the 'Create Content' Navigation menu item.  This function
  * adds more menu items needed for this module.
+ *
+ * @ingroup tripal_library
  */
 function tripal_library_menu() {
    $items = array();
@@ -122,11 +140,13 @@ function tripal_library_menu() {
    return $items;
 }
 
-/*************************************************************************
+/**
  * Implements hook_views_api()
  * Purpose: Essentially this hook tells drupal that there is views support for
  *  for this module which then includes tripal_db.views.inc where all the
  *  views integration code is
+ *
+ * @ingroup tripal_library
  */ 
 function tripal_library_views_api() {
    return array(
@@ -134,10 +154,12 @@ function tripal_library_views_api() {
    );
 }
 
-/*************************************************************************
+/**
  * Purpose: Provide Guidance to new Tripal Admin
  *
  * @return HTML Formatted text
+ *
+ * @ingroup tripal_library
  */
 function tripal_library_module_description_page() {
   $text = '';
@@ -236,8 +258,10 @@ function tripal_library_module_description_page() {
   return $text;
 }
 
-/*******************************************************************************
+/**
  * Administrative settings form
+ *
+ * @ingroup tripal_library
  */
 function tripal_library_admin () {
    $form = array();
@@ -270,10 +294,12 @@ function tripal_library_admin () {
    return system_settings_form($form);
 }
 
-/*******************************************************************************
+/**
  * HOOK: Implementation of hook_nodeapi()
  * Display library information for associated features or organisms
  * This function also provides contents for indexing
+ *
+ * @ingroup tripal_library
  */
 function tripal_library_nodeapi(&$node, $op, $teaser, $page) {
 
@@ -310,10 +336,12 @@ function tripal_library_nodeapi(&$node, $op, $teaser, $page) {
    }
 }
 
-/************************************************************************
+/**
  *  We need to let drupal know about our theme functions and their arguments.
  *  We create theme functions to allow users of the module to customize the
  *  look and feel of the output generated in this module
+ *
+ * @ingroup tripal_library
  */
 function tripal_library_theme () {
    return array(
@@ -355,10 +383,12 @@ function tripal_library_theme () {
    );
 }
 
-/************************************************************************
+/**
  * This function is an extension of the chado_feature_view and
  * chado_organism_view by providing the markup for the library object
  * THAT WILL BE INDEXED.
+ *
+ * @ingroup tripal_library
  */
 function theme_tripal_library_search_index ($node) {
 
@@ -411,8 +441,10 @@ function theme_tripal_library_search_index ($node) {
    return $content;
 }
 
-/*******************************************************************************
+/**
  * This function shows library information on an organism/feature node
+ *
+ * @ingroup tripal_library
  */
 function theme_tripal_library_node_libraries($node) {
    $content = "";
@@ -459,8 +491,10 @@ function theme_tripal_library_node_libraries($node) {
    return $content;
 }
 
-/************************************************************************
+/**
  *
+ *
+ * @ingroup tripal_library
  */
 function get_tripal_library_admin_form_menu_set(&$form){
    $form['menu'] = array(
@@ -491,8 +525,10 @@ function get_tripal_library_admin_form_menu_set(&$form){
       '#weight' => 1,
    );
 }
-/************************************************************************
+/**
  *
+ *
+ * @ingroup tripal_library
  */
 function get_tripal_library_admin_form_cleanup_set(&$form) {
    $form['cleanup'] = array(
@@ -514,8 +550,10 @@ function get_tripal_library_admin_form_cleanup_set(&$form) {
       '#weight' => 2,
    );
 }
-/************************************************************************
+/**
  *
+ *
+ * @ingroup tripal_library
  */
 function get_tripal_library_admin_form_taxonomy_set(&$form) {
    $form['taxonify'] = array(
@@ -559,8 +597,9 @@ function get_tripal_library_admin_form_taxonomy_set(&$form) {
       '#weight'      => 3
    );
 }
-/************************************************************************
+/**
  *
+ * @ingroup tripal_library
  */
 function get_tripal_library_admin_form_reindex_set(&$form) {
    // define the fieldsets
@@ -602,8 +641,9 @@ function get_tripal_library_admin_form_reindex_set(&$form) {
       '#weight' => 3,
    );
 }
-/************************************************************************
+/**
  *
+ * @ingroup tripal_library
  */
 function get_tripal_library_admin_form_sync_set (&$form) {
    // define the fieldsets
@@ -670,8 +710,9 @@ function get_tripal_library_admin_form_sync_set (&$form) {
       );
    }
 }
-/************************************************************************
+/**
  *
+ * @ingroup tripal_library
  */
 function tripal_library_admin_validate($form, &$form_state) {
    global $user;  // we need access to the user info
@@ -754,8 +795,9 @@ function tripal_library_admin_validate($form, &$form_state) {
          'tripal_library_cleanup',$job_args,$user->uid);
    }
 }
-/*******************************************************************************
+/**
  *
+ * @ingroup tripal_library
  */
 function tripal_library_show_libraries (){
    // Show libraries stored in Drupal's {chado_library} table
@@ -773,18 +815,21 @@ function tripal_library_show_libraries (){
    }
 }
 
-/*******************************************************************************
+/**
  *
+ * @ingroup tripal_library
  */
 function tripal_library_cron (){
 
 }
-/*******************************************************************************
+/**
  *
  *                  CHADO_LIBRARY NODE FUNCTIONS
  *
  *  The following function proves access control for users trying to
  *  perform actions on data managed by this module
+ *
+ * @ingroup tripal_library
  */
 function tripal_library_library_access($op, $node, $account){
    if ($op == 'create') {
@@ -807,8 +852,10 @@ function tripal_library_library_access($op, $node, $account){
       }
    }
 }
-/*******************************************************************************
+/**
  *  validates submission of form when adding or updating a library node
+ *
+ * @ingroup tripal_library
  */
 function chado_library_validate($node){
    $lib = 0;
@@ -837,10 +884,12 @@ function chado_library_validate($node){
    }
 }
 
-/*******************************************************************************
+/**
  *  When a new chado_library node is created we also need to add information
  *  to our chado_library table.  This function is called on insert of a new node
  *  of type 'chado_library' and inserts the necessary information.
+ *
+ * @ingroup tripal_library
  */
 function chado_library_insert($node){
 
@@ -882,8 +931,10 @@ function chado_library_insert($node){
 		);
 	}
 }
-/*******************************************************************************
+/**
  * Update nodes
+ *
+ * @ingroup tripal_library
  */
 function chado_library_update($node){
    if($node->revision){
@@ -917,8 +968,10 @@ function chado_library_update($node){
 }
 
 
-/*******************************************************************************
+/**
  * Add the library as a taxonomy term for associating with library_features
+ *
+ * @ingroup tripal_library
  */
 function tripal_library_add_taxonomy ($node,$library_id){
 
@@ -966,9 +1019,11 @@ function tripal_library_add_taxonomy ($node,$library_id){
    }
 }
 
-/*******************************************************************************
+/**
  *  When editing or creating a new node of type 'chado_library' we need
  *  a form.  This function creates the form that will be used for this.
+ *
+ * @ingroup tripal_library
  */
 function chado_library_form ($node){
    $form = array();
@@ -1075,8 +1130,10 @@ function chado_library_form ($node){
 
    return $form;
 }
-/************************************************************************
+/**
  *
+ *
+ * @ingroup tripal_library
  */
 function tripal_library_sync_libraries ($library_id = NULL, $job_id = NULL){
 
@@ -1130,9 +1187,11 @@ function tripal_library_sync_libraries ($library_id = NULL, $job_id = NULL){
    return $page_content;
 }
 
-/************************************************************************
+/**
  *  When a node is requested by the user this function is called to allow us
  *  to add auxiliary data to the node object.
+ *
+ * @ingroup tripal_library
  */
 function chado_library_load($node){
    // get the feature details from chado
@@ -1145,9 +1204,11 @@ function chado_library_load($node){
    return $additions;
 
 }
-/*******************************************************************************
+/**
  *  This function customizes the view of the chado_library node.  It allows
  *  us to generate the markup. This function is required for node [Preview]
+ *
+ * @ingroup tripal_library
  */
 function chado_library_view ($node, $teaser = FALSE, $page = FALSE) {
    // use drupal's default node view:
@@ -1171,11 +1232,13 @@ function chado_library_view ($node, $teaser = FALSE, $page = FALSE) {
    return $node;
 }
 
-/************************************************************************
- **  This function creates the html markup for the library table.
- **  It can be overridden in the theme for the site by adding a php
- **  method in the template.php file named
- **  <theme_name>_tripal_library_library_table(&$libraries)
+/**
+ *  This function creates the html markup for the library table.
+ *  It can be overridden in the theme for the site by adding a php
+ *  method in the template.php file named
+ *  [theme_name]_tripal_library_library_table(&$libraries)
+ *
+ * @ingroup tripal_library
  */
 
 function theme_tripal_library_library_table ($libraries) {
@@ -1220,8 +1283,9 @@ function theme_tripal_library_library_table ($libraries) {
    return $output;
 }
 
-/************************************************************************
+/**
  *
+ * @ingroup tripal_library
  */
 function tripal_library_feature_set_taxonomy($library_id = NULL){
 
@@ -1273,8 +1337,9 @@ function tripal_library_feature_set_taxonomy($library_id = NULL){
       print "Updated $feature->feature_id as $feature->libname\n";
    }
 }
-/*******************************************************************************
+/**
  *
+ * @ingroup tripal_library
  */
 function tripal_library_reindex_features ($library_id = NULL, $job_id = NULL){
    $i = 0;
@@ -1320,8 +1385,9 @@ function tripal_library_reindex_features ($library_id = NULL, $job_id = NULL){
       $i++;
    }
 }
-/*******************************************************************************
+/**
  *
+ * @ingroup tripal_library
  */
 function tripal_library_taxonify_features ($library_id = NULL, $job_id = NULL){
    $i = 0;
@@ -1377,8 +1443,9 @@ function tripal_library_taxonify_features ($library_id = NULL, $job_id = NULL){
       $i++;
    }
 }
-/*******************************************************************************
+/**
  * Delete data from drupal and chado databases when a node is deleted
+ * @ingroup tripal_library
  */
 function chado_library_delete(&$node){
    // Before removing, get library_id so we can remove it from chado database
@@ -1410,11 +1477,13 @@ function chado_library_delete(&$node){
    tripal_db_set_active($previous_db);
 }
 
-/************************************************************************
+/**
  * Display block with libraries
  * @param op    - parameter to define the phase being called for the block
  * @param delta - id of the block to return (ignored when op is list)
  * @param edit  - when op is save, contains the submitted form data
+ *
+ * @ingroup tripal_library
  */
 function tripal_library_block($op = 'list', $delta = '0', $edit = array()){
    switch($op){
@@ -1478,11 +1547,16 @@ function tripal_library_block($op = 'list', $delta = '0', $edit = array()){
    }
 }
 
-/*******************************************************************************
+/**
  * This function uses library_id's of all drupal library nodes as input and
  * pull the library information (name, uniquename, type, genus, species,
  * common_name, description) from chado database. The return type is an object
  * array that stores sorted $library objects
+ *
+ * This function is DEPRECATED
+ * Please use tripal_core_chado_generate_vars
+ * 
+ * @ingroup tripal_library_api
  */
 function get_chado_libraries() {
    $sql_drupal = "SELECT COUNT (library_id) FROM {chado_library}";
@@ -1525,8 +1599,9 @@ function get_chado_libraries() {
       return $libraries;
    }
 }
-/************************************************************************
+/**
  *
+ * @ingroup tripal_library
  */
 function tripal_library_cleanup($dummy = NULL, $job_id = NULL) {
 

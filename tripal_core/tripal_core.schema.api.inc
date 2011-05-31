@@ -9,6 +9,7 @@
 
 /**
  *
+ * @ingroup tripal_schema_api
  */
 function tripal_core_get_chado_tables() {
   if(is_array($db_url) and array_key_exists('chado',$db_url)){

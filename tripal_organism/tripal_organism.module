@@ -2,9 +2,14 @@
 
 require_once "tripal_organism.api.inc";
 
+/**
+ * @defgroup tripal_organism Organism
+ * @ingroup tripal_modules
+ */
 
-/*************************************************************************
+/**
 *
+* @ingroup tripal_organism
 */
 function tripal_organism_init(){
 
@@ -12,9 +17,11 @@ function tripal_organism_init(){
    drupal_add_js (drupal_get_path('theme', 'tripal').'/js/tripal_organism.js'); 
    drupal_add_css(drupal_get_path('theme', 'tripal').'/css/tripal_organism.css');
 }
-/*******************************************************************************
+/**
  *  Provide information to drupal about the node types that we're creating
  *  in this module
+ *
+ * @ingroup tripal_organism
  */
 function tripal_organism_node_info() {
    $nodes = array();
@@ -31,11 +38,13 @@ function tripal_organism_node_info() {
    return $nodes;
 }
 
-/*******************************************************************************
+/**
  * Display block with organisms
  * @param op    - parameter to define the phase being called for the block
  * @param delta - id of the block to return (ignored when op is list)
  * @param edit  - when op is save, contains the submitted form data
+ *
+ * @ingroup tripal_organism
  */
 function tripal_organism_block($op = 'list', $delta = '0', $edit = array()){
    switch($op){
@@ -76,10 +85,12 @@ function tripal_organism_block($op = 'list', $delta = '0', $edit = array()){
       }
    }
 }
-/*******************************************************************************
+/**
  *  Menu items are automatically added for the new node types created
  *  by this module to the 'Create Content' Navigation menu item.  This function
  *  adds more menu items needed for this module.
+ *
+ * @ingroup tripal_organism
  */
 function tripal_organism_menu() {
   $items = array();
@@ -112,9 +123,11 @@ function tripal_organism_menu() {
    
   return $items;
 }
-/*******************************************************************************
+/**
  *  The following function proves access control for users trying to
  *  perform actions on data managed by this module
+ *
+ * @ingroup tripal_organism
  */
 function chado_organism_access($op, $node, $account){
    switch ($op){
@@ -128,10 +141,12 @@ function chado_organism_access($op, $node, $account){
         return user_access('access chado_organism content', $account);
    }
 }
-/*******************************************************************************
+/**
 *  Set the permission types that the chado module uses.  Essentially we
 *  want permissionis that protect creation, editing and deleting of chado
-#  data objects
+*  data objects
+*
+* @ingroup tripal_organism
 */
 function tripal_organism_perm(){
    return array(
@@ -142,10 +157,12 @@ function tripal_organism_perm(){
    );
 }
 
-/*************************************************************************
+/**
  * Purpose: Provide Guidance to new Tripal Admin
  *
  * @return HTML Formatted text
+ *
+ * @ingroup tripal_organism
  */
 function tripal_organism_module_description_page() {
   $text = '';
@@ -277,8 +294,10 @@ function tripal_organism_module_description_page() {
   return $text;
 }
 
-/*******************************************************************************
+/**
  * Administrative settings for chado_orgnism
+ *
+ * @ingroup tripal_organism
  */
 function tripal_organism_admin () {
 
@@ -310,8 +329,10 @@ function tripal_organism_admin () {
 
    return system_settings_form($form);
 }
-/************************************************************************
+/**
  *
+ *
+ * @ingroup tripal_organism
  */
 function get_tripal_organism_admin_form_cleanup_set(&$form) {
    $form['cleanup'] = array(
@@ -333,8 +354,10 @@ function get_tripal_organism_admin_form_cleanup_set(&$form) {
       '#weight' => 2,
    );
 }
-/************************************************************************
+/**
 *
+*
+* @ingroup tripal_organism
 */
 function get_tripal_organism_admin_form_taxonomy_set(&$form) {
    $form['taxonify'] = array(
@@ -378,8 +401,9 @@ function get_tripal_organism_admin_form_taxonomy_set(&$form) {
       '#weight'      => 3
   );
 }
-/************************************************************************
+/**
 *
+* @ingroup tripal_organism
 */
 function get_tripal_organism_admin_form_reindex_set(&$form) {
    // define the fieldsets
@@ -421,8 +445,9 @@ function get_tripal_organism_admin_form_reindex_set(&$form) {
       '#weight' => 3,
   );
 }
-/************************************************************************
+/**
 *
+* @ingroup tripal_organism
 */
 function get_tripal_organism_admin_form_sync_set (&$form) {
    // define the fieldsets
@@ -496,8 +521,9 @@ function get_tripal_organism_admin_form_sync_set (&$form) {
       );
    }
 }
-/************************************************************************
+/**
 *
+* @ingroup tripal_organism
 */
 function tripal_organism_admin_validate($form, &$form_state) {
    global $user;  // we need access to the user info
@@ -584,10 +610,12 @@ function tripal_organism_admin_validate($form, &$form_state) {
          'tripal_organisms_cleanup',$job_args,$user->uid);
    }
 }
-/*******************************************************************************
+/**
  *  We need to let drupal know about our theme functions and their arguments.
  *  We create theme functions to allow users of the module to customize the
  *  look and feel of the output generated in this module
+ *
+ * @ingroup tripal_organism
  */
 function tripal_organism_theme () {
    return array(
@@ -608,8 +636,9 @@ function tripal_organism_theme () {
       ),
    );
 }
-/*******************************************************************************
+/**
  * 
+ * @ingroup tripal_organism
  */
 function tripal_organism_nodeapi(&$node, $op, $teaser, $page) {
 
@@ -620,8 +649,9 @@ function tripal_organism_nodeapi(&$node, $op, $teaser, $page) {
          }
    }
 }
-/*******************************************************************************
+/**
  *
+ * @ingroup tripal_organism
  */
 function tripal_organism_cron (){
    // we want to make sure that any new organisms or features that were
@@ -629,8 +659,10 @@ function tripal_organism_cron (){
    // nodes created for themselves in drupal.
 //   tripal_organism_sync_organisms();
 }
+
 /**
 *
+* @ingroup tripal_organism
 */
 function chado_organism_validate($node,&$form){
    // check to see if the organism already exists, but only for an insert
@@ -646,10 +678,12 @@ function chado_organism_validate($node,&$form){
       }
    }
 }
-/*******************************************************************************
+/**
  *  When a new chado_organism node is created we also need to add information
  *  to our chado_organism table.  This function is called on insert of a new node
  *  of type 'chado_organism' and inserts the necessary information.
+ *
+ * @ingroup tripal_organism
  */
 function chado_organism_insert($node){
 
@@ -691,8 +725,10 @@ function chado_organism_insert($node){
    // add the image 
    chado_organism_add_image($node);
 }
-/*******************************************************************************
+/**
  * Update organisms
+ *
+ * @ingroup tripal_organism
  */
 function chado_organism_update($node){
    if($node->revision){
@@ -722,9 +758,11 @@ function chado_organism_update($node){
 
    }
 }
-/*******************************************************************************
+/**
  * Delete organism from both drupal and chado databases. Check dependency before
  * deleting from chado.
+ *
+ * @ingroup tripal_organism
  */
 function chado_organism_delete($node){
    $organism_id = chado_get_id_for_node('organism',$node);
@@ -761,8 +799,10 @@ function chado_organism_delete($node){
    }
    tripal_db_set_active($previous_db);
 }
-/*******************************************************************************
+/**
 *
+*
+* @ingroup tripal_organism
 */
 function chado_organism_add_image($node){
    // check to see if a file was uploaded. If so then copy it to the images
@@ -783,9 +823,11 @@ function chado_organism_add_image($node){
 }
 
 
-/*******************************************************************************
+/**
  *  When editing or creating a new node of type 'chado_organism' we need
  *  a form.  This function creates the form that will be used for this.
+ *
+ * @ingroup tripal_organism
  */
 function chado_organism_form ($node, $param){
    $organism = $node->organism;
@@ -865,9 +907,11 @@ function chado_organism_form ($node, $param){
    return $form;
 }
 
-/*******************************************************************************
+/**
  *  When a node is requested by the user this function is called to allow us
  *  to add auxiliary data to the node object.
+ *
+ * @ingroup tripal_organism
  */
 function chado_organism_load($node){
    // find the organism and add in the details
@@ -882,9 +926,11 @@ function chado_organism_load($node){
    return $additions;
 }
 
-/*******************************************************************************
+/**
  *  This function customizes the view of the chado_organism node.  It allows
  *  us to generate the markup.
+ *
+ * @ingroup tripal_organism
  */
 function chado_organism_view ($node, $teaser = FALSE, $page = FALSE) {
    // use drupal's default node view:
@@ -892,8 +938,10 @@ function chado_organism_view ($node, $teaser = FALSE, $page = FALSE) {
    return $node;
 }
 
-/*******************************************************************************
+/**
  * Synchronize organisms from chado to drupal
+ *
+ * @ingroup tripal_organism
  */
 function tripal_organism_sync_organisms ($organism_id = NULL, $job_id = NULL){
    global $user;
@@ -942,12 +990,14 @@ function tripal_organism_sync_organisms ($organism_id = NULL, $job_id = NULL){
    }
    return $page_content;
 }
-/*******************************************************************************
+/**
  * Display help and module information
  * @param path which path of the site we're displaying help
  * @param arg array that holds the current path as would be returned from arg()
  * function
  * @return help text for the path
+ *
+ * @ingroup tripal_organism
  */
 function tripal_organism_help($path, $arg) {
   $output = '';
@@ -961,9 +1011,11 @@ function tripal_organism_help($path, $arg) {
   return $output;
 }
 
-/*******************************************************************************
+/**
  * Display the summary view of organisms when click on the 'Organisms'
  * primary-link
+ *
+ * @ingroup tripal_organism
  */
 function tripal_organism_show_organisms (){
    // Show libraries stored in Drupal's {chado_organism} table
@@ -977,8 +1029,9 @@ function tripal_organism_show_organisms (){
                "synchronize organisms.");
    }
 }
-/*******************************************************************************
+/**
 *
+* @ingroup tripal_organism
 */
 function theme_tripal_organism_organism_page($organisms) {
 
@@ -1015,11 +1068,13 @@ function theme_tripal_organism_organism_page($organisms) {
    return $output;
 }
 
-/*******************************************************************************
+/**
  * This function uses organism_id's of all drupal organism nodes as input and
  * pull the organism information (genus, species, common_name, comment) from
  * chado database. The return type is an object array that stores $organism
  * objects sorted by common_name
+ *
+ * @ingroup tripal_organism
  */
 function get_chado_organisms() {
    $sql_drupal = "SELECT COUNT (organism_id) FROM {chado_organism}";
@@ -1050,8 +1105,9 @@ function get_chado_organisms() {
       return $organisms;
    }
 }
-/*******************************************************************************
+/**
  *
+ * @ingroup tripal_organism
  */
 function tripal_organism_reindex_features ($organism_id = NULL, $job_id = NULL){
    $i = 0;
@@ -1086,8 +1142,9 @@ function tripal_organism_reindex_features ($organism_id = NULL, $job_id = NULL){
       $i++;
    }
 }
-/*******************************************************************************
+/**
  *
+ * @ingroup tripal_organism
  */
 function tripal_organism_taxonify_features ($organism_id = NULL, $job_id = NULL){
    $i = 0;
@@ -1132,8 +1189,9 @@ function tripal_organism_taxonify_features ($organism_id = NULL, $job_id = NULL)
       $i++;
    }
 }
-/*******************************************************************************
+/**
  *  Returns a list of organisms that are currently synced with Drupal
+ * @ingroup tripal_organism
  */
 function tripal_organism_get_synced() {
 
@@ -1156,8 +1214,9 @@ function tripal_organism_get_synced() {
    }  
    return $org_list;
 }
-/************************************************************************
+/**
  *
+ * @ingroup tripal_organism
  */
 function tripal_organisms_cleanup($dummy = NULL, $job_id = NULL) {
 
@@ -1225,11 +1284,13 @@ function tripal_organisms_cleanup($dummy = NULL, $job_id = NULL) {
    return '';
 }
 
-/*************************************************************************
+/**
  * Implements hook_views_api()
  * Purpose: Essentially this hook tells drupal that there is views support for
  *  for this module which then includes tripal_db.views.inc where all the
  *  views integration code is
+ *
+ * @ingroup tripal_organism
  */ 
 function tripal_organism_views_api() {
    return array(

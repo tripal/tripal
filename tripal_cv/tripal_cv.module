@@ -6,8 +6,14 @@ require_once "obo_loader.php";
 
 require_once "tripal_cv.api.inc";
 
-/*************************************************************************
+/**
+ * @defgroup tripal_cv Controlled Vocabulary Module
+ * @ingroup tripal_modules
+ */
+ 
+/**
 *
+* @ingroup tripal_cv
 */
 function tripal_cv_init(){
 
@@ -21,8 +27,9 @@ function tripal_cv_init(){
    drupal_add_js (drupal_get_path('theme', 'tripal').'/js/jsTree/source/_lib.js');
    drupal_add_js (drupal_get_path('theme', 'tripal').'/js/jsTree/source/tree_component.js');
 }
-/*************************************************************************
+/**
 *
+* @ingroup tripal_cv
 */
 function tripal_cv_menu() {
    $items = array();
@@ -152,9 +159,11 @@ function tripal_cv_menu() {
    return $items;
 }
 
-/*******************************************************************************
+/**
  *  The following function proves access control for users trying to
  *  perform actions on data managed by this module
+ *
+ * @ingroup tripal_cv
  */
 function chado_cv_access($op, $node, $account){
   if ($op == 'create') {
@@ -179,10 +188,12 @@ function chado_cv_access($op, $node, $account){
    return FALSE;
 }
 
-/*******************************************************************************
+/**
 *  Set the permission types that the chado module uses.  Essentially we
 *  want permissionis that protect creation, editing and deleting of chado
 *  data objects
+*
+* @ingroup tripal_cv
 */
 function tripal_cv_perm(){
    return array(
@@ -193,20 +204,24 @@ function tripal_cv_perm(){
    );
 }
 
-/*************************************************************************
+/**
  * Implements hook_views_api()
  * Purpose: Essentially this hook tells drupal that there is views support for
  *  for this module which then includes tripal_cv.views.inc where all the
  *  views integration code is
+ *
+ * @ingroup tripal_cv
  */
 function tripal_cv_views_api() {
 	return array('api' => 2.0);
 }
 
-/*******************************************************************************
+/**
  *  We need to let drupal know about our theme functions and their arguments.
  *  We create theme functions to allow users of the module to customize the
  *  look and feel of the output generated in this module
+ *
+ * @ingroup tripal_cv
  */
 function tripal_cv_theme () {
    return array(
@@ -216,10 +231,12 @@ function tripal_cv_theme () {
    );
 }
 
-/*************************************************************************
+/**
  * Purpose: Provide Guidance to new Tripal Admin
  *
  * @return HTML Formatted text
+ *
+ * @ingroup tripal_cv
  */
 function tripal_cv_module_description_page() {
   $text = '';
@@ -304,13 +321,15 @@ function tripal_cv_module_description_page() {
   return $text;
 }
 
-/*************************************************************************
- * @section Edit/Delete CVs
- *************************************************************************/
+///////////////////////////////////////////
+// Edit/Delete CVs
+//////////////////////////////////////////
  
-/*************************************************************************
+/**
  * Purpose: Provides the form for Updating and Deleteing existing
  *   chado controlled vocabularies (See chado cv table)
+ *
+  * @ingroup tripal_cv
  */
 function tripal_cv_admin_page(){
    $add_url = url("admin/tripal/tripal_cv/new");
@@ -326,10 +345,12 @@ function tripal_cv_admin_page(){
    return $output;
 }
 
-/*************************************************************************
+/**
  * Purpose: Provides the actual "Select CV" form on the Update/Delete Controlled
  *   Vocabulary page. This form also triggers the edit javascript
  * @todo Modify this form to use Drupal AJAX
+ *
+  * @ingroup tripal_cv
  */
 function tripal_cv_select_form(){
 
@@ -360,8 +381,10 @@ function tripal_cv_select_form(){
 
    return $form;
 }
-/*************************************************************************
+/**
  * Purpose: The edit controlled vocabulary javascript
+ *
+  * @ingroup tripal_cv
  */
 function tripal_ajax_cv_edit (){ 
    // get the database id, build the form and then return the JSON object
@@ -370,8 +393,10 @@ function tripal_ajax_cv_edit (){
    drupal_json(array('status' => TRUE, 'data' => $form));
 }
 
-/*************************************************************************
+/**
  * Purpose: Provides a form to allow updating/deleteing of controlled vocabularies
+ *
+  * @ingroup tripal_cv
  */
 function tripal_cv_edit_form(&$form_state = NULL,$cvid = NULL){
 
@@ -438,8 +463,10 @@ function tripal_cv_edit_form(&$form_state = NULL,$cvid = NULL){
    return $form;
 }
 
-/************************************************************************
+/**
  * Purpose: The submit function of the update/delete controlled vocabulary form
+ *
+  * @ingroup tripal_cv
  */
 function tripal_cv_edit_form_submit($form, &$form_state){
 
@@ -483,12 +510,14 @@ function tripal_cv_edit_form_submit($form, &$form_state){
    return '';
 }
 
-/*************************************************************************
- * @section Add CVs
- *************************************************************************/
+/////////////////////////////////////
+// Add CVs
+////////////////////////////////////
 
-/*************************************************************************
+/**
  * Purpose: Provides the Add controlled vocabulary form
+ *
+  * @ingroup tripal_cv
  */
 function tripal_cv_add_form(&$form_state = NULL){
 
@@ -530,8 +559,10 @@ function tripal_cv_add_form(&$form_state = NULL){
    return $form;
 }
 
-/************************************************************************
+/**
  * Purpose: The submit function for the add controlled vocabulary form
+ *
+  * @ingroup tripal_cv
  */
 function tripal_cv_add_form_submit($form, &$form_state){
 
@@ -557,13 +588,15 @@ function tripal_cv_add_form_submit($form, &$form_state){
    return '';
 }
 
-/*************************************************************************
- * @section Add Controlled Vocabulary Term
- *************************************************************************/
+//////////////////////////////////////////
+// Add Controlled Vocabulary Term
+//////////////////////////////////////////
 
-/*************************************************************************
+/**
  * Purpose: Provides the form that allows adding of terms to an existing
  *   controlled vocabulary
+ *
+  * @ingroup tripal_cv
  */
 function tripal_cv_add_cvterm_form (&$form_state) {
 	$form = array();
@@ -670,8 +703,10 @@ function tripal_cv_add_cvterm_form (&$form_state) {
   return $form;
 }
 
-/*************************************************************************
+/**
  * Purpose: Validates the input for adding a cvterm
+ *
+  * @ingroup tripal_cv
  */
 function tripal_cv_add_cvterm_form_validate ($form, &$form_state) {
   if (!empty($form_state['ahah_submission'])) {
@@ -680,8 +715,10 @@ function tripal_cv_add_cvterm_form_validate ($form, &$form_state) {
   
 }
 
-/*************************************************************************
+/**
  * Purpose: Adds terms to an existing controlled vocabulary
+ *
+  * @ingroup tripal_cv
  */
 function tripal_cv_add_cvterm_form_submit ($form, &$form_state) {
   if (!empty($form_state['ahah_submission'])) {
@@ -746,10 +783,12 @@ function tripal_cv_add_cvterm_form_submit ($form, &$form_state) {
   return;
 }
 
-/*************************************************************************
+/**
  * Purpose: This function gets called when the selecting of a cv from
  *   the select list triggers it. This function simply rebuilds the form
  *   with new information. No elements are created here
+ *
+  * @ingroup tripal_cv
  */
 function tripal_cv_add_cvterm_callback () {
 
@@ -790,13 +829,15 @@ function tripal_cv_add_cvterm_callback () {
   drupal_json(array('status' => TRUE, 'data' => $output));
 }
 
-/*************************************************************************
- * @section Ontology Loader
- *************************************************************************/
+///////////////////////////////
+// Ontology Loader
+//////////////////////////////
  
-/*************************************************************************
+/**
  * Purpose: Provides the form to load an already existing controlled
  *  Vocabulary into chado
+ *
+  * @ingroup tripal_obo_loader
  */
 function tripal_cv_obo_form(&$form_state = NULL){
 
@@ -888,9 +929,11 @@ function tripal_cv_obo_form(&$form_state = NULL){
    return $form;
 }
 
-/************************************************************************
+/**
  * Purpose: The submit function for the load ontology form. It registers a
  *   tripal job to run the obo_loader.php script
+ *
+   * @ingroup tripal_obo_loader
  */
 function tripal_cv_obo_form_submit($form, &$form_state){
    global $user;
@@ -924,12 +967,13 @@ function tripal_cv_obo_form_submit($form, &$form_state){
    return '';
 }
 
-/*************************************************************************
- * @section cvterm path management
- *************************************************************************/
+////////////////////////////////////
+// cvterm path management
+///////////////////////////////////
 
-/*************************************************************************
+/**
 *
+* @ingroup tripal_cv
 */
 function tripal_cv_cvtermpath_form () {
 
@@ -964,8 +1008,9 @@ function tripal_cv_cvtermpath_form () {
    );
    return $form;
 }
-/*************************************************************************
+/**
 *
+* @ingroup tripal_cv
 */
 function tripal_cv_cvtermpath_form_validate($form, &$form_state) {
    global $user;
@@ -985,8 +1030,10 @@ function tripal_cv_cvtermpath_form_validate($form, &$form_state) {
    }
 }
 
-/***********************************************************
+/**
  * Update the cvtermpath table
+ *
+ * @ingroup tripal_cv
  */
 function tripal_cv_update_cvtermpath($cvid = NULL, $job_id = NULL) {
 
@@ -1002,13 +1049,15 @@ function tripal_cv_update_cvtermpath($cvid = NULL, $job_id = NULL) {
    return;
 }
 
-/*************************************************************************
- * @section Miscellaneous
- * @todo check to see if these functions are still needed and/or if they
- *   should be moved to the api file
- *************************************************************************/
+//////////////////////////////////////
+// @section Miscellaneous
+// @todo check to see if these functions are still needed and/or if they
+//   should be moved to the api file
+//////////////////////////////////////
  
-/*************************************************************************
+/**
+*
+* @ingroup tripal_cv
 */
 function tripal_cv_get_cv_id($cv_name){
 
@@ -1021,8 +1070,9 @@ function tripal_cv_get_cv_id($cv_name){
    return $cv->cv_id;
 }
 
-/*************************************************************************
+/**
 *
+* @ingroup tripal_cv
 */
 function tripal_cv_cvterm_edit($cvterm_id){
    $sql = "
@@ -1037,8 +1087,9 @@ function tripal_cv_cvterm_edit($cvterm_id){
    return theme('tripal_cv_cvterm_edit',$cvterm);
 }
 
-/*************************************************************************
+/**
 *
+* @ingroup tripal_cv
 */
 function theme_tripal_cv_cvterm_edit(&$cvterm){
    $output = "

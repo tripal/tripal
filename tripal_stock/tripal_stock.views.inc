@@ -9,8 +9,17 @@
  *  Documentation on views integration can be found at 
  *  http://views2.logrus.com/doc/html/index.html.
  */
- 
-/*************************************************************************
+
+/**
+ * @defgroup tripal_stock_views Stock Views Integration
+ * @ingroup views
+ * @ingroup tripal_stock
+ */
+
+require_once('views/stock.views.inc');
+require_once('views/chado_stock.views.inc');
+require_once('views/misc_tables.views.inc'); 
+/**
  * Implements hook_views_data(): Describe chado/tripal tables & fields to views
  *
  * @return array
@@ -19,10 +28,9 @@
  *   definitions keyed by chado/tripal table name. Each table definition 
  *   includes basic details about the table, fields in that table and
  *   relationships between that table and others (joins)
+ *
+ * @ingroup tripal_stock_views
  */
-require_once('views/stock.views.inc');
-require_once('views/chado_stock.views.inc');
-require_once('views/misc_tables.views.inc');
 function tripal_stock_views_data()  {
   $data = array();
 
@@ -33,7 +41,7 @@ function tripal_stock_views_data()  {
   return $data;
 }
 
-/*************************************************************************
+/**
  * Implements hook_views_handlers()
  *
  * Purpose: Register all custom handlers with views
@@ -42,6 +50,8 @@ function tripal_stock_views_data()  {
  *
  * @return array
  *   An array of handler definitions
+ *
+ * @ingroup tripal_stock_views
  */
 function tripal_stock_views_handlers() {
  return array(
@@ -83,7 +93,7 @@ function tripal_stock_views_handlers() {
  );
 }
 
-/*************************************************************************
+/**
  * Implements hook_views_pre_render
  *
  * Purpose: Intercepts the view after the query has been executed
@@ -92,6 +102,8 @@ function tripal_stock_views_handlers() {
  *   for all stocks in the table.
  *
  * @todo add if !<chado/drupal same db> around NID portion
+ *
+ * @ingroup tripal_stock_views
  */
 function tripal_stock_views_pre_render	(&$view) {
 	if (preg_match('/stock/', $view->base_table)) {
@@ -181,6 +193,10 @@ function tripal_stock_views_pre_render	(&$view) {
 	} //if we're dealing with a stock view
 }
 
+/**
+ *
+ * @ingroup tripal_stock_views
+ */
 function tripal_stock_views_default_views() {
   $views = array();
   

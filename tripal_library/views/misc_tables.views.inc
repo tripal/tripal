@@ -15,6 +15,8 @@
         ),
       ); 
  *   @endcode
+ *
+ * @ingroup tripal_library_views
  */
 function retrieve_library_misc_tables_views_data() {
   $data = array();

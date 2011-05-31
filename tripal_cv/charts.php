@@ -1,9 +1,17 @@
 <?php
 
 
-/*************************************************************************
-*
-*/
+/**
+ * Generates JSON used for generating a chart
+ *
+ * @param $chart_id
+ *   The unique identifier for the chart
+ *
+ * @return
+ *   JSON array needed for the js caller
+ *
+ * @ingroup tripal_cv
+ */
 function tripal_cv_chart($chart_id){
   // parse out the tripal module name from the chart_id to find out 
   // which Tripal "hook" to call:
@@ -23,10 +31,29 @@ function tripal_cv_chart($chart_id){
 
 }
 
-/*************************************************************************
-*  name: tripal_cv_chart
-*  description:  
-*/
+ /**
+  * Determines the counts needed for the chart to be rendered
+  *
+  * @param $cnt_table
+  *   The table containing counts for the various cvterms
+  * @param $fk_column
+  *   The column in the count table to join it to the cvterm table
+  * @param $cnt_column
+  *   The name of the column in the count table containing the counts
+  * @param $filter
+  *   A Filter string. Default is (1=1).
+  * @param $title
+  *   The title of the chart to be rendered.
+  * @param $type
+  *   The type of chart to be rendered. Default is p3 (pie chart).
+  * @param $size
+  *   The size of the chart to be rendered. Default is 300x75.
+  *
+  * @return 
+  *   An options array needed to render the chart specified
+  *
+  * @ingroup tripal_cv_api
+  */
 function tripal_cv_count_chart($cnt_table, $fk_column,
    $cnt_column, $filter = null, $title = '', $type = 'p3', $size='300x75') {
 

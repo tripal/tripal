@@ -121,8 +121,17 @@ function tripal_add_cv($cv_name,$definition){
 }
 
 /************************************************************************
-* Get cvterm_id for a tripal cvterm by passing its name
-*/
+ * Get cvterm_id for a tripal cvterm by passing its name
+ * This function is deprecated
+ *
+ * @param $cvterm
+ *   The name of the cvterm to return
+ *
+ * @return
+ *   A database result for the cvterm?
+ *
+ * @ingroup tripal_cv_api
+ */
 function tripal_get_cvterm_id ($cvterm){
 	$sql = "SELECT CVT.cvterm_id FROM {cvterm} CVT
          	    INNER JOIN cv ON cv.cv_id = CVT.cv_id 

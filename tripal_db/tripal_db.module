@@ -2,8 +2,14 @@
 
 require_once "tripal_db.api.inc";
 
-/*************************************************************************
+/**
+ * @defgroup tripal_db External Database Module
+ * @ingroup tripal_modules
+ */
+ 
+/**
 *
+* @ingroup tripal_db
 */
 function tripal_db_init(){
 
@@ -11,8 +17,9 @@ function tripal_db_init(){
    drupal_add_css(drupal_get_path('theme', 'tripal').'/css/tripal_db.css');
    drupal_add_js(drupal_get_path('theme', 'tripal').'/js/tripal_db.js');
 }
-/*************************************************************************
+/**
 *
+* @ingroup tripal_db
 */
 function tripal_db_menu() {
    $items = array();
@@ -50,10 +57,12 @@ function tripal_db_menu() {
    return $items;
 }
 
-/*******************************************************************************
+/**
 *  Set the permission types that the chado module uses.  Essentially we
 *  want permissionis that protect creation, editing and deleting of chado
 *  data objects
+*
+* @ingroup tripal_db
 */
 function tripal_db_perm(){
    return array(
@@ -64,20 +73,24 @@ function tripal_db_perm(){
    );
 }
 
-/*************************************************************************
+/**
  * Implements hook_views_api()
  * Purpose: Essentially this hook tells drupal that there is views support for
  *  for this module which then includes tripal_db.views.inc where all the
  *  views integration code is
+ *
+ * @ingroup tripal_db
  */
 function tripal_db_views_api() {
 	return array('api' => 2.0);
 }
 
-/*************************************************************************
+/**
  * Purpose: Provide Guidance to new Tripal Admin
  *
  * @return HTML Formatted text
+ *
+ * @ingroup tripal_db
  */
 function tripal_db_module_description_page() {
   $text = '';
@@ -123,8 +136,10 @@ function tripal_db_module_description_page() {
   return $text;
 }
 
-/*************************************************************************
+/**
 *
+*
+* @ingroup tripal_db
 */
 function tripal_db_admin_page(){
    $add_url = url("admin/tripal/tripal_db/add_db");
@@ -133,8 +148,10 @@ function tripal_db_admin_page(){
    $output .= '<div id="db-edit-div">Please select a database above to view or edit</div>';
    return $output;
 }
-/*************************************************************************
+/**
 *
+*
+* @ingroup tripal_db
 */
 function tripal_db_select_form(){
 
@@ -165,8 +182,9 @@ function tripal_db_select_form(){
 
    return $form;
 }
-/*************************************************************************
+/**
 *
+* @ingroup tripal_db
 */
 function tripal_ajax_db_edit (){ 
    // get the database id, build the form and then return the JSON object
@@ -174,8 +192,9 @@ function tripal_ajax_db_edit (){
    $form = drupal_get_form('tripal_db_form',$dbid);
    drupal_json(array('status' => TRUE, 'data' => $form));
 }
-/*************************************************************************
+/**
 *
+* @ingroup tripal_db
 */
 function tripal_db_form(&$form_state = NULL,$dbid = NULL){
 
@@ -274,8 +293,9 @@ function tripal_db_form(&$form_state = NULL,$dbid = NULL){
 
    return $form;
 }
-/************************************************************************
+/**
 *
+* @ingroup tripal_db
 */
 function tripal_db_form_submit($form, &$form_state){
 

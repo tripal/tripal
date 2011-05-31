@@ -8,7 +8,7 @@
  * @return
  *    Array describing the feature table
  *
- * @ingroup tripal_feature
+ * @ingroup tripal_schema_api
  */
 function tripal_feature_chado_feature_schema() {
   $description = array();
@@ -67,7 +67,7 @@ function tripal_feature_chado_feature_schema() {
  * @return
  *    Array describing the featureprop table
  *
- * @ingroup tripal_feature
+ * @ingroup tripal_schema_api
  */
 function tripal_feature_chado_featureprop_schema() {
   $description = array();
@@ -104,7 +104,7 @@ function tripal_feature_chado_featureprop_schema() {
  * @return
  *    Array describing the featureloc table
  *
- * @ingroup tripal_feature
+ * @ingroup tripal_schema_api
  */
 function tripal_feature_chado_featureloc_schema() {
   $description = array();
@@ -135,7 +135,7 @@ function tripal_feature_chado_featureloc_schema() {
  * @return
  *    Array describing the feature_dbxref table
  *
- * @ingroup tripal_feature
+ * @ingroup tripal_schema_api
  */
 function tripal_feature_chado_feature_dbxref_schema() {
   $description = array();
@@ -166,7 +166,7 @@ function tripal_feature_chado_feature_dbxref_schema() {
  * @return
  *    Array describing the feature_dbxref table
  *
- * @ingroup tripal_feature
+ * @ingroup tripal_schema_api
  */
 function tripal_feature_chado_feature_relationship_schema() {
   $description = array();
@@ -196,7 +196,7 @@ function tripal_feature_chado_feature_relationship_schema() {
  * @return
  *    Array describing the feature_dbxref table
  *
- * @ingroup tripal_feature
+ * @ingroup tripal_schema_api
  */
 function tripal_feature_chado_feature_cvterm_schema() {
   $description = array();
@@ -225,7 +225,8 @@ function tripal_feature_chado_feature_cvterm_schema() {
 }
 /**
 *
-**/
+* @ingroup tripal_schema_api
+*/
 function tripal_feature_chado_feature_synonym_schema() {
   $description = array();
 

@@ -9,6 +9,12 @@
  *  Documentation on views integration can be found at 
  *  http://views2.logrus.com/doc/html/index.html.
  */
+
+/**
+ * @defgroup tripal_feature_views Feature Views Integration
+ * @ingroup views
+ * @ingroup tripal_feature
+ */
  
 /**
  * Implements hook_views_data()
@@ -21,7 +27,7 @@
  *   includes basic details about the table, fields in that table and
  *   relationships between that table and others (joins)
  *
- * @ingroup tripal_feature
+ * @ingroup tripal_feature_views
  */
 require_once('views/feature.views.inc');
 require_once('views/chado_feature.views.inc');
@@ -45,7 +51,7 @@ function tripal_feature_views_data()  {
  *
  * @return: An array of handler definitions
  *
- * @ingroup tripal_feature
+ * @ingroup tripal_feature_views
  */
 function tripal_feature_views_handlers() {
  return array(
@@ -66,6 +72,10 @@ function tripal_feature_views_handlers() {
  );
 }
 
+/**
+ *
+ * @ingroup tripal_feature_views
+ */
 function tripal_feature_views_default_views () {
   $views = array();
   

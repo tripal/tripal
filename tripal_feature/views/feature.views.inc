@@ -33,7 +33,7 @@
  *   );
  * @endcode
  *
- * @ingroup tripal_feature
+ * @ingroup tripal_feature_views
  */
  function retrieve_feature_views_data() {
 	global $db_url;

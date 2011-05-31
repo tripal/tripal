@@ -9,7 +9,16 @@
  *  Documentation on views integration can be found at 
  *  http://views2.logrus.com/doc/html/index.html.
  */
- 
+
+/**
+ * @defgroup tripal_library_views Library Views Integration
+ * @ingroup views
+ * @ingroup tripal_library
+ */
+
+require_once('views/library.views.inc');
+require_once('views/chado_library.views.inc');
+require_once('views/misc_tables.views.inc'); 
 /*************************************************************************
  * Implements hook_views_data()
  * Purpose: Describe chado/tripal tables & fields to views
@@ -18,10 +27,9 @@
  *   definitions keyed by chado/tripal table name. Each table definition 
  *   includes basic details about the table, fields in that table and
  *   relationships between that table and others (joins)
+ *
+ * @ingroup tripal_library_views
  */
-require_once('views/library.views.inc');
-require_once('views/chado_library.views.inc');
-require_once('views/misc_tables.views.inc');
 function tripal_library_views_data()  {
   $data = array();
   
@@ -38,6 +46,8 @@ function tripal_library_views_data()  {
  *   where a handler describes either "the type of field", 
  *   "how a field should be filtered", "how a field should be sorted"
  * @return: An array of handler definitions
+ *
+ * @ingroup tripal_library_views
  */
 function tripal_library_views_handlers() {
  return array(
@@ -58,6 +68,11 @@ function tripal_library_views_handlers() {
  );
 }
 
+/**
+ *
+ *
+ * @ingroup tripal_library_views
+ */
 function tripal_library_views_default_views () {
   $views = array();
   

@@ -25,6 +25,8 @@
  *    constraint library_c1 unique (organism_id,uniquename,type_id)
  * );
  * @endcode
+ *
+ * @ingroup tripal_library_views
  */
 function retrieve_library_views_data() {
 	global $db_url;

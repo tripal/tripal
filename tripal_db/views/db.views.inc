@@ -17,6 +17,8 @@
  *    constraint db_c1 unique (name)
  * );
  * @endcode
+ *
+ * @ingroup tripal_db_views
  */
 function retrieve_db_views_data() {
   

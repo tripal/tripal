@@ -9,8 +9,16 @@
  *  Documentation on views integration can be found at 
  *  http://views2.logrus.com/doc/html/index.html.
  */
- 
-/*************************************************************************
+
+/**
+ * @defgroup tripal_db_views External Database Views Integration
+ * @ingroup views
+ * @ingroup tripal_db
+ */
+
+require_once('views/dbxref.views.inc');
+require_once('views/db.views.inc'); 
+/**
  * Implements hook_views_data()
  * Purpose: Describe chado/tripal tables & fields to views
  * @return: a data array which follows the structure outlined in the
@@ -18,9 +26,9 @@
  *   definitions keyed by chado/tripal table name. Each table definition 
  *   includes basic details about the table, fields in that table and
  *   relationships between that table and others (joins)
+ *
+ * @ingroup tripal_db_views
  */
-require_once('views/dbxref.views.inc');
-require_once('views/db.views.inc');
 function tripal_db_views_data()  {
 
    $data = array();
@@ -30,12 +38,14 @@ function tripal_db_views_data()  {
 
 }
 
-/*************************************************************************
+/**
  * Implements hook_views_handlers()
  * Purpose: Register all custom handlers with views
  *   where a handler describes either "the type of field", 
  *   "how a field should be filtered", "how a field should be sorted"
  * @return: An array of handler definitions
+ *
+ * @ingroup tripal_db_views
  */
 function tripal_db_views_handlers() {
  return array(
@@ -50,6 +60,10 @@ function tripal_db_views_handlers() {
  );
 }
 
+/**
+ *
+ * @ingroup tripal_db_views
+ */
 function tripal_db_views_default_views () {
   $views = array();
   

@@ -15,6 +15,8 @@
  *       constraint cv_c1 unique (name)
  *   );
  * @endcode
+ *
+ * @ingroup tripal_cv_views
  */
 function retrieve_cv_views_data() {
   $data = array();

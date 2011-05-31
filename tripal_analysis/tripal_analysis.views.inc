@@ -9,9 +9,19 @@
  *  Documentation on views integration can be found at 
  *  http://views2.logrus.com/doc/html/index.html.
  */
- 
-/*************************************************************************
+
+/**
+ * @defgroup tripal_analysis_views Analysis Views Integration
+ * @ingroup views
+ * @ingroup tripal_analysis
+ */
+
+require('views/analysis.views.inc');
+require('views/chado_analysis.views.inc');
+require('views/misc_tables.views.inc'); 
+/**
  * Implements hook_views_data()
+ *
  * Purpose: Describe chado/tripal tables & fields to views
  *
  * @return: a data array which follows the structure outlined in the
@@ -20,11 +30,8 @@
  *   includes basic details about the table, fields in that table and
  *   relationships between that table and others (joins)
  *
- * @ingroup tripal_analysis
+ * @ingroup tripal_analysis_views
  */
-require('views/analysis.views.inc');
-require('views/chado_analysis.views.inc');
-require('views/misc_tables.views.inc');
 function tripal_analysis_views_data()  {
   $data = array();
 
@@ -35,16 +42,19 @@ function tripal_analysis_views_data()  {
   return $data;
 }
 
-/*************************************************************************
+/**
  * Implements hook_views_handlers()
+ *
  * Purpose: Register all custom handlers with views
  *   where a handler describes either "the type of field", 
  *   "how a field should be filtered", "how a field should be sorted"
- * @return: An array of handler definitions
  *
- * @ingroup tripal_analysis
+ * @return
+ *   An array of handler definitions
+ *
+ * @ingroup tripal_analysis_views
  */
-function chado_analysis_views_views_handlers() {
+function tripal_analysis_views_views_handlers() {
   return array(
     'info' => array(
       'path' => drupal_get_path('module', 'tripal_analysis') . '/views/handlers',
@@ -60,6 +70,11 @@ function chado_analysis_views_views_handlers() {
   );
 }
 
+/**
+ *
+ *
+ * @ingroup tripal_analysis_views
+ */
 function tripal_analysis_views_default_views () {
   $views = array();
   

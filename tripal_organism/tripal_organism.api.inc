@@ -1,11 +1,13 @@
 <?php
-
+ 
 /*************************************************************************
  * Purpose: Create an options array to be used in a form element
  *   which provides a list of all chado organisms
  *
  * @return an array(organism_id => common_name) 
  *   for each organism in the chado organism table
+ *
+ * @ingroup tripal_organism_api
  */
 function tripal_organism_get_organism_options() {
 
@@ -28,6 +30,8 @@ function tripal_organism_get_organism_options() {
  * Purpose: Return a given organism object using the nid
  *
  * @return organism object created by node load
+ *
+ * @ingroup tripal_organism_api
  */
 function tripal_organism_get_organism_by_nid ($nid) {
 
@@ -39,6 +43,8 @@ function tripal_organism_get_organism_by_nid ($nid) {
  * Purpose: Return a given organism object using the organism id
  *
  * @return organism object created by node load
+ *
+ * @ingroup tripal_organism_api
  */
 function tripal_organism_get_organism_by_organism_id ($organism_id) {
 

@@ -21,6 +21,8 @@
  *        constraint organism_c1 unique (genus,species)
  * );
  * @endcode
+ *
+ * @ingroup tripal_organism_views
  */
 function retrieve_organism_views_data() {
 	global $db_url;

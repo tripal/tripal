@@ -16,7 +16,7 @@
       ); 
  *   @endcode
  *
- * @ingroup tripal_stock
+ * @ingroup tripal_stock_views
  */
 function retrieve_stock_misc_tables_views_data() {
   $data = array();

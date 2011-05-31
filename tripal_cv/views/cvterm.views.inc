@@ -22,6 +22,8 @@
  *       constraint cvterm_c2 unique (dbxref_id)
  *   );
  * @endcode
+ *
+ * @ingroup tripal_cv_views
  */
 function retrieve_cvterm_views_data() {
 

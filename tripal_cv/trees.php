@@ -4,8 +4,9 @@
 // Copyright 2009 Clemson University
 //
 
-/*************************************************************************
+/**
 *
+* @ingroup tripal_cv
 */
 function tripal_cv_show_browser() {
   
@@ -17,8 +18,9 @@ function tripal_cv_show_browser() {
 }
 
 
-/*************************************************************************
+/**
 *
+* @ingroup tripal_cv
 */
 function tripal_cv_tree($tree_id){
   // parse out the tripal module name from the chart_id to find out 
@@ -40,8 +42,9 @@ function tripal_cv_tree($tree_id){
 }
 
 
-/*************************************************************************
+/**
 *
+* @ingroup tripal_cv
 */
 function tripal_cv_update_tree() {
    $content = array();
@@ -75,11 +78,14 @@ function tripal_cv_update_tree() {
    }
    drupal_json($content);
 }
-/*************************************************************************
-*  name:  tripal_cv_init_cv
-*  description:  This function returns the JSON array for the jsTree 
+/**
+* Generates JSON needed for jsTree Root-level Branches
+*
+* This function returns the JSON array for the jsTree 
 *    jQuery code that builds a tree for browsing the ontology.  This function
 *    should be called to generate the root level branches of the tree.
+*
+* @ingroup tripal_cv_api
 */
 function tripal_cv_init_tree($cv_id,$cnt_table = null, $fk_column = null,
    $cnt_column = null, $filter = null, $label = null) {
@@ -136,10 +142,13 @@ function tripal_cv_init_tree($cv_id,$cnt_table = null, $fk_column = null,
    return $content;
 
 }
-/*************************************************************************
-*  name:  tripal_cv_get_term_children
-*  description:  This function returns the JSON array for the jsTree 
-*    jQuery code when expanding a term to view it's children.  
+/**
+*  Generates SON needed for jsTree -expanding a term to view children
+*
+*  This function returns the JSON array for the jsTree 
+*    jQuery code when expanding a term to view it's children.
+*
+* @ingroup tripal_cv_api
 */
 function tripal_cv_get_term_children($cvterm_id,$cnt_table = null, 
    $fk_column = null,$cnt_column = null, $filter = null, $label = null) {
@@ -228,8 +237,9 @@ function tripal_cv_get_term_children($cvterm_id,$cnt_table = null,
    $content[] = $cnt_sql;
    return $content;
 }
-/*************************************************************************
-*
+/**
+* 
+* @ingroup tripal_cv
 */
 function tripal_cv_init_browser($cv_id) {
 
@@ -249,8 +259,9 @@ function tripal_cv_init_browser($cv_id) {
 
    drupal_json(array('update' => "$content"));
 }
-/*************************************************************************
+/**
 *
+* @ingroup tripal_cv
 */
 function tripal_cv_cvterm_info($cvterm_id){
 
@@ -321,9 +332,10 @@ function tripal_cv_cvterm_info($cvterm_id){
    ";
    drupal_json(array('update' => $content));
 }
-/*******************************************************************************
+/**
+*
+* @ingroup tripal_cv
 */
-
 function tripal_cv_list_form($form_state) {
 
    // get a list of db from chado for user to choose

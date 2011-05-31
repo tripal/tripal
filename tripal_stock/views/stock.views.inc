@@ -28,7 +28,7 @@
       );
  * @endcode
  *
- * @ingroup tripal_stock
+ * @ingroup tripal_stock_views
  */
 function retrieve_stock_views_data() {
   global $db_url;

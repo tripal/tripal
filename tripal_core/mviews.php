@@ -5,18 +5,24 @@
 
 /**
  * Add a materialized view to the chado database to help speed data access.
- * @param name The name of the materialized view.
- * @param modulename The name of the module submitting the materialized view (e.g. 'tripal_library')
- * @param mv_table The name of the table to add to chado. This is the table that can be queried.
- * @param mv_specs The table definition 
- * @param indexed The columns that are to be indexed
- * @param query The SQL query that loads the materialized view with data
- * @param special_index  
- * function
- * @return nothing
  *
-* @ingroup tripal_core
-*/
+ * @param $name 
+ *   The name of the materialized view.
+ * @param $modulename 
+ *   The name of the module submitting the materialized view (e.g. 'tripal_library')
+ * @param $mv_table 
+ *   The name of the table to add to chado. This is the table that can be queried.
+ * @param $mv_specs 
+ *   The table definition 
+ * @param $indexed 
+ *   The columns that are to be indexed
+ * @param $query 
+ *   The SQL query that loads the materialized view with data
+ * @param $special_index  
+ *   function
+ *
+ * @ingroup tripal_core_api
+ */
 function tripal_add_mview ($name,$modulename,$mv_table,$mv_specs,$indexed,$query,$special_index){
 
    $record = new stdClass();
@@ -62,10 +68,16 @@ function tripal_add_mview ($name,$modulename,$mv_table,$mv_specs,$indexed,$query
    }
 }
 /**
-*
-*
-* @ingroup tripal_core
-*/
+ * Retrieve the materialized view_id given the name
+ *
+ * @param $view_name
+ *   The name of the materialized view
+ *
+ * @return
+ *   The unique identifier for the given view
+ *
+ * @ingroup tripal_core_api
+ */
 function tripal_mviews_get_mview_id ($view_name){
 
    $sql = "SELECT * FROM {tripal_mviews} ".
@@ -117,9 +129,15 @@ function tripal_mviews_action ($op,$mview_id){
    return '';
 }
 /**
+* Update a Materialized View
 *
+* @param $mview_id
+*   The unique identifier for the materialized view to be updated
 *
-* @ingroup tripal_core
+* @return
+*   True if successful, false otherwise
+*
+* @ingroup tripal_core_api
 */
 function tripal_update_mview ($mview_id){
    $sql = "SELECT * FROM {tripal_mviews} WHERE mview_id = %d ";

@@ -2,6 +2,8 @@
 
 /************************************************************************
 *  Implementation of hook_install();
+* 
+* @ingroup tripal_core
 */
 function tripal_core_install(){
 
@@ -22,6 +24,8 @@ function tripal_core_install(){
 
 /************************************************************************
 * Implementation of hook_schema().
+*
+* @ingroup tripal_core
 */
 function tripal_core_schema() {
    $schema = tripal_core_get_schemas();
@@ -29,6 +33,8 @@ function tripal_core_schema() {
 }
 /************************************************************************
 * Implementation of hook_uninstall()
+*
+* @ingroup tripal_core
 */
 function tripal_core_uninstall(){
    drupal_uninstall_schema('tripal_core');
@@ -39,6 +45,8 @@ function tripal_core_uninstall(){
 * correctly.  By putting the table definitions in a separate function we
 * can easily provide the entire list for hook_install or individual
 * tables for an update.
+*
+* @ingroup tripal_core
 */
 function tripal_core_get_schemas (){  
   $schema = array();

@@ -26,7 +26,7 @@
  *   );
  * @endcode
  *
- * @ingroup tripal_analysis
+ * @ingroup tripal_analysis_views
  */
 function retrieve_analysis_views_data() {
 	global $db_url;
