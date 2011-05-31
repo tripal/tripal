@@ -1176,7 +1176,17 @@ function tripal_analysis_kegg_select_form(&$form_state = NULL,$node){
       $analyses[$analysis->analysis_id] = "$analysis->analysis_name";
    }
   
-   # create the select box
+   global $base_url;
+   // we need to set some hidden values for the javascript to use
+   $form['theme_dir'] = array(
+      '#type' => 'hidden',
+      '#value' => drupal_get_path('theme', 'tripal'),
+   );
+   $form['base_url'] = array(
+      '#type' => 'hidden',
+      '#value' => $base_url,
+   );
+   // now generate the select box
    global $base_url;
    $theme_dir = drupal_get_path('theme', 'tripal');
    $form['tripal_analysis_kegg_select'] = array(

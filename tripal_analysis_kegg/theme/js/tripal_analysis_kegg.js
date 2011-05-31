@@ -13,7 +13,7 @@ if (Drupal.jsEnabled) {
    });
 
    //------------------------------------------------------------
-   function tripal_analysis_kegg_org_report(item){
+   function tripal_analysis_kegg_org_report(item,baseurl,themedir){
       if(!item){
          $("#tripal_analysis_kegg_org_report").html('');
          return false;

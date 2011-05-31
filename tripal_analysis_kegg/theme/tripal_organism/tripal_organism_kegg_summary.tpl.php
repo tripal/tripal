@@ -1,6 +1,7 @@
 <?php
-  $form = $organism->tripal_analysis_kegg->select_form->form;
-  $has_results = $organism->tripal_analysis_kegg->select_form->has_results;
+  $organism = $node->organism;
+  $form = $organism->tripal_analysis_kegg->select_form['form'];
+  $has_results = $organism->tripal_analysis_kegg->select_form['has_results'];
 ?>
 <div id="tripal_organism-kegg_summary-box" class="tripal_organism-info-box tripal-info-box">
   <div  class="tripal_organism-info-box-title tripal-info-box-title">KEGG Analysis Reports</div>
@@ -16,5 +17,6 @@
      <div id="loadingText">Loading...</div>
    </div>   
 </div>
+
 
 
