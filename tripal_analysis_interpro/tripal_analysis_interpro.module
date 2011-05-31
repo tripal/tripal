@@ -7,10 +7,10 @@ require_once "parseInterpro.inc";
  * feature
  ******************************************************************************/
 function tripal_analysis_interpro_init(){
+
 	// Add javascript and style sheet
 	drupal_add_css(drupal_get_path('theme', 'tripal').'/css/tripal_analysis_interpro.css');
-	// Add javascript and style sheet
-   drupal_add_js(drupal_get_path('theme', 'tripal').'/js/tripal_analysis_interpro.js');
+   drupal_add_js( drupal_get_path('theme', 'tripal').'/js/tripal_analysis_interpro.js');
 }
 /*******************************************************************************
  *  Provide information to drupal about the node types that we're creating

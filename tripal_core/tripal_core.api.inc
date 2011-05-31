@@ -1535,3 +1535,131 @@ function tripal_core_delete_property($basetable, $record_id,$property,$cv_name){
    );
    return tripal_core_chado_delete($basetable.'prop',$match);
 }
+
+/**
+ *
+ *
+ * @ingroup tripal_core
+ */
+function tripal_create_moddir($module_name){
+   // make the data directory for this module
+   $data_dir = file_directory_path() . "/tripal/$module_name";
+   if(!file_check_directory($data_dir,FILE_CREATE_DIRECTORY|FILE_MODIFY_PERMISSIONS)){
+      $message = "Cannot create directory $data_dir. This module may not ".
+                 "behave correctly without this directory.  Please  create ".
+                 "the directory manually or fix the problem and reinstall.";
+      drupal_set_message($message,'error');      
+      watchdog('tripal_core',$message,array(),WATCHDOG_ERROR);
+   }
+}
+
+/**
+ *
+ *
+ * @ingroup tripal_core
+ */
+function tripal_get_moddir($module_name){
+   $data_dir = file_directory_path() . "/tripal/$module_name";
+   return $data_dir;
+}
+/**
+ * Set the Tripal Database
+ *
+ * The tripal_db_set_active function is used to prevent namespace collisions
+ * when chado and drupal are installed in the same database but in different
+ * schemas.  It is also used for backwards compatibility with older versions
+ * of tripal or in cases where chado is located outside of the Drupal database.
+ *
+ * @ingroup tripal_core
+ */
+function tripal_db_set_active($dbname){
+   global $db_url, $db_type;
+   $chado_exists = 0;
+
+   // only postgres can support search paths.  So if this is MysQL then
+   // just run the normal tripal_db_set_active function.
+   if(strcmp($db_type,'pgsql')==0){
+
+      // if the 'chado' database is in the $db_url variable then chado is 
+      // not in the same Drupal database
+      if(is_array($db_url)){ 
+         if(isset($db_url[$dbname])){
+            return db_set_active($dbname);
+         } 
+      }
+
+      // check to make sure the chado schema exists
+      $sql = "select nspname from pg_catalog.pg_namespace where nspname = 'chado'";
+      if(db_fetch_object(db_query($sql))){
+         $chado_exists = 1;
+      }
+
+      // here we make the assumption that the default database schema is
+      // 'public'.  This will most likely always be the case but if not,
+      // then this code will break
+      if($chado_exists && strcmp($dbname,'chado')==0){
+         db_query("set search_path to %s",'chado,public');  
+         return 'public,chado';
+      } 
+      elseif($chado_exists) {
+         db_query("set search_path to %s",'public,chado');  
+         return 'chado,public';
+      }
+      else {
+         return db_set_active($dbname);
+      }
+   }
+   else return db_set_active($dbname);
+}
+/**
+ * Purpose: Get max rank for a given set of criteria
+ *   This function was developed with the many property tables in chado in mind
+ *
+ * @param $tablename
+ *    The name of the chado table you want to select the max rank from this table must contain a 
+ *    rank column of type integer
+ * @param $where_options
+ *   where options should include the id and type for that table to correctly
+ *     group a set of records together where the only difference are the value and rank
+ * @code 
+ *  array(
+ *     <column_name> => array(
+ *	      'type' => <type of column: INT/STRING>,
+ *		   'value' => <the value you want to filter on>,
+ *			'exact' => <if TRUE use =; if FALSE use ~>,
+ *		)
+ *	)
+ * @endcode
+ * @return the maximum rank
+ *
+ * @ingroup tripal_core
+ */
+function tripal_get_max_chado_rank ($tablename, $where_options) {
+
+	$where= array();
+	//generate the where clause from supplied options
+	// the key is the column name
+	foreach ($where_options as $key => $val_array) {
+		if (preg_match('/INT/', $val_array['type'])) {
+			$where[] = $key."=".$val_array['value'];
+		} else {
+			if ($val_array['exact']) { $operator='='; }
+			else { $operator='~'; }
+			$where[] = $key.$operator."'".$val_array['value']."'";
+		}
+	}
+	
+  $previous_db = tripal_db_set_active('chado');
+  $result = db_fetch_object(db_query(
+    "SELECT max(rank) as max_rank, count(rank) as count FROM %s WHERE %s",
+    $tablename,
+    implode(' AND ',$where)
+  ));
+  tripal_db_set_active($previous_db);
+	//drupal_set_message("Max Rank Query=SELECT max(rank) as max_rank, count(rank) as count FROM ".$tablename." WHERE ".implode(' AND ',$where));
+	if ($result->count > 0) {
+	  return $result->max_rank;
+	} else {
+		return -1;
+	}
+}
