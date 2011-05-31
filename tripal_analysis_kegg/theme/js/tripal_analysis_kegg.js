@@ -13,13 +13,18 @@ if (Drupal.jsEnabled) {
    });
 
    //------------------------------------------------------------
-   function tripal_analysis_kegg_org_report(item,baseurl,themedir){
+   function tripal_analysis_kegg_org_report(item){
       if(!item){
          $("#tripal_analysis_kegg_org_report").html('');
          return false;
       }
       // Form the link for the following ajax call  
-      var link = baseurl + '/tripal_analysis_kegg_org_report/' + item;
+      var link = baseurl + "/";
+      if(!isClean){
+         link += "?q=";
+      }
+      link += 'tripal_analysis_kegg_org_report/' + item;
+
       tripal_startAjax();
       $.ajax({
            url: link,
@@ -28,7 +33,7 @@ if (Drupal.jsEnabled) {
            success: function(data){
              $("#tripal_analysis_kegg_org_report").html(data[0]);
              $(".tripal_kegg_brite_tree").attr("id", function(){
-                init_kegg_tree($(this).attr("id"),baseurl,themedir);    
+                init_kegg_tree($(this).attr("id"));    
              });
              tripal_stopAjax();
            }
@@ -38,7 +43,7 @@ if (Drupal.jsEnabled) {
    
    //------------------------------------------------------------
    // Update the BRITE hierarchy based on the user selection
-   function tripal_update_brite(link,type_id,baseurl,themedir){
+   function tripal_update_brite(link,type_id){
       tripal_startAjax();
       $.ajax({
          url: link.href,
@@ -48,9 +53,7 @@ if (Drupal.jsEnabled) {
             $("#tripal_kegg_brite_hierarchy").html(data.update);
             $("#tripal_kegg_brite_header").html(data.brite_term);
             tripal_stopAjax();
-            if(baseurl && themedir){
-               init_kegg_tree(data.id,baseurl,themedir);
-            }
+            init_kegg_tree(data.id);
          }
       });
       return false;
@@ -58,7 +61,7 @@ if (Drupal.jsEnabled) {
 
    //------------------------------------------------------------
    // This function initializes a KEGG term tree
-   function init_kegg_tree(id,baseurl,themedir){
+   function init_kegg_tree(id){
 
       // Form the link for the following ajax call
       var theme_path = baseurl + '/' + themedir + "/js/jsTree/source/themes/";
