@@ -100,6 +100,8 @@ function chado_analysis_kegg_access($op, $node, $account){
 /*******************************************************************************
  */
 function tripal_analysis_kegg_brite($analysis_id, $type_id, $ajax){
+   global $base_url;
+   $theme_dir = drupal_get_path('theme','tripal');
    // If not called by ajax
    if (!$ajax) {
       $content .=  
@@ -124,7 +126,7 @@ function tripal_analysis_kegg_brite($analysis_id, $type_id, $ajax){
       while ($brite_term = db_fetch_object($result)) {
          $url = url("brite/$analysis_id/$brite_term->cvterm_id/1");
          $content .= "<li class=\"tripal_kegg_brite_terms\"><a onclick=\"return tripal_update_brite(".
-                   "this,$brite_term->cvterm_id)\" href=\"$url\">
+                   "this,$brite_term->cvterm_id,'$base_url','$theme_dir')\" href=\"$url\">
                    $brite_term->name
                    </a></li>";
       }
@@ -1175,13 +1177,23 @@ function tripal_analysis_kegg_select_form(&$form_state = NULL,$node){
    }
   
    # create the select box
+   global $base_url;
+   $theme_dir = drupal_get_path('theme', 'tripal');
+   $form['theme_dir'] = array(
+      '#type' => 'hidden',
+      '#value' => $theme_dir,
+   );
+   $form['base_url'] = array(
+      '#type' => 'hidden',
+      '#value' => $base_url,
+   );
    $form['tripal_analysis_kegg_select'] = array(
       '#title' => t('Select a KEGG report to view'),
       '#description' => t('Any analysis with KEGG results related to this organism are available for viewing. For further information, see the analysis information page.'),
       '#type'  => 'select',
       '#options' => $analyses,
       '#attributes' => array (
-         'onchange' => 'tripal_analysis_kegg_org_report(this.options[this.selectedIndex].value)'
+         'onchange' => "tripal_analysis_kegg_org_report(this.options[this.selectedIndex].value,'".$base_url. "','".$theme_dir."')"
       ),
    );
    return $form;
