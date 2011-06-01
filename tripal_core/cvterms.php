@@ -1,7 +1,7 @@
 <?php
 
 /** 
- * @defgroup tripal_core_cv_api Tripal Basic CV API
+ * @defgroup tripal_core_cv_api Core Module CV API
  * @{
  * For working with controlled vocabularies see the Controlled Vocabulary
  * API.  However, there are cases where a CV does not exist. For example in

@@ -1,7 +1,7 @@
 <?php
 
 /** 
- * @defgroup tripal_mviews_api Tripal Materalized Views API
+ * @defgroup tripal_mviews_api Core Module Materalized Views API
  * @{
  * Provides an application programming interface (API) to manage materialized views in Chado.
  * The Perl-based chado comes with an interface for managing materialzed views.  This

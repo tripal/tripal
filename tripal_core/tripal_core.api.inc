@@ -25,7 +25,7 @@
 require_once "tripal_core.schema.api.inc";
 
 /** 
- * @defgroup tripal_chado_api Tripal Chado API
+ * @defgroup tripal_chado_api Core Module Chado API
  * @{
  * Provides an application programming interface (API) to manage data withing the Chado database.
  * This includes functions for selecting, inserting, updating and deleting records 
@@ -50,6 +50,16 @@ require_once "tripal_core.schema.api.inc";
  * there is a set of functions for inserting, updating and deleting properties for
  * any table.  This provides quick lookup of properties (provided the CV term is
  * known).
+ *
+ * @}
+ * @ingroup tripal_api
+ */
+
+/** 
+ * @defgroup tripal_files_api Core Module Files API
+ * @{
+ * Provides an application programming interface (API) for managing files within 
+ * the Tripal data directory structure.
  *
  * @}
  * @ingroup tripal_api
@@ -1495,9 +1505,19 @@ function tripal_core_delete_property($basetable, $record_id,$property,$cv_name){
 }
 
 /**
+ * This function is typically used in the '.install' file for a Tripal module
+ * Each module should call this function during installation to create
+ * the module data directory which is sites/default/files/tripal/[module_name] 
+ * for default Drupal settings.  This directory can then be used by the module 
+ * for storing files.
  *
+ * @param $module_name
+ *   the name of the module being installed.
  *
- * @ingroup tripal_core
+ * @returns
+ *   nothing
+ *
+ * @ingroup tripal_files_api
  */
 function tripal_create_moddir($module_name){
    // make the data directory for this module
@@ -1512,9 +1532,16 @@ function tripal_create_moddir($module_name){
 }
 
 /**
+ * Each Tripal module has a unique data directory which was creatd using the
+ * tripal_create_moddir function during installation.  This function 
+ * retrieves the directory path.
  *
+ * @param $module_name
+ *   The name of the module
  *
- * @ingroup tripal_core
+ * @returns
+ *   The path within the Drupal installation where the data directory resides
+ * @ingroup tripal_files_api
  */
 function tripal_get_moddir($module_name){
    $data_dir = file_directory_path() . "/tripal/$module_name";
@@ -1528,7 +1555,7 @@ function tripal_get_moddir($module_name){
  * schemas.  It is also used for backwards compatibility with older versions
  * of tripal or in cases where chado is located outside of the Drupal database.
  *
- * @ingroup tripal_core
+ * @ingroup tripal_chado_api
  */
 function tripal_db_set_active($dbname){
    global $db_url, $db_type;
@@ -1590,7 +1617,7 @@ function tripal_db_set_active($dbname){
  * @endcode
  * @return the maximum rank
  *
- * @ingroup tripal_core
+ * @ingroup tripal_chado_api
  */
 function tripal_get_max_chado_rank ($tablename, $where_options) {
 

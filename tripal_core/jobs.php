@@ -1,7 +1,7 @@
 <?php
 
 /** 
- * @defgroup tripal_jobs_api Tripal Jobs API
+ * @defgroup tripal_jobs_api Core Module Jobs API
  * @{
  * Tripal offers a job management subsystem for managing tasks that may require an extended period of time for 
  * completion.  Drupal uses a UNIX-based cron job to handle tasks such as  checking  the  availability of updates, 

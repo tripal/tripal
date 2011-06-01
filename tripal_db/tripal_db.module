@@ -3,7 +3,7 @@
 require_once "tripal_db.api.inc";
 
 /**
- * @defgroup tripal_db External Database Module
+ * @defgroup tripal_db Database Module
  * @ingroup tripal_modules
  */
  

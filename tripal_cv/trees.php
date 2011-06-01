@@ -15,9 +15,99 @@ function tripal_cv_show_browser() {
 
 
 /**
-*
-* @ingroup tripal_cv
-*/
+ * Generates JSON used for generating an exapandable tree of terms from
+ * a controlled vocabulary that has associated counts. 
+ *
+ * The progammer must first create a materialized view that
+ * will generate count data for a given controlled vocabulary.  For example, the Tripal
+ * Analysis GO creates a materialized view for counting Gene Ontology assignments
+ * to features.  This view is created on install of the module and is named
+ * 'go_count_analysis'.
+ *
+ * Second, the progammer must add an HTML 'div' box to the desired page
+ * with a class name of 'tripal_cv_tree', and an id of the following format:
+ *
+ *  tripal_[module_name]_cv_tree_[unique id]
+ *
+ * where [module_name] is the name of the tripal module (e.g. tripal_analyisis_go)
+ * and [unique id] is some unique identifier that the contolling module 
+ * recognizes. This string is the $tree_id variable passed as the first argument
+ * to the function.  For example, the Tripal GO Analysis module generates 
+ * tree ids of the form:
+ * 
+ *  tripal_analysis_go_cv_tree_10_2_bp
+ * 
+ * In this case the module that will manage this tree is identified as 'tripal_analysis_go' and within
+ * the [unique id] portion contains the
+ * organism_id (e.g. 10), analysis_id (e.g. 2) and tree type (bp = biological process). 
+ *
+ * Second, the programmer must then define a hook in the controlling module for setting
+ * some options used to build the chart.  The hook has the form:  hook_cv_tree($tree_id).
+ * This hook should accept the full $tree_id as the single parameter.  For the Tripal
+ * Analysis GO module the hook is named:  tripal_analysis_go_cv_tree.  
+ *
+ * The array returned by this hook must have the following fields: 
+ *  - cv_id 
+ *      the cv_id for the controlled vocabulary
+ *  - count_mview
+ *      the name of the materialized view that contains the count data
+ *      this materialized view must have at least two columns, one with the cvterm_id
+ *      for each term and a second column containing the counts. The tree will only
+ *      be expanded to include child terms that have counts.
+ *  - cvterm_id_column
+ *      the column name in the materialized view that contains
+ *      the cvterm_ids
+ *  - count_column
+ *      the column name in the materialized view that contains the
+ *      counts
+ *  - filter
+ *      an SQL compatible WHERE clause string (whithout the word 'WHERE')
+ *      that can be used for filtering the records in the materialized view.
+ *  - label
+ *      the title for the tree
+ *
+ * Example from the tripal_analysis_go module:
+ * @code
+ *  function tripal_analysis_go_cv_tree($tree_id){
+ * 
+ *   $organism_id = preg_replace("/^tripal_analysis_go_cv_tree_(\d+)-(\d+)_(bp|cc|mf)$/","$1",$tree_id);
+ *   $analysis_id = preg_replace("/^tripal_analysis_go_cv_tree_(\d+)-(\d+)_(bp|cc|mf)$/","$2",$tree_id);
+ *   $type        = preg_replace("/^tripal_analysis_go_cv_tree_(\d+)-(\d+)_(bp|cc|mf)$/","$3",$tree_id);
+ * 
+ *   if(strcmp($type,'mf')==0){
+ *      $class = 'molecular_function';
+ *   }
+ *   if(strcmp($type,'cc')==0){
+ *      $class = 'cellular_component';
+ *   }
+ *   if(strcmp($type,'bp')==0){
+ *      $class = 'biological_process';
+ *   }
+ * 
+ *   $options = array(
+ *      cv_id            => tripal_cv_get_cv_id($class),
+ *      count_mview      => 'go_count_analysis',
+ *      cvterm_id_column => 'cvterm_id',
+ *      count_column     => 'feature_count',
+ *      filter           => "CNT.organism_id = $organism_id AND CNT.analysis_id = $analysis_id",
+ *      label            => 'Features',
+ *   );
+ *   return $options;
+ * }
+ *
+ * @endcode
+ *
+ * @param $tree_id
+ *   The unique identifier for the tree
+ *
+ * @return
+ *   JSON array needed for the jsTree package for generating expandable trees.
+ *
+ * With these three components (materialized view, a 'div' box with proper CSS class and ID, and a hook_cv_tree)
+ * a tree will be created on the page.  There is no need to call this function directly.
+ *
+ * @ingroup tripal_cv
+ */
 function tripal_cv_tree($tree_id){
   // parse out the tripal module name from the chart_id to find out 
   // which Tripal "hook" to call:

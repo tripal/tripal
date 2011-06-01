@@ -8,7 +8,7 @@
  */
 
 /** 
- * @defgroup tripal_schema_api Tripal Schema API
+ * @defgroup tripal_schema_api Core Module Schema API
  * @{
  * Provides an application programming interface (API) for describing Chado tables.
  * This API consists of a set of functions, one for each table in Chado.  Each 
