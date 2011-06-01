@@ -333,6 +333,9 @@ function tripal_analysis_interpro_parseSingleXMLFile ($analysis_id, $interproxml
    }
    print "  Found results for $no_iterations sequences\n";
    $interval = intval($no_iterations * 0.01);
+   if($interval == 0){
+      $interval = 1;
+   }
    $idx_iterations = 0;
 
    // get the DB id for the GO database
@@ -428,14 +431,15 @@ function tripal_analysis_interpro_parseSingleXMLFile ($analysis_id, $interproxml
 
          print "  Adding InterPro results for feature '$seqname' ($feature_id)\n";
 
-         // Insert into analysisfeature table
-         $sql = "INSERT INTO {analysisfeature} (feature_id, analysis_id) ".
-                "VALUES (%d, %d)";
-         db_query ($sql, $feature_id, $analysis_id);                     
-
-         // Get the analysisfeature_id
-         $sql = "SELECT analysisfeature_id FROM {analysisfeature} WHERE feature_id = %d AND analysis_id = %d";
-         $analysisfeature_id = db_result(db_query($sql, $feature_id, $analysis_id));
+         // Insert into analysisfeature table only if it doesn't already exist
+         $values = array('feature_id' => $feature_id, 'analysis_id' => $analysis_id);
+         $analysisfeature = tripal_core_chado_select('analysisfeature',array('*'),$values);
+         if(sizeof($analysisfeature) == 0){
+            $analysisfeature = tripal_core_chado_insert('analysisfeature',$values);
+            $analysisfeature_id = $analysisfeature['analysisfeature_id'];
+         } else {
+         $analysisfeature_id = $analysisfeature[0]->analysisfeature_id;
+         }
 
          // Insert interpro xml results into analysisfeatureprop table
          // Check to see if we have an existing entry
@@ -454,7 +458,6 @@ function tripal_analysis_interpro_parseSingleXMLFile ($analysis_id, $interproxml
          db_query($sql, $analysisfeature_id, $type_id, $protein->asXML(), $rank);
 
          // parse the XML for each protein if GO terms are requested
-
          if($parsego and $go_db_id){		
 
             $protein = tripal_analysis_interpro_get_result_object($protein->asXML(),$feature_id); 
@@ -474,15 +477,21 @@ function tripal_analysis_interpro_parseSingleXMLFile ($analysis_id, $interproxml
 
                   // Insert GO terms into feature_cvterm table
                   // Default pub_id = 1 (NULL) was used
-                  $sql = "INSERT INTO {feature_cvterm} (feature_id, cvterm_id, pub_id)
-                          VALUES (%d, %d, 1)";
-                  db_query($sql, $feature_id, $goterm_id);
-
+                  $values = array('feature_id' => $feature_id, 'cvterm_id' => $goterm_id, 'pub_id' => 1);
+                  $feature_cvterm = tripal_core_chado_select('feature_cvterm',array('*'),$values);
+                  if(sizeof($feature_cvterm) == 0){
+                     $feature_cvterm = tripal_core_chado_insert('feature_cvterm',$values);
+                  }
 
                   // Insert GO terms into analysisfeatureprop table
-                  $sql = "INSERT INTO {analysisfeatureprop} (analysisfeature_id, type_id, value, rank) ".
-                          "VALUES (%d, %d, '%s', 0)";
-                  db_query($sql, $analysisfeature_id, $goterm_id, $matches[1]);
+                  $values = array('analysisfeature_id' => $analysisfeature_id,
+                                  'type_id' => $goterm_id,
+                                  'rank' => 0);
+                  $analysisfeatureprop = tripal_core_chado_select('analysisfeatureprop',array('*'),$values);
+                  if(sizeof($analysisfeatureprop) == 0){
+                     $values['value'] = $matches[1];
+                     $analysisfeatureprop = tripal_core_chado_insert('analysisfeatureprop',$values);
+                  }
                } // end if preg_match
             } // end for each goterm
          } // end if($parsego and $go_db_id)

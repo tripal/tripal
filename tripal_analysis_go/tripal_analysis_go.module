@@ -323,7 +323,7 @@ function tripal_analysis_go_load_organism_go_summary($node) {
    tripal_db_set_active($previous_db);
 
    $has_results = 0;
-   if($results){
+   if($results->cnt > 0){
       $has_results = 1;
    }
    return array (
