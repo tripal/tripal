@@ -1,13 +1,37 @@
 <?php
-//
-// Copyright 2009 Clemson University
-//
+
+/** 
+ * @defgroup tripal_core_cv_api Tripal Basic CV API
+ * @{
+ * For working with controlled vocabularies see the Controlled Vocabulary
+ * API.  However, there are cases where a CV does not exist. For example in
+ * some cases a module may want to support adding of properties (such as to
+ * for an analysis) to a record but an organized CV does not exist.  The 
+ * progammer may create their own ontology and populate it, or they may use
+ * the basic CV interface provided by Tripal.  Tripal provides a CV named
+ * 'Tripal' and modules may add terms to this CV to support the functionality
+ * of their modules.  
+ * @}
+ * @ingroup tripal_api
+ */
 
 /**
-*
-*
-* @ingroup tripal_core
-*/
+ * Add a materialized view to the chado database to help speed data access.
+ *
+ * @param $name 
+ *   The name of the term
+ * @param $definition 
+ *   The definition for the term
+ * @param $cv_name 
+ *   The name of the controlled vocabulary to which the term will be added.
+ *   The default CV is 'tripal'.
+ * @param $db_name 
+ *   CV records also have a corresponding database reference.  This argument
+ *   specifies the name of the database to which this term belongs. The default
+ *   database name is 'tripal'.
+ *
+ * @ingroup tripal_core_cv_api
+ */
 function tripal_add_cvterms ($name,$definition,$cv_name = 'tripal',$db_name='tripal'){
    
    
@@ -52,10 +76,11 @@ function tripal_add_cvterms ($name,$definition,$cv_name = 'tripal',$db_name='tri
    }
 }
 /**
-*
-*
-* @ingroup tripal_core
-*/
+ * Add a database to the Chado 'db' table.
+ * NOTE: This function is deprecated and may not be used in future releases of Tripal
+ *  
+ * @ingroup tripal_core_cv_api
+ */
 function tripal_add_db($db_name,$description,$urlprefix,$url){
    $previous_db = tripal_db_set_active('chado');  // use chado database
 
@@ -79,58 +104,12 @@ function tripal_add_db($db_name,$description,$urlprefix,$url){
    return $db->db_id;
 }
 
-/**
-*
-*
-* @ingroup tripal_core
-*/
-function tripal_delete_db($db_name){
-   $previous_db = tripal_db_set_active('chado');  // use chado database
-   $sql = "DELETE FROM {db} WHERE name ='%s'";
-   db_query($sql,$db_name);
-   tripal_db_set_active($previous_db);  // now use drupal database 
-   
-}
 
 /**
-*
-*
-* @ingroup tripal_core
-*/
-function tripal_add_cv($cv_name,$definition){
-   $previous_db = tripal_db_set_active('chado');  // use chado database
-
-   // use this SQL statement to get the db_id for the database name
-   $id_sql = "SELECT cv_id FROM {cv} WHERE name = '%s'";
-
-   $cv = db_fetch_object(db_query($sql,$cv_name));
-
-   // if the database doesn't exist then let's add it.
-   if(!$cv){
-      $sql = "
-         INSERT INTO {cv} (name,definition) VALUES 
-         ('%s','%s');
-      ";
-      db_query($sql,$cv_name,$definition);
-    
-      # now get the id for this new db entry
-      $cv = db_fetch_object(db_query($sql,$cv_name));
-   }
-   tripal_db_set_active($previous_db);  // now use drupal database	
-   return $cv->cv_id;
-}
-
-/************************************************************************
- * Get cvterm_id for a tripal cvterm by passing its name
- * This function is deprecated
- *
- * @param $cvterm
- *   The name of the cvterm to return
- *
- * @return
- *   A database result for the cvterm?
- *
- * @ingroup tripal_cv_api
+ * Get cvterm_id for a tripal term by passing its name
+ * NOTE: This function is deprecated and may not be used in future releases of Tripal
+ *  
+ * @ingroup tripal_core_cv_api
  */
 function tripal_get_cvterm_id ($cvterm){
 	$sql = "SELECT CVT.cvterm_id FROM {cvterm} CVT

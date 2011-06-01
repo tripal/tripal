@@ -1,10 +1,10 @@
 <?php
 
 /**
- * @defgroup tripal_db_api External Database Module API
+ * @defgroup tripal_db_api Database Module API
  * @ingroup tripal_api
  * @ingroup tripal_db
- * Provides an application programming interface (API) to manage databases
+ * Provides an application programming interface (API) to manage references to external databases
  */
 
 /**

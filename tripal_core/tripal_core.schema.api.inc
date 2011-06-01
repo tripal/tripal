@@ -7,6 +7,35 @@
  *        hook_chado_<table name>_schema().
  */
 
+/** 
+ * @defgroup tripal_schema_api Tripal Schema API
+ * @{
+ * Provides an application programming interface (API) for describing Chado tables.
+ * This API consists of a set of functions, one for each table in Chado.  Each 
+ * function simply returns a Drupal style array that defines the table. 
+ * 
+ * Because Drupal 6 does not handle foreign key relationships, a separate 
+ * hook is used to define the foreign key relationships for each table.  As
+ * of version 0.3b of Tripal, not all foreign key relationships have been 
+ * defined.  Therefore, if you need a foreign key you must create the appropriate
+ * hook.  Hooks are named hook_chado_table_schema() where 'hook' is replaced
+ * with the module name, and 'table' is replaced by the Chado table name.
+ *
+ * The functions provided in this documentation should not be called as is, but if you need
+ * the Drupal-style array definition for any table, use the following function
+ * call:
+ *
+ *   $table_desc = module_invoke_all('chado_'.$table.'_schema');
+ * 
+ * where the variable $table contains the name of the table you want to 
+ * retireve.  The function call above uses the Drupal hook infrastructure to
+ * call the appropriate function in the Schema API as well as the appropriate
+ * hook to add in any foreign key relationships. 
+ * 
+ * @}
+ * @ingroup tripal_api
+ */
+
 /**
  *
  * @ingroup tripal_schema_api

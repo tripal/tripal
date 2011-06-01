@@ -10,93 +10,51 @@
 /**
  * @defgroup tripal_api Tripal API
  * @{
- * Provides an application programming interface (API) for the tripal package
+ * Provides an application programming interface (API) for Tripal
  *
  * The Tripal API currently provides generic insert/update/select functions for all chado content as 
  * well as some module specific functions that insert/update/delete/select specific chado content. 
  *
- * This API is currently in it's infancy so some necessary functions might be missing. If you come 
- * across a missing function that you think should be included go to the sourceforge feature request * page and request it's inclusion in the API. Such feature requests with a working function * definition will be given priority.
+ * This API is currently in its infancy and some necessary functions might be missing. If you find
+ * a missing function that you think should be included go to the sourceforge feature request 
+ * page and request it's inclusion in the API. Such feature requests with a working function 
+ * definition will be given priority.
  * @}
  */
 
-/** 
- * @defgroup tripal_core_api Tripal Core API
- * @ingroup tripal_api
- */
-
-/** 
- * @defgroup tripal_schema_api Tripal Schema API
- * @{
- * Provides an application programming interface (API) used to describe chado tables to 
- * drupal/tripal
- * @}
- * @ingroup tripal_api
- */
 require_once "tripal_core.schema.api.inc";
 
 /** 
- * @defgroup tripal_chado_api Tripal Chado DB API
+ * @defgroup tripal_chado_api Tripal Chado API
  * @{
- * Provides an application programming interface (API) to interact with the Chado database.
+ * Provides an application programming interface (API) to manage data withing the Chado database.
+ * This includes functions for selecting, inserting, updating and deleting records 
+ * in Chado tables.  The functions will ensure proper integrity contraints are met
+ * for inserts and updates.  
+ *
+ * Also, a set of functions is provided for creating template variables.  First,
+ * is the tripal_core_generate_chado_vars which is used to select one ore more
+ * records from a table and return an array with foreign key relationships fully
+ * populated.  For example, if selecting a feature, the organism_id and type_id
+ * would be present in the returned array as a nested array with their respective
+ * foreign keys also nested.  The only fields that are not included are text
+ * fields (which may be very large) or many-to-many foreign key relationships.  
+ * However, these fields and relationships can be expanded using the 
+ * tripal_core_expand_chado_vars.
+ * 
+ * When a row from a chado table is selected using these two functions, it provides
+ * a way for users who want to cutomize Drupal template files to access all data
+ * associate with a specific record.
+ *
+ * Finally, the property tables in Chado generally follow the same format.  Therefore
+ * there is a set of functions for inserting, updating and deleting properties for
+ * any table.  This provides quick lookup of properties (provided the CV term is
+ * known).
+ *
  * @}
  * @ingroup tripal_api
  */
  
-// just a temporary function for debugging
-function tripal_core_chado_insert_test(){
-   $ivalues =  array(
-     'organism_id' => array(
-         'genus' => 'Lens',
-         'species' => 'culinaris',
-      ),
-     'name' => 'orange1.1g000034m.g',
-     'uniquename' => 'orange1.1g000034m.g9',
-     'type_id' => array (
-         'cv_id' => array (
-            'name' => 'sequence',
-         ),
-         'name' => 'gene',
-         'is_obsolete' => 0
-      ),
-   );
-   $umatch = array(
-     'organism_id' => array(
-         'genus' => 'Lens',
-         'species' => 'culinaris',
-      ),
-     'uniquename' => 'orange1.1g000034m.g9',
-     'type_id' => array (
-         'cv_id' => array (
-            'name' => 'sequence',
-         ),
-         'name' => 'gene',
-         'is_obsolete' => 0
-      ),
-   );
-   $uvalues = array(
-      'name' => 'orange1.1g000034m.g',
-      'type_id' => array (
-         'cv_id' => array (
-            'name' => 'sequence',
-         ),
-         'name' => 'mRNA',
-         'is_obsolete' => 0
-      ),
-   );
-   $select_multiple = array(
-     'dbxref_id' => array(
-       'db_id' => 2,
-     )
-   );
-   //$result = tripal_core_chado_insert('feature',$ivalues);
-   //return "$result->feature_id";
-   $result = tripal_core_chado_update('feature',$umatch,$uvalues);
-   //$result = tripal_core_chado_select('feature',array('type_id', 'uniquename'),$select_multiple);
-   return $result;
-
-}
-
 /**
 * Provides a generic routine for inserting into any Chado table
 *

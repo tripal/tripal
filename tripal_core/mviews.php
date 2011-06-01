@@ -1,7 +1,14 @@
 <?php
-//
-// Copyright 2009 Clemson University
-//
+
+/** 
+ * @defgroup tripal_mviews_api Tripal Materalized Views API
+ * @{
+ * Provides an application programming interface (API) to manage materialized views in Chado.
+ * The Perl-based chado comes with an interface for managing materialzed views.  This
+ * API provides an alternative Drupal-based method.  
+ * @}
+ * @ingroup tripal_api
+ */
 
 /**
  * Add a materialized view to the chado database to help speed data access.
@@ -21,7 +28,7 @@
  * @param $special_index  
  *   function
  *
- * @ingroup tripal_core_api
+ * @ingroup tripal_mviews_api
  */
 function tripal_add_mview ($name,$modulename,$mv_table,$mv_specs,$indexed,$query,$special_index){
 
@@ -76,7 +83,7 @@ function tripal_add_mview ($name,$modulename,$mv_table,$mv_specs,$indexed,$query
  * @return
  *   The unique identifier for the given view
  *
- * @ingroup tripal_core_api
+ * @ingroup tripal_mviews_api
  */
 function tripal_mviews_get_mview_id ($view_name){
 
@@ -137,7 +144,7 @@ function tripal_mviews_action ($op,$mview_id){
 * @return
 *   True if successful, false otherwise
 *
-* @ingroup tripal_core_api
+* @ingroup tripal_mviews_api
 */
 function tripal_update_mview ($mview_id){
    $sql = "SELECT * FROM {tripal_mviews} WHERE mview_id = %d ";
@@ -162,7 +169,7 @@ function tripal_update_mview ($mview_id){
 /**
 *
 *
-* @ingroup tripal_core
+* @ingroup tripal_mviews_api
 */
 function tripal_mview_report ($mview_id) {
    // get this mview details
@@ -249,7 +256,7 @@ function tripal_mview_report ($mview_id) {
 /**
 *
 *
-* @ingroup tripal_core
+* @ingroup tripal_mviews_api
 */
 function tripal_mviews_report () {
    $mviews = db_query("SELECT * FROM {tripal_mviews} ORDER BY name");

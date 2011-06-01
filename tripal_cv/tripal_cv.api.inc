@@ -1,10 +1,20 @@
 <?php
 
 /**
- * @defgroup tripal_cv_api Controlled Vocabulary Module API
+ * @defgroup tripal_cv_api CV Module API
  * @ingroup tripal_api
  * @ingroup tripal_cv
- * Provides an application programming interface (API) to controlled vocabularies
+ * This module provides a set of functions to simplify working with
+ * controlled vocabularies.  Most of the API functions deal with retrieving
+ * terms or their parent vocabularies.  
+ * 
+ * However, the API also supports
+ * generation of trees for browsing a vocabulary as well as generation of 
+ * pie graphs for display of hierarchical counts of terms.  Version 0.3b of
+ * Tripal provides a feature browser and a feature summary chart uses
+ * the API functions provided here.  But in general charts and trees can be
+ * created for any controlled vocabulary.
+ *
  */
 
 /**

@@ -1,9 +1,5 @@
 <?php
 
-//
-// Copyright 2009 Clemson University
-//
-
 /**
 *
 * @ingroup tripal_cv
@@ -85,7 +81,7 @@ function tripal_cv_update_tree() {
 *    jQuery code that builds a tree for browsing the ontology.  This function
 *    should be called to generate the root level branches of the tree.
 *
-* @ingroup tripal_cv_api
+* @ingroup tripal_cv
 */
 function tripal_cv_init_tree($cv_id,$cnt_table = null, $fk_column = null,
    $cnt_column = null, $filter = null, $label = null) {
