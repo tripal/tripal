@@ -7,7 +7,7 @@ require_once "obo_loader.php";
 require_once "tripal_cv.api.inc";
 
 /**
- * @defgroup tripal_cv Controlled Vocabulary Module
+ * @defgroup tripal_cv CV Module
  * @ingroup tripal_modules
  */
  

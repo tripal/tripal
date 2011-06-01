@@ -4,7 +4,8 @@
 /**
  * Generates JSON used for generating a Google chart of count data associated
  * with a controlled vocabulary.  An example would be features assigned to
- * Gene Ontology terms.  
+ * Gene Ontology terms. 
+ * 
  * To generate a chart, the progammer must first create a materialized view that
  * will generate count data for a given controlled vocabulary.  For example, the Tripal
  * Analysis GO creates a materialized view for counting Gene Ontology assignments
