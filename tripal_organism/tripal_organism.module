@@ -665,8 +665,26 @@ function tripal_organism_cron (){
 * @ingroup tripal_organism
 */
 function chado_organism_validate($node,&$form){
-   // check to see if the organism already exists, but only for an insert
-   if(!$node->nid){
+   // if this is an update, we want to make sure that a different organism doesn't
+   // already have this genus and speces
+   if($node->organism_id){
+       $sql = "SELECT * 
+              FROM {organism} O
+              WHERE genus = '%s' and species = '%s' AND NOT organism_id = %d";
+      $previous_db = tripal_db_set_active('chado');
+      $result = db_fetch_object(db_query($sql, $node->genus,$node->species,$node->organism_id));
+      tripal_db_set_active($previous_db);
+      if($result){
+         form_set_error('genus',t("Update cannot proceed. The organism genus 
+           '$node->genus' and species '$node->species' is already present in the database."));
+		   watchdog('tripal_organism', 
+			   'Update organism: genus and species already exists: %values', 
+			   array('%values' => "genus = $node->genus, species = $node->species"),
+			   WATCHDOG_WARNING);
+      }
+   }
+   // if this is an insert then check to make sure the genus and species are unique
+   else {
       $values = array(
          'genus' => $node->genus,
          'species' => $node->species,
@@ -675,6 +693,10 @@ function chado_organism_validate($node,&$form){
       if(sizeof($organism) > 0){
          form_set_error('genus','Cannot add the organism with this genus and species.
             The organism already exists.');
+		   watchdog('tripal_organism', 
+			   'Insert organism: genus and species already exists: %values', 
+			   array('%values' => "genus = $node->genus, species = $node->species"),
+			   WATCHDOG_WARNING);
       }
    }
 }
@@ -694,20 +716,29 @@ function chado_organism_insert($node){
       'common_name' => $node->common_name,
       'comment' => $node->description
    );
-   $organism = tripal_core_chado_insert('organism', $values);
-   if (!$organism) {
-		drupal_set_message('Unable to add organism.', 'warning');
-		watchdog('tripal_organism', 
-			'Insert Organism: Unable to create organism where values:%values', 
-			array('%values' => print_r($values, TRUE)),
-			WATCHDOG_WARNING
-		);
-      return;
-	}   
+   // if there is an organism_id in the $node object then this must be a sync so
+   // we can skip adding the organism as it is already there, although
+   // we do need to proceed with the rest of the insert
+   if(!$node->organism_id){
+      $organism = tripal_core_chado_insert('organism', $values);
+      if (!$organism) {
+		   drupal_set_message('Unable to add organism.', 'warning');
+		   watchdog('tripal_organism', 
+			   'Insert Organism: Unable to create organism where values:%values', 
+			   array('%values' => print_r($values, TRUE)),
+			   WATCHDOG_WARNING
+		   );
+         return;
+	   }
+      $organism_id = $organism['organism_id'];
+   }  
+   else {
+      $organism_id = $node->organism_id;
+   } 
 
    // Make sure the entry for this organism doesn't already exist in the
    // chado_organism table if it doesn't exist then we want to add it.
-   $organism_id = $organism['organism_id'];
+
    if(!chado_get_id_for_node('organism',$node) ){
       // next add the item to the drupal table
       $sql = "INSERT INTO {chado_organism} (nid, vid, organism_id) ".
@@ -862,6 +893,13 @@ function chado_organism_form ($node, $param){
    $form = array();
    $form['#attributes']['enctype'] = 'multipart/form-data';
 
+   // keep track of the organism id if we have one.  If we do have one then
+   // this would indicate an update as opposed to an insert.
+   $form['organism_id'] = array(
+      '#type' => 'value',
+      '#value' => $organism->organism_id,
+   );
+
    $form['abbreviation']= array(
       '#type' => 'textfield',
       '#title' => t('Abbreviation'),
@@ -965,9 +1003,11 @@ function tripal_organism_sync_organisms ($organism_id = NULL, $job_id = NULL){
           "WHERE organism_id = %d";
 
    while($organism = db_fetch_object($results)){
+
       // check if this organism already exists in the drupal database. if it
       // does then skip this organism and go to the next one.
       if(!db_fetch_object(db_query($sql,$organism->organism_id))){
+
          $new_node = new stdClass();
          $new_node->type = 'chado_organism';
          $new_node->uid = $user->uid;
@@ -981,11 +1021,13 @@ function tripal_organism_sync_organisms ($organism_id = NULL, $job_id = NULL){
             $node = node_submit($new_node);
             node_save($node);
             if($node->nid){
-               $page_content .= "Added $organism->common_name<br>";
+               print "Added $organism->common_name\n";
             }
+         } else {
+            print "Failed to insert organism $organism->common_name\n";
          }
       } else {
-         $page_content .= "Skipped $organism->common_name<br>";
+         print "Skipped $organism->common_name\n";
       }
    }
    return $page_content;
@@ -1296,4 +1338,18 @@ function tripal_organism_views_api() {
    return array(
       'api' => 2.0,
    );
+}
+/**
+ *
+ *
+ * @ingroup tripal_organism
+ */
+function tripal_organism_job_describe_args($callback,$args){
+   
+   $new_args = array();
+   if($callback == 'tripal_organism_sync_organisms'){
+      $organism = tripal_core_chado_select('organism',array('genus','species'),array('organism_id' => $args[0]));
+      $new_args['Organism'] = $organism[0]->genus." ". $organism[0]->species;
+   }
+   return $new_args;
 }
