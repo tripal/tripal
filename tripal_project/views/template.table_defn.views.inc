@@ -90,7 +90,7 @@
     'left_field' => 'matching XXX key in the XY table',
     'field' => 'primary key in XXX table',
   );  
-  $data['XXX']['table']['join']['YYY'] => array(
+  $data['XXX']['table']['join']['YYY'] = array(
     'left_table' => 'XY',
     'left_field' => 'matching XXX key in the XY table',
     'field' => 'primary key in XXX table',
@@ -205,7 +205,7 @@
    
    /*
     * End of Example Field definitions
-    *......................................................./
+    */
     
   return $data;
 }
