@@ -128,7 +128,7 @@ function tripal_jobs_report () {
               TJ.status as job_status, TJ,submit_date,TJ.start_time,
               TJ.end_time,TJ.priority,U.name as username
        FROM {tripal_jobs} TJ 
-         INNER JOIN users U on TJ.uid = U.uid 
+         INNER JOIN {users} U on TJ.uid = U.uid 
        ORDER BY job_id DESC", 10,0,"SELECT count(*) FROM {tripal_jobs}");
 	
    // create a table with each row containig stats for 
