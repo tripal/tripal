@@ -83,12 +83,7 @@ function tripal_search_unigene_install(){
 																								AND cv_id = (SELECT cv_id FROM cv WHERE name = 'tripal')
 																								)
 													AND value = 'tripal_analysis_unigene') UNIGENE ON F.feature_id = UNIGENE.feature_id
-						WHERE F.type_id != (SELECT cvterm_id FROM cvterm WHERE name = 'EST_match')
-						AND F.feature_id NOT IN (SELECT feature_id from feature 
-																					 WHERE type_id = (select cvterm_id from cvterm where name = 'EST') 
-																					 AND feature_id NOT IN (SELECT F.feature_id FROM feature F 
-																					 														  INNER JOIN featureprop FP ON F.feature_id = FP.feature_id 
-																					 														  AND FP.type_id = (select cvterm_id from cvterm where name = 'singlet_in_analysis')))
+						WHERE F.type_id != (SELECT cvterm_id FROM cvterm WHERE name = 'EST_match'))
 						) T";
    
       // Create the MView
