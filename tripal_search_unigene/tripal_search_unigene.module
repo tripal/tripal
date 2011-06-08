@@ -1,6 +1,6 @@
 <?php
 
-require_once "PHPExcel/Classes/PHPExcel.php";
+// require_once "PHPExcel/Classes/PHPExcel.php";
 
 /*************************************************************************
  * tripal_search_unigene_init

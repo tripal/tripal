@@ -63,7 +63,7 @@ global $base_url;
   </tbody>
 </table>
 
-<?php if ($count != 0) {
+<?php /* if ($count != 0) {
 	// Generate Excel files
 	// set parameters for excel file
 	$param_excel= array();
@@ -113,7 +113,9 @@ global $base_url;
 	# generate excel
 	ml_generate_excel($param_excel);
 	print "&nbsp;&nbsp;&nbsp;<a href=\"$path_url\">Download as Excel file</a>";
-}?>
+	
+}
+*/?>
 
 <?php 
 # ----------------------------------------- #
