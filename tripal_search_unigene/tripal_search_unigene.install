@@ -3,23 +3,23 @@
 /*******************************************************************************
 *  Implementation of hook_install();
 */
-function tripal_search_feature_install(){
+function tripal_search_unigene_install(){
 
    // create the module's data directory
-   tripal_create_moddir('tripal_search_feature');
+   tripal_create_moddir('tripal_search_unigene');
 	
-	// Create a sequence as the primiry key for the feature_for_search
-	$sql = "DROP SEQUENCE IF EXISTS feature_for_search_id; CREATE SEQUENCE feature_for_search_id";
+	// Create a sequence as the primiry key for the unigene_for_search
+	$sql = "DROP SEQUENCE IF EXISTS unigene_for_search_id; CREATE SEQUENCE unigene_for_search_id";
 	chado_query($sql);	
 
-	$view_name = 'feature_for_search';
+	$view_name = 'unigene_for_search';
    // Drop the MView table if it exists
    $mview_id = tripal_mviews_get_mview_id($view_name);
    if($mview_id){
       tripal_mviews_action("delete",$mview_id);
    }
 
-   $schema = " feature_for_search_id integer, 
+   $schema = " unigene_for_search_id integer, 
    							  feature_id integer,
    							  feature_type character varying(1024),
    							  feature_name character varying(1024),
@@ -34,9 +34,10 @@ function tripal_search_feature_install(){
    							  interpro_value text
    							  ";
    
-   $index = "feature_id, go_term, blast_value, kegg_value, interpro_value";
-   
-   $sql = "SELECT nextval ('feature_for_search_id') AS feature_for_search_id, T.* FROM (
+   $index = "feature_id, go_term, unigene, blast_value, kegg_value, interpro_value";
+   $singlet_type_id = tripal_get_cvterm_id('singlet_in_analysis');
+   $EST_type = db_result(chado_query("SELECT cvterm_id FROM {cvterm} WHERE name = 'EST' AND cv_id = (SELECT cv_id FROM {cv} WHERE name = 'sequence')")); //P.S. 'EST' is not a tripal term
+   $sql = "SELECT nextval ('unigene_for_search_id') AS unigene_for_search_id, T.* FROM (
 						SELECT F.feature_id AS feature_id, 
 										(SELECT name FROM cvterm WHERE F.type_id = cvterm_id) AS feature_type,
 										F.name AS feature_name, 
@@ -53,26 +54,26 @@ function tripal_search_feature_install(){
 						LEFT JOIN organism O ON F.organism_id = O.organism_id 
 						LEFT JOIN feature_cvterm FC ON F.feature_id = FC.feature_id 
 						LEFT JOIN cvterm C ON FC.cvterm_id = C.cvterm_id 
-						LEFT JOIN (SELECT * FROM analysisfeatureprop AFP
+						LEFT JOIN (SELECT AF.feature_id, AFP.value FROM analysisfeatureprop AFP
 													INNER JOIN analysisfeature AF ON AF.analysisfeature_id = AFP.analysisfeature_id
 													WHERE type_id = (SELECT cvterm_id FROM cvterm 
 																								WHERE name = 'analysis_blast_besthit_description' 
 																								AND cv_id = (SELECT cv_id FROM cv WHERE name = 'tripal')
-																								)
+																								) GROUP BY feature_id, value
 													) BLAST ON BLAST.feature_id = F.feature_id
-						LEFT JOIN (SELECT * FROM analysisfeatureprop AFP
+						LEFT JOIN (SELECT AF.feature_id, AFP.value FROM analysisfeatureprop AFP
 													INNER JOIN analysisfeature AF ON AF.analysisfeature_id = AFP.analysisfeature_id
 													WHERE type_id = (SELECT cvterm_id FROM cvterm 
 																								WHERE name = 'analysis_kegg_output_keywords' 
 																								AND cv_id = (SELECT cv_id FROM cv WHERE name = 'tripal')
-																								)			
+																								) GROUP BY feature_id, value			
 													) KEGG ON KEGG.feature_id = F.feature_id
-						LEFT JOIN (SELECT * FROM analysisfeatureprop AFP
+						LEFT JOIN (SELECT AF.feature_id, AFP.value FROM analysisfeatureprop AFP
 													INNER JOIN analysisfeature AF ON AF.analysisfeature_id = AFP.analysisfeature_id
 													WHERE type_id = (SELECT cvterm_id FROM cvterm
 																								WHERE name = 'analysis_interpro_output_keywords' 
 																								AND cv_id = (SELECT cv_id FROM cv WHERE name = 'tripal')
-																								)
+																								) GROUP BY feature_id, value
 													) INTERPRO ON INTERPRO.feature_id = F.feature_id 
 						LEFT JOIN (SELECT * FROM analysisfeature AF 
 													INNER JOIN analysis A ON A.analysis_id = AF.analysis_id 
@@ -82,6 +83,12 @@ function tripal_search_feature_install(){
 																								AND cv_id = (SELECT cv_id FROM cv WHERE name = 'tripal')
 																								)
 													AND value = 'tripal_analysis_unigene') UNIGENE ON F.feature_id = UNIGENE.feature_id
+						WHERE F.type_id != (SELECT cvterm_id FROM cvterm WHERE name = 'EST_match')
+						AND F.feature_id NOT IN (SELECT feature_id from feature 
+																					 WHERE type_id = (select cvterm_id from cvterm where name = 'EST') 
+																					 AND feature_id NOT IN (SELECT F.feature_id FROM feature F 
+																					 														  INNER JOIN featureprop FP ON F.feature_id = FP.feature_id 
+																					 														  AND FP.type_id = (select cvterm_id from cvterm where name = 'singlet_in_analysis')))
 						) T";
    
       // Create the MView
@@ -89,7 +96,7 @@ function tripal_search_feature_install(){
       // view name
       $view_name,
       // tripal module name
-      ' tripal_search_feature',
+      ' tripal_search_unigene',
       // table name
       $view_name,
       // table schema definition
@@ -114,8 +121,8 @@ function tripal_search_feature_install(){
 /*******************************************************************************
  * Implementation of hook_uninstall()
  */
-function tripal_search_feature_uninstall(){
-	$view_name = 'feature_for_search';
+function tripal_search_unigene_uninstall(){
+	$view_name = 'unigene_for_search';
 	// Drop the MView table if it exists
 	$mview_id = tripal_mviews_get_mview_id($view_name);
 	if($mview_id){
@@ -123,7 +130,7 @@ function tripal_search_feature_uninstall(){
 	}
 	 
 	// Drop the sequence
-	$sql = "DROP SEQUENCE IF EXISTS feature_for_search_id";
+	$sql = "DROP SEQUENCE IF EXISTS unigene_for_search_id";
 	chado_query($sql);
 }
 
@@ -131,12 +138,12 @@ function tripal_search_feature_uninstall(){
  * Implementation of hook_requirements(). Make sure 'Tripal Core' is enabled
  * before installation
  */
-function tripal_search_feature_requirements($phase) {
+function tripal_search_unigene_requirements($phase) {
    $requirements = array();
    if ($phase == 'install') {
       if (!function_exists('tripal_create_moddir')) {
-         $requirements ['tripal_search_feature'] = array(
-            'title' => "tripal_search_feature",
+         $requirements ['tripal_search_unigene'] = array(
+            'title' => "tripal_search_unigene",
             'value' => "error. Some required modules are just being installed. Please try again.",
             'severity' => REQUIREMENT_ERROR,
          );

@@ -1,14 +1,308 @@
-$view = new view;
-$view->name = 'est_search';
-$view->description = 'EST Search';
-$view->tag = '';
-$view->view_php = '';
-$view->base_table = 'feature_for_search';
-$view->is_cacheable = FALSE;
-$view->api_version = 2;
-$view->disabled = FALSE; /* Edit this to true to make a default view disabled initially */
-$handler = $view->new_display('default', 'Defaults', 'default');
-$handler->override_option('fields', array(
+<?php
+
+/*************************************************************************
+ * tripal_search_unigene_views_data()
+ */
+
+function tripal_search_unigene_views_data()  {
+	global $db_url;
+	$data = array();
+	
+	// if the chado database is not local to the drupal database
+	// then we need to set the database name.  This should always
+	// be 'chado'.
+	if(is_array($db_url) and array_key_exists('chado', $db_url)) {
+		$database = 'chado';
+	}
+	
+ 	// Basic table definition
+	$data['unigene_for_search']['table']['group'] = 'Tripal Search feature';
+	$data['unigene_for_search']['table']['base'] = array(
+		'field' => 'unigene_for_search_id',
+		'title' => t('Chado Feature with searchable annotations'),
+		'help'  => t('A materialized view for feature is generated to enable the search for different annotations'),
+	);
+ 	if ($database) {
+ 		$data['unigene_for_search']['table']['base']['database'] = $database;
+	}
+	
+	// Table Field Definitions----------------------
+	// Field: feature_id (integer)
+	$data['unigene_for_search']['unigene_for_search_id'] = array(
+		'title' => t('unigene_for_search ID'),
+		'help' => t('The primary key of unigene_for_search'),
+		'field' => array(
+			'handler' => 'views_handler_field_numeric',
+			'click sortable' => TRUE,
+		),
+		'sort' => array(
+			'handler' => 'views_handler_sort',
+		),
+		'filter' => array(
+			'handler' => 'views_handler_filter_numeric',
+		),
+	);
+			
+	// Field: feature_id (integer)
+	$data['unigene_for_search']['feature_id'] = array(
+		'title' => t('feature ID'),
+		'help' => t('The primary key of a feature'),
+		'field' => array(
+			'handler' => 'views_handler_field_numeric',
+			'click sortable' => TRUE,
+		),
+		'sort' => array(
+			'handler' => 'views_handler_sort',
+		),
+		'filter' => array(
+			'handler' => 'views_handler_filter_numeric',
+		),
+	);
+	
+	// Field: name (character varying(1024))
+	$data['unigene_for_search']['feature_type'] = array(
+		'title' => t('feature_type'),
+		'help' => t('Type of the feature'),
+		'field' => array(
+			'handler' => 'views_handler_field',
+			'click sortable' => TRUE,
+		),
+		'sort' => array(
+			'handler' => 'views_handler_sort',
+		),
+		'filter' => array(
+			'handler' => 'views_handler_filter_feature_type_id',
+		),
+		'argument' => array(
+			'handler' => 'views_handler_argument_string',
+		),
+	);
+	
+	// Field: name (character varying(255),)
+	$data['unigene_for_search']['feature_name'] = array(
+		'title' => t('feature_name'),
+		'help' => t('The optional human-readable common name for a feature, for display purposes.'),
+		'field' => array(
+			'handler' => 'views_handler_field',
+			'click sortable' => TRUE,
+		),
+		'sort' => array(
+			'handler' => 'views_handler_sort',
+		),
+		'filter' => array(
+			'handler' => 'views_handler_filter_string',
+		),
+		'argument' => array(
+			'handler' => 'views_handler_argument_string',
+		),
+	);
+	
+		// Field: uniquename (text)
+	$data['unigene_for_search']['feature_uniquename'] = array(
+		'title' => t('feature_uniquename'),
+		'help' => t('The unique name for a feature; may not be necessarily be particularly human-readable, although this is preferred. This name must be unique for this type of feature within this organism.'),
+		'field' => array(
+			'handler' => 'views_handler_field',
+			'click sortable' => TRUE,
+		),
+		'sort' => array(
+			'handler' => 'views_handler_sort',
+		),
+		'filter' => array(
+			'handler' => 'views_handler_filter_string',
+		),
+		'argument' => array(
+			'handler' => 'views_handler_argument_string',
+		),
+	);
+	
+	// Field: is_obsolete (boolean)
+	$data['unigene_for_search']['feature_is_obsolete'] = array(
+		'title' => t('feature_is_obsolete'),
+		'help' => t('Boolean indicating whether this feature has been obsoleted. Some chado instances may choose to simply remove the feature altogether, others may choose to keep an obsolete row in the table.'),
+		'field' => array(
+			'handler' => 'views_handler_field',
+			'click sortable' => TRUE,
+		),
+		'sort' => array(
+			'handler' => 'views_handler_sort',
+		),
+		'filter' => array(
+			'handler' => 'views_handler_filter_boolean_operator_string',
+		),
+	);
+	
+	// Field: common name (varchar 255)
+  $data['unigene_for_search']['organism_common_name'] = array(
+    'title' => 'organism_common_name',
+    'help' => 'The common name of the organism.',
+    'field' => array(
+       'handler' => 'views_handler_field',
+       'click sortable' => TRUE,
+     ),
+     'sort' => array(
+       'handler' => 'views_handler_sort',
+     ),
+     'filter' => array(
+       'handler' => 'views_handler_filter_organism_common_name',
+     ),
+     'argument' => array(
+       'handler' => 'views_handler_argument_string',
+     ),
+  );
+  
+  	// Field: seqlen (integer)
+	$data['unigene_for_search']['feature_seqlen'] = array(
+		'title' => t('feature_seqlen'),
+		'help' => t('The length of the residue feature. See column:residues. This column is partially redundant with the residues column, and also with featureloc. This column is required because the location may be unknown and the residue sequence may not be manifested, yet it may be desirable to store and query the length of the feature. The seqlen should always be manifested where the length of the sequence is known.'),
+		'field' => array(
+			'handler' => 'views_handler_field_numeric',
+			'click sortable' => TRUE,
+		),
+		'sort' => array(
+			'handler' => 'views_handler_sort',
+		),
+		'filter' => array(
+			'handler' => 'views_handler_filter_numeric',
+		),
+	);
+	
+		// Field: name (character varying(1024))
+	$data['unigene_for_search']['go_term'] = array(
+		'title' => t('go_term'),
+		'help' => t('GO Terms associated with a feature'),
+		'field' => array(
+			'handler' => 'views_handler_field',
+			'click sortable' => TRUE,
+		),
+		'sort' => array(
+			'handler' => 'views_handler_sort',
+		),
+		'filter' => array(
+			'handler' => 'views_handler_filter_string',
+		),
+		'argument' => array(
+			'handler' => 'views_handler_argument_string',
+		),
+	);
+		
+	// Field: name (character varying(255),)
+	$data['unigene_for_search']['unigene'] = array(
+		'title' => t('unigene'),
+		'help' => t('Unigene analysis name.'),
+		'field' => array(
+			'handler' => 'views_handler_field',
+			'click sortable' => TRUE,
+		),
+		'sort' => array(
+			'handler' => 'views_handler_sort',
+		),
+		'filter' => array(
+			'handler' => 'views_handler_filter_analysis_name',
+		),
+		'argument' => array(
+			'handler' => 'views_handler_argument_string',
+		),
+	);
+	
+		// Field: value (text,)
+	$data['unigene_for_search']['blast_value'] = array(
+		'title' => t('value'),
+		'help' => t(''),
+		'field' => array(
+			'handler' => 'views_handler_field',
+			'click sortable' => TRUE,
+		),
+		'sort' => array(
+			'handler' => 'views_handler_sort',
+		),
+		'filter' => array(
+			'handler' => 'views_handler_filter_string',
+		),
+		'argument' => array(
+			'handler' => 'views_handler_argument_string',
+		),
+	);
+	
+		// Field: value (text,)
+	$data['unigene_for_search']['kegg_value'] = array(
+		'title' => t('value'),
+		'help' => t(''),
+		'field' => array(
+			'handler' => 'views_handler_field',
+			'click sortable' => TRUE,
+		),
+		'sort' => array(
+			'handler' => 'views_handler_sort',
+		),
+		'filter' => array(
+			'handler' => 'views_handler_filter_string',
+		),
+		'argument' => array(
+			'handler' => 'views_handler_argument_string',
+		),
+	);
+	
+		// Field: value (text,)
+	$data['unigene_for_search']['interpro_value'] = array(
+		'title' => t('value'),
+		'help' => t(''),
+		'field' => array(
+			'handler' => 'views_handler_field',
+			'click sortable' => TRUE,
+		),
+		'sort' => array(
+			'handler' => 'views_handler_sort',
+		),
+		'filter' => array(
+			'handler' => 'views_handler_filter_string',
+		),
+		'argument' => array(
+			'handler' => 'views_handler_argument_string',
+		),
+	);
+
+	return $data;
+}
+
+/*************************************************************************
+ * tripal_search_unigene_views_handlers
+ */
+function tripal_search_unigene_views_handlers() {
+ return array(
+   'info' => array(
+     'path' => drupal_get_path('module', 'tripal_search_unigene'),
+   ),
+   'handlers' => array(
+   	'views_handler_filter_organism_common_name' => array(
+   		'parent' => 'views_handler_filter_string'
+   	),
+   	'views_handler_filter_analysis_name' => array(
+   		'parent' => 'views_handler_filter_string'
+   	),
+   	'views_handler_filter_feature_type_id' => array(
+   		'parent' => 'views_handler_filter_numeric'
+   	),
+   ),
+ );
+}
+
+/*************************************************************************
+ * tripal_search_unigene_views_default_views
+ */
+function tripal_search_unigene_views_default_views () {
+	$views = array();
+	$view = new view;
+	$view->name = 'unigene_search';
+	$view->description = 'Unigene Search';
+	$view->tag = '';
+	$view->view_php = '';
+	$view->base_table = 'unigene_for_search';
+	$view->is_cacheable = FALSE;
+	$view->api_version = 2;
+	$view->disabled = FALSE; /* Edit this to true to make a default view disabled initially */
+	$handler = $view->new_display('default', 'Defaults', 'default');
+	$handler->override_option('fields', array(
   'counter' => array(
     'label' => '#',
     'alter' => array(
@@ -28,7 +322,7 @@ $handler->override_option('fields', array(
       'ellipsis' => 1,
       'html' => 0,
       'strip_tags' => 0,
-    ),
+	),
     'empty' => '',
     'hide_empty' => 0,
     'empty_zero' => 0,
@@ -38,7 +332,7 @@ $handler->override_option('fields', array(
     'table' => 'views',
     'field' => 'counter',
     'relationship' => 'none',
-  ),
+	),
   'feature_id' => array(
     'label' => 'feature ID',
     'alter' => array(
@@ -58,7 +352,7 @@ $handler->override_option('fields', array(
       'ellipsis' => 1,
       'html' => 0,
       'strip_tags' => 0,
-    ),
+	),
     'empty' => '',
     'hide_empty' => 0,
     'empty_zero' => 0,
@@ -70,10 +364,10 @@ $handler->override_option('fields', array(
     'suffix' => '',
     'exclude' => 1,
     'id' => 'feature_id',
-    'table' => 'feature_for_search',
+    'table' => 'unigene_for_search',
     'field' => 'feature_id',
     'relationship' => 'none',
-  ),
+	),
   'feature_name' => array(
     'label' => 'Sequence',
     'alter' => array(
@@ -93,16 +387,16 @@ $handler->override_option('fields', array(
       'ellipsis' => 1,
       'html' => 0,
       'strip_tags' => 0,
-    ),
+	),
     'empty' => '',
     'hide_empty' => 0,
     'empty_zero' => 0,
     'exclude' => 0,
     'id' => 'feature_name',
-    'table' => 'feature_for_search',
+    'table' => 'unigene_for_search',
     'field' => 'feature_name',
     'relationship' => 'none',
-  ),
+	),
   'organism_common_name' => array(
     'label' => 'Organism',
     'alter' => array(
@@ -122,16 +416,16 @@ $handler->override_option('fields', array(
       'ellipsis' => 1,
       'html' => 0,
       'strip_tags' => 0,
-    ),
+	),
     'empty' => '',
     'hide_empty' => 0,
     'empty_zero' => 0,
     'exclude' => 0,
     'id' => 'organism_common_name',
-    'table' => 'feature_for_search',
+    'table' => 'unigene_for_search',
     'field' => 'organism_common_name',
     'relationship' => 'none',
-  ),
+	),
   'feature_seqlen' => array(
     'label' => 'Length',
     'alter' => array(
@@ -151,7 +445,7 @@ $handler->override_option('fields', array(
       'ellipsis' => 1,
       'html' => 0,
       'strip_tags' => 0,
-    ),
+	),
     'empty' => '',
     'hide_empty' => 0,
     'empty_zero' => 0,
@@ -163,10 +457,10 @@ $handler->override_option('fields', array(
     'suffix' => '',
     'exclude' => 0,
     'id' => 'feature_seqlen',
-    'table' => 'feature_for_search',
+    'table' => 'unigene_for_search',
     'field' => 'feature_seqlen',
     'relationship' => 'none',
-  ),
+	),
   'feature_type' => array(
     'label' => 'Type',
     'alter' => array(
@@ -186,16 +480,16 @@ $handler->override_option('fields', array(
       'ellipsis' => 1,
       'html' => 0,
       'strip_tags' => 0,
-    ),
+	),
     'empty' => '',
     'hide_empty' => 0,
     'empty_zero' => 0,
     'exclude' => 0,
     'id' => 'feature_type',
-    'table' => 'feature_for_search',
+    'table' => 'unigene_for_search',
     'field' => 'feature_type',
     'relationship' => 'none',
-  ),
+	),
   'go_term' => array(
     'label' => 'GO Term',
     'alter' => array(
@@ -215,16 +509,16 @@ $handler->override_option('fields', array(
       'ellipsis' => 1,
       'html' => 0,
       'strip_tags' => 0,
-    ),
+	),
     'empty' => '',
     'hide_empty' => 0,
     'empty_zero' => 0,
     'exclude' => 0,
     'id' => 'go_term',
-    'table' => 'feature_for_search',
+    'table' => 'unigene_for_search',
     'field' => 'go_term',
     'relationship' => 'none',
-  ),
+	),
   'blast_value' => array(
     'label' => 'Blast',
     'alter' => array(
@@ -244,16 +538,16 @@ $handler->override_option('fields', array(
       'ellipsis' => 1,
       'html' => 0,
       'strip_tags' => 0,
-    ),
+	),
     'empty' => '',
     'hide_empty' => 0,
     'empty_zero' => 0,
     'exclude' => 0,
     'id' => 'blast_value',
-    'table' => 'feature_for_search',
+    'table' => 'unigene_for_search',
     'field' => 'blast_value',
     'relationship' => 'none',
-  ),
+	),
   'kegg_value' => array(
     'label' => 'KEGG',
     'alter' => array(
@@ -273,16 +567,16 @@ $handler->override_option('fields', array(
       'ellipsis' => 1,
       'html' => 0,
       'strip_tags' => 0,
-    ),
+	),
     'empty' => '',
     'hide_empty' => 0,
     'empty_zero' => 0,
     'exclude' => 0,
     'id' => 'kegg_value',
-    'table' => 'feature_for_search',
+    'table' => 'unigene_for_search',
     'field' => 'kegg_value',
     'relationship' => 'none',
-  ),
+	),
   'interpro_value' => array(
     'label' => 'Interpro',
     'alter' => array(
@@ -302,18 +596,18 @@ $handler->override_option('fields', array(
       'ellipsis' => 1,
       'html' => 0,
       'strip_tags' => 0,
-    ),
+	),
     'empty' => '',
     'hide_empty' => 0,
     'empty_zero' => 0,
     'exclude' => 0,
     'id' => 'interpro_value',
-    'table' => 'feature_for_search',
+    'table' => 'unigene_for_search',
     'field' => 'interpro_value',
     'relationship' => 'none',
-  ),
-));
-$handler->override_option('arguments', array(
+	),
+	));
+	$handler->override_option('arguments', array(
   'null' => array(
     'default_action' => 'default',
     'style_plugin' => 'default_summary',
@@ -336,7 +630,7 @@ $handler->override_option('arguments', array(
       '3' => 0,
       '5' => 0,
       '4' => 0,
-    ),
+	),
     'relationship' => 'none',
     'default_options_div_prefix' => '',
     'default_argument_fixed' => '',
@@ -356,7 +650,7 @@ $handler->override_option('arguments', array(
       'calendar_event' => 0,
       'page' => 0,
       'story' => 0,
-    ),
+	),
     'validate_argument_node_access' => 0,
     'validate_argument_nid_type' => 'nid',
     'validate_argument_vocabulary' => array(
@@ -373,16 +667,16 @@ $handler->override_option('arguments', array(
       '6' => 0,
       '7' => 0,
       '8' => 0,
-    ),
+	),
     'validate_argument_type' => 'tid',
     'validate_argument_transform' => 0,
     'validate_user_restrict_roles' => 0,
     'validate_argument_php' => 'if (count($view->exposed_input)) {
 return TRUE;
 }',
-  ),
-));
-$handler->override_option('filters', array(
+	),
+	));
+	$handler->override_option('filters', array(
   'feature_name' => array(
     'operator' => 'contains',
     'value' => '',
@@ -395,20 +689,20 @@ $handler->override_option('filters', array(
       'label' => 'sequence name',
       'optional' => 1,
       'remember' => 0,
-    ),
+	),
     'case' => 0,
     'id' => 'feature_name',
-    'table' => 'feature_for_search',
+    'table' => 'unigene_for_search',
     'field' => 'feature_name',
     'relationship' => 'none',
-  ),
+	),
   'feature_seqlen' => array(
     'operator' => '>=',
     'value' => array(
       'value' => '',
       'min' => '',
       'max' => '',
-    ),
+	),
     'group' => '0',
     'exposed' => TRUE,
     'expose' => array(
@@ -418,12 +712,12 @@ $handler->override_option('filters', array(
       'label' => 'sequence length (bp)',
       'optional' => 1,
       'remember' => 0,
-    ),
+	),
     'id' => 'feature_seqlen',
-    'table' => 'feature_for_search',
+    'table' => 'unigene_for_search',
     'field' => 'feature_seqlen',
     'relationship' => 'none',
-  ),
+	),
   'feature_type' => array(
     'operator' => '=',
     'value' => '260',
@@ -436,13 +730,13 @@ $handler->override_option('filters', array(
       'label' => 'type of sequence',
       'optional' => 1,
       'remember' => 0,
-    ),
+	),
     'case' => 0,
     'id' => 'feature_type',
-    'table' => 'feature_for_search',
+    'table' => 'unigene_for_search',
     'field' => 'feature_type',
     'relationship' => 'none',
-  ),
+	),
   'go_term' => array(
     'operator' => 'contains',
     'value' => '',
@@ -455,13 +749,13 @@ $handler->override_option('filters', array(
       'label' => 'GO term',
       'optional' => 1,
       'remember' => 0,
-    ),
+	),
     'case' => 0,
     'id' => 'go_term',
-    'table' => 'feature_for_search',
+    'table' => 'unigene_for_search',
     'field' => 'go_term',
     'relationship' => 'none',
-  ),
+	),
   'organism_common_name' => array(
     'operator' => '=',
     'value' => 'chickpea',
@@ -474,13 +768,13 @@ $handler->override_option('filters', array(
       'label' => 'organism',
       'optional' => 1,
       'remember' => 0,
-    ),
+	),
     'case' => 0,
     'id' => 'organism_common_name',
-    'table' => 'feature_for_search',
+    'table' => 'unigene_for_search',
     'field' => 'organism_common_name',
     'relationship' => 'none',
-  ),
+	),
   'unigene' => array(
     'operator' => '=',
     'value' => 'Cicer arietinum unigene v1',
@@ -493,13 +787,13 @@ $handler->override_option('filters', array(
       'label' => 'belongs to unigene',
       'optional' => 1,
       'remember' => 0,
-    ),
+	),
     'case' => 0,
     'id' => 'unigene',
-    'table' => 'feature_for_search',
+    'table' => 'unigene_for_search',
     'field' => 'unigene',
     'relationship' => 'none',
-  ),
+	),
   'interpro_value' => array(
     'operator' => 'contains',
     'value' => '',
@@ -512,13 +806,13 @@ $handler->override_option('filters', array(
       'label' => 'interpro description',
       'optional' => 1,
       'remember' => 0,
-    ),
+	),
     'case' => 0,
     'id' => 'interpro_value',
-    'table' => 'feature_for_search',
+    'table' => 'unigene_for_search',
     'field' => 'interpro_value',
     'relationship' => 'none',
-  ),
+	),
   'blast_value' => array(
     'operator' => 'contains',
     'value' => '',
@@ -531,13 +825,13 @@ $handler->override_option('filters', array(
       'label' => 'blast description',
       'optional' => 1,
       'remember' => 0,
-    ),
+	),
     'case' => 0,
     'id' => 'blast_value',
-    'table' => 'feature_for_search',
+    'table' => 'unigene_for_search',
     'field' => 'blast_value',
     'relationship' => 'none',
-  ),
+	),
   'kegg_value' => array(
     'operator' => 'contains',
     'value' => '',
@@ -550,32 +844,32 @@ $handler->override_option('filters', array(
       'label' => 'kegg description',
       'optional' => 1,
       'remember' => 0,
-    ),
+	),
     'case' => 0,
     'id' => 'kegg_value',
-    'table' => 'feature_for_search',
+    'table' => 'unigene_for_search',
     'field' => 'kegg_value',
     'relationship' => 'none',
-  ),
-));
-$handler->override_option('access', array(
+	),
+	));
+	$handler->override_option('access', array(
   'type' => 'none',
-));
-$handler->override_option('cache', array(
+	));
+	$handler->override_option('cache', array(
   'type' => 'none',
-));
-$handler->override_option('title', 'EST Unigene Search');
-$handler->override_option('css_class', 'tripal-search-feature');
-$handler->override_option('empty', '<?php 
+	));
+	$handler->override_option('title', 'Unigene Search');
+	$handler->override_option('css_class', 'tripal-search-feature');
+	$handler->override_option('empty', '<?php
 $view = views_get_current_view();
   if (count($view->exposed_input)) {
     drupal_set_message("Your search returns no results. Please adjust your search criteria and try again.");
 } 
 ?>');
-$handler->override_option('empty_format', '3');
-$handler->override_option('use_pager', '1');
-$handler->override_option('style_plugin', 'table');
-$handler->override_option('style_options', array(
+	$handler->override_option('empty_format', '3');
+	$handler->override_option('use_pager', '1');
+	$handler->override_option('style_plugin', 'table');
+	$handler->override_option('style_options', array(
   'grouping' => '',
   'override' => 1,
   'sticky' => 0,
@@ -591,64 +885,68 @@ $handler->override_option('style_options', array(
     'blast_value' => 'blast_value',
     'kegg_value' => 'kegg_value',
     'interpro_value' => 'interpro_value',
-  ),
+	),
   'info' => array(
     'feature_id' => array(
       'sortable' => 1,
       'separator' => '',
-    ),
+	),
     'feature_name' => array(
       'sortable' => 1,
       'separator' => '',
-    ),
+	),
     'feature_seqlen' => array(
       'sortable' => 1,
       'separator' => '',
-    ),
+	),
     'feature_type' => array(
       'sortable' => 1,
       'separator' => '',
-    ),
+	),
     'go_term' => array(
       'sortable' => 1,
       'separator' => '',
-    ),
+	),
     'organism_common_name' => array(
       'sortable' => 1,
       'separator' => '',
-    ),
+	),
     'unigene' => array(
       'sortable' => 1,
       'separator' => '',
-    ),
+	),
     'blast_value' => array(
       'sortable' => 1,
       'separator' => '',
-    ),
+	),
     'kegg_value' => array(
       'sortable' => 1,
       'separator' => '',
-    ),
+	),
     'interpro_value' => array(
       'sortable' => 1,
       'separator' => '',
-    ),
-  ),
+	),
+	),
   'default' => '-1',
-));
-$handler = $view->new_display('page', 'Page', 'page_1');
-$handler->override_option('path', 'est_search');
-$handler->override_option('menu', array(
+	));
+	$handler = $view->new_display('page', 'Page', 'page_1');
+	$handler->override_option('path', 'unigene_search');
+	$handler->override_option('menu', array(
   'type' => 'normal',
-  'title' => 'EST Unigene Search',
-  'description' => 'Advanced Search for EST and unigenes',
+  'title' => 'Unigene Search',
+  'description' => 'Advanced Search for unigenes',
   'weight' => '0',
   'name' => 'primary-links',
-));
-$handler->override_option('tab_options', array(
+	));
+	$handler->override_option('tab_options', array(
   'type' => 'none',
   'title' => '',
   'description' => '',
   'weight' => 0,
   'name' => 'navigation',
-));
+	));
+  $views[$view->name] = $view;
+  
+  return $views;
+}

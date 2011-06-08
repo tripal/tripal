@@ -6,16 +6,35 @@ class views_handler_filter_analysis_name extends views_handler_filter_string {
 
 		$results = chado_query($sql);
 		$analyses = array();
-
+		$block_ana = array();
+		$counter = 0;
 		while ($ana = db_fetch_object($results)) {
 			// check if the organisms is synced
 			if (db_result(db_query("SELECT * FROM {chado_analysis} WHERE analysis_id = $ana->analysis_id"))) {
-				$analyses[$ana->name] = t($ana->name);
+				// check user's permission
+				if (tripal_analysis_check_permission($ana->analysis_id)) {
+					$analyses[$ana->name] = t($ana->name);
+				} else {
+					$block_ana[$counter] = t($ana->name);
+					$counter ++;
+				}
 			}
 		}
+		
+		if ($block_ana) {
+			$where = "";
+			for ($i = 0; $i < count($block_ana); $i ++) {
+					$where .= "unigene_for_search.unigene <> '$block_ana[$i]'";
+					if ($i != count($block_ana) - 1) {
+						$where .= " AND ";
+					}
+			}
+			$this->query->add_where($this->options['group'], $where);
+		}
+		
 		$form['value'] = array(
 		'#type' => 'select',
-		'#title' => t('Organism'),
+		'#title' => t('Analysis'),
 		'#options' => $analyses,
 		'#default_value' => 0,
 		);

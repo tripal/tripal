@@ -3,7 +3,7 @@ class views_handler_filter_feature_type_id extends views_handler_filter_string {
 
 	function value_form(&$form, &$form_state) {
 
-		$sql = "SELECT distinct feature_type FROM {feature_for_search}";
+		$sql = "SELECT distinct feature_type FROM {unigene_for_search}";
 		$results = chado_query($sql);
 		$options = array ();
 		while($type = db_fetch_object($results)) {
