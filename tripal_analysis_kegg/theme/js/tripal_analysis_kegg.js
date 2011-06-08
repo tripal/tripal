@@ -5,7 +5,7 @@ if (Drupal.jsEnabled) {
 
        // Select default KEGG analysis when available
        var selectbox = $('#edit-tripal-analysis-kegg-select');
-       if(selectbox){ 
+       if(selectbox.length > 0){ 
           selectbox[0].selectedIndex = 1;
           selectbox.change();
        }

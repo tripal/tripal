@@ -6,7 +6,7 @@ if (Drupal.jsEnabled) {
    $(document).ready(function() {
        // Select default GO analysis when available
        var selectbox = $('#edit-tripal-analysis-go-select');
-       if(selectbox){ 
+       if(selectbox.length > 0){ 
           selectbox[0].selectedIndex = 1;
           tripal_analysis_go_org_charts(selectbox.val());
        }
