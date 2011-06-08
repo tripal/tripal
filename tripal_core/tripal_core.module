@@ -57,6 +57,11 @@ function tripal_core_init(){
       var baseurl = '$base_url'; 
       var themedir = '$theme_dir'; 
       var isClean = $clean_urls;",'inline');
+
+   // make sure the date time settings are the way Tripal will insert them
+   // otherwise PostgreSQL version that may have a different datestyle setting
+   // will fail when inserting or updating a date column in a table.
+   db_query("SET DATESTYLE TO '%s'",'MDY');
 }
 
 
