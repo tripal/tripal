@@ -36,6 +36,13 @@ function tripal_search_unigene_install(){
    
    $index = "feature_id, go_term, unigene, blast_value, kegg_value, interpro_value";
    $singlet_type_id = tripal_get_cvterm_id('singlet_in_analysis');
+   if ($singlet_type_id) {
+   	$singlet_condition = " AND F.feature_id NOT IN (SELECT feature_id from feature
+   						   WHERE type_id = (select cvterm_id from cvterm where name = 'EST')
+   						   AND feature_id NOT IN (SELECT F.feature_id FROM feature F
+   						   INNER JOIN featureprop FP ON F.feature_id = FP.feature_id
+   						   AND FP.type_id = (select cvterm_id from cvterm where name = 'singlet_in_analysis')))";
+   }
    $EST_type = db_result(chado_query("SELECT cvterm_id FROM {cvterm} WHERE name = 'EST' AND cv_id = (SELECT cv_id FROM {cv} WHERE name = 'sequence')")); //P.S. 'EST' is not a tripal term
    $sql = "SELECT nextval ('unigene_for_search_id') AS unigene_for_search_id, T.* FROM (
 						SELECT F.feature_id AS feature_id, 
@@ -83,7 +90,7 @@ function tripal_search_unigene_install(){
 																								AND cv_id = (SELECT cv_id FROM cv WHERE name = 'tripal')
 																								)
 													AND value = 'tripal_analysis_unigene') UNIGENE ON F.feature_id = UNIGENE.feature_id
-						WHERE F.type_id != (SELECT cvterm_id FROM cvterm WHERE name = 'EST_match')
+						WHERE F.type_id != (SELECT cvterm_id FROM cvterm WHERE name = 'EST_match') $singlet_condition
 						) T";
    
       // Create the MView
