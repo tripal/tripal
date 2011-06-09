@@ -1114,6 +1114,9 @@ function tripal_analysis_kegg_load_feature_terms($feature) {
       ),         
    );
    $afeatureprops = tripal_core_chado_select('analysisfeatureprop',array('*'),$select);
+   if(!$afeatureprops){
+      return;
+   }
 
    // iterate through all of the KEGG properties for this feature
    $results = array();
