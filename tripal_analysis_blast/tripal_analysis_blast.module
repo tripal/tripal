@@ -570,12 +570,12 @@ function chado_analysis_blast_form ($node){
       '#default_value' => $blastjob
 	);
 	
-//	$form['blast']['blastbesthit'] = array(
-//      '#type' => 'checkbox',
-//      '#title' => t('Submit a job to generate a "best hits" report.'),
-//      '#description' => t('Note: the checkbox above must also be selected.'),
-//      '#default_value' => $blastbesthit
-//	);
+	$form['blast']['blastbesthit'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Submit a job to generate a "best hits" report.'),
+      '#description' => t('Note: the checkbox above must also be selected.'),
+      '#default_value' => $blastbesthit
+	);
 	
 	return $form;
 }
@@ -635,9 +635,7 @@ function chado_analysis_blast_load($node){
       $analysis->tripal_analysis_blast->blastparameters = $prop_values[2];
    }
 
-return $additions;
-
-   // check if there exists a best hit report. if yes, reuturn the report url
+   /* check if there exists a best hit report. if yes, reuturn the report url
    $select = array(
       'analysisfeature_id' => array(
          'analysis_id' => $analysis_id,
@@ -650,6 +648,22 @@ return $additions;
       ),         
    );
    $blast_report = tripal_core_chado_select('analysisfeatureprop',array('analysisfeatureprop_id'),$select);
+   */
+   $sql = "SELECT AFP.analysisfeature_id
+	             FROM {analysisfeature} AF 
+	             INNER JOIN {analysisfeatureprop} AFP ON AF.analysisfeature_id = AFP.analysisfeature_id
+	             WHERE analysis_id = %d
+	             AND AFP.type_id = (
+	                SELECT cvterm_id 
+	                FROM {cvterm} 
+	                WHERE name = '%s' 
+	                AND cv_id = (
+	                   SELECT cv_id 
+	                   FROM {cv} 
+	                   WHERE name = 'tripal'
+	                )
+	             ) LIMIT 1 OFFSET 0";
+   $blast_report = db_result(chado_query($sql, $analysis_id, 'analysis_blast_besthit_query'));
 	if ($blast_report) {
 		$report_url = url("tripal_blast_report/".$analysis->analysis_id."/1/0/0/20");
 		$analysis->blast_report = $report_url;
