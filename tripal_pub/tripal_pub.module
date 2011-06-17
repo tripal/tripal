@@ -9,14 +9,421 @@
  * @see http://gmod.org/wiki/Chado_General_Module
  */
 
-/*************************************************************************
- * Implements hook_views_api()
+
+//-----------------------------------------------------------------------------
+//  SECTION: Main Section for Tripal Publication Module
+//-----------------------------------------------------------------------------
+
+/**
+ * Implements hook_pub_views_api()
  * Purpose: Essentially this hook tells drupal that there is views support for
- *  for this module which then includes tripal_pub.views.inc where all the
- *  views integration code is
+ *  for this module which then includes tripal_project.views.inc where all the
+ *  views integration code is located.
  */ 
 function tripal_pub_views_api() {
+
    return array(
       'api' => 2.0,
    );
 }
+
+
+/**
+* Implementation of hook_node_info()
+*
+* This tripal_pub_node_info, is a simple node that describes the functionallity of the module. It specifies
+* that the title (Project Name) and body (Description) are set to true so the information can be
+* entered
+*
+*/
+function tripal_pub_node_info() {
+  return array(
+    'tripal_pub' => array(
+      'name' => t('Publication'),
+      'module' => 'tripal_pub',
+      'description' => t('A module for interfacing the GMOD chado database with Drupal, providing viewing of publications'),
+    	'has_title' => TRUE,
+    	'title_label' =>t('Title'),
+    	'had_body' => FALSE,
+    )
+  );
+}
+
+
+/**
+* Implementation of tripal_pub_form().
+*
+*  This form takes the following information:A Publication Title,Volume title,Volume,Series Name,
+*  Issue,Publication Year,Pages where the Article is located, Miniref,Type-Id, if the article is Obsolete,
+*  Publishing company,Pubplication Place and a Uniquename for the the instance. It then puts the 
+*  infromation into the Chado_project database table based on its 'pub_id'.
+*
+*  @parm &$node
+*    The node that is created when the database is initialized
+*
+*  @parm $form_state
+*    The state of the form, that has the user entered information that is neccessary for, setting
+*    up the database of the project
+*
+*  @return $form
+*    The information that was enterd allong with   
+*
+*/
+function tripal_pub_form(&$node, $form_state) {
+  
+	$type = node_get_types('type', $node);
+	
+	//define form elements for the node's title and body.
+	$form['title'] = array(
+		'#type' => 'textfield',
+		'#title' => t('Article Title'),
+		'#description' => t('Title Heading'),
+		'#required' => TRUE,
+		'#default_value' => $node->title
+	);
+	
+	$form['volumetitle'] = array(
+	  '#type' => 'textfield',
+		'#title' => t('Volume Title'),
+		'#description' => t('Title of part if one of a series.'),
+		'#required' => TRUE,
+		'#default_value' => isset($node->pub_id->volumetitle) ? $node->pub_id->volumetitle : ''
+	);
+	
+	$form['volume'] = array(
+		'#type' => 'textfield',
+		'#title' => t('Volume'),
+		'#required' => FALSE,
+		'#default_value' => isset($node->pub_id->volume) ? $node->pub_id->volume : ''
+	);
+	
+	$form['series_name'] = array(
+		'#type' => 'textfield',
+		'#title' => t('Series Name'),
+		'#required' => TRUE,
+		'#default_value' => isset($node->pub_id->series_name) ? $node->pub_id->series_name : ''
+	);
+	
+	$form['issue'] = array(
+		'#type' => 'textfield',
+		'#title' => t('Issue'),
+		'#required' => FALSE,
+		'#default_value' => isset($node->pub_id->issue) ? $node->pub_id->issue : ''
+	);
+	
+	$form['pyear'] = array(
+		'#type' => 'textfield',
+		'#title' => t('Publication Year'),
+		'#required' => FALSE,
+		'#default_value' => isset($node->pub_id->pyear) ? $node->pub_id->pyear : ''
+	);
+	
+	$form['pages'] = array(
+		'#type' => 'textfield',
+		'#title' => t('Pages'),
+		'#description' => t('Page number range[s], e.g. 457--459, viii + 664pp, lv--lvii.'),
+		'#required' => TRUE,
+		'#default_value' => isset($node->pub_id->pages) ? $node->pub_id->pages : ''
+	);
+	
+	$form['miniref'] = array(
+		'#type' => 'textfield',
+		'#title' => t('Mini-Ref'),
+		'#required' => FALSE,
+		'#default_value' => isset($node->pub_id->miniref) ? $node->pub_id->miniref : ''
+	);
+	
+	$form['uniquename'] = array(
+		'#type' => 'textfield',
+		'#title' => t('Unique Name'),
+		'#required' => TRUE,
+		'#default_value' => isset($node->pub_id->uniquename) ? $node->pub_id->uniquename : ''
+	);
+	
+	$values= array(
+	  'cv_id'=>array(
+	  'name'=>'publication'),
+	);
+	
+	//population select list with 'cvterm' names
+	$result = tripal_core_chado_select ('cvterm', array('cvterm_id', 'name'), $values);
+	
+	foreach ($result as $value) {
+	  $newArray[$value->cvterm_id]=$value->name;     //options for the select list
+	}
+	
+	$form['type_id'] = array(
+		'#type' => 'select',
+		'#title' => t('Publication Type'),
+		'#options' => $newArray,
+		'#description' => t('Type of publication (book, journal, poem, graffiti, etc). Uses pub cv.'),
+		'#required' => TRUE,
+		'#default_value'=>isset($node->pub_id->type_id) ? $node->pub_id->type_id : ''
+	);
+	
+	$form['is_obsolete'] = array(
+		'#type' => 'checkbox',
+		'#title' => t('Is Obsolete?(Check for Yes)'),
+		'#required' => TRUE,
+		'#default_value'=>isset($node->pub_id->is_obsolete) ? $node->pub_id->is_obsolete : FALSE
+	);
+	
+	$form['publisher'] = array(
+		'#type' => 'textfield',
+		'#title' => t('Publisher Name'),
+		'#required' => FALSE,
+		'#default_value' => isset($node->pub_id->publisher) ? $node->pub_id->publisher : ''
+	);
+	
+	$form['pubplace'] = array(
+		'#type' => 'textfield',
+		'#title' => t('Place of Publication'),
+		'#required' => FALSE,
+		'#default_value' => isset($node->pub_id->pubplace) ? $node->pub_id->pubplace  : ''
+	);
+	
+	return $form;
+}
+
+
+/**
+ *  Implements tripal_pub_help()
+ *
+ *  This function simply states, in HTML tags, the creator of the the module and the contact	
+ *  for the programmer
+ *
+ *  @parm $path
+ *    The absolute path of the module and help information
+ *
+ *  @parm $arg
+ *    The argument
+ */
+function tripal_pub_help($path, $arg) {
+  switch ($path) {
+  
+    case 'admin/help#tripal_pub':
+      
+      return '<p>'. t('Module Created By:Chad Krilow (e-mail:cnk046@mail.usask.ca)') .'</p>';
+			
+			break;
+  
+  }
+}
+
+
+/**
+ * Implements hook_pub_perm()
+ *
+ *  This function sets the permission for the user to access the information in the database.
+ *  This includes creating, inserting, deleting and updating of information in the database
+ *
+ */
+function tripal_pub_perm() {
+
+  return array('create tripal_pub', 'edit own tripal_pub');
+  
+}
+
+
+/**
+ * Implements tripal_project_access()
+ *
+ *  This function sets the access permission for database operations.
+ *  
+ *  @parm $op
+ *    The operation that is to be performed
+ *
+ *  @parm $node
+ *    The specific node which is to have the operation performed  
+ *
+ *  @parm $account
+ *    The account of the user that is performing the operations  
+ *
+ *  @return
+ *    True if a operation was performed, else False
+ *
+ */
+function tripal_pub_access($op, $node, $account) {
+
+  if ($op == 'create') {
+    // Only users with permission to do so may create this node type.
+    return user_access('create tripal_pub', $account);
+  }
+
+  // Users who create a node may edit or delete it later, assuming they have the
+  // necessary permissions.
+  if ($op == 'update' || $op == 'delete') {
+    if (user_access('edit own tripal_pub',$account) && ($account->uid == $node->uid)) {
+      return TRUE;
+    }
+  }
+}
+
+
+/**
+* Implementation of tripal_pub_insert()
+*
+*  This function takes the user entered information and inserts it into the database
+*
+*  @parm $node
+*    Then node which has the information stored within the node-ID
+*
+*/
+function tripal_pub_insert($node) {
+
+  $values =  array(
+    'title' => $node->title,
+    'volumetitle' => $node->volumetitle,
+    'volume'=>$node->volume,
+    'series_name'=>$node->series_name,
+    'issue'=>$node->issue,
+    'pyear'=>$node->pyear,
+    'pages'=>$node->pages,
+    'miniref'=>$node->miniref,
+    'type_id'=>$node->type_id,
+    'is_obsolete'=>$node->is_obsolete,
+    'publisher'=>$node->publisher,
+    'pubplace'=>$node->pubplace,
+    'uniquename' => $node->uniquename
+  );
+  
+  //inserts info into chado table.
+  $result = tripal_core_chado_insert('pub',$values);
+
+	//inserts the row of vid,nid,project_id into the chado_project table
+  db_query("INSERT INTO {chado_pub} (nid, vid, pub_id) VALUES (%d, %d, %d)", 
+    $node->nid, 
+    $node->vid,
+    $result['pub_id']
+  );
+}
+
+
+/**
+* Implementation of tripal_pub_delete().
+*
+* This function takes a node that is linked to a publication-Id, and if 'Delete' is selected 
+* in the 'Edit' section of the page, the Selected publication is deleted from the database.
+*
+* @param $node
+*   The node that is to be deleted
+*/
+function tripal_pub_delete($node) {
+  
+  // Matching all revision, by using the node's pub_id.
+  $values =  array(
+	  'pub_id' => $node->pub_id->pub_id,
+  );
+  
+  //deleting row in chado table
+  tripal_core_chado_delete('pub',$values);
+  
+  //deleteing in drupal chado_project table
+  db_query('DELETE FROM {chado_pub} WHERE nid = %d', $node->nid);
+	
+}
+
+
+/**
+*Implementation of tripal_pub_update().
+*
+*  This function updates the node that is to be modified. All the modified aspects of the 
+*  database are updated as they are edited in the 'Edit' form.
+*
+* @param $node
+*	  the node that is to be modified, all of the modified sections of the chado table are updated
+*
+*/
+function tripal_pub_update($node){
+	
+  $values =  array(
+    'title' => $node->title,
+    'volumetitle' => $node->volumetitle,
+    'volume'=>$node->volume,
+    'series_name'=>$node->series_name,
+    'issue'=>$node->issue,
+    'pyear'=>$node->pyear,
+    'pages'=>$node->pages,
+    'miniref'=>$node->miniref,
+    'uniquename'=>$node->uniquename,
+    'type_id'=>$node->type_id,
+    'is_obsolete'=>$node->is_obsolete,
+    'publisher'=>$node->publisher,
+    'pubplace'=>$node->pubplace,
+  );
+   
+  $result = db_fetch_object(db_query('SELECT pub_id FROM {chado_pub} WHERE nid=%d AND vid=%d ',$node->nid, $node->vid));
+   
+  //extract pub_id from the chad table for update function
+  $match = array( 'pub_id' => $result->pub_id ) ;
+   
+  //$table to be updated, $match is the 'pub_id', $value are the values that are to be updated
+  $update_result = tripal_core_chado_update('pub',$match,$values);
+  
+}
+
+
+/**
+* Implementation of tripal_pub_load().
+*
+* This function is used to load the information, based on the 'pub_id', into the database
+*
+*  @param $node
+*    The node that contains the information which  is to be loaded into the database, contains the 
+*    user entered information
+*
+*  @return $node
+*    The node containing the information which is to loaded in the database
+*/
+function tripal_pub_load($node) {
+
+	$result = db_fetch_object(db_query('SELECT * FROM {chado_pub} WHERE nid=%d AND vid=%d ',$node->nid, $node->vid));
+	
+	$values = array(
+	  'pub_id' => $result->pub_id,
+	);
+	
+	if(empty($result->pub_id)){
+		drupal_set_message("Unable to find publication", 'error');
+	}else{
+  	$node->pub_id = tripal_core_generate_chado_var('pub',$values);
+  }
+
+  return $node;
+}
+
+
+//-----------------------------------------------------------------------------
+//  END OF SOFTWARE
+//-----------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
