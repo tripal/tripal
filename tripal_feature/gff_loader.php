@@ -290,12 +290,13 @@ function tripal_core_load_gff3($gff_file, $organism_id,$analysis_id,$add_only =0
       $phase = $cols[7];
       $attrs = explode(";",$cols[8]);  // split by a semi-colon
 
-      // ready the start and stop for chado
-      $fmin = $start;
-      $fmax = $end;
+      // ready the start and stop for chado.  Chado expects these positions
+      // to be zero-based, so we substract 1 from each of them
+      $fmin = ($start - 1);
+      $fmax = ($end - 1);
       if($end < $start){
-         $fmin = $end;
-         $fmax = $start;
+         $fmin = ($end - 1);
+         $fmax = ($start - 1);
       }
       // format the strand for chado
       if(strcmp($strand,'.')==0){
