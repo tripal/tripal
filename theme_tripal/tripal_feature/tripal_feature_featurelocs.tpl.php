@@ -43,9 +43,9 @@ if (!$sfeaturelocs) {
          if($i % 2 == 0 ){
             $class = 'tripal_feature-table-odd-row tripal-table-even-row';
          } 
-         $location = $featureloc->srcfeature_id->name .":". ($featureloc->fmin + 1) . ".." . ($featureloc->fmax + 1);
+         $location = $featureloc->srcfeature_id->name .":". ($featureloc->fmin + 1) . ".." . $featureloc->fmax;
          if($location->srcfeature_id->nid){
-           $location = "<a href=\"" . url("node/".$location->srcfeature_id->nid) . "\">".$featureloc->srcfeature_id->name .":".($featureloc->fmin + 1) . ".." . ($featureloc->fmax + 1) ."</a> ";
+           $location = "<a href=\"" . url("node/".$location->srcfeature_id->nid) . "\">".$featureloc->srcfeature_id->name .":".($featureloc->fmin + 1) . ".." . $featureloc->fmax ."</a> ";
          }
          ?>
          <tr class="<?php print $class ?>">
@@ -95,9 +95,9 @@ if (!$sfeaturelocs) {
          if($i % 2 == 0 ){
             $class = 'tripal_feature-table-odd-row tripal-table-even-row';
          } 
-         $location = $featureloc->srcfeature_id->name .":". ($featureloc->fmin + 1) . ".." . ($featureloc->fmax + 1);
+         $location = $featureloc->srcfeature_id->name .":". ($featureloc->fmin + 1) . ".." . $featureloc->fmax;
          if($location->srcfeature_id->nid){
-           $location = "<a href=\"" . url("node/$location->srcfeature_id->nid") . "\">".$featureloc->srcfeature_id->name .":".($featureloc->fmin + 1) . ".." . ($featureloc->fmax + 1) ."</a> ";
+           $location = "<a href=\"" . url("node/$location->srcfeature_id->nid") . "\">".$featureloc->srcfeature_id->name .":".($featureloc->fmin + 1) . ".." . $featureloc->fmax ."</a> ";
          }
          ?>
          <tr class="<?php print $class ?>">
