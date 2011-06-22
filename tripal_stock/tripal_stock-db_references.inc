@@ -225,7 +225,7 @@ function tripal_stock_edit_ALL_dbreferences_page($node) {
  *
  * @ingroup tripal_stock
  */                                        
-function tripal_stock_edit_ALL_db_references_form($form_state, &$node) {
+function tripal_stock_edit_ALL_db_references_form($form_state, $node) {
   $form = array();
 
   // Add database references to the node

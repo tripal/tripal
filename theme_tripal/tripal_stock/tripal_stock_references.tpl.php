@@ -74,6 +74,6 @@
     } ?>
   </table>
   <?php } else {
-    print '<b>There are no external database references for the current stock.</b>';
+    print '<div class="tripal-no-results">There are no external database references for the current stock.</div>';
   }?>
 </div>

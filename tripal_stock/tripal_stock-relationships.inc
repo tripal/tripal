@@ -11,9 +11,7 @@ function tripal_stock_add_ALL_relationships_page($node) {
   $output .= tripal_stock_add_chado_properties_progress('relationships').'<br>';
   $output .= '<b>All Relationships should include the CURRENT Individual ('.$node->stock->uniquename.')</b><br>';
   $output .= '<br>';
-  $output .= theme('tripal_stock_relationships_as_object', $node);
-  $output .= '<br>';
-  $output .= theme('tripal_stock_relationships_as_subject', $node);
+  $output .= theme('tripal_stock_relationships', $node);
   $output .= '<br><br>';
   $output .= drupal_get_form('tripal_stock_add_ONE_relationship_form', $node);
   $output .= '<br>';
@@ -207,15 +205,27 @@ function tripal_stock_edit_ALL_relationships_page($node) {
  */                                                   
 function tripal_stock_edit_ALL_relationships_form($form_state, $node) {
   $form = array();
-
+  
   // All Stock Relationships
   $node = tripal_core_expand_chado_vars($node, 'table', 'stock_relationship');    
-  if (!$node->stock->stock_relationship) { 
-    $node->stock->stock_relationship = array(); 
-  } elseif (!is_array($node->stock->stock_relationship)) { 
-    $node->stock->stock_relationship = array($node->stock->stock_relationship); 
-  }  
-  
+   
+  // compile all relationships into one variable
+  $relationships = array();
+  if (is_array($node->stock->stock_relationship->subject_id)) {
+    foreach ($node->stock->stock_relationship->subject_id as $r) {
+      $relationships[$r->stock_relationship_id] = $r;
+    }
+  } elseif (is_object($node->stock->stock_relationship->subject_id)) { 
+    $relationships[$node->stock->stock_relationship->subject_id->stock_relationship_id] = $node->stock->stock_relationship->subject_id;
+  }
+
+  if (is_array($node->stock->stock_relationship->object_id)) {
+    foreach ($node->stock->stock_relationship->object_id as $r) {
+      $relationships[$r->stock_relationship_id] = $r;
+    }
+  } elseif (is_object($node->stock->stock_relationship->object_id)) { 
+    $relationships[$node->stock->stock_relationship->object_id->stock_relationship_id] = $node->stock->stock_relationship->object_id;
+  }
     
   $form['nid'] = array(
     '#type' => 'hidden',
@@ -228,8 +238,8 @@ function tripal_stock_edit_ALL_relationships_form($form_state, $node) {
   );
 
   $i=0;
-  if (sizeof($node->stock->stock_relationship) != 0) {
-  foreach ($node->stock->stock_relationship as $r) {
+  if (sizeof($relationships) != 0) {
+  foreach ($relationships as $r) {
 
     $i++;
     $form["num-$i"] = array(

@@ -184,7 +184,7 @@ function tripal_stock_edit_ALL_properties_page($node) {
  *
  * @ingroup tripal_stock
  */
-function tripal_stock_edit_ALL_properties_form($form_state, &$node) {
+function tripal_stock_edit_ALL_properties_form($form_state, $node) {
   $form = array();
 
   // Add properties and synonyms
