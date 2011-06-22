@@ -25,7 +25,7 @@
  *
  * @return
  *   An array of menu items that is visible within the Drupal Menu, returned as soon
- *    as the program is ran
+ *   as the program is ran
  */
 function tripal_gbrowse_menu() {
   
@@ -49,20 +49,38 @@ function tripal_gbrowse_menu() {
     'type' => MENU_NORMAL_ITEM
   );
  
-  $items['admin/tripal/tripal_gbrowse/load_features'] = array(
-    'title' => t('Load Features'),
+  $items['admin/tripal/tripal_gbrowse/load_library_features'] = array(
+    'title' => t('Load Library Features'),
     'description' => t('Load features associated with a specified library into a GBrowse instance.'),
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_gbrowse_load_features_form'),
+    'page arguments' => array('tripal_gbrowse_load_library_features_form'),
     'access arguments' => array('administer site configuration'),
     'type' => MENU_NORMAL_ITEM
   );
   
-  $items['admin/tripal/tripal_gbrowse/delete_features']=array(
-    'title' => t('Delete Features'),
+  $items['admin/tripal/tripal_gbrowse/load_analysis_features'] = array(
+    'title' => t('Load Analysis Features'),
+    'description' => t('Load features associated with a specified analyses into a GBrowse instance.'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_gbrowse_load_analyses_form'),
+    'access arguments' => array('administer site configuration'),
+    'type' => MENU_NORMAL_ITEM
+  );
+  
+  $items['admin/tripal/tripal_gbrowse/delete_library_features']=array(
+    'title' => t('Delete Library Features'),
     'description' => t('Interface to delete features of a given library from a GBrowse Instance'), 
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_gbrowse_delete_library_features_from_gbrowse_form'), 
+    'access arguments' => array('administer site configuration'),
+    'type' => MENU_NORMAL_ITEM
+  );
+  
+  $items['admin/tripal/tripal_gbrowse/delete_analysis_features']=array(
+    'title' => t('Delete Analysis Features'),
+    'description' => t('Interface to delete features of a given analysis from a GBrowse Instance'), 
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_gbrowse_delete_analysis_features_from_gbrowse_form'), 
     'access arguments' => array('administer site configuration'),
     'type' => MENU_NORMAL_ITEM
   );
@@ -85,7 +103,6 @@ function tripal_gbrowse_menu() {
       'type' => MENU_NORMAL_ITEM
   );
 
-  
   return $items;
 }
 
@@ -120,10 +137,9 @@ function tripal_gbrowse_theme() {
       'arguments' => array('node'=> null),
       'template' => 'tripal_gbrowse_teaser',
     ),
-    
-    'tripal_gbrowse_loaded_libraries' => array (
+    'tripal_gbrowse_loaded_sources' => array (
       'arguments' => array('node'=> null),
-      'template' => 'tripal_gbrowse_loaded_libraries',
+      'template' => 'tripal_gbrowse_loaded_sources',
     ),
 	);
 }
@@ -161,8 +177,8 @@ function tripal_gbrowse_block ($op = 'list', $delta = 0, $edit=array()) {
       $blocks['teaser']['info'] = t('Tripal GBrowse Teaser');
       $blocks['teaser']['cache'] = BLOCK_NO_CACHE;
       
-     // $blocks['teaser']['info'] = t('Tripal GBrowse Libraries');
-    //  $blocks['teaser']['cache'] = BLOCK_NO_CACHE;
+      $blocks['teaser']['info'] = t('Tripal GBrowse Sources');
+      $blocks['teaser']['cache'] = BLOCK_NO_CACHE;
       
       return $blocks;
 
@@ -193,16 +209,17 @@ function tripal_gbrowse_block ($op = 'list', $delta = 0, $edit=array()) {
 						$block['content'] = theme('tripal_gbrowse_teaser',$node);
 						break;
 						
-			//	case 'teaser':
-			//		$block['subject'] = t('Tripal GBrowse Libraries');
-			//		$block['content'] = theme('tripal_gbrowse_loaded_libraries',$node);
-			//		break;	
+					case 'teaser':
+						$block['subject'] = t('Tripal GBrowse Sources');
+						$block['content'] = theme('tripal_gbrowse_loaded_sources',$node);
+						break;	
 							
         }
 				return $block;
 			}
 	}
 }
+
 
 /**
  * Implements hook_views_api()
@@ -215,6 +232,7 @@ function tripal_gbrowse_views_api() {
       'api' => 2.0,
    );
 }
+
 
 /**
  * This section uses HTML to output the descriptions of the module, through the Tripal Management
@@ -233,10 +251,13 @@ function tripal_gbrowse_administration_description_page() {
   
   $text .= "<ul>";
   
-  $text .= "<li>".l("Load Features", "admin/tripal/tripal_gbrowse/load_features"). "</li>";
   $text .= "<li>".l("Configuration", "admin/tripal/tripal_gbrowse/configuration"). "</li>";
-  $text .= "<li>".l("Add Tracks","admin/tripal/tripal_gbrowse/job_sumit"). "</li>";
-  $text .= "<li>".l("Delete Tracks","admin/tripal/tripal_gbrowse/delete_features"). "</li>";
+  $text .= "<li>".l("Load Library Features", "admin/tripal/tripal_gbrowse/load_library_features"). "</li>";
+  $text .= "<li>".l("Delete Library Features", "admin/tripal/tripal_gbrowse/delete_library_features"). "</li>";
+  $text .= "<li>".l("Load Analysis Features", "admin/tripal/tripal_gbrowse/load_analysis_features"). "</li>";
+  $text .= "<li>".l("Delete Analysis Features", "admin/tripal/tripal_gbrowse/delete_analysis_features"). "</li>";
+  $text .= "<li>".l("Add Tracks","admin/tripal/tripal_gbrowse/add_tracks"). "</li>";
+  $text .= "<li>".l("Delete Tracks","admin/tripal/tripal_gbrowse/delete_tracks"). "</li>";
 
    
    $text .= "</ul>";
@@ -251,6 +272,9 @@ function tripal_gbrowse_administration_description_page() {
   $text .= '<ol>';
   $text .= '<li><b>Ensure the PHP-MySQL extension is installed:</b> Installation instructions are dependant upon your operating system.</li>';
   $text .= '<li><b>Move Template Configuration File:</b> Move the template.conf file included with this module into the GBrowse configuration file directory.</li>';
+    $text .= '<li><b>Set GBrowse Instance Defaults :</b> Set default repository for Configuration files, also set the default GBrowse web link address.</li>'
+						.'<a href="tripal_gbrowse/configuration">Administration -> Tripal Management -> GBrowse Management -> Configuration</a>.</li>';
+  
   $text .= '<li><b>Register Existing GBrowse Instances</b>: Register any existing GBrowse instances through the form provided at '
             .'<a href="tripal_gbrowse/register_gbrowse">Administration -> Tripal Management -> GBrowse Management -> Register GBrowse Instance</a>.</li>';
   $text .= '<li><b>Load desired Feature Libraries into GBrowse Instances</b>: Additional feature libraries should be loaded through the form provided at '.l('Administration -> Tripal Management -> GBrowse Management -> Load Features','admin/tripal/tripal_gbrowse/load_features').'</li>';
@@ -272,13 +296,19 @@ function tripal_gbrowse_administration_description_page() {
     						.'This module provides details for a registered GBrowse Instance, including an I-Frame, providing instance access to the GBrowse display,' 
     						.'as well,the module provides a link to a GBrowse instance in a new window.</li>';
     
-      $text .= '<li><b>Load Feature (Libraries) Libraries:</b> Simply by selecting a Tripal Library and a GBrowse Instance, '
+      $text .= '<li><b>Load Library Features:</b> Simply by selecting a Tripal Library and a GBrowse Instance, '
               .'the features associated with the selected Library are loaded into the selected GBrowse Instance. Libraries can also be updated by selecting that option. This removes all of the pre-existing'
               .'features associated with that library, then reloades them. Both loading and updating utilize the Perl script "bp_seqfeature_load.pl" which should be installed when you install GBrowse.</li>';
     
+    	$text .= '<li><b>Load Analysis Features:</b> Simply by selecting a Tripal Analysis and a GBrowse Instance, '
+              .'the analyses associated with the selected Library are loaded into the selected GBrowse Instance. Analyses can also be updated by selecting that option. This removes all of the pre-existing'
+              .'features associated with that analysis, then reloades them. Both loading and updating utilize the Perl script "bp_seqfeature_load.pl" which should be installed when you install GBrowse.</li>';
+    
       $text .= '<li><b>Delete Feature (Libraries) Libraries:</b> A user can select a desired Tripal Library and a specific GBrowse instance and all of the features associated with that library in the selected isntance are removed.'
               .' This section uses the Perl "script bp_seqfeature_delete.pl" to delete the specified features.</li>';
-      
+      $text .= '<li><b>Delete (Libraries) Analysis :</b> A user can select a desired Tripal Analysis  and a specific GBrowse instance and all of the features associated with that analysis in the selected isntance are removed.'
+              .' This section uses the Perl "script bp_seqfeature_delete.pl" to delete the specified features.</li>';
+              
       $text .= '<li><b>Add Tracks:</b> Allows a user to add tracks to a given GBrowse instance. This allows them to define exactly how they want their features to be displayed, as well as, to separate their features into their own GBrowse track.</li>';
       
       $text .= '<li><b>Delete Tracks:</b> Allows a user to delete default tracks or user created  tracks for a given GBrowse instance.</li>';
@@ -301,10 +331,14 @@ function tripal_gbrowse_administration_description_page() {
  *
  *  @param $args
  *    The arguments that are passed, given if the selected proccess is 
- *				1-'tripal_gbrowse_delete_features_from_gbrowse'
- *				2-'tripal_gbrowse_load_features_into_gbrowse'
- *    If 1- then the arguments are based on deleting a feature from GBrowse.
- *    If 2- then the arguments are based on loading features into GBrowse.
+ *				1-'tripal_gbrowse_delete_library_features_from_gbrowse'
+ *				2-'tripal_gbrowse_load_library_features_into_gbrowse'*				
+ *				3-'tripal_gbrowse_delete_analysis_features_from_gbrowse'
+ *				3-'tripal_gbrowse_load_analysis_features_into_gbrowse'
+ *    If 1- then the arguments are based on deleting a library feature from GBrowse.
+ *    If 2- then the arguments are based on loading library features into GBrowse.
+ *    If 3- then the arguments are based on deleting a analysis feature from GBrowse.
+ *    If 4- then the arguments are based on loading analysis features into GBrowse.
  *
  * @return
  *     Job arguments:Database name, user Name, Password, Library ID, If GBrowse database was cleared, 
@@ -314,7 +348,7 @@ function tripal_gbrowse_job_describe_args($call_back, $args){
 
   switch ($call_back){
   
-    case 'tripal_gbrowse_delete_features_from_gbrowse':
+    case 'tripal_gbrowse_delete_library_features_from_gbrowse':
         
         $new_args['GBrowse Database Name']=$args[0];
         
@@ -335,7 +369,7 @@ function tripal_gbrowse_job_describe_args($call_back, $args){
       
         break;
   
-    case 'tripal_gbrowse_load_features_into_gbrowse':
+    case 'tripal_gbrowse_load_library_features_into_gbrowse':
         
         $new_args['GBrowse Database Name']=$args[0];
         
@@ -348,6 +382,49 @@ function tripal_gbrowse_job_describe_args($call_back, $args){
         $node = node_load($result->nid);
         
         $new_args['Library']= l($node->title, 'node/'.$result->nid);
+        
+          if(empty($args[4])){
+            $new_args['Clear GBrowse Database']= 'No';
+          }else{
+            $new_args['Clear GBrowse Database']= 'Yes';
+          }
+      
+        break;
+        
+  case 'tripal_gbrowse_delete_analysis_features_from_gbrowse':
+        
+        $new_args['GBrowse Database Name']=$args[0];
+        
+        $new_args['User Name']=$args[1];
+        
+        $new_args['Password']=$args[2];
+        $result = db_fetch_object(db_query("SELECT nid FROM chado_analysis WHERE analysis_id=%d",$args[3]));
+        
+        $node = node_load($result->nid);
+        
+        $new_args['Analysis']= l($node->title, 'node/'.$result->nid);
+        
+          if(empty($args[4])){
+            $new_args['Clear GBrowse Database']= 'No';
+          }else{
+            $new_args['Clear GBrowse Database']= 'Yes';
+          }
+      
+        break;
+  
+  case 'tripal_gbrowse_load_analysis_features_into_gbrowse':
+        
+        $new_args['GBrowse Database Name']=$args[0];
+        
+        $new_args['User Name']=$args[1];
+        
+        $new_args['Password']=$args[2];
+        
+        $result = db_fetch_object(db_query("SELECT nid FROM chado_analysis WHERE analysis_id=%d",$args[3]));
+        
+        $node = node_load($result->nid);
+        
+        $new_args['Analysis']= l($node->title, 'node/'.$result->nid);
         
           if(empty($args[4])){
             $new_args['Clear GBrowse Database']= 'No';
@@ -368,6 +445,7 @@ function tripal_gbrowse_job_describe_args($call_back, $args){
 //  SECTION: Database API
 //-----------------------------------------------------------------------------
 
+
 /**
  * The purpose of this function is to retrieve the previousley loaded libraries from database.
  *
@@ -377,41 +455,42 @@ function tripal_gbrowse_job_describe_args($call_back, $args){
  * @return 
  * 	An array of libraries that have been loaded into the database
  */
-function tripal_gbrowse_getloaded_libraries($gbrowse){
+function tripal_gbrowse_getloaded_sources($gbrowse){
 
-	$loaded_libraries = array();
+  $loaded_libraries = array();
 	
 	$link = mysql_connect('localhost', $gbrowse->database_user, $gbrowse->user_password);
 	
 	if (!$link) {
-		drupal_set_message('Could not connect: ' . mysql_error(), 'error');
+		drupal_set_message('Could not connect to database: ' . mysql_error(), 'error');
 	}
  
 	//Sending query to the database
 	$resource = mysql_query('use ' .$gbrowse->database_name);
 	
 	if (empty($resource)) {
-		drupal_set_message ('Database is empty or non-existent','error');
+		drupal_set_message ('Database is empty or Non-existent','error');
 	}
 	
 	$resource = mysql_query('select * from typelist');
 	
 	if (empty($resource)) {
-		drupal_set_message ('Missing table typelist in database','error');
-	}  
+		drupal_set_message ('Missing table typelist in database. Check sequence backbone has been loaded (Execute: tripal jobs) ','error');
+	}  else {
 	
-	$library_array = array();
-	
-	while($record = mysql_fetch_object($resource)){
-			preg_match('/^[^:]+:(.+)/', $record->tag, $matches);	
-			$library_array[$matches[1]]= $matches[1];
+		$library_array = array();
+		
+		while($record = mysql_fetch_object($resource)){
+				preg_match('/^[^:]+:(.+)/', $record->tag, $matches);	
+				$library_array[$matches[1]]= $matches[1];
+		}
 	}
-
 	mysql_close($link);
 
 	return $library_array;
 
 }
+
 
 /**
  * The purpose of this function is to firstly create a file for backup purposes. Secondly, this
@@ -420,13 +499,15 @@ function tripal_gbrowse_getloaded_libraries($gbrowse){
  * then uploads the previously backed up infromation into the newly created database.
  * 
  *
- * @param $node
- *   A node object containing the data and infromation of the GBrowse instance
+ *  @param $node
+ *    A node object containing the data and infromation of the GBrowse instance
  *
- * @param $old_database
- *   The name of the originally created database, which will be replaced if the user
- *	 changes the name of the database that they have created
+ *  @param $old_database
+ *    The name of the originally created database, which will be replaced if the user
+ *	  changes the name of the database that they have created
  *
+ *  @return FALSE
+ *    If error in creating database, or creating database, else nothing is returned
  */
 function tripal_gbrowse_database_modification($node,$old_database){
 		
@@ -453,12 +534,13 @@ function tripal_gbrowse_database_modification($node,$old_database){
 		return false;
 	}
 
+	//Dropping original database name and information
 	$sql = 'DROP DATABASE ' . $old_database;
 			
 	if(mysql_query($sql, $link)){
-		drupal_set_message( "Database Dropped successfully\n");
+		drupal_set_message( "Database Dropped Successfully\n");
 	}else{
-		drupal_set_message( 'Error dropping database: ' . mysql_error(), 'error');
+		drupal_set_message( 'Error Dropping Database: ' . mysql_error(), 'error');
 		return false;
 	}
 
@@ -502,7 +584,8 @@ function tripal_gbrowse_node_info() {
       'name' => t('GBrowse Instance'),
       'module' => 'tripal_gbrowse',
       'description' => t('A module for interfacing the GMOD database with Drupal, providing:
-      Registration,Alteration and Deletion of GBrowse Instances,Configuration Files and Databases'),
+      Registration,Alteration and Deletion of GBrowse Instances,Configuration Files and Databases
+      and the option to load/delete Sequence & Analysis Libraries'),
     	'has_title' => TRUE,
     	'title_label' =>t('gbrowse Name'),
     	'had_body' => FALSE,
@@ -658,10 +741,8 @@ function tripal_gbrowse_form(&$node, $form_state) {
 					'#options' => $newArray,
 					'#description' => t('Sequence Features Locations'),
 				);
-		
 		}
-
-		
+	
 	}
 	
   return $form;
@@ -779,7 +860,7 @@ function tripal_gbrowse_insert($node) {
   if($node->check_box==1){
   	tripal_gbrowse_create_gbrowse_instance($values);
 	}else{
-		drupal_set_message("Create instance check box not selected, can not initialize instance");
+		drupal_set_message("Create instance check box not selected, unable initialize instance");
 	}
 	
 }
@@ -879,7 +960,7 @@ function tripal_gbrowse_update($node){
 *   The node that is to be accessed from the database
 *
 * @return $node
-*   The node that is to be loaded into the database 
+*   The node with the information to be loaded into the database 
 *
 */
 function tripal_gbrowse_load($node) {
@@ -899,7 +980,6 @@ function tripal_gbrowse_load($node) {
 
 
 /**
-*
 * Implemets hook_menu(): Adds menu items for the tripal_gbrowse module
 *
 * This form creates a specific Configuration File directory and sets a specific
@@ -913,7 +993,7 @@ function tripal_gbrowse_administration_form () {
   //Creating Fieldset for multiple fields in form
   $form['configuration_features'] = array(
     '#type' => 'fieldset',
-    '#title' => t('GBrowse Instance-Related Fields'),
+    '#title' => t('Module Configuration Fields'),
   );
  
   //Configuration File Directory
@@ -937,12 +1017,12 @@ function tripal_gbrowse_administration_form () {
   );
   
   //A box if checked creates GBrowse Instances(.conf file and database)
-			$form['configuration_features']['delete_check_box'] = array(
-				'#type' => 'checkbox',
-				'#title' => t('Delete Instance'),
-				'#description' => t('Delete GBrowse Configuration file and Database  '),
-				'#default_value'=>variable_get('tripal_gbrowse_delete_all', ''),	
-			);
+	$form['configuration_features']['delete_check_box'] = array(
+		'#type' => 'checkbox',
+		'#title' => t('Delete Instance'),
+		'#description' => t('Delete GBrowse Configuration file and Database  '),
+		'#default_value'=>variable_get('tripal_gbrowse_delete_all', ''),	
+	);
 
   $form['configuration_features']['submit'] = array(
     '#type' => 'submit', 
@@ -968,11 +1048,9 @@ function tripal_gbrowse_administration_form () {
  */
 function tripal_gbrowse_administration_form_validate ($form, $form_state) {
   
-
   if ( !valid_url($form_state['values']['gbrowse_address'])) {
-    form_set_error('gbrowse_address', 'Not a vaild url');
+    form_set_error('gbrowse_address', 'Invalid URL');
   }
-
 }
 
 
@@ -989,7 +1067,6 @@ function tripal_gbrowse_administration_form_validate ($form, $form_state) {
 function tripal_gbrowse_administration_form_submit ($form, $form_state) {
 
   if(!preg_match('/\/$/', $form_state['values']['configuration_file'])) {
-      
       $form_state['values']['configuration_file'] = $form_state['values']['configuration_file'] . "/";
   }
 
@@ -1000,18 +1077,18 @@ function tripal_gbrowse_administration_form_submit ($form, $form_state) {
   variable_set('tripal_gbrowse_gbrowse_address_stub',$form_state['values']['gbrowse_address'] );
   drupal_set_message('GBrowse Default Address set to: '.variable_get('tripal_gbrowse_gbrowse_address_stub', ''));
   
-  if($form_state['values']['delete_check_box']==1){
-  											
+  if($form_state['values']['delete_check_box']==1){									
   	variable_set('tripal_gbrowse_delete_all',$form_state['values']['delete_check_box'] );
   	drupal_set_message('Selected GBrowse instance will be deleted: '.variable_get('tripal_gbrowse_delete_all', 'NOT SET'));
-  
   }
 
 }
 
+
 //-----------------------------------------------------------------------------
 //  SECTION: Register-GBrowse-Instance 
 //-----------------------------------------------------------------------------
+
 
 /**
 *
@@ -1025,6 +1102,7 @@ function tripal_gbrowse_administration_form_submit ($form, $form_state) {
 *
 * @param $form
 *    -The submitted form containing the user entered infromation
+*
 * @param $form_state 
 *    This is the state of the form: i.e what button was pressed.The key is 
 *    the name of the fields in database 
@@ -1032,79 +1110,76 @@ function tripal_gbrowse_administration_form_submit ($form, $form_state) {
 */
 function tripal_gbrowse_create_gbrowse_instance($values) {
     
-  global $user;    //make current user details available so access of user id is available 
+    global $user;    //make current user details available so access of user id is available 
         
-    //checking for existance of configuration file, if allready created a warning is issued
-    if ( file_exists($values['config_file']) ){
-      drupal_set_message('Configuration File Already Exists', 'warning');
-    }else{ 
-    
-      $config_path = variable_get('tripal_gbrowse_configuration_file_path', '');
-      
-      if(empty($config_path)){   
-        drupal_set_message( "Invalid or Non-Existent Configuration Path", 'error');
-      }
-          
-      $temp_file = '/tmp/temporary_gbrowse_'.time().'.conf';
-      
-      // Using 'sed' to select the second line of the template.config substitute <#gbrowse_name>
-      //for .$values['gbrowse_name'] 
-      $command = "sed '2 s/<#gbrowse_name#>/".$values['gbrowse_name']."/' ".$config_path."template.conf > ".$temp_file; 
+  //checking for existance of configuration file, if allready created a warning is issued
+	if ( file_exists($values['config_file']) ){
+		drupal_set_message('Configuration File Already Exists', 'warning');
+	}else{ 
+	
+		$config_path = variable_get('tripal_gbrowse_configuration_file_path', '');
+		
+		if(empty($config_path)){   
+			drupal_set_message( "Invalid or Non-Existent Configuration Path (Check Configuration Menu Defaults)", 'error');
+		}
+				
+		$temp_file = '/tmp/temporary_gbrowse_'.time().'.conf';
+		
+		// Using 'sed' to select the second line of the template.config substitute <#gbrowse_name>
+		//for .$values['gbrowse_name'] 
+		$command = "sed '2 s/<#gbrowse_name#>/".$values['gbrowse_name']."/' ".$config_path."template.conf > ".$temp_file; 
 
-      exec($command);
-      
-      // Using 'sed' to select the fifth line of the template.config substitute <#database_name>
-      //for .$values['database_name']
-       $command = "sed '5 s/<#database_name#>/".$values['database_name']."/' ".$temp_file." > ".$values['config_file'];
+		exec($command);
+		
+		// Using 'sed' to select the fifth line of the template.config substitute <#database_name>
+		//for .$values['database_name']
+		 $command = "sed '5 s/<#database_name#>/".$values['database_name']."/' ".$temp_file." > ".$values['config_file'];
 
-      exec($command);
-      
-      // Check configuration file is there
-      if (file_exists($values['config_file'])) {
-        drupal_set_message('Configuration File created successfully');
-      } else {
-        drupal_set_message('Unable to create configuration file','error');
-      }
+		exec($command);
+		
+		// Check configuration file is there
+		if (file_exists($values['config_file'])) {
+			drupal_set_message('Configuration File created successfully');
+		} else {
+			drupal_set_message('Unable to create configuration file','error');
+		}
 
-      //To create a database use the mysql_query() function to execute an SQL query
-      $link = mysql_connect('localhost', $values['database_user'],$values['user_password']);
-    
-      if (!$link) {
-          
-        drupal_set_message('Could not connect: ' . mysql_error());
-        
-        return false;
-      }
+		//To create a database use the mysql_query() function to execute an SQL query
+		$link = mysql_connect('localhost', $values['database_user'],$values['user_password']);
+	
+		if (!$link) {
+			drupal_set_message('Could not connect: ' . mysql_error());
+			return false;
+		}
 
-      $sql = 'CREATE DATABASE ' . $values['database_name'];
+		$sql = 'CREATE DATABASE ' . $values['database_name'];
 
-      if (mysql_query($sql, $link)) {
-            
-        drupal_set_message( "Database created successfully\n");
-      } 
-      else {
-        
-        drupal_set_message( 'Error creating database: ' . mysql_error() . "\n");
-        
-        return false;
-      }
-    
-      mysql_query( "GRANT SELECT ON " .$values['database_name'].".* TO 'www-data'@'localhost'",$link);
-                  
-      mysql_close($link);
+		if (mysql_query($sql, $link)) {	
+			drupal_set_message( "Database created successfully\n");
+		} else {
+			drupal_set_message( 'Error creating database: ' . mysql_error() . "\n");
+			return false;
+		}
+	
+		mysql_query( "GRANT SELECT ON " .$values['database_name'].".* TO 'www-data'@'localhost'",$link);
+								
+		mysql_close($link);
 
-      $job_args=array($values['database_name'],$values['database_user'],$values['user_password'],$values['library_id'],TRUE);
-        
-      //registering a job with the tripal system, this job calls the function when executed
-      $job_id = tripal_add_job('Loading Features Into GBrowse', 'tripal_gbrowse','tripal_gbrowse_load_features_into_gbrowse', $job_args, $user->uid);
-    }
+		$job_args=array($values['database_name'],$values['database_user'],$values['user_password'],$values['library_id'],TRUE);
+			
+		//registering a job with the tripal system, this job calls the function when executed
+		$job_id = tripal_add_job('Loading Features Into GBrowse', 'tripal_gbrowse','tripal_gbrowse_load_library_features_into_gbrowse', $job_args, $user->uid);
+
+		drupal_set_message(' The Backbone needs to be loaded into GBrowse (done by executing Tripal Jobs Loading script), 
+		Before loaded libraries or GBrowse Instance will be displayed. ');
+
+  	}
   
-
 }
 
 
 //-----------------------------------------------------------------------------
-//  SECTION: Un-Register Previously Created GBrowse Instance
+//  SECTION: Un-Register Existing GBrowse Instances
 //-----------------------------------------------------------------------------
 
 
@@ -1145,7 +1220,7 @@ function tripal_gbrowse_delete_gbrowse_instance($gbrowse) {
     if (file_exists($config_file)) {
       drupal_set_message('Configuration File ('.$config_file.') not removed!', 'error');
     } else {
-      drupal_set_message('Configuration File successfully removed');
+      drupal_set_message('Configuration File removed successfully');
     }
       
     $user_name = $gbrowse->database_user;
@@ -1154,32 +1229,27 @@ function tripal_gbrowse_delete_gbrowse_instance($gbrowse) {
 
     $link = mysql_connect('localhost', $user_name,$user_password);
       
-    if (!$link) {
-            
+    if (!$link) {     
       drupal_set_message('Could not connect: ' . mysql_error(), 'error');
-      
       return false;
     }
 
     $sql = 'DROP DATABASE ' . $gbrowse->database_name;
       
-    if(mysql_query($sql, $link)){
-            
-      drupal_set_message( "Database removed successfully\n");
-        
+    if(mysql_query($sql, $link)){    
+      drupal_set_message( "Database removed successfully\n"); 
     }else{
-      
       drupal_set_message( 'Error removing database: ' . mysql_error(), 'error');
-      
       return false;
-      }
+    }
+      
     mysql_close($link);
   
 }
 
 
 //-----------------------------------------------------------------------------
-//  SECTION: Load features into GBrowse Form and Form Submit
+//  SECTION: Load Library features into GBrowse Form & Form Submit
 //-----------------------------------------------------------------------------
 
 
@@ -1193,27 +1263,26 @@ function tripal_gbrowse_delete_gbrowse_instance($gbrowse) {
 * @return
 *   An array describing the form to be rendered
 */
-function tripal_gbrowse_load_features_form() {
+function tripal_gbrowse_load_library_features_form() {
  
-    
+  $new_array=array();
+   
   $result = tripal_core_chado_select ( 'library', array('library_id','name'), array() );
+  
   foreach ($result as $value) {
-  
-    $newArray[$value->library_id]=$value->name;        //options for the select list
-  
+    $new_array[$value->library_id]=$value->name;        //options for the select list
   }
   
   //Creating Fieldset for multiple fields in form
   $form['load_features'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Data Base Specific Fields'),
+    '#type' => 'fieldset'
   );
  
   //Library ID
   $form['load_features']['library_id'] = array(
       '#type' => 'select',
       '#title' => t('Libraries'),
-      '#options' => $newArray,
+      '#options' => $new_array,
       '#description' => t('Library of Genetic Sequences.'),
   );
     
@@ -1223,16 +1292,15 @@ function tripal_gbrowse_load_features_form() {
     $items = array();
   
     while($record = db_fetch_object($resource)){
-    
-    $items[$record->gbrowse_id]= $record->gbrowse_name;
-  }
+      $items[$record->gbrowse_id]= $record->gbrowse_name;
+    }
    
   //GBrowse Instances
   $form['load_features']['gbrowse_id'] = array(
-      '#type' => 'select',
-      '#title' => t('GBrowse Instances'),
-      '#options' => $items,
-      '#description' => t('Selected GBrowse Instances to be Loaded.'),
+    '#type' => 'select',
+    '#title' => t('GBrowse Instances'),
+    '#options' => $items,
+    '#description' => t('Selected GBrowse Instances to be Loaded.'),
   );
     
   //A checkbox to update features for the gbrowse
@@ -1253,7 +1321,6 @@ function tripal_gbrowse_load_features_form() {
 
 
 /**
-*
 * Load-Features-Form
 *
 * @param $form
@@ -1262,147 +1329,36 @@ function tripal_gbrowse_load_features_form() {
 *    -Is the state of the form: i.e what button was pressed, what infromation was entered,etc.
 *    The key is the 'values'
 */
-function tripal_gbrowse_load_features_form_submit($form, $form_state) {
+function tripal_gbrowse_load_library_features_form_submit($form,$form_state) {
     
-    global $user;    //needed to make the current users details available so access of user id is available 
-          
-    $record = db_fetch_object(mysql_query('SELECT * FROM {tripal_gbrowse_instances} WHERE gbrowse_id=%d', $form_state['values']['gbrowse_id']));
-    
-    $name = $record->database_name;
-  
-    $user_name = $record->database_user;
-  
-    $password= $record->user_password;
-  
-    $job_args = array($name,$user_name,$password,$form_state['values']['library_id'], FALSE);   
-                  
-    //Checking state of check box, if checked delete features from GBrowse
-    if($form_state['values']['check_box']==1){
-  
-        //registering a delete job with the tripal system, this job calls the function when executed
-        $job_id = tripal_add_job('Deleting Features From GBrowse', 'tripal_gbrowse', 
-        'tripal_gbrowse_delete_features_from_gbrowse', $job_args, $user->uid);
-        
-    }
-    
-    //registering a job with the tripal system, this job calls the function when executed
-    $job_id = tripal_add_job('Loading Features Into GBrowse', 'tripal_gbrowse', 
-    'tripal_gbrowse_load_features_into_gbrowse', $job_args, $user->uid);
+	global $user;    //needed to make the current users details available so access of user id is available 
+				
+	$record = db_fetch_object(db_query('SELECT * FROM {tripal_gbrowse_instances} WHERE gbrowse_id=%d', $form_state['values']['gbrowse_id']));
+	
+	$name = $record->database_name;
+
+	$user_name = $record->database_user;
+
+	$password= $record->user_password;
+
+	$job_args = array($name,$user_name,$password,$form_state['values']['library_id'], FALSE);   
+								
+	//Checking state of check box, if checked delete features from GBrowse
+	if($form_state['values']['check_box']==1){
+		//registering a delete job with the tripal system, this job calls the function when executed
+			$job_id = tripal_add_job('Deleting Features From GBrowse', 'tripal_gbrowse', 
+			'tripal_gbrowse_delete_library_features_from_gbrowse', $job_args, $user->uid);
+	}
+	
+  //registering a job with the tripal system, this job calls the function when executed
+	$job_id = tripal_add_job('Loading Features Into GBrowse', 'tripal_gbrowse', 
+	'tripal_gbrowse_load_library_features_into_gbrowse', $job_args, $user->uid);
 
 }
 
 
 //-----------------------------------------------------------------------------
-//  SECTION: Delete library features from database
-//-----------------------------------------------------------------------------
-
-
-/**
-*
-* This form's purpose is to delete library featues from a selected GBrowse insatance. By selecting
-* a Library of genetic sequences and a GBrowse instance, the instance will be removed as will all the 
-* associated libraries. This form allows access to a specified database and will delete any
-* selected Library features. It will return the form that contains all of the neccessary
-* information to send to the 'form_submit' function.
-*
-* @return $form
-*   An array of menu items allowing deletion of features from the library
-*/
-function tripal_gbrowse_delete_library_features_from_gbrowse_form() {
-
-  $form = array();
-  
-  $result = tripal_core_chado_select ( 'library', array('library_id','name'), array() );
-
-  foreach ($result as $value){
-  
-    $newArray[$value->library_id]=$value->name;        //options for the select list
-  
-  }
-    
-  //Creating Fieldset for multiple fields in form
-  $form['delete_gbrowse'] = array(
-    '#type' => 'fieldset',
-    '#title' => t(''),
-  );
-     
-   //Library ID
-   $form['delete_gbrowse']['library_id'] = array(
-    '#type' => 'select',
-    '#title' => t('Libraries'),
-    '#options' => $newArray,
-    '#description' => t('Genetic Sequences.'),
-  );
-    
-  //Sending query to the database
-  $resource = db_query('SELECT * FROM {tripal_gbrowse_instances}');
-
-  $items = array();
-  
-  while($record = db_fetch_object($resource)){
-    
-    $items[$record->gbrowse_id]= $record->gbrowse_name;
-    
-  }
-
-  $form['delete_gbrowse']['gbrowse_id'] = array(
-    '#type' => 'select',
-    '#title' => t('GBrowse Instances'),
-    '#options' => $items,
-    '#description' => t('Selected Instances to be Removed.'),
-  );
-  
-  //Delete button to remove Library
-  $form['delete_gbrowse']['submit'] = array(
-     '#type' => 'submit', 
-     '#weight' => 10,
-     '#value' => t('Delete')
-   );
-    
-  return $form;
-
-}
-
-
-/**
-*
-* This 'form_submit' function uses MySQL commands to select the GBrowse instance from a selected database.
-* Then the selected features are deleted from the library.
-*
-*
-* @param $form
-*    The submitted form that 
-* @param $form_state 
-*    The state of the form, includes the selected library and the GBrowse instance to be removed
-*    The key is the 'values'
-*/
-function tripal_gbrowse_delete_library_features_from_gbrowse_form_submit($form, $form_state) {
-  
-  global $user;    //needed to make the current users details available so access of user id is available 
-          
-  $record = db_fetch_object(db_query('SELECT * FROM {tripal_gbrowse_instances} WHERE gbrowse_id=%d', $form_state['values']['gbrowse_id']));
-    
-  $name = $record->database_name;
-  
-  $user_name = $record->database_user;
-  
-  $password= $record->user_password;
-  
-  $job_args = array($name,$user_name,$password,$form_state['values']['library_id']);   
-                  
-  //Checking state of submit button, if selected delete features from library
-  if($form_state['values']['op'] == 'Delete'){
-
-    //registering a delete job with the tripal system, this job calls the function when executed
-    $job_id = tripal_add_job('Deleting Features From GBrowse', 'tripal_gbrowse', 'tripal_gbrowse_delete_features_from_gbrowse', $job_args, $user->uid);
-        
-  }
-    
-}
-
-
-//-----------------------------------------------------------------------------
-//  SECTION:Load Desired Features into GBrowse
+//  SECTION:Load Library Features into GBrowse
 //-----------------------------------------------------------------------------
 
 
@@ -1420,16 +1376,20 @@ function tripal_gbrowse_delete_library_features_from_gbrowse_form_submit($form, 
  *
  * @param $name
  *   name of GBrowse database
+ *
  * @param $user_name
  *   GBrowse MySQL user name 
+ *
  * @param $password
  *   user password for GBrowse
+ *
  * @param $library_id
  *   GBrowse MySQL user name 
+ *
  * @param $clear_database
  *   Used to clear the database of its backbone structure
  */
-function tripal_gbrowse_load_features_into_gbrowse($db1_name, $user_name, $password, $library_id,$clear_database){
+function tripal_gbrowse_load_library_features_into_gbrowse($database_name, $user_name, $password, $library_id,$clear_database){
 
   //A test file created to verify output
   $myFile = "/tmp/temporaryGBrowse_".time().".gff3";
@@ -1440,7 +1400,7 @@ function tripal_gbrowse_load_features_into_gbrowse($db1_name, $user_name, $passw
   print "Creating GFF3 file of features for library...\n";
  
   if (!preg_match('/^\d+$/', $library_id)) {
-   print "ERROR: Invalid Library ID supplied (Library ID= ".$library_id.")\n";  
+   print "ERROR: Invalid Library ID supplied (Library ID = ".$library_id.")\n";  
    return false;
   }
   
@@ -1658,12 +1618,12 @@ function tripal_gbrowse_load_features_into_gbrowse($db1_name, $user_name, $passw
   if($clear_database){    
 
     //The loading script: bp_seqfeature_load.pl, allows loading of data to specific file 
-    $command= "bp_seqfeature_load.pl -c -u '" .$user_name. "' -p '" .$password. "' -d " .$db1_name. " " . $myFile;
+    $command= "bp_seqfeature_load.pl -c -u '" .$user_name. "' -p '" .$password. "' -d " .$database_name. " " . $myFile;
 
   }else{
 
     //The loading script: bp_seqfeature_load.pl, allows loading of data to specific file 
-    $command= "bp_seqfeature_load.pl -u '" .$user_name. "' -p '" .$password. "' -d " .$db1_name. " " . $myFile;
+    $command= "bp_seqfeature_load.pl -u '" .$user_name. "' -p '" .$password. "' -d " .$database_name. " " . $myFile;
   }
 
   //optional 'print' statement to verify that the above comman is being called and executed properly
@@ -1676,7 +1636,112 @@ function tripal_gbrowse_load_features_into_gbrowse($db1_name, $user_name, $passw
 
 
 //-----------------------------------------------------------------------------
-//  SECTION: Delete Features from GBrowse
+//  SECTION: Delete library features from database Form & Form submit
+//-----------------------------------------------------------------------------
+
+
+/**
+*
+* This form's purpose is to delete library featues from a selected GBrowse insatance. By selecting
+* a Library of genetic sequences and a GBrowse instance, the instance will be removed as will all the 
+* associated libraries. This form allows access to a specified database and will delete any
+* selected Library features. It will return the form that contains all of the neccessary
+* information to send to the 'form_submit' function.
+*
+* @return $form
+*   An array of menu items allowing deletion of features from the library
+*/
+function tripal_gbrowse_delete_library_features_from_gbrowse_form() {
+
+  $form = array();
+  
+  $result = tripal_core_chado_select ( 'library', array('library_id','name'), array() );
+
+  foreach ($result as $value){
+    $newArray[$value->library_id]=$value->name;        //options for the select list
+  }
+    
+  //Creating Fieldset for multiple fields in form
+  $form['delete_gbrowse'] = array(
+    '#type' => 'fieldset',
+    '#title' => t(''),
+  );
+     
+   //Library ID
+   $form['delete_gbrowse']['library_id'] = array(
+    '#type' => 'select',
+    '#title' => t('Libraries'),
+    '#options' => $newArray,
+    '#description' => t('Genetic Sequences.'),
+  );
+    
+  //Sending query to the database
+  $resource = db_query('SELECT * FROM {tripal_gbrowse_instances}');
+
+  $items = array();
+  
+  while($record = db_fetch_object($resource)){  
+    $items[$record->gbrowse_id]= $record->gbrowse_name;  
+  }
+
+  $form['delete_gbrowse']['gbrowse_id'] = array(
+    '#type' => 'select',
+    '#title' => t('GBrowse Instances'),
+    '#options' => $items,
+    '#description' => t('Selected Instances to be Removed.'),
+  );
+  
+  //Delete button to remove Library
+  $form['delete_gbrowse']['submit'] = array(
+     '#type' => 'submit', 
+     '#weight' => 10,
+     '#value' => t('Delete')
+   );
+    
+  return $form;
+
+}
+
+
+/**
+* This 'form_submit' function uses MySQL commands to select the GBrowse instance from a selected database.
+* Then the selected features are deleted from the library.
+*
+*
+* @param $form
+*    The submitted form that 
+*
+* @param $form_state 
+*    The state of the form, includes the selected library and the GBrowse instance to be removed
+*    The key is the 'values'
+*/
+function tripal_gbrowse_delete_library_features_from_gbrowse_form_submit($form, $form_state) {
+  
+  global $user;    //needed to make the current users details available so access of user id is available 
+          
+  $record = db_fetch_object(db_query('SELECT * FROM {tripal_gbrowse_instances} WHERE gbrowse_id=%d', $form_state['values']['gbrowse_id']));
+    
+  $name = $record->database_name;
+  
+  $user_name = $record->database_user;
+  
+  $password= $record->user_password;
+  
+  $job_args = array($name,$user_name,$password,$form_state['values']['library_id']);   
+                  
+  //Checking state of submit button, if selected delete features from library
+  if($form_state['values']['op'] == 'Delete'){
+
+    //registering a delete job with the tripal system, this job calls the function when executed
+    $job_id = tripal_add_job('Deleting Library Features From GBrowse', 'tripal_gbrowse', 'tripal_gbrowse_delete_library_features_from_gbrowse', $job_args, $user->uid);
+        
+  }
+    
+}
+
+
+//-----------------------------------------------------------------------------
+//  SECTION: Delete Library Features from GBrowse
 //-----------------------------------------------------------------------------
 
 
@@ -1689,7 +1754,7 @@ function tripal_gbrowse_load_features_into_gbrowse($db1_name, $user_name, $passw
 *
 *
 *
-* @param $db1_name
+* @param $database_name
 *   name of GBrowse database
 * @param $user_name
 *   GBrowse MySQL user name 
@@ -1699,7 +1764,7 @@ function tripal_gbrowse_load_features_into_gbrowse($db1_name, $user_name, $passw
 *   The id of the library that is being selected from
 *
 */
-function tripal_gbrowse_delete_features_from_gbrowse($db1_name, $user_name, $password, $library_id){
+function tripal_gbrowse_delete_library_features_from_gbrowse($database_name, $user_name, $password, $library_id){
 
   $result = tripal_core_chado_select ( 'library', array('name'), array('library_id' => $library_id) 
   
@@ -1718,7 +1783,9 @@ function tripal_gbrowse_delete_features_from_gbrowse($db1_name, $user_name, $pas
   cvterm.name';
 
   $previous_db = tripal_db_set_active('chado');
+  
   $resource = db_query($sql, $library_id);
+  
   tripal_db_set_active($previous_db);
   
   while($record = db_fetch_object($resource)){
@@ -1726,7 +1793,7 @@ function tripal_gbrowse_delete_features_from_gbrowse($db1_name, $user_name, $pas
     $type = $record->name;
     
     //The loading script: bp_seqfeature_delete.pl, allows removal of data to specific file 
-    $command= "bp_seqfeature_delete.pl -u '".$user_name."' -p '".$password."' -d '" .$db1_name. "' -t '" .$type. ":".$library_name."'";
+    $command= "bp_seqfeature_delete.pl -u '".$user_name."' -p '".$password."' -d '" .$database_name. "' -t '" .$type. ":".$library_name."'";
     
     print "Executing Command: ".$command."\n";
     
@@ -1739,7 +1806,555 @@ function tripal_gbrowse_delete_features_from_gbrowse($db1_name, $user_name, $pas
 
 
 //-----------------------------------------------------------------------------
-//  SECTION: Add Tracks
+//  SECTION: Load analyses into GBrowse Form and Form Submit
+//-----------------------------------------------------------------------------
+
+
+/**
+* Implements hook_form
+*
+* This function creates a form for the database name, user name for database operation and a 
+* password for access.The module uses these analyses to access information regarding the user's 
+* operations and needs.
+*
+* @return
+*   An array describing the form to be rendered
+*/
+function tripal_gbrowse_load_analyses_form(){
+ 
+  $newArray=array();
+  
+  $result = tripal_core_chado_select ( 'analysis', array('analysis_id','name'), array() );
+  
+  foreach ($result as $value) {
+    $newArray[$value->analysis_id]=$value->name;        //options for the select list
+  }
+  
+  //Creating Fieldset for multiple fields in form
+  $form['load_analyses'] = array(
+    '#type' => 'fieldset',
+  );
+ 
+  //Library ID
+  $form['load_analyses']['analysis_id'] = array(
+      '#type' => 'select',
+      '#title' => t('Analyses'),
+      '#options' => $newArray,
+      '#description' => t('Analyses.'),
+  );
+    
+  //Sending query to the database
+  $resource = db_query('SELECT * FROM {tripal_gbrowse_instances}');
+
+    $items = array();
+  
+    while($record = db_fetch_object($resource)){
+      $items[$record->gbrowse_id]= $record->gbrowse_name;
+  }
+  
+  //GBrowse Instances
+  $form['load_analyses']['gbrowse_id'] = array(
+      '#type' => 'select',
+      '#title' => t('GBrowse Instances'),
+      '#options' => $items,
+      '#description' => t('Selected GBrowse Instances to be Loaded.'),
+  );
+    
+  //A checkbox to update features for the gbrowse
+  $form['load_analyses']['check_box'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Update Analyses'),
+    '#description' => t('Existing Same Name Analyses Updated Accordingly.'),
+  );
+
+  $form['load_analyses']['submit'] = array(
+   '#type' => 'submit', 
+   '#weight' => 10,
+   '#value' => t('Submit Job')
+   );
+  
+  return $form;
+}
+
+
+/**
+* Load-Features-Form
+*
+* @param $form
+*    -The submitted form containing the user entered infromation
+*
+* @param $form_state 
+*    -Is the state of the form: i.e what button was pressed, what infromation was entered,etc.
+*    The key is the 'values'
+*/
+function tripal_gbrowse_load_analyses_form_submit($form, $form_state) {
+    
+    global $user;    //needed to make the current users details available so access of user id is available 
+          
+    $record = db_fetch_object(db_query('SELECT * FROM {tripal_gbrowse_instances} WHERE gbrowse_id=%d', $form_state['values']['gbrowse_id']));
+    
+    $name = $record->database_name;
+  
+    $user_name = $record->database_user;
+  
+    $password= $record->user_password;
+ 
+    $job_args = array($name,$user_name,$password,$form_state['values']['analysis_id'], FALSE);   
+                 
+    //Checking state of check box, if checked delete features from GBrowse
+    if($form_state['values']['check_box']==1){
+        //registering a delete job with the tripal system, this job calls the function when executed
+        $job_id = tripal_add_job('Deleting Features From GBrowse', 'tripal_gbrowse', 
+        'tripal_gbrowse_delete_analysis_features_from_gbrowse', $job_args, $user->uid);
+    }
+    
+    //registering a job with the tripal system, this job calls the function when executed
+    $job_id = tripal_add_job('Loading Features Into GBrowse', 'tripal_gbrowse', 
+    'tripal_gbrowse_load_analysis_features_into_gbrowse', $job_args, $user->uid);
+
+}
+
+
+//-----------------------------------------------------------------------------
+//  SECTION:Load Analysis Features into GBrowse
+//-----------------------------------------------------------------------------
+
+
+/**
+ * Load Analysis features into database 
+ *
+ * This loading function firstly creates a output GFF3 format file for verification purposes. Then, a 'Chado' table
+ * is selected,depending which table the user is interested in, from this table specific infromation 
+ * is taken out and placed in the GFF3 file.The Featurelocation(fmin) & featurelocation (fmax) are used  
+ * to set the featureloc.feature_id = feature.feature_id, the fmin = start & fmax = end of the desired gene.
+ * The testing if the phase is empty is done, if so a '.' is inserted into $phase variable. If the parent 
+ * feature is indicated in feature location for the child feature will be set.The Attributes section 
+ * sets the, ID, Name, Alias, Dbrexf to variables to be put into a CONF file.The strand is either a 
+ * positive, negative, or zero value and is represented by +/./- accordingley.
+ *
+ * @param $name
+ *   name of GBrowse database
+ *
+ * @param $user_name
+ *   GBrowse MySQL user name
+ *
+ * @param $password
+ *   user password for GBrowse
+ *
+ * @param $library_id
+ *   GBrowse MySQL user name 
+ *
+ * @param $clear_database
+ *   Used to clear the database of its backbone structure
+ */
+function tripal_gbrowse_load_analysis_features_into_gbrowse($database_name, $user_name, $password, $analysis_id,$clear_database){
+
+	//print 'Analysis ID: '.$analysis_id.".\n";
+
+  //A test file created to verify output
+  $myFile = "/tmp/temporaryGBrowse_".time().".gff3";
+  
+  //Test opening the file, will print warning if file is not able to be opened
+  $fh = fopen($myFile, 'w') or die("WARNING: Can not open file");
+
+  print "Creating GFF3 file of features for Analysis...\n";
+ 
+  if (!preg_match('/^\d+$/', $analysis_id)) {
+   print "ERROR: Invalid Analysis ID supplied (Analysis ID= ".$analysis_id.")\n";  
+   return false;
+  }
+  
+  // Selecting all analyses
+  $values = array('analysis_id' => $analysis_id);
+      
+  $prime_result = tripal_core_chado_select ( 'analysisfeature', array('feature_id'), $values);
+
+  // Select Table:library; column:uniquename
+  $result = tripal_core_chado_select ( 'analysis', array('name'), $values );
+
+  $source = $result[0]->name ;
+  
+  // Check source: ERROR
+  //For each feature, type id form feature table, specific record the feature id containing $feature_id
+  foreach ($prime_result as $value) {
+
+    $feature_id = $value->feature_id;
+     
+    if (!preg_match('/^\d+$/', $feature_id)) {
+      print "ERROR: Invalid feature ID (".$feature_id.") associated with Library (Library ID = ".$analysis_id.")\n";
+    }
+   
+    $result = tripal_core_chado_select('feature', array('type_id'), array('feature_id'=>$feature_id));
+   
+    $type_id = $result[0]->type_id;
+     
+    if (empty($type_id)) {
+      print "ERROR: No Type associated with Feature ( Feature ID = ".$feature_id.")\n";
+    }
+   
+    //Taking the cvterm name from the cvterm table given the type-id($type_id)
+    $result = tripal_core_chado_select('cvterm', array('name'), array('cvterm_id'=>$type_id));
+
+    //The extracted cvterm name
+    $type = $result[0]->name;
+    
+    if (empty($type)) {
+      print "ERROR: Type associated with Feature (".$type_id.") doesn't exist in cvterm table (Feature ID = ".$feature_id.")\n";
+    }
+    
+    //Featureloc.fmin & featureloc.fmax ( where featureloc.feature_id = feature.feature_id )
+    //fmin = start & fmax = end
+    $result = tripal_core_chado_select('featureloc', array('fmin','fmax', 'strand', 'phase', 'srcfeature_id'), array('feature_id'=>$feature_id));
+  
+    $start = $result[0]->fmin;
+    if (!preg_match('/^\d+$/', $start)) {
+      print "ERROR: Invalid Start (".$start.") of Feature (Feature ID= ".$feature_id.")\n";
+    }
+  
+    $end = $result[0]->fmax;
+    if (!preg_match('/^\d+$/', $end)) {
+      print "ERROR: Invalid End (".$end.") of Feature (Feature ID= ".$feature_id.")\n";
+    }
+    
+    $score = '.';
+
+    //Converting from +1/0/-1 to +/./- as there are only three possible values
+    if ($result[0]->strand < 0) {
+      $strand= '-';
+    } elseif ($result[0]->strand == 0) {
+      $strand = '.';
+    } elseif($result[0]->strand > 0) {
+      $strand = '+';
+    } else{
+      $strand = '.';
+    }
+  
+    //Testing if phase is empty, if so a '.' is inserted into $phase variable
+    $phase = $result[0]->phase;
+    if(empty($phase)){
+      $phase = '.';
+    }
+  
+    //This is the parent feature as indicated in feature location for the child feature and 
+    //the current line described the child feature
+    $srcfeature_id = $result[0]->srcfeature_id;
+
+    if (empty($srcfeature_id)) {
+      print "ERROR: No Parent associated with Feature Location (Feature ID = ".$feature_id.")\n";
+    }
+  
+    $result = tripal_core_chado_select('feature', array('name'), array('feature_id'=>$srcfeature_id));
+  
+    $seqid = $result[0]->name;
+
+    if (empty($seqid)) {
+      print "ERROR: Parent (Parent Feature ID = ".$seqid.") associated with Feature doesn't exist in feature table (Feature ID =".$feature_id."\n";
+    }
+
+    //Attributes section, ID, Name, Alias, Dbrexf  
+    $result = tripal_core_chado_select('feature', array('uniquename', 'name'), array('feature_id'=>$feature_id));
+  
+    $id = $result[0]->uniquename;
+  
+    if (empty($id)) {
+      print "ERROR: Missing Unique Name for Feature (Feature ID = ".$feature_id.")\n";
+    }
+
+    $name = $result[0]->name;
+  
+    if (empty($name)) {
+      print "WARNING: Missing Name for Feature (Feature ID = ".$feature_id.")\n";
+    }
+    
+    //Synonym
+    $result = tripal_core_chado_select('feature_synonym', array('synonym_id'), array('feature_id'=>$feature_id));
+
+    $synonyms = array();
+    foreach ($result as $obj){
+  
+      $synonym_id = $obj->synonym_id;
+    
+      $sub_result = tripal_core_chado_select('synonym', array('name'), array('synonym_id'=>$synonym_id));
+
+      // check that $sub_result[0]->name isn't empty
+      if (empty($sub_result[0]->name)) {
+        print "ERROR: Synonym (".$synonym_id.") associated with feature not found in synonym table (Feature ID = ".$feature_id.")\n";
+      } else {
+        $synonyms[] = $sub_result[0]->name;
+      }
+
+    }
+    
+    // Additional Dbxref's
+    $result = tripal_core_chado_select('feature_dbxref', array('dbxref_id'), array('feature_id'=>$feature_id));
+    $dbxref = array();
+    
+    foreach ($result as $obj){
+    
+      $dbxref_id = $obj->dbxref_id;
+  
+      if (!empty($dbxref_id)) {
+        $sub1_result = tripal_core_chado_select('dbxref', array('db_id', 'accession'), array('dbxref_id'=>$dbxref_id));
+    
+        $dbxref_accession = $sub1_result[0]->accession;
+        
+        $db_id = $sub1_result[0]->db_id;
+        
+        if (!empty($db_id)) {
+          $sub_sub_result =tripal_core_chado_select('db', array('name'), array('db_id'=>$db_id));
+        
+          $db_name = $sub_sub_result[0]->name;    
+      
+          if (empty($db_name)) {
+            print "ERROR: Database (".$db_id.") associated with database reference not in db table (Database Reference ID = ".$dbxref_id.")\n";
+          } elseif (empty($dbxref_accession)) {
+            print "WARNING: Missing Accession for Database Reference (Database Reference ID = ".$dbxref_id.")\n";
+          } else {
+            $dbxref[] = $db_name . ':' . $dbxref_accession;
+          }
+        }
+      }
+    }
+
+    //Main Dbxref
+    $result = tripal_core_chado_select('feature', array('dbxref_id'), array('feature_id'=>$feature_id));
+  
+    $dbxref_id = $result[0]->dbxref_id;
+  
+    if (empty($dbxref_id)) {
+      print "WARNING: No Database Reference associated directly with Feature (Feature ID = ".$feature_id.")\n";
+    }
+
+    $result = tripal_core_chado_select('dbxref', array('accession','db_id'), array('dbxref_id'=>$dbxref_id));
+      
+    $dbxref_accession = $result[0]->accession;
+
+    //checking $dbrexf_accession for emptyness 
+    if(!empty($dbxref_accession)){
+
+      $db_id = $result[0]->db_id;
+    
+      $sub_sub_result =tripal_core_chado_select('db', array('name'), array('db_id'=>$db_id));
+
+      $db_name = $sub_sub_result[0]->name;
+  
+      $dbxref[] = $db_name . ':' . $dbxref_accession;
+
+    } else {
+      print "WARNING: Missing Accession for Database Reference (Database Reference ID = ".$dbxref_id.")\n";
+    }
+
+    //attributes array is assigned given elements based on previous initializations
+    $attributes = array();
+
+    $attributes[] = 'ID='.$id;
+
+    if (!empty($name)) { 
+      $attributes[] = 'Name='.$name; 
+    }
+
+    if (!empty($synonyms)) { 
+      $attributes[] = 'Alias='.implode(',',$synonyms); 
+    }
+
+    if (!empty($dbxref)) { 
+      $attributes[] = 'Dbxref=' .implode(',', $dbxref); 
+    }
+
+    //write to string for printing
+    $stringData = implode("\t", array($seqid,$source,$type,$start,$end,$score,$strand,$phase,
+  
+    implode(';',$attributes)))."\n";
+    
+    //Write concatinated data ($stringData) to file    
+    fwrite($fh, $stringData);
+  }
+
+  //Closing file
+  fclose($fh);
+
+
+  if($clear_database){    
+    //The loading script: bp_seqfeature_load.pl, allows loading of data to specific file 
+    $command= "bp_seqfeature_load.pl -c -u '" .$user_name. "' -p '" .$password. "' -d " .$database_name. " " . $myFile;
+  }else{
+    //The loading script: bp_seqfeature_load.pl, allows loading of data to specific file 
+    $command= "bp_seqfeature_load.pl -u '" .$user_name. "' -p '" .$password. "' -d " .$database_name. " " . $myFile;
+  }
+
+  //optional 'print' statement to verify that the above comman is being called and executed properly
+  print 'Executing Command:'.$command."\n";
+
+  exec($command, $out_put, $return_var);
+} 
+
+
+//-----------------------------------------------------------------------------
+//  SECTION: Delete analysis features from database Form & Form submit
+//-----------------------------------------------------------------------------
+
+
+/**
+* This form's purpose is to delete analysis featues from a selected GBrowse insatance. By selecting
+* a Library of analyses and a GBrowse instance, the instance will be removed as will all the 
+* associated analysis library. This form allows access to a specified database and will delete any
+* selected Analysis features. It will return the form that contains all of the neccessary
+* information to send to the 'form_submit' function.
+*
+* @return $form
+*   An array of menu items allowing deletion of features from the library
+*/
+function tripal_gbrowse_delete_analysis_features_from_gbrowse_form() {
+
+  $form = array();
+  
+  $result = tripal_core_chado_select ( 'analysis', array('analysis_id','name'), array() );
+
+  foreach ($result as $value){
+    $newArray[$value->analysis_id]=$value->name;        //options for the select list
+  }
+    
+  //Creating Fieldset for multiple fields in form
+  $form['delete_analysis'] = array(
+    '#type' => 'fieldset',
+    '#title' => t(''),
+  );
+     
+   //Library ID
+   $form['delete_analysis']['analysis_id'] = array(
+    '#type' => 'select',
+    '#title' => t('Analysis Features'),
+    '#options' => $newArray,
+    '#description' => t('Analysis.'),
+  );
+    
+  //Sending query to the database
+  $resource = db_query('SELECT * FROM {tripal_gbrowse_instances}');
+
+  $items = array();
+  
+  while($record = db_fetch_object($resource)){
+    $items[$record->gbrowse_id]= $record->gbrowse_name;
+  }
+  
+  $form['delete_analysis']['gbrowse_id'] = array(
+    '#type' => 'select',
+    '#title' => t('GBrowse Instances'),
+    '#options' => $items,
+    '#description' => t('Selected Instances to be Removed.'),
+  );
+  
+  //Delete button to remove Library
+  $form['delete_analysis']['submit'] = array(
+     '#type' => 'submit', 
+     '#weight' => 10,
+     '#value' => t('Delete')
+   );
+    
+  return $form;
+}
+
+
+/**
+* This 'form_submit' function uses MySQL commands to select the GBrowse instance from a selected database.
+* Then the selected features are deleted from the library.
+*
+*
+* @param $form
+*    The submitted form that 
+*
+* @param $form_state 
+*    The state of the form, includes the selected library and the GBrowse instance to be removed
+*    The key is the 'values'
+*/
+function tripal_gbrowse_delete_analysis_features_from_gbrowse_form_submit($form, $form_state) {
+  
+  global $user;    //needed to make the current users details available so access of user id is available 
+          
+  $record = db_fetch_object(db_query('SELECT * FROM {tripal_gbrowse_instances} WHERE gbrowse_id=%d', $form_state['values']['gbrowse_id']));
+    
+  $name = $record->database_name;
+  
+  $user_name = $record->database_user;
+  
+  $password= $record->user_password;
+  
+  $job_args = array($name,$user_name,$password,$form_state['values']['analysis_id']);
+                  
+  //Checking state of submit button, if selected delete features from library
+  if($form_state['values']['op'] == 'Delete'){
+    //registering a delete job with the tripal system, this job calls the function when executed
+    $job_id = tripal_add_job('Deleting Analysis Features From GBrowse', 'tripal_gbrowse', 'tripal_gbrowse_delete_analysis_features_from_gbrowse', $job_args, $user->uid);
+  }
+    
+}
+
+
+//-----------------------------------------------------------------------------
+//  SECTION: Delete Analysis Features from GBrowse
+//-----------------------------------------------------------------------------
+
+
+/**
+* Delete-GBrowse-Feature
+*
+* This form Removes features from Analysis that the user has specified. The form allows the user
+* to select a desired instance. Once the analysis and instance are selected and deleted, the selected 
+* analyses will be disassociated with the specified instance. 
+*
+* @param $database_name
+*   name of GBrowse database
+*
+* @param $user_name
+*   GBrowse MySQL user name 
+*
+* @param $password
+*   user password for GBrowse
+*
+* @param $library_id
+*   The id of the library that is being selected from
+*
+*/
+function tripal_gbrowse_delete_analysis_features_from_gbrowse($database_name, $user_name, $password, $analysis_id){
+
+  $result = tripal_core_chado_select ( 'analysis', array('name'), array('analysis_id' => $analysis_id) 
+  
+  );
+  
+  $analysis_name = $result[0]->name;
+  
+  print "Removing Analysis Features of all types related to the ".$analysis_name." analysis...\n";
+
+  $sql = 'SELECT cvterm.name FROM feature JOIN cvterm cvterm ON cvterm.cvterm_id=feature.type_id 
+  
+  JOIN analysisfeature analysisfeature ON analysisfeature.feature_id=feature.feature_id JOIN analysis 
+  
+  analysis ON analysis.analysis_id=analysisfeature.analysis_id WHERE analysis.analysis_id=%d GROUP BY 
+  
+  cvterm.name';
+
+  $previous_db = tripal_db_set_active('chado');
+  $resource = db_query($sql, $analysis_id);
+  tripal_db_set_active($previous_db);
+  
+  while($record = db_fetch_object($resource)){
+  
+    $type = $record->name;
+    
+    //The loading script: bp_seqfeature_delete.pl, allows removal of data to specific file 
+    $command= "bp_seqfeature_delete.pl -u '".$user_name."' -p '".$password."' -d '" .$database_name. "' -t '" .$type. ":".$analysis_name."'";
+    
+    print "Executing Command: ".$command."\n";
+    
+    //exec() allows for execution of a external program: given the input
+    exec($command);
+  }
+
+}
+
+
+//-----------------------------------------------------------------------------
+//  SECTION: Add Tracks Form & Form submit
 //-----------------------------------------------------------------------------
 
 
@@ -2059,7 +2674,7 @@ function tripal_gbrowse_add_tracks_form_submit($form, $form_state) {
 
 
 //-----------------------------------------------------------------------------
-//  SECTION: Delete Tracks
+//  SECTION: Delete Tracks Form & Form submit
 //-----------------------------------------------------------------------------
 
 
