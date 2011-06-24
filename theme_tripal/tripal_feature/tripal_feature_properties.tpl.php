@@ -23,7 +23,7 @@
 
 <?php
  //uncomment this line to see a full listing of the fields avail. to $node
- dpm($node);
+ //dpm($node);
 ?>
 
 <?php
