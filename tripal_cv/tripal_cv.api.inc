@@ -343,3 +343,175 @@ function tripal_cv_chado_cvterm_schema() {
 
   return $description;
 }
+
+/**
+*
+* @ingroup tripal_cv_api
+*/
+function tripal_cv_add_cv($name,$comment){
+
+ // see if the CV (default-namespace) exists already in the database
+   $vocab = $name;
+   $remark = $comment;
+   $cv_sql = "SELECT * FROM {cv} WHERE name = '%s'";
+   $cv = db_fetch_object(db_query($cv_sql,$vocab));
+
+   // if the CV exists then update it, otherwise insert
+   if(!$cv){
+      $sql = "INSERT INTO {cv} (name,definition) VALUES ('%s','%s')";
+      if(!db_query($sql,$vocab,$remark)){
+         watchdog('tripal_cv', "Failed to create the CV record",NULL,WATCHDOG_WARNING);
+         return 0;
+      }
+      $cv = db_fetch_object(db_query($cv_sql,$vocab));
+   } else {
+      $sql = "UPDATE {cv} SET definition = '%s' WHERE name ='%s'";
+      if(!db_query($sql,$remark,$vocab)){
+         watchdog('tripal_cv', "Failed to update the CV record",NULL,WATCHDOG_WARNING);
+         return 0;
+      }
+      $cv = db_fetch_object(db_query($cv_sql,$vocab));
+   }
+   return $cv;
+}
+/**
+*
+* @ingroup tripal_cv_api
+*/
+function tripal_cv_add_cvterm($term,$defaultcv,$is_relationship = 0,$update = 1){
+
+   // get the term properties
+   $id = $term['id'];
+   $name = $term['name'];
+   $cvname = $term['namespace'];
+   $definition = preg_replace('/^\"(.*)\"/','\1',$term['def']);
+   $is_obsolete = 0;
+   if(isset($term['is_obsolete']) and  strcmp($term['is_obsolete'],'true')==0){
+     $is_obsolete = 1;
+   }
+   if(!$cvname){
+      $cvname = $defaultcv->name;
+   }
+   // make sure the CV name exists
+   $cv = tripal_cv_add_cv($cvname,'');
+   if(!$cv){
+      watchdog('tripal_cv', "Cannot find namespace '$cvname' when adding/updating $id",NULL,WATCHDOG_WARNING);
+      return 0;
+   }
+
+   // this SQL statement will be used a lot to find a cvterm so just set it
+   // here for easy reference below.
+   $cvtermsql = "SELECT CVT.name, CVT.cvterm_id, DB.name as dbname, DB.db_id 
+                  FROM {cvterm} CVT
+                    INNER JOIN {dbxref} DBX on CVT.dbxref_id = DBX.dbxref_id
+                    INNER JOIN {db} DB on DBX.db_id = DB.db_id
+                    INNER JOIN {cv} CV on CV.cv_id = CVT.cv_id
+                  WHERE CVT.name = '%s' and DB.name = '%s'";  
+
+   // get the accession and the database from the cvterm
+   if(preg_match('/^.+?:.*$/',$id)){
+      $accession = preg_replace('/^.+?:(.*)$/','\1',$id);
+      $dbname = preg_replace('/^(.+?):.*$/','\1',$id);
+   } 
+   if($is_relationship and !$dbname){
+      $accession = $id;
+      // because this is a relationship cvterm first check to see if it 
+      // exists in the relationship ontology. If it does then return the cvterm.
+      //  If not then set the dbname to _global and we'll add it or find it there
+      $cvterm = db_fetch_object(db_query($cvtermsql,$name,'OBO_REL'));
+      if($cvterm){
+         return $cvterm;
+      } else {
+         // next check if this term is in the _global ontology.  If it is then
+         // return it no matter what the original CV
+         $dbname = '_global';
+
+         $cvterm = db_fetch_object(db_query($cvtermsql,$name,$dbname));
+         if($cvterm){
+            return $cvterm;
+         }
+      }
+   }
+   if(!$is_relationship and !$dbname){
+      watchdog('tripal_cv', "A database identifier is missing from the term: $id",NULL,WATCHDOG_WARNING);
+      return 0;
+   }
+
+   // check to see if the database exists. 
+   $db = tripal_db_add_db($dbname);
+   if(!$db){
+      watchdog('tripal_cv', "Cannot find database '$dbname' in Chado.",NULL,WATCHDOG_WARNING);
+      return 0;
+   }
+
+
+   // if the cvterm doesn't exist then add it otherwise just update it
+   $cvterm = db_fetch_object(db_query($cvtermsql,$name,$dbname));
+   if(!$cvterm){
+      // check to see if the dbxref exists if not, add it
+      $dbxref =  tripal_db_add_dbxref($db->db_id,$accession);
+      if(!$dbxref){
+         watchdog('tripal_cv', "Failed to find or insert the dbxref record for cvterm, $name (id: $accession), for database $dbname",NULL,WATCHDOG_WARNING);
+         return 0;
+      }
+
+      // check to see if the dbxref already has an entry in the cvterm table
+      $sql = "SELECT * FROM {cvterm} WHERE dbxref_id = %d";
+      $check = db_fetch_object(db_query($sql,$dbxref->dbxref_id));
+
+      if(!$check){
+         // now add the cvterm
+         $sql = "
+            INSERT INTO {cvterm} (cv_id, name, definition, dbxref_id, 
+               is_obsolete, is_relationshiptype) 
+            VALUES (%d,'%s','%s',%d,%d,%d)
+         ";
+         if(!db_query($sql,$cv->cv_id,$name,$definition,
+             $dbxref->dbxref_id,$is_obsolete,$is_relationship)){
+            if(!$is_relationship){
+               watchdog('tripal_cv', "Failed to insert the term: $name ($dbname)",NULL,WATCHDOG_WARNING);
+               return 0;
+            } else {
+               watchdog('tripal_cv', "Failed to insert the relationship term: $name (cv: " . $cvname . " db: $dbname)",NULL,WATCHDOG_WARNING);
+               return 0;
+            }
+         }  
+      }
+      elseif($check and strcmp($check->name,$name)==0){
+         // this entry already exists. We're good, so do nothing
+      }
+      elseif($check and strcmp($check->name,$name)!=0){
+         watchdog('tripal_cv', "The dbxref already exists in the cvterm table: $dbxref->dbxref_id ($$accession) for term $name",NULL,WATCHDOG_WARNING);
+         return 0;
+      }
+      $cvterm = db_fetch_object(db_query($cvtermsql,$name,$dbname));
+      if(!$is_relationship){
+         print "Added CV term: $name ($dbname)\n";
+      } else {
+         print "Added relationship CV term: $name ($dbname)\n";
+      }
+   }
+   elseif($update) { // update the cvterm
+      $sql = "
+         UPDATE {cvterm} SET name='%s', definition='%s',
+            is_obsolete = %d, is_relationshiptype = %d
+         WHERE cvterm_id = %d
+      ";
+      if(!db_query($sql,$term['name'],$definition,
+          $is_obsolete,$is_relationship,$cvterm->cvterm_id)){
+         watchdog('tripal_cv', "Failed to update the term: $name",NULL,WATCHDOG_WARNING);
+         return 0;
+
+      }  
+      $cvterm = db_fetch_object(db_query($cvtermsql,$name,$dbname));         
+      if(!$is_relationship){
+         print "Updated CV term: $name ($dbname)\n";
+      } else {
+         print "Updated relationship CV term: $name ($dbname)\n";
+      }
+   }
+   // return the cvterm
+   return $cvterm;
+}
+
+

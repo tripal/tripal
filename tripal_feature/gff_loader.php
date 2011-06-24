@@ -17,7 +17,7 @@
  *
  * @ingroup gff3_loader
  */
-function tripal_core_gff3_load_form (){
+function tripal_feature_gff3_load_form (){
 
    $form['gff_file']= array(
       '#type'          => 'textfield',
@@ -100,7 +100,7 @@ function tripal_core_gff3_load_form (){
          data set, but at least indicates the source of the data."), 
    );
 
-   // get the list of organisms
+   // get the list of analyses
    $sql = "SELECT * FROM {analysis} ORDER BY name";
    $previous_db = tripal_db_set_active('chado');  // use chado database
    $org_rset = db_query($sql);
@@ -133,7 +133,7 @@ function tripal_core_gff3_load_form (){
  *
  * @ingroup gff3_loader
  */
-function tripal_core_gff3_load_form_validate ($form, &$form_state){
+function tripal_feature_gff3_load_form_validate ($form, &$form_state){
 
    $gff_file = $form_state['values']['gff_file'];
    $organism_id = $form_state['values']['organism_id'];
@@ -165,7 +165,7 @@ function tripal_core_gff3_load_form_validate ($form, &$form_state){
  *
  * @ingroup gff3_loader
  */
-function tripal_core_gff3_load_form_submit ($form, &$form_state){
+function tripal_feature_gff3_load_form_submit ($form, &$form_state){
    global $user;
 
    $gff_file = $form_state['values']['gff_file'];
@@ -190,8 +190,8 @@ function tripal_core_gff3_load_form_submit ($form, &$form_state){
    if($remove){
      $type = 'delete features';
    }
-   tripal_add_job("$type GFF3 file $gff_file",'tripal_core',
-      'tripal_core_load_gff3',$args,$user->uid);
+   tripal_add_job("$type GFF3 file $gff_file",'tripal_feature',
+      'tripal_feature_load_gff3',$args,$user->uid);
 
    return '';
 }
@@ -201,7 +201,7 @@ function tripal_core_gff3_load_form_submit ($form, &$form_state){
  *
  * @ingroup gff3_loader
  */
-function tripal_core_load_gff3($gff_file, $organism_id,$analysis_id,$add_only =0, 
+function tripal_feature_load_gff3($gff_file, $organism_id,$analysis_id,$add_only =0, 
    $update = 0, $refresh = 0, $remove = 0, $job = NULL)
 {
 
@@ -248,6 +248,7 @@ function tripal_core_load_gff3($gff_file, $organism_id,$analysis_id,$add_only =0
    }
    $in_fasta = 0;
    foreach ($lines as $line_num => $line) {
+   
       $i++;  // update the line count
       // update the job status every 1% features
       if($job and $i % $interval == 0){
@@ -257,6 +258,7 @@ function tripal_core_load_gff3($gff_file, $organism_id,$analysis_id,$add_only =0
       // to start parsing
       if(preg_match('/^##FASTA/i',$line)){
          $in_fasta = 1;
+         break;
       }
       // skip comments
       if(preg_match('/^#/',$line)){
@@ -270,9 +272,9 @@ function tripal_core_load_gff3($gff_file, $organism_id,$analysis_id,$add_only =0
 
       // handle FASTA section
       
+      // TODO: handle URL encoding
 
-      // TODO: remove URL encoding
-  
+      // remove URL encoding and get the columns
       $cols = explode("\t",$line);
       if(sizeof($cols) != 9){
          print "ERROR: improper number of columns on line $i\n";
@@ -434,7 +436,7 @@ function tripal_core_load_gff3($gff_file, $organism_id,$analysis_id,$add_only =0
 
          // add/update the feature
          print "$i ";
-         $feature = tripal_core_load_gff3_feature($organism,$analysis_id,$cvterm,
+         $feature = tripal_feature_load_gff3_feature($organism,$analysis_id,$cvterm,
             $attr_uniquename,$attr_name,$residues,$attr_is_analysis,
             $attr_is_obsolete, $add_only);
 
@@ -448,29 +450,37 @@ function tripal_core_load_gff3($gff_file, $organism_id,$analysis_id,$add_only =0
             // add/update the featureloc if the landmark and the ID are not the same
             // if they are the same then this entry in the GFF is probably a landmark identifier
             if(strcmp($landmark,$attr_uniquename)!=0){
-               tripal_core_load_gff3_featureloc($feature,$organism,
+               tripal_feature_load_gff3_featureloc($feature,$organism,
                   $landmark,$fmin,$fmax,$strand,$phase,$attr_fmin_partial,
                   $attr_fmax_partial,$attr_residue_info,$attr_locgroup);
             }
             // add any aliases for this feature
             if(array_key_exists('Alias',$tags)){
-               tripal_core_load_gff3_alias($feature,$tags['Alias']);
+               tripal_feature_load_gff3_alias($feature,$tags['Alias']);
             }
             // add any aliases for this feature
             if(array_key_exists('Dbxref',$tags)){
-               tripal_core_load_gff3_dbxref($feature,$tags['Dbxref']);
+               tripal_feature_load_gff3_dbxref($feature,$tags['Dbxref']);
             }
             // add any aliases for this feature
             if(array_key_exists('Ontology_term',$tags)){
-               tripal_core_load_gff3_ontology($feature,$tags['Ontology_term']);
+               tripal_feature_load_gff3_ontology($feature,$tags['Ontology_term']);
             }
             // add parent relationships
             if(array_key_exists('Parent',$tags)){
-               tripal_core_load_gff3_parents($feature,$cvterm,$tags['Parent'],$gff_features,$organism_id,$fmin);
+               tripal_feature_load_gff3_parents($feature,$cvterm,$tags['Parent'],$gff_features,$organism_id,$fmin);
             }
             // add in the GFF3_source dbxref so that GBrowse can find the feature using the source column
             $source_ref = array('GFF_source:'.$source);
-            tripal_core_load_gff3_dbxref($feature,$source_ref);
+            tripal_feature_load_gff3_dbxref($feature,$source_ref);
+
+            // add any additional attributes
+            if($attr_others){
+               foreach($attr_others as $property => $value){
+                  print "   Setting feature property: $property -> $value\n";
+                  tripal_feature_load_gff3_property($feature,$property,$value);
+               }
+            }
          }
       }      
    }
@@ -535,7 +545,7 @@ function tripal_core_load_gff3($gff_file, $organism_id,$analysis_id,$add_only =0
  *
  * @ingroup gff3_loader
  */
-function tripal_core_load_gff3_parents($feature,$cvterm,$parents,&$gff_features,$organism_id,$fmin){
+function tripal_feature_load_gff3_parents($feature,$cvterm,$parents,&$gff_features,$organism_id,$fmin){
 
    $uname = $feature->uniquename;
    $type = $cvterm->name;
@@ -598,7 +608,7 @@ function tripal_core_load_gff3_parents($feature,$cvterm,$parents,&$gff_features,
  * @ingroup gff3_loader
  */
 
-function tripal_core_load_gff3_dbxref($feature,$dbxrefs){
+function tripal_feature_load_gff3_dbxref($feature,$dbxrefs){
 
    // iterate through each of the dbxrefs
    foreach($dbxrefs as $dbxref){
@@ -669,7 +679,7 @@ function tripal_core_load_gff3_dbxref($feature,$dbxrefs){
  *
  * @ingroup gff3_loader
  */
-function tripal_core_load_gff3_ontology($feature,$dbxrefs){
+function tripal_feature_load_gff3_ontology($feature,$dbxrefs){
 
    // iterate through each of the dbxrefs
    foreach($dbxrefs as $dbxref){
@@ -746,7 +756,7 @@ function tripal_core_load_gff3_ontology($feature,$dbxrefs){
  *
  * @ingroup gff3_loader
  */
-function tripal_core_load_gff3_alias($feature,$aliases){
+function tripal_feature_load_gff3_alias($feature,$aliases){
 
    // make sure we have a 'synonym_type' vocabulary
    $sql = "SELECT * FROM {cv} WHERE name='synonym_type'";
@@ -774,9 +784,10 @@ function tripal_core_load_gff3_alias($feature,$aliases){
          'definition' => array(''),
          'is_obsolete' => array(0),
       );
-      $syntype = tripal_cv_obo_add_cv_term($term,$syncv,0,1);
+      $syntype = tripal_cv_add_cvterm($term,$syncv,0,1);
       if(!$syntype){
-         tripal_cv_obo_quiterror("Cannot add synonym type: internal:$type");
+         print("Cannot add synonym type: internal:$type");
+         return 0;
       }
    }
 
@@ -835,7 +846,7 @@ function tripal_core_load_gff3_alias($feature,$aliases){
             return 0;
          }
       } else {
-         print "Synonym $alias already exists. Skipping\n";
+         print "   Synonym $alias already exists. Skipping\n";
       }
    }
    return 1;
@@ -846,7 +857,7 @@ function tripal_core_load_gff3_alias($feature,$aliases){
  *
  * @ingroup gff3_loader
  */
-function tripal_core_load_gff3_feature($organism,$analysis_id,$cvterm,$uniquename,$name,
+function tripal_feature_load_gff3_feature($organism,$analysis_id,$cvterm,$uniquename,$name,
    $residues,$is_analysis='f',$is_obsolete='f',$add_only)  {
 
    // check to see if the feature already exists
@@ -915,7 +926,7 @@ function tripal_core_load_gff3_feature($organism,$analysis_id,$cvterm,$uniquenam
  *
  * @ingroup gff3_loader
  */
-function tripal_core_load_gff3_featureloc($feature,$organism,$landmark,$fmin,
+function tripal_feature_load_gff3_featureloc($feature,$organism,$landmark,$fmin,
    $fmax,$strand,$phase,$is_fmin_partial,$is_fmax_partial,$residue_info,$locgroup)
 {
  
@@ -986,5 +997,38 @@ function tripal_core_load_gff3_featureloc($feature,$organism,$landmark,$fmin,
    }
    return 1;
 }
+/**
+ *
+ *
+ * @ingroup gff3_loader
+ */
+function tripal_feature_load_gff3_property($feature,$property,$value){
+   // first make sure the cvterm exists.  If the term already exists then
+   // the function should return it
+   $match = array(
+      'name' => $property,
+      'cv_id' => array(
+         'name' => 'feature_property',
+      ),
+   );
+   $cvterm = tripal_core_chado_select('cvterm',array('*'),$match);
+   if(sizeof($cvterm) == 0){
+      $term = array(
+         'id' => "null:$property",
+         'name' => $property,
+         'namespace' => 'feature_property', 
+         'is_obsolete' => 0,
+      );
+      print "   Adding cvterm, $property\n";
+      $cvterm = tripal_cv_add_cvterm($term,'feature_property',0,0);
+   }
 
+   if(!$cvterm){
+      print "ERROR: cannot add cvterm, $property, before adding property\n";
+      exit;
+   }
+
+   // next give the feature the property
+   tripal_core_insert_property('feature',$feature->feature_id,$property,'feature_property',$value,1);
+}
 

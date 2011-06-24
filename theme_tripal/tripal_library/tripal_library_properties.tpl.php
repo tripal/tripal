@@ -26,8 +26,12 @@
  //print '<pre>'.print_r($node,TRUE).'</pre>';
 ?>
 
+
 <?php
-  $properties = $node->library->libraryprop;
+  $library = $node->library;
+  $library = tripal_core_expand_chado_vars($library,'table','libraryprop');
+  $properties = $library->libraryprop;
+
   if (!$properties) {
     $properties = array();
   } elseif (!is_array($properties)) { 

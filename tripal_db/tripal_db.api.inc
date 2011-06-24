@@ -290,3 +290,44 @@ function tripal_db_chado_dbxref_schema() {
 
   return $description;
 }
+/**
+*
+* @ingroup tripal_db_api
+*/
+function tripal_db_add_db($dbname){
+
+   $db_sql = "SELECT * FROM {db} WHERE name ='%s'";
+   $db = db_fetch_object(db_query($db_sql,$dbname));
+   if(!$db){
+      if(!db_query("INSERT INTO {db} (name) VALUES ('%s')",$dbname)){
+         watchdog('tripal_cv', "Cannot create '$dbname' db in Chado.",NULL,WATCHDOG_WARNING);
+         return 0;
+      }      
+     $db = db_fetch_object(db_query($db_sql,$dbname));
+   }
+   return $db;
+}
+/**
+*
+* @ingroup tripal_db_api
+*/
+function tripal_db_add_dbxref($db_id,$accession,$version='',$description=''){
+
+   // check to see if the dbxref exists if not, add it
+   $dbxsql = "SELECT dbxref_id FROM {dbxref} WHERE db_id = %d and accession = '%s'";
+   $dbxref = db_fetch_object(db_query($dbxsql,$db_id,$accession));
+   if(!$dbxref){
+      $sql = "
+         INSERT INTO {dbxref} (db_id, accession, version, description)
+         VALUES (%d,'%s','%s','%s')
+      ";
+      if(!db_query($sql,$db_id,$accession,$version,$description)){
+         watchdog('tripal_cv', "Failed to insert the dbxref record $accession",NULL,WATCHDOG_WARNING);
+         return 0;
+      }
+      print "Added Dbxref accession: $accession\n";
+      $dbxref = db_fetch_object(db_query($dbxsql,$db_id,$accession));
+   }
+   return $dbxref;
+
+}

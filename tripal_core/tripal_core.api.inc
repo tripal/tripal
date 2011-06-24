@@ -124,7 +124,7 @@ function tripal_core_chado_insert($table,$values){
          if (sizeof($results) > 1) {
            watchdog('tripal_core', 'tripal_core_chado_insert: Too many records match the criteria supplied for !foreign_key foreign key constraint (!criteria)', array('!foreign_key' => $field, '!criteria' => print_r($value,TRUE)), WATCHDOG_ERROR);         
          } elseif (sizeof($results) < 1) {
-           watchdog('tripal_core', 'tripal_core_chado_insert: no record matches criteria supplied for !foreign_key foreign key constraint (!criteria)', array('!foreign_key' => $field, '!criteria' => print_r($value,TRUE)), WATCHDOG_ERROR);
+           //watchdog('tripal_core', 'tripal_core_chado_insert: no record matches criteria supplied for !foreign_key foreign key constraint (!criteria)', array('!foreign_key' => $field, '!criteria' => print_r($value,TRUE)), WATCHDOG_ERROR);
          } else {
            $insert_values[$field] = $results[0];
          }
@@ -272,13 +272,19 @@ function tripal_core_chado_delete($table,$match){
    // get the values needed for matching in the SQL statement
    foreach ($match as $field => $value){
       if(is_array($value)){
-         $results = tripal_core_chado_get_foreign_key($table_desc,$field,$value);
-         if (sizeof($results) > 1) {
-           watchdog('tripal_core', 'tripal_core_chado_delete: When trying to find record to delete, too many records match the criteria supplied for !foreign_key foreign key constraint (!criteria)', array('!foreign_key' => $field, '!criteria' => print_r($value,TRUE)), WATCHDOG_ERROR);         
-         } elseif (sizeof($results) < 1) {
-           watchdog('tripal_core', 'tripal_core_chado_delete: When trying to find record to delete, no record matches criteria supplied for !foreign_key foreign key constraint (!criteria)', array('!foreign_key' => $field, '!criteria' => print_r($value,TRUE)), WATCHDOG_ERROR);
+         // if the user has specified an array of values to delete rather than
+         // FK relationships the keep those in our match 
+         if(array_values($value) === $value){
+            $delete_matches[$field] = $value;
          } else {
-           $delete_matches[$field] = $results[0];
+            $results = tripal_core_chado_get_foreign_key($table_desc,$field,$value);
+            if (sizeof($results) > 1) {
+              watchdog('tripal_core', 'tripal_core_chado_delete: When trying to find record to delete, too many records match the criteria supplied for !foreign_key foreign key constraint (!criteria)', array('!foreign_key' => $field, '!criteria' => print_r($value,TRUE)), WATCHDOG_ERROR);         
+            } elseif (sizeof($results) < 1) {
+              //watchdog('tripal_core', 'tripal_core_chado_delete: When trying to find record to delete, no record matches criteria supplied for !foreign_key foreign key constraint (!criteria)', array('!foreign_key' => $field, '!criteria' => print_r($value,TRUE)), WATCHDOG_ERROR);
+            } else {
+              $delete_matches[$field] = $results[0];
+            }
          }
       }
       else {
@@ -289,13 +295,18 @@ function tripal_core_chado_delete($table,$match){
    $sql = "DELETE FROM {$table} WHERE ";
    $dargs = array();
    foreach($delete_matches as $field => $value){
-      if(strcmp($fields[$field]['type'],'serial')==0 or 
-         strcmp($fields[$field]['type'],'int')==0){
-         $sql .= " $field = %d AND ";
+      if (count($value) > 1) {
+         $sql .= "$field IN (".db_placeholders($value,'varchar').") AND ";
+         foreach ($value as $v) { $dargs[] = $v; }
       } else {
-         $sql .= " $field = '%s' AND ";
+         if(strcmp($fields[$field]['type'],'serial')==0 or 
+            strcmp($fields[$field]['type'],'int')==0){
+            $sql .= " $field = %d AND ";
+         } else {
+            $sql .= " $field = '%s' AND ";
+         }
+         array_push($dargs,$value);
       }
-      array_push($dargs,$value);
    }
    $sql = substr($sql,0,-4);  // get rid of the trailing 'AND'
    
@@ -384,7 +395,7 @@ function tripal_core_chado_update($table,$match,$values){
          if (sizeof($results) > 1) {
            watchdog('tripal_core', 'tripal_core_chado_update: When trying to find record to update, too many records match the criteria supplied for !foreign_key foreign key constraint (!criteria)', array('!foreign_key' => $field, '!criteria' => print_r($value,TRUE)), WATCHDOG_ERROR);         
          } elseif (sizeof($results) < 1) {
-           watchdog('tripal_core', 'tripal_core_chado_update: When trying to find record to update, no record matches criteria supplied for !foreign_key foreign key constraint (!criteria)', array('!foreign_key' => $field, '!criteria' => print_r($value,TRUE)), WATCHDOG_ERROR);
+           //watchdog('tripal_core', 'tripal_core_chado_update: When trying to find record to update, no record matches criteria supplied for !foreign_key foreign key constraint (!criteria)', array('!foreign_key' => $field, '!criteria' => print_r($value,TRUE)), WATCHDOG_ERROR);
          } else {
            $update_matches[$field] = $results[0];
          }
@@ -401,7 +412,7 @@ function tripal_core_chado_update($table,$match,$values){
          if (sizeof($results) > 1) {
            watchdog('tripal_core', 'tripal_core_chado_update: When trying to find update values, too many records match the criteria supplied for !foreign_key foreign key constraint (!criteria)', array('!foreign_key' => $field, '!criteria' => print_r($value,TRUE)), WATCHDOG_ERROR);         
          } elseif (sizeof($results) < 1) {
-           watchdog('tripal_core', 'tripal_core_chado_update: When trying to find update values, no record matches criteria supplied for !foreign_key foreign key constraint (!criteria)', array('!foreign_key' => $field, '!criteria' => print_r($value,TRUE)), WATCHDOG_ERROR);
+           //watchdog('tripal_core', 'tripal_core_chado_update: When trying to find update values, no record matches criteria supplied for !foreign_key foreign key constraint (!criteria)', array('!foreign_key' => $field, '!criteria' => print_r($value,TRUE)), WATCHDOG_ERROR);
          } else {
            $update_values[$field] = $results[0];
          }         
@@ -560,14 +571,14 @@ function tripal_core_chado_select($table,$columns,$values,$options = null){
             if (sizeof($results) < 1) {
               // foreign key records are required
               // thus if none matched then return false and alert the admin through watchdog
-              watchdog('tripal_core', 
-               'tripal_core_chado_select: no record in the table referenced by the foreign key (!field)   exists. tripal_core_chado_select table=!table, columns=!columns, values=!values', 
-               array('!table' => $table, 
-                 '!columns' => '<pre>' . print_r($columns, TRUE) . '</pre>', 
-                 '!values' => '<pre>' . print_r($values, TRUE) . '</pre>',
-                 '!field' => $field,
-               ), 
-               WATCHDOG_WARNING);
+              //watchdog('tripal_core', 
+              // 'tripal_core_chado_select: no record in the table referenced by the foreign key (!field)   exists. tripal_core_chado_select table=!table, columns=!columns, values=!values', 
+              // array('!table' => $table, 
+              //   '!columns' => '<pre>' . print_r($columns, TRUE) . '</pre>', 
+              //   '!values' => '<pre>' . print_r($values, TRUE) . '</pre>',
+              //   '!field' => $field,
+              // ), 
+              // WATCHDOG_WARNING);
               return false;           
             } else {
               $where[$field] = $results;

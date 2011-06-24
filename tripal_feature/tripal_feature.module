@@ -16,6 +16,7 @@ require_once "gff_loader.php";
 
 require_once "tripal_feature.api.inc";
 
+require_once "tripal_feature-delete.inc";
 require_once "tripal_feature-secondary_tables.inc";
 require_once "tripal_feature-properties.inc";
 require_once "tripal_feature-relationships.inc";
@@ -178,10 +179,28 @@ function tripal_feature_menu() {
      'title' => 'Import a GFF3 file',
      'description' => 'Import a GFF3 file into Chado',
      'page callback' => 'drupal_get_form',
-     'page arguments' => array('tripal_core_gff3_load_form'),
+     'page arguments' => array('tripal_feature_gff3_load_form'),
      'access arguments' => array('access administration pages'),
      'type' => MENU_NORMAL_ITEM,
    );  
+
+   $items['admin/tripal/tripal_feature/delete'] = array(
+     'title' => ' Delete Features',
+     'description' => 'Delete multiple features from Chado',
+     'page callback' => 'drupal_get_form',
+     'page arguments' => array('tripal_feature_delete_form'),
+     'access arguments' => array('access administration pages'),
+     'type' => MENU_NORMAL_ITEM,
+   ); 
+
+   $items['admin/tripal/tripal_feature/sync'] = array(
+     'title' => ' Sync Features',
+     'description' => 'Sync features from Chado with Drupal',
+     'page callback' => 'drupal_get_form',
+     'page arguments' => array('tripal_feature_sync_form'),
+     'access arguments' => array('access administration pages'),
+     'type' => MENU_NORMAL_ITEM,
+   ); 
 
   // Adding Secondary Properties
 
@@ -2048,6 +2067,9 @@ function tripal_features_cleanup($dummy = NULL, $job_id = NULL) {
       $count++;
    }
    $interval = intval($count * 0.01);
+   if($interval > 1){
+      $interval = 1;
+   }
 
    // iterate through all of the chado_feature nodes and delete those  that aren't valid
    foreach($nodes as $nid){
@@ -2153,6 +2175,35 @@ function tripal_feature_job_describe_args($callback,$args){
          $analysis = tripal_core_chado_select('analysis',array('name'),array('analysis_id' => $args[13]));
       }
       $new_args['Analysis'] = $analysis[0]->name;
+   }
+   if($callback == 'tripal_feature_delete_features'){
+      if($args[0]){
+         $organism = tripal_core_chado_select('organism',array('genus','species'),array('organism_id' => $args[0]));
+         $new_args['Organism'] = $organism[0]->genus." ". $organism[0]->species;
+      } else {
+         $new_args['Organism'] = '';
+      }
+
+      if($args[1]){
+         $analysis = tripal_core_chado_select('analysis',array('name'),array('analysis_id' => $args[1]));
+         $new_args['Analysis'] = $analysis[0]->name;
+      } else {
+         $new_args['Analysis'] = '';
+      }
+      
+      $new_args['Sequence Type'] = $args[2];
+      $new_args['Is Unique Name'] = $args[3];
+      $new_args['Features Names'] = $args[4];
+      
+   }
+   if($callback == 'tripal_feature_sync_features'){
+      if($args[0]){
+         $organism = tripal_core_chado_select('organism',array('genus','species'),array('organism_id' => $args[0]));
+         $new_args['Organism'] = $organism[0]->genus." ". $organism[0]->species;
+      } else {
+         $new_args['Organism'] = '';
+      }
+      $new_args['Feature Types'] = $args[1];
    }
    return $new_args;
 }

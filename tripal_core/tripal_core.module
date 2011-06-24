@@ -274,3 +274,12 @@ function tripal_core_job_describe_args($callback,$args){
    }
    return $new_args;
 }
+
+// this is just a wrapper for backwards compatibility with a naming mistake.
+// it can go away in the future as it only is useful for jobs created by v0.3b 
+function tripal_core_load_gff3($gff_file, $organism_id,$analysis_id,$add_only =0, 
+   $update = 0, $refresh = 0, $remove = 0, $job = NULL)
+{
+   tripal_feature_load_gff3($gff_file, $organism_id,$analysis_id,$add_only, 
+      $update, $refresh, $remove, $job);
+}

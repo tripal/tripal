@@ -29,6 +29,91 @@ if(isset($arguments['f'])){
 }
 /**
 *
+*/
+function tripal_feature_sync_form (){
+
+   $form['description'] = array(
+      '#type' => 'item',
+      '#value' => t("Add feature types, optionally select an organism and ".
+         "click the 'Sync all Features' button to create Drupal ".
+         "content for features in chado. Only features of the types listed ".
+         "below in the Feature Types box will be synced. You may limit the ".
+         "features to be synced by a specific organism. Depending on the ".
+         "number of features in the chado database this may take a long ".
+         "time to complete. "),
+   );
+
+   $form['feature_types'] = array(
+      '#title'       => t('Feature Types'),
+      '#type'        => 'textarea',
+      '#description' => t('Enter the names of the sequence types that the ".
+         "site will support with independent pages.  Pages for these data ".
+         "types will be built automatically for features that exist in the ".
+         "chado database.  The names listed here should be spearated by ".
+         "spaces or entered separately on new lines. The names must match ".
+         "exactly (spelling and case) with terms in the sequence ontology'),
+      '#required'    => TRUE,
+      '#default_value' => variable_get('chado_feature_types','EST contig'),
+   );
+
+   // get the list of organisms
+   $sql = "SELECT * FROM {organism} ORDER BY genus, species";
+   $orgs = tripal_organism_get_synced(); 
+   $organisms[] = ''; 
+   foreach($orgs as $organism){
+      $organisms[$organism->organism_id] = "$organism->genus $organism->species ($organism->common_name)";
+   }
+   $form['organism_id'] = array (
+     '#title'       => t('Organism'),
+     '#type'        => t('select'),
+     '#description' => t("Choose the organism for which features will be deleted."),
+     '#options'     => $organisms,
+   );
+
+
+   $form['button'] = array(
+      '#type' => 'submit',
+      '#value' => t('Sync all Features'),
+      '#weight' => 3,
+   );
+
+   return $form;
+}
+/**
+*
+*/
+function tripal_feature_sync_form_validate ($form, &$form_state){
+   $organism_id   = $form_state['values']['organism_id'];
+   $feature_types = $form_state['values']['feature_types'];
+
+   // nothing to do
+}
+/**
+*
+*/
+function tripal_feature_sync_form_submit ($form, &$form_state){
+
+   global $user;
+
+   $organism_id   = $form_state['values']['organism_id'];
+   $feature_types = $form_state['values']['feature_types'];
+
+   $job_args = array(0,$organism_id,$feature_types);
+
+   if($organism_id){
+      $organism = tripal_core_chado_select('organism',array('genus','species'),array('organism_id' => $organism_id));
+      $title = "Sync all features for " .  $organism[0]->genus . " " . $organism[0]->species;
+   } else {
+      $title = t('Sync all features for all synced organisms');
+   }
+
+   variable_get('chado_feature_types',$feature_types);
+
+   tripal_add_job($title,'tripal_feature',
+         'tripal_feature_sync_features',$job_args,$user->uid);
+}
+/**
+*
 */   
 function tripal_feature_set_urls($job_id = NULL){
    // first get the list of features that have been synced
@@ -73,14 +158,20 @@ function tripal_feature_set_feature_url($node,$feature){
  *
  * @ingroup tripal_feature
  */
-function tripal_feature_sync_features ($max_sync = 0, $job_id = NULL){
+function tripal_feature_sync_features ($max_sync = 0, $organism_id = NULL, 
+   $feature_types = NULL, $job_id = NULL)
+{
    //print "Syncing features (max of $max_sync)\n";
    $i = 0;
 
    // get the list of available sequence ontology terms for which
    // we will build drupal pages from features in chado.  If a feature
    // is not one of the specified typse we won't build a node for it.
-   $allowed_types = variable_get('chado_feature_types','EST contig');
+   if(!$feature_types){
+      $allowed_types = variable_get('chado_feature_types','EST contig');
+   } else {
+      $allowed_types = $feature_types;
+   }
    $allowed_types = preg_replace("/[\s\n\r]+/"," ",$allowed_types);
 
    print "Looking for features of type: $allowed_types\n";
@@ -94,11 +185,18 @@ function tripal_feature_sync_features ($max_sync = 0, $job_id = NULL){
 
    // get the list of organisms that are synced and only include features from
    // those organisms
-   $orgs = organism_get_synced();
+   $orgs = tripal_organism_get_synced();
    $where_org = "";
    foreach($orgs as $org){
-      if($org->organism_id){
-         $where_org .= "F.organism_id = $org->organism_id OR ";
+      if($organism_id){
+         if($org->organism_id and $org->organism_id == $organism_id){
+            $where_org .= "F.organism_id = $org->organism_id OR ";
+         }
+      } 
+      else {
+         if($org->organism_id){
+            $where_org .= "F.organism_id = $org->organism_id OR ";
+         }
       }
    }
    $where_org = substr($where_org,0,strlen($where_org)-3);  # strip trailing 'OR'
@@ -135,6 +233,9 @@ function tripal_feature_sync_features ($max_sync = 0, $job_id = NULL){
 
    // Iterate through features that need to be synced
    $interval = intval($count * 0.01);
+   if($interval > 1){
+      $interval = 1;
+   }
    $num_ids = sizeof($ids);
    $i = 0;
    foreach($ids as $feature_id){
@@ -314,38 +415,4 @@ function tripal_feature_sync_feature ($feature_id){
 
    return '';
 }
-
-
-
-/**
- *  Returns a list of organisms that are currently synced with Drupal
- *
- * @ingroup tripal_feature
- */
-function organism_get_synced() {
-
-   // use this SQL for getting synced organisms
-   $dsql =  "SELECT * FROM {chado_organism}";
-   $orgs = db_query($dsql);
-
-   // use this SQL statement for getting the organisms
-   $csql =  "SELECT * FROM {Organism} ".
-            "WHERE organism_id = %d";
-
-   $org_list = array();
-
-   // iterate through the organisms and build an array of those that are synced
-   while($org = db_fetch_object($orgs)){
-      $previous_db = tripal_db_set_active('chado');  // use chado database
-      $info = db_fetch_object(db_query($csql,$org->organism_id));
-      tripal_db_set_active($previous_db);  // now use drupal database
-      $org_list[] = $info;
-   }    
-   return $org_list;
-}
-
-
-
-
-
 ?>

@@ -16,7 +16,7 @@ function tripal_cv_load_obo_v1_2_id($obo_id,$jobid = NULL){
    $obo = db_fetch_object(db_query($sql,$obo_id));
 
    // if the reference is for a remote URL then run the URL processing function
-   if(preg_match("/^http:\/\/",$obo->path) or preg_match("/^ftp:\/\/",$obo->path)){
+   if(preg_match("/^http:\/\//",$obo->path) or preg_match("/^ftp:\/\//",$obo->path)){
       tripal_cv_load_obo_v1_2_url($obo->name,$obo->path,$jobid,0);
    } 
    // if the reference is for a local file then run the file processing function
@@ -29,7 +29,11 @@ function tripal_cv_load_obo_v1_2_id($obo_id,$jobid = NULL){
       // if not local to Drupal, the file must be someplace else, just use
       // the full path provided
       else{
-         tripal_cv_load_obo_v1_2_file($obo->name,$obo->path,$jobid,0);
+         if(file_exists($obo->path)){
+            tripal_cv_load_obo_v1_2_file($obo->name,$obo->path,$jobid,0);
+         } else {
+            print "ERROR: counld not find OBO file: '$obo->path'\n";
+         }
       }
    }  
 }
@@ -58,7 +62,7 @@ function tripal_cv_load_obo_v1_2_url($obo_name,$url,$jobid = NULL,$is_new = 1){
 
    // first download the OBO
    $temp = tempnam(sys_get_temp_dir(),'obo_');
-   print "Opening URL $url\n";
+   print "Downloading URL $url, saving to $temp\n";
    $url_fh = fopen($url,"r");
    $obo_fh = fopen($temp,"w");
    while(!feof($url_fh)){
@@ -199,7 +203,7 @@ function tripal_cv_obo_process_terms($terms,$defaultcv,$obo,$jobid=null,&$newcvs
 function tripal_cv_obo_process_term($term,$defaultcv,$obo,$is_relationship=0,&$newcvs){
 
    // add the cvterm
-   $cvterm = tripal_cv_obo_add_cv_term($term,$defaultcv,$is_relationship,1);     
+   $cvterm = tripal_cv_obo_add_cvterm($term,$defaultcv,$is_relationship,1);     
    if(!$cvterm){ 
       tripal_cv_obo_quiterror("Cannot add the term " . $term['id'][0]);
    }
@@ -266,8 +270,22 @@ function tripal_cv_obo_process_term($term,$defaultcv,$obo,$is_relationship=0,&$n
       }
    }    
    // add any other external dbxrefs
-   if(isset($term['xref']) or isset($term['xref_analog']) or isset($term['xref_unk'])){
+   if(isset($term['xref'])){
       foreach($term['xref'] as $xref){
+         if(!tripal_cv_obo_add_cvterm_dbxref($cvterm,$xref)){
+            tripal_cv_obo_quiterror("Cannot add/update cvterm database reference (dbxref).");
+         }
+      }
+   }
+   if(isset($term['xref_analog'])){
+      foreach($term['xref_analog'] as $xref){
+         if(!tripal_cv_obo_add_cvterm_dbxref($cvterm,$xref)){
+            tripal_cv_obo_quiterror("Cannot add/update cvterm database reference (dbxref).");
+         }
+      }
+   }
+   if(isset($term['xref_unk'])){
+      foreach($term['xref_unk'] as $xref){
          if(!tripal_cv_obo_add_cvterm_dbxref($cvterm,$xref)){
             tripal_cv_obo_quiterror("Cannot add/update cvterm database reference (dbxref).");
          }
@@ -358,53 +376,7 @@ function tripal_cv_obo_add_cv($name,$comment){
    }
    return $cv;
 }
-/**
-*
-* @ingroup tripal_obo_loader
-*/
-function tripal_cv_obo_add_cvterm_prop($cvterm,$property,$value,$rank){
 
-   // make sure the 'cvterm_property_type' CV exists
-   $cv = tripal_cv_obo_add_cv('cvterm_property_type','');
-   if(!$cv){ 
-      tripal_cv_obo_quiterror("Cannot add/find cvterm_property_type cvterm");
-   }
-
-   // get the property type cvterm.  If it doesn't exist then we want to add it
-   $sql = "
-        SELECT * 
-        FROM {cvterm} CVT INNER JOIN {cv} CV on CVT.cv_id = CV.cv_id
-        WHERE CVT.name = '%s' and CV.name = '%s'
-   ";
-   $cvproptype = db_fetch_object(db_query($sql,$property,'cvterm_property_type'));
-   if(!$cvproptype){
-      $term = array(
-         'name' => array($property),
-         'id' => array("internal:$property"),
-         'definition' => array(''),
-         'is_obsolete' => array(0),
-      );
-      $cvproptype = tripal_cv_obo_add_cv_term($term,$cv,0,0);
-      if(!$cvproptype){  
-         tripal_cv_obo_quiterror("Cannot add cvterm property: internal:$property");
-      }
-   }
-
-
-   // remove any properties that currently exist for this term.  We'll reset them
-   if($rank == 0){
-      $sql = "DELETE FROM {cvtermprop} WHERE cvterm_id = %d";
-      db_query($sql,$cvterm->cvterm_id);
-   }
-
-   // now add the property
-   $sql = "INSERT INTO {cvtermprop} (cvterm_id,type_id,value,rank) ".
-          "VALUES (%d, %d, '%s',%d)";
-   if(!db_query($sql,$cvterm->cvterm_id,$cvproptype->cvterm_id,$value,$rank)){
-      tripal_cv_obo_quiterror("Could not add property $property for term\n");
-   }
-   return 1;
-}
 /**
 *
 * @ingroup tripal_obo_loader
@@ -418,7 +390,7 @@ function tripal_cv_obo_add_relationship($cvterm,$defaultcv,$obo,$rel,$objname,$o
       'definition' => array(''),
       'is_obsolete' => array(0),
    );
-   $relcvterm = tripal_cv_obo_add_cv_term($term,$defaultcv,1,0);
+   $relcvterm = tripal_cv_obo_add_cvterm($term,$defaultcv,1,0);
    if(!$relcvterm){
       tripal_cv_obo_quiterror("Cannot find or insert the relationship term: $rel\n");
    }
@@ -428,7 +400,7 @@ function tripal_cv_obo_add_relationship($cvterm,$defaultcv,$obo,$rel,$objname,$o
    if(!$objterm) { 
       tripal_cv_obo_quiterror("Could not find object term $objname\n"); 
    }
-   $objcvterm = tripal_cv_obo_add_cv_term($objterm,$defaultcv,$object_is_relationship,1);
+   $objcvterm = tripal_cv_obo_add_cvterm($objterm,$defaultcv,$object_is_relationship,1);
    if(!$objcvterm){ 
       tripal_cv_obo_quiterror("Cannot add/find cvterm");
    }
@@ -500,7 +472,7 @@ function tripal_cv_obo_add_synonyms($term,$cvterm){
                'definition' => array(''),
                'is_obsolete' => array(0),
             );
-            $syntype = tripal_cv_obo_add_cv_term($term,$syncv,0,1);
+            $syntype = tripal_cv_obo_add_cvterm($term,$syncv,0,1);
             if(!$syntype){
                tripal_cv_obo_quiterror("Cannot add synonym type: internal:$type");
             }
@@ -510,9 +482,9 @@ function tripal_cv_obo_add_synonyms($term,$cvterm){
          $sql = "
             SELECT * 
             FROM {cvtermsynonym} 
-            WHERE cvterm_id = %d and synonym = '%s' and type_id = %d
+            WHERE cvterm_id = %d and synonym = '%s'
          ";
-         $syn = db_fetch_object(db_query($sql,$cvterm->cvterm_id,$def,$syntype->cvterm_id));
+         $syn = db_fetch_object(db_query($sql,$cvterm->cvterm_id,$def));
          if(!$syn){
             $sql = "INSERT INTO {cvtermsynonym} (cvterm_id,synonym,type_id)
                     VALUES(%d,'%s',%d)";
@@ -537,191 +509,7 @@ function tripal_cv_obo_add_synonyms($term,$cvterm){
    }
    return 1;
 }
-/**
-*
-* @ingroup tripal_obo_loader
-*/
-function tripal_cv_obo_add_cv_term($term,$defaultcv,$is_relationship = 0,$update = 1){
 
-   // get the term properties
-   $id = $term['id'][0];
-   $name = $term['name'][0];
-   $cvname = $term['namespace'][0];
-   $definition = preg_replace('/^\"(.*)\"/','\1',$term['def'][0]);
-   $is_obsolete = 0;
-   if(isset($term['is_obsolete'][0]) and  strcmp($term['is_obsolete'][0],'true')==0){
-     $is_obsolete = 1;
-   }
-   if(!$cvname){
-      $cvname = $defaultcv->name;
-   }
-   // make sure the CV name exists
-   $cv = tripal_cv_obo_add_cv($cvname,'');
-   if(!$cv){
-      tripal_cv_obo_quiterror("Cannot find namespace '$cvname' when adding/updating $id");
-   }
-
-   // this SQL statement will be used a lot to find a cvterm so just set it
-   // here for easy reference below.
-   $cvtermsql = "SELECT CVT.name, CVT.cvterm_id, DB.name as dbname, DB.db_id 
-                  FROM {cvterm} CVT
-                    INNER JOIN {dbxref} DBX on CVT.dbxref_id = DBX.dbxref_id
-                    INNER JOIN {db} DB on DBX.db_id = DB.db_id
-                    INNER JOIN {cv} CV on CV.cv_id = CVT.cv_id
-                  WHERE CVT.name = '%s' and DB.name = '%s'";  
-
-   // get the accession and the database from the cvterm
-   if(preg_match('/^.+?:.*$/',$id)){
-      $accession = preg_replace('/^.+?:(.*)$/','\1',$id);
-      $dbname = preg_replace('/^(.+?):.*$/','\1',$id);
-   } 
-   if($is_relationship and !$dbname){
-      $accession = $id;
-      // because this is a relationship cvterm first check to see if it 
-      // exists in the relationship ontology. If it does then return the cvterm.
-      //  If not then set the dbname to _global and we'll add it or find it there
-      $cvterm = db_fetch_object(db_query($cvtermsql,$name,'OBO_REL'));
-      if($cvterm){
-         return $cvterm;
-      } else {
-         // next check if this term is in the _global ontology.  If it is then
-         // return it no matter what the original CV
-         $dbname = '_global';
-
-         $cvterm = db_fetch_object(db_query($cvtermsql,$name,$dbname));
-         if($cvterm){
-            return $cvterm;
-         }
-      }
-   }
-   if(!$is_relationship and !$dbname){
-      tripal_cv_obo_quiterror("A database identifier is missing from the term: $id");
-   }
-
-   // check to see if the database exists. 
-   $db = tripal_cv_obo_add_db($dbname);
-   if(!$db){
-      tripal_cv_obo_quiterror("Cannot find database '$dbname' in Chado.");
-   }
-
-
-   // if the cvterm doesn't exist then add it otherwise just update it
-   $cvterm = db_fetch_object(db_query($cvtermsql,$name,$dbname));
-   if(!$cvterm){
-      // check to see if the dbxref exists if not, add it
-      $dbxref =  tripal_cv_obo_add_dbxref($db->db_id,$accession);
-      if(!$dbxref){
-         tripal_cv_obo_quiterror("Failed to find or insert the dbxref record for cvterm, $name (id: $accession), for database $dbname");
-      }
-
-      // now add the cvterm
-      $sql = "
-         INSERT INTO {cvterm} (cv_id, name, definition, dbxref_id, 
-            is_obsolete, is_relationshiptype) 
-         VALUES (%d,'%s','%s',%d,%d,%d)
-      ";
-      if(!db_query($sql,$cv->cv_id,$name,$definition,
-          $dbxref->dbxref_id,$is_obsolete,$is_relationship)){
-         if(!$is_relationship){
-            tripal_cv_obo_quiterror("Failed to insert the term: $name ($dbname)");
-         } else {
-           tripal_cv_obo_quiterror("Failed to insert the relationship term: $name (cv: " . $cvname . " db: $dbname)");
-         }
-      }     
-      $cvterm = db_fetch_object(db_query($cvtermsql,$name,$dbname));
-      if(!$is_relationship){
-         print "Added CV term: $name ($dbname)\n";
-      } else {
-         print "Added relationship CV term: $name ($dbname)\n";
-      }
-   }
-   elseif($update) { // update the cvterm
-      $sql = "
-         UPDATE {cvterm} SET name='%s', definition='%s',
-            is_obsolete = %d, is_relationshiptype = %d
-         WHERE cvterm_id = %d
-      ";
-      if(!db_query($sql,$term['name'][0],$definition,
-          $is_obsolete,$is_relationship,$cvterm->cvterm_id)){
-         tripal_cv_obo_quiterror("Failed to update the term: $name");
-      }  
-      $cvterm = db_fetch_object(db_query($cvtermsql,$name,$dbname));         
-      if(!$is_relationship){
-         print "Updated CV term: $name ($dbname)\n";
-      } else {
-         print "Updated relationship CV term: $name ($dbname)\n";
-      }
-   }
-   // return the cvterm
-   return $cvterm;
-}
-/**
-*
-* @ingroup tripal_obo_loader
-*/
-function tripal_cv_obo_add_cvterm_dbxref($cvterm,$xref){
-
-   $dbname = preg_replace('/^(.+?):.*$/','$1',$xref);
-   $accession = preg_replace('/^.+?:\s*(.*?)(\{.+$|\[.+$|\s.+$|\".+$|$)/','$1',$xref);
-   $description = preg_replace('/^.+?\"(.+?)\".*?$/','$1',$xref);
-   $dbxrefs = preg_replace('/^.+?\[(.+?)\].*?$/','$1',$xref);
-
-   if(!$accession){
-      tripal_cv_obo_quiterror("Cannot add a dbxref without an accession: '$xref'");
-   }
-
-   // if the xref is a database link, handle that specially
-   if(strcmp($dbname,'http')==0){
-      $accession = $xref;
-      $dbname = 'URL';
-   }
-
-   // check to see if the database exists
-   $db = tripal_cv_obo_add_db($dbname);
-   if(!$db){
-      tripal_cv_obo_quiterror("Cannot find database '$dbname' in Chado.");
-   }
-
-   // now add the dbxref
-   $dbxref = tripal_cv_obo_add_dbxref($db->db_id,$accession,'',$description);
-   if(!$dbxref){ 
-      tripal_cv_obo_quiterror("Cannot find or add the database reference (dbxref)");
-   }
-
-   // finally add the cvterm_dbxref but first check to make sure it exists
-   $sql = "SELECT * from {cvterm_dbxref} WHERE cvterm_id = %d and dbxref_id = %d";
-   if(!db_fetch_object(db_query($sql,$cvterm->cvterm_id,$dbxref->dbxref_id))){            
-      $sql = "INSERT INTO {cvterm_dbxref} (cvterm_id,dbxref_id)".
-             "VALUES (%d,%d)";
-      if(!db_query($sql,$cvterm->cvterm_id,$dbxref->dbxref_id)){
-         tripal_cv_obo_quiterror("Cannot add cvterm_dbxref: $xref");
-      }
-   }
-   return 1;
-}
-/**
-*
-* @ingroup tripal_obo_loader
-*/
-function tripal_cv_obo_add_dbxref($db_id,$accession,$version='',$description=''){
-
-   // check to see if the dbxref exists if not, add it
-   $dbxsql = "SELECT dbxref_id FROM {dbxref} WHERE db_id = %d and accession = '%s'";
-   $dbxref = db_fetch_object(db_query($dbxsql,$db_id,$accession));
-   if(!$dbxref){
-      $sql = "
-         INSERT INTO {dbxref} (db_id, accession, version, description)
-         VALUES (%d,'%s','%s','%s')
-      ";
-      if(!db_query($sql,$db_id,$accession,$version,$description)){
-         tripal_cv_obo_quiterror("Failed to insert the dbxref record $accession");
-      }
-      print "Added Dbxref accession: $accession\n";
-      $dbxref = db_fetch_object(db_query($dbxsql,$db_id,$accession));
-   }
-   return $dbxref;
-
-}
 /**
 *
 * @ingroup tripal_obo_loader
@@ -794,5 +582,265 @@ function tripal_cv_obo_parse($obo_file,&$obo,&$header){
       }
    }
 }
+/**
+*
+* @ingroup tripal_obo_loader
+*/
+function tripal_cv_obo_add_cvterm_dbxref($cvterm,$xref){
 
+   $dbname = preg_replace('/^(.+?):.*$/','$1',$xref);
+   $accession = preg_replace('/^.+?:\s*(.*?)(\{.+$|\[.+$|\s.+$|\".+$|$)/','$1',$xref);
+   $description = preg_replace('/^.+?\"(.+?)\".*?$/','$1',$xref);
+   $dbxrefs = preg_replace('/^.+?\[(.+?)\].*?$/','$1',$xref);
+
+   if(!$accession){
+      tripal_cv_obo_quiterror();
+      watchdog('tripal_cv',"Cannot add a dbxref without an accession: '$xref'"
+         ,NULL,WATCHDOG_WARNING);
+      return 0;
+   }
+
+   // if the xref is a database link, handle that specially
+   if(strcmp($dbname,'http')==0){
+      $accession = $xref;
+      $dbname = 'URL';
+   }
+
+   // check to see if the database exists
+   $db = tripal_cv_obo_add_db($dbname);
+   if(!$db){
+      tripal_cv_obo_quiterror("Cannot find database '$dbname' in Chado.");
+   }
+
+   // now add the dbxref
+   $dbxref = tripal_cv_obo_add_dbxref($db->db_id,$accession,'',$description);
+   if(!$dbxref){ 
+      tripal_cv_obo_quiterror("Cannot find or add the database reference (dbxref)");
+   }
+
+   // finally add the cvterm_dbxref but first check to make sure it exists
+   $sql = "SELECT * from {cvterm_dbxref} WHERE cvterm_id = %d and dbxref_id = %d";
+   if(!db_fetch_object(db_query($sql,$cvterm->cvterm_id,$dbxref->dbxref_id))){            
+      $sql = "INSERT INTO {cvterm_dbxref} (cvterm_id,dbxref_id)".
+             "VALUES (%d,%d)";
+      if(!db_query($sql,$cvterm->cvterm_id,$dbxref->dbxref_id)){
+         tripal_cv_obo_quiterror("Cannot add cvterm_dbxref: $xref");
+      }
+   }
+   return 1;
+}
+/**
+*
+* @ingroup tripal_obo_loader
+*/
+function tripal_cv_obo_add_cvterm_prop($cvterm,$property,$value,$rank){
+
+   // make sure the 'cvterm_property_type' CV exists
+   $cv = tripal_cv_obo_add_cv('cvterm_property_type','');
+   if(!$cv){ 
+      tripal_cv_obo_quiterror("Cannot add/find cvterm_property_type cvterm");
+   }
+
+   // get the property type cvterm.  If it doesn't exist then we want to add it
+   $sql = "
+        SELECT * 
+        FROM {cvterm} CVT INNER JOIN {cv} CV on CVT.cv_id = CV.cv_id
+        WHERE CVT.name = '%s' and CV.name = '%s'
+   ";
+   $cvproptype = db_fetch_object(db_query($sql,$property,'cvterm_property_type'));
+   if(!$cvproptype){
+      $term = array(
+         'name' => array($property),
+         'id' => array("internal:$property"),
+         'definition' => array(''),
+         'is_obsolete' => array(0),
+      );
+      $cvproptype = tripal_cv_obo_add_cvterm($term,$cv,0,0);
+      if(!$cvproptype){  
+         tripal_cv_obo_quiterror("Cannot add cvterm property: internal:$property");
+      }
+   }
+
+
+   // remove any properties that currently exist for this term.  We'll reset them
+   if($rank == 0){
+      $sql = "DELETE FROM {cvtermprop} WHERE cvterm_id = %d";
+      db_query($sql,$cvterm->cvterm_id);
+   }
+
+   // now add the property
+   $sql = "INSERT INTO {cvtermprop} (cvterm_id,type_id,value,rank) ".
+          "VALUES (%d, %d, '%s',%d)";
+   if(!db_query($sql,$cvterm->cvterm_id,$cvproptype->cvterm_id,$value,$rank)){
+      tripal_cv_obo_quiterror("Could not add property $property for term\n");
+   }
+   return 1;
+}
+/**
+*
+* @ingroup tripal_obo_loader
+*/
+function tripal_cv_obo_add_cvterm($term,$defaultcv,$is_relationship = 0,$update = 1){
+
+   // get the term properties
+   $id = $term['id'][0];
+   $name = $term['name'][0];
+   $cvname = $term['namespace'][0];
+   $definition = preg_replace('/^\"(.*)\"/','\1',$term['def'][0]);
+   $is_obsolete = 0;
+   if(isset($term['is_obsolete'][0]) and  strcmp($term['is_obsolete'][0],'true')==0){
+     $is_obsolete = 1;
+   }
+   if(!$cvname){
+      $cvname = $defaultcv->name;
+   }
+   // make sure the CV name exists
+   $cv = tripal_cv_obo_add_cv($cvname,'');
+   if(!$cv){
+      tripal_cv_obo_quiterror("Cannot find namespace '$cvname' when adding/updating $id");
+   }
+
+   // this SQL statement will be used a lot to find a cvterm so just set it
+   // here for easy reference below.
+   $cvtermsql = "SELECT CVT.name, CVT.cvterm_id, DB.name as dbname, DB.db_id 
+                  FROM {cvterm} CVT
+                    INNER JOIN {dbxref} DBX on CVT.dbxref_id = DBX.dbxref_id
+                    INNER JOIN {db} DB on DBX.db_id = DB.db_id
+                    INNER JOIN {cv} CV on CV.cv_id = CVT.cv_id
+                  WHERE CVT.name = '%s' and DB.name = '%s'";  
+
+   // get the accession and the database from the cvterm
+   if(preg_match('/^.+?:.*$/',$id)){
+      $accession = preg_replace('/^.+?:(.*)$/','\1',$id);
+      $dbname = preg_replace('/^(.+?):.*$/','\1',$id);
+   } 
+   if($is_relationship and !$dbname){
+      $accession = $id;
+      // because this is a relationship cvterm first check to see if it 
+      // exists in the relationship ontology. If it does then return the cvterm.
+      //  If not then set the dbname to _global and we'll add it or find it there
+      $cvterm = db_fetch_object(db_query($cvtermsql,$name,'OBO_REL'));
+      if($cvterm){
+         return $cvterm;
+      } else {
+         // next check if this term is in the _global ontology.  If it is then
+         // return it no matter what the original CV
+         $dbname = '_global';
+
+         $cvterm = db_fetch_object(db_query($cvtermsql,$name,$dbname));
+         if($cvterm){
+            return $cvterm;
+         }
+      }
+   }
+   if(!$is_relationship and !$dbname){
+      tripal_cv_obo_quiterror("A database identifier is missing from the term: $id");
+   }
+
+   // check to see if the database exists. 
+   $db = tripal_cv_obo_add_db($dbname);
+   if(!$db){
+      tripal_cv_obo_quiterror("Cannot find database '$dbname' in Chado.");
+   }
+
+
+   // if the cvterm doesn't exist then add it otherwise just update it
+   $cvterm = db_fetch_object(db_query($cvtermsql,$name,$dbname));
+   if(!$cvterm){
+      // check to see if the dbxref exists if not, add it
+      $dbxref =  tripal_cv_obo_add_dbxref($db->db_id,$accession);
+      if(!$dbxref){
+         tripal_cv_obo_quiterror("Failed to find or insert the dbxref record for cvterm, $name (id: $accession), for database $dbname");
+      }
+
+      // check to see if the dbxref already has an entry in the cvterm table
+      $sql = "SELECT * FROM {cvterm} WHERE dbxref_id = %d";
+      $check = db_fetch_object(db_query($sql,$dbxref->dbxref_id));
+
+      if(!$check){
+         // now add the cvterm
+         $sql = "
+            INSERT INTO {cvterm} (cv_id, name, definition, dbxref_id, 
+               is_obsolete, is_relationshiptype) 
+            VALUES (%d,'%s','%s',%d,%d,%d)
+         ";
+         if(!db_query($sql,$cv->cv_id,$name,$definition,
+             $dbxref->dbxref_id,$is_obsolete,$is_relationship)){
+            if(!$is_relationship){
+               tripal_cv_obo_quiterror("Failed to insert the term: $name ($dbname)");
+            } else {
+               tripal_cv_obo_quiterror("Failed to insert the relationship term: $name (cv: " . $cvname . " db: $dbname)");
+            }
+         }  
+      }
+      elseif($check and strcmp($check->name,$name)!=0){
+         // this dbxref_id alrady exists in the database but the name is 
+         // different.  We will trust that the OBO is correct and that there
+         // has been a name change for this dbxref, so we'll update
+         $sql = "
+            UPDATE {cvterm} SET name = '%s', definition = '%s',
+               is_obsolete = %d, is_relationshiptype = %d 
+         ";
+         if(!db_query($sql,$name,$definition,$is_obsolete,$is_relationship)){
+            if(!$is_relationship){
+               tripal_cv_obo_quiterror("Failed to update the term: $name ($dbname)");
+            } else {
+               tripal_cv_obo_quiterror("Failed to update the relationship term: $name (cv: " . $cvname . " db: $dbname)");
+            }
+         } 
+      }
+      elseif($check and strcmp($check->name,$name)==0){
+         // this entry already exists. We're good, so do nothing
+      }
+      $cvterm = db_fetch_object(db_query($cvtermsql,$name,$dbname));
+      if(!$is_relationship){
+         print "Added CV term: $name ($dbname)\n";
+      } else {
+         print "Added relationship CV term: $name ($dbname)\n";
+      }
+   }
+   elseif($update) { // update the cvterm
+      $sql = "
+         UPDATE {cvterm} SET name='%s', definition='%s',
+            is_obsolete = %d, is_relationshiptype = %d
+         WHERE cvterm_id = %d
+      ";
+      if(!db_query($sql,$term['name'][0],$definition,
+          $is_obsolete,$is_relationship,$cvterm->cvterm_id)){
+         tripal_cv_obo_quiterror("Failed to update the term: $name");
+      }  
+      $cvterm = db_fetch_object(db_query($cvtermsql,$name,$dbname));         
+      if(!$is_relationship){
+         print "Updated CV term: $name ($dbname)\n";
+      } else {
+         print "Updated relationship CV term: $name ($dbname)\n";
+      }
+   }
+   // return the cvterm
+   return $cvterm;
+}
+
+/**
+*
+* @ingroup tripal_obo_loader
+*/
+function tripal_cv_obo_add_dbxref($db_id,$accession,$version='',$description=''){
+
+   // check to see if the dbxref exists if not, add it
+   $dbxsql = "SELECT dbxref_id FROM {dbxref} WHERE db_id = %d and accession = '%s'";
+   $dbxref = db_fetch_object(db_query($dbxsql,$db_id,$accession));
+   if(!$dbxref){
+      $sql = "
+         INSERT INTO {dbxref} (db_id, accession, version, description)
+         VALUES (%d,'%s','%s','%s')
+      ";
+      if(!db_query($sql,$db_id,$accession,$version,$description)){
+         tripal_cv_obo_quiterror("Failed to insert the dbxref record $accession");
+      }
+      print "Added Dbxref accession: $accession\n";
+      $dbxref = db_fetch_object(db_query($dbxsql,$db_id,$accession));
+   }
+   return $dbxref;
+
+}
 

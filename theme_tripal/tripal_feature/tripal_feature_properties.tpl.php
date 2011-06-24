@@ -23,11 +23,13 @@
 
 <?php
  //uncomment this line to see a full listing of the fields avail. to $node
- //print '<pre>'.print_r($node,TRUE).'</pre>';
+ dpm($node);
 ?>
 
 <?php
-  $properties = $node->feature->featureprop;
+  $feature = $node->feature;
+  $feature = tripal_core_expand_chado_vars($feature,'table','featureprop');
+  $properties = $feature->featureprop;
   if (!$properties) {
     $properties = array();
   } elseif (!is_array($properties)) { 

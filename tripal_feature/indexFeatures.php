@@ -155,8 +155,8 @@ function tripal_feature_index_feature ($feature_id,$nid){
    $node = node_build_content($node, FALSE, FALSE);
    $node->body = drupal_render($node->content);
    node_invoke_nodeapi($node, 'view', FALSE, FALSE);
-   $node->body .= module_invoke('comment', 'nodeapi', $node, 'update index');
-   $node->body .= module_invoke('taxonomy','nodeapi', $node, 'update index');
+//   $node->body .= module_invoke('comment', 'nodeapi', $node, 'update index');
+//   $node->body .= module_invoke('taxonomy','nodeapi', $node, 'update index');
    //   print "$node->title: $node->body\n";
    search_index($node->nid,'node',$node->body);
 

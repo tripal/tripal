@@ -15,9 +15,10 @@ function tripal_feature_module_description_page() {
              <li><a href=\"".url("admin/tripal/tripal_feature/configuration") . "\">Feature Configuration</a></li>
              <li><a href=\"".url("admin/tripal/tripal_feature/fasta_loader"). "\">Import a multi-FASTA file</a></li>
              <li><a href=\"".url("admin/tripal/tripal_feature/gff3_load"). "\">Import a GFF3 file</a></li>
-             <li><a href=\"".url("admin/tripal/tripal_feature/aggregate"). "\">Feature Relationship Aggegators</a></li>
+             <li><a href=\"".url("admin/tripal/tripal_feature/sync") . "\">Sync Features</a></li>
+             <li><a href=\"".url("admin/tripal/tripal_feature/delete") . "\">Delete Features</a></li>
            </ul>";
- 
+#             <li><a href=\"".url("admin/tripal/tripal_feature/aggregate"). "\">Feature Relationship Aggegators</a></li> 
 
   $text .= '<h3>Module Description:</h3>';
   $text .= '<p>This module provides an interface for the Chado feature module which stores information
@@ -64,7 +65,7 @@ function tripal_feature_module_description_page() {
                later to visualize data pipelines.  Before loading feature data through the FASTA or GFF loaders
                you will need to <a href="'.url('node/add').'">create an analysis</a> for the data.</p></li>
 
-               <li><p><b>Create Database</b>:  If you would like to associate your feature data with an 
+               <li><p><b>Create Referring Database Entries</b>:  If you would like to associate your feature data with an 
                external reference database, check to ensure that the <a href="'.url('admin/tripal/tripal_db/edit_db').'">
                database record already exists</a>.  If not you should <a href="'.url('admin/tripal/tripal_db/add_db').'">add a new database record</a> before importing
                feature data.</p></li>
@@ -83,7 +84,7 @@ function tripal_feature_module_description_page() {
                have loaded whole genome sequence with fully defined gene models with several features to define
                a gene and its products (e.g. gene, mRNA, CDS, 5\'UTR, 3\'UTR, etc) you probably only want to create
                pages for genes or genes and mRNA.  You probably do not want a page for a 5\'UTR.  
-               Using the <a href="'.url('admin/tripal/tripal_feature/configuration').'">Feature Configuration page</a> 
+               Using the <a href="'.url('admin/tripal/tripal_feature/configuration/sync').'">Feature Sync page</a> 
                you can sync (or create pages) for the desired feature types. </p></li>
 
                <li><p><b>Set Feature URL</b>:  It is often convenient to have a simple URL for each feature page. 
@@ -140,6 +141,10 @@ function tripal_feature_module_description_page() {
               <li><p><b>Basic Feature Lookup View</b>: This module provides a basic <a href="'.url('features').'">feature search 
               tool</a> for finding or listing features in Chado. It does not require indexing for Drupal searching but relies
               on Drupal Views.  <a href="http://drupal.org/project/views">Drupal Views</a> must be installed. </p></li>              
+
+              <li><p><b>Delete Features</b>: This module provides a <a href="'.url('admin/tripal/tripal_feature/delete').'">Delete Feature page</a>
+              for bulk deltions of features. You may delete features using a list of feature names, or for a specific organism
+              or for a specific feature type.</p></li>              
 
             </ul>
             </p>';
@@ -214,32 +219,8 @@ function tripal_feature_admin () {
    if(tripal_get_module_active_jobs('tripal_feature')){
       $active_jobs = TRUE;
    }
-   if(!$active_jobs){
+   if($active_jobs){
 
-      $form['chado_feature_accession_prefix'] = array (
-         '#title'       => t('Internal ID Prefix'),
-         '#type'        => t('textfield'),
-         '#description' => t("Internal ID numbers for features consist of the ".
-            "chado feature_id and a site specific prefix.  Set the prefix that ".
-            "will be incorporated in front of each feature_id."),
-         '#required'    => TRUE,
-         '#default_value' => variable_get('chado_feature_accession_prefix','ID'),
-      );
-
-      $form['chado_feature_types'] = array(
-         '#title'       => t('Feature Types'),
-         '#type'        => 'textarea',
-         '#description' => t('Enter the names of the sequence types that the ".
-            "site will support with independent pages.  Pages for these data ".
-            "types will be built automatically for features that exist in the ".
-            "chado database.  The names listed here should be spearated by ".
-            "spaces or entered separately on new lines. The names must match ".
-            "exactly (spelling and case) with terms in the sequence ontology'),
-         '#required'    => TRUE,
-         '#default_value' => variable_get('chado_feature_types','EST contig'),
-      );
-
-      get_tripal_feature_admin_form_sync_set($form);
       get_tripal_feature_admin_form_url_set($form);
 
       $form['browser'] = array(
@@ -458,80 +439,47 @@ function get_tripal_feature_admin_form_taxonomy_set (&$form) {
 
 }
 
-/**
- *
- *
- * @ingroup tripal_feature
- */
-function get_tripal_feature_admin_form_sync_set (&$form) {
-
-  
-   // get the list of organisms which will be synced.
-   $feature_sql = "SELECT * FROM {Feature} WHERE uniquename = '%s' and organism_id = %d";
-   $previous_db = tripal_db_set_active('chado');
-   $feature = db_fetch_object(db_query($feature_sql,$node->title,$node->organism_id));
-   tripal_db_set_active($previous_db);
-
-   // define the fieldsets
-   $form['sync'] = array(
-      '#type' => 'fieldset',
-      '#title' => t('Sync Features')
-   );
-
-   $form['sync']['description'] = array(
-      '#type' => 'item',
-      '#value' => t("Click the 'Sync all Features' button to create Drupal ".
-         "content for features in chado. Only features of the types listed ".
-         "above in the Feature Types box will be synced. Depending on the ".
-         "number of features in the chado database this may take a long ".
-         "time to complete. "),
-      '#weight' => 1,
-   );
-
-   $orgs = tripal_organism_get_synced();   
-   $org_list = '';
-   foreach($orgs as $org){
-      $org_list .= "$org->genus $org->species, ";
-   }
-   $form['sync']['description2'] = array(
-      '#type' => 'item',
-      '#value' => "Only features for the following organisms will be synced: ".
-         " $org_list",
-      '#weight' => 1,
-   );
-
-   $form['sync']['button'] = array(
-      '#type' => 'submit',
-      '#value' => t('Sync all Features'),
-      '#weight' => 3,
-   );
-
-}
 function get_tripal_feature_admin_form_url_set (&$form) {
 
    $form['url'] = array(
       '#type' => 'fieldset',
       '#title' => t('Feature URL Path')
    );
-
-   $form['url']['chado_feature_url'] = array(
-      '#title'       => t('Feature URL'),
-      '#type'        => 'radios',
-      '#description' => t('Each synced feature will have a unique URL which consists of '.
+   $form['url']['desc'] = array (
+      '#type'        => 'markup',
+      '#value' => t('Each synced feature will have a unique URL which consists of '.
                           'the site domain followed by a unique identifer: for '.
                           'example http://my-tripal-site.org/ID1034, where the '.
                           'element just after the final slash is the unique '.
-                          'identifier for the feature.  Choose a feature descriptor '.
-                          'from the list that is guaranteed to be unique in your synced '.
+                          'identifier for the feature.'),
+
+   );
+
+   $form['url']['chado_feature_url'] = array(
+      '#title'       => t('Unique Identifier'),
+      '#type'        => 'radios',
+      '#description' => t('Choose an identifier type '.
+                          'from the list above that is guaranteed to be unique in your synced '.
                           'dataset. If in doubt it is safest to coose the internal ID. '.
                           'The descrpitor need not be unique amont the total dataset. '.
                           'It only need be unique among the synced dataset.'),
       '#required'    => FALSE,
-      '#options'     => array('internal ID' => 'internal ID',
+      '#options'     => array('internal ID' => 'internal ID (Chado feature_id)',
                               'feature unique name' => 'feature unique name', 
                               'feature name' => 'feature name'),
       '#default_value' => variable_get('chado_feature_url','internal ID'),
    );
+
+   $form['url']['chado_feature_accession_prefix'] = array (
+      '#title'       => t('ID Prefix'),
+      '#type'        => t('textfield'),
+      '#description' => t("If you choose an Internal ID above you must also enter an ID prefix.".
+                          "this prefix will be prepended to the internal ID number (e.g. ID38294). ".
+                          "if you chose to use the feature name or unique name then this prfix is not used"),
+      '#required'    => TRUE,
+      '#default_value' => variable_get('chado_feature_accession_prefix','ID'),
+   );
+
    $form['url']['button'] = array(
       '#type' => 'submit',
       '#value' => t('Set Feature URLs'),

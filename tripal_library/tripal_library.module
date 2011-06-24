@@ -397,7 +397,7 @@ function theme_tripal_library_search_index ($node) {
       // get the libraries for the organism
       $previous_db = tripal_db_set_active('chado');
       $sql = "SELECT * FROM {library} L ".
-       	     "WHERE L.Organism_id = $node->organism_id";
+       	     "WHERE L.Organism_id = $node->organism->organism_id";
       $libraries = array();
       $results = db_query($sql);
       while($library = db_fetch_object($results)){
