@@ -7,4 +7,4 @@ package = Tripal
 dependencies[] = tripal_core
 dependencies[] = search
 dependencies[] = path
-version = 6.x-0.3b
+version = 6.x-0.3.1b

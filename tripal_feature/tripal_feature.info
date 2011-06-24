@@ -11,4 +11,4 @@ dependencies[] = tripal_db
 dependencies[] = tripal_cv
 dependencies[] = tripal_organism
 dependencies[] = tripal_analysis
-version = 6.x-0.3b
+version = 6.x-0.3.1b

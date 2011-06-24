@@ -1,6 +1,6 @@
 name = Tripal Theme
 description = A Tripal specific theme for use with any other theme.  Requires customization to .info file of the primary theme.
-version = 6.x-0.3b
+version = 6.x-0.3.1b
 core = 6.x
 engine = phptemplate
 ;base theme = admire_gray

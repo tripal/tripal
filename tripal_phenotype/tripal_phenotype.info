@@ -1,7 +1,7 @@
 ; $Id$
 package = Tripal
 name = Tripal Phenotype
-version = 6.x-0.3b
+version = 6.x-0.3.1b
 description = A module for interfacing the GMOD chado database with Drupal, providing viewing of Phenotype Data
 core = 6.x
 

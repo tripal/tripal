@@ -1,7 +1,7 @@
 ; $Id$
 package = Tripal Extensions
 name = Tripal Search Unigene
-version = 6.x-0.3b
+version = 6.x-0.3.1b
 description = A module to provide advanced search functions for unigenes
 core = 6.x
 
