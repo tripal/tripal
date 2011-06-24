@@ -62,15 +62,17 @@ if (Drupal.jsEnabled) {
 
       // we want the base details to show up when the page is first shown 
       // unless the user specified a specific block
-      var block = window.location.href.match(/\?block=.*/);
+      var block = window.location.href.match(/[\?|\&]block=(.+?)\&/)
+      if(block == null){
+         block = window.location.href.match(/[\?|\&]block=(.+)/)
+      }
       if(block != null){
-         block_title = block.toString().replace(/\?block=/g,'');
-         $("#tripal_library-"+block_title+"-box").show();
+         $("#tripal_library-"+block[1]+"-box").show();
       } else {
          $("#tripal_library-base-box").show();
       }
 
-      $("#tripal_organism_toc").height($("#tripal_library-base-box").parent().height());
+      $("#tripal_library_toc").height($("#tripal_library-base-box").parent().height());
    });
 }
 </script>

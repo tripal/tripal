@@ -64,10 +64,12 @@ if (Drupal.jsEnabled) {
 
       // we want the base details to show up when the page is first shown 
       // unless the user specified a specific block
-      var block = window.location.href.match(/\?block=.*/);
+      var block = window.location.href.match(/[\?|\&]block=(.+?)\&/)
+      if(block == null){
+         block = window.location.href.match(/[\?|\&]block=(.+)/)
+      }
       if(block != null){
-         block_title = block.toString().replace(/\?block=/g,'');
-         $("#tripal_analysis-"+block_title+"-box").show();
+         $("#tripal_analysis-"+block[1]+"-box").show();
       } else {
          $("#tripal_analysis-base-box").show();
       }
