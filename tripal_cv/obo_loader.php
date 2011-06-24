@@ -179,6 +179,9 @@ function tripal_cv_obo_process_terms($terms,$defaultcv,$obo,$jobid=null,&$newcvs
    $i = 0;
    $count = sizeof($terms);
    $interval = intval($count * 0.01);
+   if($interval > 1){
+      $interval = 1;
+   }
 
    foreach ($terms as $term){
 
@@ -772,6 +775,11 @@ function tripal_cv_obo_add_cvterm($term,$defaultcv,$is_relationship = 0,$update 
                tripal_cv_obo_quiterror("Failed to insert the relationship term: $name (cv: " . $cvname . " db: $dbname)");
             }
          }  
+         if(!$is_relationship){
+            print "Added CV term: $name ($dbname)\n";
+         } else {
+            print "Added relationship CV term: $name ($dbname)\n";
+         }
       }
       elseif($check and strcmp($check->name,$name)!=0){
          // this dbxref_id alrady exists in the database but the name is 
@@ -780,24 +788,25 @@ function tripal_cv_obo_add_cvterm($term,$defaultcv,$is_relationship = 0,$update 
          $sql = "
             UPDATE {cvterm} SET name = '%s', definition = '%s',
                is_obsolete = %d, is_relationshiptype = %d 
+            WHERE dbxref_id = %d
          ";
-         if(!db_query($sql,$name,$definition,$is_obsolete,$is_relationship)){
+         if(!db_query($sql,$name,$definition,$is_obsolete,$is_relationship,$dbxref->dbxref_id)){
             if(!$is_relationship){
                tripal_cv_obo_quiterror("Failed to update the term: $name ($dbname)");
             } else {
                tripal_cv_obo_quiterror("Failed to update the relationship term: $name (cv: " . $cvname . " db: $dbname)");
             }
          } 
+         if(!$is_relationship){
+            print "Updated CV term: $name ($dbname)\n";
+         } else {
+            print "Updated relationship CV term: $name ($dbname)\n";
+         }
       }
       elseif($check and strcmp($check->name,$name)==0){
          // this entry already exists. We're good, so do nothing
       }
       $cvterm = db_fetch_object(db_query($cvtermsql,$name,$dbname));
-      if(!$is_relationship){
-         print "Added CV term: $name ($dbname)\n";
-      } else {
-         print "Added relationship CV term: $name ($dbname)\n";
-      }
    }
    elseif($update) { // update the cvterm
       $sql = "
