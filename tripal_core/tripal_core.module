@@ -172,31 +172,6 @@ function tripal_core_menu() {
      'type' => MENU_NORMAL_ITEM,
    );
 
-   $items['admin/tripal/bulk_load/create'] = array(
-     'title' => 'Create Bulk Loader',
-     'description' => 'Create a bulk loader template for loading data into Chado',
-     'page callback' => 'tripal_core_bulk_loader_create',
-     'access arguments' => array('access administration pages'),
-     'type' => MENU_NORMAL_ITEM,
-   );
-
-   $items['admin/tripal/bulk_load/step2_get_type/%'] = array(
-     'title' => 'Create Bulk Loader',
-     'description' => 'Create a bulk loader template for loading data into Chado',
-     'page callback' => 'tripal_core_bulk_loader_ahah_step2_feature_type',
-     'page arguments' => array(4),
-     'access arguments' => array('access administration pages'),
-     'type' => MENU_CALLBACK,
-   );
-
-   $items['test2'] = array(
-     'title' => 'test',
-     'description' => 'test',
-     'page callback' => 'tripal_core_chado_insert_test',
-     'access arguments' => array('access administration pages'),
-     'type' => MENU_CALLBACK,
-   );
-
   return $items;
 }
 
