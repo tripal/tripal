@@ -570,13 +570,13 @@ function chado_analysis_blast_form ($node){
       '#default_value' => $blastjob
 	);
 	
-	$form['blast']['blastbesthit'] = array(
+/*	$form['blast']['blastbesthit'] = array(
       '#type' => 'checkbox',
       '#title' => t('Submit a job to generate a "best hits" report.'),
       '#description' => t('Note: the checkbox above must also be selected.'),
       '#default_value' => $blastbesthit
 	);
-	
+*/	
 	return $form;
 }
 /**
