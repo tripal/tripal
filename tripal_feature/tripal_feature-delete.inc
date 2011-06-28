@@ -24,7 +24,7 @@ function tripal_feature_delete_form (){
          separated by spaces or by new lines to be delete. If you specify feature names then
          all other options below will be ignored (except the unique checkbox).'),
    );
-	$form['is_uniquename'] = array(
+	$form['is_unique'] = array(
       '#title' => t('Names are Unique Names'),
       '#type' => 'checkbox',
       '#description' => t('Select this checbox if the names listed in the feature 

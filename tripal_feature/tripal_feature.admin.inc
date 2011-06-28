@@ -219,7 +219,7 @@ function tripal_feature_admin () {
    if(tripal_get_module_active_jobs('tripal_feature')){
       $active_jobs = TRUE;
    }
-   if($active_jobs){
+   if(!$active_jobs){
 
       get_tripal_feature_admin_form_url_set($form);
 
