@@ -100,7 +100,12 @@ function tripal_analysis_blast_parseXMLFile ($analysis_id, $blastdb, $blastfile,
 	// Prepare log
 	$filename = preg_replace("/.*\/(.*)/", "$1", $blastfile);
 	$logfile = file_directory_path() . "/tripal/tripal_analysis_blast/load_$filename.log";
+        $logfile = tempnam(sys_get_temp_dir(),"tripal_analysis_blast_import");
 	$log = fopen($logfile, 'a'); // append parsing results to log file
+        if(!$log){
+           print "ERROR: cannot open log file: $logfile\n";
+           exit;
+        }
 
 	// If user input a file (e.g. blast.xml)
 	if (is_file($blastfile)) {
@@ -134,7 +139,7 @@ function tripal_analysis_blast_parseXMLFile ($analysis_id, $blastdb, $blastfile,
 			   if ($no_file % $interval == 0) {
 			      $percentage = (int) (($no_file / $total_files) * 100);
 				   tripal_job_set_progress($job_id, $percentage);
-				   print $percentage."% ";
+				   print $percentage."%\r";
 			   }				
          }
    	   $no_file ++;
@@ -242,7 +247,7 @@ function tripal_analysis_blast_parseXML($analysis_id, $blastdb, $blastfile,
 					if ($set_progress and $idx_iterations % $interval == 0) {
 						$percentage = (int) (($idx_iterations / $no_iterations) * 100);
 						tripal_job_set_progress($job_id, $percentage);
-						print $percentage."% ";
+						print $percentage."%\r";
 					}
 					// now run through the blast hits/hsps of this iteration
 					// and generate the rows of the table
@@ -673,7 +678,7 @@ function tripal_analysis_blast_parse_best_hit ($analysis_id) {
 		if ($i !=0 && $i % $interval == 0) {
 			$percentage = (int) ($i / $counter * 100);
 			tripal_job_set_progress($job_id, $percentage);	
-			print $percentage."% ";
+			print $percentage."%\r";
 		}
 
 		$sql = "SELECT value

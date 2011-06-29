@@ -4,7 +4,7 @@ $analysis = $variables['node']->analysis;
 $interpro = $node->analysis->tripal_analysis_interpro;
 
 // the description is a text field so we want to expand that
-$analysis = tripal_core_expand_chado_vars($analysis,'field','description');
+$analysis = tripal_core_expand_chado_vars($analysis,'field','analysis.description');
 ?>
 <div id="tripal_analysis_interpro-base-box" class="tripal_analysis_interpro-info-box tripal-info-box">
   <div class="tripal_analysis_interpro-info-box-title tripal-info-box-title">Details</div>

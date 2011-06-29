@@ -7,8 +7,12 @@ function tripal_analysis_interpro_parseHTMLFile ($analysis_id, $interprofile, $p
 
 	// Prepare log
 	$filename = preg_replace("/.*\/(.*)/", "$1", $interprofile);
-	$logfile = file_directory_path() . "/tripal/tripal_analysis_interpro/load_$filename.log";
-	$log = fopen($logfile, 'a'); // append parsing results to log file
+        $logfile = tempnam(sys_get_temp_dir(),"tripal_analysis_interpro_import");
+        $log = fopen($logfile, 'a'); // append parsing results to log file
+        if(!$log){
+           print "ERROR: cannot open log file: $logfile\n";
+           exit;
+        }
 
 	// Parsing started
 	print "Parsing File:".$interprofile." ...\n";
