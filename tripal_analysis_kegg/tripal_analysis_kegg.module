@@ -997,8 +997,8 @@ function theme_tripal_analysis_kegg_search_index($node){
 /************************************************************************
  */
 function theme_tripal_analysis_kegg_search_result($node){
-   $content = theme_tripal_analysis_kegg_node_add($node);
-   return $content;
+ //  $content = theme_tripal_analysis_kegg_node_add($node);
+ //  return $content;
 }
 
 

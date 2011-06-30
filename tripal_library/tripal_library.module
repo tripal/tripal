@@ -1667,3 +1667,9 @@ function tripal_library_cleanup($dummy = NULL, $job_id = NULL) {
    }
    return '';
 }
+/************************************************************************
+ */
+function theme_tripal_library_search_result($node){
+
+}
+
