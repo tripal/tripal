@@ -566,7 +566,12 @@ function tripal_analysis_go_job_describe_args($callback,$args){
 
       $organism = tripal_core_chado_select('organism',array('genus','species'),array('organism_id' => $args[1]));
       $new_args['Organism'] = $organism[0]->genus." ". $organism[0]->species;
-      $new_args['Sequence Type'] = $args[8];
+      $new_args['Sequence Type'] = $args[7];
+      if(!$args[8]){
+        $new_args['Use Unique Name'] = 'No';
+      } else {
+        $new_args['Use Unique Name'] = 'Yes';
+      }
 
       // add in the analysis 
       if($args[2]){
@@ -585,7 +590,6 @@ function tripal_analysis_go_job_describe_args($callback,$args){
       }
 
       $new_args['Regular expression for the feature name'] = $args[6];
-      $new_args['Regular expression for the feature unique name'] = $args[7];
 
 
    }

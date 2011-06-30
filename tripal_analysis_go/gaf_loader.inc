@@ -27,12 +27,6 @@ function tripal_analysis_go_gaf_load_form (){
    while($organism = db_fetch_object($org_rset)){
       $organisms[$organism->organism_id] = "$organism->genus $organism->species ($organism->common_name)";
    }
-   $form['type']= array(
-      '#type' => 'textfield',
-      '#title' => t('Sequence Type'),
-      '#required' => TRUE,
-      '#description' => t('Please enter the Sequence Ontology term that describes the sequences in the GAF file.'),
-   );
    $form['organism_id'] = array (
      '#title'       => t('Organism'),
      '#type'        => t('select'),
@@ -40,6 +34,20 @@ function tripal_analysis_go_gaf_load_form (){
      '#required'    => TRUE,
      '#options'     => $organisms,
    );
+   $form['seq_type']= array(
+      '#type' => 'textfield',
+      '#title' => t('Sequence Type'),
+      '#required' => TRUE,
+      '#description' => t('Please enter the Sequence Ontology term that describes the sequences in the GAF file.'),
+   );
+	$form['query_uniquename'] = array(
+      '#title' => t('Use Unique Name'),
+      '#type' => 'checkbox',
+      '#description' => t('Select this checboxk if the feature name in the GAF file '.
+        'matches the uniquename in the database.  By default, the feature will '.
+        'be mapped to the "name" of the feature.'),
+      '#default_value' => $query_uniquename,
+	);
    $form['import_options'] = array(
       '#type' => 'fieldset',
       '#title' => t('Import Options'),
@@ -107,15 +115,12 @@ function tripal_analysis_go_gaf_load_form (){
       '#type' => 'textfield',
       '#title' => t('Regular expression for the name'),
       '#required' => FALSE,
-      '#description' => t('Enter the regular expression that will extract the feature name. For example, for text with a name and uniquename separated by a bar \'|\' (>seqname|uniquename), the regular expression would be, "^(.*?)\|.*$".  the name must be unique for this organism and sequence type.' ),
+      '#description' => t('Enter the regular expression that will extract the '.
+         'feature name from the GAF file. This option is '.
+         'is only required when the feature identifier does not identically match a feature '.
+         'in the database.'),
    );   
-
-   $form['advanced']['re_uname']= array(
-      '#type' => 'textfield',
-      '#title' => t('Regular expression for the unique name'),
-      '#required' => FALSE,
-      '#description' => t('Enter the regular expression that will extract the unique feature name.  For example, for text with a name and uniquename separated by a bar \'|\' (>seqname|uniquename), the regular expression would be, "^.*?\|(.*)$".  the name must be unique for this organism and sequence type.' ),
-   );   
+ 
 
    $form['button'] = array(
       '#type' => 'submit',
@@ -136,9 +141,9 @@ function tripal_analysis_go_gaf_load_form_validate ($form, &$form_state){
    $remove   = $form_state['values']['remove'];
    $replace  = $form_state['values']['replace'];
    $analysis_id = $form_state['values']['analysis_id'];
-   $type      = trim($form_state['values']['type']);
+   $type      = trim($form_state['values']['seq_type']);
    $re_name      = trim($form_state['values']['re_name']);
-   $re_uname     = trim($form_state['values']['re_uname']);
+   $query_uniquename = $form_state['values']['query_uniquename'];
 
 
    // check to see if the file is located local to Drupal
@@ -156,10 +161,6 @@ function tripal_analysis_go_gaf_load_form_validate ($form, &$form_state){
        ($replace and ($add_only or $remove)) or
        ($remove and ($replace or $add_only))){
        form_set_error('add_only',t("Please select only one checkbox from the import options section"));
-   }
-
-   if($re_name and $re_uname){
-     form_set_error('re_name',t("Please provide a regular expression for the name or the unique name only, not both."));
    }
 
    // check to make sure the types exists
@@ -193,12 +194,12 @@ function tripal_analysis_go_gaf_load_form_submit ($form, &$form_state){
    $remove   = $form_state['values']['remove'];
    $replace  = $form_state['values']['replace'];
    $analysis_id = $form_state['values']['analysis_id'];
-   $type      = trim($form_state['values']['type']);
+   $type      = trim($form_state['values']['seq_type']);
    $re_name      = trim($form_state['values']['re_name']);
-   $re_uname     = trim($form_state['values']['re_uname']);
+   $query_uniquename = $form_state['values']['query_uniquename'];
 
-
-   $args = array($gaf_file,$organism_id,$analysis_id,$add_only,$replace,$remove,$re_name,$re_uname,$type);
+   $args = array($gaf_file,$organism_id,$analysis_id,$add_only,$replace,
+      $remove,$re_name,$type,$query_uniquename);
    if($add_only){
      $type = 'add GO terms';
    }
@@ -220,7 +221,8 @@ function tripal_analysis_go_gaf_load_form_submit ($form, &$form_state){
  * @ingroup gff3_loader
  */
 function tripal_analysis_go_load_gaf($gaf_file, $organism_id,$analysis_id,$add_only =0, 
-   $replace = 0, $remove = 0, $re_name, $re_uname, $type, $job = NULL)
+   $replace = 0, $remove = 0, $re_name, $type, $query_uniquename,
+   $job = NULL)
 {
    print "Opening GAF file $gaf_file\n";
 
@@ -275,8 +277,7 @@ function tripal_analysis_go_load_gaf($gaf_file, $organism_id,$analysis_id,$add_o
       $product   = $cols[16];
 
       // get the name or uniquename for the feature
-      $uname = $object;
-      $name = '';
+      $name = $object;
       if($re_name){
          if(!preg_match("/$re_name/",$object,$matches)){
             print "Regular expression for the feature name finds nothing\n";
@@ -284,16 +285,11 @@ function tripal_analysis_go_load_gaf($gaf_file, $organism_id,$analysis_id,$add_o
             $name = trim($matches[1]);
          }
       } else {
-         preg_match("/^\s*(.*?)[\s\|].*$/",$object,$matches);
-         $name = trim($matches[1]);
-      }
-      if($re_uname){
-         if(!preg_match("/$re_uname/",$object,$matches)){
-            print "Regular expression for the feature unique name finds nothing\n";
-         } else {
-            $uname = trim($matches[1]);
+         if(preg_match("/^\s*(.*?)[\s\|].*$/",$object,$matches)){
+            $name = trim($matches[1]);
          }
       }
+      
 
       // get the feature
       $values = array(
@@ -305,23 +301,25 @@ function tripal_analysis_go_load_gaf($gaf_file, $organism_id,$analysis_id,$add_o
          ),
          'organism_id' => $organism_id,
       );
-      if($name){
+      if(!$query_uniquename){
         $values['name'] = $name;
-      } 
-      if($uname){
-        $values['uniquename'] = $uname;
+      } else {
+        $values['uniquename'] = $name;
       } 
       $feature = tripal_core_chado_select('feature',array('*'),$values);
-
-      // add the GO term to the feature
-      tripal_analysis_go_load_gaff_go_term($feature[0],$go_id,$remove);
+      if(count($feature) == 0){
+         print "WARNING: Cannot find the feature: '$name'\n";         
+      } else {
+         // add the GO term to the feature
+         tripal_analysis_go_load_gaff_go_term($feature[0],$go_id,$remove,$analysis_id);
+      }
    }
    return 1;
 }
 /**
 *
 */
-function tripal_analysis_go_load_gaff_go_term($feature,$dbxref,$remove){
+function tripal_analysis_go_load_gaff_go_term($feature,$dbxref,$remove,$analysis_id){
 
    // get the database name from the reference.  If it doesn't exist then create one.
    $ref = explode(":",$dbxref);
@@ -381,7 +379,7 @@ function tripal_analysis_go_load_gaff_go_term($feature,$dbxref,$remove){
       if($ret){
          print "   Added ontology term $dbname:$accession to feature $feature->uniquename\n";
       } else {
-         print "ERROR: failed to insert ontology term: $dbname:$accession\n";
+         print "ERROR: failed to insert ontology term '$dbname:$accession' for feature: $feature\n";
          return 0;
       }
    } else {
@@ -399,5 +397,70 @@ function tripal_analysis_go_load_gaff_go_term($feature,$dbxref,$remove){
       }
    }
 
+   if(!$remove){
+      print "   Associating feature $feature->name to analysis\n";
+      // Insert into analysisfeature table only if it doesn't already exist
+      $values = array('feature_id' => $feature->feature_id, 'analysis_id' => $analysis_id);
+      $analysisfeature = tripal_core_chado_select('analysisfeature',array('*'),$values);
+      if(sizeof($analysisfeature) == 0){
+         $analysisfeature = tripal_core_chado_insert('analysisfeature',$values);
+         $analysisfeature_id = $analysisfeature['analysisfeature_id'];
+      } else {
+         $analysisfeature_id = $analysisfeature[0]->analysisfeature_id;
+      }
+
+      // Insert GO terms into analysisfeatureprop table
+      $values = array('analysisfeature_id' => $analysisfeature_id,
+                      'type_id' => $cvterm->cvterm_id,
+                      'rank' => 0);
+      $analysisfeatureprop = tripal_core_chado_select('analysisfeatureprop',array('*'),$values);
+      if(sizeof($analysisfeatureprop) == 0){
+         $values['value'] = $matches[1];
+         $analysisfeatureprop = tripal_core_chado_insert('analysisfeatureprop',$values);
+      }
+   }
    return 1;
+}
+/**
+*
+*/
+function tripal_analysis_go_load_gaff_insert_analysisfeatureprop ($feature_id, $analysis_id,
+   $brite_id,$keggterm)
+{
+
+   // add the analysisfeature record if it doesn't already exist.
+   $values = array('feature_id' => $feature_id,'analysis_id' => $analysis_id);
+   $analysisfeature_arr = tripal_core_chado_select('analysisfeature',
+      array('analysisfeature_id'),$values);
+   if(count($analysisfeature_arr) == 0){
+      tripal_core_chado_insert('analysisfeature',$values);
+      $analysisfeature_arr = tripal_core_chado_select('analysisfeature',
+         array('analysisfeature_id'),$values);
+   }
+   $analysisfeature_id = $analysisfeature_arr[0]->analysisfeature_id;            
+   // Insert into analysisfeatureprop if the value doesn't already exist
+   // KEGG heir results sometimes have the same record more than once.
+   if($analysisfeature_id){
+      // Get the highest rank for this feature_id in analysisfeatureprop table
+      $sql = "SELECT rank FROM analysisfeatureprop WHERE analysisfeature_id = %d and type_id = %d ORDER BY rank DESC";
+      $previous_db = tripal_db_set_active('chado');
+      $result = db_fetch_object(db_query($sql,$analysisfeature_id,$brite_id));
+      tripal_db_set_active($previous);
+      $rank = 0;
+      if ($result and $result->rank > 0) {
+         $rank = $result->rank + 1;
+      }
+
+      $values = array(
+         'analysisfeature_id' => $analysisfeature_id, 
+         'type_id' => $brite_id,
+         'value' => $keggterm,
+         'rank' => $rank,
+      );
+
+      return tripal_core_chado_insert('analysisfeatureprop',$values);
+   }
+   else {
+      return 0;
+   }
 }

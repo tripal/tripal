@@ -9,7 +9,17 @@
      if($has_results){
         print $form;
      } else {
-       ?><div class="tripal-no-results">There are no GO reports avaialble</div><?php
+       ?><div class="tripal-no-results">
+           There are no GO reports avaialble
+           <?php if(user_access('access administration pages')){ ?>
+              <p><br>Administrators, to view a GO report you must:
+              <ul>
+                 <li>load GO assignments and associate them to features and a corresponding analysis</li>
+                 <li>Set the <a href="<?php print url('admin/tripal/tripal_cv/cvtermpath');?>">cvtermpath</a> for the 'biological process', 'molecular_function' and 'cellular_component' vocabularies.</li>
+                 <li>Populate the <a href="<?php print url('admin/tripal/tripal_mviews');?>">go_count_analysis</a> materialized view</li>
+              </ul> </p>
+           <?php }?>
+         </div><?php
      }
   ?>
   <div id="tripal_analysis_go_org_charts"></div>    

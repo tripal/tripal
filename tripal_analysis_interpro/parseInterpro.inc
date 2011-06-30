@@ -442,7 +442,7 @@ function tripal_analysis_interpro_parseSingleXMLFile ($analysis_id, $interproxml
             $analysisfeature = tripal_core_chado_insert('analysisfeature',$values);
             $analysisfeature_id = $analysisfeature['analysisfeature_id'];
          } else {
-         $analysisfeature_id = $analysisfeature[0]->analysisfeature_id;
+            $analysisfeature_id = $analysisfeature[0]->analysisfeature_id;
          }
 
          // Insert interpro xml results into analysisfeatureprop table
