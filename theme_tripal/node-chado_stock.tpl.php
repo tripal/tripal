@@ -77,62 +77,6 @@ drupal_add_css('./tripal-node-templates.css');
 }
 </script>
 
-<style type="text/css">
-  /* these styles are specific for this template and is not included 
-     in the main CSS files for the theme as it is anticipated that the
-     elements on this page may not be used for other customizations */
-  #tripal_stock_toc {
-     float: left;
-     width: 20%;
-     background-color: #EEEEEE;
-     -moz-border-radius: 15px;
-     border-radius: 15px;
-     -moz-box-shadow: 3px 3px 4px #888888;
-	  -webkit-box-shadow: 3px 3px 4px #888888;
-	  box-shadow: 3px 3px 4px #888888;
-     padding: 20px;
-     min-height: 500px;
-     border-style:solid;
-     border-width:1px;
-  }
-  #tripal_stock_toc ul {
-    margin-left: 0px;
-    margin-top: 5px;
-    padding-left: 15px;
-  }
-  #tripal_stock_toc_title {
-     font-size: 1.5em;
-  }
-  #tripal_stock_toc_desc {
-    font-style: italic;
-  }
-  #tripal_stock_details {
-     float: left;
-     width: 70%;
-     background-color: #FFFFFF;
-     -moz-border-radius: 15px;
-     border-radius: 15px;
-     -moz-box-shadow: 3px 3px 4px #888888;
-	  -webkit-box-shadow: 3px 3px 4px #888888;
-	  box-shadow: 3px 3px 4px #888888;
-     padding: 20px;
-     min-height: 500px;
-     margin-right: 10px;
-     border-style:solid;
-     border-width:1px;
-  }
-  #tripal_stock-base-box img {
-    float: left;
-    margin-bottom: 10px;
-  }
-  #tripal_stock-table-base {
-    float: left;
-    width: 400px;
-    margin-left: 10px;
-    margin-bottom: 10px;
-  }
-</style>
-
 <div id="tripal_stock_details" class="tripal_details">
 
   <!-- Base Theme -->
@@ -150,6 +94,7 @@ drupal_add_css('./tripal-node-templates.css');
   <!-- Relationships -->
   <?php include('tripal_stock/tripal_stock_relationships.tpl.php'); ?>
 
+	<?php print $content; ?>
 </div>
 
 <!-- Table of contents -->
