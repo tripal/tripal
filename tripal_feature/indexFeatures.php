@@ -93,7 +93,7 @@ function tripal_features_reindex ($max_sync,$job_id = NULL){
       if($job_id and $i % $interval == 0){
          $prog = intval(($i/$count)*100);
          tripal_job_set_progress($job_id,$prog);
-         print "$prog\n";
+         print "$prog%\n";
       }
 
       // sync only the max requested
