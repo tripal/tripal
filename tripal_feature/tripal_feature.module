@@ -2041,15 +2041,7 @@ function tripal_features_cleanup($dummy = NULL, $job_id = NULL) {
    $nsql = "SELECT * FROM {node} WHERE nid = %d";
    $csql = "SELECT * FROM {chado_feature} where nid = %d ";
    $cfsql= "SELECT * FROM {chado_feature}";
-   $tsql = "SELECT * FROM {feature} F ".
-          "  INNER JOIN CVTerm CVT ON F.type_id = CVT.cvterm_id ".
-          "WHERE feature_id = %d  AND (";
-   $supported_ftypes = split("[ \n]",variable_get('chado_feature_types','EST contig'));
-   foreach($supported_ftypes as $ftype){
-      $tsql .= " CVT.name = '$ftype' OR ";
-   }
-   $tsql .= " 0=1) ";  // add a 0=1 just as a filler so we don't have to remove a trailing 'OR'
-
+ 
    // load into nodes array
    $results = db_query($dsql);
    $count = 0;
@@ -2079,7 +2071,7 @@ function tripal_features_cleanup($dummy = NULL, $job_id = NULL) {
          tripal_job_set_progress($job_id,intval(($i/$count)*100));
       }
 
-      // first check to see if the node has a corresponding entry
+      // check to see if the node has a corresponding entry
       // in the chado_feature table. If not then delete the node.
       $feature = db_fetch_object(db_query($csql,$nid->nid));
       if(!$feature){
@@ -2089,20 +2081,6 @@ function tripal_features_cleanup($dummy = NULL, $job_id = NULL) {
          continue;
       }
 
-      // second check to see if the node is for a feature of an allowed type.
-      // if not, then delete the node.  This check will also take care of the
-      // case when a node exists and an entry in the chado_feature table exists
-      // but no feature with a matching feature_id exists
-      $previous_db = tripal_db_set_active('chado');  // use chado database
-      $ftype = db_fetch_object(db_query($tsql,$feature->feature_id));
-      tripal_db_set_active($previous_db);  // now use drupal database
-
-      if(!$ftype){
-         node_delete($nid->nid);
-         db_query("DELETE FROM {chado_feature} WHERE feature_id = $feature->feature_id");
-         $message = "Node of the wrong feature type.... DELETING: $nid->nid\n";
-         watchdog('tripal_feature',$message,array(),WATCHDOG_WARNING);
-      }
       $i++;
    }
 
