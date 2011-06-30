@@ -236,17 +236,18 @@ function chado_analysis_kegg_form ($node){
 	);
    $form['kegg']['keggjob'] = array(
       '#type' => 'checkbox',
-      '#title' => t('Submit a job to parse the kegg output into analysisfeatureprop table'),
-      '#description' => t('Note: features associated with the KAAS results must '.
+      '#title' => t('Submit a job to parse the kegg output into Chado'),
+      '#description' => t('Note: features used in the KAAS analysis must '.
                           'exist in chado before parsing the file. Otherwise, KEGG '.
                           'results that cannot be linked to a feature will be '.
                           'discarded.'),
    );
-   $form['kegg']['keggkeywordjob'] = array(
+/*   $form['kegg']['keggkeywordjob'] = array(
       '#type' => 'checkbox',
       '#title' => t('Submit a job to extract keywords from the KEGG html output'),
       '#description' => t('Note: KEGG results are only searchable after keywords are extracted. Do not run this twice if you have already done so.'),
 	);
+*/
    return $form;
 }
 /**
@@ -280,11 +281,12 @@ function chado_analysis_kegg_insert($node){
 */
 function chado_analysis_kegg_submit_job($node){
    global $user;
+   global $base_url;
 
    if($node->keggjob) {
       $job_args[0] = $node->analysis_id;
       $job_args[1] = $node->hierfile;
-      $job_args[2] = base_path();
+      $job_args[2] = $base_url;
       $job_args[3] = $node->query_re;
       $job_args[4] = $node->query_type;
       $job_args[5] = $node->query_uniquename;
@@ -329,7 +331,7 @@ function chado_analysis_kegg_update($node){
    tripal_analysis_update_property($node->analysis_id,'analysis_kegg_query_uniquename',$node->query_uniquename,1);	
 
      
-   // Add a job if the user wants to parse the html output
+   // Add a job if the user wants to parse the output
    chado_analysis_kegg_submit_job($node);
 }
 /*******************************************************************************
@@ -401,13 +403,16 @@ function tripal_analysis_kegg_parseHierFile ($analysis_id, $hierfile, $base_path
    $total_files = count(glob($hierdir . '/*.*'));
    print "There are $total_files keg file(s).\n";
    $interval = intval($total_files * 0.01);
+   if($interval > 1){
+      $interval = 1;
+   }
    $no_file = 0;
 
-   // Remove the analysis feature this analysis
+   // Remove the analysis features for this analysis
    // we will rebuild them from just this parsing
    $select =  array('analysis_id' => $analysis_id);
    if(!tripal_core_chado_delete('analysisfeature',$select)){
-      print "ERROR: Cannot prepare the analysis for adding features\n";
+      print "ERROR: Unable to clear previous results.\n";
       exit;
    }
 
@@ -418,7 +423,7 @@ function tripal_analysis_kegg_parseHierFile ($analysis_id, $hierfile, $base_path
          if ($no_file % $interval == 0) {
             $percentage = (int) ($no_file / $total_files * 100);
             tripal_job_set_progress($job_id, $percentage);
-            print $percentage."% ";
+            print $percentage."%\r";
          }
          $no_file ++;
          
@@ -428,10 +433,10 @@ function tripal_analysis_kegg_parseHierFile ($analysis_id, $hierfile, $base_path
 
          # add the item to the database
          if(count($results) > 0){
-            //------------------------------------------------------
-            // Insert into analysisprop table
-            //------------------------------------------------------
-            // Remove the property if it already exists we'll replace it
+            print "Loading results for '$heirarchy'\n";
+            // We want to insert the KEGG heirarchy results into the
+            // analysisprop table. We insert a separate record for each 
+            // heirarchy.  But we need to clear out any prevous results first.
             $sql = "DELETE
                     FROM {analysisprop}
                     WHERE analysis_id = %d
@@ -454,6 +459,10 @@ function tripal_analysis_kegg_parseHierFile ($analysis_id, $hierfile, $base_path
                     INNER JOIN CV ON CVT.cv_id = CV.cv_id
                     WHERE CV.name = 'tripal' AND CVT.name = '%s'";
          	$brite_cvterm_id = db_result(db_query($sql, $heirarchy)); 
+            if(!$brite_cvterm_id){
+               print "ERROR: Cannot find cvterm for '$heirarchy'.\n";
+               exit; 
+            }
 
             // convert the array to text for saving in the database
          	// Replace all single quote as HTML code before insert
@@ -467,7 +476,10 @@ function tripal_analysis_kegg_parseHierFile ($analysis_id, $hierfile, $base_path
             $sql = "INSERT INTO {analysisprop} (analysis_id, type_id, value) 
                     VALUES (%d, %d,'$content')";   
             
-            db_query($sql, $analysis_id, $brite_cvterm_id);
+            if(!db_query($sql, $analysis_id, $brite_cvterm_id)){
+               print "ERROR: Cannot add '$heirarchy' results to the database.\n";
+               exit;
+            }
             tripal_db_set_active($previous_db); // Use drupal database
 
             
@@ -533,13 +545,12 @@ function tripal_analysis_kegg_parse_kegg_file ($file, &$heirarchy, $analysis_id,
 
       // the first line of the file provides the BRITE heirarchy name
       if(preg_match("/#.*nbsp;\s(.*)<\/h2>$/",$line,$matches)){
-         // For each BRITE heirarchy file we'll add an analysisprop where we'll
-         // store the report.  If the CVTerm doesn't exist then add it.
          $heirarchy = $matches[1];
+         // get the CVterm for the heirarchy.  If it doesn't exist then add it
          $select = array('name' => $heirarchy,'cv_id' => array('name' => 'tripal'));
          $cvt_arr = tripal_core_chado_select('cvterm',array('cvterm_id'),$select);
          if (count($cvt_arr) == 0) {
-            tripal_add_cvterms($type, "KEGG BRITE term: $type");
+            tripal_add_cvterms($heirarchy, "KEGG BRITE term: $heirarchy");
             $cvt_arr = tripal_core_chado_select('cvterm',array('cvterm_id'),$select);
          }
          $heirarchy_id = $cvt_arr[0]->cvterm_id;
@@ -702,11 +713,11 @@ function tripal_analysis_kegg_check_line_handle_feature($query_re,
 
       if(count($feature_arr) > 1){
 		   print "Ambiguous: '$feature' matches more than one feature and is being skipped.\n";
-			continue;
+			return;
       }
       if(count($feature_arr) == 0){
-			print "Failed: '$feature' cannot find a matching feature in the database.\n";
-         continue;
+			print "Failed: '$feature' cannot find a matching feature in the databasef.  RE: $query_re; LINE: $fname\n";
+         return;
       }
       $feature_id = $feature_arr[0]->feature_id;
 
@@ -723,8 +734,7 @@ function tripal_analysis_kegg_check_line_handle_feature($query_re,
 
          // Add link to each matched feature
          if($nid){
-            $value = preg_replace("/^(.*?)(;\s*\<a)/","<a id=\"tripal_kegg_feature_links\" target=\"_blank\" href=\"".url("node/$nid")."\">"."$1"."</a>"."$2",$value);
-
+            $value = preg_replace("/^(.*?)(;\s*\<a)/","<a id=\"tripal_kegg_feature_links\" target=\"_blank\" href=\"$base_path/node/$nid\">"."$1"."</a>"."$2",$value);
          }
          // if we have a feature match then add this to our results array
          return $value;  
