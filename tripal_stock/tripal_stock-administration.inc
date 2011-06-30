@@ -322,7 +322,7 @@ function tripal_stock_admin_validate($form, &$form_state) {
       // $r is the current stock to be sync'd
       $stocks_attempted++;
 
-      print 'Processing '.$r->uniquename."\n";
+      print 'Processing '.$r->uniquename."... ";
 
       // check not already in drupal
       $in_drupal_query = db_query(
@@ -339,6 +339,8 @@ function tripal_stock_admin_validate($form, &$form_state) {
 	 			$new_node->type_id = $r->type_id;
 	 			$new_node->organism_id = $r->organism_id;
 	 			$new_node->stock_id = $r->stock_id;
+        $new_node->chado_stock_exists = TRUE;
+        
 	 			//print 'New Node:';
 	 			//print_r($new_node);
 	 			
@@ -352,20 +354,22 @@ function tripal_stock_admin_validate($form, &$form_state) {
           	$stocks_created_count++;
 	 
 						//Add stock id to chado_stock table
+						/**
 	 					db_query(
-	   	  			"UPDATE {chado_stock} SET stock_id=%d WHERE nid=%d AND vid=%d",
+	   	  			"INSERT INTO chado_stock (stock_id, nid, vid) VALUES (%d, %d, %d)",
 	   	  			$r->stock_id,
 	   	  			$node->nid,
 	   	  			$node->vid
 	 					);
+	 					*/
           }
         } else {
-        	print "\tCreate Stock Form Errors: ";
+        	print "Not completed due to errors:\nCreate Stock Form Errors: ";
 	 				print_r(form_get_errors());
         }
-	 			print "\n\tNid=".$node->nid."\n";
+	 			print "Nid=".$node->nid."\n";
 			} else {
-				print "\tSkipped $r->uniquename because it's already in drupal.\n";
+				print "Skipped $r->uniquename because it's already in drupal.\n";
       } //end of if not already in drupal
     } //end of while still stocks to be sync'd
   } //end of if organism_id not supplied

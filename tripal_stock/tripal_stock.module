@@ -638,7 +638,22 @@ function chado_stock_validate($node, &$form) {
  * @ingroup tripal_stock
  */
 function chado_stock_insert($node) {
-
+  
+  //If the chado stock exists
+  // then don't create but simply link to node
+  if ($node->chado_stock_exists) {
+  	if (!empty($node->stock_id)) {
+  		db_query(
+    		"INSERT INTO {chado_stock} (nid, vid, stock_id) "
+    		."VALUES (%d, %d, %d)",
+    		$node->nid,
+    		$node->vid,
+    		$node->stock_id
+  		);
+  	}
+    return $node;
+  }
+  
 	// create dbxref
   if ( !empty($node->accession) ) {
     if ( !empty($node->database) ) { 
@@ -857,19 +872,19 @@ function chado_stock_update($node) {
  */
 function chado_stock_delete($node) {
 
+  // Set stock in chado: is_obsolete = TRUE
+  $previous_db = tripal_db_set_active('chado');
+  db_query(
+    "DELETE FROM stock WHERE stock_id=%d",
+    $node->stock->stock_id
+  );
+  tripal_db_set_active($previous_db);
+  
   //remove drupal node and all revisions
   db_query(
     "DELETE FROM {chado_stock} WHERE nid=%d",
     $node->nid
   );
-  
-  // Set stock in chado: is_obsolete = TRUE
-  $previous_db = tripal_db_set_active('chado');
-  db_query(
-    "DELETE FROM stock WHERE stock_id=%d",
-    $node->stock_id
-  );
-  tripal_db_set_active($previous_db);
 }
 
 /**
