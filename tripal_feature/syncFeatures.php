@@ -53,7 +53,7 @@ function tripal_feature_sync_form (){
          "spaces or entered separately on new lines. The names must match ".
          "exactly (spelling and case) with terms in the sequence ontology'),
       '#required'    => TRUE,
-      '#default_value' => variable_get('chado_feature_types','EST contig'),
+      '#default_value' => variable_get('chado_sync_feature_types','gene contig'),
    );
 
    // get the list of organisms
@@ -107,7 +107,7 @@ function tripal_feature_sync_form_submit ($form, &$form_state){
       $title = t('Sync all features for all synced organisms');
    }
 
-   variable_get('chado_feature_types',$feature_types);
+   variable_set('chado_sync_feature_types',$feature_types);
 
    tripal_add_job($title,'tripal_feature',
          'tripal_feature_sync_features',$job_args,$user->uid);
@@ -168,7 +168,7 @@ function tripal_feature_sync_features ($max_sync = 0, $organism_id = NULL,
    // we will build drupal pages from features in chado.  If a feature
    // is not one of the specified typse we won't build a node for it.
    if(!$feature_types){
-      $allowed_types = variable_get('chado_feature_types','EST contig');
+      $allowed_types = variable_get('chado_sync_feature_types','gene contig');
    } else {
       $allowed_types = $feature_types;
    }

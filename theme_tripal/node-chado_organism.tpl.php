@@ -68,9 +68,14 @@ if (Drupal.jsEnabled) {
       }
       if(block != null){
          $("#tripal_organism-"+block[1]+"-box").show();
-      } else {
+      } 
+      else if(window.location.href.match(/\?page=\d+/)){
+         $("#tripal_organism-feature_browser-box").show();
+      } 
+      else {
          $("#tripal_organism-base-box").show();
       }
+
       $("#tripal_organism_toc").height($("#tripal_organism-base-box").parent().height());
       
    });

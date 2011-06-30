@@ -1360,7 +1360,7 @@ function tripal_feature_load_organism_feature_browser($organism){
    # get the list of available sequence ontology terms for which
    # we will build drupal pages from features in chado.  If a feature
    # is not one of the specified typse we won't build a node for it.
-   $allowed_types = variable_get('chado_feature_types','EST contig');
+   $allowed_types = variable_get('chado_browser_feature_types','EST contig');
    $allowed_types = preg_replace("/[\s\n\r]+/"," ",$allowed_types);
    $so_terms = split(' ',$allowed_types);
    $where_cvt = "";
