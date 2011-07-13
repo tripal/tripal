@@ -224,8 +224,13 @@ function tripal_feature_load_gff3($gff_file, $organism_id,$analysis_id,$add_only
    $previous_db = tripal_db_set_active('chado');
    print "Opening $gff_file\n";
     
-   $lines = file($dfile,FILE_SKIP_EMPTY_LINES);
-   $i = 0;
+   //$lines = file($dfile,FILE_SKIP_EMPTY_LINES);
+   $fh = fopen($dfile,'r');
+   if(!$fh){
+      print "ERROR: cannot open file: $dfile\n";
+      return 0;
+   }
+   $filesize = filesize($dfile);
 
    // get the controlled vocaubulary that we'll be using.  The
    // default is the 'sequence' ontology
@@ -240,19 +245,23 @@ function tripal_feature_load_gff3($gff_file, $organism_id,$analysis_id,$add_only
    $sql = "SELECT * FROM organism WHERE organism_id = %d";
    $organism = db_fetch_object(db_query($sql,$organism_id));
 
-
-   $num_lines = sizeof($lines);
-   $interval = intval($num_lines * 0.01);
+   $interval = intval($filesize * 0.01);
    if($interval == 0){
-      $interval = $num_lines;
+      $interval = 1;
    }
    $in_fasta = 0;
-   foreach ($lines as $line_num => $line) {
-   
-      $i++;  // update the line count
+//   foreach ($lines as $line_num => $line) {
+   $line_num = 0;
+   $num_read = 0;
+
+   while($line = fgets($fh)){
+
+      $line_num++;
+      $num_read += strlen($line);
+
       // update the job status every 1% features
-      if($job and $i % $interval == 0){
-         tripal_job_set_progress($job,intval(($i/$num_lines)*100));
+      if($job and $num_read % $interval == 0){
+         tripal_job_set_progress($job,intval(($num_read/$filesize)*100));
       }
       // check to see if we have FASTA section, if so then set the variable
       // to start parsing
@@ -277,7 +286,7 @@ function tripal_feature_load_gff3($gff_file, $organism_id,$analysis_id,$add_only
       // remove URL encoding and get the columns
       $cols = explode("\t",$line);
       if(sizeof($cols) != 9){
-         print "ERROR: improper number of columns on line $i\n";
+         print "ERROR: improper number of columns on line $line_num\n";
          print_r($cols);
          return '';
       }
@@ -323,10 +332,10 @@ function tripal_feature_load_gff3($gff_file, $organism_id,$analysis_id,$add_only
                     WHERE CV.cv_id = %d and (CVT.name = '%s' or CVTS.synonym = '%s')";
       $cvterm = db_fetch_object(db_query($cvtermsql,$cv->cv_id,$type,$type));
       if(!$cvterm){
-         print "ERROR: cannot find ontology term '$type' on line $i.\n";
+         print "ERROR: cannot find ontology term '$type' on line $line_num.\n";
          return '';
       }
-      
+
       // break apart each of the attributes
       $tags = array();
       $attr_name = '';
@@ -346,7 +355,7 @@ function tripal_feature_load_gff3($gff_file, $organism_id,$analysis_id,$add_only
             continue;
          }
          if(!preg_match('/^[^\=]+\=[^\=]+$/',$attr)){
-            print "ERROR: attribute is not correctly formatted on line $i: $attr\n";
+            print "ERROR: attribute is not correctly formatted on line $line_num: $attr\n";
             return '';
          }
 
@@ -375,7 +384,7 @@ function tripal_feature_load_gff3($gff_file, $organism_id,$analysis_id,$add_only
          if(array_key_exists('Parent',$tags)){
             $attr_uniquename = $tags['Parent'][0]."-$type-$landmark:$fmin..$fmax";
          } else { 
-           print "ERROR: cannot generate a uniquename for feature on line $i\n";
+           print "ERROR: cannot generate a uniquename for feature on line $line_num\n";
            exit;
          }
          $attr_name = $attr_uniquename;
@@ -415,7 +424,6 @@ function tripal_feature_load_gff3($gff_file, $organism_id,$analysis_id,$add_only
             return '';
          }
       }
-
       
       // if the option is to remove or refresh then we want to remove
       // the feature from the database.
@@ -435,10 +443,10 @@ function tripal_feature_load_gff3($gff_file, $organism_id,$analysis_id,$add_only
     
 
          // add/update the feature
-         print "$i ";
+         print "line $line_num, ". intval(($num_read/$filesize)*100). "%. ";
          $feature = tripal_feature_load_gff3_feature($organism,$analysis_id,$cvterm,
             $attr_uniquename,$attr_name,$residues,$attr_is_analysis,
-            $attr_is_obsolete, $add_only);
+            $attr_is_obsolete, $add_only,$score);
 
          // store all of the features for use later by parent and target
          // relationships
@@ -477,12 +485,11 @@ function tripal_feature_load_gff3($gff_file, $organism_id,$analysis_id,$add_only
             // add any additional attributes
             if($attr_others){
                foreach($attr_others as $property => $value){
-                  print "   Setting feature property: $property -> $value\n";
                   tripal_feature_load_gff3_property($feature,$property,$value);
                }
             }
          }
-      }      
+      } 
    }
    // now set the rank of any parent/child relationships.  The order is based
    // on the fmin.  The start rank is 1.  This allows features with other
@@ -858,7 +865,7 @@ function tripal_feature_load_gff3_alias($feature,$aliases){
  * @ingroup gff3_loader
  */
 function tripal_feature_load_gff3_feature($organism,$analysis_id,$cvterm,$uniquename,$name,
-   $residues,$is_analysis='f',$is_obsolete='f',$add_only)  {
+   $residues,$is_analysis='f',$is_obsolete='f',$add_only,$score)  {
 
    // check to see if the feature already exists
    $feature_sql = "SELECT * FROM {feature} 
@@ -905,17 +912,37 @@ function tripal_feature_load_gff3_feature($organism,$analysis_id,$cvterm,$unique
       print "Skipping existing feature: '$uniquename' ($cvterm->name).\n";
       return 0;
    }
+
    // get the newly added feature
    $feature = db_fetch_object(db_query($feature_sql,$organism->organism_id,$uniquename,$cvterm->cvterm_id));
 
    // add the analysisfeature entry to the analysisfeature table if it doesn't already exist
-   $af_values = array('analysis_id' => $analysis_id, 'feature_id' => $feature->feature_id);
-   if(tripal_core_chado_select('analysisfeature',array('analysisfeature_id'),$af_values,array('has_record'))){
+   $af_values = array(
+      'analysis_id' => $analysis_id, 
+      'feature_id' => $feature->feature_id
+   );
+   $afeature = tripal_core_chado_select('analysisfeature',array('analysisfeature_id'),$af_values,array('has_record'));
+   if(count($afeature)==0){
+      // if a score is avaialble then set that to be the significance field
+      if(strcmp($score,'.')!=0){
+        $af_values['significance'] = $score;
+      }
       if(!tripal_core_chado_insert('analysisfeature',$af_values)){
          print "ERROR: could not add analysisfeature record: $analysis_id, $feature->feature_id\n";
       } else {
          print "   Added analysisfeature record\n";
       }
+   } else {
+      // if a score is avaialble then set that to be the significance field
+      $new_vals = array();
+      if(strcmp($score,'.')!=0){
+        $new_vals['significance'] = $score;
+      }
+      if(!$add_only and !tripal_core_chado_update('analysisfeature',$af_values,$new_vals)){
+         print "ERROR: could not update analysisfeature record: $analysis_id, $feature->feature_id\n";
+      } else {
+         print "   Updated analysisfeature record\n";
+      } 
    }
 
    return $feature;
@@ -946,9 +973,10 @@ function tripal_feature_load_gff3_featureloc($feature,$organism,$landmark,$fmin,
 
    // check to see if this featureloc already exists, but also keep track of the
    // last rank value
-   $rank = -1;  
+   $rank = 0;  
    $exists = 0;  
-   $featureloc_sql = "SELECT FL.featureloc_id,FL.fmin,FL.fmax,F.uniquename as srcname
+   $featureloc_sql = "SELECT FL.featureloc_id,FL.fmin,FL.fmax,F.uniquename as srcname,
+                         rank
                       FROM {featureloc} FL
                         INNER JOIN {feature} F on F.feature_id = FL.srcfeature_id
                       WHERE FL.feature_id = %d
@@ -962,7 +990,7 @@ function tripal_feature_load_gff3_featureloc($feature,$organism,$landmark,$fmin,
          print "   No change to featureloc\n";
          $exists = 1;
       }
-      $rank = $featureloc->rank;
+      $rank = $featureloc->rank + 1;
    }
    if(!$exists){
       $rank++;
@@ -1004,6 +1032,55 @@ function tripal_feature_load_gff3_featureloc($feature,$organism,$landmark,$fmin,
  */
 function tripal_feature_load_gff3_property($feature,$property,$value){
    // first make sure the cvterm exists.  If the term already exists then
+   // the function should return it of not, then add it
+   $cvt_sql = "SELECT * FROM {cvterm} CVT
+               INNER JOIN {cv} CV on CVT.cv_id = CV.cv_id
+               WHERE CV.name = '%s' and CVT.name = '%s'";
+   $cvterm = db_fetch_object(db_query($cvt_sql,'feature_property',$property));
+   if(!$cvterm){
+      $term = array(
+         'id' => "null:$property",
+         'name' => $property,
+         'namespace' => 'feature_property', 
+         'is_obsolete' => 0,
+      );
+      print "   Adding cvterm, $property\n";
+      $cvterm = (object) tripal_cv_add_cvterm($term,'feature_property',0,0);
+   }
+
+   if(!$cvterm){
+      print "ERROR: cannot add cvterm, $property\n";
+      exit;
+   }
+
+   // check to see if the property already exists for this feature
+   // if it does but the value is unique then increment the rank and add it. 
+   // if the value is not unique then don't add it.
+   $add = 1;
+   $rank = 0;
+   $sql = "SELECT rank,value FROM {featureprop} 
+           WHERE feature_id = %d and type_id = %d
+           ORDER BY rank ASC";
+   $result = db_query($sql,$feature->feature_id,$cvterm->cvterm_id);
+   while($prop = db_fetch_object($result)){
+      if(strcmp($prop->value,$value)==0){
+        $add = NULL; // don't add it, it already exists
+        print "   Property already exists, skipping\n";
+      }
+      $rank = $prop->rank + 1;
+   }
+   
+   // add the property if we pass the check above
+   if($add){
+      print "   Setting feature property. $property: $value\n";
+      $isql = "INSERT INTO {featureprop} (feature_id,type_id,value,rank)
+               VALUES (%d,%d,'%s',%d)";
+      db_query($isql,$feature->feature_id,$cvterm->cvterm_id,$value,$rank);
+   }
+}
+/*
+function tripal_feature_load_gff3_property($feature,$property,$value){
+   // first make sure the cvterm exists.  If the term already exists then
    // the function should return it
    $match = array(
       'name' => $property,
@@ -1031,4 +1108,5 @@ function tripal_feature_load_gff3_property($feature,$property,$value){
    // next give the feature the property
    tripal_core_insert_property('feature',$feature->feature_id,$property,'feature_property',$value,1);
 }
+*/
 
