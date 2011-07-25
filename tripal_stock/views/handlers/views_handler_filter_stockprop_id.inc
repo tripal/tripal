@@ -58,12 +58,15 @@ class views_handler_filter_stockprop_id extends views_handler_filter {
 	function query () {
 		if (preg_match('/IS NOT NULL/', $this->options['operator'])) {
 			$new_where_sql = "stock.stock_id IN (SELECT stockprop.stock_id FROM stockprop WHERE stockprop.type_id=".$this->type.")";
+			$this->query->add_where($this->options['group'], $new_where_sql);
 		} elseif (preg_match('/IS NULL/', $this->options['operator'])) {
 			$new_where_sql = "stock.stock_id NOT IN (SELECT stockprop.stock_id FROM stockprop WHERE stockprop.type_id=".$this->type.")";
-		} else {
+			$this->query->add_where($this->options['group'], $new_where_sql);
+		} elseif ($this->value) {
 			$new_where_sql = "stock.stock_id IN (SELECT stockprop.stock_id FROM stockprop WHERE stockprop.type_id=".$this->type." AND stockprop.value".$this->operator."'".$this->value."')";
+			$this->query->add_where($this->options['group'], $new_where_sql);
 		}
-		$this->query->add_where($this->options['group'], $new_where_sql);
+		
 	}
 	
   function types_form(&$form, &$form_state) {

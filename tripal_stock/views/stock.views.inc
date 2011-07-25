@@ -158,10 +158,10 @@ function retrieve_stock_views_data() {
 
   //Field: is_obsolete (boolean t/f)
   $data['stock']['is_obsolete'] = array(
-    'title' => t('Is Obsolete'),
+    'title' => t('Is Obsolete?'),
     'help' => t('A yes/no field indicating whether a given stock is obsolete or not.'),
     'field' => array(
-      'handler' => 'views_handler_field',
+      'handler' => 'views_handler_field_chado_tf_boolean',
       'click sortable' => TRUE,
     ),
     'filter' => array(
@@ -220,6 +220,9 @@ function retrieve_stock_views_data() {
       'title' => t('Relationships'),
       'help' => t('Display a given type of relationships including the current stock.'),
       'handler' => 'views_handler_field_stockrel_by_type',
+    ),
+    'filter' => array(
+    	'handler' => 'views_handler_filter_stock_relationship_id'
     ),
   );
 
