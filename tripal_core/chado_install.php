@@ -41,9 +41,13 @@ function tripal_core_chado_v1_11_load_form_submit ($form, &$form_state){
 function tripal_core_install_chado ($dummy = NULL, $job = NULL){
    $schema_file = drupal_get_path('module', 'tripal_core').'/default_schema.sql';
    $init_file = drupal_get_path('module', 'tripal_core').'/initialize.sql';
-   tripal_core_reset_chado_schema();
-   tripal_core_install_sql($schema_file);
-   tripal_core_install_sql($init_file);      
+   if(tripal_core_reset_chado_schema()){
+      tripal_core_install_sql($schema_file);
+      tripal_core_install_sql($init_file);      
+   } else {
+      print "ERROR: cannot install chado.  Please check database permissions\n";
+      exit;
+   }
 }
 /**
 *
@@ -60,6 +64,18 @@ function tripal_core_reset_chado_schema (){
    pg_query($active_db,"drop schema frange cascade");
    pg_query($active_db,"create schema chado");
    pg_query($active_db,"create language plpgsql");
+
+   // check that the chado schema now exists
+   $sql = "SELECT nspname
+           FROM pg_namespace
+           WHERE has_schema_privilege(nspname, 'USAGE') and nspname = 'chado'
+           ORDER BY nspname";
+   $schema = db_fetch_object(db_query($sql));
+   if(strcmp($schema->nspname,'chado')!=0){
+      return 0;
+   }
+   return 1;
+
 }
 /**
 *
