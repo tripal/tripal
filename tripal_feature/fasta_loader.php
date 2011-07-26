@@ -22,8 +22,8 @@ function tripal_feature_fasta_load_form (){
                              installation (e.g. /sites/default/files/xyz.obo).  The path must be accessible to the
                              server on which this Drupal instance is running.'),
       '#required' => TRUE,
-      '#weight'        => 1
    );
+
    // get the list of organisms
    $sql = "SELECT * FROM {organism} ORDER BY genus, species";
    $previous_db = tripal_db_set_active('chado');  // use chado database
@@ -40,14 +40,13 @@ function tripal_feature_fasta_load_form (){
      '#description' => t("Choose the organism to which these sequences are associated "),
      '#required'    => TRUE,
      '#options'     => $organisms,
-     '#weight'      => 2,
    );
-   $form['type']= array(
+
+   $form['seqtype']= array(
       '#type' => 'textfield',
       '#title' => t('Sequence Type'),
       '#required' => TRUE,
       '#description' => t('Please enter the Sequence Ontology term that describes the sequences in the FASTA file.'),
-      '#weight' => 3
    );
 
 
@@ -72,20 +71,50 @@ function tripal_feature_fasta_load_form (){
 //     '#options'     => $libraries,
 //     '#weight'      => 5,
 //   );
-   $form['update']= array(
-      '#type' => 'checkbox',
-      '#title' => t('Insert and update'),
-      '#required' => FALSE,
-      '#description' => t('By default only new features are inserted.  Select this checkbox to update
-                           features that already exists with the contents from the FASTA file.'),
-      '#weight' => 6
+   $form['method']= array(
+      '#type' => 'radios',
+      '#title' => 'Method',
+      '#required' => TRUE,
+      '#options' => array(
+         t('Insert only'),
+         t('Update only'),
+         t('Insert and update'),
+      ),
+      '#description' => t('Select how features in the FASTA file are handled.  
+         Select "Insert only" to insert the new features. If a feature already 
+         exists with the same name or unique name and type then it is skipped.
+         Select "Update only" to only update featues that already exist in the
+         database.  Select "Insert and Update" to insert features that do
+         not exist and upate those that do.'),
+      '#default_value' => 2,
    );
 
+$form['match_type']= array(
+      '#type' => 'radios',
+      '#title' => 'Name Match Type',
+      '#required' => TRUE,
+      '#options' => array(
+         t('Name'),
+         t('Unique name'),
+      ),
+      '#description' => t('Feature data is stored in Chado with both a human-readable
+        name and a unique name. If the features in your FASTA file are identified using
+        a human-readable name then select the "Name" button. If your features are
+        identified using the unique name then select the "Unique name" button.  If you 
+        loaded your features first using the GFF loader then the unique name of each
+        features were indicated by the "ID=" attribute and the name by the "Name=" attribute.
+        By default, the FASTA loader will use the first word (character string
+        before the first space) as  the name for your feature. If 
+        this does not uniquely identify your feature consider specifying a regular expression in the advanced section below. 
+        Additionally, you may import both a name and a unique name for each sequence using the advanced options. 
+        When updating a sequence, the value selected here will be used to identify the sequence in the 
+        database in combination with any regular expression provided below.'),
+      '#default_value' => 1,
+   );
 
    $form['analysis'] = array(
       '#type' => 'fieldset',
       '#title' => t('Analysis Used to Derive Features'),
-      '#weight'=> 6,
       '#collapsed' => TRUE
    ); 
    $form['analysis']['desc'] = array(
@@ -118,31 +147,39 @@ function tripal_feature_fasta_load_form (){
    $form['advanced'] = array(
       '#type' => 'fieldset',
       '#title' => t('Advanced Options'),
-      '#weight'=> 7,
       '#collapsed' => TRUE
    );
    $form['advanced']['re_help']= array(
       '#type' => 'item',
       '#value' => t('A regular expression is an advanced method for extracting information from a string of text.  
-                     By default, this loader will use the first word in the definition line for each sequence in the FASTA file
-                     as the uniquename for the sequences.  If this is not desired, you may use the following regular 
-                     expressions to define the postions of the unique name.'),
-      '#weight' => 0
+                     Your FASTA file may contain both a human-readable name and a unique name for each sequence.  
+                     If you want to import
+                     both the name and unique name for all sequences, then you must provide regular expressions 
+                     so that the loader knows how to separate them.  
+                     Otherwise the name and uniquename will be the same.  
+                     By default, this loader will use the first word in the definition 
+                     lines of the FASTA file
+                     as the name or unique name of the feature.'),
    );
    $form['advanced']['re_name']= array(
       '#type' => 'textfield',
       '#title' => t('Regular expression for the name'),
       '#required' => FALSE,
-      '#description' => t('Enter the regular expression that will extract the feature name from the FASTA definition line. For example, for a defintion line with a name and uniquename separated by a bar \'|\' (>seqname|uniquename), the regular expression would be, "^(.*?)\|.*$"'),
-      '#weight' => 1
-   );   
+      '#description' => t('Enter the regular expression that will extract the 
+         feature name from the FASTA definition line. For example, for a 
+         defintion line with a name and unique name separated by a bar \'|\' (>seqname|uniquename), 
+         the regular expression for the name would be, "^(.*?)\|.*$".'),
+   );  
    $form['advanced']['re_uname']= array(
       '#type' => 'textfield',
       '#title' => t('Regular expression for the unique name'),
       '#required' => FALSE,
-      '#description' => t('Enter the regular expression that will extract the unique feature name for each feature from the FASTA definition line.  This name must be unique for the organism.'),
-      '#weight' => 2
+      '#description' => t('Enter the regular expression that will extract the 
+         feature name from the FASTA definition line. For example, for a 
+         defintion line with a name and unique name separated by a bar \'|\' (>seqname|uniquename), 
+         the regular expression for the unique name would be "^.*?\|(.*)$").'),
    );   
+ 
 
    // Advanced database cross-reference optoins
    $form['advanced']['db'] = array(
@@ -238,8 +275,9 @@ function tripal_feature_fasta_load_form (){
 function tripal_feature_fasta_load_form_validate($form, &$form_state){
    $fasta_file = trim($form_state['values']['fasta_file']);
    $organism_id  = $form_state['values']['organism_id'];
-   $type         = trim($form_state['values']['type']);
-   $update       = trim($form_state['values']['update']);
+   $type         = trim($form_state['values']['seqtype']);
+   $method       = trim($form_state['values']['method']);
+   $match_type   = trim($form_state['values']['match_type']);
    $library_id   = $form_state['values']['library_id'];
    $re_name      = trim($form_state['values']['re_name']);
    $re_uname     = trim($form_state['values']['re_uname']);
@@ -248,6 +286,33 @@ function tripal_feature_fasta_load_form_validate($form, &$form_state){
    $rel_type     = $form_state['values']['rel_type'];
    $re_subject   = trim($form_state['values']['re_subject']);
    $parent_type   = trim($form_state['values']['parent_type']);
+
+   if($method == 0){
+      $method = 'Insert only';
+   }
+   if($method == 1){
+      $method = 'Update only';
+   }
+   if($method == 2){
+      $method = 'Insert and update';
+   }
+
+   if($match_type == 0){
+      $match_type = 'Name';
+   }
+
+   if($match_type == 1){
+      $match_type = 'Unique name';
+   }
+
+
+   if ($re_name and !$re_uname and strcmp($match_type,'Unique name')==0){
+      form_set_error('re_uname',t("You must provide a regular expression to identify the sequence unique name"));     
+   }
+
+   if (!$re_name and $re_uname and strcmp($match_type,'Name')==0){
+      form_set_error('re_name',t("You must provide a regular expression to identify the sequence name"));     
+   }
 
    // check to see if the file is located local to Drupal
    $dfile = $_SERVER['DOCUMENT_ROOT'] . base_path() . $fasta_file; 
@@ -311,8 +376,9 @@ function tripal_feature_fasta_load_form_submit ($form, &$form_state){
 
    $dfile        = $form_state['storage']['dfile'];
    $organism_id  = $form_state['values']['organism_id'];
-   $type         = trim($form_state['values']['type']);
-   $update       = trim($form_state['values']['update']);
+   $type         = trim($form_state['values']['seqtype']);
+   $method       = trim($form_state['values']['method']);
+   $match_type   = trim($form_state['values']['match_type']);
    $library_id   = $form_state['values']['library_id'];
    $re_name      = trim($form_state['values']['re_name']);
    $re_uname     = trim($form_state['values']['re_uname']);
@@ -323,9 +389,27 @@ function tripal_feature_fasta_load_form_submit ($form, &$form_state){
    $parent_type   = trim($form_state['values']['parent_type']);
    $analysis_id = $form_state['values']['analysis_id'];
 
+   if($method == 0){
+      $method = 'Insert only';
+   }
+   if($method == 1){
+      $method = 'Update only';
+   }
+   if($method == 2){
+      $method = 'Insert and update';
+   }
+
+   if($match_type == 0){
+      $match_type = 'Name';
+   }
+
+   if($match_type == 1){
+      $match_type = 'Unique name';
+   }
+
    $args = array($dfile,$organism_id,$type,$library_id,$re_name,$re_uname,
-            $re_accession,$db_id,$rel_type,$re_subject,$parent_type,$update,
-            $user->uid,$analysis_id);
+            $re_accession,$db_id,$rel_type,$re_subject,$parent_type,$method,
+            $user->uid,$analysis_id,$match_type);
 
    tripal_add_job("Import FASTA file: $dfile",'tripal_feature',
       'tripal_feature_load_fasta',$args,$user->uid);
@@ -338,7 +422,8 @@ function tripal_feature_fasta_load_form_submit ($form, &$form_state){
  */
 function tripal_feature_load_fasta($dfile, $organism_id, $type,
    $library_id, $re_name, $re_uname, $re_accession, $db_id, $rel_type,
-   $re_subject, $parent_type, $update,$uid, $analysis_id, $job = NULL)
+   $re_subject, $parent_type, $method, $uid, $analysis_id, 
+   $match_type,$job = NULL)
 {
 
    print "Opening FASTA file $dfile\n";
@@ -367,46 +452,50 @@ function tripal_feature_load_fasta($dfile, $organism_id, $type,
       // the definition line
       if(preg_match('/^>/',$line)){
          // if we have a feature name then we are starting a new sequence
-         // and we need to insert this one
+         // so let's handle the previous one before moving on
          if($name){
-           tripal_feature_fasta_loader_insert_feature($name,$uname,$db_id,
+           tripal_feature_fasta_loader_handle_feature($name,$uname,$db_id,
               $accession,$subject,$rel_type,$parent_type,$library_id,$organism_id,$type,
-              $source,$residues,$update,$re_name);
+              $source,$residues,$method,$re_name,$match_type);
            $residues = '';
            $name = '';
          }
 
          $line = preg_replace("/^>/",'',$line);
+         // get the feature name
          if($re_name){
             if(!preg_match("/$re_name/",$line,$matches)){
-               print "Regular expression for the feature name finds nothing\n";
+               print "WARNING: Regular expression for the feature name finds nothing\n";
             }
             $name = trim($matches[1]);
          } else {
             preg_match("/^\s*(.*?)[\s\|].*$/",$line,$matches);
             $name = trim($matches[1]);
-         }
+         } 
+         // get the feature unique name
          if($re_uname){
-            preg_match("/$re_uname/",$line,$matches);
+            if(!preg_match("/$re_uname/",$line,$matches)){
+               print "WARNING: Regular expression for the feature unique name finds nothing\n";
+            }
             $uname = trim($matches[1]);
          } else {
             preg_match("/^\s*(.*?)[\s\|].*$/",$line,$matches);
             $uname = trim($matches[1]);
-         }         
+         } 
+               
          preg_match("/$re_accession/",$line,$matches);
          $accession = trim($matches[1]);
          preg_match("/$re_subject/",$line,$matches);
          $subject = trim($matches[1]);
-//         print "Name: $name, UName: $uname, Accession: $accession, Subject: $subject\n";
       }
       else {
          $residues .= trim($line);
       }
    }
    // now load the last sequence in the file
-   tripal_feature_fasta_loader_insert_feature($name,$uname,$db_id,
+   tripal_feature_fasta_loader_handle_feature($name,$uname,$db_id,
       $accession,$subject,$rel_type,$parent_type,$library_id,$organism_id,$type,
-      $source,$residues,$update,$re_name);
+      $source,$residues,$method,$re_name,$match_type);
    return '';
 }
 
@@ -415,9 +504,9 @@ function tripal_feature_load_fasta($dfile, $organism_id, $type,
  *
  * @ingroup fasta_loader
  */
-function tripal_feature_fasta_loader_insert_feature($name,$uname,$db_id,$accession,
+function tripal_feature_fasta_loader_handle_feature($name,$uname,$db_id,$accession,
               $parent,$rel_type,$parent_type,$library_id,$organism_id,$type, 
-              $source,$residues,$update,$re_name) 
+              $source,$residues,$method,$re_name,$match_type) 
 {
    $previous_db = tripal_db_set_active('chado');
 
@@ -434,38 +523,56 @@ function tripal_feature_fasta_loader_insert_feature($name,$uname,$db_id,$accessi
    }
 
    // check to see if this feature already exists
-   $feature_sql = "SELECT * FROM {feature} 
-                   WHERE organism_id = %d and uniquename = '%s' and type_id = %d";
-   $feature = db_fetch_object(db_query($feature_sql,$organism_id,$uname,$cvterm->cvterm_id));
-   if(!$feature){
-      // now insert the feature
-      $sql = "INSERT INTO {feature} (organism_id, name, uniquename, residues, seqlen, md5checksum,type_id,is_analysis,is_obsolete)
-              VALUES(%d,'%s','%s','%s',%d, '%s', %d, %s, %s)";
-      $result = db_query($sql,$organism_id,$name,$uname,$residues,strlen($residues),
-                  md5($residues),$cvterm->cvterm_id,'false','false');
-      if(!$result){
-         print "ERROR: failed to insert feature '$name ($uname)'\n";
+   if(strcmp($match_type,'Name')==0){
+      $cnt_sql = "SELECT count(*) as cnt FROM {feature} 
+                      WHERE organism_id = %d and name = '%s' and type_id = %d";
+      $cnt = db_fetch_object(db_query($cnt_sql,$organism_id,$name,$cvterm->cvterm_id));
+      if($cnt->cnt > 1){
+         print "ERROR: multiple features exist with the name '$name' of type '$type' for the organism.  skipping\n";
          return 0;
       } else {
-         print "Inserted feature $name ($uname)\n";
+         $feature_sql = "SELECT * FROM {feature} 
+                      WHERE organism_id = %d and name = '%s' and type_id = %d";
+         $feature = db_fetch_object(db_query($feature_sql,$organism_id,$name,$cvterm->cvterm_id));
       }
    } else {
-       if($update){
+      $feature_sql = "SELECT * FROM {feature} 
+                      WHERE organism_id = %d and uniquename = '%s' and type_id = %d";
+      $feature = db_fetch_object(db_query($feature_sql,$organism_id,$uname,$cvterm->cvterm_id));
+   }
 
-         // we do not want to wipe out the name if the user did not intend for this to
-         // happen.  The uniquename must match the sequence but the name may not.  
-         // so, we'll only update the name if the users specified an 're_name' regular
-         // expression.
-         if($re_name){
+   if(!$feature){
+       if(strcmp($method,'Insert only')==0 or strcmp($method,'Insert and update')==0){
+         // now insert the feature
+         $sql = "INSERT INTO {feature} 
+                    (organism_id, name, uniquename, residues, seqlen, 
+                     md5checksum,type_id,is_analysis,is_obsolete)
+                 VALUES(%d,'%s','%s','%s',%d, '%s', %d, %s, %s)";
+         $result = db_query($sql,$organism_id,$name,$uname,$residues,strlen($residues),
+                     md5($residues),$cvterm->cvterm_id,'false','false');
+         if(!$result){
+            print "ERROR: failed to insert feature '$name ($uname)'\n";
+            return 0;
+         } else {
+            print "Inserted feature $name ($uname)\n";
+         }
+      } 
+      else {
+         print "WARNING: failed to find feature '$name' ('$uname') while matching on " . strtolower($match_type) . ". Skipping\n";
+         return 0;
+      }
+   } else {
+       if(strcmp($method,'Update only')==0 or strcmp($method,'Insert and update')==0){
+         if(strcmp($match_type,'Name')==0){
+            $sql = "UPDATE {feature} 
+                     SET uniquename = '%s', residues = '%s', seqlen = '%s', md5checksum = '%s'
+                     WHERE organism_id = %d and name = '%s' and type_id = %d";
+            $result = db_query($sql,$uname,$residues,strlen($residues),md5($residues),$organism_id,$name,$cvterm->cvterm_id);
+         } else {
             $sql = "UPDATE {feature} 
                      SET name = '%s', residues = '%s', seqlen = '%s', md5checksum = '%s'
                      WHERE organism_id = %d and uniquename = '%s' and type_id = %d";
             $result = db_query($sql,$name,$residues,strlen($residues),md5($residues),$organism_id,$uname,$cvterm->cvterm_id);
-         } else {
-            $sql = "UPDATE {feature} 
-                     SET residues = '%s', seqlen = '%s', md5checksum = '%s'
-                     WHERE organism_id = %d and uniquename = '%s' and type_id = %d";
-            $result = db_query($sql,$residues,strlen($residues),md5($residues),$organism_id,$uname,$cvterm->cvterm_id);
          }
          if(!$result){
             print "ERROR: failed to update feature '$name ($uname)'\n";
@@ -474,7 +581,7 @@ function tripal_feature_fasta_loader_insert_feature($name,$uname,$db_id,$accessi
             print "Updated feature $name ($uname)\n";
          }
       } else {
-         print "WARNING: feature already exists, skipping: '$name ($uname)'\n";
+         print "WARNING: feature already exists: '$name' ('$uname'). Skipping\n";
       }
    }
    // now get the feature
