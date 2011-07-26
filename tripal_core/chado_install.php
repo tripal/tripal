@@ -58,24 +58,48 @@ function tripal_core_reset_chado_schema (){
    global $active_db;
 
    // iterate through the lines of the schema file and rebuild the SQL
-   pg_query($active_db,"drop schema chado cascade");
-   pg_query($active_db,"drop schema genetic_code cascade");
-   pg_query($active_db,"drop schema so cascade");
-   pg_query($active_db,"drop schema frange cascade");
+   if(tripal_core_schema_exists('chado')){
+      print "Dropping existing 'chado' schema\n";
+      pg_query($active_db,"drop schema chado cascade");
+   }
+   if(tripal_core_schema_exists('genetic_code')){
+      print "Dropping existing 'genetic_code' schema\n";
+      pg_query($active_db,"drop schema genetic_code cascade");
+   }
+   if(tripal_core_schema_exists('so')){
+      print "Dropping existing 'so' schema\n";
+      pg_query($active_db,"drop schema so cascade");
+   }
+   if(tripal_core_schema_exists('frange')){
+      print "Dropping existing 'frange' schema\n";
+      pg_query($active_db,"drop schema frange cascade");
+   }
+   // create the new chado schema
+   print "Creating 'chado' schema\n";
    pg_query($active_db,"create schema chado");
-   pg_query($active_db,"create language plpgsql");
+   if(tripal_core_schema_exists('chado')){
+      pg_query($active_db,"create language plpgsql");
+      return 1;
+   }
+   return 0;
+}
+/**
+*
+*
+* @ingroup tripal_core
+*/
 
+function tripal_core_schema_exists($schema){
    // check that the chado schema now exists
    $sql = "SELECT nspname
            FROM pg_namespace
-           WHERE has_schema_privilege(nspname, 'USAGE') and nspname = 'chado'
+           WHERE has_schema_privilege(nspname, 'USAGE') and nspname = '%s'
            ORDER BY nspname";
-   $schema = db_fetch_object(db_query($sql));
-   if(strcmp($schema->nspname,'chado')!=0){
+   $name = db_fetch_object(db_query($sql,$schema));
+   if(strcmp($name->nspname,$schema)!=0){
       return 0;
    }
    return 1;
-
 }
 /**
 *
