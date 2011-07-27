@@ -466,11 +466,11 @@ function tripal_feature_load_gff3($gff_file, $organism_id,$analysis_id,$add_only
             if(array_key_exists('Alias',$tags)){
                tripal_feature_load_gff3_alias($feature,$tags['Alias']);
             }
-            // add any aliases for this feature
+            // add any dbxrefs for this feature
             if(array_key_exists('Dbxref',$tags)){
                tripal_feature_load_gff3_dbxref($feature,$tags['Dbxref']);
             }
-            // add any aliases for this feature
+            // add any ontology terms for this feature
             if(array_key_exists('Ontology_term',$tags)){
                tripal_feature_load_gff3_ontology($feature,$tags['Ontology_term']);
             }
@@ -478,6 +478,31 @@ function tripal_feature_load_gff3($gff_file, $organism_id,$analysis_id,$add_only
             if(array_key_exists('Parent',$tags)){
                tripal_feature_load_gff3_parents($feature,$cvterm,$tags['Parent'],$gff_features,$organism_id,$fmin);
             }
+            // add target relationships
+            if(array_key_exists('Target',$tags)){
+               $target = explode(" ",$tags['Target'][0]);
+               $target_feature = $target[0];
+               $target_start = $target[1];
+               $target_end = $target[2];
+               $target_dir = $target[3];
+               #print "Target: $target_feature, $target_start-$target_end\n";
+               tripal_feature_load_gff3_featureloc($feature,$organism,
+                  $target_feature,$target_start,$target_end,$strand,$phase,$attr_fmin_partial,
+                  $attr_fmax_partial,$attr_residue_info,$attr_locgroup);
+            }
+            // add gap information.  This goes in simply as a property 
+            if(array_key_exists('Gap',$tags)){
+               tripal_feature_load_gff3_property($feature,'Gap',$tags['Gap'][0]);
+            }
+            // add notes. This goes in simply as a property
+            if(array_key_exists('Note',$tags)){
+               tripal_feature_load_gff3_property($feature,'Note',$tags['Note'][0]);
+            }
+            // add the Derives_from relationship (e.g. polycistronic genes).
+            if(array_key_exists('Derives_from',$tags)){
+               tripal_feature_load_gff3_derives_from($feature,$tags['Derives_from'][0],$gff_features,$organism);
+            }
+
             // add in the GFF3_source dbxref so that GBrowse can find the feature using the source column
             $source_ref = array('GFF_source:'.$source);
             tripal_feature_load_gff3_dbxref($feature,$source_ref);
@@ -546,7 +571,56 @@ function tripal_feature_load_gff3($gff_file, $organism_id,$analysis_id,$add_only
    tripal_db_set_active($previous_db);
    return '';
 }
+/**
+ *
+ *
+ * @ingroup gff3_loader
+ */
+function tripal_feature_load_gff3_derives_from($feature,$subject,$gff_features,$organism){
 
+   // first get the subject feature
+   $match = array(
+      'organism_id' => $organism->organism_id,
+      'uniquename' => $subject,
+      'type_id' => array(
+         'name' => $gff_features[$subject]['type'],
+         'cv_id' => array(
+            'name' => 'sequence'
+         ),
+      ),
+   );
+   $sfeature = tripal_core_chado_select('feature',array('*'),$match);
+   if(count($sfeature)==0){
+      print "ERROR: could not add 'Derives_from' relationship for $feature->uniquename and $subject.  Subject feature, '$subject', cannot be found\n";
+      return;
+   }
+
+   // now check to see if the relationship already exists  
+   $values = array(
+      'object_id' => $feature->feature_id,
+      'subject_id' => $sfeature[0]->feature_id,
+      'type_id' => array(
+         'cv_id' => array(
+            'name' => 'relationship'
+         ),
+         'name' => 'derives_from',
+      ),
+      'rank' => 0
+   );
+   $rel = tripal_core_chado_select('feature_relationship',array('*'),$values);
+   if(count($rel) > 0){
+      print "   Relationship already exists: $feature->uniquename derives_from $subject\n";
+      return;
+   }
+
+   // finally insert the relationship if it doesn't exist
+   $ret = tripal_core_chado_insert('feature_relationship',$values);
+   if(!$ret){
+      print "ERROR: could not add 'Derives_from' relationship for $feature->uniquename and $subject\n";
+   } else {
+      print "   Added relationship: $feature->uniquename derives_from $subject\n";
+   }
+}
 /**
  *
  *
@@ -933,16 +1007,21 @@ function tripal_feature_load_gff3_feature($organism,$analysis_id,$cvterm,$unique
          print "   Added analysisfeature record\n";
       }
    } else {
-      // if a score is avaialble then set that to be the significance field
+      // if a score is available then set that to be the significance field
       $new_vals = array();
       if(strcmp($score,'.')!=0){
         $new_vals['significance'] = $score;
-      }
-      if(!$add_only and !tripal_core_chado_update('analysisfeature',$af_values,$new_vals)){
-         print "ERROR: could not update analysisfeature record: $analysis_id, $feature->feature_id\n";
       } else {
-         print "   Updated analysisfeature record\n";
-      } 
+        $new_vals['significance'] = '__NULL__';
+      }
+      if(!$add_only){
+         $ret = tripal_core_chado_update('analysisfeature',$af_values,$new_vals);
+         if(!$ret){
+            print "ERROR: could not update analysisfeature record: $analysis_id, $feature->feature_id\n";
+         } else {
+            print "   Updated analysisfeature record\n";
+         } 
+      }
    }
 
    return $feature;

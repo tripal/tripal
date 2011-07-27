@@ -180,10 +180,14 @@ function tripal_core_chado_insert($table,$values){
    foreach ($insert_values as $field => $value){
       array_push($ifields,$field);
       array_push($ivalues,$value);
-      if(strcmp($fields[$field]['type'],'serial')==0 or 
+      if(strcmp($value,'__NULL__')==0){
+         array_push($itypes,"NULL");
+      } 
+      elseif(strcmp($fields[$field]['type'],'serial')==0 or 
          strcmp($fields[$field]['type'],'int')==0){
          array_push($itypes,"%d");
-      } else {
+      } 
+      else {
          array_push($itypes,"'%s'");
       }
    }
@@ -299,10 +303,15 @@ function tripal_core_chado_delete($table,$match){
          $sql .= "$field IN (".db_placeholders($value,'varchar').") AND ";
          foreach ($value as $v) { $dargs[] = $v; }
       } else {
-         if(strcmp($fields[$field]['type'],'serial')==0 or 
+         if(strcmp($value,'__NULL__')==0){
+            $sql .= " $field = NULL AND ";
+         } 
+         elseif(strcmp($fields[$field]['type'],'serial')==0 or 
             strcmp($fields[$field]['type'],'int')==0){
             $sql .= " $field = %d AND ";
-         } else {
+
+         } 
+         else {
             $sql .= " $field = '%s' AND ";
          }
          array_push($dargs,$value);
@@ -427,7 +436,10 @@ function tripal_core_chado_update($table,$match,$values){
    $fields = $table_desc['fields'];
    $uargs = array();
    foreach($update_values as $field => $value){
-      if(strcmp($fields[$field]['type'],'serial')==0 or 
+      if(strcmp($value,'__NULL__')==0){
+         $sql .= " $field = NULL, ";
+      } 
+      elseif(strcmp($fields[$field]['type'],'serial')==0 or 
          strcmp($fields[$field]['type'],'int')==0){
          $sql .= " $field = %d, ";
       } else {
@@ -438,10 +450,14 @@ function tripal_core_chado_update($table,$match,$values){
    $sql = substr($sql,0,-2);  // get rid of the trailing comma & space
    $sql .= " WHERE ";
    foreach($update_matches as $field => $value){
-      if(strcmp($fields[$field]['type'],'serial')==0 or 
+      if(strcmp($value,'__NULL__')==0){
+         $sql .= " $field = NULL AND ";
+      } 
+      elseif(strcmp($fields[$field]['type'],'serial')==0 or 
          strcmp($fields[$field]['type'],'int')==0){
          $sql .= " $field = %d AND ";
-      } else {
+      } 
+      else {
          $sql .= " $field = '%s' AND ";
       }
       array_push($uargs,$value);
