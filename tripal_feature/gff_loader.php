@@ -597,8 +597,8 @@ function tripal_feature_load_gff3_derives_from($feature,$subject,$gff_features,$
 
    // now check to see if the relationship already exists  
    $values = array(
-      'object_id' => $feature->feature_id,
-      'subject_id' => $sfeature[0]->feature_id,
+      'object_id' => $sfeature[0]->feature_id,
+      'subject_id' => $feature->feature_id,
       'type_id' => array(
          'cv_id' => array(
             'name' => 'relationship'
