@@ -27,6 +27,8 @@ function tripal_analysis_unigene_install() {
 
    tripal_analysis_unigene_add_cvterms();
    tripal_analysis_unigene_add_organism_unigene_mview();
+   
+   tripal_analysis_unigene_add_stat_mview(); // Add statistics mview
 
 }
 
@@ -44,7 +46,7 @@ function tripal_analysis_unigene_update_6000(){
       tripal_mviews_action('delete',$mview);
    }
    tripal_analysis_unigene_add_organism_unigene_mview();
-
+   tripal_analysis_unigene_add_stat_mview(); // Add statistics mview
 
    // next, add the cvterm 'analysis_unigene_name' to all existing 
    // unigenes that are already in the database. This will allow the 
@@ -82,6 +84,7 @@ function tripal_analysis_unigene_add_cvterms(){
 
    // Add cveterm 'analysis_unigene_settings' for inserting into analysisprop table   
    tripal_add_cvterms('analysis_unigene_settings', 'Settings of a unigene analysis');
+   tripal_add_cvterms('singlet_in_analysis', 'Label the feature as a singlet of specified analysis. The value is the name of a unigene analysis. More importantly, the analysis_id of said analysis is inserted to the featureprop table as rank');
 }
 /**
 *
@@ -169,4 +172,119 @@ function tripal_analysis_unigene_requirements($phase) {
       }
    }
    return $requirements;
+}
+
+/********************************************************************************
+* Add a materialized view for unigene basic stat
+*/
+function tripal_analysis_unigene_add_stat_mview() {
+	$view_name = 'unigene_basic_stats';
+	// Drop the MView table if it exists
+	$mview_id = tripal_mviews_get_mview_id($view_name);
+	if($mview_id){
+		tripal_mviews_action("delete",$mview_id);
+	}
+
+	$schema = " analysis_id integer,
+   							  name character varying(255),
+   							  unigene_no integer,
+   							  unigene_min_length integer,
+   							  unigene_max_length integer,
+   							  unigene_avg_length integer,
+   							  contig_no integer,
+   							  contig_min_length integer,
+   							  contig_max_length integer,
+   							  contig_avg_length integer,
+   							  singlet_no integer,
+   							  singlet_min_length integer,
+   							  singlet_max_length integer,
+   							  singlet_avg_length integer
+   							  ";
+	 
+	$index = "analysis_id";
+	 
+	$ana_type = tripal_get_cvterm_id('analysis_type');
+	$singlet_type_id = tripal_get_cvterm_id('singlet_in_analysis');
+	$contig_type = db_result(chado_query("SELECT cvterm_id FROM {cvterm} WHERE name = 'contig' AND cv_id = (SELECT cv_id FROM {cv} WHERE name = 'sequence')")); //P.S. 'contig' is not a tripal term
+	$EST_type = db_result(chado_query("SELECT cvterm_id FROM {cvterm} WHERE name = 'EST' AND cv_id = (SELECT cv_id FROM {cv} WHERE name = 'sequence')")); //P.S. 'EST' is not a tripal term
+	$sql = "SELECT
+						A.analysis_id, name, 
+						coalesce(unigene_no, 0), 
+						coalesce(unigene_min, 0), 
+						coalesce(unigene_max, 0), 
+						coalesce(unigene_avg, 0), 
+						coalesce(contig_no, 0), 
+						coalesce(contig_min, 0), 
+						coalesce(contig_max, 0), 
+						coalesce(contig_avg, 0), 
+						coalesce(singlet_no, 0), 
+						coalesce(singlet_min, 0), 
+						coalesce(singlet_max, 0), 
+						coalesce(singlet_avg, 0)
+
+					FROM analysis A 
+					INNER JOIN analysisprop AP ON A.analysis_id = AP.analysis_id
+
+					LEFT JOIN (SELECT count (F.feature_id) AS unigene_no, 
+												min(F.seqlen) AS unigene_min, 
+												max(F.seqlen) AS unigene_max, 
+												round(avg(F.seqlen),0) AS unigene_avg, 
+												analysis_id 
+												FROM feature F
+						         			INNER JOIN analysisfeature AF ON F.feature_id = AF.feature_id
+												LEFT JOIN featureprop FP on F.feature_id = FP.feature_id
+            								WHERE F.type_id = $contig_type
+            								AND ((FP.type_id = $singlet_type_id AND FP.rank != AF.analysis_id) OR FP.type_id IS NULL)
+												OR (FP.type_id = $singlet_type_id AND FP.rank = AF.analysis_id)
+												GROUP BY analysis_id) Unigene ON Unigene.analysis_id = A.analysis_id
+			
+					LEFT JOIN (SELECT count (F.feature_id) AS contig_no, 
+												min(F.seqlen) AS contig_min, 
+												max(F.seqlen) AS contig_max, 
+												round(avg(F.seqlen),0) AS contig_avg, 
+												analysis_id 
+											FROM feature F
+         								INNER JOIN analysisfeature AF ON F.feature_id = AF.feature_id
+											LEFT JOIN featureprop FP on F.feature_id = FP.feature_id
+            							WHERE F.type_id = $contig_type
+            							AND ((FP.type_id = $singlet_type_id AND FP.rank != AF.analysis_id) OR FP.type_id IS NULL)
+											GROUP BY analysis_id) Contig ON Contig.analysis_id = A.analysis_id
+
+					LEFT JOIN (SELECT count (F.feature_id) AS singlet_no, 
+												min(F.seqlen) AS singlet_min, 
+												max(F.seqlen) AS singlet_max, 
+												round(avg(F.seqlen),0) AS singlet_avg, 
+												analysis_id 
+											FROM featureprop FP
+											INNER JOIN feature F ON F.feature_id = FP.feature_id
+         								INNER JOIN analysisfeature AF ON FP.feature_id = AF.feature_id
+											WHERE FP.type_id = $singlet_type_id AND FP.rank = AF.analysis_id
+											GROUP BY analysis_id) Singlet ON Singlet.analysis_id = A.analysis_id			
+			
+					WHERE type_id = $ana_type AND value = 'tripal_analysis_unigene'";
+	 
+	// Create the MView
+	tripal_add_mview(
+	// view name
+	$view_name,
+	// tripal module name
+      ' tripal_analysis_unigene',
+	// table name
+	$view_name,
+	// table schema definition
+	$schema,
+	// columns for indexing
+	$index,
+	// SQL statement to populate the view
+	$sql,
+	// special index
+      ''
+	);
+	 
+	// add a job to the job queue so this view gets updated automatically next
+	// time the job facility is run
+	$mview_id = tripal_mviews_get_mview_id($view_name);
+	if($mview_id){
+		tripal_mviews_action('update',$mview_id);
+	}
 }
