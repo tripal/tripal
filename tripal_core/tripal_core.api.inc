@@ -1309,9 +1309,9 @@ function chado_query($sql) {
 	}
 	_db_query_callback($args, TRUE);
 	$sql = preg_replace_callback(DB_QUERY_REGEXP, '_db_query_callback', $sql);
-	$previous_db = db_set_active('chado');
+	$previous_db = tripal_db_set_active('chado');
 	$results = _db_query($sql);
-	db_set_active($previous_db);
+	tripal_db_set_active($previous_db);
 	return $results;
 }
 
