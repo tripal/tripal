@@ -414,6 +414,7 @@ function tripal_analysis_blast_get_result_object($xml_string,$db,$max,$feature_i
 
 	// Get analysis information
 	$blast_object->analysis = $analysis;
+	$db->displayname = $db_name;
 	$blast_object->db = $db;
 	if (!$db_name) {
 		$blast_object->title = $analysis->name;

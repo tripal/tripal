@@ -834,7 +834,7 @@ function chado_analysis_blast_access($op, $node, $account){
 		}
 	}
 	if ($op == 'view') {
-		if (user_access('access chado_analysis_blast content', $account)) {
+		if (user_access('access chado_analysis_blast content', $account) && tripal_check_permission_by_node_id($node->nid)) {
 			return TRUE;
 		}
 	}

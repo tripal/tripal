@@ -1,7 +1,10 @@
 <?php
 
 function tripal_get_blast_report ($analysis_id, $currentpage, $sort, $descending, $per_page) {
-
+	if (!tripal_analysis_check_permission($analysis_id)) {
+		$html_out = "Access denied. You are not authorized to access this report.";
+		return $html_out;
+	}
 	$report_object = new stdClass;
 	
 	$symbol = "&and;";

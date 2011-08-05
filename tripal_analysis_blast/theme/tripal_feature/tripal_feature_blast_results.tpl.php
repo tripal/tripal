@@ -17,7 +17,7 @@ if(count($blast_results_list) > 0){
 ?>
 <div id="blast_db_<?php print $db->db_id ?>">
 <div id="tripal_analysis_blast-results-<?php print "$db->db_id" ?>-box" class="tripal_analysis_blast-box tripal-info-box">
-	<div class="tripal-info-box-title tripal_analysis_blast-info-box-title"><?php print $db->name ?> Homologs</div>
+	<div class="tripal-info-box-title tripal_analysis_blast-info-box-title"><?php if ($db->displayname) {print $db->displayname;} else {print $db->name . "Homologs";} ?></div>
 	<div class="tripal-info-box-desc tripal_analysis_blast-info-box-desc">
 	<strong>Analysis Date: </strong><?php print preg_replace("/^(\d+-\d+-\d+) .*/","$1",$analysis->timeexecuted) . " (<a href=".url("node/$analysis->nid").">$analysis->name</a>)"?><br>
 	<!--Query: <?php print "$blast_result->xml_tag"?><br>-->
