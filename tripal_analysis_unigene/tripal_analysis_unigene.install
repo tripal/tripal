@@ -35,7 +35,7 @@ function tripal_analysis_unigene_install() {
 /**
 *
 */
-function tripal_analysis_unigene_update_6000(){
+function tripal_analysis_unigene_update_6001(){
 
    // we have some new cvterms to add
    tripal_analysis_unigene_add_cvterms();
