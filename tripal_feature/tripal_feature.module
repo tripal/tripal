@@ -135,7 +135,7 @@ function chado_feature_access($op, $node, $account) {
       }
    }
    if ($op == 'view') {
-      if (user_access('access chado_feature content', $account)) {
+      if (user_access('access chado_feature content', $account) && tripal_check_permission_by_node_id($node->nid)) {
          return TRUE;
       }
    }
