@@ -249,12 +249,12 @@ function chado_analysis_kegg_form ($node){
                           'results that cannot be linked to a feature will be '.
                           'discarded.'),
    );
-/*   $form['kegg']['keggkeywordjob'] = array(
+   $form['kegg']['keggkeywordjob'] = array(
       '#type' => 'checkbox',
       '#title' => t('Submit a job to extract keywords from the KEGG html output'),
       '#description' => t('Note: KEGG results are only searchable after keywords are extracted.'),
 	);
-*/
+
    return $form;
 }
 /**
