@@ -160,4 +160,6 @@ table.tripal-table-horz .tripal-table-odd-row {
   margin-bottom: 10px;
   border-style:solid;
   border-width:1px;
+  
+  overflow:auto;
 }
