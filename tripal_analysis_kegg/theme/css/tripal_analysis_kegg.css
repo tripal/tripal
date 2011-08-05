@@ -27,6 +27,7 @@
 #tripal_kegg_brite_links {
    background-image:url("../images/kegg.gif");
    background-repeat: no-repeat;
+   padding-left:20px;
 }
 
 #tripal_kegg_feature_links {

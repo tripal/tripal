@@ -6,8 +6,23 @@ if (Drupal.jsEnabled) {
        // Select default KEGG analysis when available
        var selectbox = $('#edit-tripal-analysis-kegg-select');
        if(selectbox.length > 0){ 
-          selectbox[0].selectedIndex = 1;
-          selectbox.change();
+    	   var option = document.getElementById("analysis_id_for_kegg_report");
+    	   if (option) {
+    		   var options = document.getElementsByTagName('option');
+    		   var index = 0;
+    		   for (index = 0; index < options.length; index ++) {
+    			   if (options[index].value == option.value) {
+    				   break;
+    			   }
+    		   }
+    		   selectbox[0].selectedIndex = index;
+    		   var baseurl = tripal_get_base_url();
+    		   tripal_analysis_kegg_org_report(option.value, baseurl);
+    		// Otherwise, show the first option by default
+    	   } else {
+    		   selectbox[0].selectedIndex = 1;
+    		   selectbox.change();
+    	   }
        }
 
    });
