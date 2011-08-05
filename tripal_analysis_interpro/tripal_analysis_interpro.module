@@ -9,7 +9,7 @@ require_once "parseInterpro.inc";
 function tripal_analysis_interpro_init(){
 
 	// Add javascript and style sheet
-	drupal_add_css(drupal_get_path('theme', 'tripal').'/css/tripal_analysis_interpro.css');
+   drupal_add_css(drupal_get_path('theme', 'tripal').'/css/tripal_analysis_interpro.css');
    drupal_add_js( drupal_get_path('theme', 'tripal').'/js/tripal_analysis_interpro.js');
 }
 /*******************************************************************************
@@ -88,11 +88,11 @@ function chado_analysis_interpro_form ($node){
       '#description' => t('Check the box to load GO terms to chado database'),
       '#default_value' => $parsego
    );
-//   $form['interpro']['interprokeywordjob'] = array(
-//      '#type' => 'checkbox',
-//      '#title' => t('Submit a job to extract keywords from the Interpro html output'),
-//      '#description' => t('Note: Interpro results are only searchable after keywords are extracted. Do not run this twice if you have already done so.'),
-//	);
+   $form['interpro']['interprokeywordjob'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Submit a job to extract keywords from the Interpro html output'),
+      '#description' => t('Note: Interpro results are only searchable after keywords are extracted.'),
+	);
 	$form['interpro']['interproparameters'] = array(
       '#title' => t('Parameters'),
       '#type' => 'textfield',
@@ -505,6 +505,9 @@ function tripal_get_interpro_HTML_results($feature_id){
 	        INNER JOIN analysisfeatureprop AFP ON AF.analysisfeature_id = AFP.analysisfeature_id
 	        WHERE feature_id = %d
 	        AND AFP.type_id = %d
+	        AND AFP.value NOT like '%No hits reported.%' 
+           AND AFP.value NOT like '%parent%' 
+           AND AFP.value NOT like '%children%' 
 	        GROUP BY A.analysis_id
 	       ";
    $hasResult = db_result(db_query($sql, $feature_id, $type_id));
@@ -537,8 +540,12 @@ function tripal_get_interpro_HTML_results($feature_id){
                  INNER JOIN analysisfeature AF on AF.analysisfeature_id = AFP.analysisfeature_id
                  WHERE AF.analysis_id = %d
                  AND AF.feature_id = %d
+                 AND AFP.type_id = %d
+                 AND AFP.value NOT like '%No hits reported.%' 
+                 AND AFP.value NOT like '%parent%' 
+                 AND AFP.value NOT like '%children%' 
                 ";
-         $interpro_results = db_query($sql, $ana->aid, $feature_id);
+         $interpro_results = db_query($sql, $ana->aid, $feature_id, $type_id);
       	 while ($afp = db_fetch_object($interpro_results)) {
       	 	$content .= $afp->afpvalue;
       	 }
@@ -643,12 +650,49 @@ function chado_analysis_interpro_access($op, $node, $account){
       }
    }
    if ($op == 'view') {
-      if (user_access('access chado_analysis_interpro content', $account)) {
+      if (user_access('access chado_analysis_interpro content', $account) && tripal_check_permission_by_node_id($node->nid)) {
          return TRUE;
       }
    }
    return FALSE;
 }
+
+/**
+ *
+ *
+ * @ingroup tripal_analysis_interpro
+ */
+function tripal_analysis_interpro_job_describe_args($callback,$args){
+
+
+   $new_args = array();
+   if($callback == 'tripal_analysis_interpro_parseXMLFile'){
+
+      // add in the analysis 
+      if($args[0]){
+         $analysis = tripal_core_chado_select('analysis',array('name'),array('analysis_id' => $args[0]));
+      }
+      $new_args['Analysis'] = $analysis[0]->name;
+
+      $new_args['File or Directory Name'] = $args[1];
+
+      if($args[2]){
+         $new_args['Parse GO terms'] = 'Yes';
+      } else {
+         $new_args['Parse GO terms'] = 'No';
+      }
+
+      $new_args['Query name regular expression'] = $args[3];
+      $new_args['Query type'] = $args[4];
+      if($args[5] == 1){
+        $new_args['Feature identifier'] = 'feature unique name';
+      } else {
+        $new_args['Feature identifier'] = 'feature name';
+      }      
+   }
+   return $new_args;
+}
+
 
 /*******************************************************************************
  * Parsing Interpro HTML results that are stored in analysisfeatureprop for 
@@ -656,9 +700,23 @@ function chado_analysis_interpro_access($op, $node, $account){
  * */
 function tripal_analysis_interpro_extract_keywords ($analysis_id) {	
 	
-	print "Extracting keywords...\n";
-	// Get all interpro output hits except for records with 'No hits reported', 'parent', 'children'.
+	// Remove previously stored interpro keywords for this analysis
+	print "Remove keywords previously stored...\n";
 	$output_type_id = tripal_get_cvterm_id('analysis_interpro_output_hit');
+	$sql = "SELECT distinct AFP.analysisfeature_id FROM {analysisfeatureprop} AFP 
+					 INNER JOIN {analysisfeature} AF ON AF.analysisfeature_id = AFP.analysisfeature_id
+					 WHERE type_id = $output_type_id 
+					 AND AF.analysis_id = $analysis_id";
+	$results_remove = chado_query($sql);
+	$keyword_type_id = tripal_get_cvterm_id('analysis_interpro_output_keywords');
+
+	while ($record = db_fetch_object($results_remove)) {
+		$af_id = $record->analysisfeature_id;
+		$sql = "DELETE FROM {analysisfeatureprop} WHERE analysisfeature_id =$af_id AND type_id = $keyword_type_id";
+		chado_query($sql);
+	}
+	
+	print "Extracting keywords...\n";
 	$sql = "SELECT AFP.analysisfeature_id, AFP.value FROM {analysisfeatureprop} AFP 
 					 INNER JOIN {analysisfeature} AF ON AF.analysisfeature_id = AFP.analysisfeature_id
 					 WHERE type_id = $output_type_id 
@@ -667,12 +725,14 @@ function tripal_analysis_interpro_extract_keywords ($analysis_id) {
            		 AND value NOT like '%parent%' 
            		 AND value NOT like '%children%'";
 	$results = chado_query($sql);
-	$keyword_type_id = tripal_get_cvterm_id('analysis_interpro_output_keywords');
 	// Define what to be extracted in the array
 	$search = array (
 							"'SEQUENCE:.*'",
 							"'CRC64:.*'",
 							"'LENGTH:.*'",
+							"'unintegrated'",
+							"'noIPR'",
+							"'<td>seg</td>'",
 							"'<b>InterPro<br/>'",
 							"'<br/>Domain|Family\n'",
 							"'<td>no description</td>'",
@@ -680,6 +740,9 @@ function tripal_analysis_interpro_extract_keywords ($analysis_id) {
 							"'\n'", // replace newlines with a space
 	);
 	$replace = array (
+								"",
+								"",
+								"",
 								"",
 								"",
 								"",
@@ -715,39 +778,4 @@ function tripal_analysis_interpro_extract_keywords ($analysis_id) {
 	
 	print "Finished.\n";
 	
-}
-/**
- *
- *
- * @ingroup tripal_analysis_interpro
- */
-function tripal_analysis_interpro_job_describe_args($callback,$args){
-
-
-   $new_args = array();
-   if($callback == 'tripal_analysis_interpro_parseXMLFile'){
-
-      // add in the analysis 
-      if($args[0]){
-         $analysis = tripal_core_chado_select('analysis',array('name'),array('analysis_id' => $args[0]));
-      }
-      $new_args['Analysis'] = $analysis[0]->name;
-
-      $new_args['File or Directory Name'] = $args[1];
-
-      if($args[2]){
-         $new_args['Parse GO terms'] = 'Yes';
-      } else {
-         $new_args['Parse GO terms'] = 'No';
-      }
-
-      $new_args['Query name regular expression'] = $args[3];
-      $new_args['Query type'] = $args[4];
-      if($args[5] == 1){
-        $new_args['Feature identifier'] = 'feature unique name';
-      } else {
-        $new_args['Feature identifier'] = 'feature name';
-      }      
-   }
-   return $new_args;
 }
