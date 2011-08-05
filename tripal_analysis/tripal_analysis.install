@@ -125,3 +125,16 @@ function tripal_analysis_requirements($phase) {
    }
    return $requirements;
 }
+
+/*******************************************************************************
+ * Provide update script for adding new cvterms
+ */
+function tripal_analysis_update_6001(){
+   // we have some new cvterms to add
+   tripal_add_cvterms('based_on_analysis','The analysis that this analysis was based on. For example, blast/kegg/interpro analyses are based on a unigene analysis. The unigene analysis_id should be stored in analysisprop as the rank using this cvterm. The name of said unigene analysis can be inserted as the value in analysisprop.');
+   tripal_add_cvterms('additional_files', 'Additional files for this analysis. Each file should be separated by a semi-colon and have this format: <file description>, <file path>;');
+   $ret = array(
+      '#finished' => 1,
+   );   
+   return $ret;
+}

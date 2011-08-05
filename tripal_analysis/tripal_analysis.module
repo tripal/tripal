@@ -203,6 +203,13 @@ function chado_analysis_insert($node){
 		drupal_write_record('node',$record,'nid');
 		drupal_write_record('node_revisions',$record,'nid');
 	}
+	
+	if($node->setpermissions) {
+		$job_args[0] = $analysis_id;
+		$job_args[1] = $node->nid;
+		tripal_add_job("Set permission for analysis associated features",'tripal_analysis',
+	                              'tripal_analysis_set_feature_permission', $job_args, $user->uid);
+	}
 
    // add the analysis to the node object for
    // use by other analysis modules that may be using this function
@@ -294,6 +301,32 @@ function chado_analysis_update($node){
 			//Construct node title as "program (version)
 			$record->title = "$node->program ($node->programversion)";
 		}
+		if ($node->files) {
+			$files = $node->files;
+			$type_id = tripal_get_cvterm_id('additional_files');
+			$sql = "SELECT * FROM {analysisprop} WHERE type_id = $type_id AND analysis_id = $analysis_id";
+			$result = db_result(chado_query($sql));
+			if (!$result) {
+				$sql = "INSERT INTO {analysisprop} (analysis_id, type_id, value, rank)
+	   				 VALUES ($analysis_id, $type_id, '$files', 0)";
+				chado_query($sql);
+			} else {
+				$sql = "UPDATE {analysisprop}
+								  SET rank = 0,
+								  value = '$node->files' 
+								  WHERE analysis_id = $analysis_id 
+								  AND type_id =$type_id";
+				chado_query($sql);
+			}
+		}
+		
+		if($node->setpermissions) {
+			$job_args[0] = $analysis_id;
+			$job_args[1] = $node->nid;
+			tripal_add_job("Set permission for analysis associated features",'tripal_analysis',
+		                              'tripal_analysis_set_feature_permission', $job_args, $user->uid);
+		}
+		
 		$record->nid = $node->nid;
 		drupal_write_record('node',$record,'nid');
 		drupal_write_record('node_revisions',$record,'nid');
@@ -354,6 +387,10 @@ function chado_analysis_form ($node){
    $description = $node->description;
    if(!$description){
       $description = $analysis->description;
+   }
+   $files = $node->files;
+   if(!$files){
+      $files = $analysis->files;
    }
 	$form = array();
 	$form['title']= array(
@@ -450,6 +487,24 @@ function chado_analysis_form ($node){
          someone to recreate the analysis, including materials and methods
          for collection of the source data and performing the analysis'),
 	);
+	$form['files']= array(
+      '#type' => 'textarea',
+      '#rows' => 5,
+      '#title' => t('Additional Files for Download'),
+	  '#description' => t('Separate each file with a bar \'|\' and include a description for each file using semicolon. e.g. Description1; File1 | Description2; File2'),
+      '#required' => FALSE,
+      '#default_value' => check_plain($files),
+      '#weight' => 12
+	);
+	/* Set permissions for all features associated with this analysis */
+	if (module_exists('node_privacy_byrole')) {
+		$form['setpermissions'] = array(
+				'#type' => 'checkbox',
+	      	'#title' => t('Submit a job to set the same permissions for all features associated with this analysis'),
+	      	'#default_value' => FALSE,
+			   '#weight' => 10
+		);
+	}
 	
 	return $form;
 }
@@ -468,6 +523,9 @@ function chado_analysis_load($node){
    $values = array('analysis_id' => $analysis_id);
    $analysis = tripal_core_generate_chado_var('analysis',$values);
 
+   $files = tripal_analysis_get_property($analysis_id,'additional_files');
+   $analysis->files = $files->value;
+      
    $additions->analysis = $analysis;
    return $additions;
 }
@@ -727,7 +785,7 @@ function chado_analysis_access($op, $node, $account){
 		}
 	}
 	if ($op == 'view') {
-		if (user_access('access chado_analysis content', $account)) {
+		if (user_access('access chado_analysis content', $account) && tripal_check_permission_by_node_id($node->nid)) {
 			return TRUE;
 		}
 	}
