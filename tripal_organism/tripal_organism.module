@@ -138,7 +138,7 @@ function chado_organism_access($op, $node, $account){
       case 'delete':
         return user_access('delete chado_organism content', $account);
       case 'view' :
-        return user_access('access chado_organism content', $account);
+        return (user_access('access chado_organism content', $account) && tripal_check_permission_by_node_id($node->nid));
    }
 }
 /**
