@@ -635,26 +635,28 @@ function tripal_analysis_interpro_perm(){
  *  perform actions on data managed by this module
  */
 function chado_analysis_interpro_access($op, $node, $account){
-   if ($op == 'create') {
-      return user_access('create chado_analysis_interpro content', $account);
-   }
+	if ($op == 'create') {
+		if(!user_access('create chado_analysis_interpro content', $account)){
+			return FALSE;
+      }
+	}
 
-   if ($op == 'update') {
-      if (user_access('edit chado_analysis_interpro content', $account)) {
-         return TRUE;
+	if ($op == 'update') {
+		if (!user_access('edit chado_analysis_interpro content', $account)) {
+			return FALSE;
+		}
+	}
+	if ($op == 'delete') {
+		if (!user_access('delete chado_analysis_interpro content', $account)) {
+			return FALSE;
+		}
+	}
+	if ($op == 'view') {
+		if(!user_access('access chado_analysis_interpro content', $account)){
+         return FALSE;
       }
-   }
-   if ($op == 'delete') {
-      if (user_access('delete chado_analysis_interpro content', $account)) {
-         return TRUE;
-      }
-   }
-   if ($op == 'view') {
-      if (user_access('access chado_analysis_interpro content', $account) && tripal_check_permission_by_node_id($node->nid)) {
-         return TRUE;
-      }
-   }
-   return FALSE;
+	}
+   return NULL;
 }
 
 /**

@@ -120,26 +120,28 @@ function tripal_feature_perm(){
  * @ingroup tripal_feature
  */
 function chado_feature_access($op, $node, $account) {
-   if ($op == 'create') {
-      return user_access('create chado_feature content', $account);
-   }
+	if ($op == 'create') {
+		if(!user_access('create chado_feature content', $account)){
+			return FALSE;
+      }
+	}
 
-   if ($op == 'update') {
-      if (user_access('edit chado_feature content', $account)) {
-         return TRUE;
+	if ($op == 'update') {
+		if (!user_access('edit chado_feature content', $account)) {
+			return FALSE;
+		}
+	}
+	if ($op == 'delete') {
+		if (!user_access('delete chado_feature content', $account)) {
+			return FALSE;
+		}
+	}
+	if ($op == 'view') {
+		if(!user_access('access chado_feature content', $account)){
+         return FALSE;
       }
-   }
-   if ($op == 'delete') {
-      if (user_access('delete chado_feature content', $account)) {
-         return TRUE;
-      }
-   }
-   if ($op == 'view') {
-      if (user_access('access chado_feature content', $account) && tripal_check_permission_by_node_id($node->nid)) {
-         return TRUE;
-      }
-   }
-   return FALSE;
+	}
+   return NULL;
 }
 /**
  *  Menu items are automatically added for the new node types created

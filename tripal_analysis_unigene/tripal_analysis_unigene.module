@@ -40,26 +40,28 @@ function tripal_analysis_unigene_perm(){
  *  perform actions on data managed by this module
  */
 function chado_analysis_unigene_access($op, $node, $account){
-   if ($op == 'create') {
-      return user_access('create chado_analysis_unigene content', $account);
-   }
+	if ($op == 'create') {
+		if(!user_access('create chado_analysis_unigene content', $account)){
+			return FALSE;
+      }
+	}
 
-   if ($op == 'update') {
-      if (user_access('edit chado_analysis_unigene content', $account)) {
-         return TRUE;
+	if ($op == 'update') {
+		if (!user_access('edit chado_analysis_unigene content', $account)) {
+			return FALSE;
+		}
+	}
+	if ($op == 'delete') {
+		if (!user_access('delete chado_analysis_unigene content', $account)) {
+			return FALSE;
+		}
+	}
+	if ($op == 'view') {
+		if(!user_access('access chado_analysis_unigene content', $account)){
+         return FALSE;
       }
-   }
-   if ($op == 'delete') {
-      if (user_access('delete chado_analysis_unigene content', $account)) {
-         return TRUE;
-      }
-   }
-   if ($op == 'view') {
-      if (user_access('access chado_analysis_unigene content', $account) && tripal_check_permission_by_node_id($node->nid)) {
-         return TRUE;
-      }
-   }
-   return FALSE;
+	}
+   return NULL;
 }
 /**
 *
@@ -827,11 +829,7 @@ function tripal_analysis_unigene_load_organism_unigenes($organism){
       $unigene->num_clusters = $num_clusters->value;
       $unigene->num_contigs = $num_contigs->value;     
       $unigene->num_singlets = $num_singlets->value;
-      
-		// add in unigene number using the materialized view
-		$sql_u = "SELECT unigene_no FROM {unigene_basic_stats} WHERE analysis_id = %d";
-		$unigene->num_unigenes = db_result(chado_query($sql_u, $analysis_id));
-		
+
       $unigenes[$i++] = $unigene;
    }
    return $unigenes;
