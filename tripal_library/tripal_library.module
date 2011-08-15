@@ -841,22 +841,22 @@ function tripal_library_library_access($op, $node, $account){
 
    if ($op == 'update') {
       if (!user_access('edit any chado_library content', $account) &&
-         (!user_access('edit own chado_library content', $account)){
+          !user_access('edit own chado_library content', $account)){
           return FALSE;
       }
-      if(user_access('edit own chado_library content', $account)
-        ($account->uid != $node->uid)){
+      if(user_access('edit own chado_library content', $account) &&
+         $account->uid != $node->uid){
          return FALSE;
       }
    }
 
    if ($op == 'delete') {
       if (!user_access('delete any chado_library content', $account) &&
-         (!user_access('delete own chado_library content', $account)){
+         !user_access('delete own chado_library content', $account)){
          return FALSE;
       } 
       if (user_access('delete own chado_library content', $account) &&
-         ($account->uid != $node->uid)) {
+          $account->uid != $node->uid) {
          return FALSE;
       }
    }
