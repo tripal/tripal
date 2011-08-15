@@ -262,8 +262,8 @@ function tripal_analysis_go_select_form(&$form_state = NULL,$node){
    $analyses[''] = '';
    while($analysis = db_fetch_object($results)){
       # check to see if the user has permission to see this analysis
-      $node = tripal_analysis_get_node($analysis->analysis_id);
-      if(node_access("view",$node)){
+      $anode = tripal_analysis_get_node($analysis->analysis_id);
+      if(node_access("view",$anode)){
          $analyses[$analysis->analysis_id."-".$analysis->organism_id] = "$analysis->name";
       }
    }
@@ -330,8 +330,8 @@ function tripal_analysis_go_load_organism_go_summary($node) {
    # check to ensure we have access to at least one of the GO analyses
    $has_results = 0;
    while($analysis = db_fetch_object($results)){
-      $node = tripal_analysis_get_node($analysis->analysis_id);
-      if(node_access("view",$node)){
+      $anode = tripal_analysis_get_node($analysis->analysis_id);
+      if(node_access("view",$anode)){
          $has_results = 1;
       }
    }
