@@ -810,21 +810,24 @@ function tripal_gbrowse_perm(){
 function tripal_gbrowse_access($op, $node, $account) {
 
   if($op == 'create') {
-  
     // Only users with permission to do so may create this node type.
-    return user_access('create tripal_gbrowse', $account);
-  
+    if(!user_access('create tripal_gbrowse', $account)){
+       return FALSE;
+    }  
   }
 
   // Users who create a node may edit or delete it later, assuming they have the
   // necessary permissions.
-  if($op == 'update' || $op == 'delete') {
-    
-    if(user_access('edit own tripal_gbrowse',$account) && ($account->uid == $node->uid)) {
-      
-      return TRUE;
+  if($op == 'update' || $op == 'delete') {   
+    if(!user_access('edit own tripal_gbrowse',$account)){
+       return FALSE;
+    } 
+    if(user_access('edit own tripal_gbrowse',$account) && 
+       $account->uid != $node->uid){
+      return FALSE;
     }
   }
+  return NULL;
 }
 
 

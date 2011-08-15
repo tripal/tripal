@@ -640,7 +640,6 @@ function chado_analysis_interpro_access($op, $node, $account){
 			return FALSE;
       }
 	}
-
 	if ($op == 'update') {
 		if (!user_access('edit chado_analysis_interpro content', $account)) {
 			return FALSE;

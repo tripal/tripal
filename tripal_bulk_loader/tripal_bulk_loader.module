@@ -137,24 +137,26 @@ function tripal_bulk_loader_list () {
  */
 function tripal_bulk_loader_access($op, $node, $account){
 	if ($op == 'create') {
-		return user_access('create tripal_bulk_loader', $account);
+		if(!user_access('create tripal_bulk_loader', $account)){
+         return FALSE;
+      }
 	}
 	if ($op == 'update') {
-		if (user_access('edit tripal_bulk_loader', $account)) {
-			return TRUE;
+		if (!user_access('edit tripal_bulk_loader', $account)) {
+			return FALSE;
 		}
 	}
 	if ($op == 'delete') {
-		if (user_access('delete tripal_bulk_loader', $account)) {
-			return TRUE;
+		if (!user_access('delete tripal_bulk_loader', $account)) {
+			return FALSE;
 		}
 	}
 	if ($op == 'view') {
-		if (user_access('access tripal_bulk_loader', $account)) {
-			return TRUE;
+		if (!user_access('access tripal_bulk_loader', $account)) {
+			return FALSE;
 		}
 	}
-	return FALSE;
+	return NULL;
 }
 
 /**

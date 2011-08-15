@@ -45,7 +45,6 @@ function chado_analysis_unigene_access($op, $node, $account){
 			return FALSE;
       }
 	}
-
 	if ($op == 'update') {
 		if (!user_access('edit chado_analysis_unigene content', $account)) {
 			return FALSE;

@@ -824,7 +824,6 @@ function chado_analysis_blast_access($op, $node, $account){
 			return FALSE;
       }
 	}
-
 	if ($op == 'update') {
 		if (!user_access('edit chado_analysis_blast content', $account)) {
 			return FALSE;

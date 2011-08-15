@@ -130,8 +130,10 @@ function tripal_project_help($path, $arg) {
  */
 function tripal_project_perm() {
 
-  return array('create tripal_project', 'edit own tripal_project');
-  
+  return array(
+    'create tripal_project', 
+    'edit own tripal_project'
+  );
 }
 
 
@@ -158,17 +160,23 @@ function tripal_project_access($op, $node, $account) {
   if ($op == 'create') {
   
     // Only users with permission to do so may create this node type.
-    return user_access('create tripal_project', $account);
+    if(!user_access('create tripal_project', $account)){
+      return FALSE;
+    }
   }
 
   // Users who create a node may edit or delete it later, assuming they have the necessary permissions.
   if ($op == 'update' || $op == 'delete') {
   
-    if (user_access('edit own tripal_project',$account) && ($account->uid == $node->uid)) {
-    
-      return TRUE;
+    if(!user_access('edit own tripal_project',$account){
+       return FALSE;
+    }
+    if(user_access('edit own tripal_project',$account) &&
+       $account->uid != $node->uid){
+      return FALSE;
     }
   }
+  return NULL;
 }
 
 

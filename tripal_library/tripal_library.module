@@ -74,25 +74,26 @@ function tripal_library_perm(){
  */
 function chado_library_access($op, $node, $account) {
    if ($op == 'create') {
-      return user_access('create chado_library content', $account);
+      if(!user_access('create chado_library content', $account)){
+         return FALSE;
+      }
    }
-
    if ($op == 'update') {
-      if (user_access('edit chado_library content', $account)) {
-         return TRUE;
+      if (!user_access('edit chado_library content', $account)) {
+         return FALSE;
       }
    }
    if ($op == 'delete') {
-      if (user_access('delete chado_library content', $account)) {
-         return TRUE;
+      if (!user_access('delete chado_library content', $account)) {
+         return FALSE;
       }
    }
    if ($op == 'view') {
-      if (user_access('access chado_library content', $account)) {
-         return TRUE;
+      if (!user_access('access chado_library content', $account)) {
+         return FALSE;
       }
    }
-   return FALSE;
+   return NULL;
 }
 /**
  * Menu items are automatically added for the new node types created
@@ -833,24 +834,33 @@ function tripal_library_cron (){
  */
 function tripal_library_library_access($op, $node, $account){
    if ($op == 'create') {
-      return user_access('create chado_library content', $account);
+      if(!user_access('create chado_library content', $account)){
+        return FALSE;
+      }
    }
 
    if ($op == 'update') {
-      if (user_access('edit any chado_library content', $account) ||
-      (user_access('edit own chado_library content', $account) &&
-      ($account->uid == $node->uid))){
-         return TRUE;
+      if (!user_access('edit any chado_library content', $account) &&
+         (!user_access('edit own chado_library content', $account)){
+          return FALSE;
+      }
+      if(user_access('edit own chado_library content', $account)
+        ($account->uid != $node->uid)){
+         return FALSE;
       }
    }
 
    if ($op == 'delete') {
-      if (user_access('delete any chado_library content', $account) ||
-      (user_access('delete own chado_library content', $account) &&
-      ($account->uid == $node->uid))) {
-         return TRUE;
+      if (!user_access('delete any chado_library content', $account) &&
+         (!user_access('delete own chado_library content', $account)){
+         return FALSE;
+      } 
+      if (user_access('delete own chado_library content', $account) &&
+         ($account->uid != $node->uid)) {
+         return FALSE;
       }
    }
+   return NULL;
 }
 /**
  *  validates submission of form when adding or updating a library node
