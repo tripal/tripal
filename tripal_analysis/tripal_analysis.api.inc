@@ -205,3 +205,22 @@ function tripal_analysis_update_property($analysis_id,$property,$value,$insert_i
 function tripal_analysis_delete_property($analysis_id,$property){
    return tripal_core_delete_property('analysis',$analysis_id,$property,'tripal');
 }
+/**
+ * Retreives the node of a sync'ed analysis
+ *
+ * @param $analysis_id
+ *   The analysis_id of the property to delete
+ *
+ * @return
+ *   node of analysis on success, null otherwise 
+ *
+ * @ingroup tripal_analysis_api
+ */
+function tripal_analysis_get_node($analysis_id){
+   $sql = "SELECT * 
+           FROM chado_analysis CA
+              INNER JOIN node N on CA.nid = N.nid
+           WHERE analysis_id = %d";
+   $node = db_fetch_object(db_query($sql,$analysis_id));
+   return $node;
+}

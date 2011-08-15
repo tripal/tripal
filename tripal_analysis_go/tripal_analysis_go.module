@@ -261,7 +261,11 @@ function tripal_analysis_go_select_form(&$form_state = NULL,$node){
    $analyses = array();
    $analyses[''] = '';
    while($analysis = db_fetch_object($results)){
-   		$analyses[$analysis->analysis_id."-".$analysis->organism_id] = "$analysis->name";
+      # check to see if the user has permission to see this analysis
+      $node = tripal_analysis_get_node($analysis->analysis_id);
+      if(node_access("view",$node)){
+         $analyses[$analysis->analysis_id."-".$analysis->organism_id] = "$analysis->name";
+      }
    }
   
    # create the select box
@@ -310,22 +314,26 @@ function tripal_analysis_go_org_charts ($element) {
 /************************************************************************
 */
 function tripal_analysis_go_load_organism_go_summary($node) {
-   $organism = $node->organism;
-
+  $organism = $node->organism;
+	
    // check to see if we have any analyses
    $sql = "
-     SELECT count(*) as cnt
+     SELECT A.analysis_id
      FROM {go_count_analysis} GCA
        INNER JOIN Analysis A on GCA.analysis_id = A.analysis_id
      WHERE organism_id = %d
    ";
    $previous_db = tripal_db_set_active('chado');
-   $results = db_fetch_object(db_query($sql,$organism->organism_id));
+   $results = db_query($sql,$organism->organism_id);
    tripal_db_set_active($previous_db);
 
+   # check to ensure we have access to at least one of the GO analyses
    $has_results = 0;
-   if($results->cnt > 0){
-      $has_results = 1;
+   while($analysis = db_fetch_object($results)){
+      $node = tripal_analysis_get_node($analysis->analysis_id);
+      if(node_access("view",$node)){
+         $has_results = 1;
+      }
    }
    return array (
       'has_results' => $has_results,

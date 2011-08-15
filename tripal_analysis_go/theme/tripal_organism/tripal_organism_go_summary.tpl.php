@@ -10,7 +10,7 @@
         print $form;
      } else {
        ?><div class="tripal-no-results">
-           There are no GO reports avaialble
+           There are no GO reports available
            <?php if(user_access('access administration pages')){ ?>
               <p><br>Administrators, to view a GO report you must:
               <ul>
