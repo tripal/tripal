@@ -1010,18 +1010,22 @@ function tripal_analysis_kegg_load_organism_kegg_summary($node) {
 
    // find analyses that have KEGG terms
    $sql = "
-     SELECT *
+     SELECT analysis_id
      FROM {kegg_by_organism} KBO
      WHERE organism_id = %d
      ORDER BY analysis_id DESC
    ";
    $previous_db = tripal_db_set_active('chado');
-   $results = db_fetch_object(db_query($sql,$organism->organism_id));
+   $results = db_query($sql,$organism->organism_id);
    tripal_db_set_active($previous_db);
 
+   # check to ensure we have access to at least one of the GO analyses
    $has_results = 0;
-   if($results){
-      $has_results = 1;
+   while($analysis = db_fetch_object($results)){
+      $anode = tripal_analysis_get_node($analysis->analysis_id);
+      if(node_access("view",$anode)){
+         $has_results = 1;
+      }
    }
    return array (
       'has_results' => $has_results,
@@ -1187,7 +1191,11 @@ function tripal_analysis_kegg_select_form(&$form_state = NULL,$node){
    $analyses = array();
    $analyses[''] = '';
    while($analysis = db_fetch_object($results)){
+      # check to see if the user has permission to see this analysis
+      $anode = tripal_analysis_get_node($analysis->analysis_id);
+      if(node_access("view",$anode)){
    		$analyses[$analysis->analysis_id] = "$analysis->analysis_name";
+      }
    }
   
    global $base_url;
