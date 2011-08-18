@@ -433,6 +433,7 @@ function tripal_feature_load_fasta($dfile, $organism_id, $type,
    $i = 0;
 
    $name = '';
+   $uname = '';
    $residues = '';
    $num_lines = sizeof($lines);
    $interval = intval($num_lines * 0.01);
@@ -448,17 +449,18 @@ function tripal_feature_load_fasta($dfile, $organism_id, $type,
          tripal_job_set_progress($job,intval(($i/$num_lines)*100));
       }
 
-      // get the name, uniquename, accession and relationship subject from
-      // the definition line
+      // if we encounter a definition line then get the name, uniquename, 
+      // accession and relationship subject from the definition line
       if(preg_match('/^>/',$line)){
          // if we have a feature name then we are starting a new sequence
          // so let's handle the previous one before moving on
-         if($name){
+         if($name or $uname){
            tripal_feature_fasta_loader_handle_feature($name,$uname,$db_id,
               $accession,$subject,$rel_type,$parent_type,$library_id,$organism_id,$type,
               $source,$residues,$method,$re_name,$match_type);
            $residues = '';
            $name = '';
+           $uname = '';
          }
 
          $line = preg_replace("/^>/",'',$line);
@@ -469,8 +471,12 @@ function tripal_feature_load_fasta($dfile, $organism_id, $type,
             }
             $name = trim($matches[1]);
          } else {
-            preg_match("/^\s*(.*?)[\s\|].*$/",$line,$matches);
-            $name = trim($matches[1]);
+            // if the match_type is name and no regular expression was provided
+            // then use the first word as the name, otherwise we don't set the name
+            if(strcmp($match_type,'Name')==0){
+               preg_match("/^\s*(.*?)[\s\|].*$/",$line,$matches);
+               $name = trim($matches[1]);
+            }
          } 
          // get the feature unique name
          if($re_uname){
@@ -479,12 +485,18 @@ function tripal_feature_load_fasta($dfile, $organism_id, $type,
             }
             $uname = trim($matches[1]);
          } else {
-            preg_match("/^\s*(.*?)[\s\|].*$/",$line,$matches);
-            $uname = trim($matches[1]);
+            // if the match_type is name and no regular expression was provided
+            // then use the first word as the name, otherwise, we don't set the unqiuename
+            if(strcmp($match_type,'Unique name')==0){
+               preg_match("/^\s*(.*?)[\s\|].*$/",$line,$matches);
+               $uname = trim($matches[1]);
+            }
          } 
-               
+         // get the accession    
          preg_match("/$re_accession/",$line,$matches);
          $accession = trim($matches[1]);
+
+         // get the relationship subject
          preg_match("/$re_subject/",$line,$matches);
          $subject = trim($matches[1]);
       }
@@ -535,44 +547,75 @@ function tripal_feature_fasta_loader_handle_feature($name,$uname,$db_id,$accessi
                       WHERE organism_id = %d and name = '%s' and type_id = %d";
          $feature = db_fetch_object(db_query($feature_sql,$organism_id,$name,$cvterm->cvterm_id));
       }
-   } else {
+   }
+   if(strcmp($match_type,'Unique name')==0){
       $feature_sql = "SELECT * FROM {feature} 
                       WHERE organism_id = %d and uniquename = '%s' and type_id = %d";
       $feature = db_fetch_object(db_query($feature_sql,$organism_id,$uname,$cvterm->cvterm_id));
    }
 
-   if(!$feature){
-       if(strcmp($method,'Insert only')==0 or strcmp($method,'Insert and update')==0){
-         // now insert the feature
-         $sql = "INSERT INTO {feature} 
-                    (organism_id, name, uniquename, residues, seqlen, 
-                     md5checksum,type_id,is_analysis,is_obsolete)
-                 VALUES(%d,'%s','%s','%s',%d, '%s', %d, %s, %s)";
-         $result = db_query($sql,$organism_id,$name,$uname,$residues,strlen($residues),
-                     md5($residues),$cvterm->cvterm_id,'false','false');
-         if(!$result){
-            print "ERROR: failed to insert feature '$name ($uname)'\n";
-            return 0;
-         } else {
-            print "Inserted feature $name ($uname)\n";
-         }
-      } 
-      else {
-         print "WARNING: failed to find feature '$name' ('$uname') while matching on " . strtolower($match_type) . ". Skipping\n";
+   if(!$feature and (strcmp($method,'Insert only')==0 or strcmp($method,'Insert and update')==0)){
+       // if we have a unique name but not a name then set them to be teh same 
+       // and vice versa
+       if(!$uname){
+          $uname = $name;
+       }
+       elseif(!$name){
+          $name = $uname;
+       }
+      // now insert the feature
+      $sql = "INSERT INTO {feature} 
+                 (organism_id, name, uniquename, residues, seqlen, 
+                  md5checksum,type_id,is_analysis,is_obsolete)
+              VALUES(%d,'%s','%s','%s',%d, '%s', %d, %s, %s)";
+      $result = db_query($sql,$organism_id,$name,$uname,$residues,strlen($residues),
+                  md5($residues),$cvterm->cvterm_id,'false','false');
+      if(!$result){
+         print "ERROR: failed to insert feature '$name ($uname)'\n";
          return 0;
+      } else {
+         print "Inserted feature $name ($uname)\n";
       }
-   } else {
+   } 
+   if(!$feature and (strcmp($method,'Update only')==0 or strcmp($method,'Insert and update')==0)){
+      print "WARNING: failed to find feature '$name' ('$uname') while matching on " . strtolower($match_type) . ". Skipping\n";
+      return 0;
+   }
+
+   if($feature and (strcmp($method,'Update only')==0 or strcmp($method,'Insert and update')==0)){
        if(strcmp($method,'Update only')==0 or strcmp($method,'Insert and update')==0){
          if(strcmp($match_type,'Name')==0){
-            $sql = "UPDATE {feature} 
-                     SET uniquename = '%s', residues = '%s', seqlen = '%s', md5checksum = '%s'
-                     WHERE organism_id = %d and name = '%s' and type_id = %d";
-            $result = db_query($sql,$uname,$residues,strlen($residues),md5($residues),$organism_id,$name,$cvterm->cvterm_id);
+            // if we're matching on the name but do not have a new unique name then we
+            // don't want to update the uniquename.  If we do have a uniquename then we 
+            // should update it.  We only get a uniquename if there was a regular expression
+            // provided for pulling it out
+            if($uname){
+               $sql = "UPDATE {feature} 
+                        SET uniquename = '%s', residues = '%s', seqlen = '%s', md5checksum = '%s'
+                        WHERE organism_id = %d and name = '%s' and type_id = %d";
+               $result = db_query($sql,$uname,$residues,strlen($residues),md5($residues),$organism_id,$name,$cvterm->cvterm_id);
+            } else {
+               $sql = "UPDATE {feature} 
+                        SET residues = '%s', seqlen = '%s', md5checksum = '%s'
+                        WHERE organism_id = %d and name = '%s' and type_id = %d";
+               $result = db_query($sql,$residues,strlen($residues),md5($residues),$organism_id,$name,$cvterm->cvterm_id);
+            }
          } else {
-            $sql = "UPDATE {feature} 
-                     SET name = '%s', residues = '%s', seqlen = '%s', md5checksum = '%s'
-                     WHERE organism_id = %d and uniquename = '%s' and type_id = %d";
-            $result = db_query($sql,$name,$residues,strlen($residues),md5($residues),$organism_id,$uname,$cvterm->cvterm_id);
+            // if we're matching on the unique name but do not have a new name then we
+            // don't want to update the name.  If we do have a name then we 
+            // should update it.  We only get a name if there was a regular expression
+            // provided for pulling it out
+            if($name){
+               $sql = "UPDATE {feature} 
+                        SET name = '%s', residues = '%s', seqlen = '%s', md5checksum = '%s'
+                        WHERE organism_id = %d and uniquename = '%s' and type_id = %d";
+               $result = db_query($sql,$name,$residues,strlen($residues),md5($residues),$organism_id,$uname,$cvterm->cvterm_id);
+            } else {
+               $sql = "UPDATE {feature} 
+                        SET residues = '%s', seqlen = '%s', md5checksum = '%s'
+                        WHERE organism_id = %d and uniquename = '%s' and type_id = %d";
+               $result = db_query($sql,$residues,strlen($residues),md5($residues),$organism_id,$uname,$cvterm->cvterm_id);
+            }
          }
          if(!$result){
             print "ERROR: failed to update feature '$name ($uname)'\n";
