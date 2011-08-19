@@ -88,11 +88,11 @@ function chado_analysis_interpro_form ($node){
       '#description' => t('Check the box to load GO terms to chado database'),
       '#default_value' => $parsego
    );
-   $form['interpro']['interprokeywordjob'] = array(
-      '#type' => 'checkbox',
-      '#title' => t('Submit a job to extract keywords from the Interpro html output'),
-      '#description' => t('Note: Interpro results are only searchable after keywords are extracted.'),
-	);
+//   $form['interpro']['interprokeywordjob'] = array(
+//      '#type' => 'checkbox',
+//      '#title' => t('Submit a job to extract keywords from the Interpro html output'),
+//      '#description' => t('Note: Interpro results are only searchable after keywords are extracted.'),/
+//	);
 	$form['interpro']['interproparameters'] = array(
       '#title' => t('Parameters'),
       '#type' => 'textfield',
