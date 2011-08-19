@@ -254,13 +254,13 @@ function chado_analysis_unigene_insert($node){
    chado_analysis_insert($node);
 
    // add the unigene name as a property of the anslysis
-   tripal_analysis_insert_property($node->analysis->analysis_id,'analysis_type','tripal_analysis_unigene');	
-   tripal_analysis_insert_property($node->analysis->analysis_id,'analysis_unigene_name',$node->unigene_name);	
-   tripal_analysis_insert_property($node->analysis->analysis_id,'analysis_unigene_num_contigs',$node->num_contigs);	
-   tripal_analysis_insert_property($node->analysis->analysis_id,'analysis_unigene_num_reads',$node->num_reads);	
-   tripal_analysis_insert_property($node->analysis->analysis_id,'analysis_unigene_avg_length',$node->avg_length);
-   tripal_analysis_insert_property($node->analysis->analysis_id,'analysis_unigene_num_clusters',$node->num_clusters);	
-   tripal_analysis_insert_property($node->analysis->analysis_id,'analysis_unigene_num_singlets',$node->num_clusters);	
+   tripal_analysis_insert_property($node->analysis_id,'analysis_type','tripal_analysis_unigene');	
+   tripal_analysis_insert_property($node->analysis_id,'analysis_unigene_name',$node->unigene_name);	
+   tripal_analysis_insert_property($node->analysis_id,'analysis_unigene_num_contigs',$node->num_contigs);	
+   tripal_analysis_insert_property($node->analysis_id,'analysis_unigene_num_reads',$node->num_reads);	
+   tripal_analysis_insert_property($node->analysis_id,'analysis_unigene_avg_length',$node->avg_length);
+   tripal_analysis_insert_property($node->analysis_id,'analysis_unigene_num_clusters',$node->num_clusters);	
+   tripal_analysis_insert_property($node->analysis_id,'analysis_unigene_num_singlets',$node->num_clusters);	
 }
 /**
 *
