@@ -529,8 +529,13 @@ function tripal_cv_obo_parse($obo_file,&$obo,&$header){
 
       // remove newlines
       $line = rtrim($line);  
+
+      // remove any special characters that may be hiding
+      $line = preg_replace('/[^(\x20-\x7F)]*/','', $line);
+
       // skip empty lines
       if(strcmp($line,'')==0) { continue; }
+
       //remove comments from end of lines
       $line = preg_replace('/^(.*?)\!.*$/','\1',$line);  // TODO: if the explamation is escaped
 
