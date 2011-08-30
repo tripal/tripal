@@ -316,11 +316,13 @@ function tripal_bulk_loader_load($node){
  */
 function tripal_bulk_loader_insert ($node) {
   
-	$sql = "INSERT INTO {tripal_bulk_loader} (nid, loader_name, template_id, file, file_has_header) VALUES (%d, '%s', %d, '%s', %d)";
-	db_query($sql, $node->nid, $node->loader_name, $node->template_id, $node->file, $node->has_header);
+	$sql = "INSERT INTO {tripal_bulk_loader} (nid, loader_name, template_id, file, file_has_header, job_status) VALUES (%d, '%s', %d, '%s', %d, '%s')";
+	db_query($sql, $node->nid, $node->loader_name, $node->template_id, $node->file, $node->has_header, 'Initialized');
 	$node->title =$node->loader_name;
 	drupal_write_record('node',$node,'nid');
 	drupal_write_record('node_revision',$node,'nid');	
+	
+	drupal_set_message('After reviewing the details, please Submit this Job (by clicking the "Submit Job" button below). No data will be loaded until the submitted job is reached in the queue.');
 
 }
 

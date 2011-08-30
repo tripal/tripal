@@ -1405,9 +1405,12 @@ function tripal_bulk_loader_edit_template_field_form (&$form_state = NULL) {
       $field = NULL;
     } elseif ($chado_fields[$form_state['values']['chado_field']]) {
       $field = $form_state['values']['chado_field'];
+    } elseif ($template_field['field']) {
+      $field = $template_field['field'];
     } else {
       $field = current($chado_fields);
     }
+    dpm($field, 'field');
     
     // Foreign key options
     $foreign_table = $foreign_field2table[$field];
