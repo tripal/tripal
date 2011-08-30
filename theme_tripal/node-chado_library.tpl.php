@@ -34,8 +34,7 @@ $library  = $variables['node']->library;
 } else { ?>
 
 <script type="text/javascript">
-if (Drupal.jsEnabled) {
-   $(document).ready(function() {
+   Drupal.behaviors.libraryBehavior = function (context){
       // hide all tripal info boxes at the start
       $(".tripal-info-box").hide();
  
@@ -73,8 +72,7 @@ if (Drupal.jsEnabled) {
       }
 
       $("#tripal_library_toc").height($("#tripal_library-base-box").parent().height());
-   });
-}
+   };
 </script>
 
 <div id="tripal_library_details" class="tripal_details">
