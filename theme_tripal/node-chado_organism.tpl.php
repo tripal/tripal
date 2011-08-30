@@ -34,8 +34,7 @@ $organism = $variables['node']->organism;
 } else { ?>
 
 <script type="text/javascript">
-if (Drupal.jsEnabled) {
-   $(document).ready(function() {
+   Drupal.behaviors.organismBehavior = function (context){
       // hide all tripal info boxes at the start
       $(".tripal-info-box").hide();
  
@@ -78,8 +77,7 @@ if (Drupal.jsEnabled) {
 
       $("#tripal_organism_toc").height($("#tripal_organism-base-box").parent().height());
       
-   });
-}
+   };
 </script>
 
 
