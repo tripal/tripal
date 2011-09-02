@@ -1,5 +1,7 @@
 <?php
 
+require('tripal_project.admin.inc');
+
 /**
  *  @file
  * This file contains the basic functions needed for this drupal module.
@@ -28,6 +30,111 @@ function tripal_project_views_api() {
    );
 }
 
+/**
+ * Implements hook_menu
+ */
+function tripal_project_menu() {
+  $items[ 'admin/tripal/tripal_project' ]= array(
+    'title' => t('Projects'),
+    'page callback' => 'tripal_project_administration_description_page',
+    'access arguments' => array('administer site configuration'),
+    'type' => MENU_NORMAL_ITEM
+  ); 
+
+  $items[ 'admin/tripal/tripal_project/configuration' ]= array(
+    'title' => t('Configuration'),
+    'page callback' => 'tripal_project_configuration_page',
+    'access arguments' => array('administer site configuration'),
+    'type' => MENU_NORMAL_ITEM
+  ); 
+  
+  return $items;
+}
+
+/**
+ *  Implements Hook_help()
+ *
+ *  This function simply states, in HTML tags, the creator of the the module and the contact	
+ *  for the programmer
+ *
+ *  @parm $path
+ *    The absolute path of the module and help information
+ *
+ *  @parm $arg
+ *    The argument
+ */
+function tripal_project_help($path, $arg) {
+
+  switch ($path) {
+  
+    case 'admin/help#tripal_project':
+      
+      return '<p>'. t('Module created by:Chad Krilow (e-mail:cnk046@mail.usask.ca)') .'</p>';
+			
+			break;
+  }
+}
+
+/**
+ * Implements hook_perm()
+ *
+ *  This function sets the permission for the user to access the information in the database.
+ *  This includes creating, inserting, deleting and updating of information in the database
+ *
+ */
+function tripal_project_perm() {
+
+  return array(
+    'create tripal_project', 
+    'edit own tripal_project'
+  );
+}
+
+/**
+ * Implements hook_access()
+ *
+ *  This function sets the access permission for operations on the database.
+ *
+ *  @parm $op
+ *    The operation that is to be performed
+ *
+ *  @parm $node
+ *    The specific node that is to have the operation performed  
+ *
+ *  @parm $account
+ *    The account of the user that is performing the operations  
+ *
+ *  @return
+ *    True if a operation was performed
+ *
+ */
+function tripal_project_access($op, $node, $account) {
+
+  if ($op == 'create') {
+  
+    // Only users with permission to do so may create this node type.
+    if(!user_access('create tripal_project', $account)){
+      return FALSE;
+    }
+  }
+
+  // Users who create a node may edit or delete it later, assuming they have the necessary permissions.
+  if ($op == 'update' || $op == 'delete') {
+  
+    if(!user_access('edit own tripal_project',$account)){
+       return FALSE;
+    }
+    if(user_access('edit own tripal_project',$account) &&
+       $account->uid != $node->uid){
+      return FALSE;
+    }
+  }
+  return NULL;
+}
+
+//-----------------------------------------------------------------------------
+//  SECTION: Node Functionality
+//-----------------------------------------------------------------------------
 
 /**
 * Implementation of hook_node_info()
@@ -50,7 +157,6 @@ function tripal_project_node_info() {
     )
   );
 }
-
 
 /**
 * Implementation of hook_form().
@@ -91,94 +197,15 @@ function tripal_project_form(&$node, $form_state) {
   );
   
   $form['body_filter']['filter'] = filter_form($node->format);
+  
+  // whether or not the project exists in chado
+  $form['project_id'] = array(
+    '#type' => 'value',
+    '#value' => FALSE,
+  );
 
   return $form;
 }
-
-
-/**
- *  Implements Hook_help()
- *
- *  This function simply states, in HTML tags, the creator of the the module and the contact	
- *  for the programmer
- *
- *  @parm $path
- *    The absolute path of the module and help information
- *
- *  @parm $arg
- *    The argument
- */
-function tripal_project_help($path, $arg) {
-
-  switch ($path) {
-  
-    case 'admin/help#tripal_project':
-      
-      return '<p>'. t('Module created by:Chad Krilow (e-mail:cnk046@mail.usask.ca)') .'</p>';
-			
-			break;
-  }
-}
-
-
-/**
- * Implements hook_perm()
- *
- *  This function sets the permission for the user to access the information in the database.
- *  This includes creating, inserting, deleting and updating of information in the database
- *
- */
-function tripal_project_perm() {
-
-  return array(
-    'create tripal_project', 
-    'edit own tripal_project'
-  );
-}
-
-
-/**
- * Implements hook_access()
- *
- *  This function sets the access permission for operations on the database.
- *
- *  @parm $op
- *    The operation that is to be performed
- *
- *  @parm $node
- *    The specific node that is to have the operation performed  
- *
- *  @parm $account
- *    The account of the user that is performing the operations  
- *
- *  @return
- *    True if a operation was performed
- *
- */
-function tripal_project_access($op, $node, $account) {
-
-  if ($op == 'create') {
-  
-    // Only users with permission to do so may create this node type.
-    if(!user_access('create tripal_project', $account)){
-      return FALSE;
-    }
-  }
-
-  // Users who create a node may edit or delete it later, assuming they have the necessary permissions.
-  if ($op == 'update' || $op == 'delete') {
-  
-    if(!user_access('edit own tripal_project',$account){
-       return FALSE;
-    }
-    if(user_access('edit own tripal_project',$account) &&
-       $account->uid != $node->uid){
-      return FALSE;
-    }
-  }
-  return NULL;
-}
-
 
 /**
 * Implementation of hook_insert()
@@ -194,14 +221,16 @@ function tripal_project_insert($node) {
      'description' => $node->body,
    );
    
-   //inserts info into chado table.
-   $result = tripal_core_chado_insert('project',$values);
-
+   if (!$node->project_id) {
+     //inserts info into chado table.
+     $result = tripal_core_chado_insert('project',$values);
+     $node->project_id = $result['project_id'];
+  } 
+  
 	//inserts the row of vid,nid,project_id into the chado_project table
-  db_query("INSERT INTO {chado_project} (vid, nid, project_id) VALUES (%d, %d, %d)", $node->vid, $node->nid, $result['project_id']);
+  db_query("INSERT INTO {chado_project} (vid, nid, project_id) VALUES (%d, %d, %d)", $node->vid, $node->nid, $node->project_id);
   
 }
-
 
 /**
 *
@@ -226,7 +255,6 @@ function tripal_project_delete($node) {
   db_query('DELETE FROM {chado_project} WHERE nid = %d', $node->nid);
 
 }
-
 
 /**
 * Implements hook_update()
@@ -253,7 +281,6 @@ function tripal_project_update($node){
   $result = tripal_core_chado_update('project',$match,$values);
 
 }
-
 
 /**
 * Implementation of tripal_project_load().

@@ -48,7 +48,26 @@ function tripal_gbrowse_menu() {
     'access arguments' => array('administer site configuration'),
     'type' => MENU_NORMAL_ITEM
   );
- 
+
+  $items['admin/tripal/tripal_gbrowse/register_gbrowse'] = array(
+    'title' => t('Register GBrowse Instance'),
+    'description' => t('Interface to enter gbrowse details and save to the database'), 
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_gbrowse_register_gbrowse_form'), 
+    'access arguments' => array('administer site configuration'),
+    'weight' => 20,
+    'type' => MENU_NORMAL_ITEM
+  );
+  
+  $items['admin/tripal/tripal_gbrowse/unregister_gbrowse']=array(
+    'title' => t('Un-Register GBrowse Instance'),
+    'description' => t('Interface to remove gbrowse details from the database'), 
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_gbrowse_unregister_gbrowse_instances_form'), 
+    'access arguments' => array('administer site configuration'),
+    'type' => MENU_NORMAL_ITEM
+  );
+  
   $items['admin/tripal/tripal_gbrowse/load_library_features'] = array(
     'title' => t('Load Library Features'),
     'description' => t('Load features associated with a specified library into a GBrowse instance.'),
@@ -1095,7 +1114,7 @@ function tripal_gbrowse_administration_form_submit ($form, $form_state) {
 
 /**
 *
-* Register & Create GBrowse instance
+* Register & Create GBrowse instance ( called by the node form )
 *
 * This form submit takes it's fields from the form for registering a GBrowse instance. The 'sed'command
 * is used to select certain lines of a template 'conf' file and replaces them with the user specified GBrowse instance
