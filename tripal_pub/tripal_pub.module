@@ -247,7 +247,7 @@ function tripal_pub_access($op, $node, $account) {
 
   if ($op == 'create') {
     // Only users with permission to do so may create this node type.
-    if(!user_access('create tripal_pub', $account){
+    if(!user_access('create tripal_pub', $account)){
       return FALSE;
     }
   }
