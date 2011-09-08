@@ -1,23 +1,24 @@
 <?php
 
 include('tripal_bulk_loader.loader.inc');
-include('tripal_bulk_loader.info_hooks.inc');
 
 /**
- * tripal_bulk_loader_init
+ * Implements hook_init
+ * Used to add stylesheets and javascript files to the header
  */
 function tripal_bulk_loader_init(){
 	// Add javascript and style sheet
 	drupal_add_css(drupal_get_path('theme', 'tripal').'/css/tripal_bulk_loader.css');
 	drupal_add_js(drupal_get_path('theme', 'tripal').'/js/tripal_bulk_loader.js');
 }
+
 /**
- * tripal_bulk_loader_menu
+ * Implements hook_menu
  */
 function tripal_bulk_loader_menu() {
   $items = array();
    // Show all loaders
-   $items['/tripal_bulk_loaders'] = array(
+   $items['tripal_bulk_loaders'] = array(
      'title' => 'Tripal Bulk Loaders',
      'description' => 'Tripal bulk loaders for loading tab-delimited file into chado database',
      'page callback' => 'tripal_bulk_loader_list',
@@ -126,14 +127,31 @@ function tripal_bulk_loader_menu() {
 }
 
 /**
- * tripal_bulk_loader_list
+ * Implements hook_theme
  */
-function tripal_bulk_loader_list () {
-	return "Loaders";
+function tripal_bulk_loader_theme() {
+  return array(
+    'tripal_bulk_loader_template' => array(
+    	'arguments'=> array('template_id' => NULL),
+    	'template' => 'tripal_bulk_loader_template'
+    ),
+    'tripal_bulk_loader_modify_template_base_form' => array(
+    	'arguments' => array('form' => NULL),
+    	'template' => 'tripal_bulk_loader_modify_template_base_form',
+    ),
+    'tripal_bulk_loader_edit_template_field_form' => array(
+      'arguments' => array('form' => NULL),
+      'template' => 'tripal_bulk_loader_edit_template_field_form',
+    ),
+    'tripal_bulk_loader_add_template_field_form' => array(
+      'arguments' => array('form' => NULL),
+      'template' => 'tripal_bulk_loader_add_template_field_form',
+    ),
+  );
 }
 
 /**
- *  tripal_bulk_loader_access
+ *  Implements hook_access
  */
 function tripal_bulk_loader_access($op, $node, $account){
 	if ($op == 'create') {
@@ -160,7 +178,7 @@ function tripal_bulk_loader_access($op, $node, $account){
 }
 
 /**
- * tripal_bulk_loader_perm
+ * Implements hook_perm
  */
 function tripal_bulk_loader_perm(){
 	return array(
@@ -172,7 +190,40 @@ function tripal_bulk_loader_perm(){
 }
 
 /**
- * tripal_bulk_loader_node_info
+ * Creates a listing page for all bulk loading jobs
+ */
+function tripal_bulk_loader_list () {
+  $num_results_per_page = 50;
+  $output = '';
+  
+  $header = array('','Status','Loader','File');
+  $rows = array();
+  
+  $query = 'SELECT * FROM {tripal_bulk_loader} l '
+    .'LEFT JOIN {node} n ON n.nid = l.nid '
+    .'LEFT JOIN {tripal_bulk_loader_template} t ON t.template_id = cast(l.template_id as integer)';
+  $resource = pager_query($query, $num_results_per_page, 0, NULL);
+  while ($r = db_fetch_object($resource)) {
+    $row = array(
+      l($r->title, 'node/'.$r->nid),
+      $r->job_status,
+      $r->name,
+      $r->file
+    );
+    $rows[] = $row;
+  }
+  
+  $output .= theme('table', $header, $rows);
+  return $output;
+  
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////
+// Node Functions
+//////////////////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * Implements hook_node_info
  */
 function tripal_bulk_loader_node_info() {
 	$nodes = array();
@@ -188,7 +239,8 @@ function tripal_bulk_loader_node_info() {
 }
 
 /**
- * tripal_bulk_loader_form
+ * Implements node_form
+ * Used to gather the extra details stored with a Bulk Loading Job Node
  */
 function tripal_bulk_loader_form ($node){
    $form = array();
@@ -247,46 +299,7 @@ function tripal_bulk_loader_form ($node){
 }
 
 /**
- * tripal_bulk_loader_theme
- */
-function tripal_bulk_loader_theme() {
-  return array(
-    'tripal_bulk_loader_node_form' => array(
-      'arguments' => array('form' => NULL),
-    ),
-    'tripal_bulk_loader_template' => array(
-    	'arguments'=> array('template_id' => NULL),
-    	'template' => 'tripal_bulk_loader_template'
-    ),
-    'tripal_bulk_loader_modify_template_base_form' => array(
-    	'arguments' => array('form' => NULL),
-    	'template' => 'tripal_bulk_loader_modify_template_base_form',
-    ),
-    'tripal_bulk_loader_edit_template_field_form' => array(
-      'arguments' => array('form' => NULL),
-      'template' => 'tripal_bulk_loader_edit_template_field_form',
-    ),
-    'tripal_bulk_loader_add_template_field_form' => array(
-      'arguments' => array('form' => NULL),
-      'template' => 'tripal_bulk_loader_add_template_field_form',
-    ),
-  );
-}
-
-/**
- * theme_tripal_bulk_loader_node_form
- */
-function theme_tripal_bulk_loader_node_form($form) {
-	// Do not show [Save] and [Preview] buttons if loader template is not available
-	if($form['label']['#type'] == "item") {
-		unset($form['buttons']);
-	}
-
-	return drupal_render($form);
-}
-
-/**
- * tripal_bulk_loader_load
+ * Implements node_load
  */
 function tripal_bulk_loader_load($node){
 	$sql = "SELECT * FROM {tripal_bulk_loader} WHERE nid = %d";
@@ -308,11 +321,13 @@ function tripal_bulk_loader_load($node){
     $r->num_inserted = sizeof(preg_split('/,/',$r->ids_inserted)); 
     $node->inserted_records->{$r->table_inserted_into} = $r;
   }
+  
 	return $node;
 }
 
 /**
- * tripal_bulk_loader_insert
+ * Implements node_insert
+ * Insert the data from the node form on Create content
  */
 function tripal_bulk_loader_insert ($node) {
   
@@ -327,7 +342,8 @@ function tripal_bulk_loader_insert ($node) {
 }
 
 /**
- * tripal_bulk_loader_delete
+ * Implements node_delete
+ * Deletes the data when the delete button on the node form is clicked
  */
 function tripal_bulk_loader_delete ($node) {
 	$sql = "DELETE FROM {tripal_bulk_loader} WHERE nid = %d";
@@ -335,7 +351,8 @@ function tripal_bulk_loader_delete ($node) {
 }
 
 /**
- * tripal_bulk_loader_update
+ * Implements node_update
+ * Updates the data submitted by the node form on edit
  */
 function tripal_bulk_loader_update ($node) {
 	$sql = "UPDATE {tripal_bulk_loader} SET nid = %d, loader_name = '%s', template_id = %d, file = '%s', file_has_header = '%s' WHERE nid = %d";

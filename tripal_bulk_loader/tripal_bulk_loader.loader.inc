@@ -89,12 +89,13 @@ function tripal_bulk_loader_add_loader_job_form_submit ($form, $form_state) {
  * Tripal Bulk Loader
  *
  * This is the function that's run by tripal_launch_jobs to bulk load chado data.
+ *
  * @param $nid
  *   The Node ID of the bulk loading job node to be loaded. All other needed data is expected to be 
  *   in the node (ie: template ID and file)
  *
- * Note: Instead of returning a value this function updates the tripal_bulk_loader.status and
- *   Enters errors into tripal_bulk_loader_errors if they are encountered.
+ * Note: Instead of returning a value this function updates the tripal_bulk_loader.status.
+ *   Errors are thrown through watchdog and can be viewed at admin/reports/dblog.
  */
 function tripal_bulk_loader_load_data($nid) {
   

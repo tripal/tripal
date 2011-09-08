@@ -6,14 +6,30 @@
  */
  
 /**
- * tripal_bulk_loader_admin_template
+ * Provides a description page and quick links for the bulk loader
  */
 function tripal_bulk_loader_admin_template () {
-	$add_url = url("admin/tripal/tripal_bulk_loader_template/add");
-   $output = "<a href=\"$add_url\">Create a new bulk loader template</a><br>"; 
-   $del_url = url("admin/tripal/tripal_bulk_loader_template/delete");
-   $output .= "<a href=\"$del_url\">Delete a bulk loader template</a>";
-   return $output;
+	$output = '';
+	
+	$output .= '<br><h3>Quick Links:</h3>';
+  $output .= l('Create a new bulk loader template', 'admin/tripal/tripal_bulk_loader_template/create')."<br>"; 
+  $output .= l('Edit a bulk loader template', 'admin/tripal/tripal_bulk_loader_template/edit')."<br>"; 
+  $output .= l('Delete a bulk loader template', 'admin/tripal/tripal_bulk_loader_template/delete')."<br>"; 
+  $output .= l('Export a bulk loader template', 'admin/tripal/tripal_bulk_loader_template/export')."<br>";
+  $output .= l('Import a bulk loader template', 'admin/tripal/tripal_bulk_loader_template/import')."<br>";
+  $output .= '<br>';
+  
+  $output .= '<h3>Module Description:</h3>';
+  $output .= '<p>This module provides the ability to create loading templates for any tab-delimited '
+    .'data file allowing it to be loaded into chado. The Loading Templates are a direct mapping '
+    .'between the columns in your file and the columns in chado tables. As such to use this tool '
+    .'you need to be very familar with the chado schema -See '
+    .l('Chado -Getting Started', 'http://gmod.org/wiki/Chado_-_Getting_Started')
+    .'. The ability to add constants and specify foreign key contraints is also provided '
+    .'in order for the loader to fill chado columns which may be required but are not specified '
+    .'in your input file.</p>';
+  
+  return $output;
 }
 
 
@@ -23,7 +39,7 @@ function tripal_bulk_loader_admin_template () {
 
 
 /**
- * 
+ * The main form reached at admin/tripal/tripal_bulk_loader/create and /edit
  */
 function tripal_bulk_loader_modify_template_base_form ($form_state = NULL, $mode){
 	$form = array();
@@ -276,7 +292,7 @@ function tripal_bulk_loader_modify_template_base_form ($form_state = NULL, $mode
 }
 
 /**
- * 
+ * Submit for tripal_bulk_loader_modify_template_base_form
  */
 function tripal_bulk_loader_modify_template_base_form_submit($form, &$form_state){
 
@@ -450,6 +466,10 @@ function tripal_bulk_loader_delete_template_base_form_submit ($form, &$form_stat
 	db_query($sql, $form_state['values']['template_name']);
 }
 
+//////////////////////////////////////////////////////////////////////////////////////
+// Import/Export Template
+//////////////////////////////////////////////////////////////////////////////////////
+
 /**
  * Import/Export Template Form
  *
@@ -546,7 +566,7 @@ function tripal_bulk_loader_import_export_template_form_submit ($form, &$form_st
 }
 
 //////////////////////////////////////////////////////////////////////////////////////
-// Add/Edit Field/Record Forms
+// Edit Record Form
 //////////////////////////////////////////////////////////////////////////////////////
 
 /**
@@ -744,6 +764,10 @@ function tripal_bulk_loader_edit_template_record_form_submit ($form, &$form_stat
   
 }
 
+//////////////////////////////////////////////////////////////////////////////////////
+// Add/Edit Field Forms
+//////////////////////////////////////////////////////////////////////////////////////
+
 /**
  * Add Field Form
  *
@@ -823,6 +847,7 @@ function tripal_bulk_loader_add_template_field_form (&$form_state = NULL) {
   $fk_options = array();
   $fk_options['NULL'] = 'None';
   $table_description = module_invoke_all('chado_'.$table.'_schema');
+  //dpm($table_description, 'table description for |'.$table.'|');
   if ($field_type == 'foreign key') {
     $foreign_field2table = array();
     foreach ($table_description['foreign keys'] as $key_table => $key_array) {
@@ -1410,7 +1435,7 @@ function tripal_bulk_loader_edit_template_field_form (&$form_state = NULL) {
     } else {
       $field = current($chado_fields);
     }
-    dpm($field, 'field');
+    //dpm($field, 'field');
     
     // Foreign key options
     $foreign_table = $foreign_field2table[$field];

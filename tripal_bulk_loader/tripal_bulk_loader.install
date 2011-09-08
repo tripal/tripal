@@ -1,22 +1,27 @@
 <?php
 
-/*******************************************************************************
-* tripal_bulk_loader_install
-*/
+/**
+ * Implements hook_install
+ */
 function tripal_bulk_loader_install(){
    drupal_install_schema('tripal_bulk_loader');
 }
 
-/*******************************************************************************
-* tripal_bulk_loader_uninstall
-*/
+/**
+ * Implements hook_uninstall
+ */
 function tripal_bulk_loader_uninstall(){
    drupal_uninstall_schema('tripal_bulk_loader');
 }
 
-/*******************************************************************************
-* tripal_bulk_loader_schema
-*/
+/**
+ * Implements hook_schema
+ *
+ * Creates the following tables in the Drupal database:
+ *  - tripal_bulk_loader: Stores extra details for bulk loading jobs (nodes)
+ *  - tripal_bulk_loader_template: Stores all loading templates
+ *  - tripal_bulk_loader_inserted: Keeps track of all records inserted for a given bulk loading job
+ */
 function tripal_bulk_loader_schema() {
 	$schema = array();
 	$schema['tripal_bulk_loader'] = array(
