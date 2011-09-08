@@ -28,6 +28,17 @@ function tripal_bulk_loader_admin_template () {
     .'. The ability to add constants and specify foreign key contraints is also provided '
     .'in order for the loader to fill chado columns which may be required but are not specified '
     .'in your input file.</p>';
+  $output .= '<br>';
+  
+  $output .= '<h3>Setup Instructions</h3>';
+  $output .= '<p>After intallation of the bulk loader module, the following tasks should be performed:</p>';
+  $output .= '<ol>';
+  $output .= '<li><b>Install Theme:</b> In order for Bulk Loading pages to be displayed correctly, '
+    .'the contents of the Tripal Bulk Loader theme directory ([drupal root]/sites/all/modules/tripal/tripal_bulk_loader/theme) '
+    .'should be moved to the base directory of the Tripal theme ([drupal root]/sites/all/themes/tripal). '
+    .'Finally the drupal cache should be cleared for the new theme to take effect -navigate to admin/settings/performance '
+    .'and click the Clear Cached Data button.</li>';
+  $output .= '</ol>';
   
   return $output;
 }
