@@ -39,9 +39,11 @@ function tripal_genetic_nodeapi (&$node, $op, $teaser, $page) {
   switch ($op) {
     case 'view':
       if ($node->type == 'chado_feature') {
-        $node->content['tripal_feature_genotypes'] = array(
-           '#value' => theme('tripal_feature_genotypes', $node),
-        );      
+        if (!isset($node->content['tripal_feature_genotypes'])) {
+          $node->content['tripal_feature_genotypes'] = array(
+             '#value' => theme('tripal_feature_genotypes', $node),
+          );
+        }
       }
   }
 }
