@@ -1297,17 +1297,19 @@ function tripal_feature_load_featureloc_sequences($feature_id,$featurelocs){
       $src = $featureloc->srcfeature_id->feature_id ."-". $featureloc->srcfeature_id->type_id->cvterm_id;
 
       // orient the parts to the beginning of the feature sequence
-      $parts = $rel_locs[$src]['parts'];
-      usort($parts, 'tripal_feature_sort_rel_parts');
-      foreach ($parts as $start => $attrs){
-         $parts[$start]['start'] = $parts[$start]['start'] - $featureloc->fmin;
-         $parts[$start]['end']   = $parts[$start]['end'] - $featureloc->fmin;
-      }      
-      $floc_sequences[$src]['src'] = $src;
-      $floc_sequences[$src]['type'] = $featureloc->feature_id->type_id->name;
-      $sequence = substr($feature->residues,$featureloc->fmin-1,($featureloc->fmax - $featureloc->fmin)+1);
-      $floc_sequences[$src]['formatted_seq'] =  tripal_feature_color_sequence (
-          $sequence,$parts);
+      if (!empty($rel_locs[$src]['parts'])) {
+        $parts = $rel_locs[$src]['parts'];
+        usort($parts, 'tripal_feature_sort_rel_parts');
+        foreach ($parts as $start => $attrs){
+           $parts[$start]['start'] = $parts[$start]['start'] - $featureloc->fmin;
+           $parts[$start]['end']   = $parts[$start]['end'] - $featureloc->fmin;
+        }      
+        $floc_sequences[$src]['src'] = $src;
+        $floc_sequences[$src]['type'] = $featureloc->feature_id->type_id->name;
+        $sequence = substr($feature->residues,$featureloc->fmin-1,($featureloc->fmax - $featureloc->fmin)+1);
+        $floc_sequences[$src]['formatted_seq'] =  tripal_feature_color_sequence (
+            $sequence,$parts);
+      }
    }
    return $floc_sequences;
 }
