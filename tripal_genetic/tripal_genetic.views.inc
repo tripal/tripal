@@ -9,7 +9,8 @@
  *  Documentation on views integration can be found at 
  *  http://views2.logrus.com/doc/html/index.html.
  */
- 
+
+require_once('views/genotype.views.inc');
 /*************************************************************************
  * Implements hook_views_data()
  * Purpose: Describe chado/tripal tables & fields to views
@@ -22,6 +23,8 @@
  */
 function tripal_genetic_views_data()  {
   $data = array();
+  
+  $data = array_merge($data, retrieve_genotype_views_data());
   
   return $data;
 }
