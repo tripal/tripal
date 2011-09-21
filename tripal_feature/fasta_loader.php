@@ -576,6 +576,7 @@ function tripal_feature_fasta_loader_handle_feature($name,$uname,$db_id,$accessi
       } else {
          print "Inserted feature $name ($uname)\n";
       }
+      $feature = db_fetch_object(db_query($feature_sql,$organism_id,$uname,$cvterm->cvterm_id));
    } 
    if(!$feature and (strcmp($method,'Update only')==0 or strcmp($method,'Insert and update')==0)){
       print "WARNING: failed to find feature '$name' ('$uname') while matching on " . strtolower($match_type) . ". Skipping\n";
