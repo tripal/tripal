@@ -32,8 +32,9 @@ if (Drupal.jsEnabled) {
          $("#tripal_analysis_go_org_charts").html('');
          return false;
       }
-      // Form the link for the following ajax call       
-      var link = baseurl + '/tripal_analysis_go_org_charts/' + item;
+      // Form the link for the following ajax call 
+      baseurl = tripal_get_base_url();      
+      var link = baseurl + '?q=tripal_analysis_go_org_charts/' + item;
       tripal_startAjax();
       $.ajax({
            url: link,
