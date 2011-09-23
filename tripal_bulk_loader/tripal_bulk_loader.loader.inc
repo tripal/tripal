@@ -261,7 +261,7 @@ function process_data_array_for_line ($priority, &$data, &$default_data, $field2
   }
 
   if (!$values) {
-    $msg = $table_data['record_id'].' ('.$table_data['mode'].') Aborted due to error in previous record. Values of current record:'.print_r($values,TRUE);
+    $msg = $table_data['record_id'].' ('.$table_data['mode'].') Aborted due to error in previous record. Values of current record:'.print_r($table_data['values_array'],TRUE);
     watchdog('T_bulk_loader', $msg, array(), WATCHDOG_WARNING); 
     print "ERROR: ".$msg."\n";
     $data[$priority]['error'] = TRUE;
