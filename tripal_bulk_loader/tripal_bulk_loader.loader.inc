@@ -402,7 +402,7 @@ function tripal_bulk_loader_add_spreadsheetdata_to_values ($values, $line, $fiel
     $column = $field2column[$field] - 1;
     if ($column < 0) { continue; }
     
-    if (preg_match('/\w+/',$line[$column])) {
+    if (preg_match('/\S+/',$line[$column])) {
       $values[$field] = $line[$column];
     } else {
       unset($values[$field]);
