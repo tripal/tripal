@@ -246,18 +246,22 @@ function process_data_array_for_line ($priority, &$data, &$default_data, $field2
   //print 'default values:'.print_r($values,TRUE)."\n";
   if ($table_data['need_further_processing']) {
     $values = tripal_bulk_loader_add_spreadsheetdata_to_values ($values, $line, $field2column[$priority]);
-    //print 'after spreadsheet values:'.print_r($values,TRUE)."\n";
-    //watchdog('T_bulk_loader','Spreadsheet Added:'.print_r($values, TRUE), array(), WATCHDOG_NOTICE);
+    if (!$values) {
+      watchdog('T_bulk_loader','Spreadsheet Added:'.print_r($values, TRUE), array(), WATCHDOG_NOTICE);
+    }
+    
     $values = tripal_bulk_loader_add_foreignkey_to_values($values, $data, $record2priority);
-    //print 'after fk values:'.print_r($values,TRUE)."\n";
-    //watchdog('T_bulk_loader','FK Added:<pre>'.print_r($values, TRUE).print_r($data[$priority],TRUE).'</pre>', array(), WATCHDOG_NOTICE);
+    if (!$values) {
+      watchdog('T_bulk_loader','FK Added:<pre>'.print_r($values, TRUE).print_r($data[$priority],TRUE).'</pre>', array(), WATCHDOG_NOTICE);
+    }
   }
   $values = tripal_bulk_loader_regex_tranform_values($values, $table_data, $line);
-  //print 'after regex values:'.print_r($values,TRUE)."\n";
-  //watchdog('T_bulk_loader','Regex:<pre>'.print_r($values, TRUE).print_r($table_data, TRUE).'</pre>'.'</pre>', array(), WATCHDOG_NOTICE);
+  if (!$values) {
+    watchdog('T_bulk_loader','Regex:<pre>'.print_r($values, TRUE).print_r($table_data, TRUE).'</pre>'.'</pre>', array(), WATCHDOG_NOTICE);
+  }
 
   if (!$values) {
-    $msg = $table_data['record_id'].' ('.$table_data['mode'].') Aborted due to error in previous record.';
+    $msg = $table_data['record_id'].' ('.$table_data['mode'].') Aborted due to error in previous record. Values of current record:'.print_r($values,TRUE);
     watchdog('T_bulk_loader', $msg, array(), WATCHDOG_WARNING); 
     print "ERROR: ".$msg."\n";
     $data[$priority]['error'] = TRUE;
