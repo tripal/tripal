@@ -45,7 +45,39 @@ function retrieve_chado_feature_views_data () {
   	'left_table' => 'chado_feature',
   	'left_field' => 'nid',
   	'field' => 'nid',
-  );  
+  );
+  
+  // Add relationship between chado_feature and feature
+  $data['chado_feature']['feature_nid'] = array(
+    'group' => 'Feature',
+    'title' => 'Feature Node',
+    'help' => 'Links Chado Feature Fields/Data to the Nodes in the current View.',
+    'real field' => 'feature_id',
+    'relationship' => array(
+      'handler' => 'views_handler_relationship',
+      'title' => t('Chado => Feature'),
+      'label' => t('Chado => Feature'),
+      'real field' => 'feature_id',
+      'base' => 'feature',
+      'base field' => 'feature_id'
+    ),
+  );
 
+  // Add node relationship to feature
+  $data['chado_feature']['feature_chado_nid'] = array(
+    'group' => 'Feature',
+    'title' => 'Feature Node',
+    'help' => 'Links Chado Feature Fields/Data to the Nodes in the current View.',
+    'real field' => 'nid',
+    'relationship' => array(
+      'handler' => 'views_handler_relationship',
+      'title' => t('Chado => Node'),
+      'label' => t('Chado => Node'),
+      'real field' => 'nid',
+      'base' => 'node',
+      'base field' => 'nid'
+    ),
+  );
+  
 	return $data;
 }

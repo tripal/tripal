@@ -82,6 +82,14 @@
     'sort' => array(
      	'handler' => 'views_handler_sort',
     ),
+    'relationship' => array(
+      'handler' => 'views_handler_many2many_relationship',
+      'title' => t('Feature Node'),
+      'label' => t('Feature Node'),
+      'left' => 'node',
+      'left field' => 'nid',
+      'middle' => 'chado_feature',    
+    ),
   );
 
   // Calculated Field: Node ID
@@ -95,8 +103,25 @@
       	'handler' => 'views_handler_field_computed_feature_nid',
       ),
   	);
-  }
+  } else {
+    // Add relationship between chado_feature and feature
+    $data['feature']['feature_nid'] = array(
+      'group' => 'Feature',
+      'title' => 'Feature Node',
+      'help' => 'Links Chado Feature Fields/Data to the Nodes in the current View.',
+      'real field' => 'feature_id',
+      'relationship' => array(
+        'handler' => 'views_handler_relationship',
+        'title' => t('Feature => Chado'),
+        'label' => t('Feature => Chado'),
+        'real field' => 'feature_id',
+        'base' => 'chado_feature',
+        'base field' => 'feature_id'
+      ),
+    );
 
+  }
+  
   // Field: organism_id (forgeign key)
   //  join between organism table and this one in tripal_organism/views/organism.views.inc
   
