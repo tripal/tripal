@@ -47,5 +47,37 @@ function retrieve_chado_organism_views_data () {
   	'field' => 'nid',
   );  
 
+  // Add relationship between chado_organism and organism
+  $data['chado_organism']['organism_nid'] = array(
+    'group' => 'Organism',
+    'title' => 'Organism Node',
+    'help' => 'Links Chado Organism Fields/Data to the Nodes in the current View.',
+    'real field' => 'organism_id',
+    'relationship' => array(
+      'handler' => 'views_handler_relationship',
+      'title' => t('Chado => Organism'),
+      'label' => t('Chado => Organism'),
+      'real field' => 'organism_id',
+      'base' => 'organism',
+      'base field' => 'organism_id'
+    ),
+  );
+
+  // Add node relationship to organism
+  $data['chado_organism']['organism_chado_nid'] = array(
+    'group' => 'Organism',
+    'title' => 'Organism Node',
+    'help' => 'Links Chado Organism Fields/Data to the Nodes in the current View.',
+    'real field' => 'nid',
+    'relationship' => array(
+      'handler' => 'views_handler_relationship',
+      'title' => t('Chado => Node'),
+      'label' => t('Chado => Node'),
+      'real field' => 'nid',
+      'base' => 'node',
+      'base field' => 'nid'
+    ),
+  );
+  
 	return $data;
 }

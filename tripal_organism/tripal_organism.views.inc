@@ -64,6 +64,32 @@ function tripal_organism_views_handlers() {
 }
 
 /**
+ * Implementation of hook_views_data_alter().
+ */
+function tripal_organism_views_data_alter(&$data) {
+
+  if( !(is_array($db_url) and array_key_exists('chado',$db_url)) ){
+
+    // Add featuer relationship to node
+    $data['node']['organism_chado_nid'] = array(
+      'group' => 'Organism',
+      'title' => 'Organism Node',
+      'help' => 'Links Chado Organism Fields/Data to the Nodes in the current View.',
+      'real field' => 'nid',
+      'relationship' => array(
+        'handler' => 'views_handler_relationship',
+        'title' => t('Node => Chado'),
+        'label' => t('Node => Chado'),
+        'real field' => 'nid',
+        'base' => 'chado_organism',
+        'base field' => 'nid'
+      ),
+    );
+  }
+  
+}
+
+/**
  *
  * @ingroup tripal_organism_views
  */

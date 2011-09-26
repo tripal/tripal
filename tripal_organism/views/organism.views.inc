@@ -94,7 +94,24 @@ function retrieve_organism_views_data() {
       	'handler' => 'views_handler_field_computed_organism_nid',
     	),    
   	);
-	}
+  } else {
+    // Add relationship between chado_organism and organism
+    $data['organism']['organism_nid'] = array(
+      'group' => 'Organism',
+      'title' => 'Organism Node',
+      'help' => 'Links Chado Organism Fields/Data to the Nodes in the current View.',
+      'real field' => 'organism_id',
+      'relationship' => array(
+        'handler' => 'views_handler_relationship',
+        'title' => t('Organism => Chado'),
+        'label' => t('Organism => Chado'),
+        'real field' => 'organism_id',
+        'base' => 'chado_organism',
+        'base field' => 'organism_id'
+      ),
+    );
+
+  }
 	
   // Field: abbreviation (varchar 255)
   $data['organism']['abbreviation'] = array(
