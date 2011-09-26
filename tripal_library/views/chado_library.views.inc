@@ -47,5 +47,37 @@ function retrieve_chado_library_views_data () {
   	'field' => 'nid',
   );  
 
+  // Add relationship between chado_library and library
+  $data['chado_library']['library_nid'] = array(
+    'group' => 'Library',
+    'title' => 'Library Node',
+    'help' => 'Links Chado Library Fields/Data to the Nodes in the current View.',
+    'real field' => 'library_id',
+    'relationship' => array(
+      'handler' => 'views_handler_relationship',
+      'title' => t('Chado => Library'),
+      'label' => t('Chado => Library'),
+      'real field' => 'library_id',
+      'base' => 'library',
+      'base field' => 'library_id'
+    ),
+  );
+
+  // Add node relationship to library
+  $data['chado_library']['library_chado_nid'] = array(
+    'group' => 'Library',
+    'title' => 'Library Node',
+    'help' => 'Links Chado Library Fields/Data to the Nodes in the current View.',
+    'real field' => 'nid',
+    'relationship' => array(
+      'handler' => 'views_handler_relationship',
+      'title' => t('Chado => Node'),
+      'label' => t('Chado => Node'),
+      'real field' => 'nid',
+      'base' => 'node',
+      'base field' => 'nid'
+    ),
+  );
+  
 	return $data;
 }

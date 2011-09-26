@@ -99,7 +99,24 @@ function retrieve_library_views_data() {
 	    	'handler' => 'views_handler_field_computed_library_nid',
 	  	),
 		);
-	}
+  } else {
+    // Add relationship between chado_library and library
+    $data['library']['library_nid'] = array(
+      'group' => 'Library',
+      'title' => 'Library Node',
+      'help' => 'Links Chado Library Fields/Data to the Nodes in the current View.',
+      'real field' => 'library_id',
+      'relationship' => array(
+        'handler' => 'views_handler_relationship',
+        'title' => t('Library => Chado'),
+        'label' => t('Library => Chado'),
+        'real field' => 'library_id',
+        'base' => 'chado_library',
+        'base field' => 'library_id'
+      ),
+    );
+
+  }
 	
 	// Field: organism_id (forgeign key)
   //  join between organism table and this one in tripal_organism/views/organism.views.inc
