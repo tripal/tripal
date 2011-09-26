@@ -48,5 +48,37 @@ function retrieve_chado_analysis_views_data () {
   	'field' => 'nid',
   );  
 
+  // Add relationship between chado_analysis and analysis
+  $data['chado_analysis']['analysis_nid'] = array(
+    'group' => 'Analysis',
+    'title' => 'Analysis Node',
+    'help' => 'Links Chado Analysis Fields/Data to the Nodes in the current View.',
+    'real field' => 'analysis_id',
+    'relationship' => array(
+      'handler' => 'views_handler_relationship',
+      'title' => t('Chado => Analysis'),
+      'label' => t('Chado => Analysis'),
+      'real field' => 'analysis_id',
+      'base' => 'analysis',
+      'base field' => 'analysis_id'
+    ),
+  );
+
+  // Add node relationship to analysis
+  $data['chado_analysis']['analysis_chado_nid'] = array(
+    'group' => 'Analysis',
+    'title' => 'Analysis Node',
+    'help' => 'Links Chado Analysis Fields/Data to the Nodes in the current View.',
+    'real field' => 'nid',
+    'relationship' => array(
+      'handler' => 'views_handler_relationship',
+      'title' => t('Chado => Node'),
+      'label' => t('Chado => Node'),
+      'real field' => 'nid',
+      'base' => 'node',
+      'base field' => 'nid'
+    ),
+  );
+  
 	return $data;
 }

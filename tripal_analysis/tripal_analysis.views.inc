@@ -71,6 +71,32 @@ function tripal_analysis_views_views_handlers() {
 }
 
 /**
+ * Implementation of hook_views_data_alter().
+ */
+function tripal_analysis_views_data_alter(&$data) {
+
+  if( !(is_array($db_url) and array_key_exists('chado',$db_url)) ){
+
+    // Add featuer relationship to node
+    $data['node']['analysis_chado_nid'] = array(
+      'group' => 'Analysis',
+      'title' => 'Analysis Node',
+      'help' => 'Links Chado analysis Fields/Data to the Nodes in the current View.',
+      'real field' => 'nid',
+      'relationship' => array(
+        'handler' => 'views_handler_relationship',
+        'title' => t('Node => Chado'),
+        'label' => t('Node => Chado'),
+        'real field' => 'nid',
+        'base' => 'chado_analysis',
+        'base field' => 'nid'
+      ),
+    );
+  }
+  
+}
+
+/**
  *
  *
  * @ingroup tripal_analysis_views

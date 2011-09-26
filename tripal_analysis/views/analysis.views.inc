@@ -99,7 +99,24 @@ function retrieve_analysis_views_data() {
 	    	'handler' => 'views_handler_field_computed_analysis_nid',
 	  	),
 		);
-	}	
+  } else {
+    // Add relationship between chado_analysis and analysis
+    $data['analysis']['analysis_nid'] = array(
+      'group' => 'Analysis',
+      'title' => 'Analysis Node',
+      'help' => 'Links Chado Analysis Fields/Data to the Nodes in the current View.',
+      'real field' => 'analysis_id',
+      'relationship' => array(
+        'handler' => 'views_handler_relationship',
+        'title' => t('Analysis => Chado'),
+        'label' => t('Analysis => Chado'),
+        'real field' => 'analysis_id',
+        'base' => 'chado_analysis',
+        'base field' => 'analysis_id'
+      ),
+    );
+
+  }
 	
 	// Field: name (varchar 255)
  	$data['analysis']['name'] = array(
