@@ -1,5 +1,7 @@
 <?php
 
+//module_load_include('inc','views', 'handlers/views_handler_relationship');
+
 /**
  * Purpose: this function returns the portion of the data array which describes the chado_stock 
  * drupal table, it's fields and any joins between it and other tables
@@ -24,7 +26,8 @@ function retrieve_chado_stock_views_data () {
 
   // Basic table definition
   $data['chado_stock']['table'] = array(
-    'field' => 'nid',
+    'field' => 'stock_id',
+    'group' => 'Chado Stock Node',
   );
   
   // Note: No joins need to be made from $data['stock']['table']
@@ -47,6 +50,38 @@ function retrieve_chado_stock_views_data () {
   	'left_field' => 'nid',
   	'field' => 'nid',
   );  
+  
+  // Add relationship between chado_stock and stock
+  $data['chado_stock']['stock_nid'] = array(
+    'group' => 'Stock',
+    'title' => 'Stock Node',
+    'help' => 'Links Chado Stock Fields/Data to the Nodes in the current View.',
+    'real field' => 'stock_id',
+    'relationship' => array(
+      'handler' => 'views_handler_relationship',
+      'title' => t('Chado => Stock'),
+      'label' => t('Chado => Stock'),
+      'real field' => 'stock_id',
+      'base' => 'stock',
+      'base field' => 'stock_id'
+    ),
+  );
 
+  // Add node relationship to stock
+  $data['chado_stock']['stock_chado_nid'] = array(
+    'group' => 'Stock',
+    'title' => 'Stock Node',
+    'help' => 'Links Chado Stock Fields/Data to the Nodes in the current View.',
+    'real field' => 'nid',
+    'relationship' => array(
+      'handler' => 'views_handler_relationship',
+      'title' => t('Chado => Node'),
+      'label' => t('Chado => Node'),
+      'real field' => 'nid',
+      'base' => 'node',
+      'base field' => 'nid'
+    ),
+  );
+  
 	return $data;
 }

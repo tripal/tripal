@@ -97,6 +97,32 @@ function tripal_stock_views_handlers() {
 }
 
 /**
+ * Implementation of hook_views_data_alter().
+ */
+function tripal_stock_views_data_alter(&$data) {
+
+  if( !(is_array($db_url) and array_key_exists('chado',$db_url)) ){
+
+    // Add featuer relationship to node
+    $data['node']['stock_chado_nid'] = array(
+      'group' => 'Stock',
+      'title' => 'Stock Node',
+      'help' => 'Links Chado Stock Fields/Data to the Nodes in the current View.',
+      'real field' => 'nid',
+      'relationship' => array(
+        'handler' => 'views_handler_relationship',
+        'title' => t('Node => Chado'),
+        'label' => t('Node => Chado'),
+        'real field' => 'nid',
+        'base' => 'chado_stock',
+        'base field' => 'nid'
+      ),
+    );
+  }
+  
+}
+
+/**
  * Implements hook_views_pre_render
  *
  * Purpose: Intercepts the view after the query has been executed

@@ -89,6 +89,23 @@ function retrieve_stock_views_data() {
        'handler' => 'views_handler_field_computed_stock_nid',
       ),
   	);
+  } else {
+    // Add relationship between chado_stock and stock
+    $data['stock']['stock_nid'] = array(
+      'group' => 'Stock',
+      'title' => 'Stock Node',
+      'help' => 'Links Chado Stock Fields/Data to the Nodes in the current View.',
+      'real field' => 'stock_id',
+      'relationship' => array(
+        'handler' => 'views_handler_relationship',
+        'title' => t('Stock => Chado'),
+        'label' => t('Stock => Chado'),
+        'real field' => 'stock_id',
+        'base' => 'chado_stock',
+        'base field' => 'stock_id'
+      ),
+    );
+
   }
 
   //Field: unique name (text)
