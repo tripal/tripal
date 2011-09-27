@@ -20,71 +20,49 @@ class views_handler_field_node_optional extends views_handler_field_node {
    * Add chado_* and *_node alias'd left joins to the table
    */
   function query() {
-    parent::query();
-    if (!preg_match('/'.$this->options[table].'/', $this->view->base_table)) {
-      // chado_* ======================================================
-      $drupal_chado_table_name = 'chado_'.$this->options[table];
-      
-      // add to table_queue--------------------------------------------
-      $drupal_chado_table_join['table'] = $drupal_chado_table_name;
-      $drupal_chado_table_join['num'] = 1;
-      $drupal_chado_table_join['alias'] = $drupal_chado_table_name;
-      $drupal_chado_table_join['relationship'] = $this->options[table];
-
-      $drupal_chado_table_join['join'] = clone($this->query->table_queue[$this->options[table]]['join']);
-      $drupal_chado_table_join['join']->table = $drupal_chado_table_name;
-      $drupal_chado_table_join['join']->left_table = $this->options[table];
-      
-      $drupal_chado_table_join['join']->definition['table'] = $drupal_chado_table_name;
-      $drupal_chado_table_join['join']->definition['left_table'] = $this->options[table];
-
-      $this->query->table_queue[$drupal_chado_table_name] = $drupal_chado_table_join;
-
-      // add to table--------------------------------------------------
-      $this->query->tables[$this->view->base_table][$drupal_chado_table_name] = array(
-        'count' => 1,
-        'alias' => $drupal_chado_table_name,
-      );
-      
-      // node ============================================================
-      $drupal_node_table_alias = $this->options[table].'_node';
-      
-      // add to table_queue--------------------------------------------
-      $drupal_node_table_join['table'] = 'node';
-      $drupal_node_table_join['num'] = 1;
-      $drupal_node_table_join['alias'] = $drupal_node_table_alias;
-      $drupal_node_table_join['relationship'] = $this->options[table];
-
-      if ($this->query->table_queue['node']['join']) {
-        $drupal_node_table_join['join'] = clone($this->query->table_queue['node']['join']);
-      } elseif ($this->query->table_queue[$drupal_chado_table_name]['join']) {
-        $drupal_node_table_join['join'] = clone($this->query->table_queue[$drupal_chado_table_name]['join']);
-      } else {
-        
+    
+    // Check what we have (ie: current table? node table? )
+    $chado_table = 'chado_' . $this->table;
+    foreach ($this->query->table_queue as $table_def) {
+      //check is $this->table
+      if ($table_def['table'] == $this->table) {
+        $this_table_alias = $table_def['alias'];
       }
-      $drupal_node_table_join['join']->table = 'node';
-      $drupal_node_table_join['join']->field = 'nid';
-      $drupal_node_table_join['join']->left_field = 'nid';
-      $drupal_node_table_join['join']->left_table = $drupal_chado_table_name;
-      $drupal_node_table_join['join']->definition['left_table'] = $drupal_chado_table_name;
       
-      $this->query->table_queue[$drupal_node_table_alias] = $drupal_node_table_join;
-
-      // add to table--------------------------------------------------
-      $this->query->tables[$this->view->base_table][$drupal_node_table_alias] = array(
-        'count' => 1,
-        'alias' => $drupal_node_table_alias,
-      );
-      
-      // add field and set alias ===========================
-      $field_alias = $this->options[table].'_node_nid';
-      $this->query->add_field($drupal_node_table_alias, 'nid');
-      $this->add_additional_fields();
-      
-      $this->aliases['nid'] = $field_alias;     
-    } else {
-      $this->aliases['nid'] = 'node_nid';
+      // check is node joined to #this->table
+      if ($table_def['table'] == $chado_table) {
+        $node_table_alias = $table_def['alias'];
+      }
     }
+    
+    // First: Add the main field-----------------------------------------------
+    if (!$this_table_alias) {
+      $this_table_alias = $this->ensure_my_table();
+    }
+    $field_alias = $this->query->add_field($this_table_alias, $this->real_field); 
+    $this->aliases[ $this->real_field ] = $field_alias;
+    $this->field_alias = $field_alias;
+    
+    // Second: Add nid field and Joins if necessary----------------------------
+    // Add node join if needed
+    if (!$node_table_alias) {
+      $def['table'] = $chado_table;
+      $def['field'] = $this->table . '_id';
+      $def['left_table'] = $this_table_alias;
+      $def['left_field'] = $this->table . '_id';
+      
+      $join = new views_join();
+      $join->definition = $def;
+      $join->construct();
+      $join->adjusted = TRUE;
+    
+      $node_table_alias = $this->query->add_relationship($def['table'], $join, $def['table']);
+    }
+    
+    // Finally Add Field
+    $field_alias = $this->query->add_field($node_table_alias, 'nid'); 
+    $this->aliases['nid'] = $field_alias;   
+
   }
 
   /**
