@@ -48,7 +48,7 @@ function retrieve_chado_organism_views_data () {
   );  
 
   // Add relationship between chado_organism and organism
-  $data['chado_organism']['organism_nid'] = array(
+  $data['chado_organism']['organism_id'] = array(
     'group' => 'Organism',
     'title' => 'Organism Node',
     'help' => 'Links Chado Organism Fields/Data to the Nodes in the current View.',
@@ -64,7 +64,7 @@ function retrieve_chado_organism_views_data () {
   );
 
   // Add node relationship to organism
-  $data['chado_organism']['organism_chado_nid'] = array(
+  $data['chado_organism']['nid'] = array(
     'group' => 'Organism',
     'title' => 'Organism Node',
     'help' => 'Links Chado Organism Fields/Data to the Nodes in the current View.',
