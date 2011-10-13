@@ -96,7 +96,7 @@ function retrieve_organism_views_data() {
   	);
   } else {
     // Add relationship between chado_organism and organism
-    $data['organism']['organism_nid'] = array(
+    $data['organism']['organism_id'] = array(
       'group' => 'Organism',
       'title' => 'Organism Node',
       'help' => 'Links Chado Organism Fields/Data to the Nodes in the current View.',
