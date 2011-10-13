@@ -52,6 +52,14 @@ $organism = $variables['node']->organism;
       $(".tripal_organism_toc_item").click(function(){
          $(".tripal-info-box").hide();
          href = $(this).attr('href');
+         if(href.match(/^#/)){
+            //alert("correct: " + href);
+         }
+         else{
+            tmp = href.replace(/^.*?#/, "#");
+            href = tmp;
+            //alert("fixed: " + href);
+         }
          $(href).fadeIn('slow');
          // we want to make sure our table of contents and the details
          // box stay the same height
