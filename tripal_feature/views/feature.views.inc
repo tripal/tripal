@@ -82,14 +82,6 @@
     'sort' => array(
      	'handler' => 'views_handler_sort',
     ),
-    'relationship' => array(
-      'handler' => 'views_handler_many2many_relationship',
-      'title' => t('Feature Node'),
-      'label' => t('Feature Node'),
-      'left' => 'node',
-      'left field' => 'nid',
-      'middle' => 'chado_feature',    
-    ),
   );
 
   // Calculated Field: Node ID
@@ -286,5 +278,16 @@
   // Provides the number of libraries for a given feature
   // @see tripal_library/views/misc_tables.views.inc 
 
+	// Calculated Field: feature relationships
+	// uses a custom field handler which pulls results from the view
+	$data['feature']['relationships'] = array(
+    'title' => t('Feature Relationships'),
+    'help' => t('Relationships including the current feature.'),
+    'field' => array(
+      'title' => t('Relationships'),
+      'help' => t('Display a given type of relationships including the current feature.'),
+      'handler' => 'views_handler_field_chado_rel_by_type',
+    ),
+  );  
   return $data;
  }
