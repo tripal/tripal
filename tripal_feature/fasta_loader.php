@@ -456,7 +456,7 @@ function tripal_feature_load_fasta($dfile, $organism_id, $type,
          // so let's handle the previous one before moving on
          if($name or $uname){
            tripal_feature_fasta_loader_handle_feature($name,$uname,$db_id,
-              $accession,$subject,$rel_type,$parent_type,$library_id,$organism_id,$type,
+              $accession,$subject,$rel_type,$parent_type,$analysis_id,$organism_id,$type,
               $source,$residues,$method,$re_name,$match_type);
            $residues = '';
            $name = '';
@@ -506,7 +506,7 @@ function tripal_feature_load_fasta($dfile, $organism_id, $type,
    }
    // now load the last sequence in the file
    tripal_feature_fasta_loader_handle_feature($name,$uname,$db_id,
-      $accession,$subject,$rel_type,$parent_type,$library_id,$organism_id,$type,
+      $accession,$subject,$rel_type,$parent_type,$analysis_id,$organism_id,$type,
       $source,$residues,$method,$re_name,$match_type);
    return '';
 }
@@ -517,7 +517,7 @@ function tripal_feature_load_fasta($dfile, $organism_id, $type,
  * @ingroup fasta_loader
  */
 function tripal_feature_fasta_loader_handle_feature($name,$uname,$db_id,$accession,
-              $parent,$rel_type,$parent_type,$library_id,$organism_id,$type, 
+              $parent,$rel_type,$parent_type,$analysis_id,$organism_id,$type, 
               $source,$residues,$method,$re_name,$match_type) 
 {
    $previous_db = tripal_db_set_active('chado');
@@ -635,6 +635,20 @@ function tripal_feature_fasta_loader_handle_feature($name,$uname,$db_id,$accessi
       return 0;
    }
 
+	 // add in the analysis link
+	 if ($analysis_id) {
+	 	$analysis_link_sql = 'SELECT * FROM analysisfeature WHERE analysis_id=%d AND feature_id=%d';
+	 	$analysis_link = db_fetch_object(db_query($analysis_link_sql, $analysis_id, $feature->feature_id));
+	 	if (!$analysis_link) {
+	 		$sql = "INSERT INTO analysisfeature (analysis_id, feature_id) VALUES (%d, %d)";
+	 		$result = db_query($sql, $analysis_id, $feature->feature_id);
+		  if(!$result){
+			  print "WARNING: could not add link between analysis: ".$analysis_id." and feature: ".$feature->uniquename."\n";
+		  }
+		  $analysis_link = db_fetch_object(db_query($analysis_link_sql, $analysis_id, $feature->feature_id));
+	 	}
+	 }
+	 
    // now add the database cross reference
    if($db_id){
       // check to see if this accession reference exists, if not add it
