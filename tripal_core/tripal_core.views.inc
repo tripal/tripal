@@ -78,8 +78,8 @@ function tripal_core_views_handlers() {
      'views_handler_filter_chado_boolean' => array(
       'parent' => 'views_handler_filter_boolean_operator',
      ),
-     'views_handler_many2many_relationship' => array(
-      'parent' => 'views_handler_relationship',
+     'views_handler_field_chado_rel_by_type' => array(
+      'parent' => 'views_handler_field_prerender_list',
      ),
    ),
  );
