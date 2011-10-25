@@ -72,11 +72,17 @@ function tripal_bulk_loader_add_loader_job_form_submit ($form, $form_state) {
   } elseif (preg_match('/Revert/', $form_state['values']['op'])) {
   
     // Remove the records from the database that were already inserted
-    $resource = db_query('SELECT * FROM {tripal_bulk_loader_inserted} WHERE nid=%d', $form_state['values']['nid']);
+    $resource = db_query('SELECT * FROM {tripal_bulk_loader_inserted} WHERE nid=%d ORDER BY tripal_bulk_loader_inserted_id DESC', $form_state['values']['nid']);
     while ($r = db_fetch_object($resource)) {
       $ids = preg_split('/,/',$r->ids_inserted);
       db_query('DELETE FROM %s WHERE %s IN (%s)',$r->table_inserted_into, $r->table_primary_key, $r->ids_inserted);
-      db_query('DELETE FROM {tripal_bulk_loader_inserted} WHERE tripal_bulk_loader_inserted_id=%d',$r->tripal_bulk_loader_inserted_id);
+      $result = db_fetch_object(db_query('SELECT true as present FROM %s WHERE %s IN (%s)', $r->table_inserted_into, $r->table_primary_key, $r->ids_inserted));
+      if (!$result->present) {
+        drupal_set_message('Successfully Removed data Inserted into the '.$r->table_inserted_into.' table.');
+        db_query('DELETE FROM {tripal_bulk_loader_inserted} WHERE tripal_bulk_loader_inserted_id=%d',$r->tripal_bulk_loader_inserted_id);
+      } else {
+        drupal_set_message('Unable to remove data Inserted into the '.$r->table_inserted_into.' table!', 'error');
+      }
     }
     
     // reset status
