@@ -11,6 +11,7 @@
  * multiple GBrowse/mysql instances as well as manage and create such GBrowse instances
  */
 
+include('tripal_gbrowse.align_features.inc');
 
 //-----------------------------------------------------------------------------
 //  SECTION: Main Outline Menu for GBrowse Management 
@@ -121,6 +122,15 @@ function tripal_gbrowse_menu() {
       'access arguments' => array('administer site configuration'),
       'type' => MENU_NORMAL_ITEM
   );
+  
+  $items['admin/tripal/tripal_gbrowse/align_features']=array(
+      'title' => t('Align Features'),
+      'description' => t('Align a group of features (either library or analysis) against another grouping of features.'), 
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array('tripal_gbrowse_align_features_form'), 
+      'access arguments' => array('administer site configuration'),
+      'type' => MENU_NORMAL_ITEM
+  );  
 
   return $items;
 }
@@ -271,6 +281,7 @@ function tripal_gbrowse_administration_description_page() {
   $text .= "<ul>";
   
   $text .= "<li>".l("Configuration", "admin/tripal/tripal_gbrowse/configuration"). "</li>";
+	$text .= "<li>".l('Register GBrowse Instance', 'node/add/tripal-gbrowse')."</li>";
   $text .= "<li>".l("Load Library Features", "admin/tripal/tripal_gbrowse/load_library_features"). "</li>";
   $text .= "<li>".l("Delete Library Features", "admin/tripal/tripal_gbrowse/delete_library_features"). "</li>";
   $text .= "<li>".l("Load Analysis Features", "admin/tripal/tripal_gbrowse/load_analysis_features"). "</li>";
@@ -684,7 +695,7 @@ function tripal_gbrowse_form(&$node, $form_state) {
     '#type' => 'textfield',
     '#title' => t('GBrowse Name'),
     '#size' => 30,
-    '#maxlength' => 64,
+    '#maxlength' => 256,
     '#description' => t('GBrowse Instance'),
     '#default_value' => isset($node->gbrowse->gbrowse_name) ? $node->gbrowse->gbrowse_name : '',
     '#required' => TRUE,
@@ -698,7 +709,7 @@ function tripal_gbrowse_form(&$node, $form_state) {
     '#type' => 'textfield',
     '#title' => t('GBrowse Link'),
     '#size' => 30,
-    '#maxlength' => 64,
+    '#maxlength' => 256,
     '#description'=>t('Enter Full HTML address Including Host 
     (ex:http://knowpulse2.usask.ca/) of the new GBrowse instance. By default this is '.$default_value.'[configuration file name] where the configuration file name is the same as that entered below except without .conf'),
     '#default_value' => isset($node->gbrowse->gbrowse_link) ? $node->gbrowse->gbrowse_link : $default_value,
@@ -710,7 +721,7 @@ function tripal_gbrowse_form(&$node, $form_state) {
     '#type' => 'textfield',
     '#title' => t('Configuration File'),
     '#size' => 30,
-    '#maxlength' => 64,
+    '#maxlength' => 256,
     '#description' => t('Enter Fully Qualified File Name including Path (ex: file.conf) '),
     '#default_value' => isset($node->gbrowse->config_file) ? $node->gbrowse->config_file : variable_get('tripal_gbrowse_configuration_file_path', ''),
     '#required' => TRUE,
@@ -768,6 +779,16 @@ function tripal_gbrowse_form(&$node, $form_state) {
   
 }
 
+function tripal_gbrowse_validate ($node, $form) {
+
+  if (!preg_match('/\.conf$/',$node->config_file)) {
+    form_set_error('config_file','Configuration file must end in .conf');
+  }
+  
+  if (!preg_match('/^http:\/\//',$node->gbrowse_link)) {
+    form_set_error('gbrowse_link','GBrowse Link must be an absolute path (include http://)');
+  }
+}
 
 /**
  *  Implements tripal_gbrowse_help()
