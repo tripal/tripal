@@ -262,6 +262,32 @@ function tripal_feature_admin () {
          '#weight' => 2,
       );
 
+
+      $form['feature_edit'] = array(
+         '#type' => 'fieldset',
+         '#title' => t('Feature Editing')
+      );
+
+      $form['feature_edit']['browser_desc'] = array(
+         '#type'        => 'markup',
+         '#value' => 'When editing or creating a feature, a user must provide the feature type. '.
+                     'The Sequence Ontology list is very large, therefore, to simply the list of types for the user, the following '.
+                     'textbox allows you to specify which features types can be used. This list of terms will appear in the '.
+                     'feature type drop down list of the feature creation/edit form.',
+
+      );
+      $form['feature_edit']['feature_edit_types'] = array(
+         '#title'       => t('Feature Types'),
+         '#type'        => 'textarea',
+         '#description' => t("Enter the Sequence Ontology (SO) terms for the allowed feature types when creating or editing features."),
+         '#default_value' => variable_get('chado_edit_feature_types','gene contig EST mRNA'),
+      );
+
+      $form['feature_edit']['set_feature_types'] = array(
+         '#type' => 'submit',
+         '#value' => t('Set Feature Types'),
+      );
+
       $form['summary'] = array(
          '#type' => 'fieldset',
          '#title' => t('Feature Summary')
@@ -339,6 +365,10 @@ function tripal_feature_admin_validate($form, &$form_state) {
 
       case t('Set Browser') :
          variable_set('tripal_feature_browse_setting',$form_state['values']['browse_features']);
+         break;
+
+      case t('Set Feature Types') :
+         variable_set('tripal_feature_type_setting',$form_state['values']['feature_edit_types']);
          break;
 
       case t('Set Summary') :

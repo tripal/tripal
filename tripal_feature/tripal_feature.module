@@ -778,7 +778,7 @@ function chado_feature_form ($node,$param){
    // get the list of supported feature types
    $ftypes = array();
    $ftypes[''] = '';
-   $supported_ftypes = split("[ \n]",variable_get('chado_browser_feature_types','gene mRNA EST contig'));
+   $supported_ftypes = split("[ \n]",variable_get('tripal_feature_type_setting','gene mRNA EST contig'));
    foreach($supported_ftypes as $ftype){
       $ftypes["$ftype"] = $ftype;
    }
