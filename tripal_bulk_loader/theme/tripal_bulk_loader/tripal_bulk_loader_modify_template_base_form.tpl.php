@@ -25,7 +25,7 @@
       $rows[] = array('data' => $row, 'class' => 'draggable');
     }
     
-    print theme('table', $header, $rows, array('id' => 'draggable-table'));
+print theme('table', $header, $rows, array('id' => 'draggable-table', 'width' => '100%'));
     
     // Render submit
     print drupal_render($form['records']['submit-new_record']);
@@ -41,12 +41,13 @@
 
   <?php 
     // generate table
-    $header = array('Record Name', 'Field Name', 'Chado Table', 'Chado Field', 'Worksheet', 'Column', 'Constant Value', 'Foreign Record', '');
+  $header = array('','Record Name', 'Field Name', 'Chado Table', 'Chado Field', 'Worksheet', 'Column', 'Constant Value', 'Foreign Record');
     $rows = array();
     foreach ($form['fields']['fields-data'] as $key => $element) {
       if (preg_match('/^#/', $key)) { continue; }
       
       $row = array();
+      $row[] = drupal_render($element['edit_submit']) . '<br>' . drupal_render($element['delete_submit']);
       $row[] = drupal_render($element['record_id']);
       $row[] = drupal_render($element['field_name']);
       $row[] = drupal_render($element['chado_table_name']);
@@ -55,11 +56,10 @@
       $row[] = drupal_render($element['column_num']);
       $row[] = drupal_render($element['constant_value']);
       $row[] = drupal_render($element['foreign_record_id']);
-      $row[] = drupal_render($element['edit_submit']) . '<br>' . drupal_render($element['delete_submit']);
       
       $rows[] = $row;
     }
-    print theme('table', $header, $rows, array());
+print theme('table', $header, $rows, array('style'=>'table-layout: fixed; width: 100%'));
     
     // Render other elements
     print drupal_render($form['fields']['add_field']);
