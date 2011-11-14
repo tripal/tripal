@@ -18,7 +18,12 @@
 function tripal_pub_install() {
 
 	drupal_install_schema('tripal_pub');
-	
+	$dbxref = array('accession' => 'abstract', 'db_id'=>array('name'=>'tripal'));
+	$success = tripal_core_chado_insert('dbxref',$dbxref);
+	if ($success) {
+		tripal_core_chado_insert('cvterm',array('name'=>'abstract','cv_id'=>array('name'=>'tripal'), 'db
+xref_id'=>$dbxref));
+	}
 }
 
 
@@ -26,7 +31,7 @@ function tripal_pub_install() {
  * Implementation of hook_uninstall() 
  */
 function tripal_pub_uninstall() {
-
+	//Remove tables
 	drupal_uninstall_schema('tripal_pub');
 	
 }
@@ -36,8 +41,7 @@ function tripal_pub_uninstall() {
  * Implementation of hook_schema()
  */
 function tripal_pub_schema() {
-
-	//specification for 'tripal_pub_instances'
+//specification for 'tripal_pub_instances'
 	$schema['chado_pub'] = array(
 		
 		'fields' => array(
@@ -60,14 +64,30 @@ function tripal_pub_schema() {
    	   	'type' => 'int',
    	   	'unsigned' => TRUE,
    	   	'not null' => TRUE,
-    	)	 	
-  	  	
-    ),//end of shema
+    	),	
+    	
+    	 //a intfield, not null and project_id is the unique_id of the project in chado
+    	 'pubmed_id' => array(
+   	   	'type' => 'int',
+   	   	'unsigned' => TRUE,
+   	   	'not null' => FALSE,
+    	),
+    	'author' => array(
+        'type' => 'text',
+        'size' => 'normal',
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'The Author Name.',
+      ),
+  	 ), 	
+     //end of shema
   	
-  	'primary key' => array('nid','vid','pub_id'),
+  	'primary key' => array('nid'),
 	
 	);
 
   return $schema;
 }
+
+
 
