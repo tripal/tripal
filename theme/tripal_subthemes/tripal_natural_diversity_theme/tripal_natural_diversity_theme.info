@@ -1,0 +1,7 @@
+name = Tripal Subtheme: Natural Diversity Theme
+description = A tripal subtheme for tripal natural diversity module
+version = 6.x-0.3.1b
+core = 6.x
+engine = phptemplate
+base theme = tripal
+
