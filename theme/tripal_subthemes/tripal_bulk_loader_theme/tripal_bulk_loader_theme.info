@@ -1,7 +1,0 @@
-name = Tripal Subtheme: Bulk Loader
-description = A tripal subtheme for tripal bulk loader
-version = 6.x-0.3.1b
-core = 6.x
-engine = phptemplate
-base theme = tripal
-
