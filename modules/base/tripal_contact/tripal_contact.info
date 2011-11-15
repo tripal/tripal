@@ -1,9 +1,0 @@
-; $Id$
-package = Tripal
-name = Tripal Contact
-version = 6.x-0.3.1b
-description = A module for interfacing the GMOD chado database with Drupal, providing viewing of Contacts
-core = 6.x
-
-dependencies[] = tripal_core
-dependencies[] = tripal_cv

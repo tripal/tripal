@@ -1,7 +1,0 @@
-name = Tripal Bulk Loader
-description = A module for uploading tab-delimit data into GMOD chado database using templates.
-core = 6.x
-project = tripal_bulk_loader
-package = Tripal
-dependencies[] = tripal_core
-version = 6.x-0.3.1b-1.0

@@ -1,1 +1,0 @@
-../../../tripal_core/views/handlers/views_handler_field_dbxref_accession_link.inc
