@@ -126,9 +126,10 @@ function tripal_bulk_loader_load_data($nid) {
   $default_data = array();
   $field2column = array();
   $record2priority = array();
+
   foreach ($node->template->template_array as $priority => $record_array) {
     if (!is_array($record_array)) { continue; }
-    
+
     //watchdog('T_bulk_loader','1)'.$record_array['record_id']." => \n<pre>".print_r($record_array,TRUE).'</pre>', array(), WATCHDOG_NOTICE);
     
     foreach ($record_array['fields'] as $field_index => $field_array) {
@@ -184,6 +185,9 @@ function tripal_bulk_loader_load_data($nid) {
   $num_records = 0;
   $num_lines = 0;
   $num_errors = 0;
+  $total_lines = trim(`wc --lines < $node->file`);
+  $interval = intval($total_lines * 0.01);
+  if($interval == 0){ $interval = 1; }
   while (!feof($file_handle)) {
 
     // Clear variables
@@ -198,6 +202,12 @@ function tripal_bulk_loader_load_data($nid) {
     if (empty($raw_line)) { continue; } // skips blank lines
     $line = explode("\t", $raw_line);
     $num_lines++;
+    
+    // update the job status every 1% features
+    if($node->job_id and $num_lines % $interval == 0){
+      print "Updating progress of ".$node->job_id." to ".($num_lines/$interval) ."%\n";
+       tripal_job_set_progress($node->job_id,($num_lines/$interval));
+    }    
 
     $data = $default_data;
 
