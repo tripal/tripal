@@ -85,7 +85,7 @@ function tripal_add_job ($job_name,$modulename,$callback,$arguments,$uid,$priori
  */
 function tripal_job_set_progress($job_id,$percentage){
 
-   if(preg_match("/^(\d\d|100)$/",$percentage)){
+   if(preg_match("/^(\d+|100)$/",$percentage)){
       $record = new stdClass();
       $record->job_id = $job_id; 
       $record->progress = $percentage;
