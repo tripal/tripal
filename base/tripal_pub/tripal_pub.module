@@ -141,16 +141,24 @@ specified by the user, which searches the PubMed extracts and saves acedemic pup
       $text .= '<ol type="i">';
       $text .= '</ol>';
   
-  $text .= '<li><p><b>Set Permissions</b>: The stock module supports the Drupal user permissions interface for 
-               controlling access to stock content and functions. These permissions include viewing, 
+  $text .= '<li><p><b>Set Permissions</b>: The publication module supports the Drupal user permissions interface for 
+               controlling access to publlication content and functions. These permissions include viewing, 
                creating, editing or administering of
-               stock content. The default is that only the original site administrator has these 
+               publication content. The default is that only the original site administrator has these 
                permissions.  You can <a href="'.url('admin/user/roles').'">add roles</a> for classifying users, 
                <a href="'.url('admin/user/user').'">assign users to roles</a> and
                <a href="'.url('admin/user/permissions').'">assign permissions</a> for the publication content to 
-               those roles.  For a simple setup, allow anonymous users access to view organism content and 
+               those roles.  For a simple setup, allow anonymous users access to view publication content and 
                allow the site administrator all other permissions.</p></li>';
-  
+  $text .= '<li><p><b>Set Publication Type Controlled Vocabulary</b>: The select list for setting the publication '
+                .'type is controlled be a controlled vocabulary (cv). '
+                .'<ul><li>Before you can add any publications you need '
+                .'to create/load this cv. There is a limited cv included in this module. To use it, you need to '
+                .'load it using the <a href="'.url('admin/tripal/tripal_cv/obo_loader').'">OBO Loader included with Tripal</a>.</li>'
+                .'<li>After the controlled vocabulary is loaded you need to set it to be used for the publication '
+                .'module. To do this, go to <a href="'.url('admin/tripal/tripal_pub/configuration').'">Publication->Configuration</a>, select it in the controlled vocabulary '
+                .'select list and click save configuration.</p></li></ul>';
+               
   $text .= '</ol>';  
   $text .= '<h3>Features of this Module:</h3>';
   //================================================================================
