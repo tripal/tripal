@@ -29,6 +29,7 @@
 <?php
   $feature = $node->feature;
   $feature = tripal_core_expand_chado_vars($feature,'table','featureprop');
+  $feature = tripal_core_expand_chado_vars($feature,'field','featureprop.value');
   $properties = $feature->featureprop;
   if (!$properties) {
     $properties = array();
