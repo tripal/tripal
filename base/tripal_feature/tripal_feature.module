@@ -206,7 +206,7 @@ function tripal_feature_menu() {
 
   // Adding Secondary Properties
 
-
+  /**
   $items['node/%tf_node/tf_properties'] = array(       
     'title' => t('Add Properties & Synonyms'),                         
     'description' => t('Settings for Features'),
@@ -233,9 +233,10 @@ function tripal_feature_menu() {
     'access arguments' => array('create chado_feature content'),
     'type' => MENU_CALLBACK
   );
+  */
+  
   //Edit/Deleting Secondary Properties-------------
-/**
-  $items['node/%tf_node/tf_edit_properties'] = array(
+  $items['node/%tf_node/edit_feature_properties'] = array(
     'title' => t('Edit Properties'),
     'description' => t('Settings for Features'),
     'page callback' => 'tripal_feature_edit_ALL_properties_page',
@@ -244,7 +245,7 @@ function tripal_feature_menu() {
     'type' => MENU_LOCAL_TASK,
     'weight' => 8,
   );
-
+/**
     $items['node/%tf_node/tf_edit_relationships'] = array(
     'title' => t('Edit Relationships'),
     'description' => t('Settings for Feature'), 
@@ -1609,6 +1610,11 @@ function tripal_feature_theme () {
          'arguments' => array('node'=> null),
          'template' => 'tripal_feature_relationships',
       ),
+      
+      'tripal_feature_edit_ALL_properties_form' => array(
+            'arguments' => array('form' => null),
+            'function' => 'theme_tripal_feature_edit_ALL_properties_form',
+        ),
    );
 }
 
