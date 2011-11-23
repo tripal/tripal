@@ -9,7 +9,9 @@
  *  Documentation on views integration can be found at 
  *  http://views2.logrus.com/doc/html/index.html.
  */
- 
+
+require_once('views/project.views.inc');
+require_once('views/project.views.inc');
 /*************************************************************************
  * Implements hook_views_data()
  * Purpose: Describe chado/tripal tables & fields to views
@@ -22,6 +24,9 @@
  */
 function tripal_project_views_data()  {
   $data = array();
+  
+  $data = array_merge($data, retrieve_project_views_data());
+  $data = array_merge($data, retrieve_project_views_data());
   
   return $data;
 }
