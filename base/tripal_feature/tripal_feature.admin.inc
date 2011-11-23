@@ -266,6 +266,16 @@ function tripal_feature_admin () {
          ),
          '#default_value'=>variable_get('tripal_library_feature_browse_setting', 'show_feature_browser'),
       );
+
+      $form['browser']['browse_features_analysis'] = array(
+         '#title' => 'Feature Browser on Analysis Page',
+         '#type' => 'radios',
+         '#options' => array(
+          'show_feature_browser' => "Show the feature browse on the analysis page. The browser loads when page loads. This may be slow for large sites.",
+          'hide_feature_browser' => "Hide the feature browser on the analysis page. Disables the feature browser completely.",
+         ),
+         '#default_value'=>variable_get('tripal_analysis_feature_browse_setting', 'show_feature_browser'),
+      );
       
       $form['browser']['set_browse_button'] = array(
          '#type' => 'submit',
@@ -377,6 +387,7 @@ function tripal_feature_admin_validate($form, &$form_state) {
       case t('Set Browser') :
          variable_set('tripal_feature_browse_setting',$form_state['values']['browse_features']);
          variable_set('tripal_library_feature_browse_setting', $form_state['values']['browse_features_library']);
+         variable_set('tripal_analysis_feature_browse_setting', $form_state['values']['browse_features_analysis']);
          break;
 
       case t('Set Feature Types') :

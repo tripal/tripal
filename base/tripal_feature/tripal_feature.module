@@ -349,6 +349,9 @@ function tripal_feature_block($op = 'list', $delta = 0, $edit=array()){
 
          $blocks['library_feature_browser']['info'] = t('Tripal Library Feature Browser');
          $blocks['library_feature_browser']['cache'] = BLOCK_NO_CACHE;
+
+         $blocks['analysis_feature_browser']['info'] = t('Tripal Analysis Feature Browser');
+         $blocks['analysis_feature_browser']['cache'] = BLOCK_NO_CACHE;
          return $blocks;
 
 
@@ -402,6 +405,10 @@ function tripal_feature_block($op = 'list', $delta = 0, $edit=array()){
                case 'library_feature_browser':
                   $block['subject'] = t('Library Feature Browser');
                   $block['content'] = theme('tripal_library_feature_browser', $node);
+                  break;
+               case 'analysis_feature_browser':
+                  $block['subject'] = t('Analysis Feature Browser');
+                  $block['content'] = theme('tripal_analysis_feature_browser', $node);
                   break;
                default :
             }
@@ -1415,7 +1422,7 @@ function tripal_feature_load_organism_feature_browser($organism){
 }
 
 /**
- * This generates the Feature Browse which can optionally be included on library pages
+ * This generates the Feature Browser which can optionally be included on library pages
  * and shows all features belonging to the given library. This Browse can be shown/hidden
  * on the Feature Configuration page.
  *
@@ -1460,6 +1467,68 @@ function tripal_feature_load_library_feature_browser($library){
 
    $previous_db = tripal_db_set_active('chado');  // use chado database
    $org_features = pager_query($sql,10,0,$csql,$library->library_id);
+   tripal_db_set_active($previous_db);  // now use drupal database
+   $pager = theme('pager');
+
+   // prepare the query that will lookup node ids
+   $sql = "SELECT nid FROM {chado_feature} ".
+           "WHERE feature_id = %d";
+   $i=0;
+   $features = array();
+   while($feature = db_fetch_object($org_features)){
+      $node = db_fetch_object(db_query($sql,$feature->feature_id));
+      $feature->nid = $node->nid;
+      $features[$i++] = $feature;
+   }
+
+   return array ( 'features' => $features, 'pager' => $pager, 'enabled' => true );
+}
+/**
+ * This generates the Feature Browse which can optionally be included on library pages
+ * and shows all features belonging to the given library. This Browse can be shown/hidden
+ * on the Feature Configuration page.
+ *
+ * @ingroup tripal_feature
+ */
+function tripal_feature_load_analysis_feature_browser($analysis){
+
+   // don't show the browser if the settings in the admin page is turned off
+   // instead return the array indicating the status of the browser
+   $show_browser = variable_get('tripal_analysis_feature_browse_setting','show_feature_browser');
+   if(strcmp($show_browser,'show_feature_browser')!=0){
+      return array ('enabled' => false);
+   }
+
+   // get a list of feature types to include in the browser
+   $allowed_types = variable_get('chado_browser_feature_types','EST contig');
+   $allowed_types = preg_replace("/[\s\n\r]+/"," ",$allowed_types);
+   $so_terms = split(' ',$allowed_types);
+   $where_cvt = "";
+   foreach ($so_terms as $term){
+      $where_cvt .= "CVT.name = '$term' OR ";
+   }
+   $where_cvt = substr($where_cvt,0,strlen($where_cvt)-3);  # strip trailing 'OR'
+
+   // get the features for this library
+   $sql  = "SELECT F.name,F.feature_id,F.uniquename,CVT.name as cvname ".
+           "FROM {feature} F ".
+              "  INNER JOIN {cvterm} CVT on F.type_id = CVT.cvterm_id ".
+              "  INNER JOIN {analysisfeature} AF on F.feature_id = AF.feature_id ".
+              "  INNER JOIN {analysis} A on AF.analysis_id = A.analysis_id ".
+            "WHERE A.analysis_id = %d and ($where_cvt) ".
+            "ORDER BY feature_id ASC";
+
+   // the counting SQL
+   $csql  = "SELECT count(*) ".
+            "FROM {feature} F".
+              "  INNER JOIN {cvterm} CVT on F.type_id = CVT.cvterm_id ".
+              "  INNER JOIN {analysisfeature} AF on F.feature_id = AF.feature_id ".
+              "  INNER JOIN {analysis} A on AF.analysis_id = A.analysis_id ".
+            "WHERE A.analysis_id = %d and ($where_cvt) ".
+            "GROUP BY A.analysis_id ";
+
+   $previous_db = tripal_db_set_active('chado');  // use chado database
+   $org_features = pager_query($sql,10,0,$csql,$analysis->analysis_id);
    tripal_db_set_active($previous_db);  // now use drupal database
    $pager = theme('pager');
 
@@ -1622,6 +1691,11 @@ function tripal_feature_nodeapi(&$node, $op, $teaser, $page) {
                  '#value' => theme('tripal_library_feature_browser', $node),
                );               
                break;
+            case 'chado_analysis':
+               $node->content['tripal_analysis_feature_browser'] = array(
+                 '#value' => theme('tripal_analysis_feature_browser', $node),
+               );               
+               break;
             default:           
          }
          break;
@@ -1654,6 +1728,10 @@ function tripal_feature_theme () {
       'tripal_library_feature_browser' => array (
          'arguments' => array('node'=> null),
          'template' => 'tripal_library_feature_browser',
+      ),
+      'tripal_analysis_feature_browser' => array (
+         'arguments' => array('node'=> null),
+         'template' => 'tripal_analysis_feature_browser',
       ),
       'tripal_feature_base' => array (
          'arguments' => array('node'=> null),
@@ -1724,6 +1802,16 @@ function tripal_feature_preprocess_tripal_organism_feature_browser(&$variables){
 function tripal_feature_preprocess_tripal_library_feature_browser(&$variables){
    $library = $variables['node']->library;
    $library->feature_browser = tripal_feature_load_library_feature_browser($library);
+}
+
+/**
+ * Preprocessor function for the Analysis Feature Browser
+ *
+ * @ingroup tripal_feature
+ */
+function tripal_feature_preprocess_tripal_analysis_feature_browser(&$variables){
+   $analysis = $variables['node']->analysis;
+   $analysis->feature_browser = tripal_feature_load_analysis_feature_browser($analysis);
 }
 
 /**
