@@ -76,12 +76,11 @@ function tripal_project_sync_all_projects () {
     
     // create node
     $new_node = new stdClass();
-    $new_node->type = 'tripal_project';
+    $new_node->type = 'chado_project';
     $new_node->uid = $user->uid;
     $new_node->title = $project[0]->name;
     $new_node->project_id = $project_id;
     $new_node->description = $project[0]->description;
-    $new_node->project_name = $project[0]->name;
     node_validate($new_node);
     $errors = form_get_errors();
     if(!$errors){
