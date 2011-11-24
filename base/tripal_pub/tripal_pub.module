@@ -238,7 +238,7 @@ specified by the user, which searches the PubMed extracts and saves acedemic pup
  *	TRUE
  *
  */
-function tripal_pub_access($op, $node, $account ){
+function chado_pub_access($op, $node, $account ){
  
  global $user;
  
@@ -296,19 +296,6 @@ function tripal_pub_access($op, $node, $account ){
 
 }
 
-
-/**
- * Implement hook_view().
- */
-function tripal_pub_view($node, $teaser = FALSE, $page = FALSE){
-  
-  $node = node_prepare($node, $teaser);
-  
-  $content = $node->content['body']['#value'];
-
-  return $node;
-}
-
 /**
 * Implementation of hook_tripal_pub_node_info()
 *
@@ -318,9 +305,9 @@ function tripal_pub_view($node, $teaser = FALSE, $page = FALSE){
 function tripal_pub_node_info(){
  
  return array(
-    'publication' => array(
+    'chado_pub' => array(
       'name' => t('Publication'),
-      'module' => 'tripal_pub',
+      'module' => 'chado_pub',
       'description' => t('A module for interfacing the GMOD chado database with Drupal, providing viewing of publications'),
       'title_label' => t('Article Title'),
       'body_label' => t('Abstract'),
@@ -347,7 +334,7 @@ function tripal_pub_node_info(){
 *    The information that was enterd allong with   
 *
 */
-function tripal_pub_form(&$node, $form_state){
+function chado_pub_form(&$node, $form_state){
 
 				$type = node_get_types('type', $node);
 				
@@ -646,7 +633,7 @@ function tripal_pub_form(&$node, $form_state){
 *
 *
 */
-function tripal_pub_insert($node){
+function chado_pub_insert($node){
 
   $values =  array(
     'title' => $node->title,
@@ -754,7 +741,7 @@ function tripal_pub_insert($node){
 *    Then node which contains the information stored within the node-ID
 *
 */
-function tripal_pub_delete(&$node){
+function chado_pub_delete(&$node){
   
   // Matching all revision, by using the node's pub_id.
   $values =  array(
@@ -782,7 +769,7 @@ function tripal_pub_delete(&$node){
 *   The node being updated
 *
 */
-function tripal_pub_update($node){
+function chado_pub_update($node){
 
 
    $values =  array(
@@ -876,7 +863,7 @@ function tripal_pub_update($node){
 *   The node with the information to be loaded into the database 
 *
 */
-function tripal_pub_load($node){
+function chado_pub_load($node){
   
 	$result = db_fetch_object(db_query('SELECT * FROM {chado_pub} WHERE nid=%d AND vid=%d ',$node->nid, $node->vid));
 	
@@ -891,18 +878,18 @@ function tripal_pub_load($node){
 	
 	}else{
 	
-  	$node->pub_id = tripal_core_generate_chado_var('pub',$values);
+  	$node->pub = tripal_core_generate_chado_var('pub',$values);
   	
   	// add in authors
-  	$authors = tripal_core_chado_select('pubauthor',array('rank','surname','givennames','suffix'),array('pub_id'=>$node->pub_id->pub_id));
-				
-		$size= sizeof($authors);
-		
-		for($i=0;$i<$size;$i++){
-		
-  			$node->authors[$i]['author_name'] = (array) $authors[$i];
-  
+  	$authors = tripal_core_chado_select(
+  	  'pubauthor',
+  	  array('rank','surname','givennames','suffix'),
+  	  array('pub_id'=>$node->pub->pub_id)
+  	);	
+		foreach ($authors as $author){
+  			$node->pub->authors[$author->rank] = $author;
   	}
+  	ksort($node->pub->authors);
   
   }
     
@@ -1482,13 +1469,13 @@ function tripal_pub_search_load_pubmed_publications($search_term_array){
 										//checking the Article Title exists, if so, procede with setting values
 										if(isset($xml->PubmedArticle->MedlineCitation->Article->ArticleTitle)){		
 													
-													$form_id ='tripal_pub_node_form';
+													$form_id ='chado_pub_node_form';
 													
 													$form_state = array();
 													
 													module_load_include('inc', 'node', 'node.pages');
 											
-													$node = array('type' => 'tripal_pub');
+													$node = array('type' => 'chado_pub');
 													
 													$form_state = array();
 													
