@@ -179,7 +179,6 @@ function tripal_project_form(&$node, $form_state) {
   
   $type = node_get_types('type', $node);
 
-  //define form elements for the node's title and body.
   $form['title'] = array(
     '#type' => 'textfield',
     '#title' => check_plain($type->title_label),
@@ -187,15 +186,24 @@ function tripal_project_form(&$node, $form_state) {
     '#default_value' => $node->title,
     '#weight' => -5
   );
+
+  $form['project_name'] = array(
+    '#type' => 'textfield',
+    '#maxlength' => 255,
+    '#title' => 'Project Name',
+  );
+
+  $form['description'] = array(
+    '#type' => 'textfield',
+    '#maxlength' => 255,
+    '#title' => 'Short Description',
+  ); 
   
-  // Putting body and filter elements to be adjacent them into a sub-array together
   $form['body_filter']['body'] = array(
     '#type' => 'textarea',
     '#title' => check_plain($type->body_label),
     '#default_value' => $node->body,
-    '#required' => FALSE
   );
-  
   $form['body_filter']['filter'] = filter_form($node->format);
   
   // whether or not the project exists in chado

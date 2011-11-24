@@ -73,22 +73,26 @@ function tripal_project_sync_all_projects () {
   
   foreach ($chado_projects as $project_id) {
     $project = tripal_core_chado_select('project',array('name','description'),array('project_id'=>$project_id));
-    print 'Project:'.print_r($project,TRUE)."\n";
-    print 'Sync\'ing '.$project[0]->name.'...';
     
     // create node
-    $form_state = array();
-    $form_state['values']['name'] = $project[0]->name;
-    $form_state['values']['description'] = $project[0]->description;
-    $form_state['values']['project_id'] = $project_id;
-    $form_state['clicked_button'] = 'Save';
-    drupal_execute('tripal_project_node_form',$form_state, (object)array('type' => 'tripal_project'));
+    $new_node = new stdClass();
+    $new_node->type = 'tripal_project';
+    $new_node->uid = $user->uid;
+    $new_node->title = $project[0]->name;
+    $new_node->project_id = $project_id;
+    $new_node->description = $project[0]->description;
+    $new_node->project_name = $project[0]->name;
+    node_validate($new_node);
     $errors = form_get_errors();
-    if ($errors) {
-      print "Error Encountered!\n";
-      print "Errors:".print_r($errors,TRUE)."\n";
+    if(!$errors){
+      $node = node_submit($new_node);
+      node_save($node);
+      if($node->nid){
+         print "Added ".$project[0]->name." (Node ID:".$node->nid.")\n";
+      }
     } else {
-      print "Successful (".$node->nid.")\n";
+      print "Failed to insert project: ".$project[0]->name."\n";
+      print "Errors: ".print_r($errors, TRUE)."\n";
     }
     
   }
