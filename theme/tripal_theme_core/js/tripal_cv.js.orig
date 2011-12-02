@@ -1,0 +1,61 @@
+//
+// Copyright 2009 Clemson University
+//
+
+if (Drupal.jsEnabled) {
+   $(document).ready(function() {
+
+   });
+
+   function init_tree(){
+      $("#browser").treeview({
+         toggle: function() {
+   	      
+         },
+			url: "tripal_cv_update_browser",
+			// add some additional, dynamic data and request with POST
+			ajax: {
+				data: {
+					"additional": function() {
+						return "yeah: " + new Date;
+					}
+				},
+				type: "post"
+			}
+      });
+   }
+
+   //------------------------------------------------------------
+   // Update the cv tree based on the user selection
+   function tripal_cv_init_browser(options){
+      // Get the cv_id from DOM
+      var index = options.selectedIndex;
+      var cv_id = options[index].value;
+      $.ajax({
+         url: '/tripal_cv_init_browser/' + cv_id ,
+         dataType: 'json',
+         type: 'POST',
+         success: function(data){         
+            $("#cv_browser").html(data.update);
+            init_tree();
+         }
+      });
+      return false;
+   }
+
+   //------------------------------------------------------------
+   // Update the cv tree based on the user selection
+   function tripal_cv_cvterm_info(cvterm_id){
+      // Get the cv_id from DOM
+      $.ajax({
+         url: '/tripal_cv_cvterm_info/' + cvterm_id ,
+         dataType: 'json',
+         type: 'POST',
+         success: function(data){         
+            $("#cvterm_info").html(data.update);
+            init_tree();
+         }
+      });
+      return false;
+   }
+}

@@ -1,0 +1,31 @@
+
+#tripal_organism-image-box {
+   float: left;
+   margin-left: 10px;
+   margin-bottom: 10px;
+   margin-right: 10px;
+   width: auto;
+}
+#tripal_organism-image-box img {
+   max-height: 200px;
+}
+
+#tripal_organism-base-box {
+   float: left;
+}
+#tripal_organism-description-box {
+   clear: left;
+   width: auto;
+}
+
+#tripal_organism-base-box img {
+ float: left;
+ margin-bottom: 10px;
+}
+#tripal_organism-table-base {
+ float: left;
+ width: 330px;
+ margin-left: 10px;
+ margin-bottom: 10px;
+}
+
