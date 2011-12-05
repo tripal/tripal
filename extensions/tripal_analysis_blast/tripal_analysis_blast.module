@@ -135,31 +135,27 @@ function tripal_analysis_blast_nodeapi(&$node, $op, $teaser, $page) {
  */
 function tripal_analysis_blast_theme () {
 	
-	$path = drupal_get_path('module', 'tripal_analysis_blast') . '/theme';
-	$path_feature = $path . '/tripal_feature';
-	$path_analysis = $path . '/tripal_analysis_blast';
+	// $path = drupal_get_path('module', 'tripal_analysis_blast') . '/theme';
+	// $path_feature = $path . '/tripal_feature';
+	// $path_analysis = $path . '/tripal_analysis_blast';
 	//dpm($path, 'path');
 	
 	$theme = array(
       'tripal_analysis_blast_results_index_version' => array (
          'arguments' => array('node'),
-         'template' => 'node-chado_analysis_blast',
-         'path' => $path,
+         'template' => 'theme/node-chado_analysis_blast',
 		),
 		'tripal_feature_blast_results' => array(
 			'arguments' =>  array('node'=> null),
-		   'template' => 'tripal_feature_blast_results',
-		   //'path' => $path_feature,
+		   'template' => 'theme/tripal_analysis_blast/tripal_feature_blast_results',
 		),
 		'tripal_analysis_blast_report' => array(
 			'arguments' =>  array('report_object'=> null),
-		   'template' => 'tripal_analysis_blast_report',
-		   //'path' => $path_analysis,
+		   'template' => 'theme/tripal_analysis_blast/tripal_analysis_blast_report',
 		),
 		'tripal_analysis_blast_base' => array(
 			'arguments' =>  array('report_object'=> null),
-		   'template' => 'tripal_analysis_blast_base',
-		   //'path' => $path_analysis,
+		   'template' => 'theme/tripal_analysis_blast/tripal_analysis_blast_base',
 		)
 	);
 	//dpm($theme, 'blast theme');

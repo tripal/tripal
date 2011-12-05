@@ -24,7 +24,8 @@
 <?php
  //uncomment this line to see a full listing of the fields avail. to $node
  //print '<pre>'.print_r($variables,TRUE).'</pre>';
-drupal_add_css('./tripal-node-templates.css');
+// drupal_add_css('./tripal-node-templates.css');
+drupal_add_css('./css/tripal-node-templates.css');
 
 $node = $variables['node'];
 $organism = $variables['node']->organism;
@@ -83,7 +84,7 @@ if (Drupal.jsEnabled) {
 <div id="tripal_analysis_blast_details" class="tripal_details">
 
    <!-- Basic Details Theme -->
-   <?php include('tripal_analysis_blast/tripal_analysis_blast_base.tpl.php'); ?>
+   <?php include('tripal_analysis_blast/tripal_analysis_blast_base.tpl.php'); dpm('hello', 'hello')?>
 
    <?php print $content ?>
 </div>
