@@ -2,7 +2,7 @@
 
 function tripal_analysis_unigene_init(){
    // Add style sheet
-   drupal_add_css(drupal_get_path('theme', 'tripal').'/css/tripal_analysis_unigene.css');
+   drupal_add_css(drupal_get_path('module', 'tripal_analysis_unigene').'/theme/css/tripal_analysis_unigene.css');
 }
 /**
 *

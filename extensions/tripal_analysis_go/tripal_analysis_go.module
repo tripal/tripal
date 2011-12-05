@@ -4,9 +4,9 @@ require_once "gaf_loader.inc";
 
 function tripal_analysis_go_init(){
    // Add style sheet
-   drupal_add_css(drupal_get_path('theme', 'tripal').'/css/tripal_analysis_go.css');
+   drupal_add_css(drupal_get_path('module', 'tripal_analysis_go').'/theme/css/tripal_analysis_go.css');
 
-   drupal_add_js(drupal_get_path('theme', 'tripal').'/js/tripal_analysis_go.js');
+   drupal_add_js(drupal_get_path('module', 'tripal_analysis_go').'/theme/js/tripal_analysis_go.js');
 }
 
 /*******************************************************************************
