@@ -787,7 +787,6 @@ function tripal_analysis_theme () {
 	return array(
       'tripal_analysis_analysis_page' => array (
          'arguments' => array('analyses'),
-         'path' => (drupal_get_path('module', 'tripal_analysis_blast') . '/theme'),
 	    ),
 	);
 }
