@@ -136,8 +136,8 @@ function tripal_analysis_blast_nodeapi(&$node, $op, $teaser, $page) {
  */
 function tripal_analysis_blast_theme () {
 	$theme = array(
-      // 'tripal_analysis_blast_results_index_version' => array (
-      'node__chado_analysis_blast' => array (
+      'tripal_analysis_blast_results_index_version' => array (
+      // 'node__chado_analysis_blast' => array (
          'arguments' => array('node'),
          'template' => 'templates/node--chado_analysis_blast',
 		),

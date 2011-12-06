@@ -8,7 +8,7 @@
 function tripal_analysis_kegg_init(){
    // add the tripal_analysis_kegg JS and CSS
    drupal_add_js(drupal_get_path('module', 'tripal_analysis_kegg').'/theme/js/tripal_analysis_kegg.js');
-   drupal_add_css(drupal_get_path('theme', 'tripal').'/css/tripal_analysis_kegg.css');
+   drupal_add_css(drupal_get_path('module', 'tripal_analysis_kegg').'/theme/css/tripal_analysis_kegg.css');
    // add the jsTree JS and CSS
    drupal_add_css(drupal_get_path('theme', 'tripal').'/js/jsTree/source/tree_component.css');
    drupal_add_js (drupal_get_path('theme', 'tripal').'/js/jsTree/source/_lib.js');
