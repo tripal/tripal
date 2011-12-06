@@ -139,19 +139,19 @@ function tripal_analysis_blast_theme () {
       'tripal_analysis_blast_results_index_version' => array (
       // 'node__chado_analysis_blast' => array (
          'arguments' => array('node'),
-         'template' => 'templates/node--chado_analysis_blast',
+         'template' => 'templates/node--chado-analysis-blast',
 		),
 		'tripal_feature_blast_results' => array(
 			'arguments' =>  array('node'=> null),
-		   'template' => 'templates/tripal_analysis_blast/tripal_feature_blast_results',
+		   'template' => 'templates/tripal-feature-blast-results',
 		),
 		'tripal_analysis_blast_report' => array(
 			'arguments' =>  array('report_object'=> null),
-		   'template' => 'templates/tripal_analysis_blast/tripal_analysis_blast_report',
+		   'template' => 'templates/tripal-analysis-blast-report',
 		),
 		'tripal_analysis_blast_base' => array(
 			'arguments' =>  array('report_object'=> null),
-		   'template' => 'templates/tripal_analysis_blast/tripal_analysis_blast_base',
+		   'template' => 'templates/tripal-analysis-blast-base',
 		)
 	);
 	dpm($theme, 'blast theme');

@@ -26,7 +26,7 @@
  //print '<pre>'.print_r($variables,TRUE).'</pre>';
 // drupal_add_css('./tripal-node-templates.css');
 drupal_add_css('./css/tripal-node-templates.css');
-
+dpm('node -- chado is running' ,'template');
 $node = $variables['node'];
 $organism = $variables['node']->organism;
 ?>
