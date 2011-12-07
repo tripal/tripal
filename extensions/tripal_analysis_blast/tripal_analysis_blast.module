@@ -135,7 +135,7 @@ function tripal_analysis_blast_nodeapi(&$node, $op, $teaser, $page) {
 /**
  * Implements hook_theme_registry_alter().
  */
-function tripal_analysis_blast__theme_registry_alter(&$info) {
+function tripal_analysis_blast_theme_registry_alter(&$info) {
   // Inject our module into the node theme registry as being an available theme
   // path so that we can override the node template for our content type.
   array_splice($info['node']['theme paths'], 1, 0, array(drupal_get_path('module', 'tripal_analysis_blast')));
@@ -152,8 +152,8 @@ function tripal_analysis_blast_theme () {
       // 'node__chado_analysis_blast' => array (
          'arguments' => array('node'),
 		),
-		'node__chado_analysis_blast' => array(
-		'template' => 'node--chado-analysis-blast',
+		'node_chado_analysis_blast' => array(
+		'template' => 'node-chado-analysis-blast',
 		'arguments' => array('node'=>null),
 		),
 		'tripal_feature_blast_results' => array(
@@ -294,8 +294,6 @@ function tripal_get_feature_blast_results($feature_id, $db_id, $max){
 		$blast_obj_array [$blast_obj_counter] = $blast_obj;
 		$blast_obj_counter ++;
 	}
-
-	$blast_obj_array = theme('tripal_analysis_blast_report', $blast_obj_array);
 
    return $blast_obj_array;
 }
