@@ -47,6 +47,7 @@ function tripal_analysis_blast_menu() {
       'type' => MENU_CALLBACK,
 	   'file' => 'tripal_analysis_blast_htmlreport.inc'
 	);
+	
 	return $items;
 }
 /**
@@ -85,6 +86,7 @@ function tripal_analysis_blast_block($op = 'list', $delta = 0, $edit=array()){
                   break;  
                default :
             }
+
             return $block;
          }
    }
@@ -136,26 +138,27 @@ function tripal_analysis_blast_nodeapi(&$node, $op, $teaser, $page) {
  */
 function tripal_analysis_blast_theme () {
 	$theme = array(
-      // 'tripal_analysis_blast_results_index_version' => array (
-      'node__chado_analysis_blast' => array (
+      'tripal_analysis_blast_results_index_version' => array (
+      // 'node__chado_analysis_blast' => array (
          'arguments' => array('node'),
-         'template' => 'templates/node--chado-analysis-blast',
+		),
+		'node__chado_analysis_blast' => array(
+		'template' => 'node--chado-analysis-blast.tpl.php',
+		'arguments' => array('node'=>null),
 		),
 		'tripal_feature_blast_results' => array(
+			'template' => 'tripal-feature-blast-results',
 			'arguments' =>  array('node'=> null),
-		   'template' => 'templates/tripal-feature-blast-results',
 		),
 		'tripal_analysis_blast_report' => array(
+			'template' => 'tripal-analysis-blast-report',
 			'arguments' =>  array('report_object'=> null),
-		   'template' => 'templates/tripal-analysis-blast-report',
 		),
 		'tripal_analysis_blast_base' => array(
+			'template' => 'tripal-analysis-blast-base',
 			'arguments' =>  array('report_object'=> null),
-		   'template' => 'templates/tripal-analysis-blast-base',
 		)
 	);
-	dpm($theme, 'blast theme');
-	dpm(node_load(array('nid' => 18)),'node18');
 	return $theme;
 }
 /*******************************************************************************
@@ -185,7 +188,10 @@ function tripal_analysis_blast_preprocess_tripal_feature_blast_results(&$variabl
    }
 
    $blast_results = tripal_get_feature_blast_results($feature->feature_id, $db_id, $max);
+	 dpm($blast_results, 'blast_resulst');
    $feature->tripal_analysis_blast->blast_results_list = $blast_results;
+	 
+	 
 }
 /*******************************************************************************
  * Prepare blast result for the feature shown on the page
@@ -278,6 +284,9 @@ function tripal_get_feature_blast_results($feature_id, $db_id, $max){
 		$blast_obj_array [$blast_obj_counter] = $blast_obj;
 		$blast_obj_counter ++;
 	}
+
+	$blast_obj_array = theme('tripal_analysis_blast_report', $blast_obj_array);
+
    return $blast_obj_array;
 }
 /*******************************************************************************
