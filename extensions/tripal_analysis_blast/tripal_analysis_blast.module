@@ -131,6 +131,16 @@ function tripal_analysis_blast_nodeapi(&$node, $op, $teaser, $page) {
          break;
 	}
 }
+
+/**
+ * Implements hook_theme_registry_alter().
+ */
+function tripal_analysis_blast__theme_registry_alter(&$info) {
+  // Inject our module into the node theme registry as being an available theme
+  // path so that we can override the node template for our content type.
+  array_splice($info['node']['theme paths'], 1, 0, array(drupal_get_path('module', 'tripal_analysis_blast')));
+}
+
 /************************************************************************
  *  We need to let drupal know about our theme functions and their arguments.
  *  We create theme functions to allow users of the module to customize the
@@ -143,7 +153,7 @@ function tripal_analysis_blast_theme () {
          'arguments' => array('node'),
 		),
 		'node__chado_analysis_blast' => array(
-		'template' => 'node--chado-analysis-blast.tpl.php',
+		'template' => 'node--chado-analysis-blast',
 		'arguments' => array('node'=>null),
 		),
 		'tripal_feature_blast_results' => array(
