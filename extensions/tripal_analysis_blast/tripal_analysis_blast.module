@@ -13,7 +13,6 @@ function tripal_analysis_blast_init(){
 	// drupal_add_js( drupal_get_path('theme', 'tripal').'/js/tripal_analysis_blast.js');
 	drupal_add_css(drupal_get_path('module', 'tripal_analysis_blast') .'/css/tripal_analysis_blast.css');
 	drupal_add_js(drupal_get_path('module', 'tripal_analysis_blast') .'/js/tripal_analysis_blast.js');
-	dpm('helloinit', 'hello');
 }
 
 /*******************************************************************************
@@ -149,13 +148,12 @@ function tripal_analysis_blast_theme_registry_alter(&$info) {
 function tripal_analysis_blast_theme () {
 	$theme = array(
       'tripal_analysis_blast_results_index_version' => array (
-      // 'node__chado_analysis_blast' => array (
          'arguments' => array('node'),
 		),
-		'node_chado_analysis_blast' => array(
-		'template' => 'node-chado-analysis-blast',
-		'arguments' => array('node'=>null),
-		),
+	//	'node_chado_analysis_blast' => array(
+	//	'template' => 'node-chado-analysis-blast',
+	//	'arguments' => array('node'=>null),
+	//	),
 		'tripal_feature_blast_results' => array(
 			'template' => 'tripal-feature-blast-results',
 			'arguments' =>  array('node'=> null),
@@ -198,7 +196,6 @@ function tripal_analysis_blast_preprocess_tripal_feature_blast_results(&$variabl
    }
 
    $blast_results = tripal_get_feature_blast_results($feature->feature_id, $db_id, $max);
-	 dpm($blast_results, 'blast_resulst');
    $feature->tripal_analysis_blast->blast_results_list = $blast_results;
 	 
 	 

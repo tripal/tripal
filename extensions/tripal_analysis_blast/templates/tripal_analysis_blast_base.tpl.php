@@ -9,7 +9,6 @@ $analysis = tripal_core_expand_chado_vars($analysis,'field','analysis.descriptio
 $blast = $node->analysis->tripal_analysis_blast;
 
 //dpm($analysis);
-dpm('tripal-analysis-base','template');
 
 ?>
 <div id="tripal_analysis_blast-base-box" class="tripal_analysis_blast-info-box tripal-info-box">

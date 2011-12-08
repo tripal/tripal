@@ -24,15 +24,16 @@
 <?php
  //uncomment this line to see a full listing of the fields avail. to $node
  //print '<pre>'.print_r($variables,TRUE).'</pre>';
-// drupal_add_css('./tripal-node-templates.css');
-drupal_add_css('./css/tripal-node-templates.css');
-dpm('node -- chado is running' ,'template');
+ //drupal_add_css('./tripal-node-templates.css');
+drupal_add_css(drupal_get_path('theme', 'tripal') . '/tripal-node-templates.css');
+//this makes tripal required as theme-------^  !!!
+                                          
 $node = $variables['node'];
 $organism = $variables['node']->organism;
 ?>
 
 <?php if ($teaser) { 
-  include('tripal_analysis_blast/tripal_analysis_blast_teaser.tpl.php'); 
+	include('templates/tripal_analysis_blast_teaser.tpl.php');
 } else { ?>
 
 <script type="text/javascript">
@@ -84,7 +85,7 @@ if (Drupal.jsEnabled) {
 <div id="tripal_analysis_blast_details" class="tripal_details">
 
    <!-- Basic Details Theme -->
-   <?php include('tripal_analysis_blast/tripal_analysis_blast_base.tpl.php'); dpm('hello', 'hello')?>
+   <?php include('templates/tripal_analysis_blast_base.tpl.php');?>
 
    <?php print $content ?>
 </div>
