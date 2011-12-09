@@ -446,6 +446,7 @@ function tripal_analysis_unigene_theme_registry_alter(&$info) {
  *  look and feel of the output generated in this module
  */
 function tripal_analysis_unigene_theme () {
+	$path = drupal_get_path('module', 'tripal_analysis_unigene') . '/theme';
    return array(
       'tripal_analysis_unigene_search_index' => array (
          'arguments' => array('node'),
@@ -456,14 +457,12 @@ function tripal_analysis_unigene_theme () {
       'tripal_organism_unigenes' => array (
          'arguments' => array('node'=> null),
          'template' => 'tripal_organism_unigenes',
-      ),
-      'tripal_feature_unigenes' => array (
-         'arguments' => array('node'=> null),
-         'template' => 'tripal_feature_unigenes',
+         'path' => $path . '/tripal_feature',
       ),
       'tripal_analysis_unigene_base' => array (
          'arguments' => array('node'=> null),
          'template' => 'tripal_analysis_unigene_base',
+         'path' => $path . '/tripal_analysis_unigene',
       ),
    );
 }
