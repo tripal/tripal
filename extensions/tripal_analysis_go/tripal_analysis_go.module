@@ -4,9 +4,9 @@ require_once "includes/gaf_loader.inc";
 
 function tripal_analysis_go_init(){
    // Add style sheet
-   drupal_add_css(drupal_get_path('module', 'tripal_analysis_go').'/css/tripal_analysis_go.css');
+   drupal_add_css(drupal_get_path('module', 'tripal_analysis_go').'/theme/css/tripal_analysis_go.css');
 
-   drupal_add_js(drupal_get_path('module', 'tripal_analysis_go').'/js/tripal_analysis_go.js');
+   drupal_add_js(drupal_get_path('module', 'tripal_analysis_go').'/theme/js/tripal_analysis_go.js');
 }
 
 /*******************************************************************************
@@ -199,8 +199,8 @@ function tripal_analysis_go_nodeapi(&$node, $op, $teaser, $page) {
  *  look and feel of the output generated in this module
  */
 function tripal_analysis_go_theme () {
+	$path = drupal_get_path('module', 'tripal_analysis_go') . '/theme';
    return array(
-   	  
       'tripal_analysis_go_search_index' => array (
          'arguments' => array('node'),
       ),
@@ -209,11 +209,13 @@ function tripal_analysis_go_theme () {
       ),
       'tripal_organism_go_summary' => array (
          'arguments' => array('node'=> null),
-         'template' => 'templates/tripal_organism/tripal_organism_go_summary',
+         'template' => 'tripal_organism_go_summary',
+         'path' => $path . '/tripal_organism',
       ),
       'tripal_feature_go_terms' => array (
          'arguments' => array('node'=> null),
-         'template' => 'templates/tripal_feature/tripal_feature_go_terms',
+         'template' => 'tripal_feature_go_terms',
+         'path' => $path . '/tripal_feature',
       )
    );
 }
