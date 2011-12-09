@@ -1,6 +1,6 @@
 <?php
 
-require_once "parse_blast_XML.inc";
+require_once "includes/parse_blast_XML.inc";
 
 
 /*******************************************************************************
@@ -9,8 +9,6 @@ require_once "parse_blast_XML.inc";
  ******************************************************************************/
 function tripal_analysis_blast_init(){
 	// Add javascript and style sheet
-	// drupal_add_css(drupal_get_path('theme', 'tripal').'/css/tripal_analysis_blast.css');
-	// drupal_add_js( drupal_get_path('theme', 'tripal').'/js/tripal_analysis_blast.js');
 	drupal_add_css(drupal_get_path('module', 'tripal_analysis_blast') .'/css/tripal_analysis_blast.css');
 	drupal_add_js(drupal_get_path('module', 'tripal_analysis_blast') .'/js/tripal_analysis_blast.js');
 }
@@ -134,11 +132,14 @@ function tripal_analysis_blast_nodeapi(&$node, $op, $teaser, $page) {
 /**
  * Implements hook_theme_registry_alter().
  */
+
 function tripal_analysis_blast_theme_registry_alter(&$info) {
   // Inject our module into the node theme registry as being an available theme
   // path so that we can override the node template for our content type.
   array_splice($info['node']['theme paths'], 1, 0, array(drupal_get_path('module', 'tripal_analysis_blast')));
 }
+
+
 
 /************************************************************************
  *  We need to let drupal know about our theme functions and their arguments.
@@ -150,20 +151,16 @@ function tripal_analysis_blast_theme () {
       'tripal_analysis_blast_results_index_version' => array (
          'arguments' => array('node'),
 		),
-	//	'node_chado_analysis_blast' => array(
-	//	'template' => 'node-chado-analysis-blast',
-	//	'arguments' => array('node'=>null),
-	//	),
 		'tripal_feature_blast_results' => array(
-			'template' => 'tripal-feature-blast-results',
+			'template' => 'templates/tripal_feature_blast_results',
 			'arguments' =>  array('node'=> null),
 		),
 		'tripal_analysis_blast_report' => array(
-			'template' => 'tripal-analysis-blast-report',
+			'template' => 'templates/tripal_analysis_blast_report',
 			'arguments' =>  array('report_object'=> null),
 		),
 		'tripal_analysis_blast_base' => array(
-			'template' => 'tripal-analysis-blast-base',
+			'template' => 'templates/tripal_analysis_blast_base',
 			'arguments' =>  array('report_object'=> null),
 		)
 	);
