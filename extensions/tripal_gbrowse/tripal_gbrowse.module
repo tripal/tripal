@@ -135,6 +135,15 @@ function tripal_gbrowse_menu() {
   return $items;
 }
 
+/**
+ * Implements hook_theme_registry_alter().
+ */
+function tripal_gbrowse_theme_registry_alter(&$info) {
+  // Inject our module into the node theme registry as being an available theme
+  // path so that we can override the node template for our content type.
+  array_splice($info['node']['theme paths'], 1, 0, array(drupal_get_path('module', 'tripal_gbrowse')));
+}
+
 
 /**
  * Implements hook_theme(): Register themeing functions for this module
@@ -148,27 +157,34 @@ function tripal_gbrowse_menu() {
  */
 function tripal_gbrowse_theme() {
 	
+	$path = drupal_get_path('module', 'tripal_gbrowse_theme') . '/theme/tripal_gbrowse';
+	
 	return array(
     // Block Templates------------------------------
     'tripal_gbrowse_database_details' => array (
       'arguments' => array('node'=> null),
       'template' => 'tripal_gbrowse_database_details',
+      'path' => $path,
     ),
     'tripal_gbrowse_details' => array (
       'arguments' => array('node'=> null),
       'template' => 'tripal_gbrowse_details',
+      'path' => $path,
     ),
     'tripal_gbrowse_gbrowse_instance' => array (
       'arguments' => array('node'=> null),
       'template' => 'tripal_gbrowse_gbrowse_instance',
+      'path' => $path,
     ),
     'tripal_gbrowse_teaser' => array (
       'arguments' => array('node'=> null),
       'template' => 'tripal_gbrowse_teaser',
+      'path' => $path,
     ),
     'tripal_gbrowse_loaded_sources' => array (
       'arguments' => array('node'=> null),
       'template' => 'tripal_gbrowse_loaded_sources',
+      'path' => $path,
     ),
 	);
 }
