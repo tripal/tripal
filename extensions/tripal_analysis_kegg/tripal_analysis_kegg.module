@@ -892,17 +892,17 @@ function tripal_analysis_kegg_theme () {
       'tripal_organism_kegg_summary' => array (
          'arguments' => array('node'=> null),
          'template' => 'tripal_organism_kegg_summary',
-         'path' => $path . 'tripal_organism',
+         'path' => $path . '/tripal_organism',
       ),
       'tripal_feature_kegg_terms' => array (
          'arguments' => array('node'=> null),
          'template' => 'tripal_feature_kegg_terms',
-         'path' => $path . 'tripal_feature',
+         'path' => $path . '/tripal_feature',
       ),
       'tripal_analysis_kegg_report' => array (
          'arguments' => array('node'=> null),
          'template' => 'tripal_analysis_kegg_report',
-         'path' => $path . 'tripal_analysis_kegg',
+         'path' => $path . '/tripal_analysis_kegg',
       ),
    );
 }
