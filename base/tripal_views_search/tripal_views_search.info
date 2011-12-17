@@ -1,0 +1,7 @@
+name = Tripal Views Search
+description = Tripal suite module to perform searches as views, instead of the built in drupal search
+core = 6.x
+package = Tripal
+
+dependencies[] = schema
+

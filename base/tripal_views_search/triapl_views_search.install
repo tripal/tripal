@@ -1,0 +1,53 @@
+<?php
+function tripal_views_search_schema(){
+        $schema['tripal_views_search'] = array(
+                'description' => 'contains the searches, their materialized view id and base table name that was used.',
+                'fields' => array(
+                        'tripal_search_id' => array(
+                                'description' => 'the id of the search',
+                                'type' => 'serial',
+                                'unsigned' => TRUE,
+                                'not null' => TRUE,
+                        ),
+                        'mview_id' => array(
+                                'description' => 'the materialized view used for this search',
+                                'type' => 'int',
+                                'unsigned' => TRUE,
+                                'not null' => FALSE,
+                                'default' => NULL,
+                        ),
+                        'base_table_name' => array(
+                                'description' => 'the base table name to be used when using this search',
+                                'type' => 'varchar',
+                                'length' => 255,
+                                'unsigned' => TRUE,
+                                'not null' => FALSE,
+                                'default' => NULL,
+                        ),
+                ),
+                'uique_keys' => array(
+                        'tripal_search_id' => array('tripal_search_id'),
+                ),
+        );
+        // $schema['tripal_mviews_join'] = array();
+        // $schema['tripal_views_handlers'] = array();
+        return $schema;
+}
+
+function tripal_views_search_install(){
+        drupal_install_schema('tripal_views_search');
+}
+
+function tripal_views_serach_uninstall(){
+        drupal_uninstall_schema('tripal_views_search');
+}
+
+
+/*
+ * NOTE: when updating schema for this module's tables
+ * follow api of schema module, otherwise on uninstall
+ * the tables will not be removed correctly
+ *
+ */
+
+
