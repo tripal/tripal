@@ -14,22 +14,19 @@ function tripal_views_search_schema(){
 				'description' => 'the materialized view used for this search',
 				'type' => 'int',
 				'unsigned' => TRUE,
-				'not null' => FALSE,
 			),
 			'base_table_name' => array(
 				'description' => 'the base table name to be used when using this search',
+				'type' => 'varchar',
 				'length' => 255,
 				'not null' => TRUE,
 				'default' => '',
 			),
 		),
-		'uique_keys' => array(
+		'unique_keys' => array(
 			'tripal_search_id' => array('tripal_search_id'),
 		),
 		'primary key' => array('tripal_search_id'),
-		'indexes' => array(
-			'tripal_search_id' => array('tripal_search_id'),
-		),
 	);
 	// $schema['tripal_mviews_join'] = array();
 	// $schema['tripal_views_handlers'] = array();
@@ -40,7 +37,7 @@ function tripal_views_search_install(){
 	drupal_install_schema('tripal_views_search');
 }
 
-function tripal_views_serach_uninstall(){
+function tripal_views_search_uninstall(){
 	drupal_uninstall_schema('tripal_views_search');l
 }
 

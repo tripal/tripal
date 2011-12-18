@@ -1,5 +1,1 @@
 <?php
-
-function tripal_views_search(){
-	//dummy function
-}
