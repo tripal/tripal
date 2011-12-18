@@ -903,27 +903,32 @@ function chado_library_validate($node){
  */
 function chado_library_insert($node){
 
-   // get the library type id
-   $values = array(
-      'cv_id' => array(
-         'name' => 'tripal'
-      ),
-      'name' => $node->library_type
-   );
-   $type = tripal_core_chado_select('cvterm',array('cvterm_id'),$values);
-
-   $values = array(
-      'name' => $node->title,
-      'uniquename' => $node->uniquename,
-      'organism_id' => $node->organism_id,
-      'type_id' => $type[0]->cvterm_id
-   );
-   $library = tripal_core_chado_insert('library', $values);
+  if ($node->library_id) {
+    $library['library_id'] = $node->library_id;
+  } else {
+     // get the library type id
+     $values = array(
+        'cv_id' => array(
+           'name' => 'tripal'
+        ),
+        'name' => $node->library_type
+     );
+     $type = tripal_core_chado_select('cvterm',array('cvterm_id'),$values);
+  
+     $values = array(
+        'name' => $node->title,
+        'uniquename' => $node->uniquename,
+        'organism_id' => $node->organism_id,
+        'type_id' => $type[0]->cvterm_id
+     );
+     $library = tripal_core_chado_insert('library', $values);
+   }
+   
    if ($library) {
        // add the description property
       tripal_library_insert_property($library['library_id'],'library_description',$node->library_description);
 
-      // make sure the entry for this feature doesn't already exist in the chado_feature table
+      // make sure the entry for this feature doesn't already exist in the chado_library table
       // if it doesn't exist then we want to add it.
       $library_id = chado_get_id_for_node('library',$node) ;
       if(!$library_id){
@@ -1169,6 +1174,7 @@ function tripal_library_sync_libraries ($library_id = NULL, $job_id = NULL){
           "WHERE library_id = %d";
 
    while($library = db_fetch_object($results)){
+    
       // check if this library already exists in the drupal database. if it
       // does then skip this library and go to the next one.
       if(!db_fetch_object(db_query($sql,$library->library_id))){
@@ -1183,15 +1189,20 @@ function tripal_library_sync_libraries ($library_id = NULL, $job_id = NULL){
          $new_node->type_id = $library->type_id;
 
          node_validate($new_node);
-         if(!form_get_errors()){
+         $errors = form_get_errors();
+         if(!$errors){
             $node = node_submit($new_node);
             node_save($node);
             if($node->nid){
-               $page_content .= "Added $library->name<br>";
+              print "Added ".$library->name."\n";
+            } else {
+              print "ERROR: Unable to create ".$library->name."\n";
             }
+         } else {
+           print "ERROR: Unable to create ".$library->name."\n".print_r($errors, TRUE)."\n";
          }
       } else {
-         $page_content .= "Skipped $library->name<br>";
+         print "Skipped ".$library->name."\n";
       }
    }
    return $page_content;
