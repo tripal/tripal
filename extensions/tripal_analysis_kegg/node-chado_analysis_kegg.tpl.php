@@ -30,7 +30,7 @@ $organism = $variables['node']->organism;
 ?>
 
 <?php if ($teaser) { 
-  include('tripal_analysis_kegg/tripal_analysis_kegg_teaser.tpl.php'); 
+  include(drupal_get_path('module', 'tripal_analysis_kegg') . '/theme/tripal_analysis_kegg/tripal_analysis_kegg_teaser.tpl.php'); 
 } else { ?>
 
 <script type="text/javascript">
@@ -83,8 +83,8 @@ if (Drupal.jsEnabled) {
 <div id="tripal_analysis_kegg_details" class="tripal_details">
 
    <!-- Basic Details Theme -->
-   <?php include('tripal_analysis_kegg/tripal_analysis_kegg_base.tpl.php'); ?>
-   <?php include('tripal_analysis_kegg/tripal_analysis_kegg_report.tpl.php'); ?>
+   <?php include(drupal_get_path('module', 'tripal_analysis_kegg') . '/theme/tripal_analysis_kegg/tripal_analysis_kegg_base.tpl.php'); ?>
+   <?php include(drupal_get_path('module', 'tripal_analysis_kegg') . '/theme/tripal_analysis_kegg/tripal_analysis_kegg_report.tpl.php'); ?>
 
    <?php print $content ?>
 </div>

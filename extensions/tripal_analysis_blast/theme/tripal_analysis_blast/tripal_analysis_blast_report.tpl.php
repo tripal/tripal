@@ -22,7 +22,7 @@ $hits = $report->hits;
 
 <div id="tripal_ajaxLoading" style="display:none">
 	<div id="loadingText">Loading...</div>
-	<img src="<?php print url("sites/all/themes/theme_tripal/images/ajax-loader.gif") ?>">
+	<img src="<?php print url(drupal_get_path('theme', 'tripal') . '/images/ajax-loader.gif') ?>">
 </div>
 
 <div id="blast-hits-report">
