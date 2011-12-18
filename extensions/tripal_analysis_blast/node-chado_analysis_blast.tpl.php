@@ -33,7 +33,7 @@ $organism = $variables['node']->organism;
 ?>
 
 <?php if ($teaser) { 
-	include('templates/tripal_analysis_blast_teaser.tpl.php');
+	include(drupal_get_path('module' , 'tripal_analysis_blast') . '/theme/tripal_analysis_blast/tripal_analysis_blast_teaser.tpl.php');
 } else { ?>
 
 <script type="text/javascript">
