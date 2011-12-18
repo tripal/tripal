@@ -18,7 +18,6 @@ function tripal_views_search_schema(){
 				),
 			'base_table_name' => array(
 				'description' => 'the base table name to be used when using this search',
-				'type' => 'varchar',
 				'length' => 255,
 				'unsigned' => TRUE,
 				'not null' => FALSE,
