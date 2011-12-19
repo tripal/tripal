@@ -1,1 +1,52 @@
 <?php
+
+function tripal_views_search_menu(){
+	$items = array();
+	
+	$items['admin/settings/tripal_views_search'] = array(
+	  'title' => t('Tripal Views Search settings'),
+	  'description' => t('Tripal Views Search settings page, allows you to select which materialized views and chado tables to use for searches.'),
+	  'page callback' => 'drupal_get_form',
+	  'page arguments' => array('tripal_views_search_admin'),
+	  'access arguments' => array('access administration pages'),
+	  'type' => MENU_NORMAL_ITEM,
+	);
+	
+	return $items;
+}
+
+function tripal_views_search_admin(){
+	$form = array();
+	
+	$form['tripal_views_search_config_mview'] = array(
+		'#type' => 'textfield',
+		'#title' => t('Materialized View'),
+		'#default_value' => variable_get('tripal_views_search_config_mview', 'amview'),
+		'#size' => 2,
+		'#maxlength' => 2,
+		'#description' => t('Select which materialized view needs to be used for this search'),
+		'#required' => TRUE,
+	);
+	
+	$form['tripal_views_search_config_btable'] = array(
+			'#type' => 'textfield',
+			'#title' => t('Chado base table'),
+			'#default_value' => variable_get('tripal_views_search_config_btable', 'achadotable'),
+			'#size' => 2,
+			'#maxlength' => 2,
+			'#description' => t('Select which chado table needs to be used for this earch'),
+			'#required' => TRUE,
+	);
+	
+	return system_settings_form($form);
+}
+
+/* this needs to go into the function tripal_views_search_block()
+$limitnum = variable_get("onthisdate_maxdisp", 3);
+
+$query = "SELECT nid, title, created FROM " .
+           "{node} WHERE created >= %d " .
+           "AND created <= %d";
+
+$query_result = db_query_range($query, $start_time, $end_time, 0, $limitnum);
+*/
