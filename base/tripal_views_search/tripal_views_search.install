@@ -28,8 +28,60 @@ function tripal_views_search_schema(){
 		),
 		'primary key' => array('tripal_search_id'),
 	);
-	// $schema['tripal_mviews_join'] = array();
-	// $schema['tripal_views_handlers'] = array();
+	$schema['tripal_mviews_join'] = array(
+		'description' => 'which materialzed views and chado tables to join in a given search',
+		'fields' => array(
+			'tripal_search_id' => array(
+				'description' => 'tripal search id from tripal_views_search table',
+				'type' => 'serial',
+				'unsigned' => TRUE,
+				'not null'=> TRUE,
+			),
+			'view_column' => array(
+				'description' => 'materialized view name and column',
+				'type' => 'varchar',
+				'length' => '255',
+				'not null' => TRUE,
+				'default' => '',
+			),
+			'chado_column' => array(
+				'description' => 'which chado table and column is to be linked up to materialized view in this serach',
+				'type' => 'varchar',
+				'length' => '255',
+				'not null' => TRUE,
+				'default' => '',
+			),
+		),
+		'unique_keys' => array(
+			'tripal_search_id' => array('tripal_search_id'),
+		),
+		'primary key' => array('tripal_search_id'),
+	);
+	$schema['tripal_views_handlers'] = array(
+		'description' => 'in formation for views: column and views handler name',
+		'fields' => array(
+			'tripal_search_id' => array(
+				'description' => 'which search this is used by from tripal_views_search table',
+					'type' => 'serial',
+					'unsigned' => TRUE,
+					'not null'=> TRUE,
+			),
+			'column_name' => array(
+				'description' => '',
+				'type' => 'varchar',
+				'length' => '255',
+				'not null' => TRUE,
+				'default' => '',
+			),
+			'handler_name' => array(
+				'description' => 'name of the views handler to be used for this particular search',
+				'type' => 'varchar',
+				'length' => '255',
+				'not null' => TRUE,
+				'default' => '',
+			),
+		), 
+	);
 	return $schema;
 }
 
@@ -38,7 +90,7 @@ function tripal_views_search_install(){
 }
 
 function tripal_views_search_uninstall(){
-	drupal_uninstall_schema('tripal_views_search');l
+	drupal_uninstall_schema('tripal_views_search');
 }
 
 
