@@ -67,3 +67,30 @@ function tripal_views_search_btable_list(){
 
 	return $options;
 }
+
+/**
+ * 
+ * Use this hook for the admin form page,
+ * once changes are saved, use this to update
+ * the tripal_views_search related tables.
+ * 
+ * @param array $form
+ * @param array $form_state
+ * @param int $form_id
+ */
+function tripal_views_search_form_alter(&$form, &$form_state, $form_id){
+	if(strstr('tripal-views-search-admin', $form['#id'] != FALSE)){
+		$form['#submit']['tripal_views_search_admin_submit'] = array();
+	}
+}
+
+/**
+ * 
+ * the actual submit callback function
+ * @param int $form_id
+ * @param array $form_values
+ */
+function tripal_views_search_admin_submit($form_id, &$form_values){
+	//populate db tables based on settings
+}
+
