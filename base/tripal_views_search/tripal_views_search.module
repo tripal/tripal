@@ -19,23 +19,19 @@ function tripal_views_search_admin(){
 	$form = array();
 	
 	$form['tripal_views_search_config_mview'] = array(
-		'#type' => 'textfield',
+		'#type' => 'select',
 		'#title' => t('Materialized View'),
-		'#default_value' => variable_get('tripal_views_search_config_mview', 'amview'),
-		'#size' => 2,
-		'#maxlength' => 2,
+		'#options' => tripal_views_search_mview_list(),
 		'#description' => t('Select which materialized view needs to be used for this search'),
 		'#required' => TRUE,
 	);
 	
 	$form['tripal_views_search_config_btable'] = array(
-			'#type' => 'textfield',
-			'#title' => t('Chado base table'),
-			'#default_value' => variable_get('tripal_views_search_config_btable', 'achadotable'),
-			'#size' => 2,
-			'#maxlength' => 2,
-			'#description' => t('Select which chado table needs to be used for this earch'),
-			'#required' => TRUE,
+		'#type' => 'select',
+		'#title' => t('Chado base table'),
+		'#options' => tripal_views_search_btable_list(),
+		'#description' => t('Select which chado table needs to be used for this earch'),
+		'#required' => TRUE,
 	);
 	
 	return system_settings_form($form);
@@ -50,3 +46,24 @@ $query = "SELECT nid, title, created FROM " .
 
 $query_result = db_query_range($query, $start_time, $end_time, 0, $limitnum);
 */
+
+//TODO: validation for the admin pages
+
+
+function tripal_views_search_mview_list(){
+	//must return an array of strings ie:
+	$options = array(
+		'dummyoption' => t('dummyoptiontext'),
+	);
+
+	return $options;
+}
+
+function tripal_views_search_btable_list(){
+	//must return an array of strings ie:
+	$options = array(
+		'dummyoption2' => t('dummyoptiontext2'),
+	);
+
+	return $options;
+}
