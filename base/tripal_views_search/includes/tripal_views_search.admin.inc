@@ -2,9 +2,10 @@
 
 function tripal_views_search_admin(){
 	$add_url = url('admin/tripal/tripal_views_search/new');
-	$output = "<a href=\"$add_url\">Add New Search";
+	$output = "<div id='add-new-search'><a href=\"$add_url\">Add New Search</a><div>";
 	$output .= drupal_get_form(tripal_views_search_admin_form);
 	
+	dsm($output, 'tvs admin output');
 	return $output;
 }
 
