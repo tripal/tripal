@@ -5,15 +5,53 @@ require_once 'includes/tripal_views_search.admin.inc';
 function tripal_views_search_menu(){
 	$items = array();
 	
-	$items['admin/settings/tripal_views_search'] = array(
+	//parents admin page TODO: figure out what to do here: add / remove searches
+	$items['admin/tripal/tripal_views_search'] = array(
 	  'title' => t('Tripal Views Search settings'),
-	  'description' => t('Tripal Views Search settings page, allows you to select which materialized views and chado tables to use for searches.'),
-	  'page callback' => 'drupal_get_form',
-	  'page arguments' => array('tripal_views_search_admin'),
+	  'description' => t('Tripal Views Search settings page, allows you to select and create materialized views and chado tables to use for searches.'),
+	  'page callback' => 'tripal_views_search_admin',
+	  // 'page arguments' => array('tripal_views_search_admin'),
 	  'access arguments' => array('access administration pages'),
 	  'type' => MENU_NORMAL_ITEM,
 	);
 	
+	/////////////////////////////////
+	
+	 // managing relationship aggregates
+   // $items['admin/tripal/tripal_feature/aggregate'] = array(
+     // 'title' => 'Feature Relationship Aggegators',
+     // 'description' => t('Features have relationships with other features and it may be desirable to aggregate the content from one ore more child or parent feature.'),
+     // 'page callback' => 'tripal_feature_aggregator_page',
+     // 'access arguments' => array('manage chado_feature aggregator'),
+     // 'type' => MENU_NORMAL_ITEM,
+   // );
+	
+	
+	//////////////////////////
+	
+	//page to actually create searche->mview->chado table relationships
+ 	$items['admin/tripal/tripal_views_search/new'] = array(
+		 'title' => 'Create New Search',
+     'page callback' => 'drupal_get_form',
+     'page arguments' => array('tripal_views_search_new_search_form'),
+     'access arguments' => array('access administration pages'), //TODO: figure out the proper permissions arguments
+     'type' => MENU_NORMAL_ITEM,
+ 	);
+	
 	return $items;
 }
+
+
+/* this needs to go into the function tripal_views_search_block()
+ $limitnum = variable_get("onthisdate_maxdisp", 3);
+
+$query = "SELECT nid, title, created FROM " .
+"{node} WHERE created >= %d " .
+"AND created <= %d";
+
+$query_result = db_query_range($query, $start_time, $end_time, 0, $limitnum);
+*/
+
+//TODO: validation for the admin pages
+
 
