@@ -15,20 +15,6 @@ function tripal_views_search_menu(){
 	  'type' => MENU_NORMAL_ITEM,
 	);
 	
-	/////////////////////////////////
-	
-	 // managing relationship aggregates
-   // $items['admin/tripal/tripal_feature/aggregate'] = array(
-     // 'title' => 'Feature Relationship Aggegators',
-     // 'description' => t('Features have relationships with other features and it may be desirable to aggregate the content from one ore more child or parent feature.'),
-     // 'page callback' => 'tripal_feature_aggregator_page',
-     // 'access arguments' => array('manage chado_feature aggregator'),
-     // 'type' => MENU_NORMAL_ITEM,
-   // );
-	
-	
-	//////////////////////////
-	
 	//page to actually create searche->mview->chado table relationships
  	$items['admin/tripal/tripal_views_search/new'] = array(
 		 'title' => 'Create New Search',

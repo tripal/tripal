@@ -29,6 +29,13 @@ function tripal_views_search_schema(){
 				'not null' => TRUE,
 				'default' => '0',
 			),
+			'name' => array(
+				'description' => 'Human readable name of this search',
+				'type' => 'varchar',
+				'length' => 255,
+				'not null' => TRUE,
+				'default' => '',
+			),
 		),
 		'unique_keys' => array(
 			'tripal_search_id' => array('tripal_search_id'),

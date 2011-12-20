@@ -11,8 +11,38 @@ function tripal_views_search_admin(){
 
 
 function tripal_views_search_admin_form(){
+	
+	$query_resulst = db_query('SELECT * FROM public.tripal_views_search;');
+	
 	$form = array();
+	$int_i = 0; 
+	while($record = db_fetch_object($query_resulst)){
+		dpm($record, 'record' . (string)$int_i);
+		
+		$item_name = 'query-record-' . (string)$int_i; 
+		$form[$item_name] = array(
+			'#type' => '#checkbox',
+			'#title' => t('Search '),
+			'#description' => t('')
+		);
+		
+	 	$int_i++;	
+	}
+	
 
+	return system_settings_form($form);
+}
+
+function tripal_views_search_new_search_form(){
+	$form = array();
+		$form['tripal_views_search_config_mview'] = array(
+		'#type' => 'textfield',
+		'#title' => t('Materialized View'),
+		'#description' => t('Select which materialized view needs to be used for this search'),
+		'#required' => TRUE,
+	);
+	
+	/*
 	$form['tripal_views_search_config_mview'] = array(
 		'#type' => 'select',
 		'#title' => t('Materialized View'),
@@ -30,17 +60,9 @@ function tripal_views_search_admin_form(){
 	);
 
 	dpm($form, 'tripal_views_search_admin form');
-	return system_settings_form($form);
-}
-
-function tripal_views_search_new_search_form(){
-	$form = array();
-		$form['tripal_views_search_config_mview'] = array(
-		'#type' => 'textfield',
-		'#title' => t('Materialized View'),
-		'#description' => t('Select which materialized view needs to be used for this search'),
-		'#required' => TRUE,
-	);
+	 */
+	
+	
 	return $form;
 }
 
