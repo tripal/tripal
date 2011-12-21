@@ -1,36 +1,36 @@
 <?php
-function tripal_views_search_schema(){
+function tripal_views_setup_schema(){
 	$schema = array();
-	$schema['tripal_views_search'] = array(
-		'description' => 'contains the searches, their materialized view id and base table name that was used.',
+	$schema['tripal_views_setup'] = array(
+		'description' => 'contains the setupes, their materialized view id and base table name that was used.',
 		'fields' => array(
-			'tripal_search_id' => array(
-				'description' => 'the id of the search',
+			'setup_id' => array(
+				'description' => 'the id of the setup',
 				'type' => 'serial',
 				'unsigned' => TRUE,
 				'not null' => TRUE,
 			),
 			'mview_id' => array(
-				'description' => 'the materialized view used for this search',
+				'description' => 'the materialized view used for this setup',
 				'type' => 'int',
 				'unsigned' => TRUE,
 			),
 			'base_table_name' => array(
-				'description' => 'the base table name to be used when using this search',
+				'description' => 'the base table name to be used when using this setup',
 				'type' => 'varchar',
 				'length' => 255,
 				'not null' => TRUE,
 				'default' => '',
 			),
 			'status' => array(
-				'description' => 'Weather this search will be used: 0 = inactive, 1 = active.',
+				'description' => 'Weather this setup will be used: 0 = inactive, 1 = active.',
 				'type' => 'int',
 				'unsigned' => TRUE,
 				'not null' => TRUE,
 				'default' => '0',
 			),
 			'name' => array(
-				'description' => 'Human readable name of this search',
+				'description' => 'Human readable name of this setup',
 				'type' => 'varchar',
 				'length' => 255,
 				'not null' => TRUE,
@@ -38,15 +38,15 @@ function tripal_views_search_schema(){
 			),
 		),
 		'unique_keys' => array(
-			'tripal_search_id' => array('tripal_search_id'),
+			'setup_id' => array('setup_id'),
 		),
-		'primary key' => array('tripal_search_id'),
+		'primary key' => array('setup_id'),
 	);
 	$schema['tripal_mviews_join'] = array(
-		'description' => 'which materialzed views and chado tables to join in a given search',
+		'description' => 'which materialzed views and chado tables to join in a given setup',
 		'fields' => array(
-			'tripal_search_id' => array(
-				'description' => 'tripal search id from tripal_views_search table',
+			'setup_id' => array(
+				'description' => 'tripal setup id from tripal_views_setup table',
 				'type' => 'serial',
 				'unsigned' => TRUE,
 				'not null'=> TRUE,
@@ -67,15 +67,15 @@ function tripal_views_search_schema(){
 			),
 		),
 		'unique_keys' => array(
-			'tripal_search_id' => array('tripal_search_id'),
+			'setup_id' => array('setup_id'),
 		),
-		'primary key' => array('tripal_search_id'),
+		'primary key' => array('setup_id'),
 	);
 	$schema['tripal_views_handlers'] = array(
 		'description' => 'in formation for views: column and views handler name',
 		'fields' => array(
-			'tripal_search_id' => array(
-				'description' => 'which search this is used by from tripal_views_search table',
+			'setup_id' => array(
+				'description' => 'which setup this is used by from tripal_views_setup table',
 					'type' => 'serial',
 					'unsigned' => TRUE,
 					'not null'=> TRUE,
@@ -88,7 +88,7 @@ function tripal_views_search_schema(){
 				'default' => '',
 			),
 			'handler_name' => array(
-				'description' => 'name of the views handler to be used for this particular search',
+				'description' => 'name of the views handler to be used for this particular setup',
 				'type' => 'varchar',
 				'length' => '255',
 				'not null' => TRUE,
@@ -99,12 +99,12 @@ function tripal_views_search_schema(){
 	return $schema;
 }
 
-function tripal_views_search_install(){
-	drupal_install_schema('tripal_views_search');
+function tripal_views_setup_install(){
+	drupal_install_schema('tripal_views_setup');
 }
 
-function tripal_views_search_uninstall(){
-	drupal_uninstall_schema('tripal_views_search');
+function tripal_views_setup_uninstall(){
+	drupal_uninstall_schema('tripal_views_setup');
 }
 
 
