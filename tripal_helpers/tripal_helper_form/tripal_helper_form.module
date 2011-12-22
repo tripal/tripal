@@ -1,0 +1,46 @@
+<? php
+
+
+/**
+ * taken from http://www.akchauhan.com/create-drupal-form-using-theme_table-like-module-list-form/
+ * following as function theme_featured_product_form($form)
+ */
+function theme_tripal_helper_form_form($form, $field_keys){
+	$rows = array();
+	foreach (element_children($form) as $key) {
+		$row = array();
+		if (isset($form[$key]['name'])) {
+ 
+			$status = drupal_render($form['featured'][$key]);
+			$row[] = array(’data’ => $status, ‘class’ => ‘checkbox’);
+ 
+ 			$bool_first = TRUE;
+ 			foreach ($field_keys as $field_key => $value) {
+				if($bool_first){
+					$row[] = ‘‘. drupal_render($form[$key][$field_keys[$field_key]]) .’‘;//for "bold style"
+					$bool_first = FALSE;
+				}
+				else{
+					$row[] = array(’data’ => drupal_render($form[$key][$field_keys[$field_key]]);
+				}
+			}
+ 
+		
+ 
+			$rows[] = $row;
+		}
+	}
+ 
+	// Individual table headers.
+	$header = array();
+	$header[] = array(’data’ => t(’Featured’), ‘class’ => ‘checkbox’);
+	$header[] = t(’Name’);
+	$header[] = t(’Category’);
+	$header[] = t(’Discount’);
+	$header[] = t(’Created on’);
+ 
+	$output = theme(’table’, $header, $rows);
+	$output .= drupal_render($form);
+	return $output;
+}
+

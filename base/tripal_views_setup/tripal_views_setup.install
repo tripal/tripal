@@ -36,6 +36,13 @@ function tripal_views_setup_schema(){
 				'not null' => TRUE,
 				'default' => '',
 			),
+			'description' => array(
+				'description' => 'description of this row',
+				'type' => 'varchar',
+				'length' => 255,
+				'not null' => TRUE,
+				'default' => '',
+			),
 		),
 		'unique_keys' => array(
 			'setup_id' => array('setup_id'),

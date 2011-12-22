@@ -1,0 +1,5 @@
+name = Tripal Helper Form
+description = Useful functions for dealing with forms for tripal 
+core = 6.x
+package = Tripal Helpers
+

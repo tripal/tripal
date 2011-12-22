@@ -40,4 +40,17 @@ $query_result = db_query_range($query, $start_time, $end_time, 0, $limitnum);
 
 //TODO: validation for the admin pages
 
-function tripal_views_setup_
+function tripal_views_setup_theme(){
+	$theme = array();
+	
+	$theme['tripal_views_setup_form'] = array(
+		'arguments' => array('form' => NULL,),
+	);
+	
+	return $theme;
+}
+
+
+function theme_tripal_views_setup_theme($form){
+	return theme_tripal_helper_form_form($form);
+}

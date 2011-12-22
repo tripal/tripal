@@ -36,6 +36,12 @@ function tripal_views_setup_admin_form(){
 	 	$int_i++;	
 	}
 	
+	$form['featured'] = array(
+		'#type' => 'checkboxes',
+		'#options' => $options,
+		'#default_value' => $status,
+	);
+	
 	dpm($form, 'admin_form');
 	return $form;
 	//return system_settings_form($form);
