@@ -4,8 +4,10 @@
 /**
  * taken from http://www.akchauhan.com/create-drupal-form-using-theme_table-like-module-list-form/
  * following as function theme_featured_product_form($form)
+ * 
+ * to be run as a regular function, within a module's theme function implementation
  */
-function theme_tripal_helper_form_form($form, $field_keys){
+function tripal_helper_form_theme_form($form, $field_keys){
 	$rows = array();
 	foreach (element_children($form) as $key) {
 		$row = array();
@@ -24,8 +26,6 @@ function theme_tripal_helper_form_form($form, $field_keys){
 					$row[] = array(’data’ => drupal_render($form[$key][$field_keys[$field_key]]);
 				}
 			}
- 
-		
  
 			$rows[] = $row;
 		}
