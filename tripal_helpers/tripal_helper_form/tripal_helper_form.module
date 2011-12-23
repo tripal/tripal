@@ -1,4 +1,4 @@
-<? php
+<?php
 
 
 /**
@@ -7,7 +7,8 @@
  * 
  * to be run as a regular function, within a module's theme function implementation
  */
-function tripal_helper_form_theme_form($form, $field_keys){
+
+function tripal_helper_form_themeform(&$form, $field_keys){
 	$rows = array();
 	foreach (element_children($form) as $key) {
 		$row = array();
@@ -23,7 +24,7 @@ function tripal_helper_form_theme_form($form, $field_keys){
 					$bool_first = FALSE;
 				}
 				else{
-					$row[] = array(’data’ => drupal_render($form[$key][$field_keys[$field_key]]);
+					$row[] = array(’data’ => drupal_render($form[$key][$field_keys[$field_key]]),);
 				}
 			}
  
@@ -34,13 +35,17 @@ function tripal_helper_form_theme_form($form, $field_keys){
 	// Individual table headers.
 	$header = array();
 	$header[] = array(’data’ => t(’Featured’), ‘class’ => ‘checkbox’);
-	$header[] = t(’Name’);
-	$header[] = t(’Category’);
-	$header[] = t(’Discount’);
-	$header[] = t(’Created on’);
+	
+	foreach ($field_keys as $key => $value) {
+		$header[] = t($key);
+	}
  
 	$output = theme(’table’, $header, $rows);
 	$output .= drupal_render($form);
 	return $output;
 }
+
+// function tripal_helper_form_createformdata
+
+
 

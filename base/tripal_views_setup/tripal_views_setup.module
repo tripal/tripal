@@ -7,17 +7,17 @@ function tripal_views_setup_menu(){
 	
 	//parents admin page TODO: figure out what to do here: add / remove searches
 	$items['admin/tripal/tripal_views_setup'] = array(
-	  'title' => t('Tripal Views Search settings'),
-	  'description' => t('Tripal Views Search settings page, allows you to select and create materialized views and chado tables to use for searches.'),
+	  'title' => t('Tripal Views Setups'),
+	  'description' => t('Tripal Views Setups settings page, allows you to select and create materialized views and chado tables to use for searches.'),
 	  'page callback' => 'drupal_get_form',
-	  'page arguments' => array('tripal_views_setup_admin'),
+	  'page arguments' => array('tripal_views_setup_admin_form'),
 	  'access arguments' => array('access administration pages'),
 	  'type' => MENU_NORMAL_ITEM,
 	);
 	
 	//page to actually create searche->mview->chado table relationships
  	$items['admin/tripal/tripal_views_setup/new'] = array(
-		 'title' => 'Create New Search',
+		 'title' => 'Create New Views Setup',
      'page callback' => 'drupal_get_form',
      'page arguments' => array('tripal_views_setup_new_search_form'),
      'access arguments' => array('access administration pages'), //TODO: figure out the proper permissions arguments
@@ -51,6 +51,6 @@ function tripal_views_setup_theme(){
 }
 
 
-function theme_tripal_views_setup_theme($form){
-	return theme_tripal_helper_form_form($form);
+function theme_tripal_views_setup_form($form){
+	// return tripal_helper_form_themeform($form, array('name', 'setup_id', 'mview_id', 'base_table_name', 'description'));
 }

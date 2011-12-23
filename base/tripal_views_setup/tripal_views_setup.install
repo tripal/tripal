@@ -22,13 +22,6 @@ function tripal_views_setup_schema(){
 				'not null' => TRUE,
 				'default' => '',
 			),
-			'status' => array(
-				'description' => 'Weather this setup will be used: 0 = inactive, 1 = active.',
-				'type' => 'int',
-				'unsigned' => TRUE,
-				'not null' => TRUE,
-				'default' => '0',
-			),
 			'name' => array(
 				'description' => 'Human readable name of this setup',
 				'type' => 'varchar',
