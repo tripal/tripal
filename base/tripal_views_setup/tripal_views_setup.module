@@ -50,7 +50,8 @@ function tripal_views_setup_theme(){
 	return $theme;
 }
 
-
-function theme_tripal_views_setup_form($form){
-	// return tripal_helper_form_themeform($form, array('name', 'setup_id', 'mview_id', 'base_table_name', 'description'));
+function tripal_views_setup_admin_form_theme($form){
+	$output = tripal_helper_form_themeform($form, array('name', 'setup_id', 'mview_id', 'base_table_name', 'description'));
+	dpm($output, 'theme output');
+	return $output;
 }

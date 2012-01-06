@@ -22,26 +22,23 @@ function tripal_views_setup_admin_form(){
 	}
 
 	dpm($records, 'records');
-
-		// dpm($record, 'record' . (string)$int_i);
-// 		
-		// $item_name = 'tripal_views_setup_config_query_record_' . (string)$int_i;
-// 		
-		// $form[$item_name] = array(
-			// '#type' => 'checkbox',
-			// '#title' => t($record->name),
-			// '#description' => t('Search of mview ' . $record->mview_id . ' and ' . $record->base_table_name),
-			// '#required' => TRUE,
-		// );
-// 		
-	 	// $int_i++;	
-	// }
 	
-	$form['featured'] = array(
-		'#type' => 'checkboxes',
-		'#options' => $options,
-		'#default_value' => $status,
+	$record_fields = array('setup_id', 'mview_id', 'base_table_name', 'name', 'description');
+
+	$form = tripal_helper_form_createformdata($form, $records, $record_fields);
+	
+	
+	
+	$form['submit'] = array(
+		'#type' => 'submit',
+		'#value' => t('Remove'),
 	);
+	
+	$form['cancel'] = array(
+		'#type' => 'markup',
+		'#value' => l(t('Cancel'), 'admin/tripal/'),
+	);
+	
 	
 	dpm($form, 'admin_form');
 	return $form;
@@ -49,12 +46,35 @@ function tripal_views_setup_admin_form(){
 }
 
 
-function tripal_views_setup_form_submit($form_id, $form){
+function tripal_views_setup_admin_form_submit($form_id, $form){
 	$form_values = $form['values'];
-	$featured = $form_values['featured'];
+	dpm($form, 'submitted form');
+	dpm($form_values, 'submitted form values');
+	$featured = $form_values['row_checkboxes'];
+	$selected_checkbox = array();
 	
+	foreach($featured as $key => $value){
+		if($value){
+			$selected_checkbox[] = "'$value'";
+		}
+	}
+	
+	dpm($selected_checkbox, 'selected');
+	
+	foreach ($selected_checkbox as $key => $value) {
+		
+		dpm((string)$value, 'delete value');
+		dpm("DELETE FROM public.tripal_views_setup WHERE setup_id = $value;", 'delete stuff');
+		db_query("DELETE FROM public.tripal_views_setup WHERE setup_id = $value;");
+		
+	}
 	
 }
+
+
+
+
+
 
 
 function tripal_views_setup_new_search_form(){
@@ -80,7 +100,3 @@ function tripal_views_setup_btable_list(){
 
 	return $options;
 }
-
-
-
-
