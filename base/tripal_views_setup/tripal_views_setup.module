@@ -16,7 +16,7 @@ function tripal_views_setup_menu(){
 	);
 	
 	//page to actually create searche->mview->chado table relationships
- 	$items['admin/tripal/tripal_views_setup/new'] = array(
+ 	$items['admin/tripal/tripal_views_setup_new'] = array(
 		 'title' => 'Create New Views Setup',
      'page callback' => 'drupal_get_form',
      'page arguments' => array('tripal_views_setup_new_search_form'),
@@ -27,19 +27,6 @@ function tripal_views_setup_menu(){
 	return $items;
 }
 
-
-/* this needs to go into the function tripal_views_setup_block()
- $limitnum = variable_get("onthisdate_maxdisp", 3);
-
-$query = "SELECT nid, title, created FROM " .
-"{node} WHERE created >= %d " .
-"AND created <= %d";
-
-$query_result = db_query_range($query, $start_time, $end_time, 0, $limitnum);
-*/
-
-//TODO: validation for the admin pages
-
 function tripal_views_setup_theme(){
 	$theme = array();
 	
@@ -47,11 +34,40 @@ function tripal_views_setup_theme(){
 		'arguments' => array('form' => NULL,),
 	);
 	
+	$theme['tripal_views_setup_admin_form'] = array(
+		'arguments' => array(),
+	);
+	
 	return $theme;
 }
 
-function tripal_views_setup_admin_form_theme($form){
-	$output = tripal_helper_form_themeform($form, array('name', 'setup_id', 'mview_id', 'base_table_name', 'description'));
-	dpm($output, 'theme output');
+
+function theme_tripal_views_setup_admin_form($form){
+	$header = array(
+		theme('table_select_header_cell'),//using previously empty field
+		array('data' => t('Setup ID'), 'field' => 'setup_id', 'sort' => 'asc'),
+    array('data' => t('MView ID'), 'field' => 'mview_id'),
+    array('data' => t('Base Table Name'), 'field' => 'base_table_name'),
+  );
+	
+	if(!empty($form['checkboses']['#options'])) {
+		foreach (element_children($form['uid']) as $key) {
+			$rows[] = array(
+				drupal_render($form['checkboxes'][$key]),
+				drupal_render($form['setup_id'][$key]),
+				drupal_render($form['mview_id'][$key]),
+				drupal_render($form['base_table_name'][$key]),
+			);
+		}
+	}
+	else {
+		$row[] = array(array('data' => '<div class="error">click link above to add entries</div>', 'colspan' => 4));
+	}
+	
+	$output .= theme('table', $header, $rows);
+	
+	$output .= drupal_render($form);
 	return $output;
+	
 }
+

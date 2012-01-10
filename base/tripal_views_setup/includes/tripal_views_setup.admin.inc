@@ -11,22 +11,46 @@
 
 function tripal_views_setup_admin_form(){
 	
-	$query_resulst = db_query('SELECT * FROM public.tripal_views_setup;');
+	// $query_results = db_query('SELECT * FROM public.tripal_views_setup;');
+	$result = db_query('SELECT * FROM public.tripal_views_setup;');
 	
 	$form = array();
 	$int_i = 0;
 	
-	$records = array();
-	while($record = db_fetch_object($query_resulst)){
-		$records[] = $record;
+		
+	//set limit for pager]
+	$limit = 20;
+  //define table header
+  $header = array(
+    '', //note empty value, will use this later
+    array('data' => t('Setup ID'), 'field' => 'setup_id', 'sort' => 'asc'),
+    array('data' => t('MView ID'), 'field' => 'mview_id'),
+    array('data' => t('Base Table Name'), 'field' => 'base_table_name'),
+  );
+	
+	//allows sorting
+	$tablesort = tablesort_sql($header);
+	//add pager to results
+	// $result = pager_query($query_results,$limit, $tablesort);
+	
+	while ($item = db_fetch_object($result)){
+		//add row key
+		$checkboxes[$item->setup_id] = '';
+		$form['setup_id'][$item->setup_id] = array(
+			'#value' => $item->setup_id,
+		);
+		$form['mview_id'][$item->mview_id] = array(
+			'#value' => $item->mview_id,
+		);
+		
+		$form['base_table_name'][$item->setup_id] = array(
+			'#value' => $item->base_table_name,
+		);
+		
 	}
 
-	dpm($records, 'records');
-	
-	$record_fields = array('setup_id', 'mview_id', 'base_table_name', 'name', 'description');
-
-	$form = tripal_helper_form_createformdata($form, $records, $record_fields);
-	
+	$form['checkboxes'] = array('#type' => 'checkboxes', '#options' => $checkboxes);
+	$form['pager'] = array('#value' => theme('pager', NULL, $limit, 0));	
 	
 	
 	$form['submit'] = array(
@@ -36,7 +60,12 @@ function tripal_views_setup_admin_form(){
 	
 	$form['cancel'] = array(
 		'#type' => 'markup',
-		'#value' => l(t('Cancel'), 'admin/tripal/'),
+		'#value' => l(t('Cancel '), 'admin/tripal/'),
+	);
+	
+	$form['new'] = array(
+		'#type' => 'markup',
+		'#value' => l(t(' New'), 'admin/tripal/tripal_views_setup_new'),
 	);
 	
 	
@@ -61,13 +90,13 @@ function tripal_views_setup_admin_form_submit($form_id, $form){
 	
 	dpm($selected_checkbox, 'selected');
 	
-	foreach ($selected_checkbox as $key => $value) {
-		
-		dpm((string)$value, 'delete value');
-		dpm("DELETE FROM public.tripal_views_setup WHERE setup_id = $value;", 'delete stuff');
-		db_query("DELETE FROM public.tripal_views_setup WHERE setup_id = $value;");
-		
-	}
+	// foreach ($selected_checkbox as $key => $value) {
+// 		
+		// dpm((string)$value, 'delete value');
+		// dpm("DELETE FROM public.tripal_views_setup WHERE setup_id = $value;", 'delete stuff');
+		// db_query("DELETE FROM public.tripal_views_setup WHERE setup_id = $value;");
+// 		
+	// }
 	
 }
 
@@ -79,6 +108,12 @@ function tripal_views_setup_admin_form_submit($form_id, $form){
 
 function tripal_views_setup_new_search_form(){
 	$form = array();
+	
+	$form['q1'] = array(
+		'#type' => 'select',
+		'#options' => tripal_views_setup_mview_list(),
+		
+	);
 	
 	return $form;
 }
