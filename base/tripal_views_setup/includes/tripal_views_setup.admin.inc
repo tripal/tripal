@@ -54,7 +54,28 @@ function tripal_views_setup_admin_form_submit($form, &$form_state){
 	db_query("DELETE FROM public.tripal_views_setup WHERE setup_id = $value;");
 }
 
+function tripal_views_setup_new_search_form(){
+	$form = array();
+	
+	$form['row_name'] = array(
+		'#title' => t('Name'),
+		'#type' => 'textfield',
+		'#size' => 60,
+		'#maxlength' => 60,
+		'#description' => 'Name of the Views Setup',
+		'#required' => TRUE,
+	);
+	
+	$form['submit'] = array(
+		'#type' => 'submit',
+		'#value' => 'Create',
+	); 
+	
+	return $form;
+}
 
-
+function tripal_views_setup_new_search_form_submit($form, &$form_state){
+	
+}
 
 
