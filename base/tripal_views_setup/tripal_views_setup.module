@@ -11,6 +11,7 @@ function tripal_views_setup_menu(){
 	  'description' => t('Tripal Views Setups settings page, allows you to select and create materialized views and chado tables to use for searches.'),
 	  'page callback' => 'drupal_get_form',
 	  'page arguments' => array('tripal_views_setup_admin_form'),
+	  // 'page callback' => 'tripal_views_setup_admin_form_page',
 	  'access arguments' => array('access administration pages'),
 	  'type' => MENU_NORMAL_ITEM,
 	);
@@ -34,40 +35,6 @@ function tripal_views_setup_theme(){
 		'arguments' => array('form' => NULL,),
 	);
 	
-	$theme['tripal_views_setup_admin_form'] = array(
-		'arguments' => array(),
-	);
-	
 	return $theme;
-}
-
-
-function theme_tripal_views_setup_admin_form($form){
-	$header = array(
-		theme('table_select_header_cell'),//using previously empty field
-		array('data' => t('Setup ID'), 'field' => 'setup_id', 'sort' => 'asc'),
-    array('data' => t('MView ID'), 'field' => 'mview_id'),
-    array('data' => t('Base Table Name'), 'field' => 'base_table_name'),
-  );
-	
-	if(!empty($form['checkboses']['#options'])) {
-		foreach (element_children($form['uid']) as $key) {
-			$rows[] = array(
-				drupal_render($form['checkboxes'][$key]),
-				drupal_render($form['setup_id'][$key]),
-				drupal_render($form['mview_id'][$key]),
-				drupal_render($form['base_table_name'][$key]),
-			);
-		}
-	}
-	else {
-		$row[] = array(array('data' => '<div class="error">click link above to add entries</div>', 'colspan' => 4));
-	}
-	
-	$output .= theme('table', $header, $rows);
-	
-	$output .= drupal_render($form);
-	return $output;
-	
 }
 

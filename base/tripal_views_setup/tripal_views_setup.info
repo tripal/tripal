@@ -4,5 +4,3 @@ core = 6.x
 package = Tripal
 
 dependencies[] = schema
-dependencies[] = tripal_helper_form
-
