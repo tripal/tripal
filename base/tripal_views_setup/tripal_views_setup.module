@@ -25,6 +25,8 @@ function tripal_views_setup_menu(){
      'type' => MENU_NORMAL_ITEM,
  	);
 	
+	// $items
+	
 	return $items;
 }
 

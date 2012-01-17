@@ -52,6 +52,8 @@ function tripal_views_setup_admin_form(){
 function tripal_views_setup_admin_form_submit($form, &$form_state){
 	$value = $form['existing_rows']['#options'][$form_state['values']['existing_rows']];
 	db_query("DELETE FROM public.tripal_views_setup WHERE setup_id = $value;");
+	db_query("DELETE FROM public.tripal_views_handlers WHERE setup_id = $value;");
+	db_query("DELETE FROM public.tripal_mviews_join WHERE setup_id = $value;");
 }
 
 function tripal_views_setup_new_search_form(){
@@ -61,10 +63,58 @@ function tripal_views_setup_new_search_form(){
 		'#title' => t('Name'),
 		'#type' => 'textfield',
 		'#size' => 60,
-		'#maxlength' => 60,
+		'#maxlength' => 128,
 		'#description' => 'Name of the Views Setup',
 		'#required' => TRUE,
 	);
+	
+		$form['row_description'] = array(
+		'#title' => t('Description'),
+		'#type' => 'textfield',
+		'#size' => 60,
+		'#maxlength' => 255,
+		'#description' => 'Briefly describe in which view this will be used',
+		'#required' => TRUE,
+	);
+	
+	$form['row_mview'] = array(
+		'#title' => t('Materialized View'),
+		'#type' => 'select',
+		'#options' => array('stub'),
+		'#maxlength' => 128,
+		'#description' => 'Which materialized view to use.',
+		'#required' => TRUE,
+	);
+	
+	$form['row_base_table_name'] = array(
+		'#title' => t('Base Table Name'),
+		'#type' => 'select',
+		'#options' => array('stub'),
+		'#maxlength' => 128,
+		'#description' => 'Select which chado table to use for this view.',
+		'#required' => TRUE,
+	);
+	
+	//--tripal_mviews_join
+	
+	$form['row_view_column'] = array(
+		'#title' => t('View Column'),
+		'#type' => 'select',
+		'#options' => array('stub'),
+		'#maxlength' => 128,
+		'#description' => 'Which materialized view column to use.',
+		'#required' => TRUE,
+	);
+	
+		$form['row_chado_column'] = array(
+		'#title' => t('Chado Column'),
+		'#type' => 'select',
+		'#options' => array('stub'),
+		'#maxlength' => 128,
+		'#description' => 'Which Chado table column to use.',
+		'#required' => TRUE,
+	);
+	
 	
 	$form['submit'] = array(
 		'#type' => 'submit',
