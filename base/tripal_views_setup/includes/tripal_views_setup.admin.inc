@@ -56,8 +56,10 @@ function tripal_views_setup_admin_form_submit($form, &$form_state){
 	db_query("DELETE FROM public.tripal_mviews_join WHERE setup_id = $value;");
 }
 
-function tripal_views_setup_new_search_form(){
+function tripal_views_setup_new_search_form($form_state){
 	$form = array();
+	
+	$form['#cache'] = TRUE;
 	
 	$form['row_name'] = array(
 		'#title' => t('Name'),
@@ -77,20 +79,32 @@ function tripal_views_setup_new_search_form(){
 		'#required' => TRUE,
 	);
 	
+	$mview_query = db_query("SELECT name FROM {tripal_mviews} ORDER BY name;");
+	$mview_options = array();
+	while ($mview_option = db_fetch_array($mview_query)){
+		$mview_options[] = $mview_option['name'];
+	}
+	
 	$form['row_mview'] = array(
 		'#title' => t('Materialized View'),
 		'#type' => 'select',
-		'#options' => array('stub'),
-		'#maxlength' => 128,
+		'#options' => $mview_options,
 		'#description' => 'Which materialized view to use.',
 		'#required' => TRUE,
+		// '#ahah' => array(
+			// 'path' => 'rowmview/ahah',
+			// 'wrapper' => 'rowmview-ahah',
+			// 'effect' => 'fade',
+			// 'event' => 'change',
+			// 'method' => 'replace',
+		// ),
 	);
 	
 	$form['row_base_table_name'] = array(
 		'#title' => t('Base Table Name'),
 		'#type' => 'select',
-		'#options' => array('stub'),
-		'#maxlength' => 128,
+		// '#options' => array('stub'),
+		'#options' => tripal_core_get_chado_tables(),
 		'#description' => 'Select which chado table to use for this view.',
 		'#required' => TRUE,
 	);
@@ -101,16 +115,15 @@ function tripal_views_setup_new_search_form(){
 		'#title' => t('View Column'),
 		'#type' => 'select',
 		'#options' => array('stub'),
-		'#maxlength' => 128,
 		'#description' => 'Which materialized view column to use.',
 		'#required' => TRUE,
+
 	);
 	
 		$form['row_chado_column'] = array(
 		'#title' => t('Chado Column'),
 		'#type' => 'select',
 		'#options' => array('stub'),
-		'#maxlength' => 128,
 		'#description' => 'Which Chado table column to use.',
 		'#required' => TRUE,
 	);
@@ -123,6 +136,34 @@ function tripal_views_setup_new_search_form(){
 	
 	return $form;
 }
+
+// function rowmview_ahah(){
+	// $query = "SELECT mv_specs FROM tripal_mviews;";
+	// $row_options = db_fetch_array(db_query($query)); 
+// 	
+// 	
+// }
+
+// function tripal_views_setup_ajax_db_mview_columns(){
+	// $mview = $_POST['row_mview'];
+	// $form = drupal_get_form('tripal_views_setup_mview_column_form', $mview);
+	// drupal_json(array('status' => TRUE, 'data' => $form));
+// }
+
+// function tripal_views_setup_mview_column_form(&$form_state = NULL, $mview = NULL){
+	// if ($mview){
+		// $mview_query = db_fetch_array(db_query("SELECT mv_specs FROM tripal_mviews WHERE name = $mview;"));
+// 		
+		// $form['row_mview']
+	// }
+// 	
+// }
+
+// function tripal_views_setup_ajax_db_chado_tables(){
+// }
+
+
+
 
 function tripal_views_setup_new_search_form_submit($form, &$form_state){
 	

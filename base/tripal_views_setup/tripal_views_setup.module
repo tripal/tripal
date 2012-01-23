@@ -5,7 +5,6 @@ require_once 'includes/tripal_views_setup.admin.inc';
 function tripal_views_setup_menu(){
 	$items = array();
 	
-	//parents admin page TODO: figure out what to do here: add / remove searches
 	$items['admin/tripal/tripal_views_setup'] = array(
 	  'title' => t('Tripal Views Setups'),
 	  'description' => t('Tripal Views Setups settings page, allows you to select and create materialized views and chado tables to use for searches.'),
@@ -25,7 +24,20 @@ function tripal_views_setup_menu(){
      'type' => MENU_NORMAL_ITEM,
  	);
 	
-	// $items
+	
+	// $items['admin/tripal/tripal_views_setup_new/ajax/mview_column'] = array(
+		// 'title' => 'Get Mview Columns',
+		// 'page callback' => 'tripal_views_setup_ajax_db_mview_columns',
+		// 'access arguments' => array('access administration pages'),
+		// 'type' => MENU_CALLBACK,
+	// );
+	
+	// $items['admin/tripal/tripal_views_setup_new/ajax/base_table_name'] = array(
+		// 'title' => 'Get Chado Tables',
+		// 'page callback' => 'tripal_views_setup_ajax_db_chado_tables',
+		// 'access arguments' => array('access administration pages'),
+		// 'type' => MENU_CALLBACK,
+	// );
 	
 	return $items;
 }
