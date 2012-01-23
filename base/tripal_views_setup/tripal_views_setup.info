@@ -3,4 +3,5 @@ description = Tripal suite module to perform setup as views, instead of the buil
 core = 6.x
 package = Tripal
 
-dependencies[] = schema
+dependencies[] = tripal_core
+
