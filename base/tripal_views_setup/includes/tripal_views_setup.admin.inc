@@ -204,13 +204,6 @@ function tripal_views_setup_fields_form(&$form_state=NULL, $mview_id = NULL){
        '#prefix' => "<div id=\"fields-column-join-column-$i\" class=\"fields-column-join-column\">",
        '#suffix' => "</div>",
        '#options' => array(),
-       // '#ahah' => array(
-         // 'path' => 'admin/tripal/tripal_views_setup/ajax/field_col_join',
-         // 'wrapper' => 'field-col-join-div',
-         // 'effect' => 'fade',
-         // 'event' => 'change',
-         // 'method' => 'replace',
-        // ),
        '#required' => FALSE,
      );
       $form["fields_column_handler_$i"] = array(
@@ -227,23 +220,10 @@ function tripal_views_setup_fields_form(&$form_state=NULL, $mview_id = NULL){
       $i++;
    }
 
-/*	$form['row_view_column'] = array(
-    '#title' => t('View Column'),
-    '#type' => 'select',
-    '#options' => array('stub'),
-    '#description' => 'Which materialized view column to use.',
-    '#required' => TRUE,
-
+  $form['row_counter'] = array(
+    '#type' => 'hidden',
+    '#value' => $i,
   );
-
-   $form['row_chado_column'] = array(
-    '#title' => t('Chado Column'),
-    '#type' => 'select',
-    '#options' => array('stub'),
-    '#description' => 'Which Chado table column to use.',
-    '#required' => TRUE,
-   );
-  */
 
   $form['submit'] = array(
     '#type' => 'submit',
@@ -257,37 +237,15 @@ function tripal_views_setup_fields_form_submit($form, &$form_state){
   dpm($form,'formfield');
   dpm($form_state, 'formstatefield');
 }
-// function rowmview_ahah(){
-  // $query = "SELECT mv_specs FROM tripal_mviews;";
-  // $row_options = db_fetch_array(db_query($query));
-//
-//
-// }
-
-// function tripal_views_setup_ajax_db_mview_columns(){
-  // $mview = $_POST['row_mview'];
-  // $form = drupal_get_form('tripal_views_setup_mview_column_form', $mview);
-  // drupal_json(array('status' => TRUE, 'data' => $form));
-// }
-
-// function tripal_views_setup_mview_column_form(&$form_state = NULL, $mview = NULL){
-  // if ($mview){
-    // $mview_query = db_fetch_array(db_query("SELECT mv_specs FROM tripal_mviews WHERE name = $mview;"));
-//
-    // $form['row_mview']
-  // }
-//
-// }
-
-// function tripal_views_setup_ajax_db_chado_tables(){
-// }
 
 /**
 *
 * @ingroup tripal_view_search
 */
 function tripal_view_search_ajax_field_col_join(){
-  dpm($_POST, 'post');
+  dpm($_POST);
+  dpm($_POST['row_counter'], 'rowcounter');
+  drupal_json(array('status' => TRUE, 'data' => 'howdy'));
 
 }
 
