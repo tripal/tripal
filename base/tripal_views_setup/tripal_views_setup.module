@@ -3,26 +3,26 @@
 require_once 'includes/tripal_views_setup.admin.inc';
 
 function tripal_views_setup_menu(){
-	$items = array();
-	
-	$items['admin/tripal/tripal_views_setup'] = array(
-	  'title' => t('Tripal Views Setups'),
-	  'description' => t('Tripal Views Setups settings page, allows you to select and create materialized views and chado tables to use for searches.'),
-	  'page callback' => 'drupal_get_form',
-	  'page arguments' => array('tripal_views_setup_admin_form'),
-	  // 'page callback' => 'tripal_views_setup_admin_form_page',
-	  'access arguments' => array('access administration pages'),
-	  'type' => MENU_NORMAL_ITEM,
-	);
-	
-	//page to actually create search->mview->chado table relationships
- 	$items['admin/tripal/tripal_views_setup_new'] = array(
-		 'title' => 'Create New Views Setup',
+  $items = array();
+
+  $items['admin/tripal/tripal_views_setup'] = array(
+    'title' => t('Tripal Views Setups'),
+    'description' => t('Tripal Views Setups settings page, allows you to select and create materialized views and chado tables to use for searches.'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_views_setup_admin_form'),
+    // 'page callback' => 'tripal_views_setup_admin_form_page',
+    'access arguments' => array('access administration pages'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  //page to actually create search->mview->chado table relationships
+   $items['admin/tripal/tripal_views_setup_new'] = array(
+     'title' => 'Create New Views Setup',
      'page callback' => 'drupal_get_form',
      'page arguments' => array('tripal_views_setup_new_search_form'),
      'access arguments' => array('access administration pages'), //TODO: figure out the proper permissions arguments
      'type' => MENU_NORMAL_ITEM,
- 	);
+   );
 
    $items['admin/tripal/tripal_views_setup/ajax/mview_cols'] = array(
      'title' => 'Get MView Columns',
@@ -30,32 +30,39 @@ function tripal_views_setup_menu(){
      'access arguments' => array('access administration pages'),
      'type' => MENU_CALLBACK,
    );
-	
-	// $items['admin/tripal/tripal_views_setup_new/ajax/mview_column'] = array(
-		// 'title' => 'Get Mview Columns',
-		// 'page callback' => 'tripal_views_setup_ajax_db_mview_columns',
-		// 'access arguments' => array('access administration pages'),
-		// 'type' => MENU_CALLBACK,
-	// );
-	
-	// $items['admin/tripal/tripal_views_setup_new/ajax/base_table_name'] = array(
-		// 'title' => 'Get Chado Tables',
-		// 'page callback' => 'tripal_views_setup_ajax_db_chado_tables',
-		// 'access arguments' => array('access administration pages'),
-		// 'type' => MENU_CALLBACK,
-	// );
-	
-	return $items;
+
+  $items['admin/tripal/tripal_views_setup/ajax/field_col_join'] = array(
+     'title' => 'Get MView Columns',
+     'page callback' => 'tripal_view_search_ajax_field_col_join',
+     'access arguments' => array('access administration pages'),
+     'type' => MENU_CALLBACK,
+   );
+
+  // $items['admin/tripal/tripal_views_setup_new/ajax/mview_column'] = array(
+    // 'title' => 'Get Mview Columns',
+    // 'page callback' => 'tripal_views_setup_ajax_db_mview_columns',
+    // 'access arguments' => array('access administration pages'),
+    // 'type' => MENU_CALLBACK,
+  // );
+
+  // $items['admin/tripal/tripal_views_setup_new/ajax/base_table_name'] = array(
+    // 'title' => 'Get Chado Tables',
+    // 'page callback' => 'tripal_views_setup_ajax_db_chado_tables',
+    // 'access arguments' => array('access administration pages'),
+    // 'type' => MENU_CALLBACK,
+  // );
+
+  return $items;
 }
 
 function tripal_views_setup_theme(){
-	$theme = array();
-	
-	$theme['tripal_views_setup_fields_form'] = array(
-		'arguments' => array('form' => NULL),
+  $theme = array();
+
+  $theme['tripal_views_setup_fields_form'] = array(
+    'arguments' => array('form' => NULL),
       'template'  => 'tripal_views_setup_fields_form',
- 	);
-	
-	return $theme;
+   );
+
+  return $theme;
 }
 
