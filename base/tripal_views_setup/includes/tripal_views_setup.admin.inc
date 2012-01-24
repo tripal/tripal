@@ -1,5 +1,8 @@
 <?php 
-
+/**
+*
+* @ingroup tripal_view_search
+*/
 function tripal_views_setup_admin_form(){
 	
 	$form = array();
@@ -48,14 +51,20 @@ function tripal_views_setup_admin_form(){
 	return $form;
 }
 
-
+/**
+*
+* @ingroup tripal_view_search
+*/
 function tripal_views_setup_admin_form_submit($form, &$form_state){
 	$value = $form['existing_rows']['#options'][$form_state['values']['existing_rows']];
 	db_query("DELETE FROM public.tripal_views_setup WHERE setup_id = $value;");
 	db_query("DELETE FROM public.tripal_views_handlers WHERE setup_id = $value;");
 	db_query("DELETE FROM public.tripal_mviews_join WHERE setup_id = $value;");
 }
-
+/**
+*
+* @ingroup tripal_view_search
+*/
 function tripal_views_setup_new_search_form($form_state){
 	$form = array();
 	
@@ -70,7 +79,7 @@ function tripal_views_setup_new_search_form($form_state){
 		'#required' => TRUE,
 	);
 	
-		$form['row_description'] = array(
+   $form['row_description'] = array(
 		'#title' => t('Description'),
 		'#type' => 'textfield',
 		'#size' => 60,
@@ -79,39 +88,129 @@ function tripal_views_setup_new_search_form($form_state){
 		'#required' => TRUE,
 	);
 	
-	$mview_query = db_query("SELECT name FROM {tripal_mviews} ORDER BY name;");
+	$mview_query = db_query("SELECT mview_id,name FROM {tripal_mviews} ORDER BY name;");
 	$mview_options = array();
 	while ($mview_option = db_fetch_array($mview_query)){
-		$mview_options[] = $mview_option['name'];
+		$mview_options[$mview_option['mview_id']] = $mview_option['name'];
 	}
+
 	
-	$form['row_mview'] = array(
+	$form['mview_id'] = array(
 		'#title' => t('Materialized View'),
 		'#type' => 'select',
 		'#options' => $mview_options,
 		'#description' => 'Which materialized view to use.',
 		'#required' => TRUE,
-		// '#ahah' => array(
-			// 'path' => 'rowmview/ahah',
-			// 'wrapper' => 'rowmview-ahah',
-			// 'effect' => 'fade',
-			// 'event' => 'change',
-			// 'method' => 'replace',
-		// ),
+      '#ahah' => array(
+         'path' => 'admin/tripal/tripal_views_setup/ajax/mview_cols',
+         'wrapper' => 'table-rows-div',
+         'effect' => 'fade',
+         'event' => 'change',
+         'method' => 'replace',
+      ),
 	);
-	
-	$form['row_base_table_name'] = array(
-		'#title' => t('Base Table Name'),
-		'#type' => 'select',
-		// '#options' => array('stub'),
-		'#options' => tripal_core_get_chado_tables(),
-		'#description' => 'Select which chado table to use for this view.',
-		'#required' => TRUE,
+
+// ignore this for now... we'll come back to it later -- spf
+//	$form['row_base_table_name'] = array(
+//		'#title' => t('Base Table Name'),
+//		'#type' => 'select',
+//		// '#options' => array('stub'),
+//		'#options' => tripal_core_get_chado_tables(),
+//		'#description' => 'Select which chado table to use for this view.',
+//		'#required' => TRUE,
+//	);
+
+	$form['table-rows-div'] = array(
+		'#type' => 'markup',
+		'#value' => '<div id="table-rows-div">',
 	);
-	
-	//--tripal_mviews_join
-	
-	$form['row_view_column'] = array(
+	return $form;
+}
+/**
+*
+* @ingroup tripal_view_search
+*/
+function tripal_view_search_ajax_mview_cols(){
+   $mview_id = $_POST['mview_id'];
+   $form = drupal_get_form('tripal_views_setup_fields_form',$mview_id);
+   drupal_json(array('status' => TRUE, 'data' => $form));
+}
+/**
+*
+* @ingroup tripal_view_search
+*/
+function tripal_views_setup_fields_form(&$form_state=NULL, $mview_id = NULL){
+
+	if(!$mview_id){
+      return;
+   }
+
+   // get the columns in this materialized view.  They are separated by commas
+   // where the first word is the column name and the rest is the type
+	$sql = "SELECT mv_specs FROM {tripal_mviews} WHERE mview_id = $mview_id";
+	$mview = db_fetch_object(db_query($sql));
+   $columns = explode(",",$mview->mv_specs);
+
+   $i=1;
+   $chado_tables = tripal_core_get_chado_tables();
+   $handlers = array();
+   $form["fields_headers"] = array(
+		   '#type' => 'markup',
+		   '#value' => "<div class=\"field-headers\">".
+            "<div class=\"column-id\">Field Name and Type</div>".
+            "<div class=\"fields-column-join\">Join Table</div>".
+            "<div class=\"fields-column-join-column\">Join Column</div>".
+            "<div class=\"fields-column-handler\">Handler</div></div>",        
+	);
+   foreach ($columns as $column){
+
+      $column = trim($column);  // trim trailing and leading spaces
+      preg_match("/^(.*?)\ (.*?)$/",$column,$matches);
+      $column_name = $matches[1];
+      $column_type = $matches[2];
+   
+      // first print the field name
+	   $form["fields_start_$i"] = array(
+		   '#type' => 'markup',
+		   '#value' => "<div class=\"fields-new-row\">",        
+	   );
+	   $form["fields_column_name_$i"] = array(
+		   '#type' => 'markup',
+         '#attributes' => array('class' => 'fields-column-name'),
+		   '#value' => "<div class=\"column-id\"><span class=\"column-name\">$column_name</span>".
+                     "<br><span class=\"column-type\">$column_type</span></div>",
+	   );
+
+      // second print the table join drop down
+   	$form["fields_column_join_$i"] = array(
+		   '#type' => 'select',
+         '#prefix' => "<div class=\"fields-column-join\">",
+         '#suffix' => "</div>",
+		   '#options' => $chado_tables,
+		   '#required' => FALSE,
+	   );
+   	$form["fields_column_join_column_$i"] = array(
+		   '#type' => 'select',
+         '#prefix' => "<div class=\"fields-column-join-column\">",
+         '#suffix' => "</div>",
+         '#options' => array(),
+		   '#required' => FALSE,
+	   );
+      $form["fields_column_handler_$i"] = array(
+		   '#type' => 'select',
+         '#prefix' => "<div class=\"fields-column-handler\">",
+         '#suffix' => "</div>",
+		   '#options' => $handlers,
+		   '#required' => FALSE,        
+	   );
+	   $form["fields_end_$i"] = array(
+		   '#type' => 'markup',
+		   '#value' => "</div>",
+	   );
+      $i++;
+   }
+
+/*	$form['row_view_column'] = array(
 		'#title' => t('View Column'),
 		'#type' => 'select',
 		'#options' => array('stub'),
@@ -120,21 +219,21 @@ function tripal_views_setup_new_search_form($form_state){
 
 	);
 	
-		$form['row_chado_column'] = array(
+   $form['row_chado_column'] = array(
 		'#title' => t('Chado Column'),
 		'#type' => 'select',
 		'#options' => array('stub'),
 		'#description' => 'Which Chado table column to use.',
 		'#required' => TRUE,
-	);
-	
+	 );
+	*/
 	
 	$form['submit'] = array(
 		'#type' => 'submit',
 		'#value' => 'Create',
 	); 
-	
-	return $form;
+
+   return $form;
 }
 
 // function rowmview_ahah(){
@@ -164,7 +263,10 @@ function tripal_views_setup_new_search_form($form_state){
 
 
 
-
+/**
+*
+* @ingroup tripal_view_search
+*/
 function tripal_views_setup_new_search_form_submit($form, &$form_state){
 	
 }
