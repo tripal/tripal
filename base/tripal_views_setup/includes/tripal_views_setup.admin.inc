@@ -97,18 +97,18 @@ function tripal_views_setup_new_setup_form(&$form_state){
 
 
 	$form['mview_id'] = array(
-    '#title' => t('Materialized View'),
-    '#type' => 'select',
-    '#options' => $mview_options,
-    '#description' => 'Which materialized view to use.',
-    '#required' => TRUE,
-    '#ahah' => array(
-	    'path' => 'admin/tripal/tripal_views_setup/ajax/mview_cols',
-  	  'wrapper' => 'table-rows-div',
-      'effect' => 'fade',
-      'event' => 'change',
-      'method' => 'replace',
-	),
+      '#title' => t('Materialized View'),
+      '#type' => 'select',
+      '#options' => $mview_options,
+      '#description' => 'Which materialized view to use.',
+      '#required' => TRUE,
+      '#ahah' => array(
+	      'path' => 'admin/tripal/tripal_views_setup/ajax/mview_cols',
+  	      'wrapper' => 'table-rows-div',
+         'effect' => 'fade',
+         'event' => 'change',
+         'method' => 'replace',
+	   ),
 	);
 
 	// ignore this for now... we'll come back to it later -- spf
@@ -122,9 +122,9 @@ function tripal_views_setup_new_setup_form(&$form_state){
 	//	);
 
 	$form['view_setup_table'] = array(
-    '#type' => 'item',
-  	'#prefix' => '<div id="table-rows-div">',
-  	'#suffix' => '</div>',
+     '#type' => 'item',
+  	  '#prefix' => '<div id="table-rows-div">',
+  	  '#suffix' => '</div>',
 	);
 
 	if($form_state['values']['mview_id']){
@@ -133,9 +133,9 @@ function tripal_views_setup_new_setup_form(&$form_state){
 
 		$form['view_setup_table'] = array(
 			'#type' => 'fieldset',
-			'#title' => 'New View Setup',
+			'#title' => 'Table Fields Setup',
 			'#prefix' => '<div id="table-rows-div">',
-		  '#suffix' => '</div>',
+		   '#suffix' => '</div>',
 		);
 
 		// get the columns in this materialized view.  They are separated by commas
@@ -164,73 +164,72 @@ function tripal_views_setup_new_setup_form(&$form_state){
 			$column_type = $matches[2];
 
 			// first print the field name
-			$form['view_setup_table']["fields_start_$i"] = array(
-         '#type' => 'markup',
-         '#value' => "<div class=\"fields-new-row\">",
+			$form['view_setup_table']["fields_start_$mview_id-$i"] = array(
+           '#type' => 'markup',
+           '#value' => "<div class=\"fields-new-row\">",
 			);
 
-			$form['view_setup_table']["fields_column_name_$i"] = array(
-         '#type' => 'markup',
+			$form['view_setup_table']["fields_column_name_$mview_id-$i"] = array(
+           '#type' => 'markup',
            '#attributes' => array('class' => 'fields-column-name'),
-         '#value' => "<div class=\"column-id\"><span class=\"column-name\">$column_name</span>".
+           '#value' => "<div class=\"column-id\"><span class=\"column-name\">$column_name</span>".
                        "<br><span class=\"column-type\">$column_type</span></div>",
 			);
 
 			// second print the table join drop down
-			$form['view_setup_table']["fields_column_join_$i"] = array(
-         '#type' => 'select',
-         '#prefix' => "<div class=\"fields-column-join\">",
-         '#suffix' => "</div>",
-         '#options' => $chado_tables,
-         '#required' => FALSE,
-         '#ahah' => array(
-           'path' => 'admin/tripal/tripal_views_setup/ajax/field_col_join',
-           'wrapper' => "fields-column-join-column",
-           'effect' => 'fade',
-           'event' => 'change',
-           'method' => 'replace',
-			),
+			$table = $form_state['values']["fields_column_join_$mview_id_$i"];
+			$form['view_setup_table']["fields_column_join_$mview_id-$i"] = array(
+            '#type' => 'select',
+            '#prefix' => "<div class=\"fields-column-join\">",
+            '#suffix' => "</div>",
+            '#options' => $chado_tables,
+            '#required' => FALSE,
+            '#default_value' => $table,
+            '#ahah' => array(
+      	     'path' => 'admin/tripal/tripal_views_setup/ajax/field_col_join',
+      	     'wrapper' => "fields-column-join-column-$mview_id-$i",
+              'effect' => 'fade',
+              'event' => 'change',
+              'method' => 'replace',
+			   ),
 			);
-			$column_join = array();
-			if($form_state['values']["fields_column_join_$i"]){
-				$column_join = array('hello', 'world');
-			}
-			$form['view_setup_table']["fields_column_join_column_$i"] = array(
-         '#type' => 'select',
-//          '#prefix' => "<div id=\"fields-column-join-column-$i\" class=\"fields-column-join-column\">",
-				 '#prefix' => "<div class=\"fields-column-join-column\">",
-         '#suffix' => "</div>",
-         '#options' => $column_join,
-         '#required' => FALSE,
+         if($table){
+            $table_desc = module_invoke_all('chado_'.$table.'_schema');
+            $columns = array_keys($table_desc['fields']);
+         } else {
+            $columns = array();
+         }
+			$form['view_setup_table']["fields_column_join_column_$mview_id-$i"] = array(
+            '#type' => 'select',
+		      '#prefix' => "<div id=\"fields-column-join-column-$mview_id-$i\" class=\"fields-column-join-column\">",
+            '#suffix' => "</div>",
+            '#options' => $columns,
+            '#required' => FALSE,
 			);
-			$form['view_setup_table']["fields_column_handler_$i"] = array(
-         '#type' => 'select',
-           '#prefix' => "<div class=\"fields-column-handler\">",
-           '#suffix' => "</div>",
-         '#options' => $handlers,
-         '#required' => FALSE,
+			$form['view_setup_table']["fields_column_handler_$mview_id-$i"] = array(
+            '#type' => 'select',
+            '#prefix' => "<div class=\"fields-column-handler\">",
+            '#suffix' => "</div>",
+            '#options' => $handlers,
+            '#required' => FALSE,
 			);
 			$form['view_setup_table']["fields_end_$i"] = array(
-         '#type' => 'markup',
-         '#value' => "</div>",
+            '#type' => 'markup',
+            '#value' => "</div>",
 			);
 			$i++;
 		}
 
-		$form['row_counter'] = array(
-		'#type' => 'hidden',
-		'#value' => $i,
-		);
-
-
-
-	}
-	
-	$form['submit'] = array(
+	   $form['view_setup_table']['submit'] = array(
 	      '#type' => 'submit',
 	      '#value' => 'Create',
-	);
+	   );
 
+		$form['row_counter'] = array(
+		   '#type' => 'hidden',
+		   '#value' => $i,
+		);
+	} // end if($form_state['values']['mview_id']) 
 	return $form;
 }
 /**
@@ -239,16 +238,47 @@ function tripal_views_setup_new_setup_form(&$form_state){
  */
 function tripal_view_setup_ajax_mview_cols(){
 
-	$form = tripal_views_setup_ajax_getform($form_state, $args, $_POST);
+   // regenerate the form
+	$form = tripal_views_setup_ajax_rebuild_form($form_state, $args, $_POST);
 
-	unset($form['view_setup_table']['#prefix'], $form['view_setup_table']['#suffix']);
-	$output = theme('status_message') . drupal_render($form['view_setup_table']);
+   // because the AJAX sent a post of the mview_id, the form now has in it
+   // form components for the rows for the materialized view.  We want to add
+   // these components to the page, but we don't need to add the existing form 
+   // elements because they are already there.
+   $view_setup_table_form = $form['view_setup_table'];
+	unset($view_setup_table_form['#prefix'], $view_setup_table_form['#suffix']);
+	$output = theme('status_message') . drupal_render($view_setup_table_form);
 
 	// Final rendering callback.
 	drupal_json(array('status' => TRUE, 'data' => $output));
 }
+/**
+ *
+ * @ingroup tripal_view_setup
+ */
+function tripal_view_setup_ajax_field_col_join(){
 
-function tripal_views_setup_ajax_getform(&$form_state, &$args, &$_POST){
+   // regenerate the form
+	$form = tripal_views_setup_ajax_rebuild_form($form_state, $args, $_POST);
+
+   // get the information we need to pull out table select box that was changed
+   $mview_id = $form_state['values']['mview_id'];
+//   $row = $form_state['values']['mview_id'];
+
+//   $row_select_box = $form['view_setup_table']["fields-column-join-column-$mview_id-1"];
+//	unset($row_select_box['#prefix'], $row_select_box['#suffix']);
+//	$output = theme('status_message') . drupal_render($row_select_box);
+
+	// Final rendering callback.
+//	drupal_json(array('status' => TRUE, 'data' => $output));
+   drupal_json(array('status' => TRUE, 'data' => 'test'));
+
+}
+/**
+ *
+ * @ingroup tripal_view_setup
+ */
+function tripal_views_setup_ajax_rebuild_form(&$form_state, &$args, &$_POST){
 
 	// Retrieve the form from the cache
 	$form_state = array('storage' => NULL);
@@ -279,21 +309,7 @@ function tripal_views_setup_ajax_getform(&$form_state, &$args, &$_POST){
 	return $form;
 }
 
-/**
- *
- * @ingroup tripal_view_setup
- */
-function tripal_view_setup_ajax_field_col_join(){
 
-	$form = tripal_views_setup_ajax_getform($form_state, $args, $_POST);
-
-	unset($form['view_setup_table']['#prefix'], $form['view_setup_table']['#suffix']);
-	$output = theme('status_message') . drupal_render($form['view_setup_table']);
-
-	// Final rendering callback.
-	drupal_json(array('status' => TRUE, 'data' => $output));
-
-}
 
 /**
  *
