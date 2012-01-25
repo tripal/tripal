@@ -185,7 +185,7 @@ function tripal_views_setup_new_setup_form(&$form_state){
          '#required' => FALSE,
          '#ahah' => array(
            'path' => 'admin/tripal/tripal_views_setup/ajax/field_col_join',
-           'wrapper' => "table-rows-div",
+           'wrapper' => "fields-column-join-column",
            'effect' => 'fade',
            'event' => 'change',
            'method' => 'replace',
@@ -197,7 +197,8 @@ function tripal_views_setup_new_setup_form(&$form_state){
 			}
 			$form['view_setup_table']["fields_column_join_column_$i"] = array(
          '#type' => 'select',
-         '#prefix' => "<div id=\"fields-column-join-column-$i\" class=\"fields-column-join-column\">",
+//          '#prefix' => "<div id=\"fields-column-join-column-$i\" class=\"fields-column-join-column\">",
+				 '#prefix' => "<div class=\"fields-column-join-column\">",
          '#suffix' => "</div>",
          '#options' => $column_join,
          '#required' => FALSE,
