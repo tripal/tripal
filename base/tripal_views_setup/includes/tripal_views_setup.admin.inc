@@ -65,7 +65,7 @@ function tripal_views_setup_admin_form_submit($form, &$form_state){
  *
  * @ingroup tripal_view_setup
  */
-function tripal_views_setup_new_search_form(&$form_state){
+function tripal_views_setup_new_setup_form(&$form_state){
 	$form = array();
 
 	$form['#cache'] = TRUE;
@@ -127,11 +127,9 @@ function tripal_views_setup_new_search_form(&$form_state){
   	'#suffix' => '</div>',
 	);
 
-	if($form_state['values']['mview_id'] || $form['mview_id']['#value']){
-		if (isset($form_state['values']['mview_id']))
-			$mview_id = $form_state['values']['mview_id'];
-		else
-			$mview_id = $form['mview_id']['#value'];
+	if($form_state['values']['mview_id']){
+
+		$mview_id = $form_state['values']['mview_id'];
 
 		$form['view_setup_table'] = array(
 			'#type' => 'fieldset',
@@ -187,7 +185,7 @@ function tripal_views_setup_new_search_form(&$form_state){
          '#required' => FALSE,
          '#ahah' => array(
            'path' => 'admin/tripal/tripal_views_setup/ajax/field_col_join',
-           'wrapper' => "fields-column-join-column-$i",
+           'wrapper' => "table-rows-div",
            'effect' => 'fade',
            'event' => 'change',
            'method' => 'replace',
@@ -197,7 +195,6 @@ function tripal_views_setup_new_search_form(&$form_state){
 			if($form_state['values']["fields_column_join_$i"]){
 				$column_join = array('hello', 'world');
 			}
-			dpm($form_state,'formstate attopfieldcolumns');
 			$form['view_setup_table']["fields_column_join_column_$i"] = array(
          '#type' => 'select',
          '#prefix' => "<div id=\"fields-column-join-column-$i\" class=\"fields-column-join-column\">",
@@ -223,14 +220,15 @@ function tripal_views_setup_new_search_form(&$form_state){
 		'#type' => 'hidden',
 		'#value' => $i,
 		);
+
+
+
 	}
-
+	
 	$form['submit'] = array(
-      '#type' => 'submit',
-      '#value' => 'Create',
+	      '#type' => 'submit',
+	      '#value' => 'Create',
 	);
-
-	dpm($form, 'form final');
 
 	return $form;
 }
@@ -285,9 +283,6 @@ function tripal_views_setup_ajax_getform(&$form_state, &$args, &$_POST){
  * @ingroup tripal_view_setup
  */
 function tripal_view_setup_ajax_field_col_join(){
-	dpm($_POST,'post tripal_view_setup_ajax_field_col_join');
-
-	dpm($form_state,'formstate tripal_view_setup_ajax_field_col_join');
 
 	$form = tripal_views_setup_ajax_getform($form_state, $args, $_POST);
 
@@ -397,8 +392,8 @@ function tripal_view_setup_ajax_field_col_join(){
 // }
 
 // function tripal_views_setup_fields_form_submit($form, &$form_state){
-// 	dpm($form,'formfield');
-// 	dpm($form_state, 'formstatefield');
+// 	----($form,'formfield');
+// 	----($form_state, 'formstatefield');
 
 // }
 
@@ -408,7 +403,7 @@ function tripal_view_setup_ajax_field_col_join(){
  *
  * @ingroup tripal_view_setup
  */
-function tripal_views_setup_new_search_form_submit($form, &$form_state){
-	dpm($form,'form on submit');
-	dpm($form_state, 'formstate on submit');
+function tripal_views_setup_new_setup_form_submit($form, &$form_state){
+	dpm($form, 'form on submit');
+	dpm($form_state, 'forms_state on submit');
 }

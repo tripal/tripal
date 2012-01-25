@@ -1,43 +1,43 @@
 <style type="text/css">
 
-#tripal-views-setup-fields-form  .fields-new-row, .field-headers {
+#tripal-views-setup-new-setup-form  .fields-new-row, .field-headers {
    dislay: block;
    margin: 0px;
    border-bottom-style: solid;
    border-bottom-width: 1px;
 }
-#tripal-views-setup-fields-form .form-item {
+#tripal-views-setup-new-setup-form .form-item {
    margin: 0px 0px 5px 0px;
 }
-#tripal-views-setup-fields-form .column-id,.fields-column-join,.fields-column-join-column, .fields-column-handler {
+#tripal-views-setup-new-setup-form .column-id,.fields-column-join,.fields-column-join-column, .fields-column-handler {
    display: inline-block;
    margin: 0px;
    vertical-align: top;
 }
-#tripal-views-setup-fields-form  .field-headers {
+#tripal-views-setup-new-setup-form  .field-headers {
    font-weight: bold;  
 }
-#tripal-views-setup-fields-form  .field-headers div {
+#tripal-views-setup-new-setup-form  .field-headers div {
    display: inline-block;
    margin: 0px;
    vertical-align: top;
 }
-#tripal-views-setup-fields-form .column-name {
+#tripal-views-setup-new-setup-form .column-name {
 
 }
-#tripal-views-setup-fields-form .column-type {
+#tripal-views-setup-new-setup-form .column-type {
    font-style: italic;  
 }
-#tripal-views-setup-fields-form .column-id {
+#tripal-views-setup-new-setup-form .column-id {
    width: 25%;
 }
-#tripal-views-setup-fields-form .fields-column-join {
+#tripal-views-setup-new-setup-form .fields-column-join {
    width: 25%;
 }
-#tripal-views-setup-fields-form .fields-column-join-column {
+#tripal-views-setup-new-setup-form .fields-column-join-column {
    width: 25%;
 }
-#tripal-views-setup-fields-form .fields-column-handler {
+#tripal-views-setup-new-setup-form .fields-column-handler {
    width: 25%;
 }
 

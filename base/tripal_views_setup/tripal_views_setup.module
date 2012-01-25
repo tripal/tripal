@@ -15,11 +15,11 @@ function tripal_views_setup_menu(){
     'type' => MENU_NORMAL_ITEM,
   );
 
-  //page to actually create search->mview->chado table relationships
+  //page to actually create setup->mview->chado table relationships
    $items['admin/tripal/tripal_views_setup_new'] = array(
      'title' => 'Create New Views Setup',
      'page callback' => 'drupal_get_form',
-     'page arguments' => array('tripal_views_setup_new_search_form'),
+     'page arguments' => array('tripal_views_setup_new_setup_form'),
      'access arguments' => array('access administration pages'), //TODO: figure out the proper permissions arguments
      'type' => MENU_NORMAL_ITEM,
    );
@@ -58,7 +58,8 @@ function tripal_views_setup_menu(){
 function tripal_views_setup_theme(){
   $theme = array();
 
-  $theme['tripal_views_setup_fields_form'] = array(
+//   $theme['tripal_views_setup_fields_form'] = array(
+  $theme['tripal_views_setup_new_setup_form'] = array(
     'arguments' => array('form' => NULL),
       'template'  => 'tripal_views_setup_fields_form',
    );
