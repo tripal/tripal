@@ -34,8 +34,9 @@ function tripal_views_setup_menu(){
   $items['admin/tripal/tripal_views_setup/ajax/field_col_join'] = array(
      'title' => 'Get Join Columns',
      'page callback' => 'tripal_view_setup_ajax_field_col_join',
+  	 'type' => MENU_CALLBACK,
      'access arguments' => array('access administration pages'),
-     'type' => MENU_CALLBACK,
+     
    );
 
   return $items;
