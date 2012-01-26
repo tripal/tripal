@@ -1,7 +1,7 @@
 <?php
-function tripal_views_setup_schema(){
+function tripal_views_integration_schema(){
 	$schema = array();
-	$schema['tripal_views_setup'] = array(
+	$schema['tripal_views_integration'] = array(
 		'description' => 'contains the setupes, their materialized view id and base table name that was used.',
 		'fields' => array(
 			'setup_id' => array(
@@ -46,7 +46,7 @@ function tripal_views_setup_schema(){
 		'description' => 'which materialzed views and chado tables to join in a given setup',
 		'fields' => array(
 			'setup_id' => array(
-				'description' => 'tripal setup id from tripal_views_setup table',
+				'description' => 'tripal setup id from tripal_views_integration table',
 				'type' => 'serial',
 				'unsigned' => TRUE,
 				'not null'=> TRUE,
@@ -75,7 +75,7 @@ function tripal_views_setup_schema(){
 		'description' => 'in formation for views: column and views handler name',
 		'fields' => array(
 			'setup_id' => array(
-				'description' => 'which setup this is used by from tripal_views_setup table',
+				'description' => 'which setup this is used by from tripal_views_integration table',
 					'type' => 'serial',
 					'unsigned' => TRUE,
 					'not null'=> TRUE,
@@ -99,12 +99,12 @@ function tripal_views_setup_schema(){
 	return $schema;
 }
 
-function tripal_views_setup_install(){
-	drupal_install_schema('tripal_views_setup');
+function tripal_views_integration_install(){
+	drupal_install_schema('tripal_views_integration');
 }
 
-function tripal_views_setup_uninstall(){
-	drupal_uninstall_schema('tripal_views_setup');
+function tripal_views_integration_uninstall(){
+	drupal_uninstall_schema('tripal_views_integration');
 }
 
 

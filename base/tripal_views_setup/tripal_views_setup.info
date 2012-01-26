@@ -1,7 +1,0 @@
-name = Tripal Views Setup 
-description = Tripal suite module to perform setup as views, instead of the built in drupal setup 
-core = 6.x
-package = Tripal
-
-dependencies[] = tripal_core
-

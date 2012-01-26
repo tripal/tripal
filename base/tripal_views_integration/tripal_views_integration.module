@@ -1,0 +1,66 @@
+<?php
+
+require_once 'includes/tripal_views_integration.admin.inc';
+
+/**
+ *
+ * @ingroup tripal_views_integration
+ */
+function tripal_views_integration_menu(){
+	$items = array();
+
+   $items['admin/tripal/tripal_views_integration'] = array(
+     'title' => t('Views Integration'),
+     'description' => 'Basic Description of Tripal Views Integration Module',
+     'page callback' => 'tripal_views_integration_module_description_page',
+     'access arguments' => array('administer site configuration'),
+     'type' => MENU_NORMAL_ITEM,
+   );
+
+	$items['admin/tripal/tripal_views_integration/list'] = array(
+    'title' => t('List of Integrated Views'),
+    'description' => t('Tripal Views Setups settings page, allows you to select and create materialized views and chado tables to use for searches.'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_views_integration_admin_form'),
+    'access arguments' => array('manage tripal_views_integration'),
+    'type' => MENU_NORMAL_ITEM,
+	);
+
+	//page to actually create setup->mview->chado table relationships
+	$items['admin/tripal/tripal_views_integration/new'] = array(
+     'title' => 'Views Integration',
+     'page callback' => 'drupal_get_form',
+     'page arguments' => array('tripal_views_integration_new_setup_form'),
+     'access arguments' => array('manage tripal_views_integration'), //TODO: figure out the proper permissions arguments
+     'type' => MENU_NORMAL_ITEM,
+	);
+
+	return $items;
+}
+/**
+ *  Set the permission types that the chado module uses.  Essentially we
+ *  want permissionis that protect creation, editing and deleting of chado
+ *  data objects
+ *
+ * @ingroup tripal_views_integration
+ */
+function tripal_views_integration_perm(){
+   return array(
+      'manage tripal_views_integration',
+   );
+}
+/**
+ *
+ * @ingroup tripal_views_integration
+ */
+function tripal_views_integration_theme(){
+	$theme = array();
+
+	$theme['tripal_views_integration_new_setup_form'] = array(
+      'arguments' => array('form' => NULL),
+      'template'  => 'tripal_views_integration_fields_form',
+	);
+
+	return $theme;
+}
+
