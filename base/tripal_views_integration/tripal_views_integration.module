@@ -28,7 +28,7 @@ function tripal_views_integration_menu(){
 
 	//page to actually create setup->mview->chado table relationships
 	$items['admin/tripal/tripal_views_integration/new'] = array(
-     'title' => 'Views Integration',
+     'title' => 'Integrate a Materialized View',
      'page callback' => 'drupal_get_form',
      'page arguments' => array('tripal_views_integration_new_setup_form'),
      'access arguments' => array('manage tripal_views_integration'), //TODO: figure out the proper permissions arguments
