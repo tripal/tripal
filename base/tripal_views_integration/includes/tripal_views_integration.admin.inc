@@ -293,11 +293,14 @@ function tripal_views_integration_new_setup_form(&$form_state){
          );
          $i++;
       }
-      $form['view_setup_table']['save'] = array(
-          '#type'  => 'submit',
-          '#value' => t('Save'),
-      );
+
    }
+   $form['save'] = array(
+             '#type'  => 'submit',
+             '#value' => t('Save'),
+             '#executes_submit_callback' => TRUE,
+   );
+   dpm($form, 'form at end of creating');
    return $form;
 }
 
@@ -306,6 +309,9 @@ function tripal_views_integration_new_setup_form(&$form_state){
  *
  * @ingroup tripal_views_integration
  */
-function tripal_views_integration_new_setup_form_submit($form, &$form_state){
+function tripal_views_integration_submit($form, &$form_state){
+	dpm($form, 'form');
+	drupal_set_message('Congratulations, you entered valid data. Unfortunately, nothing was saved because this is a demo.');
+	
 
 }
