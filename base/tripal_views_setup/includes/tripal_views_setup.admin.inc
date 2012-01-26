@@ -65,7 +65,23 @@ function tripal_views_setup_admin_form_submit($form, &$form_state){
  *
  * @ingroup tripal_view_setup
  */
-function tripal_views_setup_new_setup_form(&$form_state){
+// function tripal_views_setup_admin_menu($howmany = NULL){
+// 	hook_menu();
+// 	$items = array();
+// 	for ($i = 0; $i < $howmany; $i++) {
+// 		$items["admin/tripal/tripal_views_setup/ajax/field_col_join-$i"] = array(
+// 			     'title' => 'Get Join Columns',
+// 			     'page callback' => 'tripal_view_setup_ajax_field_col_join',
+// 			  	 'type' => MENU_CALLBACK,
+// 			     'access arguments' => array('access administration pages'),
+// 		);
+// 	}
+
+// 	menu_link_save($items);
+// 	return $items;
+// }
+
+function tripal_views_setup_new_setup_form(&$form_state, $ahah_values = array()){
 	$form = array();
 
 	$form['#cache'] = TRUE;
@@ -94,7 +110,6 @@ function tripal_views_setup_new_setup_form(&$form_state){
 	while ($mview_option = db_fetch_array($mview_query)){
 		$mview_options[$mview_option['mview_id']] = $mview_option['name'];
 	}
-
 
 	$form['mview_id'] = array(
       '#title' => t('Materialized View'),
@@ -157,6 +172,18 @@ function tripal_views_setup_new_setup_form(&$form_state){
               "<div class=\"fields-column-handler\">Handler</div></div>",
 		);
 		foreach ($columns as $column){
+			
+// 			for ($i = 0; $i < $howmany; $i++) {
+				$item = array(
+					'link_path' => "admin/tripal/tripal_views_setup/ajax/field_col_join-$i",
+			     'title' => 'Get Join Columns',
+			     'page callback' => 'tripal_view_setup_ajax_field_col_join',
+			  	 'type' => MENU_CALLBACK,
+			     'access arguments' => array('access administration pages'),
+				);
+// 			}
+			
+			menu_link_save($item);
 
 			$column = trim($column);  // trim trailing and leading spaces
 			preg_match("/^(.*?)\ (.*?)$/",$column,$matches);
@@ -186,10 +213,10 @@ function tripal_views_setup_new_setup_form(&$form_state){
             '#required' => FALSE,
             '#default_value' => $table,
             '#ahah' => array(
-      	     'path' => 'admin/tripal/tripal_views_setup/ajax/field_col_join',
+      	     'path' => "admin/tripal/tripal_views_setup/ajax/field_col_join_$i",
       	     'wrapper' => "fields-column-join-column-$mview_id-$i",
               'effect' => 'fade',
-//               'event' => 'change',
+              'event' => 'change',
               'method' => 'replace',
 			   ),
 			);
@@ -239,8 +266,9 @@ function tripal_views_setup_new_setup_form(&$form_state){
 function tripal_view_setup_ajax_mview_cols(){
 
    // regenerate the form
-	$form = tripal_views_setup_ajax_rebuild_form($form_state, $args, $_POST);
-
+// 	$form = tripal_views_setup_ajax_rebuild_form($form_state, $args, $_POST);
+	$form = tripal_views_setup_ajax_rebuild_form();
+	
    // because the AJAX sent a post of the mview_id, the form now has in it
    // form components for the rows for the materialized view.  We want to add
    // these components to the page, but we don't need to add the existing form 
@@ -250,8 +278,8 @@ function tripal_view_setup_ajax_mview_cols(){
 	$output = theme('status_message') . drupal_render($view_setup_table_form);
 
 	// Final rendering callback.
-	$javascript = drupal_add_js(NULL, NULL, 'header');
-	drupal_json(array('status' => TRUE, 'data' => $output, 'settings' => call_user_func('array_merge_recursive', $javascript['setting'])));
+// 	$javascript = drupal_add_js(NULL, NULL, 'header');
+	drupal_json(array('status' => TRUE, 'data' => $output,));// 'settings' => call_user_func('array_merge_recursive', $javascript['setting'])));
 }
 /**
  *
@@ -260,28 +288,50 @@ function tripal_view_setup_ajax_mview_cols(){
 function tripal_view_setup_ajax_field_col_join(){
 
    // regenerate the form
-	$form = tripal_views_setup_ajax_rebuild_form($form_state, $args, $_POST);
+	$form = tripal_views_setup_ajax_rebuild_form();
 
-   // get the information we need to pull out table select box that was changed
-   $mview_id = $form_state['values']['mview_id'];
-//   $row = $form_state['values']['mview_id'];
+//    // get the information we need to pull out table select box that was changed
+//    $mview_id = $form_state['values']['mview_id'];
+// //   $row = $form_state['values']['mview_id'];
 
-//   $row_select_box = $form['view_setup_table']["fields-column-join-column-$mview_id-1"];
-//	unset($row_select_box['#prefix'], $row_select_box['#suffix']);
-// 	$output = theme('status_message') . drupal_render($row_select_box);
+// //   $row_select_box = $form['view_setup_table']["fields-column-join-column-$mview_id-1"];
+// //	unset($row_select_box['#prefix'], $row_select_box['#suffix']);
+// // 	$output = theme('status_message') . drupal_render($row_select_box);
 
-	// Final rendering callback.
-// 	$javascript = $javascript = drupal_add_js(NULL);
-// 	drupal_json(array('status' => TRUE, 'data' => $output, 'settings' => call_user_func('array_merge_recursive', $javascript['setting'])));
-  $javascript = drupal_add_js(NULL, NULL, 'header');
-	drupal_json(array('status' => TRUE, 'data' => 'helloworld', 'settings' => call_user_func('array_merge_recursive', $javascript['setting'])));
+// 	// Final rendering callback.
+// // 	$javascript = $javascript = drupal_add_js(NULL);
+// // 	drupal_json(array('status' => TRUE, 'data' => $output, 'settings' => call_user_func('array_merge_recursive', $javascript['setting'])));
+//   $javascript = drupal_add_js(NULL, NULL, 'header');
+// 	drupal_json(array('status' => TRUE, 'data' => 'helloworld', 'settings' => call_user_func('array_merge_recursive', $javascript['setting'])));
 
+	$changed_elements = $form['fields-column-join-column-$mview_1-1'];
+	unset($changed_elements['#prefix'], $changed_elements['#suffix']);
+	$output = theme('status_messages') . drupal_render($changed_elements);
+	drupal_json(array(
+		    'status'   => TRUE,
+		    'data'     => $output,
+	));
+}
+
+function tripal_views_setup_ajax_rebuild_form(){
+$form_state = array('storage' => NULL, 'submitted' => FALSE);
+$form_build_id = $_POST['form_build_id'];
+$form = form_get_cache($form_build_id, $form_state);
+$args = $form['#parameters'];
+$form_id = array_shift($args);
+$form_state['post'] = $form['#post'] = $_POST;
+// Enable the submit/validate handlers to determine whether AHAH-submittted.
+$form_state['ahah_submission'] = TRUE;
+$form['#programmed'] = $form['#redirect'] = FALSE;
+drupal_process_form($form_id, $form, $form_state);
+$form = drupal_rebuild_form($form_id, $form_state, $args, $form_build_id);
+return $form;
 }
 /**
  *
  * @ingroup tripal_view_setup
  */
-function tripal_views_setup_ajax_rebuild_form(&$form_state, &$args, &$_POST){
+function tripal_views_setup_ajax_rebuild_formz(&$form_state, &$args, &$_POST){
 
 	// Retrieve the form from the cache
 	$form_state = array('storage' => NULL, 'submitted' => FALSE,);
