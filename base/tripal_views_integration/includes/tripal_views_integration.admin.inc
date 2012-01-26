@@ -110,7 +110,7 @@ function tripal_views_integration_admin_form(){
 
    $form['new'] = array(
     '#type' => 'markup',
-    '#value' => l(t(' New'), 'admin/tripal/tripal_views_integration_new'),
+    '#value' => l(t(' New'), 'admin/tripal/tripal_views_integration/new'),
    );
 
    return $form;
