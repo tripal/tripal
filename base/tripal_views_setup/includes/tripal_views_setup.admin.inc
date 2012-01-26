@@ -172,7 +172,7 @@ function tripal_views_setup_new_setup_form(&$form_state, $ahah_values = array())
               "<div class=\"fields-column-handler\">Handler</div></div>",
 		);
 		foreach ($columns as $column){
-			
+			// each ahah element must have it's own matching menu item, maybe this is why our created ahahs don't work
 // 			for ($i = 0; $i < $howmany; $i++) {
 				$item = array(
 					'link_path' => "admin/tripal/tripal_views_setup/ajax/field_col_join-$i",
@@ -183,7 +183,7 @@ function tripal_views_setup_new_setup_form(&$form_state, $ahah_values = array())
 				);
 // 			}
 			
-			menu_link_save($item);
+			menu_link_save($item);// saves the menu item
 
 			$column = trim($column);  // trim trailing and leading spaces
 			preg_match("/^(.*?)\ (.*?)$/",$column,$matches);
