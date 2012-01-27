@@ -6,7 +6,7 @@ Submit issue reported and solved here:
 http://drupal.org/node/1231140
 The original patch location:
 http://drupal.org/files/issues/1231140.ahah_helper.form-submit-handler.patch
-The patch file alexg used:
+The patch file alexgl used:
 patches/1231140.ahah_helper.form-submit-handler.patch
 Usage:
 1. Find the global or local path to this module and substitue in the command below for*path_to_tripal_views_integration*
