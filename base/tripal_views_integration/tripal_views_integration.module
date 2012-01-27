@@ -3,6 +3,21 @@
 require_once 'includes/tripal_views_integration.admin.inc';
 
 /**
+ * Implements hook_views_api()
+ *
+ * Purpose: Essentially this hook tells drupal that there is views support for
+ *  for this module which then includes tripal_db.views.inc where all the
+ *  views integration code is
+ *
+ * @ingroup tripal_views_integration
+ */ 
+function tripal_views_integration_views_api() {
+   return array(
+      'api' => 2.0,
+   );
+}
+
+/**
  *
  * @ingroup tripal_views_integration
  */

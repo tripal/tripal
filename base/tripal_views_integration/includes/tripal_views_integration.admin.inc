@@ -234,8 +234,8 @@ function tripal_views_integration_new_setup_form(&$form_state){
               "<div class=\"column-id\">Field Name and Type</div>".
               "<div class=\"fields-column-join\">Join Table</div>".
               "<div class=\"fields-column-join-column\">Join Column</div>".
-              "<div class=\"fields-column-handler-filter\">Handler: Filter</div></div>".
-    					"<div class=\"fields-column-handler-field\">Handler: Field</div></div>",
+              "<div class=\"fields-filter-handler\">Filter Handler</div>".
+              "<div class=\"fields-field-handler\">Field Handler</div></div>",
     );
 
     $data['field_types'] = array();
@@ -269,7 +269,7 @@ function tripal_views_integration_new_setup_form(&$form_state){
         '#required' => FALSE,
         '#default_value' => $table,
         '#ahah' => array(
-           'path' => ahah_helper_path(array('view_setup_table',"fields_join_column_$mview_id-$i")),
+           'path' => ahah_helper_path(array("view_setup_table","fields_join_column_$mview_id-$i")),
            'wrapper' => "fields-column-join-column-$mview_id-$i",
            'effect' => 'fade',
            'event' => 'change',
@@ -290,20 +290,20 @@ function tripal_views_integration_new_setup_form(&$form_state){
         '#required' => FALSE,
       );
       
-      $form['view_setup_table']["fields_handler_filter_$mview_id-$i"] = array(
+      $form['view_setup_table']["fields_filter_handler_$mview_id-$i"] = array(
         '#type' => 'select',
-        '#prefix' => "<div class=\"fields-column-handler-filter\">",
+        '#prefix' => "<div class=\"fields-filter-handler\">",
         '#suffix' => "</div>",
         '#options' => $handlers_filters,
         '#required' => FALSE,
       );
       
-      $form['view_setup_table']["fields_handler_field_$mview_id-$i"] = array(
-              '#type' => 'select',
-              '#prefix' => "<div class=\"fields-column-handler-field\">",
-              '#suffix' => "</div>",
-              '#options' => $handlers_fields,
-              '#required' => FALSE,
+      $form['view_setup_table']["fields_field_handler_$mview_id-$i"] = array(
+         '#type' => 'select',
+         '#prefix' => "<div class=\"fields-field-handler\">",
+         '#suffix' => "</div>",
+         '#options' => $handlers_fields,
+         '#required' => FALSE,
       );
       
       $form['view_setup_table']["fields_end_$i"] = array(
@@ -311,11 +311,14 @@ function tripal_views_integration_new_setup_form(&$form_state){
         '#value' => "</div>",
       );
       $i++;
-    }
+   }
+   $form['view_setup_table']['save'] = array(
+      '#type'  => 'submit',
+      '#value' => t('Save'),
+   );
+
     $data['row_count'] = $i - 1;
   }
-
-
 
   //use this to put values into $form_state['values']
   $form['data'] = array();
@@ -329,13 +332,6 @@ function tripal_views_integration_new_setup_form(&$form_state){
     	'#value' => $value,
     );
   }
-
-
-  $form['save'] = array(
-  	'#type'  => 'submit',
-  	'#value' => t('Save'),
-  );
-
 
   return $form;
 }
