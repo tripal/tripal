@@ -363,7 +363,7 @@ function tripal_views_integration_new_setup_form_submit($form, &$form_state){
   foreach ($form_state['values']['field_types'] as $key => $value){
     $mview_join_record = array(
         'setup_id' => $tripal_views_integration_record['setup_id'],
-        'view_table' => $name,
+        'view_table' => $form['mview_id']['#options'][$form_state['values']['mview_id']],
         'view_column' => $key,
         'chado_table_join' => $form_state['values']["fields_join_$mview_id-$i"],
         'chado_column' => $form['view_setup_table']["fields_join_column_$mview_id-$i"]['#options'][$form_state['values']["fields_join_column_$mview_id-$i"]],
@@ -373,11 +373,10 @@ function tripal_views_integration_new_setup_form_submit($form, &$form_state){
     $handlers_record = array(
       'setup_id' => $tripal_views_integration_record['setup_id'],
       'column_name' => $key,//TODO: should we change this to an mview_join_id from tripal_view_join?
-      'handler_filter' => $form['view_setup_table']["fields_handler_filter_$mview_id-$i"]['#options'][$form_state['values']["fields_handler_filter_$mview_id-$i"]],
-    	'handler_field' => $form['view_setup_table']["fields_handler_field_$mview_id-$i"]['#options'][$form_state['values']["fields_handler_field_$mview_id-$i"]],
+      'handler_filter' => $form['view_setup_table']["fields_filter_handler_$mview_id-$i"]['#options'][$form_state['values']["fields_filter_handler_$mview_id-$i"]],
+    	'handler_field' => $form['view_setup_table']["fields_field_handler_$mview_id-$i"]['#options'][$form_state['values']["fields_field_handler_$mview_id-$i"]],
     );
     drupal_write_record('tripal_views_handlers', $handlers_record);
-    
     $i++;
   }
 
