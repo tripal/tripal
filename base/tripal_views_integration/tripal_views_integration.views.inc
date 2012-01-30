@@ -133,10 +133,9 @@
 
         
         /*TODO: get join info here per mview field*/
-        /*
         
         $chado_join_field = $tmj_row->chado_table_join;
-        $chado_join_column = $tmj_row->chado_column
+        $chado_join_column = $tmj_row->chado_column;
         $join_column = $tmj_row->view_column;
         
         $data[$mview_table->name]['table']['join'] = array(
@@ -149,7 +148,6 @@
           ),
         );
         
-        */
         $i++;
       }
 
