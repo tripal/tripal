@@ -598,10 +598,21 @@ function tripal_analysis_blast_get_result_object($xml_string,$db,$max,$feature_i
 		}
 		
 		$hits_array[$hit_count]['best_evalue'] = $best_evalue;
-		$percent_identity = number_format($best_identity/$best_len*100, 2);
-		$hits_array[$hit_count]['percent_identity'] = $percent_identity;
+		
+		if (!empty($best_len)) {
+  		$percent_identity = number_format($best_identity/$best_len*100, 2);
+  		$hits_array[$hit_count]['percent_identity'] = $percent_identity;
+  	}
+  	
 		$hits_array[$hit_count]['description'] = $description;
-		$hits_array[$hit_count]['hsp'] = $hsp_array;
+		
+		// if there is at least one HSP
+		if (!empty($hsp_array[0]['query_frame'])) {
+		  $hits_array[$hit_count]['hsp'] = $hsp_array;
+		} else {
+		  $hits_array[$hit_count]['hsp'] = array();
+		}
+		
 		$hit_count ++;
 		
 		// if we've hit the maximum number of hits then return
