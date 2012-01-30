@@ -9019,12 +9019,6 @@ function tripal_core_chado_analysisprop_schema () {
         'type' => 'text',
         'not null' => '',
       ),
-      'rank' => array(
-//        'description' => 'TODO: please describe this field!',
-        'type' => 'int',
-        'not null' => '1',
-        'default' => '0',
-      ),
     ),
     'primary key' => array(
       '0' => 'analysisprop_id',
@@ -9033,7 +9027,6 @@ function tripal_core_chado_analysisprop_schema () {
       'analysisprop_c1' => array(
         '0' => 'analysis_id',
         '1' => 'type_id',
-        '2' => 'rank',
       ),
     ),
     'indexes' => array(

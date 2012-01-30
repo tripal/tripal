@@ -81,9 +81,12 @@ if(count($blast_results_list) > 0){
 			      <td><?php print $hit['hit_name'] ?></td>
 		      <?php } ?>
 			   <td nowrap><?php print $hit['best_evalue']?></td>
-			   <td nowrap><?php  print $hit['percent_identity']?></td>
+			   <td nowrap><?php  if (!empty($hit['percent_identity'])) { print $hit['percent_identity']; } ?></td>
 			   <td><?php print $hit['description']?></td>
 		   </tr>
+		   
+		   <!-- If there is alignment information for at least one HSP -->
+		   <?php if (!empty($hit['hsp'][0]['query_frame'])) { ?>
 	      <tr class="<?php print $class ?>">
 		      <td colspan=5>
 			      <a class="blast-hit-arrow-icon" onclick="return tripal_blast_toggle_alignment(<?php print $analysis->analysis_id ?>,<?php print $i?>)"><img id="tripal_analysis_blast-info-toggle-image-<?php print $analysis->analysis_id ?>-<?php print $i?>" src=<?php print $hit['arrowr_url']?> align="top"> View Alignment</a>
@@ -102,7 +105,8 @@ if(count($blast_results_list) > 0){
 		      <?php } ?>
 		      </td>
 	      </tr>		
-         <?php $i++;
+         <?php }
+         $i++;
 	   } ?>
 	</table>
 </div>

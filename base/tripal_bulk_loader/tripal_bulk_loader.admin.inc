@@ -117,6 +117,7 @@ function tripal_bulk_loader_modify_template_base_form ($form_state = NULL, $mode
   $form['records'] = array(
 		'#type' => ($form_state['storage']['template_id'])? 'fieldset' : 'hidden',
 		'#title' => t('Current Records'), 
+		'#collapsible' => TRUE,
 		'#weight' => 2,
   );
   
@@ -149,6 +150,7 @@ function tripal_bulk_loader_modify_template_base_form ($form_state = NULL, $mode
 	$form['fields'] = array(
 		'#type' => ($form_state['storage']['template_id'])? 'fieldset' : 'hidden',
 		'#title' => t('Current Fields'),
+		'#collapsible' => TRUE,
 		'#weight' => 3,
 	);
 

@@ -113,6 +113,9 @@ function tripal_core_chado_insert($table,$values){
    
    // get the table description
    $table_desc = module_invoke_all('chado_'.$table.'_schema');
+   if (empty($table_desc)) {
+   	watchdog('tripal_core', 'tripal_core_chado_insert: There is no table description for !table_name', array('!table_name' => $table), WATCHDOG_WARNING);       
+   }
 
    // iterate through the values array and create a new 'insert_values' array
    // that has all the values needed for insert with all foreign relationsihps
