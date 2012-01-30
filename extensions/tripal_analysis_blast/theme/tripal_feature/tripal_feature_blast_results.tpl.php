@@ -5,7 +5,7 @@ $blast_results_list = $feature->tripal_analysis_blast->blast_results_list;
 ?>
 <div id="tripal_ajaxLoading" style="display:none">
 	<div id="loadingText">Loading...</div>
-	<img src="sites/all/themes/theme_tripal/images/ajax-loader.gif">
+	<img src="<?php print drupal_get_path('theme', 'tripal') . '/images/ajax-loader.gif';?>">
 </div>
 
 <?php 

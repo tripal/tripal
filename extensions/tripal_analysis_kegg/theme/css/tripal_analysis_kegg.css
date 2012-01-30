@@ -25,7 +25,7 @@
 }
 
 #tripal_kegg_brite_links {
-   background-image:url("../images/kegg.gif");
+   background-image:url("../images/kegg.gif");/*TODO: figure out what to do about images in tripal extensions*/
    background-repeat: no-repeat;
    padding-left:20px;
 }
