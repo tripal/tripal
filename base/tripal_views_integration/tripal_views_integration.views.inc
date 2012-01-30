@@ -8,7 +8,6 @@
     * 									how the user associated fields with which handlers.
     */
 
-/*
     $data['go_count_organism']['table']['group'] = t('go count organism');
 
     $data['go_count_organism']['table']['base'] = array(
@@ -79,8 +78,13 @@
     'handler' => 'views_handler_sort',
     ),
     );
+    
+    $data['go_count_organism']['table']['join']['biomaterialprop'] = array(
+      'left_field' => 'biomaterialprop_id',
+      'field' => 'organism_id',
+    );
 
-*/
+/*
     $tvi_query = db_query('SELECT * FROM public.tripal_views_integration');
 
     //tvi = tripal_views_integration
@@ -132,7 +136,7 @@
         );
 
         
-        /*TODO: get join info here per mview field*/
+        //TODO: get join info here per mview field
         
         $chado_join_field = $tmj_row->chado_table_join;
         $chado_join_column = $tmj_row->chado_column;
@@ -152,9 +156,8 @@
       }
 
 
-
     }
-
+*/
     dpm("in tripal_views_integration file", 'dpm');
 
     dpm($data, 'data');
