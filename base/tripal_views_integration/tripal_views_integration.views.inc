@@ -1,93 +1,11 @@
   <?php
+/**
+ *
+ * @ingroup tripal_views_integration
+ */
+function tripal_views_integration_views_data(){   
 
-  function tripal_views_integration_views_data(){
-    //this gets rebuild on cache clear
-    /*
-    * note on fields: the handlers must be able to handle the type of the field
-    * 									may be an issue without validation of data entry:
-    * 									how the user associated fields with which handlers.
-    */
-/*
-    $data['go_count_organism']['table']['group'] = t('go count organism');
-
-    $data['go_count_organism']['table']['base'] = array(
-    'field' => 'cvterm_id',
-    'title' => t('go count organism table'),
-    'help' => t("go count organism table contains mview data."), //garbage explanation for now
-    );
-
-    $data['go_count_organism']['cvname'] = array(
-    'title' => t('cvname text field'),
-    'help' => t(' text field.'),
-    'field' => array(
-    'handler' => 'views_handler_field',
-    'click sortable' => TRUE,
-    ),
-    'sort' => array(
-    'handler' => 'views_handler_sort',
-    ),
-    'filter' => array(
-    'handler' => 'views_handler_filter_string',
-    ),
-    'argument' => array(
-    'handler' => 'views_handler_argument_string',
-    ),
-    );
-
-    $data['go_count_organism']['cvterm_id'] = array(
-    'title' => t('cvterm_id numeric field'),
-    'help' => t(' numeric field.'),
-    'field' => array(
-    'handler' => 'views_handler_field_numeric',
-    'click sortable' => TRUE,
-    ),
-    'filter' => array(
-    'handler' => 'views_handler_filter_numeric',
-    ),
-    'sort' => array(
-    'handler' => 'views_handler_sort',
-    ),
-    );
-
-    $data['go_count_organism']['organism_id'] = array(
-    'title' => t('organism_id numeric field'),
-    'help' => t(' numeric field.'),
-    'field' => array(
-    'handler' => 'views_handler_field_numeric',
-    'click sortable' => TRUE,
-    ),
-    'filter' => array(
-    'handler' => 'views_handler_filter_numeric',
-    ),
-    'sort' => array(
-    'handler' => 'views_handler_sort',
-    ),
-    );
-
-    $data['go_count_organism']['feature_count'] = array(
-    'title' => t('feature_count numeric field'),
-    'help' => t(' numeric field.'),
-    'field' => array(
-    'handler' => 'views_handler_field_numeric',
-    'click sortable' => TRUE,
-    ),
-    'filter' => array(
-    'handler' => 'views_handler_filter_numeric',
-    ),
-    'sort' => array(
-    'handler' => 'views_handler_sort',
-    ),
-    );
-    
-
-    $data['organism']['table']['join']['go_count_organism'] = array(
-      'left_field' => 'organism_id',
-      'field' => 'organism_id',
-    );
-*/
-    
-
-    $tvi_query = db_query('SELECT * FROM public.tripal_views_integration');
+    $tvi_query = db_query('SELECT * FROM tripal_views_integration');
 
     //tvi = tripal_views_integration
     while($tvi_row = db_fetch_object($tvi_query)){
@@ -101,18 +19,15 @@
 
       //use name from above and description from $tvi_row
       $data[$mview_table->name]['table']['group'] = t('Mview ' . $tvi_row->name);
-      //TODO: this need  to be a base table! so need logic to figure out the primary key of this table, on the fly
-      
       $data[$mview_table->name]['table']['base'] = array(
         'group' => t($tvi_row->name),
-      	'title' => t($tvi_row->name),
-        'help' => t($tvi_row->description),
+        'title' => t($tvi_row->name),
+        'help'  => t($tvi_row->description),
       );
 
       //let's add fields
       //tmj = tripal_mviews_join
-      $tmj_query = db_query("SELECT * FROM public.tripal_mviews_join WHERE setup_id = '$setup_id'");
-      $i = 0;
+      $tmj_query = db_query("SELECT * FROM tripal_mviews_join WHERE setup_id = '$setup_id'");
       while($tmj_row = db_fetch_object($tmj_query)){
 
         $column_name = $tmj_row->view_column;
@@ -121,43 +36,105 @@
 
         //let's use handlers we retrieved from above
         $data[$mview_table->name][$tmj_row->view_column] = array(
-        'title' => t($tmj_row->view_column),
-        'help' => t("**"),
-        'field' => array(
-        'handler' => 'views_handler_field',
-        'click sortable' => TRUE,
-        ),
-        'sort' => array(
-        'handler' => 'views_handler_sort',
-        ),
-        'filter' => array(
-        'handler' => 'views_handler_filter_string',
-        ),
-        'argument' => array(
-        'handler' => 'views_handler_argument_string',
-        ),
+           'title' => t($tmj_row->view_column),
+           'help' => t("**"),
+           'field' => array(
+              'handler' => 'views_handler_field',
+              'click sortable' => TRUE,
+           ),
+           'sort' => array(
+              'handler' => 'views_handler_sort',
+           ),
+           'filter' => array(
+              'handler' => 'views_handler_filter_string',
+           ),
+           'argument' => array(
+              'handler' => 'views_handler_argument_string',
+           ),
         );
-
-        
-        //TODO: get join info here per mview field
-        
-        $chado_join_field = $tmj_row->chado_table_join;
+               
+        $chado_join_table = $tmj_row->chado_table_join;
         $chado_join_column = $tmj_row->chado_column;
-        $join_column = $tmj_row->view_column;
+        $mview_join_column = $tmj_row->view_column;
         
-        $data["$chado_join_field"]['table']['join']["$mview_table->name"] = array(
-        // Index this array by the table name to which this table refers.
-        // 'left_field' is the primary key in the referenced table.
-        // 'field' is the foreign key in this table.
-          'left_field' => $join_column,
-          'field' => $chado_join_column,
+        // add recipricol join entries
+        $data["$mview_table->name"]['table']['join']["$chado_join_table"] = array(
+          'left_field' => $chado_join_column,
+          'field' => $mview_join_column,
         );
-        
-        $i++;
+
+        // check to see if this table is one that correlates with Drupal nodes
+        // if so, there will be a chado_<table_name> table in the Drupal database
+        // if there is, then we need to add the linking join information
+        $sql = "SELECT tablename FROM pg_tables WHERE tablename = 'chado_$chado_join_table'";
+        if(db_fetch_object(db_query($sql))){
+
+           // join the mview to the linker table
+           $data["$mview_table->name"]['table']['join']["chado_$chado_join_table"] = array(
+             'left_field' => $chado_join_column,
+             'field' => $mview_join_column,
+           );
+        }
       }
-
-
     }
 
     return $data;
-  }
+}
+/**      $setup_id = $tvi_row->setup_id;
+ *
+ * @ingroup tripal_views_integration
+ */
+function tripal_views_integration_views_data_alter(&$data) {
+    $tvi_query = db_query('SELECT * FROM tripal_views_integration');
+
+    //tvi = tripal_views_integration
+    while($tvi_row = db_fetch_object($tvi_query)){
+
+      //ids we'll use for queries
+      $mview_id = $tvi_row->mview_id;
+      $setup_id = $tvi_row->setup_id;
+
+      //let's get the name of the table
+      $mview_table = db_fetch_object(db_query("SELECT name, mv_specs FROM {tripal_mviews} WHERE mview_id = '$mview_id';"));
+
+      // iterate through the columns and alter the existing data array for
+      // joins to other tables
+      $tmj_query = db_query("SELECT * FROM tripal_mviews_join WHERE setup_id = '$setup_id'");
+      while($tmj_row = db_fetch_object($tmj_query)){
+        
+        $chado_join_table = $tmj_row->chado_table_join;
+        $chado_join_column = $tmj_row->chado_column;
+        $mview_join_column = $tmj_row->view_column;      
+ 
+        // add the recipricol join entries for each column
+        $data["$chado_join_table"]['table']['join']["$mview_table->name"] = array(
+          'left_field' => $mview_join_column,
+          'field' => $chado_join_column,
+        );
+
+        // check to see if this table is one that correlates with Drupal nodes
+        // if so, there will be a chado_<table_name> table in the Drupal database
+        // if there is, then we need to add the linking join information.  We did
+        // this step in the hook_views_data function above, but now we need 
+        // to add the reciprical joins
+        $sql = "SELECT tablename FROM pg_tables WHERE tablename = 'chado_$chado_join_table'";
+        if(db_fetch_object(db_query($sql))){
+
+           // join the linker table to the mview
+           $data["chado_$chado_join_table"]['table']['join']["$mview_table->name"] = array(
+             'left_field' => $mview_join_column,
+             'field' => $chado_join_column,
+           );
+
+           // Join the node table to the view by way of the chado linker table
+           $data['node']['table']['join']["$mview_table->name"] = array(
+           	'left_table' => "chado_$chado_join_table",
+           	'left_field' => 'nid',
+           	'field' => 'nid',
+           );
+        }
+      }
+    }
+
+    return $data;
+}
