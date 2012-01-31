@@ -123,7 +123,7 @@ class views_handler_filter_chado_select_string extends views_handler_filter_stri
             $holders[] = "'%s'";
           }
         }
-        $where = "$upper($field) IN $upper(".implode(", ",$holders).")";
+        $where = "$field IN (".implode(", ",$holders).")";
         $this->query->add_where($this->options['group'], $where, $this->value);
       }
     } else {
