@@ -37,10 +37,10 @@ class views_handler_filter_chado_select_string extends views_handler_filter_stri
     
     // Get Options
     if ($this->options['exposed']) {    
-      $options['All'] = 'Any';
+      $options['All'] = '--Any--';
     }
     if ($this->options['optional']) {
-      $options['<select '.$this->table.'>'] = '<None>';
+      $options['<select '.$this->table.'>'] = '--None--';
     }
     $results = tripal_core_chado_select(
       $this->table,
