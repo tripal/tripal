@@ -9,6 +9,25 @@
  */
 class views_handler_filter_chado_select_string extends views_handler_filter_string {
 
+  function options_form(&$form, &$form_state) {
+    parent::options_form($form, $form_state);
+    
+    $form['multiple'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Select Multiple'),
+      '#description' => t('Allows more then one option to be selected.'),
+      '#default_value' => (isset($this->options['multiple'])) ? $this->options['multiple'] : FALSE,
+    );
+
+    $form['optional'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Optional'),
+      '#description' => t('Adds <Any> to the available options.'),
+      '#default_value' => (isset($this->options['optional'])) ? $this->options['optional'] : TRUE,
+    );
+    
+  }
+  
  /**
   * Defines the value field in both the views filter options form
   *   and the exposed form
@@ -18,9 +37,11 @@ class views_handler_filter_chado_select_string extends views_handler_filter_stri
     
     // Get Options
     if ($this->options['exposed']) {    
-      $options['All'] = '<Any>';
+      $options['All'] = 'Any';
     }
-    $options['<select '.$this->table.'>'] = '<None>';
+    if ($this->options['optional']) {
+      $options['<select '.$this->table.'>'] = '<None>';
+    }
     $results = tripal_core_chado_select(
       $this->table,
       array($this->field),
@@ -42,6 +63,10 @@ class views_handler_filter_chado_select_string extends views_handler_filter_stri
         '#options' => $options,
         '#default_value' => $this->value,
     );
+    
+    if ($this->options['multiple']) {
+      $form['value']['#multiple'] = TRUE;
+    }
   }
 
  /**
@@ -80,17 +105,37 @@ class views_handler_filter_chado_select_string extends views_handler_filter_stri
   *
   */
   function query() {
+  
     $this->ensure_my_table();
     $field = "$this->table_alias.$this->real_field";
     $upper = $this->case_transform();
-
-    // Deal with All/Any as value
-    if (preg_match('/All/', $this->value)) {
-      // Don't do anything    
+      
+    if ($this->options['multiple']) {
+      // Remove any if it's there
+      unset($this->value['All']);
+      
+      if (sizeof($this->value)) {
+        $holders = array();
+        foreach ($this->value as $v) {
+          if (preg_match('/^[\d\.]+$/',$v)) {
+            $holders[] = '%d';
+          } else {
+            $holders[] = "'%s'";
+          }
+        }
+        $where = "$upper($field) IN $upper(".implode(", ",$holders).")";
+        $this->query->add_where($this->options['group'], $where, $this->value);
+      }
     } else {
-      $info = $this->operators();
-      if (!empty($info[$this->operator]['method'])) {
-        $this->{$info[$this->operator]['method']}($field, $upper);
+  
+      // Deal with All/Any as value
+      if (preg_match('/All/', $this->value)) {
+        // Don't do anything    
+      } else {
+        $info = $this->operators();
+        if (!empty($info[$this->operator]['method'])) {
+          $this->{$info[$this->operator]['method']}($field, $upper);
+        }
       }
     }
   }
