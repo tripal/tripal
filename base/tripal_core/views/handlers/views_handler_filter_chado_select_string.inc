@@ -22,7 +22,7 @@ class views_handler_filter_chado_select_string extends views_handler_filter_stri
     $form['optional'] = array(
       '#type' => 'checkbox',
       '#title' => t('Optional'),
-      '#description' => t('Adds <Any> to the available options.'),
+      '#description' => t('Adds --Any-- to the available options.'),
       '#default_value' => (isset($this->options['optional'])) ? $this->options['optional'] : TRUE,
     );
     
@@ -36,11 +36,9 @@ class views_handler_filter_chado_select_string extends views_handler_filter_stri
     parent::value_form($form, $form_state);
     
     // Get Options
-    if ($this->options['exposed']) {    
-      $options['All'] = '--Any--';
-    }
     if ($this->options['optional']) {
       $options['<select '.$this->table.'>'] = '--None--';
+      $options['All'] = '--Any--';
     }
     $results = tripal_core_chado_select(
       $this->table,
