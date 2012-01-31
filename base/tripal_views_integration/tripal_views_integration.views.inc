@@ -100,12 +100,13 @@
       $mview_table = db_fetch_object(db_query("SELECT name, mv_specs FROM {tripal_mviews} WHERE mview_id = '$mview_id';"));
 
       //use name from above and description from $tvi_row
-      $data[$mview_table->name]['table']['group'] = t($tvi_row->description);
+      $data[$mview_table->name]['table']['group'] = t('Mview ' . $tvi_row->name);
       //TODO: this need  to be a base table! so need logic to figure out the primary key of this table, on the fly
       
       $data[$mview_table->name]['table']['base'] = array(
-          'title' => t($tvi_row->name),
-          'help' => t($tvi_row->description), //garbage explanation for now
+        'group' => t($tvi_row->name),
+      	'title' => t($tvi_row->name),
+        'help' => t($tvi_row->description),
       );
 
       //let's add fields
@@ -144,7 +145,7 @@
         $chado_join_column = $tmj_row->chado_column;
         $join_column = $tmj_row->view_column;
         
-        $data[$chado_join_field]['table']['join'][$mview_table->name] = array(
+        $data["$chado_join_field"]['table']['join']["$mview_table->name"] = array(
         // Index this array by the table name to which this table refers.
         // 'left_field' is the primary key in the referenced table.
         // 'field' is the foreign key in this table.
@@ -158,8 +159,5 @@
 
     }
 
-    dpm("in tripal_views_integration file", 'dpm');
-
-    dpm($data, 'data');
     return $data;
   }

@@ -342,6 +342,10 @@ function tripal_views_integration_new_setup_form(&$form_state){
  * @ingroup tripal_views_integration
  */
 function tripal_views_integration_new_setup_form_validate($form, &$form_state){
+  $name_array = explode(" ", $form_state['values']['row_name']);
+  if(count($name_array) > 1){
+    form_set_error($form_state['values']['row_name'], 'Name must be ONE word only.');
+  }
   //TODO: write validation function for this new form
 }
 /**
