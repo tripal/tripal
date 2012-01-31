@@ -7,7 +7,7 @@
     * 									may be an issue without validation of data entry:
     * 									how the user associated fields with which handlers.
     */
-
+/*
     $data['go_count_organism']['table']['group'] = t('go count organism');
 
     $data['go_count_organism']['table']['base'] = array(
@@ -79,12 +79,14 @@
     ),
     );
     
-    $data['go_count_organism']['table']['join']['biomaterialprop'] = array(
-      'left_field' => 'biomaterialprop_id',
+
+    $data['organism']['table']['join']['go_count_organism'] = array(
+      'left_field' => 'organism_id',
       'field' => 'organism_id',
     );
+*/
+    
 
-/*
     $tvi_query = db_query('SELECT * FROM public.tripal_views_integration');
 
     //tvi = tripal_views_integration
@@ -142,14 +144,12 @@
         $chado_join_column = $tmj_row->chado_column;
         $join_column = $tmj_row->view_column;
         
-        $data[$mview_table->name]['table']['join'] = array(
+        $data[$chado_join_field]['table']['join'][$mview_table->name] = array(
         // Index this array by the table name to which this table refers.
         // 'left_field' is the primary key in the referenced table.
         // 'field' is the foreign key in this table.
-        "$chado_join_field" => array(
-          'left_field' => $chado_join_column,
-          'field' => $join_column,
-          ),
+          'left_field' => $join_column,
+          'field' => $chado_join_column,
         );
         
         $i++;
@@ -157,7 +157,7 @@
 
 
     }
-*/
+
     dpm("in tripal_views_integration file", 'dpm');
 
     dpm($data, 'data');
