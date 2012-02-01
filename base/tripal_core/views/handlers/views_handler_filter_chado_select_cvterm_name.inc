@@ -21,7 +21,8 @@ class views_handler_filter_chado_select_cvterm_name extends views_handler_filter
   	if ($this->options['show_all']) {
         $cv_id = variable_get('chado_'.$this->view->base_table.'_cv', null);
         if ($cv_id) {
-          $results = tripal_core_chado_select('cvterm',array('cvterm_id','name'), array('cv_id'=>$cv_id));				
+          $results = tripal_core_chado_select('cvterm',array('cvterm_id','name'), array('cv_id'=>$cv_id));	
+          if (empty($results)) { $results = array(); }
           foreach ($results as $c) {
             $cvterms[$c->cvterm_id] = $c->name;
           }    	
@@ -40,7 +41,8 @@ class views_handler_filter_chado_select_cvterm_name extends views_handler_filter
           tripal_db_set_active($previous_db);
           $cvterms = array();
           while ( $r = db_fetch_object($resource) ) {
-            $results = tripal_core_chado_select('cvterm',array('cvterm_id','name'), array('cv_id'=>$r->cv_id));				
+            $results = tripal_core_chado_select('cvterm',array('cvterm_id','name'), array('cv_id'=>$r->cv_id));	
+            if (empty($results)) { $results = array(); }
             foreach ($results as $c) {
               $cvterms[$c->cvterm_id] = $c->name;
             }
@@ -157,6 +159,10 @@ class views_handler_filter_chado_select_cvterm_name extends views_handler_filter
         }
       }
       
+      if (empty($options)) {
+        $options[0] = '';
+      }
+      
       //Select List
       $form['value'] = array(
           '#type' => 'select',
@@ -164,7 +170,7 @@ class views_handler_filter_chado_select_cvterm_name extends views_handler_filter
           '#options' => $options,
           '#default_value' => $this->value,
       );
-
+      
       if ($this->options['multiple']) {
         $form['value']['#multiple'] = TRUE;
       }
