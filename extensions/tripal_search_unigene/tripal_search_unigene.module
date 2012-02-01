@@ -4,15 +4,15 @@
 
 /*************************************************************************
  * tripal_search_unigene_init
- */ 
+ */
 function tripal_search_unigene_init(){
-	drupal_add_css(drupal_get_path('theme', 'tripal_search_unigene').'/theme/css/tripal_search_unigene.css');
-	drupal_add_js(drupal_get_path('theme', 'tripal_search_unigene').'/theme/js/tripal_search_unigene.js');
+	drupal_add_css(drupal_get_path('module', 'tripal_search_unigene').'/theme/css/tripal_search_unigene.css');
+	drupal_add_js(drupal_get_path('module', 'tripal_search_unigene').'/theme/js/tripal_search_unigene.js');
 }
 
 /*************************************************************************
  * tripal_search_unigene_views_api
- */ 
+ */
 function tripal_search_unigene_views_api() {
    return array(
       'api' => 2.0,
