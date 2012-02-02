@@ -1,7 +1,7 @@
 <?php
 
 include('views/handlers/views_handler_join_chado_through_linking.inc');
-//include('views/handlers/views_handler_join_chado_one2many.inc');
+include('views/handlers/views_handler_join_chado_aggregator.inc');
 
 /**
  * @defgroup views Views Integration

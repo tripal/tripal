@@ -62,7 +62,38 @@ function retrieve_analysis_views_data() {
     'handler' => 'views_handler_join_chado_through_linking'
   );
 
-	
+  // Analysis properties?
+ 	$data['analysisprop']['table'] = array(
+'group' => 'Chado analysis Properties',
+ 		'field' => 'analysisprop_id',
+ 		'title' => t('Chado analysis Properties'),
+ 		'help' => '  ',
+ 	);
+ 	
+ 	$data['analysisprop']['table']['join']['analysis'] = array(
+    'left_field' => 'analysis_id',
+    'field' => 'analysis_id',
+    'handler' => 'views_handler_join_chado_aggregator'
+ 	);
+ 	
+ 	$data['analysisprop']['value'] = array(
+    'title' => t('Value'),
+    'help' => t(' '),
+    'field' => array(
+      'handler' => 'views_handler_field',
+      'click sortable' => TRUE,
+    ),
+    'sort' => array(
+      'handler' => 'views_handler_sort',
+    ),
+    'filter' => array(
+      'handler' => 'views_handler_filter_string',
+    ),
+    'argument' => array(
+      'handler' => 'views_handler_argument_string',
+    ),
+ 	);
+ 	
 	// Table Field Definitions----------------------
 	// Field: analysis_id (primary key)
 	$data['analysis']['analysis_id'] = array(
