@@ -51,25 +51,17 @@ function retrieve_analysis_views_data() {
   }
 
   // Define relationships between this table and others
-  $data['analysis']['table']['join'] = array(
-    'analysisfeature' => array(
-      'left_field' => 'analysis_id',
+  $data['analysis']['table']['join']['feature'] = array(
+    'linking' => array(
+      'table' => 'analysisfeature',
+      'left_field' => 'feature_id',
       'field' => 'analysis_id',
     ),
-    'feature' => array(
-      'left_table' => 'analysisfeature',
-      'left_field' => 'analysis_id',
-      'field' => 'analysis_id',
-    ),
+    'left_field' => 'feature_id',
+    'field' => 'analysis_id',
+    'handler' => 'views_handler_join_chado_through_linking'
   );
 
-  // Describe the joins with the analysis_feature table
-  $data['analysisfeature']['table']['join'] = array(
-    'feature' => array(
-      'left_field' => 'feature_id',
-      'field' => 'feature_id',
-    ),
-  );
 	
 	// Table Field Definitions----------------------
 	// Field: analysis_id (primary key)
