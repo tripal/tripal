@@ -11,6 +11,16 @@ class views_handler_filter_chado_select_string extends views_handler_filter_stri
 
   function options_form(&$form, &$form_state) {
     parent::options_form($form, $form_state);
+
+    $form['values_form_type'] = array(
+      '#type' => 'radios',
+      '#title' => 'Filter Type',
+      '#options' => array(
+        'textfield' => 'Text Field',
+        'select' => 'Drop-Down Box',
+      ),
+      '#default_value' => ($this->options['values_form_type']) ? $this->options['values_form_type'] : 'select',
+    );
     
     $form['multiple'] = array(
       '#type' => 'checkbox',
@@ -35,35 +45,43 @@ class views_handler_filter_chado_select_string extends views_handler_filter_stri
   function value_form(&$form, &$form_state) {
     parent::value_form($form, $form_state);
     
-    // Get Options
-    if ($this->options['optional']) {
-      $options['<select '.$this->table.'>'] = '--None--';
-      $options['All'] = '--Any--';
-    }
-    $results = tripal_core_chado_select(
-      $this->table,
-      array($this->field),
-      array()
-    );
-    $max_length = 40;
-    foreach ($results as $r) {
-      if (strlen($r->{$this->field}) > $max_length) {
-        $options[$r->{$this->field}] = substr($r->{$this->field},0,$max_length) . '...';
-      } else {
-        $options[$r->{$this->field}] = $r->{$this->field};    
-      }
-    }
-    
-    //Select List
-    $form['value'] = array(
-        '#type' => 'select',
+    if (preg_match('/textfield/', $this->options['values_form_type'])) {
+      $form['value'] = array(
+        '#type' => 'textfield',
         '#title' => $this->options['label'],
-        '#options' => $options,
         '#default_value' => $this->value,
-    );
-    
-    if ($this->options['multiple']) {
-      $form['value']['#multiple'] = TRUE;
+      );    
+    } else {
+      // Get Options
+      if ($this->options['optional']) {
+        $options['<select '.$this->table.'>'] = '--None--';
+        $options['All'] = '--Any--';
+      }
+      $results = tripal_core_chado_select(
+        $this->table,
+        array($this->field),
+        array()
+      );
+      $max_length = 40;
+      foreach ($results as $r) {
+        if (strlen($r->{$this->field}) > $max_length) {
+          $options[$r->{$this->field}] = substr($r->{$this->field},0,$max_length) . '...';
+        } else {
+          $options[$r->{$this->field}] = $r->{$this->field};    
+        }
+      }
+      
+      //Select List
+      $form['value'] = array(
+          '#type' => 'select',
+          '#title' => $this->options['label'],
+          '#options' => $options,
+          '#default_value' => $this->value,
+      );
+      
+      if ($this->options['multiple']) {
+        $form['value']['#multiple'] = TRUE;
+      }
     }
   }
 
