@@ -80,7 +80,7 @@ function retrieve_analysis_views_data() {
     'title' => t('Value'),
     'help' => t(' '),
     'field' => array(
-      'handler' => 'views_handler_field',
+      'handler' => 'chado_views_handler_field',
       'click sortable' => TRUE,
     ),
     'sort' => array(

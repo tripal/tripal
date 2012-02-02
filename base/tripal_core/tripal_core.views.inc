@@ -60,6 +60,7 @@ function tripal_core_views_handlers() {
      'path' => drupal_get_path('module', 'tripal_core') . '/views/handlers',
    ),
    'handlers' => array(
+     // Custom Chado Handlers
      'views_handler_field_node_optional' => array(
        'parent' => 'views_handler_field_node',
      ),
@@ -84,8 +85,32 @@ function tripal_core_views_handlers() {
      'views_handler_field_chado_rel_by_type' => array(
       'parent' => 'views_handler_field_prerender_list',
      ),
-     'views_handler_join_chado_one2many' => array(
-      'parent' => 'views_join'
+
+     
+     // Wrappers for Default Views Handlers
+     'chado_views_handler_field' => array(
+      'parent' => 'views_handler_field'
+     ),
+     'chado_views_handler_field_boolean' => array(
+      'parent' => 'views_handler_field_boolean'
+     ),
+     'chado_views_handler_field_counter' => array(
+      'parent' => 'views_handler_field_counter'
+     ),
+     'chado_views_handler_field_custom' => array(
+      'parent' => 'views_handler_field_custom'
+     ),
+     'chado_views_handler_field_date' => array(
+      'parent' => 'views_handler_field_date'
+     ),
+     'chado_views_handler_field_markup' => array(
+      'parent' => 'views_handler_field_markup'
+     ),
+     'chado_views_handler_field_math' => array(
+      'parent' => 'views_handler_field_math'
+     ),
+     'chado_views_handler_field_numeric' => array(
+      'parent' => 'views_handler_field_numeric'
      ),
    ),
  );
