@@ -32,8 +32,6 @@ class views_handler_join_chado_aggregator extends views_join {
     // Create the table SQL (used in join) -------
     // query creating one-to-one table using array_agg
     $table_desc = module_invoke_all('chado_'.$this->definition['table'].'_schema');
-    dpm($table_desc, 'table description');
-    dpm($this, 'this');
     $select_fields[ $this->definition['table'] ] = $table_desc['fields'];
     
     // Add joins to tables with a foreign key in this table
@@ -41,7 +39,6 @@ class views_handler_join_chado_aggregator extends views_join {
     $joins = array();
     foreach($table_desc['foreign keys'] as $defn) {
       if ($defn['table'] != $this->left_table) {
-        dpm($defn, 'workin on');
         foreach( $defn['columns'] as $left => $right) {
           $left = $this->definition['table'] .'.'. $left;
           $right = $defn[table] .'.'. $right;
