@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Purpose: Provide Guidance to new Tripal Admin
  *
@@ -207,25 +208,31 @@ function tripal_core_views_integration_new_setup_form(&$form_state){
 
     $i=1;
     $chado_tables = tripal_core_get_chado_tables();
-    $chado_tables = array_merge(array('',), $chado_tables);
+    $chado_tables = array_merge(array('Select a Join Table',), $chado_tables);
 
-    $handlers_filters = array('<default>');
-    $handlers_fields = array('<default>');
     $form['view_setup_table']["instructions"] = array(
          '#type' => 'markup',
          '#value' => "Select an optional table to which the fields of the materialized view can join.  If a field does not need to join you may leave the selection blank.",
     );
-    $form['view_setup_table']["fields_headers"] = array(
-         '#type' => 'markup',
-         '#value' => "<div class=\"field-headers\">".
-              "<div class=\"column-id\">Field Name and Type</div>".
-              "<div class=\"fields-column-join\">Join Table</div>".
-              "<div class=\"fields-column-join-column\">Join Column</div>".
-              "<div class=\"fields-filter-handler\">Filter Handler</div>".
-              "<div class=\"fields-field-handler\">Field Handler</div></div>",
-    );
 
     $data['field_types'] = array();
+
+
+    // get list of all handlers
+    $all_handlers = tripal_core_views_integration_discover_handlers();
+    $handlers_fields = array();
+    $handlers_filters = array();
+    
+    $handlers_fields[] = "Select a Field Handler"; 
+    $handlers_filters[] = "Select a Filter Handler";
+    foreach($all_handlers as $handler){
+       if(preg_match("/views_handler_field/",$handler)){
+          $handlers_fields[] = $handler;
+       }
+       if(preg_match("/views_handler_filter/",$handler)){
+          $handlers_filters[] = $handler;
+       }
+    }
 
     foreach ($columns as $column){
       $column = trim($column);  // trim trailing and leading spaces
@@ -241,8 +248,11 @@ function tripal_core_views_integration_new_setup_form(&$form_state){
       $form['view_setup_table']["fields_name_$mview_id-$i"] = array(
         '#type' => 'markup',
         '#attributes' => array('class' => 'fields-column-name'),
-        '#value' => "<div class=\"column-id\"><span class=\"column-name\">$column_name</span>".
-                   "<br><span class=\"column-type\">$column_type</span></div>",
+        '#value' => "<div class=\"column-id\">".
+                      "<span class=\"column-name\">$column_name</span>".
+                      "<br><span class=\"column-type\">$column_type</span>".
+                    "</div>".
+                    "<div class=\"column-form-fields\"><div class=\"column-one\">",
       );
 
       $data['field_types'][$column_name] = $column_type;
@@ -261,41 +271,42 @@ function tripal_core_views_integration_new_setup_form(&$form_state){
            'effect' => 'fade',
            'event' => 'change',
            'method' => 'replace',
-      ),
+         ),
       );
+      
       if($table){
         $table_desc = module_invoke_all('chado_'.$table.'_schema');
         $columns = array_keys($table_desc['fields']);
       } else {
-        $columns = array();
+        $columns = array('Select Join Column');
       }
       $form['view_setup_table']["fields_join_column_$mview_id-$i"] = array(
         '#type' => 'select',
-        '#prefix' => "<div id=\"fields-column-join-column-$mview_id-$i\" class=\"fields-column-join-column\">",
-        '#suffix' => "</div>",
+        '#prefix' => "  <div id=\"fields-column-join-column-$mview_id-$i\" class=\"fields-column-join-column\">",
+        '#suffix' => "</div></div>",
         '#options' => $columns,
         '#required' => FALSE,
-      );
-      
-      $form['view_setup_table']["fields_filter_handler_$mview_id-$i"] = array(
-        '#type' => 'select',
-        '#prefix' => "<div class=\"fields-filter-handler\">",
-        '#suffix' => "</div>",
-        '#options' => $handlers_filters,
-        '#required' => FALSE,
-      );
+      );      
       
       $form['view_setup_table']["fields_field_handler_$mview_id-$i"] = array(
          '#type' => 'select',
-         '#prefix' => "<div class=\"fields-field-handler\">",
+         '#prefix' => "<div class=\"column-two\">".
+                        "<div class=\"fields-field-handler\">",
          '#suffix' => "</div>",
          '#options' => $handlers_fields,
          '#required' => FALSE,
       );
+      $form['view_setup_table']["fields_filter_handler_$mview_id-$i"] = array(
+        '#type' => 'select',
+        '#prefix' => "<div class=\"fields-filter-handler\">",
+        '#suffix' => "</div></div>",
+        '#options' => $handlers_filters,
+        '#required' => FALSE,
+      );
       
       $form['view_setup_table']["fields_end_$i"] = array(
         '#type' => 'markup',
-        '#value' => "</div>",
+        '#value' => "</div></div>",
       );
       $i++;
    }
@@ -373,3 +384,74 @@ function tripal_core_views_integration_new_setup_form_submit($form, &$form_state
 
 }
 
+/**
+ *
+ * @ingroup tripal_views_integration
+ */
+function tripal_core_views_integration_discover_handlers() {
+
+   $handlers = array();
+
+   // Get handlers from all modules.
+   foreach (module_implements('views_handlers') as $module) {
+     $function = $module . '_views_handlers';
+     $result = $function();
+     if (!is_array($result)) {
+       continue;
+     }
+     foreach ($result['handlers'] as $handler => $parent){
+        $handlers[] = $handler;
+     }
+   }
+
+   // these handlers are hard coded because I could not 
+   // get the views_views_handlers() function to be called
+   // in the code above.  However, we will be creating 
+   // Chado wrappers for many of these and once that work
+   // is done these will no longer be needed.
+
+   // argument handlers
+   $handlers[] = 'views_handler_argument';
+   $handlers[] = 'views_handler_argument_numeric';
+   $handlers[] = 'views_handler_argument_formula';
+   $handlers[] = 'views_handler_argument_date';
+   $handlers[] = 'views_handler_argument_string';
+   $handlers[] = 'views_handler_argument_many_to_one';
+   $handlers[] = 'views_handler_argument_null';
+
+   // field handlers
+   $handlers[] = 'views_handler_field';
+   $handlers[] = 'views_handler_field_date';
+   $handlers[] = 'views_handler_field_boolean';
+   $handlers[] = 'views_handler_field_markup';
+   $handlers[] = 'views_handler_field_xss';
+   $handlers[] = 'views_handler_field_url';
+   $handlers[] = 'views_handler_field_file_size';
+   $handlers[] = 'views_handler_field_prerender_list';
+   $handlers[] = 'views_handler_field_numeric';
+   $handlers[] = 'views_handler_field_custom';
+   $handlers[] = 'views_handler_field_counter';
+
+   // filter handlers
+   $handlers[] = 'views_handler_filter';
+   $handlers[] = 'views_handler_filter_equality';
+   $handlers[] = 'views_handler_filter_string';
+   $handlers[] = 'views_handler_filter_boolean_operator';
+   $handlers[] = 'views_handler_filter_boolean_operator_string';
+   $handlers[] = 'views_handler_filter_in_operator';
+   $handlers[] = 'views_handler_filter_numeric';
+   $handlers[] = 'views_handler_filter_float';
+   $handlers[] = 'views_handler_filter_date';
+   $handlers[] = 'views_handler_filter_many_to_one';
+
+   // relationship handlers
+   $handlers[] = 'views_handler_relationship';
+
+   // sort handlers
+   $handlers[] = 'views_handler_sort';
+   $handlers[] = 'views_handler_sort_formula';
+   $handlers[] = 'views_handler_sort_date';
+   $handlers[] = 'views_handler_sort_menu_hierarchy';
+   $handlers[] = 'views_handler_sort_random';
+   return $handlers;
+ }

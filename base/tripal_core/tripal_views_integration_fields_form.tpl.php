@@ -9,10 +9,11 @@
 #tripal-core-views-integration-new-setup-form .form-item {
    margin: 0px 0px 5px 0px;
 }
-#tripal-core-views-integration-new-setup-form .column-id, .fields-column-join,.fields-column-join-column, .fields-filter-handler, .fields-field-handler {
+#tripal-core-views-integration-new-setup-form .column-id, .column-form-fields, .column-one, .column-two {
    display: inline-block;
    margin: 0px;
    vertical-align: top;
+   //border: 1px solid #000;
 }
 #tripal-core-views-integration-new-setup-form  .field-headers {
    font-weight: bold;
@@ -23,25 +24,40 @@
    vertical-align: top;
 }
 #tripal-core-views-integration-new-setup-form .column-name {
-
+   font-weight: bold;
 }
 #tripal-core-views-integration-new-setup-form .column-type {
    font-style: italic;
 }
 #tripal-core-views-integration-new-setup-form .column-id {
-   width: 15%;
+   width: 20%;
+   height: 50px;
+}
+#tripal-core-views-integration-new-setup-form  .fields-new-row {
+   padding-bottom: 10px;
+   margin-bottom: 5px;
+   padding-top: 10px;
+}
+#tripal-core-views-integration-new-setup-form .column-form-fields {
+   //border: 3px solid #f00;
+}
+#tripal-core-views-integration-new-setup-form .column-one {
+   margin-left: 15px;
+}
+#tripal-core-views-integration-new-setup-form .column-two {
+   margin-left: 15px;
 }
 #tripal-core-views-integration-new-setup-form .fields-column-join {
-   width: 30%;
+
 }
 #tripal-core-views-integration-new-setup-form .fields-column-join-column {
-   width: 30%;
+
 }
 #tripal-core-views-integration-new-setup-form .fields-filter-handler {
-   width: 10%;
+
 }
 #tripal-core-views-integration-new-setup-form .fields-field-handler {
-   width: 10%;
+
 }
 
 </style>

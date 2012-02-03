@@ -7,6 +7,7 @@ require_once "chado_install.php";
 require_once "tripal_views_integration.inc";
 
 require_once "tripal_core.api.inc";
+require_once "tripal_core.views.inc";
 
 /**
  * @defgroup tripal_modules Tripal Modules

@@ -100,6 +100,16 @@ function tripal_core_get_schemas (){
       'primary key' => array('mview_id'),
   );
 
+   $schema = tripal_core_views_integration_schema();
+
+	return $schema;
+}
+/************************************************************************
+* 
+*
+* @ingroup tripal_core
+*/
+function tripal_core_views_integration_schema(){
 	$schema['tripal_views_integration'] = array(
 		'description' => 'contains the setupes, their materialized view id and base table name that was used.',
 		'fields' => array(
@@ -234,7 +244,29 @@ function tripal_core_get_schemas (){
 	  ),
 		'primary key' => array('handler_id'),
 	);
-	return $schema;
-  return $schema;
+
+   return $schema;
+}
+/************************************************************************
+* 
+*
+* @ingroup tripal_core
+*/
+function tripal_core_update_6000(){
+   // recreate the materialized view
+   tripal_feature_add_organism_count_mview();
+   $ret = array(
+      '#finished' => 1,
+   );
+   
+   return $ret;
+}
+/************************************************************************
+* 
+*
+* @ingroup tripal_core
+*/
+tripal_core_update_6000_views_integration(){
+
 }
 ?>
