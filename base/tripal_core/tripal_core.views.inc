@@ -322,14 +322,14 @@ function tripal_core_views_data(){
            'title' => t($tmj_row->view_column),
            'help' => t("**"),
            'field' => array(
-              'handler' => 'views_handler_field',
+              'handler' => $handlers->handler_field,
               'click sortable' => TRUE,
            ),
            'sort' => array(
               'handler' => 'views_handler_sort',
            ),
            'filter' => array(
-              'handler' => 'views_handler_filter_string',
+              'handler' => $handlers->handler_filter,
            ),
            'argument' => array(
               'handler' => 'views_handler_argument_string',
