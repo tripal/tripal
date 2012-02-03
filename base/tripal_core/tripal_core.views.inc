@@ -60,7 +60,19 @@ function tripal_core_views_handlers() {
      'path' => drupal_get_path('module', 'tripal_core') . '/views/handlers',
    ),
    'handlers' => array(
+   
      // Custom Chado Handlers
+     'chado_views_handler_field_aggregate' => array(
+      'parent' => 'chado_views_handler_field',
+     ),
+     'views_handler_filter_chado_select_string' => array(
+      'parent' => 'views_handler_filter_string',
+     ),
+     'views_handler_filter_chado_select_cvterm_name' => array(
+      'parent' => 'views_handler_filter_string',
+     ),
+     
+     // Old Handlers
      'views_handler_field_node_optional' => array(
        'parent' => 'views_handler_field_node',
      ),
@@ -72,12 +84,6 @@ function tripal_core_views_handlers() {
      ),
      'views_handler_field_chado_count' => array(
       'parent' => 'views_handler_field',
-     ),
-     'views_handler_filter_chado_select_string' => array(
-      'parent' => 'views_handler_filter_string',
-     ),
-     'views_handler_filter_chado_select_cvterm_name' => array(
-      'parent' => 'views_handler_filter_string',
      ),
      'views_handler_filter_chado_boolean' => array(
       'parent' => 'views_handler_filter_boolean_operator',

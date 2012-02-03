@@ -94,6 +94,24 @@ function retrieve_analysis_views_data() {
     ),
  	);
  	
+ 	$data['analysisprop']['all'] = array(
+    'title' => t('All'),
+    'help' => t('An aggregate field that contains all fields for a row.'),
+    'field' => array(
+      'handler' => 'chado_views_handler_field_aggregate',
+      'click sortable' => TRUE,
+    ),
+    'sort' => array(
+      'handler' => 'views_handler_sort',
+    ),
+    'filter' => array(
+      'handler' => 'views_handler_filter_string',
+    ),
+    'argument' => array(
+      'handler' => 'views_handler_argument_string',
+    ),
+ 	);
+ 	
 	// Table Field Definitions----------------------
 	// Field: analysis_id (primary key)
 	$data['analysis']['analysis_id'] = array(

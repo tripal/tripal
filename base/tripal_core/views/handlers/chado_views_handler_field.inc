@@ -19,6 +19,7 @@ class chado_views_handler_field extends views_handler_field {
    */
   function options_form(&$form, &$form_state) {
     parent::options_form($form, $form_state);
+    
     $form['type'] = array(
       '#type' => 'radios',
       '#title' => t('Display type'),
@@ -55,6 +56,19 @@ class chado_views_handler_field extends views_handler_field {
   }
   
   /**
+   * Splits the aggregated values up for use in rendering
+   */
+  function pre_render (&$values) {
+    
+    if ($this->aggregated) {
+      foreach($values as $k => $v) {
+        $values[$k]->{$this->field_alias} = $this->split_array_agg_results($v->{$this->field_alias});
+      }
+    }
+    
+  }
+  
+  /**
    * Render the field.
    *
    * Note: Checks to see if we have an array or simple field. If we have an array, then
@@ -64,13 +78,13 @@ class chado_views_handler_field extends views_handler_field {
    *   The values retrieved from the database.
    */
   function render($values) {
-    
+
     // If it's aggregated (an array), then render each part 
     // using the parent render functionality
     if ($this->aggregated) {
       $items = array();
       
-      $parts = $this->split_array_agg_results($values->{$this->field_alias});
+      $parts = $values->{$this->field_alias};
       foreach ($parts as $p) {
         $v[ $this->field_alias ] = $p;
         $val = (object) $v;
