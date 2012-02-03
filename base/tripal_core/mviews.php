@@ -179,7 +179,7 @@ function tripal_mview_report ($mview_id) {
    // create a table with each row containig stats for
    // an individual job in the results set.
 
-   $return_url = url("admin/tripal/tripal_mviews/");
+   $return_url = url("admin/tripal/views/mviews/");
 
    $output .= "<p><a href=\"$return_url\">Return to table of materialized views.</a></p>";
    $output .= "<br />";
@@ -240,9 +240,9 @@ function tripal_mview_report ($mview_id) {
 
    // build the URLs using the url function so we can handle installations where
    // clean URLs are or are not used
-   $update_url = url("admin/tripal/tripal_mviews/action/update/$mview->mview_id");
-   $delete_url = url("admin/tripal/tripal_mviews/action/delete/$mview->mview_id");
-   $edit_url = url("admin/tripal/tripal_mviews/edit/$mview->mview_id");
+   $update_url = url("admin/tripal/views/mviews/action/update/$mview->mview_id");
+   $delete_url = url("admin/tripal/views/mviews/action/delete/$mview->mview_id");
+   $edit_url = url("admin/tripal/views/mviews/edit/$mview->mview_id");
 
    $output .= "<tr><th>Actions</th>".
               "<td> <a href='$update_url'>Update</a>, ".
@@ -279,9 +279,9 @@ function tripal_mviews_report () {
       }
 	  // build the URLs using the url function so we can handle installations where
 	  // clean URLs are or are not used
-	  $view_url = url("admin/tripal/tripal_mview/$mview->mview_id");
-	  $update_url = url("admin/tripal/tripal_mviews/action/update/$mview->mview_id");
-	  $delete_url = url("admin/tripal/tripal_mviews/action/delete/$mview->mview_id");
+	  $view_url   = url("admin/tripal/views/mviews/report/$mview->mview_id");
+	  $update_url = url("admin/tripal/views/mviews/action/update/$mview->mview_id");
+	  $delete_url = url("admin/tripal/views/mviews/action/delete/$mview->mview_id");
 	  // create the row for the table
       $output .= "  <tr>";
       $output .= "    <td><a href='$view_url'>View</a>&nbsp".
@@ -291,7 +291,7 @@ function tripal_mviews_report () {
                  "    <td><a href='$delete_url'>Delete</a></td>".
                  "  </tr>";
    }
-   $new_url = url("admin/tripal/tripal_mviews/new");
+   $new_url = url("admin/tripal/views/mviews/new");
    $output .= "</table>";
    $output .= "<br />";
    $output .= "<p><a href=\"$new_url\">Create a new materialized view.</a></p>";
@@ -411,7 +411,7 @@ function tripal_mviews_form(&$form_state = NULL,$mview_id = NULL){
      '#executes_submit_callback' => TRUE,
    );
 
-   $form['#redirect'] = 'admin/tripal/tripal_mviews';
+   $form['#redirect'] = 'admin/tripal/views/mviews';
    return $form;
 }
 /**

@@ -7,17 +7,20 @@
  *
  * @ingroup tripal_views_integration
  */
-function tripal_views_integration_module_description_page() {
+function tripal_core_views_description_page() {
 
-  $text .= '<h3>Tripal Views Integration Administrative Tools Quick Links:</h3>';
+  $text .= '<h3>Tripal Views Quick Links:</h3>';
   $text .= "<ul>
-             <li><a href=\"".url("admin/tripal/tripal_views_integration/list") . "\">List of integrated views</a></li>
-             <li><a href=\"".url("admin/tripal/tripal_views_integration/new"). "\">Setup integration of a materialized view</a></li>
+             <li><a href=\"".url("admin/tripal/views/mviews") . "\">List of Materialized Views (MViews)</a></li>
+             <li><a href=\"".url("admin/tripal/views/mviews/new") . "\">Create a new MViews</a></li>
+             <li><a href=\"".url("admin/tripal/views/integration/mviews") . "\">List of integrated MViews</a></li>
+             <li><a href=\"".url("admin/tripal/views/integration/mviews/new"). "\">Integrate a MView</a></li>
+             <li><a href=\"".url("admin/tripal/views/integration/chado"). "\">List of integrated Chado tables</a></li>
+             <li><a href=\"".url("admin/tripal/views/integration/chado/new"). "\">Integrate a Chado tables</a></li>
            </ul>";
-  #             <li><a href=\"".url("admin/tripal/tripal_feature/aggregate"). "\">Feature Relationship Aggegators</a></li>
 
-  $text .= '<h3>Module Description:</h3>';
-  $text .= '<p>This module provides an interface for integrating <a href="http://drupal.org/project/views">Drupal Views</a>
+  $text .= '<h3>Views Integartion Description:</h3>';
+  $text .= '<p>Tripal Views provides an interface for integrating <a href="http://drupal.org/project/views">Drupal Views</a>
             with Tripal materialized views.  This will allow site administrators to create custom queries for the materialized views
             and in turn provide custom content pages, custom blocks and custom search forms. The forms allow a site administrator
             to select a materialized view and associate other Chado tables on which the view can join.  Usage of this module requires
@@ -25,22 +28,19 @@ function tripal_views_integration_module_description_page() {
             </p>';
 
   $text .= '<h3>Setup Instructions:</h3>';
-  $text .= '<p>After installation of the feature module.  The following tasks should be performed
+  $text .= '<p>After installation of the Tripal core module.  The following tasks should be performed
             <ol>
-              <li><b>Install Drupal Views</b>: The <a href="http://drupal.org/project/views">Drupal Views</a> module
-                must first be installed before this module can be used.  If you are reading this page then you must have
-                Drupal Views installed</li>
               <li><b>Set Permissions</b>: To allow access to site administrators for this module, simply
                <a href="'.url('admin/user/permissions').'">assign permissions</a> to the appropriate user roles for the
                permission type "manage tripal_views_integration". </li>
             </ol>
             </p>';
   $text .= '<h3>Usage Instructions:</h3>';
-  $text .= "<p>To use this module follow these steps:
+  $text .= "<p>To use Tripal Views integration follow these steps:
             <ol>
-               <li><b>Identify or create a materialized view:</b> Using the <a href=\"".url("admin/tripal/tripal_mviews") . "\">
+               <li><b>Identify or create a materialized view:</b> Using the <a href=\"".url("admin/tripal/views/mviews") . "\">
                  Tripal materialized View</a> interface, identify the view you would like to integrate or create a new one.</li>
-               <li><b>Setup the Views Integration</b>: Navigate to the <a href=\"".url("admin/tripal/tripal_views_integration/new") . "\">
+               <li><b>Setup the Views Integration</b>: Navigate to the <a href=\"".url("admin/tripal/views/integration/mviews/new") . "\">
                  Tripal views integration setup page</a> to integrate the selected materialized view.  Provide a  user friendly name
                  and description to help you remember the purpose for integrating the view.  Next, select the view you want to integrate
                  from the provided select box.  If your materialized view has fields that can join with other Chado tables, you may
@@ -49,26 +49,18 @@ function tripal_views_integration_module_description_page() {
                <li><b>Create custom pages/block/search form</b>:  After saving setup information from step 2 above, you will be redirected to the
                  Drupal Views interface</a> where you can create a custom page, block or search form.</li>
                <li><b>Review your integrated views</b>:  A page providing a
-                 <a href=\"".url("admin/tripal/tripal_views_integration/list") . "\">list of all integrated views</a> is provided. You may
+                 <a href=\"".url("admin/tripal/views/integration/mviews/list") . "\">list of all integrated views</a> is provided. You may
                  view this page to see all integrated views, but also to remove any unwanted integrations.</li>
             </ol>
          
             </p>";
-  $text .= '<h3>Features of this Module:</h3>';
-  $text .= '<p>This module provides the following functionality
-            <ul>
-              <li>A dynamic form for integration of an existing materialized view with Drupal Views.  This form allows the site
-                  administrator to select an existing view and indicate Chado tables on which the fields may join.</li>
-            </ul>
-            
-            </p>';
   return $text;
 }
 /**
  *
  * @ingroup tripal_views_integration
  */
-function tripal_views_integration_admin_form(){
+function tripal_core_views_integration_admin_form(){
 
   $form = array();
 
@@ -103,14 +95,9 @@ function tripal_views_integration_admin_form(){
     '#value' => t('Remove'),
   );
 
-  $form['cancel'] = array(
-    '#type' => 'markup',
-    '#value' => l(t('Cancel '), 'admin/tripal/'),
-  );
-
   $form['new'] = array(
     '#type' => 'markup',
-    '#value' => l(t(' New'), 'admin/tripal/tripal_views_integration/new'),
+    '#value' => l(t(' Add a New MView'), 'admin/tripal/views/integration/mviews/new'),
   );
 
   return $form;
@@ -120,7 +107,7 @@ function tripal_views_integration_admin_form(){
  *
  * @ingroup tripal_views_integration
  */
-function tripal_views_integration_admin_form_submit($form, &$form_state){
+function tripal_core_views_integration_admin_form_submit($form, &$form_state){
   $value = $form['existing_rows']['#options'][$form_state['values']['existing_rows']];
   db_query("DELETE FROM public.tripal_views_integration WHERE setup_id = $value;");
   db_query("DELETE FROM public.tripal_views_handlers WHERE setup_id = $value;");
@@ -131,7 +118,7 @@ function tripal_views_integration_admin_form_submit($form, &$form_state){
  * @ingroup tripal_views_integration
  */
 
-function tripal_views_integration_new_setup_form(&$form_state){
+function tripal_core_views_integration_new_setup_form(&$form_state){
 
   $form = array();
 
@@ -222,8 +209,8 @@ function tripal_views_integration_new_setup_form(&$form_state){
     $chado_tables = tripal_core_get_chado_tables();
     $chado_tables = array_merge(array('',), $chado_tables);
 
-    $handlers_filters = array('', 'hello' , 'world');
-    $handlers_fields = array('', 'foo', 'bar');
+    $handlers_filters = array('<default>');
+    $handlers_fields = array('<default>');
     $form['view_setup_table']["instructions"] = array(
          '#type' => 'markup',
          '#value' => "Select an optional table to which the fields of the materialized view can join.  If a field does not need to join you may leave the selection blank.",
@@ -341,7 +328,7 @@ function tripal_views_integration_new_setup_form(&$form_state){
  *
  * @ingroup tripal_views_integration
  */
-function tripal_views_integration_new_setup_form_validate($form, &$form_state){
+function tripal_core_views_integration_new_setup_form_validate($form, &$form_state){
   $name_array = explode(" ", $form_state['values']['row_name']);
   if(count($name_array) > 1){
     form_set_error($form_state['values']['row_name'], 'Name must be ONE word only.');
@@ -352,13 +339,13 @@ function tripal_views_integration_new_setup_form_validate($form, &$form_state){
  *
  * @ingroup tripal_views_integration
  */
-function tripal_views_integration_new_setup_form_submit($form, &$form_state){
+function tripal_core_views_integration_new_setup_form_submit($form, &$form_state){
   $name = $form_state['values']['row_name'];
   $mview_id = $form_state['values']['mview_id'];
   $tripal_views_integration_record = array(
     'mview_id' => $mview_id,
     'name' => $name,
-  	'description' => $form_state['values']['row_description'],
+  	 'description' => $form_state['values']['row_description'],
   );
 
   drupal_write_record('tripal_views_integration', $tripal_views_integration_record);
