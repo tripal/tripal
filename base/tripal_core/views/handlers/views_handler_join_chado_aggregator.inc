@@ -27,21 +27,49 @@ class views_handler_join_chado_aggregator extends views_join {
    * Creates SQL including aggregation query used in join
    */
   function join($table, &$query) {
-    $output = '';
-    $joins = array();
+    $output = array();
 
     // Create the table SQL (used in join) -------
     // query creating one-to-one table using array_agg
     $table_desc = module_invoke_all('chado_'.$this->definition['table'].'_schema');
-
+    dpm($table_desc, 'table description');
+    dpm($this, 'this');
+    $select_fields[ $this->definition['table'] ] = $table_desc['fields'];
+    
+    // Add joins to tables with a foreign key in this table
+    // (ie: add join to cvterm if this table has a type_id
+    $joins = array();
+    foreach($table_desc['foreign keys'] as $defn) {
+      if ($defn['table'] != $this->left_table) {
+        dpm($defn, 'workin on');
+        foreach( $defn['columns'] as $left => $right) {
+          $left = $this->definition['table'] .'.'. $left;
+          $right = $defn[table] .'.'. $right;
+          $joins[] = "LEFT JOIN $defn[table] $defn[table] ON $left=$right";
+        }
+        
+        // Fields to be selected from joined table
+        $join_table = module_invoke_all('chado_'.$defn['table'].'_schema');
+        $select_fields[ $defn['table'] ] = $join_table['fields'];
+      } 
+    }
+    
+    
     // Fields to be selected
-    $fields = array();
-    foreach ($table_desc['fields'] as $fname => $f) {
-      if ($fname != $this->definition['field']) {
-        $fields[] = 'array_agg('.$fname.') as '.$fname;
-        $composite_field_parts[] = "'".$fname."::' ||".$fname;
-      } else {
-        $fields[] = $fname;
+    foreach ($select_fields as $table => $table_fields) {
+      foreach ($table_fields as $fname => $f) {
+        $alias = '';
+        if ($table != $this->definition['table']) {
+          $alias = $table .'_';
+        }
+        
+        if ($fname != $this->definition['field']) {
+          $fields[] = 'array_agg('.$table.'.'.$fname.') as '.$alias.$fname;
+          $composite_field_parts[] = "'".$alias.$fname."::' ||".$table.'.'.$fname;
+        } else {
+          $fields[] = $fname;
+          $composite_field_parts[] = "'".$alias.$fname."::' ||".$table.'.'.$fname;
+        }
       }
     }
     
@@ -51,10 +79,13 @@ class views_handler_join_chado_aggregator extends views_join {
     $fields[] = $composite_field;
     
     // SQL to use in the join
-    $sql = 'SELECT '.implode(', ',$fields).' FROM '.$this->definition['table'].' GROUP BY '.$this->definition['field'];
+    $sql = 'SELECT '.implode(', ',$fields)
+      .' FROM '.$this->definition['table']
+      .' '.implode(' ',$joins)
+      .' GROUP BY '.$this->definition['field'];
    
     // Create the join (full SQL) ----------------
-    $joins[] = $this->create_single_join(
+    $output[] = $this->create_single_join(
       $query,
       array(
         'table' => $this->definition['table'],
@@ -69,8 +100,7 @@ class views_handler_join_chado_aggregator extends views_join {
       'LEFT'
     );
     
-    $output .= implode("\n",$joins);
-    return $output;
+    return implode("\n",$output);
   }
   
   /**
