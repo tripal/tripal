@@ -1,9 +1,0 @@
-name = Tripal Views Integration
-description = Tripal module that integrates materialized views with Drupal views to enable custom pages, queries and search forms.
-core = 6.x
-package = Tripal
-
-dependencies[] = tripal_core
-dependencies[] = ahah_helper
-dependencies[] = views
-
