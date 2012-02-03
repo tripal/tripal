@@ -291,7 +291,7 @@ function tripal_core_theme () {
          'arguments' => array('job_id'=> null),
          'template' => 'tripal_core_job_view',
       ),
-	  'tripal_views_integration_new_setup_form' => array(
+	  'tripal_core_views_integration_new_setup_form' => array(
          'arguments' => array('form' => NULL),
          'template'  => 'tripal_views_integration_fields_form',
 	   ),
