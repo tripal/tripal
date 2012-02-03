@@ -266,7 +266,7 @@ function tripal_core_update_6000(){
 *
 * @ingroup tripal_core
 */
-tripal_core_update_6000_views_integration(){
+function tripal_core_update_6000_views_integration(){
 
 }
 ?>
