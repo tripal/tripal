@@ -87,7 +87,7 @@ function retrieve_analysis_views_data() {
       'handler' => 'chado_views_handler_sort',
     ),
     'filter' => array(
-      'handler' => 'views_handler_filter_string',
+      'handler' => 'chado_views_handler_filter_string',
     ),
     'argument' => array(
       'handler' => 'views_handler_argument_string',
@@ -105,7 +105,7 @@ function retrieve_analysis_views_data() {
       'handler' => 'chado_views_handler_sort',
     ),
     'filter' => array(
-      'handler' => 'views_handler_filter_string',
+      'handler' => 'chado_views_handler_filter_string',
     ),
     'argument' => array(
       'handler' => 'views_handler_argument_string',
@@ -194,7 +194,7 @@ function retrieve_analysis_views_data() {
       'handler' => 'chado_views_handler_sort',
     ),
     'filter' => array(
-      'handler' => 'views_handler_filter_string',
+      'handler' => 'chado_views_handler_filter_string',
     ),
     'argument' => array(
       'handler' => 'views_handler_argument_string',
@@ -269,7 +269,7 @@ function retrieve_analysis_views_data() {
       'handler' => 'chado_views_handler_sort',
     ),
     'filter' => array(
-      'handler' => 'views_handler_filter_string',
+      'handler' => 'chado_views_handler_filter_string',
     ),
     'argument' => array(
       'handler' => 'views_handler_argument_string',
@@ -288,7 +288,7 @@ function retrieve_analysis_views_data() {
       'handler' => 'chado_views_handler_sort',
     ),
     'filter' => array(
-      'handler' => 'views_handler_filter_string',
+      'handler' => 'chado_views_handler_filter_string',
     ),
     'argument' => array(
       'handler' => 'views_handler_argument_string',
@@ -307,7 +307,7 @@ function retrieve_analysis_views_data() {
       'handler' => 'chado_views_handler_sort',
     ),
     'filter' => array(
-      'handler' => 'views_handler_filter_string',
+      'handler' => 'chado_views_handler_filter_string',
     ),
     'argument' => array(
       'handler' => 'views_handler_argument_string',

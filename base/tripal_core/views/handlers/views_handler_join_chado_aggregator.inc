@@ -105,9 +105,14 @@ class views_handler_join_chado_aggregator extends views_join {
     // SQL to use in the join
     $sql = 'SELECT '.implode(', ',$fields)
       .' FROM '.$this->definition['table']
-      .' '.implode(' ',$joins)
-      .' GROUP BY '.$this->definition['field'];
-   
+      .' '.implode(' ',$joins);
+ 
+    if (!empty($this->filter)) {
+      $sql .= ' WHERE '.implode(', ', $this->filter);
+    }
+    
+    $sql .= ' GROUP BY '.$this->definition['field'];
+    
     // Create the join (full SQL) ----------------
     $output[] = $this->create_single_join(
       $query,

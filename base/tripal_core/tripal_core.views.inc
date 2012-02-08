@@ -55,6 +55,7 @@ include('views/handlers/views_handler_join_chado_aggregator.inc');
  * @ingroup tripal_core
  */
 function tripal_core_views_handlers() {
+
  return array(
    'info' => array(
      'path' => drupal_get_path('module', 'tripal_core') . '/views/handlers',
@@ -119,9 +120,10 @@ function tripal_core_views_handlers() {
      'chado_views_handler_field_numeric' => array(
       'parent' => 'views_handler_field_numeric'
      ),
-     'chado_views_handler_sort' => array(
-      'parent' => 'views_handler_sort',
-     ),
+     // Filter Handlers
+     'chado_views_handler_filter_string' => array(
+      'parent' => 'views_handler_filter_string',
+     ),     
      // Sort Handlers
      'chado_views_handler_sort' => array(
       'parent' => 'views_handler_sort'
