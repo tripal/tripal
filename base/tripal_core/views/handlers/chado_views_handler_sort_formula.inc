@@ -1,6 +1,6 @@
 <?php
 
-class chado_views_handler_sort extends views_handler_sort {
+class chado_views_handler_sort extends views_handler_sort_formula {
 
   /**
    * Defines the options form (form available to admin when they add a field to a view)

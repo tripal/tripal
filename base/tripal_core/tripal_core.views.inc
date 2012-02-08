@@ -93,7 +93,8 @@ function tripal_core_views_handlers() {
      ),
 
      
-     // Wrappers for Default Views Handlers
+     // Wrappers for Default Views Handlers-----
+     // Field Handlers
      'chado_views_handler_field' => array(
       'parent' => 'views_handler_field'
      ),
@@ -118,6 +119,25 @@ function tripal_core_views_handlers() {
      'chado_views_handler_field_numeric' => array(
       'parent' => 'views_handler_field_numeric'
      ),
+     'chado_views_handler_sort' => array(
+      'parent' => 'views_handler_sort',
+     ),
+     // Sort Handlers
+     'chado_views_handler_sort' => array(
+      'parent' => 'views_handler_sort'
+     ),     
+     'chado_views_handler_sort_date' => array(
+      'parent' => 'views_handler_sort_date'
+     ), 
+     'chado_views_handler_sort_formula' => array(
+      'parent' => 'views_handler_sort_formula'
+     ), 
+     'chado_views_handler_sort_menu_hierarchy' => array(
+      'parent' => 'views_handler_sort_menu_hierarchy'
+     ), 
+     'chado_views_handler_sort_random' => array(
+      'parent' => 'views_handler_sort_random'
+     ), 
    ),
  );
 }
