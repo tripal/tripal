@@ -1,6 +1,6 @@
 <?php
 
-class chado_views_handler_filter_string extends views_handler_filter_string {
+class chado_views_handler_filter_date extends views_handler_filter_date {
 
   /**
    * Defines the options form (form available to admin when they add a field to a view)

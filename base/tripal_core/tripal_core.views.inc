@@ -123,7 +123,25 @@ function tripal_core_views_handlers() {
      // Filter Handlers
      'chado_views_handler_filter_string' => array(
       'parent' => 'views_handler_filter_string',
-     ),     
+     ), 
+     'chado_views_handler_filter_boolean_operator_string' => array(
+      'parent' => 'views_handler_filter_boolean_operator_string',
+     ),
+     'chado_views_handler_filter_boolean_operator' => array(
+      'parent' => 'views_handler_filter_boolean_operator',
+     ),
+     'chado_views_handler_filter_date' => array(
+      'parent' => 'views_handler_filter_date',
+     ),
+     'chado_views_handler_filter_equality' => array(
+      'parent' => 'views_handler_filter_equality',
+     ),
+     'chado_views_handler_filter_float' => array(
+      'parent' => 'views_handler_filter_float',
+     ),
+     'chado_views_handler_filter_numeric' => array(
+      'parent' => 'views_handler_filter_numeric',
+     ),
      // Sort Handlers
      'chado_views_handler_sort' => array(
       'parent' => 'views_handler_sort'

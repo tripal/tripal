@@ -1,6 +1,6 @@
 <?php
 
-class chado_views_handler_filter_string extends views_handler_filter_string {
+class chado_views_handler_filter_boolean_operator extends views_handler_filter_boolean_operator {
 
   /**
    * Defines the options form (form available to admin when they add a field to a view)
