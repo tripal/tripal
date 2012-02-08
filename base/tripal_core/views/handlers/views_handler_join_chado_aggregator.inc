@@ -21,6 +21,17 @@ class views_handler_join_chado_aggregator extends views_join {
   // the call to constructors upstream where appropriate.
   function construct($table = NULL, $left_table = NULL, $left_field = NULL, $field = NULL, $extra = array(), $type = 'LEFT', $added = NULL) {
     parent::construct($table, $left_table, $left_field, $field, $extra, $type);
+    
+    // Determine the postgresql version
+    $postgresql_version = pg_version();
+    $this->postgresql_version = $postgresql_version['client'];
+
+    // If version is 9.0+ then indicate
+    // Needed to apply sorting for aggregated fields
+    if (intval($postgresql_version['client']) >= 9) {
+      $this->postgresql_9up = TRUE;
+    }
+
   }
 
   /**
@@ -51,6 +62,12 @@ class views_handler_join_chado_aggregator extends views_join {
       } 
     }
     
+    // Determine Order BY's for aggregates
+    $order_by = array();
+    foreach ($this->sort as $s) {
+      $order_by[] = $s['table'].'.'.$s['field'].' '.$s['order'];
+    }
+    
     
     // Fields to be selected
     foreach ($select_fields as $table => $table_fields) {
@@ -61,7 +78,12 @@ class views_handler_join_chado_aggregator extends views_join {
         }
         
         if ($fname != $this->definition['field']) {
-          $fields[] = 'array_agg('.$table.'.'.$fname.') as '.$alias.$fname;
+          // Add sort to aggregate field if postgreSQL 9.0+
+          if ($this->postgresql_9up && !empty($order_by)) {
+            $fields[] = 'array_agg('.$table.'.'.$fname.' ORDER BY '.implode(',',$order_by).') as '.$alias.$fname;
+          } else {
+            $fields[] = 'array_agg('.$table.'.'.$fname.') as '.$alias.$fname;
+          }
           $composite_field_parts[] = "'".$alias.$fname."::' ||".$table.'.'.$fname;
         } else {
           $fields[] = $fname;
@@ -72,7 +94,12 @@ class views_handler_join_chado_aggregator extends views_join {
     
     // composite field 
     // (combines all other fields before aggregating)
-    $composite_field = "array_agg('{'||".implode(" || ',' || ",$composite_field_parts)."||'}') as all";
+    // Add sort to aggregate field if postgreSQL 9.0+
+    if ($this->postgresql_9up && !empty($order_by)) {
+      $composite_field = "array_agg('{'||".implode(" || ',' || ",$composite_field_parts)."||'}' ORDER BY ".implode(',',$order_by).") as all";
+    } else {
+      $composite_field = "array_agg('{'||".implode(" || ',' || ",$composite_field_parts)."||'}') as all";
+    }
     $fields[] = $composite_field;
     
     // SQL to use in the join
