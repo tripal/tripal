@@ -195,6 +195,14 @@ function tripal_core_menu() {
     'access arguments' => array('manage tripal_views_integration'),
     'type' => MENU_NORMAL_ITEM,
 	);
+	
+// 	$items['admin/tripal/views/integration/edit_form'] = array(
+//     'title' => 'My redirected path', 
+//     'page callback' => 'drupal_goto', 
+//     'page arguments' => array('tripal_core_views_integration_new_setup_form'), 
+//     'access arguments' => array('access administration pages'),
+//     'type' => MENU_CALLBACK, 
+// 	);
 
 	//page to actually create setup->mview->chado table relationships
 	$items['admin/tripal/views/integration/mviews/new'] = array(
@@ -203,6 +211,14 @@ function tripal_core_menu() {
      'page arguments' => array('tripal_core_views_integration_new_setup_form'),
      'access arguments' => array('manage tripal_views_integration'), //TODO: figure out the proper permissions arguments
      'type' => MENU_NORMAL_ITEM,
+	);
+	
+	$items['admin/tripal/views/integration/mviews/edit/%'] = array(
+	     'title' => 'Add an MView',
+	     'page callback' => 'drupal_get_form',
+	     'page arguments' => array('tripal_core_views_integration_new_setup_form', 6),
+	     'access arguments' => array('manage tripal_views_integration'), //TODO: figure out the proper permissions arguments
+	     'type' => MENU_NORMAL_ITEM,
 	);
 
 	$items['admin/tripal/views/integration/chado'] = array(

@@ -94,6 +94,19 @@ function tripal_core_views_integration_admin_form(){
   $form['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Remove'),
+  	'#submit' => array('tripal_core_views_integration_admin_form_submit'),
+  );
+  
+//   $form[''] = array(
+//     '#type' => 'submit',
+//     '#value' => 'Edit',
+//     '#submit' => array('tripal_core_views_integration_admin_edit_form_submit'),
+//   );
+  
+  $form['button']['edit_form'] = array(
+    '#type' => 'submit',
+    '#value' => t('Edit'),
+    '#submit' => array('tripal_core_views_integration_admin_edit_form_submit'),
   );
 
   $form['new'] = array(
@@ -104,6 +117,15 @@ function tripal_core_views_integration_admin_form(){
   return $form;
 }
 
+
+
+function tripal_core_views_integration_admin_edit_form_submit($form, &$form_state) {
+	$form_state['rebuild'] = FALSE;
+	unset($form_state['storage']);
+// 	$form_state['redirect'] = 'admin/tripal/views/integration/edit_form';
+	$form_state['redirect'] = 'admin/tripal/views/integration/mviews/edit/'. $form['existing_rows']['#options'][$form_state['values']['existing_rows']];
+	return $form_state;
+}
 /**
  *
  * @ingroup tripal_views_integration
@@ -119,8 +141,24 @@ function tripal_core_views_integration_admin_form_submit($form, &$form_state){
  * @ingroup tripal_views_integration
  */
 
-function tripal_core_views_integration_new_setup_form(&$form_state){
+function tripal_core_views_integration_new_setup_form(&$form_state, $setup_id){
+	$setup_id = $setup_id['0'];
+	dpm($setup_id,'setupid');
+	dpm($args, 'args');
+	if(isset($setup_id)){
+		$setup_obj = db_fetch_object(db_query("SELECT * FROM {tripal_views_integration} WHERE setup_id = '$setup_id';"));
+		dpm($setup_obj,'$setup_obj');
+		$mview_id = $setup_obj->mview_id;
+		$form_state['storage']['mview_id'] = $mview_id;
+		$column_query = db_query("SELECT * FROM {tripal_mviews_join} WHERE setup_id = '$setup_id';");
+		$mview_joins = array();
+		while ($mviews_join = db_fetch_object($column_query)){
+			$mview_joins[] = $mviews_join;
+		}
 
+		dpm($mview_joins,'mviewjoins');
+	}
+	dpm($mview_id,'$$mview_id');
   $form = array();
 
   $data = array();
@@ -134,6 +172,7 @@ function tripal_core_views_integration_new_setup_form(&$form_state){
   $form['row_name'] = array(
     '#title' => t('Name'),
     '#type' => 'textfield',
+    '#default_value' => $setup_obj->name,
     '#size' => 60,
     '#maxlength' => 128,
     '#description' => 'Name of the Views Setup',
@@ -143,6 +182,7 @@ function tripal_core_views_integration_new_setup_form(&$form_state){
   $form['row_description'] = array(
     '#title' => t('Description'),
     '#type' => 'textfield',
+  	'#default_value' => $setup_obj->description,
     '#size' => 60,
     '#maxlength' => 255,
     '#description' => 'Briefly describe in which view this will be used',
@@ -162,7 +202,9 @@ function tripal_core_views_integration_new_setup_form(&$form_state){
     '#options' => $mview_options,
     '#description' => 'Which materialized view to use.',
     '#required' => TRUE,
-    '#default_value' => $mview_default_value,
+//     '#value' => $setup_obj->mview_id,
+//     '#default_value' => $mview_default_value,
+  	'#default_value' => $setup_obj->mview_id,
     '#ahah' => array(
        'path' => ahah_helper_path(array('view_setup_table')),
        'wrapper' => 'table-rows-div',
@@ -191,8 +233,10 @@ function tripal_core_views_integration_new_setup_form(&$form_state){
 
   if ($form_state['storage']['mview_id']){
 
-    $mview_id = $form_state['storage']['mview_id'];
-
+  	if(!isset($mview_id)){
+    	$mview_id = $form_state['storage']['mview_id'];
+  	}
+  	
     $form['view_setup_table'] = array(
      '#type' => 'fieldset',
      '#title' => 'Join Selection',
@@ -257,7 +301,15 @@ function tripal_core_views_integration_new_setup_form(&$form_state){
 
       $data['field_types'][$column_name] = $column_type;
 
-      $table = $form_state['storage']["fields_join_$mview_id-$i"];
+      if(isset($setup_id)){
+      	$p = $i - 1;
+      	$table = $mview_joins["$p"]->chado_table_join;
+      	$form_state['storage']["fields_join_$mview_id-$i"] = $table;
+      	dpm($table,'table');
+      }
+      else{
+      	$table = $form_state['storage']["fields_join_$mview_id-$i"];
+      }
       $form['view_setup_table']["fields_join_$mview_id-$i"] = array(
         '#type' => 'select',
         '#prefix' => "<div class=\"fields-column-join\">",
@@ -287,7 +339,10 @@ function tripal_core_views_integration_new_setup_form(&$form_state){
         '#options' => $columns,
         '#required' => FALSE,
       );      
-      
+      $column_name = $mview_joins["$p"]->view_column;
+      $default_handlers = db_fetch_object(db_query("SELECT handler_filter, handler_field FROM {tripal_views_handlers} WHERE setup_id = '$setup_id' AND column_name = '$column_name';"));
+      dpm($default_handlers, 'default handlers');
+      dpm($handlers_fields,'handlers');
       $form['view_setup_table']["fields_field_handler_$mview_id-$i"] = array(
          '#type' => 'select',
          '#prefix' => "<div class=\"column-two\">".
@@ -295,6 +350,7 @@ function tripal_core_views_integration_new_setup_form(&$form_state){
          '#suffix' => "</div>",
          '#options' => $handlers_fields,
          '#required' => FALSE,
+//          '#'
       );
       $form['view_setup_table']["fields_filter_handler_$mview_id-$i"] = array(
         '#type' => 'select',
