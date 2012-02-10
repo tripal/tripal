@@ -141,7 +141,7 @@ function tripal_core_views_integration_admin_form_submit($form, &$form_state){
  * @ingroup tripal_views_integration
  */
 
-function tripal_core_views_integration_new_setup_form(&$form_state, $setup_id){
+function tripal_core_views_integration_new_setup_form(&$form_state, $setup_id = NULL){
 	$setup_id = $setup_id['0'];
 	if(isset($setup_id)){
 		$setup_obj = db_fetch_object(db_query("SELECT * FROM {tripal_views_integration} WHERE setup_id = '$setup_id';"));
