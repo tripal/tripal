@@ -343,6 +343,10 @@ function tripal_core_views_integration_new_setup_form(&$form_state, $setup_id){
       $default_handlers = db_fetch_object(db_query("SELECT handler_filter, handler_field FROM {tripal_views_handlers} WHERE setup_id = '$setup_id' AND column_name = '$column_name';"));
       dpm($default_handlers, 'default handlers');
       dpm($handlers_fields,'handlers');
+      dpm(array_keys($handlers_fields, 'views_handler_field', TRUE),'arraykey');
+    	$default_field_handler = array_keys($handlers_fields, $default_handlers->handler_field, TRUE);
+    	$default_field_handler = $default_field_handler[0];
+    	
       $form['view_setup_table']["fields_field_handler_$mview_id-$i"] = array(
          '#type' => 'select',
          '#prefix' => "<div class=\"column-two\">".
@@ -350,14 +354,18 @@ function tripal_core_views_integration_new_setup_form(&$form_state, $setup_id){
          '#suffix' => "</div>",
          '#options' => $handlers_fields,
          '#required' => FALSE,
-//          '#'
+         '#default_value' => $default_field_handler,
       );
+      
+      $default_filter_handler = array_keys($handlers_filters, $default_handlers->handler_filter, TRUE);
+      $default_filter_handler = $default_filter_handler['0'];
       $form['view_setup_table']["fields_filter_handler_$mview_id-$i"] = array(
         '#type' => 'select',
         '#prefix' => "<div class=\"fields-filter-handler\">",
         '#suffix' => "</div></div>",
         '#options' => $handlers_filters,
         '#required' => FALSE,
+      	'#default_value' => $default_filter_handler,
       );
       
       $form['view_setup_table']["fields_end_$i"] = array(
