@@ -6,4 +6,5 @@ project = tripal_core
 package = Tripal
 version = 6.x-0.3.1b
 
-dependencies = views
+dependencies[] = views
+dependencies[] = ahah_helper

@@ -91,17 +91,11 @@ function tripal_core_views_integration_admin_form(){
     '#prefix' => theme('table', $header, $rows),
   );
 
-  $form['submit'] = array(
+  $form['button']['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Remove'),
   	'#submit' => array('tripal_core_views_integration_admin_form_submit'),
   );
-  
-//   $form[''] = array(
-//     '#type' => 'submit',
-//     '#value' => 'Edit',
-//     '#submit' => array('tripal_core_views_integration_admin_edit_form_submit'),
-//   );
   
   $form['button']['edit_form'] = array(
     '#type' => 'submit',
@@ -111,7 +105,7 @@ function tripal_core_views_integration_admin_form(){
 
   $form['new'] = array(
     '#type' => 'markup',
-    '#value' => l(t(' Add a New MView'), 'admin/tripal/views/integration/mviews/new'),
+    '#value' => l(t(' Add a New MView'), 'admin/tripal/views/integration/chado/new'),
   );
 
   return $form;
@@ -122,8 +116,9 @@ function tripal_core_views_integration_admin_form(){
 function tripal_core_views_integration_admin_edit_form_submit($form, &$form_state) {
 	$form_state['rebuild'] = FALSE;
 	unset($form_state['storage']);
-// 	$form_state['redirect'] = 'admin/tripal/views/integration/edit_form';
-	$form_state['redirect'] = 'admin/tripal/views/integration/mviews/edit/'. $form['existing_rows']['#options'][$form_state['values']['existing_rows']];
+	$form_state['redirect'] = 'admin/tripal/views/integration/chado/edit/'. $form['existing_rows']['#options'][$form_state['values']['existing_rows']];
+// 	$form_state['redirect'] = 'admin';
+// 	$form_state['redirect'] = 'admin/tripal/views/integration/mview/new';
 	return $form_state;
 }
 /**
@@ -142,18 +137,9 @@ function tripal_core_views_integration_admin_form_submit($form, &$form_state){
  */
 
 function tripal_core_views_integration_new_setup_form(&$form_state, $setup_id = NULL){
-	$setup_id = $setup_id['0'];
-	if(isset($setup_id)){
-		$setup_obj = db_fetch_object(db_query("SELECT * FROM {tripal_views_integration} WHERE setup_id = '$setup_id';"));
-		$mview_id = $setup_obj->mview_id;
-		$form_state['storage']['mview_id'] = $mview_id;
-		$column_query = db_query("SELECT * FROM {tripal_mviews_join} WHERE setup_id = '$setup_id';");
-		$mview_joins = array();
-		while ($mviews_join = db_fetch_object($column_query)){
-			$mview_joins[] = $mviews_join;
-		}
+  
+  
 
-	}
   $form = array();
 
   $data = array();
@@ -162,7 +148,37 @@ function tripal_core_views_integration_new_setup_form(&$form_state, $setup_id = 
 
   //ahah_helper requires this to register the form with it's module
   ahah_helper_register($form, $form_state);
+  
 
+
+  $setup_id = $setup_id['0'];
+  if(isset($setup_id)){
+
+    
+    
+    
+    
+    $setup_obj = db_fetch_object(db_query("SELECT * FROM {tripal_views_integration} WHERE setup_id = '$setup_id';"));
+    $mview_id = $setup_obj->mview_id;
+    $form_state['storage']['mview_id'] = $mview_id;
+    $column_query = db_query("SELECT * FROM {tripal_mviews_join} WHERE setup_id = '$setup_id';");
+    $mview_joins = array();
+    while ($mviews_join = db_fetch_object($column_query)){
+      $mview_joins[] = $mviews_join;
+    }
+  
+    dpm($form_state,'formstate');
+    if(!isset($form_state['storage']['mview_id'])){
+      $form_state['storage']['mview_id'] = $setup_obj->mview_id;
+    }
+  }
+  else{
+    $form['hidden_edited'] = array(
+      '#type' => 'hidden',
+      '#value' => FALSE,
+    );
+  }
+  
   // field for the name of the
   $form['row_name'] = array(
     '#title' => t('Name'),
@@ -228,9 +244,7 @@ function tripal_core_views_integration_new_setup_form(&$form_state, $setup_id = 
 
   if ($form_state['storage']['mview_id']){
 
-  	if(!isset($mview_id)){
     	$mview_id = $form_state['storage']['mview_id'];
-  	}
   	
     $form['view_setup_table'] = array(
      '#type' => 'fieldset',
@@ -262,7 +276,7 @@ function tripal_core_views_integration_new_setup_form(&$form_state, $setup_id = 
     $handlers_fields = array();
     $handlers_filters = array();
     
-    $handlers_fields[] = "Select a Field Handler"; 
+    $handlers_fields[] = "Select a Field Handler";
     $handlers_filters[] = "Select a Filter Handler";
     foreach($all_handlers as $handler){
        if(preg_match("/views_handler_field/",$handler)){
@@ -332,12 +346,9 @@ function tripal_core_views_integration_new_setup_form(&$form_state, $setup_id = 
         '#suffix' => "</div></div>",
         '#options' => $columns,
         '#required' => FALSE,
-      );      
-      $column_name = $mview_joins["$p"]->view_column;
-      $default_handlers = db_fetch_object(db_query("SELECT handler_filter, handler_field FROM {tripal_views_handlers} WHERE setup_id = '$setup_id' AND column_name = '$column_name';"));
-    	$default_field_handler = array_keys($handlers_fields, $default_handlers->handler_field, TRUE);
-    	$default_field_handler = $default_field_handler[0];
-    	
+      );
+      
+      
       $form['view_setup_table']["fields_field_handler_$mview_id-$i"] = array(
          '#type' => 'select',
          '#prefix' => "<div class=\"column-two\">".
@@ -345,19 +356,28 @@ function tripal_core_views_integration_new_setup_form(&$form_state, $setup_id = 
          '#suffix' => "</div>",
          '#options' => $handlers_fields,
          '#required' => FALSE,
-         '#default_value' => $default_field_handler,
       );
       
-      $default_filter_handler = array_keys($handlers_filters, $default_handlers->handler_filter, TRUE);
-      $default_filter_handler = $default_filter_handler['0'];
+
       $form['view_setup_table']["fields_filter_handler_$mview_id-$i"] = array(
         '#type' => 'select',
         '#prefix' => "<div class=\"fields-filter-handler\">",
         '#suffix' => "</div></div>",
         '#options' => $handlers_filters,
         '#required' => FALSE,
-      	'#default_value' => $default_filter_handler,
       );
+      
+      if(isset($setup_id)){
+        $column_name = $mview_joins["$p"]->view_column;
+        $default_handlers = db_fetch_object(db_query("SELECT handler_filter, handler_field FROM {tripal_views_handlers} WHERE setup_id = '$setup_id' AND column_name = '$column_name';"));
+        $default_field_handler = array_keys($handlers_fields, $default_handlers->handler_field, TRUE);
+        $default_field_handler = $default_field_handler[0];
+        $form['view_setup_table']["fields_field_handler_$mview_id-$i"]['#default_value'] = $default_field_handler;
+        
+        $default_filter_handler = array_keys($handlers_filters, $default_handlers->handler_filter, TRUE);
+        $default_filter_handler = $default_filter_handler['0'];
+        $form['view_setup_table']["fields_filter_handler_$mview_id-$i"]['#default_value'] = $default_filter_handler;
+      }
       
       $form['view_setup_table']["fields_end_$i"] = array(
         '#type' => 'markup',
@@ -459,9 +479,9 @@ function tripal_core_views_integration_discover_handlers() {
      }
    }
 
-   // these handlers are hard coded because I could not 
+   // these handlers are hard coded because I could not
    // get the views_views_handlers() function to be called
-   // in the code above.  However, we will be creating 
+   // in the code above.  However, we will be creating
    // Chado wrappers for many of these and once that work
    // is done these will no longer be needed.
 
