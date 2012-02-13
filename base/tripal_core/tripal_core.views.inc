@@ -1,5 +1,8 @@
 <?php
 
+include('views/handlers/views_handler_join_chado_through_linking.inc');
+include('views/handlers/views_handler_join_chado_aggregator.inc');
+
 /**
  * @defgroup views Views Integration
  * @{
@@ -52,11 +55,25 @@
  * @ingroup tripal_core
  */
 function tripal_core_views_handlers() {
+
  return array(
    'info' => array(
      'path' => drupal_get_path('module', 'tripal_core') . '/views/handlers',
    ),
    'handlers' => array(
+   
+     // Custom Chado Handlers
+     'chado_views_handler_field_aggregate' => array(
+      'parent' => 'chado_views_handler_field',
+     ),
+     'views_handler_filter_chado_select_string' => array(
+      'parent' => 'views_handler_filter_string',
+     ),
+     'views_handler_filter_chado_select_cvterm_name' => array(
+      'parent' => 'views_handler_filter_string',
+     ),
+     
+     // Old Handlers
      'views_handler_field_node_optional' => array(
        'parent' => 'views_handler_field_node',
      ),
@@ -69,18 +86,78 @@ function tripal_core_views_handlers() {
      'views_handler_field_chado_count' => array(
       'parent' => 'views_handler_field',
      ),
-     'views_handler_filter_chado_select_string' => array(
-      'parent' => 'views_handler_filter_string',
-     ),
-     'views_handler_filter_chado_select_cvterm_name' => array(
-      'parent' => 'views_handler_filter_string',
-     ),
      'views_handler_filter_chado_boolean' => array(
       'parent' => 'views_handler_filter_boolean_operator',
      ),
      'views_handler_field_chado_rel_by_type' => array(
       'parent' => 'views_handler_field_prerender_list',
      ),
+
+     
+     // Wrappers for Default Views Handlers-----
+     // Field Handlers
+     'chado_views_handler_field' => array(
+      'parent' => 'views_handler_field'
+     ),
+     'chado_views_handler_field_boolean' => array(
+      'parent' => 'views_handler_field_boolean'
+     ),
+     'chado_views_handler_field_counter' => array(
+      'parent' => 'views_handler_field_counter'
+     ),
+     'chado_views_handler_field_custom' => array(
+      'parent' => 'views_handler_field_custom'
+     ),
+     'chado_views_handler_field_date' => array(
+      'parent' => 'views_handler_field_date'
+     ),
+     'chado_views_handler_field_markup' => array(
+      'parent' => 'views_handler_field_markup'
+     ),
+     'chado_views_handler_field_math' => array(
+      'parent' => 'views_handler_field_math'
+     ),
+     'chado_views_handler_field_numeric' => array(
+      'parent' => 'views_handler_field_numeric'
+     ),
+     // Filter Handlers
+     'chado_views_handler_filter_string' => array(
+      'parent' => 'views_handler_filter_string',
+     ), 
+     'chado_views_handler_filter_boolean_operator_string' => array(
+      'parent' => 'views_handler_filter_boolean_operator_string',
+     ),
+     'chado_views_handler_filter_boolean_operator' => array(
+      'parent' => 'views_handler_filter_boolean_operator',
+     ),
+     'chado_views_handler_filter_date' => array(
+      'parent' => 'views_handler_filter_date',
+     ),
+     'chado_views_handler_filter_equality' => array(
+      'parent' => 'views_handler_filter_equality',
+     ),
+     'chado_views_handler_filter_float' => array(
+      'parent' => 'views_handler_filter_float',
+     ),
+     'chado_views_handler_filter_numeric' => array(
+      'parent' => 'views_handler_filter_numeric',
+     ),
+     // Sort Handlers
+     'chado_views_handler_sort' => array(
+      'parent' => 'views_handler_sort'
+     ),     
+     'chado_views_handler_sort_date' => array(
+      'parent' => 'views_handler_sort_date'
+     ), 
+     'chado_views_handler_sort_formula' => array(
+      'parent' => 'views_handler_sort_formula'
+     ), 
+     'chado_views_handler_sort_menu_hierarchy' => array(
+      'parent' => 'views_handler_sort_menu_hierarchy'
+     ), 
+     'chado_views_handler_sort_random' => array(
+      'parent' => 'views_handler_sort_random'
+     ), 
    ),
  );
 }

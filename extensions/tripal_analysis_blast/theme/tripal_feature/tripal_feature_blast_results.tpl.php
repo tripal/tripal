@@ -84,7 +84,7 @@ if(count($blast_results_list) > 0){
 			   <td nowrap><?php  if (!empty($hit['percent_identity'])) { print $hit['percent_identity']; } ?></td>
 			   <td><?php print $hit['description']?></td>
 		   </tr>
-		   
+   
 		   <!-- If there is alignment information for at least one HSP -->
 		   <?php if (!empty($hit['hsp'][0]['query_frame'])) { ?>
 	      <tr class="<?php print $class ?>">
@@ -102,14 +102,14 @@ if(count($blast_results_list) > 0){
 				      &nbsp;HSP <?php  print $hsp['hsp_num'] ?>
 				      <pre>Score: <?php print $hsp['bit_score'] ?> bits (<?php print $hsp['score'] ?>), Expect = <?php print $hsp['evalue'] ?><br>Identity = <?php print sprintf("%d/%d (%.2f%%)", $hsp['identity'], $hsp['align_len'], $hsp['identity']/$hsp['align_len']*100) ?>, Postives = <?php print sprintf("%d/%d (%.2f%%)", $hsp['positive'], $hsp['align_len'], $hsp['positive']/$hsp['align_len']*100)?>, Query Frame = <?php print $hsp['query_frame']?></a><br><br></a>Query: <?php print sprintf("%4d", $hsp['query_from'])?> <?php print $hsp['qseq'] ?> <?php print sprintf("%d", $hsp['query_to']); ?><br>            <?php print $hsp['midline'] ?><br>Sbjct: <?php print sprintf("%4d", $hsp['hit_from']) ?> <?php print $hsp['hseq']?> <?php print sprintf("%d",$hsp['hit_to']) ?></pre><br>
 			      </div>
-		      <?php } ?>
+		      <?php } //end of foreach hsp ?>
 		      </td>
 	      </tr>		
-         <?php }
-         $i++;
-	   } ?>
+         <?php } //end of if there is query sequence for at least one hsp
+         $i++;  
+     } //end of foreach hit ?>
 	</table>
 </div>
 </div>
-  <?php } ?>
-<?php } ?>
+  <?php } // end of foreach blast result ?>
+<?php } //end of if there are blast results ?>

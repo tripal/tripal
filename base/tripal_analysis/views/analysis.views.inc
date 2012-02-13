@@ -51,26 +51,67 @@ function retrieve_analysis_views_data() {
   }
 
   // Define relationships between this table and others
-  $data['analysis']['table']['join'] = array(
-    'analysisfeature' => array(
-      'left_field' => 'analysis_id',
+  $data['analysis']['table']['join']['feature'] = array(
+    'linking' => array(
+      'table' => 'analysisfeature',
+      'left_field' => 'feature_id',
       'field' => 'analysis_id',
     ),
-    'feature' => array(
-      'left_table' => 'analysisfeature',
-      'left_field' => 'analysis_id',
-      'field' => 'analysis_id',
-    ),
+    'left_field' => 'feature_id',
+    'field' => 'analysis_id',
+    'handler' => 'views_handler_join_chado_through_linking'
   );
 
-  // Describe the joins with the analysis_feature table
-  $data['analysisfeature']['table']['join'] = array(
-    'feature' => array(
-      'left_field' => 'feature_id',
-      'field' => 'feature_id',
+  // Analysis properties?
+ 	$data['analysisprop']['table'] = array(
+'group' => 'Chado analysis Properties',
+ 		'field' => 'analysisprop_id',
+ 		'title' => t('Chado analysis Properties'),
+ 		'help' => '  ',
+ 	);
+ 	
+ 	$data['analysisprop']['table']['join']['analysis'] = array(
+    'left_field' => 'analysis_id',
+    'field' => 'analysis_id',
+    'handler' => 'views_handler_join_chado_aggregator'
+ 	);
+ 	
+ 	$data['analysisprop']['value'] = array(
+    'title' => t('Value'),
+    'help' => t(' '),
+    'field' => array(
+      'handler' => 'chado_views_handler_field',
+      'click sortable' => TRUE,
     ),
-  );
-	
+    'sort' => array(
+      'handler' => 'chado_views_handler_sort',
+    ),
+    'filter' => array(
+      'handler' => 'chado_views_handler_filter_string',
+    ),
+    'argument' => array(
+      'handler' => 'views_handler_argument_string',
+    ),
+ 	);
+ 	
+ 	$data['analysisprop']['all'] = array(
+    'title' => t('All'),
+    'help' => t('An aggregate field that contains all fields for a row.'),
+    'field' => array(
+      'handler' => 'chado_views_handler_field_aggregate',
+      'click sortable' => TRUE,
+    ),
+    'sort' => array(
+      'handler' => 'chado_views_handler_sort',
+    ),
+    'filter' => array(
+      'handler' => 'chado_views_handler_filter_string',
+    ),
+    'argument' => array(
+      'handler' => 'views_handler_argument_string',
+    ),
+ 	);
+ 	
 	// Table Field Definitions----------------------
 	// Field: analysis_id (primary key)
 	$data['analysis']['analysis_id'] = array(
@@ -84,7 +125,7 @@ function retrieve_analysis_views_data() {
 	    'handler' => 'views_handler_filter_numeric',
 	  ),
 	  'sort' => array(
-	    'handler' => 'views_handler_sort',
+	    'handler' => 'chado_views_handler_sort',
 	  ),
 	);
 	
@@ -127,10 +168,10 @@ function retrieve_analysis_views_data() {
       'click sortable' => TRUE,
     ),
     'sort' => array(
-      'handler' => 'views_handler_sort',
+      'handler' => 'chado_views_handler_sort',
     ),
     'filter' => array(
-      'handler' => 'views_handler_filter_string',
+      'handler' => 'views_handler_filter_chado_select_string',
     ),
     'argument' => array(
       'handler' => 'views_handler_argument_string',
@@ -150,10 +191,10 @@ function retrieve_analysis_views_data() {
       'click sortable' => TRUE,
     ),
     'sort' => array(
-      'handler' => 'views_handler_sort',
+      'handler' => 'chado_views_handler_sort',
     ),
     'filter' => array(
-      'handler' => 'views_handler_filter_string',
+      'handler' => 'chado_views_handler_filter_string',
     ),
     'argument' => array(
       'handler' => 'views_handler_argument_string',
@@ -169,7 +210,7 @@ function retrieve_analysis_views_data() {
       'click sortable' => TRUE,
     ),
     'sort' => array(
-      'handler' => 'views_handler_sort',
+      'handler' => 'chado_views_handler_sort',
     ),
     'filter' => array(
       'handler' => 'views_handler_filter_chado_select_string',
@@ -188,7 +229,7 @@ function retrieve_analysis_views_data() {
       'click sortable' => TRUE,
     ),
     'sort' => array(
-      'handler' => 'views_handler_sort',
+      'handler' => 'chado_views_handler_sort',
     ),
     'filter' => array(
       'handler' => 'views_handler_filter_chado_select_string',
@@ -207,7 +248,7 @@ function retrieve_analysis_views_data() {
       'click sortable' => TRUE,
     ),
     'sort' => array(
-      'handler' => 'views_handler_sort',
+      'handler' => 'chado_views_handler_sort',
     ),
     'filter' => array(
       'handler' => 'views_handler_filter_chado_select_string',
@@ -225,10 +266,10 @@ function retrieve_analysis_views_data() {
       'click sortable' => TRUE,
     ),
     'sort' => array(
-      'handler' => 'views_handler_sort',
+      'handler' => 'chado_views_handler_sort',
     ),
     'filter' => array(
-      'handler' => 'views_handler_filter_string',
+      'handler' => 'chado_views_handler_filter_string',
     ),
     'argument' => array(
       'handler' => 'views_handler_argument_string',
@@ -244,10 +285,10 @@ function retrieve_analysis_views_data() {
       'click sortable' => TRUE,
     ),
     'sort' => array(
-      'handler' => 'views_handler_sort',
+      'handler' => 'chado_views_handler_sort',
     ),
     'filter' => array(
-      'handler' => 'views_handler_filter_string',
+      'handler' => 'chado_views_handler_filter_string',
     ),
     'argument' => array(
       'handler' => 'views_handler_argument_string',
@@ -263,10 +304,10 @@ function retrieve_analysis_views_data() {
       'click sortable' => TRUE,
     ),
     'sort' => array(
-      'handler' => 'views_handler_sort',
+      'handler' => 'chado_views_handler_sort',
     ),
     'filter' => array(
-      'handler' => 'views_handler_filter_string',
+      'handler' => 'chado_views_handler_filter_string',
     ),
     'argument' => array(
       'handler' => 'views_handler_argument_string',
@@ -282,7 +323,7 @@ function retrieve_analysis_views_data() {
       'click sortable' => TRUE,
     ),
     'sort' => array(
-      'handler' => 'views_handler_sort_date',
+      'handler' => 'chado_views_handler_sort_date',
     ),
   );
 
