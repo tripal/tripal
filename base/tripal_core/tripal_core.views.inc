@@ -340,14 +340,14 @@ function tripal_core_views_data(){
               'click sortable' => TRUE,
            ),
         );
-     };
 
-     // now add the handlers
-     $sql = "SELECT * FROM {tripal_views_handlers} WHERE setup_id = '$setup_id' AND base_field = '$column_name'";
-     $handlers = db_query($sql);
-     while($handler = db_fetch_object($handlers)){
-        $data[$base_table][$column_name][$handler->hander_type]['handler'] = $handler->handler_name;
-     };
+        // now add the handlers
+        $sql = "SELECT * FROM {tripal_views_handlers} WHERE setup_id = '$setup_id' AND base_field = '$base_field'";
+        $handlers = db_query($sql);
+        while($handler = db_fetch_object($handlers)){
+           $data[$base_table][$base_field][$handler->hander_type]['handler'] = $handler->handler_name;
+        };
+    }
 
      // now add the joins
      $joins = db_query("SELECT * FROM {tripal_views_join} WHERE setup_id = '$setup_id'");
