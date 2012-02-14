@@ -188,54 +188,54 @@ function tripal_core_menu() {
 //     'type' => MENU_NORMAL_ITEM,
 // 	);
 
-// 	$items['admin/tripal/views/integration/mviews'] = array(
-//     'title' => t('Integrated MViews'),
-//     'description' => t('Allows you to select existing materialized views and provide details for integration with Drupal Views.'),
-//     'page callback' => 'drupal_get_form',
-//     'page arguments' => array('tripal_core_views_integration_admin_form'),
-//     'access arguments' => array('manage tripal_views_integration'),
-//     'type' => MENU_NORMAL_ITEM,
-// 	);
-	
-// 	$items['admin/tripal/views/integration/mviews/new'] = array(
-//      'title' => 'Add an MView',
-//      'page callback' => 'drupal_get_form',
-//      'page arguments' => array('tripal_core_views_integration_new_setup_form'),
-//      'access arguments' => array('manage tripal_views_integration'), //TODO: figure out the proper permissions arguments
-//      'type' => MENU_NORMAL_ITEM,
-// 	);
-	
-// 	$items['admin/tripal/views/integration/mviews/edit/%'] = array(
-//      'title' => 'Edit MView Integration',
-//      'page callback' => 'drupal_get_form',
-//      'page arguments' => array('tripal_core_views_integration_new_setup_form', 6),
-//      'access arguments' => array('manage tripal_views_integration'), //TODO: figure out the proper permissions arguments
-//      'type' => MENU_NORMAL_ITEM,
-// 	);
-
-	$items['admin/tripal/views/integration/chado'] = array(
-    'title' => t('Integrated Chado Table'),
-    'description' => t('Tripal Views Setups settings page, allows you to select and create materialized views and chado tables to use for searches.'),
+	$items['admin/tripal/views/integration/mviews'] = array(
+    'title' => t('Integrated MViews'),
+    'description' => t('Allows you to select existing materialized views and provide details for integration with Drupal Views.'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_core_views_integration_admin_form'),
     'access arguments' => array('manage tripal_views_integration'),
     'type' => MENU_NORMAL_ITEM,
 	);
-	$items['admin/tripal/views/integration/chado/new'] = array(
-     'title' => 'Add a Chado table',
+	
+	$items['admin/tripal/views/integration/mviews/new'] = array(
+     'title' => 'Add an MView',
      'page callback' => 'drupal_get_form',
      'page arguments' => array('tripal_core_views_integration_new_setup_form'),
-     'access arguments' => array('manage tripal_views_integration'), //TODO: What is this item supposed to be?
+     'access arguments' => array('manage tripal_views_integration'), //TODO: figure out the proper permissions arguments
+     'type' => MENU_NORMAL_ITEM,
+	);
+	
+	$items['admin/tripal/views/integration/mviews/edit/%'] = array(
+     'title' => 'Edit MView Integration',
+     'page callback' => 'drupal_get_form',
+     'page arguments' => array('tripal_core_views_integration_new_setup_form', 6),
+     'access arguments' => array('manage tripal_views_integration'), //TODO: figure out the proper permissions arguments
      'type' => MENU_NORMAL_ITEM,
 	);
 
-	$items['admin/tripal/views/integration/chado/edit/%'] = array(
-	     'title' => 'Edit MView Integration',
-	     'page callback' => 'drupal_get_form',
-	     'page arguments' => array('tripal_core_views_integration_new_setup_form', 6),
-	     'access arguments' => array('manage tripal_views_integration'), //TODO: figure out the proper permissions arguments
-	     'type' => MENU_NORMAL_ITEM,
-	);
+// 	$items['admin/tripal/views/integration/chado'] = array(
+//     'title' => t('Integrated Chado Table'),
+//     'description' => t('Tripal Views Setups settings page, allows you to select and create materialized views and chado tables to use for searches.'),
+//     'page callback' => 'drupal_get_form',
+//     'page arguments' => array('tripal_core_views_integration_admin_form'),
+//     'access arguments' => array('manage tripal_views_integration'),
+//     'type' => MENU_NORMAL_ITEM,
+// 	);
+// 	$items['admin/tripal/views/integration/chado/new'] = array(
+//      'title' => 'Add a Chado table',
+//      'page callback' => 'drupal_get_form',
+//      'page arguments' => array('tripal_core_views_integration_new_setup_form'),
+//      'access arguments' => array('manage tripal_views_integration'), //TODO: What is this item supposed to be?
+//      'type' => MENU_NORMAL_ITEM,
+// 	);
+
+// 	$items['admin/tripal/views/integration/chado/edit/%'] = array(
+// 	     'title' => 'Edit MView Integration',
+// 	     'page callback' => 'drupal_get_form',
+// 	     'page arguments' => array('tripal_core_views_integration_new_setup_form', 6),
+// 	     'access arguments' => array('manage tripal_views_integration'), //TODO: figure out the proper permissions arguments
+// 	     'type' => MENU_NORMAL_ITEM,
+// 	);
 
   return $items;
 }

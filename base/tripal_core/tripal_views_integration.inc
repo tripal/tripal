@@ -105,7 +105,7 @@ function tripal_core_views_integration_admin_form(){
 
   $form['new'] = array(
     '#type' => 'markup',
-    '#value' => l(t(' Add a New MView'), 'admin/tripal/views/integration/chado/new'),
+    '#value' => l(t(' Add a New MView'), 'admin/tripal/views/integration/mview/new'),
   );
 
   return $form;
@@ -116,7 +116,7 @@ function tripal_core_views_integration_admin_form(){
 function tripal_core_views_integration_admin_edit_form_submit($form, &$form_state) {
 	$form_state['rebuild'] = FALSE;
 	unset($form_state['storage']);
-	$form_state['redirect'] = 'admin/tripal/views/integration/chado/edit/'. $form['existing_rows']['#options'][$form_state['values']['existing_rows']];
+	$form_state['redirect'] = 'admin/tripal/views/integration/mview/edit/'. $form['existing_rows']['#options'][$form_state['values']['existing_rows']];
 // 	$form_state['redirect'] = 'admin';
 // 	$form_state['redirect'] = 'admin/tripal/views/integration/mview/new';
 	return $form_state;
@@ -127,19 +127,24 @@ function tripal_core_views_integration_admin_edit_form_submit($form, &$form_stat
  */
 function tripal_core_views_integration_admin_form_submit($form, &$form_state){
   $value = $form['existing_rows']['#options'][$form_state['values']['existing_rows']];
-  db_query("DELETE FROM public.tripal_views_integration WHERE setup_id = $value;");
-  db_query("DELETE FROM public.tripal_views_handlers WHERE setup_id = $value;");
-  db_query("DELETE FROM public.tripal_mviews_join WHERE setup_id = $value;");
+  tripal_core_delete_mview_int_by_id($value);
+}
+/**
+*
+* @ingroup tripal_views_integration
+*/
+function tripal_core_delete_mview_int_by_id($setup_id){
+  dpm($setup_id);
+  db_query("DELETE FROM public.tripal_views_integration WHERE setup_id = '$setup_id';");
+  db_query("DELETE FROM public.tripal_views_handlers WHERE setup_id = '$setup_id';");
+  db_query("DELETE FROM public.tripal_mviews_join WHERE setup_id = '$setup_id';");
 }
 /**
  *
  * @ingroup tripal_views_integration
  */
-
 function tripal_core_views_integration_new_setup_form(&$form_state, $setup_id = NULL){
   
-  
-
   $form = array();
 
   $data = array();
@@ -148,16 +153,10 @@ function tripal_core_views_integration_new_setup_form(&$form_state, $setup_id = 
 
   //ahah_helper requires this to register the form with it's module
   ahah_helper_register($form, $form_state);
-  
 
-
-  $setup_id = $setup_id['0'];
+  //   $setup_id = $setup_id['0']; //<--- this is not needed for some reason, don't know what changed
   if(isset($setup_id)){
 
-    
-    
-    
-    
     $setup_obj = db_fetch_object(db_query("SELECT * FROM {tripal_views_integration} WHERE setup_id = '$setup_id';"));
     $mview_id = $setup_obj->mview_id;
     $form_state['storage']['mview_id'] = $mview_id;
@@ -167,10 +166,21 @@ function tripal_core_views_integration_new_setup_form(&$form_state, $setup_id = 
       $mview_joins[] = $mviews_join;
     }
   
-    dpm($form_state,'formstate');
+//     dpm($form_state,'formstate');
     if(!isset($form_state['storage']['mview_id'])){
       $form_state['storage']['mview_id'] = $setup_obj->mview_id;
     }
+    
+    $form['setup_id'] = array(
+      '#type' => 'hidden',
+      '#value' => $setup_id,
+    );
+    
+    $form['hidden_edited'] = array(
+      '#type' => 'hidden',
+      '#value' => TRUE,
+    );
+    
   }
   else{
     $form['hidden_edited'] = array(
@@ -189,6 +199,10 @@ function tripal_core_views_integration_new_setup_form(&$form_state, $setup_id = 
     '#description' => 'Name of the Views Setup',
     '#required' => TRUE,
   );
+  
+  if(isset($setup_id)){
+    $form['row_name']['#attributes'] = array('readonly' => 'readonly');
+  }
 
   $form['row_description'] = array(
     '#title' => t('Description'),
@@ -310,7 +324,10 @@ function tripal_core_views_integration_new_setup_form(&$form_state, $setup_id = 
 
       $data['field_types'][$column_name] = $column_type;
 
-      if(isset($setup_id)){
+      $table = 0;
+      
+//       if(isset($setup_id) && $mview_joins["$p"]->chado_table_join == $form_state['storage']["fields_join_$mview_id-$i"]){
+      if(isset($setup_id) && !isset($form_state['storage']["fields_join_$mview_id-$i"])){
       	$p = $i - 1;
       	$table = $mview_joins["$p"]->chado_table_join;
       	$form_state['storage']["fields_join_$mview_id-$i"] = $table;
@@ -426,6 +443,9 @@ function tripal_core_views_integration_new_setup_form_validate($form, &$form_sta
  * @ingroup tripal_views_integration
  */
 function tripal_core_views_integration_new_setup_form_submit($form, &$form_state){
+  dpm($form);
+  dpm($form_state);
+
   $name = $form_state['values']['row_name'];
   $mview_id = $form_state['values']['mview_id'];
   $tripal_views_integration_record = array(
@@ -433,7 +453,13 @@ function tripal_core_views_integration_new_setup_form_submit($form, &$form_state
     'name' => $name,
   	 'description' => $form_state['values']['row_description'],
   );
-
+  
+  //delete records by setup id if
+  if($form_state['values']['hidden_edited']){
+    tripal_core_delete_mview_int_by_id($form_state['values']['setup_id']);
+//     $tripal_views_integration_record['setup_id'] = $form_state['values']['setup_id'];
+  }
+  
   drupal_write_record('tripal_views_integration', $tripal_views_integration_record);
 
   $i = 1;
