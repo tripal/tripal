@@ -105,7 +105,7 @@ function tripal_core_views_integration_admin_form(){
 
   $form['new'] = array(
     '#type' => 'markup',
-    '#value' => l(t(' Add a New MView'), 'admin/tripal/views/integration/mview/new'),
+    '#value' => l(t(' Add a New MView'), 'admin/tripal/views/integration/mviews/new'),
   );
 
   return $form;
@@ -116,9 +116,8 @@ function tripal_core_views_integration_admin_form(){
 function tripal_core_views_integration_admin_edit_form_submit($form, &$form_state) {
 	$form_state['rebuild'] = FALSE;
 	unset($form_state['storage']);
-	$form_state['redirect'] = 'admin/tripal/views/integration/mview/edit/'. $form['existing_rows']['#options'][$form_state['values']['existing_rows']];
+	$form_state['redirect'] = 'admin/tripal/views/integration/mviews/edit/'. $form['existing_rows']['#options'][$form_state['values']['existing_rows']];
 // 	$form_state['redirect'] = 'admin';
-// 	$form_state['redirect'] = 'admin/tripal/views/integration/mview/new';
 	return $form_state;
 }
 /**
