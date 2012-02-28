@@ -87,10 +87,31 @@ function tripal_core_views_handlers() {
      'views_handler_join_chado_one2many' => array(
       'parent' => 'views_join'
      ),
+     
+     'views_handler_filter_no_results' => array(
+      'parent' => 'views_handler_filter'
+     ),
    ),
  );
 }
-    
+
+function tripal_core_views_data () {
+  
+  // Define Global Fields -------------
+  // Filter handler that lets the admin say: 
+  // "Show no results until they enter search parameters"
+  $data['views']['search_results'] = array(
+    'title' => t('Search Results'),
+    'help' => t('Delay results until Apply/Search is clicked by the user.'),
+    'filter' => array(
+      'handler' => 'views_handler_filter_no_results',
+    ),
+  );
+  
+  return $data;
+  
+}
+
 /**
  * Implements hook_views_pre_render
  *
