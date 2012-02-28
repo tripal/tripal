@@ -40,7 +40,6 @@ class views_handler_filter_no_results extends views_handler_filter {
   
   function query() {
     global $base_url;
-          dpm($base_url, 'url?');
           
     if (empty($this->view->exposed_input)) {
       $this->view->executed = TRUE;
