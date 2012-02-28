@@ -39,6 +39,7 @@ class views_handler_filter_no_results extends views_handler_filter {
   }
   
   function query() {
+    global $base_url;
     
     if (empty($this->view->exposed_input)) {
       $this->view->executed = TRUE;
@@ -48,7 +49,7 @@ class views_handler_filter_no_results extends views_handler_filter {
       // If set, change the no_results text
       if (!empty($this->options['apply_button'])) {
         if (!$jquery_loaded) {
-          drupal_set_html_head('<script type="text/javascript" src="misc/jquery.js"></script>');
+          drupal_set_html_head('<script type="text/javascript" src="'.$base_url.'/misc/jquery.js"></script>');
           $jquery_loaded = TRUE;
         }
         $javascript = '<script type="text/javascript">'."\n"
@@ -63,7 +64,7 @@ class views_handler_filter_no_results extends views_handler_filter {
     // Set the Apply button text
     if (!empty($this->options['apply_button'])) {
       if (!$jquery_loaded) {
-        drupal_set_html_head('<script type="text/javascript" src="misc/jquery.js"></script>');
+        drupal_set_html_head('<script type="text/javascript" src="'.$base_url.'/misc/jquery.js"></script>');
         $jquery_loaded = TRUE;
       }
       $javascript = '<script type="text/javascript">'."\n"
