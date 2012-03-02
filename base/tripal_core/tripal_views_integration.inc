@@ -61,193 +61,183 @@ function tripal_core_views_description_page() {
  *
  * @ingroup tripal_views_integration
  */
-function tripal_core_views_integration_admin_form(){
+function tripal_core_views_integration_setup_list(){
 
-  $form = array();
+   $header = array('', 'Drupal Views Type Name', 'Table Name', 'Is Mview', 'Comment','');
+   $rows = array();
 
-  $form['#theme'] = 'tripal';
-
-  $query_results = db_query('SELECT * FROM public.tripal_views_integration;');
-
-  $header = array('Setup ID', 'Name', 'Materialized View ID', 'Base Table Name', 'Description');
-  $rows = array();
-
-  $results = array();
-  while($result = db_fetch_object($query_results)){
-    $rows[] = array($result->setup_id, $result->name, $result->mview_id, $result->base_table_name, $result->description,);
-    $results[] = $result;
-  }
-
-  $options = array();
-  foreach ($results as $key => $value) {
-    if(!empty($value))
-    $options[] = $value->setup_id;// . ' | ' . $value->name . ' | ' . $value->mview_id . ' | ' . $value->base_table_name;
-  }
-
-  $form['existing_rows'] = array(
-    '#type' => 'select',
-    '#options' => $options,
-    '#description' => '<strong>Select a View Setup to delete from the database.</strong>',
-    '#prefix' => theme('table', $header, $rows),
-  );
-
-  $form['button']['submit'] = array(
-    '#type' => 'submit',
-    '#value' => t('Remove'),
-  	'#submit' => array('tripal_core_views_integration_admin_form_submit'),
-  );
-  
-  $form['button']['edit_form'] = array(
-    '#type' => 'submit',
-    '#value' => t('Edit'),
-    '#submit' => array('tripal_core_views_integration_admin_edit_form_submit'),
-  );
-
-  $form['new'] = array(
-    '#type' => 'markup',
-    '#value' => l(t(' Add a New MView'), 'admin/tripal/views/integration/mviews/new'),
-  );
-
-  return $form;
+   // get the list of materialized views
+   $tviews = db_query('SELECT * FROM {tripal_views}');
+   while($tview = db_fetch_object($tviews)){
+      if($tview->mview_id){
+         // get the materialized view
+         $sql = "SELECT * FROM {tripal_mviews} WHERE mview_id = %d";
+         $mview = db_fetch_object(db_query($sql,$tview->mview_id));
+         $rows[] = array(
+            l('Edit',"admin/tripal/views/integration/edit/".$tview->setup_id) ,
+            $tview->name, 
+            $mview->mv_table, 
+            'Yes', 
+            $tview->comment,
+            l('Delete',"admin/tripal/views/integration/delete/".$tview->setup_id),
+         );
+      } else {
+         // TODO: customize for Chado tables
+      }
+   }
+   $rows[] = array(
+      'data' => array( 
+         array('data' => l('Add a new entry',"admin/tripal/views/integration/new") . " | " .
+                         l("Create View",'admin/build/views/add'), 
+               'colspan' => 6),
+         )
+   );
+   return theme('table', $header, $rows);
 }
 
-
-
-function tripal_core_views_integration_admin_edit_form_submit($form, &$form_state) {
-	$form_state['rebuild'] = FALSE;
-	unset($form_state['storage']);
-	$form_state['redirect'] = 'admin/tripal/views/integration/mviews/edit/'. $form['existing_rows']['#options'][$form_state['values']['existing_rows']];
-// 	$form_state['redirect'] = 'admin';
-	return $form_state;
+/**
+ *
+ * @ingroup tripal_views_integration
+ */
+function tripal_core_views_integration_delete($setup_id){
+  db_query("DELETE FROM {tripal_views} WHERE setup_id = %d",$setup_id);
+  db_query("DELETE FROM {tripal_views_handlers} WHERE setup_id = %d",$setup_id);
+  db_query("DELETE FROM {tripal_views_join} WHERE setup_id = %d",$setup_id);
+  drupal_set_message("Record Deleted");
+  drupal_goto('admin/tripal/views/integration');
 }
 /**
  *
  * @ingroup tripal_views_integration
  */
-function tripal_core_views_integration_admin_form_submit($form, &$form_state){
-  $value = $form['existing_rows']['#options'][$form_state['values']['existing_rows']];
-  tripal_core_delete_mview_int_by_id($value);
-}
-/**
-*
-* @ingroup tripal_views_integration
-*/
-function tripal_core_delete_mview_int_by_id($setup_id){
-  dpm($setup_id);
-  db_query("DELETE FROM public.tripal_views_integration WHERE setup_id = '$setup_id';");
-  db_query("DELETE FROM public.tripal_views_handlers WHERE setup_id = '$setup_id';");
-  db_query("DELETE FROM public.tripal_mviews_join WHERE setup_id = '$setup_id';");
-}
-/**
- *
- * @ingroup tripal_views_integration
- */
-function tripal_core_views_integration_new_setup_form(&$form_state, $setup_id = NULL){
+function tripal_core_views_integration_form(&$form_state, $setup_id = NULL){
   
-  $form = array();
+   $form = array();
+   $data = array();
+   $form['#cache'] = TRUE;
 
-  $data = array();
+   // ahah_helper requires us to register the form with it's module
+   ahah_helper_register($form, $form_state);
 
-  $form['#cache'] = TRUE;
+   // if a setup_id is provided then we want to get the form defaults
+   $setup_obj = array();
+   if(isset($setup_id)){
+      // get the deafult setup values
+      $sql = "SELECT * FROM {tripal_views} WHERE setup_id = %d";
+      $setup_obj = db_fetch_object(db_query($sql,$setup_id));
+      $mview_id = $setup_obj->mview_id;
+      $table_name = $setup_obj->table_name;
+      $form_state['storage']['mview_id'] = $mview_id;
 
-  //ahah_helper requires this to register the form with it's module
-  ahah_helper_register($form, $form_state);
+      // get the default join settings and handlers
+      $sql = "SELECT * FROM {tripal_views_join} WHERE setup_id = %d";
+      $query = db_query($sql,$setup_id);
+      $default_joins = array();
+      while ($join = db_fetch_object($query)){
+         $default_joins[$join->base_field]['left_table'] = $join->left_table;
+         $default_joins[$join->base_field]['left_field'] = $join->left_field;
+      }
+      // get the default handlers
+      $sql = "SELECT * FROM {tripal_views_handlers} WHERE setup_id = %d";
+      $query = db_query($sql,$setup_id);
+      $default_handlers = array();
+      while ($handler = db_fetch_object($query)){
+         $default_handlers[$handler->column_name][$handler->handler_type]['handler_name'] = $handler->handler_name;
+         $default_handlers[$handler->column_name][$handler->handler_type]['arguments'] = $handler->arguments;
+      }
+      // add in the setup_id for the form so we know this is an update not an insert
+      $form['setup_id'] = array(
+         '#type' => 'hidden',
+         '#value' => $setup_id,
+      );    
+   }
 
-  //   $setup_id = $setup_id['0']; //<--- this is not needed for some reason, don't know what changed
-  if(isset($setup_id)){
+  // add a fieldset for the MView & Chado table selectors
+  $form['base_table_type'] = array(
+     '#type' => 'fieldset',
+     '#title' => 'Base Table',
+     '#description' => 'Please select either a materialized view or a Chado table for integration with '.
+                       'Drupal Views.  In Drupal Views terminology, the selected table becomes the "base table". '.
+                       'After you select a table from either list, the fields from that table will appear below '.
+                       'and you can specify other tables to join with and handlers.',
+   );
 
-    $setup_obj = db_fetch_object(db_query("SELECT * FROM {tripal_views_integration} WHERE setup_id = '$setup_id';"));
-    $mview_id = $setup_obj->mview_id;
-    $form_state['storage']['mview_id'] = $mview_id;
-    $column_query = db_query("SELECT * FROM {tripal_mviews_join} WHERE setup_id = '$setup_id';");
-    $mview_joins = array();
-    while ($mviews_join = db_fetch_object($column_query)){
-      $mview_joins[] = $mviews_join;
-    }
-  
-//     dpm($form_state,'formstate');
-    if(!isset($form_state['storage']['mview_id'])){
-      $form_state['storage']['mview_id'] = $setup_obj->mview_id;
-    }
-    
-    $form['setup_id'] = array(
-      '#type' => 'hidden',
-      '#value' => $setup_id,
-    );
-    
-    $form['hidden_edited'] = array(
-      '#type' => 'hidden',
-      '#value' => TRUE,
-    );
-    
+
+  // build the form element that lists the materialized views
+  $query = db_query("SELECT mview_id,name FROM {tripal_mviews} ORDER BY name");
+  $mview_tables = array();
+  $mview_tables['0'] = 'Select';
+  while ($mview = db_fetch_object($query)){
+    $mview_tables[$mview->mview_id] = $mview->name;
   }
-  else{
-    $form['hidden_edited'] = array(
-      '#type' => 'hidden',
-      '#value' => FALSE,
-    );
-  }
-  
-  // field for the name of the
-  $form['row_name'] = array(
-    '#title' => t('Name'),
-    '#type' => 'textfield',
-    '#default_value' => $setup_obj->name,
-    '#size' => 60,
-    '#maxlength' => 128,
-    '#description' => 'Name of the Views Setup',
-    '#required' => TRUE,
-  );
-  
-  if(isset($setup_id)){
-    $form['row_name']['#attributes'] = array('readonly' => 'readonly');
-  }
-
-  $form['row_description'] = array(
-    '#title' => t('Description'),
-    '#type' => 'textfield',
-  	'#default_value' => $setup_obj->description,
-    '#size' => 60,
-    '#maxlength' => 255,
-    '#description' => 'Briefly describe in which view this will be used',
-    '#required' => TRUE,
-  );
-
-  $mview_query = db_query("SELECT mview_id,name FROM {tripal_mviews} ORDER BY name;");
-  $mview_options = array();
-  $mview_options['0'] = 'Select';
-  while ($mview_option = db_fetch_array($mview_query)){
-    $mview_options[$mview_option['mview_id']] = $mview_option['name'];
-  }
-
-  $form['mview_id'] = array(
+  $form['base_table_type']['mview_id'] = array(
     '#title' => t('Materialized View'),
     '#type' => 'select',
-    '#options' => $mview_options,
+    '#options' => $mview_tables,
     '#description' => 'Which materialized view to use.',
-    '#required' => TRUE,
-//     '#value' => $setup_obj->mview_id,
-//     '#default_value' => $mview_default_value,
-  	'#default_value' => $setup_obj->mview_id,
+    '#default_value' => $setup_obj->mview_id,
     '#ahah' => array(
        'path' => ahah_helper_path(array('view_setup_table')),
        'wrapper' => 'table-rows-div',
        'effect' => 'fade',
        'event' => 'change',
        'method' => 'replace',
-  ),
+    ),
   );
 
-  // ignore this for now... we'll come back to it later -- spf
-  //   $form['row_base_table_name'] = array(
-  //      '#title' => t('Base Table Name'),
-  //      '#type' => 'select',
-  //      // '#options' => array('stub'),
-  //      '#options' => tripal_core_get_chado_tables(),
-  //      '#description' => 'Select which chado table to use for this view.',
-  //      '#required' => TRUE,
-  //   );
+  // build the form element for the Chado tables
+  $chado_tables = tripal_core_get_chado_tables();
+  $chado_tables = array_merge(array('Select',), $chado_tables);
+  $form['base_table_type']['table_name'] = array(
+    '#title' => t('Chado Table'),
+    '#type' => 'select',
+    '#options' => $chado_tables,
+    '#description' => 'Which Chado table to use.',
+    '#default_value' => $setup_obj->table_name,
+    '#ahah' => array(
+       'path' => ahah_helper_path(array('view_setup_table')),
+       'wrapper' => 'table-rows-div',
+       'effect' => 'fade',
+       'event' => 'change',
+       'method' => 'replace',
+    ),
+  );
 
+  $form['views_type'] = array(
+     '#type' => 'fieldset',
+     '#title' => 'View Type',
+     '#description' => 'Here you can provide the "type" of View you want to create.',
+   );
+  
+  // field for the name of the
+  $form['views_type']['row_name'] = array(
+    '#title' => t('View Type Name'),
+    '#type' => 'textfield',
+    '#default_value' => $setup_obj->name,
+    '#size' => 60,
+    '#maxlength' => 128,
+    '#description' => 'Provide the view type name.  This is the name that will appear in '.
+                      'the Drupal Views interface when adding a new view.  The view type name '.
+                      'must be unique.  You may use the a materialized view or Chado table '.
+                      'multiple times as the base table for different type names.  This allows '.
+                      'for differetn handlers to be '.
+                      'applied to the same table in different ways.',
+    '#required' => TRUE,   
+  );
+  
+  if(isset($setup_id)){
+    $form['row_name']['#attributes'] = array('readonly' => 'readonly');
+  }
+
+  $form['views_type']['row_description'] = array(
+    '#title' => t('Comment'),
+    '#type' => 'textarea',
+    '#description' => '(Optional). Provide any details regarding this setup you would like.',
+    '#required' => FALSE,
+  );
+
+  // we need a div block where the table fields will get put when the
+  // AHAH callback is made
   $form['view_setup_table'] = array(
      '#type' => 'item',
        '#prefix' => '<div id="table-rows-div">',
@@ -255,10 +245,12 @@ function tripal_core_views_integration_new_setup_form(&$form_state, $setup_id = 
   );
 
 
-  if ($form_state['storage']['mview_id']){
-
-    	$mview_id = $form_state['storage']['mview_id'];
-  	
+  // add the fieldset for the table fields, but only if the $mview_id or $table_name
+  // is set. The only times these values are set is if we're editing an existing
+  // record or if the AHAH callback is being made.
+  if ($form_state['storage']['mview_id'] or $form_state['storage']['table_name']){
+    $mview_id = $form_state['storage']['mview_id'];
+    $table_name = $form_state['storage']['table_name'];
     $form['view_setup_table'] = array(
      '#type' => 'fieldset',
      '#title' => 'Join Selection',
@@ -268,132 +260,245 @@ function tripal_core_views_integration_new_setup_form(&$form_state, $setup_id = 
 
     // get the columns in this materialized view.  They are separated by commas
     // where the first word is the column name and the rest is the type
-    $sql = "SELECT mv_specs FROM {tripal_mviews} WHERE mview_id = $mview_id";
-    $mview = db_fetch_object(db_query($sql));
-    $columns = explode(",",$mview->mv_specs);
+    if($mview_id){
+       $sql = "SELECT mv_specs FROM {tripal_mviews} WHERE mview_id = %d";
+       $mview = db_fetch_object(db_query($sql,$mview_id));
+       $columns = explode(",",$mview->mv_specs);
+    } else {
+       // TODO: get chado table columns and add them to the $columns array
+    }
 
     $i=1;
-    $chado_tables = tripal_core_get_chado_tables();
-    $chado_tables = array_merge(array('Select a Join Table',), $chado_tables);
-
     $form['view_setup_table']["instructions"] = array(
          '#type' => 'markup',
-         '#value' => "Select an optional table to which the fields of the materialized view can join.  If a field does not need to join you may leave the selection blank.",
+         '#value' => "Select an optional table to which the fields of the ".
+                     "materialized view can join.  If a field does not need to ".
+                     "join you may leave the selection blank.",
     );
-
     $data['field_types'] = array();
 
+    // get the list of chado tables to join on
+    $chado_join_tables = tripal_core_get_chado_tables();
+    $chado_join_tables = array_merge(array('Select a Join Table',), $chado_join_tables);
 
     // get list of all handlers
     $all_handlers = tripal_core_views_integration_discover_handlers();
     $handlers_fields = array();
     $handlers_filters = array();
-    
-    $handlers_fields[] = "Select a Field Handler";
-    $handlers_filters[] = "Select a Filter Handler";
+    $handlers_sort = array();
+    $handlers_arguments = array();
+    $handlers_join = array();
+    $handlers_rel = array();
+    $handlers_fields[0] = "Select a field handler"; 
+    $handlers_filters[0] = "Select a filter handler";
+    $handlers_sort[0] = "Select a sort handler";
+    $handlers_argument[0] = "Select an argument handler";
+    $handlers_join[0] = "Select a join handler";
+    $handlers_rel[0] = "Select a relationship handler";
     foreach($all_handlers as $handler){
        if(preg_match("/views_handler_field/",$handler)){
-          $handlers_fields[] = $handler;
+          $handlers_fields[$handler] = $handler;
        }
        if(preg_match("/views_handler_filter/",$handler)){
-          $handlers_filters[] = $handler;
+          $handlers_filters[$handler] = $handler;
+       }
+       if(preg_match("/views_handler_sort/",$handler)){
+          $handlers_sort[$handler] = $handler;
+       }
+       if(preg_match("/views_handler_argument/",$handler)){
+          $handlers_argument[$handler] = $handler;
+       }
+       if(preg_match("/views_handler_join/",$handler)){
+          $handlers_join[$handler] = $handler;
+       }
+       if(preg_match("/views_handler_relationship/",$handler)){
+          $handlers_rel[$handler] = $handler;
        }
     }
 
+    // generate a unique $table_id for keeping track of the table
+    if($mview_id){
+       $table_id = $mview_id;
+    } else {
+       $table_id = $table_name;
+    }
+
+    // now iterate through the columns of the materialized view or 
+    // chado table and generate the join and handler fields
     foreach ($columns as $column){
       $column = trim($column);  // trim trailing and leading spaces
       preg_match("/^(.*?)\ (.*?)$/",$column,$matches);
       $column_name = $matches[1];
       $column_type = $matches[2];
 
-      $form['view_setup_table']["fields_start_$mview_id-$i"] = array(
+      $form['view_setup_table']["fields_start_$table_id-$i"] = array(
            '#type' => 'markup',
            '#value' => "<div class=\"fields-new-row\">",
       );
 
-      $form['view_setup_table']["fields_name_$mview_id-$i"] = array(
+      $form['view_setup_table']["fields_name_$table_id-$i"] = array(
         '#type' => 'markup',
         '#attributes' => array('class' => 'fields-column-name'),
         '#value' => "<div class=\"column-id\">".
-                      "<span class=\"column-name\">$column_name</span>".
-                      "<br><span class=\"column-type\">$column_type</span>".
+                    "<span class=\"column-name\">$column_name</span>".
+                    "<br><span class=\"column-type\">$column_type</span>".
                     "</div>".
                     "<div class=\"column-form-fields\"><div class=\"column-one\">",
       );
-
       $data['field_types'][$column_name] = $column_type;
 
-      $table = 0;
-      
-//       if(isset($setup_id) && $mview_joins["$p"]->chado_table_join == $form_state['storage']["fields_join_$mview_id-$i"]){
-      if(isset($setup_id) && !isset($form_state['storage']["fields_join_$mview_id-$i"])){
-      	$p = $i - 1;
-      	$table = $mview_joins["$p"]->chado_table_join;
-      	$form_state['storage']["fields_join_$mview_id-$i"] = $table;
+      // set the default values for the join table and columns
+      $default_join_table = 0;
+      $default_join_field = 0;
+      if(isset($setup_id) && !isset($form_state['storage']["fields_join_$table_id-$i"])){
+      	$default_join_table = $default_joins[$column_name]['left_table'];
+      	$default_join_field = $default_joins[$column_name]['left_field'];
+      	$form_state['storage']["fields_join_$table_id-$i"] = $default_join_table;
+      	$form_state['storage']["fields_join_column_$table_id-$i"] = $default_join_field;
       }
       else{
-      	$table = $form_state['storage']["fields_join_$mview_id-$i"];
+      	$default_join_table = $form_state['storage']["fields_join_$table_id-$i"];
+      	$default_join_field = $form_state['storage']["fields_join_column_$table_id-$i"];
       }
-      $form['view_setup_table']["fields_join_$mview_id-$i"] = array(
+
+      $form['view_setup_table']["fields_join_$table_id-$i"] = array(
         '#type' => 'select',
         '#prefix' => "<div class=\"fields-column-join\">",
         '#suffix' => "</div>",
-        '#options' => $chado_tables,
+        '#options' => $chado_join_tables,
         '#required' => FALSE,
-        '#default_value' => $table,
+        '#default_value' => $default_join_table,
         '#ahah' => array(
-           'path' => ahah_helper_path(array("view_setup_table","fields_join_column_$mview_id-$i")),
-           'wrapper' => "fields-column-join-column-$mview_id-$i",
+           'path' => ahah_helper_path(array("view_setup_table","fields_join_column_$table_id-$i")),
+           'wrapper' => "fields-column-join-column-$table_id-$i",
            'effect' => 'fade',
            'event' => 'change',
            'method' => 'replace',
          ),
       );
       
-      if($table){
-        $table_desc = module_invoke_all('chado_'.$table.'_schema');
-        $columns = array_keys($table_desc['fields']);
+      $columns = array();
+      if($default_join_table){
+        $table_desc = module_invoke_all('chado_'.$default_join_table.'_schema');
+        foreach ($table_desc['fields'] as $column => $def){
+           $columns[$column] = $column;
+        }
       } else {
         $columns = array('Select Join Column');
       }
-      $form['view_setup_table']["fields_join_column_$mview_id-$i"] = array(
+      $form['view_setup_table']["fields_join_column_$table_id-$i"] = array(
         '#type' => 'select',
-        '#prefix' => "  <div id=\"fields-column-join-column-$mview_id-$i\" class=\"fields-column-join-column\">",
+        '#prefix' => "  <div id=\"fields-column-join-column-$table_id-$i\" class=\"fields-column-join-column\">",
         '#suffix' => "</div></div>",
         '#options' => $columns,
         '#required' => FALSE,
+        '#default_value' => $default_join_field
       );
-      
-      
-      $form['view_setup_table']["fields_field_handler_$mview_id-$i"] = array(
+
+      // create the handler fields
+      $default_field_handler = 0;
+      if(isset($setup_id) && !isset($form_state['storage']["fields_field_handler_$table_id-$i"])){
+         $default_field_handler = $default_handlers[$column_name]['field']['handler_name'];
+         $form_state['storage']["fields_field_handler_$table_id-$i"] = $default_field_handler;
+      }
+      else {
+      	$default_field_handler = $form_state['storage']["fields_field_handler_$table_id-$i"];
+      }
+
+      $form['view_setup_table']["fields_field_handler_$table_id-$i"] = array(
          '#type' => 'select',
          '#prefix' => "<div class=\"column-two\">".
                         "<div class=\"fields-field-handler\">",
          '#suffix' => "</div>",
          '#options' => $handlers_fields,
          '#required' => FALSE,
+         '#default_value' => $default_field_handler,
       );
-      
 
-      $form['view_setup_table']["fields_filter_handler_$mview_id-$i"] = array(
+      $default_filter_handler = 0;
+      if(isset($setup_id) && !isset($form_state['storage']["fields_filter_handler_$table_id-$i"])){
+         $default_filter_handler = $default_handlers[$column_name]['filter']['handler_name'];
+         $form_state['storage']["fields_filter_handler_$table_id-$i"]= $default_filter_handler;
+      }
+      else {
+         $default_filter_handler = $form_state['storage']["fields_filter_handler_$table_id-$i"];
+      }
+      $form['view_setup_table']["fields_filter_handler_$table_id-$i"] = array(
         '#type' => 'select',
         '#prefix' => "<div class=\"fields-filter-handler\">",
-        '#suffix' => "</div></div>",
+        '#suffix' => "</div>",
         '#options' => $handlers_filters,
         '#required' => FALSE,
+         '#default_value' => $default_filter_handler,
       );
-      
-      if(isset($setup_id)){
-        $column_name = $mview_joins["$p"]->view_column;
-        $default_handlers = db_fetch_object(db_query("SELECT handler_filter, handler_field FROM {tripal_views_handlers} WHERE setup_id = '$setup_id' AND column_name = '$column_name';"));
-        $default_field_handler = array_keys($handlers_fields, $default_handlers->handler_field, TRUE);
-        $default_field_handler = $default_field_handler[0];
-        $form['view_setup_table']["fields_field_handler_$mview_id-$i"]['#default_value'] = $default_field_handler;
-        
-        $default_filter_handler = array_keys($handlers_filters, $default_handlers->handler_filter, TRUE);
-        $default_filter_handler = $default_filter_handler['0'];
-        $form['view_setup_table']["fields_filter_handler_$mview_id-$i"]['#default_value'] = $default_filter_handler;
+
+      $default_sort_handler = 0;
+      if(isset($setup_id) && !isset($form_state['storage']["fields_sort_handler_$table_id-$i"])){
+         $default_sort_handler = $default_handlers[$column_name]['sort']['handler_name'];
+         $form_state['storage']["fields_sort_handler_$table_id-$i"] = $default_sort_handler;
       }
+      else {
+         $default_sort_handler = $form_state['storage']["fields_sort_handler_$table_id-$i"];
+      }
+      $form['view_setup_table']["fields_sort_handler_$table_id-$i"] = array(
+        '#type' => 'select',
+        '#prefix' => "<div class=\"fields-sort-handler\">",
+        '#suffix' => "</div>",
+        '#options' => $handlers_sort,
+        '#required' => FALSE,
+         '#default_value' => $default_sort_handler,
+      );
+
+      $default_argument_handler = 0;
+      if(isset($setup_id) && !isset($form_state['storage']["fields_argument_handler_$table_id-$i"])){
+         $default_argument_handler = $default_handlers[$column_name]['argument']['handler_name'];
+         $form_state['storage']["fields_argument_handler_$table_id-$i"]=$default_argument_handler ;
+      }
+      else {
+         $default_argument_handler = $form_state['storage']["fields_argument_handler_$table_id-$i"];
+      }
+      $form['view_setup_table']["fields_argument_handler_$table_id-$i"] = array(
+        '#type' => 'select',
+        '#prefix' => "<div class=\"fields-argument-handler\">",
+        '#suffix' => "</div>",
+        '#options' => $handlers_argument,
+        '#required' => FALSE,
+         '#default_value' => $default_argument_handler,
+      );
+
+      $default_relationship_handler = 0;
+      if(isset($setup_id) && !isset($form_state['storage']["fields_relationship_handler_$table_id-$i"])){
+         $default_relationship_handler = $default_handlers[$column_name]['relationship']['handler_name'];
+         $form_state['storage']["fields_relationship_handler_$table_id-$i"]=$default_relationship_handler;
+      }
+      else {
+         $default_relationship_handler = $form_state['storage']["fields_relationship_handler_$table_id-$i"];
+      }
+      $form['view_setup_table']["fields_relationship_handler_$table_id-$i"] = array(
+        '#type' => 'select',
+        '#prefix' => "<div class=\"fields-relationship-handler\">",
+        '#suffix' => "</div>",
+        '#options' => $handlers_rel,
+        '#required' => FALSE,
+         '#default_value' => $default_relationship_handler,
+      );
+
+      $default_join_handler = 0;
+      if(isset($setup_id) && !isset($form_state['storage']["fields_join_handler_$table_id-$i"])){
+         $default_join_handler = $default_handlers[$column_name]['join']['handler_name'];
+         $form_state['storage']["fields_join_handler_$table_id-$i"]=$default_join_handler;
+      }
+      else {
+         $default_join_handler = $form_state['storage']["fields_join_handler_$table_id-$i"];
+      }
+      $form['view_setup_table']["fields_join_handler_$table_id-$i"] = array(
+        '#type' => 'select',
+        '#prefix' => "<div class=\"fields-join-handler\">",
+        '#suffix' => "</div></div>",
+        '#options' => $handlers_join,
+        '#required' => FALSE,
+         '#default_value' => $default_join_handler,
+      );
       
       $form['view_setup_table']["fields_end_$i"] = array(
         '#type' => 'markup',
@@ -410,7 +515,7 @@ function tripal_core_views_integration_new_setup_form(&$form_state, $setup_id = 
   }
 
   //use this to put values into $form_state['values']
-  $form['data'] = array();
+  $form['data'] = array();   
 
   //need to find out if storing $form['data'][$key]['#value'] = $value <- is an issue
   //since it will give me errors if i try to stare an array instead of $value
@@ -422,6 +527,8 @@ function tripal_core_views_integration_new_setup_form(&$form_state, $setup_id = 
     );
   }
 
+  $form['#redirect'] = 'admin/tripal/views/integration';   
+
   return $form;
 }
 
@@ -430,58 +537,120 @@ function tripal_core_views_integration_new_setup_form(&$form_state, $setup_id = 
  *
  * @ingroup tripal_views_integration
  */
-function tripal_core_views_integration_new_setup_form_validate($form, &$form_state){
+function tripal_core_views_integration_form_validate($form, &$form_state){
   $name_array = explode(" ", $form_state['values']['row_name']);
+  $mview_id = $form_state['values']['mview_id'];
+  $table_name = $form_state['values']['table_name'];
+
   if(count($name_array) > 1){
-    form_set_error($form_state['values']['row_name'], 'Name must be ONE word only.');
+    form_set_error($form_state['values']['row_name'], 'The View type name must be a single word only.');
   }
-  //TODO: write validation function for this new form
+  if($mview_id and $table_name){
+    form_set_error($form_state['values']['mview_id'], 'Please select either a materialized view or a Chado table but not both');
+  }
+  if(!$mview_id and !$table_name){
+    form_set_error($form_state['values']['mview_id'], 'Please select either a materialized view or a Chado table');
+  }
+  // TODO: do we need to require that a handler be set for each field and each type of handler?
 }
 /**
  *
  * @ingroup tripal_views_integration
  */
-function tripal_core_views_integration_new_setup_form_submit($form, &$form_state){
-  dpm($form);
-  dpm($form_state);
+function tripal_core_views_integration_form_submit($form, &$form_state){
+   $name = $form_state['values']['row_name'];
+   $mview_id = $form_state['values']['mview_id'];
+   $table_name = $form_state['values']['table_name'];
+   $setup_id = $form_state['values']['setup_id'];
 
-  $name = $form_state['values']['row_name'];
-  $mview_id = $form_state['values']['mview_id'];
-  $tripal_views_integration_record = array(
-    'mview_id' => $mview_id,
-    'name' => $name,
-  	 'description' => $form_state['values']['row_description'],
-  );
-  
-  //delete records by setup id if
-  if($form_state['values']['hidden_edited']){
-    tripal_core_delete_mview_int_by_id($form_state['values']['setup_id']);
-//     $tripal_views_integration_record['setup_id'] = $form_state['values']['setup_id'];
-  }
-  
-  drupal_write_record('tripal_views_integration', $tripal_views_integration_record);
+   if($mview_id){
+      $table_id = $mview_id;
+   } else {
+      $table_id = $table_name;
+   }
 
-  $i = 1;
-  foreach ($form_state['values']['field_types'] as $key => $value){
-    $mview_join_record = array(
-        'setup_id' => $tripal_views_integration_record['setup_id'],
-        'view_table' => $form['mview_id']['#options'][$form_state['values']['mview_id']],
-        'view_column' => $key,
-        'chado_table_join' => $form_state['values']["fields_join_$mview_id-$i"],
-        'chado_column' => $form['view_setup_table']["fields_join_column_$mview_id-$i"]['#options'][$form_state['values']["fields_join_column_$mview_id-$i"]],
-    );
-    drupal_write_record('tripal_mviews_join', $mview_join_record);
-    
-    $handlers_record = array(
-      'setup_id' => $tripal_views_integration_record['setup_id'],
-      'column_name' => $key,//TODO: should we change this to an mview_join_id from tripal_view_join?
-      'handler_filter' => $form['view_setup_table']["fields_filter_handler_$mview_id-$i"]['#options'][$form_state['values']["fields_filter_handler_$mview_id-$i"]],
-    	'handler_field' => $form['view_setup_table']["fields_field_handler_$mview_id-$i"]['#options'][$form_state['values']["fields_field_handler_$mview_id-$i"]],
-    );
-    drupal_write_record('tripal_views_handlers', $handlers_record);
-    $i++;
-  }
+   // If this is for a materialized view then we want to add/update that record
+   $tripal_views_record = array();
+   if($mview_id){
+      // get details about this mview
+      $sql = "SELECT * FROM {tripal_mviews} WHERE mview_id = $mview_id";
+      $mview = db_fetch_object(db_query($sql));      
 
+      // build the record for insert/update
+      $tripal_views_record = array(
+       'mview_id' => $mview_id,
+       'name' => $name,
+       'comment' => $form_state['values']['row_description'],
+      );
+      if(!$setup_id){  // this is an insert
+         if(!drupal_write_record('tripal_views', $tripal_views_record)){
+            drupal_set_message("Failed to add record.");
+            return;
+         }
+      } else {  // this is an update
+         $tripal_views_record['setup_id'] = $setup_id;
+         if(!drupal_write_record('tripal_views', $tripal_views_record,array('setup_id'))){
+            drupal_set_message("Failed to update record.");
+            return;
+         }
+      }
+   } 
+   // if a chado table then...
+   if($table_name){
+      // TODO: add code to update tables for Chado table
+   }
+
+   
+   // if this is an update then clean out the existing joins and handlers so we can add new ones
+   if($setup_id){  
+      db_query("DELETE FROM {tripal_views_join} WHERE setup_id = %d",$setup_id);
+      db_query("DELETE FROM {tripal_views_handlers} WHERE setup_id = %d",$setup_id);
+   }
+
+   // iterate through the columns of the form and add
+   // the joins if provided, and the handlers
+   $i = 1;
+   foreach ($form_state['values']['field_types'] as $key => $value){
+
+      // first add the join if it exists
+      $left_table = $form_state['values']["fields_join_$table_id-$i"];
+      $left_column = $form_state['values']["fields_join_column_$table_id-$i"];
+
+      if($left_column){
+         $view_join_record = array(
+           'setup_id' => $tripal_views_record['setup_id'],
+           'base_table' => $mview->mv_table,
+           'base_field' => $key,
+           'left_table' => $left_table,
+           'left_field' => $left_column,
+         );
+         
+         // write the new joins to the database
+         drupal_write_record('tripal_views_join', $view_join_record);
+      }
+
+      // add the hanlders
+      $handlers = array('filter','field','sort','argument','join','relationship');
+     
+      foreach($handlers as $handler){
+         $handler_name = $form_state['values']["fields_".$handler."_handler_$table_id-$i"];
+         if($handler_name){
+            $handler_record = array(
+            'setup_id' => $tripal_views_record['setup_id'],
+            'column_name' => $key, 
+            'handler_type' => $handler,
+            'handler_name' => $handler_name,
+            );
+            drupal_write_record('tripal_views_handlers', $handler_record);
+         }
+      }
+      $i++;
+   }
+   if(!$setup_id){
+      drupal_set_message('Record Updated');
+   } else {
+      drupal_set_message('Record Added');
+   }
 }
 
 /**

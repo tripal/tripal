@@ -259,43 +259,32 @@ function tripal_mview_report ($mview_id) {
 * @ingroup tripal_mviews_api
 */
 function tripal_mviews_report () {
-   $mviews = db_query("SELECT * FROM {tripal_mviews} ORDER BY name");
 
-   // create a table with each row containig stats for
-   // an individual job in the results set.
-   $output .= "<table class=\"border-table\">". 
-              "  <tr>".
-              "    <th nowrap></th>".
-              "    <th>Name</th>".
-              "    <th>Last_Update</th>".
-              "    <th nowrap></th>".
-              "  </tr>";
-   
+   $header = array('','MView Name','Last Update','');
+   $rows = array();
+
+   $mviews = db_query("SELECT * FROM {tripal_mviews} ORDER BY name");  
    while($mview = db_fetch_object($mviews)){
       if($mview->last_update > 0){
          $update = format_date($mview->last_update);
       } else {
          $update = 'Not yet populated';
       }
-	  // build the URLs using the url function so we can handle installations where
-	  // clean URLs are or are not used
-	  $view_url   = url("admin/tripal/views/mviews/report/$mview->mview_id");
-	  $update_url = url("admin/tripal/views/mviews/action/update/$mview->mview_id");
-	  $delete_url = url("admin/tripal/views/mviews/action/delete/$mview->mview_id");
-	  // create the row for the table
-      $output .= "  <tr>";
-      $output .= "    <td><a href='$view_url'>View</a>&nbsp".
-                 "        <a href='$update_url'>Update</a></td>".
-	             "    <td>$mview->name</td>".
-                 "    <td>$update</td>".
-                 "    <td><a href='$delete_url'>Delete</a></td>".
-                 "  </tr>";
+      $rows[] = array(
+         l('View',"admin/tripal/views/mviews/report/$mview->mview_id") ." | ".
+            l('Update',"admin/tripal/views/mviews/action/update/$mview->mview_id"),
+         $mview->name,
+         $update,
+         l('Delete',"admin/tripal/views/mviews/action/delete/$mview->mview_id"),
+      );
    }
-   $new_url = url("admin/tripal/views/mviews/new");
-   $output .= "</table>";
-   $output .= "<br />";
-   $output .= "<p><a href=\"$new_url\">Create a new materialized view.</a></p>";
-   return $output;
+   $rows[] = array(
+      'data' => array( 
+         array('data' => l('Create a new materialized view.',"admin/tripal/views/mviews/new"), 
+               'colspan' => 4),
+         )
+   );
+   return theme('table', $header, $rows);
 }
 /**
 *

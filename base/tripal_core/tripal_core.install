@@ -49,10 +49,62 @@ function tripal_core_uninstall(){
 * @ingroup tripal_core
 */
 function tripal_core_get_schemas (){  
-  $schema = array();
+   $schema = array();
 
+   // get all the various schema parts and join them together
+   $temp = tripal_core_jobs_schema();
+   foreach ($temp as $table => $arr){ 
+      $schema[$table] = $arr; 
+   }
+   $temp = tripal_core_mviews_schema();
+   foreach ($temp as $table => $arr){ 
+      $schema[$table] = $arr; 
+   }
+   $temp = tripal_core_views_schema();
+   foreach ($temp as $table => $arr){ 
+      $schema[$table] = $arr; 
+   } 
 
-  $schema['tripal_jobs'] = array(
+	return $schema;
+}
+/************************************************************************
+* 
+*
+* @ingroup tripal_core
+*/
+function tripal_core_mviews_schema(){
+   $schema = array();
+   $schema['tripal_mviews'] = array(
+      'fields' => array(
+         'mview_id'      => array('type' => 'serial', 'unsigned' => TRUE, 'not null' => TRUE),
+         'name'          => array('type' => 'varchar','length' => 255, 'not null' => TRUE),
+         'modulename'    => array('type' => 'varchar','length' => 50, 'not null' => TRUE, 'description' => 'The module name that provides the callback for this job'),
+         'mv_table'      => array('type' => 'varchar','length' => 128, 'not null' => TRUE),
+         'mv_specs'      => array('type' => 'text', 'size' => 'normal', 'not null' => TRUE),
+         'indexed'       => array('type' => 'text', 'size' => 'normal', 'not null' => TRUE),
+         'query'         => array('type' => 'text', 'size' => 'normal', 'not null' => TRUE),
+         'special_index' => array('type' => 'text', 'size' => 'normal', 'not null' => FALSE),
+         'last_update'   => array('type' => 'int', 'not null' => FALSE, 'description' => 'UNIX integer time'),
+      ),
+      'indexes' => array(
+         'mview_id' => array('mview_id')
+      ),
+      'unique keys' => array(
+         'mv_table' => array('mv_table'),
+         'mv_name' => array('name'),
+      ),
+      'primary key' => array('mview_id'),
+  );
+  return $schema;
+}
+/************************************************************************
+* 
+*
+* @ingroup tripal_core
+*/
+function tripal_core_jobs_schema(){
+   $schema = array();
+   $schema['tripal_jobs'] = array(
       'fields' => array(
          'job_id' => array('type' => 'serial', 'unsigned' => TRUE, 'not null' => TRUE),
          'uid' => array ('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'description' => 'The Drupal userid of the submitee'),
@@ -76,41 +128,17 @@ function tripal_core_get_schemas (){
          'job_name' => array('job_name')
       ),
       'primary key' => array('job_id'),
-  );
-
-  $schema['tripal_mviews'] = array(
-      'fields' => array(
-         'mview_id' => array('type' => 'serial', 'unsigned' => TRUE, 'not null' => TRUE),
-         'name' => array('type' => 'varchar','length' => 255, 'not null' => TRUE),
-         'modulename' => array('type' => 'varchar','length' => 50, 'not null' => TRUE, 'description' => 'The module name that provides the callback for this job'),
-         'mv_table' => array('type' => 'varchar','length' => 128, 'not null' => TRUE),
-         'mv_specs' => array('type' => 'text', 'size' => 'normal', 'not null' => TRUE),
-         'indexed' => array('type' => 'text', 'size' => 'normal', 'not null' => TRUE),
-         'query' => array('type' => 'text', 'size' => 'normal', 'not null' => TRUE),
-         'special_index' => array('type' => 'text', 'size' => 'normal', 'not null' => FALSE),
-         'last_update' => array ('type' => 'int', 'not null' => FALSE, 'description' => 'UNIX integer time'),
-      ),
-      'indexes' => array(
-         'mview_id' => array('mview_id')
-      ),
-      'unique keys' => array(
-         'mv_table' => array('mv_table'),
-         'mv_name' => array('name'),
-      ),
-      'primary key' => array('mview_id'),
-  );
-
-   $schema = tripal_core_views_integration_schema();
-
-	return $schema;
+   );
+   return $schema;
 }
 /************************************************************************
 * 
 *
 * @ingroup tripal_core
 */
-function tripal_core_views_integration_schema(){
-	$schema['tripal_views_integration'] = array(
+function tripal_core_views_schema(){
+   $schema = array();
+	$schema['tripal_views'] = array(
 		'description' => 'contains the setupes, their materialized view id and base table name that was used.',
 		'fields' => array(
 			'setup_id' => array(
@@ -124,8 +152,8 @@ function tripal_core_views_integration_schema(){
 				'type' => 'int',
 				'unsigned' => TRUE,
 			),
-			'chado_table_name' => array(
-				'description' => 'the base table name to be used when using this setup',
+			'table_name' => array(
+				'description' => 'the base table name to be used when using this setup. Use this field when not using a materialized view',
 				'type' => 'varchar',
 				'length' => 255,
 				'not null' => TRUE,
@@ -138,11 +166,11 @@ function tripal_core_views_integration_schema(){
 				'not null' => TRUE,
 				'default' => '',
 			),
-			'description' => array(
-				'description' => 'description of this row',
-				'type' => 'varchar',
-				'length' => 255,
-				'not null' => TRUE,
+			'comment' => array(
+				'description' => 'add notes about this views setup',
+				'type' => 'text',
+				'size' => 'normal',
+				'not null' => FALSE,
 				'default' => '',
 			),
 		),
@@ -152,54 +180,54 @@ function tripal_core_views_integration_schema(){
 		'primary key' => array('setup_id'),
 	);
 
-	$schema['tripal_mviews_join'] = array(
-		'description' => 'which materialzed views and chado tables to join in a given setup',
+	$schema['tripal_views_join'] = array(
+		'description' => 'coordinate the joining of tables',
 		'fields' => array(
-		  'mview_join_id' => array(
+		  'view_join_id' => array(
 				'description' => 'the id of the join',
-					'type' => 'serial',
-					'unsigned' => TRUE,
-					'not null' => TRUE,
+				'type' => 'serial',
+				'unsigned' => TRUE,
+				'not null' => TRUE,
 		  ),
 			'setup_id' => array(
-				'description' => 'tripal setup id from tripal_views_integration table',
+				'description' => 'setup id from tripal_views table',
 				'type' => 'int',
 				'unsigned' => TRUE,
 				'not null'=> TRUE,
 			),
-			'view_table' => array(
-					'description' => 'materialized view table name',
-					'type' => 'varchar',
-					'length' => '255',
-					'not null' => TRUE,
-					'default' => '',
-	    ),
-			'view_column' => array(
-				'description' => 'column of materialized view table (mview_table)',
+			'base_table' => array(
+			   'description' => 'the name of the base table',
+				'type' => 'varchar',
+				'length' => '255',
+				'not null' => TRUE,
+				'default' => '',
+	      ),
+			'base_field' => array(
+				'description' => 'the name of the base table column that will be joined',
 				'type' => 'varchar',
 				'length' => '255',
 				'not null' => TRUE,
 				'default' => '',
 			),
-			'chado_table_join' => array(
-				'description' => 'on which chado table to join to materialized view in this serach',
+			'left_table' => array(
+				'description' => 'the table on which to perform a left join',
 				'type' => 'varchar',
 				'length' => '255',
 				'not null' => TRUE,
 				'default' => '',
 			),
-			'chado_column' => array(
-				'description' => 'chado table (above) column to join on materialized view in this serach',
+			'left_field' => array(
+				'description' => 'the column on which to perform a left join',
 				'type' => 'varchar',
 				'length' => '255',
 				'not null' => TRUE,
 				'default' => '',
-	    ),
+	      ),
 		),
 		'unique_keys' => array(
-			'setup_id' => array('mview_join_id'),
+			'setup_id' => array('view_join_id'),
 		),
-		'primary key' => array('mview_join_id'),
+		'primary key' => array('view_join_id'),
 	);
 
 	$schema['tripal_views_handlers'] = array(
@@ -207,15 +235,15 @@ function tripal_core_views_integration_schema(){
 		'fields' => array(
 			'handler_id' => array(
 				'description' => 'the id of the handler',
-					'type' => 'serial',
-					'unsigned' => TRUE,
-					'not null' => TRUE,
-	    ),
+				'type' => 'serial',
+			   'unsigned' => TRUE,
+			   'not null' => TRUE,
+	      ),
 			'setup_id' => array(
-				'description' => 'which setup this is used by from tripal_views_integration table',
-					'type' => 'int',
-					'unsigned' => TRUE,
-					'not null'=> TRUE,
+				'description' => 'setup id from the tripal_views table',
+				'type' => 'int',
+				'unsigned' => TRUE,
+				'not null'=> TRUE,
 			),
 			'column_name' => array(
 				'description' => '',
@@ -224,24 +252,31 @@ function tripal_core_views_integration_schema(){
 				'not null' => TRUE,
 				'default' => '',
 			),
-			'handler_filter' => array(
-				'description' => 'identifier of the handler filter to be used for this column',
+			'handler_type' => array(
+				'description' => 'identifies the type of hander (e.g. field, filter, sort, argument, relationship, etc.)',
+				'type' => 'varchar',
+				'length' => '50',
+				'not null' => TRUE,
+				'default' => '',
+			),
+			'handler_name' => array(
+				'description' => 'the name of the handler',
 				'type' => 'varchar',
 				'length' => '255',
 				'not null' => TRUE,
 				'default' => '',
 			),
-			'handler_field' => array(
-				'description' => 'identifier of the handler field to be used for this column',
-				'type' => 'varchar',
-				'length' => '255',
-				'not null' => TRUE,
+			'arguments' => array(
+				'description' => 'arguments that may get passed to the handler',
+				'type' => 'text',
+				'size' => 'normal',
+				'not null' => FALSE,
 				'default' => '',
-	    ),
+			),
 		),
 		'unique_keys' => array(
-				'setup_id' => array('handler_id'),
-	  ),
+		   'setup_id' => array('handler_id'),
+	   ),
 		'primary key' => array('handler_id'),
 	);
 
@@ -253,20 +288,12 @@ function tripal_core_views_integration_schema(){
 * @ingroup tripal_core
 */
 function tripal_core_update_6000(){
-   // recreate the materialized view
-   tripal_feature_add_organism_count_mview();
-   $ret = array(
-      '#finished' => 1,
-   );
-   
+   $schema = tripal_core_views_schema();
+   $ret = array();
+   foreach ($schema as $name => $table) {
+      db_create_table($ret, $name, $table);
+   }   
    return $ret;
 }
-/************************************************************************
-* 
-*
-* @ingroup tripal_core
-*/
-function tripal_core_update_6000_views_integration(){
 
-}
 ?>

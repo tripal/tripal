@@ -87,6 +87,23 @@ function tripal_core_menu() {
       'file' => 'system.admin.inc',
       'file path' => drupal_get_path('module', 'system'),
    );
+   $items['tripal_toggle_box_menu/%/%/%'] = array(
+     'title' => t('Toggle Box'),
+     'page callback' => 'tripal_toggle_box_menu',
+     'page arguments' => array(1,2,3),
+     'access arguments' => array('access administration pages'),
+     'type' => MENU_CALLBACK | MENU_LINKS_TO_PARENT
+   );
+   $items['admin/tripal/chado_1_11_install'] = array(
+     'title' => 'Install Chado v1.11',
+     'description' => 'Installs Chado version 1.11 inside the current Drupal database',
+     'page callback' => 'drupal_get_form',
+     'page arguments' => array('tripal_core_chado_v1_11_load_form'),
+     'access arguments' => array('access administration pages'),
+     'type' => MENU_NORMAL_ITEM,
+   );
+
+   // Jobs Management
    $items['admin/tripal/tripal_jobs'] = array(
      'title' => 'Jobs',
      'description' => 'Jobs managed by Tripal',
@@ -118,22 +135,9 @@ function tripal_core_menu() {
      'access arguments' => array('access administration pages'),
      'type' => MENU_CALLBACK,
    );
-   $items['tripal_toggle_box_menu/%/%/%'] = array(
-     'title' => t('Libraries'),
-     'page callback' => 'tripal_toggle_box_menu',
-     'page arguments' => array(1,2,3),
-     'access arguments' => array('access administration pages'),
-     'type' => MENU_CALLBACK | MENU_LINKS_TO_PARENT
-   );
-   $items['admin/tripal/chado_1_11_install'] = array(
-     'title' => 'Install Chado v1.11',
-     'description' => 'Installs Chado version 1.11 inside the current Drupal database',
-     'page callback' => 'drupal_get_form',
-     'page arguments' => array('tripal_core_chado_v1_11_load_form'),
-     'access arguments' => array('access administration pages'),
-     'type' => MENU_NORMAL_ITEM,
-   );
+ 
 
+   // Views Integration
    $items['admin/tripal/views'] = array(
      'title' => t('Views'),
      'description' => 'Management of Materialized Views & Integration with Drupal Views',
@@ -162,7 +166,7 @@ function tripal_core_menu() {
      'page callback' => 'drupal_get_form',
      'page arguments' => array('tripal_mviews_form'),
      'access arguments' => array('access administration pages'),
-     'type' => MENU_NORMAL_ITEM,
+     'type' => MENU_CALLBACK,
    );
    $items['admin/tripal/views/mviews/edit/%'] = array(
      'title' => 'Edit MView',
@@ -179,64 +183,38 @@ function tripal_core_menu() {
      'access arguments' => array('access administration pages'),
      'type' => MENU_CALLBACK,
    );
-// 	$items['admin/tripal/views/integration'] = array(
-//     'title' => t('Drupal Views Integration'),
-//     'description' => t('Allows you to select existing materialized views and provide details for integration with Drupal Views.'),
-//     'page callback' => 'drupal_get_form',
-//     'page arguments' => array('tripal_core_views_integration_admin_form'),
-//     'access arguments' => array('manage tripal_views_integration'),
-//     'type' => MENU_NORMAL_ITEM,
-// 	);
+ 	$items['admin/tripal/views/integration'] = array(
+     'title' => t('Views Integration'),
+     'description' => t('Allows you to select existing materialized views and provide details for integration with Drupal Views.'),
+     'page callback' => 'tripal_core_views_integration_setup_list',
+     'access arguments' => array('manage tripal_views_integration'),
+     'type' => MENU_NORMAL_ITEM,
+ 	);
 
-	$items['admin/tripal/views/integration/mviews'] = array(
-    'title' => t('Integrated MViews'),
-    'description' => t('Allows you to select existing materialized views and provide details for integration with Drupal Views.'),
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_core_views_integration_admin_form'),
-    'access arguments' => array('manage tripal_views_integration'),
-    'type' => MENU_NORMAL_ITEM,
+
+	$items['admin/tripal/views/integration/new'] = array(
+     'title' => 'Integrate Views',
+     'page callback' => 'drupal_get_form',
+     'page arguments' => array('tripal_core_views_integration_form'),
+     'access arguments' => array('manage tripal_views_integration'), //TODO: figure out the proper permissions arguments
+     'type' => MENU_CALLBACK,
 	);
 	
-	$items['admin/tripal/views/integration/mviews/new'] = array(
-     'title' => 'Add an MView',
+	$items['admin/tripal/views/integration/edit/%'] = array(
+     'title' => 'Edit Views Integration',
      'page callback' => 'drupal_get_form',
-     'page arguments' => array('tripal_core_views_integration_new_setup_form'),
+     'page arguments' => array('tripal_core_views_integration_form',5),
      'access arguments' => array('manage tripal_views_integration'), //TODO: figure out the proper permissions arguments
-     'type' => MENU_NORMAL_ITEM,
-	);
-	
-	$items['admin/tripal/views/integration/mviews/edit/%'] = array(
-     'title' => 'Edit MView Integration',
-     'page callback' => 'drupal_get_form',
-     'page arguments' => array('tripal_core_views_integration_new_setup_form', 6),
-     'access arguments' => array('manage tripal_views_integration'), //TODO: figure out the proper permissions arguments
-     'type' => MENU_NORMAL_ITEM,
+     'type' => MENU_CALLBACK,
 	);
 
-// 	$items['admin/tripal/views/integration/chado'] = array(
-//     'title' => t('Integrated Chado Table'),
-//     'description' => t('Tripal Views Setups settings page, allows you to select and create materialized views and chado tables to use for searches.'),
-//     'page callback' => 'drupal_get_form',
-//     'page arguments' => array('tripal_core_views_integration_admin_form'),
-//     'access arguments' => array('manage tripal_views_integration'),
-//     'type' => MENU_NORMAL_ITEM,
-// 	);
-// 	$items['admin/tripal/views/integration/chado/new'] = array(
-//      'title' => 'Add a Chado table',
-//      'page callback' => 'drupal_get_form',
-//      'page arguments' => array('tripal_core_views_integration_new_setup_form'),
-//      'access arguments' => array('manage tripal_views_integration'), //TODO: What is this item supposed to be?
-//      'type' => MENU_NORMAL_ITEM,
-// 	);
-
-// 	$items['admin/tripal/views/integration/chado/edit/%'] = array(
-// 	     'title' => 'Edit MView Integration',
-// 	     'page callback' => 'drupal_get_form',
-// 	     'page arguments' => array('tripal_core_views_integration_new_setup_form', 6),
-// 	     'access arguments' => array('manage tripal_views_integration'), //TODO: figure out the proper permissions arguments
-// 	     'type' => MENU_NORMAL_ITEM,
-// 	);
-
+	$items['admin/tripal/views/integration/delete/%'] = array(
+     'title' => 'Delete Views Integration',
+     'page callback' => 'tripal_core_views_integration_delete',
+     'page arguments' => array(5),
+     'access arguments' => array('manage tripal_views_integration'), //TODO: figure out the proper permissions arguments
+     'type' => MENU_CALLBACK,
+	);
   return $items;
 }
 
@@ -309,7 +287,7 @@ function tripal_core_theme () {
          'arguments' => array('job_id'=> null),
          'template' => 'tripal_core_job_view',
       ),
-	  'tripal_core_views_integration_new_setup_form' => array(
+	  'tripal_core_views_integration_form' => array(
          'arguments' => array('form' => NULL),
          'template'  => 'tripal_views_integration_fields_form',
 	   ),
