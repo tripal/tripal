@@ -647,7 +647,7 @@ function tripal_core_views_integration_form_submit($form, &$form_state){
       }
       $i++;
    }
-   if(!$setup_id){
+   if($setup_id){
       drupal_set_message('Record Updated');
    } else {
       drupal_set_message('Record Added');

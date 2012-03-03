@@ -347,15 +347,16 @@ function tripal_core_views_data(){
         );
 
         // now add the handlers
-        $sql = "SELECT * FROM {tripal_views_handlers} WHERE setup_id = '$setup_id' AND column_name = '$base_field'";
-        $handlers = db_query($sql);
+        $sql = "SELECT * FROM {tripal_views_handlers} WHERE setup_id = %d AND column_name = '%s'";
+        $handlers = db_query($sql,$setup_id,$base_field);
         while($handler = db_fetch_object($handlers)){
-           $data[$base_table][$base_field][$handler->hander_type]['handler'] = $handler->handler_name;
+           $data[$base_table][$base_field][$handler->handler_type]['handler'] = $handler->handler_name;
         };
     }
 
      // now add the joins
-     $joins = db_query("SELECT * FROM {tripal_views_join} WHERE setup_id = '$setup_id'");
+     $sql = "SELECT * FROM {tripal_views_join} WHERE setup_id = %d";
+     $joins = db_query($sql,$setup_id);
      while($join = db_fetch_object($joins)){               
         $left_table = $join->left_table;
         $left_field = $join->left_field;
@@ -367,7 +368,7 @@ function tripal_core_views_data(){
           'field' => $base_field,
         );
 
-        // check to see if this table is one that correlates with Drupal nodes
+        // check to see if the join table is one that correlates with Drupal nodes
         // if so, there will be a chado_<table_name> table in the Drupal database
         // if there is, then we need to add the linking join information
         $sql = "SELECT tablename FROM pg_tables WHERE tablename = 'chado_$left_table'";
@@ -390,61 +391,55 @@ function tripal_core_views_data(){
 function tripal_core_views_data_alter(&$data) {
     $tvi_query = db_query('SELECT * FROM {tripal_views}');
 
-    //tvi = tripal_views_integration
+    // iterate through the views that we manage
     while($tvi_row = db_fetch_object($tvi_query)){
 
       //ids we'll use for queries
       $mview_id = $tvi_row->mview_id;
       $setup_id = $tvi_row->setup_id;
 
-      //let's get the name of the table
-      $base_table = '';
-      if($mview_id){
-         $mview_table = db_fetch_object(db_query("SELECT name, mv_specs FROM {tripal_mviews} WHERE mview_id = '$mview_id';"));
-         $base_table = $mview_table->name;
-      }
-      else {
-         // TODO: get the non materialized view info and populate these variables
-         //  1) $base_table
-      }
-
       // iterate through the columns and alter the existing data array for
       // joins to other tables
-      $joins = db_query("SELECT * FROM {tripal_views_join} WHERE setup_id = '$setup_id'");
+      $sql = "SELECT * FROM {tripal_views_join} WHERE setup_id = %d";
+      $joins = db_query($sql,$setup_id);
       while($join = db_fetch_object($joins)){                       
-        $left_table = $tmj_row->left_join;
-        $left_field = $tmj_row->left_column;
-        $base_field = $tmj_row->base_column;      
- 
+        $left_table = $join->left_table;
+        $left_field = $join->left_field;
+        $base_field = $join->base_field;  
+        $base_table = $join->base_table;    
+
         // add the recipricol join entries for each column
-        $data[$left_table]['table']['join'][$base_table] = array(
-          'left_field' => $base_field,
-          'field' => $left_field,
-        );
+        if(array_key_exists($left_table,$data)){
+           $data[$left_table]['table']['join'][$base_table] = array(
+             'left_field' => $base_field,
+             'field' => $left_field,
+           );
+        }
 
         // check to see if this table is one that correlates with Drupal nodes
         // if so, there will be a chado_<table_name> table in the Drupal database
         // if there is, then we need to add the linking join information.  We did
         // this step in the hook_views_data function above, but now we need 
         // to add the reciprical joins
-        $sql = "SELECT tablename FROM pg_tables WHERE tablename = 'chado_$left_table'";
-        if(db_fetch_object(db_query($sql))){
+        $sql = "SELECT tablename FROM pg_tables WHERE tablename = '%s'";
+        if(db_fetch_object(db_query($sql,"chado_$left_table"))){
 
            // join the linker table to the mview
-           $data["chado_$left_table"]['table']['join'][$base_table] = array(
-             'left_field' => $base_field,
-             'field' => $left_field,
-           );
+           if(array_key_exists("chado_$left_table",$data)){
+              $data["chado_$left_table"]['table']['join'][$base_table] = array(
+                'left_field' => $base_field,
+                'field' => $left_field,
+              );
 
-           // Join the node table to the view by way of the chado linker table
-           $data['node']['table']['join'][$base_table] = array(
-           	'left_table' => "chado_$left_table",
-           	'left_field' => 'nid',
-           	'field' => 'nid',
-           );
+              // Join the node table to the view by way of the chado linker table
+              $data['node']['table']['join'][$base_table] = array(
+              	'left_table' => "chado_$left_table",
+              	'left_field' => 'nid',
+              	'field' => 'nid',
+              );           
+           }
         }
       }
     }
-
     return $data;
 }
