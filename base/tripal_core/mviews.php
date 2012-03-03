@@ -133,7 +133,7 @@ function tripal_mviews_action ($op,$mview_id){
       }
       tripal_db_set_active($previous_db);  // now use drupal database
    }
-   return '';
+   drupal_goto("admin/tripal/views/mviews");
 }
 /**
 * Update a Materialized View

@@ -923,7 +923,7 @@ function tripal_cv_obo_form(&$form_state = NULL){
      '#executes_submit_callback' => TRUE,
    );
 
-   $form['#redirect'] = 'admin/tripal/tripal_cv/obo';
+   $form['#redirect'] = 'admin/tripal/tripal_cv/obo_loader';
 
 
    return $form;

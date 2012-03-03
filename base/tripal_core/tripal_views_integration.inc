@@ -232,7 +232,8 @@ function tripal_core_views_integration_form(&$form_state, $setup_id = NULL){
   $form['views_type']['row_description'] = array(
     '#title' => t('Comment'),
     '#type' => 'textarea',
-    '#description' => '(Optional). Provide any details regarding this setup you would like.',
+    '#description' => '(Optional). Provide any details regarding this setup you would like. This '.
+                      'description will appear when selecting a type for a new Drupal View',
     '#required' => FALSE,
   );
 
@@ -542,9 +543,9 @@ function tripal_core_views_integration_form_validate($form, &$form_state){
   $mview_id = $form_state['values']['mview_id'];
   $table_name = $form_state['values']['table_name'];
 
-  if(count($name_array) > 1){
-    form_set_error($form_state['values']['row_name'], 'The View type name must be a single word only.');
-  }
+//  if(count($name_array) > 1){
+//    form_set_error($form_state['values']['row_name'], 'The View type name must be a single word only.');
+//  }
   if($mview_id and $table_name){
     form_set_error($form_state['values']['mview_id'], 'Please select either a materialized view or a Chado table but not both');
   }
@@ -651,6 +652,8 @@ function tripal_core_views_integration_form_submit($form, &$form_state){
    } else {
       drupal_set_message('Record Added');
    }
+   // now clear all the caches so that Drupal views picks up our chages
+   views_invalidate_cache();
 }
 
 /**

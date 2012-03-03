@@ -290,25 +290,29 @@ function tripal_core_views_data(){
 
     $tvi_query = db_query('SELECT * FROM {tripal_views}');
 
-    //tvi = tripal_views_integration
     while($tvi_row = db_fetch_object($tvi_query)){
 
-      //ids we'll use for queries
+      // ids we'll use for queries
       $setup_id = $tvi_row->setup_id;
       $mview_id = $tvi_row->mview_id;
 
-      //let's get the name of the materialized view
+      // holds the base table name and fields
       $base_table = '';
       $base_fields = array();
+      $type_prefix = '';
+
+      // populate the base table name and fields.  If an $mview_id is given
+      // the get the materialized view info, otherwise get the Chado table info
       if($mview_id){
-         $mview_table = db_fetch_object(db_query("SELECT name, mv_specs FROM {tripal_mviews} WHERE mview_id = '$mview_id';"));
+         $type_prefix = 'MView';
+         // get the base table name from the materialized view
+         $sql = "SELECT name, mv_specs FROM {tripal_mviews} WHERE mview_id = %d";
+         $mview_table = db_fetch_object(db_query($sql,$mview_id));
          $base_table = $mview_table->name;
 
          // get the columns in this materialized view.  They are separated by commas
          // where the first word is the column name and the rest is the type
-         $sql = "SELECT mv_specs FROM {tripal_mviews} WHERE mview_id = $mview_id";
-         $mview = db_fetch_object(db_query($sql));
-         $columns = explode(",",$mview->mv_specs);
+         $columns = explode(",",$mview_table->mv_specs);
          foreach ($columns as $column){
             $column = trim($column);  // trim trailing and leading spaces
             preg_match("/^(.*?)\ (.*?)$/",$column,$matches);
@@ -318,31 +322,32 @@ function tripal_core_views_data(){
          }
       }
       else {
-         // TODO: get the non materialized view info and populate these variables
+         $type_prefix = 'Chado Table';
+         // TODO: get the chado table info and populate these variables
          //  1) $base_table
          //  2) $base_fields (an array of just the table field names)
       }
 
-      //use name from above and description from $tvi_row
+      // Setup the base table info in the data array
       $data[$base_table]['table']['group'] = t($tvi_row->name);
       $data[$base_table]['table']['base'] = array(
-        'group' => t($tvi_row->name),
-        'title' => t($tvi_row->name),
-        'help'  => t($tvi_row->comment),
+        'group' => "$type_prefix: $tvi_row->name",
+        'title' => "$type_prefix: $tvi_row->name",
+        'help'  => $tvi_row->comment,
       );
 
       // first add the fields
       foreach ($base_fields as $base_field){
         $data[$base_table][$base_field] = array(
-           'title' => t($base_field),
-           'help' => t("**"),
+           'title' => $base_field,
+           'help' => t("The $base_field from the $base_table table (added by Tripal Views Integration)"),
            'field' => array(
               'click sortable' => TRUE,
            ),
         );
 
         // now add the handlers
-        $sql = "SELECT * FROM {tripal_views_handlers} WHERE setup_id = '$setup_id' AND base_field = '$base_field'";
+        $sql = "SELECT * FROM {tripal_views_handlers} WHERE setup_id = '$setup_id' AND column_name = '$base_field'";
         $handlers = db_query($sql);
         while($handler = db_fetch_object($handlers)){
            $data[$base_table][$base_field][$handler->hander_type]['handler'] = $handler->handler_name;
