@@ -85,7 +85,7 @@ if (Drupal.jsEnabled) {
 <div id="tripal_analysis_blast_details" class="tripal_details">
 
    <!-- Basic Details Theme -->
-   <?php include('templates/tripal_analysis_blast_base.tpl.php');?>
+   <?php include('theme/tripal_analysis_blast/tripal_analysis_blast_base.tpl.php');?>
 
    <?php print $content ?>
 </div>
