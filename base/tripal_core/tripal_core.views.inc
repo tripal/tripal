@@ -167,24 +167,6 @@ function tripal_core_views_handlers() {
  );
 }
 
-
-function tripal_core_views_data () {
-  
-  // Define Global Fields -------------
-  // Filter handler that lets the admin say: 
-  // "Show no results until they enter search parameters"
-  $data['views']['search_results'] = array(
-    'title' => t('Search Results'),
-    'help' => t('Delay results until Apply/Search is clicked by the user.'),
-    'filter' => array(
-      'handler' => 'views_handler_filter_no_results',
-    ),
-  );
-  
-  return $data;
-  
-}
-
 /**
  * Implements hook_views_pre_render
  *
@@ -387,7 +369,19 @@ function tripal_core_add_node_ids_to_view (&$view) {
  */
 
 function tripal_core_views_data(){   
-
+  
+   // Define Global Fields -------------
+   // Filter handler that lets the admin say: 
+   // "Show no results until they enter search parameters"
+   $data['views']['search_results'] = array(
+      'title' => t('Search Results'),
+      'help' => t('Delay results until Apply/Search is clicked by the user.'),
+      'filter' => array(
+         'handler' => 'views_handler_filter_no_results',
+      ),
+   );
+  
+ 
     $tvi_query = db_query('SELECT * FROM {tripal_views}');
 
     while($tvi_row = db_fetch_object($tvi_query)){
