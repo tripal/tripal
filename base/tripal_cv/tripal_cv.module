@@ -607,7 +607,7 @@ function tripal_cv_add_cvterm_form (&$form_state) {
 		array()
 	);
 	$cvs = array();
-  $cvs[] = '';
+   $cvs[] = '';
 	foreach ($results as $cv) {
 		$cvs[$cv->cv_id] = $cv->name;
 	}
@@ -628,7 +628,7 @@ function tripal_cv_add_cvterm_form (&$form_state) {
 
 	$form['add_cvterm'] = array(
 		'#type'					 => 'item',
-		'#value'				 => t('Please select a vocabulary above to add a term to it'),
+		'#value'				    => t('Please select a vocabulary above to add a term to it'),
 		'#prefix'				 => '<div id="cvterm-add-div">',
 		'#suffix'				 => '</div>'		
 	);
@@ -923,7 +923,7 @@ function tripal_cv_obo_form(&$form_state = NULL){
      '#executes_submit_callback' => TRUE,
    );
 
-   $form['#redirect'] = 'admin/tripal/tripal_cv/obo';
+   $form['#redirect'] = 'admin/tripal/tripal_cv/obo_loader';
 
 
    return $form;

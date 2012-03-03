@@ -358,3 +358,165 @@ function tripal_core_add_node_ids_to_view (&$view) {
 		
 	return $view;
 }
+/**
+ *
+ * @ingroup tripal_core
+ */
+
+function tripal_core_views_data(){   
+
+    $tvi_query = db_query('SELECT * FROM {tripal_views}');
+
+    while($tvi_row = db_fetch_object($tvi_query)){
+
+      // ids we'll use for queries
+      $setup_id = $tvi_row->setup_id;
+      $mview_id = $tvi_row->mview_id;
+
+      // holds the base table name and fields
+      $base_table = '';
+      $base_fields = array();
+      $type_prefix = '';
+
+      // populate the base table name and fields.  If an $mview_id is given
+      // the get the materialized view info, otherwise get the Chado table info
+      if($mview_id){
+         $type_prefix = 'MView';
+         // get the base table name from the materialized view
+         $sql = "SELECT name, mv_specs FROM {tripal_mviews} WHERE mview_id = %d";
+         $mview_table = db_fetch_object(db_query($sql,$mview_id));
+         $base_table = $mview_table->name;
+
+         // get the columns in this materialized view.  They are separated by commas
+         // where the first word is the column name and the rest is the type
+         $columns = explode(",",$mview_table->mv_specs);
+         foreach ($columns as $column){
+            $column = trim($column);  // trim trailing and leading spaces
+            preg_match("/^(.*?)\ (.*?)$/",$column,$matches);
+            $column_name = $matches[1];
+            $column_type = $matches[2];
+            $base_fields[] = $column_name;
+         }
+      }
+      else {
+         $type_prefix = 'Chado Table';
+         // TODO: get the chado table info and populate these variables
+         //  1) $base_table
+         //  2) $base_fields (an array of just the table field names)
+      }
+
+      // Setup the base table info in the data array
+      $data[$base_table]['table']['group'] = t($tvi_row->name);
+      $data[$base_table]['table']['base'] = array(
+        'group' => "$type_prefix: $tvi_row->name",
+        'title' => "$type_prefix: $tvi_row->name",
+        'help'  => $tvi_row->comment,
+      );
+
+      // first add the fields
+      foreach ($base_fields as $base_field){
+        $data[$base_table][$base_field] = array(
+           'title' => $base_field,
+           'help' => t("The $base_field from the $base_table table (added by Tripal Views Integration)"),
+           'field' => array(
+              'click sortable' => TRUE,
+           ),
+        );
+
+        // now add the handlers
+        $sql = "SELECT * FROM {tripal_views_handlers} WHERE setup_id = %d AND column_name = '%s'";
+        $handlers = db_query($sql,$setup_id,$base_field);
+        while($handler = db_fetch_object($handlers)){
+           $data[$base_table][$base_field][$handler->handler_type]['handler'] = $handler->handler_name;
+        };
+    }
+
+     // now add the joins
+     $sql = "SELECT * FROM {tripal_views_join} WHERE setup_id = %d";
+     $joins = db_query($sql,$setup_id);
+     while($join = db_fetch_object($joins)){               
+        $left_table = $join->left_table;
+        $left_field = $join->left_field;
+        $base_field = $join->base_field;  
+      
+        // add join entry
+        $data[$base_table]['table']['join'][$left_table] = array(
+          'left_field' => $left_field,
+          'field' => $base_field,
+        );
+
+        // check to see if the join table is one that correlates with Drupal nodes
+        // if so, there will be a chado_<table_name> table in the Drupal database
+        // if there is, then we need to add the linking join information
+        $sql = "SELECT tablename FROM pg_tables WHERE tablename = 'chado_$left_table'";
+        if(db_fetch_object(db_query($sql))){
+
+           // join the mview to the linker table
+           $data[$base_table]['table']['join']["chado_$left_table"] = array(
+             'left_field' => $left_field,
+             'field' => $base_field,
+           );
+        }
+      }
+    }
+    return $data;
+}
+/**
+ *
+ * @ingroup tripal_core
+ */
+function tripal_core_views_data_alter(&$data) {
+    $tvi_query = db_query('SELECT * FROM {tripal_views}');
+
+    // iterate through the views that we manage
+    while($tvi_row = db_fetch_object($tvi_query)){
+
+      //ids we'll use for queries
+      $mview_id = $tvi_row->mview_id;
+      $setup_id = $tvi_row->setup_id;
+
+      // iterate through the columns and alter the existing data array for
+      // joins to other tables
+      $sql = "SELECT * FROM {tripal_views_join} WHERE setup_id = %d";
+      $joins = db_query($sql,$setup_id);
+      while($join = db_fetch_object($joins)){                       
+        $left_table = $join->left_table;
+        $left_field = $join->left_field;
+        $base_field = $join->base_field;  
+        $base_table = $join->base_table;    
+
+        // add the recipricol join entries for each column
+        if(array_key_exists($left_table,$data)){
+           $data[$left_table]['table']['join'][$base_table] = array(
+             'left_field' => $base_field,
+             'field' => $left_field,
+           );
+        }
+
+        // check to see if this table is one that correlates with Drupal nodes
+        // if so, there will be a chado_<table_name> table in the Drupal database
+        // if there is, then we need to add the linking join information.  We did
+        // this step in the hook_views_data function above, but now we need 
+        // to add the reciprical joins
+        $sql = "SELECT tablename FROM pg_tables WHERE tablename = '%s'";
+        if(db_fetch_object(db_query($sql,"chado_$left_table"))){
+
+           // join the linker table to the mview
+           if(array_key_exists("chado_$left_table",$data)){
+              $data["chado_$left_table"]['table']['join'][$base_table] = array(
+                'left_field' => $base_field,
+                'field' => $left_field,
+              );
+
+              // Join the node table to the view by way of the chado linker table
+              $data['node']['table']['join'][$base_table] = array(
+              	'left_table' => "chado_$left_table",
+              	'left_field' => 'nid',
+              	'field' => 'nid',
+              );           
+           }
+        }
+      }
+    }
+    return $data;
+}

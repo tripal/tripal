@@ -216,7 +216,7 @@ function tripal_cv_obo_process_term($term,$defaultcv,$obo,$is_relationship=0,&$n
 
    // now handle other properites
    if(isset($term['is_anonymous'])){
-     print "WARNING: unhandled tag: is_anonymous\n";
+     //print "WARNING: unhandled tag: is_anonymous\n";
    }
    if(isset($term['alt_id'])){
       foreach($term['alt_id'] as $alt_id){
@@ -226,7 +226,7 @@ function tripal_cv_obo_process_term($term,$defaultcv,$obo,$is_relationship=0,&$n
       }
    }
    if(isset($term['subset'])){
-     print "WARNING: unhandled tag: subset\n";
+     //print "WARNING: unhandled tag: subset\n";
    }
    // add synonyms for this cvterm
    if(isset($term['synonym'])){
@@ -304,13 +304,13 @@ function tripal_cv_obo_process_term($term,$defaultcv,$obo,$is_relationship=0,&$n
       }
    } 
    if(isset($term['intersection_of'])){
-     print "WARNING: unhandled tag: intersection_of\n";
+     //print "WARNING: unhandled tag: intersection_of\n";
    }
    if(isset($term['union_of'])){
-     print "WARNING: unhandled tag: union_on\n";
+     //print "WARNING: unhandled tag: union_on\n";
    }
    if(isset($term['disjoint_from'])){
-     print "WARNING: unhandled tag: disjoint_from\n";
+     //print "WARNING: unhandled tag: disjoint_from\n";
    }
    if(isset($term['relationship'])){
       foreach($term['relationship'] as $value){
@@ -322,16 +322,16 @@ function tripal_cv_obo_process_term($term,$defaultcv,$obo,$is_relationship=0,&$n
       }
    }
    if(isset($term['replaced_by'])){
-     print "WARNING: unhandled tag: replaced_by\n";
+     //print "WARNING: unhandled tag: replaced_by\n";
    }
    if(isset($term['consider'])){
-     print "WARNING: unhandled tag: consider\n";
+     //print "WARNING: unhandled tag: consider\n";
    }
    if(isset($term['use_term'])){
-     print "WARNING: unhandled tag: user_term\n";
+     //print "WARNING: unhandled tag: user_term\n";
    }
    if(isset($term['builtin'])){
-     print "WARNING: unhandled tag: builtin\n";
+     //print "WARNING: unhandled tag: builtin\n";
    }
    return 1;
 }
