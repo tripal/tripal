@@ -167,6 +167,10 @@ function tripal_core_chado_insert($table,$values){
 
    // make sure required fields have a value
    $fields = $table_desc['fields'];
+   if (!is_array($fields)) {
+   	 $fields = array();
+   	 watchdog('tripal_core',"tripal_core_chado_insert: %table not defined in tripal schema api", array('%table' => $table), 'WATCHDOG WARNING');
+   }
    foreach($fields as $field => $def){
       // a field is considered missing if it cannot be null and there is no default
       // value for it or it is of type 'serial'
@@ -203,6 +207,10 @@ function tripal_core_chado_insert($table,$values){
    if($result){
       // add primary keys to values before return
       $primary_key = array();
+      if (!is_array($table_desc['primary key'])) {
+      	$table_desc['primary key'] = array();
+      	watchdog('tripal_core',"tripal_core_chado_insert: %table not defined in tripal schema api", array('%table' => $table), 'WATCHDOG WARNING');
+      }
       foreach ($table_desc['primary key'] as $field) {
         $value = db_last_insert_id($table, $field);
         $values[$field] = $value;
