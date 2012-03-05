@@ -1,5 +1,8 @@
 <?php
 
+module_load_include('inc','views','includes/base');
+module_load_include('inc','views','includes/handlers');
+
 /**
  * Handler to allow joins between records via a linking table
  *
