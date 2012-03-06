@@ -147,6 +147,9 @@ function tripal_core_views_handlers() {
      'chado_views_handler_filter_numeric' => array(
       'parent' => 'views_handler_filter_numeric',
      ),
+     'views_handler_filter_file_upload' => array(
+      'parent' => 'views_handler_filter',
+     ),
      // Sort Handlers
      'chado_views_handler_sort' => array(
       'parent' => 'views_handler_sort'
