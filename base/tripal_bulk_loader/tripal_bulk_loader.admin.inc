@@ -1022,6 +1022,18 @@ function tripal_bulk_loader_add_template_field_form (&$form_state = NULL) {
     '#description' => t('Specify the value you wish this field to have regardless of spreadsheet data.'),
     '#default_value' => $form_state['values']['constant_value']
   );
+  
+  $form['add_fields']['constant']['constant_exposed'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Allow Constant to be set for each Bulk Loading Job'),
+    '#description' => t('Adds a textbox field to the Create Bulk Loader Form to allow users to set this value.')
+  );
+  
+  $form['add_fields']['constant']['constant_validate'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Ensure value is in table'),
+    '#description' => t('Checks the database when a bulk loading job is created to ensure the value entered already exists in the database.'),
+  );
 
   // Foreign Key
   $form['add_fields']['foreign_key'] = array(
@@ -1270,7 +1282,8 @@ function tripal_bulk_loader_add_template_field_form_submit ($form, &$form_state)
           'required' => $form_state['values']['required'],
           //'allowed values' => empty by default,
           'constant value' => $form_state['values']['constant_value'],
-          //'exposed' => 'true|false'  If exposed, will give a select box first from allowed values if set, second from database if values not set.     
+          'exposed' => $form_state['values']['constant_exposed'],   
+          'exposed_validate' => $form_state['values']['constant_validate'],   
         );      
       } elseif ($form_state['values']['field_type'] == 'foreign key') {
         $field = array(
@@ -1582,6 +1595,20 @@ function tripal_bulk_loader_edit_template_field_form (&$form_state = NULL) {
     '#default_value' => ($form_state['values']['constant_value']) ? $form_state['values']['constant_value'] : $template_field['constant value'],
   );
 
+  $form['edit_fields']['constant']['constant_exposed'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Allow Constant to be set for each Bulk Loading Job'),
+    '#description' => t('Adds a textbox field to the Create Bulk Loader Form to allow users to set this value.'),
+    '#default_value' => ($form_state['values']['constant_exposed']) ? $form_state['values']['constant_exposed'] : $template_field['exposed'],
+  );
+  
+  $form['edit_fields']['constant']['constant_validate'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Ensure value is in table'),
+    '#description' => t('Checks the database when a bulk loading job is created to ensure the value entered already exists in the database.'),
+    '#default_value' => ($form_state['values']['constant_validate']) ? $form_state['values']['constant_validate'] : $template_field['exposed_validate'],
+  );
+  
   // Foreign Key
   $form['edit_fields']['foreign_key'] = array(
     '#type' => 'fieldset',
@@ -1835,7 +1862,8 @@ function tripal_bulk_loader_edit_template_field_form_submit ($form, &$form_state
           $field['required'] = $form_state['values']['required'];
           //$field['allowed values'] = empty by default;
           $field['constant value'] = $form_state['values']['constant_value'];
-          //$field['exposed'] = 'true|false';  If exposed, will give a select box first from allowed values if set, second from database if values not set.      
+          $field['exposed_validate'] = $form_state['values']['constant_validate'];
+          $field['exposed'] = $form_state['values']['constant_exposed']; 
       } elseif ($form_state['values']['field_type'] == 'foreign key') {
           $field['type'] = 'foreign key';
           $field['title'] = $form_state['values']['field_title'];
