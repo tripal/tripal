@@ -540,3 +540,45 @@ function tripal_core_views_data_alter(&$data) {
     }
     return $data;
 }
+/**
+ * Implementation of hook_views_plugins().
+ */
+function tripal_core_views_plugins() {
+  $tc_path = drupal_get_path('module', 'tripal_core');
+
+  $style_defaults = array(
+    'path' => $tc_path . '/views_data_export/plugins',
+    'parent' => 'views_data_export',
+    'theme' => 'views_data_export',
+    'theme path' => $tc_path . '/views_data_export/theme',
+    'theme file' => 'tripal_core_views_data_export.theme.inc',
+    'uses row plugin' => FALSE,
+    'uses fields' => TRUE,
+    'uses options' => TRUE,
+    'type' => 'data_export',
+  );
+
+  // add FASTA format as a new style for the existing views_export_data Display
+  return array( 
+    'style' => array(   
+      'views_data_export_fasta' => array(
+        'title' => t('FASTA file'),
+        'help' => t('Display results in FASTA format. All fields in results are on the definition line while the feature.residues field must be present .'),
+        'handler' => 'tripal_core_plugin_style_export_fasta',
+        // Views Data Export element that will be used to set additional headers when serving the feed.
+        'export headers' => array('Content-type: text/plain; charset=utf-8'),
+        // Views Data Export element mostly used for creating some additional classes and template names.
+        'export feed type' => 'fasta',
+        'export feed text' => 'FASTA',
+        'export feed file' => '%view.fna',
+        'export feed icon' => $tc_path . '/views_data_export/images/fasta.png',
+        'additional themes' => array(
+          'views_data_export_fasta_header' => 'style',
+          'views_data_export_fasta_body' => 'style',
+          'views_data_export_fasta_footer' => 'style',
+        ),
+        'additional themes base' => 'views_data_export_fasta',
+      ) + $style_defaults,      
+    ),
+  );
+}
