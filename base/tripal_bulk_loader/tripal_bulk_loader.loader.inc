@@ -186,7 +186,11 @@ function tripal_bulk_loader_load_data($nid) {
       foreach ($record as $field_id => $field) {
         if ($default_data[$priority]['table'] == $field['chado_table']) {
           if (isset($default_data[$priority]['values_array'][$field['chado_field']])) {
-            $default_data[$priority]['values_array'][$field['chado_field']] = $field['value'];
+            if (isset($field2column[$priority][$field['chado_field']])) {
+              $field2column[$priority][$field['chado_field']] = $field['value'];
+            } else {
+              $default_data[$priority]['values_array'][$field['chado_field']] = $field['value'];
+            }
           } else {
             print "ERROR: Template has changed after constants were assigned!\n";
             watchdog('T_bulk_loader','Template has changed after constants were assigned', array(), WATCHDOG_NOTICE);
