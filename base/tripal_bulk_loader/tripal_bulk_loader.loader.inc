@@ -117,7 +117,16 @@ function tripal_bulk_loader_load_data($nid) {
   print "Template: ".$node->template->name." (".$node->template_id.")\n";
   print "File: ".$node->file."\n";
   
-  print "Memory Usage (After Node Load): ".number_format((memory_get_usage() * 0.000000953674316), 5, '.', ',') . " Mb\n";
+  if ($node->constants) {
+    print "Constants:\n";
+    foreach ($node->constants as $record_id => $record) {
+      foreach ($record as $field_id => $field) {
+        print "\t- ".$field['chado_table'].'.'.$field['chado_field'].' = '.$field['value']."\n";
+      }
+    }
+  }
+  
+  print "\nMemory Usage (After Node Load): ".number_format((memory_get_usage() * 0.000000953674316), 5, '.', ',') . " Mb\n";
   
   // Prep Work ==================================================================================
   $loaded_without_errors = TRUE;
@@ -170,6 +179,27 @@ function tripal_bulk_loader_load_data($nid) {
     } // end of foreach field
     //watchdog('T_bulk_loader','2)'.$record_array['record_id'].':<pre>'.print_r($default_data[$priority], TRUE).'</pre>', array(), WATCHDOG_NOTICE);
   } //end of foreach record
+
+  // Add constants
+  if ($node->constants) {
+    foreach ($node->constants as $priority => $record) {
+      foreach ($record as $field_id => $field) {
+        if ($default_data[$priority]['table'] == $field['chado_table']) {
+          if (isset($default_data[$priority]['values_array'][$field['chado_field']])) {
+            $default_data[$priority]['values_array'][$field['chado_field']] = $field['value'];
+          } else {
+            print "ERROR: Template has changed after constants were assigned!\n";
+            watchdog('T_bulk_loader','Template has changed after constants were assigned', array(), WATCHDOG_NOTICE);
+            exit(1);
+          }
+        } else {
+          print "ERROR: Template has changed after constants were assigned!\n";
+          watchdog('T_bulk_loader','Template has changed after constants were assigned', array(), WATCHDOG_NOTICE);
+          exit(1);
+        }
+      }
+    }
+  }
   
   print "Memory Usage (end of prep work): ".number_format((memory_get_usage() * 0.000000953674316), 5, '.', ',') . " Mb\n";
   
