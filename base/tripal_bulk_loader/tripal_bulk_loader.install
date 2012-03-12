@@ -104,5 +104,54 @@ function tripal_bulk_loader_schema() {
 	  ),
 	  'primary key' => array('tripal_bulk_loader_inserted_id'),
 	);
+	$schema['tripal_bulk_loader_constants'] = array(
+	  'fields' => array(
+	    'constant_id' => array(
+	      'type' => 'serial',
+	      'not null' => TRUE
+	    ),
+      'nid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+			),
+			'chado_table' => array(
+			  'type' => 'varchar',
+			  'not null' => TRUE,
+			),
+			'chado_field' => array(
+			  'type' => 'varchar',
+			  'not null' => TRUE,
+			),
+			'record_id' => array(
+			  'type' => 'int',
+			  'not null' => TRUE
+			),
+			'field_id' => array(
+			  'type' => 'int',
+			  'not null' => TRUE
+			),
+			'value' => array(
+			  'type' => 'text',
+			),
+	  ),
+	  'primary key' => array('constant_id'),
+	);
+	
 	return $schema;
+}
+
+/**
+ * Update schema for version 6.x-0.3.1b-1.5
+ * - Add the tripal_bulk_loader_constants table
+ */
+function tripal_bulk_loader_update_6150 () {
+
+  // Create tripal_bulk_loader_constants table
+  $schema = tripal_bulk_loader_schema();
+  $ret = array();
+  db_create_table($ret, 'tripal_bulk_loader_constants', $schema['tripal_bulk_loader_constants']);
+  
+  return $ret;
+  
 }
