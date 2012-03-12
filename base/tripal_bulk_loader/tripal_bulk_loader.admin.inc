@@ -1008,6 +1008,20 @@ function tripal_bulk_loader_add_template_field_form (&$form_state = NULL) {
     '#default_value' => $form_state['values']['column_number'],
   );
 
+  $form['add_fields']['columns']['column_exposed'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Allow Column to be set for each Bulk Loading Job'),
+    '#description' => t('Adds a textbox field to the Bulk Loader Page to allow users to set this value.'),
+    '#default_value' => ($form_state['values']['column_exposed']) ? $form_state['values']['column_exposed'] : $template_field['exposed'],
+  );
+
+  $form['add_fields']['columns']['column_exposed_desc'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Description for exposed field on bulk loading job'),
+    '#description' => t('This description should tell the user what column should be entered here.'),
+    '#default_value' => ($form_state['values']['column_exposed_desc']) ? $form_state['values']['column_exposed_desc'] : $template_field['exposed_description'],
+  );
+  
   // Global Value
   $form['add_fields']['constant'] = array(
     '#type' => 'fieldset',
@@ -1272,7 +1286,8 @@ function tripal_bulk_loader_add_template_field_form_submit ($form, &$form_state)
           //'allowed values' => empty by default,
           'spreadsheet sheet' => $form_state['values']['sheet_name'],
           'spreadsheet column' => $form_state['values']['column_number'],
-          //'exposed' => 'true|false'  If exposed, will give a select box first from allowed values if set, second from database if values not set.     
+          'exposed' => $form_state['values']['column_exposed'],
+          'exposed_description' => $form_state['values']['column_exposed_desc'],
         );
       } elseif ($form_state['values']['field_type'] == 'constant') {
         $field = array(
@@ -1580,6 +1595,20 @@ function tripal_bulk_loader_edit_template_field_form (&$form_state = NULL) {
     '#default_value' => ($form_state['values']['column_number']) ? $form_state['values']['column_number'] : $template_field['spreadsheet column'],
   );
 
+  $form['edit_fields']['columns']['column_exposed'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Allow Column to be set for each Bulk Loading Job'),
+    '#description' => t('Adds a textbox field to the Bulk Loader Page to allow users to set this value.'),
+    '#default_value' => ($form_state['values']['column_exposed']) ? $form_state['values']['column_exposed'] : $template_field['exposed'],
+  );
+
+  $form['edit_fields']['columns']['column_exposed_desc'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Description for exposed field on bulk loading job'),
+    '#description' => t('This description should tell the user what column should be entered here.'),
+    '#default_value' => ($form_state['values']['column_exposed_desc']) ? $form_state['values']['column_exposed_desc'] : $template_field['exposed_description'],
+  );
+  
   // Global Value
   $form['edit_fields']['constant'] = array(
     '#type' => 'fieldset',
@@ -1854,7 +1883,8 @@ function tripal_bulk_loader_edit_template_field_form_submit ($form, &$form_state
           //$field['allowed values'] = empty by default;
           $field['spreadsheet sheet'] = $form_state['values']['sheet_name'];
           $field['spreadsheet column'] = $form_state['values']['column_number'];
-          //$field['exposed'] = 'true|false';  If exposed, will give a select box first from allowed values if set, second from database if values not set.  
+          $field['exposed'] = $form_state['values']['column_exposed'];
+          $field['exposed_description'] = $form_state['values']['column_exposed_desc'];
       } elseif ($form_state['values']['field_type'] == 'constant') {
           $field['type'] = 'constant';
           $field['title'] = $form_state['values']['field_title'];

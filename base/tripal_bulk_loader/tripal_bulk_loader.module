@@ -500,12 +500,26 @@ function tripal_bulk_loader_set_constants_form ($form_state, $node) {
           if ($field['exposed']) {
             $exposed_fields = TRUE;
             $indexes[$record_id][] = $field_id;
-            $form['exposed_fields'][$record_id.'-'.$field_id] = array(
-              '#type' => 'textfield',
-              '#title' => t($field['title']),
-              '#description' => t('Enter the case-sensitive value of this constant for your spreadsheet'),
-              '#default_value' => (isset($node->constants[$record_id][$field_id]['value'])) ? $node->constants[$record_id][$field_id]['value'] : $field['constant value'],
-            );
+            
+            switch($field['type']) {
+              case 'table field':
+                $form['exposed_fields'][$record_id.'-'.$field_id] = array(
+                  '#type' => 'textfield',
+                  '#title' => t($field['title']),
+                  '#description' => t($field['exposed_description']),
+                  '#default_value' => (isset($node->constants[$record_id][$field_id]['value'])) ? $node->constants[$record_id][$field_id]['value'] : $field['constant value'],
+                );
+              break;
+              case 'constant':
+                $form['exposed_fields'][$record_id.'-'.$field_id] = array(
+                  '#type' => 'textfield',
+                  '#title' => t($field['title']),
+                  '#description' => t('Enter the case-sensitive value of this constant for your spreadsheet'),
+                  '#default_value' => (isset($node->constants[$record_id][$field_id]['value'])) ? $node->constants[$record_id][$field_id]['value'] : $field['constant value'],
+                );
+              break;
+            }
+            
             $form['exposed_fields'][$record_id.'-'.$field_id.'-table'] = array(
               '#type' => 'hidden',
               '#value' => $record['table'],
@@ -513,6 +527,10 @@ function tripal_bulk_loader_set_constants_form ($form_state, $node) {
             $form['exposed_fields'][$record_id.'-'.$field_id.'-field'] = array(
               '#type' => 'hidden',
               '#value' => $field['field'],
+            );
+            $form['exposed_fields'][$record_id.'-'.$field_id.'-type'] = array(
+              '#type' => 'hidden',
+              '#value' => $field['type'],
             );
           }
         }
