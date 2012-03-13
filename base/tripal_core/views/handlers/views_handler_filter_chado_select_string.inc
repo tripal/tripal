@@ -125,7 +125,7 @@ class views_handler_filter_chado_select_string extends views_handler_filter_stri
     $this->ensure_my_table();
     $field = "$this->table_alias.$this->real_field";
     $upper = $this->case_transform();
-      
+
     if ($this->options['multiple']) {
       // Remove any if it's there
       unset($this->value['All']);
