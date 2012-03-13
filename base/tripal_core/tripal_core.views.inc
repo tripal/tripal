@@ -482,7 +482,7 @@ function tripal_core_views_data(){
         }
       }
     }
-dpm($data);
+//dpm($data);
     return $data;
 }
 /**
