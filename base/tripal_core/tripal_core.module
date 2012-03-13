@@ -287,9 +287,13 @@ function tripal_core_theme () {
          'arguments' => array('job_id'=> null),
          'template' => 'tripal_core_job_view',
       ),
-	  'tripal_core_views_integration_form' => array(
+	   'tripal_core_views_integration_form' => array(
          'arguments' => array('form' => NULL),
          'template'  => 'tripal_views_integration_fields_form',
+	   ),
+	   'tripal_core_views_data_export_download_form' => array(
+         'arguments' => array('form' => NULL),
+         'template'  => 'tripal_core_views_data_export_download_form',
 	   ),
    );
 }
@@ -316,4 +320,5 @@ function tripal_core_load_gff3($gff_file, $organism_id,$analysis_id,$add_only =0
    tripal_feature_load_gff3($gff_file, $organism_id,$analysis_id,$add_only,
       $update, $refresh, $remove, $job);
 }
+ 
 

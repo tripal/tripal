@@ -82,7 +82,14 @@ function tripal_core_views_integration_setup_list(){
             l('Delete',"admin/tripal/views/integration/delete/".$tview->setup_id),
          );
       } else {
-         // TODO: customize for Chado tables
+         $rows[] = array(
+            l('Edit',"admin/tripal/views/integration/edit/".$tview->setup_id) ,
+            $tview->name, 
+            $tview->table_name, 
+            'No', 
+            $tview->comment,
+            l('Delete',"admin/tripal/views/integration/delete/".$tview->setup_id),
+         );         
       }
    }
    $rows[] = array(
@@ -128,6 +135,7 @@ function tripal_core_views_integration_form(&$form_state, $setup_id = NULL){
       $mview_id = $setup_obj->mview_id;
       $table_name = $setup_obj->table_name;
       $form_state['storage']['mview_id'] = $mview_id;
+      $form_state['storage']['table_name'] = $table_name;
 
       // get the default join settings and handlers
       $sql = "SELECT * FROM {tripal_views_join} WHERE setup_id = %d";
@@ -261,12 +269,20 @@ function tripal_core_views_integration_form(&$form_state, $setup_id = NULL){
 
     // get the columns in this materialized view.  They are separated by commas
     // where the first word is the column name and the rest is the type
+    $columns = array();
     if($mview_id){
        $sql = "SELECT mv_specs FROM {tripal_mviews} WHERE mview_id = %d";
        $mview = db_fetch_object(db_query($sql,$mview_id));
        $columns = explode(",",$mview->mv_specs);
     } else {
-       // TODO: get chado table columns and add them to the $columns array
+       $table_desc = module_invoke_all('chado_'.$table_name.'_schema');
+       $fields = $table_desc['fields'];
+       // iterate through the columns and build the format
+       // compatible with the code below. The column name is first followed
+       // by the type with a separating space
+       foreach($fields as $column => $attrs){
+          $columns[] = "$column ".$attrs['type'];
+       }
     }
 
     $i=1;
@@ -583,23 +599,31 @@ function tripal_core_views_integration_form_submit($form, &$form_state){
        'name' => $name,
        'comment' => $form_state['values']['row_description'],
       );
-      if(!$setup_id){  // this is an insert
-         if(!drupal_write_record('tripal_views', $tripal_views_record)){
-            drupal_set_message("Failed to add record.");
-            return;
-         }
-      } else {  // this is an update
-         $tripal_views_record['setup_id'] = $setup_id;
-         if(!drupal_write_record('tripal_views', $tripal_views_record,array('setup_id'))){
-            drupal_set_message("Failed to update record.");
-            return;
-         }
-      }
    } 
    // if a chado table then...
    if($table_name){
-      // TODO: add code to update tables for Chado table
+            // build the record for insert/update
+      $tripal_views_record = array(
+       'table_name' => $table_name,
+       'name' => $name,
+       'comment' => $form_state['values']['row_description'],
+      );
    }
+
+   // perform the insert or update
+   if(!$setup_id){  // this is an insert
+      if(!drupal_write_record('tripal_views', $tripal_views_record)){
+         drupal_set_message("Failed to add record.");
+         return;
+      }
+   } else {  // this is an update
+      $tripal_views_record['setup_id'] = $setup_id;
+      if(!drupal_write_record('tripal_views', $tripal_views_record,array('setup_id'))){
+         drupal_set_message("Failed to update record.");
+         return;
+      }
+   }
+   
 
    
    // if this is an update then clean out the existing joins and handlers so we can add new ones
