@@ -60,6 +60,14 @@ class chado_views_handler_field extends views_handler_field {
    */
   function pre_render (&$values) {
     
+    // further check the results to see if this field is a postgresql array
+    if (!$this->aggregated) {
+      if (preg_match('/^{.*}$/',$values[0]->{$this->field_alias})) {
+        $this->aggregated = TRUE;
+      }
+    }
+    
+    // Split Aggregated Results
     if ($this->aggregated) {
       foreach($values as $k => $v) {
         $values[$k]->{$this->field_alias} = $this->split_array_agg_results($v->{$this->field_alias});
