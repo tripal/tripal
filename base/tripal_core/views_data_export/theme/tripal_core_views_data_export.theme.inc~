@@ -9,7 +9,7 @@ function template_preprocess_views_data_export_fasta_body(&$vars) {
    // to generate the definition line
    foreach ($vars['themed_rows'] as $i => $fields) {
       $defline = $defline_tpl;
-      foreach ($values as $key => $value) {
+      foreach ($fields as $key => $value) {
          $defline = preg_replace("/\[$key\]/",$value,$defline);
       }
       $vars['themed_rows'][$i]['defline'] = $defline;

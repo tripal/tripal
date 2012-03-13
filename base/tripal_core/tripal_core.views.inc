@@ -420,13 +420,16 @@ function tripal_core_views_data(){
       }
       else {
          $type_prefix = 'Chado Table';
-         // TODO: get the chado table info and populate these variables
-         //  1) $base_table
-         //  2) $base_fields (an array of just the table field names)
+         $base_table = $tvi_row->table_name;
+         $table_desc = module_invoke_all('chado_'.$base_table.'_schema');
+         $fields = $table_desc['fields'];
+         foreach($fields as $column => $attrs){
+            $base_fields[] = $column;
+         }
       }
 
       // Setup the base table info in the data array
-      $data[$base_table]['table']['group'] = t($tvi_row->name);
+      $data[$base_table]['table']['group'] = t("$type_prefix: $tvi_row->name");
       $data[$base_table]['table']['base'] = array(
         'group' => "$type_prefix: $tvi_row->name",
         'title' => "$type_prefix: $tvi_row->name",
@@ -479,6 +482,7 @@ function tripal_core_views_data(){
         }
       }
     }
+dpm($data);
     return $data;
 }
 /**
@@ -582,3 +586,81 @@ function tripal_core_views_plugins() {
     ),
   );
 }
+/**
+ * Implementation of hook_views_pre_view().
+ */
+function tripal_core_views_pre_view(&$view,&$display_id,&$args){
+   $form = drupal_get_form('tripal_core_views_data_export_download_form',$view,$display_id,$args);
+   $view->attachment_after = $form;
+}
+/**
+ * 
+ */
+function tripal_core_views_data_export_download_form(&$form_state, $view,$display_id,$args){
+   $form = array();
+   $urls = array();
+
+   // get any export_data_export displays
+   $displays = $view->display;
+   $options = array();
+   $default = '';
+   foreach($displays as $name => $display){
+      if(preg_match("/^views_data_export/",$name)){
+         // set the first item as default
+         if(!$default){
+            $default = $display->id;
+         }
+         // add the data export URL to the URLs array
+         $query = $view->get_exposed_input();
+         $path = $display->display_options['path'];
+         $urls[$display->id]['path'] = $path;
+         $urls[$display->id]['query'] = $query;
+         // add the new item to the options array
+         $options[$display->id] = $display->display_title;
+      }
+   }
+   // only generate the form if we have views_data_export displays attached
+   // to this view
+   if(count($options) > 0){
+
+      $form_state['storage']['urls'] = $urls;
+      $form['#cache'] = TRUE;
+
+      // we want the form to redirect to a new window
+      $form['#attributes']['target'] = "_blank";
+
+      // now build the form elements
+      $form['downloads'] = array(
+        '#type' => 'fieldset',
+        '#title' => 'Download Results',
+        '#collapsible' => TRUE,
+        '#collapsed' => FALSE
+      );
+      $form['downloads']['file_type'] = array(
+         '#title' => t('File format'),
+         '#type' => 'radios',
+         '#options' => $options,
+         '#required' => TRUE,
+         '#default_value' => $default,
+         '#description' => t('Please select a file format to download'),
+      );
+      $form['downloads']['submit'] = array(
+         '#value' => t('Download Results'),
+         '#type' => 'submit',
+      );
+   }
+   
+   return $form;
+}
+/**
+ * 
+ */
+function tripal_core_views_data_export_download_form_submit($form, &$form_state){
+   $urls = $form_state['storage']['urls'];
+   $display_id = $form_state['values']['file_type'];
+   drupal_goto($urls[$display_id]['path'],$urls[$display_id]['query']);
+}
+
+
+
+
