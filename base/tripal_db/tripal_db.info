@@ -1,9 +1,0 @@
-; $Id: tripal_db.info,v 1.2 2009/12/05 06:11:56 ficklin Exp $
-name = Tripal DB
-description = The database module for the Tripal package that integrates Drupal and GMOD chado. This module provides support for managing and viewing external databases.
-core = 6.x
-project = tripal_db
-package = Tripal
-version = 6.x-0.3.1b
-
-dependencies[] = tripal_core

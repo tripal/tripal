@@ -1,5 +1,0 @@
-; $Id$ 
-name = "GBrowse Management" 
-description = "Provides an interface to sync Tripal/Chado Features with a specified GBrowse instance. Management of GBrowse instances including creation and deletion is also provided." 
-core = 6.x
-package = Tripal Extensions

@@ -1,9 +1,0 @@
-; $Id$
-package = Tripal
-name = Tripal Stock
-version = 6.x-0.3.1b
-description = A module for interfacing the GMOD chado database with Drupal, providing viewing, inserting and editing of stocks (including stock relationships and properties).
-core = 6.x
-
-dependencies[] = tripal_core
-dependencies[] = tripal_organism

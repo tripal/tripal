@@ -1,3 +1,1 @@
-This branch is tested to work with drupal core version 6.22.
-Mileage will vary with 6.x .
-
+This branch is just a place holder and is not used.  See an appropriate release or development branch for current source code.
