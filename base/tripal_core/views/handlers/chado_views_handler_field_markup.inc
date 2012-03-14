@@ -2,6 +2,11 @@
 
 class chado_views_handler_field_markup extends views_handler_field_markup {
 
+  function init (&$view, $options) {
+    include_once('chado_wrapper_functions.inc');
+    parent::init($view,$options);
+  }
+  
   /**
    * Defines the defaults for the options form
    */
@@ -19,6 +24,7 @@ class chado_views_handler_field_markup extends views_handler_field_markup {
    */
   function options_form(&$form, &$form_state) {
     parent::options_form($form, $form_state);
+    
     $form['type'] = array(
       '#type' => 'radios',
       '#title' => t('Display type'),
@@ -45,13 +51,20 @@ class chado_views_handler_field_markup extends views_handler_field_markup {
    */
   function query () {
     parent::query();
+    $this->aggregated = chado_wrapper_is_aggregated_by_join($this);
+  }
+  
+  /**
+   * Splits the aggregated values up for use in rendering
+   */
+  function pre_render (&$values) {
     
-    $table = $this->query->get_table_info($this->table);
-    if (preg_match('/aggregator/',$table['join']->definition['handler'])) {
-      $this->aggregated = TRUE;
-    } else {
-      $this->aggregated = FALSE;
-    }
+    // further check the results to see if this field is a postgresql array
+    $this->aggregated = chado_wrapper_is_aggregated_by_result($this, $values);
+    
+    // Split Aggregated Results
+    chado_wrapper_split_array_agg_results($this, $values);
+    
   }
   
   /**
@@ -64,49 +77,11 @@ class chado_views_handler_field_markup extends views_handler_field_markup {
    *   The values retrieved from the database.
    */
   function render($values) {
-    
-    // If it's aggregated (an array), then render each part 
-    // using the parent render functionality
-    if ($this->aggregated) {
-      $items = array();
-      
-      $parts = $this->split_array_agg_results($values->{$this->field_alias});
-      foreach ($parts as $p) {
-        $v[ $this->field_alias ] = $p;
-        $val = (object) $v;
-        $items[] = parent::render($val);
-        unset($v, $val);
-      }
-      
-      if ($this->options['type'] == 'separator') {
-        return implode(check_plain($this->options['separator']), $items);
-      }
-      else {
-        return theme('item_list', $items, NULL, $this->options['type']);
-      }
-    
-    // Otherwise it is not aggragated
-    // Just render like the default handler would
-    } else {
-      return parent::render($values);
-    }
-    
+    return chado_wrapper_render_items($this, $values);
   }
   
-  /**
-   * Splits an SQL array of results in a single field
-   * into a php array
-   *
-   * @param $field
-   *   An SQL array (ie: {"",^(.*)$,646,tripal_analysis_blast} )
-   * @return
-   *   A PHP version of the SQL array (ie: array('','^(.*)$','646','tripal_analysis_blast') )
-   */
-  function split_array_agg_results($field) {
-    if(preg_match('/^{(.*)}$/',$field, $matches)) {
-      return str_getcsv($matches[1]);
-    } else {
-      return array();
-    }
+  function parent_render($val) {
+    return parent::render($val);
   }
+  
 }
