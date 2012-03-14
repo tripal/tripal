@@ -2,6 +2,11 @@
 
 class chado_views_handler_field extends views_handler_field {
 
+  function init (&$view, $options) {
+    include_once('chado_wrapper_functions.inc');
+    parent::init($view,$options);
+  }
+  
   /**
    * Defines the defaults for the options form
    */
@@ -70,7 +75,7 @@ class chado_views_handler_field extends views_handler_field {
     // Split Aggregated Results
     if ($this->aggregated) {
       foreach($values as $k => $v) {
-        $values[$k]->{$this->field_alias} = $this->split_array_agg_results($v->{$this->field_alias});
+        $values[$k]->{$this->field_alias} = chado_wrapper_split_array_agg_results($this, $v->{$this->field_alias});
       }
     }
     
@@ -115,20 +120,4 @@ class chado_views_handler_field extends views_handler_field {
     
   }
   
-  /**
-   * Splits an SQL array of results in a single field
-   * into a php array
-   *
-   * @param $field
-   *   An SQL array (ie: {"",^(.*)$,646,tripal_analysis_blast} )
-   * @return
-   *   A PHP version of the SQL array (ie: array('','^(.*)$','646','tripal_analysis_blast') )
-   */
-  function split_array_agg_results($field) {
-    if(preg_match('/^{(.*)}$/',$field, $matches)) {
-      return str_getcsv($matches[1]);
-    } else {
-      return array();
-    }
-  }
 }
