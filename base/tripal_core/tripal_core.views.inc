@@ -2,6 +2,7 @@
 
 include('views/handlers/views_handler_join_chado_through_linking.inc');
 include('views/handlers/views_handler_join_chado_aggregator.inc');
+include('tripal_views.api.inc');
 
 /**
  * @defgroup views Views Integration
