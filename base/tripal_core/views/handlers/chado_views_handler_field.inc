@@ -51,13 +51,7 @@ class chado_views_handler_field extends views_handler_field {
    */
   function query () {
     parent::query();
-    
-    $table = $this->query->get_table_info($this->table);
-    if (preg_match('/aggregator/',$table['join']->definition['handler'])) {
-      $this->aggregated = TRUE;
-    } else {
-      $this->aggregated = FALSE;
-    }
+    $this->aggregated = chado_wrapper_is_aggregated_by_join($this);
   }
   
   /**
@@ -66,18 +60,10 @@ class chado_views_handler_field extends views_handler_field {
   function pre_render (&$values) {
     
     // further check the results to see if this field is a postgresql array
-    if (!$this->aggregated) {
-      if (preg_match('/^{.*}$/',$values[0]->{$this->field_alias})) {
-        $this->aggregated = TRUE;
-      }
-    }
+    $this->aggregated = chado_wrapper_is_aggregated_by_result($this, $values);
     
     // Split Aggregated Results
-    if ($this->aggregated) {
-      foreach($values as $k => $v) {
-        $values[$k]->{$this->field_alias} = chado_wrapper_split_array_agg_results($this, $v->{$this->field_alias});
-      }
-    }
+    chado_wrapper_split_array_agg_results($this, $values);
     
   }
   
@@ -91,33 +77,11 @@ class chado_views_handler_field extends views_handler_field {
    *   The values retrieved from the database.
    */
   function render($values) {
-
-    // If it's aggregated (an array), then render each part 
-    // using the parent render functionality
-    if ($this->aggregated) {
-      $items = array();
-      
-      $parts = $values->{$this->field_alias};
-      foreach ($parts as $p) {
-        $v[ $this->field_alias ] = $p;
-        $val = (object) $v;
-        $items[] = parent::render($val);
-        unset($v, $val);
-      }
-      
-      if ($this->options['type'] == 'separator') {
-        return implode(check_plain($this->options['separator']), $items);
-      }
-      else {
-        return theme('item_list', $items, NULL, $this->options['type']);
-      }
-    
-    // Otherwise it is not aggragated
-    // Just render like the default handler would
-    } else {
-      return parent::render($values);
-    }
-    
+    return chado_wrapper_render_items($this, $values);
+  }
+  
+  function parent_render($val) {
+    return parent::render($val);
   }
   
 }
