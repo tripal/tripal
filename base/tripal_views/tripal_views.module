@@ -1,0 +1,42 @@
+<?php
+
+require_once "tripal_views_integration.inc";
+require_once "tripal_views.views.inc";
+
+function tripal_views_menu() {
+   $items = array();
+   
+ 	$items['admin/tripal/views/integration'] = array(
+     'title' => t('Views Integration'),
+     'description' => t('Allows you to select existing materialized views and provide details for integration with Drupal Views.'),
+     'page callback' => 'tripal_views_views_integration_setup_list',
+     'access arguments' => array('manage tripal_views_integration'),
+     'type' => MENU_NORMAL_ITEM,
+ 	);
+
+
+	$items['admin/tripal/views/integration/new'] = array(
+     'title' => 'Integrate Views',
+     'page callback' => 'drupal_get_form',
+     'page arguments' => array('tripal_views_views_integration_form'),
+     'access arguments' => array('manage tripal_views_integration'), //TODO: figure out the proper permissions arguments
+     'type' => MENU_CALLBACK,
+	);
+	
+	$items['admin/tripal/views/integration/edit/%'] = array(
+     'title' => 'Edit Views Integration',
+     'page callback' => 'drupal_get_form',
+     'page arguments' => array('tripal_views_views_integration_form',5),
+     'access arguments' => array('manage tripal_views_integration'), //TODO: figure out the proper permissions arguments
+     'type' => MENU_CALLBACK,
+	);
+
+	$items['admin/tripal/views/integration/delete/%'] = array(
+     'title' => 'Delete Views Integration',
+     'page callback' => 'tripal_views_views_integration_delete',
+     'page arguments' => array(5),
+     'access arguments' => array('manage tripal_views_integration'), //TODO: figure out the proper permissions arguments
+     'type' => MENU_CALLBACK,
+	);
+  return $items;
+}
