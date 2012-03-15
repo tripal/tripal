@@ -155,9 +155,8 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL){
          '#value' => $setup_id,
       );    
    }
-
-  // add a fieldset for the MView & Chado table selectors
-  $form['base_table_type'] = array(
+   // add a fieldset for the MView & Chado table selectors
+   $form['base_table_type'] = array(
      '#type' => 'fieldset',
      '#title' => 'Base Table',
      '#description' => 'Please select either a materialized view or a Chado table for integration with '.
@@ -167,26 +166,26 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL){
    );
 
 
-  // build the form element that lists the materialized views
-  $query = db_query("SELECT mview_id,name FROM {tripal_mviews} ORDER BY name");
-  $mview_tables = array();
-  $mview_tables['0'] = 'Select';
-  while ($mview = db_fetch_object($query)){
-    $mview_tables[$mview->mview_id] = $mview->name;
-  }
-  $form['base_table_type']['mview_id'] = array(
-    '#title' => t('Materialized View'),
-    '#type' => 'select',
-    '#options' => $mview_tables,
-    '#description' => 'Which materialized view to use.',
-    '#default_value' => $setup_obj->mview_id,
-    '#ahah' => array(
-       'path' => ahah_helper_path(array('view_setup_table')),
-       'wrapper' => 'table-rows-div',
-       'effect' => 'fade',
-       'event' => 'change',
-       'method' => 'replace',
-    ),
+   // build the form element that lists the materialized views
+   $query = db_query("SELECT mview_id,name FROM {tripal_mviews} ORDER BY name");
+   $mview_tables = array();
+   $mview_tables['0'] = 'Select';
+   while ($mview = db_fetch_object($query)){
+     $mview_tables[$mview->mview_id] = $mview->name;
+   }
+   $form['base_table_type']['mview_id'] = array(
+      '#title' => t('Materialized View'),
+      '#type' => 'select',
+      '#options' => $mview_tables,
+      '#description' => 'Which materialized view to use.',
+      '#default_value' => $setup_obj->mview_id,
+      '#ahah' => array(
+         'path' => ahah_helper_path(array('view_setup_table')),
+         'wrapper' => 'table-rows-div',
+         'effect' => 'fade',
+         'event' => 'change',
+         'method' => 'replace',
+      ),
   );
 
   // build the form element for the Chado tables
@@ -413,6 +412,23 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL){
       }
       else {
       	$default_field_handler = $form_state['storage']["fields_field_handler_$table_id-$i"];
+         if(!$default_field_handler){
+            if($column_type == 'integer' or $column_type == 'int' or $column_type == 'serial'){
+               $default_field_handler = 'chado_views_handler_field_numeric';
+            }
+            elseif(preg_match("/character varying/",$column_type) or $column_type == 'char' or $column_type == 'text'){
+               $default_field_handler = 'chado_views_handler_field';
+            }
+            elseif($column_type == 'boolean'){
+               $default_field_handler = 'chado_views_handler_field_boolean';
+            }
+            elseif($column_type == 'float'){
+               $default_field_handler = 'chado_views_handler_field_numeric';
+            }
+            elseif($column_type == 'datetime'){
+               $default_field_handler = 'chado_views_handler_field_date';
+            }
+         }
       }
 
       $form['view_setup_table']["fields_field_handler_$table_id-$i"] = array(
@@ -432,6 +448,23 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL){
       }
       else {
          $default_filter_handler = $form_state['storage']["fields_filter_handler_$table_id-$i"];
+         if(!$default_filter_handler){
+            if($column_type == 'integer' or $column_type == 'int' or $column_type == 'serial'){
+               $default_filter_handler = 'chado_views_handler_filter_numeric';
+            }
+            elseif(preg_match("/^character varying/",$column_type) or $column_type == 'char' or $column_type == 'text'){
+               $default_filter_handler = 'chado_views_handler_filter_string';
+            }
+            elseif($column_type == 'boolean'){
+               $default_filter_handler = 'chado_views_handler_filter_boolean';
+            }
+            elseif($column_type == 'float'){
+               $default_filter_handler = 'chado_views_handler_filter_float';
+            }
+            elseif($column_type == 'datetime'){
+               $default_filter_handler = 'chado_views_handler_filter_date';
+            }
+         }
       }
       $form['view_setup_table']["fields_filter_handler_$table_id-$i"] = array(
         '#type' => 'select',
@@ -439,7 +472,7 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL){
         '#suffix' => "</div>",
         '#options' => $handlers_filters,
         '#required' => FALSE,
-         '#default_value' => $default_filter_handler,
+        '#default_value' => $default_filter_handler,
       );
 
       $default_sort_handler = 0;
@@ -449,6 +482,23 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL){
       }
       else {
          $default_sort_handler = $form_state['storage']["fields_sort_handler_$table_id-$i"];
+         if(!$default_sort_handler){
+            if($column_type == 'integer' or $column_type == 'int' or $column_type == 'serial'){
+               $default_sort_handler = 'chado_views_handler_sort';
+            }
+            elseif(preg_match("/character varying/",$column_type) or $column_type == 'char' or $column_type == 'text'){
+               $default_sort_handler = 'chado_views_handler_sort';
+            }
+            elseif($column_type == 'boolean'){
+               $default_sort_handler = 'chado_views_handler_sort';
+            }
+            elseif($column_type == 'float'){
+               $default_sort_handler = 'chado_views_handler_sort';
+            }
+            elseif($column_type == 'datetime'){
+               $default_sort_handler = 'chado_views_handler_sort_date';
+            }
+         }
       }
       $form['view_setup_table']["fields_sort_handler_$table_id-$i"] = array(
         '#type' => 'select',
@@ -456,7 +506,7 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL){
         '#suffix' => "</div>",
         '#options' => $handlers_sort,
         '#required' => FALSE,
-         '#default_value' => $default_sort_handler,
+        '#default_value' => $default_sort_handler,
       );
 
       $default_argument_handler = 0;
@@ -466,6 +516,23 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL){
       }
       else {
          $default_argument_handler = $form_state['storage']["fields_argument_handler_$table_id-$i"];
+         if(!$default_argument_handler){
+            if($column_type == 'integer' or $column_type == 'int' or $column_type == 'serial'){
+               $default_argument_handler = 'views_handler_argument_numeric';
+            }
+            elseif(preg_match("/character varying/",$column_type) or $column_type == 'char' or $column_type == 'text'){
+               $default_argument_handler = 'views_handler_argument_string';
+            }
+            elseif($column_type == 'boolean'){
+               $default_argument_handler = 'views_handler_argument_numeric';
+            }
+            elseif($column_type == 'float'){
+               $default_argument_handler = 'views_handler_argument_numeric';
+            }
+            elseif($column_type == 'datetime'){
+               $default_argument_handler = 'views_handler_argument_date';
+            }
+         }
       }
       $form['view_setup_table']["fields_argument_handler_$table_id-$i"] = array(
         '#type' => 'select',
@@ -473,7 +540,7 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL){
         '#suffix' => "</div>",
         '#options' => $handlers_argument,
         '#required' => FALSE,
-         '#default_value' => $default_argument_handler,
+        '#default_value' => $default_argument_handler,
       );
 
       $default_relationship_handler = 0;
@@ -483,6 +550,23 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL){
       }
       else {
          $default_relationship_handler = $form_state['storage']["fields_relationship_handler_$table_id-$i"];
+         if(!$default_relationship_handler){
+            if($column_type == 'integer' or $column_type == 'int' or $column_type == 'serial'){
+               $default_relationship_handler = 'views_handler_relationship';
+            }
+            elseif(preg_match("/character varying/",$column_type) or $column_type == 'char' or $column_type == 'text'){
+               $default_relationship_handler = 'views_handler_relationship';
+            }
+            elseif($column_type == 'boolean'){
+               $default_relationship_handler = 'views_handler_relationship';
+            }
+            elseif($column_type == 'float'){
+               $default_relationship_handler = 'views_handler_relationship';
+            }
+            elseif($column_type == 'datetime'){
+               $default_relationship_handler = 'views_handler_relationship';
+            }
+         }
       }
       $form['view_setup_table']["fields_relationship_handler_$table_id-$i"] = array(
         '#type' => 'select',
@@ -490,7 +574,7 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL){
         '#suffix' => "</div>",
         '#options' => $handlers_rel,
         '#required' => FALSE,
-         '#default_value' => $default_relationship_handler,
+        '#default_value' => $default_relationship_handler,
       );
 
       $default_join_handler = 0;
@@ -500,6 +584,24 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL){
       }
       else {
          $default_join_handler = $form_state['storage']["fields_join_handler_$table_id-$i"];
+         if(!$default_join_handler){
+            if($column_type == 'integer' or $column_type == 'int' or $column_type == 'serial'){
+               $default_join_handler = '';
+            }
+            elseif(preg_match("/character varying/",$column_type) or $column_type == 'char' or $column_type == 'text'){
+               $default_join_handler = '';
+            }
+            elseif($column_type == 'boolean'){
+               $default_join_handler = '';
+            }
+            elseif($column_type == 'float'){
+               $default_join_handler = '';
+            }
+            elseif($column_type == 'datetime'){
+               $default_join_handler = '';
+            }
+         }
+
       }
       $form['view_setup_table']["fields_join_handler_$table_id-$i"] = array(
         '#type' => 'select',
