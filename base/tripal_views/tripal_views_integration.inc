@@ -8,19 +8,15 @@
  *
  * @ingroup tripal_views_integration
  */
-function tripal_core_views_description_page() {
+function tripal_views_description_page() {
 
   $text .= '<h3>Tripal Views Quick Links:</h3>';
   $text .= "<ul>
-             <li><a href=\"".url("admin/tripal/views/mviews") . "\">List of Materialized Views (MViews)</a></li>
-             <li><a href=\"".url("admin/tripal/views/mviews/new") . "\">Create a new MViews</a></li>
-             <li><a href=\"".url("admin/tripal/views/integration/mviews") . "\">List of integrated MViews</a></li>
-             <li><a href=\"".url("admin/tripal/views/integration/mviews/new"). "\">Integrate a MView</a></li>
-             <li><a href=\"".url("admin/tripal/views/integration/chado"). "\">List of integrated Chado tables</a></li>
-             <li><a href=\"".url("admin/tripal/views/integration/chado/new"). "\">Integrate a Chado tables</a></li>
+             <li><a href=\"".url("admin/tripal/views/integration/mviews") . "\">List of integrated tables</a></li>
+             <li><a href=\"".url("admin/tripal/views/integration/mviews/new"). "\">Integrate a new table</a></li>
            </ul>";
 
-  $text .= '<h3>Views Integartion Description:</h3>';
+  $text .= '<h3>Views Integration Description:</h3>';
   $text .= '<p>Tripal Views provides an interface for integrating <a href="http://drupal.org/project/views">Drupal Views</a>
             with Tripal materialized views.  This will allow site administrators to create custom queries for the materialized views
             and in turn provide custom content pages, custom blocks and custom search forms. The forms allow a site administrator
@@ -61,7 +57,7 @@ function tripal_core_views_description_page() {
  *
  * @ingroup tripal_views_integration
  */
-function tripal_core_views_integration_setup_list(){
+function tripal_views_integration_setup_list(){
 
    $header = array('', 'Drupal Views Type Name', 'Table Name', 'Is Mview', 'Comment','');
    $rows = array();
@@ -106,7 +102,7 @@ function tripal_core_views_integration_setup_list(){
  *
  * @ingroup tripal_views_integration
  */
-function tripal_core_views_integration_delete($setup_id){
+function tripal_views_integration_delete($setup_id){
   db_query("DELETE FROM {tripal_views} WHERE setup_id = %d",$setup_id);
   db_query("DELETE FROM {tripal_views_handlers} WHERE setup_id = %d",$setup_id);
   db_query("DELETE FROM {tripal_views_join} WHERE setup_id = %d",$setup_id);
@@ -117,7 +113,7 @@ function tripal_core_views_integration_delete($setup_id){
  *
  * @ingroup tripal_views_integration
  */
-function tripal_core_views_integration_form(&$form_state, $setup_id = NULL){
+function tripal_views_integration_form(&$form_state, $setup_id = NULL){
   
    $form = array();
    $data = array();
@@ -226,10 +222,7 @@ function tripal_core_views_integration_form(&$form_state, $setup_id = NULL){
     '#maxlength' => 128,
     '#description' => 'Provide the view type name.  This is the name that will appear in '.
                       'the Drupal Views interface when adding a new view.  The view type name '.
-                      'must be unique.  You may use the a materialized view or Chado table '.
-                      'multiple times as the base table for different type names.  This allows '.
-                      'for differetn handlers to be '.
-                      'applied to the same table in different ways.',
+                      'must be unique.',
     '#required' => TRUE,   
   );
   
@@ -299,7 +292,7 @@ function tripal_core_views_integration_form(&$form_state, $setup_id = NULL){
     $chado_join_tables = array_merge(array('Select a Join Table',), $chado_join_tables);
 
     // get list of all handlers
-    $all_handlers = tripal_core_views_integration_discover_handlers();
+    $all_handlers = tripal_views_integration_discover_handlers();
     $handlers_fields = array();
     $handlers_filters = array();
     $handlers_sort = array();
@@ -554,7 +547,7 @@ function tripal_core_views_integration_form(&$form_state, $setup_id = NULL){
  *
  * @ingroup tripal_views_integration
  */
-function tripal_core_views_integration_form_validate($form, &$form_state){
+function tripal_views_integration_form_validate($form, &$form_state){
   $name_array = explode(" ", $form_state['values']['row_name']);
   $mview_id = $form_state['values']['mview_id'];
   $table_name = $form_state['values']['table_name'];
@@ -574,7 +567,7 @@ function tripal_core_views_integration_form_validate($form, &$form_state){
  *
  * @ingroup tripal_views_integration
  */
-function tripal_core_views_integration_form_submit($form, &$form_state){
+function tripal_views_integration_form_submit($form, &$form_state){
    $name = $form_state['values']['row_name'];
    $mview_id = $form_state['values']['mview_id'];
    $table_name = $form_state['values']['table_name'];
@@ -684,7 +677,7 @@ function tripal_core_views_integration_form_submit($form, &$form_state){
  *
  * @ingroup tripal_views_integration
  */
-function tripal_core_views_integration_discover_handlers() {
+function tripal_views_integration_discover_handlers() {
 
    $handlers = array();
 
@@ -701,7 +694,7 @@ function tripal_core_views_integration_discover_handlers() {
    }
 
    // these handlers are hard coded because I could not
-   // get the views_views_handlers() function to be called
+   // get the views_handlers() function to be called
    // in the code above.  However, we will be creating
    // Chado wrappers for many of these and once that work
    // is done these will no longer be needed.
