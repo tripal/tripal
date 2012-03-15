@@ -59,40 +59,27 @@ function tripal_views_description_page() {
  */
 function tripal_views_integration_setup_list(){
 
-   $header = array('', 'Drupal Views Type Name', 'Table Name', 'Is Mview', 'Comment','');
+   $header = array('', 'Drupal Views Type Name', 'Table Name', 'Is Mview', 'Priority', 'Comment','');
    $rows = array();
 
    // get the list of materialized views
-   $tviews = db_query('SELECT * FROM {tripal_views}');
+   $tviews = db_query('SELECT * FROM {tripal_views} ORDER BY table_name, priority');
    while($tview = db_fetch_object($tviews)){
-      if($tview->mview_id){
-         // get the materialized view
-         $sql = "SELECT * FROM {tripal_mviews} WHERE mview_id = %d";
-         $mview = db_fetch_object(db_query($sql,$tview->mview_id));
-         $rows[] = array(
-            l('Edit',"admin/tripal/views/integration/edit/".$tview->setup_id) ,
-            $tview->name, 
-            $mview->mv_table, 
-            'Yes', 
-            $tview->comment,
-            l('Delete',"admin/tripal/views/integration/delete/".$tview->setup_id),
-         );
-      } else {
          $rows[] = array(
             l('Edit',"admin/tripal/views/integration/edit/".$tview->setup_id) ,
             $tview->name, 
             $tview->table_name, 
-            'No', 
+            ($tview->mview_id) ? 'Yes' : 'No', 
+            $tview->priority,
             $tview->comment,
             l('Delete',"admin/tripal/views/integration/delete/".$tview->setup_id),
          );         
-      }
    }
    $rows[] = array(
       'data' => array( 
          array('data' => l('Add a new entry',"admin/tripal/views/integration/new") . " | " .
                          l("Create View",'admin/build/views/add'), 
-               'colspan' => 6),
+               'colspan' => 7),
          )
    );
    return theme('table', $header, $rows);
@@ -103,12 +90,11 @@ function tripal_views_integration_setup_list(){
  * @ingroup tripal_views_integration
  */
 function tripal_views_integration_delete($setup_id){
-  db_query("DELETE FROM {tripal_views} WHERE setup_id = %d",$setup_id);
-  db_query("DELETE FROM {tripal_views_handlers} WHERE setup_id = %d",$setup_id);
-  db_query("DELETE FROM {tripal_views_join} WHERE setup_id = %d",$setup_id);
+  tripal_views_integration_remove_entry_by_setup_id ($setup_id);
   drupal_set_message("Record Deleted");
   drupal_goto('admin/tripal/views/integration');
 }
+
 /**
  *
  * @ingroup tripal_views_integration
@@ -230,6 +216,22 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL){
     $form['row_name']['#attributes'] = array('readonly' => 'readonly');
   }
 
+  $priorities = array();
+  foreach (range(-10,10) as $v) {
+    $priorities[$v] = $v;
+  }
+  $form['views_type']['row_priority'] = array(
+    '#type' => 'select',
+    '#title' => ('Priority'),
+    '#description' => 'The level of priority your Views integration has in relation to the '
+      .'default core and module definitions. The views integration definition with the '
+      .'lightest priority will be used. For example, if there is a definition created by '
+      .'core with a priority of 10 and another by a custom module of 5 and yours is -1 then '
+      .'you definition will be used for that table because -1 is lighter then both 5 and 10.',
+    '#options' => $priorities,
+    '#default_value' => (isset($setup_obj->priority)) ? $setup_obj->priotiy : -1,
+  );
+  
   $form['views_type']['row_description'] = array(
     '#title' => t('Comment'),
     '#type' => 'textarea',
@@ -589,8 +591,11 @@ function tripal_views_integration_form_submit($form, &$form_state){
       // build the record for insert/update
       $tripal_views_record = array(
        'mview_id' => $mview_id,
+       'table_name' => $mview->mv_table,
        'name' => $name,
+       'priority' => $form_state['values']['row_priority'],
        'comment' => $form_state['values']['row_description'],
+       
       );
    } 
    // if a chado table then...
@@ -599,6 +604,7 @@ function tripal_views_integration_form_submit($form, &$form_state){
       $tripal_views_record = array(
        'table_name' => $table_name,
        'name' => $name,
+       'priority' => $form_state['values']['row_priority'],
        'comment' => $form_state['values']['row_description'],
       );
    }
@@ -742,5 +748,9 @@ function tripal_views_integration_discover_handlers() {
    $handlers[] = 'views_handler_sort_date';
    $handlers[] = 'views_handler_sort_menu_hierarchy';
    $handlers[] = 'views_handler_sort_random';
+   
+   // join handler
+   $handlers[] = 'views_join';
+   
    return $handlers;
  }

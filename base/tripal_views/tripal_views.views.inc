@@ -74,6 +74,14 @@ function tripal_views_views_handlers() {
       'parent' => 'views_handler_filter_string',
      ),
      
+     // Join Handlers
+     'views_handler_join_chado_aggregator' => array(
+      'parent' => 'views_join',
+     ),
+     'views_handler_join_chado_through_linking' => array(
+      'parent' => 'views_join',
+     ),
+     
      // Other Custom Handlers
      'views_handler_filter_no_results' => array(
       'parent' => 'views_handler_filter'
@@ -389,7 +397,14 @@ function tripal_views_views_data(){
     $tvi_query = db_query('SELECT * FROM {tripal_views}');
 
     while($tvi_row = db_fetch_object($tvi_query)){
-
+      
+      // check to see if this is the lightest (drupal-style) priority setup for this table
+      // if not then don't use this definition
+      $lightest_priority_setup = tripal_views_is_lightest_priority_setup($tvi_row->setup_id, $tvi_row->table_name);
+      if (!$lightest_priority_setup) {
+        continue;
+      }
+      
       // ids we'll use for queries
       $setup_id = $tvi_row->setup_id;
       $mview_id = $tvi_row->mview_id;

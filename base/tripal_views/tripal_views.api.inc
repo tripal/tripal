@@ -1,6 +1,42 @@
 <?php
 
 /**
+ * Retrieve the views integration setup with the lightest priority for a given table
+ *
+ * NOTE: Uses lightest priority (drupal-style) where the range is from -10 to 10
+ * and -10 is of highest priority.
+ *
+ * @param $table_name
+ *   The name of the table to retrieve the setup ID for. This can be either a materialized 
+ *   view or a chado table
+ *
+ * @return
+ *   On success, the setup_id to use for integration of this table; otherwise FALSE
+ */
+function tripal_views_get_lightest_priority_setup ($table_name) {
+
+  $sql = "SELECT setup_id FROM {tripal_views} WHERE table_name='%s' ORDER BY priority ASC";
+  $setup = db_fetch_object(db_query($sql, $table_name));
+  if ($setup) {
+    return $setup->setup_id;  
+  } else {
+    return FALSE;
+  }
+}
+
+/**
+ * Checks if you are dealing with the lightest priority setup for a given table
+ */
+function tripal_views_is_lightest_priority_setup ($setup_id, $table_name) {
+  $lightest_priority_setup_id = tripal_views_get_lightest_priority_setup ($table_name);
+  if ($lightest_priority_setup_id == $setup_id) {
+    return TRUE;
+  } else {
+    return FALSE;
+  }
+}
+
+/**
  * Add views integration records into the tripal_views* tables
  *
  * @param $defn_array
@@ -38,10 +74,10 @@
       )
     ),
   );
-  tripal_core_views_integration_add_entry($defn_array);
+  tripal_views_integration_add_entry($defn_array);
  * @endcode
  */
-function tripal_core_views_integration_add_entry($defn_array) {
+function tripal_views_integration_add_entry($defn_array) {
   $no_errors = TRUE;
   
   // First insert into tripal_views
@@ -132,15 +168,39 @@ function tripal_core_views_integration_add_entry($defn_array) {
 }
 
 /**
+ * Removes a View Integration Entry
  *
+ * @param $table_name
+ *   The name of the table to remove a views integration entry for
+ * @param $priority
+ *   The priority of the of views integration entry
+ *
+ * @return
+ *   TRUE on Success; FALSE otherwise
  */
-function tripal_core_views_integration_remove_entry($tablename, $priority) {
+function tripal_views_integration_remove_entry_by_table_name ($table_name, $priority) {
 
-  $views = db_fetch_object(db_query("SELECT * FROM {tripal_views} WHERE table_name='%s'",$tablename));
+  $views = db_fetch_object(db_query("SELECT * FROM {tripal_views} WHERE table_name='%s' AND priority=%d",$table_name,$priority));
   if ($views->setup_id) {
-    db_query('DELETE FROM {tripal_views} WHERE setup_id=%d',$views->setup_id);
-    db_query('DELETE FROM {tripal_views_field} WHERE setup_id=%d',$views->setup_id);
-    db_query('DELETE FROM {tripal_views_handlers} WHERE setup_id=%d',$views->setup_id);
-    db_query('DELETE FROM {tripal_views_join} WHERE setup_id=%d',$views->setup_id);
+    tripal_views_integration_remove_entry_by_setup_id($views->setup_id);
+    return TRUE;  
+  } else {
+    return FALSE;
   }
+  
+}
+
+/**
+ * Removes a View Integration Entry
+ *
+ * @param $setup_id
+ *   The setup ID of the views integration entry to remove
+ */
+function tripal_views_integration_remove_entry_by_setup_id ($setup_id) {
+
+    db_query('DELETE FROM {tripal_views} WHERE setup_id=%d',$setup_id);
+    db_query('DELETE FROM {tripal_views_field} WHERE setup_id=%d',$setup_id);
+    db_query('DELETE FROM {tripal_views_handlers} WHERE setup_id=%d',$setup_id);
+    db_query('DELETE FROM {tripal_views_join} WHERE setup_id=%d',$setup_id);
+
 }
