@@ -4,10 +4,8 @@ require_once "jobs.php";
 require_once "mviews.php";
 require_once "cvterms.php";
 require_once "chado_install.php";
-require_once "tripal_views_integration.inc";
-
 require_once "tripal_core.api.inc";
-require_once "tripal_core.views.inc";
+
 
 /**
  * @defgroup tripal_modules Tripal Modules
@@ -137,30 +135,24 @@ function tripal_core_menu() {
    );
  
 
-   // Views Integration
-   $items['admin/tripal/views'] = array(
-     'title' => t('Views'),
-     'description' => 'Management of Materialized Views & Integration with Drupal Views',
-     'page callback' => 'tripal_core_views_description_page',
-     'access arguments' => array('administer site configuration'),
-     'type' => MENU_NORMAL_ITEM,
-   );
-   $items['admin/tripal/views/mviews'] = array(
+   // Materialized Views 
+
+   $items['admin/tripal/mviews'] = array(
      'title' => 'MViews',
      'description' => 'Materialized views are used to improve speed of large or complex queries.',
      'page callback' => 'tripal_mviews_report',
      'access arguments' => array('access administration pages'),
      'type' => MENU_NORMAL_ITEM,
    );
-   $items['admin/tripal/views/mviews/report/%'] = array(
+   $items['admin/tripal/mviews/report/%'] = array(
      'title' => 'Materialized View',
      'description' => 'Materialized views are used to improve speed of large or complex queries.',
      'page callback' => 'tripal_mview_report',
-     'page arguments' => array(5),
+     'page arguments' => array(4),
      'access arguments' => array('access administration pages'),
      'type' => MENU_NORMAL_ITEM,
    );
-   $items['admin/tripal/views/mviews/new'] = array(
+   $items['admin/tripal/mviews/new'] = array(
      'title' => 'Create MView',
      'description' => 'Materialized views are used to improve speed of large or complex queries.',
      'page callback' => 'drupal_get_form',
@@ -168,53 +160,21 @@ function tripal_core_menu() {
      'access arguments' => array('access administration pages'),
      'type' => MENU_CALLBACK,
    );
-   $items['admin/tripal/views/mviews/edit/%'] = array(
+   $items['admin/tripal/mviews/edit/%'] = array(
      'title' => 'Edit MView',
      'page callback' => 'drupal_get_form',
-     'page arguments' => array('tripal_mviews_form',5),
+     'page arguments' => array('tripal_mviews_form',4),
      'access arguments' => array('access administration pages'),
      'type' => MENU_NORMAL_ITEM,
    );
-   $items['admin/tripal/views/mviews/action/%/%'] = array(
+   $items['admin/tripal/mviews/action/%/%'] = array(
      'title' => 'Create MView',
      'description' => 'Materialized views are used to improve speed of large or complex queries.',
      'page callback' => 'tripal_mviews_action',
-     'page arguments' => array(5,6),
+     'page arguments' => array(4,5,"1"),
      'access arguments' => array('access administration pages'),
      'type' => MENU_CALLBACK,
    );
- 	$items['admin/tripal/views/integration'] = array(
-     'title' => t('Views Integration'),
-     'description' => t('Allows you to select existing materialized views and provide details for integration with Drupal Views.'),
-     'page callback' => 'tripal_core_views_integration_setup_list',
-     'access arguments' => array('manage tripal_views_integration'),
-     'type' => MENU_NORMAL_ITEM,
- 	);
-
-
-	$items['admin/tripal/views/integration/new'] = array(
-     'title' => 'Integrate Views',
-     'page callback' => 'drupal_get_form',
-     'page arguments' => array('tripal_core_views_integration_form'),
-     'access arguments' => array('manage tripal_views_integration'), //TODO: figure out the proper permissions arguments
-     'type' => MENU_CALLBACK,
-	);
-	
-	$items['admin/tripal/views/integration/edit/%'] = array(
-     'title' => 'Edit Views Integration',
-     'page callback' => 'drupal_get_form',
-     'page arguments' => array('tripal_core_views_integration_form',5),
-     'access arguments' => array('manage tripal_views_integration'), //TODO: figure out the proper permissions arguments
-     'type' => MENU_CALLBACK,
-	);
-
-	$items['admin/tripal/views/integration/delete/%'] = array(
-     'title' => 'Delete Views Integration',
-     'page callback' => 'tripal_core_views_integration_delete',
-     'page arguments' => array(5),
-     'access arguments' => array('manage tripal_views_integration'), //TODO: figure out the proper permissions arguments
-     'type' => MENU_CALLBACK,
-	);
   return $items;
 }
 
@@ -228,7 +188,6 @@ function tripal_core_menu() {
  */
 function tripal_core_perm(){
    return array(
-      'manage tripal_views_integration',
    );
 }
 /**
@@ -261,21 +220,6 @@ function tripal_core_is_chado_installed(){
    return false;
 }
 
-/**
- * Implements hook_views_api()
- *
- * Purpose: Essentially this hook tells drupal that there is views support for
- *  for this module which then includes tripal_core.views.inc where all the
- *  views integration code is
- *
- * @ingroup tripal_core
- */
-function tripal_core_views_api() {
-   return array(
-      'api' => 2.0,
-   );
-}
-
 
 /**
  *
@@ -287,14 +231,6 @@ function tripal_core_theme () {
          'arguments' => array('job_id'=> null),
          'template' => 'tripal_core_job_view',
       ),
-	   'tripal_core_views_integration_form' => array(
-         'arguments' => array('form' => NULL),
-         'template'  => 'tripal_views_integration_fields_form',
-	   ),
-	   'tripal_core_views_data_export_download_form' => array(
-         'arguments' => array('form' => NULL),
-         'template'  => 'tripal_core_views_data_export_download_form',
-	   ),
    );
 }
 /**

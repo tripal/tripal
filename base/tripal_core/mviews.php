@@ -102,7 +102,7 @@ function tripal_mviews_get_mview_id ($view_name){
 *
 * @ingroup tripal_core
 */
-function tripal_mviews_action ($op,$mview_id){
+function tripal_mviews_action ($op,$mview_id,$redirect=0){
    global $user;
    $args = array("$mview_id");
    
@@ -133,7 +133,9 @@ function tripal_mviews_action ($op,$mview_id){
       }
       tripal_db_set_active($previous_db);  // now use drupal database
    }
-   drupal_goto("admin/tripal/views/mviews");
+   if($redirect){
+      drupal_goto("admin/tripal/mviews");
+   }
 }
 /**
 * Update a Materialized View
@@ -179,7 +181,7 @@ function tripal_mview_report ($mview_id) {
    // create a table with each row containig stats for
    // an individual job in the results set.
 
-   $return_url = url("admin/tripal/views/mviews/");
+   $return_url = url("admin/tripal/mviews/");
 
    $output .= "<p><a href=\"$return_url\">Return to table of materialized views.</a></p>";
    $output .= "<br />";
@@ -240,9 +242,9 @@ function tripal_mview_report ($mview_id) {
 
    // build the URLs using the url function so we can handle installations where
    // clean URLs are or are not used
-   $update_url = url("admin/tripal/views/mviews/action/update/$mview->mview_id");
-   $delete_url = url("admin/tripal/views/mviews/action/delete/$mview->mview_id");
-   $edit_url = url("admin/tripal/views/mviews/edit/$mview->mview_id");
+   $update_url = url("admin/tripal/mviews/action/update/$mview->mview_id");
+   $delete_url = url("admin/tripal/mviews/action/delete/$mview->mview_id");
+   $edit_url = url("admin/tripal/mviews/edit/$mview->mview_id");
 
    $output .= "<tr><th>Actions</th>".
               "<td> <a href='$update_url'>Update</a>, ".
@@ -271,16 +273,16 @@ function tripal_mviews_report () {
          $update = 'Not yet populated';
       }
       $rows[] = array(
-         l('View',"admin/tripal/views/mviews/report/$mview->mview_id") ." | ".
-            l('Update',"admin/tripal/views/mviews/action/update/$mview->mview_id"),
+         l('View',"admin/tripal/mviews/report/$mview->mview_id") ." | ".
+            l('Update',"admin/tripal/mviews/action/update/$mview->mview_id"),
          $mview->name,
          $update,
-         l('Delete',"admin/tripal/views/mviews/action/delete/$mview->mview_id"),
+         l('Delete',"admin/tripal/mviews/action/delete/$mview->mview_id"),
       );
    }
    $rows[] = array(
       'data' => array( 
-         array('data' => l('Create a new materialized view.',"admin/tripal/views/mviews/new"), 
+         array('data' => l('Create a new materialized view.',"admin/tripal/mviews/new"), 
                'colspan' => 4),
          )
    );
@@ -400,7 +402,7 @@ function tripal_mviews_form(&$form_state = NULL,$mview_id = NULL){
      '#executes_submit_callback' => TRUE,
    );
 
-   $form['#redirect'] = 'admin/tripal/views/mviews';
+   $form['#redirect'] = 'admin/tripal/mviews';
    return $form;
 }
 /**
