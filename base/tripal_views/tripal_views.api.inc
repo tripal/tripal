@@ -21,7 +21,7 @@
       'feature_id' => array(
         'name' => 'feature_id', //field name in database
         'title' => 'Feature ID', //human-readable name -seen in Views UI
-        'help' => 'This is the unique identifier for features', //help/description seen in Views UI
+        'description' => 'This is the unique identifier for features', //help/description seen in Views UI
         'type' => 'int', // the type of field
         'handlers' => array(  //possible keys are field, filter, sort, argument, relationship
           'field' => array(
@@ -48,6 +48,7 @@ function tripal_core_views_integration_add_entry($defn_array) {
   $view_record = array(
     'name' => $defn_array['name'],
     'comment' => $defn_array['description'],
+    'priority' => $defn_array['priority'],
   );
   switch($defn_array['type']) {
     case 'chado':
@@ -66,11 +67,13 @@ function tripal_core_views_integration_add_entry($defn_array) {
     // Insert Field Definitions
     foreach ($defn_array['fields'] as $field) {
       $field_record = array(
+      	'setup_id' => $view_record['setup_id'],
         'column_name' => $field['name'],
-        'title' => $field['title'],
-        'help' => $field['help'],
+        'name' => $field['title'],
+        'description' => $field['description'],
+        'type' => $field['type'],
       );
-      //$status = drupal_write_record('tripal_views_fields',$field_record);
+      $status = drupal_write_record('tripal_views_field',$field_record);
       
       if ($status) {
       
@@ -98,8 +101,15 @@ function tripal_core_views_integration_add_entry($defn_array) {
             'base_table' => $defn_array['table'],
             'base_field' => $field['name'],
             'left_table' => $join['table'],
-            'left_field' => $join['field']
+            'left_field' => $join['field'],
           );
+
+          if (!empty($join['handler'])) {
+          	$join_record['handler'] = $join['handler'];
+          } else {
+          	$join_record['handler'] = 'views_join';
+          }
+
           $status = drupal_write_record('tripal_views_join',$join_record);
           if (!$status) {
             drupal_set_message('Unable to join '.$join['table'].'.'.$join['field'].' with '.$defn_array['table'].'.'.$field['name'], 'error');
@@ -129,6 +139,7 @@ function tripal_core_views_integration_remove_entry($tablename, $priority) {
   $views = db_fetch_object(db_query("SELECT * FROM {tripal_views} WHERE table_name='%s'",$tablename));
   if ($views->setup_id) {
     db_query('DELETE FROM {tripal_views} WHERE setup_id=%d',$views->setup_id);
+    db_query('DELETE FROM {tripal_views_field} WHERE setup_id=%d',$views->setup_id);
     db_query('DELETE FROM {tripal_views_handlers} WHERE setup_id=%d',$views->setup_id);
     db_query('DELETE FROM {tripal_views_join} WHERE setup_id=%d',$views->setup_id);
   }
