@@ -1,0 +1,98 @@
+<?php
+
+require_once "tripal_views_integration.inc";
+require_once "tripal_views.views.inc";
+
+/**
+ *
+ *
+ * @ingroup tripal_views
+ */
+function tripal_views_menu() {
+   $items = array();
+   
+   $items['admin/tripal/views'] = array(
+     'title' => t('Views Integration'),
+     'description' => 'Integration with Drupal Views',
+     'page callback' => 'tripal_views_description_page',
+     'access arguments' => array('administer site configuration'),
+     'type' => MENU_NORMAL_ITEM,
+   );
+
+ 	$items['admin/tripal/views/integration'] = array(
+     'title' => t('Views Integration'),
+     'description' => t('Allows you to select existing materialized views and provide details for integration with Drupal Views.'),
+     'page callback' => 'tripal_views_integration_setup_list',
+     'access arguments' => array('manage tripal_views_integration'),
+     'type' => MENU_NORMAL_ITEM,
+ 	);
+
+
+	$items['admin/tripal/views/integration/new'] = array(
+     'title' => 'Integrate Views',
+     'page callback' => 'drupal_get_form',
+     'page arguments' => array('tripal_views_integration_form'),
+     'access arguments' => array('manage tripal_views_integration'), //TODO: figure out the proper permissions arguments
+     'type' => MENU_CALLBACK,
+	);
+	
+	$items['admin/tripal/views/integration/edit/%'] = array(
+     'title' => 'Edit Views Integration',
+     'page callback' => 'drupal_get_form',
+     'page arguments' => array('tripal_views_integration_form',5),
+     'access arguments' => array('manage tripal_views_integration'), //TODO: figure out the proper permissions arguments
+     'type' => MENU_CALLBACK,
+	);
+
+	$items['admin/tripal/views/integration/delete/%'] = array(
+     'title' => 'Delete Views Integration',
+     'page callback' => 'tripal_views_integration_delete',
+     'page arguments' => array(5),
+     'access arguments' => array('manage tripal_views_integration'), //TODO: figure out the proper permissions arguments
+     'type' => MENU_CALLBACK,
+	);
+
+   return $items;
+}
+/**
+ *  Set the permission types that the chado module uses.  Essentially we
+ *  want permissionis that protect creation, editing and deleting of chado
+ *  data objects
+ *
+ * @ingroup tripal_views
+ */
+function tripal_views_perm(){
+   return array(
+      'manage tripal_views_integration',
+   );
+}
+/**
+ * Implements hook_views_api()
+ *
+ * Purpose: Essentially this hook tells drupal that there is views support for
+ *  for this module which then includes tripal_views.views.inc where all the
+ *  views integration code is
+ *
+ * @ingroup tripal_views
+ */
+function tripal_views_views_api() {
+   return array(
+      'api' => 2.0,
+   );
+}
+/**
+ *
+ * @ingroup tripal_views
+ */
+function tripal_views_theme () {
+   return array(
+	   'tripal_views_integration_form' => array(
+         'arguments' => array('form' => NULL),
+         'template'  => 'tripal_views_integration_fields_form',
+	   ),
+	   'tripal_views_data_export_download_form' => array(
+         'arguments' => array('form' => NULL),
+         'template'  => 'tripal_views_data_export_download_form',
+	   ),
+   );
+}

@@ -9,7 +9,7 @@
  *
  * @ingroup views_style_plugins
  */
-class tripal_core_plugin_style_export_fasta extends views_data_export_plugin_style_export {
+class tripal_views_plugin_style_export_fasta extends views_data_export_plugin_style_export {
 
   /**
    * Set options fields and default values.
@@ -42,6 +42,7 @@ class tripal_core_plugin_style_export_fasta extends views_data_export_plugin_sty
       '#suffix' => '</div></div>',
       '#type' => 'textfield',
       '#title' => t('Defenition line fields'),
+      '#required' => TRUE,
       '#default_value' => $this->options['defline_fields'],
       '#description' => t("This field controls the information present in the definition ".
          "line for each sequence. Any of the fields in the view can be used in the ".
@@ -50,7 +51,7 @@ class tripal_core_plugin_style_export_fasta extends views_data_export_plugin_sty
          "the output of this field\".  In the replacement patterns section are the ".
          "field replacement tokens that can be used in this field. You may include any ".
          "additional text to separte or qualify these fields.  Only fields that have not ".
-         "been excluded from the display will appear"),
+         "been excluded from the display will appear."),
     );
   }
 }

@@ -53,13 +53,13 @@ include('tripal_views.api.inc');
  * @return
  *   An array of handler definitions
  *
- * @ingroup tripal_core
+ * @ingroup tripal_views
  */
-function tripal_core_views_handlers() {
+function tripal_views_views_handlers() {
 
  return array(
    'info' => array(
-     'path' => drupal_get_path('module', 'tripal_core') . '/views/handlers',
+     'path' => drupal_get_path('module', 'tripal_views') . '/views/handlers',
    ),
    'handlers' => array(
    
@@ -181,13 +181,13 @@ function tripal_core_views_handlers() {
  *
  * @todo add if !<chado/drupal same db> around NID portion
  *
- * @ingroup tripal_core
+ * @ingroup tripal_views
  */
-function tripal_core_views_pre_render	(&$view) {
+function tripal_views_views_pre_render	(&$view) {
 		
 		//Add Node IDs in to every table that needs them
-		// @see file: tripal_core.views.inc
-		tripal_core_add_node_ids_to_view ($view);
+		// @see file: tripal_views.views.inc
+		tripal_views_add_node_ids_to_view ($view);
 		
 }
 
@@ -206,9 +206,9 @@ function tripal_core_views_pre_render	(&$view) {
  *
  * @return the views object with nids added to the result array
  *
- * @ingroup tripal_core
+ * @ingroup tripal_views
  */
-function tripal_core_add_node_ids_to_view (&$view) {
+function tripal_views_add_node_ids_to_view (&$view) {
 	
 	//-----Analysis----------------------------------------------
 	if (!empty($view->field['analysis_nid'])) {
@@ -369,10 +369,10 @@ function tripal_core_add_node_ids_to_view (&$view) {
 }
 /**
  *
- * @ingroup tripal_core
+ * @ingroup tripal_views
  */
 
-function tripal_core_views_data(){   
+function tripal_views_views_data(){   
   
    // Define Global Fields -------------
    // Filter handler that lets the admin say: 
@@ -488,9 +488,9 @@ function tripal_core_views_data(){
 }
 /**
  *
- * @ingroup tripal_core
+ * @ingroup tripal_views
  */
-function tripal_core_views_data_alter(&$data) {
+function tripal_views_views_data_alter(&$data) {
     $tvi_query = db_query('SELECT * FROM {tripal_views}');
 
     // iterate through the views that we manage
@@ -548,15 +548,15 @@ function tripal_core_views_data_alter(&$data) {
 /**
  * Implementation of hook_views_plugins().
  */
-function tripal_core_views_plugins() {
-  $tc_path = drupal_get_path('module', 'tripal_core');
+function tripal_views_views_plugins() {
+  $tc_path = drupal_get_path('module', 'tripal_views');
 
   $style_defaults = array(
     'path' => $tc_path . '/views_data_export/plugins',
     'parent' => 'views_data_export',
     'theme' => 'views_data_export',
     'theme path' => $tc_path . '/views_data_export/theme',
-    'theme file' => 'tripal_core_views_data_export.theme.inc',
+    'theme file' => 'tripal_views_data_export.theme.inc',
     'uses row plugin' => FALSE,
     'uses fields' => TRUE,
     'uses options' => TRUE,
@@ -569,7 +569,7 @@ function tripal_core_views_plugins() {
       'views_data_export_fasta' => array(
         'title' => t('FASTA file'),
         'help' => t('Display results in FASTA format. All fields in results are on the definition line while the feature.residues field must be present .'),
-        'handler' => 'tripal_core_plugin_style_export_fasta',
+        'handler' => 'tripal_views_plugin_style_export_fasta',
         // Views Data Export element that will be used to set additional headers when serving the feed.
         'export headers' => array('Content-type: text/plain; charset=utf-8'),
         // Views Data Export element mostly used for creating some additional classes and template names.
@@ -590,14 +590,14 @@ function tripal_core_views_plugins() {
 /**
  * Implementation of hook_views_pre_view().
  */
-function tripal_core_views_pre_view(&$view,&$display_id,&$args){
-   $form = drupal_get_form('tripal_core_views_data_export_download_form',$view,$display_id,$args);
+function tripal_views_views_pre_view(&$view,&$display_id,&$args){
+   $form = drupal_get_form('tripal_views_data_export_download_form',$view,$display_id,$args);
    $view->attachment_after = $form;
 }
 /**
  * 
  */
-function tripal_core_views_data_export_download_form(&$form_state, $view,$display_id,$args){
+function tripal_views_data_export_download_form(&$form_state, $view,$display_id,$args){
    $form = array();
    $urls = array();
 
@@ -656,7 +656,7 @@ function tripal_core_views_data_export_download_form(&$form_state, $view,$displa
 /**
  * 
  */
-function tripal_core_views_data_export_download_form_submit($form, &$form_state){
+function tripal_views_data_export_download_form_submit($form, &$form_state){
    $urls = $form_state['storage']['urls'];
    $display_id = $form_state['values']['file_type'];
    drupal_goto($urls[$display_id]['path'],$urls[$display_id]['query']);
