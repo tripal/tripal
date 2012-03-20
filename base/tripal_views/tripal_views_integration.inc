@@ -183,7 +183,7 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL){
     '#type' => 'select',
     '#options' => $chado_tables,
     '#description' => 'Which Chado table to use.',
-    '#default_value' => $setup_obj->table_name,
+    '#default_value' => (!$setup_obj->mview_id) ? $setup_obj->table_name : '',
     '#ahah' => array(
        'path' => ahah_helper_path(array('view_setup_table')),
        'wrapper' => 'table-rows-div',
@@ -215,21 +215,21 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL){
   if(isset($setup_id)){
     $form['row_name']['#attributes'] = array('readonly' => 'readonly');
   }
-
+  
   $priorities = array();
   foreach (range(-10,10) as $v) {
-    $priorities[$v] = $v;
+    $priorities[$v] = (string) $v;
   }
   $form['views_type']['row_priority'] = array(
     '#type' => 'select',
-    '#title' => ('Priority'),
-    '#description' => 'The level of priority your Views integration has in relation to the '
+    '#title' => t('Priority'),
+    '#description' => t('The level of priority your Views integration has in relation to the '
       .'default core and module definitions. The views integration definition with the '
       .'lightest priority will be used. For example, if there is a definition created by '
       .'core with a priority of 10 and another by a custom module of 5 and yours is -1 then '
-      .'you definition will be used for that table because -1 is lighter then both 5 and 10.',
+      .'you definition will be used for that table because -1 is lighter then both 5 and 10.'),
     '#options' => $priorities,
-    '#default_value' => (isset($setup_obj->priority)) ? $setup_obj->priotiy : -1,
+    '#default_value' => (isset($setup_obj->priority)) ? $setup_obj->priority : -1,
   );
   
   $form['views_type']['row_description'] = array(
@@ -320,7 +320,7 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL){
        if(preg_match("/views_handler_argument/",$handler)){
           $handlers_argument[$handler] = $handler;
        }
-       if(preg_match("/views_handler_join/",$handler)){
+       if(preg_match("/_join/",$handler)){
           $handlers_join[$handler] = $handler;
        }
        if(preg_match("/views_handler_relationship/",$handler)){
@@ -575,11 +575,16 @@ function tripal_views_integration_form_submit($form, &$form_state){
    $table_name = $form_state['values']['table_name'];
    $setup_id = $form_state['values']['setup_id'];
 
-   if($mview_id){
-      $table_id = $mview_id;
+   // get details about this mview
+   if ($mview_id) {
+     $sql = "SELECT * FROM {tripal_mviews} WHERE mview_id = $mview_id";
+     $mview = db_fetch_object(db_query($sql));
+     $table_name = $mview->mv_table;
+     $type = 'mview';
    } else {
-      $table_id = $table_name;
+     $type = 'chado';
    }
+   
 
    // If this is for a materialized view then we want to add/update that record
    $tripal_views_record = array();
@@ -670,6 +675,7 @@ function tripal_views_integration_form_submit($form, &$form_state){
       }
       $i++;
    }
+   
    if($setup_id){
       drupal_set_message('Record Updated');
    } else {
