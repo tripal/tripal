@@ -136,6 +136,7 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL){
          $default_joins[$join->base_field]['left_table'] = $join->left_table;
          $default_joins[$join->base_field]['left_field'] = $join->left_field;
       }
+
       // get the default handlers
       $sql = "SELECT * FROM {tripal_views_handlers} WHERE setup_id = %d";
       $query = db_query($sql,$setup_id);
@@ -144,6 +145,15 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL){
          $default_handlers[$handler->column_name][$handler->handler_type]['handler_name'] = $handler->handler_name;
          $default_handlers[$handler->column_name][$handler->handler_type]['arguments'] = $handler->arguments;
       }
+      
+      // get the default join handlers
+      $sql = "SELECT * FROM {tripal_views_join} WHERE setup_id = %d";
+      $query = db_query($sql,$setup_id);
+      while ($handler = db_fetch_object($query)){
+         $default_handlers[$handler->base_field]['join']['handler_name'] = $handler->handler;
+         //$default_handlers[$handler->base_field]['join']['arguments'] = $handler->arguments;
+      }   
+      
       // add in the setup_id for the form so we know this is an update not an insert
       $form['setup_id'] = array(
          '#type' => 'hidden',
@@ -697,6 +707,7 @@ function tripal_views_integration_form_validate($form, &$form_state){
   }
   // TODO: do we need to require that a handler be set for each field and each type of handler?
 }
+
 /**
  *
  * @ingroup tripal_views_integration
@@ -796,6 +807,7 @@ function tripal_views_integration_form_submit($form, &$form_state){
            'base_field' => $key,
            'left_table' => $left_table,
            'left_field' => $left_column,
+           'handler' => $form_state['values']["fields_join_handler_$table_id-$i"],
          );
          
          // write the new joins to the database
@@ -803,7 +815,7 @@ function tripal_views_integration_form_submit($form, &$form_state){
       }
 
       // add the hanlders
-      $handlers = array('filter','field','sort','argument','join','relationship');
+      $handlers = array('filter','field','sort','argument','relationship');
      
       foreach($handlers as $handler){
          $handler_name = $form_state['values']["fields_".$handler."_handler_$table_id-$i"];

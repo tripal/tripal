@@ -487,13 +487,17 @@ function tripal_views_views_data(){
      while($join = db_fetch_object($joins)){               
         $left_table = $join->left_table;
         $left_field = $join->left_field;
-        $base_field = $join->base_field;  
+        $base_field = $join->base_field; 
+        $handler = $join->handler;
       
         // add join entry
         $data[$base_table]['table']['join'][$left_table] = array(
           'left_field' => $left_field,
           'field' => $base_field,
         );
+        if ($handler) {
+          $data[$base_table]['table']['join'][$left_table]['handler'] = $handler;
+        }
 
         // check to see if the join table is one that correlates with Drupal nodes
         // if so, there will be a chado_<table_name> table in the Drupal database
