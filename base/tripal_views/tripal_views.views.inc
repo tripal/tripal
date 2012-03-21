@@ -431,7 +431,18 @@ function tripal_views_views_data(){
             preg_match("/^(.*?)\ (.*?)$/",$column,$matches);
             $column_name = $matches[1];
             $column_type = $matches[2];
-            $base_fields[] = $column_name;
+            $base_fields[$column_name] = array(
+              'column_name' => $column_name,
+              'type' => $column_type,
+            );
+         }
+         
+         // get the field name and descriptions
+         $sql = "SELECT * FROM {tripal_views_field} WHERE setup_id=%d";
+         $query = db_query($sql, $setup_id);
+         while ($field = db_fetch_object($query)) {
+           $base_fields[$field->column_name]['name'] = $field->name;
+           $base_fields[$field->column_name]['help'] = $field->description;
          }
       }
       else {
@@ -453,10 +464,10 @@ function tripal_views_views_data(){
       );
 
       // first add the fields
-      foreach ($base_fields as $base_field){
-        $data[$base_table][$base_field] = array(
-           'title' => $base_field,
-           'help' => t("The $base_field from the $base_table table (added by Tripal Views Integration)"),
+      foreach ($base_fields as $column_name => $base_field){
+        $data[$base_table][$column_name] = array(
+           'title' => t($base_field['name']),
+           'help' => t($base_field['help']),
            'field' => array(
               'click sortable' => TRUE,
            ),
@@ -464,9 +475,9 @@ function tripal_views_views_data(){
 
         // now add the handlers
         $sql = "SELECT * FROM {tripal_views_handlers} WHERE setup_id = %d AND column_name = '%s'";
-        $handlers = db_query($sql,$setup_id,$base_field);
+        $handlers = db_query($sql,$setup_id,$column_name);
         while($handler = db_fetch_object($handlers)){
-           $data[$base_table][$base_field][$handler->handler_type]['handler'] = $handler->handler_name;
+           $data[$base_table][$column_name][$handler->handler_type]['handler'] = $handler->handler_name;
         };
     }
 

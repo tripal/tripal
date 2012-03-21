@@ -119,6 +119,15 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL){
       $form_state['storage']['mview_id'] = $mview_id;
       $form_state['storage']['table_name'] = $table_name;
 
+      // get the default field name/description
+      $sql = "SELECT * FROM {tripal_views_field} WHERE setup_id=%d";
+      $query = db_query($sql,$setup_id);
+      $default_fields = array();
+      while ($field = db_fetch_object($query)) {
+        $default_fields[$field->column_name]['name'] = $field->name;
+        $default_fields[$field->column_name]['description'] = $field->description;
+      }
+      
       // get the default join settings and handlers
       $sql = "SELECT * FROM {tripal_views_join} WHERE setup_id = %d";
       $query = db_query($sql,$setup_id);
@@ -182,7 +191,7 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL){
     '#type' => 'select',
     '#options' => $chado_tables,
     '#description' => 'Which Chado table to use.',
-    '#default_value' => $setup_obj->table_name,
+    '#default_value' => (!$setup_obj->mview_id) ? $setup_obj->table_name : '',
     '#ahah' => array(
        'path' => ahah_helper_path(array('view_setup_table')),
        'wrapper' => 'table-rows-div',
@@ -214,21 +223,21 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL){
   if(isset($setup_id)){
     $form['row_name']['#attributes'] = array('readonly' => 'readonly');
   }
-
+  
   $priorities = array();
   foreach (range(-10,10) as $v) {
-    $priorities[$v] = $v;
+    $priorities[$v] = (string) $v;
   }
   $form['views_type']['row_priority'] = array(
     '#type' => 'select',
-    '#title' => ('Priority'),
-    '#description' => 'The level of priority your Views integration has in relation to the '
+    '#title' => t('Priority'),
+    '#description' => t('The level of priority your Views integration has in relation to the '
       .'default core and module definitions. The views integration definition with the '
       .'lightest priority will be used. For example, if there is a definition created by '
       .'core with a priority of 10 and another by a custom module of 5 and yours is -1 then '
-      .'you definition will be used for that table because -1 is lighter then both 5 and 10.',
+      .'you definition will be used for that table because -1 is lighter then both 5 and 10.'),
     '#options' => $priorities,
-    '#default_value' => (isset($setup_obj->priority)) ? $setup_obj->priotiy : -1,
+    '#default_value' => (isset($setup_obj->priority)) ? $setup_obj->priority : -1,
   );
   
   $form['views_type']['row_description'] = array(
@@ -294,18 +303,12 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL){
 
     // get list of all handlers
     $all_handlers = tripal_views_integration_discover_handlers();
-    $handlers_fields = array();
-    $handlers_filters = array();
-    $handlers_sort = array();
-    $handlers_arguments = array();
-    $handlers_join = array();
-    $handlers_rel = array();
-    $handlers_fields[0] = "Select a field handler"; 
-    $handlers_filters[0] = "Select a filter handler";
-    $handlers_sort[0] = "Select a sort handler";
-    $handlers_argument[0] = "Select an argument handler";
-    $handlers_join[0] = "Select a join handler";
-    $handlers_rel[0] = "Select a relationship handler";
+    $handlers_fields = array(0 => "Select a field handler"); 
+    $handlers_filters = array(0 => "Select a filter handler");
+    $handlers_sort = array(0 => "Select a sort handler");
+    $handlers_argument = array(0 => "Select an argument handler");
+    $handlers_join = array(0 => "Select a join handler");
+    $handlers_rel = array(0 => "Select a relationship handler");
     foreach($all_handlers as $handler){
        if(preg_match("/views_handler_field/",$handler)){
           $handlers_fields[$handler] = $handler;
@@ -319,7 +322,7 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL){
        if(preg_match("/views_handler_argument/",$handler)){
           $handlers_argument[$handler] = $handler;
        }
-       if(preg_match("/views_handler_join/",$handler)){
+       if(preg_match("/_join/",$handler)){
           $handlers_join[$handler] = $handler;
        }
        if(preg_match("/views_handler_relationship/",$handler)){
@@ -334,6 +337,7 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL){
        $table_id = $table_name;
     }
 
+    // Per Row (Fields) --------------
     // now iterate through the columns of the materialized view or 
     // chado table and generate the join and handler fields
     foreach ($columns as $column){
@@ -342,22 +346,64 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL){
       $column_name = $matches[1];
       $column_type = $matches[2];
 
-      $form['view_setup_table']["fields_start_$table_id-$i"] = array(
+      $form['view_setup_table']["$table_id-$i"] = array(
            '#type' => 'markup',
-           '#value' => "<div class=\"fields-new-row\">",
+           '#prefix' => "<div class=\"fields-new-row\">",
+           '#suffix' => "</div>"
       );
 
-      $form['view_setup_table']["fields_name_$table_id-$i"] = array(
+      // COLUMN I
+      $form['view_setup_table']["$table_id-$i"]["fields_name_$table_id-$i"] = array(
         '#type' => 'markup',
-        '#attributes' => array('class' => 'fields-column-name'),
-        '#value' => "<div class=\"column-id\">".
-                    "<span class=\"column-name\">$column_name</span>".
-                    "<br><span class=\"column-type\">$column_type</span>".
-                    "</div>".
-                    "<div class=\"column-form-fields\"><div class=\"column-one\">",
+        '#prefix' => "<div class=\"column-one\">", 
+        '#value' => "<span class=\"column-name\">$column_name</span>".
+                    "<br><span class=\"column-type\">$column_type</span>",
+        '#suffix' => "</div>",
       );
       $data['field_types'][$column_name] = $column_type;
-
+  
+      // COLUMN II
+      $form['view_setup_table']["$table_id-$i"]['column-2'] = array(
+           '#type' => 'markup',
+           '#prefix' => "<div class=\"column-two\">",
+           '#suffix' => "</div>"
+      );
+      
+      // set the default values for the human-readable name and description
+      $default_name = '';
+      $default_descrip = '';
+      if (isset($setup_id) && !isset($form_state['storage']["fields_readable_name_$table_id-$i"])){
+        $default_name = $default_fields[$column_name]['name'];
+        $default_descrip = $default_fields[$column_name]['description'];
+      } else {
+        $default_name = $form_state['storage']["fields_readable_name_$table_id-$i"];
+        $default_descrip = $form_state['storage']["fields_description_$table_id-$i"];
+      }
+      $form['view_setup_table']["$table_id-$i"]['column-2']["fields_readable_name_$table_id-$i"] = array(
+        '#type' => 'textfield',
+        '#title' => 'Human-Readable Name',
+        '#description' => 'This is the name of the field in the Views UI',
+        '#required' => TRUE,
+        '#default_value' => $default_name,
+      );
+      
+      $form['view_setup_table']["$table_id-$i"]['column-2']["fields_description_$table_id-$i"] = array(
+        '#type' => 'textarea',
+        '#title' => 'Short Description',
+        '#description' => 'This is the field help in the Views UI',
+        '#required' => TRUE,
+        '#cols' => 42,
+        '#rows' => 3,
+        '#default_value' => $default_descrip,
+      );
+      
+      // COLUMN III
+      $form['view_setup_table']["$table_id-$i"]['column-3'] = array(
+           '#type' => 'markup',
+           '#prefix' => "<div class=\"column-three\">",
+           '#suffix' => "</div>"
+      );
+      
       // set the default values for the join table and columns
       $default_join_table = 0;
       $default_join_field = 0;
@@ -372,7 +418,7 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL){
       	$default_join_field = $form_state['storage']["fields_join_column_$table_id-$i"];
       }
 
-      $form['view_setup_table']["fields_join_$table_id-$i"] = array(
+      $form['view_setup_table']["$table_id-$i"]['column-3']["fields_join_$table_id-$i"] = array(
         '#type' => 'select',
         '#prefix' => "<div class=\"fields-column-join\">",
         '#suffix' => "</div>",
@@ -380,7 +426,7 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL){
         '#required' => FALSE,
         '#default_value' => $default_join_table,
         '#ahah' => array(
-           'path' => ahah_helper_path(array("view_setup_table","fields_join_column_$table_id-$i")),
+           'path' => ahah_helper_path(array("view_setup_table","$table_id-$i",'column-3',"fields_join_column_$table_id-$i")),
            'wrapper' => "fields-column-join-column-$table_id-$i",
            'effect' => 'fade',
            'event' => 'change',
@@ -397,15 +443,39 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL){
       } else {
         $columns = array('Select Join Column');
       }
-      $form['view_setup_table']["fields_join_column_$table_id-$i"] = array(
+      $form['view_setup_table']["$table_id-$i"]['column-3']["fields_join_column_$table_id-$i"] = array(
         '#type' => 'select',
         '#prefix' => "  <div id=\"fields-column-join-column-$table_id-$i\" class=\"fields-column-join-column\">",
-        '#suffix' => "</div></div>",
+        '#suffix' => "</div>",
         '#options' => $columns,
         '#required' => FALSE,
         '#default_value' => $default_join_field
       );
 
+      $default_join_handler = 0;
+      if(isset($setup_id) && !isset($form_state['storage']["fields_join_handler_$table_id-$i"])){
+         $default_join_handler = $default_handlers[$column_name]['join']['handler_name'];
+         $form_state['storage']["fields_join_handler_$table_id-$i"]=$default_join_handler;
+      }
+      else {
+         $default_join_handler = $form_state['storage']["fields_join_handler_$table_id-$i"];
+      }
+      $form['view_setup_table']["$table_id-$i"]['column-3']["fields_join_handler_$table_id-$i"] = array(
+        '#type' => 'select',
+        '#prefix' => "<div class=\"fields-join-handler\">",
+        '#suffix' => "</div>",
+        '#options' => $handlers_join,
+        '#required' => FALSE,
+         '#default_value' => $default_join_handler,
+      );
+      
+      // COLUMN 4
+      $form['view_setup_table']["$table_id-$i"]['column-4'] = array(
+           '#type' => 'markup',
+           '#prefix' => "<div class=\"column-four\">",
+           '#suffix' => "</div>"
+      );
+      
       // create the handler fields
       $default_field_handler = 0;
       if(isset($setup_id) && !isset($form_state['storage']["fields_field_handler_$table_id-$i"])){
@@ -433,10 +503,9 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL){
          }
       }
 
-      $form['view_setup_table']["fields_field_handler_$table_id-$i"] = array(
+      $form['view_setup_table']["$table_id-$i"]['column-4']["fields_field_handler_$table_id-$i"] = array(
          '#type' => 'select',
-         '#prefix' => "<div class=\"column-two\">".
-                        "<div class=\"fields-field-handler\">",
+         '#prefix' => "<div class=\"fields-field-handler\">",
          '#suffix' => "</div>",
          '#options' => $handlers_fields,
          '#required' => FALSE,
@@ -468,7 +537,7 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL){
             }
          }
       }
-      $form['view_setup_table']["fields_filter_handler_$table_id-$i"] = array(
+      $form['view_setup_table']["$table_id-$i"]['column-4']["fields_filter_handler_$table_id-$i"] = array(
         '#type' => 'select',
         '#prefix' => "<div class=\"fields-filter-handler\">",
         '#suffix' => "</div>",
@@ -502,7 +571,7 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL){
             }
          }
       }
-      $form['view_setup_table']["fields_sort_handler_$table_id-$i"] = array(
+      $form['view_setup_table']["$table_id-$i"]['column-4']["fields_sort_handler_$table_id-$i"] = array(
         '#type' => 'select',
         '#prefix' => "<div class=\"fields-sort-handler\">",
         '#suffix' => "</div>",
@@ -536,7 +605,7 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL){
             }
          }
       }
-      $form['view_setup_table']["fields_argument_handler_$table_id-$i"] = array(
+      $form['view_setup_table']["$table_id-$i"]['column-4']["fields_argument_handler_$table_id-$i"] = array(
         '#type' => 'select',
         '#prefix' => "<div class=\"fields-argument-handler\">",
         '#suffix' => "</div>",
@@ -570,7 +639,7 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL){
             }
          }
       }
-      $form['view_setup_table']["fields_relationship_handler_$table_id-$i"] = array(
+      $form['view_setup_table']["$table_id-$i"]['column-4']["fields_relationship_handler_$table_id-$i"] = array(
         '#type' => 'select',
         '#prefix' => "<div class=\"fields-relationship-handler\">",
         '#suffix' => "</div>",
@@ -578,46 +647,7 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL){
         '#required' => FALSE,
         '#default_value' => $default_relationship_handler,
       );
-
-      $default_join_handler = 0;
-      if(isset($setup_id) && !isset($form_state['storage']["fields_join_handler_$table_id-$i"])){
-         $default_join_handler = $default_handlers[$column_name]['join']['handler_name'];
-         $form_state['storage']["fields_join_handler_$table_id-$i"]=$default_join_handler;
-      }
-      else {
-         $default_join_handler = $form_state['storage']["fields_join_handler_$table_id-$i"];
-         if(!$default_join_handler){
-            if($column_type == 'integer' or $column_type == 'int' or $column_type == 'serial'){
-               $default_join_handler = '';
-            }
-            elseif(preg_match("/character varying/",$column_type) or $column_type == 'char' or $column_type == 'text'){
-               $default_join_handler = '';
-            }
-            elseif($column_type == 'boolean'){
-               $default_join_handler = '';
-            }
-            elseif($column_type == 'float'){
-               $default_join_handler = '';
-            }
-            elseif($column_type == 'datetime'){
-               $default_join_handler = '';
-            }
-         }
-
-      }
-      $form['view_setup_table']["fields_join_handler_$table_id-$i"] = array(
-        '#type' => 'select',
-        '#prefix' => "<div class=\"fields-join-handler\">",
-        '#suffix' => "</div></div>",
-        '#options' => $handlers_join,
-        '#required' => FALSE,
-         '#default_value' => $default_join_handler,
-      );
       
-      $form['view_setup_table']["fields_end_$i"] = array(
-        '#type' => 'markup',
-        '#value' => "</div></div>",
-      );
       $i++;
    }
    $form['view_setup_table']['save'] = array(
@@ -677,10 +707,16 @@ function tripal_views_integration_form_submit($form, &$form_state){
    $table_name = $form_state['values']['table_name'];
    $setup_id = $form_state['values']['setup_id'];
 
-   if($mview_id){
-      $table_id = $mview_id;
+   // get details about this mview
+   if ($mview_id) {
+     $sql = "SELECT * FROM {tripal_mviews} WHERE mview_id = $mview_id";
+     $mview = db_fetch_object(db_query($sql));
+     $table_name = $mview->mv_table;
+     $table_id = $mview_id;
+     $type = 'mview';
    } else {
-      $table_id = $table_name;
+     $type = 'chado';
+     $table_id = $table_name;
    }
 
    // If this is for a materialized view then we want to add/update that record
@@ -729,6 +765,7 @@ function tripal_views_integration_form_submit($form, &$form_state){
    
    // if this is an update then clean out the existing joins and handlers so we can add new ones
    if($setup_id){  
+      db_query("DELETE FROM {tripal_views_field} WHERE setup_id = %d",$setup_id);
       db_query("DELETE FROM {tripal_views_join} WHERE setup_id = %d",$setup_id);
       db_query("DELETE FROM {tripal_views_handlers} WHERE setup_id = %d",$setup_id);
    }
@@ -738,6 +775,16 @@ function tripal_views_integration_form_submit($form, &$form_state){
    $i = 1;
    foreach ($form_state['values']['field_types'] as $key => $value){
 
+      // add the field definition
+      $view_field_record = array(
+        'setup_id' => $tripal_views_record['setup_id'],
+        'column_name' => $key, 
+        'name' => $form_state['values']["fields_readable_name_$table_id-$i"], 
+        'description' => $form_state['values']["fields_description_$table_id-$i"], 
+        'type' => $value,
+      );
+      drupal_write_record('tripal_views_field', $view_field_record);
+      
       // first add the join if it exists
       $left_table = $form_state['values']["fields_join_$table_id-$i"];
       $left_column = $form_state['values']["fields_join_column_$table_id-$i"];
@@ -772,6 +819,7 @@ function tripal_views_integration_form_submit($form, &$form_state){
       }
       $i++;
    }
+   
    if($setup_id){
       drupal_set_message('Record Updated');
    } else {

@@ -82,19 +82,17 @@ function tripal_views_integration_add_entry($defn_array) {
   
   // First insert into tripal_views
   $view_record = array(
+    'table_name' => $defn_array['table'],
     'name' => $defn_array['name'],
     'comment' => $defn_array['description'],
     'priority' => $defn_array['priority'],
   );
-  switch($defn_array['type']) {
-    case 'chado':
-      $view_record['table_name'] = $defn_array['table'];
-      break;
-    case 'mview':
+  if ($defn_array['type'] == 'mview') {
       $mview = db_fetch_object(db_query("SELECT mview_id FROM tripal_mviews WHERE mv_table='%s'",$defn_array['table']));
       $view_record['mview_id'] = $mview->mview_id;
-      $view_record['table_name'] = $defn_array['table'];
-      break;
+      if (!$mview->mview_id) {
+        return FALSE;
+      }
   }
   $status = drupal_write_record('tripal_views',$view_record);
   

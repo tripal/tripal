@@ -9,10 +9,11 @@
 #tripal-views-integration-form .form-item {
    margin: 0px 0px 5px 0px;
 }
-#tripal-views-integration-form .column-id, .column-form-fields, .column-one, .column-two {
+#tripal-views-integration-form .column-one, .column-two, .column-three, .column-four {
    display: inline-block;
    margin: 0px;
    vertical-align: top;
+   margin-left: 15px;
    //border: 1px solid #000;
 }
 #tripal-views-integration-form  .field-headers {
@@ -29,7 +30,7 @@
 #tripal-views-integration-form .column-type {
    font-style: italic;
 }
-#tripal-views-integration-form .column-id {
+#tripal-views-integration-form .column-one {
    width: 20%;
    height: 50px;
 }
@@ -37,27 +38,6 @@
    padding-bottom: 10px;
    margin-bottom: 5px;
    padding-top: 10px;
-}
-#tripal-views-integration-form .column-form-fields {
-   //border: 3px solid #f00;
-}
-#tripal-views-integration-form .column-one {
-   margin-left: 15px;
-}
-#tripal-views-integration-form .column-two {
-   margin-left: 15px;
-}
-#tripal-views-integration-form .fields-column-join {
-
-}
-#tripal-views-integration-form .fields-column-join-column {
-
-}
-#tripal-views-integration-form .fields-filter-handler {
-
-}
-#tripal-views-integration-form .fields-field-handler {
-
 }
 
 </style>
