@@ -119,6 +119,15 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL){
       $form_state['storage']['mview_id'] = $mview_id;
       $form_state['storage']['table_name'] = $table_name;
 
+      // get the default field name/description
+      $sql = "SELECT * FROM {tripal_views_field} WHERE setup_id=%d";
+      $query = db_query($sql,$setup_id);
+      $default_fields = array();
+      while ($field = db_fetch_object($query)) {
+        $default_fields[$field->column_name]['name'] = $field->name;
+        $default_fields[$field->column_name]['description'] = $field->description;
+      }
+      
       // get the default join settings and handlers
       $sql = "SELECT * FROM {tripal_views_join} WHERE setup_id = %d";
       $query = db_query($sql,$setup_id);
@@ -295,18 +304,12 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL){
 
     // get list of all handlers
     $all_handlers = tripal_views_integration_discover_handlers();
-    $handlers_fields = array();
-    $handlers_filters = array();
-    $handlers_sort = array();
-    $handlers_arguments = array();
-    $handlers_join = array();
-    $handlers_rel = array();
-    $handlers_fields[0] = "Select a field handler"; 
-    $handlers_filters[0] = "Select a filter handler";
-    $handlers_sort[0] = "Select a sort handler";
-    $handlers_argument[0] = "Select an argument handler";
-    $handlers_join[0] = "Select a join handler";
-    $handlers_rel[0] = "Select a relationship handler";
+    $handlers_fields = array(0 => "Select a field handler"); 
+    $handlers_filters = array(0 => "Select a filter handler");
+    $handlers_sort = array(0 => "Select a sort handler");
+    $handlers_argument = array(0 => "Select an argument handler");
+    $handlers_join = array(0 => "Select a join handler");
+    $handlers_rel = array(0 => "Select a relationship handler");
     foreach($all_handlers as $handler){
        if(preg_match("/views_handler_field/",$handler)){
           $handlers_fields[$handler] = $handler;
@@ -358,7 +361,38 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL){
                     "<div class=\"column-form-fields\"><div class=\"column-one\">",
       );
       $data['field_types'][$column_name] = $column_type;
-
+  
+      // set the default values for the human-readable name and description
+      $default_name = '';
+      $default_descrip = '';
+      if (isset($setup_id) && !isset($form_state['storage']["fields_readable_name_$table_id-$i"])){
+        $default_name = $default_fields[$column_name]['name'];
+        $default_descrip = $default_fields[$column_name]['description'];
+      } else {
+        $default_name = $form_state['storage']["fields_readable_name_$table_id-$i"];
+        $default_descrip = $form_state['storage']["fields_description_$table_id-$i"];
+      }
+      
+      $form['view_setup_table']["fields_readable_name_$table_id-$i"] = array(
+        '#type' => 'textfield',
+        '#title' => 'Human-Readable Name',
+        '#description' => 'This is the name of the field in the Views UI',
+        '#required' => TRUE,
+        //'#suffix' => '</div><div class="column-two">',
+        '#default_value' => $default_name,
+      );
+      
+      $form['view_setup_table']["fields_description_$table_id-$i"] = array(
+        '#type' => 'textarea',
+        '#title' => 'Short Description',
+        '#description' => 'This is the field help in the Views UI',
+        '#required' => TRUE,
+        '#cols' => 42,
+        '#rows' => 3,
+        '#suffix' => '</div><div class="column-two">',
+        '#default_value' => $default_descrip,
+      );
+      
       // set the default values for the join table and columns
       $default_join_table = 0;
       $default_join_field = 0;
@@ -580,11 +614,12 @@ function tripal_views_integration_form_submit($form, &$form_state){
      $sql = "SELECT * FROM {tripal_mviews} WHERE mview_id = $mview_id";
      $mview = db_fetch_object(db_query($sql));
      $table_name = $mview->mv_table;
+     $table_id = $mview_id;
      $type = 'mview';
    } else {
      $type = 'chado';
+     $table_id = $table_name;
    }
-   
 
    // If this is for a materialized view then we want to add/update that record
    $tripal_views_record = array();
@@ -632,6 +667,7 @@ function tripal_views_integration_form_submit($form, &$form_state){
    
    // if this is an update then clean out the existing joins and handlers so we can add new ones
    if($setup_id){  
+      db_query("DELETE FROM {tripal_views_field} WHERE setup_id = %d",$setup_id);
       db_query("DELETE FROM {tripal_views_join} WHERE setup_id = %d",$setup_id);
       db_query("DELETE FROM {tripal_views_handlers} WHERE setup_id = %d",$setup_id);
    }
@@ -641,6 +677,16 @@ function tripal_views_integration_form_submit($form, &$form_state){
    $i = 1;
    foreach ($form_state['values']['field_types'] as $key => $value){
 
+      // add the field definition
+      $view_field_record = array(
+        'setup_id' => $tripal_views_record['setup_id'],
+        'column_name' => $key, 
+        'name' => $form_state['values']["fields_readable_name_$table_id-$i"], 
+        'description' => $form_state['values']["fields_description_$table_id-$i"], 
+        'type' => $value,
+      );
+      drupal_write_record('tripal_views_field', $view_field_record);
+      
       // first add the join if it exists
       $left_table = $form_state['values']["fields_join_$table_id-$i"];
       $left_column = $form_state['values']["fields_join_column_$table_id-$i"];
