@@ -110,11 +110,6 @@ function tripal_bulk_loader_menu() {
 		  'file' => 'tripal_bulk_loader.admin.inc',  
   );	
 	// AHAH ---------
-	$items['node/add/tripal-bulk-loader/ahah'] = array(
-      'page callback' => 'tripal_bulk_loader_create_node_ahah',
-      'access arguments' => array('create tripal_bulk_loader'),
-      'type' => MENU_CALLBACK,   
-	);
 	$items['admin/tripal/tripal_bulk_loader_template/add_field_ahah'] = array(
       'page callback' => 'tripal_bulk_loader_add_field_ahah',
       'access arguments' => array('administer site configuration'),
@@ -293,13 +288,6 @@ function tripal_bulk_loader_form ($node, $form_state){
     '#weight'        => -9,
     '#required'      => TRUE,
     '#default_value' => $node->template_id,
-    '#ahah' => array(
-      'path' => 'node/add/tripal-bulk-loader/ahah',
-      'wrapper' => 'set-constants',
-      'event' => 'change',
-      'method' => 'replace',
-      'effect' => 'fade',
-    ),
   );
   
   $form['loader']['file']= array(
@@ -321,43 +309,6 @@ function tripal_bulk_loader_form ($node, $form_state){
   return $form;
 }
 
-/**
- * AHAH Function: Replace $form['constants'] in tripal_bulk_loader_form
- *
- * @return
- *  JSON Data printed to the screen
- */
-function tripal_bulk_loader_create_node_ahah () {
-
-  // The form is generated in an include file which we need to include manually.
-  include_once 'modules/node/node.pages.inc';
-  
-  $form_state = array('storage' => NULL, 'submitted' => FALSE);
-  $form_build_id = $_POST['form_build_id'];
-  $form = form_get_cache($form_build_id, $form_state);
-  $args = $form['#parameters'];
-  $form_id = array_shift($args);
-  $form_state['post'] = $form['#post'] = $_POST;
-  
-  // Enable the submit/validate handlers to determine whether AHAH-submittted.
-  $form_state['ahah_submission'] = TRUE;
-  
-  $form['#programmed'] = $form['#redirect'] = FALSE;
-  drupal_process_form($form_id, $form, $form_state);
-  $form = drupal_rebuild_form($form_id, $form_state, $args, $form_build_id);
-  
-  $form_element = $form['exposed_fields'];
-  // Remove the wrapper so we don't double it up.
-  unset($form_element['#prefix'], $form_element['#suffix']);
-
-  $output = theme('status_messages');
-  $output .= drupal_render($form_element);
-
-  // Final rendering callback.
-  print drupal_json(array('status' => TRUE, 'data' => $output));
-  exit();
-  
-}
 
 /**
  * Implements node_load
