@@ -86,7 +86,7 @@ function retrieve_organism_views_data() {
   // Calculated Field: Node ID
   //  use custom field handler to query drupal for the node ID
   //  this is only needed if chado is in a separate database from drupal
-  if($database){
+  if($database && module_exists('tripal_views')){
 	  $data['organism']['organism_nid'] = array(
   	  'title' => 'Node ID',
     	'help' => 'This is the node ID of this organism. It can be used as a link to the node.',
@@ -125,14 +125,14 @@ function retrieve_organism_views_data() {
        'handler' => 'views_handler_sort',
      ),
      'filter' => array(
-       'handler' => 'views_handler_filter_chado_select_string',
+       'handler' => 'views_handler_filter_string',
      ),
      'argument' => array(
        'handler' => 'views_handler_argument_string',
      ),
   );
   // if joined to the node table add a "Link to Node" option for the field  
-  if (!$database) {
+  if (!$database && module_exists('tripal_views')) {
     $data['organism']['abbreviation']['field']['handler'] = 'views_handler_field_node_optional';
   }
 
@@ -148,7 +148,7 @@ function retrieve_organism_views_data() {
        'handler' => 'views_handler_sort',
      ),
      'filter' => array(
-       'handler' => 'views_handler_filter_chado_select_string',
+       'handler' => 'views_handler_filter_string',
      ),
      'argument' => array(
        'handler' => 'views_handler_argument_string',
@@ -167,7 +167,7 @@ function retrieve_organism_views_data() {
        'handler' => 'views_handler_sort',
      ),
      'filter' => array(
-       'handler' => 'views_handler_filter_chado_select_string',
+       'handler' => 'views_handler_filter_string',
      ),
      'argument' => array(
        'handler' => 'views_handler_argument_string',
@@ -186,14 +186,14 @@ function retrieve_organism_views_data() {
        'handler' => 'views_handler_sort',
      ),
      'filter' => array(
-       'handler' => 'views_handler_filter_chado_select_string',
+       'handler' => 'views_handler_filter_string',
      ),
      'argument' => array(
        'handler' => 'views_handler_argument_string',
      ),
   );
   // if joined to the node table add a "Link to Node" option for the field  
-  if (!$database) {
+  if (!$database && module_exists('tripal_views')) {
     $data['organism']['common_name']['field']['handler'] = 'views_handler_field_node_optional';
   }
 

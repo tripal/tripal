@@ -88,7 +88,7 @@ function retrieve_cvterm_views_data() {
        'handler' => 'views_handler_sort',
      ),
      'filter' => array(
-       'handler' => 'views_handler_filter_chado_select_cvterm_name',
+       'handler' => 'views_handler_filter_string',
      ),
      'argument' => array(
        'handler' => 'views_handler_argument_string',
@@ -123,7 +123,7 @@ function retrieve_cvterm_views_data() {
        'click sortable' => TRUE,
      ),
      'filter' => array(
-       'handler' => 'views_handler_filter_chado_boolean',
+       'handler' => 'views_handler_filter_string',
        'label' => t('Is Obsolete?'),
        'type' => 'yes-no',
      ),
