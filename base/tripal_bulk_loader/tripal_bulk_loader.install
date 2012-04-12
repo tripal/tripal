@@ -114,26 +114,32 @@ function tripal_bulk_loader_schema() {
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
-			),
-			'chado_table' => array(
-			  'type' => 'varchar',
-			  'not null' => TRUE,
-			),
-			'chado_field' => array(
-			  'type' => 'varchar',
-			  'not null' => TRUE,
-			),
-			'record_id' => array(
-			  'type' => 'int',
-			  'not null' => TRUE
-			),
-			'field_id' => array(
-			  'type' => 'int',
-			  'not null' => TRUE
-			),
-			'value' => array(
-			  'type' => 'text',
-			),
+      ),
+      'group_id' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0
+      ),
+      'chado_table' => array(
+        'type' => 'varchar',
+        'not null' => TRUE,
+      ),
+      'chado_field' => array(
+        'type' => 'varchar',
+        'not null' => TRUE,
+      ),
+      'record_id' => array(
+        'type' => 'int',
+        'not null' => TRUE
+      ),
+      'field_id' => array(
+        'type' => 'int',
+        'not null' => TRUE
+      ),
+      'value' => array(
+        'type' => 'text',
+      ),
 	  ),
 	  'primary key' => array('constant_id'),
 	);
@@ -154,4 +160,28 @@ function tripal_bulk_loader_update_6150 () {
   
   return $ret;
   
+}
+
+/**
+ * Update schema for version 6.x-0.3.1b-1.5
+ * - Add the tripal_bulk_loader_constants.group_id column 
+ *   to allow multiple sets of constants per job
+ */
+function tripal_bulk_loader_update_6151 () {
+  $ret = array();
+  
+  $schema = tripal_bulk_loader_schema();
+  db_add_field(
+    $ret, 
+    'tripal_bulk_loader_constants', 
+    'group_id', 
+    array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0
+      )
+    );
+
+  return $ret;  
 }
