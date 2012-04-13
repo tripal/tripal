@@ -376,6 +376,14 @@ function tripal_views_add_node_ids_to_view (&$view) {
 	return $view;
 }
 /**
+ * Generates a dynamic data array for Views
+ *
+ * Purpose: This function is a hook used by the Views module. It populates and
+ *   returns a data array that specifies for the Views module the base table,
+ *   the tables it joins with and handlers.  The data array is populated
+ *   using the data stored in the tripal_views tables.
+ *
+ * @return a data array formatted for the Views module
  *
  * @ingroup tripal_views
  */
