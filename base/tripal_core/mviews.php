@@ -413,30 +413,24 @@ function tripal_mviews_form(&$form_state = NULL,$mview_id = NULL){
 function tripal_mviews_form_submit($form, &$form_state){
    
    $action = $form_state['values']['action'];
+   $mview_id = $form_state['values']['mview_id'];
+   $name = $form_state['values']['name'];
+   $mv_table = $form_state['values']['mv_table'];
+   $mv_specs = $form_state['values']['mv_specs'];
+   $indexed = $form_state['values']['indexed'];
+   $query = $form_state['values']['mvquery'];
+   $special_index = $form_state['values']['special_index'];
 
    if(strcmp($action,'Update')==0){
-      $record = new stdClass();
-      $record->mview_id = $form_state['values']['mview_id'];
-      $record->name = $form_state['values']['name'];
-      $record->mv_table = $form_state['values']['mv_table'];
-      $record->mv_specs = $form_state['values']['mv_specs'];
-      $record->indexed = $form_state['values']['indexed'];
-      $record->query = $form_state['values']['mvquery'];
-      $record->special_index = $form_state['values']['special_index'];
-
-      // add the record to the tripal_mviews table and if successful
-      // create the new materialized view in the chado schema
-      if(drupal_write_record('tripal_mviews',$record,'mview_id')){
-         drupal_set_message('View updated successfullly');
-      } else {
-         drupal_set_message('View update failed');
-      }
+      // updating the materialized view consits of deleting the old entry
+      // and readding.  This is necessary because a change to any of the fields
+      // other than the query changes the nature of table so it needs to be 
+      // rebuilt
+      tripal_mviews_action ('delete',$mview_id);
+      tripal_add_mview ($name, 'tripal_core',$mv_table, $mv_specs,$indexed,$query,$special_index);
    }
    else if(strcmp($action,'Add')==0){
-      tripal_add_mview ($form_state['values']['name'], 'tripal_core',
-         $form_state['values']['mv_table'], $form_state['values']['mv_specs'],
-         $form_state['values']['indexed'], $form_state['values']['mvquery'],
-         $form_state['values']['special_index']);
+      tripal_add_mview ($name, 'tripal_core',$mv_table, $mv_specs,$indexed,$query,$special_index);
    }
    else {
         drupal_set_message("No action performed.");
