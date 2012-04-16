@@ -357,6 +357,27 @@ function tripal_bulk_loader_load($node){
     $r->num_inserted = sizeof(preg_split('/,/',$r->ids_inserted)); 
     $node->inserted_records->{$r->table_inserted_into} = $r;
   }
+
+  // Add exposed field list
+  $node->exposed_fields = array();
+  if ($template) {
+    foreach ($template as $record_id => $record) {
+      foreach ($record['fields'] as $field_id => $field) {
+        if ($field['exposed']) {
+          $node->exposed_fields[] = array(
+            'record_id' => $record_id,
+            'field_id' => $field_id,
+            'title' => $field['title'],
+          );
+        }
+      }
+    }
+    
+    if (empty($node->exposed_fields)) {
+      $node->exposed_fields[] = array();
+    }
+  }
+
   
   // Add constants
   $sql = 'SELECT * FROM {tripal_bulk_loader_constants} WHERE nid=%d ORDER BY group_id, record_id, field_id';
@@ -371,6 +392,9 @@ function tripal_bulk_loader_load($node){
       'field_id'=>$r->field_id, 
       'value'=>$r->value
     );
+  }
+  if (!$node->constants) {
+    $node->constants[] = array();
   }
   
 	return $node;

@@ -60,6 +60,31 @@ function tripal_bulk_loader_update_constant ($nid, $group_id, $table, $field, $r
   }
 }
 
+function tripal_bulk_loader_has_exposed_fields ($node) {
+
+  // exposed fields isn't set
+  if (!isset($node->exposed_fields)) {
+    return FALSE;
+  }
+  
+  // exposed fields has at least one element
+  if (sizeof($node->exposed_fields) == 1) {
+    // need to check if single element is an empty array
+    $element = reset($node->exposed_fields);
+    if ($element) {
+      return TRUE;
+    } else {
+      return FALSE;
+    }
+  } elseif (sizeof($node->exposed_fields) > 1) {
+    return TRUE;
+  } else {
+    return FALSE;
+  }
+  
+  return FALSE;
+}
+
 ///////////////////////////////////////////////////////////
 // Set Constants Form (on Bulk Loader Node)
 ///////////////////////////////////////////////////////////
@@ -81,6 +106,15 @@ function tripal_bulk_loader_set_constants_form ($form_state, $node) {
   $form['nid'] = array(
     '#type' => 'hidden',
     '#value' => $node->nid
+  );
+  
+  if (!tripal_bulk_loader_has_exposed_fields($node)) {
+    return $form;
+  }
+  
+  $form['exposed_array'] = array(
+    '#type' => 'hidden',
+    '#value' => serialize($node->exposed_fields),
   );
   
   $form['exposed_fields'] = array(
@@ -142,47 +176,49 @@ function tripal_bulk_loader_set_constants_form ($form_state, $node) {
   // Add textifelds for exposed fields of the current template
   $exposed_fields = FALSE;
   $indexes = array();
-  if ($node->template_id) {
-    if (isset($node->template)) {
-      foreach ($node->template->template_array as $record_id => $record) {
-        foreach ($record['fields'] as $field_id => $field) {
-          if ($field['exposed']) {
-            $exposed_fields = TRUE;
-            $indexes[$record_id][] = $field_id;
-            
-            switch($field['type']) {
-              case 'table field':
-                $form['exposed_fields']['new'][$record_id.'-'.$field_id] = array(
-                  '#type' => 'textfield',
-                  '#title' => t($field['title']),
-                  '#description' => t($field['exposed_description']),
-                  '#default_value' => (isset($node->constants[$record_id][$field_id]['value'])) ? $node->constants[$record_id][$field_id]['value'] : $field['constant value'],
-                );
-              break;
-              case 'constant':
-                $form['exposed_fields']['new'][$record_id.'-'.$field_id] = array(
-                  '#type' => 'textfield',
-                  '#title' => t($field['title']),
-                  '#description' => t('Enter the case-sensitive value of this constant for your spreadsheet'),
-                  '#default_value' => (isset($node->constants[$record_id][$field_id]['value'])) ? $node->constants[$record_id][$field_id]['value'] : $field['constant value'],
-                );
-              break;
-            }
-            
-            $form['exposed_fields']['new'][$record_id.'-'.$field_id.'-table'] = array(
-              '#type' => 'hidden',
-              '#value' => $record['table'],
+  if (tripal_bulk_loader_has_exposed_fields($node)) {
+    foreach ($node->exposed_fields as $exposed_index) {
+      
+      $record_id = $exposed_index['record_id'];
+      $field_id = $exposed_index['field_id'];
+      $field = $node->template->template_array[$record_id]['fields'][$field_id];
+      
+      if ($field['exposed']) {
+        $exposed_fields = TRUE;
+        $indexes[$record_id][] = $field_id;
+        
+        switch($field['type']) {
+          case 'table field':
+            $form['exposed_fields']['new'][$record_id.'-'.$field_id] = array(
+              '#type' => 'textfield',
+              '#title' => t($field['title']),
+              '#description' => t($field['exposed_description']),
+              '#default_value' => (isset($node->constants[$record_id][$field_id]['value'])) ? $node->constants[$record_id][$field_id]['value'] : $field['constant value'],
             );
-            $form['exposed_fields']['new'][$record_id.'-'.$field_id.'-field'] = array(
-              '#type' => 'hidden',
-              '#value' => $field['field'],
+          break;
+          case 'constant':
+            $form['exposed_fields']['new'][$record_id.'-'.$field_id] = array(
+              '#type' => 'textfield',
+              '#title' => t($field['title']),
+              '#description' => t('Enter the case-sensitive value of this constant for your spreadsheet'),
+              '#default_value' => (isset($node->constants[$record_id][$field_id]['value'])) ? $node->constants[$record_id][$field_id]['value'] : $field['constant value'],
             );
-            $form['exposed_fields']['new'][$record_id.'-'.$field_id.'-type'] = array(
-              '#type' => 'hidden',
-              '#value' => $field['type'],
-            );
-          }
+          break;
         }
+        
+        $form['exposed_fields']['new'][$record_id.'-'.$field_id.'-table'] = array(
+          '#type' => 'hidden',
+          '#value' => $record['table'],
+        );
+        $form['exposed_fields']['new'][$record_id.'-'.$field_id.'-field'] = array(
+          '#type' => 'hidden',
+          '#value' => $field['field'],
+        );
+        $form['exposed_fields']['new'][$record_id.'-'.$field_id.'-type'] = array(
+          '#type' => 'hidden',
+          '#value' => $field['type'],
+        );
+
       }
     }
   }
@@ -278,34 +314,41 @@ function tripal_bulk_loader_set_constants_form_submit ($form, $form_state) {
 function theme_tripal_bulk_loader_set_constants_form ($form) {
   $output = '';
   
+  $exposed_fields = unserialize($form['exposed_array']['#value']);
+  // need to put in the context of a node so we can use the has_exposed_fields function
+  if ($exposed_fields) {
+    $node->exposed_fields = $exposed_fields;
+  } else {
+    $node->exposed_fields = array();
+  }
+  
   // Add draggable table for constant sets
-  $exposed_field_keys = array();
-  //$header[] = ' ';
-  foreach ($form['exposed_fields']['new'] as $k => $element) {
-    if (preg_match('/^\d+-\d+$/',$k)) {
-      $exposed_field_keys[] = $k;
-      $header[] = $element['#title'];
-    }
-  }
+  if (tripal_bulk_loader_has_exposed_fields($node)) {
+    $i=1;
+    foreach (element_children($form['exposed_fields']['existing']) as $key) {
+      $element = &$form['exposed_fields']['existing'][$key];
+      $element['group']['#attributes']['class'] = 'weight-group';
   
-  foreach (element_children($form['exposed_fields']['existing']) as $key) {
-    $element = &$form['exposed_fields']['existing'][$key];
-    $element['group']['#attributes']['class'] = 'weight-group';
-
-    $row = array();
-    foreach ($exposed_field_keys as $k) {
-      $row[] = drupal_render($element[$k]);
+      $row = array();
+      foreach ($exposed_fields as $exposed) {
+        if ($i==1) {
+          $header[] = $exposed['title'];
+        }
+        $k = $exposed['record_id'].'-'.$exposed['field_id'];
+        $row[] = drupal_render($element[$k]);
+      }
+      $row[] = drupal_render($element['delete']);
+      $row[] = drupal_render($element['group']) . drupal_render($element['id']);
+      $rows[] = array('data' => $row, 'class' => 'draggable');
+      $i++;
     }
-    $row[] = drupal_render($element['delete']);
-    $row[] = drupal_render($element['group']) . drupal_render($element['id']);
-    $rows[] = array('data' => $row, 'class' => 'draggable');
+    //drupal_add_tabledrag('mytable', 'order', 'sibling', 'weight-group');
+    $form['exposed_fields']['existing'] = array(
+      '#type' => 'markup',
+      '#value' => theme('table', $header, $rows, array('id' => 'mytable')) . '<br />'
+    );
   }
-  //drupal_add_tabledrag('mytable', 'order', 'sibling', 'weight-group');
-  $form['exposed_fields']['existing'] = array(
-    '#type' => 'markup',
-    '#value' => theme('table', $header, $rows, array('id' => 'mytable')) . '<br />'
-  );
-  
+    
   $output .= drupal_render($form);
   return $output;
 }
@@ -351,48 +394,50 @@ function tripal_bulk_loader_edit_constant_set_form ($form_state, $node, $group_i
   // Add textifelds for exposed fields of the current template
   $exposed_fields = FALSE;
   $indexes = array();
-  if ($node->template_id) {
-    if (isset($node->template)) {
-      foreach ($node->template->template_array as $record_id => $record) {
-        foreach ($record['fields'] as $field_id => $field) {
-          if ($field['exposed']) {
-            $exposed_fields = TRUE;
-            $indexes[$record_id][] = $field_id;
-            
-            switch($field['type']) {
-              case 'table field':
-                $form[$record_id.'-'.$field_id] = array(
-                  '#type' => 'textfield',
-                  '#title' => t($field['title']),
-                  '#description' => t($field['exposed_description']),
-                  '#default_value' => (isset($node->constants[$group_id][$record_id][$field_id]['value'])) ? $node->constants[$group_id][$record_id][$field_id]['value'] : $field['constant value'],
-                );
-              break;
-              case 'constant':
-                $form[$record_id.'-'.$field_id] = array(
-                  '#type' => 'textfield',
-                  '#title' => t($field['title']),
-                  '#description' => t('Enter the case-sensitive value of this constant for your spreadsheet'),
-                  '#default_value' => (isset($node->constants[$group_id][$record_id][$field_id]['value'])) ? $node->constants[$group_id][$record_id][$field_id]['value'] : $field['constant value'],
-                );
-              break;
-            }
-            
-            $form[$record_id.'-'.$field_id.'-table'] = array(
-              '#type' => 'hidden',
-              '#value' => $record['table'],
+  if (tripal_bulk_loader_has_exposed_fields($node)) {
+    foreach ($node->exposed_fields as $exposed_index) {
+      
+      $record_id = $exposed_index['record_id'];
+      $field_id = $exposed_index['field_id'];
+      $field = $node->template->template_array[$record_id]['fields'][$field_id];
+
+      if ($field['exposed']) {
+        $exposed_fields = TRUE;
+        $indexes[$record_id][] = $field_id;
+        
+        switch($field['type']) {
+          case 'table field':
+            $form[$record_id.'-'.$field_id] = array(
+              '#type' => 'textfield',
+              '#title' => t($field['title']),
+              '#description' => t($field['exposed_description']),
+              '#default_value' => (isset($node->constants[$group_id][$record_id][$field_id]['value'])) ? $node->constants[$group_id][$record_id][$field_id]['value'] : $field['constant value'],
             );
-            $form[$record_id.'-'.$field_id.'-field'] = array(
-              '#type' => 'hidden',
-              '#value' => $field['field'],
+          break;
+          case 'constant':
+            $form[$record_id.'-'.$field_id] = array(
+              '#type' => 'textfield',
+              '#title' => t($field['title']),
+              '#description' => t('Enter the case-sensitive value of this constant for your spreadsheet'),
+              '#default_value' => (isset($node->constants[$group_id][$record_id][$field_id]['value'])) ? $node->constants[$group_id][$record_id][$field_id]['value'] : $field['constant value'],
             );
-            $form[$record_id.'-'.$field_id.'-type'] = array(
-              '#type' => 'hidden',
-              '#value' => $field['type'],
-            );
-          }
+          break;
         }
+        
+        $form[$record_id.'-'.$field_id.'-table'] = array(
+          '#type' => 'hidden',
+          '#value' => $record['table'],
+        );
+        $form[$record_id.'-'.$field_id.'-field'] = array(
+          '#type' => 'hidden',
+          '#value' => $field['field'],
+        );
+        $form[$record_id.'-'.$field_id.'-type'] = array(
+          '#type' => 'hidden',
+          '#value' => $field['type'],
+        );
       }
+
     }
   }
   $form['template'] = array(
