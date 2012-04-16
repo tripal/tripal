@@ -110,23 +110,13 @@ function tripal_bulk_loader_load_data($nid) {
   
   // set the status of the job (in the node not the tripal jobs)
   db_query("UPDATE tripal_bulk_loader SET job_status='%s' WHERE nid=%d",'Loading...', $nid);
-  
-  print "Memory Usage (Start): ".number_format((memory_get_usage() * 0.000000953674316), 5, '.', ',') . " Mb\n";
+
   
   $node = node_load($nid);
   print "Template: ".$node->template->name." (".$node->template_id.")\n";
-  print "File: ".$node->file."\n";
-  
-  if ($node->constants) {
-    print "Constants:\n";
-    foreach ($node->constants as $record_id => $record) {
-      foreach ($record as $field_id => $field) {
-        print "\t- ".$field['chado_table'].'.'.$field['chado_field'].' = '.$field['value']."\n";
-      }
-    }
-  }
-  
-  print "\nMemory Usage (After Node Load): ".number_format((memory_get_usage() * 0.000000953674316), 5, '.', ',') . " Mb\n";
+
+  $total_lines = trim(`wc --lines < $node->file`);
+  print "File: ".$node->file." (".$total_lines." lines)\n";
   
   // Prep Work ==================================================================================
   $loaded_without_errors = TRUE;
@@ -180,86 +170,101 @@ function tripal_bulk_loader_load_data($nid) {
     //watchdog('T_bulk_loader','2)'.$record_array['record_id'].':<pre>'.print_r($default_data[$priority], TRUE).'</pre>', array(), WATCHDOG_NOTICE);
   } //end of foreach record
 
-  // Add constants
-  if ($node->constants) {
-    foreach ($node->constants as $priority => $record) {
-      foreach ($record as $field_id => $field) {
-        if ($default_data[$priority]['table'] == $field['chado_table']) {
-          if (isset($default_data[$priority]['values_array'][$field['chado_field']])) {
-            if (isset($field2column[$priority][$field['chado_field']])) {
-              $field2column[$priority][$field['chado_field']] = $field['value'];
+  ///////////////////////////////////////////////
+  // For each set of constants
+  ///////////////////////////////////////////////
+  $original_default_data = $default_data;
+  $group_index = 0;
+  $total_num_groups = sizeof($node->constants);
+  foreach ($node->constants as $group_id => $set) {
+    // revert default data array for next set of constants
+    $default_data = $original_default_data;
+    $group_index++;
+    
+    // Add constants
+    if (!empty($set)) {
+      print "Constants:\n";
+      foreach ($set as $priority => $record) {
+        foreach ($record as $field_id => $field) {
+        
+          print "\t- ".$field['chado_table'].'.'.$field['chado_field'].' = '.$field['value']."\n";
+          
+          if ($default_data[$priority]['table'] == $field['chado_table']) {
+            if (isset($default_data[$priority]['values_array'][$field['chado_field']])) {
+              if (isset($field2column[$priority][$field['chado_field']])) {
+                $field2column[$priority][$field['chado_field']] = $field['value'];
+              } else {
+                $default_data[$priority]['values_array'][$field['chado_field']] = $field['value'];
+              }
             } else {
-              $default_data[$priority]['values_array'][$field['chado_field']] = $field['value'];
+              print "ERROR: Template has changed after constants were assigned!\n";
+              watchdog('T_bulk_loader','Template has changed after constants were assigned', array(), WATCHDOG_NOTICE);
+              exit(1);
             }
           } else {
             print "ERROR: Template has changed after constants were assigned!\n";
             watchdog('T_bulk_loader','Template has changed after constants were assigned', array(), WATCHDOG_NOTICE);
             exit(1);
           }
-        } else {
-          print "ERROR: Template has changed after constants were assigned!\n";
-          watchdog('T_bulk_loader','Template has changed after constants were assigned', array(), WATCHDOG_NOTICE);
-          exit(1);
         }
       }
     }
-  }
-  
-  print "Memory Usage (end of prep work): ".number_format((memory_get_usage() * 0.000000953674316), 5, '.', ',') . " Mb\n";
-  
-  //print "Default Data:".print_r($default_data,TRUE)."\n";
-  //watchdog('T_bulk_loader','Default Data:<pre>'.print_r($default_data, TRUE).'</pre>', array(), WATCHDOG_NOTICE);
-  
-  //print "\nDefault Values Array: ".print_r($default_data, TRUE)."\n";
-  //print "\nField to Column Mapping: ".print_r($field2column, TRUE)."\n";
-  
-  // Parse File adding records as we go ========================================================
-  $file_handle = fopen($node->file, 'r');
-  if (preg_match('/(t|true|1)/', $node->file_has_header)) { fgets($file_handle, 4096); }
-  $num_records = 0;
-  $num_lines = 0;
-  $num_errors = 0;
-  $total_lines = trim(`wc --lines < $node->file`);
-  $interval = intval($total_lines * 0.01);
-  if($interval == 0){ $interval = 1; }
-  while (!feof($file_handle)) {
-
-    // Clear variables
-    // Was added to fix memory leak
-    unset($line);                     unset($raw_line);
-    unset($data);                     unset($data_keys);
-    unset($priority);                 unset($sql);
-    unset($result);                   
     
-    $raw_line = fgets($file_handle, 4096);
-    $raw_line = trim($raw_line);
-    if (empty($raw_line)) { continue; } // skips blank lines
-    $line = explode("\t", $raw_line);
-    $num_lines++;
+    //print "Default Data:".print_r($default_data,TRUE)."\n";
+    //watchdog('T_bulk_loader','Default Data:<pre>'.print_r($default_data, TRUE).'</pre>', array(), WATCHDOG_NOTICE);
     
-    // update the job status every 1% features
-    if($node->job_id and $num_lines % $interval == 0){
-      print "Updating progress of ".$node->job_id." to ".($num_lines/$interval) ."%\n";
-       tripal_job_set_progress($node->job_id,($num_lines/$interval));
-    }    
-
-    $data = $default_data;
-
-    $data_keys = array_keys($data); 
-    foreach ($data_keys as $priority) {
-      $status = process_data_array_for_line($priority, $data, $default_data, $field2column, $record2priority, $line, $nid);
-      if (!$status ) { $loaded_without_errors = FALSE; }
-    } // end of foreach table in default data array
-
-    // determine memory increase
-    $line_mem_increase = memory_get_usage() - $memory;
-    if ($num_lines != 1) { 
-      $increased_mem = $increased_mem + $line_mem_increase;
-    }
-    $memory = memory_get_usage();
+    //print "\nDefault Values Array: ".print_r($default_data, TRUE)."\n";
+    //print "\nField to Column Mapping: ".print_r($field2column, TRUE)."\n";
     
-  } //end of foreach line of file
+    // Parse File adding records as we go ========================================================
+    $file_handle = fopen($node->file, 'r');
+    if (preg_match('/(t|true|1)/', $node->file_has_header)) { fgets($file_handle, 4096); }
+    $num_records = 0;
+    $num_lines = 0;
+    $num_errors = 0;
+    $interval = intval($total_lines * 0.10);
+    if($interval == 0){ $interval = 1; }
+    while (!feof($file_handle)) {
   
+      // Clear variables
+      // Was added to fix memory leak
+      unset($line);                     unset($raw_line);
+      unset($data);                     unset($data_keys);
+      unset($priority);                 unset($sql);
+      unset($result);                   
+      
+      $raw_line = fgets($file_handle, 4096);
+      $raw_line = trim($raw_line);
+      if (empty($raw_line)) { continue; } // skips blank lines
+      $line = explode("\t", $raw_line);
+      $num_lines++;
+      
+      // update the job status every 10% of lines processed for the current group
+      if($node->job_id and $num_lines % $interval == 0){
+        // percentage of lines processed for the current group
+        $group_progress = round(($num_lines/$total_lines)*100);
+        // percentage of lines processed for all groups
+        $job_progress = round(($group_index / $total_num_groups) * $group_progress);
+        
+          print "\nProgress Update:\n"
+            ."\t- ".$num_lines." lines have been processed for the current constant set.\n"
+            ."\t- ".$group_progress."% of the lines in the file have been processed for the current constant set.\n"
+            ."\t- ".$job_progress."% of the current job has been completed.\n";
+            
+        tripal_job_set_progress($node->job_id,$job_progress);
+      }    
+  
+      $data = $default_data;
+  
+      $data_keys = array_keys($data); 
+      foreach ($data_keys as $priority) {
+        $status = process_data_array_for_line($priority, $data, $default_data, $field2column, $record2priority, $line, $nid, $num_lines);
+        if (!$status ) { $loaded_without_errors = FALSE; }
+      } // end of foreach table in default data array
+      
+    } //end of foreach line of file
+  } //end of foreach constant set
+    
   // check that data was inserted and update job_status
   $sql = 'SELECT count(*) as num_tables FROM {tripal_bulk_loader_inserted} WHERE nid=%d GROUP BY nid';
   $result = db_fetch_object(db_query($sql, $nid));
@@ -271,11 +276,6 @@ function tripal_bulk_loader_load_data($nid) {
   // set the status of the job (in the node not the tripal jobs)
   if ($loaded_without_errors) { $status = 'Loading Completed Successfully'; } else { $status = 'Errors Encountered'; }
   db_query("UPDATE tripal_bulk_loader SET job_status='%s' WHERE nid=%d",$status, $nid);
-  
-  $avg_line_increase = ( $increased_mem / $num_lines) * 0.0078125;
-  print "Average Increase in Memory per Line: ".number_format($avg_line_increase, 5, '.', ',') . " Kb\n";
-  print "Peak Memory Usage: ".number_format((memory_get_peak_usage() * 0.000000953674316), 5, '.', ',') . " Mb\n";
-  print "End Memory Usage: ".number_format((memory_get_usage() * 0.000000953674316), 5, '.', ',') . " Mb\n";
 
 }
 
@@ -283,7 +283,7 @@ function tripal_bulk_loader_load_data($nid) {
  * 
  *
  */
-function process_data_array_for_line ($priority, &$data, &$default_data, $field2column, $record2priority, $line, $nid) {
+function process_data_array_for_line ($priority, &$data, &$default_data, $field2column, $record2priority, $line, $nid, $line_num) {
   $table_data = $data[$priority];
 
   $no_errors = TRUE;
@@ -297,21 +297,21 @@ function process_data_array_for_line ($priority, &$data, &$default_data, $field2
   if ($table_data['need_further_processing']) {
     $values = tripal_bulk_loader_add_spreadsheetdata_to_values ($values, $line, $field2column[$priority]);
     if (!$values) {
-      watchdog('T_bulk_loader','Spreadsheet Added:'.print_r($values, TRUE), array(), WATCHDOG_NOTICE);
+      watchdog('T_bulk_loader','Line '.$line_num.' Spreadsheet Added:'.print_r($values, TRUE), array(), WATCHDOG_NOTICE);
     }
     
     $values = tripal_bulk_loader_add_foreignkey_to_values($values, $data, $record2priority);
     if (!$values) {
-      watchdog('T_bulk_loader','FK Added:<pre>'.print_r($values, TRUE).print_r($data[$priority],TRUE).'</pre>', array(), WATCHDOG_NOTICE);
+      watchdog('T_bulk_loader','Line '.$line_num.' FK Added:<pre>'.print_r($values, TRUE).print_r($data[$priority],TRUE).'</pre>', array(), WATCHDOG_NOTICE);
     }
   }
   $values = tripal_bulk_loader_regex_tranform_values($values, $table_data, $line);
   if (!$values) {
-    watchdog('T_bulk_loader','Regex:<pre>'.print_r($values, TRUE).print_r($table_data, TRUE).'</pre>'.'</pre>', array(), WATCHDOG_NOTICE);
+    watchdog('T_bulk_loader','Line '.$line_num.' Regex:<pre>'.print_r($values, TRUE).print_r($table_data, TRUE).'</pre>'.'</pre>', array(), WATCHDOG_NOTICE);
   }
 
   if (!$values) {
-    $msg = $table_data['record_id'].' ('.$table_data['mode'].') Aborted due to error in previous record. Values of current record:'.print_r($table_data['values_array'],TRUE);
+    $msg = 'Line '.$line_num.' '.$table_data['record_id'].' ('.$table_data['mode'].') Aborted due to error in previous record. Values of current record:'.print_r($table_data['values_array'],TRUE);
     watchdog('T_bulk_loader', $msg, array(), WATCHDOG_WARNING); 
     print "ERROR: ".$msg."\n";
     $data[$priority]['error'] = TRUE;
@@ -326,7 +326,7 @@ function process_data_array_for_line ($priority, &$data, &$default_data, $field2
       // a field is considered missing if it cannot be null and there is no default
       // value for it or it is of type 'serial'
       if($def['not null'] == 1 and !array_key_exists($field,$insert_values) and !isset($def['default']) and strcmp($def['type'],serial)!=0){
-         $msg = $table_data['record_id'].' ('.$table_data['mode'].') Missing Database Required Value: '.$table.'.'.$field;
+         $msg = 'Line '.$line_num.' '.$table_data['record_id'].' ('.$table_data['mode'].') Missing Database Required Value: '.$table.'.'.$field;
          watchdog('T_bulk_loader', $msg, array(), WATCHDOG_NOTICE); 
          $data[$priority]['error'] = TRUE;
       }
@@ -337,7 +337,7 @@ function process_data_array_for_line ($priority, &$data, &$default_data, $field2
   foreach ($table_data['required'] as $field => $required) {
     if ($required) {
       if (!isset($values[$field])) {
-        $msg = $table_data['record_id'].' ('.$table_data['mode'].') Missing Template Required Value: '.$table.'.'.$field;
+        $msg = 'Line '.$line_num.' '.$table_data['record_id'].' ('.$table_data['mode'].') Missing Template Required Value: '.$table.'.'.$field;
         watchdog('T_bulk_loader', $msg, array(), WATCHDOG_NOTICE); 
         $data[$priority]['error'] = TRUE;  
       }
@@ -381,7 +381,7 @@ function process_data_array_for_line ($priority, &$data, &$default_data, $field2
     //watchdog('T_bulk_loader',$header.': Inserting:'.print_r($values, TRUE), array(), WATCHDOG_NOTICE);
     $record = tripal_core_chado_insert($table, $values);
     if (!$record) {
-      $msg = $table_data['record_id'].' ('.$table_data['mode'].') Unable to insert record into '.$table.' where values:'.print_r($values,TRUE);
+      $msg = 'Line '.$line_num.' '.$table_data['record_id'].' ('.$table_data['mode'].') Unable to insert record into '.$table.' where values:'.print_r($values,TRUE);
       watchdog('T_bulk_loader', $msg, array(), WATCHDOG_ERROR); 
       print "ERROR: ".$msg."\n";  
       $data[$priority]['error'] = TRUE;
@@ -424,7 +424,7 @@ function process_data_array_for_line ($priority, &$data, &$default_data, $field2
     $exists = tripal_core_chado_select($table, array_keys($table_desc['fields']), $values, array('has_record'=>TRUE));
     if (!$exists) {
       // No record on select
-      $msg = $table_data['record_id'].' ('.$table_data['mode'].') No Matching record in '.$table.' where values:'.print_r($values,TRUE);
+      $msg = 'Line '.$line_num.' '.$table_data['record_id'].' ('.$table_data['mode'].') No Matching record in '.$table.' where values:'.print_r($values,TRUE);
       watchdog('T_bulk_loader', $msg, array(), WATCHDOG_WARNING); 
       $data[$priority]['error'] = TRUE;  
     }
