@@ -51,6 +51,7 @@ function tripal_bulk_loader_update_constant ($nid, $group_id, $table, $field, $r
       return FALSE;
     }
   } else {
+
     $status = drupal_write_record('tripal_bulk_loader_constants',$record);
     if ($status) {
       return $record;
@@ -208,7 +209,7 @@ function tripal_bulk_loader_set_constants_form ($form_state, $node) {
         
         $form['exposed_fields']['new'][$record_id.'-'.$field_id.'-table'] = array(
           '#type' => 'hidden',
-          '#value' => $record['table'],
+          '#value' => $node->template->template_array[$record_id]['table'],
         );
         $form['exposed_fields']['new'][$record_id.'-'.$field_id.'-field'] = array(
           '#type' => 'hidden',
@@ -290,7 +291,7 @@ function tripal_bulk_loader_set_constants_form_submit ($form, $form_state) {
 	// Insert/Update constants
   $template = unserialize($form_state['values']['template']);
   $indexes = unserialize($form_state['values']['indexes']);
-  
+
   $op = $form_state['values'][ $form_state['clicked_button']['#name'] ];
   if (strcmp('Add Constant Set',$op) == 0) {
       $max_group = db_fetch_object(db_query("SELECT max(group_id) as value FROM tripal_bulk_loader_constants WHERE nid=%d",$form_state['values']['nid']));
