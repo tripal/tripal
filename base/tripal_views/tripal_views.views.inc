@@ -625,6 +625,18 @@ function tripal_views_views_plugins() {
  * Implementation of hook_views_pre_view().
  */
 function tripal_views_views_pre_view(&$view,&$display_id,&$args){
+
+   // merge the $_GET and $_POST into the $_GET. This is because
+   // Views and Views Data Export modules only uses the $_GET variable but
+   // file uploads require $_POST. We need to make sure these two modules
+   // have access to everything needed for this view to work properlys
+   $_GET = array_merge($_GET, $_POST);
+
+
+   // we want to add to the bottom of the views the form for downloading 
+   // results in other formats (e.g. Excel, FASTA, CSV, etc.).  The Views Data
+   // Export module provides small images at the bottom, but we want to provide
+   // a more intutitive interface for getting different file formats
    $form = drupal_get_form('tripal_views_data_export_download_form',$view,$display_id,$args);
    $view->attachment_after = $form;
 }

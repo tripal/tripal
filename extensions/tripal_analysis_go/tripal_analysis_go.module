@@ -4,7 +4,7 @@ require_once "includes/gaf_loader.inc";
 
 function tripal_analysis_go_init(){
    // Add style sheet
-   drupal_add_css(drupal_get_path('module', 'tripal_analysis_go').'/theme/css/tripal_analysis_go.css');
+   drupal_add_css(drupal_get_path('module', 'tripal_analysis_go').'/theme/css/tripal_analysis_go.css', 'theme');
 
    drupal_add_js(drupal_get_path('module', 'tripal_analysis_go').'/theme/js/tripal_analysis_go.js');
 }
@@ -390,7 +390,7 @@ function tripal_analysis_go_cv_chart($chart_id){
         )
      ",
      type             => 'p',
-     size             => '550x175',
+     size             => '650x260',
      title            => $title,
   );
   return $options;
