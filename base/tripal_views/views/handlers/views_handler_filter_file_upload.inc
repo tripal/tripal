@@ -1,10 +1,10 @@
 <?php
 
 /**
- * Purpose: This Handler provides a file upload field.
+ * Purpose: This Handler provides a file upload field by extending the
+ * views_handler_filter object.
  *
- * @ingroup views_filter_handlers
- * @ingroup tripal_core
+ * @ingroup tripal_views_integration
  */
 class views_handler_filter_file_upload extends views_handler_filter {
 
@@ -27,7 +27,7 @@ class views_handler_filter_file_upload extends views_handler_filter {
     
     // we'll provide a single text area for this field.
     // in the exposed_form function we'll add in the file upload button
-    $form['value'] = array(
+    $form['value'][$this->options['field'] . '_textarea']  = array(
        '#type' => 'textarea',
        '#title' => $this->options['expose']['label'],
        '#default_value' => $this->value,
@@ -35,6 +35,13 @@ class views_handler_filter_file_upload extends views_handler_filter {
        '#description' => t('Provide search values for ' . $this->options['expose']['label'] . 
          '. Please place each search item on a separate line or separated by commas.'),
     ); 
+    $form['value'][$this->options['field'] . '_upload'] = array(
+      '#type' => 'file',
+      '#title' => '',
+      '#description' => t('Upload a file to provide search values for ' . $this->options['expose']['label'] . 
+         '. Please place each search item on a separate line. If a file is uploaded but values are present '.
+         'in the text box above, the values in the text box will be ignored.'),
+    );
   }
 
   /** 
@@ -45,10 +52,12 @@ class views_handler_filter_file_upload extends views_handler_filter {
 
   }
   /**
-  * Ensures the select list gets rendered when the filter is exposed
+  * Ensures the upload field gets rendered when the filter is exposed. It also
+  * changes the form type from a GET to a POST so that file uploads will work.
   */
   function exposed_form(&$form, &$form_state) {
 
+    // don't do anything if the form isn't exposed.
     if (empty($this->options['exposed'])) {
       return;
     }
@@ -57,13 +66,10 @@ class views_handler_filter_file_upload extends views_handler_filter {
     $value = $this->options['expose']['identifier'];
     $this->value_form($form, $form_state);
     $form[$value] = $form['value'];
-    unset($form[$value]['#title']);
-    $form[$this->options['field'] . '_upload'] = array(
-      '#type' => 'file',
-      '#title' => '',
-      '#description' => t('Upload a file to provide search values for ' . $this->options['expose']['label'] . 
-         '. Please place each search item on a separate line.'),
-    );
+    unset($form[$value][$this->options['field'] . '_textarea']['#title']);
+
+    // since this is an exposed form we want to enable file uploads by
+    // setting the 'enctype' attribute and the method to POST
     $form['#attributes']['enctype'] = 'multipart/form-data';
     $form['#method'] = 'POST';
     $this->exposed_translate($form[$value], 'value');
@@ -77,7 +83,7 @@ class views_handler_filter_file_upload extends views_handler_filter {
      $holders = array();
      $values = array();
 
-     // get the file upload info if one has been provided
+     // get the file upload content if one has been provided
      $file = file_save_upload($this->field.'_upload',array());
      if($file){
         $fh = fopen($file->filepath,'r');
