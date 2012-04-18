@@ -71,7 +71,7 @@ if(count($blast_results_list) > 0){
 		foreach($hits_array AS $hit) { 
          $class = 'tripal-table-odd-row tripal_analysis_blast-table-odd-row';
          if($i % 2 == 0 ){
-            $class = 'tripal-table-even-row tripal_analysis_blast-table-odd-row';
+            $class = 'tripal-table-even-row tripal_analysis_blast-table-even-row';
          }?>
          <tr class="<?php print $class ?> tripal_analysis_blast-result-first-row">
             <td><?php print $i+1 ?>.</td>

@@ -1,6 +1,5 @@
 <?php
 
-require_once "/var/www/sites/all/modules/views/handlers/views_handler_filter_string.inc";
 /**
  * Purpose: This Handler provides a file upload field.
  *

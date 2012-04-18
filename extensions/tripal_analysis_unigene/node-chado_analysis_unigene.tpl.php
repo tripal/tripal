@@ -86,7 +86,7 @@ if (Drupal.jsEnabled) {
 <div id="tripal_analysis_unigene_details" class="tripal_details">
 
    <!-- Basic Details Theme -->
-   <?php include('tripal_analysis_unigene/tripal_analysis_unigene_base.tpl.php'); ?>
+   <?php include('theme/tripal_analysis_unigene/tripal_analysis_unigene_base.tpl.php'); ?>
 
    <?php print $content ?>
 </div>
