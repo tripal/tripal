@@ -243,8 +243,15 @@ function tripal_bulk_loader_load_data($nid) {
       if($node->job_id and $num_lines % $interval == 0){
         // percentage of lines processed for the current group
         $group_progress = round(($num_lines/$total_lines)*100);
+        
         // percentage of lines processed for all groups
-        $job_progress = round(($group_index / $total_num_groups) * $group_progress);
+        // <previous group index> * 100 + <current group progress>
+        // --------------------------------------------------------
+        //               <total number of groups>
+        // For example, if you were in the third group of 3 constant sets 
+        // and had a group percentage of 50% then the job progress would be
+        // (2*100 + 50%) / 3 = 250%/3 = 83%
+        $job_progress = round(((($group_index-1)*100)+$group_progress)/$total_num_groups);
         
           print "\nProgress Update:\n"
             ."\t- ".$num_lines." lines have been processed for the current constant set.\n"
