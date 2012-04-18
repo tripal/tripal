@@ -9,7 +9,7 @@ require_once "includes/parse_blast_XML.inc";
  ******************************************************************************/
 function tripal_analysis_blast_init(){
 	// Add javascript and style sheet
-	drupal_add_css(drupal_get_path('module', 'tripal_analysis_blast') .'/theme/css/tripal_analysis_blast.css');
+	drupal_add_css(drupal_get_path('module', 'tripal_analysis_blast') .'/theme/css/tripal_analysis_blast.css', 'theme');
 	drupal_add_js(drupal_get_path('module', 'tripal_analysis_blast') .'/theme/js/tripal_analysis_blast.js');
 }
 

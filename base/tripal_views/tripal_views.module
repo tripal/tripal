@@ -4,7 +4,9 @@ require_once "tripal_views_integration.inc";
 require_once "tripal_views.views.inc";
 
 /**
+ * Implements hook_menu()
  *
+ * Purpose: this hook provides details about new menu items added by this module
  *
  * @ingroup tripal_views
  */
@@ -20,8 +22,8 @@ function tripal_views_menu() {
    );
 
  	$items['admin/tripal/views/integration'] = array(
-     'title' => t('Views Integration'),
-     'description' => t('Allows you to select existing materialized views and provide details for integration with Drupal Views.'),
+     'title' => t('Integrated Tables'),
+     'description' => t('Provide a list of all integrated tables and allows for adding new tables or editing already integrated tables.'),
      'page callback' => 'tripal_views_integration_setup_list',
      'access arguments' => array('manage tripal_views_integration'),
      'type' => MENU_NORMAL_ITEM,
@@ -55,9 +57,9 @@ function tripal_views_menu() {
    return $items;
 }
 /**
- *  Set the permission types that the chado module uses.  Essentially we
- *  want permissionis that protect creation, editing and deleting of chado
- *  data objects
+ * Implements hook_views_api()
+ * 
+ * Purpose: Set the permission types that the chado module uses.  
  *
  * @ingroup tripal_views
  */
@@ -81,6 +83,10 @@ function tripal_views_views_api() {
    );
 }
 /**
+ * Implements hook_theme()
+ *
+ * Purpose: this hook provides details about themable objects added by 
+ *   this module
  *
  * @ingroup tripal_views
  */

@@ -376,6 +376,14 @@ function tripal_views_add_node_ids_to_view (&$view) {
 	return $view;
 }
 /**
+ * Generates a dynamic data array for Views
+ *
+ * Purpose: This function is a hook used by the Views module. It populates and
+ *   returns a data array that specifies for the Views module the base table,
+ *   the tables it joins with and handlers.  The data array is populated
+ *   using the data stored in the tripal_views tables.
+ *
+ * @return a data array formatted for the Views module
  *
  * @ingroup tripal_views
  */
@@ -621,6 +629,18 @@ function tripal_views_views_plugins() {
  * Implementation of hook_views_pre_view().
  */
 function tripal_views_views_pre_view(&$view,&$display_id,&$args){
+
+   // merge the $_GET and $_POST into the $_GET. This is because
+   // Views and Views Data Export modules only uses the $_GET variable but
+   // file uploads require $_POST. We need to make sure these two modules
+   // have access to everything needed for this view to work properlys
+   $_GET = array_merge($_GET, $_POST);
+
+
+   // we want to add to the bottom of the views the form for downloading 
+   // results in other formats (e.g. Excel, FASTA, CSV, etc.).  The Views Data
+   // Export module provides small images at the bottom, but we want to provide
+   // a more intutitive interface for getting different file formats
    $form = drupal_get_form('tripal_views_data_export_download_form',$view,$display_id,$args);
    $view->attachment_after = $form;
 }

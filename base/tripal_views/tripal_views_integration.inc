@@ -54,6 +54,12 @@ function tripal_views_description_page() {
   return $text;
 }
 /**
+ * Purpose: Generates a themable table containing the list of integrated tables
+ *   The look-and-feel of the table can be altered by overriding the theme for
+ *   tables.
+ *
+ * @return
+ *    a themed HTML table   
  *
  * @ingroup tripal_views_integration
  */
@@ -86,6 +92,12 @@ function tripal_views_integration_setup_list(){
 }
 
 /**
+ * Purpose: Deletes integration of a table with the Views module.  This 
+ *   function is meant to be called from a menu item. After completion it
+ *   redirects the user to the views intergation page.
+ *
+ * @param $setup_id
+ *    the unique setup id for the integrated table   
  *
  * @ingroup tripal_views_integration
  */
@@ -96,6 +108,19 @@ function tripal_views_integration_delete($setup_id){
 }
 
 /**
+ * Purpose: defines the web form used for specifing the base table, joins and
+ *   handlers when integrating a table with views.  This form is used for both
+ *   creating a new record and editing an existing record.
+ *
+ * @param &$form_state
+ *    The form state which is passed automatically by drupal  
+ *
+ * @param $setup_id
+ *    The unique setup for an integrated table.  This value is only set when
+ *    the form is used for updating an existing record.  
+ *
+ * @return
+ *    A proper Drupal form associative array.
  *
  * @ingroup tripal_views_integration
  */
@@ -688,6 +713,13 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL){
 
 
 /**
+ * Purpose: validates the tripal_views_integration_form after submission
+ *
+ * @param $form
+ *    The form object which is passed automatically by drupal  
+ *
+ * @param &$form_state
+ *    The form state pbject which is passed automatically by drupal  
  *
  * @ingroup tripal_views_integration
  */
@@ -709,6 +741,14 @@ function tripal_views_integration_form_validate($form, &$form_state){
 }
 
 /**
+ * Purpose: inserts or updates the record in the tripal views integration
+ *   tables.  This function is only called if validation is passed. 
+ *
+ * @param $form
+ *    The form object which is passed automatically by drupal  
+ *
+ * @param &$form_state
+ *    The form state pbject which is passed automatically by drupal  
  *
  * @ingroup tripal_views_integration
  */
@@ -717,6 +757,8 @@ function tripal_views_integration_form_submit($form, &$form_state){
    $mview_id = $form_state['values']['mview_id'];
    $table_name = $form_state['values']['table_name'];
    $setup_id = $form_state['values']['setup_id'];
+   $priority = $form_state['values']['row_priority'];
+   $comment = $form_state['values']['row_description'];
 
    // get details about this mview
    if ($mview_id) {
@@ -742,19 +784,18 @@ function tripal_views_integration_form_submit($form, &$form_state){
        'mview_id' => $mview_id,
        'table_name' => $mview->mv_table,
        'name' => $name,
-       'priority' => $form_state['values']['row_priority'],
-       'comment' => $form_state['values']['row_description'],
-       
+       'priority' => $priority,
+       'comment' => $comment,       
       );
    } 
    // if a chado table then...
-   if($table_name){
-            // build the record for insert/update
+   else {
+      // build the record for insert/update
       $tripal_views_record = array(
        'table_name' => $table_name,
        'name' => $name,
-       'priority' => $form_state['values']['row_priority'],
-       'comment' => $form_state['values']['row_description'],
+       'priority' => $priority,
+       'comment' => $comment,
       );
    }
 
@@ -771,8 +812,6 @@ function tripal_views_integration_form_submit($form, &$form_state){
          return;
       }
    }
-   
-
    
    // if this is an update then clean out the existing joins and handlers so we can add new ones
    if($setup_id){  
@@ -842,6 +881,12 @@ function tripal_views_integration_form_submit($form, &$form_state){
 }
 
 /**
+ * Purpose: this function queries all modules currently enabled on the site
+ *   looking for custom handlers and returns a list of all available handerls.
+ *   The base View handlers are also included.
+ *
+ * @return
+ *   Returns an array of handler names
  *
  * @ingroup tripal_views_integration
  */

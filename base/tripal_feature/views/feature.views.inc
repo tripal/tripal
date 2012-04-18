@@ -142,7 +142,7 @@
     ),
   );
   // if joined to the node table add a "Link to Node" option for the field  
-  if (!$database) {
+  if (!$database && module_exists('tripal_views')) {
     $data['feature']['name']['field']['handler'] = 'views_handler_field_node_optional';
   }
 
@@ -165,7 +165,7 @@
     ),
   );
   // if joined to the node table add a "Link to Node" option for the field  
-  if (!$database) {
+  if (!$database && module_exists('tripal_views')) {
     $data['feature']['uniquename']['field']['handler'] = 'views_handler_field_node_optional';
   }
 
@@ -288,6 +288,7 @@
       'help' => t('Display a given type of relationships including the current feature.'),
       'handler' => 'views_handler_field_chado_rel_by_type',
     ),
-  );  
+  ); 
+  
   return $data;
  }

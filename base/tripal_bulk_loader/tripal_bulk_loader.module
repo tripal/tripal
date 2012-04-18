@@ -1,6 +1,7 @@
 <?php
 
 include('tripal_bulk_loader.loader.inc');
+include('tripal_bulk_loader.constants.inc');
 
 /**
  * Implements hook_init
@@ -24,6 +25,25 @@ function tripal_bulk_loader_menu() {
      'page callback' => 'tripal_bulk_loader_list',
      'access arguments' => array('access tripal_bulk_loader'),
      'type' => MENU_NORMAL_ITEM,
+   );
+   // Bulk Loading Job Node
+   $items['node/%node/constants/%/edit'] = array(
+      'title' => 'Edit Constant Set',
+      'description' => 'Edit a group of constants associated with the current bulk loader',
+    	'page callback' => 'drupal_get_form',
+    	'page arguments' => array('tripal_bulk_loader_edit_constant_set_form',1,3),
+      'access arguments' => array('administer site configuration'),
+      'type' => MENU_CALLBACK,   
+		  'file' => 'tripal_bulk_loader.constants.inc',
+   );
+   $items['node/%node/constants/%/delete'] = array(
+      'title' => 'Delete Constant Set',
+      'description' => 'Delete a group of constants associated with the current bulk loader',
+    	'page callback' => 'drupal_get_form',
+    	'page arguments' => array('tripal_bulk_loader_delete_constant_set_form',1,3),
+      'access arguments' => array('administer site configuration'),
+      'type' => MENU_CALLBACK,   
+		  'file' => 'tripal_bulk_loader.constants.inc',
    );
    // Admin page to create the template
    $items['admin/tripal/tripal_bulk_loader_template'] = array(
@@ -110,11 +130,6 @@ function tripal_bulk_loader_menu() {
 		  'file' => 'tripal_bulk_loader.admin.inc',  
   );	
 	// AHAH ---------
-	$items['node/add/tripal-bulk-loader/ahah'] = array(
-      'page callback' => 'tripal_bulk_loader_create_node_ahah',
-      'access arguments' => array('create tripal_bulk_loader'),
-      'type' => MENU_CALLBACK,   
-	);
 	$items['admin/tripal/tripal_bulk_loader_template/add_field_ahah'] = array(
       'page callback' => 'tripal_bulk_loader_add_field_ahah',
       'access arguments' => array('administer site configuration'),
@@ -131,11 +146,15 @@ function tripal_bulk_loader_menu() {
   return $items;
 }
 
+
 /**
  * Implements hook_theme
  */
 function tripal_bulk_loader_theme() {
   return array(
+    'tripal_bulk_loader_set_constants_form' => array(
+      'arguments' => array('form' => NULL),
+    ),
     'tripal_bulk_loader_template' => array(
     	'arguments'=> array('template_id' => NULL),
     	'template' => 'tripal_bulk_loader_template'
@@ -293,13 +312,6 @@ function tripal_bulk_loader_form ($node, $form_state){
     '#weight'        => -9,
     '#required'      => TRUE,
     '#default_value' => $node->template_id,
-    '#ahah' => array(
-      'path' => 'node/add/tripal-bulk-loader/ahah',
-      'wrapper' => 'set-constants',
-      'event' => 'change',
-      'method' => 'replace',
-      'effect' => 'fade',
-    ),
   );
   
   $form['loader']['file']= array(
@@ -321,43 +333,6 @@ function tripal_bulk_loader_form ($node, $form_state){
   return $form;
 }
 
-/**
- * AHAH Function: Replace $form['constants'] in tripal_bulk_loader_form
- *
- * @return
- *  JSON Data printed to the screen
- */
-function tripal_bulk_loader_create_node_ahah () {
-
-  // The form is generated in an include file which we need to include manually.
-  include_once 'modules/node/node.pages.inc';
-  
-  $form_state = array('storage' => NULL, 'submitted' => FALSE);
-  $form_build_id = $_POST['form_build_id'];
-  $form = form_get_cache($form_build_id, $form_state);
-  $args = $form['#parameters'];
-  $form_id = array_shift($args);
-  $form_state['post'] = $form['#post'] = $_POST;
-  
-  // Enable the submit/validate handlers to determine whether AHAH-submittted.
-  $form_state['ahah_submission'] = TRUE;
-  
-  $form['#programmed'] = $form['#redirect'] = FALSE;
-  drupal_process_form($form_id, $form, $form_state);
-  $form = drupal_rebuild_form($form_id, $form_state, $args, $form_build_id);
-  
-  $form_element = $form['exposed_fields'];
-  // Remove the wrapper so we don't double it up.
-  unset($form_element['#prefix'], $form_element['#suffix']);
-
-  $output = theme('status_messages');
-  $output .= drupal_render($form_element);
-
-  // Final rendering callback.
-  print drupal_json(array('status' => TRUE, 'data' => $output));
-  exit();
-  
-}
 
 /**
  * Implements node_load
@@ -382,18 +357,44 @@ function tripal_bulk_loader_load($node){
     $r->num_inserted = sizeof(preg_split('/,/',$r->ids_inserted)); 
     $node->inserted_records->{$r->table_inserted_into} = $r;
   }
+
+  // Add exposed field list
+  $node->exposed_fields = array();
+  if ($template) {
+    foreach ($template as $record_id => $record) {
+      foreach ($record['fields'] as $field_id => $field) {
+        if ($field['exposed']) {
+          $node->exposed_fields[] = array(
+            'record_id' => $record_id,
+            'field_id' => $field_id,
+            'title' => $field['title'],
+          );
+        }
+      }
+    }
+    
+    if (empty($node->exposed_fields)) {
+      $node->exposed_fields[] = array();
+    }
+  }
+
   
   // Add constants
-  $sql = 'SELECT * FROM {tripal_bulk_loader_constants} WHERE nid=%d ORDER BY record_id, field_id';
+  $sql = 'SELECT * FROM {tripal_bulk_loader_constants} WHERE nid=%d ORDER BY group_id, record_id, field_id';
   $resource = db_query($sql,$node->nid);
   while ($r = db_fetch_object($resource)) {
-    $node->constants[$r->record_id][$r->field_id] = array(
+    $node->constants[$r->group_id][$r->record_id][$r->field_id] = array(
+      'constant_id' => $r->constant_id,
+      'group_id' => $r->group_id,
       'chado_table'=>$r->chado_table, 
       'chado_field'=>$r->chado_field, 
       'record_id'=>$r->record_id, 
       'field_id'=>$r->field_id, 
       'value'=>$r->value
     );
+  }
+  if (!$node->constants) {
+    $node->constants[] = array();
   }
   
 	return $node;
@@ -451,228 +452,6 @@ function tripal_bulk_loader_update ($node) {
 		}
 	}
   
-}
-
-///////////////////////////////////////////////////////////
-// Set Constants Form
-///////////////////////////////////////////////////////////
-
-/**
- * Set constants (exposed fields in template)
- *
- * @param $form_state 
- *   The current state of the form
- * @param $node
- *   The node to set constants for
- *
- * @return
- *   A form array to be rendered by drupal_get_form()
- */
-function tripal_bulk_loader_set_constants_form ($form_state, $node) {
-  $form = array();
-  
-  $form['nid'] = array(
-    '#type' => 'hidden',
-    '#value' => $node->nid
-  );
-  
-  $form['exposed_fields'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Constant Values'),
-    '#collapsible' => TRUE,
-    '#collapsed' => ($node->template_id) ? FALSE : TRUE,
-    '#prefix' => '<div id="set-constants">',
-    '#suffix' => '</div>',
-  );
-  
-  $form['exposed_fields']['explanation'] = array(
-    '#type' => 'item',
-    '#value' => t('The following fields are constants in the selected template that you need to set values for.')
-  );
-  
-  // Add textifelds for exposed fields of the current template
-  $exposed_fields = FALSE;
-  $indexes = array();
-  if ($node->template_id) {
-    if (isset($node->template)) {
-      foreach ($node->template->template_array as $record_id => $record) {
-        foreach ($record['fields'] as $field_id => $field) {
-          if ($field['exposed']) {
-            $exposed_fields = TRUE;
-            $indexes[$record_id][] = $field_id;
-            
-            switch($field['type']) {
-              case 'table field':
-                $form['exposed_fields'][$record_id.'-'.$field_id] = array(
-                  '#type' => 'textfield',
-                  '#title' => t($field['title']),
-                  '#description' => t($field['exposed_description']),
-                  '#default_value' => (isset($node->constants[$record_id][$field_id]['value'])) ? $node->constants[$record_id][$field_id]['value'] : $field['constant value'],
-                );
-              break;
-              case 'constant':
-                $form['exposed_fields'][$record_id.'-'.$field_id] = array(
-                  '#type' => 'textfield',
-                  '#title' => t($field['title']),
-                  '#description' => t('Enter the case-sensitive value of this constant for your spreadsheet'),
-                  '#default_value' => (isset($node->constants[$record_id][$field_id]['value'])) ? $node->constants[$record_id][$field_id]['value'] : $field['constant value'],
-                );
-              break;
-            }
-            
-            $form['exposed_fields'][$record_id.'-'.$field_id.'-table'] = array(
-              '#type' => 'hidden',
-              '#value' => $record['table'],
-            );
-            $form['exposed_fields'][$record_id.'-'.$field_id.'-field'] = array(
-              '#type' => 'hidden',
-              '#value' => $field['field'],
-            );
-            $form['exposed_fields'][$record_id.'-'.$field_id.'-type'] = array(
-              '#type' => 'hidden',
-              '#value' => $field['type'],
-            );
-          }
-        }
-      }
-    }
-  }
-  $form['template'] = array(
-    '#type' => 'hidden',
-    '#value' => serialize($node->template->template_array)
-  );
-  
-  $form['exposed_fields']['indexes'] = array(
-    '#type' => 'hidden',
-    '#value' => serialize($indexes),
-  );
-  
-  if (!$exposed_fields) {
-    $form['exposed_fields']['explanation'] = array(
-      '#type' => 'item',
-      '#value' => t('There are no exposed fields for this template.')
-    );    
-  }
-  
-  $form['exposed_fields']['submit'] = array(
-    '#type' => 'submit',
-    '#value' => t('Save Changes')
-  );
-  
-  return $form;
-}
-
-/**
- * Validate that the values entered exist in the database
- * if indicated in hte template array
- */
-function tripal_bulk_loader_set_constants_form_validate ($form_state, $form) {
-
-  $template = unserialize($form_state['template']['#value']);
-  $indexes = unserialize($form_state['exposed_fields']['indexes']['#value']);
-  
-  foreach ($indexes as $record_id => $array) {
-    foreach($array as $field_id) {
-      if ($template[$record_id]['fields'][$field_id]['exposed_validate']) {
-        $result = db_fetch_object(db_query(
-          "SELECT 1 as valid FROM %s WHERE %s='%s'",
-          $template[$record_id]['table'],
-          $template[$record_id]['fields'][$field_id]['field'],
-          $form_state['exposed_fields'][$record_id.'-'.$field_id]['#value']
-        ));
-
-        if (!$result->valid) {
-          $msg = 'A '.$form_state['exposed_fields'][$record_id.'-'.$field_id]['#title'].' of "'.$form_state['exposed_fields'][$record_id.'-'.$field_id]['#value'].'" must already exist!';
-          form_set_error($record_id.'-'.$field_id, $msg);
-        } else {
-          drupal_set_message('Confirmed a '.$form_state['exposed_fields'][$record_id.'-'.$field_id]['#title'].' of "'.$form_state['exposed_fields'][$record_id.'-'.$field_id]['#value'].'" already exists.');
-        }
-      }
-    }
-  }
-  
-}
-
-/**
- * Insert/update the constants associated with this node
- */
-function tripal_bulk_loader_set_constants_form_submit ($form, $form_state) {
-
-	// Insert/Update constants
-  $template = unserialize($form_state['values']['template']);
-  $indexes = unserialize($form_state['values']['indexes']);
-  
-  foreach ($indexes as $record_id => $array) {
-    foreach($array as $field_id) {	
-      tripal_bulk_loader_update_constant(
-        $form_state['values'][nid], 
-        $form_state['values'][$record_id.'-'.$field_id.'-table'], 
-        $form_state['values'][$record_id.'-'.$field_id.'-field'],
-        $record_id,
-        $field_id,
-        $form_state['values'][$record_id.'-'.$field_id]
-        );
-    }
-  }
-  
-}
-
-/**
- * Inserts/Updates a tripal bulk loading job constant
- *
- * @param $nid
- *   The node ID of the the tripal bulk loading job the constant is associated with
- * @param $table
- *   The chado table the constant is associated with
- * @param $field
- *   The chado field the constant is associated with
- * @param $record_id
- *   The index in the template array for this record
- * @param $field_id
- *   The index in the template array for this field
- *
- * NOTE: $template_array[$record_id]['table'] = $table and $template_array[$record_id]['fields'][$field_id]['field'] = $field
- *   both are included as a means of double-checking the constant still is still in thesame place in the template array.
- *   For example, that the template was not edited and the records moved around after the job was submitted but before it was run.
- *
- * @return
- *   On success it returns the object (with primary key if inserted);
- *   on failure it returns FALSE
- */
-function tripal_bulk_loader_update_constant ($nid, $table, $field, $record_id, $field_id, $value) {
-  
-  $record = array(
-    'nid'=>$nid, 
-    'chado_table'=>$table, 
-    'chado_field'=>$field, 
-    'record_id'=>$record_id, 
-    'field_id'=>$field_id, 
-    'value'=>$value
-  );
-  
-  // Check to see if already exists
-  $exists = db_fetch_object(db_query(
-    "SELECT constant_id FROM {tripal_bulk_loader_constants} WHERE nid=%d AND record_id=%d AND field_id=%d",
-    $record['nid'],
-    $record['record_id'],
-    $record['field_id']
-  ));
-  if ($exists->constant_id) {
-    $record['constant_id'] = $exists->constant_id;
-    $status = drupal_write_record('tripal_bulk_loader_constants',$record,'constant_id');
-    if ($status) {
-      return $record;
-    } else {
-      return FALSE;
-    }
-  } else {
-    $status = drupal_write_record('tripal_bulk_loader_constants',$record);
-    if ($status) {
-      return $record;
-    } else {
-      return FALSE;
-    }
-  }
 }
 
 ///////////////////////////////////////////////////////////
