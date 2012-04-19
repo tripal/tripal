@@ -27,7 +27,7 @@ class views_handler_filter_file_upload extends views_handler_filter {
     
     // we'll provide a single text area for this field.
     // in the exposed_form function we'll add in the file upload button
-    $form['value'][$this->options['field'] . '_textarea']  = array(
+    $form['value'] = array(
        '#type' => 'textarea',
        '#title' => $this->options['expose']['label'],
        '#default_value' => $this->value,
@@ -35,22 +35,14 @@ class views_handler_filter_file_upload extends views_handler_filter {
        '#description' => t('Provide search values for ' . $this->options['expose']['label'] . 
          '. Please place each search item on a separate line or separated by commas.'),
     ); 
-    $form['value'][$this->options['field'] . '_upload'] = array(
+    $form[$this->options['field'] . '_upload'] = array(
       '#type' => 'file',
-      '#title' => '',
+      '#title' => $this->options['expose']['label'] . ' File upload',
       '#description' => t('Upload a file to provide search values for ' . $this->options['expose']['label'] . 
-         '. Please place each search item on a separate line. If a file is uploaded but values are present '.
-         'in the text box above, the values in the text box will be ignored.'),
+         '. Please place each search item on a separate line.'),
     );
   }
 
-  /** 
-   *  Validates the input form
-   */
-  function exposed_validate(&$form, &$form_state) {
-    //dpm($form_state);
-
-  }
   /**
   * Ensures the upload field gets rendered when the filter is exposed. It also
   * changes the form type from a GET to a POST so that file uploads will work.
@@ -61,24 +53,36 @@ class views_handler_filter_file_upload extends views_handler_filter {
     if (empty($this->options['exposed'])) {
       return;
     }
-
     // rebuild the form elements 
     $value = $this->options['expose']['identifier'];
     $this->value_form($form, $form_state);
+
     $form[$value] = $form['value'];
-    unset($form[$value][$this->options['field'] . '_textarea']['#title']);
+    unset($form[$value]['#title']);
 
     // since this is an exposed form we want to enable file uploads by
     // setting the 'enctype' attribute and the method to POST
     $form['#attributes']['enctype'] = 'multipart/form-data';
     $form['#method'] = 'POST';
     $this->exposed_translate($form[$value], 'value');
-  }
 
- /**
-  *
-  */
+    if ($value != 'value') {
+      unset($form['value']);
+    }
+
+  }
+  /** 
+   *  Validates the input form
+   */
+  function exposed_validate(&$form, &$form_state) {
+     //dpm($form_state);
+  }
+  /**
+   *
+   */
   function query() {
+    $this->ensure_my_table();
+
      $field = "$this->table.$this->real_field";
      $holders = array();
      $values = array();
@@ -94,13 +98,15 @@ class views_handler_filter_file_upload extends views_handler_filter {
         }
      } 
      // if a file upload has not been provided then use the value in the textarea
-     else {
+     if($this->value[0]){
         $items = $this->value[0];
+        // remove extra spaces and new lines
         $items = preg_replace("/\s+,/",",",$items);
         $items = preg_replace("/\s+\n/","\n",$items);
         $items = preg_replace("/,\n/","\n",$items);
-        $values = preg_split("/[\n,]+/",$items);
-
+        // add to the array of values
+        $vals = preg_split("/[\n,]+/",$items);
+        $values = array_merge($values,$vals);
      }
      for($i = 0 ; $i < count($values); $i++){
         $values[$i] = trim($values[$i]);
