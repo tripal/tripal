@@ -66,6 +66,9 @@ function tripal_views_description_page() {
 function tripal_views_integration_setup_list(){
    $output = '';
 
+   $output .= '<h3>'.l('Add a new entry',"admin/tripal/views/integration/new") . " | " .
+                         l("Create Materialized View",'admin/build/views/add').'</h3>';
+                         
    $output .= '<p>The following tables list the views integration setups available. If '
     .'there is more then one setup for a given table, then the setup with the lightest ' 
     .'priority will be used. For example, if you have created a custom setup for the '
@@ -73,9 +76,7 @@ function tripal_views_integration_setup_list(){
     .'used instead of the default feature integration because -5 is lighter then 10.'
     .'Priorities use the Drupal -10 to +10 scale where a record with -10 has a '
     .'greater priority then one with 0 and both have a greater priority then one with +10.</p>';
-       
-   $output .= '<p>'.l('Add a new entry',"admin/tripal/views/integration/new") . " | " .
-                         l("Create View",'admin/build/views/add').'</p>';
+      
    
    // Start with materialized views           
    $output .= '<br /><h3>Materialized Views</h3>';           
