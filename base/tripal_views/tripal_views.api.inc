@@ -55,6 +55,13 @@ function tripal_views_is_integrated($table_name, $priority = NULL) {
 
 /**
  * Checks if you are dealing with the lightest priority setup for a given table
+ *
+ * @param $setup_id
+ *   The ID of the setup to check (is this setup the lightest one?)
+ * @param $table_name
+ *   The name of the table associated with this setup
+ *
+ * @return TRUE is this is the lightest priority; FALSE otherwise
  */
 function tripal_views_is_lightest_priority_setup ($setup_id, $table_name) {
   $lightest_priority_setup_id = tripal_views_get_lightest_priority_setup ($table_name);

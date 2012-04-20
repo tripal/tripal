@@ -64,31 +64,59 @@ function tripal_views_description_page() {
  * @ingroup tripal_views_integration
  */
 function tripal_views_integration_setup_list(){
+   $output = '';
 
-   $header = array('', 'Drupal Views Type Name', 'Table Name', 'Is Mview', 'Priority', 'Comment','');
+   $output .= '<p>The following tables list the views integration setups available. If '
+    .'there is more then one setup for a given table, then the setup with the lightest ' 
+    .'priority will be used. For example, if you have created a custom setup for the '
+    .'feature chado table and your setup has a priority of -5 then your setup will be '
+    .'used instead of the default feature integration because -5 is lighter then 10.'
+    .'Priorities use the Drupal -10 to +10 scale where a record with -10 has a '
+    .'greater priority then one with 0 and both have a greater priority then one with +10.</p>';
+       
+   $output .= '<p>'.l('Add a new entry',"admin/tripal/views/integration/new") . " | " .
+                         l("Create View",'admin/build/views/add').'</p>';
+   
+   // Start with materialized views           
+   $output .= '<br /><h3>Materialized Views</h3>';           
+   $header = array('', 'Drupal Views Type Name', 'Table Name', 'Priority', 'Comment','');
    $rows = array();
 
    // get the list of materialized views
-   $tviews = db_query('SELECT * FROM {tripal_views} ORDER BY table_name, priority');
+   $tviews = db_query('SELECT * FROM {tripal_views} WHERE mview_id IS NOT NULL ORDER BY table_name ASC, priority ASC');
    while($tview = db_fetch_object($tviews)){
          $rows[] = array(
             l('Edit',"admin/tripal/views/integration/edit/".$tview->setup_id) ,
             $tview->name, 
-            $tview->table_name, 
-            ($tview->mview_id) ? 'Yes' : 'No', 
+            $tview->table_name,  
             $tview->priority,
             $tview->comment,
             l('Delete',"admin/tripal/views/integration/delete/".$tview->setup_id),
          );         
    }
-   $rows[] = array(
-      'data' => array( 
-         array('data' => l('Add a new entry',"admin/tripal/views/integration/new") . " | " .
-                         l("Create View",'admin/build/views/add'), 
-               'colspan' => 7),
-         )
-   );
-   return theme('table', $header, $rows);
+   
+   $output .= theme('table', $header, $rows);
+
+   // Now list chado tables
+   $output .= '<br /><h3>Chado Tables</h3>';           
+   $header = array('', 'Drupal Views Type Name', 'Table Name', 'Priority', 'Comment','');
+   $rows = array();
+
+   // get the list of materialized views
+   $tviews = db_query('SELECT * FROM {tripal_views} WHERE mview_id IS NULL ORDER BY table_name ASC, priority ASC');
+   while($tview = db_fetch_object($tviews)){
+         $rows[] = array(
+            l('Edit',"admin/tripal/views/integration/edit/".$tview->setup_id) ,
+            $tview->name, 
+            $tview->table_name,  
+            $tview->priority,
+            $tview->comment,
+            l('Delete',"admin/tripal/views/integration/delete/".$tview->setup_id),
+         );         
+   }
+   
+   $output .= theme('table', $header, $rows);
+   return $output;
 }
 
 /**
