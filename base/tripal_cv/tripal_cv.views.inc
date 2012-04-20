@@ -37,11 +37,29 @@ function tripal_cv_views_data() {
   
   //Function is contained in includes/cvterm.views.inc
   //Returns the data array for the chado cvterm table
-  $data = array_merge($data, retrieve_cvterm_views_data());
+  //$data = array_merge($data, retrieve_cvterm_views_data());
   
   //Function is contained in includes/cv.views.inc
   //Returns the data array for the chado cv table
-  $data = array_merge($data, retrieve_cv_views_data());
+  //$data = array_merge($data, retrieve_cv_views_data());
+  
+    if (module_exists('tripal_views')) {
+    $tables = array(
+      'cv',
+      'cvterm',
+      'cvterm_dbxref',
+      'cvterm_relationship',
+      'cvtermpath',
+      'cvtermprop',
+      'cvtermsynonym'
+    );
+    foreach ($tables as $tablename) {
+      if (!tripal_views_is_integrated($tablename, 10)) {
+        $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename);
+        tripal_views_integration_add_entry($table_integration_array);
+      }
+    }
+  }
   
   return $data;
 }

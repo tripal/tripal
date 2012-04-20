@@ -35,9 +35,41 @@ require_once('views/misc_tables.views.inc');
 function tripal_feature_views_data()  {
   $data = array();
   
-  $data = array_merge($data, retrieve_feature_views_data());
-  $data = array_merge($data, retrieve_chado_feature_views_data());
-  $data = array_merge($data, retrieve_feature_misc_tables_views_data());
+  //$data = array_merge($data, retrieve_feature_views_data());
+  //$data = array_merge($data, retrieve_chado_feature_views_data());
+  //$data = array_merge($data, retrieve_feature_misc_tables_views_data());
+  
+  if (module_exists('tripal_views')) {
+    $tables = array(
+      'feature',
+      //'feature_cvterm',
+      'feature_cvterm_dbxref',
+      'feature_cvterm_pub',
+      'feature_cvtermprop',
+      'feature_dbxref',
+      'feature_pub',
+      'feature_pubprop',
+      'feature_relationship',
+      'feature_relationship_pub',
+      'feature_relationshipprop',
+      'feature_relationshipprop_pub',
+      'feature_synonym',
+      'featureloc',
+      'featureloc_pub',
+      'featureprop',
+      'featureprop_pub',
+      'featuremap',
+      'featuremap_pub',
+      'featurepos',
+      'featurerange'
+    );
+    foreach ($tables as $tablename) {
+      if (!tripal_views_is_integrated($tablename, 10)) {
+        $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename);
+        tripal_views_integration_add_entry($table_integration_array);
+      }
+    }
+  }
   
   return $data;
 }

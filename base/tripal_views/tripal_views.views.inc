@@ -375,6 +375,7 @@ function tripal_views_add_node_ids_to_view (&$view) {
 		
 	return $view;
 }
+
 /**
  * Generates a dynamic data array for Views
  *

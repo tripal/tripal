@@ -30,11 +30,26 @@ require_once('views/db.views.inc');
  * @ingroup tripal_db_views
  */
 function tripal_db_views_data()  {
+  $data = array();
+   
+   //$data = array_merge($data, retrieve_dbxref_views_data());
+   //$data = array_merge($data, retrieve_db_views_data());
+   
+  if (module_exists('tripal_views')) {
+    $tables = array(
+      'db',
+      'dbxref',
+      'dbxrefprop'
+    );
+    foreach ($tables as $tablename) {
+      if (!tripal_views_is_integrated($tablename, 10)) {
+        $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename);
+        tripal_views_integration_add_entry($table_integration_array);
+      }
+    }
+  }
 
-   $data = array();
-   $data = array_merge($data, retrieve_dbxref_views_data());
-   $data = array_merge($data, retrieve_db_views_data());
-   return $data;
+  return $data;
 
 }
 
