@@ -1,0 +1,14 @@
+name = Mainlab Searches
+description = Provides basic searching tools for a whole genome website. Allows for searching by gene (mRNA, unigene contig), homology, GO termrs, KEGG terms and InterPro terms.  This module was develoepd at the Main Bioinformatics Lab at Washington State University.
+core = 6.x
+project = mainlab_search
+package = Tripal Extensions
+dependencies[] = tripal_core
+dependencies[] = tripal_feature
+dependencies[] = tripal_analysis
+dependencies[] = tripal_organism
+dependencies[] = tripal_analysis_go
+dependencies[] = tripal_analysis_blast
+dependencies[] = tripal_analysis_interpro
+dependencies[] = tripal_analysis_kegg
+dependencies[] = tripal_views
