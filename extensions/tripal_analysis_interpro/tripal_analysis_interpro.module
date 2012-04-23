@@ -180,7 +180,7 @@ function chado_analysis_interpro_load($node){
  *  
  */
 function chado_analysis_interpro_insert($node){
-  // insert the analysistripal_core_generate_chado_var
+   // insert the analysistripal_core_generate_chado_var
    chado_analysis_insert($node);
 
    // set the type for this analysis

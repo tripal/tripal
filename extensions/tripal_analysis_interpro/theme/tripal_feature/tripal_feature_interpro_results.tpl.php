@@ -32,12 +32,15 @@ if(count($results) > 0){
      foreach($terms as $term){ 
        $ipr_id = $term[0];
        $ipr_name = $term[1];
+       if(strcmp($ipr_id,'noIPR')==0){
+          continue;
+       }
        $class = 'tripal_feature-table-odd-row tripal-table-odd-row';
        if($j % 2 == 0 ){
          $class = 'tripal_feature-table-even-row tripal-table-even-row';
        }?>
        <tr class="<?php print $class ?>">
-         <td><?php print $ipr_id ?></td>
+         <td><a href="http://www.ebi.ac.uk/interpro/IEntry?ac=<?php print $ipr_id ?>" target="_ipr"><?php print $ipr_id ?></a></td>
          <td><?php print $ipr_name ?></td>         
        </tr>
        <?php
@@ -56,10 +59,14 @@ if(count($results) > 0){
           $matches = $term['matches'];
           $ipr_id = $term['ipr_id'];
           $ipr_name = $term['ipr_name'];
-          $ipr_type = $term['ipr_type']; ?>          
+          $ipr_type = $term['ipr_type']; 
+          if(strcmp($ipr_id,'noIPR')==0){
+             continue;
+          } 
+          ?>          
             <tr>
               <td colspan="4" style="padding-left: 0px">ORF: <?php print $orf['orf_id'] ?>, Length: <?php print $orf['orf_length'] ?> <br>
-                              IPR Term: <?php print "$ipr_id $ipr_name ($ipr_type)"; ?></th>
+                              IPR Term: <a href="http://www.ebi.ac.uk/interpro/IEntry?ac=<?php print $ipr_id ?>" target="_ipr"><?php print $ipr_id ?></a> <?php print " $ipr_name ($ipr_type)"; ?></th>
             </tr>
             <tr style="border-top: solid 1px;">
               <th>Method</th>
