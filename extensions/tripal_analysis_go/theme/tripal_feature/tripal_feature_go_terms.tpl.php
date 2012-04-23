@@ -22,7 +22,7 @@ $terms = $feature->tripal_analysis_go->terms;
       ?>
       <tr class="<?php print $class ?>">
         <td><?php print $term->cvname ?></td>
-        <td>GO:<?php print $term->accession?></td>
+        <td><a href="http://amigo.geneontology.org/cgi-bin/amigo/term_details?term=GO:<?php print $term->accession ?>"  target="_go">GO:<?php print $term->accession?></a></td>
         <td><span title="<?php print $term->definition ?>"><?php print $term->goterm ?></span></td>
       </tr>
       <?php
