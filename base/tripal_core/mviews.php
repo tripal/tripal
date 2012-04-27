@@ -475,9 +475,15 @@ function tripal_mviews_form(&$form_state = NULL,$mview_id = NULL){
       '#weight'        => 7
    );
 */
+   if($action == 'Edit'){
+      $value = 'Save';
+   }
+   if($action == 'Add'){
+      $value = 'Add';
+   }
    $form['submit'] = array (
      '#type'         => 'submit',
-     '#value'        => t($action),
+     '#value'        => t($value),
      '#weight'       => 8,
      '#executes_submit_callback' => TRUE,
    );
@@ -501,7 +507,7 @@ function tripal_mviews_form_submit($form, &$form_state){
    $query = $form_state['values']['mvquery'];
    $special_index = $form_state['values']['special_index'];
 
-   if(strcmp($action,'Edit')==0){
+   if(strcmp($action,'Save')==0){
       tripal_edit_mview($mview_id,$name, 'tripal_core',$mv_table, $mv_specs,$indexed,$query,$special_index);
    }
    else if(strcmp($action,'Add')==0){
