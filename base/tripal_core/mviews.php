@@ -75,6 +75,84 @@ function tripal_add_mview ($name,$modulename,$mv_table,$mv_specs,$indexed,$query
    }
 }
 /**
+ * Edits a materialized view to the chado database to help speed data access.
+ *
+ * @param $mview_id 
+ *   The mview_id of the materialized view to edit
+ * @param $name 
+ *   The name of the materialized view.
+ * @param $modulename 
+ *   The name of the module submitting the materialized view (e.g. 'tripal_library')
+ * @param $mv_table 
+ *   The name of the table to add to chado. This is the table that can be queried.
+ * @param $mv_specs 
+ *   The table definition 
+ * @param $indexed 
+ *   The columns that are to be indexed
+ * @param $query 
+ *   The SQL query that loads the materialized view with data
+ * @param $special_index  
+ *   function
+ *
+ * @ingroup tripal_mviews_api
+ */
+function tripal_edit_mview ($mview_id,$name,$modulename,$mv_table,$mv_specs,$indexed,$query,$special_index){
+
+   $record = new stdClass();
+   $record->mview_id = $mview_id;
+   $record->name = $name;
+   $record->modulename = $modulename;
+   $record->mv_schema = 'DUMMY';
+   $record->mv_table = $mv_table;
+   $record->mv_specs = $mv_specs;
+   $record->indexed = $indexed;
+   $record->query = $query;
+   $record->special_index = $special_index;
+   $record->last_update = 0;
+
+   // drop the table from chado if it exists
+   $sql = "SELECT * FROM {tripal_mviews} WHERE mview_id = $mview_id ";
+   $mview = db_fetch_object(db_query($sql));
+   $previous_db = tripal_db_set_active('chado');  // use chado database
+   if (db_table_exists($mview->mv_table)) {
+      $sql = "DROP TABLE $mview->mv_table";
+      db_query($sql);
+   }
+   tripal_db_set_active($previous_db);  // now use drupal database
+
+   // update the record to the tripal_mviews table and if successful
+   // create the new materialized view in the chado schema
+   if(drupal_write_record('tripal_mviews',$record,'mview_id')){
+
+      // drop the table from chado if it exists
+      $previous_db = tripal_db_set_active('chado');  // use chado database
+      if (db_table_exists($mv_table)) {
+         $sql = "DROP TABLE $mv_table";
+         db_query($sql);
+      }
+      tripal_db_set_active($previous_db);  // now use drupal database
+      
+      // now add the table for this view
+      $index = '';
+      if($indexed){
+         $index = ", CONSTRAINT ". $mv_table . "_index UNIQUE ($indexed) ";
+      }
+      $sql = "CREATE TABLE {$mv_table} ($mv_specs $index)"; 
+      $previous_db = tripal_db_set_active('chado');  // use chado database
+      $results = db_query($sql);
+      tripal_db_set_active($previous_db);  // now use drupal database
+      if($results){
+         drupal_set_message(t("View '$name' updated.  All results cleared. Please re-populate the view."));
+      } else {
+         // if we failed to create the view in chado then
+         // remove the record from the tripal_jobs table
+         $sql = "DELETE FROM {tripal_mviews} ".
+                "WHERE mview_id = $record->mview_id";
+         db_query($sql);
+      }
+   }
+}
+/**
  * Retrieve the materialized view_id given the name
  *
  * @param $view_name
@@ -116,7 +194,7 @@ function tripal_mviews_action ($op,$mview_id,$redirect=0){
    
    // add a job or perform the action based on the given operation
    if($op == 'update'){
-      tripal_add_job("Update materialized view '$mview->name'",'tripal_core',
+      tripal_add_job("Populate materialized view '$mview->name'",'tripal_core',
          'tripal_update_mview',$args,$user->uid);
 	}
    if($op == 'delete'){
@@ -247,7 +325,7 @@ function tripal_mview_report ($mview_id) {
    $edit_url = url("admin/tripal/mviews/edit/$mview->mview_id");
 
    $output .= "<tr><th>Actions</th>".
-              "<td> <a href='$update_url'>Update</a>, ".
+              "<td> <a href='$update_url'>Populate</a>, ".
               "     <a href='$edit_url'>Edit</a>, ".
               "     <a href='$delete_url'>Delete</a></td></tr>";
 
@@ -274,7 +352,8 @@ function tripal_mviews_report () {
       }
       $rows[] = array(
          l('View',"admin/tripal/mviews/report/$mview->mview_id") ." | ".
-            l('Update',"admin/tripal/mviews/action/update/$mview->mview_id"),
+         l('Edit',"admin/tripal/mviews/edit/$mview->mview_id") ." | ".
+         l('Populate',"admin/tripal/mviews/action/update/$mview->mview_id"),
          $mview->name,
          $update,
          l('Delete',"admin/tripal/mviews/action/delete/$mview->mview_id"),
@@ -286,7 +365,9 @@ function tripal_mviews_report () {
                'colspan' => 4),
          )
    );
-   return theme('table', $header, $rows);
+   $page = theme('table', $header, $rows);
+
+   return $page;
 }
 /**
 *
@@ -298,14 +379,13 @@ function tripal_mviews_form(&$form_state = NULL,$mview_id = NULL){
    if(!$mview_id){
       $action = 'Add';
    } else {
-      $action = 'Update';
+      $action = 'Edit';
    }
 
    // get this requested view
-   if(strcmp($action,'Update')==0){
+   if(strcmp($action,'Edit')==0){
       $sql = "SELECT * FROM {tripal_mviews} WHERE mview_id = $mview_id ";
       $mview = db_fetch_object(db_query($sql));
-
 
       # set the default values.  If there is a value set in the 
       # form_state then let's use that, otherwise, we'll pull 
@@ -421,13 +501,8 @@ function tripal_mviews_form_submit($form, &$form_state){
    $query = $form_state['values']['mvquery'];
    $special_index = $form_state['values']['special_index'];
 
-   if(strcmp($action,'Update')==0){
-      // updating the materialized view consits of deleting the old entry
-      // and readding.  This is necessary because a change to any of the fields
-      // other than the query changes the nature of table so it needs to be 
-      // rebuilt
-      tripal_mviews_action ('delete',$mview_id);
-      tripal_add_mview ($name, 'tripal_core',$mv_table, $mv_specs,$indexed,$query,$special_index);
+   if(strcmp($action,'Edit')==0){
+      tripal_edit_mview($mview_id,$name, 'tripal_core',$mv_table, $mv_specs,$indexed,$query,$special_index);
    }
    else if(strcmp($action,'Add')==0){
       tripal_add_mview ($name, 'tripal_core',$mv_table, $mv_specs,$indexed,$query,$special_index);
