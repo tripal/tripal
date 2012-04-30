@@ -58,14 +58,11 @@ function tripal_add_mview ($name,$modulename,$mv_table,$mv_specs,$indexed,$query
       // now construct the indexes
       $index = '';
       if($indexed){
-         // remove extra spaces and index field names
-        $indexed = preg_replace("/\s+,/",",",$indexed);
-        $indexed = preg_replace("/\s+\n/","\n",$indexed);
-        $indexed = preg_replace("/,\n/","\n",$indexed);
         // add to the array of values
         $vals = preg_split("/[\n,]+/",$indexed);
         $index = '';
         foreach ($vals as $field){
+           $field = trim($field);
            $index .= "CREATE INDEX idx_${mv_table}_${field} ON $mv_table ($field);";
         }
       }
@@ -149,14 +146,11 @@ function tripal_edit_mview ($mview_id,$name,$modulename,$mv_table,$mv_specs,$ind
       // now construct the indexes
       $index = '';
       if($indexed){
-         // remove extra spaces and index field names
-        $indexed = preg_replace("/\s+,/",",",$indexed);
-        $indexed = preg_replace("/\s+\n/","\n",$indexed);
-        $indexed = preg_replace("/,\n/","\n",$indexed);
         // add to the array of values
         $vals = preg_split("/[\n,]+/",$indexed);
         $index = '';
         foreach ($vals as $field){
+           $field = trim($field);
            $index .= "CREATE INDEX idx_${mv_table}_${field} ON $mv_table ($field);";
         }
       }
