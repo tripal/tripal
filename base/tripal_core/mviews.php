@@ -30,7 +30,7 @@
  *
  * @ingroup tripal_mviews_api
  */
-function tripal_add_mview ($name,$modulename,$mv_table,$mv_specs,$indexed,$query,$special_index){
+function tripal_add_mview ($name,$modulename,$mv_table,$mv_specs,$indexed,$query,$special_index,$comment=NULL){
 
    $record = new stdClass();
    $record->name = $name;
@@ -41,6 +41,7 @@ function tripal_add_mview ($name,$modulename,$mv_table,$mv_specs,$indexed,$query
    $record->indexed = $indexed;
    $record->query = $query;
    $record->special_index = $special_index;
+   $record->comment = $comment;
 
    // add the record to the tripal_mviews table and if successful
    // create the new materialized view in the chado schema
@@ -96,7 +97,7 @@ function tripal_add_mview ($name,$modulename,$mv_table,$mv_specs,$indexed,$query
  *
  * @ingroup tripal_mviews_api
  */
-function tripal_edit_mview ($mview_id,$name,$modulename,$mv_table,$mv_specs,$indexed,$query,$special_index){
+function tripal_edit_mview ($mview_id,$name,$modulename,$mv_table,$mv_specs,$indexed,$query,$special_index,$comment){
 
    $record = new stdClass();
    $record->mview_id = $mview_id;
@@ -109,6 +110,8 @@ function tripal_edit_mview ($mview_id,$name,$modulename,$mv_table,$mv_specs,$ind
    $record->query = $query;
    $record->special_index = $special_index;
    $record->last_update = 0;
+   $record->status = '';
+   $record->comment = $comment;
 
    // drop the table from chado if it exists
    $sql = "SELECT * FROM {tripal_mviews} WHERE mview_id = $mview_id ";
@@ -235,14 +238,22 @@ function tripal_update_mview ($mview_id){
       $results = db_query("INSERT INTO $mview->mv_table ($mview->query)");
       tripal_db_set_active($previous_db);  // now use drupal database
       if($results){
+         $sql = "SELECT count(*) as cnt FROM $mview->mv_table";
+         $count = db_fetch_object(db_query($sql));
 	      $record = new stdClass();
          $record->mview_id = $mview_id;
          $record->last_update = time();
+         $record->status = "Populated with " . $count->cnt . " rows";
 		   drupal_write_record('tripal_mviews',$record,'mview_id');
 		   return 1;
       } else {
-	     // TODO -- error handling
-	     return 0;
+         # print and save the error message
+	      $record = new stdClass();
+         $record->mview_id = $mview_id;
+         $record->status = "ERROR populating. See Drupal's recent log entries for details.";
+         print $record->status . "\n";
+		   drupal_write_record('tripal_mviews',$record,'mview_id');
+	      return 0;
 	  }
    }
 }
@@ -340,7 +351,7 @@ function tripal_mview_report ($mview_id) {
 */
 function tripal_mviews_report () {
 
-   $header = array('','MView Name','Last Update','');
+   $header = array('','MView Name','Last Update','Status','Description','');
    $rows = array();
 
    $mviews = db_query("SELECT * FROM {tripal_mviews} ORDER BY name");  
@@ -356,13 +367,15 @@ function tripal_mviews_report () {
          l('Populate',"admin/tripal/mviews/action/update/$mview->mview_id"),
          $mview->name,
          $update,
+         $mview->status,
+         $mview->comment,
          l('Delete',"admin/tripal/mviews/action/delete/$mview->mview_id"),
       );
    }
    $rows[] = array(
       'data' => array( 
          array('data' => l('Create a new materialized view.',"admin/tripal/mviews/new"), 
-               'colspan' => 4),
+               'colspan' => 6),
          )
    );
    $page = theme('table', $header, $rows);
@@ -396,6 +409,7 @@ function tripal_mviews_form(&$form_state = NULL,$mview_id = NULL){
       $default_indexed = $form_state['values']['indexed'];
       $default_mvquery = $form_state['values']['mvquery'];
       $default_special_index = $form_state['values']['special_index'];
+      $default_comment = $form_state['values']['cpmment'];
       if(!$default_name){
          $default_name = $mview->name;
       }
@@ -413,6 +427,9 @@ function tripal_mviews_form(&$form_state = NULL,$mview_id = NULL){
       }
       if(!$default_special_index){
          $default_special_index = $mview->special_index;
+      }
+      if(!$default_comment){
+         $default_comment = $mview->comment;
       }
    }
    // Build the form
@@ -465,6 +482,14 @@ function tripal_mviews_form(&$form_state = NULL,$mview_id = NULL){
       '#default_value' => $default_mvquery,
       '#weight'        => 6
    );
+   $form['comment']= array(
+      '#type'          => 'textarea',
+      '#title'         => t('MView Description'),
+      '#description'   => t('Optional.  Please provide a description of the purpose for this materialized vieww.'),
+      '#required'      => FALSE,
+      '#default_value' => $default_comment,
+      '#weight'        => 6
+   );
 /**
    $form['special_index']= array(
       '#type'          => 'textarea',
@@ -506,12 +531,13 @@ function tripal_mviews_form_submit($form, &$form_state){
    $indexed = $form_state['values']['indexed'];
    $query = $form_state['values']['mvquery'];
    $special_index = $form_state['values']['special_index'];
+   $comment = $form_state['values']['comment'];
 
    if(strcmp($action,'Edit')==0){
-      tripal_edit_mview($mview_id,$name, 'tripal_core',$mv_table, $mv_specs,$indexed,$query,$special_index);
+      tripal_edit_mview($mview_id,$name, 'tripal_core',$mv_table, $mv_specs,$indexed,$query,$special_index,$comment);
    }
    else if(strcmp($action,'Add')==0){
-      tripal_add_mview ($name, 'tripal_core',$mv_table, $mv_specs,$indexed,$query,$special_index);
+      tripal_add_mview ($name, 'tripal_core',$mv_table, $mv_specs,$indexed,$query,$special_index,$comment);
    }
    else {
         drupal_set_message("No action performed.");

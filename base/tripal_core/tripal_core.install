@@ -21,7 +21,22 @@ function tripal_core_install(){
   drupal_install_schema('tripal_core');
 
 }
-
+/**
+*  Update for Drupal 6.x, Tripal 0.4
+*  This update adjusts the materialized view by adding a 'cvterm_id' column
+*
+* @ingroup tripal_feature
+*/
+function tripal_core_update_6000(){
+   // recreate the materialized view
+   db_add_field($ret, 'tripal_mviews', 'status', array('type' => 'text', 'size' => 'normal', 'not null' => FALSE));
+   db_add_field($ret, 'tripal_mviews', 'comment', array('type' => 'text', 'size' => 'normal', 'not null' => FALSE));
+   $ret = array(
+      '#finished' => 1,
+   );
+   
+   return $ret;
+}
 /************************************************************************
 * Implementation of hook_schema().
 *
@@ -81,6 +96,8 @@ function tripal_core_mviews_schema(){
          'query'         => array('type' => 'text', 'size' => 'normal', 'not null' => TRUE),
          'special_index' => array('type' => 'text', 'size' => 'normal', 'not null' => FALSE),
          'last_update'   => array('type' => 'int', 'not null' => FALSE, 'description' => 'UNIX integer time'),
+         'status'        => array('type' => 'text', 'size' => 'normal', 'not null' => FALSE),
+         'comment'       => array('type' => 'text', 'size' => 'normal', 'not null' => FALSE),
       ),
       'indexes' => array(
          'mview_id' => array('mview_id')
