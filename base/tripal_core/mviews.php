@@ -55,12 +55,23 @@ function tripal_add_mview ($name,$modulename,$mv_table,$mv_specs,$indexed,$query
       }
       tripal_db_set_active($previous_db);  // now use drupal database
       
-      // now add the table for this view
+      // now construct the indexes
       $index = '';
       if($indexed){
-         $index = ", CONSTRAINT ". $mv_table . "_index UNIQUE ($indexed) ";
+         // remove extra spaces and index field names
+        $indexed = preg_replace("/\s+,/",",",$indexed);
+        $indexed = preg_replace("/\s+\n/","\n",$indexed);
+        $indexed = preg_replace("/,\n/","\n",$indexed);
+        // add to the array of values
+        $vals = preg_split("/[\n,]+/",$indexed);
+        $index = '';
+        foreach ($vals as $field){
+           $index .= "CREATE INDEX idx_${mv_table}_${field} ON $mv_table ($field);";
+        }
       }
-      $sql = "CREATE TABLE {$mv_table} ($mv_specs $index)"; 
+
+      // add the table to the database
+      $sql = "CREATE TABLE {$mv_table} ($mv_specs); $index"; 
       $previous_db = tripal_db_set_active('chado');  // use chado database
       $results = db_query($sql);
       tripal_db_set_active($previous_db);  // now use drupal database
@@ -135,17 +146,28 @@ function tripal_edit_mview ($mview_id,$name,$modulename,$mv_table,$mv_specs,$ind
       }
       tripal_db_set_active($previous_db);  // now use drupal database
       
-      // now add the table for this view
+      // now construct the indexes
       $index = '';
       if($indexed){
-         $index = ", CONSTRAINT ". $mv_table . "_index UNIQUE ($indexed) ";
+         // remove extra spaces and index field names
+        $indexed = preg_replace("/\s+,/",",",$indexed);
+        $indexed = preg_replace("/\s+\n/","\n",$indexed);
+        $indexed = preg_replace("/,\n/","\n",$indexed);
+        // add to the array of values
+        $vals = preg_split("/[\n,]+/",$indexed);
+        $index = '';
+        foreach ($vals as $field){
+           $index .= "CREATE INDEX idx_${mv_table}_${field} ON $mv_table ($field);";
+        }
       }
-      $sql = "CREATE TABLE {$mv_table} ($mv_specs $index)"; 
+
+      // recreate the view
+      $sql = "CREATE TABLE {$mv_table} ($mv_specs); $index"; 
       $previous_db = tripal_db_set_active('chado');  // use chado database
       $results = db_query($sql);
       tripal_db_set_active($previous_db);  // now use drupal database
       if($results){
-         drupal_set_message(t("View '$name' updated.  All results cleared. Please re-populate the view."));
+         drupal_set_message(t("View '$name' edited and saved.  All results cleared. Please re-populate the view."));
       } else {
          // if we failed to create the view in chado then
          // remove the record from the tripal_jobs table
@@ -243,7 +265,7 @@ function tripal_update_mview ($mview_id){
 	      $record = new stdClass();
          $record->mview_id = $mview_id;
          $record->last_update = time();
-         $record->status = "Populated with " . $count->cnt . " rows";
+         $record->status = "Populated with " . number_format($count->cnt) . " rows";
 		   drupal_write_record('tripal_mviews',$record,'mview_id');
 		   return 1;
       } else {
@@ -482,14 +504,6 @@ function tripal_mviews_form(&$form_state = NULL,$mview_id = NULL){
       '#default_value' => $default_mvquery,
       '#weight'        => 6
    );
-   $form['comment']= array(
-      '#type'          => 'textarea',
-      '#title'         => t('MView Description'),
-      '#description'   => t('Optional.  Please provide a description of the purpose for this materialized vieww.'),
-      '#required'      => FALSE,
-      '#default_value' => $default_comment,
-      '#weight'        => 6
-   );
 /**
    $form['special_index']= array(
       '#type'          => 'textarea',
@@ -500,6 +514,14 @@ function tripal_mviews_form(&$form_state = NULL,$mview_id = NULL){
       '#weight'        => 7
    );
 */
+   $form['comment']= array(
+      '#type'          => 'textarea',
+      '#title'         => t('MView Description'),
+      '#description'   => t('Optional.  Please provide a description of the purpose for this materialized vieww.'),
+      '#required'      => FALSE,
+      '#default_value' => $default_comment,
+      '#weight'        => 8
+   );
    if($action == 'Edit'){
       $value = 'Save';
    }
@@ -509,7 +531,7 @@ function tripal_mviews_form(&$form_state = NULL,$mview_id = NULL){
    $form['submit'] = array (
      '#type'         => 'submit',
      '#value'        => t($value),
-     '#weight'       => 8,
+     '#weight'       => 9,
      '#executes_submit_callback' => TRUE,
    );
 
