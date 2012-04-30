@@ -30,7 +30,7 @@
  *
  * @ingroup tripal_mviews_api
  */
-function tripal_add_mview ($name,$modulename,$mv_table,$mv_specs,$indexed,$query,$special_index,$comment){
+function tripal_add_mview ($name,$modulename,$mv_table,$mv_specs,$indexed,$query,$special_index,$comment=NULL){
 
    $record = new stdClass();
    $record->name = $name;
