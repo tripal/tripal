@@ -140,6 +140,7 @@ function tripal_analysis_node_info() {
  */
 function chado_analysis_insert($node){
 	global $user;
+
 	// Create a timestamp so we can insert it into the chado database
 	$time = $node->timeexecuted;
 	$month = $time['month'];
@@ -151,8 +152,8 @@ function chado_analysis_insert($node){
 	$analysis_id = $node->analysis_id;
 	if ($analysis_id) {
 		$sql = "SELECT analysis_id ".
-               "FROM {Analysis} ".
-               "WHERE analysis_id = %d ";
+             "FROM {Analysis} ".
+             "WHERE analysis_id = %d ";
 		$previous_db = tripal_db_set_active('chado');
 		$analysis = db_fetch_object(db_query($sql, $node->analysis_id));
 		tripal_db_set_active($previous_db);
