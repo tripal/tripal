@@ -24,8 +24,24 @@ function retrieve_chado_library_views_data () {
   // Basic table definition
   $data['chado_library']['table'] = array(
     'field' => 'nid',
+    'group' => 'Chado Library'
   );
   
+  $data['chado_library']['nid'] = array(
+    'title' => t('Library Node ID'),
+    'help' => t('The node ID for this library'),
+    'field' => array(
+     	'handler' => 'views_handler_field_numeric',
+ 		  'click sortable' => TRUE,
+    ),
+    'filter' => array(
+     	'handler' => 'views_handler_filter_numeric',
+    ),
+    'sort' => array(
+     	'handler' => 'views_handler_sort',
+    ),
+  );
+
   // Note: No joins need to be made from $data['library']['table']
   
   // Join the chado library table to library

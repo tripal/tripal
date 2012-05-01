@@ -25,6 +25,22 @@ function retrieve_chado_analysis_views_data () {
   // Basic table definition
   $data['chado_analysis']['table'] = array(
     'field' => 'nid',
+    'group' => 'Chado Analysis'
+  );
+
+  $data['chado_analysis']['nid'] = array(
+    'title' => t('Analysis Node ID'),
+    'help' => t('The node ID for this analysis'),
+    'field' => array(
+     	'handler' => 'views_handler_field_numeric',
+ 		  'click sortable' => TRUE,
+    ),
+    'filter' => array(
+     	'handler' => 'views_handler_filter_numeric',
+    ),
+    'sort' => array(
+     	'handler' => 'views_handler_sort',
+    ),
   );
   
   // Note: No joins need to be made from $data['analysis']['table']
