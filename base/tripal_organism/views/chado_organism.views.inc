@@ -24,8 +24,24 @@ function retrieve_chado_organism_views_data () {
   // Basic table definition
   $data['chado_organism']['table'] = array(
     'field' => 'nid',
+    'group' => 'Chado Organism'
   );
   
+  $data['chado_organism']['nid'] = array(
+    'title' => t('Organism Node ID'),
+    'help' => t('The node ID for this organism'),
+    'field' => array(
+     	'handler' => 'views_handler_field_numeric',
+ 		  'click sortable' => TRUE,
+    ),
+    'filter' => array(
+     	'handler' => 'views_handler_filter_numeric',
+    ),
+    'sort' => array(
+     	'handler' => 'views_handler_sort',
+    ),
+  );
+
   // Note: No joins need to be made from $data['organism']['table']
   
   // Join the chado organism table to organism
@@ -62,7 +78,7 @@ function retrieve_chado_organism_views_data () {
       'base field' => 'organism_id'
     ),
   );
-
+/*
   // Add node relationship to organism
   $data['chado_organism']['nid'] = array(
     'group' => 'Organism',
@@ -78,6 +94,6 @@ function retrieve_chado_organism_views_data () {
       'base field' => 'nid'
     ),
   );
-  
+*/  
 	return $data;
 }
