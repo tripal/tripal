@@ -54,7 +54,7 @@ class views_handler_filter_chado_select_string extends views_handler_filter_stri
     } else {
       // Get Options
       if ($this->options['optional']) {
-        $options['<select '.$this->table.'>'] = '--None--';
+        //$options['<select '.$this->table.'>'] = '--None--';
         $options['All'] = '--Any--';
       }
       $results = tripal_core_chado_select(
