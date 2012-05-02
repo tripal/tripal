@@ -60,7 +60,8 @@ class views_handler_filter_chado_select_string extends views_handler_filter_stri
       $results = tripal_core_chado_select(
         $this->table,
         array($this->field),
-        array()
+        array(),
+        array('order_by' => array($this->field => 'ASC'))
       );
       $max_length = 40;
       foreach ($results as $r) {
