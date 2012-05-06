@@ -197,6 +197,12 @@ function tripal_views_views_pre_render	(&$view) {
 		// @see file: tripal_views.views.inc
 		tripal_views_add_node_ids_to_view ($view);
 		
+   // we want to add to the bottom of the views the form for downloading 
+   // results in other formats (e.g. Excel, FASTA, CSV, etc.).  The Views Data
+   // Export module provides small images at the bottom, but we want to provide
+   // a more intutitive interface for getting different file formats
+   $form = drupal_get_form('tripal_views_data_export_download_form',$view,$display_id,$args);
+   $view->attachment_after = $form;
 }
 
 /**
@@ -517,7 +523,6 @@ function tripal_views_views_data(){
         }
       }
     }
-//dpm($data);
     return $data;
 }
 /**
@@ -631,15 +636,18 @@ function tripal_views_views_pre_view(&$view,&$display_id,&$args){
    // file uploads require $_POST. We need to make sure these two modules
    // have access to everything needed for this view to work properlys
    $_GET = array_merge($_GET, $_POST);
-
-
+}
+/**
+ * Implementation of hook_views_pre_build().
+ */
+/*function tripal_views_views_pre_render(&$view, &$display_id, &$args){
    // we want to add to the bottom of the views the form for downloading 
    // results in other formats (e.g. Excel, FASTA, CSV, etc.).  The Views Data
    // Export module provides small images at the bottom, but we want to provide
    // a more intutitive interface for getting different file formats
    $form = drupal_get_form('tripal_views_data_export_download_form',$view,$display_id,$args);
    $view->attachment_after = $form;
-}
+}*/
 /**
  * 
  */
@@ -657,8 +665,14 @@ function tripal_views_data_export_download_form(&$form_state, $view,$display_id,
          if(!$default){
             $default = $display->id;
          }
-         // add the data export URL to the URLs array
-         $query = $view->get_exposed_input();
+         // add the data export URL to the URLs array.  We need to first unset
+         // the exposed_input for the view so we can repopulate that variable
+         // this is necessary if we're using the file_upload_combo 
+         // custom form element which adds the file_path variable to the $_GET after the
+         // view has populated the $view->exposed_input variable 
+         unset($view->exposed_input);
+         $query = $view->get_exposed_input();  // retrieves elements in $_GET array
+
          $path = $display->display_options['path'];
          $urls[$display->id]['path'] = $path;
          $urls[$display->id]['query'] = $query;

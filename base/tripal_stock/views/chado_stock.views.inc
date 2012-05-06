@@ -27,7 +27,22 @@ function retrieve_chado_stock_views_data () {
   // Basic table definition
   $data['chado_stock']['table'] = array(
     'field' => 'stock_id',
-    'group' => 'Chado Stock Node',
+    'group' => 'Chado Stock',
+  );
+
+  $data['chado_stock']['nid'] = array(
+    'title' => t('Stock Node ID'),
+    'help' => t('The node ID for this analysis'),
+    'field' => array(
+     	'handler' => 'views_handler_field_numeric',
+ 		  'click sortable' => TRUE,
+    ),
+    'filter' => array(
+     	'handler' => 'views_handler_filter_numeric',
+    ),
+    'sort' => array(
+     	'handler' => 'views_handler_sort',
+    ),
   );
   
   // Note: No joins need to be made from $data['stock']['table']

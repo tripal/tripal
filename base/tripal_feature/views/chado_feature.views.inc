@@ -24,8 +24,24 @@ function retrieve_chado_feature_views_data () {
   // Basic table definition
   $data['chado_feature']['table'] = array(
     'field' => 'nid',
+    'group' => 'Chado Feature'
   );
   
+  $data['chado_feature']['nid'] = array(
+    'title' => t('Feature Node ID'),
+    'help' => t('The node ID for this feature'),
+    'field' => array(
+     	'handler' => 'views_handler_field_numeric',
+ 		  'click sortable' => TRUE,
+    ),
+    'filter' => array(
+     	'handler' => 'views_handler_filter_numeric',
+    ),
+    'sort' => array(
+     	'handler' => 'views_handler_sort',
+    ),
+  );
+
   // Note: No joins need to be made from $data['feature']['table']
   
   // Join the chado feature table to feature
@@ -78,6 +94,6 @@ function retrieve_chado_feature_views_data () {
       'base field' => 'nid'
     ),
   );
-  
+
 	return $data;
 }

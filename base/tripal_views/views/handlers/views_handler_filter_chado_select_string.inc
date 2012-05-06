@@ -54,13 +54,14 @@ class views_handler_filter_chado_select_string extends views_handler_filter_stri
     } else {
       // Get Options
       if ($this->options['optional']) {
-        $options['<select '.$this->table.'>'] = '--None--';
+        //$options['<select '.$this->table.'>'] = '--None--';
         $options['All'] = '--Any--';
       }
       $results = tripal_core_chado_select(
         $this->table,
         array($this->field),
-        array()
+        array(),
+        array('order_by' => array($this->field => 'ASC'))
       );
       $max_length = 40;
       foreach ($results as $r) {

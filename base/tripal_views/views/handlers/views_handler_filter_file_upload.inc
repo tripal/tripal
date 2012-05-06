@@ -25,22 +25,15 @@ class views_handler_filter_file_upload extends views_handler_filter {
   function value_form(&$form, &$form_state) {
     parent::value_form($form, $form_state);
     
-    // we'll provide a single text area for this field.
-    // in the exposed_form function we'll add in the file upload button
-    $form['value'] = array(
-       '#type' => 'textarea',
+    $this->value_form = array(
+       '#type' => 'file_upload_combo',
        '#title' => $this->options['expose']['label'],
        '#default_value' => $this->value,
        '#multiple' => FALSE,
        '#description' => t('Provide search values for ' . $this->options['expose']['label'] . 
          '. Please place each search item on a separate line or separated by commas.'),
-    ); 
-    $form[$this->options['field'] . '_upload'] = array(
-      '#type' => 'file',
-      '#title' => $this->options['expose']['label'] . ' File upload',
-      '#description' => t('Upload a file to provide search values for ' . $this->options['expose']['label'] . 
-         '. Please place each search item on a separate line.'),
     );
+    $form['value'] = &$this->value_form;
   }
 
   /**
@@ -81,40 +74,45 @@ class views_handler_filter_file_upload extends views_handler_filter {
    *
    */
   function query() {
-    $this->ensure_my_table();
-
+     $this->ensure_my_table();
      $field = "$this->table.$this->real_field";
+
+     // get the form element value
+     $value = $this->value[0];
+
+     // the form element value has sub values, so get those
+     $items =  $value['items'];
+     $file_path = $value['file_path'];
+
      $holders = array();
      $values = array();
 
      // get the file upload content if one has been provided
-     $file = file_save_upload($this->field.'_upload',array());
-     if($file){
-        $fh = fopen($file->filepath,'r');
-
+     if($file_path){
+        $fh = fopen($file_path,'r');
         while($line = fgets($fh)){
           $line = trim($line);
           $values[] = $line;
         }
      } 
      // if a file upload has not been provided then use the value in the textarea
-     if($this->value[0]){
-        $items = $this->value[0];
+     if($items){
+
         // remove extra spaces and new lines
         $items = preg_replace("/\s+,/",",",$items);
         $items = preg_replace("/\s+\n/","\n",$items);
         $items = preg_replace("/,\n/","\n",$items);
-        // add to the array of values
+
+        // in the event the user uploaded a file and provided items in the
+        // textbox then we need to merge these two lists
         $vals = preg_split("/[\n,]+/",$items);
         $values = array_merge($values,$vals);
      }
+     // iterate through all of the values and generate the corresponding
+     // sprintf style holders
      for($i = 0 ; $i < count($values); $i++){
         $values[$i] = trim($values[$i]);
-        if (preg_match('/^[\d\.]+$/',$values[$i])) {
-           $holders[] = '%d';
-        } else {
-           $holders[] = "'%s'";
-        }
+        $holders[] = "'%s'";
      }
      // if we have any values supplied then update the where clause for
      // the views query

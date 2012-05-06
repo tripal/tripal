@@ -2,6 +2,7 @@
 
 require_once "tripal_views_integration.inc";
 require_once "tripal_views.views.inc";
+require_once "tripal_views_form_elements.inc";
 
 /**
  * Implements hook_menu()
@@ -100,5 +101,8 @@ function tripal_views_theme () {
          'arguments' => array('form' => NULL),
          'template'  => 'tripal_views_data_export_download_form',
 	   ),
+      'file_upload_combo' => array(
+        'arguments' => array('element' => NULL)
+      ),
    );
 }
