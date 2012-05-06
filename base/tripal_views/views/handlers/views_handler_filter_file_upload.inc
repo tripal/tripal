@@ -91,8 +91,16 @@ class views_handler_filter_file_upload extends views_handler_filter {
      if($file_path){
         $fh = fopen($file_path,'r');
         while($line = fgets($fh)){
-          $line = trim($line);
-          $values[] = $line;
+           $items = trim($line);
+
+           // remove extra spaces and new lines
+           $items = preg_replace("/\s+,/",",",$items);
+           $items = preg_replace("/\s+\n/","\n",$items);
+           $items = preg_replace("/,\n/","\n",$items);
+
+           // add the values from this line to the values[] array
+           $vals = preg_split("/[\n,]+/",$items);
+           $values = array_merge($values,$vals);
         }
      } 
      // if a file upload has not been provided then use the value in the textarea
