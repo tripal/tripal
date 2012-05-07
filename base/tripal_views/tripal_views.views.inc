@@ -192,10 +192,17 @@ function tripal_views_views_handlers() {
  * @ingroup tripal_views
  */
 function tripal_views_views_pre_render	(&$view) {
-		
-		//Add Node IDs in to every table that needs them
-		// @see file: tripal_views.views.inc
-		tripal_views_add_node_ids_to_view ($view);
+
+   //Add Node IDs in to every table that needs them
+	// @see file: tripal_views.views.inc
+	tripal_views_add_node_ids_to_view ($view);
+
+   // We need to unset the exposed_input for the view so we can repopulate that 
+   // variable. This is necessary if we're using the file_upload_combo 
+   // custom form element which adds the file_path variable to the $_GET after the
+   // view has populated the $view->exposed_input variable 
+   unset($view->exposed_input);
+   $query = $view->get_exposed_input();  // retrieves elements in $_GET array
 		
    // we want to add to the bottom of the views the form for downloading 
    // results in other formats (e.g. Excel, FASTA, CSV, etc.).  The Views Data
@@ -665,13 +672,6 @@ function tripal_views_data_export_download_form(&$form_state, $view,$display_id,
          if(!$default){
             $default = $display->id;
          }
-         // add the data export URL to the URLs array.  We need to first unset
-         // the exposed_input for the view so we can repopulate that variable
-         // this is necessary if we're using the file_upload_combo 
-         // custom form element which adds the file_path variable to the $_GET after the
-         // view has populated the $view->exposed_input variable 
-         unset($view->exposed_input);
-         $query = $view->get_exposed_input();  // retrieves elements in $_GET array
 
          $path = $display->display_options['path'];
          $urls[$display->id]['path'] = $path;
