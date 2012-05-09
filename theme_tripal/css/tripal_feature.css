@@ -1,0 +1,76 @@
+#tripal_feature-featureloc_sequence,
+#tripal_feature-sequence-residues {
+  /*height: 500px;*/
+  /*overflow: scroll;*/
+  background-color: #FFFFFF;
+  font-family: monospace;
+}
+
+div#tripal_feature-featureloc_sequence-legend {
+   padding: 10px;
+   margin: 10px;
+}
+/* styles for cvterm types in sequences */
+div#tripal_feature-featureloc_sequence-legend span {
+   margin: 5px;
+   padding: 10px;
+}
+span.tripal_feature-featureloc_sequence-five_prime_UTR {
+   background-color: #99FF99;
+}
+
+span.tripal_feature-featureloc_sequence-three_prime_UTR {
+   background-color: #FF9999;
+}
+
+span.tripal_feature-featureloc_sequence-CDS {
+   background-color: #FFFF99;
+}
+
+span.tripal_feature-featureloc_sequence-mRNA {
+   background-color: #FFFF99;
+}
+
+span.tripal_feature-featureloc_sequence-exon {
+   background-color: #9999FF;
+}
+
+span.tripal_feature-featureloc_sequence-intron {
+   background-color: #FFFFFF;
+}
+/* information tables on the feature pages */
+table.tripal_feature-relationships-subject-table th {
+   background-color: #EEEEEE;
+   text-align: left;
+}
+table.tripal_feature-relationships-object-table th {
+   background-color: #EEEEEE;
+   text-align: left;
+}
+table.tripal_feature-locations-table th {
+   background-color: #EEEEEE;
+   text-align: left;
+}
+table.tripal_feature-references-table th {
+   background-color: #EEEEEE;
+   text-align: left;
+
+}
+/* feature relationship edit form */
+#tripal-feature-edit-ALL-relationships-form .form-item,
+#tripal-feature-edit-ALL-db-references-form .form-item {
+   float: left;
+   margin: 0 10px 0 0;
+   
+}
+#tripal-feature-edit-ALL-db-references-form .form-submit {
+   float: none;
+   display: block;
+}
+.tripal_feature-obsolete {
+   color: red;
+   font-weight: bold;
+   font-style: italic;
+   padding-bottom: 15px; 
+   text-align: center;
+}

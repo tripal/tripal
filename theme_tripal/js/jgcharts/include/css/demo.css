@@ -1,0 +1,28 @@
+html, body{
+    margin:0px;
+    font-family:'Lucida Grande',Verdana,Arial,Sans-Serif;
+    font-size:1.1em;
+    font-size-adjust:none;
+    font-style:normal;
+    font-variant:normal;
+    font-weight:normal;
+    line-height:1.5em;
+    font-size:12px;
+    background:#000;
+    width:100%;
+}
+a{text-decoration:none;}
+img{border:0px;}
+h3{}
+
+.start_hide{display:none;}
+
+
+.icone_dx{display:block;margin:auto;}
+.text_icone_dx{color:white;margin-bottom:10px;display:block;}
+#icone_destra{position:absolute;right:30px;top:30px;text-align:center;width:60px;}
+      
+.icone_sx{display:block;margin:auto;}
+.text_icone_sx{color:white;margin-bottom:10px;display:block;}
+#icone_sinistra{position:absolute;left:20px;top:30px;text-align:center;width:60px;} 
+

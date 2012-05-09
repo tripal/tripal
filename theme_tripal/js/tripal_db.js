@@ -1,0 +1,3 @@
+if (Drupal.jsEnabled) {
+
+}

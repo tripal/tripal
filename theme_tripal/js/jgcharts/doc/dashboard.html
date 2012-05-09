@@ -1,0 +1,495 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-us">
+<head>
+    <title>jgcharts - jQuery Google Charts</title>
+    <meta http-equiv="refresh" content="0; url=../include/demo/">
+    <meta http-equiv="Content-type" content="text/html; charset=UTF-8" />
+    <meta http-equiv="Content-Language" content="en-us" />
+    <meta name="author" content="Massimiliano Balestrieri" />
+    <script type="text/javascript" src="../lib/jquery-1.2.5.pack.js"></script>
+    <script type="text/javascript" src="../lib/farbtastic/farbtastic.js"></script>
+    <link rel="stylesheet" href="../lib/farbtastic/farbtastic.css" type="text/css" />
+    <script type="text/javascript" src="../lib/sugar-arrays.js"></script>
+    <script type="text/javascript" src="../lib/iterators.js"></script>
+    <script type="text/javascript" src="../lib/jquery.tablelib.js"></script>
+    <script type="text/javascript" src="../jgcharts.js"></script>
+    <script type="text/javascript" src="../plugins/dashboard/jgdash.js"></script>
+    <script type="text/javascript"><!--
+        jQuery(document).ready(function(){
+            jQuery("#dash").jgdash({
+                    target  : "#target", 
+                    debug   : "#debug",
+                    url     : "../plugins/dashboard/",
+                    sources : ["table-0","table-1","table-2","table-3","table-4"] 
+            });
+        });
+    --></script>
+    <style type="text/css">
+        table tbody tr td,table tbody tr th,table thead tr th
+        {font-size:80%;border:1px dashed #000; padding:3px; margin:1px}
+    </style>
+</head>
+<body>
+<div id="test"></div>
+<div id="target"></div>
+<div id="debug"></div>
+<div id="dash"></div>
+
+<div>
+http://www.istat.it/dati/dataset/20080429_00/
+
+Tavola 1        
+Indici dei prezzi alla produzione dei prodotti industriali venduti sul mercato interno.
+Raggruppamento Principale di Industrie: Energia - Serie storica 2003-2008
+</div>
+<table id="table-0">
+<thead>
+<tr>
+    <th></th>
+    <th class="serie">CA</th>
+    <th class="serie">DF</th>
+</tr>
+</thead>
+<tbody>
+   <tr>
+    <th class="serie">01-03</th>
+    <td>105.7</td>
+    <td>97.9</td>
+  </tr>
+  <tr>
+    <th class="serie">02-03</th>
+    <td>108.1</td>
+    <td>101.6</td>
+  </tr>
+  <tr>
+    <th class="serie">03-03</th>
+    <td>110.7</td>
+    <td>102.9</td>
+  </tr>
+  
+  <tr>
+    <th class="serie">04-03</th>
+    <td>111.0</td>
+    <td>93.7</td>
+  </tr>
+  <tr>
+    <th class="serie">05-03</th>
+    <td>110.0</td>
+    <td>89.8</td>
+  </tr>
+  <tr>
+    <th class="serie">06-03</th>
+    <td>109.0</td>
+    <td>90.7</td>
+  </tr>
+  <tr>
+    <th class="serie">07-03</th>
+    <td>107.5</td>
+    <td>93.0</td>
+  </tr>
+  <tr>
+    <th class="serie">08-03</th>
+    <td>106.1</td>
+    <td>94.5</td>
+  </tr>
+  <tr>
+    <th class="serie">09-03</th>
+    <td>104.3</td>
+    <td>91.9</td>
+  </tr>
+  <tr>
+    <th class="serie">10-03</th>
+    <td>102.0</td>
+    <td>93.9</td>
+  </tr>
+  <tr>
+    <th class="serie">11-03</th>
+    <td>102.8</td>
+    <td>93.6</td>
+  </tr>
+  <tr>
+    <th class="serie">12-03</th>
+    <td>103.8</td>
+    <td>92.6</td>
+  </tr>
+  
+  <tr>
+    <th class="serie">01-04</th>
+    <td>102.9</td>
+    <td>94.0</td>
+  </tr>
+  <tr>
+    <th class="serie">02-04</th>
+    <td>102.1</td>
+    <td>92.7</td>
+  </tr>
+  <tr>
+    <th class="serie">03-04</th>
+    <td>100.6</td>
+    <td>96.0</td>
+  </tr>
+  
+ <tr>
+    <th class="serie">04-04</th>
+    <td>101.7</td>
+    <td>97.9</td>
+  </tr>
+  <tr>
+    <th class="serie">05-04</th>
+    <td>101.8</td>
+    <td>105.0</td>
+  </tr>
+  <tr>
+    <th class="serie">06-04</th>
+    <td>103.3</td>
+    <td>104.1</td>
+  </tr>
+  <tr>
+    <th class="serie">07-04</th>
+    <td>104.0</td>
+    <td>105.1</td>
+  </tr>
+  <tr>
+    <th class="serie">08-04</th>
+    <td>103.7</td>
+    <td>108.1</td>
+  </tr>
+  <tr>
+    <th class="serie">09-04</th>
+    <td>108.4</td>
+    <td>108.4</td>
+  </tr>
+  <tr>
+    <th class="serie">10-04</th>
+    <td>109.4</td>
+    <td>113.8</td>
+  </tr>
+  <tr>
+    <th class="serie">11-04</th>
+    <td>112.0</td>
+    <td>109.1</td>
+  </tr>
+  <tr>
+    <th class="serie">12-04</th>
+    <td>112.6</td>
+    <td>106.3</td>
+  </tr>
+  <tr>
+    <th class="serie">01-05</th>
+    <td>115.5</td>
+    <td>106.7</td>
+  </tr>
+  <tr>
+    <th class="serie">02-05</th>
+    <td>115.7</td>
+    <td>108.8</td>
+  </tr>
+  <tr>
+    <th class="serie">03-05</th>
+    <td>114.7</td>
+    <td>118.8</td>
+  </tr>
+  <tr>
+    <th class="serie">04-05</th>
+    <td>115.9</td>
+    <td>120.4</td>
+  </tr>
+  <tr>
+    <th class="serie">05-05</th>
+    <td>116.2</td>
+    <td>115.9</td>
+  </tr>
+  <tr>
+    <th class="serie">06-05</th>
+    <td>118.0</td>
+    <td>124.7</td>
+  </tr>
+  <tr>
+    <th class="serie">07-05</th>
+    <td>123.3</td>
+    <td>126.5</td>
+  </tr>
+  <tr>
+    <th class="serie">08-05</th>
+    <td>127.6</td>
+    <td>131.6</td>
+  </tr>
+  <tr>
+    <th class="serie">09-05</th>
+    <td>130.3</td>
+    <td>134.0</td>
+  </tr>
+  <tr>
+    <th class="serie">10-05</th>
+    <td>135.5</td>
+    <td>135.7</td>
+  </tr>
+  <tr>
+    <th class="serie">11-05</th>
+    <td>138.2</td>
+    <td>126.4</td>
+  </tr>
+  <tr>
+    <th class="serie">12-05</th>
+    <td>139.6</td>
+    <td>127.4</td>
+  </tr>
+  <tr>
+    <th class="serie">01-06</th>
+    <td>145.1</td>
+    <td>131.0</td>
+  </tr>
+  <tr>
+    <th class="serie">02-06</th>
+    <td>146.4</td>
+    <td>129.9</td>
+  </tr>
+  <tr>
+    <th class="serie">03-06</th>
+    <td>147.1</td>
+    <td>133.7</td>
+  </tr>
+  <tr>
+    <th class="serie">04-06</th>
+    <td>149.0</td>
+    <td>138.4</td>
+  </tr>
+  <tr>
+    <th class="serie">05-06</th>
+    <td>150.3</td>
+    <td>141.0</td>
+  </tr>
+  <tr>
+    <th class="serie">06-06</th>
+    <td>151.3</td>
+    <td>139.3</td>
+  </tr>
+  <tr>
+    <th class="serie">07-06</th>
+    <td>153.4</td>
+    <td>145.3</td>
+  </tr>
+  <tr>
+    <th class="serie">08-06</th>
+    <td>152.7</td>
+    <td>142.9</td>
+  </tr>
+  <tr>
+    <th class="serie">09-06</th>
+    <td>152.9</td>
+    <td>129.2</td>
+  </tr>
+  <tr>
+    <th class="serie">10-06</th>
+    <td>152.2</td>
+    <td>126.0</td>
+  </tr>
+  <tr>
+    <th class="serie">11-06</th>
+    <td>151.9</td>
+    <td>124.8</td>
+  </tr>
+  <tr>
+    <th class="serie">12-06</th>
+    <td>150.1</td>
+    <td>125.9</td>
+  </tr>
+  <tr>
+    <th class="serie">01-07</th>
+    <td>148.2</td>
+    <td>118.9</td>
+  </tr>
+  <tr>
+    <th class="serie">02-07</th>
+    <td>145.3</td>
+    <td>122.9</td>
+  </tr>
+  <tr>
+    <th class="serie">03-07</th>
+    <td>142.9</td>
+    <td>127.7</td>
+  </tr>
+  <tr>
+    <th class="serie">04-07</th>
+    <td>142.6</td>
+    <td>134.4</td>
+  </tr>
+  <tr>
+    <th class="serie">05-07</th>
+    <td>144.0</td>
+    <td>138.5</td>
+  </tr>
+  <tr>
+    <th class="serie">06-07</th>
+    <td>145.5</td>
+    <td>138.7</td>
+  </tr>
+  <tr>
+    <th class="serie">07-07</th>
+    <td>147.2</td>
+    <td>141.8</td>
+  </tr>
+  <tr>
+    <th class="serie">08-07</th>
+    <td>150.0</td>
+    <td>139.2</td>
+  </tr>
+  <tr>
+    <th class="serie">09-07</th>
+    <td>153.8</td>
+    <td>145.6</td>
+  </tr>
+  <tr>
+    <th class="serie">10-07</th>
+    <td>155.4</td>
+    <td>147.6</td>
+  </tr>
+  <tr>
+    <th class="serie">11-07</th>
+    <td>157.0</td>
+    <td>157.9</td>
+  </tr>
+  <tr>
+    <th class="serie">12-07</th>
+    <td>158.4</td>
+    <td>156.2</td>
+  </tr>
+  <tr>
+    <th class="serie">01-08</th>
+    <td>162.8</td>
+    <td>153.9</td>
+  </tr>
+  <tr>
+    <th class="serie">02-08</th>
+    <td>162.8</td>
+    <td>158.6</td>
+  </tr>
+  <tr>
+    <th class="serie">03-08</th>
+    <td>164.7</td>
+    <td>166.3</td>
+  </tr>
+  <tr>
+    <th class="serie">04-08</th>
+    <td>168.5</td>
+    <td>165.8</td>
+  </tr>
+</tbody>
+</table>
+<table id="table-1">
+  <thead>
+    <tr>
+        <th>Anno</th>
+        <th class="serie">Data 1</th>
+        <th class="serie">Data 2</th>
+        <th class="serie">Data 3</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+        <th class="serie">2001</th>
+        <td>153</td>
+        <td>60</td>
+        <td>52</td>
+    </tr>
+    <tr>
+        <th class="serie">2002</th>
+        <td>113</td>
+        <td>70</td>
+        <td>60</td>
+    </tr>
+    <tr>
+        <th class="serie">2003</th>
+        <td>120</td>
+        <td>80</td>
+        <td>40</td>
+    </tr>
+  </tbody>
+</table>
+<table id="table-2">
+  <thead>
+    <tr>
+        <th>Anno</th>
+        <th class="serie">Data 1</th>
+        <th class="serie">Data 2</th>
+        <th class="serie">Data 3</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+        <th class="serie">2001</th>
+        <td>73</td>
+        <td>40</td>
+        <td>423</td>
+    </tr>
+    <tr>
+        <th class="serie">2002</th>
+        <td>63</td>
+        <td>30</td>
+        <td>-40</td>
+    </tr>
+    <tr>
+        <th class="serie">2003</th>
+        <td>2</td>
+        <td>4</td>
+        <td>0</td>
+    </tr>
+  </tbody>
+</table>
+
+<table id="table-3">
+  <thead>
+    <tr>
+        <th>Anno</th>
+        <th class="serie">Data 4</th>
+        <th class="serie">Data 5</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+        <th class="serie">2001</th>
+        <td>40</td>
+        <td>30</td>
+    </tr>
+    <tr>
+        <th class="serie">2000</th>
+        <td>30</td>
+        <td>40</td>
+    </tr>
+  </tbody>
+</table>
+
+<table id="table-4">
+  <thead>
+    <tr>
+        <th>Anno</th>
+        <th class="serie">Data 4</th>
+        <th class="serie">Data 5</th>
+        <th class="serie">Data 6</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+        <th class="serie">2001</th>
+        <td>40</td>
+        <td>30</td>
+        <td>20</td>
+    </tr>
+    <tr>
+        <th class="serie">2000</th>
+        <td>30</td>
+        <td>40</td>
+        <td>30</td>
+    </tr>
+  </tbody>
+</table>
+
+<script src="http://www.google-analytics.com/urchin.js" type="text/javascript"></script>
+<script type="text/javascript">
+_uacct = "UA-258871-1";
+urchinTracker();
+</script>
+
+</body>
+</html>    
