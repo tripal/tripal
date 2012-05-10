@@ -971,6 +971,7 @@ function chado_organism_load($node){
    // add in the description field
    $organism = tripal_core_expand_chado_vars($organism,'field','organism.comment');
 
+   $additions = new stdClass();
    $additions->organism = $organism;
    return $additions;
 }
