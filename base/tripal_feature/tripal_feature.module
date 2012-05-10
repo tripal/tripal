@@ -942,6 +942,7 @@ function chado_feature_load($node){
    $values = array('feature_id' => $feature_id);
    $feature = tripal_core_generate_chado_var('feature',$values);
 
+   $addition = new stdClass();
    $additions->feature = $feature;
    return $additions;
 }
