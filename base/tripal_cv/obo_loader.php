@@ -65,6 +65,12 @@ function tripal_cv_load_obo_v1_2_url($obo_name,$url,$jobid = NULL,$is_new = 1){
    print "Downloading URL $url, saving to $temp\n";
    $url_fh = fopen($url,"r");
    $obo_fh = fopen($temp,"w");
+   if(!$url_fh){
+      tripal_cv_obo_quiterror("Unable to download the remote OBO file at $url. Could a firewall be blocking outgoing connections? ".
+            " if you are unable to download the file you may manually downlod the OBO file and use the web interface to ".
+            " specify the location of the file on your server.");
+      
+   }
    while(!feof($url_fh)){
       fwrite($obo_fh,fread($url_fh,255),255);
    }

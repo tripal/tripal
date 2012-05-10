@@ -840,6 +840,8 @@ function tripal_core_chado_get_foreign_key($table_desc,$field,$values, $options 
  * @ingroup tripal_chado_api
  */
  function tripal_core_generate_chado_var($table, $values, $base_options=array()) {
+
+  $all = new stdClass();
   
   // get description for the current table----------------------------------------------------------
   $table_desc = module_invoke_all('chado_'.$table.'_schema');
