@@ -310,7 +310,8 @@ function tripal_jobs_check_running () {
            "WHERE TJ.end_time IS NULL and NOT TJ.start_time IS NULL ";
    $jobs = db_query($sql);
    while($job = db_fetch_object($jobs)){
-      if($job->pid and posix_kill($job->pid, 0)) {
+      $status = `ps --pid=$job->pid --no-header`;
+      if($job->pid && $status) {
          // the job is still running so let it go
 		   // we return 1 to indicate that a job is running
 		   print "Job is still running (pid $job->pid)\n";
