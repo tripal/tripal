@@ -30,7 +30,7 @@ function tripal_core_drush_command() {
     'examples' => array(
       'Standard example' => 'drush tripal-current-job',
     ),
-    'aliases' => array('trpjob'),
+    'aliases' => array('trpjob-cur'),
   );
   $items['tripal-update-mview'] = array(
     // used by drush help
@@ -48,15 +48,45 @@ function tripal_core_drush_command() {
       'mview_id',
       'table_name'
     ),
-    'alias' => array('trpmv-up')
+    'aliases' => array('trpmv-up')
+  );
+  $items['tripal-launch-jobs'] = array(
+    // used by drush help
+    'description' => dt('Lauches any jobs waiting in the queue.'),
+    'arguments' => array(
+      'parallel' => dt('Normally jobs are executed one at a time. But if you are certain no conflicts will occur with other currently running jobs you may set this argument to a value of 1 to make the job run in parallel with other running jobs.'),
+    ),
+    'examples' => array(
+      'Normal Job' => 'drush tripal-launch-jobs',
+      'Parallel Job' => 'drush tripal-launch-jobs --parallel=1'
+    ),
+    // supply options
+    'options' => array(
+      'parallel',
+    ),
+    'aliases' => array('trpjob-run')
   );
   return $items;
 }
 
 /**
+ * Executes jobs in the Tripal Jobs Queue
+ * 
+ * NOTE: The following code is executed when drush 'trpjob-run' or 'drush tripal-launch-jobs' is called
+ */
+function drush_tripal_core_tripal_launch_jobs () {
+  $parallel = drush_get_option('parallel');   
+  if($parallel){
+    tripal_jobs_launch($do_parallel);
+  } else {
+    tripal_jobs_launch();  
+  }
+}
+
+/**
  * Prints details about the current running job
  * 
- * NOTE: The following code is executed when drush tjob or drush tripal-current-job is called
+ * NOTE: The following code is executed when 'drush trpjob-curr' or 'drush tripal-current-job' is called
  */
 function drush_tripal_core_tripal_current_job () {
   

@@ -8,16 +8,15 @@
 function tripal_feature_edit_ALL_properties_page($node) {
   $output = '';
 
-  $properties = tripal_core_chado_select(
-    'featureprop', 
-    array('featureprop_id','type_id','value','rank'), 
-    array(
-      'feature_id' => $node->feature->feature_id
-    ),
-    array('order_by' => array('type_id' => 'ASC','rank'=>'ASC'))
-  );
+  // get the list of properties for this feature
+  $values  = array('feature_id' => $node->feature->feature_id);
+  $options = array('order_by' => array('type_id' => 'ASC','rank'=>'ASC'));
+  $properties = tripal_core_generate_chado_var('featureprop',$values,$options);
+  $properties = tripal_core_expand_chado_vars($properties,'field','featureprop.value');
+  
   $expand_add = (sizeof($properties)) ? FALSE : TRUE;
   
+  // add the appopriate form sections
   $output .= drupal_get_form('tripal_feature_add_ONE_property_form', $node, $expand_add);
   $output .= drupal_get_form('tripal_feature_edit_ALL_properties_form', $node, $properties);
   $output .= drupal_get_form('tripal_feature_implement_back_to_feature_button', $node->nid);
@@ -45,13 +44,34 @@ function tripal_feature_add_ONE_property_form($form_state, $node, $expand) {
     '#type' => 'hidden',
     '#value' => $node->nid
   );
+  
+  $form['add_properties']['feature_id'] = array(
+    '#type' => 'value',
+    '#value' => $feature_id,
+    '#required' => TRUE
+  );
+  
+  // right now this defaults to the 'feature_property' CV
+  // but in the future it should be more flexible
+  $form['cv_name'] = array(
+    '#type' => 'hidden',
+    '#value' => 'feature_property'
+  );
 	
+  // get the list of property types
   $prop_type_options = array();
-  $results = tripal_core_chado_select('cvterm',array('cvterm_id','name'), array('cv_id' => array('name' => 'feature_property')));
+  $columns = array('cvterm_id','name');
+  $values = array(
+    'cv_id' => array(
+      'name' => $form['cv_name']['#value'],
+    )
+  );
+  $results = tripal_core_chado_select('cvterm',$columns,$values);
   foreach ($results as $r) {
-    $prop_type_options[$r->cvterm_id] = $r->name;
+    $prop_type_options[$r->name] = $r->name;
   }
-  $form['add_properties']['prop_type_id'] = array(
+
+  $form['add_properties']['property'] = array(
     '#type' => 'select',
     '#title' => t('Type of Property'),
     '#options' => $prop_type_options,
@@ -60,12 +80,6 @@ function tripal_feature_add_ONE_property_form($form_state, $node, $expand) {
   $form['add_properties']['prop_value'] = array(
     '#type' => 'textfield',
     '#title' => t('Value'),
-  );
-
-  $form['add_properties']['prop_feature_id'] = array(
-    '#type' => 'value',
-    '#value' => $feature_id,
-    '#required' => TRUE
   );
 
   $form['add_properties']['submit-add'] = array(
@@ -83,31 +97,19 @@ function tripal_feature_add_ONE_property_form($form_state, $node, $expand) {
  */
 function tripal_feature_add_ONE_property_form_validate($form, &$form_state) {
 
-  // Only Require if Adding Property
-  if ($form_state['clicked_button']['#value'] == t('Add Property') ) {
-
-		// Check that there is a feature
-		if ( $form_state['values']['prop_feature_id'] <= 0 ) {
-			form_set_error('prop_feature_id', 'There is no associated feature.');
-		}
+   // Only Require if Adding Property
+   if ($form_state['clicked_button']['#value'] == t('Add Property') ) {
+   
+      // Check that there is a feature
+      if ( $form_state['values']['feature_id'] <= 0 ) {
+         form_set_error('feature_id', 'There is no associated feature.');
+      }
 		
-    // Check that Selected a type
-    if ( $form_state['values']['prop_type_id'] == 0) {
-      form_set_error('prop_type_id', 'Please select a type of property.');
-    } else {
-      // Check that type is in chado
-      $previous_db = tripal_db_set_active('chado');
-      $num_rows = db_fetch_object(db_query("SELECT count(*) as count FROM cvterm WHERE cvterm_id=%d", $form_state['values']['prop_type_id']));
-      tripal_db_set_active($previous_db);
-      if ( $num_rows->count != 1) {
-        form_set_error('prop_type_id', "The type you selected is not valid. Please choose another one. (CODE:$num_rows)");
-      } // end of if more or less than 1 row
-    } // if no prop type
-
-
-
-  } // if add Property
-
+      // Check that Selected a type
+      if ( !$form_state['values']['property']) {
+         form_set_error('property', 'Please select a type of property.');
+      } 
+   } 
 }
 
 /**
@@ -115,30 +117,18 @@ function tripal_feature_add_ONE_property_form_validate($form, &$form_state) {
  *
  * @ingroup tripal_feature
  */
-function tripal_feature_add_ONE_property_form_submit($form, &$form_state) {
-	
-  // if there is a property add it (only won't be a property if clicked next step w/ no property)
-  if ($form_state['values']['prop_type_id'] != 0) {
-    //determine the rank for this property
-    $max_rank = get_max_chado_rank('featureprop', 
-       array('feature_id'=>array('type'=>'INT','value'=>$form_state['values']['prop_feature_id']), 
-       'type_id'=>array('type'=>'INT','value'=> $form_state['values']['prop_type_id']) ));
-    if ($max_rank == -1) { $rank = 0; 
-    } else { $rank = $max_rank+1; }
-    
-    $previous_db = tripal_db_set_active('chado');
-    db_query(
-      "INSERT INTO featureprop (feature_id, type_id, value, rank) VALUES (%d, %d, '%s', %d)",
-      $form_state['values']['prop_feature_id'],
-      $form_state['values']['prop_type_id'],
-      $form_state['values']['prop_value'],
-      $rank
-    );
-    tripal_db_set_active($previous_db);
-
-    drupal_set_message("Successfully Added Property");
-
-  } //end of if property to add
+function tripal_feature_add_ONE_property_form_submit($form, &$form_state) {	
+   $feature_id = $form_state['values']['feature_id'];
+   $property = $form_state['values']['property'];
+   $value = $form_state['values']['prop_value'];       
+   $cv_name = $form_state['values']['cv_name'];       
+       
+   $succes = tripal_feature_insert_property($feature_id,$property,$value,0,$cv_name);
+   if($succes){
+      drupal_set_message("Successfully Added Property: $property => $value");
+   } else {
+      drupal_set_message("Failed to Add Property: $property => $value");
+   }
 }
 
 /**
@@ -149,52 +139,67 @@ function tripal_feature_add_ONE_property_form_submit($form, &$form_state) {
  */ 
 function tripal_feature_edit_ALL_properties_form($form_state, $node, $properties) {
   $form = array();
-
+  $feature_id = $node->feature->feature_id;
+  
   $form['nid'] = array(
     '#type' => 'hidden',
     '#value' => $node->nid
   );
   
+  $form['add_properties']['feature_id'] = array(
+    '#type' => 'value',
+    '#value' => $feature_id,
+    '#required' => TRUE
+  );
+    
+  // right now this defaults to the 'feature_property' CV
+  // but in the future it should be more flexible
+  $form['cv_name'] = array(
+    '#type' => 'hidden',
+    '#value' => 'feature_property'
+  );
+  
   if (sizeof($properties)) {
     
+    // build the select box options for the property name
     $prop_type_options = array();
-    $results = tripal_core_chado_select('cvterm',array('cvterm_id','name'), array('cv_id' => array('name' => 'feature_property')));
+    $columns = array('cvterm_id','name');
+    $values = array(
+       'cv_id' => array(
+          'name' => $form['cv_name']['#value']
+       )
+    );
+    $results = tripal_core_chado_select('cvterm',$columns, $values);
     foreach ($results as $r) {
-      $prop_type_options[$r->cvterm_id] = $r->name;
+      $prop_type_options[$r->name] = $r->name;
     }
-      
-    foreach ($properties as $i => $property) {
     
-      $form["num-$i"] = array(
-       '#type' => 'fieldset',
-       '#value' => "Property $i"
-      );
-      
-      $form["num-$i"]["id-$i"] = array(
-       '#type' => 'hidden',
-       '#value' => $property->featureprop_id
-      );
-      
-      $default = array_search($property->type, $prop_type_options);  
-      $form["num-$i"]["type-$i"] = array(
-       '#type' => 'select',
-       //'#title' => t('Type of Property'),
-       '#options' => $prop_type_options,
-       '#default_value' => $property->type_id
-      );
-      
-      $form["num-$i"]["value-$i"] = array(
-       '#type' => 'textfield',
-       //'#title' => t('Value'),
-       '#default_value' => $property->value
-      );
-      
-      $form["num-$i"]["delete-$i"] = array(
-       '#type' => 'submit',
-       '#value' => t("Delete"),
-       '#name' => "delete-$i",
-      );
-    }//end of foreach property
+    // iterate through all of the properties and create a set of form elements 
+    foreach ($properties as $i => $property) {
+       $form["num-$i"] = array(
+          '#type' => 'fieldset',
+          '#value' => "Property $i"
+       );      
+       $form["num-$i"]["id-$i"] = array(
+          '#type' => 'hidden',
+          '#value' => $property->featureprop_id
+       );      
+       $default = array_search($property->type, $prop_type_options);  
+       $form["num-$i"]["type-$i"] = array(
+          '#type' => 'select',
+          '#options' => $prop_type_options,
+          '#default_value' => $property->type_id->name
+       );     
+       $form["num-$i"]["value-$i"] = array(
+          '#type' => 'textfield',
+          '#default_value' => $property->value
+       );      
+       $form["num-$i"]["delete-$i"] = array(
+          '#type' => 'submit',
+          '#value' => t("Delete"),
+         '#name' => "delete-$i",
+       );
+    } //end of foreach property
   
     $form['num_properties'] = array(
       '#type' => 'hidden',
@@ -217,85 +222,44 @@ function tripal_feature_edit_ALL_properties_form($form_state, $node, $properties
  */
 function tripal_feature_edit_ALL_properties_form_submit($form, &$form_state) {
 
+  $cv_name = $form_state['values']['cv_name'];  
+  $feature_id = $form_state['values']["feature_id"];
+  $all_good = 1;
+
+  // if the update button was clicked then do the update
   if ($form_state['clicked_button']['#value'] == t('Update All Properties') ) {
-     //Update all
+     // iterate through each of the properties and set each one               
      for ($i=1; $i<=$form_state['values']['num_properties']; $i++) {
-       tripal_feature_update_property($form_state['values']["id-$i"], $form_state['values']["type-$i"], $form_state['values']["value-$i"], $form_state['values']["preferred-$i"], $form_state['values']["nid"]);
+       $featureprop_id = $form_state['values']["id-$i"];
+       $property = $form_state['values']["type-$i"];
+       $value = $form_state['values']["value-$i"];
+       $success = tripal_feature_update_property_by_id($featureprop_id,$property,$value,$cv_name);       
+       if(!$success){
+          drupal_set_message("Failed to Update Property: $property => $value");
+          $all_good = 0;
+       }
      }
-     drupal_set_message("Updated all Properties");
+     if($all_good){
+        drupal_set_message("Updated all Properties");
+     }
      drupal_goto('node/'.$form_state['values']['nid']);
-  } elseif ( preg_match('/delete-(\d+)/', $form_state['clicked_button']['#name'], $matches) ) {
+  } 
+  // if the delete button was clicked then remove the property
+  elseif (preg_match('/delete-(\d+)/', $form_state['clicked_button']['#name'], $matches) ) {
      $i = $matches[1];
-     tripal_feature_delete_property($form_state['values']["id-$i"], $form_state['values']["type-$i"], $form_state['values']["value-$i"]);
-     drupal_set_message("Deleted Property");
+     $featureprop_id = $form_state['values']["id-$i"];
+     $property = $form_state['values']["type-$i"];
+     $value = $form_state['values']["value-$i"];
+     $success = tripal_feature_delete_property_by_id($featureprop_id);
+     if($success){
+        drupal_set_message("Deleted Property");
+     } else {
+        drupal_set_message("Unable to Delete Property");
+     }
   } else {
     drupal_set_message("Unrecognized Button Pressed",'error');
   }
-
-  
 }
-
-/**
- * 
- *
- * @ingroup tripal_feature
- */
-function tripal_feature_update_property($featureprop_id, $cvterm_id, $value, $preferred, $nid) {
-
-	$previous_db = tripal_db_set_active('chado');
-	$old_obj = db_fetch_object(db_query("SELECT * FROM featureprop WHERE featureprop_id=%d",$featureprop_id));
-	tripal_db_set_active($previous_db);
-	
-	// if they changed the type need to check rank
-	//   (if there is another property of the same type then rank needs to be increased to prevent collisions)
-	if ($cvterm_id == $old_obj->type_id) {
-	  $previous_db = tripal_db_set_active('chado');
-  	db_query(
-    	"UPDATE featureprop SET type_id=%d, value='%s' WHERE featureprop_id=%d",
-    	$cvterm_id, 
-    	$value,
-    	$featureprop_id
-  	);
-  	tripal_db_set_active($previous_db);
-  } else {
-      //determine the rank for this property
-    $max_rank = get_max_chado_rank('featureprop', 
-       array('feature_id'=>array('type'=>'INT','value'=> $old_obj->feature_id), 
-    	 'type_id'=>array('type'=>'INT','value'=> $cvterm_id ) ));
-    if ($max_rank == -1) { $rank = 0; 
-    } else { $rank = $max_rank+1; }
-	  $previous_db = tripal_db_set_active('chado');
-  	db_query(
-    	"UPDATE featureprop SET type_id=%d, value='%s', rank=%d WHERE featureprop_id=%d",
-    	$cvterm_id, 
-    	$value,
-    	$rank,
-    	$featureprop_id
-  	);
-  	tripal_db_set_active($previous_db);  	
-  }
-                                                                                                                                                                                                                          
-    module_load_include('inc', 'node', 'node.pages');                                                                                                                                                                                
-    drupal_execute('chado_feature_node_form', $node_form_state, $node);  
-
-}
-
-/**
- * 
- *
- * @ingroup tripal_feature
- */
-function tripal_feature_delete_property($featureprop_id) {
-
-  $previous_db = tripal_db_set_active('chado');
-  db_query(
-    "DELETE FROM featureprop WHERE featureprop_id=%d",
-    $featureprop_id
-  );
-  tripal_db_set_active($previous_db);
-
-}
-
 /**
  * 
  *
@@ -351,3 +315,5 @@ function tripal_feature_list_properties_for_node($properties) {
 
   return $output;
 }
+
+

@@ -1376,7 +1376,7 @@ function tripal_core_get_property($basetable, $record_id, $property, $cv_name){
    $table_desc = module_invoke_all('chado_'.$basetable.'prop_schema');
    $fkcol = key($table_desc['foreign keys'][$basetable]['columns']);
 
-   // construct the array of values to be inserted  
+   // construct the array of values to be selected  
    $values = array (
       $fkcol => $record_id,
       'type_id' => array ( 
@@ -1392,7 +1392,10 @@ function tripal_core_get_property($basetable, $record_id, $property, $cv_name){
    return $results;
 }
 /**
- * Insert a property for a given basetable record
+ * Insert a property for a given base table.  By default if the property already
+ * exists a new property is added with the next available rank.  If 
+ * $update_if_present argument is specified then the record will be updated if it
+ * exists rather than adding a new property.
  *
  * @param $basetable
  *   The base table for which the property should be inserted. Thus to insert a property
@@ -1406,7 +1409,9 @@ function tripal_core_get_property($basetable, $record_id, $property, $cv_name){
  * @param $value
  *   The value of the property to be inserted (can be empty)
  * @param $update_if_present
- *   A boolean indicating whether an existing record should be updated or an error thrown
+ *   A boolean indicating whether an existing record should be updated. If the
+ *   property already exists and this value is not specified or is zero then
+ *   a new property will be added with the next largest rank.
  *
  * @return
  *   Return True on Insert/Update and False otherwise
@@ -1416,13 +1421,23 @@ function tripal_core_get_property($basetable, $record_id, $property, $cv_name){
 function tripal_core_insert_property($basetable, $record_id, $property, 
    $cv_name, $value, $update_if_present = 0)
 {
-   // first see if the property already exists, if so we can't insert
+   // first see if the property already exists, if the user want's to update
+   // then we can do that, but otherwise we want to increment the rank and
+   // insert
    $prop = tripal_core_get_property($basetable,$record_id,$property,$cv_name);
+   $rank = 0;
    if(count($prop)>0){ 
       if($update_if_present){
-        return tripal_core_update_property($basetable,$record_id,$property,$cv_name,$value) ;
+         return tripal_core_update_property($basetable,$record_id,$property,$cv_name,$value) ;
       } else {
-        return FALSE;
+         // iterate through the properties returned and get the largest rank
+         foreach($prop as $p){
+            if($p->rank > $rank){
+               $rank = $p->rank;
+            }
+         }
+         // now add 1 to the rank
+         $rank++;
       }
    }
 
@@ -1441,21 +1456,27 @@ function tripal_core_insert_property($basetable, $record_id, $property,
          'is_obsolete' => 0
       ),
       'value' => $value, 
-      'rank' => 0,
+      'rank' => $rank,
    );
+
    return tripal_core_chado_insert($basetable.'prop',$values);
 }
 
 /**
- * Update a property for a given basetable record
+ * Update a property for a given base table record and property name.  This 
+ * function should be used only if one record of the property will be present.
+ * If the property name can have multiple entries (with increasing rank) then
+ * use the function named tripal_core_update_property_by_id
  *
  * @param $basetable
- *   The base table for which the property should be updated. Thus to update a property
- *   for a feature the basetable=feature and property is updated in featureprop
+ *   The base table for which the property should be updated. The property table 
+ *   is constructed using  a combination of the base table name and the suffix 
+ *   'prop' (e.g. basetable = feature then property tabie is featureprop).
  * @param $record_id
- *   The primary key of the basetable to update a property for. This should be in integer.
+ *   The foreign key of the basetable to update a property for. This should be in integer.
+ *   For example, if the basetable is 'feature' then the $record_id should be the feature_id
  * @param $property
- *   The cvterm name describing the type of property to be updated
+ *   The cvterm name of property to be updated
  * @param $cv_name
  *   The name of the cv that the above cvterm is part of
  * @param $value
@@ -1463,7 +1484,7 @@ function tripal_core_insert_property($basetable, $record_id, $property,
  * @param $insert_if_missing
  *   A boolean indicating whether a record should be inserted if one doesn't exist to update
  *
- * Note: The property to be updated is select via theu nique combination of $record_id and
+ * Note: The property to be updated is select via the unique combination of $record_id and
  * $property and then it is updated with the supplied value
  *
  * @return
@@ -1471,8 +1492,8 @@ function tripal_core_insert_property($basetable, $record_id, $property,
  *
  * @ingroup tripal_chado_api
  */
-function tripal_core_update_property($basetable, $record_id,$property,$cv_name,
-   $value,$insert_if_missing = 0)
+function tripal_core_update_property($basetable, $record_id, $property, 
+   $cv_name, $value, $insert_if_missing = 0)
 {
 
    // first see if the property is missing (we can't update a missing property
@@ -1507,7 +1528,55 @@ function tripal_core_update_property($basetable, $record_id,$property,$cv_name,
 }
 
 /**
- * Deletes a property for a given basetable record
+ * Update a property for a given base table record.  This function should be 
+ * used if multiple records of the same property will be present. Also, use this
+ * function to change the property name of an existing property.
+ *
+ * @param $basetable
+ *   The base table for which the property should be updated. The property table 
+ *   is constructed using  a combination of the base table name and the suffix 
+ *   'prop' (e.g. basetable = feature then property tabie is featureprop).
+ * @param $record_id
+ *   The primary key of the base table. This should be in integer.
+ *   For example, if the basetable is 'feature' then the $record_id should be the featureprop_id
+ * @param $property
+ *   The cvterm name of property to be updated
+ * @param $cv_name
+ *   The name of the cv that the above cvterm is part of
+ * @param $value
+ *   The value of the property to be inserted (can be empty)
+ *
+ * @return
+ *   Return True on Update/Insert and False otherwise
+ *
+ * @ingroup tripal_chado_api
+ */
+function tripal_core_update_property_by_id($basetable, $record_id, $property, 
+   $cv_name, $value)
+{
+
+   // get the primary key for this property table
+   $table_desc = module_invoke_all('chado_'.$basetable.'prop_schema');
+   $pkcol = $table_desc['primary key'][0];
+
+   // construct the array that will match the exact record to update
+   $match = array (
+      $pkcol => $record_id,
+   );
+   // construct the array of values to be updated
+   $values = array (      
+      'type_id' => array ( 
+         'cv_id' => array (
+            'name' => $cv_name,
+         ),
+         'name' => $property,
+      ),
+      'value' => $value, 
+   );
+   return tripal_core_chado_update($basetable.'prop',$match,$values);
+}
+/**
+ * Deletes a property for a given base table record using the property name
  *
  * @param $basetable
  *   The base table for which the property should be deleted. Thus to deleted a property
@@ -1519,7 +1588,7 @@ function tripal_core_update_property($basetable, $record_id,$property,$cv_name,
  * @param $cv_name
  *   The name of the cv that the above cvterm is part of
  *
- * Note: The property to be deleted is select via theu nique combination of $record_id and $property 
+ * Note: The property to be deleted is select via the unique combination of $record_id and $property 
  *
  * @return
  *   Return True on Delete and False otherwise
@@ -1540,6 +1609,32 @@ function tripal_core_delete_property($basetable, $record_id,$property,$cv_name){
          ),
          'name' => $property,
       ),
+   );
+   return tripal_core_chado_delete($basetable.'prop',$match);
+}
+
+/**
+ * Deletes a property using the property ID
+ *
+ * @param $basetable
+ *   The base table for which the property should be deleted. Thus to deleted a property
+ *   for a feature the basetable=feature and property is deleted from featureprop
+ * @param $record_id
+ *   The primary key of the basetable to delete a property for. This should be in integer.
+ *
+ * @return
+ *   Return True on Delete and False otherwise
+ *
+ * @ingroup tripal_chado_api
+ */
+function tripal_core_delete_property_by_id($basetable, $record_id){
+   // get the foreign key for this property table
+   $table_desc = module_invoke_all('chado_'.$basetable.'prop_schema');
+   $pkcol = $table_desc['primary key'][0];
+
+   // construct the array that will match the exact record to update
+   $match = array (
+      $pkcol => $record_id,
    );
    return tripal_core_chado_delete($basetable.'prop',$match);
 }
