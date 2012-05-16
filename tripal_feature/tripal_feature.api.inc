@@ -361,7 +361,10 @@ function tripal_feature_analysis_insert_property($analysis_id = NULL, $feature_i
 }
 
 /**
- * Update a property for an analysis feature
+ * Update an analysis feature property using the property name. Use this
+ * when a property only exists once for a given analysis feature.  When more
+ * than one value can exist for the same property use the 
+ * tripal_feature_analysis_update_property_by_id() function.
  *
  * @param $analysis_id
  *    The analysis ID for the analysis feature. This argument is optional but
@@ -419,7 +422,35 @@ function tripal_feature_analysis_update_property($analysis_id = NULL, $feature_i
 }
 
 /**
- * Delete a property for an analysis feature
+ * Update a property for an analysis feature using the analysisfeatureprop_id.
+ *
+ * @param $analysisfeatureprop_id
+ *    The analysis feature property ID for the analysis feature. 
+ * @param $property
+ *   The cvterm name of the property
+ * @param $value
+ *   The value of the property
+ * @param $cv_name
+ *    Optional.  The name of the cv to which the property belongs.  By
+ *    default this is the 'tripal' cv.
+ * *
+ * @return
+ *   True of success, False otherwise
+ *
+ * @ingroup tripal_feature_api
+ */
+function tripal_feature_analysis_update_property_by_id($analysisfeatureprop_id, 
+   $property, $value, $cv_name = 'tripal')
+{  
+   // update the property.
+   return tripal_core_update_property_by_id('analysisfeature',
+      $analysisfeatureprop_id,$property,$cv_name,$value);
+}
+/**
+ * Delete an analysis feature property using the property name.  Use this
+ * when a property only exists once for a given analysis feature.  When more
+ * than one value can exist for the same property use the 
+ * tripal_feature_analysis_delete_property_by_id() function.
  *
  * @param $analysis_id
  *    The analysis ID for the analysis feature. This argument is optional but
@@ -469,6 +500,22 @@ function tripal_feature_analysis_delete_property($analysis_id = NULL, $feature_i
 
    // get the property.   
    return tripal_core_delete_property('analysisfeature',$analysisfeature_id,$property,$cv_name);
+}
+/**
+ * Delete a property using the analysisfeatureprop_id
+ *
+ * @param $analysisfeatureprop_id
+ *    The analysis feature property ID for the analysis feature. 
+ *
+ * @return
+ *   True of success, False otherwise 
+ *
+ * @ingroup tripal_feature_api
+ */
+function tripal_feature_analysis_delete_property_by_id($analysisfeatureprop_id)
+{
+   // get the property.   
+   return tripal_core_delete_property_by_id('analysisfeature',$analysisfeatureprop_id);
 }
 /**
  * Retrieve properties of a given type for a given feature
