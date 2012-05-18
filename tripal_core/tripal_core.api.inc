@@ -1359,7 +1359,7 @@ function chado_get_node_id ($table, $id) {
  *   The base table for which the property should be retrieved. Thus to retrieve a property
  *   for a feature the basetable=feature and property is retrieved from featureprop
  * @param $record_id
- *   The primary key of the basetable to retrieve properties for. This should be in integer.
+ *   The foriegn key field of the base table. This should be in integer.
  * @param $property
  *   The cvterm name describing the type of properties to be retrieved
  * @param $cv_name
@@ -1371,7 +1371,7 @@ function chado_get_node_id ($table, $id) {
  * @ingroup tripal_chado_api
  */
 function tripal_core_get_property($basetable, $record_id, $property, $cv_name){
-
+  
    // get the foreign key for this property table
    $table_desc = module_invoke_all('chado_'.$basetable.'prop_schema');
    $fkcol = key($table_desc['foreign keys'][$basetable]['columns']);
@@ -1387,6 +1387,7 @@ function tripal_core_get_property($basetable, $record_id, $property, $cv_name){
          'is_obsolete' => 0
       ),
    );
+
    $results = tripal_core_generate_chado_var($basetable.'prop',$values);
    $results = tripal_core_expand_chado_vars($results,'field',$basetable.'prop.value');
    return $results;
@@ -1401,7 +1402,7 @@ function tripal_core_get_property($basetable, $record_id, $property, $cv_name){
  *   The base table for which the property should be inserted. Thus to insert a property
  *   for a feature the basetable=feature and property is inserted into featureprop
  * @param $record_id
- *   The primary key of the basetable to insert a property for. This should be in integer.
+ *   The foriegn key field of the base table. This should be in integer. 
  * @param $property
  *   The cvterm name describing the type of properties to be inserted
  * @param $cv_name
@@ -1426,14 +1427,20 @@ function tripal_core_insert_property($basetable, $record_id, $property,
    // insert
    $prop = tripal_core_get_property($basetable,$record_id,$property,$cv_name);
    $rank = 0;
+   $exists = 0;
    if(count($prop)>0){ 
       if($update_if_present){
          return tripal_core_update_property($basetable,$record_id,$property,$cv_name,$value) ;
       } else {
-         // iterate through the properties returned and get the largest rank
+         // iterate through the properties returned and check to see if the
+         // property with this value already exists if not, get the largest rank
+         // and insert the same property but with this new value
          foreach($prop as $p){
             if($p->rank > $rank){
                $rank = $p->rank;
+            }
+            if(strcmp($p->value,$value)==0){
+               $exists = 1;
             }
          }
          // now add 1 to the rank
@@ -1441,6 +1448,11 @@ function tripal_core_insert_property($basetable, $record_id, $property,
       }
    }
 
+   // if the property with this value exists then we return TRUE as if the
+   // insert was successful.
+   if($exists){
+      return TRUE;
+   }
    // get the foreign key for this property table
    $table_desc = module_invoke_all('chado_'.$basetable.'prop_schema');
    $fkcol = key($table_desc['foreign keys'][$basetable]['columns']);

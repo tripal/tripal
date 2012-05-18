@@ -481,7 +481,6 @@ function tripal_feature_analysis_update_property_by_id($analysisfeatureprop_id,
 function tripal_feature_analysis_delete_property($analysis_id = NULL, $feature_id = NUll, 
    $analysisfeature_id = NULL, $property, $cv_name = 'tripal')
 {
-     
    // check that the incoming arguments are correct
    if(($analysis_id and !$feature_id) or
        (!$analysis_id and $feature_id)){
