@@ -1795,3 +1795,27 @@ function tripal_get_max_chado_rank ($tablename, $where_options) {
 		return -1;
 	}
 }
+/**
+ * Add a new table to the Chado database
+ *
+ * @param $ret
+ *   Array to which query results will be added.
+ * @param $table
+ *   The name of the table to create.
+ * @param $schema 
+ *   A Drupal-style Schema API definition of the table
+ *
+ * @return 
+ *   A database query result resource for the new table, or FALSE if table was not constructed.
+ *
+ * @ingroup tripal_core_api
+ */
+function tripal_create_chado_table (&$ret,$table,$schema) {
+   $ret = array();
+   
+   $previous_db = tripal_db_set_active('chado');  // use chado database
+   db_create_table($ret,$table,$schema[$table]);
+   tripal_db_set_active($previous_db);  // now use drupal database
+   
+   return $ret;
+}
