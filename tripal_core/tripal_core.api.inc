@@ -1796,7 +1796,9 @@ function tripal_get_max_chado_rank ($tablename, $where_options) {
 	}
 }
 /**
- * Add a new table to the Chado database
+ * Add a new table to the Chado schema. This function is simply a wrapper for
+ * the db_create_table() function of Drupal, but ensures the table is created
+ * inside the Chado schema rather than the Drupal schema.
  *
  * @param $ret
  *   Array to which query results will be added.
@@ -1814,8 +1816,19 @@ function tripal_create_chado_table (&$ret,$table,$schema) {
    $ret = array();
    
    $previous_db = tripal_db_set_active('chado');  // use chado database
-   db_create_table($ret,$table,$schema[$table]);
+   db_create_table($ret,$table,$schema);
    tripal_db_set_active($previous_db);  // now use drupal database
    
+   // if the table creation was succesful then add an entry
+   // in the tripal_custom_table
+   if($ret){
+      $record = new stdClass();
+      $record->table_name = $table;
+      $record->schema = serialize($schema);
+      $success = drupal_write_record('tripal_custom_tables',$record);
+      if(!$success){
+         drupal_set_message($message,"Error adding custom table: $table");   
+      }
+   }
    return $ret;
 }
