@@ -62,9 +62,6 @@ function tripal_feature_views_handlers() {
      'views_handler_field_computed_feature_nid' => array(
        'parent' => 'views_handler_field_numeric',
      ),
-     'views_handler_field_readable_date' => array(
-       'parent' => 'views_handler_field',
-     ),
      'views_handler_field_residues' => array(
        'parent' => 'views_handler_field',
      ),

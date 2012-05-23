@@ -106,6 +106,12 @@ function tripal_views_views_handlers() {
      'views_handler_field_chado_rel_by_type' => array(
       'parent' => 'views_handler_field_prerender_list',
      ),
+    'views_handler_field_dbxref_accession_link' => array(
+       'parent' => 'views_handler_field',
+     ),
+     'views_handler_field_readable_date' => array(
+       'parent' => 'views_handler_field',
+     ),
 
      
      // Wrappers for Default Views Handlers-----

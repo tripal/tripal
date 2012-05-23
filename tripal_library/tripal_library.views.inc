@@ -58,12 +58,6 @@ function tripal_library_views_handlers() {
      'views_handler_field_computed_library_nid' => array(
        'parent' => 'views_handler_field_numeric',
      ),
-     'views_handler_field_tf_boolean' => array(
-       'parent' => 'views_handler_field',
-     ),
-     'views_handler_field_readable_date' => array(
-       'parent' => 'views_handler_field',
-     ),
    ),
  );
 }
