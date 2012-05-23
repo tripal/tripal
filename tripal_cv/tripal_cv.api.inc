@@ -433,13 +433,15 @@ function tripal_cv_add_cvterm($term,$defaultcv,$is_relationship = 0,$update = 1)
    }
 
    // this SQL statement will be used a lot to find a cvterm so just set it
-   // here for easy reference below.
+   // here for easy reference below.  Because CV terms can change their names
+   // but accessions don't change, the following SQL finds cvterms based on
+   // their accession rather than the name
    $cvtermsql = "SELECT CVT.name, CVT.cvterm_id, DB.name as dbname, DB.db_id 
                   FROM {cvterm} CVT
                     INNER JOIN {dbxref} DBX on CVT.dbxref_id = DBX.dbxref_id
                     INNER JOIN {db} DB on DBX.db_id = DB.db_id
                     INNER JOIN {cv} CV on CV.cv_id = CVT.cv_id
-                  WHERE CVT.name = '%s' and DB.name = '%s'";  
+                  WHERE DBX.accession = '%s' and DB.name = '%s'";  
 
    // get the accession and the database from the cvterm
    if(preg_match('/^.+?:.*$/',$id)){
@@ -451,7 +453,7 @@ function tripal_cv_add_cvterm($term,$defaultcv,$is_relationship = 0,$update = 1)
       // because this is a relationship cvterm first check to see if it 
       // exists in the relationship ontology. If it does then return the cvterm.
       //  If not then set the dbname to _global and we'll add it or find it there
-      $cvterm = db_fetch_object(db_query($cvtermsql,$name,'OBO_REL'));
+      $cvterm = db_fetch_object(db_query($cvtermsql,$accession,'OBO_REL'));
       if($cvterm){
          return $cvterm;
       } else {
@@ -459,7 +461,7 @@ function tripal_cv_add_cvterm($term,$defaultcv,$is_relationship = 0,$update = 1)
          // return it no matter what the original CV
          $dbname = '_global';
 
-         $cvterm = db_fetch_object(db_query($cvtermsql,$name,$dbname));
+         $cvterm = db_fetch_object(db_query($cvtermsql,$accesion,$dbname));
          if($cvterm){
             return $cvterm;
          }
@@ -480,7 +482,7 @@ function tripal_cv_add_cvterm($term,$defaultcv,$is_relationship = 0,$update = 1)
 
 
    // if the cvterm doesn't exist then add it otherwise just update it
-   $cvterm = db_fetch_object(db_query($cvtermsql,$name,$dbname));
+   $cvterm = db_fetch_object(db_query($cvtermsql,$accession,$dbname));
    if(!$cvterm){
       // check to see if the dbxref exists if not, add it
       $dbxref =  tripal_db_add_dbxref($db->db_id,$accession);
@@ -517,7 +519,7 @@ function tripal_cv_add_cvterm($term,$defaultcv,$is_relationship = 0,$update = 1)
       }
       // if the dbxref exists but does not map to the same database name
       elseif($check and strcmp($check->name,$name)!=0){
-         watchdog('tripal_cv', "The dbxref already exists in the cvterm table: $dbxref->dbxref_id ($accession) in another databaes than $dbname for term '$name'.",NULL,WATCHDOG_WARNING);
+         watchdog('tripal_cv', "The dbxref already exists in the cvterm table. DBXREF ID: $dbxref->dbxref_id, ACCESSION: $accession. DB:  '".$dbxref->db_name ."'. term '$name'. The requested db was '$dbname'",NULL,WATCHDOG_WARNING);
          return 0;
       }
       $cvterm = db_fetch_object(db_query($cvtermsql,$name,$dbname));
