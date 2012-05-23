@@ -375,6 +375,39 @@ function tripal_cv_add_cv($name,$comment){
    return $cv;
 }
 /**
+*  Add's a CV term to the cvterm table.  If the parent CV does not exist then
+*  that too is added to the CV table.  If the cvterm is a relationship term
+*  then the $is_relationship argument should be set.  The function will try
+*  to first find the relationship in the relationship ontology for updating and
+*  if it can't be found will add the relationship to the __global CV.  All terms
+*  must also have a corresponding database.  This is specified in the term's
+*  ID just before the colon (e.g. GO:003824).  If the database does not exist
+*  in the DB table then it will be added automatically.  The accession (the 
+*  value just after the colon in the term's ID) will be added to the dbxref 
+*  table.  If the CVterm already exists and $update is set (default) then the
+*  cvterm is updated.  If the CVTerm already exists and $update is not set, then
+*  no changes are made and the CVTerm object is returned.
+*
+* @param $term
+*   An associative array with the following keys: 'id', 'name' and 'namespace',
+*   'is_obsolete', and 'def'.  Where 'id' is the term accession, 'name' is the 
+*   term name, 'namespace' is the CV name for the term, 'def' is the term 
+*   definition and 'is_obsolete' is present and set to 1 if the term is defunct.
+*   The 'id' must be of the form <DB>:<ACCESSION>, where <DB> is the name of
+*   the database to which the cvterm belongs and the <ACCESSION> is the 
+*   term's accession number in the database.
+* @param $defaultcv
+*   Optional. A CV object populated with the fields of the CV to which the term 
+*   belongs.  If this arugment is null or not provided then the function tries
+*   to find a record in the CV table with the same name provided in the 
+*   $term[namespace]. 
+* @param $is_relationship
+*   If this term is a relationship term then this value should be 1.
+* @param $update
+*   By default this is set to 1.  If the term exists it is automatically updated.
+*
+* @return
+*   A CVTerm object  
 *
 * @ingroup tripal_cv_api
 */
@@ -437,7 +470,8 @@ function tripal_cv_add_cvterm($term,$defaultcv,$is_relationship = 0,$update = 1)
       return 0;
    }
 
-   // check to see if the database exists. 
+   // add the database. The function will just return the DB object if the
+   // database already exists. 
    $db = tripal_db_add_db($dbname);
    if(!$db){
       watchdog('tripal_cv', "Cannot find database '$dbname' in Chado.",NULL,WATCHDOG_WARNING);
@@ -458,7 +492,6 @@ function tripal_cv_add_cvterm($term,$defaultcv,$is_relationship = 0,$update = 1)
       // check to see if the dbxref already has an entry in the cvterm table
       $sql = "SELECT * FROM {cvterm} WHERE dbxref_id = %d";
       $check = db_fetch_object(db_query($sql,$dbxref->dbxref_id));
-
       if(!$check){
          // now add the cvterm
          $sql = "
@@ -477,11 +510,14 @@ function tripal_cv_add_cvterm($term,$defaultcv,$is_relationship = 0,$update = 1)
             }
          }  
       }
+      // if the dbxref already exists check to make sure it exists for the correct databaes name
+      // if it does then we're good and we don't need to do anything
       elseif($check and strcmp($check->name,$name)==0){
          // this entry already exists. We're good, so do nothing
       }
+      // if the dbxref exists but does not map to the same database name
       elseif($check and strcmp($check->name,$name)!=0){
-         watchdog('tripal_cv', "The dbxref already exists in the cvterm table: $dbxref->dbxref_id ($$accession) for term $name",NULL,WATCHDOG_WARNING);
+         watchdog('tripal_cv', "The dbxref already exists in the cvterm table: $dbxref->dbxref_id ($accession) in another databaes than $dbname for term '$name'.",NULL,WATCHDOG_WARNING);
          return 0;
       }
       $cvterm = db_fetch_object(db_query($cvtermsql,$name,$dbname));

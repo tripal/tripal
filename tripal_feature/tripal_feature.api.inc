@@ -255,7 +255,7 @@ function tripal_feature_chado_feature_synonym_schema() {
 }
 
 /**
- * Retrieve properties of a given type for a given analysis featire
+ * Retrieve properties from the analysisfeatureprop table for a feature.
  *
  * @param $analysis_id
  *    The analysis ID for the analysis feature. This argument is optional but
