@@ -1359,7 +1359,7 @@ function chado_get_node_id ($table, $id) {
  *   The base table for which the property should be retrieved. Thus to retrieve a property
  *   for a feature the basetable=feature and property is retrieved from featureprop
  * @param $record_id
- *   The primary key of the basetable to retrieve properties for. This should be in integer.
+ *   The foriegn key field of the base table. This should be in integer.
  * @param $property
  *   The cvterm name describing the type of properties to be retrieved
  * @param $cv_name
@@ -1371,7 +1371,7 @@ function chado_get_node_id ($table, $id) {
  * @ingroup tripal_chado_api
  */
 function tripal_core_get_property($basetable, $record_id, $property, $cv_name){
-
+  
    // get the foreign key for this property table
    $table_desc = module_invoke_all('chado_'.$basetable.'prop_schema');
    $fkcol = key($table_desc['foreign keys'][$basetable]['columns']);
@@ -1387,6 +1387,7 @@ function tripal_core_get_property($basetable, $record_id, $property, $cv_name){
          'is_obsolete' => 0
       ),
    );
+
    $results = tripal_core_generate_chado_var($basetable.'prop',$values);
    $results = tripal_core_expand_chado_vars($results,'field',$basetable.'prop.value');
    return $results;
@@ -1401,7 +1402,7 @@ function tripal_core_get_property($basetable, $record_id, $property, $cv_name){
  *   The base table for which the property should be inserted. Thus to insert a property
  *   for a feature the basetable=feature and property is inserted into featureprop
  * @param $record_id
- *   The primary key of the basetable to insert a property for. This should be in integer.
+ *   The foriegn key field of the base table. This should be in integer. 
  * @param $property
  *   The cvterm name describing the type of properties to be inserted
  * @param $cv_name
@@ -1426,14 +1427,20 @@ function tripal_core_insert_property($basetable, $record_id, $property,
    // insert
    $prop = tripal_core_get_property($basetable,$record_id,$property,$cv_name);
    $rank = 0;
+   $exists = 0;
    if(count($prop)>0){ 
       if($update_if_present){
          return tripal_core_update_property($basetable,$record_id,$property,$cv_name,$value) ;
       } else {
-         // iterate through the properties returned and get the largest rank
+         // iterate through the properties returned and check to see if the
+         // property with this value already exists if not, get the largest rank
+         // and insert the same property but with this new value
          foreach($prop as $p){
             if($p->rank > $rank){
                $rank = $p->rank;
+            }
+            if(strcmp($p->value,$value)==0){
+               $exists = 1;
             }
          }
          // now add 1 to the rank
@@ -1441,6 +1448,11 @@ function tripal_core_insert_property($basetable, $record_id, $property,
       }
    }
 
+   // if the property with this value exists then we return TRUE as if the
+   // insert was successful.
+   if($exists){
+      return TRUE;
+   }
    // get the foreign key for this property table
    $table_desc = module_invoke_all('chado_'.$basetable.'prop_schema');
    $fkcol = key($table_desc['foreign keys'][$basetable]['columns']);
@@ -1782,4 +1794,41 @@ function tripal_get_max_chado_rank ($tablename, $where_options) {
 	} else {
 		return -1;
 	}
+}
+/**
+ * Add a new table to the Chado schema. This function is simply a wrapper for
+ * the db_create_table() function of Drupal, but ensures the table is created
+ * inside the Chado schema rather than the Drupal schema.
+ *
+ * @param $ret
+ *   Array to which query results will be added.
+ * @param $table
+ *   The name of the table to create.
+ * @param $schema 
+ *   A Drupal-style Schema API definition of the table
+ *
+ * @return 
+ *   A database query result resource for the new table, or FALSE if table was not constructed.
+ *
+ * @ingroup tripal_core_api
+ */
+function tripal_create_chado_table (&$ret,$table,$schema) {
+   $ret = array();
+   
+   $previous_db = tripal_db_set_active('chado');  // use chado database
+   db_create_table($ret,$table,$schema);
+   tripal_db_set_active($previous_db);  // now use drupal database
+   
+   // if the table creation was succesful then add an entry
+   // in the tripal_custom_table
+   if($ret){
+      $record = new stdClass();
+      $record->table_name = $table;
+      $record->schema = serialize($schema);
+      $success = drupal_write_record('tripal_custom_tables',$record);
+      if(!$success){
+         drupal_set_message($message,"Error adding custom table: $table");   
+      }
+   }
+   return $ret;
 }

@@ -31,12 +31,19 @@ function tripal_core_update_6000(){
    // recreate the materialized view
    db_add_field($ret, 'tripal_mviews', 'status', array('type' => 'text', 'size' => 'normal', 'not null' => FALSE));
    db_add_field($ret, 'tripal_mviews', 'comment', array('type' => 'text', 'size' => 'normal', 'not null' => FALSE));
+   
+   // create the custom tables table
+   $ret = array();
+   $schema = tripal_core_custom_tables_schema();
+   db_create_table($ret,'tripal_custom_tables',$schema['tripal_custom_tables']);
+   
    $ret = array(
       '#finished' => 1,
    );
-   
+
    return $ret;
 }
+
 /************************************************************************
 * Implementation of hook_schema().
 *
@@ -75,7 +82,10 @@ function tripal_core_get_schemas (){
    foreach ($temp as $table => $arr){ 
       $schema[$table] = $arr; 
    }
-
+   $temp = tripal_core_custom_tables_schema();
+   foreach ($temp as $table => $arr){ 
+      $schema[$table] = $arr; 
+   }
 	return $schema;
 }
 /************************************************************************
@@ -141,6 +151,26 @@ function tripal_core_jobs_schema(){
          'job_name' => array('job_name')
       ),
       'primary key' => array('job_id'),
+   );
+   return $schema;
+}
+/************************************************************************
+* 
+*
+* @ingroup tripal_core
+*/
+function tripal_core_custom_tables_schema(){
+   $schema = array();
+   $schema['tripal_custom_tables'] = array(
+      'fields' => array(
+         'table_id' => array('type' => 'serial', 'unsigned' => TRUE, 'not null' => TRUE),
+         'table_name' => array ('type' => 'varchar', 'length' => 255, 'not null' => TRUE),
+         'schema' => array('type' => 'text','not null' => TRUE),
+      ),
+      'indexes' => array(
+         'table_id' => array('table_id'),
+      ),
+      'primary key' => array('table_id'),
    );
    return $schema;
 }

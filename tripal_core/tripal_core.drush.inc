@@ -76,9 +76,14 @@ function tripal_core_drush_command() {
  */
 function drush_tripal_core_tripal_launch_jobs () {
   $parallel = drush_get_option('parallel');   
+  
   if($parallel){
-    tripal_jobs_launch($do_parallel);
+    print "Tripal Job Launcher (in parallel)\n";
+    print "-------------------\n";
+    tripal_jobs_launch($parallel);
   } else {
+    print "Tripal Job Launcher\n";
+    print "-------------------\n";
     tripal_jobs_launch();  
   }
 }

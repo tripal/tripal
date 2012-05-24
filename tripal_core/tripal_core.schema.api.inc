@@ -37,10 +37,20 @@
  */
 
 /**
+ * Retrieves the list tables in the Chado schema.  By default it only retursn
+ * the default Chado tables, but may also return custom tables added to the 
+ * Chado schema as well.
  *
+ * @param $include_custom
+ *   Optional.  Set as TRUE to include any custom tables created in the
+ *   Chado schema. Custom tables are added to Chado using the
+ *   tripal_core_chado_create_table() function.
+ *
+ * @returns
+ *   An associative array where the key and value pairs are the Chado table names.
  * @ingroup tripal_schema_api
  */
-function tripal_core_get_chado_tables() {
+function tripal_core_get_chado_tables($include_custom = NULL) {
   if(is_array($db_url) and array_key_exists('chado',$db_url)){
     $previous_db = tripal_db_set_active('chado');
     $sql = 'SELECT tablename FROM pg_tables';
@@ -50,11 +60,22 @@ function tripal_core_get_chado_tables() {
     $sql = "SELECT tablename FROM pg_tables WHERE schemaname='chado'";
     $resource = db_query($sql);
   }
-  
   $tables = array();
   while ($r = db_fetch_object($resource)) {
     $tables[$r->tablename] = $r->tablename;
+  }  
+  
+  
+  // now add in the custom tables too
+  if($include_custom){
+    $sql = "SELECT table_name FROM tripal_custom_tables";
+    $resource = db_query($sql);
   }
+  while ($r = db_fetch_object($resource)) {
+    $tables[$r->table_name] = $r->table_name;
+  } 
+  
+
   asort($tables);
   return $tables;
 }

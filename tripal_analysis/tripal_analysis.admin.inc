@@ -481,39 +481,5 @@ function tripal_analysis_admin_validate($form, &$form_state) {
 		tripal_add_job('Cleanup orphaned analyses','tripal_analysis',
          'tripal_analyses_cleanup',$job_args,$user->uid);
 	}
-
-	// -------------------------------------
-	// Save blast regular expression settings
-	if ($form_state['values']['op'] == t('Save settings')) {
-		$db_id = $form_state['values']['blastdb'];
-		$name = $form_state['values']['displayname'];
-		$gbstyle = $form_state['values']['gb_style_parser'];
-		$reg1 = $form_state['values']['hit_id'];
-		$reg2 = $form_state['values']['hit_def'];
-		$reg3 = $form_state['values']['hit_accession'];
-		
-		// Check if the blast settings exists
-		
-		$sql = "SELECT db_id FROM {tripal_analysis_blast} WHERE db_id=%d";
-		$check = db_result(db_query($sql, $db_id));
-
-		// If setting exists, update it
-		if ($check) {
-			$sql = "UPDATE {tripal_analysis_blast} ".
-   	          "SET displayname = '%s', ".
-   	          "    regex_hit_id = '%s', ".
-   	          "    regex_hit_def = '%s', ".
-   	          "    regex_hit_accession = '%s', ".
-			       "    genbank_style = %d ".
-   	          "WHERE db_id=%d";
-			db_query($sql, $name, $reg1, $reg2, $reg3, $gbstyle, $db_id);
-			// Otherwise, insert a new setting for the db
-		} else {
-			$sql = "INSERT INTO {tripal_analysis_blast} (db_id, displayname, ".
-   		       "           regex_hit_id, regex_hit_def, regex_hit_accession, genbank_style) ".
-   		       "VALUES (%d, '%s', '%s', '%s', '%s', %d) ";
-			db_query($sql, $db_id, $name, $reg1, $reg2, $reg3, $gbstyle);
-		}
-	}
 }
 

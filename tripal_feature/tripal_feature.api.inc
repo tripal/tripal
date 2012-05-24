@@ -255,7 +255,7 @@ function tripal_feature_chado_feature_synonym_schema() {
 }
 
 /**
- * Retrieve properties of a given type for a given analysis featire
+ * Retrieve properties from the analysisfeatureprop table for a feature.
  *
  * @param $analysis_id
  *    The analysis ID for the analysis feature. This argument is optional but
@@ -481,7 +481,6 @@ function tripal_feature_analysis_update_property_by_id($analysisfeatureprop_id,
 function tripal_feature_analysis_delete_property($analysis_id = NULL, $feature_id = NUll, 
    $analysisfeature_id = NULL, $property, $cv_name = 'tripal')
 {
-     
    // check that the incoming arguments are correct
    if(($analysis_id and !$feature_id) or
        (!$analysis_id and $feature_id)){

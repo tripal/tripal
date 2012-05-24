@@ -314,7 +314,13 @@ function tripal_db_add_db($dbname){
 function tripal_db_add_dbxref($db_id,$accession,$version='',$description=''){
 
    // check to see if the dbxref exists if not, add it
-   $dbxsql = "SELECT dbxref_id FROM {dbxref} WHERE db_id = %d and accession = '%s'";
+   $dbxsql = "
+      SELECT DBX.dbxref_id, DBX.db_id, DBX.description, DBX.version, DBX.accession,
+         DB.name as db_name
+      FROM {dbxref} DBX
+         INNER JOIN db DB on DB.db_id = DBX.db_id
+      WHERE DBX.db_id = %d and DBX.accession = '%s'
+   ";
    $dbxref = db_fetch_object(db_query($dbxsql,$db_id,$accession));
    if(!$dbxref){
       $sql = "
