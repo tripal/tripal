@@ -1221,6 +1221,7 @@ function chado_library_load($node){
    $values = array('library_id' => $library_id);
    $library = tripal_core_generate_chado_var('library',$values);
 
+   $additions = new stdClass();
    $additions->library = $library;
    return $additions;
 
