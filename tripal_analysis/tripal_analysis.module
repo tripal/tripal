@@ -493,6 +493,7 @@ function chado_analysis_load($node){
    $values = array('analysis_id' => $analysis_id);
    $analysis = tripal_core_generate_chado_var('analysis',$values);
 
+   $additions = new stdClass();
    $additions->analysis = $analysis;
    return $additions;
 }
