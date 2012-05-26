@@ -560,7 +560,8 @@ function tripal_feature_get_property($feature_id,$property,$cv_name='tripal')
 function tripal_feature_insert_property($feature_id, $property, $value,
    $update_if_present = 0, $cv_name = 'tripal')
 {
-    return tripal_core_insert_property('feature',$feature_id,$property,$cv_name,$value,$update_if_present);
+    return tripal_core_insert_property('feature', $feature_id, $property,
+       $cv_name, $value, $update_if_present);
 }
 /**
  * Update a feature property using the property name. Only use this

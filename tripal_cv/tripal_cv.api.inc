@@ -160,94 +160,6 @@ function tripal_cv_get_cv_options() {
 }
 
 /**
- * To retrieve a chado controlled vocabulary term object
- *
- * @param $select_values
- *   An array meant to uniquely select a given controlled vocabulary term
- *
- * @return
- *   Chado controlled vocabulary term object
- *
- * The controlled vocabulary term is selected using tripal_core_chado select and as such the
- * $select_values array parameter meant to uniquely identify the controlled vocab term to be 
- * returned follows the same form as when using tripal_core_chado_select directly.
- *
- * Example Usage:
- * @code
-    $select_values = array(
-      'name' => 'synonym',
-      'cv_id' => array(
-        'name' => 'feature_property'
-      )
-    );
-    $cvterm_object = tripal_cv_get_cvterm($select_values);
- * @endcode
- *  The above code selects the synonym cvterm from the feature_proeprty cv and returns 
- *  the following object:
- * @code
-    $cvterm_object = stdClass Object ( 
-      [cvterm_id] => 2099
-      [name] => synonym
-      [definition] => Historic community symbol, may have originally been symbol []
-      [is_obsolete] => 0
-      [is_relationshiptype] => 1
-      [cv_cv_id] => 13
-      [cv_name] => feature_property
-      [cv_definition] => 
-      [dbreference_dbxref_id] => 2581
-      [dbreference_accession] => synonym
-      [dbreference_description] => 
-      [dbreference_version] => 
-      [dbreference_db_db_id] => 49
-      [dbreference_db_name] => SOFP
-      [dbreference_db_description] => 
-      [dbreference_db_urlprefix] => 
-      [dbreference_db_url] => 
-    ); 
- * @endcode
- *
- * @ingroup tripal_cv_api
- */
-function tripal_cv_get_cvterm ($select_values) {
-
-  $columns = array(
-    'cvterm_id', 
-    'cv_id', 
-    'name', 
-    'definition', 
-    'dbxref_id', 
-    'is_obsolete', 
-    'is_relationshiptype'
-  );
-  $results = tripal_core_chado_select('cvterm', $columns, $select_values);
-  if (sizeof($results) == 1) {
-    // Add cv
-    $cvterm = tripal_cv_add_cv_to_object(array('cv_id'=>$results[0]->cv_id),$results[0],array());
-    unset($cvterm->cv_id);
-    
-    // Add dbxref
-    $cvterm = tripal_db_add_dbxref_to_object(array('dbxref_id'=>$cvterm->dbxref_id),$cvterm,array());
-    unset($cvterm->dbxref_id);
-    
-    return $cvterm;
-  } elseif (empty($results)) {
-    watchdog('tripal_cv', 
-      'tripal_cv_get_cvterm: No cvterm matches criteria values:%values',
-      array('%values' => print_r($select_values, TRUE)),
-      WATCHDOG_WARNING
-    );
-    return FALSE;
-  } else {
-    watchdog('tripal_cv', 
-      'tripal_cv_get_cvterm: 2+ cvterms match criteria values:%values',
-      array('%values' => print_r($select_values, TRUE)),
-      WATCHDOG_WARNING
-    );
-  }
- 
-}
-
-/**
  * Retrieve a chado cvterm object with a given name
  *
  * @param $name
@@ -345,6 +257,16 @@ function tripal_cv_chado_cvterm_schema() {
 }
 
 /**
+* Adds a controlled vocabular to the CV table of Chado.
+*
+* @param $name
+*   The name of the controlled vocabulary. These are typically all lower case
+*   with no special characters other than an undrescore (for spaces).
+* @param $comment
+*   A description or definition of the vocabulary.
+*
+* @return
+*   An object populated with fields from the newly added database.
 *
 * @ingroup tripal_cv_api
 */
@@ -405,13 +327,17 @@ function tripal_cv_add_cv($name,$comment){
 *   If this term is a relationship term then this value should be 1.
 * @param $update
 *   By default this is set to 1.  If the term exists it is automatically updated.
+* @param $dbname
+*   In some cases the database name will not be part of the $term['id'] and it
+*   needs to be explicitly set.  Use this argument only if the database name
+*   cannot be specififed in the term ID (e.g. <DB>:<ACCESSION>).
 *
 * @return
 *   A CVTerm object  
 *
 * @ingroup tripal_cv_api
 */
-function tripal_cv_add_cvterm($term,$defaultcv,$is_relationship = 0,$update = 1){
+function tripal_cv_add_cvterm($term,$defaultcv=NULL,$is_relationship = 0,$update = 1,$dbname=NULL){
 
    // get the term properties
    $id = $term['id'];
@@ -444,7 +370,10 @@ function tripal_cv_add_cvterm($term,$defaultcv,$is_relationship = 0,$update = 1)
                   WHERE DBX.accession = '%s' and DB.name = '%s'";  
 
    // get the accession and the database from the cvterm
-   if(preg_match('/^.+?:.*$/',$id)){
+   if($dbname){
+      $accession = $id;
+   }
+   elseif(preg_match('/^.+?:.*$/',$id)){
       $accession = preg_replace('/^.+?:(.*)$/','\1',$id);
       $dbname = preg_replace('/^(.+?):.*$/','\1',$id);
    } 

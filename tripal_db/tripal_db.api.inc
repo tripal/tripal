@@ -291,21 +291,57 @@ function tripal_db_chado_dbxref_schema() {
   return $description;
 }
 /**
+* Adds a new database to the Chado DB table and returns the DB object.
+*
+* @param $dbname
+*   The name of the database. This name is usually used as the prefix for
+*   CV term accessions
+* @param $description
+*   Optional. A description of the database.  By default no description is required.
+* @param $url
+*   Optional. The URL for the database
+* @param $urlprefix
+*   Optional. The URL that is to be used as a prefix when constructing a link to
+*   a database term
+* @param $update
+*   Optional. Set this to '1' to force an update of the database if it 
+*   already exists. The default is to not update. If the database exists
+*   then nothing is added.
+*
+* @return
+*   An object populated with fields from the newly added database.
 *
 * @ingroup tripal_db_api
 */
-function tripal_db_add_db($dbname){
+function tripal_db_add_db($dbname,$description='',$url='',$urlprefix='',$update=0){
 
+
+   $values = array(
+      'name' => $dbname,
+      'description' => $description,
+      'url' => $url,
+      'urlprefix' => $urlprefix
+   );
+      
    $db_sql = "SELECT * FROM {db} WHERE name ='%s'";
    $db = db_fetch_object(db_query($db_sql,$dbname));
    if(!$db){
-      if(!db_query("INSERT INTO {db} (name) VALUES ('%s')",$dbname)){
-         watchdog('tripal_cv', "Cannot create '$dbname' db in Chado.",NULL,WATCHDOG_WARNING);
+      if(!tripal_core_chado_insert('db',$values)){
+         watchdog('tripal_db', "Cannot create db '$dbname'.",NULL,WATCHDOG_WARNING);
          return 0;
       }      
-     $db = db_fetch_object(db_query($db_sql,$dbname));
+      $db = tripal_core_chado_select('db',array('*'),$values);
+   } 
+   elseif($update) {
+      $match = array('db_id' => $db->db_id);
+      if(!tripal_core_chado_update('db',$match,$values)){
+         watchdog('tripal_db', "Cannot update db '$dbname'.",NULL,WATCHDOG_WARNING);
+         return 0;
+      }      
+      $db = tripal_core_chado_select('db',array('*'),$values);
+   } else {
+      return $db;
    }
-   return $db;
 }
 /**
 *

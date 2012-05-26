@@ -16,7 +16,10 @@
  */
 
 /**
- * Add a materialized view to the chado database to help speed data access.
+ * DEPRECATED: This function should no longer be used. But rather the
+ * tripal_cv_add_cvterm function should be used. 
+ * 
+ * This function adds a term to the cvterm table of Chado.
  *
  * @param $name 
  *   The name of the term
