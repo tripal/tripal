@@ -865,7 +865,7 @@ function tripal_feature_load_gff3_alias($feature,$aliases){
          'definition' => array(''),
          'is_obsolete' => array(0),
       );
-      $syntype = tripal_cv_add_cvterm($term,$syncv,0,1);
+      $syntype = tripal_cv_add_cvterm($term,$syncv->name,0,1);
       if(!$syntype){
          print("Cannot add synonym type: internal:$type");
          return 0;

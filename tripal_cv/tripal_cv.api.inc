@@ -166,28 +166,46 @@ function tripal_cv_get_cv_options() {
  *   the cvterm.name
  * @param $cv_id
  *   the cv_id of the term you are looking for
+ * @param $cv_name
+ *   the name of the CV
  *
  * @return 
  *   cvterm object
  *
  * @ingroup tripal_cv_api
  */
-function tripal_cv_get_cvterm_by_name ($name, $cv_id=0) {
+function tripal_cv_get_cvterm_by_name ($name, $cv_id=0,$cv_name='tripal') {
 
-  if (!empty($cv_id)) {
-    $sql = "SELECT * FROM cvterm WHERE name='%s' AND cv_id=%d";
-    $previous_db = tripal_db_set_active('chado');
-    $r = db_fetch_object(db_query($sql, $name, $cv_id));
-    tripal_db_set_active($previous_db);
-  } else {
-    $sql = "SELECT * FROM cvterm WHERE name='%s'";
-    $previous_db = tripal_db_set_active('chado');
-    $r = db_fetch_object(db_query($sql, $name));
-    tripal_db_set_active($previous_db);
+  if ($cv_id) {
+    $values = array(
+       'name' => $name,
+       'cv_id' => $cv_id,
+    );
+    $r = tripal_core_chado_select('cvterm',array('*'),$values);
+  } 
+  elseif($cv_name){
+    $values = array(
+       'name' => $name,
+       'cv_id' => array(
+          'name' => $cv_name,
+       ),
+    );
+    $r = tripal_core_chado_select('cvterm',array('*'),$values);
+  }
+  else {
+    $values = array(
+       'name' => $name,
+    );
+    $r = tripal_core_chado_select('cvterm',array('*'),$values);
   }
   
-  return $r;
-  
+  if(!$r){
+     return FALSE;
+  }
+  if(count($r) > 0){
+     return FALSE;
+  }
+  return $r[0];
 }
 
 /**
@@ -319,10 +337,11 @@ function tripal_cv_add_cv($name,$comment){
 *   the database to which the cvterm belongs and the <ACCESSION> is the 
 *   term's accession number in the database.
 * @param $defaultcv
-*   Optional. A CV object populated with the fields of the CV to which the term 
+*   Optional. The CV name to which the term 
 *   belongs.  If this arugment is null or not provided then the function tries
 *   to find a record in the CV table with the same name provided in the 
-*   $term[namespace]. 
+*   $term[namespace].  If this field is provided then it overrides what the 
+*   value in $term[namespace] 
 * @param $is_relationship
 *   If this term is a relationship term then this value should be 1.
 * @param $update
@@ -337,7 +356,7 @@ function tripal_cv_add_cv($name,$comment){
 *
 * @ingroup tripal_cv_api
 */
-function tripal_cv_add_cvterm($term,$defaultcv=NULL,$is_relationship = 0,$update = 1,$dbname=NULL){
+function tripal_cv_add_cvterm($term,$defaultcv='',$is_relationship = 0,$update = 1,$dbname=NULL){
 
    // get the term properties
    $id = $term['id'];
@@ -348,8 +367,18 @@ function tripal_cv_add_cvterm($term,$defaultcv=NULL,$is_relationship = 0,$update
    if(isset($term['is_obsolete']) and  strcmp($term['is_obsolete'],'true')==0){
      $is_obsolete = 1;
    }
+   if(!$name and !$id){
+      watchdog('tripal_cv', "Cannot find cvterm without 'id' or 'name'",NULL,WATCHDOG_WARNING);
+      return 0;
+   }
+   if(!$id){
+      $id = $name;
+   }
+   if(!$name){
+      $name = $id;
+   }
    if(!$cvname){
-      $cvname = $defaultcv->name;
+      $cvname = $defaultcv;
    }
    // make sure the CV name exists
    $cv = tripal_cv_add_cv($cvname,'');

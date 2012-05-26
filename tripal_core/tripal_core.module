@@ -2,7 +2,6 @@
 
 require_once "jobs.php";
 require_once "mviews.php";
-require_once "cvterms.php";
 require_once "chado_install.php";
 require_once "tripal_core.api.inc";
 

@@ -35,7 +35,7 @@ function tripal_search_unigene_install(){
    							  ";
    
    $index = "feature_id, go_term, unigene, blast_value, kegg_value, interpro_value";
-   $singlet_type_id = tripal_get_cvterm_id('singlet_in_analysis');
+   $singlet_type_id = tripal_cv_get_cvterm_by_name('singlet_in_analysis');
    if ($singlet_type_id) {
    	$singlet_condition = " AND F.feature_id NOT IN (SELECT feature_id from feature
    						   WHERE type_id = (select cvterm_id from cvterm where name = 'EST')
