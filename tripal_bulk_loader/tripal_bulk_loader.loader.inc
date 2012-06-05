@@ -253,11 +253,13 @@ function tripal_bulk_loader_load_data($nid) {
         // (2*100 + 50%) / 3 = 250%/3 = 83%
         $job_progress = round(((($group_index-1)*100)+$group_progress)/$total_num_groups);
         
+        /**
           print "\nProgress Update:\n"
             ."\t- ".$num_lines." lines have been processed for the current constant set.\n"
             ."\t- ".$group_progress."% of the lines in the file have been processed for the current constant set.\n"
             ."\t- ".$job_progress."% of the current job has been completed.\n";
-            
+        */
+         
         tripal_job_set_progress($node->job_id,$job_progress);
       }    
   
@@ -265,7 +267,7 @@ function tripal_bulk_loader_load_data($nid) {
   
       $data_keys = array_keys($data); 
       foreach ($data_keys as $priority) {
-        $status = process_data_array_for_line($priority, $data, $default_data, $field2column, $record2priority, $line, $nid, $num_lines);
+        $status = process_data_array_for_line($priority, $data, $default_data, $field2column, $record2priority, $line, $nid, $num_lines, $group_index);
         if (!$status ) { $loaded_without_errors = FALSE; }
       } // end of foreach table in default data array
       
@@ -290,7 +292,7 @@ function tripal_bulk_loader_load_data($nid) {
  * 
  *
  */
-function process_data_array_for_line ($priority, &$data, &$default_data, $field2column, $record2priority, $line, $nid, $line_num) {
+function process_data_array_for_line ($priority, &$data, &$default_data, $field2column, $record2priority, $line, $nid, $line_num, $group_index) {
   $table_data = $data[$priority];
 
   $no_errors = TRUE;
@@ -386,7 +388,11 @@ function process_data_array_for_line ($priority, &$data, &$default_data, $field2
     
   if (!preg_match('/select/',$table_data['mode'])) {
     //watchdog('T_bulk_loader',$header.': Inserting:'.print_r($values, TRUE), array(), WATCHDOG_NOTICE);
-    $record = tripal_core_chado_insert($table, $values);
+    $options = array('statement_name' => $priority);
+    if ($line_num == 1 && $group_index == 1) {
+      $options['prepare'] = TRUE;
+    }
+    $record = tripal_core_chado_insert($table, $values, $options);
     if (!$record) {
       $msg = 'Line '.$line_num.' '.$table_data['record_id'].' ('.$table_data['mode'].') Unable to insert record into '.$table.' where values:'.print_r($values,TRUE);
       watchdog('T_bulk_loader', $msg, array(), WATCHDOG_ERROR); 
