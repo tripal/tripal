@@ -65,7 +65,7 @@ function tripal_views_description_page() {
  */
 function tripal_views_integration_setup_list(){
 
-   $header = array('', 'Drupal Views Type Name', 'Table Name', 'Is Mview', 'Priority', 'Comment','');
+   $header = array('', 'Drupal Views Type Name', 'Table Name', 'Legacy Mview', 'Priority', 'Comment','');
    $rows = array();
 
    // get the list of materialized views
