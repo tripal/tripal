@@ -108,180 +108,120 @@ require_once "tripal_core.schema.api.inc";
 *
 * @ingroup tripal_chado_api
 */
-function tripal_core_chado_insert($table, $values, $options = array()){
-  $chado_db = tripal_db_persistent_chado();
-  
-  // Determine plan of action
-  if ($options['statement_name']) {
-    $prepared = TRUE;
-    if ($options['prepare']) {
-      $build_sql = TRUE;
-    } else {
-      $build_sql = FALSE;
-    }  
-  } else {
-    $build_sql = TRUE;
-  }
-  
-  // get the table description
-  $table_desc = module_invoke_all('chado_'.$table.'_schema');
-  if (empty($table_desc)) {
-    watchdog('tripal_core', 'tripal_core_chado_insert: There is no table description for !table_name', array('!table_name' => $table), WATCHDOG_WARNING);       
-  }
-  
-  // iterate through the values array and create a new 'insert_values' array
-  // that has all the values needed for insert with all foreign relationsihps
-  // resolved.
-  $insert_values = array();
-  foreach($values as $field => $value){
-    if(is_array($value)){
-       // select the value from the foreign key relationship for this value
-       $results = tripal_core_chado_get_foreign_key($table_desc,$field,$value);
-       if (sizeof($results) > 1) {
-         watchdog('tripal_core', 'tripal_core_chado_insert: Too many records match the criteria supplied for !foreign_key foreign key constraint (!criteria)', array('!foreign_key' => $field, '!criteria' => print_r($value,TRUE)), WATCHDOG_ERROR);         
-       } elseif (sizeof($results) < 1) {
-         //watchdog('tripal_core', 'tripal_core_chado_insert: no record matches criteria supplied for !foreign_key foreign key constraint (!criteria)', array('!foreign_key' => $field, '!criteria' => print_r($value,TRUE)), WATCHDOG_ERROR);
-       } else {
-         $insert_values[$field] = $results[0];
-       }
-    }  
-    else {
-       $insert_values[$field] = $value;
-    }
-  }
-  
-  // check for violation of any unique constraints
-  $ukeys = $table_desc['unique keys'];
-  $ukselect_cols = array();
-  $ukselect_vals = array();
-  if ($ukeys) {
-   foreach($ukeys as $name => $fields){
-      foreach($fields as $index => $field){
-         // build the arrays for performing a select that will check the contraint
-         array_push($ukselect_cols,$field);
-         $ukselect_vals[$field] = $insert_values[$field];
+function tripal_core_chado_insert($table,$values){
+   $insert_values = array();
+   
+   // get the table description
+   $table_desc = module_invoke_all('chado_'.$table.'_schema');
+   if (empty($table_desc)) {
+   	watchdog('tripal_core', 'tripal_core_chado_insert: There is no table description for !table_name', array('!table_name' => $table), WATCHDOG_WARNING);       
+   }
+
+   // iterate through the values array and create a new 'insert_values' array
+   // that has all the values needed for insert with all foreign relationsihps
+   // resolved.
+   foreach($values as $field => $value){
+      if(is_array($value)){
+         // select the value from the foreign key relationship for this value
+         $results = tripal_core_chado_get_foreign_key($table_desc,$field,$value);
+         if (sizeof($results) > 1) {
+           watchdog('tripal_core', 'tripal_core_chado_insert: Too many records match the criteria supplied for !foreign_key foreign key constraint (!criteria)', array('!foreign_key' => $field, '!criteria' => print_r($value,TRUE)), WATCHDOG_ERROR);         
+         } elseif (sizeof($results) < 1) {
+           //watchdog('tripal_core', 'tripal_core_chado_insert: no record matches criteria supplied for !foreign_key foreign key constraint (!criteria)', array('!foreign_key' => $field, '!criteria' => print_r($value,TRUE)), WATCHDOG_ERROR);
+         } else {
+           $insert_values[$field] = $results[0];
+         }
+      }  
+      else {
+         $insert_values[$field] = $value;
       }
-      // now check the constraint
-      if(tripal_core_chado_select($table,$ukselect_cols,$ukselect_vals)){
-         watchdog('tripal_core',"tripal_core_chado_insert: Cannot insert duplicate record into $table table: " . print_r($values,1),array(),'WATCHDOG_ERROR');
+   }
+
+   // check for violation of any unique constraints
+   $ukeys = $table_desc['unique keys'];
+   $ukselect_cols = array();
+   $ukselect_vals = array();
+   if ($ukeys) {
+     foreach($ukeys as $name => $fields){
+        foreach($fields as $index => $field){
+           // build the arrays for performing a select that will check the contraint
+           array_push($ukselect_cols,$field);
+           $ukselect_vals[$field] = $insert_values[$field];
+        }
+        // now check the constraint
+        if(tripal_core_chado_select($table,$ukselect_cols,$ukselect_vals)){
+           watchdog('tripal_core',"tripal_core_chado_insert: Cannot insert duplicate record into $table table: " . print_r($values,1),array(),'WATCHDOG_ERROR');
+           return false;
+        }
+     }
+   }
+
+   // if trying to insert a field that is the primary key, make sure it also is unique
+   $pkey = $table_desc['primary key'][0];
+   if($insert_values[$pkey]){
+      if(tripal_core_chado_select($table,array($pkey),array($pkey => $insert_values[$pkey]))){
+         watchdog('tripal_core',"tripal_core_chado_insert: Cannot insert duplicate primary key into $table table: " . print_r($values,1),array(),'WATCHDOG_ERROR');
          return false;
       }
    }
-  }
-  
-  // if trying to insert a field that is the primary key, make sure it also is unique
-  $pkey = $table_desc['primary key'][0];
-  if($insert_values[$pkey]){
-    if(tripal_core_chado_select($table,array($pkey),array($pkey => $insert_values[$pkey]))){
-       watchdog('tripal_core',"tripal_core_chado_insert: Cannot insert duplicate primary key into $table table: " . print_r($values,1),array(),'WATCHDOG_ERROR');
-       return false;
-    }
-  }
-  
-  // make sure required fields have a value
-  $fields = $table_desc['fields'];
-  if (!is_array($fields)) {
-   $fields = array();
-   watchdog('tripal_core',"tripal_core_chado_insert: %table not defined in tripal schema api", array('%table' => $table), 'WATCHDOG WARNING');
-  }
-  foreach($fields as $field => $def){
-    // a field is considered missing if it cannot be null and there is no default
-    // value for it or it is of type 'serial'
-    if($def['not null'] == 1 and !array_key_exists($field,$insert_values) and !isset($def['default']) and strcmp($def['type'],serial)!=0){
-       watchdog('tripal_core',"tripal_core_chado_insert: Field $table.$field cannot be null: " . print_r($values,1),array(),'WATCHDOG_ERROR');
-       return false;
-    }
-  }
-  
-  // Now build the insert SQL statement
-  $ifields = array();
-  $ivalues = array();
-  $itypes = array();
-  $iplaceholders = array();
-  $i = 1;
-  foreach ($insert_values as $field => $value){
-    array_push($ifields,$field);
-    array_push($ivalues,$value);
-    array_push($iplaceholders,'$'.$i);
-    $i++;
-    if(strcmp($value,'__NULL__')==0){
-       array_push($itypes,"NULL");
-    } 
-    elseif(strcmp($fields[$field]['type'],'serial')==0 or 
-       strcmp($fields[$field]['type'],'int')==0){
-       array_push($itypes,"%d");
-    } 
-    else {
-       array_push($itypes,"'%s'");
-    }
-  }
 
-  if ($build_sql) {   
-    // prepare the statement
-    if ($prepared) {
-      $sql = "INSERT INTO {$table} (" . implode(", ",$ifields) . ") VALUES (". implode(", ",$iplaceholders) .")";
-      
-      $previous_db = tripal_db_set_active('chado');
-      $status = pg_prepare($chado_db, $options['statement_name'], $sql);
-      tripal_db_set_active($previous_db);
-      
-      if (!$status) {
-        watchdog('tripal_core',"tripal_core_chado_insert: not able to prepare '%name' statement for: %sql", array('%name' => $options['statement_name'], '%sql' => $sql), 'WATCHDOG ERROR');
-        return FALSE;
+   // make sure required fields have a value
+   $fields = $table_desc['fields'];
+   if (!is_array($fields)) {
+   	 $fields = array();
+   	 watchdog('tripal_core',"tripal_core_chado_insert: %table not defined in tripal schema api", array('%table' => $table), 'WATCHDOG WARNING');
+   }
+   foreach($fields as $field => $def){
+      // a field is considered missing if it cannot be null and there is no default
+      // value for it or it is of type 'serial'
+      if($def['not null'] == 1 and !array_key_exists($field,$insert_values) and !isset($def['default']) and strcmp($def['type'],serial)!=0){
+         watchdog('tripal_core',"tripal_core_chado_insert: Field $table.$field cannot be null: " . print_r($values,1),array(),'WATCHDOG_ERROR');
+         return false;
       }
-    } else {
-      $sql = "INSERT INTO {$table} (" . implode(", ",$ifields) . ") VALUES (". implode(", ",$itypes) .")";
-    }
-    
-  }
-    
-  // finally perform the insert. 
-  if ($prepared) {
-    
-      $previous_db = tripal_db_set_active('chado');
-      $result = pg_execute($chado_db, $options['statement_name'], $ivalues);
-      tripal_db_set_active($previous_db);
-      if ($result) {
-        // add primary keys to values before return
-        $primary_key = array();
-        if (!is_array($table_desc['primary key'])) {
-          $table_desc['primary key'] = array();
-          watchdog('tripal_core',"tripal_core_chado_insert: %table not defined in tripal schema api", array('%table' => $table), 'WATCHDOG WARNING');
-        }
-        foreach ($table_desc['primary key'] as $field) {
-          $value = db_last_insert_id($table, $field);
-          $values[$field] = $value;
-        }
-        return $values;
-      } else {
-        watchdog('tripal_core',"tripal_core_chado_insert: not able to execute prepared statement '%name' with values: %values", array('%name' => $options['statement_name'], '%values' => print_r($values,1)), 'WATCHDOG ERROR');
-        return FALSE;
-      }
+   }
 
-  } else {
-    $previous_db = tripal_db_set_active('chado');  // use chado database
-    $result = db_query($sql,$ivalues);
-    tripal_db_set_active($previous_db);  // now use drupal database 
-    if($result){
+   // Now build the insert SQL statement
+   $ifields = array();
+   $ivalues = array();
+   $itypes = array();
+   foreach ($insert_values as $field => $value){
+      array_push($ifields,$field);
+      array_push($ivalues,$value);
+      if(strcmp($value,'__NULL__')==0){
+         array_push($itypes,"NULL");
+      } 
+      elseif(strcmp($fields[$field]['type'],'serial')==0 or 
+         strcmp($fields[$field]['type'],'int')==0){
+         array_push($itypes,"%d");
+      } 
+      else {
+         array_push($itypes,"'%s'");
+      }
+   }
+   $sql = "INSERT INTO {$table} (" . implode(", ",$ifields) . ") VALUES (". implode(", ",$itypes) .")";
+
+   // finally perform the insert. 
+   $previous_db = tripal_db_set_active('chado');  // use chado database
+   $result = db_query($sql,$ivalues);
+   tripal_db_set_active($previous_db);  // now use drupal database 
+   if($result){
       // add primary keys to values before return
       $primary_key = array();
       if (!is_array($table_desc['primary key'])) {
-        $table_desc['primary key'] = array();
-        watchdog('tripal_core',"tripal_core_chado_insert: %table not defined in tripal schema api", array('%table' => $table), 'WATCHDOG WARNING');
+      	$table_desc['primary key'] = array();
+      	watchdog('tripal_core',"tripal_core_chado_insert: %table not defined in tripal schema api", array('%table' => $table), 'WATCHDOG WARNING');
       }
       foreach ($table_desc['primary key'] as $field) {
         $value = db_last_insert_id($table, $field);
         $values[$field] = $value;
       }
       return $values;
-    } 
-    else {
+   } 
+   else {
       watchdog('tripal_core',"tripal_core_chado_insert: Cannot insert record into $table table: " . print_r($values,1),array(),'WATCHDOG_ERROR');
       return false;
-    }
-  }
-  
-  return false;
+   }
+   return false;
 }
 
 /**
@@ -655,7 +595,7 @@ function tripal_core_chado_select($table,$columns,$values,$options = null){
               'case_insensitive_columns' => $options['case_insensitive_columns']
             );
             $results = tripal_core_chado_get_foreign_key($table_desc,$field,$value, $foreign_options);
-            if (sizeof($results) < 1) {
+            if (count($results) ==0) {
               // foreign key records are required
               // thus if none matched then return false and alert the admin through watchdog
               //watchdog('tripal_core', 
@@ -819,10 +759,12 @@ function tripal_core_chado_get_foreign_key($table_desc,$field,$values, $options 
                $select_cols = array($right);
                $result = tripal_core_chado_select($table,$select_cols,$values, $options);
                $fields = array();
-               foreach ($result as $obj) {
-                 $fields[] = $obj->$right;
+               if(count($result) > 0){
+                  foreach ($result as $obj) {
+                    $fields[] = $obj->$right;
+                  }
+                  return $fields;
                }
-               return $fields;
             }
          }
       } 
@@ -1419,19 +1361,22 @@ function chado_get_node_id ($table, $id) {
  *   The base table for which the property should be retrieved. Thus to retrieve a property
  *   for a feature the basetable=feature and property is retrieved from featureprop
  * @param $record_id
- *   The primary key of the basetable to retrieve properties for. This should be in integer.
+ *   The foriegn key field of the base table. This should be in integer.
  * @param $property
  *   The cvterm name describing the type of properties to be retrieved
  * @param $cv_name
  *   The name of the cv that the above cvterm is part of
  *
  * @return
- *   A chado variable with the specified properties expanded
+ *   An array in the same format as that generated by the function
+ *   tripal_core_generate_chado_var().  If only one record is returned it
+ *   is a single object.  If more than one record is returned then it is an array
+ *   of objects
  *
  * @ingroup tripal_chado_api
  */
 function tripal_core_get_property($basetable, $record_id, $property, $cv_name){
-
+  
    // get the foreign key for this property table
    $table_desc = module_invoke_all('chado_'.$basetable.'prop_schema');
    $fkcol = key($table_desc['foreign keys'][$basetable]['columns']);
@@ -1447,6 +1392,7 @@ function tripal_core_get_property($basetable, $record_id, $property, $cv_name){
          'is_obsolete' => 0
       ),
    );
+
    $results = tripal_core_generate_chado_var($basetable.'prop',$values);
    $results = tripal_core_expand_chado_vars($results,'field',$basetable.'prop.value');
    return $results;
@@ -1461,7 +1407,7 @@ function tripal_core_get_property($basetable, $record_id, $property, $cv_name){
  *   The base table for which the property should be inserted. Thus to insert a property
  *   for a feature the basetable=feature and property is inserted into featureprop
  * @param $record_id
- *   The primary key of the basetable to insert a property for. This should be in integer.
+ *   The foriegn key field of the base table. This should be in integer. 
  * @param $property
  *   The cvterm name describing the type of properties to be inserted
  * @param $cv_name
@@ -1484,16 +1430,24 @@ function tripal_core_insert_property($basetable, $record_id, $property,
    // first see if the property already exists, if the user want's to update
    // then we can do that, but otherwise we want to increment the rank and
    // insert
-   $prop = tripal_core_get_property($basetable,$record_id,$property,$cv_name);
+   $props = tripal_core_get_property($basetable,$record_id,$property,$cv_name);
+   if(!is_array($props)) { 
+    $props = array($props); 
+   }   
    $rank = 0;
-   if(count($prop)>0){ 
+   if(count($props)>0){       
       if($update_if_present){
-         return tripal_core_update_property($basetable,$record_id,$property,$cv_name,$value) ;
+         return tripal_core_update_property($basetable, $record_id, $property, $cv_name, $value) ;
       } else {
-         // iterate through the properties returned and get the largest rank
-         foreach($prop as $p){
+         // iterate through the properties returned and check to see if the
+         // property with this value already exists if not, get the largest rank
+         // and insert the same property but with this new value
+         foreach($props as $p){
             if($p->rank > $rank){
                $rank = $p->rank;
+            }
+            if(strcmp($p->value,$value)==0){
+               return TRUE;
             }
          }
          // now add 1 to the rank
@@ -1791,47 +1745,6 @@ function tripal_db_set_active($dbname){
    }
    else return db_set_active($dbname);
 }
-
-/**
- * Instantiate or Return a persistent chado connection
- *
- * NOTE: cannot use $active_db since a new connection is created each time 
- * db_set_active() is called
- *
- * @return
- *   A postgresql connection object which can be used by pg_prepare, pg_execute, etc.
- */
-function tripal_db_persistent_chado () {
-  global $db_url;
-  
-  // get connection if it already exists
-  $connection = variable_get('tripal_perisistent_chado',NULL);
-  
-  if ($connection) {
-    return $connection;
-  
-  // Otherwise we need to set it
-  } else {
-    if (is_array($db_url) && isset($db_url['chado'])) {
-      $connection = db_connect($db_url['chado']);
-      variable_set('tripal_perisistent_chado', $connection); 
-    } else {
-      $connection = db_connect($db_url);
-      variable_set('tripal_perisistent_chado', $connection); 
-    }
-    
-    return $connection;
-  }
-  return FALSE;
-}
-
-/**
- * Release a persistent chado connection
- */
-function tripal_db_release_persistent_chado () {
-  variable_del('tripal_perisistent_chado');
-}
-
 /**
  * Purpose: Get max rank for a given set of criteria
  *   This function was developed with the many property tables in chado in mind
@@ -1884,3 +1797,101 @@ function tripal_get_max_chado_rank ($tablename, $where_options) {
 		return -1;
 	}
 }
+/**
+ * Add a new table to the Chado schema. This function is simply a wrapper for
+ * the db_create_table() function of Drupal, but ensures the table is created
+ * inside the Chado schema rather than the Drupal schema.  If the table already
+ * exists then it will be dropped and recreated using the schema provided.
+ * Howver, it will only drop a table if it exsits in the tripal_custom_tables
+ * table. This way the function cannot be used to accidentally alter existing
+ * non custom tables.
+ * 
+ * @param $ret
+ *   Array to which query results will be added.
+ * @param $table
+ *   The name of the table to create.
+ * @param $schema 
+ *   A Drupal-style Schema API definition of the table
+ *
+ * @return 
+ *   A database query result resource for the new table, or FALSE if table was not constructed.
+ *
+ * @ingroup tripal_core_api
+ */
+function tripal_create_chado_table (&$ret,$table,$schema) {
+   $ret = array();
+
+   // If the table exits in Chado but not in the tripal_custom_tables field
+   // then call an error.  if the table exits in the tripal_custom_tables but
+   // not in Chado then create the table and replace the entry.
+   $sql = "SELECT * FROM {tripal_custom_tables} WHERE table_name = '%s'";
+   $centry = db_fetch_object(db_query($sql,$table));
+   $previous_db = tripal_db_set_active('chado');  // use chado database   
+   $exists = db_table_exists($table);
+   tripal_db_set_active($previous_db);  // now use drupal database
+   if(!$exists){
+      $previous_db = tripal_db_set_active('chado');  // use chado database   
+      db_create_table($ret,$table,$schema);
+      tripal_db_set_active($previous_db);  // now use drupal database  
+      if(count($ret)==0){
+   	   watchdog('tripal_core', "Error adding custom table '!table_name'.", 
+   	      array('!table_name' => $table), WATCHDOG_ERROR); 
+         return FALSE;
+      }       
+   }
+   if($exists and !$centry){
+   	watchdog('tripal_core', "Could not add custom table '!table_name'. It ".
+   	         "already exists but is not known to Tripal as being a custom table.", 
+   	   array('!table_name' => $table), WATCHDOG_WARNING);       
+   	   return FALSE;
+   }
+   if($exists and $centry){
+      // drop the table we'll recreate it with the new schema
+      $previous_db = tripal_db_set_active('chado');  // use chado database   
+      db_drop_table($ret,$table);
+      db_create_table($ret,$table,$schema);
+      tripal_db_set_active($previous_db);  // now use drupal database        
+   }
+   
+   // if the table creation was succesful then add an entry
+   // in the tripal_custom_table
+   $record = new stdClass();
+   $record->table_name = $table;
+   $record->schema = serialize($schema);
+   // if an entry already exists then remove it
+   if($centry){
+      $sql = "DELETE FROM {tripal_custom_tables} WHERE table_name = '%s'";
+      db_query($sql,$table);
+   } 
+   $success = drupal_write_record('tripal_custom_tables',$record);
+   if(!$success){
+	   watchdog('tripal_core', "Error adding custom table.", 
+	      array('!table_name' => $table), WATCHDOG_ERROR); 
+      return FALSE;
+   }
+   return $ret;
+}
+/**
+ * Retrieves the schema in an array for the specified custom table.
+ * 
+ * @param $table
+ *   The name of the table to create.
+ *
+ * @return 
+ *   A Drupal-style Schema API array definition of the table. Returns
+ *   FALSE on failure.
+ *
+ * @ingroup tripal_core_api
+ */
+function tripal_get_chado_custom_schema ($table) {
+   $sql = "SELECT schema FROM {tripal_custom_tables} WHERE table_name = '%s'";
+   $custom = db_fetch_object(db_query($sql,$table));
+   if(!$custom){
+      return FALSE;
+   } 
+   else {
+      return unserialize($custom->schema);
+   }
+}
+
+

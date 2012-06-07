@@ -11,7 +11,11 @@
  */
 
 /**
- * Add a materialized view to the chado database to help speed data access.
+ * Add a materialized view to the chado database to help speed data access. This
+ * function supports the older style where postgres column specifications 
+ * are provided using the $mv_table, $mv_specs and $indexed variables. It also
+ * supports the newer preferred method where the materialized view is described
+ * using the Drupal Schema API array.  
  *
  * @param $name 
  *   The name of the materialized view.
@@ -26,22 +30,36 @@
  * @param $query 
  *   The SQL query that loads the materialized view with data
  * @param $special_index  
- *   function
+ *   currently not used
+ * @param $comment
+ *   A string containing a description of the materialized view
+ * @param $mv_schema
+ *   If using the newer Schema API array to define the materialized view then
+ *   this variable should contain the array.
  *
  * @ingroup tripal_mviews_api
  */
-function tripal_add_mview ($name,$modulename,$mv_table,$mv_specs,$indexed,$query,$special_index,$comment=NULL){
+function tripal_add_mview ($name, $modulename, $mv_table, $mv_specs, $indexed,
+   $query, $special_index, $comment=NULL, $mv_schema=NULL)
+{
+   // get the table name from the schema array
+   $schema_arr = array();
+   if($mv_schema){
+      // get the schema from the mv_specs and use it to add the custom table
+      eval("\$schema_arr = $mv_schema;");
+      $mv_table = $schema_arr['table'];
+   }
 
    $record = new stdClass();
    $record->name = $name;
    $record->modulename = $modulename;
-   $record->mv_schema = 'DUMMY';
    $record->mv_table = $mv_table;
    $record->mv_specs = $mv_specs;
    $record->indexed = $indexed;
    $record->query = $query;
    $record->special_index = $special_index;
    $record->comment = $comment;
+   $record->mv_schema = $mv_schema;
 
    // add the record to the tripal_mviews table and if successful
    // create the new materialized view in the chado schema
@@ -67,24 +85,34 @@ function tripal_add_mview ($name,$modulename,$mv_table,$mv_specs,$indexed,$query
         }
       }
 
-      // add the table to the database
-      $sql = "CREATE TABLE {$mv_table} ($mv_specs); $index"; 
-      $previous_db = tripal_db_set_active('chado');  // use chado database
-      $results = db_query($sql);
-      tripal_db_set_active($previous_db);  // now use drupal database
-      if($results){
-         drupal_set_message(t("View '$name' created"));
+      // create the table differently depending on if it the traditional method
+      // or the Drupal Schema API method
+      if($mv_schema){
+         if(!tripal_create_chado_table ($ret,$mv_table,$schema_arr)){
+            drupal_set_message("Could not create the materialized view. Check Drupal error report logs.");
+         } else {
+            drupal_set_message(t("View '$name' created"));
+         }
       } else {
-         // if we failed to create the view in chado then
-         // remove the record from the tripal_jobs table
-         $sql = "DELETE FROM {tripal_mviews} ".
-                "WHERE mview_id = $record->mview_id";
-         db_query($sql);
+         // add the table to the database
+         $sql = "CREATE TABLE {$mv_table} ($mv_specs); $index"; 
+         $previous_db = tripal_db_set_active('chado');  // use chado database
+         $results = db_query($sql);
+         tripal_db_set_active($previous_db);  // now use drupal database
+         if($results){
+            drupal_set_message(t("View '$name' created"));
+         } else {
+            drupal_set_message(t("Failed to create the materialized view table: '$mv_table'"));
+         }
       }
    }
 }
 /**
- * Edits a materialized view to the chado database to help speed data access.
+ * Edits a materialized view to the chado database to help speed data access.This
+ * function supports the older style where postgres column specifications 
+ * are provided using the $mv_table, $mv_specs and $indexed variables. It also
+ * supports the newer preferred method where the materialized view is described
+ * using the Drupal Schema API array.  
  *
  * @param $mview_id 
  *   The mview_id of the materialized view to edit
@@ -101,17 +129,32 @@ function tripal_add_mview ($name,$modulename,$mv_table,$mv_specs,$indexed,$query
  * @param $query 
  *   The SQL query that loads the materialized view with data
  * @param $special_index  
- *   function
+ *   currently not used
+ * @param $comment
+ *   A string containing a description of the materialized view
+ * @param $mv_schema
+ *   If using the newer Schema API array to define the materialized view then
+ *   this variable should contain the array.
  *
  * @ingroup tripal_mviews_api
  */
-function tripal_edit_mview ($mview_id,$name,$modulename,$mv_table,$mv_specs,$indexed,$query,$special_index,$comment){
+function tripal_edit_mview ($mview_id,$name,$modulename,$mv_table,$mv_specs,
+   $indexed,$query,$special_index,$comment=NULL,$mv_schema=NULL)
+{
+
+   // get the table name from the schema array
+   $schema_arr = array();
+   if($mv_schema){
+      // get the schema from the mv_specs and use it to add the custom table
+      eval("\$schema_arr = $mv_schema;");
+      $mv_table = $schema_arr['table'];
+   }
 
    $record = new stdClass();
    $record->mview_id = $mview_id;
    $record->name = $name;
    $record->modulename = $modulename;
-   $record->mv_schema = 'DUMMY';
+   $record->mv_schema = $mv_schema;
    $record->mv_table = $mv_table;
    $record->mv_specs = $mv_specs;
    $record->indexed = $indexed;
@@ -154,20 +197,24 @@ function tripal_edit_mview ($mview_id,$name,$modulename,$mv_table,$mv_specs,$ind
            $index .= "CREATE INDEX idx_${mv_table}_${field} ON $mv_table ($field);";
         }
       }
-
-      // recreate the view
-      $sql = "CREATE TABLE {$mv_table} ($mv_specs); $index"; 
-      $previous_db = tripal_db_set_active('chado');  // use chado database
-      $results = db_query($sql);
-      tripal_db_set_active($previous_db);  // now use drupal database
-      if($results){
-         drupal_set_message(t("View '$name' edited and saved.  All results cleared. Please re-populate the view."));
+      // re-create the table differently depending on if it the traditional method
+      // or the Drupal Schema API method
+      if($mv_schema){         
+         if(!tripal_create_chado_table ($ret,$mv_table,$schema_arr)){
+            drupal_set_message("Could not create the materialized view. Check Drupal error report logs.");
+         } else {
+            drupal_set_message(t("View '$name' created"));
+         }
       } else {
-         // if we failed to create the view in chado then
-         // remove the record from the tripal_jobs table
-         $sql = "DELETE FROM {tripal_mviews} ".
-                "WHERE mview_id = $record->mview_id";
-         db_query($sql);
+         $sql = "CREATE TABLE {$mv_table} ($mv_specs); $index"; 
+         $previous_db = tripal_db_set_active('chado');  // use chado database
+         $results = db_query($sql);
+         tripal_db_set_active($previous_db);  // now use drupal database
+         if($results){
+            drupal_set_message(t("View '$name' edited and saved.  All results cleared. Please re-populate the view."));
+         } else {
+            drupal_set_message(t("Failed to create the materialized view table: '$mv_table'"));
+         }
       }
    }
 }
@@ -251,10 +298,10 @@ function tripal_update_mview ($mview_id){
    if($mview){
       $previous_db = tripal_db_set_active('chado');  // use chado database
 	   $results = db_query("DELETE FROM {$mview->mv_table}");
-      $results = db_query("INSERT INTO $mview->mv_table ($mview->query)");
+      $results = db_query("INSERT INTO {$mview->mv_table} ($mview->query)");
       tripal_db_set_active($previous_db);  // now use drupal database
       if($results){
-         $sql = "SELECT count(*) as cnt FROM $mview->mv_table";
+         $sql = "SELECT count(*) as cnt FROM {$mview->mv_table}";
          $count = db_fetch_object(db_query($sql));
 	      $record = new stdClass();
          $record->mview_id = $mview_id;
@@ -413,9 +460,9 @@ function tripal_mviews_form(&$form_state = NULL,$mview_id = NULL){
 
    // get this requested view
    if(strcmp($action,'Edit')==0){
-      $sql = "SELECT * FROM {tripal_mviews} WHERE mview_id = $mview_id ";
-      $mview = db_fetch_object(db_query($sql));
-
+      $sql = "SELECT * FROM {tripal_mviews} WHERE mview_id = %d ";
+      $mview = db_fetch_object(db_query($sql,$mview_id));
+      
       # set the default values.  If there is a value set in the 
       # form_state then let's use that, otherwise, we'll pull 
       # the values from the database 
@@ -446,6 +493,26 @@ function tripal_mviews_form(&$form_state = NULL,$mview_id = NULL){
       }
       if(!$default_comment){
          $default_comment = $mview->comment;
+      }      
+      if(!$default_schema){
+         $default_schema = $mview->mv_schema;
+      }
+      // the mv_table column of the tripal_mviews table always has the table 
+      // name even if it is a custom table. However, for the sake of the form,
+      // we do not want this to show up as the mv_table is needed for the 
+      // traditional style input.  We'll blank it out if we have a custom 
+      // table and it will get reset in the submit function using the 
+      // 'table' value from the schema array
+      if($default_schema){
+         $default_mv_table = '';
+      }
+      
+      // set which fieldset is collapsed 
+      $schema_collapsed = 0;      
+      $traditional_collapsed = 1;
+      if(!$default_schema){
+         $schema_collapsed = 1;      
+         $traditional_collapsed = 0;
       }
    }
    // Build the form
@@ -463,58 +530,80 @@ function tripal_mviews_form(&$form_state = NULL,$mview_id = NULL){
       '#description'   => t('Please enter the name for this materialized view.'),
       '#required'      => TRUE,
       '#default_value' => $default_name,
-      '#weight'        => 1
    );
-
-   $form['mv_table']= array(
-      '#type'          => 'textfield',
-      '#title'         => t('Table Name'),
-      '#description'   => t('Please enter the Postgres table name that this view will generate in the database.  You can use the schema and table name for querying the view'),
-      '#required'      => TRUE,
-      '#default_value' => $default_mv_table,
-      '#weight'        => 3
-   );
-   $form['mv_specs']= array(
-      '#type'          => 'textarea',
-      '#title'         => t('Table Definition'),
-      '#description'   => t('Please enter the field definitions for this view. Each field should be separated by a comma or enter each field definition on each line.'),
-      '#required'      => TRUE,
-      '#default_value' => $default_mv_specs,
-      '#weight'        => 4
-   );
-   $form['indexed']= array(
-      '#type'          => 'textarea',
-      '#title'         => t('Indexed Fields'),
-      '#description'   => t('Please enter the field names (as provided in the table definition above) that will be indexed for this view.  Separate by a comma or enter each field on a new line.'),
-      '#required'      => FALSE,
-      '#default_value' => $default_indexed,
-      '#weight'        => 5
-   );
-   $form['mvquery']= array(
-      '#type'          => 'textarea',
-      '#title'         => t('Query'),
-      '#description'   => t('Please enter the SQL statement used to populate the table.'),
-      '#required'      => TRUE,
-      '#default_value' => $default_mvquery,
-      '#weight'        => 6
-   );
-/**
-   $form['special_index']= array(
-      '#type'          => 'textarea',
-      '#title'         => t('View Name'),
-      '#description'   => t('Please enter the name for this materialized view.'),
-      '#required'      => TRUE,
-      '#default_value' => $default_special_index,
-      '#weight'        => 7
-   );
-*/
    $form['comment']= array(
       '#type'          => 'textarea',
       '#title'         => t('MView Description'),
       '#description'   => t('Optional.  Please provide a description of the purpose for this materialized vieww.'),
       '#required'      => FALSE,
       '#default_value' => $default_comment,
-      '#weight'        => 8
+   );
+
+   // add a fieldset for the Drupal Schema API
+   $form['schema'] = array(
+     '#type' => 'fieldset',
+     '#title' => 'Drupal Schema API Setup',
+     '#description' => t('Use the Drupal Schema API array to describe a table. The benefit is that it '.
+                         'can be fully integrated with Tripal Views.  Tripal supports an extended '.
+                         'array format to allow for descriptoin of foreign key relationships.'),
+     '#collapsible' => 1,
+     '#collapsed' => $schema_collapsed ,
+   );
+   $form['schema']['schema']= array(
+      '#type'          => 'textarea',
+      '#title'         => t('Schema Array'),
+      '#description'   => t('Please enter the Drupal Schema API compatible array that defines the table.'),
+      '#required'      => FALSE,
+      '#default_value' => $default_schema,
+      '#rows'          => 25,
+   ); 
+   // add a fieldset for the Original Table Description fields
+   $form['traditional'] = array(
+     '#type' => 'fieldset',
+     '#title' => 'Traditional MViews Setup',
+     '#description' => t('Traidtionally with Tripal MViews were created by specifying PostgreSQL style '.
+                         'column types.  This method can be used but is deprecated in favor of the '.
+                         'newer Drupal schema API method provided above.'),
+     '#collapsible' => 1,
+     '#collapsed' => $traditional_collapsed,
+   ); 
+   $form['traditional']['mv_table']= array(
+      '#type'          => 'textfield',
+      '#title'         => t('Table Name'),
+      '#description'   => t('Please enter the table name that this view will generate in the database.  You can use the schema and table name for querying the view'),
+      '#required'      => FALSE,
+      '#default_value' => $default_mv_table,
+   );
+   $form['traditional']['mv_specs']= array(
+      '#type'          => 'textarea',
+      '#title'         => t('Table Definition'),
+      '#description'   => t('Please enter the field definitions for this view. Each field should be separated by a comma or enter each field definition on each line.'),
+      '#required'      => FALSE,
+      '#default_value' => $default_mv_specs,
+   );
+   $form['traditional']['indexed']= array(
+      '#type'          => 'textarea',
+      '#title'         => t('Indexed Fields'),
+      '#description'   => t('Please enter the field names (as provided in the table definition above) that will be indexed for this view.  Separate by a comma or enter each field on a new line.'),
+      '#required'      => FALSE,
+      '#default_value' => $default_indexed,
+   );
+/**
+   $form['traditional']['special_index']= array(
+      '#type'          => 'textarea',
+      '#title'         => t('View Name'),
+      '#description'   => t('Please enter the name for this materialized view.'),
+      '#required'      => TRUE,
+      '#default_value' => $default_special_index,
+   );
+*/
+   $form['mvquery']= array(
+      '#type'          => 'textarea',
+      '#title'         => t('Query'),
+      '#description'   => t('Please enter the SQL statement used to populate the table.'),
+      '#required'      => TRUE,
+      '#default_value' => $default_mvquery,
+      '#rows'          => 25,
    );
    if($action == 'Edit'){
       $value = 'Save';
@@ -537,7 +626,56 @@ function tripal_mviews_form(&$form_state = NULL,$mview_id = NULL){
 *
 * @ingroup tripal_core
 */
+function tripal_mviews_form_validate($form, &$form_state){
+   $action = $form_state['values']['action'];
+   $mview_id = $form_state['values']['mview_id'];
+   $name = $form_state['values']['name'];
+   $mv_table = $form_state['values']['mv_table'];
+   $mv_specs = $form_state['values']['mv_specs'];
+   $indexed = $form_state['values']['indexed'];
+   $query = $form_state['values']['mvquery'];
+   $special_index = $form_state['values']['special_index'];
+   $comment = $form_state['values']['comment'];
+   $schema = $form_state['values']['schema'];
+   
+   if($schema and ($mv_table or $mv_specs or $indexed or $special_index)){
+       form_set_error($form_state['values']['schema'], 
+          t('You can create an MView using the Drupal Schema API method or the '.
+            'traditional method but not both.'));
+   }
+   if(!$schema){
+      if(!$mv_specs){
+         form_set_error($form_state['values']['mv_specs'], 
+            t('The Table Definition field is required.'));
+      }
+      if(!$mv_table){
+         form_set_error($form_state['values']['mv_table'], 
+            t('The Table Name field is required.'));
+      }
+   }
+   
+   // make sure the array is valid
+   if($schema){
+      $success = eval("\$schema_array = $schema;");
+      if ($success === FALSE){
+         $error = error_get_last();
+         form_set_error($form_state['values']['schema'], 
+            t("The schema array is improperly formatted. Parse Error : " . $error["message"]));
+      }
+      if(!array_key_exists('table',$schema_array)){
+         form_set_error($form_state['values']['schema'], 
+            t("The schema array must have key named 'table'"));
+      } 
+      // TODO: add in more validation checks of the array to help the user
+   }
+}
+/**
+*
+*
+* @ingroup tripal_core
+*/
 function tripal_mviews_form_submit($form, &$form_state){
+   $ret = array();
    
    $action = $form_state['values']['action'];
    $mview_id = $form_state['values']['mview_id'];
@@ -548,12 +686,15 @@ function tripal_mviews_form_submit($form, &$form_state){
    $query = $form_state['values']['mvquery'];
    $special_index = $form_state['values']['special_index'];
    $comment = $form_state['values']['comment'];
+   $schema = $form_state['values']['schema'];
 
    if(strcmp($action,'Edit')==0){
-      tripal_edit_mview($mview_id,$name, 'tripal_core',$mv_table, $mv_specs,$indexed,$query,$special_index,$comment);
+      tripal_edit_mview($mview_id,$name, 'tripal_core',$mv_table, $mv_specs,
+         $indexed,$query,$special_index,$comment,$schema);
    }
    else if(strcmp($action,'Add')==0){
-      tripal_add_mview ($name, 'tripal_core',$mv_table, $mv_specs,$indexed,$query,$special_index,$comment);
+      tripal_add_mview ($name, 'tripal_core',$mv_table, $mv_specs,
+         $indexed,$query,$special_index,$comment,$schema);
    }
    else {
         drupal_set_message("No action performed.");

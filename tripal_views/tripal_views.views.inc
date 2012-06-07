@@ -409,7 +409,7 @@ function tripal_views_add_node_ids_to_view (&$view) {
 
 function tripal_views_views_data(){   
   
-   // Define Global Fields -------------
+   // Define Global Fields 
    // Filter handler that lets the admin say: 
    // "Show no results until they enter search parameters"
    $data['views']['search_results'] = array(
@@ -442,7 +442,7 @@ function tripal_views_views_data(){
       $type_prefix = '';
 
       // populate the base table name and fields.  If an $mview_id is given
-      // the get the materialized view info, otherwise get the Chado table info
+      // then get the materialized view info, otherwise get the Chado table info
       if($mview_id){
          $type_prefix = 'MView';
          // get the base table name from the materialized view
@@ -475,10 +475,25 @@ function tripal_views_views_data(){
       else {
          $type_prefix = 'Chado Table';
          $base_table = $tvi_row->table_name;
+         // The chado table could be a regular Chado table or a custom table
+         // in the chado database.  Therefore we'll check both
          $table_desc = module_invoke_all('chado_'.$base_table.'_schema');
+         if(!$table_desc){            
+            $table_desc = tripal_get_chado_custom_schema($base_table);
+         }
          $fields = $table_desc['fields'];
          foreach($fields as $column => $attrs){
-            $base_fields[] = $column;
+            $base_fields[$column] = array(
+              'column_name' => $column,
+              'type' => $attrs['type'],
+            );
+         }
+         // get the field name and descriptions
+         $sql = "SELECT * FROM {tripal_views_field} WHERE setup_id=%d";
+         $query = db_query($sql, $setup_id);
+         while ($field = db_fetch_object($query)) {
+           $base_fields[$field->column_name]['name'] = $field->name;
+           $base_fields[$field->column_name]['help'] = $field->description;
          }
       }
 
@@ -489,7 +504,6 @@ function tripal_views_views_data(){
         'title' => "$type_prefix: $tvi_row->name",
         'help'  => $tvi_row->comment,
       );
-
       // first add the fields
       foreach ($base_fields as $column_name => $base_field){
         $data[$base_table][$column_name] = array(
@@ -499,7 +513,8 @@ function tripal_views_views_data(){
               'click sortable' => TRUE,
            ),
         );
-
+        
+        
         // now add the handlers
         $sql = "SELECT * FROM {tripal_views_handlers} WHERE setup_id = %d AND column_name = '%s'";
         $handlers = db_query($sql,$setup_id,$column_name);
@@ -525,9 +540,7 @@ function tripal_views_views_data(){
         // check to see if the join table is one that correlates with Drupal nodes
         // if so, there will be a chado_<table_name> table in the Drupal database
         // if there is, then we need to add the linking join information
-        $sql = "SELECT tablename FROM pg_tables WHERE tablename = 'chado_$left_table'";
-        if(db_fetch_object(db_query($sql))){
-
+        if(db_table_exists("chado_$left_table")){
            // join the mview to the linker table
            $data[$base_table]['table']['join']["chado_$left_table"] = array(
              'left_field' => $left_field,
@@ -575,8 +588,7 @@ function tripal_views_views_data_alter(&$data) {
         // if there is, then we need to add the linking join information.  We did
         // this step in the hook_views_data function above, but now we need 
         // to add the reciprical joins
-        $sql = "SELECT tablename FROM pg_tables WHERE tablename = '%s'";
-        if(db_fetch_object(db_query($sql,"chado_$left_table"))){
+        if(db_table_exists("chado_$left_table")){
 
            // join the linker table to the mview
            if(array_key_exists("chado_$left_table",$data)){
