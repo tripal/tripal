@@ -644,7 +644,7 @@ function tripal_mviews_form_validate($form, &$form_state){
             'traditional method but not both.'));
    }
    if(!$schema){
-      if(!$mv_speces){
+      if(!$mv_specs){
          form_set_error($form_state['values']['mv_specs'], 
             t('The Table Definition field is required.'));
       }

@@ -125,7 +125,7 @@ function tripal_feature_module_description_page() {
                visitors.    This browser can be toggled on or off using the 
                <a href="'.url('admin/tripal/tripal_feature/configuration').'">Feature Configuration page</a></p></li>
  
-              <li><p><b>Feature Summary:</b>  The feature summary is a pie chart that indicates the types and quantities
+              <li><p><b>Feature Summary Report:</b>  The feature summary report is a pie chart that indicates the types and quantities
               of feature types (Sequence Ontology terms) that are loaded in the database. It appears on the organism 
               page.  The summary can be toggled on or off using the 
               <a href="'.url('admin/tripal/tripal_feature/configuration').'">Feature Configuration page</a></p></li>             
@@ -225,7 +225,9 @@ function tripal_feature_admin () {
 
       $form['browser'] = array(
          '#type' => 'fieldset',
-         '#title' => t('Feature Browser')
+         '#title' => t('Feature Browser'),
+         '#collapsible' => 1,
+         '#collapsed' => 1 ,
       );
       $allowedoptions1  = array (
         'show_feature_browser' => "Show the feature browser on the organism page. The browser loads when page loads. This may be slow for large sites.",
@@ -286,7 +288,9 @@ function tripal_feature_admin () {
 
       $form['feature_edit'] = array(
          '#type' => 'fieldset',
-         '#title' => t('Feature Editing')
+         '#title' => t('Feature Editing'),
+         '#collapsible' => 1,
+         '#collapsed' => 1 ,
       );
 
       $form['feature_edit']['browser_desc'] = array(
@@ -311,7 +315,9 @@ function tripal_feature_admin () {
 
       $form['summary'] = array(
          '#type' => 'fieldset',
-         '#title' => t('Feature Summary')
+         '#title' => t('Feature Summary Report'),
+         '#collapsible' => 1,
+         '#collapsed' => 1 ,
       );
       $allowedoptions2 ['show_feature_summary'] = "Show the feature summary on the organism page. The summary loads when page loads.";
       $allowedoptions2 ['hide_feature_summary'] = "Hide the feature summary on the organism page. Disables the feature summary.";
@@ -323,6 +329,17 @@ function tripal_feature_admin () {
          '#type' => 'radios',
          '#options' => $allowedoptions2,
          '#default_value'=>variable_get('tripal_feature_summary_setting', 'show_feature_summary'),
+      );
+      $form['summary']['feature_mapping'] = array(
+         '#title' => 'Map feature types',
+         '#description' => t('You may specify which Sequence Ontology (SO) terms to show in the '.
+            'feature summary report by listing them in the following text area.   Enter one per line. '.
+            'If left blank, all SO terms for all features will be shown in the report. Only those terms '.
+            'listed below will be shown in the report. Terms will appear in the report in the same order listed. To rename a '.
+            'SO term to be more human readable form, use an \'=\' sign after the SO term (e.g. \'polypeptide = Protein\')'),
+         '#type' => 'textarea',
+         '#rows' => 15,
+         '#default_value'=>variable_get('tripal_feature_summary_report_mapping', ''),
       );
       $form['summary']['set_summary_button'] = array(
          '#type' => 'submit',
@@ -396,6 +413,7 @@ function tripal_feature_admin_validate($form, &$form_state) {
 
       case t('Set Summary') :
          variable_set('tripal_feature_summary_setting',$form_state['values']['feature_summary']);
+         variable_set('tripal_feature_summary_report_mapping',$form_state['values']['feature_mapping']);
          break;
 
       case t('Set Feature URLs') :
@@ -413,7 +431,9 @@ function tripal_feature_admin_validate($form, &$form_state) {
 function get_tripal_feature_admin_form_cleanup_set(&$form) {
    $form['cleanup'] = array(
       '#type' => 'fieldset',
-      '#title' => t('Clean Up')
+      '#title' => t('Clean Up'),
+      '#collapsible' => 1,
+      '#collapsed' => 1 ,
    );
    $form['cleanup']['description'] = array(
        '#type' => 'item',
@@ -443,7 +463,9 @@ function get_tripal_feature_admin_form_cleanup_set(&$form) {
 function get_tripal_feature_admin_form_reindex_set(&$form) {
    $form['reindex'] = array(
       '#type' => 'fieldset',
-      '#title' => t('Index/Reindex')
+      '#title' => t('Index/Reindex'),
+      '#collapsible' => 1,
+      '#collapsed' => 1 ,
    );
    $form['reindex']['description'] = array(
        '#type' => 'item',
@@ -471,7 +493,9 @@ function get_tripal_feature_admin_form_taxonomy_set (&$form) {
 
    $form['taxonomy'] = array(
       '#type' => 'fieldset',
-      '#title' => t('Set Taxonomy')
+      '#title' => t('Set Taxonomy'),
+      '#collapsible' => 1,
+      '#collapsed' => 1 ,
    );
 
    $form['taxonomy']['description'] = array(
