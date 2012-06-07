@@ -185,16 +185,34 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL){
                        'and you can specify other tables to join with and handlers.',
    );
 
+  // build the form element for the Chado tables
+  $chado_tables = tripal_core_get_chado_tables();
+  $chado_tables = array_merge(array('Select',), $chado_tables);
+  $form['base_table_type']['table_name'] = array(
+    '#title' => t('Chado/Custom Table'),
+    '#type' => 'select',
+    '#options' => $chado_tables,
+    '#description' => t('Tables from Chado, custom tables and materialized view tables (non-legacy MViews) can be selected for integration.'),
+    '#default_value' => (!$setup_obj->mview_id) ? $setup_obj->table_name : '',
+    '#ahah' => array(
+       'path' => ahah_helper_path(array('view_setup_table')),
+       'wrapper' => 'table-rows-div',
+       'effect' => 'fade',
+       'event' => 'change',
+       'method' => 'replace',
+    ),
+  );
+
 
    // build the form element that lists the materialized views
-   $query = db_query("SELECT mview_id,name FROM {tripal_mviews} ORDER BY name");
+   $query = db_query("SELECT mview_id,name FROM {tripal_mviews} WHERE mv_schema is NULL or mv_schema = '' ORDER BY name");
    $mview_tables = array();
    $mview_tables['0'] = 'Select';
    while ($mview = db_fetch_object($query)){
      $mview_tables[$mview->mview_id] = $mview->name;
    }
    $form['base_table_type']['mview_id'] = array(
-      '#title' => t('Materialized View'),
+      '#title' => t('Legacy Materialized View'),
       '#type' => 'select',
       '#options' => $mview_tables,
       '#description' => 'Which materialized view to use.',
@@ -206,24 +224,6 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL){
          'event' => 'change',
          'method' => 'replace',
       ),
-  );
-
-  // build the form element for the Chado tables
-  $chado_tables = tripal_core_get_chado_tables();
-  $chado_tables = array_merge(array('Select',), $chado_tables);
-  $form['base_table_type']['table_name'] = array(
-    '#title' => t('Chado Table'),
-    '#type' => 'select',
-    '#options' => $chado_tables,
-    '#description' => 'Which Chado table to use.',
-    '#default_value' => (!$setup_obj->mview_id) ? $setup_obj->table_name : '',
-    '#ahah' => array(
-       'path' => ahah_helper_path(array('view_setup_table')),
-       'wrapper' => 'table-rows-div',
-       'effect' => 'fade',
-       'event' => 'change',
-       'method' => 'replace',
-    ),
   );
 
   $form['views_type'] = array(
@@ -529,7 +529,7 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL){
             if($column_type == 'integer' or $column_type == 'int' or $column_type == 'serial'){
                $default_field_handler = 'chado_views_handler_field_numeric';
             }
-            elseif(preg_match("/character varying/",$column_type) or $column_type == 'char' or $column_type == 'text'){
+            elseif(preg_match("/character varying/",$column_type) or $column_type == 'char' or $column_type == 'text' or $column_type = 'varchar'){
                $default_field_handler = 'chado_views_handler_field';
             }
             elseif($column_type == 'boolean'){
