@@ -1800,8 +1800,12 @@ function tripal_get_max_chado_rank ($tablename, $where_options) {
 /**
  * Add a new table to the Chado schema. This function is simply a wrapper for
  * the db_create_table() function of Drupal, but ensures the table is created
- * inside the Chado schema rather than the Drupal schema.
- *
+ * inside the Chado schema rather than the Drupal schema.  If the table already
+ * exists then it will be dropped and recreated using the schema provided.
+ * Howver, it will only drop a table if it exsits in the tripal_custom_tables
+ * table. This way the function cannot be used to accidentally alter existing
+ * non custom tables.
+ * 
  * @param $ret
  *   Array to which query results will be added.
  * @param $table
@@ -1816,21 +1820,78 @@ function tripal_get_max_chado_rank ($tablename, $where_options) {
  */
 function tripal_create_chado_table (&$ret,$table,$schema) {
    $ret = array();
-   
-   $previous_db = tripal_db_set_active('chado');  // use chado database
-   db_create_table($ret,$table,$schema);
+
+   // If the table exits in Chado but not in the tripal_custom_tables field
+   // then call an error.  if the table exits in the tripal_custom_tables but
+   // not in Chado then create the table and replace the entry.
+   $sql = "SELECT * FROM {tripal_custom_tables} WHERE table_name = '%s'";
+   $centry = db_fetch_object(db_query($sql,$table));
+   $previous_db = tripal_db_set_active('chado');  // use chado database   
+   $exists = db_table_exists($table);
    tripal_db_set_active($previous_db);  // now use drupal database
+   if(!$exists){
+      $previous_db = tripal_db_set_active('chado');  // use chado database   
+      db_create_table($ret,$table,$schema);
+      tripal_db_set_active($previous_db);  // now use drupal database  
+      if(count($ret)==0){
+   	   watchdog('tripal_core', "Error adding custom table '!table_name'.", 
+   	      array('!table_name' => $table), WATCHDOG_ERROR); 
+         return FALSE;
+      }       
+   }
+   if($exists and !$centry){
+   	watchdog('tripal_core', "Could not add custom table '!table_name'. It ".
+   	         "already exists but is not known to Tripal as being a custom table.", 
+   	   array('!table_name' => $table), WATCHDOG_WARNING);       
+   	   return FALSE;
+   }
+   if($exists and $centry){
+      // drop the table we'll recreate it with the new schema
+      $previous_db = tripal_db_set_active('chado');  // use chado database   
+      db_drop_table($ret,$table);
+      db_create_table($ret,$table,$schema);
+      tripal_db_set_active($previous_db);  // now use drupal database        
+   }
    
    // if the table creation was succesful then add an entry
    // in the tripal_custom_table
-   if($ret){
-      $record = new stdClass();
-      $record->table_name = $table;
-      $record->schema = serialize($schema);
-      $success = drupal_write_record('tripal_custom_tables',$record);
-      if(!$success){
-         drupal_set_message($message,"Error adding custom table: $table");   
-      }
+   $record = new stdClass();
+   $record->table_name = $table;
+   $record->schema = serialize($schema);
+   // if an entry already exists then remove it
+   if($centry){
+      $sql = "DELETE FROM {tripal_custom_tables} WHERE table_name = '%s'";
+      db_query($sql,$table);
+   } 
+   $success = drupal_write_record('tripal_custom_tables',$record);
+   if(!$success){
+	   watchdog('tripal_core', "Error adding custom table.", 
+	      array('!table_name' => $table), WATCHDOG_ERROR); 
+      return FALSE;
    }
    return $ret;
 }
+/**
+ * Retrieves the schema in an array for the specified custom table.
+ * 
+ * @param $table
+ *   The name of the table to create.
+ *
+ * @return 
+ *   A Drupal-style Schema API array definition of the table. Returns
+ *   FALSE on failure.
+ *
+ * @ingroup tripal_core_api
+ */
+function tripal_get_chado_custom_schema ($table) {
+   $sql = "SELECT schema FROM {tripal_custom_tables} WHERE table_name = '%s'";
+   $custom = db_fetch_object(db_query($sql,$table));
+   if(!$custom){
+      return FALSE;
+   } 
+   else {
+      return unserialize($custom->schema);
+   }
+}
+
+

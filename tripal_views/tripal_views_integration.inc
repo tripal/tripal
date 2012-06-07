@@ -304,12 +304,23 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL){
        $columns = explode(",",$mview->mv_specs);
     } else {
        $table_desc = module_invoke_all('chado_'.$table_name.'_schema');
-       $fields = $table_desc['fields'];
-       // iterate through the columns and build the format
-       // compatible with the code below. The column name is first followed
-       // by the type with a separating space
-       foreach($fields as $column => $attrs){
-          $columns[] = "$column ".$attrs['type'];
+       if($table_desc){
+          $fields = $table_desc['fields'];
+          // iterate through the columns and build the format
+          // compatible with the code below. The column name is first followed
+          // by the type with a separating space
+          foreach($fields as $column => $attrs){
+             $columns[] = "$column ".$attrs['type'];
+          }
+       }
+       
+       // now do the same for the custom tables
+       $table_desc = tripal_get_chado_custom_schema ($table_name);
+       if($table_desc){
+          $fields = $table_desc['fields'];
+          foreach($fields as $column => $attrs){
+             $columns[] = "$column ".$attrs['type'];
+          }
        }
     }
 
@@ -461,7 +472,12 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL){
       
       $columns = array();
       if($default_join_table){
+        // get the table description in the typical way and if it returns 
+        // nothing then get the custom table description
         $table_desc = module_invoke_all('chado_'.$default_join_table.'_schema');
+        if(!$table_desc){
+           $table_desc = tripal_get_chado_custom_schema ($default_join_table);
+        }
         foreach ($table_desc['fields'] as $column => $def){
            $columns[$column] = $column;
         }
@@ -831,9 +847,14 @@ function tripal_views_integration_form_submit($form, &$form_state){
       $left_column = $form_state['values']["fields_join_column_$table_id-$i"];
 
       if($left_column){
+         if($mview_id){
+            $base_table = $mview->mv_table;
+         } else {
+            $base_table = $table_name;
+         }
          $view_join_record = array(
            'setup_id' => $tripal_views_record['setup_id'],
-           'base_table' => $mview->mv_table,
+           'base_table' => $base_table,
            'base_field' => $key,
            'left_table' => $left_table,
            'left_field' => $left_column,

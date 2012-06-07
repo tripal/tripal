@@ -133,9 +133,8 @@ function tripal_core_menu() {
      'type' => MENU_CALLBACK,
    );
  
-
+   
    // Materialized Views 
-
    $items['admin/tripal/mviews'] = array(
      'title' => 'MViews',
      'description' => 'Materialized views are used to improve speed of large or complex queries.',

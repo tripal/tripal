@@ -28,9 +28,14 @@ function tripal_core_install(){
 * @ingroup tripal_feature
 */
 function tripal_core_update_6000(){
-   // recreate the materialized view
+   // add additional columsn to the tripal_mviews table
    db_add_field($ret, 'tripal_mviews', 'status', array('type' => 'text', 'size' => 'normal', 'not null' => FALSE));
    db_add_field($ret, 'tripal_mviews', 'comment', array('type' => 'text', 'size' => 'normal', 'not null' => FALSE));
+   db_add_field($ret, 'tripal_mviews', 'mv_schema', array('type' => 'text', 'size' => 'normal', 'not null' => FALSE));
+   db_change_field($ret, 'tripal_mviews', 'mv_table','mv_table',array('type' => 'varchar','length' => 128, 'not null' => FALSE));
+   db_change_field($ret, 'tripal_mviews', 'mv_specs','mv_specs',array('type' => 'text', 'size' => 'normal', 'not null' => FALSE));
+   db_change_field($ret, 'tripal_mviews', 'indexed','indexed',array('type' => 'text', 'size' => 'normal', 'not null' => FALSE));
+
    
    // create the custom tables table
    $ret = array();
@@ -51,6 +56,18 @@ function tripal_core_update_6000(){
 */
 function tripal_core_schema() {
    $schema = tripal_core_get_schemas();
+   
+   // if this module is already installed and enabled, then we want to provide
+   // the schemas for all of the custom tables.  This will allow Views to 
+   // see the schemas.  We check if the module is installed because during 
+   // installation we don't want to make these custom tables available as we don't
+   // want them created in the Drupal database.  The custom tables go in the 
+   // Chado database.
+   $sql = 'SELECT * FROM {tripal_custom_tables}';
+   $q = db_query($sql);
+   while($custom = db_fetch_object($q)){
+      $schema[$custom->table_name] = unserialize($custom->schema);
+   }
    return $schema;
 }
 /************************************************************************
@@ -100,9 +117,10 @@ function tripal_core_mviews_schema(){
          'mview_id'      => array('type' => 'serial', 'unsigned' => TRUE, 'not null' => TRUE),
          'name'          => array('type' => 'varchar','length' => 255, 'not null' => TRUE),
          'modulename'    => array('type' => 'varchar','length' => 50, 'not null' => TRUE, 'description' => 'The module name that provides the callback for this job'),
-         'mv_table'      => array('type' => 'varchar','length' => 128, 'not null' => TRUE),
-         'mv_specs'      => array('type' => 'text', 'size' => 'normal', 'not null' => TRUE),
-         'indexed'       => array('type' => 'text', 'size' => 'normal', 'not null' => TRUE),
+         'mv_table'      => array('type' => 'varchar','length' => 128, 'not null' => FALSE),
+         'mv_specs'      => array('type' => 'text', 'size' => 'normal', 'not null' => FALSE),
+         'mv_schema'     => array('type' => 'text', 'size' => 'normal', 'not null' => FALSE),
+         'indexed'       => array('type' => 'text', 'size' => 'normal', 'not null' => FALSE),
          'query'         => array('type' => 'text', 'size' => 'normal', 'not null' => TRUE),
          'special_index' => array('type' => 'text', 'size' => 'normal', 'not null' => FALSE),
          'last_update'   => array('type' => 'int', 'not null' => FALSE, 'description' => 'UNIX integer time'),
