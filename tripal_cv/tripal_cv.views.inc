@@ -43,10 +43,21 @@ function tripal_cv_views_data() {
   //Returns the data array for the chado cv table
   //$data = array_merge($data, retrieve_cv_views_data());
   
-    if (module_exists('tripal_views')) {
+  if (module_exists('tripal_views')) {
+    // Base Tables
     $tables = array(
       'cv',
-      'cvterm',
+      'cvterm'
+    );
+    foreach ($tables as $tablename) {
+      if (!tripal_views_is_integrated($tablename, 10)) {
+        $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename,TRUE);
+        tripal_views_integration_add_entry($table_integration_array);
+      }
+    }
+    
+    // Additional Tables
+    $tables = array(
       'cvterm_dbxref',
       'cvterm_relationship',
       'cvtermpath',
@@ -55,7 +66,7 @@ function tripal_cv_views_data() {
     );
     foreach ($tables as $tablename) {
       if (!tripal_views_is_integrated($tablename, 10)) {
-        $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename);
+        $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename,FALSE);
         tripal_views_integration_add_entry($table_integration_array);
       }
     }

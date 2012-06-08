@@ -70,6 +70,10 @@ function tripal_views_update_6040 () {
 	$schema = tripal_views_views_schema();
 	db_create_table(&$ret, 'tripal_views_field', $schema['tripal_views_field']);
 	
+	// Add base_table TRUE/FALSE to tripal_views
+	db_add_field($ret, 'tripal_views', 'base_table', array('type' => 'int', 'not null ' => TRUE,
+			'default' => 1));
+	
   return $ret;
 }
 
@@ -111,6 +115,12 @@ function tripal_views_views_schema(){
 				'length' => 255,
 				'not null' => TRUE,
 				'default' => '',
+			),
+			'base_table' => array(
+				'description' => 'Indicated whether the table should be a base table of a view',
+				'type' => 'int',
+				'not null ' => TRUE,
+				'default' => 1
 			),
 			'comment' => array(
 				'description' => 'add notes about this views setup',

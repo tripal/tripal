@@ -89,6 +89,7 @@ function tripal_views_is_lightest_priority_setup ($setup_id, $table_name) {
     'type' => 'chado', //either chado or mview depending on tablename
     'description' => 'Create a listing of features.', //description seen when creating a view of this type
     'priority' => 10, //For Base tripal modules: 10; custom modules: 9 to 0;
+    'base_table' => TRUE //either TRUE or FALSE depending on whether the current table should show up in the add view list
     'fields' => array(
       'feature_id' => array(
         'name' => 'feature_id', //field name in database
@@ -122,6 +123,7 @@ function tripal_views_integration_add_entry($defn_array) {
     'name' => $defn_array['name'],
     'comment' => $defn_array['description'],
     'priority' => $defn_array['priority'],
+    'base_table' => ($defn_array['base_table']) ? 1 : 0,
   );
   if ($defn_array['type'] == 'mview') {
       $mview = db_fetch_object(db_query("SELECT mview_id FROM tripal_mviews WHERE mv_table='%s'",$defn_array['table']));
@@ -266,7 +268,7 @@ function tripal_views_integration_remove_entry_by_setup_id ($setup_id) {
  *   The tripal views integration array which is the parameter for 
  *   tripal_views_integration_add_entry($defn_array)
  */
-function tripal_views_get_integration_array_for_chado_table ($table_name) {
+function tripal_views_get_integration_array_for_chado_table ($table_name, $base_table = TRUE) {
 
   // Get the schema for this table (via the chado schema api)
   $schema = module_invoke_all('chado_'.$table_name.'_schema');
@@ -278,6 +280,7 @@ function tripal_views_get_integration_array_for_chado_table ($table_name) {
     'name' => ucwords(str_replace('_',' ',$table_name)),
     'description' => ($schema['description']) ? $schema['description'] : ' ',
     'priority' => 10,
+    'base_table' => $base_table,
     'fields' => array(),
   );
   

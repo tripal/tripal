@@ -36,14 +36,25 @@ function tripal_organism_views_data()  {
   //$data = array_merge($data, retrieve_chado_organism_views_data());
   
   if (module_exists('tripal_views')) {
+    // Base Table
     $tables = array(
-      'organism',
+      'organism'
+    );
+    foreach ($tables as $tablename) {
+      if (!tripal_views_is_integrated($tablename, 10)) {
+        $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename,TRUE);
+        tripal_views_integration_add_entry($table_integration_array);
+      }
+    }
+    
+    // Additional Tables
+    $tables = array(
       'organismprop',
       'organism_dbxref'
     );
     foreach ($tables as $tablename) {
       if (!tripal_views_is_integrated($tablename, 10)) {
-        $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename);
+        $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename,FALSE);
         tripal_views_integration_add_entry($table_integration_array);
       }
     }
