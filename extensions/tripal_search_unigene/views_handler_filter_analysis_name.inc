@@ -1,10 +1,13 @@
 <?php
 class views_handler_filter_analysis_name extends views_handler_filter_string {
 	function value_form(&$form, &$form_state) {
-		$type_id = tripal_get_cvterm_id("analysis_type");
-		$sql = "SELECT name, A.analysis_id FROM {analysis} A INNER JOIN {analysisprop} AP ON A.analysis_id = AP.analysis_id WHERE type_id = $type_id AND value = 'tripal_analysis_unigene'";
+		$type_id = tripal_cv_get_cvterm_by_name("analysis_type");
+		$sql = "SELECT name, A.analysis_id 
+		        FROM {analysis} A 
+		           INNER JOIN {analysisprop} AP ON A.analysis_id = AP.analysis_id 
+		        WHERE type_id = %d AND value = 'tripal_analysis_unigene'";
 
-		$results = chado_query($sql);
+		$results = chado_query($sql,$typ_id->cvterm_id);
 		$analyses = array();
 		$block_ana = array();
 		$counter = 0;
