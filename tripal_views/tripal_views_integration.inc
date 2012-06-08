@@ -80,11 +80,40 @@ function tripal_views_integration_setup_list(){
    
    // Start with materialized views           
    $output .= '<br /><h3>Materialized Views</h3>';           
-   $header = array('', 'Drupal Views Type Name', 'Table Name', 'Priority', 'Comment','');
+   $header = array('', 'Drupal Views Type Name', 'Table Name', 'Is Legacy?', 'Priority', 'Comment','');
    $rows = array();
 
    // get the list of materialized views
-   $tviews = db_query('SELECT * FROM {tripal_views} WHERE mview_id IS NOT NULL ORDER BY table_name ASC, priority ASC');
+   $tviews = db_query('SELECT tv.name, tv.table_name, tc.table_id, tv.priority, tv.comment '
+   									.'FROM {tripal_views} tv '
+   									.'LEFT JOIN {tripal_custom_tables} tc ON tc.table_name=tv.table_name '
+   									.'WHERE tv.mview_id IS NOT NULL '
+   									.'ORDER BY tv.table_name ASC, tv.priority ASC');
+   while($tview = db_fetch_object($tviews)){
+         $rows[] = array(
+            l('Edit',"admin/tripal/views/integration/edit/".$tview->setup_id) ,
+            $tview->name, 
+            $tview->table_name,
+            ($tview->table_id) ? 'No' : 'Yes',  
+            $tview->priority,
+            $tview->comment,
+            l('Delete',"admin/tripal/views/integration/delete/".$tview->setup_id),
+         );         
+   }
+   
+   $output .= theme('table', $header, $rows);
+		
+	 // Now list non-mview custom tables
+   $output .= '<br /><h3>Custom Tables</h3>';           
+   $header = array('', 'Drupal Views Type Name', 'Table Name', 'Priority', 'Comment','');
+   $rows = array();
+
+   // get the list of chado tables
+   $tviews = db_query('SELECT tv.name, tv.table_name, tv.priority, tv.comment '
+   									.'FROM {tripal_views} tv '
+   									.'LEFT JOIN {tripal_custom_tables} tc ON tc.table_name=tv.table_name '
+   									.'WHERE mview_id IS NULL AND tc.table_id IS NOT NULL '
+   									.'ORDER BY table_name ASC, priority ASC');
    while($tview = db_fetch_object($tviews)){
          $rows[] = array(
             l('Edit',"admin/tripal/views/integration/edit/".$tview->setup_id) ,
@@ -96,15 +125,22 @@ function tripal_views_integration_setup_list(){
          );         
    }
    
-   $output .= theme('table', $header, $rows);
-
+   if ($rows) {
+	   $output .= theme('table', $header, $rows);
+	 } else {
+	   $output .= '<p>There are currently no non-Materialized View Custom Tables defined.</p>';
+	 }
    // Now list chado tables
    $output .= '<br /><h3>Chado Tables</h3>';           
    $header = array('', 'Drupal Views Type Name', 'Table Name', 'Priority', 'Comment','');
    $rows = array();
 
-   // get the list of materialized views
-   $tviews = db_query('SELECT * FROM {tripal_views} WHERE mview_id IS NULL ORDER BY table_name ASC, priority ASC');
+   // get the list of chado tables
+   $tviews = db_query('SELECT tv.name, tv.table_name, tv.priority, tv.comment '
+   									.'FROM {tripal_views} tv '
+   									.'LEFT JOIN {tripal_custom_tables} tc ON tc.table_name=tv.table_name '
+   									.'WHERE mview_id IS NULL AND tc.table_id IS NULL '
+   									.'ORDER BY table_name ASC, priority ASC');
    while($tview = db_fetch_object($tviews)){
          $rows[] = array(
             l('Edit',"admin/tripal/views/integration/edit/".$tview->setup_id) ,
