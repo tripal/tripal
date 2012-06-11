@@ -529,7 +529,7 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL){
             if($column_type == 'integer' or $column_type == 'int' or $column_type == 'serial'){
                $default_field_handler = 'chado_views_handler_field_numeric';
             }
-            elseif(preg_match("/character varying/",$column_type) or $column_type == 'char' or $column_type == 'text' or $column_type = 'varchar'){
+            elseif(preg_match("/character varying/",$column_type) or $column_type == 'char' or $column_type == 'text' or $column_type == 'varchar'){
                $default_field_handler = 'chado_views_handler_field';
             }
             elseif($column_type == 'boolean'){
@@ -564,7 +564,7 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL){
             if($column_type == 'integer' or $column_type == 'int' or $column_type == 'serial'){
                $default_filter_handler = 'chado_views_handler_filter_numeric';
             }
-            elseif(preg_match("/^character varying/",$column_type) or $column_type == 'char' or $column_type == 'text'){
+            elseif(preg_match("/^character varying/",$column_type) or $column_type == 'char' or $column_type == 'text' or $column_type == 'varchar'){
                $default_filter_handler = 'chado_views_handler_filter_string';
             }
             elseif($column_type == 'boolean'){
@@ -598,7 +598,7 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL){
             if($column_type == 'integer' or $column_type == 'int' or $column_type == 'serial'){
                $default_sort_handler = 'chado_views_handler_sort';
             }
-            elseif(preg_match("/character varying/",$column_type) or $column_type == 'char' or $column_type == 'text'){
+            elseif(preg_match("/character varying/",$column_type) or $column_type == 'char' or $column_type == 'text' or $column_type == 'varchar'){
                $default_sort_handler = 'chado_views_handler_sort';
             }
             elseif($column_type == 'boolean'){
@@ -632,7 +632,7 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL){
             if($column_type == 'integer' or $column_type == 'int' or $column_type == 'serial'){
                $default_argument_handler = 'views_handler_argument_numeric';
             }
-            elseif(preg_match("/character varying/",$column_type) or $column_type == 'char' or $column_type == 'text'){
+            elseif(preg_match("/character varying/",$column_type) or $column_type == 'char' or $column_type == 'text' or $column_type == 'varchar'){
                $default_argument_handler = 'views_handler_argument_string';
             }
             elseif($column_type == 'boolean'){
@@ -666,7 +666,7 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL){
             if($column_type == 'integer' or $column_type == 'int' or $column_type == 'serial'){
                $default_relationship_handler = 'views_handler_relationship';
             }
-            elseif(preg_match("/character varying/",$column_type) or $column_type == 'char' or $column_type == 'text'){
+            elseif(preg_match("/character varying/",$column_type) or $column_type == 'char' or $column_type == 'text' or $column_type == 'varchar'){
                $default_relationship_handler = 'views_handler_relationship';
             }
             elseif($column_type == 'boolean'){

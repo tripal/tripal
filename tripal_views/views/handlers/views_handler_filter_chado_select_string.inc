@@ -35,6 +35,14 @@ class views_handler_filter_chado_select_string extends views_handler_filter_stri
       '#description' => t('Adds --Any-- to the available options.'),
       '#default_value' => (isset($this->options['optional'])) ? $this->options['optional'] : TRUE,
     );
+ 
+    $form['max_length'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Max Width'),
+      '#description' => t('Specify the maximum width of the select box'),
+      '#default_value' => (isset($this->options['max_length'])) ? $this->options['max_length'] : 40,
+
+    );
     
   }
   
@@ -57,14 +65,15 @@ class views_handler_filter_chado_select_string extends views_handler_filter_stri
         //$options['<select '.$this->table.'>'] = '--None--';
         $options['All'] = '--Any--';
       }
-      $results = tripal_core_chado_select(
-        $this->table,
-        array($this->field),
-        array(),
-        array('order_by' => array($this->field => 'ASC'))
-      );
-      $max_length = 40;
-      foreach ($results as $r) {
+      $sql = "SELECT $this->field FROM $this->table ORDER BY $this->field ASC";
+      $previous_db = tripal_db_set_active('chado');  // use chado database
+      $results = db_query($sql);
+      tripal_db_set_active($previous_db);  // now use drupal database 
+      $max_length = $this->options['max_length'];
+      if(!$max_length){
+         $max_length = 40;
+      }
+      while($r = db_fetch_object($results)){
         if (strlen($r->{$this->field}) > $max_length) {
           $options[$r->{$this->field}] = substr($r->{$this->field},0,$max_length) . '...';
         } else {
