@@ -33,9 +33,35 @@ require_once('views/misc_tables.views.inc');
 function tripal_library_views_data()  {
   $data = array();
   
-  $data = array_merge($data, retrieve_library_views_data());
-  $data = array_merge($data, retrieve_chado_library_views_data());
-  $data = array_merge($data, retrieve_library_misc_tables_views_data());
+  //$data = array_merge($data, retrieve_library_views_data());
+  //$data = array_merge($data, retrieve_chado_library_views_data());
+  //$data = array_merge($data, retrieve_library_misc_tables_views_data());
+  
+  if (module_exists('tripal_views')) {
+    $tables = array(
+      'library'
+    );
+    foreach ($tables as $tablename) {
+      if (!tripal_views_is_integrated($tablename, 10)) {
+        $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename,TRUE);
+        tripal_views_integration_add_entry($table_integration_array);
+      }
+    }
+        
+    $tables = array(
+      'library_cvterm',
+      'library_feature',
+      'library_pub',
+      'library_synonym',
+      'libraryprop'
+    );
+    foreach ($tables as $tablename) {
+      if (!tripal_views_is_integrated($tablename, 10)) {
+        $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename,FALSE);
+        tripal_views_integration_add_entry($table_integration_array);
+      }
+    }
+  }
   
   return $data;
 }

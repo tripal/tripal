@@ -212,7 +212,7 @@ function tripal_feature_chado_feature_cvterm_schema() {
   $description['foreign keys']['cvterm'] = array(
         'table' => 'cvterm',
         'columns' => array(
-          'type_id' => 'cvterm_id',
+          'cvterm_id' => 'cvterm_id',
         ),
   );
   $description['foreign keys']['pub'] = array(
@@ -221,6 +221,7 @@ function tripal_feature_chado_feature_cvterm_schema() {
           'pub_id' => 'pub_id',
         ),
   );
+  
   return $description;
 }
 /**

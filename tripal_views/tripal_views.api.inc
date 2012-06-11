@@ -143,6 +143,7 @@ function tripal_views_integration_add_entry($defn_array) {
     
     // Insert Field Definitions
     foreach ($defn_array['fields'] as $field) {
+      
       $field_record = array(
       	'setup_id' => $view_record['setup_id'],
         'column_name' => $field['name'],
@@ -285,6 +286,10 @@ function tripal_views_get_integration_array_for_chado_table ($table_name, $base_
   );
   
   // Add fields
+  if (!isset($schema['fields'])) { 
+    $schema['fields'] = array();
+    drupal_set_message('There are no fields defined for '.$table_name.' in the Chado Schema API.','warning');
+  }
   foreach ($schema['fields'] as $field_name => $field_schema) {
     
     // Base field definition
@@ -335,6 +340,10 @@ function tripal_views_get_integration_array_for_chado_table ($table_name, $base_
   }
   
   // Add Joins to fields
+  if (!isset($schema['foreign keys'])) {
+    $schema['foreign keys'] = array();
+    drupal_set_message('There are no foreign keys defined for '.$table_name.' in the Chado Schema API.','warning');
+  }
   foreach ($schema['foreign keys'] as $foreign_key_schema) {
     foreach ($foreign_key_schema['columns'] as $left_field => $right_field) {
       $defn_array['fields'][$left_field]['joins'][ $foreign_key_schema['table'] ] = array(

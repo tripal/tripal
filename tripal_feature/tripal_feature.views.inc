@@ -51,7 +51,7 @@ function tripal_feature_views_data()  {
     }
         
     $tables = array(
-      //'feature_cvterm',
+      'feature_cvterm',
       'feature_cvterm_dbxref',
       'feature_cvterm_pub',
       'feature_cvtermprop',

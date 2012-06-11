@@ -486,7 +486,7 @@ function tripal_views_views_data(){
          if(!$table_desc){            
             $table_desc = tripal_get_chado_custom_schema($base_table);
          }
-         $fields = $table_desc['fields'];
+         $fields = ($table_desc['fields']) ? $table_desc['fields'] : array();
          foreach($fields as $column => $attrs){
             $base_fields[$column] = array(
               'column_name' => $column,
@@ -541,6 +541,7 @@ function tripal_views_views_data(){
      // now add the joins
      $sql = "SELECT * FROM {tripal_views_join} WHERE setup_id = %d";
      $joins = db_query($sql,$setup_id);
+     if (!isset($joins)) { $joins = array(); }
      while($join = db_fetch_object($joins)){               
         $left_table = $join->left_table;
         $left_field = $join->left_field;
@@ -568,8 +569,10 @@ function tripal_views_views_data(){
         }
       }
     }
+    
     return $data;
 }
+
 /**
  *
  * @ingroup tripal_views
@@ -628,6 +631,7 @@ function tripal_views_views_data_alter(&$data) {
     }
     return $data;
 }
+
 /**
  * Implementation of hook_views_plugins().
  */
@@ -681,6 +685,7 @@ function tripal_views_views_pre_view(&$view,&$display_id,&$args){
    // have access to everything needed for this view to work properlys
    $_GET = array_merge($_GET, $_POST);
 }
+
 /**
  * Implementation of hook_views_pre_build().
  */
@@ -692,6 +697,7 @@ function tripal_views_views_pre_view(&$view,&$display_id,&$args){
    $form = drupal_get_form('tripal_views_data_export_download_form',$view,$display_id,$args);
    $view->attachment_after = $form;
 }*/
+
 /**
  * 
  */
@@ -750,6 +756,7 @@ function tripal_views_data_export_download_form(&$form_state, $view,$display_id,
    
    return $form;
 }
+
 /**
  * 
  */
