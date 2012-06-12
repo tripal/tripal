@@ -339,6 +339,7 @@ function tripal_jobs_check_running() {
   // return 1 to indicate that no jobs are currently running.
   return FALSE;
 }
+
 /**
  * Returns the HTML code to display a given job
  *
@@ -352,6 +353,7 @@ function tripal_jobs_check_running() {
 function tripal_jobs_view($job_id) {
   return theme('tripal_core_job_view', $job_id);
 }
+
 /**
  * Registers variables for the tripal_core_job_view themeing function
  *

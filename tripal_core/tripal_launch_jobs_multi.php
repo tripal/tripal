@@ -84,7 +84,7 @@ else {
 runjob($hostname, $username);
 
 /**
- *
+ * Runs tripal_launch_jobs() as the specified user
  *
  * @ingroup tripal_core
  */

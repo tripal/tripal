@@ -29,7 +29,10 @@ function tripal_core_install() {
 
 /**
  *  Update for Drupal 6.x, Tripal 0.4
- *  This update adjusts the materialized view by adding a 'cvterm_id' column
+ *  This update
+ *   - adjusts the materialized view by adding status, comment and mv_schema columns
+ *   - changes the specs of mv_table, mv_specs and indexed
+ *   - creates the tripal_custom_tables table
  *
  * @ingroup tripal_feature
  */
@@ -115,7 +118,8 @@ function tripal_core_get_schemas() {
 }
 
 /**
- *
+ * Describes the Tripal Materialized View (tripal_mviews) table
+ * This table keeps track of all materialized views created by Tripal and stored in chado
  *
  * @ingroup tripal_core
  */
@@ -151,7 +155,9 @@ function tripal_core_mviews_schema() {
 }
 
 /**
- *
+ * Describes the Tripal Jobs (tripal_jobs) table
+ * This table keeps track of all tripal jobs including their current status and is used
+ * by tripal_launch_jobs to determine which jobs need to be run
  *
  * @ingroup tripal_core
  */
@@ -187,7 +193,9 @@ function tripal_core_jobs_schema() {
 }
 
 /**
- *
+ * Describes the Tripal Custom Tables (tripal_custom_tables) table
+ * This keeps track of tables created by Tripal and stored in chado that may or may not
+ * also be materialized views.
  *
  * @ingroup tripal_core
  */

@@ -16,7 +16,8 @@ require_once "tripal_core.api.inc";
  */
 
 /**
- *
+ * Implements hook_init().
+ * Used to set the search_path, create default content and set default variables.
  *
  * @ingroup tripal_core
  */
@@ -63,7 +64,8 @@ function tripal_core_init() {
 }
 
 /**
- *
+ * Implements hook_menu().
+ * Defines all menu items needed by Tripal Core
  *
  * @ingroup tripal_core
  */
@@ -185,14 +187,10 @@ function tripal_core_perm() {
 }
 
 /**
- *
- *
- * @param $dbname
- *   The name of the database to switch to as indicated in settings.php
- *   Should be either default or chado
+ * Check whether chado is installed (either in the same or a different database)
  *
  * @return
- *   The name of the previously set database
+ *   TRUE/FALSE depending upon whether chado is installed.
  *
  * @ingroup tripal_chado_api
  */
@@ -213,6 +211,8 @@ function tripal_core_is_chado_installed() {
 
 
 /**
+ * Implements hook_theme().
+ * Registers template files/functions used by this module.
  *
  * @ingroup tripal_core
  */
@@ -226,6 +226,18 @@ function tripal_core_theme() {
 }
 
 /**
+ * Implements hook_job_describe_args().
+ * Describes the arguements for the tripal_update_mview job to allow for greater
+ * readability in the jobs details pages.
+ *
+ * @param $callback
+ *   The callback of the current tripal job (this is the function that will be executed
+ *   when tripal_launch_jobs.php is run.
+ * @param $args
+ *   An array of arguments passed in when the job was registered.
+ *
+ * @return
+ *   A more readable $args array
  *
  * @ingroup tripal_core
  */
@@ -241,8 +253,12 @@ function tripal_core_job_describe_args($callback, $args) {
   return $new_args;
 }
 
-// this is just a wrapper for backwards compatibility with a naming mistake.
-// it can go away in the future as it only is useful for jobs created by v0.3b
+/**
+ * this is just a wrapper for backwards compatibility with a naming mistake.
+ * it can go away in the future as it only is useful for jobs created by v0.3b
+ *
+ * @todo remove this function
+ */
 function tripal_core_load_gff3($gff_file, $organism_id, $analysis_id, $add_only = 0,
   $update = 0, $refresh = 0, $remove = 0, $job = NULL) {
 
