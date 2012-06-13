@@ -6,7 +6,7 @@
  *  chado/tripal organism tables. Supplementary functions can be found in
  *  ./views/
  *
- *  Documentation on views integration can be found at 
+ *  Documentation on views integration can be found at
  *  http://views2.logrus.com/doc/html/index.html.
  */
 
@@ -16,15 +16,12 @@
  * @ingroup tripal_library
  */
 
-require_once('views/library.views.inc');
-require_once('views/chado_library.views.inc');
-require_once('views/misc_tables.views.inc'); 
 /*************************************************************************
  * Implements hook_views_data()
  * Purpose: Describe chado/tripal tables & fields to views
  * @return: a data array which follows the structure outlined in the
  *   views2 documentation for this hook. Essentially, it's an array of table
- *   definitions keyed by chado/tripal table name. Each table definition 
+ *   definitions keyed by chado/tripal table name. Each table definition
  *   includes basic details about the table, fields in that table and
  *   relationships between that table and others (joins)
  *
@@ -32,11 +29,7 @@ require_once('views/misc_tables.views.inc');
  */
 function tripal_library_views_data()  {
   $data = array();
-  
-  //$data = array_merge($data, retrieve_library_views_data());
-  //$data = array_merge($data, retrieve_chado_library_views_data());
-  //$data = array_merge($data, retrieve_library_misc_tables_views_data());
-  
+
   if (module_exists('tripal_views')) {
     $tables = array(
       'library'
@@ -47,7 +40,7 @@ function tripal_library_views_data()  {
         tripal_views_integration_add_entry($table_integration_array);
       }
     }
-        
+
     $tables = array(
       'library_cvterm',
       'library_feature',
@@ -62,14 +55,14 @@ function tripal_library_views_data()  {
       }
     }
   }
-  
+
   return $data;
 }
 
 /*************************************************************************
  * Implements hook_views_handlers()
  * Purpose: Register all custom handlers with views
- *   where a handler describes either "the type of field", 
+ *   where a handler describes either "the type of field",
  *   "how a field should be filtered", "how a field should be sorted"
  * @return: An array of handler definitions
  *
@@ -111,7 +104,7 @@ function tripal_library_views_data_alter(&$data) {
       ),
     );
   }
-  
+
 }
 
 /**
@@ -121,7 +114,7 @@ function tripal_library_views_data_alter(&$data) {
  */
 function tripal_library_views_default_views () {
   $views = array();
-  
+
   // Main default view
   // List all cvterms based on cv
   $view = new view;
@@ -415,6 +408,6 @@ function tripal_library_views_default_views () {
     'name' => 'navigation',
   ));
   $views[$view->name] = $view;
-  
+
   return $views;
 }

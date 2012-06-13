@@ -6,7 +6,7 @@
  *  chado/tripal db tables. Supplementary functions can be found in
  *  ./views/
  *
- *  Documentation on views integration can be found at 
+ *  Documentation on views integration can be found at
  *  http://views2.logrus.com/doc/html/index.html.
  */
 
@@ -16,8 +16,6 @@
  * @ingroup tripal_cv
  */
 
-require_once('views/cvterm.views.inc');
-require_once('views/cv.views.inc'); 
 /**
  * Implements hook_views_data()
  *
@@ -26,7 +24,7 @@ require_once('views/cv.views.inc');
  * @return
  *   a data array which follows the structure outlined in the
  *   views2 documentation for this hook. Essentially, it's an array of table
- *   definitions keyed by chado/tripal table name. Each table definition 
+ *   definitions keyed by chado/tripal table name. Each table definition
  *   includes basic details about the table, fields in that table and
  *   relationships between that table and others (joins)
  *
@@ -34,15 +32,7 @@ require_once('views/cv.views.inc');
  */
 function tripal_cv_views_data() {
   $data = array();
-  
-  //Function is contained in includes/cvterm.views.inc
-  //Returns the data array for the chado cvterm table
-  //$data = array_merge($data, retrieve_cvterm_views_data());
-  
-  //Function is contained in includes/cv.views.inc
-  //Returns the data array for the chado cv table
-  //$data = array_merge($data, retrieve_cv_views_data());
-  
+
   if (module_exists('tripal_views')) {
     // Base Tables
     $tables = array(
@@ -55,7 +45,7 @@ function tripal_cv_views_data() {
         tripal_views_integration_add_entry($table_integration_array);
       }
     }
-    
+
     // Additional Tables
     $tables = array(
       'cvterm_dbxref',
@@ -71,15 +61,15 @@ function tripal_cv_views_data() {
       }
     }
   }
-  
+
   return $data;
 }
- 
+
 /**
  * Implements hook_views_handlers()
  *
  * Purpose: Register all custom handlers with views
- *   where a handler describes either "the type of field", 
+ *   where a handler describes either "the type of field",
  *   "how a field should be filtered", "how a field should be sorted"
  *
  * @return: An array of handler definitions
@@ -105,7 +95,7 @@ function tripal_cv_views_handlers() {
  */
 function tripal_cv_views_default_views () {
   $views = array();
-  
+
   // Main default view
   // List all cvterms based on cv
   $view = new view;
@@ -395,6 +385,6 @@ function tripal_cv_views_default_views () {
     'name' => 'navigation',
   ));
   $views[$view->name] = $view;
-  
+
   return $views;
 }

@@ -6,7 +6,7 @@
  *  chado/tripal stock tables. Supplementary functions can be found in
  *  ./views/
  *
- *  Documentation on views integration can be found at 
+ *  Documentation on views integration can be found at
  *  http://views2.logrus.com/doc/html/index.html.
  */
 
@@ -16,16 +16,13 @@
  * @ingroup tripal_stock
  */
 
-require_once('views/stock.views.inc');
-require_once('views/chado_stock.views.inc');
-require_once('views/misc_tables.views.inc'); 
 /**
  * Implements hook_views_data(): Describe chado/tripal tables & fields to views
  *
  * @return array
  *   A data array which follows the structure outlined in the
  *   views2 documentation for this hook. Essentially, it's an array of table
- *   definitions keyed by chado/tripal table name. Each table definition 
+ *   definitions keyed by chado/tripal table name. Each table definition
  *   includes basic details about the table, fields in that table and
  *   relationships between that table and others (joins)
  *
@@ -33,10 +30,6 @@ require_once('views/misc_tables.views.inc');
  */
 function tripal_stock_views_data()  {
   $data = array();
-
-  //$data = array_merge($data, retrieve_stock_views_data());
-  //$data = array_merge($data, retrieve_chado_stock_views_data());
-  //$data = array_merge($data, retrieve_stock_misc_tables_views_data());
 
   if (module_exists('tripal_views')) {
     $tables = array(
@@ -49,7 +42,7 @@ function tripal_stock_views_data()  {
         tripal_views_integration_add_entry($table_integration_array);
       }
     }
-        
+
     $tables = array(
       'stock_cvterm',
       'stock_dbxref',
@@ -69,7 +62,7 @@ function tripal_stock_views_data()  {
       }
     }
   }
-  
+
   return $data;
 }
 
@@ -77,7 +70,7 @@ function tripal_stock_views_data()  {
  * Implements hook_views_handlers()
  *
  * Purpose: Register all custom handlers with views
- *   where a handler describes either "the type of field", 
+ *   where a handler describes either "the type of field",
  *   "how a field should be filtered", "how a field should be sorted"
  *
  * @return array
@@ -151,7 +144,7 @@ function tripal_stock_views_data_alter(&$data) {
       ),
     );
   }
-  
+
 }
 
 /**
@@ -168,18 +161,18 @@ function tripal_stock_views_data_alter(&$data) {
  */
 function tripal_stock_views_pre_render	(&$view) {
 	if (preg_match('/stock/', $view->base_table)) {
-		
+
 		//-----Node IDs---------------------------------------------
 		// @see file: tripal_core.views.inc function: tripal_core_add_node_ids_to_view (&$view);
-		
+
 		// retrieve the stock_id for each record in the views current page
 		$stock_ids = array();
 		foreach ($view->result as $row_num => $row) {
 			$stock_ids[$row_num] = $row->stock_id;
 		}
-		
+
 		if (sizeof($stock_ids)) {
-		
+
 			//-----Properties------------------------------------------
 			$field_names = array_keys($view->field);
 			//if any property fields are in the current view
@@ -191,14 +184,14 @@ function tripal_stock_views_pre_render	(&$view) {
 				$previous_db = tripal_db_set_active('chado');
 				$resource = db_query($sql);
 			 tripal_db_set_active($previous_db);
-		
+
 				$view->result[$key]->properties = array();
 				while ($r = db_fetch_object($resource)) {
 					$key = array_search($r->stock_id, $stock_ids);
 					$view->result[$key]->properties[] = $r;
 				}
 			}
-		
+
 			//-----Relationships----------------------------------------
 			//if any relationship fields are in the current view
 			$relationship_field_names = preg_grep('/relationships/', $field_names);
@@ -214,7 +207,7 @@ function tripal_stock_views_pre_render	(&$view) {
 				$previous_db = tripal_db_set_active('chado');
 				$resource = db_query($sql);
 			 tripal_db_set_active($previous_db);
-			
+
 				while ($r = db_fetch_object($resource)) {
 					if (in_array($r->subject_id, $stock_ids)) {
 						$key = array_search($r->subject_id, $stock_ids);
@@ -228,7 +221,7 @@ function tripal_stock_views_pre_render	(&$view) {
 					}
 				}
 			}
-		
+
 			//-----DB References--------------------------------------------
 			//if any dbxref fields are in the current view
 			$dbxref_field_names = preg_grep('/dbxref/',$field_names);
@@ -242,14 +235,14 @@ function tripal_stock_views_pre_render	(&$view) {
 				$previous_db = tripal_db_set_active('chado');
 				$resource = db_query($sql);
 			 tripal_db_set_active($previous_db);
-		
+
 				$view->result[$key]->dbxref = array();
 				while ($r = db_fetch_object($resource)) {
 					$key = array_search($r->stock_id, $stock_ids);
 					$view->result[$key]->dbxref[] = $r;
 				}
 			}
-			
+
 		} //if there are stocks
 	} //if we're dealing with a stock view
 }
@@ -260,7 +253,7 @@ function tripal_stock_views_pre_render	(&$view) {
  */
 function tripal_stock_views_default_views() {
   $views = array();
-  
+
   $view = new view;
   $view->name = 'all_stocks';
   $view->description = 'This view lists all stocks by default. There are exposed filters available but no arguments are used.';
@@ -613,7 +606,7 @@ function tripal_stock_views_default_views() {
     'weight' => 0,
     'name' => 'navigation',
   ));
-  $views[$view->name] = $view;  
-  
+  $views[$view->name] = $view;
+
   return $views;
 }
