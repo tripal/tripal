@@ -1,3 +1,10 @@
+<?php
+/**
+ * @file
+ * Template file for the views integration fields form.
+ */
+?>
+
 <style type="text/css">
 
 #tripal-views-integration-form  .fields-new-row, .field-headers {

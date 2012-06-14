@@ -1,0 +1,10 @@
+; The file should be formatted this way :
+; file:line:warning-type
+; where warning-type is one of security, style, sql, i18n, comment, etc.
+
+; All <?php should be closed with a ?> in theme template files
+tripal_views_integration_fields_form.tpl.php:48:style
+tripal_views_data_export_download_form.tpl.php:8:style
+
+; All variables are set through the code and thus don't need to be filtered
+tripal_views_integration.inc:734:security

@@ -14,7 +14,6 @@ require_once "tripal_views_form_elements.inc";
 function tripal_views_menu() {
   $items = array();
 
-/**
   $items['admin/tripal/views'] = array(
     'title' => 'Views Integration',
     'description' => 'Integration with Drupal Views',
@@ -54,7 +53,7 @@ function tripal_views_menu() {
     'access arguments' => array('manage tripal_views_integration'), //TODO: figure out the proper permissions arguments
     'type' => MENU_CALLBACK,
   );
-*/
+
   return $items;
 }
 
@@ -107,5 +106,16 @@ function tripal_views_theme() {
     'file_upload_combo' => array(
       'arguments' => array('element' => NULL)
     ),
+  );
+}
+
+/**
+ * Implements hook_coder_ignore().
+ * Defines the path to the file (tripal_views.coder_ignores.txt) where ignore rules for coder are stored
+ */
+function tripal_views_coder_ignore() {
+  return array(
+    'path' => drupal_get_path('module', 'tripal_views'),
+    'line prefix' => drupal_get_path('module', 'tripal_views'),
   );
 }
