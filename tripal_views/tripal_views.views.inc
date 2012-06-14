@@ -10,7 +10,7 @@ include('tripal_views.api.inc');
  * Provide rules for formatting and composition of fields
  * @}
  */
- 
+
 /**
  * @defgroup views_field_handlers Views Field Handlers
  * @{
@@ -42,12 +42,12 @@ include('tripal_views.api.inc');
  * @}
  * @ingroup views
  */
- 
+
 /**
  * Implements hook_views_handlers()
  *
  * Purpose: Register all custom handlers with views
- *   where a handler describes either "the type of field", 
+ *   where a handler describes either "the type of field",
  *   "how a field should be filtered", "how a field should be sorted"
  *
  * @return
@@ -62,7 +62,7 @@ function tripal_views_views_handlers() {
      'path' => drupal_get_path('module', 'tripal_views') . '/views/handlers',
    ),
    'handlers' => array(
-   
+
      // Custom Chado Handlers
      'chado_views_handler_field_aggregate' => array(
       'parent' => 'chado_views_handler_field',
@@ -73,7 +73,7 @@ function tripal_views_views_handlers() {
      'views_handler_filter_chado_select_cvterm_name' => array(
       'parent' => 'views_handler_filter_string',
      ),
-     
+
      // Join Handlers
      'views_handler_join_chado_aggregator' => array(
       'parent' => 'views_join',
@@ -81,12 +81,12 @@ function tripal_views_views_handlers() {
      'views_handler_join_chado_through_linking' => array(
       'parent' => 'views_join',
      ),
-     
+
      // Other Custom Handlers
      'views_handler_filter_no_results' => array(
       'parent' => 'views_handler_filter'
      ),
-     
+
      // Old Handlers
      'views_handler_field_node_optional' => array(
        'parent' => 'views_handler_field_node',
@@ -113,7 +113,7 @@ function tripal_views_views_handlers() {
        'parent' => 'views_handler_field',
      ),
 
-     
+
      // Wrappers for Default Views Handlers-----
      // Field Handlers
      'chado_views_handler_field' => array(
@@ -143,7 +143,7 @@ function tripal_views_views_handlers() {
      // Filter Handlers
      'chado_views_handler_filter_string' => array(
       'parent' => 'views_handler_filter_string',
-     ), 
+     ),
      'chado_views_handler_filter_boolean_operator_string' => array(
       'parent' => 'views_handler_filter_boolean_operator_string',
      ),
@@ -168,19 +168,19 @@ function tripal_views_views_handlers() {
      // Sort Handlers
      'chado_views_handler_sort' => array(
       'parent' => 'views_handler_sort'
-     ),     
+     ),
      'chado_views_handler_sort_date' => array(
       'parent' => 'views_handler_sort_date'
-     ), 
+     ),
      'chado_views_handler_sort_formula' => array(
       'parent' => 'views_handler_sort_formula'
-     ), 
+     ),
      'chado_views_handler_sort_menu_hierarchy' => array(
       'parent' => 'views_handler_sort_menu_hierarchy'
-     ), 
+     ),
      'chado_views_handler_sort_random' => array(
       'parent' => 'views_handler_sort_random'
-     ), 
+     ),
    ),
  );
 }
@@ -203,14 +203,14 @@ function tripal_views_views_pre_render	(&$view) {
 	// @see file: tripal_views.views.inc
 	tripal_views_add_node_ids_to_view ($view);
 
-   // We need to unset the exposed_input for the view so we can repopulate that 
-   // variable. This is necessary if we're using the file_upload_combo 
+   // We need to unset the exposed_input for the view so we can repopulate that
+   // variable. This is necessary if we're using the file_upload_combo
    // custom form element which adds the file_path variable to the $_GET after the
-   // view has populated the $view->exposed_input variable 
+   // view has populated the $view->exposed_input variable
    unset($view->exposed_input);
    $query = $view->get_exposed_input();  // retrieves elements in $_GET array
-		
-   // we want to add to the bottom of the views the form for downloading 
+
+   // we want to add to the bottom of the views the form for downloading
    // results in other formats (e.g. Excel, FASTA, CSV, etc.).  The Views Data
    // Export module provides small images at the bottom, but we want to provide
    // a more intutitive interface for getting different file formats
@@ -223,7 +223,7 @@ function tripal_views_views_pre_render	(&$view) {
  *
  * Purpose: To add basetable_nid fields to all result arrays of a view
  *   only if the basetable_nid field is added. This function will only be
- *   called if chado/drupal are not in the same database (ie: only if 
+ *   called if chado/drupal are not in the same database (ie: only if
  *   a join between the base and node table isn't possible.
  *
  * Note: Supports adding Node IDs to analysis, feature, library, organism, stock
@@ -236,7 +236,7 @@ function tripal_views_views_pre_render	(&$view) {
  * @ingroup tripal_views
  */
 function tripal_views_add_node_ids_to_view (&$view) {
-	
+
 	//-----Analysis----------------------------------------------
 	if (!empty($view->field['analysis_nid'])) {
 		// retrieve the analysis_id for each record in the views current page
@@ -267,7 +267,7 @@ function tripal_views_add_node_ids_to_view (&$view) {
 			}
 		} // if there are any analysis'
 	} //end of case for analysis NID
-	
+
 	//-----Feature-----------------------------------------------
 	if (!empty($view->field['feature_nid'])) {
 		// retrieve the feature_id for each record in the views current page
@@ -298,7 +298,7 @@ function tripal_views_add_node_ids_to_view (&$view) {
 			}
 		} // if there are any features
 	} //end of case for feature NID
-	
+
 	//-----Library-----------------------------------------------
 	if (!empty($view->field['library_nid'])) {
 		// retrieve the library_id for each record in the views current page
@@ -329,7 +329,7 @@ function tripal_views_add_node_ids_to_view (&$view) {
 			}
 		} // if there are libraries
 	} //end of case for library NID
-	
+
 	//-----Organism----------------------------------------------
 	if (!empty($view->field['organism_nid'])) {
 		// retrieve the organism_id for each record in the views current page
@@ -360,7 +360,7 @@ function tripal_views_add_node_ids_to_view (&$view) {
 			}
 		} // if there are organisms
 	} //end of case for organism NID
-	
+
 	//-----Stock-------------------------------------------------
 	if (!empty($view->field['stock_nid'])) {
 		// retrieve the stock_id for each record in the views current page
@@ -391,7 +391,7 @@ function tripal_views_add_node_ids_to_view (&$view) {
 			}
 		} //if there are stocks
 	} //end of case for stock NID
-		
+
 	return $view;
 }
 /**
@@ -407,10 +407,10 @@ function tripal_views_add_node_ids_to_view (&$view) {
  * @ingroup tripal_views
  */
 
-function tripal_views_views_data(){   
-  
-   // Define Global Fields 
-   // Filter handler that lets the admin say: 
+function tripal_views_views_data(){
+
+   // Define Global Fields
+   // Filter handler that lets the admin say:
    // "Show no results until they enter search parameters"
    $data['views']['search_results'] = array(
       'title' => t('Search Results'),
@@ -419,19 +419,19 @@ function tripal_views_views_data(){
          'handler' => 'views_handler_filter_no_results',
       ),
    );
-  
- 
+
+
     $tvi_query = db_query('SELECT * FROM {tripal_views}');
 
     while($tvi_row = db_fetch_object($tvi_query)){
-      
+
       // check to see if this is the lightest (drupal-style) priority setup for this table
       // if not then don't use this definition
       $lightest_priority_setup = tripal_views_is_lightest_priority_setup($tvi_row->setup_id, $tvi_row->table_name);
       if (!$lightest_priority_setup) {
         continue;
       }
-      
+
       // ids we'll use for queries
       $setup_id = $tvi_row->setup_id;
       $mview_id = $tvi_row->mview_id;
@@ -463,7 +463,7 @@ function tripal_views_views_data(){
               'type' => $column_type,
             );
          }
-         
+
          // get the field name and descriptions
          $sql = "SELECT * FROM {tripal_views_field} WHERE setup_id=%d";
          $query = db_query($sql, $setup_id);
@@ -478,10 +478,14 @@ function tripal_views_views_data(){
          // The chado table could be a regular Chado table or a custom table
          // in the chado database.  Therefore we'll check both
          $table_desc = module_invoke_all('chado_'.$base_table.'_schema');
-         if(!$table_desc){            
+         if(!$table_desc){
             $table_desc = tripal_get_chado_custom_schema($base_table);
          }
          $fields = $table_desc['fields'];
+         if (!is_array($fields)) {
+           $fields = array();
+           drupal_set_message('No Fields for '.$base_table, 'error');
+         }
          foreach($fields as $column => $attrs){
             $base_fields[$column] = array(
               'column_name' => $column,
@@ -513,8 +517,8 @@ function tripal_views_views_data(){
               'click sortable' => TRUE,
            ),
         );
-        
-        
+
+
         // now add the handlers
         $sql = "SELECT * FROM {tripal_views_handlers} WHERE setup_id = %d AND column_name = '%s'";
         $handlers = db_query($sql,$setup_id,$column_name);
@@ -526,11 +530,11 @@ function tripal_views_views_data(){
      // now add the joins
      $sql = "SELECT * FROM {tripal_views_join} WHERE setup_id = %d";
      $joins = db_query($sql,$setup_id);
-     while($join = db_fetch_object($joins)){               
+     while($join = db_fetch_object($joins)){
         $left_table = $join->left_table;
         $left_field = $join->left_field;
-        $base_field = $join->base_field;  
-      
+        $base_field = $join->base_field;
+
         // add join entry
         $data[$base_table]['table']['join'][$left_table] = array(
           'left_field' => $left_field,
@@ -569,11 +573,11 @@ function tripal_views_views_data_alter(&$data) {
       // joins to other tables
       $sql = "SELECT * FROM {tripal_views_join} WHERE setup_id = %d";
       $joins = db_query($sql,$setup_id);
-      while($join = db_fetch_object($joins)){                       
+      while($join = db_fetch_object($joins)){
         $left_table = $join->left_table;
         $left_field = $join->left_field;
-        $base_field = $join->base_field;  
-        $base_table = $join->base_table;    
+        $base_field = $join->base_field;
+        $base_table = $join->base_table;
 
         // add the recipricol join entries for each column
         if(array_key_exists($left_table,$data)){
@@ -586,7 +590,7 @@ function tripal_views_views_data_alter(&$data) {
         // check to see if this table is one that correlates with Drupal nodes
         // if so, there will be a chado_<table_name> table in the Drupal database
         // if there is, then we need to add the linking join information.  We did
-        // this step in the hook_views_data function above, but now we need 
+        // this step in the hook_views_data function above, but now we need
         // to add the reciprical joins
         if(db_table_exists("chado_$left_table")){
 
@@ -602,7 +606,7 @@ function tripal_views_views_data_alter(&$data) {
               	'left_table' => "chado_$left_table",
               	'left_field' => 'nid',
               	'field' => 'nid',
-              );           
+              );
            }
         }
       }
@@ -628,8 +632,8 @@ function tripal_views_views_plugins() {
   );
 
   // add FASTA format as a new style for the existing views_export_data Display
-  return array( 
-    'style' => array(   
+  return array(
+    'style' => array(
       'views_data_export_fasta' => array(
         'title' => t('FASTA file'),
         'help' => t('Display results in FASTA format. All fields in results are on the definition line while the feature.residues field must be present .'),
@@ -647,7 +651,7 @@ function tripal_views_views_plugins() {
           'views_data_export_fasta_footer' => 'style',
         ),
         'additional themes base' => 'views_data_export_fasta',
-      ) + $style_defaults,      
+      ) + $style_defaults,
     ),
   );
 }
@@ -666,7 +670,7 @@ function tripal_views_views_pre_view(&$view,&$display_id,&$args){
  * Implementation of hook_views_pre_build().
  */
 /*function tripal_views_views_pre_render(&$view, &$display_id, &$args){
-   // we want to add to the bottom of the views the form for downloading 
+   // we want to add to the bottom of the views the form for downloading
    // results in other formats (e.g. Excel, FASTA, CSV, etc.).  The Views Data
    // Export module provides small images at the bottom, but we want to provide
    // a more intutitive interface for getting different file formats
@@ -674,7 +678,7 @@ function tripal_views_views_pre_view(&$view,&$display_id,&$args){
    $view->attachment_after = $form;
 }*/
 /**
- * 
+ *
  */
 function tripal_views_data_export_download_form(&$form_state, $view,$display_id,$args){
    $form = array();
@@ -728,11 +732,11 @@ function tripal_views_data_export_download_form(&$form_state, $view,$display_id,
          '#type' => 'submit',
       );
    }
-   
+
    return $form;
 }
 /**
- * 
+ *
  */
 function tripal_views_data_export_download_form_submit($form, &$form_state){
    $urls = $form_state['storage']['urls'];

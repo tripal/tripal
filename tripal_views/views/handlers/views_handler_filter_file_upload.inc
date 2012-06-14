@@ -17,21 +17,21 @@ class views_handler_filter_file_upload extends views_handler_filter {
     parent::options_form($form, $form_state);
 
   }
-  
+
   /**
   * Defines the value field in both the views filter options form
   *   and the exposed form
   */
   function value_form(&$form, &$form_state) {
     parent::value_form($form, $form_state);
-    
+
     $this->value_form = array(
        '#type' => 'file_upload_combo',
        '#title' => $this->options['expose']['label'],
        '#default_value' => $this->value,
        '#multiple' => FALSE,
-       '#description' => t('Provide search values for ' . $this->options['expose']['label'] . 
-         '. Please place each search item on a separate line or separated by commas.'),
+       '#description' => t('Provide search values for %label. Please place each search
+        item on a separate line or separated by commas.', array('%label' => $this->options['expose']['label'])),
     );
     $form['value'] = &$this->value_form;
   }
@@ -46,7 +46,7 @@ class views_handler_filter_file_upload extends views_handler_filter {
     if (empty($this->options['exposed'])) {
       return;
     }
-    // rebuild the form elements 
+    // rebuild the form elements
     $value = $this->options['expose']['identifier'];
     $this->value_form($form, $form_state);
 
@@ -64,7 +64,7 @@ class views_handler_filter_file_upload extends views_handler_filter {
     }
 
   }
-  /** 
+  /**
    *  Validates the input form
    */
   function exposed_validate(&$form, &$form_state) {
@@ -102,7 +102,7 @@ class views_handler_filter_file_upload extends views_handler_filter {
            $vals = preg_split("/[\n,]+/",$items);
            $values = array_merge($values,$vals);
         }
-     } 
+     }
      // if a file upload has not been provided then use the value in the textarea
      if($items){
 
