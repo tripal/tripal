@@ -1,8 +1,8 @@
 <?php
 
-function tripal_natural_diversity_chado_nd_experiment_schema () {
+function tripal_natural_diversity_chado_nd_experiment_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'nd_experiment',
     'fields' => array(
@@ -48,13 +48,13 @@ function tripal_natural_diversity_chado_nd_experiment_schema () {
       'nd_experimentprop'
     ),
   );
-  
+
   return $description;
 }
 
-function tripal_natural_diversity_chado_nd_experiment_contact_schema () {
+function tripal_natural_diversity_chado_nd_experiment_contact_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'nd_experiment_contact',
     'fields' => array(
@@ -92,13 +92,13 @@ function tripal_natural_diversity_chado_nd_experiment_contact_schema () {
 
     ),
   );
-  
+
   return $description;
 }
 
-function tripal_natural_diversity_chado_nd_experiment_dbxref_schema () {
+function tripal_natural_diversity_chado_nd_experiment_dbxref_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'nd_experiment_dbxref',
     'fields' => array(
@@ -136,13 +136,13 @@ function tripal_natural_diversity_chado_nd_experiment_dbxref_schema () {
 
     ),
   );
-  
+
   return $description;
 }
 
-function tripal_natural_diversity_chado_nd_experiment_genotype_schema () {
+function tripal_natural_diversity_chado_nd_experiment_genotype_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'nd_experiment_genotype',
     'fields' => array(
@@ -180,13 +180,13 @@ function tripal_natural_diversity_chado_nd_experiment_genotype_schema () {
 
     ),
   );
-  
+
   return $description;
 }
 
-function tripal_natural_diversity_chado_nd_experiment_phenotype_schema () {
+function tripal_natural_diversity_chado_nd_experiment_phenotype_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'nd_experiment_phenotype',
     'fields' => array(
@@ -224,13 +224,13 @@ function tripal_natural_diversity_chado_nd_experiment_phenotype_schema () {
 
     ),
   );
-  
+
   return $description;
 }
 
-function tripal_natural_diversity_chado_nd_experiment_project_schema () {
+function tripal_natural_diversity_chado_nd_experiment_project_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'nd_experiment_project',
     'fields' => array(
@@ -268,13 +268,13 @@ function tripal_natural_diversity_chado_nd_experiment_project_schema () {
 
     ),
   );
-  
+
   return $description;
 }
 
-function tripal_natural_diversity_chado_nd_experiment_protocol_schema () {
+function tripal_natural_diversity_chado_nd_experiment_protocol_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'nd_experiment_protocol',
     'fields' => array(
@@ -312,13 +312,13 @@ function tripal_natural_diversity_chado_nd_experiment_protocol_schema () {
 
     ),
   );
-  
+
   return $description;
 }
 
-function tripal_natural_diversity_chado_nd_experiment_pub_schema () {
+function tripal_natural_diversity_chado_nd_experiment_pub_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'nd_experiment_pub',
     'fields' => array(
@@ -356,13 +356,13 @@ function tripal_natural_diversity_chado_nd_experiment_pub_schema () {
 
     ),
   );
-  
+
   return $description;
 }
 
-function tripal_natural_diversity_chado_nd_experiment_stock_schema () {
+function tripal_natural_diversity_chado_nd_experiment_stock_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'nd_experiment_stock',
     'fields' => array(
@@ -411,13 +411,13 @@ function tripal_natural_diversity_chado_nd_experiment_stock_schema () {
       'nd_experiment_stockprop',
     ),
   );
-  
+
   return $description;
 }
 
-function tripal_natural_diversity_chado_nd_experiment_stockprop_schema () {
+function tripal_natural_diversity_chado_nd_experiment_stockprop_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'nd_experiment_stockprop',
     'fields' => array(
@@ -462,13 +462,13 @@ function tripal_natural_diversity_chado_nd_experiment_stockprop_schema () {
     'referring_tables' => array(
     ),
   );
-  
+
   return $description;
 }
 
-function tripal_natural_diversity_chado_nd_experiment_stock_dbxref_schema () {
+function tripal_natural_diversity_chado_nd_experiment_stock_dbxref_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'nd_experiment_stock_dbxref',
     'fields' => array(
@@ -506,13 +506,13 @@ function tripal_natural_diversity_chado_nd_experiment_stock_dbxref_schema () {
 
     ),
   );
-  
+
   return $description;
 }
 
-function tripal_natural_diversity_chado_nd_experimentprop_schema () {
+function tripal_natural_diversity_chado_nd_experimentprop_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'nd_experimentprop',
     'fields' => array(
@@ -557,13 +557,13 @@ function tripal_natural_diversity_chado_nd_experimentprop_schema () {
     'referring_tables' => array(
     ),
   );
-  
+
   return $description;
 }
 
-function tripal_natural_diversity_chado_nd_geolocation_schema () {
+function tripal_natural_diversity_chado_nd_geolocation_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'nd_reagent',
     'fields' => array(
@@ -595,13 +595,13 @@ function tripal_natural_diversity_chado_nd_geolocation_schema () {
       'nd_geolocationprop'
     ),
   );
-  
+
   return $description;
 }
 
-function tripal_natural_diversity_chado_nd_geolocationprop_schema () {
+function tripal_natural_diversity_chado_nd_geolocationprop_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'nd_geolocationprop',
     'fields' => array(
@@ -646,13 +646,13 @@ function tripal_natural_diversity_chado_nd_geolocationprop_schema () {
     'referring_tables' => array(
     ),
   );
-  
+
   return $description;
 }
 
-function tripal_natural_diversity_chado_nd_protocol_schema () {
+function tripal_natural_diversity_chado_nd_protocol_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'nd_protocol',
     'fields' => array(
@@ -671,23 +671,23 @@ function tripal_natural_diversity_chado_nd_protocol_schema () {
     'referring_tables' => array(
       'nd_experiment_protocol',
       'nd_protocol_reagent',
-      'nd_protocolprop'  
+      'nd_protocolprop'
     ),
   );
-  
+
   return $description;
 }
 
-function tripal_natural_diversity_chado_nd_protocol_reagent_schema () {
+function tripal_natural_diversity_chado_nd_protocol_reagent_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'nd_protocol_reagent',
     'fields' => array(
       'nd_protocol_reagent_id' => array(
         'type' => 'serial',
         'not null' => 1,
-      ),    
+      ),
       'nd_protocol_id' => array(
         'type' => 'int',
         'not null' => 1,
@@ -702,7 +702,7 @@ function tripal_natural_diversity_chado_nd_protocol_reagent_schema () {
       ),
     ),
     'primary key' => array(
-      '0' => 'nd_protocol_reagent_id',   
+      '0' => 'nd_protocol_reagent_id',
     ),
     'foreign keys' => array(
       'nd_protocol' => array(
@@ -725,16 +725,16 @@ function tripal_natural_diversity_chado_nd_protocol_reagent_schema () {
       ),
     ),
     'referring_tables' => array(
-    
+
     ),
   );
-  
+
   return $description;
 }
 
-function tripal_natural_diversity_chado_nd_protocolprop_schema () {
+function tripal_natural_diversity_chado_nd_protocolprop_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'nd_protocolprop',
     'fields' => array(
@@ -779,13 +779,13 @@ function tripal_natural_diversity_chado_nd_protocolprop_schema () {
     'referring_tables' => array(
     ),
   );
-  
+
   return $description;
 }
 
-function tripal_natural_diversity_chado_nd_reagent_schema () {
+function tripal_natural_diversity_chado_nd_reagent_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'nd_reagent',
     'fields' => array(
@@ -819,13 +819,13 @@ function tripal_natural_diversity_chado_nd_reagent_schema () {
       ),
     ),
   );
-  
+
   return $description;
 }
 
-function tripal_natural_diversity_chado_nd_reagent_relationship_schema () {
+function tripal_natural_diversity_chado_nd_reagent_relationship_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'nd_reagent_relationship',
     'fields' => array(
@@ -865,13 +865,13 @@ function tripal_natural_diversity_chado_nd_reagent_relationship_schema () {
       ),
     ),
   );
-  
+
   return $description;
 }
 
-function tripal_natural_diversity_chado_nd_reagentprop_schema () {
+function tripal_natural_diversity_chado_nd_reagentprop_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'nd_reagentprop',
     'fields' => array(
@@ -916,6 +916,6 @@ function tripal_natural_diversity_chado_nd_reagentprop_schema () {
     'referring_tables' => array(
     ),
   );
-  
+
   return $description;
 }
