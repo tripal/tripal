@@ -4,8 +4,8 @@
 /**
  * @file
  * This file contains all the functions which describe and implement drupal database tables
- * needed by this module. This module was developed by Chad N.A. Krilow and Lacey-Anne Sanderson, 
- * University of Saskatchewan. 
+ * needed by this module. This module was developed by Chad N.A. Krilow and Lacey-Anne Sanderson,
+ * University of Saskatchewan.
  *
  * The project manamgenet module allows you to sync data in a chado/Tripal instance with
  * multiple project/mysql instances as well as manage and create such project instances
@@ -15,14 +15,14 @@
  * Implementation of hook_install()
  */
 function tripal_project_install() {
-	drupal_install_schema('tripal_project');
+  drupal_install_schema('tripal_project');
 }
 
 /**
- * Implementation of hook_uninstall() 
+ * Implementation of hook_uninstall()
  */
 function tripal_project_uninstall() {
-	drupal_uninstall_schema('tripal_project');
+  drupal_uninstall_schema('tripal_project');
 }
 
 /**
@@ -30,37 +30,37 @@ function tripal_project_uninstall() {
  */
 function tripal_project_schema() {
 
-	//specification for 'tripal_project_instances'
-	$schema['chado_project'] = array(
-		
-		'fields' => array(
-      
-	    //a int field that cannot be null and acts as a unique identifier for all nid's
+  //specification for 'tripal_project_instances'
+  $schema['chado_project'] = array(
+
+    'fields' => array(
+
+      //a int field that cannot be null and acts as a unique identifier for all nid's
       'nid' => array(
-				'type' => 'int',
-				'unsigned' => TRUE,
-				'not null' => TRUE,
- 	 	  ),
-		
-	    //a int field that cannot be null and is vid 	  
-  		'vid' => array(
-   	   	'type' => 'int',
-   	   	'not null' => TRUE,
-  	  ),
-   	 	
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        ),
+
+      //a int field that cannot be null and is vid
+      'vid' => array(
+          'type' => 'int',
+          'not null' => TRUE,
+      ),
+
       //a intfield, not null and project_id is the unique_id of the project in chado
-    	 'project_id' => array(
-   	   	'type' => 'int',
-   	   	'unsigned' => TRUE,
-   	   	'not null' => TRUE,
-    	),
-    	 	
-  	  	
+       'project_id' => array(
+          'type' => 'int',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+      ),
+
+
     ),//end of shema
-  	
-  	'primary key' => array('nid','vid','project_id'),
-	
-	);
+
+    'primary key' => array('nid', 'vid', 'project_id'),
+
+  );
 
   return $schema;
 }
