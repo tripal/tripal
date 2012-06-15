@@ -65,7 +65,7 @@ function tripal_views_description_page() {
  */
 function tripal_views_integration_setup_list(){
 
-   $header = array('', 'Drupal Views Type Name', 'Table Name', 'Is Mview', 'Priority', 'Comment','');
+   $header = array('', 'Drupal Views Type Name', 'Table Name', 'Legacy Mview', 'Priority', 'Comment','');
    $rows = array();
 
    // get the list of materialized views
@@ -185,16 +185,34 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL){
                        'and you can specify other tables to join with and handlers.',
    );
 
+  // build the form element for the Chado tables
+  $chado_tables = tripal_core_get_chado_tables();
+  $chado_tables = array_merge(array('Select',), $chado_tables);
+  $form['base_table_type']['table_name'] = array(
+    '#title' => t('Chado/Custom Table'),
+    '#type' => 'select',
+    '#options' => $chado_tables,
+    '#description' => t('Tables from Chado, custom tables and materialized view tables (non-legacy MViews) can be selected for integration.'),
+    '#default_value' => (!$setup_obj->mview_id) ? $setup_obj->table_name : '',
+    '#ahah' => array(
+       'path' => ahah_helper_path(array('view_setup_table')),
+       'wrapper' => 'table-rows-div',
+       'effect' => 'fade',
+       'event' => 'change',
+       'method' => 'replace',
+    ),
+  );
+
 
    // build the form element that lists the materialized views
-   $query = db_query("SELECT mview_id,name FROM {tripal_mviews} ORDER BY name");
+   $query = db_query("SELECT mview_id,name FROM {tripal_mviews} WHERE mv_schema is NULL or mv_schema = '' ORDER BY name");
    $mview_tables = array();
    $mview_tables['0'] = 'Select';
    while ($mview = db_fetch_object($query)){
      $mview_tables[$mview->mview_id] = $mview->name;
    }
    $form['base_table_type']['mview_id'] = array(
-      '#title' => t('Materialized View'),
+      '#title' => t('Legacy Materialized View'),
       '#type' => 'select',
       '#options' => $mview_tables,
       '#description' => 'Which materialized view to use.',
@@ -206,24 +224,6 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL){
          'event' => 'change',
          'method' => 'replace',
       ),
-  );
-
-  // build the form element for the Chado tables
-  $chado_tables = tripal_core_get_chado_tables();
-  $chado_tables = array_merge(array('Select',), $chado_tables);
-  $form['base_table_type']['table_name'] = array(
-    '#title' => t('Chado Table'),
-    '#type' => 'select',
-    '#options' => $chado_tables,
-    '#description' => 'Which Chado table to use.',
-    '#default_value' => (!$setup_obj->mview_id) ? $setup_obj->table_name : '',
-    '#ahah' => array(
-       'path' => ahah_helper_path(array('view_setup_table')),
-       'wrapper' => 'table-rows-div',
-       'effect' => 'fade',
-       'event' => 'change',
-       'method' => 'replace',
-    ),
   );
 
   $form['views_type'] = array(
@@ -304,12 +304,23 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL){
        $columns = explode(",",$mview->mv_specs);
     } else {
        $table_desc = module_invoke_all('chado_'.$table_name.'_schema');
-       $fields = $table_desc['fields'];
-       // iterate through the columns and build the format
-       // compatible with the code below. The column name is first followed
-       // by the type with a separating space
-       foreach($fields as $column => $attrs){
-          $columns[] = "$column ".$attrs['type'];
+       if($table_desc){
+          $fields = $table_desc['fields'];
+          // iterate through the columns and build the format
+          // compatible with the code below. The column name is first followed
+          // by the type with a separating space
+          foreach($fields as $column => $attrs){
+             $columns[] = "$column ".$attrs['type'];
+          }
+       }
+       
+       // now do the same for the custom tables
+       $table_desc = tripal_get_chado_custom_schema ($table_name);
+       if($table_desc){
+          $fields = $table_desc['fields'];
+          foreach($fields as $column => $attrs){
+             $columns[] = "$column ".$attrs['type'];
+          }
        }
     }
 
@@ -461,7 +472,12 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL){
       
       $columns = array();
       if($default_join_table){
+        // get the table description in the typical way and if it returns 
+        // nothing then get the custom table description
         $table_desc = module_invoke_all('chado_'.$default_join_table.'_schema');
+        if(!$table_desc){
+           $table_desc = tripal_get_chado_custom_schema ($default_join_table);
+        }
         foreach ($table_desc['fields'] as $column => $def){
            $columns[$column] = $column;
         }
@@ -513,7 +529,7 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL){
             if($column_type == 'integer' or $column_type == 'int' or $column_type == 'serial'){
                $default_field_handler = 'chado_views_handler_field_numeric';
             }
-            elseif(preg_match("/character varying/",$column_type) or $column_type == 'char' or $column_type == 'text'){
+            elseif(preg_match("/character varying/",$column_type) or $column_type == 'char' or $column_type == 'text' or $column_type == 'varchar'){
                $default_field_handler = 'chado_views_handler_field';
             }
             elseif($column_type == 'boolean'){
@@ -548,7 +564,7 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL){
             if($column_type == 'integer' or $column_type == 'int' or $column_type == 'serial'){
                $default_filter_handler = 'chado_views_handler_filter_numeric';
             }
-            elseif(preg_match("/^character varying/",$column_type) or $column_type == 'char' or $column_type == 'text'){
+            elseif(preg_match("/^character varying/",$column_type) or $column_type == 'char' or $column_type == 'text' or $column_type == 'varchar'){
                $default_filter_handler = 'chado_views_handler_filter_string';
             }
             elseif($column_type == 'boolean'){
@@ -582,7 +598,7 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL){
             if($column_type == 'integer' or $column_type == 'int' or $column_type == 'serial'){
                $default_sort_handler = 'chado_views_handler_sort';
             }
-            elseif(preg_match("/character varying/",$column_type) or $column_type == 'char' or $column_type == 'text'){
+            elseif(preg_match("/character varying/",$column_type) or $column_type == 'char' or $column_type == 'text' or $column_type == 'varchar'){
                $default_sort_handler = 'chado_views_handler_sort';
             }
             elseif($column_type == 'boolean'){
@@ -616,7 +632,7 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL){
             if($column_type == 'integer' or $column_type == 'int' or $column_type == 'serial'){
                $default_argument_handler = 'views_handler_argument_numeric';
             }
-            elseif(preg_match("/character varying/",$column_type) or $column_type == 'char' or $column_type == 'text'){
+            elseif(preg_match("/character varying/",$column_type) or $column_type == 'char' or $column_type == 'text' or $column_type == 'varchar'){
                $default_argument_handler = 'views_handler_argument_string';
             }
             elseif($column_type == 'boolean'){
@@ -650,7 +666,7 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL){
             if($column_type == 'integer' or $column_type == 'int' or $column_type == 'serial'){
                $default_relationship_handler = 'views_handler_relationship';
             }
-            elseif(preg_match("/character varying/",$column_type) or $column_type == 'char' or $column_type == 'text'){
+            elseif(preg_match("/character varying/",$column_type) or $column_type == 'char' or $column_type == 'text' or $column_type == 'varchar'){
                $default_relationship_handler = 'views_handler_relationship';
             }
             elseif($column_type == 'boolean'){
@@ -831,9 +847,14 @@ function tripal_views_integration_form_submit($form, &$form_state){
       $left_column = $form_state['values']["fields_join_column_$table_id-$i"];
 
       if($left_column){
+         if($mview_id){
+            $base_table = $mview->mv_table;
+         } else {
+            $base_table = $table_name;
+         }
          $view_join_record = array(
            'setup_id' => $tripal_views_record['setup_id'],
-           'base_table' => $mview->mv_table,
+           'base_table' => $base_table,
            'base_field' => $key,
            'left_table' => $left_table,
            'left_field' => $left_column,

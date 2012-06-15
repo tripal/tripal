@@ -1342,6 +1342,41 @@ function tripal_feature_load_organism_feature_counts($organism){
    if(strcmp($show_counts,'show_feature_summary')!=0){
       return array ('enabled' => false );
    }
+   
+
+   $args = array();
+   $names = array();
+   $order = array();
+   
+   // build the where clause for the SQL statement if we have a custom term list
+   // we'll also keep track of the names the admin provided (if any) and the 
+   // order that the terms should appear.
+   $is_custom = 0;
+   $temp = rtrim(variable_get('tripal_feature_summary_report_mapping', ''));
+   $where = '';
+   if($temp){
+      $is_custom = 1;
+      $temp = explode("\n",$temp);
+      foreach ($temp as $key => $value){
+         // separate the key value pairs
+         $temp2 = explode("=",$value);
+         $feature_type = rtrim($temp2[0]);
+         $args[] = $feature_type;
+         $order[] = $feature_type;
+         // if a new name is provided then use that otherwise just
+         // use the feature type
+         if(count($temp2) == 2){
+            $names[] = rtrim($temp2[1]);
+         } else {
+            $names[] = $feature_type;
+         }
+         $where .= "OFC.feature_type = '%s' OR \n";
+      }
+      if($where){
+         $where = substr($where,0,-5);  # remove OR from the end
+         $where = "($where) AND";
+      }
+   }
 
    // get the feature counts.  This is dependent on a materialized view
    // installed with the organism module
@@ -1349,19 +1384,32 @@ function tripal_feature_load_organism_feature_counts($organism){
       SELECT OFC.num_features,OFC.feature_type,CVT.definition
       FROM {organism_feature_count} OFC
         INNER JOIN {cvterm} CVT on OFC.cvterm_id = CVT.cvterm_id
-      WHERE organism_id = %d 
+      WHERE $where organism_id = %d
       ORDER BY num_features desc
    ";
+   $args[] = $organism->organism_id;
    $previous_db = tripal_db_set_active('chado');  // use chado database
-   $org_features = db_query($sql,$organism->organism_id);
+   $org_features = db_query($sql,$args);
    tripal_db_set_active($previous_db);  // now use drupal database
-
-   $i=0;
+   
+   // iterate through the types 
    $types = array();
    while($type = db_fetch_object($org_features)){
-      $types[$i++] = $type;
+      $types[$type->feature_type] = $type;      
+      // if we don't have an order this means we didn't go through the loop
+      // above to set the names, so do that now
+      if(!$is_custom){
+         $names[] = $type->feature_type;
+         $order[] = $type->feature_type;
+      }
    }
-   return array ( 'types' => $types, 'enabled' => true );
+
+   # now reorder the types
+   $ordered_types = array();
+   foreach ($order as $type){
+      $ordered_types[] = $types[$type];
+   }
+   return array ( 'types' => $ordered_types, 'names' => $names, 'enabled' => true );
 }
 /**
  * 
@@ -1822,20 +1870,37 @@ function tripal_feature_preprocess_tripal_analysis_feature_browser(&$variables){
  */
 function tripal_feature_cv_chart($chart_id){
 
-  // The CV module will create the JSON array necessary for buillding a
-  // pie chart using jgChart and Google Charts.  We have to pass to it
-  // a table that contains count information, tell it which column 
-  // contains the cvterm_id and provide a filter for getting the
-  // results we want from the table.
-  $organism_id = preg_replace("/^tripal_feature_cv_chart_(\d+)$/","$1",$chart_id);
-  $options = array(
+   // we only want the chart to show feature types setup by the admin
+   $temp = rtrim(variable_get('tripal_feature_summary_report_mapping', ''));
+   $where = '';
+   if($temp){
+      $temp = explode("\n",$temp);
+      foreach ($temp as $key => $value){
+         $temp2 = explode("=",$value);
+         $feature_type = rtrim($temp2[0]);
+         $where .= "CNT.feature_type = '$feature_type' OR \n";
+      }
+      if($where){
+         $where = substr($where,0,-5);  # remove OR from the end
+         $where = "($where) AND";
+      }
+   }
+
+   $organism_id = preg_replace("/^tripal_feature_cv_chart_(\d+)$/","$1",$chart_id);
+  
+   // The CV module will create the JSON array necessary for buillding a
+   // pie chart using jgChart and Google Charts.  We have to pass to it
+   // a table that contains count information, tell it which column 
+   // contains the cvterm_id and provide a filter for getting the
+   // results we want from the table.   
+   $options = array(
      count_mview      => 'organism_feature_count',
      cvterm_id_column => 'cvterm_id',
      count_column     => 'num_features',
      size             => '550x200',
-     filter           => "CNT.organism_id = $organism_id",
-  );
-  return $options;
+     filter           => "$where CNT.organism_id = $organism_id",
+   );
+   return $options;
 }
 
 /**
