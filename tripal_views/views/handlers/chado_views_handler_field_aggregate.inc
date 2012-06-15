@@ -15,7 +15,7 @@ class chado_views_handler_field_aggregate extends chado_views_handler_field {
 
     if (!isset($this->chado_table_description)) {
       $this->chado_table_description = module_invoke_all('chado_' . $this->table . '_schema');
-      foreach($this->chado_table_description['foreign keys'] as $defn) {
+      foreach ($this->chado_table_description['foreign keys'] as $defn) {
         if ($defn['table'] != $this->view->base_table) {
           $join_table = module_invoke_all('chado_' . $defn['table'] . '_schema');
           foreach ($join_table['fields'] as $fname => $f) {
@@ -44,7 +44,7 @@ class chado_views_handler_field_aggregate extends chado_views_handler_field {
 
     $this->tokens = array();
     $value = array();
-    foreach( array_keys($this->chado_table_description['fields']) as $field ) {
+    foreach ( array_keys($this->chado_table_description['fields']) as $field ) {
       $t = '[' . $this->options['id'] . '-' . $field . ']';
       $this->tokens[$t] = t($field);
       $value[] = $t . ' == ' . $field;
@@ -60,7 +60,7 @@ class chado_views_handler_field_aggregate extends chado_views_handler_field {
     $form['format']['tokens'] = array(
       '#type' => 'item',
       '#title' => 'Format Tokens',
-      '#value' => implode("<br />",$value),
+      '#value' => implode("<br />", $value),
     );
 
   }
@@ -72,25 +72,25 @@ class chado_views_handler_field_aggregate extends chado_views_handler_field {
   }
 
 
-  function pre_render (&$values) {
+  function pre_render(&$values) {
 
     if ($this->aggregated) {
-      foreach($values as $k => $v) {
+      foreach ($values as $k => $v) {
         $values[$k]->{$this->field_alias} = $this->split_array_agg_results($v->{$this->field_alias});
 
-        foreach($values[$k]->{$this->field_alias} as &$val) {
+        foreach ($values[$k]->{$this->field_alias} as &$val) {
 
           // First, get the token values
-          $subparts = explode(',',$val);
+          $subparts = explode(',', $val);
           $token_values = array();
-          foreach($subparts as $ssk => $ssv) {
-            if(preg_match('/(.*)::(.*)/',$ssv,$matches)) {
-              $token_values[ '[all-'.$matches[1].']' ] = $matches[2];
+          foreach ($subparts as $ssk => $ssv) {
+            if (preg_match('/(.*)::(.*)/', $ssv, $matches)) {
+              $token_values[ '[all-' . $matches[1] . ']' ] = $matches[2];
             }
           }
 
           // Now manually sub them in
-          $val = str_replace(array_keys($token_values),$token_values,$this->options['format']['format_string']);
+          $val = str_replace(array_keys($token_values), $token_values, $this->options['format']['format_string']);
 
         }
       }

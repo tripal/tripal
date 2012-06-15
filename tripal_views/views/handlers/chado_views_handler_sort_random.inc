@@ -27,13 +27,14 @@ class chado_views_handler_sort extends views_handler_sort_random {
    * Adds the sort to the query only if the field isn't aggregated
    * If the field is aggregated then the sort has to be applied at the join handler level
    */
-  function query () {
+  function query() {
 
     // Determine if the current field is part of an aggregated table
     $table = $this->query->get_table_info($this->table);
-    if (preg_match('/aggregator/',$table['join']->definition['handler'])) {
+    if (preg_match('/aggregator/', $table['join']->definition['handler'])) {
       $this->aggregated = TRUE;
-    } else {
+    }
+    else {
       $this->aggregated = FALSE;
     }
 

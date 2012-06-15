@@ -20,7 +20,7 @@ class tripal_views_plugin_style_export_fasta extends views_data_export_plugin_st
   function option_definition() {
     $options = parent::option_definition();
 
-  
+
     return $options;
   }
 
