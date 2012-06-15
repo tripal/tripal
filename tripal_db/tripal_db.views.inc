@@ -6,7 +6,7 @@
  *  chado/tripal db tables. Supplementary functions can be found in
  *  ./views/
  *
- *  Documentation on views integration can be found at 
+ *  Documentation on views integration can be found at
  *  http://views2.logrus.com/doc/html/index.html.
  */
 
@@ -17,13 +17,13 @@
  */
 
 require_once('views/dbxref.views.inc');
-require_once('views/db.views.inc'); 
+require_once('views/db.views.inc');
 /**
  * Implements hook_views_data()
  * Purpose: Describe chado/tripal tables & fields to views
  * @return: a data array which follows the structure outlined in the
  *   views2 documentation for this hook. Essentially, it's an array of table
- *   definitions keyed by chado/tripal table name. Each table definition 
+ *   definitions keyed by chado/tripal table name. Each table definition
  *   includes basic details about the table, fields in that table and
  *   relationships between that table and others (joins)
  *
@@ -42,9 +42,9 @@ function tripal_db_views_data()  {
  *
  * @ingroup tripal_db_views
  */
-function tripal_db_views_default_views () {
+function tripal_db_views_default_views() {
   $views = array();
-  
+
   // Main default view
   // List all cvterms based on cv
   $view = new view;
@@ -306,6 +306,6 @@ function tripal_db_views_default_views () {
     'name' => 'navigation',
   ));
   $views[$view->name] = $view;
-  
+
   return $views;
 }

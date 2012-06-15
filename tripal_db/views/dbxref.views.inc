@@ -1,7 +1,8 @@
 <?php
 
 /**
- * Purpose: this function returns the portion of the data array 
+ * @file
+ * Purpose: this function returns the portion of the data array
  *   which describes the db table, it's fields and any joins between it and other tables
  * @see tripal_db_views_data() --in tripal_db.views.inc
  *
@@ -45,7 +46,7 @@ function retrieve_dbxref_views_data() {
     'stock' => array(
       'left_field' => 'dbxref_id',
       'field' => 'dbxref_id',
-    ),  
+    ),
   );
 
   // Table Field Definitions----------------------
@@ -64,7 +65,7 @@ function retrieve_dbxref_views_data() {
       'handler' => 'views_handler_sort',
     ),
   );
-   
+
   //Field: cv_id (foreign key: cv)
   //  join between cv table and this one in cv.views.inc
 

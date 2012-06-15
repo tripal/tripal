@@ -1,7 +1,8 @@
 <?php
 
   /**
- * Purpose: this function returns the portion of the data array 
+ * @file
+ * Purpose: this function returns the portion of the data array
  *   which describes the cv table, it's fields and any joins between it and other tables
  * @see tripal_cv_views_data() --in tripal_cv.views.inc
  *
@@ -21,7 +22,7 @@
  * @ingroup tripal_db_views
  */
 function retrieve_db_views_data() {
-  
+
   // Basic table definition
   $data['db']['table'] = array(
     'field' => 'db_id',
@@ -30,7 +31,7 @@ function retrieve_db_views_data() {
     'help' => 'Database Records existing in the Chado Database',
     'database' => 'chado'
   );
-  
+
   // Define relationships between this table and others
   $data['db']['table']['join'] = array(
     'dbxref' => array(
@@ -38,22 +39,22 @@ function retrieve_db_views_data() {
       'field' => 'db_id',
     ),
     'stock' => array(
-    	'left_table' => 'dbxref',
-    	'left_field' => 'db_id',
-    	'field' => 'db_id',
+      'left_table' => 'dbxref',
+      'left_field' => 'db_id',
+      'field' => 'db_id',
     ),
     'cvterm' => array(
-    	'left_table' => 'dbxref',
-    	'left_field' => 'db_id',
-    	'field' => 'db_id',
+      'left_table' => 'dbxref',
+      'left_field' => 'db_id',
+      'field' => 'db_id',
     ),
     'feature' => array(
-    	'left_table' => 'dbxref',
-    	'left_field' => 'db_id',
-    	'field' => 'db_id',
+      'left_table' => 'dbxref',
+      'left_field' => 'db_id',
+      'field' => 'db_id',
     ),
   );
-  
+
   // Table Field Definitions----------------------
   // Field: db_id (primary key)
   $data['db']['db_id'] = array(
@@ -70,7 +71,7 @@ function retrieve_db_views_data() {
       'handler' => 'views_handler_sort',
     ),
   );
-  
+
   // Field: name (varchar 255)
   $data['db']['name'] = array(
     'title' => 'Name',
@@ -88,7 +89,7 @@ function retrieve_db_views_data() {
       'handler' => 'views_handler_argument_string',
     ),
   );
-  
+
   // Field: description (varchar 255)
   $data['db']['description'] = array(
     'title' => 'Description',
@@ -106,7 +107,7 @@ function retrieve_db_views_data() {
       'handler' => 'views_handler_argument_string',
     ),
   );
-  
+
   // Field: urlprefix (varchar 255)
   $data['db']['urlprefix'] = array(
     'title' => 'URL Prefix',
@@ -125,7 +126,7 @@ function retrieve_db_views_data() {
       'handler' => 'views_handler_argument_string',
     ),
   );
-  
+
   // Field: url (varchar 255)
   $data['db']['url'] = array(
     'title' => 'URL',
@@ -144,7 +145,7 @@ function retrieve_db_views_data() {
       'handler' => 'views_handler_argument_string',
     ),
   );
-  
+
   return $data;
-  
+
 }
