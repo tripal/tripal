@@ -16,8 +16,6 @@
  * @ingroup tripal_db
  */
 
-require_once('views/dbxref.views.inc');
-require_once('views/db.views.inc');
 /**
  * Implements hook_views_data()
  * Purpose: Describe chado/tripal tables & fields to views
@@ -30,11 +28,34 @@ require_once('views/db.views.inc');
  * @ingroup tripal_db_views
  */
 function tripal_db_views_data()  {
+  $data = array();
 
-   $data = array();
-   $data = array_merge($data, retrieve_dbxref_views_data());
-   $data = array_merge($data, retrieve_db_views_data());
-   return $data;
+  if (module_exists('tripal_views')) {
+    // Base Tables
+    $tables = array(
+      'db',
+      'dbxref'
+    );
+    foreach ($tables as $tablename) {
+      if (!tripal_views_is_integrated($tablename, 10)) {
+        $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename,TRUE);
+        tripal_views_integration_add_entry($table_integration_array);
+      }
+    }
+
+    // Additional Tables
+    $tables = array(
+      'dbxrefprop'
+    );
+    foreach ($tables as $tablename) {
+      if (!tripal_views_is_integrated($tablename, 10)) {
+        $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename,FALSE);
+        tripal_views_integration_add_entry($table_integration_array);
+      }
+    }
+  }
+
+  return $data;
 
 }
 

@@ -69,35 +69,97 @@ function tripal_views_description_page() {
  *
  * @ingroup tripal_views_integration
  */
-function tripal_views_integration_setup_list() {
+function tripal_views_integration_setup_list(){
+   $output = '';
 
-  $header = array('', 'Drupal Views Type Name', 'Table Name', 'Legacy Mview', 'Priority', 'Comment', '');
-  $rows = array();
+   $output .= '<h3>'.l('Add a new entry',"admin/tripal/views/integration/new") . " | " .
+                         l("Create Materialized View",'admin/build/views/add').'</h3>';
+                         
+   $output .= '<p>The following tables list the views integration setups available. If '
+    .'there is more then one setup for a given table, then the setup with the lightest ' 
+    .'priority will be used. For example, if you have created a custom setup for the '
+    .'feature chado table and your setup has a priority of -5 then your setup will be '
+    .'used instead of the default feature integration because -5 is lighter then 10.'
+    .'Priorities use the Drupal -10 to +10 scale where a record with -10 has a '
+    .'greater priority then one with 0 and both have a greater priority then one with +10.</p>';
+      
+   
+   // Start with materialized views           
+   $output .= '<br /><h3>Materialized Views</h3>';           
+   $header = array('', 'Drupal Views Type Name', 'Table Name', 'Is Legacy?', 'Priority', 'Comment','');
+   $rows = array();
 
-  // get the list of materialized views
-  $tviews = db_query('SELECT * FROM {tripal_views} ORDER BY table_name, priority');
-  while ($tview = db_fetch_object($tviews)) {
-    $rows[] = array(
-      l(t('Edit'), "admin/tripal/views/integration/edit/" . $tview->setup_id) ,
-      $tview->name,
-      $tview->table_name,
-      ($tview->mview_id) ? 'Yes' : 'No',
-      $tview->priority,
-      $tview->comment,
-      l(t('Delete'), "admin/tripal/views/integration/delete/" . $tview->setup_id),
-    );
-  }
-  $rows[] = array(
-    'data' => array(
-      array(
-        'data' => l(t('Add a new entry'), "admin/tripal/views/integration/new") . " | " .
-                  l(t("Create View"), 'admin/build/views/add'),
-        'colspan' => 7
-      ),
-    )
-  );
+   // get the list of materialized views
+   $tviews = db_query('SELECT tv.name, tv.table_name, tc.table_id, tv.priority, tv.comment '
+   									.'FROM {tripal_views} tv '
+   									.'LEFT JOIN {tripal_custom_tables} tc ON tc.table_name=tv.table_name '
+   									.'WHERE tv.mview_id IS NOT NULL '
+   									.'ORDER BY tv.table_name ASC, tv.priority ASC');
+   while($tview = db_fetch_object($tviews)){
+         $rows[] = array(
+            l('Edit',"admin/tripal/views/integration/edit/".$tview->setup_id) ,
+            $tview->name, 
+            $tview->table_name,
+            ($tview->table_id) ? 'No' : 'Yes',  
+            $tview->priority,
+            $tview->comment,
+            l('Delete',"admin/tripal/views/integration/delete/".$tview->setup_id),
+         );         
+   }
+   
+   $output .= theme('table', $header, $rows);
+		
+	 // Now list non-mview custom tables
+   $output .= '<br /><h3>Custom Tables</h3>';           
+   $header = array('', 'Drupal Views Type Name', 'Table Name', 'Priority', 'Comment','');
+   $rows = array();
 
-  return theme('table', $header, $rows);
+   // get the list of chado tables
+   $tviews = db_query('SELECT tv.name, tv.table_name, tv.priority, tv.comment '
+   									.'FROM {tripal_views} tv '
+   									.'LEFT JOIN {tripal_custom_tables} tc ON tc.table_name=tv.table_name '
+   									.'WHERE mview_id IS NULL AND tc.table_id IS NOT NULL '
+   									.'ORDER BY table_name ASC, priority ASC');
+   while($tview = db_fetch_object($tviews)){
+         $rows[] = array(
+            l('Edit',"admin/tripal/views/integration/edit/".$tview->setup_id) ,
+            $tview->name, 
+            $tview->table_name,  
+            $tview->priority,
+            $tview->comment,
+            l('Delete',"admin/tripal/views/integration/delete/".$tview->setup_id),
+         );         
+   }
+   
+   if ($rows) {
+	   $output .= theme('table', $header, $rows);
+	 } else {
+	   $output .= '<p>There are currently no non-Materialized View Custom Tables defined.</p>';
+	 }
+   // Now list chado tables
+   $output .= '<br /><h3>Chado Tables</h3>';           
+   $header = array('', 'Drupal Views Type Name', 'Table Name', 'Priority', 'Comment','');
+   $rows = array();
+
+   // get the list of chado tables
+   $tviews = db_query('SELECT tv.name, tv.table_name, tv.priority, tv.comment '
+   									.'FROM {tripal_views} tv '
+   									.'LEFT JOIN {tripal_custom_tables} tc ON tc.table_name=tv.table_name '
+   									.'WHERE mview_id IS NULL AND tc.table_id IS NULL '
+   									.'ORDER BY table_name ASC, priority ASC');
+   while($tview = db_fetch_object($tviews)){
+         $rows[] = array(
+            l('Edit',"admin/tripal/views/integration/edit/".$tview->setup_id) ,
+            $tview->name, 
+            $tview->table_name,  
+            $tview->priority,
+            $tview->comment,
+            l('Delete',"admin/tripal/views/integration/delete/".$tview->setup_id),
+         );         
+   }
+   
+   $output .= theme('table', $header, $rows);
+   return $output;
 }
 
 /**
@@ -156,46 +218,56 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL) {
     $form_state['storage']['mview_id'] = $mview_id;
     $form_state['storage']['table_name'] = $table_name;
 
-    // get the default field name/description
-    $sql = "SELECT * FROM {tripal_views_field} WHERE setup_id=%d";
-    $query = db_query($sql, $setup_id);
-    $default_fields = array();
-    while ($field = db_fetch_object($query)) {
-      $default_fields[$field->column_name]['name'] = $field->name;
-      $default_fields[$field->column_name]['description'] = $field->description;
-    }
+      // get the default field name/description
+      $sql = "SELECT * FROM {tripal_views_field} WHERE setup_id=%d";
+      $query = db_query($sql,$setup_id);
+      $default_fields = array();
+      while ($field = db_fetch_object($query)) {
+        $default_fields[$field->column_name]['name'] = $field->name;
+        $default_fields[$field->column_name]['description'] = $field->description;
+      }
+      
+      // get the default join settings and handlers
+      $sql = "SELECT * FROM {tripal_views_join} WHERE setup_id = %d";
+      $query = db_query($sql,$setup_id);
+      $default_joins = array();
+      while ($join = db_fetch_object($query)){
+         $default_joins[$join->base_field]['left_table'] = $join->left_table;
+         $default_joins[$join->base_field]['left_field'] = $join->left_field;
+      }
 
-    // get the default join settings and handlers
-    $sql = "SELECT * FROM {tripal_views_join} WHERE setup_id = %d";
-    $query = db_query($sql, $setup_id);
-    $default_joins = array();
-    while ($join = db_fetch_object($query)) {
-      $default_joins[$join->base_field]['left_table'] = $join->left_table;
-      $default_joins[$join->base_field]['left_field'] = $join->left_field;
-    }
-    // get the default handlers
-    $sql = "SELECT * FROM {tripal_views_handlers} WHERE setup_id = %d";
-    $query = db_query($sql, $setup_id);
-    $default_handlers = array();
-    while ($handler = db_fetch_object($query)) {
-      $default_handlers[$handler->column_name][$handler->handler_type]['handler_name'] = $handler->handler_name;
-      $default_handlers[$handler->column_name][$handler->handler_type]['arguments'] = $handler->arguments;
-    }
-    // add in the setup_id for the form so we know this is an update not an insert
-    $form['setup_id'] = array(
-       '#type' => 'hidden',
-       '#value' => $setup_id,
-    );
-  }
-  // add a fieldset for the MView & Chado table selectors
-  $form['base_table_type'] = array(
-   '#type' => 'fieldset',
-   '#title' => 'Base Table',
-   '#description' => 'Please select either a materialized view or a Chado table for integration with '.
-                     'Drupal Views.  In Drupal Views terminology, the selected table becomes the "base table". '.
-                     'After you select a table from either list, the fields from that table will appear below '.
-                     'and you can specify other tables to join with and handlers.',
-  );
+      // get the default handlers
+      $sql = "SELECT * FROM {tripal_views_handlers} WHERE setup_id = %d";
+      $query = db_query($sql,$setup_id);
+      $default_handlers = array();
+      while ($handler = db_fetch_object($query)){
+         $default_handlers[$handler->column_name][$handler->handler_type]['handler_name'] = $handler->handler_name;
+         $default_handlers[$handler->column_name][$handler->handler_type]['arguments'] = $handler->arguments;
+      }
+      
+      // get the default join handlers
+      $sql = "SELECT * FROM {tripal_views_join} WHERE setup_id = %d";
+      $query = db_query($sql,$setup_id);
+      while ($handler = db_fetch_object($query)){
+         $default_handlers[$handler->base_field]['join']['handler_name'] = $handler->handler;
+         //$default_handlers[$handler->base_field]['join']['arguments'] = $handler->arguments;
+      }   
+      
+      // add in the setup_id for the form so we know this is an update not an insert
+      $form['setup_id'] = array(
+         '#type' => 'hidden',
+         '#value' => $setup_id,
+      );    
+   }
+   // add a fieldset for the MView & Chado table selectors
+   $form['base_table_type'] = array(
+     '#type' => 'fieldset',
+     '#title' => 'Base Table',
+     '#description' => 'Please select either a materialized view or a Chado table for integration with '.
+                       'Drupal Views.  In Drupal Views terminology, the selected table becomes the "base table". '.
+                       'After you select a table from either list, the fields from that table will appear below '.
+                       'and you can specify other tables to join with and handlers.',
+   );
 
   // build the form element for the Chado tables
   $chado_tables = tripal_core_get_chado_tables();
@@ -762,7 +834,6 @@ function tripal_views_integration_form_validate($form, &$form_state) {
   // TODO: do we need to require that a handler be set for each field and each type of handler?
 }
 
-
 /**
  * Purpose: inserts or updates the record in the tripal views integration
  *   tables.  This function is only called if validation is passed.
@@ -864,24 +935,24 @@ function tripal_views_integration_form_submit($form, &$form_state) {
     $left_table = $form_state['values']["fields_join_$table_id-$i"];
     $left_column = $form_state['values']["fields_join_column_$table_id-$i"];
 
-    if ($left_column) {
-      if ($mview_id) {
-        $base_table = $mview->mv_table;
+      if($left_column){
+         if($mview_id){
+            $base_table = $mview->mv_table;
+         } else {
+            $base_table = $table_name;
+         }
+         $view_join_record = array(
+           'setup_id' => $tripal_views_record['setup_id'],
+           'base_table' => $base_table,
+           'base_field' => $key,
+           'left_table' => $left_table,
+           'left_field' => $left_column,
+           'handler' => $form_state['values']["fields_join_handler_$table_id-$i"],
+         );
+         
+         // write the new joins to the database
+         drupal_write_record('tripal_views_join', $view_join_record);
       }
-      else {
-        $base_table = $table_name;
-      }
-      $view_join_record = array(
-        'setup_id' => $tripal_views_record['setup_id'],
-        'base_table' => $base_table,
-        'base_field' => $key,
-        'left_table' => $left_table,
-        'left_field' => $left_column,
-      );
-
-      // write the new joins to the database
-      drupal_write_record('tripal_views_join', $view_join_record);
-    }
 
     // add the hanlders
     $handlers = array('filter', 'field', 'sort', 'argument', 'join', 'relationship');
