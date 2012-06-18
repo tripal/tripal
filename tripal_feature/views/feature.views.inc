@@ -1,7 +1,8 @@
 <?php
 
 /**
- * Purpose: this function returns the portion of the data array 
+ * @file
+ * Purpose: this function returns the portion of the data array
  *   which describes the feature table, it's fields and any joins between it and other tables
  * @see tripal_feature_views_data() --in tripal_feature.views.inc
  *
@@ -36,17 +37,17 @@
  * @ingroup tripal_feature_views
  */
  function retrieve_feature_views_data() {
-	global $db_url;
-	$data = array();
-	
+  global $db_url;
+  $data = array();
+
   // if the chado database is not local to the drupal database
   // then we need to set the database name.  This should always
   // be 'chado'.
-  if(is_array($db_url) and array_key_exists('chado',$db_url)){
+  if (is_array($db_url) and array_key_exists('chado', $db_url)) {
      $database = 'chado';
   }
 
-	
+
    // Basic table definition
    $data['feature']['table']['group'] = 'Chado Feature';
    $data['feature']['table']['base'] = array(
@@ -55,17 +56,17 @@
      'help' => 'Features are Sequence Data Records in Chado.',
    );
 
-	if($database){
-		$data['feature']['table']['base']['database'] = $database;
-	}
-	
+  if ($database) {
+    $data['feature']['table']['base']['database'] = $database;
+  }
+
 
   //Relationship Definitions---------------------------------
   //Join: feature => nd_reagent
   $data['feature']['table']['join']['nd_reagent'] = array(
     'left_field' => 'feature_id',
     'field' => 'feature_id',
-  );  
+  );
 
   // Table Field Definitions----------------------
   // Field: feature_id (primary key)
@@ -73,29 +74,30 @@
     'title' => 'Feature ID',
     'help' => 'The primary key of a feature',
     'field' => array(
-     	'handler' => 'views_handler_field_numeric',
- 		  'click sortable' => TRUE,
+       'handler' => 'views_handler_field_numeric',
+       'click sortable' => TRUE,
     ),
     'filter' => array(
-     	'handler' => 'views_handler_filter_numeric',
+       'handler' => 'views_handler_filter_numeric',
     ),
     'sort' => array(
-     	'handler' => 'views_handler_sort',
+       'handler' => 'views_handler_sort',
     ),
   );
 
   // Calculated Field: Node ID
   //  use custom field handler to query drupal for the node ID
   //  this is only needed if chado is in a separate database from drupal
-  if($database){
-  	$data['feature']['feature_nid'] = array(
-    	'title' => 'Node ID',
-			'help' => 'This is the node ID of this feature. It can be used as a link to the node.',
-    	'field' => array(
-      	'handler' => 'views_handler_field_computed_feature_nid',
+  if ($database) {
+    $data['feature']['feature_nid'] = array(
+      'title' => 'Node ID',
+      'help' => 'This is the node ID of this feature. It can be used as a link to the node.',
+      'field' => array(
+        'handler' => 'views_handler_field_computed_feature_nid',
       ),
-  	);
-  } else {
+    );
+  }
+  else {
     // Add relationship between chado_feature and feature
     $data['feature']['feature_nid'] = array(
       'group' => 'Feature',
@@ -113,16 +115,16 @@
     );
 
   }
-  
+
   // Field: organism_id (forgeign key)
   //  join between organism table and this one in tripal_organism/views/organism.views.inc
-  
+
   // Field: dbxref_id (forgeign key)
   //  join between dbxref table and this one in tripal_db/views/dbxref.views.inc
-  
+
   // Field: type_id (forgeign key)
   //  join between cvterm table and this one in tripal_cv/views/cvterm.views.inc
-  
+
   // Field: name (varchar 255)
   $data['feature']['name'] = array(
     'title' => 'Name',
@@ -141,7 +143,7 @@
       'handler' => 'views_handler_argument_string',
     ),
   );
-  // if joined to the node table add a "Link to Node" option for the field  
+  // if joined to the node table add a "Link to Node" option for the field
   if (!$database && module_exists('tripal_views')) {
     $data['feature']['name']['field']['handler'] = 'views_handler_field_node_optional';
   }
@@ -164,7 +166,7 @@
       'handler' => 'views_handler_argument_string',
     ),
   );
-  // if joined to the node table add a "Link to Node" option for the field  
+  // if joined to the node table add a "Link to Node" option for the field
   if (!$database && module_exists('tripal_views')) {
     $data['feature']['uniquename']['field']['handler'] = 'views_handler_field_node_optional';
   }
@@ -273,14 +275,14 @@
   // Calculated Field: Number of Analysis' (Count -Int)
   // Provides the number of analysis' for a given feature
   // @see tripal_analysis/views/misc_tables.views.inc
-  
+
   //Calculated Field: Number of Libraries (Count -Int)
   // Provides the number of libraries for a given feature
-  // @see tripal_library/views/misc_tables.views.inc 
+  // @see tripal_library/views/misc_tables.views.inc
 
-	// Calculated Field: feature relationships
-	// uses a custom field handler which pulls results from the view
-	$data['feature']['relationships'] = array(
+  // Calculated Field: feature relationships
+  // uses a custom field handler which pulls results from the view
+  $data['feature']['relationships'] = array(
     'title' => t('Feature Relationships'),
     'help' => t('Relationships including the current feature.'),
     'field' => array(
@@ -288,7 +290,7 @@
       'help' => t('Display a given type of relationships including the current feature.'),
       'handler' => 'views_handler_field_chado_rel_by_type',
     ),
-  ); 
-  
+  );
+
   return $data;
  }
