@@ -1,6 +1,7 @@
 <?php
 
 /**
+ * @file
  * A handler to provide proper displays for booleans.
  *
  * Allows for display of true/false, yes/no, on/off.
@@ -28,11 +29,11 @@ class views_handler_field_chado_tf_boolean extends views_handler_field_boolean {
     }
 
     if (isset($this->formats[$this->options['type']])) {
-      return preg_match('/t/',$value) ? $this->formats[$this->options['type']][0] : $this->formats[$this->options['type']][1];
+      return preg_match('/t/', $value) ? $this->formats[$this->options['type']][0] : $this->formats[$this->options['type']][1];
     }
     else {
       return preg_match('/t/', $value) ? $this->formats['yes-no'][0] : $this->formats['yes-no'][1];
     }
   }
-  
+
 }

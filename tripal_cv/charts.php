@@ -1,11 +1,15 @@
 <?php
 
+/**
+ * @file
+ * Tripal API for generating a Google Chart of count data
+ */
 
 /**
  * Generates JSON used for generating a Google chart of count data associated
  * with a controlled vocabulary.  An example would be features assigned to
- * Gene Ontology terms. 
- * 
+ * Gene Ontology terms.
+ *
  * To generate a chart, the progammer must first create a materialized view that
  * will generate count data for a given controlled vocabulary.  For example, the Tripal
  * Analysis GO creates a materialized view for counting Gene Ontology assignments
@@ -18,23 +22,23 @@
  *  tripal_[module_name]_cv_chart_[unique id]
  *
  * where [module_name] is the name of the tripal module (e.g. tripal_analyisis_go)
- * and [unique id] is some unique identifier that the contolling module 
+ * and [unique id] is some unique identifier that the contolling module
  * recognizes. This string is the $chart_id variable passed as the first argument
- * to the function.  For example, the Tripal GO Analysis module generates 
+ * to the function.  For example, the Tripal GO Analysis module generates
  * chart ids of the form:
- * 
+ *
  *  tripal_analysis_go_cv_chart_10_2_bp
- * 
+ *
  * In this case the module that will manage this chart is identified as 'tripal_analysis_go' and within
  * the [unique id] portion contains the
- * organism_id (e.g. 10), analysis_id (e.g. 2) and chart type (bp = biological process). 
+ * organism_id (e.g. 10), analysis_id (e.g. 2) and chart type (bp = biological process).
  *
  * Second, the programmer must then define a hook in the controlling module for setting
  * some options used to build the chart.  The hook has the form:  hook_cv_chart($chart_id).
  * This hook should accept the full $chart_id as the single parameter.  For the Tripal
- * Analysis GO module the hook is named:  tripal_analysis_go_cv_chart.  
+ * Analysis GO module the hook is named:  tripal_analysis_go_cv_chart.
  *
- * The array returned by this hook must have the following fields:  
+ * The array returned by this hook must have the following fields:
  *  - count_mview
  *      the name of the materialized view that contains the count data
  *      this materialized view must have at least two columns, one with the cvterm_id
@@ -53,37 +57,37 @@
  *  - type
  *      the type of chart to create (see Google Charts documenation). Leave
  *      blank for a pie chart.
- *  - size 
- *      the dimensions of the chart in pixels (see Google Charts documenations 
+ *  - size
+ *      the dimensions of the chart in pixels (see Google Charts documenations
  *      for exact size limitations).
  *
  * Example from the tripal_analysis_go module:
  * @code
- *  function tripal_analysis_go_cv_chart($chart_id){
- *  
+ *  function tripal_analysis_go_cv_chart($chart_id) {
+ *
  *    // The CV module will create the JSON array necessary for buillding a
  *    // pie chart using jgChart and Google Charts.  We have to pass to it
- *    // a table that contains count information, tell it which column 
+ *    // a table that contains count information, tell it which column
  *    // contains the cvterm_id and provide a filter for getting the
  *    // results we want from the table.
  *    $organism_id = preg_replace("/^tripal_analysis_go_cv_chart_(\d+)-(\d+)_(bp|cc|mf)$/","$1",$chart_id);
  *    $analysis_id = preg_replace("/^tripal_analysis_go_cv_chart_(\d+)-(\d+)_(bp|cc|mf)$/","$2",$chart_id);
  *    $type        = preg_replace("/^tripal_analysis_go_cv_chart_(\d+)-(\d+)_(bp|cc|mf)$/","$3",$chart_id);
- *  
+ *
  *    $sql = "SELECT * FROM {Analysis} WHERE analysis_id = %d";
  *    $previous_db = tripal_db_set_active('chado');  // use chado database
  *    $analysis = db_fetch_object(db_query($sql,$analysis_id));
- *    tripal_db_set_active($previous_db);  // now use drupal database  
- *   
- *    if(strcmp($type,'mf')==0){
+ *    tripal_db_set_active($previous_db);  // now use drupal database
+ *
+ *    if (strcmp($type,'mf')==0) {
  *       $class = 'molecular_function';
  *       $title = "Number of Molecular Function Terms From $analysis->name Analysis";
  *    }
- *    if(strcmp($type,'cc')==0){
+ *    if (strcmp($type,'cc')==0) {
  *       $class = 'cellular_component';
  *       $title = "Number of Cellular Component Terms From $analysis->name Analysis";
  *    }
- *    if(strcmp($type,'bp')==0){
+ *    if (strcmp($type,'bp')==0) {
  *       $class = 'biological_process';
  *       $title = "Number of Biological Process Terms From $analysis->name Analysis";
  *    }
@@ -92,14 +96,14 @@
  *       cvterm_id_column => 'cvterm_id',
  *       count_column     => 'feature_count',
  *       filter           => "
- *          CNT.organism_id = $organism_id AND 
- *          CNT.analysis_id = $analysis_id AND 
- *          CNT.cvterm_id IN ( 
- *            SELECT CVTR.subject_id 
- *            FROM {CVTerm_relationship} CVTR 
+ *          CNT.organism_id = $organism_id AND
+ *          CNT.analysis_id = $analysis_id AND
+ *          CNT.cvterm_id IN (
+ *            SELECT CVTR.subject_id
+ *            FROM {CVTerm_relationship} CVTR
  *              INNER JOIN CVTerm CVT on CVTR.object_id = CVT.cvterm_id
  *              INNER JOIN CV on CVT.cv_id = CV.cv_id
- *            WHERE CVT.name = '$class' AND  
+ *            WHERE CVT.name = '$class' AND
  *                   CV.name = '$class'
  *          )
  *       ",
@@ -123,19 +127,26 @@
  *
  * @ingroup tripal_cv
  */
-function tripal_cv_chart($chart_id){
-  // parse out the tripal module name from the chart_id to find out 
+function tripal_cv_chart($chart_id) {
+  // parse out the tripal module name from the chart_id to find out
   // which Tripal "hook" to call:
-  $tripal_mod = preg_replace("/^(tripal_.+?)_cv_chart_(.+)$/","$1",$chart_id);
+  $tripal_mod = preg_replace("/^(tripal_.+?)_cv_chart_(.+)$/", "$1", $chart_id);
   $callback = $tripal_mod . "_cv_chart";
 
   // now call the function in the module responsible for the chart to fill out
   // an options array needed by the tripal_cv_count_chart call below.
-  $opt = call_user_func_array($callback,array($chart_id));
+  $opt = call_user_func_array($callback, array($chart_id));
 
   // build the JSON array to return to the javascript caller
-  $json_arr = tripal_cv_count_chart($opt[count_mview],$opt[cvterm_id_column],
-     $opt[count_column],$opt[filter],$opt[title], $opt[type],$opt[size]);
+  $json_arr = tripal_cv_count_chart(
+    $opt['count_mview'],
+    $opt['cvterm_id_column'],
+    $opt['count_column'],
+    $opt['filter'],
+    $opt['title'],
+    $opt['type'],
+    $opt['size']
+  );
   $json_arr[] = $chart_id;  // add the chart_id back into the json array
 
   return drupal_json($json_arr);
@@ -154,7 +165,7 @@ function tripal_cv_chart($chart_id){
   *   two columns, one with the cvterm_id for each term, and a second
   *   column with the count (i.e. features assigned the term).
   * @param $fk_column
-  *   This is the name of the column in the $cnt_table that holds the 
+  *   This is the name of the column in the $cnt_table that holds the
   *   cvterm_id for each term.
   * @param $cnt_column
   *   The name of the column in the $cnt_table containing the counts
@@ -170,80 +181,81 @@ function tripal_cv_chart($chart_id){
   *   The size in pixels of the chart to be rendered. Default is 300x75. The
   *   size of the chart is constrained by Google charts.  See the Google
   *   chart documentation for exact limitations.
-  *  
-  * @return 
+  *
+  * @return
   *   An array that has the settings needed for Google Charts to creat the chart.
   *
   * @ingroup tripal_cv
   */
 function tripal_cv_count_chart($cnt_table, $fk_column,
-   $cnt_column, $filter = null, $title = '', $type = 'p3', $size='300x75') {
+  $cnt_column, $filter = NULL, $title = '', $type = 'p3', $size='300x75') {
 
-   if(!$type){
-      $type = 'p3';
-   }
+  if (!$type) {
+    $type = 'p3';
+  }
 
-   if(!$size){
-     $size = '300x75';
-   }
+  if (!$size) {
+    $size = '300x75';
+  }
 
-   if(!$filter){
-      $filter = '(1=1)'; 
-   }
+  if (!$filter) {
+    $filter = '(1=1)';
+  }
 
-   $isPie = 0;
-   if(strcmp($type,'p')==0 or strcmp($type,'p3')==0){
-      $isPie = 1;
-   }
-   $sql = "
-      SELECT CVT.name, CVT.cvterm_id, CNT.$cnt_column as num_items
-      FROM {$cnt_table} CNT 
-       INNER JOIN {cvterm} CVT on CNT.$fk_column = CVT.cvterm_id 
-      WHERE $filter
-   ";    
+  $is_pie = 0;
+  if (strcmp($type, 'p') == 0 or strcmp($type, 'p3') == 0) {
+    $is_pie = 1;
+  }
+  $sql = "
+    SELECT CVT.name, CVT.cvterm_id, CNT.$cnt_column as num_items
+    FROM {$cnt_table} CNT
+     INNER JOIN {cvterm} CVT on CNT.$fk_column = CVT.cvterm_id
+    WHERE $filter
+  ";
 
-   $features = array();
-   $previous_db = tripal_db_set_active('chado');  // use chado database
-   $results = db_query($sql);
-   tripal_db_set_active($previous_db);  // now use drupal database
-   $data = array();
-   $axis = array();
-   $legend = array();
-   $total = 0;
-   $max = 0;
-   $i = 1;
-   while($term = db_fetch_object($results)){
-      
-      if($isPie){
-         $axis[] = "$term->name (".number_format($term->num_items).")";
-         $data[] = array($term->num_items,0,0);
-      } else {
-         $axis[] = "$term->name (".number_format($term->num_items).")";
-         $data[] = array($term->num_items);
-    //     $legend[] = "$term->name (".number_format($term->num_items).")";
-      }
-      if($term->num_items > $max){
-         $max = $term->num_items;
-      }
-      $total += $term->num_items;
-      $i++;
-   }
-   // convert numerical values into percentages
-   foreach($data as &$set){
-      $set[0] = ($set[0] / $total) * 100;
-   }
-   $opt[] = array(
-      data => $data,
-      axis_labels => $axis, 
-      legend => $legend,
-      size => $size, 
-      type => $type,
- 
-      bar_width     => 10, 
-      bar_spacing   => 0, 
-      title         => $title
-   );
-//   $opt[] = $sql;
-   
-   return $opt;
+  $features = array();
+  $previous_db = tripal_db_set_active('chado');  // use chado database
+  $results = db_query($sql);
+  tripal_db_set_active($previous_db);  // now use drupal database
+  $data = array();
+  $axis = array();
+  $legend = array();
+  $total = 0;
+  $max = 0;
+  $i = 1;
+  while ($term = db_fetch_object($results)) {
+
+    if ($is_pie) {
+      $axis[] = "$term->name (" . number_format($term->num_items) . ")";
+      $data[] = array($term->num_items, 0, 0);
+    }
+    else {
+      $axis[] = "$term->name (" . number_format($term->num_items) . ")";
+      $data[] = array($term->num_items);
+      //$legend[] = "$term->name (" . number_format($term->num_items) . ")";
+    }
+    if ($term->num_items > $max) {
+      $max = $term->num_items;
+    }
+    $total += $term->num_items;
+    $i++;
+  }
+  // convert numerical values into percentages
+  foreach ($data as &$set) {
+    $set[0] = ($set[0] / $total) * 100;
+  }
+  $opt[] = array(
+    data => $data,
+    axis_labels => $axis,
+    legend => $legend,
+    size => $size,
+    type => $type,
+
+    bar_width     => 10,
+    bar_spacing   => 0,
+    title         => $title
+  );
+  //   $opt[] = $sql;
+
+  return $opt;
 }

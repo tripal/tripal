@@ -1,6 +1,7 @@
 <?php
 
 /**
+ * @file
  * Purpose: This Handler provides a generic select list for any chado field that is a string
  *  The select list includes all distinct values for that field.
  *
@@ -14,14 +15,14 @@ class views_handler_filter_chado_select_string extends views_handler_filter_stri
 
     $form['values_form_type'] = array(
       '#type' => 'radios',
-      '#title' => 'Filter Type',
+      '#title' => t('Filter Type'),
       '#options' => array(
         'textfield' => 'Text Field',
         'select' => 'Drop-Down Box',
       ),
       '#default_value' => ($this->options['values_form_type']) ? $this->options['values_form_type'] : 'select',
     );
-    
+
     $form['multiple'] = array(
       '#type' => 'checkbox',
       '#title' => t('Select Multiple'),
@@ -35,7 +36,7 @@ class views_handler_filter_chado_select_string extends views_handler_filter_stri
       '#description' => t('Adds --Any-- to the available options.'),
       '#default_value' => (isset($this->options['optional'])) ? $this->options['optional'] : TRUE,
     );
- 
+
     $form['max_length'] = array(
       '#type' => 'textfield',
       '#title' => t('Max Width'),
@@ -43,23 +44,26 @@ class views_handler_filter_chado_select_string extends views_handler_filter_stri
       '#default_value' => (isset($this->options['max_length'])) ? $this->options['max_length'] : 40,
 
     );
-    
+
   }
-  
+
  /**
   * Defines the value field in both the views filter options form
   *   and the exposed form
   */
   function value_form(&$form, &$form_state) {
     parent::value_form($form, $form_state);
-    
+
     if (preg_match('/textfield/', $this->options['values_form_type'])) {
       $form['value'] = array(
         '#type' => 'textfield',
-        '#title' => $this->options['label'],
+        '#title' => t('%label', array('%label' => $this->options['label'])),
         '#default_value' => $this->value,
-      );    
-    } else {
+      );
+
+    }
+    else {
+
       // Get Options
       if ($this->options['optional']) {
         //$options['<select '.$this->table.'>'] = '--None--';
@@ -68,27 +72,28 @@ class views_handler_filter_chado_select_string extends views_handler_filter_stri
       $sql = "SELECT $this->field FROM $this->table ORDER BY $this->field ASC";
       $previous_db = tripal_db_set_active('chado');  // use chado database
       $results = db_query($sql);
-      tripal_db_set_active($previous_db);  // now use drupal database 
+      tripal_db_set_active($previous_db);  // now use drupal database
       $max_length = $this->options['max_length'];
-      if(!$max_length){
-         $max_length = 40;
+      if (!$max_length) {
+        $max_length = 40;
       }
-      while($r = db_fetch_object($results)){
-        if (strlen($r->{$this->field}) > $max_length) {
-          $options[$r->{$this->field}] = substr($r->{$this->field},0,$max_length) . '...';
-        } else {
-          $options[$r->{$this->field}] = $r->{$this->field};    
+      while ($r = db_fetch_object($results)) {
+        if (drupal_strlen($r->{$this->field}) > $max_length) {
+          $options[$r->{$this->field}] = drupal_substr($r->{$this->field}, 0, $max_length) . '...';
+        }
+        else {
+          $options[$r->{$this->field}] = $r->{$this->field};
         }
       }
-      
+
       //Select List
       $form['value'] = array(
           '#type' => 'select',
-          '#title' => $this->options['label'],
+          '#title' => t('%label', array('%label' => $this->options['label'])),
           '#options' => $options,
           '#default_value' => $this->value,
       );
-      
+
       if ($this->options['multiple']) {
         $form['value']['#multiple'] = TRUE;
       }
@@ -131,7 +136,7 @@ class views_handler_filter_chado_select_string extends views_handler_filter_stri
   *
   */
   function query() {
-  
+
     $this->ensure_my_table();
     $field = "$this->table_alias.$this->real_field";
     $upper = $this->case_transform();
@@ -139,25 +144,28 @@ class views_handler_filter_chado_select_string extends views_handler_filter_stri
     if ($this->options['multiple']) {
       // Remove any if it's there
       unset($this->value['All']);
-      
+
       if (sizeof($this->value)) {
         $holders = array();
         foreach ($this->value as $v) {
-          if (preg_match('/^[\d\.]+$/',$v)) {
+          if (preg_match('/^[\d\.]+$/', $v)) {
             $holders[] = '%d';
-          } else {
+          }
+          else {
             $holders[] = "'%s'";
           }
         }
-        $where = "$field IN (".implode(", ",$holders).")";
+        $where = "$field IN (" . implode(", ", $holders) . ")";
         $this->query->add_where($this->options['group'], $where, $this->value);
       }
-    } else {
-  
+    }
+    else {
+
       // Deal with All/Any as value
       if (preg_match('/All/', $this->value)) {
-        // Don't do anything    
-      } else {
+        // Don't do anything
+      }
+      else {
         $info = $this->operators();
         if (!empty($info[$this->operator]['method'])) {
           $this->{$info[$this->operator]['method']}($field, $upper);

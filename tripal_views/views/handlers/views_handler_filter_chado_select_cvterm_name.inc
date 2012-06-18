@@ -1,6 +1,7 @@
 <?php
 
 /**
+ * @file
  * Purpose: This Handler provides a select list for the type field
  *
  *  NOTE: This handler only works when applied to the type_id field in the base_table of
@@ -12,56 +13,63 @@
 class views_handler_filter_chado_select_cvterm_name extends views_handler_filter_string {
 
  /**
-	* Executed when the field is added
-	* Determine which cv to limit the cvterms to
-	*/
+  * Executed when the field is added
+  * Determine which cv to limit the cvterms to
+  */
   function init(&$view, $options) {
     parent::init($view, $options);
-  	
-  	if ($this->options['show_all']) {
-        $cv_id = variable_get('chado_'.$this->view->base_table.'_cv', null);
-        if ($cv_id) {
-          $results = tripal_core_chado_select('cvterm',array('cvterm_id','name'), array('cv_id'=>$cv_id));	
-          if (empty($results)) { $results = array(); }
-          foreach ($results as $c) {
-            $cvterms[$c->cvterm_id] = $c->name;
-          }    	
-        } else {
-          //get a list of cvs currently used
-          if ($this->view->base_table == 'cvterm') {
-            $sql = 'SELECT distinct(cv.cv_id) FROM '.$this->view->base_table
-              .' LEFT JOIN cv cv ON cv.cv_id=cvterm.cv_id';	
-          } else {
-            $sql = 'SELECT distinct(cv.cv_id) FROM '.$this->view->base_table
-              .' LEFT JOIN cvterm cvterm ON cvterm.cvterm_id='.$this->view->base_table.'.type_id '
-              .'LEFT JOIN cv cv ON cv.cv_id=cvterm.cv_id';
-          }
-          $previous_db = tripal_db_set_active('chado');
-          $resource = db_query($sql);
-          tripal_db_set_active($previous_db);
-          $cvterms = array();
-          while ( $r = db_fetch_object($resource) ) {
-            $results = tripal_core_chado_select('cvterm',array('cvterm_id','name'), array('cv_id'=>$r->cv_id));	
-            if (empty($results)) { $results = array(); }
-            foreach ($results as $c) {
-              $cvterms[$c->cvterm_id] = $c->name;
-            }
-          }
-        }// end of if variable not defined
-    
-    } else {
-        $sql = "SELECT cvterm_id, name FROM cvterm WHERE cvterm_id IN (SELECT distinct(type_id) FROM %s)";
+
+    if ($this->options['show_all']) {
+      $cv_id = variable_get('chado_' . $this->view->base_table . '_cv', NULL);
+      if ($cv_id) {
+        $results = tripal_core_chado_select('cvterm', array('cvterm_id', 'name'), array('cv_id' => $cv_id));
+        if (empty($results)) {
+          $results = array();
+        }
+        foreach ($results as $c) {
+          $cvterms[$c->cvterm_id] = $c->name;
+        }
+      }
+      else {
+        //get a list of cvs currently used
+        if ($this->view->base_table == 'cvterm') {
+          $sql = 'SELECT distinct(cv.cv_id) FROM ' . $this->view->base_table
+            .' LEFT JOIN cv cv ON cv.cv_id=cvterm.cv_id';
+        }
+        else {
+          $sql = 'SELECT distinct(cv.cv_id) FROM ' . $this->view->base_table
+            .' LEFT JOIN cvterm cvterm ON cvterm.cvterm_id=' . $this->view->base_table . '.type_id '
+            .'LEFT JOIN cv cv ON cv.cv_id=cvterm.cv_id';
+        }
         $previous_db = tripal_db_set_active('chado');
-        $resource = db_query($sql, $this->view->base_table);
+        $resource = db_query($sql);
         tripal_db_set_active($previous_db);
         $cvterms = array();
         while ( $r = db_fetch_object($resource) ) {
-          $cvterms[$r->cvterm_id] = $r->name;
-        }        
+          $results = tripal_core_chado_select('cvterm', array('cvterm_id', 'name'), array('cv_id' => $r->cv_id));
+          if (empty($results)) {
+            $results = array();
+          }
+          foreach ($results as $c) {
+            $cvterms[$c->cvterm_id] = $c->name;
+          }
+        }
+      }// end of if variable not defined
+
+    }
+    else {
+      $sql = "SELECT cvterm_id, name FROM cvterm WHERE cvterm_id IN (SELECT distinct(type_id) FROM %s)";
+      $previous_db = tripal_db_set_active('chado');
+      $resource = db_query($sql, $this->view->base_table);
+      tripal_db_set_active($previous_db);
+      $cvterms = array();
+      while ( $r = db_fetch_object($resource) ) {
+        $cvterms[$r->cvterm_id] = $r->name;
+      }
     }
     //sort cvterms by name (case insensitive)
     natcasesort($cvterms);
-    
+
     //add to this handler
     $this->cvterm_options = $cvterms;
   }
@@ -74,7 +82,7 @@ class views_handler_filter_chado_select_cvterm_name extends views_handler_filter
 
     $form['values_form_type'] = array(
       '#type' => 'radios',
-      '#title' => 'Filter Type',
+      '#title' => t('Filter Type'),
       '#options' => array(
         'textfield' => 'Text Field',
         'select' => 'Drop-Down Box',
@@ -95,90 +103,95 @@ class views_handler_filter_chado_select_cvterm_name extends views_handler_filter
       '#description' => t('Adds --Any-- to the available options.'),
       '#default_value' => (isset($this->options['optional'])) ? $this->options['optional'] : TRUE,
     );
-    
+
     $form['show_all'] = array(
       '#type' => 'checkbox',
-      '#title' => 'Show All Terms',
+      '#title' => t('Show All Terms'),
       '#description' => 'Otherwise only cvterms used in the base table will be used'
     );
   }
-  
+
  /**
   * Alters the query so that WHERE cvterm.cvterm_id=212 is used
   */
   function query() {
     $this->ensure_table;
-    
+
     if ($this->options['multiple']) {
       // Remove any if it's there
       unset($this->value['All']);
-      
+
       if (sizeof($this->value)) {
         $holders = array();
         foreach ($this->value as $v) {
-          if (preg_match('/^[\d\.]+$/',$v)) {
+          if (preg_match('/^[\d\.]+$/', $v)) {
             $holders[] = '%d';
-          } else {
+          }
+          else {
             $holders[] = "'%s'";
           }
         }
-        $where = "cvterm.cvterm_id IN (".implode(", ",$holders).")";
+        $where = "cvterm.cvterm_id IN (" . implode(", ", $holders) . ")";
       }
-    } else {
+    }
+    else {
       if (preg_match('/^\d+$/', $this->value)) {
         $where = 'cvterm.cvterm_id=%d';
-      } else {
+      }
+      else {
         $where = "cvterm.name" . $this->operator . "'%s'";
       }
     }
-    
+
     if ($where) {
       $this->query->add_where($this->options['group'], $where, $this->value);
     }
   }
-  
+
  /**
   * Defines the value field in both the views filter options form
   *   and the exposed form
   */
   function value_form(&$form, &$form_state) {
     parent::value_form($form, $form_state);
-    
+
     if (preg_match('/select/', $this->options['values_form_type'])) {
       // Get Options
       if ($this->options['optional']) {
-        $options['<select '.$this->table.'>'] = '--None--';
+        $options['<select ' . $this->table . '>'] = '--None--';
         $options['All'] = '--Any--';
       }
       $max_length = 40;
       foreach ($this->cvterm_options as $cvterm_id => $cvterm_name) {
-        if (strlen($cvterm_name) > $max_length) {
-          $options[$cvterm_id] = substr($cvterm_name,0,$max_length) . '...';
-        } else {
-          $options[$cvterm_id] = $cvterm_name;    
+        if (drupal_strlen($cvterm_name) > $max_length) {
+          $options[$cvterm_id] = drupal_substr($cvterm_name, 0, $max_length) . '...';
+        }
+        else {
+          $options[$cvterm_id] = $cvterm_name;
         }
       }
-      
+
       if (empty($options)) {
         $options[0] = '';
       }
-      
+
       //Select List
       $form['value'] = array(
           '#type' => 'select',
-          '#title' => $this->options['label'],
+          '#title' => t('%label', array('%label' => $this->options['label'])),
           '#options' => $options,
           '#default_value' => $this->value,
       );
-      
+
       if ($this->options['multiple']) {
         $form['value']['#multiple'] = TRUE;
       }
-    
-    } else {
+
+    }
+    else {
       $form['value'] = array(
         '#type' => 'textfield',
-        '#title' => $this->options['label'],
+        '#title' => t('%label', array('%label' => $this->options['label'])),
         '#default_value' => $this->value,
       );
     }
@@ -242,7 +255,7 @@ class views_handler_filter_chado_select_cvterm_name extends views_handler_filter
         'values' => 1,
       ),
     );
-    
+
     return $operators;
   }
 }

@@ -1,6 +1,11 @@
 <?php
 
 /**
+ * @file
+ * Contains function relating to drush-integration of this module.
+ */
+
+/**
  * Describes each drush command implemented by the module
  *
  * @return
@@ -71,50 +76,46 @@ function tripal_core_drush_command() {
 
 /**
  * Executes jobs in the Tripal Jobs Queue
- * 
+ *
  * NOTE: The following code is executed when drush 'trpjob-run' or 'drush tripal-launch-jobs' is called
  */
-function drush_tripal_core_tripal_launch_jobs () {
-  $parallel = drush_get_option('parallel');   
-  
-  if($parallel){
+function drush_tripal_core_tripal_launch_jobs() {
+  $parallel = drush_get_option('parallel');
+  if ($parallel) {
     print "Tripal Job Launcher (in parallel)\n";
     print "-------------------\n";
     tripal_jobs_launch($parallel);
-  } else {
+  }
+  else {
     print "Tripal Job Launcher\n";
     print "-------------------\n";
-    tripal_jobs_launch();  
+    tripal_jobs_launch();
   }
 }
 
 /**
  * Prints details about the current running job
- * 
+ *
  * NOTE: The following code is executed when 'drush trpjob-curr' or 'drush tripal-current-job' is called
  */
-function drush_tripal_core_tripal_current_job () {
-  
+function drush_tripal_core_tripal_current_job() {
   $sql =  "SELECT * FROM {tripal_jobs} TJ ".
             "WHERE TJ.end_time IS NULL and NOT TJ.start_time IS NULL ";
   $jobs = db_query($sql);
   while ($job = db_fetch_object($jobs)) {
     $job_pid = $job->pid;
-
-    $output = "Name: ".$job->job_name."\n"
-             ."Submitted: ".date(DATE_RFC822,$job->submit_date)."\n"
-             ."Started: ".date(DATE_RFC822,$job->start_time)."\n"
-             ."Module: ".$job->modulename."\n"
-             ."Callback: ".$job->callback."\n"
-             ."Process ID: ".$job->pid."\n"
-             ."Progress: ".$job->progress."%\n";
+    $output = "Name: " . $job->job_name . "\n"
+             ."Submitted: " . date(DATE_RFC822, $job->submit_date) . "\n"
+             ."Started: " . date(DATE_RFC822, $job->start_time) . "\n"
+             ."Module: " . $job->modulename . "\n"
+             ."Callback: " . $job->callback . "\n"
+             ."Process ID: " . $job->pid . "\n"
+             ."Progress: " . $job->progress . "%\n";
     drush_print($output);
   }
-  
   if (!$job_pid) {
     drush_print('There are currently no running jobs.');
   }
-    
   //log to the command line with an OK status
   drush_log('Running tripal-current-job', 'ok');
 }
@@ -128,11 +129,11 @@ function drush_tripal_core_tripal_current_job () {
  *   The name of the table storing the materialized view (tripal_mview.mv_table)
  *
  * Note: Either $mview_id OR $table_name is required
- */ 
-function drush_tripal_core_tripal_update_mview () {
+ */
+function drush_tripal_core_tripal_update_mview() {
   $mview_id = drush_get_option('mview_id');
   $table_name = drush_get_option('table_name');
-  
+
   // Either table_name or mview is required
   if (!$mview_id) {
     if ($table_name) {
@@ -143,17 +144,18 @@ function drush_tripal_core_tripal_update_mview () {
         drush_set_error('No Materialized View associated with that table_name.');
       }
       $mview_id=$r->mview_id;
-    } else {
+    }
+    else {
       drush_set_error('Either mview_id OR table_name are required.');
     }
   }
-  
-  drush_print('Updating the Materialized View with ID='.$mview_id);  
+
+  drush_print('Updating the Materialized View with ID=' . $mview_id);
   $status = tripal_update_mview($mview_id);
   if ($status) {
     drush_log('Materialized View Updated', 'ok');
-  } else {
+  }
+  else {
     drush_set_error('Update failed.');
   }
-  
 }

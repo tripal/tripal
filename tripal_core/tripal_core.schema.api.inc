@@ -5,18 +5,16 @@
  *        These schema definitions can be augmented by the various modules
  *        (specifically to add missing foreign key definitions) by implementing
  *        hook_chado_<table name>_schema().
- */
-
-/** 
+ *
  * @defgroup tripal_schema_api Core Module Schema API
  * @{
  * Provides an application programming interface (API) for describing Chado tables.
- * This API consists of a set of functions, one for each table in Chado.  Each 
- * function simply returns a Drupal style array that defines the table. 
- * 
- * Because Drupal 6 does not handle foreign key relationships, a separate 
+ * This API consists of a set of functions, one for each table in Chado.  Each
+ * function simply returns a Drupal style array that defines the table.
+ *
+ * Because Drupal 6 does not handle foreign key relationships, a separate
  * hook is used to define the foreign key relationships for each table.  As
- * of version 0.3b of Tripal, not all foreign key relationships have been 
+ * of version 0.3b of Tripal, not all foreign key relationships have been
  * defined.  Therefore, if you need a foreign key you must create the appropriate
  * hook.  Hooks are named hook_chado_table_schema() where 'hook' is replaced
  * with the module name, and 'table' is replaced by the Chado table name.
@@ -26,19 +24,19 @@
  * call:
  *
  *   $table_desc = module_invoke_all('chado_'.$table.'_schema');
- * 
- * where the variable $table contains the name of the table you want to 
+ *
+ * where the variable $table contains the name of the table you want to
  * retireve.  The function call above uses the Drupal hook infrastructure to
  * call the appropriate function in the Schema API as well as the appropriate
- * hook to add in any foreign key relationships. 
- * 
+ * hook to add in any foreign key relationships.
+ *
  * @}
  * @ingroup tripal_api
  */
 
 /**
  * Retrieves the list tables in the Chado schema.  By default it only retursn
- * the default Chado tables, but may also return custom tables added to the 
+ * the default Chado tables, but may also return custom tables added to the
  * Chado schema as well.
  *
  * @param $include_custom
@@ -51,41 +49,41 @@
  * @ingroup tripal_schema_api
  */
 function tripal_core_get_chado_tables($include_custom = NULL) {
-  if(is_array($db_url) and array_key_exists('chado',$db_url)){
+  if (is_array($db_url) AND array_key_exists('chado', $db_url)) {
     $previous_db = tripal_db_set_active('chado');
     $sql = 'SELECT tablename FROM pg_tables';
     $resource = db_query($sql);
     tripal_db_set_active($previous_db);
-  } else {
+  }
+  else {
     $sql = "SELECT tablename FROM pg_tables WHERE schemaname='chado'";
     $resource = db_query($sql);
   }
+
   $tables = array();
   while ($r = db_fetch_object($resource)) {
     $tables[$r->tablename] = $r->tablename;
-  }  
-  
-  
+  }
+
   // now add in the custom tables too
-  if($include_custom){
-    $sql = "SELECT table_name FROM tripal_custom_tables";
+  if ($include_custom) {
+    $sql = "SELECT table_name FROM {tripal_custom_tables}";
     $resource = db_query($sql);
   }
   while ($r = db_fetch_object($resource)) {
     $tables[$r->table_name] = $r->table_name;
-  } 
-  
+  }
 
   asort($tables);
   return $tables;
 }
- 
+
 /**
  * Implements hook_organism_dbxref_schema()
  * Purpose: To describe the structure of organism_dbxref to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
@@ -93,9 +91,9 @@ function tripal_core_get_chado_tables($include_custom = NULL) {
  * @ingroup tripal_schema_api
  *
  */
-function tripal_core_chado_organism_dbxref_schema () {
+function tripal_core_chado_organism_dbxref_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'organism_dbxref',
 //    'description' => 'TODO: please describe this table!',
@@ -103,17 +101,17 @@ function tripal_core_chado_organism_dbxref_schema () {
       'organism_dbxref_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'organism_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'dbxref_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
     ),
     'primary key' => array(
@@ -136,26 +134,26 @@ function tripal_core_chado_organism_dbxref_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_organismprop_schema()
  * Purpose: To describe the structure of organismprop to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_organismprop_schema () {
+ */
+function tripal_core_chado_organismprop_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'organismprop',
 //    'description' => 'TODO: please describe this table!',
@@ -163,27 +161,27 @@ function tripal_core_chado_organismprop_schema () {
       'organismprop_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'organism_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'type_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'value' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'rank' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => '0',
       ),
     ),
@@ -208,26 +206,26 @@ function tripal_core_chado_organismprop_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_phendesc_schema()
  * Purpose: To describe the structure of phendesc to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_phendesc_schema () {
+ */
+function tripal_core_chado_phendesc_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'phendesc',
 //    'description' => 'TODO: please describe this table!',
@@ -235,32 +233,32 @@ function tripal_core_chado_phendesc_schema () {
       'phendesc_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'genotype_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'environment_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'description' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'type_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'pub_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
     ),
     'primary key' => array(
@@ -288,26 +286,26 @@ function tripal_core_chado_phendesc_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_phenotype_schema()
  * Purpose: To describe the structure of phenotype to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_phenotype_schema () {
+ */
+function tripal_core_chado_phenotype_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'phenotype',
 //    'description' => 'TODO: please describe this table!',
@@ -315,37 +313,37 @@ function tripal_core_chado_phenotype_schema () {
       'phenotype_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'uniquename' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'observable_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'attr_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'value' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'cvalue_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'assay_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
     ),
     'primary key' => array(
@@ -370,26 +368,26 @@ function tripal_core_chado_phenotype_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_organism_schema()
  * Purpose: To describe the structure of organism to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_organism_schema () {
+ */
+function tripal_core_chado_organism_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'organism',
 //    'description' => 'TODO: please describe this table!',
@@ -397,36 +395,36 @@ function tripal_core_chado_organism_schema () {
       'organism_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'abbreviation' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'genus' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'species' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'common_name' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'comment' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '',
+        'not NULL' => '',
       ),
     ),
     'primary key' => array(
@@ -443,26 +441,26 @@ function tripal_core_chado_organism_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_materialized_view_schema()
  * Purpose: To describe the structure of materialized_view to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_materialized_view_schema () {
+ */
+function tripal_core_chado_materialized_view_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'materialized_view',
 //    'description' => 'TODO: please describe this table!',
@@ -470,55 +468,55 @@ function tripal_core_chado_materialized_view_schema () {
       'materialized_view_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'last_update' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'datetime',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'refresh_time' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'name' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '64',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'mv_schema' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '64',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'mv_table' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '128',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'mv_specs' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'indexed' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'query' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'special_index' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '',
+        'not NULL' => '',
       ),
     ),
     'primary key' => array(
@@ -533,26 +531,26 @@ function tripal_core_chado_materialized_view_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_libraryprop_schema()
  * Purpose: To describe the structure of libraryprop to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_libraryprop_schema () {
+ */
+function tripal_core_chado_libraryprop_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'libraryprop',
 //    'description' => 'TODO: please describe this table!',
@@ -560,27 +558,27 @@ function tripal_core_chado_libraryprop_schema () {
       'libraryprop_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'library_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'type_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'value' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'rank' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => '0',
       ),
     ),
@@ -605,26 +603,26 @@ function tripal_core_chado_libraryprop_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_libraryprop_pub_schema()
  * Purpose: To describe the structure of libraryprop_pub to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_libraryprop_pub_schema () {
+ */
+function tripal_core_chado_libraryprop_pub_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'libraryprop_pub',
 //    'description' => 'TODO: please describe this table!',
@@ -632,17 +630,17 @@ function tripal_core_chado_libraryprop_pub_schema () {
       'libraryprop_pub_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'libraryprop_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'pub_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
     ),
     'primary key' => array(
@@ -665,26 +663,26 @@ function tripal_core_chado_libraryprop_pub_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_magedocumentation_schema()
  * Purpose: To describe the structure of magedocumentation to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_magedocumentation_schema () {
+ */
+function tripal_core_chado_magedocumentation_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'magedocumentation',
 //    'description' => 'TODO: please describe this table!',
@@ -692,27 +690,27 @@ function tripal_core_chado_magedocumentation_schema () {
       'magedocumentation_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'mageml_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'tableinfo_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'row_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'mageidentifier' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
     ),
     'primary key' => array(
@@ -734,26 +732,26 @@ function tripal_core_chado_magedocumentation_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_mageml_schema()
  * Purpose: To describe the structure of mageml to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_mageml_schema () {
+ */
+function tripal_core_chado_mageml_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'mageml',
 //    'description' => 'TODO: please describe this table!',
@@ -761,17 +759,17 @@ function tripal_core_chado_mageml_schema () {
       'mageml_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'mage_package' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'mage_ml' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
     ),
     'primary key' => array(
@@ -784,26 +782,26 @@ function tripal_core_chado_mageml_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_phenotype_comparison_schema()
  * Purpose: To describe the structure of phenotype_comparison to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_phenotype_comparison_schema () {
+ */
+function tripal_core_chado_phenotype_comparison_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'phenotype_comparison',
 //    'description' => 'TODO: please describe this table!',
@@ -811,47 +809,47 @@ function tripal_core_chado_phenotype_comparison_schema () {
       'phenotype_comparison_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'genotype1_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'environment1_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'genotype2_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'environment2_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'phenotype1_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'phenotype2_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'pub_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'organism_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
     ),
     'primary key' => array(
@@ -881,26 +879,26 @@ function tripal_core_chado_phenotype_comparison_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_phenotype_comparison_cvterm_schema()
  * Purpose: To describe the structure of phenotype_comparison_cvterm to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_phenotype_comparison_cvterm_schema () {
+ */
+function tripal_core_chado_phenotype_comparison_cvterm_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'phenotype_comparison_cvterm',
 //    'description' => 'TODO: please describe this table!',
@@ -908,27 +906,27 @@ function tripal_core_chado_phenotype_comparison_cvterm_schema () {
       'phenotype_comparison_cvterm_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'phenotype_comparison_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'cvterm_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'pub_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'rank' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => '0',
       ),
     ),
@@ -952,26 +950,26 @@ function tripal_core_chado_phenotype_comparison_cvterm_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_phylonode_relationship_schema()
  * Purpose: To describe the structure of phylonode_relationship to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_phylonode_relationship_schema () {
+ */
+function tripal_core_chado_phylonode_relationship_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'phylonode_relationship',
 //    'description' => 'TODO: please describe this table!',
@@ -979,32 +977,32 @@ function tripal_core_chado_phylonode_relationship_schema () {
       'phylonode_relationship_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'subject_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'object_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'type_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'rank' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'phylotree_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
     ),
     'primary key' => array(
@@ -1031,26 +1029,26 @@ function tripal_core_chado_phylonode_relationship_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_phylonodeprop_schema()
  * Purpose: To describe the structure of phylonodeprop to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_phylonodeprop_schema () {
+ */
+function tripal_core_chado_phylonodeprop_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'phylonodeprop',
 //    'description' => 'TODO: please describe this table!',
@@ -1058,28 +1056,28 @@ function tripal_core_chado_phylonodeprop_schema () {
       'phylonodeprop_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'phylonode_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'type_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'value' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => '',
       ),
       'rank' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => '0',
       ),
     ),
@@ -1105,26 +1103,26 @@ function tripal_core_chado_phylonodeprop_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_phylotree_schema()
  * Purpose: To describe the structure of phylotree to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_phylotree_schema () {
+ */
+function tripal_core_chado_phylotree_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'phylotree',
 //    'description' => 'TODO: please describe this table!',
@@ -1132,33 +1130,33 @@ function tripal_core_chado_phylotree_schema () {
       'phylotree_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'dbxref_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'name' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'type_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'analysis_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'comment' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '',
+        'not NULL' => '',
       ),
     ),
     'primary key' => array(
@@ -1174,26 +1172,26 @@ function tripal_core_chado_phylotree_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_phylotree_pub_schema()
  * Purpose: To describe the structure of phylotree_pub to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_phylotree_pub_schema () {
+ */
+function tripal_core_chado_phylotree_pub_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'phylotree_pub',
 //    'description' => 'TODO: please describe this table!',
@@ -1201,17 +1199,17 @@ function tripal_core_chado_phylotree_pub_schema () {
       'phylotree_pub_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'phylotree_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'pub_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
     ),
     'primary key' => array(
@@ -1234,26 +1232,26 @@ function tripal_core_chado_phylotree_pub_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_phylonode_pub_schema()
  * Purpose: To describe the structure of phylonode_pub to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_phylonode_pub_schema () {
+ */
+function tripal_core_chado_phylonode_pub_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'phylonode_pub',
 //    'description' => 'TODO: please describe this table!',
@@ -1261,17 +1259,17 @@ function tripal_core_chado_phylonode_pub_schema () {
       'phylonode_pub_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'phylonode_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'pub_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
     ),
     'primary key' => array(
@@ -1294,26 +1292,26 @@ function tripal_core_chado_phylonode_pub_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_phylonode_organism_schema()
  * Purpose: To describe the structure of phylonode_organism to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_phylonode_organism_schema () {
+ */
+function tripal_core_chado_phylonode_organism_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'phylonode_organism',
 //    'description' => 'TODO: please describe this table!',
@@ -1321,17 +1319,17 @@ function tripal_core_chado_phylonode_organism_schema () {
       'phylonode_organism_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'phylonode_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'organism_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
     ),
     'primary key' => array(
@@ -1353,26 +1351,26 @@ function tripal_core_chado_phylonode_organism_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_phenotype_cvterm_schema()
  * Purpose: To describe the structure of phenotype_cvterm to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_phenotype_cvterm_schema () {
+ */
+function tripal_core_chado_phenotype_cvterm_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'phenotype_cvterm',
 //    'description' => 'TODO: please describe this table!',
@@ -1380,22 +1378,22 @@ function tripal_core_chado_phenotype_cvterm_schema () {
       'phenotype_cvterm_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'phenotype_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'cvterm_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'rank' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => '0',
       ),
     ),
@@ -1420,26 +1418,26 @@ function tripal_core_chado_phenotype_cvterm_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_phenstatement_schema()
  * Purpose: To describe the structure of phenstatement to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_phenstatement_schema () {
+ */
+function tripal_core_chado_phenstatement_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'phenstatement',
 //    'description' => 'TODO: please describe this table!',
@@ -1447,32 +1445,32 @@ function tripal_core_chado_phenstatement_schema () {
       'phenstatement_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'genotype_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'environment_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'phenotype_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'type_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'pub_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
     ),
     'primary key' => array(
@@ -1498,26 +1496,26 @@ function tripal_core_chado_phenstatement_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_phylonode_schema()
  * Purpose: To describe the structure of phylonode to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_phylonode_schema () {
+ */
+function tripal_core_chado_phylonode_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'phylonode',
 //    'description' => 'TODO: please describe this table!',
@@ -1525,49 +1523,49 @@ function tripal_core_chado_phylonode_schema () {
       'phylonode_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'phylotree_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'parent_phylonode_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'left_idx' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'right_idx' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'type_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'feature_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'label' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'distance' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'float',
         'size' => 'big',
-        'not null' => '',
+        'not NULL' => '',
       ),
     ),
     'primary key' => array(
@@ -1588,26 +1586,26 @@ function tripal_core_chado_phylonode_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_phylonode_dbxref_schema()
  * Purpose: To describe the structure of phylonode_dbxref to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_phylonode_dbxref_schema () {
+ */
+function tripal_core_chado_phylonode_dbxref_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'phylonode_dbxref',
 //    'description' => 'TODO: please describe this table!',
@@ -1615,17 +1613,17 @@ function tripal_core_chado_phylonode_dbxref_schema () {
       'phylonode_dbxref_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'phylonode_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'dbxref_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
     ),
     'primary key' => array(
@@ -1648,26 +1646,26 @@ function tripal_core_chado_phylonode_dbxref_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_library_synonym_schema()
  * Purpose: To describe the structure of library_synonym to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_library_synonym_schema () {
+ */
+function tripal_core_chado_library_synonym_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'library_synonym',
 //    'description' => 'TODO: please describe this table!',
@@ -1675,33 +1673,33 @@ function tripal_core_chado_library_synonym_schema () {
       'library_synonym_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'synonym_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'library_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'pub_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'is_current' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'boolean',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => 'ru',
       ),
       'is_internal' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'boolean',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => 'als',
       ),
     ),
@@ -1729,26 +1727,26 @@ function tripal_core_chado_library_synonym_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_library_pub_schema()
  * Purpose: To describe the structure of library_pub to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_library_pub_schema () {
+ */
+function tripal_core_chado_library_pub_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'library_pub',
 //    'description' => 'TODO: please describe this table!',
@@ -1756,17 +1754,17 @@ function tripal_core_chado_library_pub_schema () {
       'library_pub_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'library_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'pub_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
     ),
     'primary key' => array(
@@ -1789,26 +1787,26 @@ function tripal_core_chado_library_pub_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_featureprop_pub_schema()
  * Purpose: To describe the structure of featureprop_pub to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_featureprop_pub_schema () {
+ */
+function tripal_core_chado_featureprop_pub_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'featureprop_pub',
 //    'description' => 'TODO: please describe this table!',
@@ -1816,17 +1814,17 @@ function tripal_core_chado_featureprop_pub_schema () {
       'featureprop_pub_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'featureprop_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'pub_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
     ),
     'primary key' => array(
@@ -1849,26 +1847,26 @@ function tripal_core_chado_featureprop_pub_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_featureprop_schema()
  * Purpose: To describe the structure of featureprop to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_featureprop_schema () {
+ */
+function tripal_core_chado_featureprop_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'featureprop',
 //    'description' => 'TODO: please describe this table!',
@@ -1876,27 +1874,27 @@ function tripal_core_chado_featureprop_schema () {
       'featureprop_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'feature_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'type_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'value' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'rank' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => '0',
       ),
     ),
@@ -1921,26 +1919,26 @@ function tripal_core_chado_featureprop_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_featurerange_schema()
  * Purpose: To describe the structure of featurerange to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_featurerange_schema () {
+ */
+function tripal_core_chado_featurerange_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'featurerange',
 //    'description' => 'TODO: please describe this table!',
@@ -1948,43 +1946,43 @@ function tripal_core_chado_featurerange_schema () {
       'featurerange_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'featuremap_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'feature_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'leftstartf_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'leftendf_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'rightstartf_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'rightendf_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'rangestr' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => '',
+        'not NULL' => '',
       ),
     ),
     'primary key' => array(
@@ -2015,26 +2013,26 @@ function tripal_core_chado_featurerange_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_featureset_meets_schema()
  * Purpose: To describe the structure of featureset_meets to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_featureset_meets_schema () {
+ */
+function tripal_core_chado_featureset_meets_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'featureset_meets',
 //    'description' => 'TODO: please describe this table!',
@@ -2042,12 +2040,12 @@ function tripal_core_chado_featureset_meets_schema () {
       'subject_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'object_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
     ),
     'primary key' => array(
@@ -2059,26 +2057,26 @@ function tripal_core_chado_featureset_meets_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_fnr_type_schema()
  * Purpose: To describe the structure of fnr_type to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_fnr_type_schema () {
+ */
+function tripal_core_chado_fnr_type_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'fnr_type',
 //    'description' => 'TODO: please describe this table!',
@@ -2086,55 +2084,55 @@ function tripal_core_chado_fnr_type_schema () {
       'feature_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'name' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'dbxref_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'type' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '1024',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'residues' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'seqlen' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'md5checksum' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'char',
         'length' => '32',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'type_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'timeaccessioned' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'datetime',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'timelastmodified' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'datetime',
-        'not null' => '',
+        'not NULL' => '',
       ),
     ),
     'primary key' => array(
@@ -2146,26 +2144,26 @@ function tripal_core_chado_fnr_type_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_featurepos_schema()
  * Purpose: To describe the structure of featurepos to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_featurepos_schema () {
+ */
+function tripal_core_chado_featurepos_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'featurepos',
 //    'description' => 'TODO: please describe this table!',
@@ -2173,28 +2171,28 @@ function tripal_core_chado_featurepos_schema () {
       'featurepos_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'featuremap_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'feature_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'map_feature_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'mappos' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'float',
         'size' => 'big',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
     ),
     'primary key' => array(
@@ -2216,26 +2214,26 @@ function tripal_core_chado_featurepos_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_featuremap_pub_schema()
  * Purpose: To describe the structure of featuremap_pub to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_featuremap_pub_schema () {
+ */
+function tripal_core_chado_featuremap_pub_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'featuremap_pub',
 //    'description' => 'TODO: please describe this table!',
@@ -2243,17 +2241,17 @@ function tripal_core_chado_featuremap_pub_schema () {
       'featuremap_pub_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'featuremap_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'pub_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
     ),
     'primary key' => array(
@@ -2272,26 +2270,26 @@ function tripal_core_chado_featuremap_pub_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_feature_union_schema()
  * Purpose: To describe the structure of feature_union to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_feature_union_schema () {
+ */
+function tripal_core_chado_feature_union_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'feature_union',
 //    'description' => 'TODO: please describe this table!',
@@ -2299,39 +2297,39 @@ function tripal_core_chado_feature_union_schema () {
       'subject_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'object_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'srcfeature_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'subject_strand' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
         'size' => 'small',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'object_strand' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
         'size' => 'small',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'fmin' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'fmax' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
     ),
     'primary key' => array(
@@ -2343,26 +2341,26 @@ function tripal_core_chado_feature_union_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_featureloc_schema()
  * Purpose: To describe the structure of featureloc to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_featureloc_schema () {
+ */
+function tripal_core_chado_featureloc_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'featureloc',
 //    'description' => 'TODO: please describe this table!',
@@ -2370,66 +2368,66 @@ function tripal_core_chado_featureloc_schema () {
       'featureloc_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'feature_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'srcfeature_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'fmin' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'is_fmin_partial' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'boolean',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => 'als',
       ),
       'fmax' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'is_fmax_partial' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'boolean',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => 'als',
       ),
       'strand' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
         'size' => 'small',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'phase' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'residue_info' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'locgroup' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => '0',
       ),
       'rank' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => '0',
       ),
     ),
@@ -2466,26 +2464,26 @@ function tripal_core_chado_featureloc_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_featureloc_pub_schema()
  * Purpose: To describe the structure of featureloc_pub to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_featureloc_pub_schema () {
+ */
+function tripal_core_chado_featureloc_pub_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'featureloc_pub',
 //    'description' => 'TODO: please describe this table!',
@@ -2493,17 +2491,17 @@ function tripal_core_chado_featureloc_pub_schema () {
       'featureloc_pub_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'featureloc_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'pub_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
     ),
     'primary key' => array(
@@ -2526,26 +2524,26 @@ function tripal_core_chado_featureloc_pub_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_featuremap_schema()
  * Purpose: To describe the structure of featuremap to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_featuremap_schema () {
+ */
+function tripal_core_chado_featuremap_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'featuremap',
 //    'description' => 'TODO: please describe this table!',
@@ -2553,23 +2551,23 @@ function tripal_core_chado_featuremap_schema () {
       'featuremap_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'name' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'description' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'unittype_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
     ),
     'primary key' => array(
@@ -2585,26 +2583,26 @@ function tripal_core_chado_featuremap_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_fp_key_schema()
  * Purpose: To describe the structure of fp_key to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_fp_key_schema () {
+ */
+function tripal_core_chado_fp_key_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'fp_key',
 //    'description' => 'TODO: please describe this table!',
@@ -2612,18 +2610,18 @@ function tripal_core_chado_fp_key_schema () {
       'feature_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'pkey' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '1024',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'value' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '',
+        'not NULL' => '',
       ),
     ),
     'primary key' => array(
@@ -2635,26 +2633,26 @@ function tripal_core_chado_fp_key_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_genotype_schema()
  * Purpose: To describe the structure of genotype to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_genotype_schema () {
+ */
+function tripal_core_chado_genotype_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'genotype',
 //    'description' => 'TODO: please describe this table!',
@@ -2662,23 +2660,23 @@ function tripal_core_chado_genotype_schema () {
       'genotype_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'name' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'uniquename' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'description' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => '',
+        'not NULL' => '',
       ),
     ),
     'primary key' => array(
@@ -2700,26 +2698,26 @@ function tripal_core_chado_genotype_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_library_cvterm_schema()
  * Purpose: To describe the structure of library_cvterm to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_library_cvterm_schema () {
+ */
+function tripal_core_chado_library_cvterm_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'library_cvterm',
 //    'description' => 'TODO: please describe this table!',
@@ -2727,22 +2725,22 @@ function tripal_core_chado_library_cvterm_schema () {
       'library_cvterm_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'library_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'cvterm_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'pub_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
     ),
     'primary key' => array(
@@ -2769,26 +2767,26 @@ function tripal_core_chado_library_cvterm_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_library_dbxref_schema()
  * Purpose: To describe the structure of library_dbxref to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_library_dbxref_schema () {
+ */
+function tripal_core_chado_library_dbxref_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'library_dbxref',
 //    'description' => 'TODO: please describe this table!',
@@ -2796,22 +2794,22 @@ function tripal_core_chado_library_dbxref_schema () {
       'library_dbxref_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'library_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'dbxref_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'is_current' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'boolean',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => 'ru',
       ),
     ),
@@ -2835,26 +2833,26 @@ function tripal_core_chado_library_dbxref_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_library_feature_schema()
  * Purpose: To describe the structure of library_feature to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_library_feature_schema () {
+ */
+function tripal_core_chado_library_feature_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'library_feature',
 //    'description' => 'TODO: please describe this table!',
@@ -2862,17 +2860,17 @@ function tripal_core_chado_library_feature_schema () {
       'library_feature_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'library_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'feature_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
     ),
     'primary key' => array(
@@ -2895,26 +2893,26 @@ function tripal_core_chado_library_feature_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_library_feature_count_schema()
  * Purpose: To describe the structure of library_feature_count to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_library_feature_count_schema () {
+ */
+function tripal_core_chado_library_feature_count_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'library_feature_count',
 //    'description' => 'TODO: please describe this table!',
@@ -2922,24 +2920,24 @@ function tripal_core_chado_library_feature_count_schema () {
       'library_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'name' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'num_features' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'feature_type' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => '',
+        'not NULL' => '',
       ),
     ),
     'primary key' => array(
@@ -2954,26 +2952,26 @@ function tripal_core_chado_library_feature_count_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_library_schema()
  * Purpose: To describe the structure of library to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_library_schema () {
+ */
+function tripal_core_chado_library_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'library',
 //    'description' => 'TODO: please describe this table!',
@@ -2981,45 +2979,45 @@ function tripal_core_chado_library_schema () {
       'library_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'organism_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'name' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'uniquename' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'type_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'is_obsolete' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => '0',
       ),
       'timeaccessioned' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'datetime',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => 'ow(',
       ),
       'timelastmodified' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'datetime',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => 'ow(',
       ),
     ),
@@ -3050,26 +3048,26 @@ function tripal_core_chado_library_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_intronloc_view_schema()
  * Purpose: To describe the structure of intronloc_view to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_intronloc_view_schema () {
+ */
+function tripal_core_chado_intronloc_view_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'intronloc_view',
 //    'description' => 'TODO: please describe this table!',
@@ -3077,33 +3075,33 @@ function tripal_core_chado_intronloc_view_schema () {
       'exon1_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'exon2_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'fmin' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'fmax' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'strand' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
         'size' => 'small',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'srcfeature_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
     ),
     'primary key' => array(
@@ -3115,26 +3113,26 @@ function tripal_core_chado_intronloc_view_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_gff3atts_schema()
  * Purpose: To describe the structure of gff3atts to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_gff3atts_schema () {
+ */
+function tripal_core_chado_gff3atts_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'gff3atts',
 //    'description' => 'TODO: please describe this table!',
@@ -3142,17 +3140,17 @@ function tripal_core_chado_gff3atts_schema () {
       'feature_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'type' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'attribute' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
-        'not null' => '',
+        'not NULL' => '',
       ),
     ),
     'primary key' => array(
@@ -3164,26 +3162,26 @@ function tripal_core_chado_gff3atts_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_gff3view_schema()
  * Purpose: To describe the structure of gff3view to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_gff3view_schema () {
+ */
+function tripal_core_chado_gff3view_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'gff3view',
 //    'description' => 'TODO: please describe this table!',
@@ -3191,68 +3189,68 @@ function tripal_core_chado_gff3view_schema () {
       'feature_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'ref' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'source' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'type' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '1024',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'fstart' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'fend' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'score' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'float',
         'size' => 'big',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'strand' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
         'size' => 'small',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'phase' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'seqlen' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'name' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'organism_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
     ),
     'primary key' => array(
@@ -3264,26 +3262,26 @@ function tripal_core_chado_gff3view_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_gffatts_schema()
  * Purpose: To describe the structure of gffatts to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_gffatts_schema () {
+ */
+function tripal_core_chado_gffatts_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'gffatts',
 //    'description' => 'TODO: please describe this table!',
@@ -3291,17 +3289,17 @@ function tripal_core_chado_gffatts_schema () {
       'feature_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'type' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'attribute' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
-        'not null' => '',
+        'not NULL' => '',
       ),
     ),
     'primary key' => array(
@@ -3313,26 +3311,26 @@ function tripal_core_chado_gffatts_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_intron_combined_view_schema()
  * Purpose: To describe the structure of intron_combined_view to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_intron_combined_view_schema () {
+ */
+function tripal_core_chado_intron_combined_view_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'intron_combined_view',
 //    'description' => 'TODO: please describe this table!',
@@ -3340,43 +3338,43 @@ function tripal_core_chado_intron_combined_view_schema () {
       'exon1_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'exon2_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'fmin' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'fmax' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'strand' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
         'size' => 'small',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'srcfeature_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'intron_rank' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'transcript_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
     ),
     'primary key' => array(
@@ -3388,26 +3386,26 @@ function tripal_core_chado_intron_combined_view_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_project_schema()
  * Purpose: To describe the structure of project to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_project_schema () {
+ */
+function tripal_core_chado_project_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'project',
 //    'description' => 'TODO: please describe this table!',
@@ -3415,19 +3413,19 @@ function tripal_core_chado_project_schema () {
       'project_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'name' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'description' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
     ),
     'primary key' => array(
@@ -3443,26 +3441,26 @@ function tripal_core_chado_project_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_protein_coding_gene_schema()
  * Purpose: To describe the structure of protein_coding_gene to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_protein_coding_gene_schema () {
+ */
+function tripal_core_chado_protein_coding_gene_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'protein_coding_gene',
 //    'description' => 'TODO: please describe this table!',
@@ -3470,69 +3468,69 @@ function tripal_core_chado_protein_coding_gene_schema () {
       'feature_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'dbxref_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'organism_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'name' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'uniquename' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'residues' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'seqlen' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'md5checksum' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'char',
         'length' => '32',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'type_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'is_analysis' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'boolean',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'is_obsolete' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'boolean',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'timeaccessioned' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'datetime',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'timelastmodified' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'datetime',
-        'not null' => '',
+        'not NULL' => '',
       ),
     ),
     'primary key' => array(
@@ -3544,26 +3542,26 @@ function tripal_core_chado_protein_coding_gene_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_studyfactorvalue_schema()
  * Purpose: To describe the structure of studyfactorvalue to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_studyfactorvalue_schema () {
+ */
+function tripal_core_chado_studyfactorvalue_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'studyfactorvalue',
 //    'description' => 'TODO: please describe this table!',
@@ -3571,32 +3569,32 @@ function tripal_core_chado_studyfactorvalue_schema () {
       'studyfactorvalue_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'studyfactor_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'assay_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'factorvalue' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'name' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'rank' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => '0',
       ),
     ),
@@ -3616,26 +3614,26 @@ function tripal_core_chado_studyfactorvalue_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_studyfactor_schema()
  * Purpose: To describe the structure of studyfactor to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_studyfactor_schema () {
+ */
+function tripal_core_chado_studyfactor_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'studyfactor',
 //    'description' => 'TODO: please describe this table!',
@@ -3643,27 +3641,27 @@ function tripal_core_chado_studyfactor_schema () {
       'studyfactor_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'studydesign_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'type_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'name' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'description' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '',
+        'not NULL' => '',
       ),
     ),
     'primary key' => array(
@@ -3682,26 +3680,26 @@ function tripal_core_chado_studyfactor_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_studyprop_schema()
  * Purpose: To describe the structure of studyprop to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_studyprop_schema () {
+ */
+function tripal_core_chado_studyprop_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'studyprop',
 //    'description' => 'TODO: please describe this table!',
@@ -3709,27 +3707,27 @@ function tripal_core_chado_studyprop_schema () {
       'studyprop_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'study_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'type_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'value' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'rank' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => '0',
       ),
     ),
@@ -3754,26 +3752,26 @@ function tripal_core_chado_studyprop_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_studyprop_feature_schema()
  * Purpose: To describe the structure of studyprop_feature to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_studyprop_feature_schema () {
+ */
+function tripal_core_chado_studyprop_feature_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'studyprop_feature',
 //    'description' => 'TODO: please describe this table!',
@@ -3781,22 +3779,22 @@ function tripal_core_chado_studyprop_feature_schema () {
       'studyprop_feature_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'studyprop_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'feature_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'type_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
     ),
     'primary key' => array(
@@ -3819,26 +3817,26 @@ function tripal_core_chado_studyprop_feature_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_synonym_schema()
  * Purpose: To describe the structure of synonym to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_synonym_schema () {
+ */
+function tripal_core_chado_synonym_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'synonym',
 //    'description' => 'TODO: please describe this table!',
@@ -3846,24 +3844,24 @@ function tripal_core_chado_synonym_schema () {
       'synonym_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'name' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'type_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'synonym_sgml' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
     ),
     'primary key' => array(
@@ -3883,26 +3881,26 @@ function tripal_core_chado_synonym_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_studydesignprop_schema()
  * Purpose: To describe the structure of studydesignprop to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_studydesignprop_schema () {
+ */
+function tripal_core_chado_studydesignprop_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'studydesignprop',
 //    'description' => 'TODO: please describe this table!',
@@ -3910,27 +3908,27 @@ function tripal_core_chado_studydesignprop_schema () {
       'studydesignprop_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'studydesign_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'type_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'value' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'rank' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => '0',
       ),
     ),
@@ -3955,26 +3953,26 @@ function tripal_core_chado_studydesignprop_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_studydesign_schema()
  * Purpose: To describe the structure of studydesign to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_studydesign_schema () {
+ */
+function tripal_core_chado_studydesign_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'studydesign',
 //    'description' => 'TODO: please describe this table!',
@@ -3982,17 +3980,17 @@ function tripal_core_chado_studydesign_schema () {
       'studydesign_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'study_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'description' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '',
+        'not NULL' => '',
       ),
     ),
     'primary key' => array(
@@ -4008,26 +4006,26 @@ function tripal_core_chado_studydesign_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_stockprop_schema()
  * Purpose: To describe the structure of stockprop to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_stockprop_schema () {
+ */
+function tripal_core_chado_stockprop_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'stockprop',
 //    'description' => 'TODO: please describe this table!',
@@ -4035,27 +4033,27 @@ function tripal_core_chado_stockprop_schema () {
       'stockprop_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'stock_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'type_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'value' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'rank' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => '0',
       ),
     ),
@@ -4080,26 +4078,26 @@ function tripal_core_chado_stockprop_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_stockprop_pub_schema()
  * Purpose: To describe the structure of stockprop_pub to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_stockprop_pub_schema () {
+ */
+function tripal_core_chado_stockprop_pub_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'stockprop_pub',
 //    'description' => 'TODO: please describe this table!',
@@ -4107,17 +4105,17 @@ function tripal_core_chado_stockprop_pub_schema () {
       'stockprop_pub_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'stockprop_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'pub_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
     ),
     'primary key' => array(
@@ -4140,26 +4138,26 @@ function tripal_core_chado_stockprop_pub_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_study_schema()
  * Purpose: To describe the structure of study to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_study_schema () {
+ */
+function tripal_core_chado_study_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'study',
 //    'description' => 'TODO: please describe this table!',
@@ -4167,32 +4165,32 @@ function tripal_core_chado_study_schema () {
       'study_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'contact_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'pub_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'dbxref_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'name' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'description' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '',
+        'not NULL' => '',
       ),
     ),
     'primary key' => array(
@@ -4217,26 +4215,26 @@ function tripal_core_chado_study_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_study_assay_schema()
  * Purpose: To describe the structure of study_assay to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_study_assay_schema () {
+ */
+function tripal_core_chado_study_assay_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'study_assay',
 //    'description' => 'TODO: please describe this table!',
@@ -4244,17 +4242,17 @@ function tripal_core_chado_study_assay_schema () {
       'study_assay_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'study_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'assay_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
     ),
     'primary key' => array(
@@ -4277,26 +4275,26 @@ function tripal_core_chado_study_assay_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_tableinfo_schema()
  * Purpose: To describe the structure of tableinfo to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_tableinfo_schema () {
+ */
+function tripal_core_chado_tableinfo_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'tableinfo',
 //    'description' => 'TODO: please describe this table!',
@@ -4304,46 +4302,46 @@ function tripal_core_chado_tableinfo_schema () {
       'tableinfo_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'name' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '30',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'primary_key_column' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '30',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'is_view' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => '0',
       ),
       'view_on_table_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'superclass_table_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'is_updateable' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => '1',
       ),
       'modification_date' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'date',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => 'ow(',
       ),
     ),
@@ -4360,26 +4358,26 @@ function tripal_core_chado_tableinfo_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_treatment_schema()
  * Purpose: To describe the structure of treatment to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_treatment_schema () {
+ */
+function tripal_core_chado_treatment_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'treatment',
 //    'description' => 'TODO: please describe this table!',
@@ -4387,33 +4385,33 @@ function tripal_core_chado_treatment_schema () {
       'treatment_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'rank' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => '0',
       ),
       'biomaterial_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'type_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'protocol_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'name' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '',
+        'not NULL' => '',
       ),
     ),
     'primary key' => array(
@@ -4435,26 +4433,26 @@ function tripal_core_chado_treatment_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_tripal_obo_schema()
  * Purpose: To describe the structure of tripal_obo to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_tripal_obo_schema () {
+ */
+function tripal_core_chado_tripal_obo_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'tripal_obo',
 //    'description' => 'TODO: please describe this table!',
@@ -4463,20 +4461,20 @@ function tripal_core_chado_tripal_obo_schema () {
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
         'unsigned' => '1',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => '0',
       ),
       'file' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '1024',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'url' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '1024',
-        'not null' => '',
+        'not NULL' => '',
       ),
     ),
     'primary key' => array(
@@ -4492,26 +4490,26 @@ function tripal_core_chado_tripal_obo_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_tripal_organism_views_common_name_schema()
  * Purpose: To describe the structure of tripal_organism_views_common_name to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_tripal_organism_views_common_name_schema () {
+ */
+function tripal_core_chado_tripal_organism_views_common_name_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'tripal_organism_views_common_name',
 //    'description' => 'TODO: please describe this table!',
@@ -4520,14 +4518,14 @@ function tripal_core_chado_tripal_organism_views_common_name_schema () {
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
         'unsigned' => '1',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => '0',
       ),
       'common_name' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => 'NA',
       ),
     ),
@@ -4540,26 +4538,26 @@ function tripal_core_chado_tripal_organism_views_common_name_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_type_feature_count_schema()
  * Purpose: To describe the structure of type_feature_count to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_type_feature_count_schema () {
+ */
+function tripal_core_chado_type_feature_count_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'type_feature_count',
 //    'description' => 'TODO: please describe this table!',
@@ -4568,13 +4566,13 @@ function tripal_core_chado_type_feature_count_schema () {
 //        'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '1024',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'num_features' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
         'size' => 'big',
-        'not null' => '',
+        'not NULL' => '',
       ),
     ),
     'primary key' => array(
@@ -4586,26 +4584,26 @@ function tripal_core_chado_type_feature_count_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_stockcollectionprop_schema()
  * Purpose: To describe the structure of stockcollectionprop to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_stockcollectionprop_schema () {
+ */
+function tripal_core_chado_stockcollectionprop_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'stockcollectionprop',
 //    'description' => 'TODO: please describe this table!',
@@ -4613,27 +4611,27 @@ function tripal_core_chado_stockcollectionprop_schema () {
       'stockcollectionprop_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'stockcollection_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'type_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'value' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'rank' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => '0',
       ),
     ),
@@ -4658,26 +4656,26 @@ function tripal_core_chado_stockcollectionprop_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_stockcollection_stock_schema()
  * Purpose: To describe the structure of stockcollection_stock to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_stockcollection_stock_schema () {
+ */
+function tripal_core_chado_stockcollection_stock_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'stockcollection_stock',
 //    'description' => 'TODO: please describe this table!',
@@ -4685,17 +4683,17 @@ function tripal_core_chado_stockcollection_stock_schema () {
       'stockcollection_stock_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'stockcollection_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'stock_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
     ),
     'primary key' => array(
@@ -4718,26 +4716,26 @@ function tripal_core_chado_stockcollection_stock_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_public_feature_schema()
  * Purpose: To describe the structure of public_feature to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_public_feature_schema () {
+ */
+function tripal_core_chado_public_feature_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'public_feature',
 //    'description' => 'TODO: please describe this table!',
@@ -4746,26 +4744,26 @@ function tripal_core_chado_public_feature_schema () {
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
         'unsigned' => '1',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => '0',
       ),
       'nid' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
         'unsigned' => '1',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => '0',
       ),
       'feature_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => '0',
       ),
       'sync_date' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
     ),
     'primary key' => array(
@@ -4788,26 +4786,26 @@ function tripal_core_chado_public_feature_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_public_library_schema()
  * Purpose: To describe the structure of public_library to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_public_library_schema () {
+ */
+function tripal_core_chado_public_library_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'public_library',
 //    'description' => 'TODO: please describe this table!',
@@ -4816,20 +4814,20 @@ function tripal_core_chado_public_library_schema () {
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
         'unsigned' => '1',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => '0',
       ),
       'nid' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
         'unsigned' => '1',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => '0',
       ),
       'library_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => '0',
       ),
     ),
@@ -4853,26 +4851,26 @@ function tripal_core_chado_public_library_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_public_organism_schema()
  * Purpose: To describe the structure of public_organism to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_public_organism_schema () {
+ */
+function tripal_core_chado_public_organism_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'public_organism',
 //    'description' => 'TODO: please describe this table!',
@@ -4881,20 +4879,20 @@ function tripal_core_chado_public_organism_schema () {
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
         'unsigned' => '1',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => '0',
       ),
       'nid' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
         'unsigned' => '1',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => '0',
       ),
       'organism_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => '0',
       ),
     ),
@@ -4918,26 +4916,26 @@ function tripal_core_chado_public_organism_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_pubprop_schema()
  * Purpose: To describe the structure of pubprop to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_pubprop_schema () {
+ */
+function tripal_core_chado_pubprop_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'pubprop',
 //    'description' => 'TODO: please describe this table!',
@@ -4945,27 +4943,27 @@ function tripal_core_chado_pubprop_schema () {
       'pubprop_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'pub_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'type_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'value' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'rank' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
     ),
     'primary key' => array(
@@ -4989,26 +4987,26 @@ function tripal_core_chado_pubprop_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_pubauthor_schema()
  * Purpose: To describe the structure of pubauthor to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_pubauthor_schema () {
+ */
+function tripal_core_chado_pubauthor_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'pubauthor',
 //    'description' => 'TODO: please describe this table!',
@@ -5016,41 +5014,41 @@ function tripal_core_chado_pubauthor_schema () {
       'pubauthor_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'pub_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'rank' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'editor' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'boolean',
-        'not null' => '',
+        'not NULL' => '',
         'default' => 'als',
       ),
       'surname' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '100',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'givennames' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '100',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'suffix' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '100',
-        'not null' => '',
+        'not NULL' => '',
       ),
     ),
     'primary key' => array(
@@ -5070,26 +5068,26 @@ function tripal_core_chado_pubauthor_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_pub_relationship_schema()
  * Purpose: To describe the structure of pub_relationship to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_pub_relationship_schema () {
+ */
+function tripal_core_chado_pub_relationship_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'pub_relationship',
 //    'description' => 'TODO: please describe this table!',
@@ -5097,22 +5095,22 @@ function tripal_core_chado_pub_relationship_schema () {
       'pub_relationship_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'subject_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'object_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'type_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
     ),
     'primary key' => array(
@@ -5139,26 +5137,26 @@ function tripal_core_chado_pub_relationship_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_protocol_schema()
  * Purpose: To describe the structure of protocol to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_protocol_schema () {
+ */
+function tripal_core_chado_protocol_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'protocol',
 //    'description' => 'TODO: please describe this table!',
@@ -5166,47 +5164,47 @@ function tripal_core_chado_protocol_schema () {
       'protocol_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'type_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'pub_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'dbxref_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'name' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'uri' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'protocoldescription' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'hardwaredescription' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'softwaredescription' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '',
+        'not NULL' => '',
       ),
     ),
     'primary key' => array(
@@ -5231,26 +5229,26 @@ function tripal_core_chado_protocol_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_protocolparam_schema()
  * Purpose: To describe the structure of protocolparam to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_protocolparam_schema () {
+ */
+function tripal_core_chado_protocolparam_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'protocolparam',
 //    'description' => 'TODO: please describe this table!',
@@ -5258,37 +5256,37 @@ function tripal_core_chado_protocolparam_schema () {
       'protocolparam_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'protocol_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'name' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'datatype_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'unittype_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'value' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'rank' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => '0',
       ),
     ),
@@ -5311,26 +5309,26 @@ function tripal_core_chado_protocolparam_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_pub_schema()
  * Purpose: To describe the structure of pub to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_pub_schema () {
+ */
+function tripal_core_chado_pub_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'pub',
 //    'description' => 'TODO: please describe this table!',
@@ -5338,81 +5336,81 @@ function tripal_core_chado_pub_schema () {
       'pub_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'title' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'volumetitle' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'volume' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'series_name' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'issue' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'pyear' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'pages' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'miniref' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'uniquename' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'type_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'is_obsolete' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'boolean',
-        'not null' => '',
+        'not NULL' => '',
         'default' => 'als',
       ),
       'publisher' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'pubplace' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => '',
+        'not NULL' => '',
       ),
     ),
     'primary key' => array(
@@ -5431,26 +5429,26 @@ function tripal_core_chado_pub_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_pub_dbxref_schema()
  * Purpose: To describe the structure of pub_dbxref to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_pub_dbxref_schema () {
+ */
+function tripal_core_chado_pub_dbxref_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'pub_dbxref',
 //    'description' => 'TODO: please describe this table!',
@@ -5458,22 +5456,22 @@ function tripal_core_chado_pub_dbxref_schema () {
       'pub_dbxref_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'pub_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'dbxref_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'is_current' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'boolean',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => 'ru',
       ),
     ),
@@ -5497,26 +5495,26 @@ function tripal_core_chado_pub_dbxref_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_quantification_schema()
  * Purpose: To describe the structure of quantification to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_quantification_schema () {
+ */
+function tripal_core_chado_quantification_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'quantification',
 //    'description' => 'TODO: please describe this table!',
@@ -5524,43 +5522,43 @@ function tripal_core_chado_quantification_schema () {
       'quantification_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'acquisition_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'operator_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'protocol_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'analysis_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'quantificationdate' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'datetime',
-        'not null' => '',
+        'not NULL' => '',
         'default' => 'ow(',
       ),
       'name' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'uri' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '',
+        'not NULL' => '',
       ),
     ),
     'primary key' => array(
@@ -5589,26 +5587,26 @@ function tripal_core_chado_quantification_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_quantification_relationship_schema()
  * Purpose: To describe the structure of quantification_relationship to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_quantification_relationship_schema () {
+ */
+function tripal_core_chado_quantification_relationship_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'quantification_relationship',
 //    'description' => 'TODO: please describe this table!',
@@ -5616,22 +5614,22 @@ function tripal_core_chado_quantification_relationship_schema () {
       'quantification_relationship_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'subject_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'type_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'object_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
     ),
     'primary key' => array(
@@ -5658,26 +5656,26 @@ function tripal_core_chado_quantification_relationship_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_stock_pub_schema()
  * Purpose: To describe the structure of stock_pub to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_stock_pub_schema () {
+ */
+function tripal_core_chado_stock_pub_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'stock_pub',
 //    'description' => 'TODO: please describe this table!',
@@ -5685,17 +5683,17 @@ function tripal_core_chado_stock_pub_schema () {
       'stock_pub_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'stock_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'pub_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
     ),
     'primary key' => array(
@@ -5718,26 +5716,26 @@ function tripal_core_chado_stock_pub_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_stock_relationship_schema()
  * Purpose: To describe the structure of stock_relationship to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_stock_relationship_schema () {
+ */
+function tripal_core_chado_stock_relationship_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'stock_relationship',
 //    'description' => 'TODO: please describe this table!',
@@ -5745,32 +5743,32 @@ function tripal_core_chado_stock_relationship_schema () {
       'stock_relationship_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'subject_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'object_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'type_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'value' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'rank' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => '0',
       ),
     ),
@@ -5799,26 +5797,26 @@ function tripal_core_chado_stock_relationship_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_stock_relationship_pub_schema()
  * Purpose: To describe the structure of stock_relationship_pub to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_stock_relationship_pub_schema () {
+ */
+function tripal_core_chado_stock_relationship_pub_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'stock_relationship_pub',
 //    'description' => 'TODO: please describe this table!',
@@ -5826,17 +5824,17 @@ function tripal_core_chado_stock_relationship_pub_schema () {
       'stock_relationship_pub_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'stock_relationship_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'pub_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
     ),
     'primary key' => array(
@@ -5859,26 +5857,26 @@ function tripal_core_chado_stock_relationship_pub_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_stockcollection_schema()
  * Purpose: To describe the structure of stockcollection to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_stockcollection_schema () {
+ */
+function tripal_core_chado_stockcollection_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'stockcollection',
 //    'description' => 'TODO: please describe this table!',
@@ -5886,28 +5884,28 @@ function tripal_core_chado_stockcollection_schema () {
       'stockcollection_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'type_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'contact_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'name' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'uniquename' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
     ),
     'primary key' => array(
@@ -5936,26 +5934,26 @@ function tripal_core_chado_stockcollection_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_stock_genotype_schema()
  * Purpose: To describe the structure of stock_genotype to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_stock_genotype_schema () {
+ */
+function tripal_core_chado_stock_genotype_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'stock_genotype',
 //    'description' => 'TODO: please describe this table!',
@@ -5963,17 +5961,17 @@ function tripal_core_chado_stock_genotype_schema () {
       'stock_genotype_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'stock_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'genotype_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
     ),
     'primary key' => array(
@@ -5996,26 +5994,26 @@ function tripal_core_chado_stock_genotype_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_stock_dbxref_schema()
  * Purpose: To describe the structure of stock_dbxref to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_stock_dbxref_schema () {
+ */
+function tripal_core_chado_stock_dbxref_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'stock_dbxref',
 //    'description' => 'TODO: please describe this table!',
@@ -6023,22 +6021,22 @@ function tripal_core_chado_stock_dbxref_schema () {
       'stock_dbxref_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'stock_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'dbxref_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'is_current' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'boolean',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => 'ru',
       ),
     ),
@@ -6062,26 +6060,26 @@ function tripal_core_chado_stock_dbxref_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_quantificationprop_schema()
  * Purpose: To describe the structure of quantificationprop to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_quantificationprop_schema () {
+ */
+function tripal_core_chado_quantificationprop_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'quantificationprop',
 //    'description' => 'TODO: please describe this table!',
@@ -6089,27 +6087,27 @@ function tripal_core_chado_quantificationprop_schema () {
       'quantificationprop_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'quantification_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'type_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'value' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'rank' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => '0',
       ),
     ),
@@ -6134,26 +6132,26 @@ function tripal_core_chado_quantificationprop_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_stats_paths_to_root_schema()
  * Purpose: To describe the structure of stats_paths_to_root to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_stats_paths_to_root_schema () {
+ */
+function tripal_core_chado_stats_paths_to_root_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'stats_paths_to_root',
 //    'description' => 'TODO: please describe this table!',
@@ -6161,30 +6159,30 @@ function tripal_core_chado_stats_paths_to_root_schema () {
       'cvterm_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'total_paths' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
         'size' => 'big',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'avg_distance' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'numeric',
-        'not null' => '',
+        'not NULL' => '',
         'precision' => '0',
         'scale' => '0',
       ),
       'min_distance' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'max_distance' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
     ),
     'primary key' => array(
@@ -6196,26 +6194,26 @@ function tripal_core_chado_stats_paths_to_root_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_stock_schema()
  * Purpose: To describe the structure of stock to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_stock_schema () {
+ */
+function tripal_core_chado_stock_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'stock',
 //    'description' => 'TODO: please describe this table!',
@@ -6223,43 +6221,43 @@ function tripal_core_chado_stock_schema () {
       'stock_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'dbxref_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'organism_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'name' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'uniquename' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'description' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'type_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'is_obsolete' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'boolean',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => 'als',
       ),
     ),
@@ -6293,26 +6291,26 @@ function tripal_core_chado_stock_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_stock_cvterm_schema()
  * Purpose: To describe the structure of stock_cvterm to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_stock_cvterm_schema () {
+ */
+function tripal_core_chado_stock_cvterm_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'stock_cvterm',
 //    'description' => 'TODO: please describe this table!',
@@ -6320,22 +6318,22 @@ function tripal_core_chado_stock_cvterm_schema () {
       'stock_cvterm_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'stock_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'cvterm_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'pub_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
     ),
     'primary key' => array(
@@ -6362,26 +6360,26 @@ function tripal_core_chado_stock_cvterm_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_feature_synonym_schema()
  * Purpose: To describe the structure of feature_synonym to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_feature_synonym_schema () {
+ */
+function tripal_core_chado_feature_synonym_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'feature_synonym',
 //    'description' => 'TODO: please describe this table!',
@@ -6389,33 +6387,33 @@ function tripal_core_chado_feature_synonym_schema () {
       'feature_synonym_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'synonym_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'feature_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'pub_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'is_current' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'boolean',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => 'als',
       ),
       'is_internal' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'boolean',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => 'als',
       ),
     ),
@@ -6443,26 +6441,26 @@ function tripal_core_chado_feature_synonym_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_feature_relationshipprop_pub_schema()
  * Purpose: To describe the structure of feature_relationshipprop_pub to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_feature_relationshipprop_pub_schema () {
+ */
+function tripal_core_chado_feature_relationshipprop_pub_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'feature_relationshipprop_pub',
 //    'description' => 'TODO: please describe this table!',
@@ -6470,17 +6468,17 @@ function tripal_core_chado_feature_relationshipprop_pub_schema () {
       'feature_relationshipprop_pub_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'feature_relationshipprop_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'pub_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
     ),
     'primary key' => array(
@@ -6503,26 +6501,26 @@ function tripal_core_chado_feature_relationshipprop_pub_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_cell_line_relationship_schema()
  * Purpose: To describe the structure of cell_line_relationship to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_cell_line_relationship_schema () {
+ */
+function tripal_core_chado_cell_line_relationship_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'cell_line_relationship',
 //    'description' => 'TODO: please describe this table!',
@@ -6530,22 +6528,22 @@ function tripal_core_chado_cell_line_relationship_schema () {
       'cell_line_relationship_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'subject_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'object_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'type_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
     ),
     'primary key' => array(
@@ -6563,26 +6561,26 @@ function tripal_core_chado_cell_line_relationship_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_cell_line_pub_schema()
  * Purpose: To describe the structure of cell_line_pub to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_cell_line_pub_schema () {
+ */
+function tripal_core_chado_cell_line_pub_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'cell_line_pub',
 //    'description' => 'TODO: please describe this table!',
@@ -6590,17 +6588,17 @@ function tripal_core_chado_cell_line_pub_schema () {
       'cell_line_pub_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'cell_line_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'pub_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
     ),
     'primary key' => array(
@@ -6617,26 +6615,26 @@ function tripal_core_chado_cell_line_pub_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_cell_line_synonym_schema()
  * Purpose: To describe the structure of cell_line_synonym to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_cell_line_synonym_schema () {
+ */
+function tripal_core_chado_cell_line_synonym_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'cell_line_synonym',
 //    'description' => 'TODO: please describe this table!',
@@ -6644,33 +6642,33 @@ function tripal_core_chado_cell_line_synonym_schema () {
       'cell_line_synonym_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'cell_line_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'synonym_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'pub_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'is_current' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'boolean',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => 'als',
       ),
       'is_internal' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'boolean',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => 'als',
       ),
     ),
@@ -6689,26 +6687,26 @@ function tripal_core_chado_cell_line_synonym_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_cell_lineprop_schema()
  * Purpose: To describe the structure of cell_lineprop to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_cell_lineprop_schema () {
+ */
+function tripal_core_chado_cell_lineprop_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'cell_lineprop',
 //    'description' => 'TODO: please describe this table!',
@@ -6716,27 +6714,27 @@ function tripal_core_chado_cell_lineprop_schema () {
       'cell_lineprop_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'cell_line_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'type_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'value' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'rank' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => '0',
       ),
     ),
@@ -6755,26 +6753,26 @@ function tripal_core_chado_cell_lineprop_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_cell_lineprop_pub_schema()
  * Purpose: To describe the structure of cell_lineprop_pub to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_cell_lineprop_pub_schema () {
+ */
+function tripal_core_chado_cell_lineprop_pub_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'cell_lineprop_pub',
 //    'description' => 'TODO: please describe this table!',
@@ -6782,17 +6780,17 @@ function tripal_core_chado_cell_lineprop_pub_schema () {
       'cell_lineprop_pub_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'cell_lineprop_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'pub_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
     ),
     'primary key' => array(
@@ -6809,26 +6807,26 @@ function tripal_core_chado_cell_lineprop_pub_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_cell_line_library_schema()
  * Purpose: To describe the structure of cell_line_library to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_cell_line_library_schema () {
+ */
+function tripal_core_chado_cell_line_library_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'cell_line_library',
 //    'description' => 'TODO: please describe this table!',
@@ -6836,22 +6834,22 @@ function tripal_core_chado_cell_line_library_schema () {
       'cell_line_library_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'cell_line_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'library_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'pub_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
     ),
     'primary key' => array(
@@ -6869,26 +6867,26 @@ function tripal_core_chado_cell_line_library_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_cell_line_feature_schema()
  * Purpose: To describe the structure of cell_line_feature to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_cell_line_feature_schema () {
+ */
+function tripal_core_chado_cell_line_feature_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'cell_line_feature',
 //    'description' => 'TODO: please describe this table!',
@@ -6896,22 +6894,22 @@ function tripal_core_chado_cell_line_feature_schema () {
       'cell_line_feature_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'cell_line_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'feature_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'pub_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
     ),
     'primary key' => array(
@@ -6929,26 +6927,26 @@ function tripal_core_chado_cell_line_feature_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_cell_line_schema()
  * Purpose: To describe the structure of cell_line to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_cell_line_schema () {
+ */
+function tripal_core_chado_cell_line_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'cell_line',
 //    'description' => 'TODO: please describe this table!',
@@ -6956,35 +6954,35 @@ function tripal_core_chado_cell_line_schema () {
       'cell_line_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'name' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'uniquename' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'organism_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'timeaccessioned' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'datetime',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => 'ow(',
       ),
       'timelastmodified' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'datetime',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => 'ow(',
       ),
     ),
@@ -7002,26 +7000,26 @@ function tripal_core_chado_cell_line_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_cell_line_cvterm_schema()
  * Purpose: To describe the structure of cell_line_cvterm to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_cell_line_cvterm_schema () {
+ */
+function tripal_core_chado_cell_line_cvterm_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'cell_line_cvterm',
 //    'description' => 'TODO: please describe this table!',
@@ -7029,27 +7027,27 @@ function tripal_core_chado_cell_line_cvterm_schema () {
       'cell_line_cvterm_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'cell_line_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'cvterm_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'pub_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'rank' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => '0',
       ),
     ),
@@ -7069,26 +7067,26 @@ function tripal_core_chado_cell_line_cvterm_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_cell_line_cvtermprop_schema()
  * Purpose: To describe the structure of cell_line_cvtermprop to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_cell_line_cvtermprop_schema () {
+ */
+function tripal_core_chado_cell_line_cvtermprop_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'cell_line_cvtermprop',
 //    'description' => 'TODO: please describe this table!',
@@ -7096,27 +7094,27 @@ function tripal_core_chado_cell_line_cvtermprop_schema () {
       'cell_line_cvtermprop_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'cell_line_cvterm_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'type_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'value' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'rank' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => '0',
       ),
     ),
@@ -7135,26 +7133,26 @@ function tripal_core_chado_cell_line_cvtermprop_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_cell_line_dbxref_schema()
  * Purpose: To describe the structure of cell_line_dbxref to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_cell_line_dbxref_schema () {
+ */
+function tripal_core_chado_cell_line_dbxref_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'cell_line_dbxref',
 //    'description' => 'TODO: please describe this table!',
@@ -7162,22 +7160,22 @@ function tripal_core_chado_cell_line_dbxref_schema () {
       'cell_line_dbxref_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'cell_line_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'dbxref_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'is_current' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'boolean',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => 'ru',
       ),
     ),
@@ -7195,26 +7193,26 @@ function tripal_core_chado_cell_line_dbxref_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_channel_schema()
  * Purpose: To describe the structure of channel to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_channel_schema () {
+ */
+function tripal_core_chado_channel_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'channel',
 //    'description' => 'TODO: please describe this table!',
@@ -7222,17 +7220,17 @@ function tripal_core_chado_channel_schema () {
       'channel_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'name' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'definition' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
     ),
     'primary key' => array(
@@ -7248,26 +7246,26 @@ function tripal_core_chado_channel_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_common_ancestor_cvterm_schema()
  * Purpose: To describe the structure of common_ancestor_cvterm to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_common_ancestor_cvterm_schema () {
+ */
+function tripal_core_chado_common_ancestor_cvterm_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'common_ancestor_cvterm',
 //    'description' => 'TODO: please describe this table!',
@@ -7275,32 +7273,32 @@ function tripal_core_chado_common_ancestor_cvterm_schema () {
       'cvterm1_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'cvterm2_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'ancestor_cvterm_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'pathdistance1' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'pathdistance2' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'total_pathdistance' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
     ),
     'primary key' => array(
@@ -7312,26 +7310,26 @@ function tripal_core_chado_common_ancestor_cvterm_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_cv_cvterm_count_with_obs_schema()
  * Purpose: To describe the structure of cv_cvterm_count_with_obs to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_cv_cvterm_count_with_obs_schema () {
+ */
+function tripal_core_chado_cv_cvterm_count_with_obs_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'cv_cvterm_count_with_obs',
 //    'description' => 'TODO: please describe this table!',
@@ -7340,13 +7338,13 @@ function tripal_core_chado_cv_cvterm_count_with_obs_schema () {
 //        'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'num_terms_incl_obs' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
         'size' => 'big',
-        'not null' => '',
+        'not NULL' => '',
       ),
     ),
     'primary key' => array(
@@ -7358,26 +7356,26 @@ function tripal_core_chado_cv_cvterm_count_with_obs_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_cv_leaf_schema()
  * Purpose: To describe the structure of cv_leaf to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_cv_leaf_schema () {
+ */
+function tripal_core_chado_cv_leaf_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'cv_leaf',
 //    'description' => 'TODO: please describe this table!',
@@ -7385,12 +7383,12 @@ function tripal_core_chado_cv_leaf_schema () {
       'cv_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'cvterm_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
     ),
     'primary key' => array(
@@ -7402,26 +7400,26 @@ function tripal_core_chado_cv_leaf_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_cv_link_count_schema()
  * Purpose: To describe the structure of cv_link_count to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_cv_link_count_schema () {
+ */
+function tripal_core_chado_cv_link_count_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'cv_link_count',
 //    'description' => 'TODO: please describe this table!',
@@ -7430,25 +7428,25 @@ function tripal_core_chado_cv_link_count_schema () {
 //        'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'relation_name' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '1024',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'relation_cv_name' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'num_links' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
         'size' => 'big',
-        'not null' => '',
+        'not NULL' => '',
       ),
     ),
     'primary key' => array(
@@ -7460,26 +7458,26 @@ function tripal_core_chado_cv_link_count_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_cv_path_count_schema()
  * Purpose: To describe the structure of cv_path_count to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_cv_path_count_schema () {
+ */
+function tripal_core_chado_cv_path_count_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'cv_path_count',
 //    'description' => 'TODO: please describe this table!',
@@ -7488,25 +7486,25 @@ function tripal_core_chado_cv_path_count_schema () {
 //        'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'relation_name' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '1024',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'relation_cv_name' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'num_paths' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
         'size' => 'big',
-        'not null' => '',
+        'not NULL' => '',
       ),
     ),
     'primary key' => array(
@@ -7518,26 +7516,26 @@ function tripal_core_chado_cv_path_count_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_cv_cvterm_count_schema()
  * Purpose: To describe the structure of cv_cvterm_count to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_cv_cvterm_count_schema () {
+ */
+function tripal_core_chado_cv_cvterm_count_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'cv_cvterm_count',
 //    'description' => 'TODO: please describe this table!',
@@ -7546,13 +7544,13 @@ function tripal_core_chado_cv_cvterm_count_schema () {
 //        'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'num_terms_excl_obs' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
         'size' => 'big',
-        'not null' => '',
+        'not NULL' => '',
       ),
     ),
     'primary key' => array(
@@ -7564,26 +7562,26 @@ function tripal_core_chado_cv_cvterm_count_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_cv_schema()
  * Purpose: To describe the structure of cv to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_cv_schema () {
+ */
+function tripal_core_chado_cv_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'cv',
 //    'description' => 'TODO: please describe this table!',
@@ -7591,18 +7589,18 @@ function tripal_core_chado_cv_schema () {
       'cv_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'name' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'definition' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '',
+        'not NULL' => '',
       ),
     ),
     'primary key' => array(
@@ -7618,26 +7616,26 @@ function tripal_core_chado_cv_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_common_descendant_cvterm_schema()
  * Purpose: To describe the structure of common_descendant_cvterm to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_common_descendant_cvterm_schema () {
+ */
+function tripal_core_chado_common_descendant_cvterm_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'common_descendant_cvterm',
 //    'description' => 'TODO: please describe this table!',
@@ -7645,32 +7643,32 @@ function tripal_core_chado_common_descendant_cvterm_schema () {
       'cvterm1_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'cvterm2_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'ancestor_cvterm_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'pathdistance1' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'pathdistance2' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'total_pathdistance' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
     ),
     'primary key' => array(
@@ -7682,26 +7680,26 @@ function tripal_core_chado_common_descendant_cvterm_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_contact_schema()
  * Purpose: To describe the structure of contact to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_contact_schema () {
+ */
+function tripal_core_chado_contact_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'contact',
 //    'description' => 'TODO: please describe this table!',
@@ -7709,24 +7707,24 @@ function tripal_core_chado_contact_schema () {
       'contact_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'type_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'name' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'description' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => '',
+        'not NULL' => '',
       ),
     ),
     'primary key' => array(
@@ -7742,26 +7740,26 @@ function tripal_core_chado_contact_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_contact_relationship_schema()
  * Purpose: To describe the structure of contact_relationship to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_contact_relationship_schema () {
+ */
+function tripal_core_chado_contact_relationship_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'contact_relationship',
 //    'description' => 'TODO: please describe this table!',
@@ -7769,22 +7767,22 @@ function tripal_core_chado_contact_relationship_schema () {
       'contact_relationship_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'type_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'subject_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'object_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
     ),
     'primary key' => array(
@@ -7811,26 +7809,26 @@ function tripal_core_chado_contact_relationship_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_control_schema()
  * Purpose: To describe the structure of control to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_control_schema () {
+ */
+function tripal_core_chado_control_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'control',
 //    'description' => 'TODO: please describe this table!',
@@ -7838,42 +7836,42 @@ function tripal_core_chado_control_schema () {
       'control_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'type_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'assay_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'tableinfo_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'row_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'name' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'value' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'rank' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => '0',
       ),
     ),
@@ -7899,26 +7897,26 @@ function tripal_core_chado_control_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_biomaterialprop_schema()
  * Purpose: To describe the structure of biomaterialprop to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_biomaterialprop_schema () {
+ */
+function tripal_core_chado_biomaterialprop_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'biomaterialprop',
 //    'description' => 'TODO: please describe this table!',
@@ -7926,27 +7924,27 @@ function tripal_core_chado_biomaterialprop_schema () {
       'biomaterialprop_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'biomaterial_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'type_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'value' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'rank' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => '0',
       ),
     ),
@@ -7971,26 +7969,26 @@ function tripal_core_chado_biomaterialprop_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_biomaterial_treatment_schema()
  * Purpose: To describe the structure of biomaterial_treatment to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_biomaterial_treatment_schema () {
+ */
+function tripal_core_chado_biomaterial_treatment_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'biomaterial_treatment',
 //    'description' => 'TODO: please describe this table!',
@@ -7998,32 +7996,32 @@ function tripal_core_chado_biomaterial_treatment_schema () {
       'biomaterial_treatment_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'biomaterial_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'treatment_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'unittype_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'value' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'float',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'rank' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => '0',
       ),
     ),
@@ -8050,26 +8048,26 @@ function tripal_core_chado_biomaterial_treatment_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_acquisition_relationship_schema()
  * Purpose: To describe the structure of acquisition_relationship to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_acquisition_relationship_schema () {
+ */
+function tripal_core_chado_acquisition_relationship_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'acquisition_relationship',
 //    'description' => 'TODO: please describe this table!',
@@ -8077,32 +8075,32 @@ function tripal_core_chado_acquisition_relationship_schema () {
       'acquisition_relationship_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'subject_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'type_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'object_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'value' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'rank' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => '0',
       ),
     ),
@@ -8131,26 +8129,26 @@ function tripal_core_chado_acquisition_relationship_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_acquisition_schema()
  * Purpose: To describe the structure of acquisition to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_acquisition_schema () {
+ */
+function tripal_core_chado_acquisition_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'acquisition',
 //    'description' => 'TODO: please describe this table!',
@@ -8158,38 +8156,38 @@ function tripal_core_chado_acquisition_schema () {
       'acquisition_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'assay_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'protocol_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'channel_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'acquisitiondate' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'datetime',
-        'not null' => '',
+        'not NULL' => '',
         'default' => 'ow(',
       ),
       'name' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'uri' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '',
+        'not NULL' => '',
       ),
     ),
     'primary key' => array(
@@ -8214,26 +8212,26 @@ function tripal_core_chado_acquisition_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_acquisitionprop_schema()
  * Purpose: To describe the structure of acquisitionprop to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_acquisitionprop_schema () {
+ */
+function tripal_core_chado_acquisitionprop_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'acquisitionprop',
 //    'description' => 'TODO: please describe this table!',
@@ -8241,27 +8239,27 @@ function tripal_core_chado_acquisitionprop_schema () {
       'acquisitionprop_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'acquisition_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'type_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'value' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'rank' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => '0',
       ),
     ),
@@ -8286,26 +8284,26 @@ function tripal_core_chado_acquisitionprop_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_all_feature_names_schema()
  * Purpose: To describe the structure of all_feature_names to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_all_feature_names_schema () {
+ */
+function tripal_core_chado_all_feature_names_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'all_feature_names',
 //    'description' => 'TODO: please describe this table!',
@@ -8313,18 +8311,18 @@ function tripal_core_chado_all_feature_names_schema () {
       'feature_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'name' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'organism_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
     ),
     'primary key' => array(
@@ -8336,26 +8334,26 @@ function tripal_core_chado_all_feature_names_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_analysis_schema()
  * Purpose: To describe the structure of analysis to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_analysis_schema () {
+ */
+function tripal_core_chado_analysis_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'analysis',
 //    'description' => 'TODO: please describe this table!',
@@ -8363,58 +8361,58 @@ function tripal_core_chado_analysis_schema () {
       'analysis_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'name' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'description' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'program' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'programversion' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'algorithm' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'sourcename' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'sourceversion' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'sourceuri' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'timeexecuted' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'datetime',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => 'ow(',
       ),
     ),
@@ -8433,26 +8431,26 @@ function tripal_core_chado_analysis_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_analysisfeature_schema()
  * Purpose: To describe the structure of analysisfeature to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_analysisfeature_schema () {
+ */
+function tripal_core_chado_analysisfeature_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'analysisfeature',
 //    'description' => 'TODO: please describe this table!',
@@ -8460,41 +8458,41 @@ function tripal_core_chado_analysisfeature_schema () {
       'analysisfeature_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'feature_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'analysis_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'rawscore' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'float',
         'size' => 'big',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'normscore' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'float',
         'size' => 'big',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'significance' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'float',
         'size' => 'big',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'identity' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'float',
         'size' => 'big',
-        'not null' => '',
+        'not NULL' => '',
       ),
     ),
     'primary key' => array(
@@ -8517,26 +8515,26 @@ function tripal_core_chado_analysisfeature_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_analysisfeatureprop_schema()
  * Purpose: To describe the structure of analysisfeatureprop to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_analysisfeatureprop_schema () {
+ */
+function tripal_core_chado_analysisfeatureprop_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'analysisfeatureprop',
 //    'description' => 'TODO: please describe this table!',
@@ -8544,27 +8542,27 @@ function tripal_core_chado_analysisfeatureprop_schema () {
       'analysisfeatureprop_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'analysisfeature_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'type_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'value' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'rank' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
     ),
     'primary key' => array(
@@ -8582,26 +8580,26 @@ function tripal_core_chado_analysisfeatureprop_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_assayprop_schema()
  * Purpose: To describe the structure of assayprop to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_assayprop_schema () {
+ */
+function tripal_core_chado_assayprop_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'assayprop',
 //    'description' => 'TODO: please describe this table!',
@@ -8609,27 +8607,27 @@ function tripal_core_chado_assayprop_schema () {
       'assayprop_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'assay_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'type_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'value' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'rank' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => '0',
       ),
     ),
@@ -8654,26 +8652,26 @@ function tripal_core_chado_assayprop_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_biomaterial_schema()
  * Purpose: To describe the structure of biomaterial to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_biomaterial_schema () {
+ */
+function tripal_core_chado_biomaterial_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'biomaterial',
 //    'description' => 'TODO: please describe this table!',
@@ -8681,32 +8679,32 @@ function tripal_core_chado_biomaterial_schema () {
       'biomaterial_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'taxon_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'biosourceprovider_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'dbxref_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'name' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'description' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '',
+        'not NULL' => '',
       ),
     ),
     'primary key' => array(
@@ -8731,26 +8729,26 @@ function tripal_core_chado_biomaterial_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_biomaterial_dbxref_schema()
  * Purpose: To describe the structure of biomaterial_dbxref to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_biomaterial_dbxref_schema () {
+ */
+function tripal_core_chado_biomaterial_dbxref_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'biomaterial_dbxref',
 //    'description' => 'TODO: please describe this table!',
@@ -8758,17 +8756,17 @@ function tripal_core_chado_biomaterial_dbxref_schema () {
       'biomaterial_dbxref_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'biomaterial_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'dbxref_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
     ),
     'primary key' => array(
@@ -8791,26 +8789,26 @@ function tripal_core_chado_biomaterial_dbxref_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_biomaterial_relationship_schema()
  * Purpose: To describe the structure of biomaterial_relationship to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_biomaterial_relationship_schema () {
+ */
+function tripal_core_chado_biomaterial_relationship_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'biomaterial_relationship',
 //    'description' => 'TODO: please describe this table!',
@@ -8818,22 +8816,22 @@ function tripal_core_chado_biomaterial_relationship_schema () {
       'biomaterial_relationship_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'subject_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'type_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'object_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
     ),
     'primary key' => array(
@@ -8860,26 +8858,26 @@ function tripal_core_chado_biomaterial_relationship_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_assay_project_schema()
  * Purpose: To describe the structure of assay_project to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_assay_project_schema () {
+ */
+function tripal_core_chado_assay_project_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'assay_project',
 //    'description' => 'TODO: please describe this table!',
@@ -8887,17 +8885,17 @@ function tripal_core_chado_assay_project_schema () {
       'assay_project_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'assay_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'project_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
     ),
     'primary key' => array(
@@ -8920,26 +8918,26 @@ function tripal_core_chado_assay_project_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_assay_biomaterial_schema()
  * Purpose: To describe the structure of assay_biomaterial to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_assay_biomaterial_schema () {
+ */
+function tripal_core_chado_assay_biomaterial_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'assay_biomaterial',
 //    'description' => 'TODO: please describe this table!',
@@ -8947,27 +8945,27 @@ function tripal_core_chado_assay_biomaterial_schema () {
       'assay_biomaterial_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'assay_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'biomaterial_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'channel_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'rank' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => '0',
       ),
     ),
@@ -8996,26 +8994,26 @@ function tripal_core_chado_assay_biomaterial_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_analysisprop_schema()
  * Purpose: To describe the structure of analysisprop to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_analysisprop_schema () {
+ */
+function tripal_core_chado_analysisprop_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'analysisprop',
 //    'description' => 'TODO: please describe this table!',
@@ -9023,22 +9021,22 @@ function tripal_core_chado_analysisprop_schema () {
       'analysisprop_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'analysis_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'type_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'value' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '',
+        'not NULL' => '',
       ),
     ),
     'primary key' => array(
@@ -9061,26 +9059,26 @@ function tripal_core_chado_analysisprop_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_arraydesign_schema()
  * Purpose: To describe the structure of arraydesign to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_arraydesign_schema () {
+ */
+function tripal_core_chado_arraydesign_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'arraydesign',
 //    'description' => 'TODO: please describe this table!',
@@ -9088,92 +9086,92 @@ function tripal_core_chado_arraydesign_schema () {
       'arraydesign_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'manufacturer_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'platformtype_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'substratetype_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'protocol_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'dbxref_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'name' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'version' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'description' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'array_dimensions' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'element_dimensions' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'num_of_elements' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'num_array_columns' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'num_array_rows' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'num_grid_columns' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'num_grid_rows' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'num_sub_columns' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'num_sub_rows' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
     ),
     'primary key' => array(
@@ -9204,26 +9202,26 @@ function tripal_core_chado_arraydesign_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_arraydesignprop_schema()
  * Purpose: To describe the structure of arraydesignprop to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_arraydesignprop_schema () {
+ */
+function tripal_core_chado_arraydesignprop_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'arraydesignprop',
 //    'description' => 'TODO: please describe this table!',
@@ -9231,27 +9229,27 @@ function tripal_core_chado_arraydesignprop_schema () {
       'arraydesignprop_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'arraydesign_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'type_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'value' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'rank' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => '0',
       ),
     ),
@@ -9276,26 +9274,26 @@ function tripal_core_chado_arraydesignprop_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_assay_schema()
  * Purpose: To describe the structure of assay to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_assay_schema () {
+ */
+function tripal_core_chado_assay_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'assay',
 //    'description' => 'TODO: please describe this table!',
@@ -9303,53 +9301,53 @@ function tripal_core_chado_assay_schema () {
       'assay_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'arraydesign_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'protocol_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'assaydate' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'datetime',
-        'not null' => '',
+        'not NULL' => '',
         'default' => 'ow(',
       ),
       'arrayidentifier' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'arraybatchidentifier' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'operator_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'dbxref_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'name' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'description' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '',
+        'not NULL' => '',
       ),
     ),
     'primary key' => array(
@@ -9377,26 +9375,26 @@ function tripal_core_chado_assay_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_cv_root_schema()
  * Purpose: To describe the structure of cv_root to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_cv_root_schema () {
+ */
+function tripal_core_chado_cv_root_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'cv_root',
 //    'description' => 'TODO: please describe this table!',
@@ -9404,12 +9402,12 @@ function tripal_core_chado_cv_root_schema () {
       'cv_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'root_cvterm_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
     ),
     'primary key' => array(
@@ -9421,26 +9419,26 @@ function tripal_core_chado_cv_root_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_cvterm_schema()
  * Purpose: To describe the structure of cvterm to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_cvterm_schema () {
+ */
+function tripal_core_chado_cvterm_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'cvterm',
 //    'description' => 'TODO: please describe this table!',
@@ -9448,39 +9446,39 @@ function tripal_core_chado_cvterm_schema () {
       'cvterm_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'cv_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'name' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '1024',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'definition' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'dbxref_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'is_obsolete' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => '0',
       ),
       'is_relationshiptype' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => '0',
       ),
     ),
@@ -9511,26 +9509,26 @@ function tripal_core_chado_cvterm_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_feature_dbxref_schema()
  * Purpose: To describe the structure of feature_dbxref to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_feature_dbxref_schema () {
+ */
+function tripal_core_chado_feature_dbxref_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'feature_dbxref',
 //    'description' => 'TODO: please describe this table!',
@@ -9538,22 +9536,22 @@ function tripal_core_chado_feature_dbxref_schema () {
       'feature_dbxref_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'feature_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'dbxref_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'is_current' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'boolean',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => 'ru',
       ),
     ),
@@ -9577,26 +9575,26 @@ function tripal_core_chado_feature_dbxref_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_feature_cvtermprop_schema()
  * Purpose: To describe the structure of feature_cvtermprop to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_feature_cvtermprop_schema () {
+ */
+function tripal_core_chado_feature_cvtermprop_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'feature_cvtermprop',
 //    'description' => 'TODO: please describe this table!',
@@ -9604,27 +9602,27 @@ function tripal_core_chado_feature_cvtermprop_schema () {
       'feature_cvtermprop_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'feature_cvterm_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'type_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'value' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'rank' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => '0',
       ),
     ),
@@ -9649,26 +9647,26 @@ function tripal_core_chado_feature_cvtermprop_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_feature_difference_schema()
  * Purpose: To describe the structure of feature_difference to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_feature_difference_schema () {
+ */
+function tripal_core_chado_feature_difference_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'feature_difference',
 //    'description' => 'TODO: please describe this table!',
@@ -9676,33 +9674,33 @@ function tripal_core_chado_feature_difference_schema () {
       'subject_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'object_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'srcfeature_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
         'size' => 'small',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'fmin' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'fmax' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'strand' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
     ),
     'primary key' => array(
@@ -9714,26 +9712,26 @@ function tripal_core_chado_feature_difference_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_feature_disjoint_schema()
  * Purpose: To describe the structure of feature_disjoint to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_feature_disjoint_schema () {
+ */
+function tripal_core_chado_feature_disjoint_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'feature_disjoint',
 //    'description' => 'TODO: please describe this table!',
@@ -9741,12 +9739,12 @@ function tripal_core_chado_feature_disjoint_schema () {
       'subject_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'object_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
     ),
     'primary key' => array(
@@ -9758,26 +9756,26 @@ function tripal_core_chado_feature_disjoint_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_feature_distance_schema()
  * Purpose: To describe the structure of feature_distance to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_feature_distance_schema () {
+ */
+function tripal_core_chado_feature_distance_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'feature_distance',
 //    'description' => 'TODO: please describe this table!',
@@ -9785,34 +9783,34 @@ function tripal_core_chado_feature_distance_schema () {
       'subject_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'object_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'srcfeature_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'subject_strand' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
         'size' => 'small',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'object_strand' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
         'size' => 'small',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'distance' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
     ),
     'primary key' => array(
@@ -9824,26 +9822,26 @@ function tripal_core_chado_feature_distance_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_feature_cvterm_pub_schema()
  * Purpose: To describe the structure of feature_cvterm_pub to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_feature_cvterm_pub_schema () {
+ */
+function tripal_core_chado_feature_cvterm_pub_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'feature_cvterm_pub',
 //    'description' => 'TODO: please describe this table!',
@@ -9851,17 +9849,17 @@ function tripal_core_chado_feature_cvterm_pub_schema () {
       'feature_cvterm_pub_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'feature_cvterm_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'pub_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
     ),
     'primary key' => array(
@@ -9884,26 +9882,26 @@ function tripal_core_chado_feature_cvterm_pub_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_feature_cvterm_dbxref_schema()
  * Purpose: To describe the structure of feature_cvterm_dbxref to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_feature_cvterm_dbxref_schema () {
+ */
+function tripal_core_chado_feature_cvterm_dbxref_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'feature_cvterm_dbxref',
 //    'description' => 'TODO: please describe this table!',
@@ -9911,17 +9909,17 @@ function tripal_core_chado_feature_cvterm_dbxref_schema () {
       'feature_cvterm_dbxref_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'feature_cvterm_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'dbxref_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
     ),
     'primary key' => array(
@@ -9944,26 +9942,26 @@ function tripal_core_chado_feature_cvterm_dbxref_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_f_type_schema()
  * Purpose: To describe the structure of f_type to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_f_type_schema () {
+ */
+function tripal_core_chado_f_type_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'f_type',
 //    'description' => 'TODO: please describe this table!',
@@ -9971,55 +9969,55 @@ function tripal_core_chado_f_type_schema () {
       'feature_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'name' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'dbxref_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'type' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '1024',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'residues' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'seqlen' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'md5checksum' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'char',
         'length' => '32',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'type_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'timeaccessioned' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'datetime',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'timelastmodified' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'datetime',
-        'not null' => '',
+        'not NULL' => '',
       ),
     ),
     'primary key' => array(
@@ -10031,26 +10029,26 @@ function tripal_core_chado_f_type_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_feature_schema()
  * Purpose: To describe the structure of feature to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_feature_schema () {
+ */
+function tripal_core_chado_feature_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'feature',
 //    'description' => 'TODO: please describe this table!',
@@ -10058,72 +10056,72 @@ function tripal_core_chado_feature_schema () {
       'feature_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'dbxref_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'organism_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'name' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'uniquename' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'residues' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'seqlen' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'md5checksum' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'char',
         'length' => '32',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'type_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'is_analysis' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'boolean',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => 'als',
       ),
       'is_obsolete' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'boolean',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => 'als',
       ),
       'timeaccessioned' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'datetime',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => 'ow(',
       ),
       'timelastmodified' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'datetime',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => 'ow(',
       ),
     ),
@@ -10157,26 +10155,26 @@ function tripal_core_chado_feature_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_feature_contains_schema()
  * Purpose: To describe the structure of feature_contains to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_feature_contains_schema () {
+ */
+function tripal_core_chado_feature_contains_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'feature_contains',
 //    'description' => 'TODO: please describe this table!',
@@ -10184,12 +10182,12 @@ function tripal_core_chado_feature_contains_schema () {
       'subject_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'object_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
     ),
     'primary key' => array(
@@ -10201,26 +10199,26 @@ function tripal_core_chado_feature_contains_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_feature_cvterm_schema()
  * Purpose: To describe the structure of feature_cvterm to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_feature_cvterm_schema () {
+ */
+function tripal_core_chado_feature_cvterm_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'feature_cvterm',
 //    'description' => 'TODO: please describe this table!',
@@ -10228,33 +10226,33 @@ function tripal_core_chado_feature_cvterm_schema () {
       'feature_cvterm_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'feature_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'cvterm_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'pub_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'is_not' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'boolean',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => 'als',
       ),
       'rank' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => '0',
       ),
     ),
@@ -10283,26 +10281,26 @@ function tripal_core_chado_feature_cvterm_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_feature_expression_schema()
  * Purpose: To describe the structure of feature_expression to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_feature_expression_schema () {
+ */
+function tripal_core_chado_feature_expression_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'feature_expression',
 //    'description' => 'TODO: please describe this table!',
@@ -10310,22 +10308,22 @@ function tripal_core_chado_feature_expression_schema () {
       'feature_expression_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'expression_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'feature_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'pub_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
     ),
     'primary key' => array(
@@ -10352,26 +10350,26 @@ function tripal_core_chado_feature_expression_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_feature_expressionprop_schema()
  * Purpose: To describe the structure of feature_expressionprop to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_feature_expressionprop_schema () {
+ */
+function tripal_core_chado_feature_expressionprop_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'feature_expressionprop',
 //    'description' => 'TODO: please describe this table!',
@@ -10379,27 +10377,27 @@ function tripal_core_chado_feature_expressionprop_schema () {
       'feature_expressionprop_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'feature_expression_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'type_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'value' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'rank' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => '0',
       ),
     ),
@@ -10424,26 +10422,26 @@ function tripal_core_chado_feature_expressionprop_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_feature_pubprop_schema()
  * Purpose: To describe the structure of feature_pubprop to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_feature_pubprop_schema () {
+ */
+function tripal_core_chado_feature_pubprop_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'feature_pubprop',
 //    'description' => 'TODO: please describe this table!',
@@ -10451,27 +10449,27 @@ function tripal_core_chado_feature_pubprop_schema () {
       'feature_pubprop_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'feature_pub_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'type_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'value' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'rank' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => '0',
       ),
     ),
@@ -10493,26 +10491,26 @@ function tripal_core_chado_feature_pubprop_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_feature_relationship_schema()
  * Purpose: To describe the structure of feature_relationship to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_feature_relationship_schema () {
+ */
+function tripal_core_chado_feature_relationship_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'feature_relationship',
 //    'description' => 'TODO: please describe this table!',
@@ -10520,32 +10518,32 @@ function tripal_core_chado_feature_relationship_schema () {
       'feature_relationship_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'subject_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'object_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'type_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'value' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'rank' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => '0',
       ),
     ),
@@ -10574,26 +10572,26 @@ function tripal_core_chado_feature_relationship_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_feature_relationship_pub_schema()
  * Purpose: To describe the structure of feature_relationship_pub to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_feature_relationship_pub_schema () {
+ */
+function tripal_core_chado_feature_relationship_pub_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'feature_relationship_pub',
 //    'description' => 'TODO: please describe this table!',
@@ -10601,17 +10599,17 @@ function tripal_core_chado_feature_relationship_pub_schema () {
       'feature_relationship_pub_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'feature_relationship_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'pub_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
     ),
     'primary key' => array(
@@ -10634,26 +10632,26 @@ function tripal_core_chado_feature_relationship_pub_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_feature_relationshipprop_schema()
  * Purpose: To describe the structure of feature_relationshipprop to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_feature_relationshipprop_schema () {
+ */
+function tripal_core_chado_feature_relationshipprop_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'feature_relationshipprop',
 //    'description' => 'TODO: please describe this table!',
@@ -10661,27 +10659,27 @@ function tripal_core_chado_feature_relationshipprop_schema () {
       'feature_relationshipprop_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'feature_relationship_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'type_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'value' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'rank' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => '0',
       ),
     ),
@@ -10706,26 +10704,26 @@ function tripal_core_chado_feature_relationshipprop_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_feature_pub_schema()
  * Purpose: To describe the structure of feature_pub to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_feature_pub_schema () {
+ */
+function tripal_core_chado_feature_pub_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'feature_pub',
 //    'description' => 'TODO: please describe this table!',
@@ -10733,17 +10731,17 @@ function tripal_core_chado_feature_pub_schema () {
       'feature_pub_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'feature_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'pub_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
     ),
     'primary key' => array(
@@ -10766,26 +10764,26 @@ function tripal_core_chado_feature_pub_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_feature_phenotype_schema()
  * Purpose: To describe the structure of feature_phenotype to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_feature_phenotype_schema () {
+ */
+function tripal_core_chado_feature_phenotype_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'feature_phenotype',
 //    'description' => 'TODO: please describe this table!',
@@ -10793,17 +10791,17 @@ function tripal_core_chado_feature_phenotype_schema () {
       'feature_phenotype_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'feature_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'phenotype_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
     ),
     'primary key' => array(
@@ -10826,26 +10824,26 @@ function tripal_core_chado_feature_phenotype_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_feature_genotype_schema()
  * Purpose: To describe the structure of feature_genotype to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_feature_genotype_schema () {
+ */
+function tripal_core_chado_feature_genotype_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'feature_genotype',
 //    'description' => 'TODO: please describe this table!',
@@ -10853,37 +10851,37 @@ function tripal_core_chado_feature_genotype_schema () {
       'feature_genotype_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'feature_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'genotype_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'chromosome_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'rank' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'cgroup' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'cvterm_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
     ),
     'primary key' => array(
@@ -10910,26 +10908,26 @@ function tripal_core_chado_feature_genotype_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_feature_intersection_schema()
  * Purpose: To describe the structure of feature_intersection to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_feature_intersection_schema () {
+ */
+function tripal_core_chado_feature_intersection_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'feature_intersection',
 //    'description' => 'TODO: please describe this table!',
@@ -10937,39 +10935,39 @@ function tripal_core_chado_feature_intersection_schema () {
       'subject_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'object_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'srcfeature_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'subject_strand' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
         'size' => 'small',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'object_strand' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
         'size' => 'small',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'fmin' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'fmax' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
     ),
     'primary key' => array(
@@ -10981,26 +10979,26 @@ function tripal_core_chado_feature_intersection_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_feature_meets_schema()
  * Purpose: To describe the structure of feature_meets to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_feature_meets_schema () {
+ */
+function tripal_core_chado_feature_meets_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'feature_meets',
 //    'description' => 'TODO: please describe this table!',
@@ -11008,12 +11006,12 @@ function tripal_core_chado_feature_meets_schema () {
       'subject_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'object_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
     ),
     'primary key' => array(
@@ -11025,26 +11023,26 @@ function tripal_core_chado_feature_meets_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_feature_meets_on_same_strand_schema()
  * Purpose: To describe the structure of feature_meets_on_same_strand to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_feature_meets_on_same_strand_schema () {
+ */
+function tripal_core_chado_feature_meets_on_same_strand_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'feature_meets_on_same_strand',
 //    'description' => 'TODO: please describe this table!',
@@ -11052,12 +11050,12 @@ function tripal_core_chado_feature_meets_on_same_strand_schema () {
       'subject_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'object_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
     ),
     'primary key' => array(
@@ -11069,26 +11067,26 @@ function tripal_core_chado_feature_meets_on_same_strand_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_f_loc_schema()
  * Purpose: To describe the structure of f_loc to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_f_loc_schema () {
+ */
+function tripal_core_chado_f_loc_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'f_loc',
 //    'description' => 'TODO: please describe this table!',
@@ -11096,34 +11094,34 @@ function tripal_core_chado_f_loc_schema () {
       'feature_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'name' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'dbxref_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'nbeg' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'nend' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'strand' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
         'size' => 'small',
-        'not null' => '',
+        'not NULL' => '',
       ),
     ),
     'primary key' => array(
@@ -11135,26 +11133,26 @@ function tripal_core_chado_f_loc_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_expressionprop_schema()
  * Purpose: To describe the structure of expressionprop to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_expressionprop_schema () {
+ */
+function tripal_core_chado_expressionprop_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'expressionprop',
 //    'description' => 'TODO: please describe this table!',
@@ -11162,27 +11160,27 @@ function tripal_core_chado_expressionprop_schema () {
       'expressionprop_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'expression_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'type_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'value' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'rank' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => '0',
       ),
     ),
@@ -11207,26 +11205,26 @@ function tripal_core_chado_expressionprop_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_db_dbxref_count_schema()
  * Purpose: To describe the structure of db_dbxref_count to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_db_dbxref_count_schema () {
+ */
+function tripal_core_chado_db_dbxref_count_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'db_dbxref_count',
 //    'description' => 'TODO: please describe this table!',
@@ -11235,13 +11233,13 @@ function tripal_core_chado_db_dbxref_count_schema () {
 //        'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'num_dbxrefs' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
         'size' => 'big',
-        'not null' => '',
+        'not NULL' => '',
       ),
     ),
     'primary key' => array(
@@ -11253,26 +11251,26 @@ function tripal_core_chado_db_dbxref_count_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_dbxref_schema()
  * Purpose: To describe the structure of dbxref to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_dbxref_schema () {
+ */
+function tripal_core_chado_dbxref_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'dbxref',
 //    'description' => 'TODO: please describe this table!',
@@ -11280,30 +11278,30 @@ function tripal_core_chado_dbxref_schema () {
       'dbxref_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'db_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'accession' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'version' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => '',
       ),
       'description' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '',
+        'not NULL' => '',
       ),
     ),
     'primary key' => array(
@@ -11330,26 +11328,26 @@ function tripal_core_chado_dbxref_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_dbxrefprop_schema()
  * Purpose: To describe the structure of dbxrefprop to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_dbxrefprop_schema () {
+ */
+function tripal_core_chado_dbxrefprop_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'dbxrefprop',
 //    'description' => 'TODO: please describe this table!',
@@ -11357,28 +11355,28 @@ function tripal_core_chado_dbxrefprop_schema () {
       'dbxrefprop_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'dbxref_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'type_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'value' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => '',
       ),
       'rank' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => '0',
       ),
     ),
@@ -11403,26 +11401,26 @@ function tripal_core_chado_dbxrefprop_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_dfeatureloc_schema()
  * Purpose: To describe the structure of dfeatureloc to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_dfeatureloc_schema () {
+ */
+function tripal_core_chado_dfeatureloc_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'dfeatureloc',
 //    'description' => 'TODO: please describe this table!',
@@ -11430,63 +11428,63 @@ function tripal_core_chado_dfeatureloc_schema () {
       'featureloc_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'feature_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'srcfeature_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'nbeg' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'is_nbeg_partial' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'boolean',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'nend' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'is_nend_partial' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'boolean',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'strand' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
         'size' => 'small',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'phase' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'residue_info' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'locgroup' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'rank' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
     ),
     'primary key' => array(
@@ -11498,26 +11496,26 @@ function tripal_core_chado_dfeatureloc_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_db_schema()
  * Purpose: To describe the structure of db to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_db_schema () {
+ */
+function tripal_core_chado_db_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'db',
 //    'description' => 'TODO: please describe this table!',
@@ -11525,31 +11523,31 @@ function tripal_core_chado_db_schema () {
       'db_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'name' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'description' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'urlprefix' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'url' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => '',
+        'not NULL' => '',
       ),
     ),
     'primary key' => array(
@@ -11565,26 +11563,26 @@ function tripal_core_chado_db_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_cvtermsynonym_schema()
  * Purpose: To describe the structure of cvtermsynonym to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_cvtermsynonym_schema () {
+ */
+function tripal_core_chado_cvtermsynonym_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'cvtermsynonym',
 //    'description' => 'TODO: please describe this table!',
@@ -11592,23 +11590,23 @@ function tripal_core_chado_cvtermsynonym_schema () {
       'cvtermsynonym_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'cvterm_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'synonym' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '1024',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'type_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
     ),
     'primary key' => array(
@@ -11628,26 +11626,26 @@ function tripal_core_chado_cvtermsynonym_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_cvterm_dbxref_schema()
  * Purpose: To describe the structure of cvterm_dbxref to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_cvterm_dbxref_schema () {
+ */
+function tripal_core_chado_cvterm_dbxref_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'cvterm_dbxref',
 //    'description' => 'TODO: please describe this table!',
@@ -11655,22 +11653,22 @@ function tripal_core_chado_cvterm_dbxref_schema () {
       'cvterm_dbxref_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'cvterm_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'dbxref_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'is_for_definition' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => '0',
       ),
     ),
@@ -11694,26 +11692,26 @@ function tripal_core_chado_cvterm_dbxref_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_cvterm_relationship_schema()
  * Purpose: To describe the structure of cvterm_relationship to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_cvterm_relationship_schema () {
+ */
+function tripal_core_chado_cvterm_relationship_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'cvterm_relationship',
 //    'description' => 'TODO: please describe this table!',
@@ -11721,22 +11719,22 @@ function tripal_core_chado_cvterm_relationship_schema () {
       'cvterm_relationship_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'type_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'subject_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'object_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
     ),
     'primary key' => array(
@@ -11763,26 +11761,26 @@ function tripal_core_chado_cvterm_relationship_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_cvtermpath_schema()
  * Purpose: To describe the structure of cvtermpath to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_cvtermpath_schema () {
+ */
+function tripal_core_chado_cvtermpath_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'cvtermpath',
 //    'description' => 'TODO: please describe this table!',
@@ -11790,32 +11788,32 @@ function tripal_core_chado_cvtermpath_schema () {
       'cvtermpath_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'type_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'subject_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'object_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'cv_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'pathdistance' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
     ),
     'primary key' => array(
@@ -11846,26 +11844,26 @@ function tripal_core_chado_cvtermpath_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_cvtermprop_schema()
  * Purpose: To describe the structure of cvtermprop to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_cvtermprop_schema () {
+ */
+function tripal_core_chado_cvtermprop_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'cvtermprop',
 //    'description' => 'TODO: please describe this table!',
@@ -11873,28 +11871,28 @@ function tripal_core_chado_cvtermprop_schema () {
       'cvtermprop_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'cvterm_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'type_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'value' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => '',
       ),
       'rank' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => '0',
       ),
     ),
@@ -11920,26 +11918,26 @@ function tripal_core_chado_cvtermprop_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_eimage_schema()
  * Purpose: To describe the structure of eimage to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_eimage_schema () {
+ */
+function tripal_core_chado_eimage_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'eimage',
 //    'description' => 'TODO: please describe this table!',
@@ -11947,24 +11945,24 @@ function tripal_core_chado_eimage_schema () {
       'eimage_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'eimage_data' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'eimage_type' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'image_uri' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => '',
+        'not NULL' => '',
       ),
     ),
     'primary key' => array(
@@ -11977,26 +11975,26 @@ function tripal_core_chado_eimage_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_element_schema()
  * Purpose: To describe the structure of element to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_element_schema () {
+ */
+function tripal_core_chado_element_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'element',
 //    'description' => 'TODO: please describe this table!',
@@ -12004,27 +12002,27 @@ function tripal_core_chado_element_schema () {
       'element_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'feature_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'arraydesign_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'type_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'dbxref_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '',
+        'not NULL' => '',
       ),
     ),
     'primary key' => array(
@@ -12053,26 +12051,26 @@ function tripal_core_chado_element_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_expression_cvterm_schema()
  * Purpose: To describe the structure of expression_cvterm to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_expression_cvterm_schema () {
+ */
+function tripal_core_chado_expression_cvterm_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'expression_cvterm',
 //    'description' => 'TODO: please describe this table!',
@@ -12080,28 +12078,28 @@ function tripal_core_chado_expression_cvterm_schema () {
       'expression_cvterm_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'expression_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'cvterm_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'rank' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => '0',
       ),
       'cvterm_type_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
     ),
     'primary key' => array(
@@ -12128,26 +12126,26 @@ function tripal_core_chado_expression_cvterm_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_expression_cvtermprop_schema()
  * Purpose: To describe the structure of expression_cvtermprop to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_expression_cvtermprop_schema () {
+ */
+function tripal_core_chado_expression_cvtermprop_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'expression_cvtermprop',
 //    'description' => 'TODO: please describe this table!',
@@ -12155,27 +12153,27 @@ function tripal_core_chado_expression_cvtermprop_schema () {
       'expression_cvtermprop_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'expression_cvterm_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'type_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'value' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'rank' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => '0',
       ),
     ),
@@ -12200,26 +12198,26 @@ function tripal_core_chado_expression_cvtermprop_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_expression_image_schema()
  * Purpose: To describe the structure of expression_image to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_expression_image_schema () {
+ */
+function tripal_core_chado_expression_image_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'expression_image',
 //    'description' => 'TODO: please describe this table!',
@@ -12227,17 +12225,17 @@ function tripal_core_chado_expression_image_schema () {
       'expression_image_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'expression_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'eimage_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
     ),
     'primary key' => array(
@@ -12260,26 +12258,26 @@ function tripal_core_chado_expression_image_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_expression_pub_schema()
  * Purpose: To describe the structure of expression_pub to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_expression_pub_schema () {
+ */
+function tripal_core_chado_expression_pub_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'expression_pub',
 //    'description' => 'TODO: please describe this table!',
@@ -12287,17 +12285,17 @@ function tripal_core_chado_expression_pub_schema () {
       'expression_pub_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'expression_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'pub_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
     ),
     'primary key' => array(
@@ -12320,26 +12318,26 @@ function tripal_core_chado_expression_pub_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_expression_schema()
  * Purpose: To describe the structure of expression to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_expression_schema () {
+ */
+function tripal_core_chado_expression_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'expression',
 //    'description' => 'TODO: please describe this table!',
@@ -12347,23 +12345,23 @@ function tripal_core_chado_expression_schema () {
       'expression_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'uniquename' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'md5checksum' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'char',
         'length' => '32',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'description' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '',
+        'not NULL' => '',
       ),
     ),
     'primary key' => array(
@@ -12379,26 +12377,26 @@ function tripal_core_chado_expression_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_environment_cvterm_schema()
  * Purpose: To describe the structure of environment_cvterm to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_environment_cvterm_schema () {
+ */
+function tripal_core_chado_environment_cvterm_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'environment_cvterm',
 //    'description' => 'TODO: please describe this table!',
@@ -12406,17 +12404,17 @@ function tripal_core_chado_environment_cvterm_schema () {
       'environment_cvterm_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'environment_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'cvterm_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
     ),
     'primary key' => array(
@@ -12439,26 +12437,26 @@ function tripal_core_chado_environment_cvterm_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_element_relationship_schema()
  * Purpose: To describe the structure of element_relationship to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_element_relationship_schema () {
+ */
+function tripal_core_chado_element_relationship_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'element_relationship',
 //    'description' => 'TODO: please describe this table!',
@@ -12466,32 +12464,32 @@ function tripal_core_chado_element_relationship_schema () {
       'element_relationship_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'subject_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'type_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'object_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'value' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'rank' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => '0',
       ),
     ),
@@ -12523,26 +12521,26 @@ function tripal_core_chado_element_relationship_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_elementresult_schema()
  * Purpose: To describe the structure of elementresult to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_elementresult_schema () {
+ */
+function tripal_core_chado_elementresult_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'elementresult',
 //    'description' => 'TODO: please describe this table!',
@@ -12550,23 +12548,23 @@ function tripal_core_chado_elementresult_schema () {
       'elementresult_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'element_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'quantification_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'signal' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'float',
         'size' => 'big',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
     ),
     'primary key' => array(
@@ -12592,26 +12590,26 @@ function tripal_core_chado_elementresult_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_elementresult_relationship_schema()
  * Purpose: To describe the structure of elementresult_relationship to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_elementresult_relationship_schema () {
+ */
+function tripal_core_chado_elementresult_relationship_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'elementresult_relationship',
 //    'description' => 'TODO: please describe this table!',
@@ -12619,32 +12617,32 @@ function tripal_core_chado_elementresult_relationship_schema () {
       'elementresult_relationship_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'subject_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'type_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'object_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'value' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '',
+        'not NULL' => '',
       ),
       'rank' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => '1',
+        'not NULL' => '1',
         'default' => '0',
       ),
     ),
@@ -12676,26 +12674,26 @@ function tripal_core_chado_elementresult_relationship_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }
 
 /**
  * Implements hook_environment_schema()
  * Purpose: To describe the structure of environment to tripal
- * @see tripal_core.api.inc: tripal_core_chado_insert()
- * @see tripal_core.api.inc: tripal_core_chado_update()
- * @see tripal_core.api.inc: tripal_core_chado_select()
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
  *
  * @return
  *    An array describing the current table
  *
  * @ingroup tripal_schema_api
  *
-*/
-function tripal_core_chado_environment_schema () {
+ */
+function tripal_core_chado_environment_schema() {
   $description = array();
-  
+
   $description = array(
     'table' => 'environment',
 //    'description' => 'TODO: please describe this table!',
@@ -12703,17 +12701,17 @@ function tripal_core_chado_environment_schema () {
       'environment_id' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'uniquename' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '1',
+        'not NULL' => '1',
       ),
       'description' => array(
 //        'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => '',
+        'not NULL' => '',
       ),
     ),
     'primary key' => array(
@@ -12732,6 +12730,6 @@ function tripal_core_chado_environment_schema () {
     'foreign keys' => array(
     ),
   );
-  
+
   return $description;
 }

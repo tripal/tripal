@@ -12,63 +12,64 @@ require_once "tripal_views_form_elements.inc";
  * @ingroup tripal_views
  */
 function tripal_views_menu() {
-   $items = array();
-   
-   $items['admin/tripal/views'] = array(
-     'title' => t('Views Integration'),
-     'description' => 'Integration with Drupal Views',
-     'page callback' => 'tripal_views_description_page',
-     'access arguments' => array('administer site configuration'),
-     'type' => MENU_NORMAL_ITEM,
-   );
+  $items = array();
 
- 	$items['admin/tripal/views/integration'] = array(
-     'title' => t('Integrated Tables'),
-     'description' => t('Provide a list of all integrated tables and allows for adding new tables or editing already integrated tables.'),
-     'page callback' => 'tripal_views_integration_setup_list',
-     'access arguments' => array('manage tripal_views_integration'),
-     'type' => MENU_NORMAL_ITEM,
- 	);
+  $items['admin/tripal/views'] = array(
+    'title' => 'Views Integration',
+    'description' => 'Integration with Drupal Views',
+    'page callback' => 'tripal_views_description_page',
+    'access arguments' => array('administer site configuration'),
+    'type' => MENU_NORMAL_ITEM,
+  );
 
+  $items['admin/tripal/views/integration'] = array(
+    'title' => 'Integrated Tables',
+    'description' => 'Provide a list of all integrated tables and allows for adding new tables or editing already integrated tables.',
+    'page callback' => 'tripal_views_integration_setup_list',
+    'access arguments' => array('manage tripal_views_integration'),
+    'type' => MENU_NORMAL_ITEM,
+  );
 
-	$items['admin/tripal/views/integration/new'] = array(
-     'title' => 'Integrate Views',
-     'page callback' => 'drupal_get_form',
-     'page arguments' => array('tripal_views_integration_form'),
-     'access arguments' => array('manage tripal_views_integration'), //TODO: figure out the proper permissions arguments
-     'type' => MENU_CALLBACK,
-	);
-	
-	$items['admin/tripal/views/integration/edit/%'] = array(
-     'title' => 'Edit Views Integration',
-     'page callback' => 'drupal_get_form',
-     'page arguments' => array('tripal_views_integration_form',5),
-     'access arguments' => array('manage tripal_views_integration'), //TODO: figure out the proper permissions arguments
-     'type' => MENU_CALLBACK,
-	);
+  $items['admin/tripal/views/integration/new'] = array(
+    'title' => 'Integrate Views',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_views_integration_form'),
+    'access arguments' => array('manage tripal_views_integration'), //TODO: figure out the proper permissions arguments
+    'type' => MENU_CALLBACK,
+  );
 
-	$items['admin/tripal/views/integration/delete/%'] = array(
-     'title' => 'Delete Views Integration',
-     'page callback' => 'tripal_views_integration_delete',
-     'page arguments' => array(5),
-     'access arguments' => array('manage tripal_views_integration'), //TODO: figure out the proper permissions arguments
-     'type' => MENU_CALLBACK,
-	);
+  $items['admin/tripal/views/integration/edit/%'] = array(
+    'title' => 'Edit Views Integration',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_views_integration_form', 5),
+    'access arguments' => array('manage tripal_views_integration'), //TODO: figure out the proper permissions arguments
+    'type' => MENU_CALLBACK,
+  );
 
-   return $items;
+  $items['admin/tripal/views/integration/delete/%'] = array(
+    'title' => 'Delete Views Integration',
+    'page callback' => 'tripal_views_integration_delete',
+    'page arguments' => array(5),
+    'access arguments' => array('manage tripal_views_integration'), //TODO: figure out the proper permissions arguments
+    'type' => MENU_CALLBACK,
+  );
+
+  return $items;
 }
+
 /**
  * Implements hook_views_api()
- * 
- * Purpose: Set the permission types that the chado module uses.  
+ *
+ * Purpose: Set the permission types that the chado module uses.
  *
  * @ingroup tripal_views
  */
-function tripal_views_perm(){
-   return array(
-      'manage tripal_views_integration',
-   );
+function tripal_views_perm() {
+  return array(
+    'manage tripal_views_integration',
+  );
 }
+
 /**
  * Implements hook_views_api()
  *
@@ -79,30 +80,42 @@ function tripal_views_perm(){
  * @ingroup tripal_views
  */
 function tripal_views_views_api() {
-   return array(
-      'api' => 2.0,
-   );
+  return array(
+    'api' => 2.0,
+  );
 }
+
 /**
  * Implements hook_theme()
  *
- * Purpose: this hook provides details about themable objects added by 
+ * Purpose: this hook provides details about themable objects added by
  *   this module
  *
  * @ingroup tripal_views
  */
-function tripal_views_theme () {
-   return array(
-	   'tripal_views_integration_form' => array(
-         'arguments' => array('form' => NULL),
-         'template'  => 'tripal_views_integration_fields_form',
-	   ),
-	   'tripal_views_data_export_download_form' => array(
-         'arguments' => array('form' => NULL),
-         'template'  => 'tripal_views_data_export_download_form',
-	   ),
-      'file_upload_combo' => array(
-        'arguments' => array('element' => NULL)
-      ),
-   );
+function tripal_views_theme() {
+  return array(
+    'tripal_views_integration_form' => array(
+      'arguments' => array('form' => NULL),
+      'template'  => 'tripal_views_integration_fields_form',
+    ),
+    'tripal_views_data_export_download_form' => array(
+      'arguments' => array('form' => NULL),
+      'template'  => 'tripal_views_data_export_download_form',
+    ),
+    'file_upload_combo' => array(
+      'arguments' => array('element' => NULL)
+    ),
+  );
+}
+
+/**
+ * Implements hook_coder_ignore().
+ * Defines the path to the file (tripal_views.coder_ignores.txt) where ignore rules for coder are stored
+ */
+function tripal_views_coder_ignore() {
+  return array(
+    'path' => drupal_get_path('module', 'tripal_views'),
+    'line prefix' => drupal_get_path('module', 'tripal_views'),
+  );
 }

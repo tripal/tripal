@@ -1,11 +1,16 @@
 <?php
 
 /**
+ * @file
+ * Contains functions related to the installation of this module
+ */
+
+/**
 *  Implementation of hook_install();
 *
 * @ingroup tripal_db
 */
-function tripal_db_install(){
+function tripal_db_install() {
 
    // create the module's data directory
    tripal_create_moddir('tripal_db');
@@ -17,7 +22,7 @@ function tripal_db_install(){
 *
 * @ingroup tripal_db
 */
-function tripal_db_uninstall(){
+function tripal_db_uninstall() {
 
 }
 
