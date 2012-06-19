@@ -33,7 +33,7 @@ function tripal_bulk_loader_menu() {
     	'page callback' => 'drupal_get_form',
     	'page arguments' => array('tripal_bulk_loader_edit_constant_set_form',1,3),
       'access arguments' => array('administer site configuration'),
-      'type' => MENU_CALLBACK,   
+      'type' => MENU_CALLBACK,
 		  'file' => 'tripal_bulk_loader.constants.inc',
    );
    $items['node/%node/constants/%/delete'] = array(
@@ -42,18 +42,29 @@ function tripal_bulk_loader_menu() {
     	'page callback' => 'drupal_get_form',
     	'page arguments' => array('tripal_bulk_loader_delete_constant_set_form',1,3),
       'access arguments' => array('administer site configuration'),
-      'type' => MENU_CALLBACK,   
+      'type' => MENU_CALLBACK,
 		  'file' => 'tripal_bulk_loader.constants.inc',
    );
+
    // Admin page to create the template
    $items['admin/tripal/tripal_bulk_loader_template'] = array(
       'title' => 'Bulk Loader Template',
       'description' => 'Templates for loading tab-delimited data',
     	'page callback' => 'tripal_bulk_loader_admin_template',
       'access arguments' => array('administer site configuration'),
-      'type' => MENU_NORMAL_ITEM,   
+      'type' => MENU_NORMAL_ITEM,
 		  'file' => 'tripal_bulk_loader.admin.inc',
 	);
+   $items['admin/tripal/tripal_bulk_loader_template/configure'] = array(
+      'title' => 'Configuration',
+      'description' => 'Configure the Tripal Bulk Loader Module',
+    	'page callback' => 'drupal_get_form',
+    	'page arguments' => array('tripal_bulk_loader_configuration_form'),
+      'access arguments' => array('administer site configuration'),
+      'type' => MENU_NORMAL_ITEM,
+		  'file' => 'tripal_bulk_loader.admin.inc',
+	);
+
 	// Create/Edit Template -------
   $items['admin/tripal/tripal_bulk_loader_template/create'] = array(
       'title' => 'Create Bulk Loader Template',
@@ -61,7 +72,7 @@ function tripal_bulk_loader_menu() {
       'page callback' => 'drupal_get_form',
       'page arguments' => array('tripal_bulk_loader_modify_template_base_form', 'create'),
       'access arguments' => array('administer site configuration'),
-      'type' => MENU_NORMAL_ITEM,   
+      'type' => MENU_NORMAL_ITEM,
 		'file' => 'tripal_bulk_loader.admin.inc',
   );
   $items['admin/tripal/tripal_bulk_loader_template/edit'] = array(
@@ -70,8 +81,8 @@ function tripal_bulk_loader_menu() {
       'page callback' => 'drupal_get_form',
       'page arguments' => array('tripal_bulk_loader_modify_template_base_form', 'edit'),
       'access arguments' => array('administer site configuration'),
-      'type' => MENU_NORMAL_ITEM,   
-		  'file' => 'tripal_bulk_loader.admin.inc',  
+      'type' => MENU_NORMAL_ITEM,
+		  'file' => 'tripal_bulk_loader.admin.inc',
   );
 	$items['admin/tripal/tripal_bulk_loader_template/edit_record'] = array(
       'title' => 'Edit Template Record',
@@ -79,7 +90,7 @@ function tripal_bulk_loader_menu() {
       'page callback' => 'drupal_get_form',
       'page arguments' => array('tripal_bulk_loader_edit_template_record_form'),
       'access arguments' => array('administer site configuration'),
-      'type' => MENU_CALLBACK,   
+      'type' => MENU_CALLBACK,
 		'file' => 'tripal_bulk_loader.admin.inc',
 	);
 	$items['admin/tripal/tripal_bulk_loader_template/add_field'] = array(
@@ -88,7 +99,7 @@ function tripal_bulk_loader_menu() {
       'page callback' => 'drupal_get_form',
       'page arguments' => array('tripal_bulk_loader_add_template_field_form'),
       'access arguments' => array('administer site configuration'),
-      'type' => MENU_CALLBACK,   
+      'type' => MENU_CALLBACK,
 		'file' => 'tripal_bulk_loader.admin.inc',
 	);
 	$items['admin/tripal/tripal_bulk_loader_template/edit_field'] = array(
@@ -97,7 +108,7 @@ function tripal_bulk_loader_menu() {
       'page callback' => 'drupal_get_form',
       'page arguments' => array('tripal_bulk_loader_edit_template_field_form'),
       'access arguments' => array('administer site configuration'),
-      'type' => MENU_CALLBACK,   
+      'type' => MENU_CALLBACK,
 		'file' => 'tripal_bulk_loader.admin.inc',
 	);
 	// Delete Template -----
@@ -107,7 +118,7 @@ function tripal_bulk_loader_menu() {
       'page callback' => 'drupal_get_form',
       'page arguments' => array('tripal_bulk_loader_delete_template_base_form'),
       'access arguments' => array('administer site configuration'),
-      'type' => MENU_NORMAL_ITEM,   
+      'type' => MENU_NORMAL_ITEM,
 		'file' => 'tripal_bulk_loader.admin.inc',
 	);
 	// Import/Export ---------
@@ -117,32 +128,32 @@ function tripal_bulk_loader_menu() {
       'page callback' => 'drupal_get_form',
       'page arguments' => array('tripal_bulk_loader_import_export_template_form', 'import'),
       'access arguments' => array('administer site configuration'),
-      'type' => MENU_NORMAL_ITEM,   
-		  'file' => 'tripal_bulk_loader.admin.inc',  
-  );	
+      'type' => MENU_NORMAL_ITEM,
+		  'file' => 'tripal_bulk_loader.admin.inc',
+  );
   $items['admin/tripal/tripal_bulk_loader_template/export'] = array(
       'title' => 'Export Bulk Loader Template',
       'description' => 'Export Loaders',
       'page callback' => 'drupal_get_form',
       'page arguments' => array('tripal_bulk_loader_import_export_template_form', 'export'),
       'access arguments' => array('administer site configuration'),
-      'type' => MENU_NORMAL_ITEM,   
-		  'file' => 'tripal_bulk_loader.admin.inc',  
-  );	
+      'type' => MENU_NORMAL_ITEM,
+		  'file' => 'tripal_bulk_loader.admin.inc',
+  );
 	// AHAH ---------
 	$items['admin/tripal/tripal_bulk_loader_template/add_field_ahah'] = array(
       'page callback' => 'tripal_bulk_loader_add_field_ahah',
       'access arguments' => array('administer site configuration'),
-      'type' => MENU_CALLBACK,   
-		  'file' => 'tripal_bulk_loader.admin.inc',	
+      'type' => MENU_CALLBACK,
+		  'file' => 'tripal_bulk_loader.admin.inc',
 	);
 	$items['admin/tripal/tripal_bulk_loader_template/edit_field_ahah'] = array(
       'page callback' => 'tripal_bulk_loader_edit_field_ahah',
       'access arguments' => array('administer site configuration'),
-      'type' => MENU_CALLBACK,   
-		  'file' => 'tripal_bulk_loader.admin.inc',	
+      'type' => MENU_CALLBACK,
+		  'file' => 'tripal_bulk_loader.admin.inc',
 	);
-	
+
   return $items;
 }
 
@@ -219,10 +230,10 @@ function tripal_bulk_loader_perm(){
 function tripal_bulk_loader_list () {
   $num_results_per_page = 50;
   $output = '';
-  
+
   $header = array('','Status','Loader','File');
   $rows = array();
-  
+
   $query = 'SELECT * FROM {tripal_bulk_loader} l '
     .'LEFT JOIN {node} n ON n.nid = l.nid '
     .'LEFT JOIN {tripal_bulk_loader_template} t ON t.template_id = cast(l.template_id as integer)';
@@ -236,10 +247,10 @@ function tripal_bulk_loader_list () {
     );
     $rows[] = $row;
   }
-  
+
   $output .= theme('table', $header, $rows);
   return $output;
-  
+
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
@@ -268,34 +279,34 @@ function tripal_bulk_loader_node_info() {
  */
 function tripal_bulk_loader_form ($node, $form_state){
   $form = array();
-  
+
   if (isset($form_state['values'])) {
     $node = $form_state['values'] + (array)$node;
     $node = (object) $node;
   }
-  
+
   $sql = "SELECT * FROM {tripal_bulk_loader_template}";
   $results = db_query($sql);
   $templates = array ();
   while ($template = db_fetch_object ($results)) {
     $templates [$template->template_id] = $template->name;
   }
-  
+
   if (!$templates) {
     $form['label'] = array(
     '#type' => 'item',
       '#description' => t("Loader template needs to be created before any bulk loader can be added. Go to 'Tripal Management > Bulk Loader Template' to create the template."),
       '#weight'        => -10,
     );
-    
+
     return $form;
   }
-  
+
   $form['loader'] = array(
     '#type' => 'fieldset',
     '#title' => t('Basic Details'),
   );
-  
+
   $form['loader']['loader_name'] = array(
     '#type'          => 'textfield',
     '#title'         => t('Loading Job Name'),
@@ -303,7 +314,7 @@ function tripal_bulk_loader_form ($node, $form_state){
     '#required'      => TRUE,
     '#default_value' => $node->loader_name
   );
-  
+
   $form['loader']['template_id'] = array(
     '#type' => 'select',
     '#title' => t('Template'),
@@ -313,7 +324,7 @@ function tripal_bulk_loader_form ($node, $form_state){
     '#required'      => TRUE,
     '#default_value' => $node->template_id,
   );
-  
+
   $form['loader']['file']= array(
     '#type'          => 'textfield',
     '#title'         => t('Data File'),
@@ -321,7 +332,7 @@ function tripal_bulk_loader_form ($node, $form_state){
     '#weight'        => -8,
     '#default_value' => $node->file
   );
-  
+
   $form['loader']['has_header'] = array(
     '#type' => 'radios',
     '#title' => t('File has a Header'),
@@ -329,7 +340,7 @@ function tripal_bulk_loader_form ($node, $form_state){
     '#weight' => -7,
     '#default_value' => $node->file_has_header,
   );
-  
+
   return $form;
 }
 
@@ -342,7 +353,7 @@ function tripal_bulk_loader_load($node){
 	$node = db_fetch_object(db_query($sql, $node->nid));
 
 	$node->title = 'Bulk Loading Job: '.$node->loader_name;
-	
+
 	// Add the loader template
 	$sql = "SELECT * FROM {tripal_bulk_loader_template} WHERE template_id=%d";
 	$results = db_fetch_object(db_query($sql, $node->template_id));
@@ -354,7 +365,7 @@ function tripal_bulk_loader_load($node){
   $sql = 'SELECT * FROM {tripal_bulk_loader_inserted} WHERE nid=%d';
   $resource = db_query($sql,$node->nid);
   while ($r = db_fetch_object($resource)) {
-    $r->num_inserted = sizeof(preg_split('/,/',$r->ids_inserted)); 
+    $r->num_inserted = sizeof(preg_split('/,/',$r->ids_inserted));
     $node->inserted_records->{$r->table_inserted_into} = $r;
   }
 
@@ -372,13 +383,13 @@ function tripal_bulk_loader_load($node){
         }
       }
     }
-    
+
     if (empty($node->exposed_fields)) {
       $node->exposed_fields[] = array();
     }
   }
 
-  
+
   // Add constants
   $sql = 'SELECT * FROM {tripal_bulk_loader_constants} WHERE nid=%d ORDER BY group_id, record_id, field_id';
   $resource = db_query($sql,$node->nid);
@@ -386,17 +397,17 @@ function tripal_bulk_loader_load($node){
     $node->constants[$r->group_id][$r->record_id][$r->field_id] = array(
       'constant_id' => $r->constant_id,
       'group_id' => $r->group_id,
-      'chado_table'=>$r->chado_table, 
-      'chado_field'=>$r->chado_field, 
-      'record_id'=>$r->record_id, 
-      'field_id'=>$r->field_id, 
+      'chado_table'=>$r->chado_table,
+      'chado_field'=>$r->chado_field,
+      'record_id'=>$r->record_id,
+      'field_id'=>$r->field_id,
       'value'=>$r->value
     );
   }
   if (!$node->constants) {
     $node->constants[] = array();
   }
-  
+
 	return $node;
 }
 
@@ -405,18 +416,18 @@ function tripal_bulk_loader_load($node){
  * Insert the data from the node form on Create content
  */
 function tripal_bulk_loader_insert ($node) {
-  
+
   // Insert into tripal_bulk_loader
   $sql = "INSERT INTO {tripal_bulk_loader} (nid, loader_name, template_id, file, file_has_header, job_status) VALUES (%d, '%s', %d, '%s', %d, '%s')";
   db_query($sql, $node->nid, $node->loader_name, $node->template_id, $node->file, $node->has_header, 'Initialized');
-	
+
 	// Update title
 	$node->title =$node->loader_name;
 	drupal_write_record('node',$node,'nid');
-	drupal_write_record('node_revision',$node,'nid');	
-  
+	drupal_write_record('node_revision',$node,'nid');
+
   drupal_set_message('After reviewing the details, please Submit this Job (by clicking the "Submit Job" button below). No data will be loaded until the submitted job is reached in the queue.');
-  
+
 }
 
 /**
@@ -433,11 +444,11 @@ function tripal_bulk_loader_delete ($node) {
  * Updates the data submitted by the node form on edit
  */
 function tripal_bulk_loader_update ($node) {
-  
+
   // Update tripal_bulk_loader
 	$sql = "UPDATE {tripal_bulk_loader} SET nid = %d, loader_name = '%s', template_id = %d, file = '%s', file_has_header = '%s' WHERE nid = %d";
 	db_query($sql, $node->nid, $node->loader_name, $node->template_id, $node->file, $node->has_header, $node->nid);
-	
+
 	// Add a job if the user want to load the data
 	global $user;
 	if($node->job) {
@@ -451,7 +462,7 @@ function tripal_bulk_loader_update ($node) {
 			drupal_set_message("Can not open $node->file. Job not scheduled.");
 		}
 	}
-  
+
 }
 
 ///////////////////////////////////////////////////////////
@@ -463,9 +474,9 @@ function tripal_bulk_loader_preprocess_tripal_bulk_loader_template (&$variables)
 
 	$sql = "SELECT * FROM {tripal_bulk_loader_template} WHERE template_id=%d";
 	$template = db_fetch_object(db_query($sql, $variables['template_id']));
-	$template->template_array = unserialize($template->template_array);	
+	$template->template_array = unserialize($template->template_array);
 	$variables['template'] = $template;
-	
+
 }
 
 /**
@@ -476,8 +487,8 @@ function tripal_bulk_loader_preprocess_tripal_bulk_loader_template (&$variables)
  *   The callback passed into tripal_add_job()
  * @param $args
  *   The arguements passed into tripal_add_job()
- * @return 
- *   An array where keys are the human readable headers describing each arguement 
+ * @return
+ *   An array where keys are the human readable headers describing each arguement
  *   and the value is the aguement passed in after formatting
  */
 function tripal_bulk_loader_job_describe_args($callback,$args){
@@ -489,6 +500,6 @@ function tripal_bulk_loader_job_describe_args($callback,$args){
     $new_args['Bulk Loading Job'] = l($node->title, 'node/'.$args[0]);
     return $new_args;
   }
-  
+
 }
 
