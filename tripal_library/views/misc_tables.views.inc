@@ -1,6 +1,7 @@
 <?php
 
 /**
+ * @file
  * Purpose: Allows the library module to add fields to other module views
  *
  *   For example, a field counting the number of libraries associted with a given feature would be
@@ -13,14 +14,14 @@
           'handler' => 'views_handler_field_chado_count',
           'table_to_query' => 'library_feature',
         ),
-      ); 
+      );
  *   @endcode
  *
  * @ingroup tripal_library_views
  */
 function retrieve_library_misc_tables_views_data() {
   $data = array();
- 
+
   // Table: Feature---------------------------------------------------------------------------------
   // Calculated Field: Number of Libraries (Count -Int)
   // Provides the number of libraries for a given feature
@@ -31,7 +32,7 @@ function retrieve_library_misc_tables_views_data() {
       'handler' => 'views_handler_field_chado_count',
       'table_to_query' => 'library_feature',
     ),
-  ); 
+  );
 
   // Table: Organism--------------------------------------------------------------------------------
   // Calculated Field: Number of Libraries (Count -Int)
@@ -43,7 +44,7 @@ function retrieve_library_misc_tables_views_data() {
       'handler' => 'views_handler_field_chado_count',
       'table_to_query' => 'library',
     ),
-  );  
-  
+  );
+
   return $data;
 }

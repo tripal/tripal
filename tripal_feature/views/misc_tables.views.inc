@@ -1,6 +1,7 @@
 <?php
 
 /**
+ * @file
  * Purpose: Allows the feature module to add fields to other module views
  *
  *   For example, a field counting the number of features associted with a given organism would be
@@ -13,14 +14,14 @@
           'handler' => 'views_handler_field_chado_count',
           'table_to_query' => 'feature',
         ),
-      ); 
+      );
  *   @endcode
  *
  * @ingroup tripal_feature_views
  */
 function retrieve_feature_misc_tables_views_data() {
   $data = array();
- 
+
   // Table: Organism--------------------------------------------------------------------------------
   // Calculated Field: Number of features (Count -Int)
   // Provides the number of features for a given organism
@@ -31,7 +32,7 @@ function retrieve_feature_misc_tables_views_data() {
       'handler' => 'views_handler_field_chado_count',
       'table_to_query' => 'feature',
     ),
-  );  
+  );
 
   // Table: Library---------------------------------------------------------------------------------
   // Calculated Field: Number of features (Count -Int)
@@ -43,7 +44,7 @@ function retrieve_feature_misc_tables_views_data() {
       'handler' => 'views_handler_field_chado_count',
       'table_to_query' => 'library_feature',
     ),
-  );   
+  );
 
   // Table: Analysis--------------------------------------------------------------------------------
   // Calculated Field: Number of features (Count -Int)
@@ -55,6 +56,6 @@ function retrieve_feature_misc_tables_views_data() {
       'handler' => 'views_handler_field_chado_count',
       'table_to_query' => 'analysisfeature',
     ),
-  ); 
+  );
   return $data;
 }

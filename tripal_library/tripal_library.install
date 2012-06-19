@@ -5,7 +5,7 @@
 *
 * @ingroup tripal_library
 */
-function tripal_library_install(){
+function tripal_library_install() {
    // create the module's data directory
    tripal_create_moddir('tripal_library');
 
@@ -16,14 +16,14 @@ function tripal_library_install(){
    // Insert cvterm 'library_description' into cvterm table of chado
    // database. This CV term is used to keep track of the library
    // description in the libraryprop table.
-   tripal_cv_add_cvterm(array('name' => 'library_description','def' => 'Description of a library'),'tripal',0,1,'tripal');
-   
+   tripal_cv_add_cvterm(array('name' => 'library_description', 'def' => 'Description of a library'), 'tripal', 0, 1, 'tripal');
+
    // Add CVTerms for the library types
-   tripal_cv_add_cvterm(array('name' => 'cdna_library','def' => 'cDNA Library'),'tripal',0,1,'tripal');
-   tripal_cv_add_cvterm(array('name' => 'bac_library','def' => 'BAC Library'),'tripal',0,1,'tripal');
-   tripal_cv_add_cvterm(array('name' => 'fosmid_library','def' => 'FOSMID Library'),'tripal',0,1,'tripal');
-   tripal_cv_add_cvterm(array('name' => 'cosmid_library','def' => 'COSMID Library'),'tripal',0,1,'tripal');
-   tripal_cv_add_cvterm(array('name' => 'yac_library','def' => 'YAC Library'),'tripal',0,1,'tripal');
+   tripal_cv_add_cvterm(array('name' => 'cdna_library', 'def' => 'cDNA Library'), 'tripal', 0, 1, 'tripal');
+   tripal_cv_add_cvterm(array('name' => 'bac_library', 'def' => 'BAC Library'), 'tripal', 0, 1, 'tripal');
+   tripal_cv_add_cvterm(array('name' => 'fosmid_library', 'def' => 'FOSMID Library'), 'tripal', 0, 1, 'tripal');
+   tripal_cv_add_cvterm(array('name' => 'cosmid_library', 'def' => 'COSMID Library'), 'tripal', 0, 1, 'tripal');
+   tripal_cv_add_cvterm(array('name' => 'yac_library', 'def' => 'YAC Library'), 'tripal', 0, 1, 'tripal');
 
    // Add the materialized view needed to count the features for the library
    // Drop the MView table if it exists
@@ -34,12 +34,12 @@ function tripal_library_install(){
    }
    tripal_db_set_active($previous_db);
    // Create the MView
-   tripal_add_mview('library_feature_count','tripal_library',
+   tripal_add_mview('library_feature_count', 'tripal_library',
       'library_feature_count',
       'library_id integer, name character varying(255), '.
-		'  num_features integer, feature_type character varying(255)',
-	   'library_id',
-	   'SELECT '.
+    '  num_features integer, feature_type character varying(255)',
+     'library_id',
+     'SELECT '.
       '   L.library_id, '.
       '   L.name, '.
       '    count(F.feature_id) as num_features, '.
@@ -49,7 +49,7 @@ function tripal_library_install(){
       '    INNER JOIN Feature F           ON LF.feature_id = F.feature_id '.
       '    INNER JOIN Cvterm CVT          ON F.type_id = CVT.cvterm_id '.
       'GROUP BY L.library_id, L.name, CVT.name',
-	   ''
+     ''
    );
 
 }
@@ -69,7 +69,7 @@ function tripal_library_schema() {
  *
  * @ingroup tripal_library
  */
-function tripal_library_uninstall(){
+function tripal_library_uninstall() {
    drupal_uninstall_schema('tripal_library');
 
    // remove the materialized view
@@ -78,8 +78,8 @@ function tripal_library_uninstall(){
 
    if (db_table_exists('tripal_mviews')) {
       $mview = db_fetch_object(db_query($sql));
-      if($mview){
-         tripal_mviews_action('delete',$mview->mview_id);
+      if ($mview) {
+         tripal_mviews_action('delete', $mview->mview_id);
       }
    }
 
@@ -101,7 +101,7 @@ function tripal_library_uninstall(){
  *
  * @ingroup tripal_library
  */
-function tripal_library_get_schemas (){
+function tripal_library_get_schemas() {
   $schema = array();
   $schema['chado_library'] = array(
       'fields' => array(
@@ -127,7 +127,7 @@ function tripal_library_get_schemas (){
          'library_id' => array('library_id')
       ),
       'unique keys' => array(
-         'nid_vid' => array('nid','vid'),
+         'nid_vid' => array('nid', 'vid'),
          'vid' => array('vid')
       ),
       'primary key' => array('nid'),

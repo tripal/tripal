@@ -1,54 +1,53 @@
 <?php
-//$Id:
 
 /*******************************************************************************
  * Implementation of hook_install().
  */
 function tripal_analysis_install() {
 
-	// create the module's data directory
-	tripal_create_moddir('tripal_analysis');
+  // create the module's data directory
+  tripal_create_moddir('tripal_analysis');
 
-	// Use schema API to create database table.
-	drupal_install_schema('tripal_analysis');
-	
-	// Create analysisfeatureprop table in chado. This cannot be accomplished
-	// by calling drupal_install_schema because it's not in the drupal db. This
-	// table is used to store Blast xml and Interpro html/goterms
-	$previous_db = tripal_db_set_active('chado');
-	if (!db_table_exists('analysisfeatureprop')) {
-	   $sql = "CREATE TABLE {analysisfeatureprop} (".
-	          "  analysisfeatureprop_id SERIAL PRIMARY KEY, ".
-	          "  analysisfeature_id INTEGER NOT NULL REFERENCES analysisfeature(analysisfeature_id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED, ".
-	          "  type_id INTEGER NOT NULL REFERENCES cvterm(cvterm_id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED, ".
-	          "  value TEXT, ".
-	          "  rank INTEGER NOT NULL, ".
-	          "  CONSTRAINT analysisfeature_id_type_id_rank UNIQUE(analysisfeature_id, type_id, rank)".
-	          ")";
-	   db_query($sql);
-	}
-	tripal_db_set_active($previous_db);
+  // Use schema API to create database table.
+  drupal_install_schema('tripal_analysis');
 
-   tripal_cv_add_cvterm(array('name' => 'analysis_type','def' => 'The type of analysis was performed. This value is automatically set by each Tripal Analysis module and should be equal to the module name (e.g. tripal_analysis_blast, tripal_analysis_go).'),'tripal',0,1,'tripal');
-	tripal_cv_add_cvterm(array('name' => 'analysis_date','def' => 'The date that an analysis was performed.'),'tripal',0,1,'tripal');
-	tripal_cv_add_cvterm(array('name' => 'analysis_short_name','def' => 'A computer legible (no spaces '.
-      'or special characters) abbreviation for the analysis.'),'tripal',0,1,'tripal');
+  // Create analysisfeatureprop table in chado. This cannot be accomplished
+  // by calling drupal_install_schema because it's not in the drupal db. This
+  // table is used to store Blast xml and Interpro html/goterms
+  $previous_db = tripal_db_set_active('chado');
+  if (!db_table_exists('analysisfeatureprop')) {
+     $sql = "CREATE TABLE {analysisfeatureprop} (".
+            "  analysisfeatureprop_id SERIAL PRIMARY KEY, ".
+            "  analysisfeature_id INTEGER NOT NULL REFERENCES analysisfeature(analysisfeature_id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED, ".
+            "  type_id INTEGER NOT NULL REFERENCES cvterm(cvterm_id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED, ".
+            "  value TEXT, ".
+            "  rank INTEGER NOT NULL, ".
+            "  CONSTRAINT analysisfeature_id_type_id_rank UNIQUE(analysisfeature_id, type_id, rank)".
+            ")";
+     db_query($sql);
+  }
+  tripal_db_set_active($previous_db);
+
+   tripal_cv_add_cvterm(array('name' => 'analysis_type', 'def' => 'The type of analysis was performed. This value is automatically set by each Tripal Analysis module and should be equal to the module name (e.g. tripal_analysis_blast, tripal_analysis_go).'), 'tripal', 0, 1, 'tripal');
+  tripal_cv_add_cvterm(array('name' => 'analysis_date', 'def' => 'The date that an analysis was performed.'), 'tripal', 0, 1, 'tripal');
+  tripal_cv_add_cvterm(array('name' => 'analysis_short_name', 'def' => 'A computer legible (no spaces ' .
+      'or special characters) abbreviation for the analysis.'), 'tripal', 0, 1 , 'tripal');
 }
 
 /*******************************************************************************
  * Implementation of hook_uninstall().
  */
 function tripal_analysis_uninstall() {
-	// Use schema API to delete database table.
-	drupal_uninstall_schema('tripal_analysis');
-	// Remove analysis nodes from drupal.
-	$sql_ana_id = "SELECT nid, vid ".
+  // Use schema API to delete database table.
+  drupal_uninstall_schema('tripal_analysis');
+  // Remove analysis nodes from drupal.
+  $sql_ana_id = "SELECT nid, vid ".
                  "FROM {node} ".
                  "WHERE type like 'chado_analysi%'";
-	$result = db_query($sql_ana_id);
-	while ($ana = db_fetch_object($result)) {
-		node_delete($ana->nid);
-	}
+  $result = db_query($sql_ana_id);
+  while ($ana = db_fetch_object($result)) {
+    node_delete($ana->nid);
+  }
 }
 
 /*******************************************************************************
@@ -58,39 +57,39 @@ function tripal_analysis_uninstall() {
  * tripal_analysis_blast, that are registered with this module.
  */
 function tripal_analysis_schema() {
-	// chado_analysis table
-	$schema['chado_analysis'] = array(
+  // chado_analysis table
+  $schema['chado_analysis'] = array(
       'fields' => array(
          'vid' => array(
             'type' => 'int',
             'unsigned' => TRUE,
             'not null' => TRUE,
             'default' => 0
-	),
+  ),
          'nid' => array(
             'type' => 'int',
             'unsigned' => TRUE,
             'not null' => TRUE,
             'default' => 0
-	),
+  ),
          'analysis_id' => array(
             'type' => 'int',
             'not null' => TRUE,
             'default' => 0
-	)
-	),
+  )
+  ),
       'indexes' => array(
          'analysis_id' => array('analysis_id')
-	),
+  ),
       'unique keys' => array(
-         'nid_vid' => array('nid','vid'),
+         'nid_vid' => array('nid', 'vid'),
          'vid' => array('vid')
-	),
+  ),
       'primary key' => array('nid'),
-	);
+  );
 
-	// tripal_analysis table
-	$schema['tripal_analysis'] = array(
+  // tripal_analysis table
+  $schema['tripal_analysis'] = array(
       'description' => t('Table to store analysis sub-modules'),
       'fields' => array(
          'modulename' => array(
@@ -99,13 +98,13 @@ function tripal_analysis_schema() {
             'not null' => TRUE,
             'description' => t('The module name. Tripal Analysis will use the '.
                                'module name to call module_setting_form()')
-	)
-	),
+  )
+  ),
       'unique keys' => array(
          'modulename' => array('modulename')
-	)
-	);
-	return $schema;
+  )
+  );
+  return $schema;
 }
 
 /*******************************************************************************
@@ -129,12 +128,12 @@ function tripal_analysis_requirements($phase) {
 /*******************************************************************************
  * Provide update script for adding new cvterms
  */
-function tripal_analysis_update_6001(){
+function tripal_analysis_update_6001() {
    // we have some new cvterms to add
-   tripal_cv_add_cvterm(array('name' => 'based_on_analysis','def' => 'The analysis that this analysis was based on. For example, blast/kegg/interpro analyses are based on a unigene analysis. The unigene analysis_id should be stored in analysisprop as the rank using this cvterm. The name of said unigene analysis can be inserted as the value in analysisprop.'),'tripal',0,1,'tripal');
-   tripal_cv_add_cvterm(array('name' => 'additional_files', 'def' => 'Additional files for this analysis. Each file should be separated by a semi-colon and have this format: <file description>, <file path>;'),'tripal',0,1,'tripal');
+   tripal_cv_add_cvterm(array('name' => 'based_on_analysis', 'def' => 'The analysis that this analysis was based on. For example, blast/kegg/interpro analyses are based on a unigene analysis. The unigene analysis_id should be stored in analysisprop as the rank using this cvterm. The name of said unigene analysis can be inserted as the value in analysisprop.'), 'tripal', 0, 1, 'tripal');
+   tripal_cv_add_cvterm(array('name' => 'additional_files', 'def' => 'Additional files for this analysis. Each file should be separated by a semi-colon and have this format: <file description>, <file path>;'), 'tripal', 0, 1, 'tripal');
    $ret = array(
       '#finished' => 1,
-   );   
+   );
    return $ret;
 }

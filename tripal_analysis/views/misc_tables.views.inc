@@ -1,6 +1,7 @@
 <?php
 
 /**
+ * @file
  * Purpose: Allows the analysis module to add fields to other module views
  *
  *   For example, a field counting the number of analysis' associted with a given feature would be
@@ -13,14 +14,14 @@
           'handler' => 'views_handler_field_chado_count',
           'table_to_query' => 'analysis_feature',
         ),
-      ); 
+      );
  *   @endcode
  *
  * @ingroup tripal_analysis_views
  */
 function retrieve_analysis_misc_tables_views_data() {
   $data = array();
- 
+
   // Table: Feature---------------------------------------------------------------------------------
   // Calculated Field: Number of analysis' (Count -Int)
   // Provides the number of analysis' for a given feature
@@ -31,7 +32,7 @@ function retrieve_analysis_misc_tables_views_data() {
       'handler' => 'views_handler_field_chado_count',
       'table_to_query' => 'analysisfeature',
     ),
-  );  
-  
+  );
+
   return $data;
 }

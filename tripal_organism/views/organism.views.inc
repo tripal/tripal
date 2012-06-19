@@ -1,7 +1,8 @@
 <?php
 
 /**
- * Purpose: this function returns the portion of the data array 
+ * @file
+ * Purpose: this function returns the portion of the data array
  *   which describes the organism table, it's fields and any joins between it and other tables
  * @see tripal_organism_views_data() --in tripal_organism.views.inc
  *
@@ -25,25 +26,25 @@
  * @ingroup tripal_organism_views
  */
 function retrieve_organism_views_data() {
-	global $db_url;
-	$data = array();
-	
-	// if the chado database is not local to the drupal database
+  global $db_url;
+  $data = array();
+
+  // if the chado database is not local to the drupal database
   // then we need to set the database name.  This should always
   // be 'chado'.
-  if(is_array($db_url) and array_key_exists('chado',$db_url)){
+  if (is_array($db_url) and array_key_exists('chado', $db_url)) {
      $database = 'chado';
   }
 
-	
+
   // Basic table definition
   $data['organism']['table']['group'] = 'Chado Organism';
   $data['organism']['table']['base'] = array(
     'field' => 'organism_id',
     'title' => 'Chado Organism',
-    'help' => 'Organisms existing in the Chado Database',                                                                                                                                                                          
+    'help' => 'Organisms existing in the Chado Database',
   );
-  if($database){
+  if ($database) {
      $data['organism']['table']['base']['database'] = $database;
   }
 
@@ -61,7 +62,7 @@ function retrieve_organism_views_data() {
       'left_field' => 'organism_id',
       'field' => 'organism_id',
     ),
-  ); 
+  );
 
   // Table Field Definitions----------------------
   // Field: organism_id (primary key)
@@ -79,22 +80,23 @@ function retrieve_organism_views_data() {
        'handler' => 'views_handler_sort',
      ),
      'argument' => array(
-     	 'handler' => 'views_handler_argument',
+        'handler' => 'views_handler_argument',
      ),
   );
 
   // Calculated Field: Node ID
   //  use custom field handler to query drupal for the node ID
   //  this is only needed if chado is in a separate database from drupal
-  if($database && module_exists('tripal_views')){
-	  $data['organism']['organism_nid'] = array(
-  	  'title' => 'Node ID',
-    	'help' => 'This is the node ID of this organism. It can be used as a link to the node.',
-    	'field' => array(
-      	'handler' => 'views_handler_field_computed_organism_nid',
-    	),    
-  	);
-  } else {
+  if ($database && module_exists('tripal_views')) {
+    $data['organism']['organism_nid'] = array(
+      'title' => 'Node ID',
+      'help' => 'This is the node ID of this organism. It can be used as a link to the node.',
+      'field' => array(
+        'handler' => 'views_handler_field_computed_organism_nid',
+      ),
+    );
+  }
+  else {
     // Add relationship between chado_organism and organism
     $data['organism']['organism_id'] = array(
       'group' => 'Organism',
@@ -112,7 +114,7 @@ function retrieve_organism_views_data() {
     );
 
   }
-	
+
   // Field: abbreviation (varchar 255)
   $data['organism']['abbreviation'] = array(
     'title' => 'Abbreviation',
@@ -131,7 +133,7 @@ function retrieve_organism_views_data() {
        'handler' => 'views_handler_argument_string',
      ),
   );
-  // if joined to the node table add a "Link to Node" option for the field  
+  // if joined to the node table add a "Link to Node" option for the field
   if (!$database && module_exists('tripal_views')) {
     $data['organism']['abbreviation']['field']['handler'] = 'views_handler_field_node_optional';
   }
@@ -192,7 +194,7 @@ function retrieve_organism_views_data() {
        'handler' => 'views_handler_argument_string',
      ),
   );
-  // if joined to the node table add a "Link to Node" option for the field  
+  // if joined to the node table add a "Link to Node" option for the field
   if (!$database && module_exists('tripal_views')) {
     $data['organism']['common_name']['field']['handler'] = 'views_handler_field_node_optional';
   }
@@ -212,7 +214,7 @@ function retrieve_organism_views_data() {
        'handler' => 'views_handler_argument_string',
      ),
   );
-  
+
   //Calculated Field: Count (Int)
   // Provides the number of features for a given organism
   // @see tripal_feature/views/misc_tables.views.inc

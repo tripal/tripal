@@ -1,6 +1,7 @@
 <?php
-	/**
- * Purpose: this function returns the portion of the data array 
+  /**
+ * @file
+ * Purpose: this function returns the portion of the data array
  *   which describes the analysis table, it's fields and any joins between it and other tables
  * @see tripal_analysis_views_data() --in tripal_analysis.views.inc
  *
@@ -29,24 +30,24 @@
  * @ingroup tripal_analysis_views
  */
 function retrieve_analysis_views_data() {
-	global $db_url;
-	$data = array();
+  global $db_url;
+  $data = array();
 
   // if the chado database is not local to the drupal database
   // then we need to set the database name.  This should always
   // be 'chado'.
-  if(is_array($db_url) and array_key_exists('chado',$db_url)){
+  if (is_array($db_url) and array_key_exists('chado', $db_url)) {
      $database = 'chado';
   }
-	
+
   // Basic table definition
   $data['analysis']['table']['group'] = 'Chado Analysis';
- 	$data['analysis']['table']['base'] = array(
- 		'field' => 'analysis_id',
- 		'title' => t('Chado Analysis'),
- 		'help' => t("An analysis is a particular type of a computational analysis; it may be a blast of one sequence against another, or an all by all blast, or a different kind of analysis altogether. It is a single unit of computation."),
- 	);
-  if($database){
+   $data['analysis']['table']['base'] = array(
+     'field' => 'analysis_id',
+     'title' => t('Chado Analysis'),
+     'help' => t("An analysis is a particular type of a computational analysis; it may be a blast of one sequence against another, or an all by all blast, or a different kind of analysis altogether. It is a single unit of computation."),
+   );
+  if ($database) {
      $data['analysis']['table']['base']['database'] = $database;
   }
 
@@ -63,20 +64,20 @@ function retrieve_analysis_views_data() {
   );
 
   // Analysis properties?
- 	$data['analysisprop']['table'] = array(
+   $data['analysisprop']['table'] = array(
 'group' => 'Chado analysis Properties',
- 		'field' => 'analysisprop_id',
- 		'title' => t('Chado analysis Properties'),
- 		'help' => '  ',
- 	);
- 	
- 	$data['analysisprop']['table']['join']['analysis'] = array(
+     'field' => 'analysisprop_id',
+     'title' => t('Chado analysis Properties'),
+     'help' => '  ',
+   );
+
+   $data['analysisprop']['table']['join']['analysis'] = array(
     'left_field' => 'analysis_id',
     'field' => 'analysis_id',
     'handler' => 'views_handler_join_chado_aggregator'
- 	);
- 	
- 	$data['analysisprop']['value'] = array(
+   );
+
+   $data['analysisprop']['value'] = array(
     'title' => t('Value'),
     'help' => t(' '),
     'field' => array(
@@ -92,9 +93,9 @@ function retrieve_analysis_views_data() {
     'argument' => array(
       'handler' => 'views_handler_argument_string',
     ),
- 	);
- 	
- 	$data['analysisprop']['all'] = array(
+   );
+
+   $data['analysisprop']['all'] = array(
     'title' => t('All'),
     'help' => t('An aggregate field that contains all fields for a row.'),
     'field' => array(
@@ -110,37 +111,38 @@ function retrieve_analysis_views_data() {
     'argument' => array(
       'handler' => 'views_handler_argument_string',
     ),
- 	);
- 	
-	// Table Field Definitions----------------------
-	// Field: analysis_id (primary key)
-	$data['analysis']['analysis_id'] = array(
-	  'title' => 'analysis ID',
-	  'help' => 'The primary key of the analysis table.',
-	  'field' => array(
-	    'handler' => 'views_handler_field_numeric',
-	    'click sortable' => TRUE,
-	  ),
-	  'filter' => array(
-	    'handler' => 'views_handler_filter_numeric',
-	  ),
-	  'sort' => array(
-	    'handler' => 'chado_views_handler_sort',
-	  ),
-	);
-	
+   );
+
+  // Table Field Definitions----------------------
+  // Field: analysis_id (primary key)
+  $data['analysis']['analysis_id'] = array(
+    'title' => 'analysis ID',
+    'help' => 'The primary key of the analysis table.',
+    'field' => array(
+      'handler' => 'views_handler_field_numeric',
+      'click sortable' => TRUE,
+    ),
+    'filter' => array(
+      'handler' => 'views_handler_filter_numeric',
+    ),
+    'sort' => array(
+      'handler' => 'chado_views_handler_sort',
+    ),
+  );
+
   // Calculated Field: Node ID
   //  use custom field handler to query drupal for the node ID
   //  this is only needed if chado is in a separate database from drupal
-  if($database){
-		$data['analysis']['analysis_nid'] = array(
-	  	'title' => 'Node ID',
-	  	'help' => 'The node ID for the current analysis',
-	  	'field' => array(
-	    	'handler' => 'views_handler_field_computed_analysis_nid',
-	  	),
-		);
-  } else {
+  if ($database) {
+    $data['analysis']['analysis_nid'] = array(
+      'title' => 'Node ID',
+      'help' => 'The node ID for the current analysis',
+      'field' => array(
+        'handler' => 'views_handler_field_computed_analysis_nid',
+      ),
+    );
+  }
+  else {
     // Add relationship between chado_analysis and analysis
     $data['analysis']['analysis_nid'] = array(
       'group' => 'Analysis',
@@ -158,9 +160,9 @@ function retrieve_analysis_views_data() {
     );
 
   }
-	
-	// Field: name (varchar 255)
- 	$data['analysis']['name'] = array(
+
+  // Field: name (varchar 255)
+   $data['analysis']['name'] = array(
     'title' => t('Name'),
     'help' => t(''),
     'field' => array(
@@ -177,13 +179,13 @@ function retrieve_analysis_views_data() {
       'handler' => 'views_handler_argument_string',
     ),
   );
-  // if joined to the node table add a "Link to Node" option for the field  
+  // if joined to the node table add a "Link to Node" option for the field
   if (!$database) {
     $data['analysis']['name']['field']['handler'] = 'views_handler_field_node_optional';
   }
 
   // Field: description (text)
- 	$data['analysis']['description'] = array(
+   $data['analysis']['description'] = array(
     'title' => t('Description'),
     'help' => t(''),
     'field' => array(
@@ -202,7 +204,7 @@ function retrieve_analysis_views_data() {
   );
 
   // Field: program (varchar 255)
- 	$data['analysis']['program'] = array(
+   $data['analysis']['program'] = array(
     'title' => t('Program'),
     'help' => t('Program name, e.g. blastx, blastp, sim4, genscan.'),
     'field' => array(
@@ -221,7 +223,7 @@ function retrieve_analysis_views_data() {
   );
 
   // Field: program version (varchar 255)
- 	$data['analysis']['programversion'] = array(
+   $data['analysis']['programversion'] = array(
     'title' => t('Program Version'),
     'help' => t('Version description, e.g. TBLASTX 2.0MP-WashU [09-Nov-2000].'),
     'field' => array(
@@ -240,7 +242,7 @@ function retrieve_analysis_views_data() {
   );
 
   // Field: algorithm (varchar 255)
- 	$data['analysis']['algorithm'] = array(
+   $data['analysis']['algorithm'] = array(
     'title' => t('Algorithm'),
     'help' => t('Algorithm name, e.g. blast.'),
     'field' => array(
@@ -258,7 +260,7 @@ function retrieve_analysis_views_data() {
     ),
   );
 
- 	$data['analysis']['sourcename'] = array(
+   $data['analysis']['sourcename'] = array(
     'title' => t('Source Name'),
     'help' => t('Source name, e.g. cDNA, SwissProt.'),
     'field' => array(
@@ -277,7 +279,7 @@ function retrieve_analysis_views_data() {
   );
 
   // Field: source version (varchar 255)
- 	$data['analysis']['sourceversion'] = array(
+   $data['analysis']['sourceversion'] = array(
     'title' => t('Source Version'),
     'help' => t('The version of the source.'),
     'field' => array(
@@ -296,7 +298,7 @@ function retrieve_analysis_views_data() {
   );
 
   // Field: source URI/URL (text)
- 	$data['analysis']['sourceuri'] = array(
+   $data['analysis']['sourceuri'] = array(
     'title' => t('Source URL'),
     'help' => t('This is an optional, permanent URL or URI for the source of the analysis.'),
     'field' => array(
@@ -315,7 +317,7 @@ function retrieve_analysis_views_data() {
   );
 
   // Field: time executed (datetime)
- 	$data['analysis']['timeexecuted'] = array(
+   $data['analysis']['timeexecuted'] = array(
     'title' => 'Time Executed',
     'help' => 'The date & time when this analysis was executed.',
     'field' => array(
@@ -327,5 +329,5 @@ function retrieve_analysis_views_data() {
     ),
   );
 
- 	return $data;
+   return $data;
 }

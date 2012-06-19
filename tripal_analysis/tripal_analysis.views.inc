@@ -6,7 +6,7 @@
  *  chado/tripal analysis tables. Supplementary functions can be found in
  *  ./views/
  *
- *  Documentation on views integration can be found at 
+ *  Documentation on views integration can be found at
  *  http://views2.logrus.com/doc/html/index.html.
  */
 
@@ -18,7 +18,7 @@
 
 require('views/analysis.views.inc');
 require('views/chado_analysis.views.inc');
-require('views/misc_tables.views.inc'); 
+require('views/misc_tables.views.inc');
 /**
  * Implements hook_views_data()
  *
@@ -26,7 +26,7 @@ require('views/misc_tables.views.inc');
  *
  * @return: a data array which follows the structure outlined in the
  *   views2 documentation for this hook. Essentially, it's an array of table
- *   definitions keyed by chado/tripal table name. Each table definition 
+ *   definitions keyed by chado/tripal table name. Each table definition
  *   includes basic details about the table, fields in that table and
  *   relationships between that table and others (joins)
  *
@@ -46,7 +46,7 @@ function tripal_analysis_views_data()  {
  * Implements hook_views_handlers()
  *
  * Purpose: Register all custom handlers with views
- *   where a handler describes either "the type of field", 
+ *   where a handler describes either "the type of field",
  *   "how a field should be filtered", "how a field should be sorted"
  *
  * @return
@@ -75,7 +75,7 @@ function tripal_analysis_views_views_handlers() {
  */
 function tripal_analysis_views_data_alter(&$data) {
 
-  if( !(is_array($db_url) and array_key_exists('chado',$db_url)) ){
+  if (!(is_array($db_url) and array_key_exists('chado', $db_url)) ) {
 
     // Add featuer relationship to node
     $data['node']['analysis_chado_nid'] = array(
@@ -93,7 +93,7 @@ function tripal_analysis_views_data_alter(&$data) {
       ),
     );
   }
-  
+
 }
 
 /**
@@ -101,9 +101,9 @@ function tripal_analysis_views_data_alter(&$data) {
  *
  * @ingroup tripal_analysis_views
  */
-function tripal_analysis_views_default_views () {
+function tripal_analysis_views_default_views() {
   $views = array();
-  
+
   // Main default view
   // List all cvterms based on cv
   $view = new view;
@@ -541,6 +541,6 @@ function tripal_analysis_views_default_views () {
     'name' => 'navigation',
   ));
   $views[$view->name] = $view;
-  
+
   return $views;
 }
