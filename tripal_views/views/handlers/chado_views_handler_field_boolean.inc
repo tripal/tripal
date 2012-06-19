@@ -10,9 +10,9 @@
  */
 class chado_views_handler_field_boolean extends views_handler_field_boolean {
 
-  function init (&$view, $options) {
+  function init(&$view, $options) {
     include_once('chado_wrapper_functions.inc');
-    parent::init($view,$options);
+    parent::init($view, $options);
   }
 
   /**
@@ -57,7 +57,7 @@ class chado_views_handler_field_boolean extends views_handler_field_boolean {
    * Determines whether the current field is aggregated or not
    * Note: The parent::query() takes care of adding the field to the query, etc.
    */
-  function query () {
+  function query() {
     parent::query();
     $this->aggregated = chado_wrapper_is_aggregated_by_join($this);
   }
@@ -65,7 +65,7 @@ class chado_views_handler_field_boolean extends views_handler_field_boolean {
   /**
    * Splits the aggregated values up for use in rendering
    */
-  function pre_render (&$values) {
+  function pre_render(&$values) {
 
     // further check the results to see if this field is a postgresql array
     $this->aggregated = chado_wrapper_is_aggregated_by_result($this, $values);

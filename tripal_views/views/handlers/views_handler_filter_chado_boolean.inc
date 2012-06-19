@@ -1,6 +1,7 @@
 <?php
 
 /**
+ * @file
  * Purpose: This handler provides a TRUE/FALSE or YES/NO select for chado fields
  *  of type boolean (includes both 0/1 and t/f booleans)
  *
@@ -10,17 +11,14 @@
 class views_handler_filter_chado_boolean extends views_handler_filter_boolean_operator {
  /**
   * Checks if this field uses 0/1 or t/f
+  * @todo Implement LIMIT 1 functionality for tripal_core_chado_select().
   */
   function init(&$view, $options) {
     parent::init($view, $options);
-    
-    $sql = 'SELECT '.$this->field.' FROM '.$this->table.' LIMIT 1';
-    $previous_db = tripal_db_set_active('chado');
-    $result = db_fetch_object(db_query($sql));
-    tripal_db_set_active($previous_db);
-    
+
+    $results = tripal_core_chado_select($this->table, array($this->field), array());
     $this->boolean_type_tf = FALSE;
-    if (preg_match('/[tf]/', $result->{$this->field})) {
+    if (preg_match('/[tf]/', $results[0]->{$this->field})) {
       $this->boolean_type_tf = TRUE;
     }
 
@@ -46,8 +44,9 @@ class views_handler_filter_chado_boolean extends views_handler_filter_boolean_op
       // Provide a fallback if the above didn't set anything.
       if (!isset($this->value_options)) {
         $this->value_options = array('t' => t('True'), 'f' => t('False'));
-      }    
-    } else { //end of t/f boolean
+      }
+    }
+    else { //end of t/f boolean
       if (isset($this->definition['type'])) {
         if ($this->definition['type'] == 'yes-no') {
           $this->value_options = array(1 => t('Yes'), 0 => t('No'));
@@ -70,19 +69,22 @@ class views_handler_filter_chado_boolean extends views_handler_filter_boolean_op
     $where = "$this->table_alias.$this->real_field ";
 
     if ($this->boolean_type_tf) {
-      if (preg_match('/f/',$this->value)) {
+      if (preg_match('/f/', $this->value)) {
         $where .= "= 'f'";
-      } else {
+      }
+      else {
         $where .= "= 't'";
       }
-      $this->query->add_where($this->options['group'], $where);    
-    } else {
+      $this->query->add_where($this->options['group'], $where);
+    }
+    else {
       if (empty($this->value)) {
         $where .= '= 0';
         if ($this->accept_null) {
           $where = '(' . $where . " OR $this->table_alias.$this->real_field IS NULL)";
         }
-      } else {
+      }
+      else {
         $where .= '<> 0';
       }
       $this->query->add_where($this->options['group'], $where);

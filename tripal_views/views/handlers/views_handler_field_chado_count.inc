@@ -1,6 +1,7 @@
 <?php
 
 /**
+ * @file
  * Purpose: Provide a field that counts the number of records in the current table
  *   are connected to the base table. For example, this field could be used to count
  *   the number of features connected to a given organism -base table=organism,
@@ -19,7 +20,8 @@ class views_handler_field_chado_count extends views_handler_field {
     // check that it was provided in the field definition and if not warn
     if ($this->definition['table_to_query']) {
       $this->aliases['current_table'] = $this->definition['table_to_query'];
-    } else {
+    }
+    else {
       drupal_set_message(t("The field definition ( in hook_views_data() ) needs to specify the 'table_to_query' in order for this fields to work. Field:%field in the %table table definition"), array('%field' => $this->field, '%table' => $this->table), 'error');
     }
 
@@ -35,7 +37,7 @@ class views_handler_field_chado_count extends views_handler_field {
 
   function pre_render(&$values) {
     // Render nothing if the current table wasn't set in the field definition
-    if(!$this->aliases['current_table']) {
+    if (!$this->aliases['current_table']) {
       return '';
     }
 

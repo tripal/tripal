@@ -1,9 +1,10 @@
 <?php
 
-module_load_include('inc','views','includes/base');
-module_load_include('inc','views','includes/handlers');
+module_load_include('inc', 'views', 'includes/base');
+module_load_include('inc', 'views', 'includes/handlers');
 
 /**
+ * @file
  * Handler to allow joins between records via a linking table
  *
  * Example Usage:
@@ -20,10 +21,10 @@ module_load_include('inc','views','includes/handlers');
           'left_field' => 'feature_id',
           'field' => 'analysis_id',
           'handler' => 'views_handler_join_chado_through_linking'
-        ); 
+        );
  *   @endcode
  *
- * NOTE: If the right table is in the drupal schema rather then the chado schema 
+ * NOTE: If the right table is in the drupal schema rather then the chado schema
  *  (ie: node, chado_feature) then add the following to the above join description:
  *  @code
     'table_is_drupal' => TRUE
@@ -40,7 +41,7 @@ class views_handler_join_chado_through_linking extends views_join {
   function construct($table = NULL, $left_table = NULL, $left_field = NULL, $field = NULL, $extra = array(), $type = 'LEFT', $added = NULL) {
     parent::construct($table, $left_table, $left_field, $field, $extra, $type);
   }
-  
+
   /**
    * Creates SQL for both joins table => linking_table and linking_table => left_table
    * NOTE: Uses fields in definition as passed in from hook_views_data join definition
@@ -62,7 +63,7 @@ class views_handler_join_chado_through_linking extends views_join {
       ),
       'LEFT'
     );
-    
+
     $joins[] = $this->create_single_join(
       $query,
       array(
@@ -76,40 +77,46 @@ class views_handler_join_chado_through_linking extends views_join {
       ),
       'LEFT'
     );
-    
-    $output .= implode("\n",$joins);
+
+    $output .= implode("\n", $joins);
     return $output;
   }
-  
+
   /**
    * Creates SQL for a single join based on parameters
    */
-  function create_single_join (&$query, $right_spec, $left_spec, $join_type) {
-    
+  function create_single_join(&$query, $right_spec, $left_spec, $join_type) {
+
     if ($right_spec['table']) {
       $right = $query->get_table_info($right_spec['table']);
-      if (!$right['alias']) { $right['alias'] = $right_spec['table']; }
+      if (!$right['alias']) {
+        $right['alias'] = $right_spec['table'];
+      }
       $right_field = "$right[alias].$right_spec[field]";
 
       if ($right_spec['is_drupal']) {
-        $right_table = '{'.$right_spec['table'].'}';
-      } else {
+        $right_table = '{' . $right_spec['table'] . '}';
+      }
+      else {
         $right_table = $right_spec['table'];
       }
-    }   
+    }
 
     if ($left_spec['table']) {
       $left = $query->get_table_info($left_spec['table']);
-      if (!$left['alias']) { $left['alias'] = $left_spec['table']; }
+      if (!$left['alias']) {
+        $left['alias'] = $left_spec['table'];
+        }
       $left_field = "$left[alias].$left_spec[field]";
-    } else {
+    }
+    else {
       // This can be used if left_field is a formula or something. It should be used only *very* rarely.
       $left_field = $this->left_spec['field'];
     }
-    
+
     $output = " $join_type JOIN $right_table $right[alias] ON $left_field = $right_field";
-     
+
     return $output;
   }
- 
+
 }

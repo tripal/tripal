@@ -17,11 +17,12 @@
 function chado_wrapper_split_array_agg_results($handler, &$values) {
 
   if ($handler->aggregated) {
-    foreach($values as $k => $v) {
+    foreach ($values as $k => $v) {
 
-      if(preg_match('/^{(.*)}$/',$v->{$handler->field_alias}, $matches)) {
+      if (preg_match('/^{(.*)}$/', $v->{$handler->field_alias}, $matches)) {
         $values[$k]->{$handler->field_alias} = str_getcsv($matches[1]);
-      } else {
+      }
+      else {
         $values[$k]->{$handler->field_alias} = array();
       }
     }
@@ -39,11 +40,11 @@ function chado_wrapper_split_array_agg_results($handler, &$values) {
  * @return
  *   TRUE/FALSE if or if not the field has the aggregated join handler
  */
-function chado_wrapper_is_aggregated_by_join ($handler) {
+function chado_wrapper_is_aggregated_by_join($handler) {
   $aggregated = FALSE;
 
   $table = $handler->query->get_table_info($handler->table);
-  if (preg_match('/aggregator/',$table['join']->definition['handler'])) {
+  if (preg_match('/aggregator/', $table['join']->definition['handler'])) {
     $aggregated = TRUE;
   }
 
@@ -61,10 +62,10 @@ function chado_wrapper_is_aggregated_by_join ($handler) {
  * @return
  *   TRUE/FALSE if or if not the field is aggregated
  */
-function chado_wrapper_is_aggregated_by_result ($handler, $values) {
+function chado_wrapper_is_aggregated_by_result($handler, $values) {
   $aggregated = FALSE;
 
-  if (preg_match('/^{.*}$/',$values[0]->{$handler->field_alias})) {
+  if (preg_match('/^{.*}$/', $values[0]->{$handler->field_alias})) {
     $aggregated = TRUE;
   }
 
@@ -96,7 +97,8 @@ function chado_wrapper_render_items($handler, $values) {
 
   // Otherwise it is not aggragated
   // Just render like the default handler would
-  } else {
+  }
+  else {
     return $handler->parent_render($values);
   }
 }

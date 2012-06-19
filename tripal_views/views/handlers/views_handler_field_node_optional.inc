@@ -1,6 +1,7 @@
 <?php
 
 /**
+ * @file
  * Field handler to provide simple renderer that allows linking to a node.
  *
  * @ingroup views_field_handlers
@@ -15,12 +16,12 @@ class views_handler_field_node_optional extends views_handler_field_node {
       $this->additional_fields['language'] = array('table' => 'node', 'field' => 'language');
     }
   }
-  
+
   /**
    * Add chado_* and *_node alias'd left joins to the table
    */
   function query() {
-    
+
     // Check what we have (ie: current table? node table? )
     $chado_table = 'chado_' . $this->table;
     foreach ($this->query->table_queue as $table_def) {
@@ -28,21 +29,21 @@ class views_handler_field_node_optional extends views_handler_field_node {
       if ($table_def['table'] == $this->table) {
         $this_table_alias = $table_def['alias'];
       }
-      
+
       // check is node joined to #this->table
       if ($table_def['table'] == $chado_table) {
         $node_table_alias = $table_def['alias'];
       }
     }
-    
+
     // First: Add the main field-----------------------------------------------
     if (!$this_table_alias) {
       $this_table_alias = $this->ensure_my_table();
     }
-    $field_alias = $this->query->add_field($this_table_alias, $this->real_field); 
+    $field_alias = $this->query->add_field($this_table_alias, $this->real_field);
     $this->aliases[ $this->real_field ] = $field_alias;
     $this->field_alias = $field_alias;
-    
+
     // Second: Add nid field and Joins if necessary----------------------------
     // Add node join if needed
     if (!$node_table_alias) {
@@ -50,18 +51,18 @@ class views_handler_field_node_optional extends views_handler_field_node {
       $def['field'] = $this->table . '_id';
       $def['left_table'] = $this_table_alias;
       $def['left_field'] = $this->table . '_id';
-      
+
       $join = new views_join();
       $join->definition = $def;
       $join->construct();
       $join->adjusted = TRUE;
-    
+
       $node_table_alias = $this->query->add_relationship($def['table'], $join, $def['table']);
     }
-    
+
     // Finally Add Field
-    $field_alias = $this->query->add_field($node_table_alias, 'nid'); 
-    $this->aliases['nid'] = $field_alias;   
+    $field_alias = $this->query->add_field($node_table_alias, 'nid');
+    $this->aliases['nid'] = $field_alias;
 
   }
 
@@ -71,7 +72,7 @@ class views_handler_field_node_optional extends views_handler_field_node {
    * Data should be made XSS safe prior to calling this function.
    */
   function render_link($data, $values) {
-    if (!empty($this->options['link_to_node']) && $data !== NULL && $data !== '') {  
+    if (!empty($this->options['link_to_node']) && $data !== NULL && $data !== '') {
       if (!empty($values->{$this->aliases['nid']})) {
         $this->options['alter']['make_link'] = TRUE;
         $this->options['alter']['path'] = "node/" . $values->{$this->aliases['nid']};
@@ -84,11 +85,13 @@ class views_handler_field_node_optional extends views_handler_field_node {
             unset($this->options['alter']['language']);
           }
         }
-      } else {
+      }
+      else {
         $this->options['alter']['make_link'] = FALSE;
-        $this->options['alter']['path'] = "";        
+        $this->options['alter']['path'] = "";
       }
     }
+
     return $data;
   }
 }

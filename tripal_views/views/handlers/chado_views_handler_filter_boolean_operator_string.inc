@@ -29,14 +29,14 @@ class chado_views_handler_filter_boolean_operator_string extends views_handler_f
     $form['agg']['records_with'] = array(
       '#type' => 'checkbox',
       '#title' => t('Filter base table records'),
-      '#description' => t('Filters '.$this->view->base_table.' to only those with the value in the aggregate array.'),
+      '#description' => t('Filters %table to only those with the value in the aggregate array.', array('%table' => $this->view->base_table)),
       '#default_value' => (isset($this->options['records_with'])) ? $this->options['records_with'] : TRUE,
     );
 
     $form['agg']['aggregates_with'] = array(
       '#type' => 'checkbox',
       '#title' => t('Filter aggregates displayed'),
-      '#description' => t('Filters the aggregates shown based on the value. Doesn\'t affect the number of '.$this->view->base_table.' records.'),
+      '#description' => t('Filters the aggregates shown based on the value. Doesn\'t affect the number of %table records.', array('%table' => $this->view->base_table)),
       '#default_value' => (isset($this->options['aggregates_with'])) ? $this->options['aggregates_with'] : TRUE,
     );
 
@@ -46,20 +46,21 @@ class chado_views_handler_filter_boolean_operator_string extends views_handler_f
    * If the table to be filtered is not aggregated uses the parent::query()
    * However, if it is uses postgresql any() function to compare
    */
-  function query () {
+  function query() {
     $this->ensure_my_table();
 
-
     $table = $this->query->get_table_info($this->table);
-    if (preg_match('/aggregator/',$table['join']->definition['handler'])) {
+    if (preg_match('/aggregator/', $table['join']->definition['handler'])) {
       $this->aggregated = TRUE;
-    } else {
+    }
+    else {
       $this->aggregated = FALSE;
     }
 
     if (!$this->aggregated) {
       parent::query();
-    } else {
+    }
+    else {
 
       // Only base records with value in the aggregated field
       // This doesn't restrict the items in the aggregate field
@@ -74,7 +75,7 @@ class chado_views_handler_filter_boolean_operator_string extends views_handler_f
       // Tell the join handler about the filter
       // so it can be done in the join query
       if ($this->options['agg']['aggregates_with']) {
-        $table['join']->filter[] = $field ." = '". $this->value."'";
+        $table['join']->filter[] = $field . " = '" . $this->value . "'";
       }
     }
 
