@@ -6,7 +6,7 @@
  *  chado/tripal organism tables. Supplementary functions can be found in
  *  ./views/
  *
- *  Documentation on views integration can be found at 
+ *  Documentation on views integration can be found at
  *  http://views2.logrus.com/doc/html/index.html.
  */
 
@@ -15,7 +15,7 @@
  * @ingroup views
  * @ingroup tripal_feature
  */
- 
+
 /**
  * Implements hook_views_data()
  *
@@ -23,7 +23,7 @@
  *
  * @return: a data array which follows the structure outlined in the
  *   views2 documentation for this hook. Essentially, it's an array of table
- *   definitions keyed by chado/tripal table name. Each table definition 
+ *   definitions keyed by chado/tripal table name. Each table definition
  *   includes basic details about the table, fields in that table and
  *   relationships between that table and others (joins)
  *
@@ -34,11 +34,11 @@ require_once('views/chado_feature.views.inc');
 require_once('views/misc_tables.views.inc');
 function tripal_feature_views_data()  {
   $data = array();
-  
+
   $data = array_merge($data, retrieve_feature_views_data());
   $data = array_merge($data, retrieve_chado_feature_views_data());
   $data = array_merge($data, retrieve_feature_misc_tables_views_data());
-  
+
   return $data;
 }
 
@@ -46,7 +46,7 @@ function tripal_feature_views_data()  {
  * Implements hook_views_handlers()
  *
  * Purpose: Register all custom handlers with views
- *   where a handler describes either "the type of field", 
+ *   where a handler describes either "the type of field",
  *   "how a field should be filtered", "how a field should be sorted"
  *
  * @return: An array of handler definitions
@@ -74,7 +74,7 @@ function tripal_feature_views_handlers() {
  */
 function tripal_feature_views_data_alter(&$data) {
 
-  if( !(is_array($db_url) and array_key_exists('chado',$db_url)) ){
+  if ( !(is_array($db_url) and array_key_exists('chado', $db_url)) ) {
 
     // Add featuer relationship to node
     $data['node']['feature_chado_nid'] = array(
@@ -92,16 +92,16 @@ function tripal_feature_views_data_alter(&$data) {
       ),
     );
   }
-  
+
 }
 
 /**
  *
  * @ingroup tripal_feature_views
  */
-function tripal_feature_views_default_views () {
+function tripal_feature_views_default_views() {
   $views = array();
-  
+
   // Main default view
   // List all cvterms based on cv
   $view = new view;
@@ -431,6 +431,6 @@ function tripal_feature_views_default_views () {
     'name' => 'navigation',
   ));
   $views[$view->name] = $view;
-  
+
   return $views;
 }

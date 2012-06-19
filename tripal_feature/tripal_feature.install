@@ -5,14 +5,14 @@
 *
 * @ingroup tripal_feature
 */
-function tripal_feature_install(){
+function tripal_feature_install() {
    // create the module's data directory
    tripal_create_moddir('tripal_feature');
 
-   // create the tables that correlate drupal nodes with chado 
+   // create the tables that correlate drupal nodes with chado
    // features, organisms, etc....
    drupal_install_schema('tripal_feature');
-  
+
    // add the materialized view
    tripal_feature_add_organism_count_mview();
 
@@ -23,13 +23,13 @@ function tripal_feature_install(){
 *
 * @ingroup tripal_feature
 */
-function tripal_feature_update_6000(){
+function tripal_feature_update_6000() {
    // recreate the materialized view
    tripal_feature_add_organism_count_mview();
    $ret = array(
       '#finished' => 1,
    );
-   
+
    return $ret;
 }
 
@@ -37,25 +37,25 @@ function tripal_feature_update_6000(){
 *
 * @ingroup tripal_feature
 */
-function tripal_feature_update_6300(){
+function tripal_feature_update_6300() {
    // add the relationship aggregator table to the database
    $schema = tripal_feature_get_schemas('tripal_feature_relagg');
    $ret = array();
    db_create_table($ret, 'tripal_feature_relagg', $schema['tripal_feature_relagg']);
-   
+
    return $ret;
 }
 /**
 *
 * @ingroup tripal_feature
 */
-function tripal_feature_add_organism_count_mview(){
+function tripal_feature_add_organism_count_mview() {
    $view_name = 'organism_feature_count';
 
    // Drop the MView table if it exists
    $mview_id = tripal_mviews_get_mview_id($view_name);
-   if($mview_id){
-      tripal_mviews_action("delete",$mview_id);
+   if ($mview_id) {
+      tripal_mviews_action("delete", $mview_id);
    }
 
    // Create the MView
@@ -75,12 +75,12 @@ function tripal_feature_add_organism_count_mview(){
       // columns for indexing
       'organism_id,cvterm_id,feature_type',
       // SQL statement to populate the view
-      'SELECT O.organism_id, O.genus, O.species, O.common_name, 
-          count(F.feature_id) as num_features, 
-          CVT.cvterm_id, CVT.name as feature_type 
-       FROM {Organism} O 
-          INNER JOIN Feature F           ON O.Organism_id = F.organism_id 
-          INNER JOIN Cvterm CVT          ON F.type_id = CVT.cvterm_id 
+      'SELECT O.organism_id, O.genus, O.species, O.common_name,
+          count(F.feature_id) as num_features,
+          CVT.cvterm_id, CVT.name as feature_type
+       FROM {Organism} O
+          INNER JOIN Feature F           ON O.Organism_id = F.organism_id
+          INNER JOIN Cvterm CVT          ON F.type_id = CVT.cvterm_id
        GROUP BY O.Organism_id, O.genus, O.species, O.common_name,
           CVT.cvterm_id, CVT.name',
       // special index
@@ -90,8 +90,8 @@ function tripal_feature_add_organism_count_mview(){
    // add a job to the job queue so this view gets updated automatically next
    // time the job facility is run
    $mview_id = tripal_mviews_get_mview_id($view_name);
-   if($mview_id){
-      tripal_mviews_action('update',$mview_id);
+   if ($mview_id) {
+      tripal_mviews_action('update', $mview_id);
    }
 }
 /**
@@ -108,19 +108,19 @@ function tripal_feature_schema() {
 *
 * @ingroup tripal_feature
 */
-function tripal_feature_uninstall(){
+function tripal_feature_uninstall() {
 
    // Drop the MView table if it exists
    $mview_id = tripal_mviews_get_mview_id('organism_feature_count');
-   if($mview_id){
-      tripal_mviews_action("delete",$mview_id);
+   if ($mview_id) {
+      tripal_mviews_action("delete", $mview_id);
    }
 
    drupal_uninstall_schema('tripal_feature');
 
    // Get the list of nodes to remove
-   $sql_feature_id = "SELECT nid, vid ".
-                 "FROM {node} ".
+   $sql_feature_id = "SELECT nid, vid " .
+                 "FROM {node} " .
                  "WHERE type='chado_feature'";
    $result = db_query($sql_feature_id);
    while ($node = db_fetch_object($result)) {
@@ -130,35 +130,35 @@ function tripal_feature_uninstall(){
 
 /**
 * This function simply defines all tables needed for the module to work
-* correctly.  By putting the table definitions in a separate function we 
+* correctly.  By putting the table definitions in a separate function we
 * can easily provide the entire list for hook_install or individual
 * tables for an update.
 *
 * @ingroup tripal_feature
 */
-function tripal_feature_get_schemas ($table = NULL){  
+function tripal_feature_get_schemas($table = NULL) {
   $schema = array();
 
 
-  if(!$table or strcmp($table,'chado_feature')==0){
+  if (!$table or strcmp($table, 'chado_feature')==0) {
      $schema['chado_feature'] = array(
          'fields' => array(
             'vid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
             'nid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
             'feature_id' => array('type' => 'int', 'not null' => TRUE, 'default' => 0),
-            'sync_date' => array ('type' => 'int', 'not null' => FALSE, 'description' => 'UNIX integer sync date/time'),
+            'sync_date' => array('type' => 'int', 'not null' => FALSE, 'description' => 'UNIX integer sync date/time'),
          ),
          'indexes' => array(
             'feature_id' => array('feature_id')
           ),
          'unique keys' => array(
-            'nid_vid' => array('nid','vid'),
+            'nid_vid' => array('nid', 'vid'),
             'vid' => array('vid')
          ),
          'primary key' => array('nid'),
      );
   }
-  if(!$table or strcmp($table,'tripal_feature_relagg')==0){
+  if (!$table or strcmp($table, 'tripal_feature_relagg')==0) {
      $schema['tripal_feature_relagg'] = array(
         'fields' => array(
            'type_id' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
