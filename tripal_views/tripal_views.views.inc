@@ -438,22 +438,23 @@ function tripal_views_views_data() {
     $setup_id = $tvi_row->setup_id;
     $mview_id = $tvi_row->mview_id;
 
-      // holds the base table name and fields
-      $base_table = '';
-      $base_fields = array();
-      $type_prefix = '';
-      
-      // indicated whether the current table is a base table or not
-      $is_base_table = $tvi_row->base_table;
-      
-      // populate the base table name and fields.  If an $mview_id is given
-      // then get the materialized view info, otherwise get the Chado table info
-      if($mview_id){
-         $type_prefix = 'MView';
-         // get the base table name from the materialized view
-         $sql = "SELECT name, mv_specs FROM {tripal_mviews} WHERE mview_id = %d";
-         $mview_table = db_fetch_object(db_query($sql,$mview_id));
-         $base_table = $mview_table->name;
+    // holds the base table name and fields
+    $base_table = '';
+    $base_fields = array();
+    $type_prefix = '';
+
+    // indicated whether the current table is a base table or not
+    $is_base_table = $tvi_row->base_table;
+
+    // populate the base table name and fields.  If an $mview_id is given
+    // then get the materialized view info, otherwise get the Chado table info
+    if ($mview_id) {
+      $type_prefix = 'MView';
+
+      // get the base table name from the materialized view
+      $sql = "SELECT name, mv_specs FROM {tripal_mviews} WHERE mview_id = %d";
+      $mview_table = db_fetch_object(db_query($sql, $mview_id));
+      $base_table = $mview_table->name;
 
       // get the columns in this materialized view.  They are separated by commas
       // where the first word is the column name and the rest is the type
@@ -510,58 +511,61 @@ function tripal_views_views_data() {
 
       // Setup the base table info in the data array
       $data[$base_table]['table']['group'] = t("$type_prefix $tvi_row->name");
-      
+
       if ($is_base_table) {
         $data[$base_table]['table']['base'] = array(
           'group' => "$type_prefix $tvi_row->name",
           'title' => "$type_prefix $tvi_row->name",
           'help'  => $tvi_row->comment,
         );
-      } else {
+      }
+      else {
         $data[$base_table]['table'] = array(
           'group' => "$type_prefix $tvi_row->name",
           'title' => "$type_prefix $tvi_row->name",
           'help'  => $tvi_row->comment,
         );
       }
-      
+
       // first add the fields
-      foreach ($base_fields as $column_name => $base_field){
+      foreach ($base_fields as $column_name => $base_field) {
         $data[$base_table][$column_name] = array(
-           'title' => t($base_field['name']),
-           'help' => t($base_field['help']),
-           'field' => array(
-              'click sortable' => TRUE,
-           ),
+          'title' => t($base_field['name']),
+          'help' => t($base_field['help']),
+          'field' => array(
+            'click sortable' => TRUE,
+          ),
         );
-        
-        
+
+
         // now add the handlers
         $sql = "SELECT * FROM {tripal_views_handlers} WHERE setup_id = %d AND column_name = '%s'";
-        $handlers = db_query($sql,$setup_id,$column_name);
-        while($handler = db_fetch_object($handlers)){
-           $data[$base_table][$column_name][$handler->handler_type]['handler'] = $handler->handler_name;
+        $handlers = db_query($sql, $setup_id, $column_name);
+        while ($handler = db_fetch_object($handlers)) {
+          $data[$base_table][$column_name][$handler->handler_type]['handler'] = $handler->handler_name;
         };
     }
 
-     // now add the joins
-     $sql = "SELECT * FROM {tripal_views_join} WHERE setup_id = %d";
-     $joins = db_query($sql,$setup_id);
-     if (!isset($joins)) { $joins = array(); }
-     while($join = db_fetch_object($joins)){               
-        $left_table = $join->left_table;
-        $left_field = $join->left_field;
-        $base_field = $join->base_field; 
-        $handler = $join->handler;
-      
-        // add join entry
-        $data[$base_table]['table']['join'][$left_table] = array(
-          'left_field' => $left_field,
-          'field' => $base_field,
-        );
-        if ($handler) {
-          $data[$base_table]['table']['join'][$left_table]['handler'] = $handler;
-        }
+    // now add the joins
+    $sql = "SELECT * FROM {tripal_views_join} WHERE setup_id = %d";
+    $joins = db_query($sql, $setup_id);
+    if (!isset($joins)) {
+      $joins = array();
+    }
+    while ($join = db_fetch_object($joins)) {
+      $left_table = $join->left_table;
+      $left_field = $join->left_field;
+      $base_field = $join->base_field;
+      $handler = $join->handler;
+
+      // add join entry
+      $data[$base_table]['table']['join'][$left_table] = array(
+        'left_field' => $left_field,
+        'field' => $base_field,
+      );
+      if ($handler) {
+        $data[$base_table]['table']['join'][$left_table]['handler'] = $handler;
+      }
 
       // check to see if the join table is one that correlates with Drupal nodes
       // if so, there will be a chado_<table_name> table in the Drupal database

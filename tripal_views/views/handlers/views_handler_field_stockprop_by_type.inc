@@ -1,7 +1,8 @@
 <?php
 
 /**
- * Field handler allowing all properties of a specified type for a given stock to be displayed in a 
+ * @file
+ * Field handler allowing all properties of a specified type for a given stock to be displayed in a
  * single cell
  *
  * @ingroup tripal_stock
@@ -9,7 +10,7 @@
  */
 class views_handler_field_stockprop_by_type extends views_handler_field_prerender_list {
   function init(&$view, $options) {
-    parent::init($view, $options);    
+    parent::init($view, $options);
   }
 
   function option_definition() {
@@ -40,7 +41,7 @@ class views_handler_field_stockprop_by_type extends views_handler_field_prerende
       ),
       '#default_value' => array($this->options['stockprop_display_options']['type'], $this->options['stockprop_display_options']['value']),
     );
-    
+
     $options = tripal_cv_get_cvterm_options( variable_get('chado_stock_prop_types_cv', 'null') );
     $form['stockprop_type_ids'] = array(
       '#prefix' => '<div><div id="edit-options-stockprop_type_ids">',
@@ -51,7 +52,7 @@ class views_handler_field_stockprop_by_type extends views_handler_field_prerende
       '#default_value' => $this->options['stockprop_type_ids'],
     );
   }
-  
+
   /**
    * Add this term to the query
    */
@@ -63,11 +64,11 @@ class views_handler_field_stockprop_by_type extends views_handler_field_prerende
     $this->aliases['properties'] = 'properties';
     $this->aliases['stock_id'] = 'stock_id';
     $this->field_alias = $this->aliases['stock_id'];
-    
+
     //for each stock in this view page
     foreach ($values as $result) {
       if (!empty($result->{$this->aliases['properties']})) {
-        
+
         // all properties for the current stock
         $properties = $result->{$this->aliases['properties']};
         foreach ($properties as $property) {
@@ -78,7 +79,7 @@ class views_handler_field_stockprop_by_type extends views_handler_field_prerende
               continue;
             }
           }
-          
+
           // Add property to the list of items to be rendered
           $this->items[$property->stock_id][$property->stockprop_id]['stock_id'] = $property->stock_id;
           $this->items[$property->stock_id][$property->stockprop_id]['stockprop_id'] = $property->stockprop_id;
@@ -93,23 +94,25 @@ class views_handler_field_stockprop_by_type extends views_handler_field_prerende
 
   function render_item($count, $item) {
     $text = array();
-    
+
     if ($this->options['stockprop_display_options']['value']) {
       if ($item['value']) {
         $text[] =  $item['value'];
-      } else {
-        //display checkmark image
-        $image_path = drupal_get_path('module','tripal_core').'/images/checkmark.gif';
-        $text[] = '<img border="0" src="'.url($image_path).'" alt="checkmark" />';
       }
-    } 
+      else {
+        //display checkmark image
+        $image_path = drupal_get_path('module', 'tripal_core') . '/images/checkmark.gif';
+        $text[] = '<img border="0" src="' . url($image_path) . '" alt="checkmark" />';
+      }
+    }
     if ($this->options['stockprop_display_options']['type']) {
       $text[] = $item['type_name'];
     }
-  
+
     if (sizeof($text) > 1) {
-      return $text[0].' ('.$text[1].')';
-    } else {
+      return $text[0] . ' (' . $text[1] . ')';
+    }
+    else {
       return $text[0];
     }
   }

@@ -1,7 +1,7 @@
 <?php
-// $Id: views_handler_field_term_node_tid.inc,v 1.4 2009/07/01 23:07:14 merlinofchaos Exp $
 
 /**
+ * @file
  * Field handler for terms.
  */
 class views_handler_field_chado_relationship_by_type extends views_handler_field_prerender_list {
@@ -10,7 +10,7 @@ class views_handler_field_chado_relationship_by_type extends views_handler_field
 
     // Boolean to determine whether
     //    TRUE =>  value (property type)      -more than one property type displayed
-    //    FALSE => or just value is rendered  -only 1 porperty type is displayed    
+    //    FALSE => or just value is rendered  -only 1 porperty type is displayed
     $this->display_type = TRUE;
 
   }
@@ -18,7 +18,7 @@ class views_handler_field_chado_relationship_by_type extends views_handler_field
   function option_definition() {
     $options = parent::option_definition();
     $options['stockrel_type_ids'] = array('default' => array());
-    $options['stockrel_display_options'] = array('default' => array('subject','type','object'));
+    $options['stockrel_display_options'] = array('default' => array('subject', 'type', 'object'));
     return $options;
   }
 
@@ -42,7 +42,7 @@ class views_handler_field_chado_relationship_by_type extends views_handler_field
       ),
       '#default_value' => array($this->options['stockrel_display_parts']['subject'], $this->options['stockrel_display_parts']['type'], $this->options['stockrel_display_parts']['object']),
     );
-    
+
     $form['stockrel_display_rels'] = array(
       '#type' => 'radios',
       '#title' => t('Display Relationships Where'),
@@ -59,7 +59,7 @@ class views_handler_field_chado_relationship_by_type extends views_handler_field
       ),
       '#default_value' => $this->options['stockrel_display_rels'],
     );
-    
+
     $options = tripal_cv_get_cvterm_options( variable_get('chado_stock_relationship_cv', 'null') );
     $form['stockrel_type_ids'] = array(
       '#type' => 'checkboxes',
@@ -80,14 +80,14 @@ class views_handler_field_chado_relationship_by_type extends views_handler_field
     $this->aliases['relationships'] = 'relationships';
     $this->aliases['stock_id'] = 'stock_id';
     $this->field_alias = $this->aliases['stock_id'];
-    
+
     //for each stock in this view page
     foreach ($values as $result) {
       if (!empty($result->{$this->aliases['relationships']})) {
-          
+
         // all relationships including the current stock
         $relationships = $result->{$this->aliases['relationships']};
-        foreach ($relationships as $relationship) {      
+        foreach ($relationships as $relationship) {
           // perform filtering------
           //type
           if (!empty($this->options['stockrel_type_ids'])) {
@@ -96,18 +96,19 @@ class views_handler_field_chado_relationship_by_type extends views_handler_field
               continue;
             }
           }
-          
+
           //"Display Relationships Where" criteria
           if (preg_match('/subject/', $this->options['stockrel_display_rels'])) {
             if ($relationship->stock_id != $relationship->subject_id) {
               continue;
-            }      
-          } elseif (preg_match('/object/', $this->options['stockrel_display_rels'])) {
+            }
+          }
+          elseif (preg_match('/object/', $this->options['stockrel_display_rels'])) {
             if ($relationship->stock_id != $relationship->object_id) {
               continue;
             }
           }
-          
+
           // Add relationship to the list of items to be rendered
           $this->items[$relationship->stock_id][$relationship->stock_relationship_id]['stock_id'] = $relationship->stock_id;
           $this->items[$relationship->stock_id][$relationship->stock_relationship_id]['stock_relationship_id'] = $relationship->stock_relationship_id;
@@ -124,7 +125,7 @@ class views_handler_field_chado_relationship_by_type extends views_handler_field
 
   function render_item($count, $item) {
     $text = array();
-    
+
     // Render Parts
     if ($this->options['stockrel_display_parts']['subject']) {
       $text[] = $item['subject_name'];
@@ -135,7 +136,7 @@ class views_handler_field_chado_relationship_by_type extends views_handler_field
     if ($this->options['stockrel_display_parts']['object']) {
       $text[] = $item['object_name'];
     }
-    
+
     return implode(' ', $text);
   }
 

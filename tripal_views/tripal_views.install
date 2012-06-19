@@ -74,14 +74,14 @@ function tripal_views_update_6040() {
   // Add handler to tripal_views_join
   db_add_field($ret, 'tripal_views_join', 'handler', array('type' => 'varchar', 'length' => '255', 'not null' => TRUE, 'default' => ''));
 
-	// Add tripal_views_field to keep track of fields for views integration
-	$schema = tripal_views_views_schema();
-	db_create_table(&$ret, 'tripal_views_field', $schema['tripal_views_field']);
-	
-	// Add base_table TRUE/FALSE to tripal_views
-	db_add_field($ret, 'tripal_views', 'base_table', array('type' => 'int', 'not null ' => TRUE,
-			'default' => 1));
-	
+  // Add tripal_views_field to keep track of fields for views integration
+  $schema = tripal_views_views_schema();
+  db_create_table(&$ret, 'tripal_views_field', $schema['tripal_views_field']);
+
+  // Add base_table TRUE/FALSE to tripal_views
+  db_add_field($ret, 'tripal_views', 'base_table', array('type' => 'int', 'not null ' => TRUE,
+      'default' => 1));
+
   return $ret;
 }
 
