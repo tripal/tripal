@@ -1,6 +1,11 @@
 <?php
 
 /**
+ * @file
+ * @todo Add file header description
+ */
+
+/**
  * @defgroup tripal_analysis_api Analysis Module API
  * @ingroup tripal_analysis
  * @ingroup tripal_api

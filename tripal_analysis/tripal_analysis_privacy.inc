@@ -1,4 +1,8 @@
 <?php
+/**
+ * @file
+ * @todo Add file header description
+ */
 
 /*
  *  Perform permission check by analysis_id only if 'node_privacy_byrole' module is enabled
@@ -53,7 +57,7 @@ function tripal_analysis_set_feature_permission($analysis_id, $nid) {
   }
 
   //Convert analysis_id into node_id
-  $ana_nid = db_result(db_query("SELECT nid FROM {chado_analysis} WHERE analysis_id = $analysis_id"));
+  $ana_nid = db_result(db_query("SELECT nid FROM {chado_analysis} WHERE analysis_id = %analysis_id", $analysis_id));
   // Get available roles
   $roles = array_keys(user_roles());
 

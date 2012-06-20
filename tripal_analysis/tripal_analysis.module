@@ -936,7 +936,7 @@ function tripal_analyses_cleanup($dummy = NULL, $job_id = NULL) {
   while ($ca_record = db_fetch_object($results)) {
         $node = db_fetch_object(db_query($sql_drupal_node2, $ca_record->nid));
         if (!$node) {
-      db_query("DELETE FROM {chado_analysis} WHERE nid = $ca_record->nid");
+      db_query("DELETE FROM {chado_analysis} WHERE nid = %nid", $ca_record->nid);
       $message = "chado_analysis missing node.... DELETING chado_analysis record with nid: $ca_record->nid\n";
       watchdog('tripal_analysis', $message, array(), WATCHDOG_WARNING);
         }
