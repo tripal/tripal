@@ -1,4 +1,8 @@
 <?php
+/**
+ * @file
+ * @todo Add file header description
+ */
 
 /**
  * Inserts/Updates a tripal bulk loading job constant
@@ -163,8 +167,8 @@ function tripal_bulk_loader_set_constants_form($form_state, $node) {
 
       $form['exposed_fields']['existing'][$group]['delete'] = array(
         '#type' => 'markup',
-        '#value' => l('Edit', 'node/' . $node->nid . '/constants/' . $group . '/edit') . '<br />'  .
-          l('Delete', 'node/' . $node->nid . '/constants/' . $group . '/delete'),
+        '#value' => l(t('Edit'), 'node/' . $node->nid . '/constants/' . $group . '/edit') . '<br />'  .
+          l(t('Delete'), 'node/' . $node->nid . '/constants/' . $group . '/delete'),
       );
 
     }
@@ -198,15 +202,15 @@ function tripal_bulk_loader_set_constants_form($form_state, $node) {
           case 'table field':
             $form['exposed_fields']['new'][$record_id . '-' . $field_id] = array(
               '#type' => 'textfield',
-              '#title' => t($field['title']),
-              '#description' => t($field['exposed_description']),
+              '#title' => t('%title', array('%title' => $field['title'])),
+              '#description' => t('%exposed_description', array('%exposed_description' => $field['exposed_description'])),
               '#default_value' => (isset($node->constants[$record_id][$field_id]['value'])) ? $node->constants[$record_id][$field_id]['value'] : $field['constant value'],
             );
           break;
           case 'constant':
             $form['exposed_fields']['new'][$record_id . '-' . $field_id] = array(
               '#type' => 'textfield',
-              '#title' => t($field['title']),
+              '#title' => t('%title', array('%title' => $field['title']) ),
               '#description' => t('Enter the case-sensitive value of this constant for your spreadsheet'),
               '#default_value' => (isset($node->constants[$record_id][$field_id]['value'])) ? $node->constants[$record_id][$field_id]['value'] : $field['constant value'],
             );
@@ -281,7 +285,15 @@ function tripal_bulk_loader_set_constants_form_validate($form, $form_state) {
               form_set_error($record_id . '-' . $field_id, $msg);
             }
             else {
-              drupal_set_message('Confirmed a '. $form['exposed_fields']['new'][$record_id . '-' . $field_id]['#title'] . ' of "'. $form['exposed_fields']['new'][$record_id . '-' . $field_id]['#value'] . '" already exists.');
+              drupal_set_message(
+                t(
+                  'Confirmed a %title of "%value" already exists.',
+                  array(
+                    '%title' => $form['exposed_fields']['new'][$record_id . '-' . $field_id]['#title'],
+                    '%value' => $form['exposed_fields']['new'][$record_id . '-' . $field_id]['#value']
+                  )
+                )
+              );
             }
           }
         }
@@ -418,15 +430,15 @@ function tripal_bulk_loader_edit_constant_set_form($form_state, $node, $group_id
           case 'table field':
             $form[$record_id . '-' . $field_id] = array(
               '#type' => 'textfield',
-              '#title' => t($field['title']),
-              '#description' => t($field['exposed_description']),
+              '#title' => t('%title', array('%title' => $field['title'])),
+              '#description' => t('%exposed_description', array('%exposed_description' => $field['exposed_description'])),
               '#default_value' => (isset($node->constants[$group_id][$record_id][$field_id]['value'])) ? $node->constants[$group_id][$record_id][$field_id]['value'] : $field['constant value'],
             );
           break;
           case 'constant':
             $form[$record_id . '-' . $field_id] = array(
               '#type' => 'textfield',
-              '#title' => t($field['title']),
+              '#title' => t('%title', array('%title' => $field['title'])),
               '#description' => t('Enter the case-sensitive value of this constant for your spreadsheet'),
               '#default_value' => (isset($node->constants[$group_id][$record_id][$field_id]['value'])) ? $node->constants[$group_id][$record_id][$field_id]['value'] : $field['constant value'],
             );

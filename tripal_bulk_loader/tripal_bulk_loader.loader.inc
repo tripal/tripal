@@ -1,6 +1,11 @@
 <?php
 
 /**
+ * @file
+ * @todo Add file header description
+ */
+
+/**
  * Add Loader Job Form
  *
  * This form is meant to be included on the node page to allow users to submit/re-submit
@@ -62,7 +67,7 @@ function tripal_bulk_loader_add_loader_job_form_submit($form, $form_state) {
       db_query("UPDATE {tripal_bulk_loader} SET job_status='%s' WHERE nid=%d", 'Submitted to Queue', $form_state['values']['nid']);
     }
     else {
-      drupal_set_message("Can not open " . $form_state['values']['file'] . ". Job not scheduled.");
+      drupal_set_message(t("Can not open %file. Job not scheduled.", array('%file' => $form_state['values']['file'])));
     }
   }
   elseif (preg_match('/Re-Submit Job/', $form_state['values']['op'])) {
@@ -82,11 +87,11 @@ function tripal_bulk_loader_add_loader_job_form_submit($form, $form_state) {
       db_query('DELETE FROM %s WHERE %s IN (%s)', $r->table_inserted_into, $r->table_primary_key, $r->ids_inserted);
       $result = db_fetch_object(db_query('SELECT true as present FROM %s WHERE %s IN (%s)', $r->table_inserted_into, $r->table_primary_key, $r->ids_inserted));
       if (!$result->present) {
-        drupal_set_message('Successfully Removed data Inserted into the ' . $r->table_inserted_into . ' table.');
+        drupal_set_message(t('Successfully Removed data Inserted into the %tableto table.', array('%tableto' => $r->table_inserted_into)));
         db_query('DELETE FROM {tripal_bulk_loader_inserted} WHERE tripal_bulk_loader_inserted_id=%d', $r->tripal_bulk_loader_inserted_id);
       }
       else {
-        drupal_set_message('Unable to remove data Inserted into the ' . $r->table_inserted_into . ' table!', 'error');
+        drupal_set_message(t('Unable to remove data Inserted into the %tableto table!', array('%tableto' => $r->table_inserted_into)), 'error');
       }
     }
 
