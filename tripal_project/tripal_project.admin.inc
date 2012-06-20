@@ -1,4 +1,8 @@
 <?php
+/**
+ * @file
+ * @todo Add file header description
+ */
 
 function tripal_project_administration_description_page() {
  $output = '';
