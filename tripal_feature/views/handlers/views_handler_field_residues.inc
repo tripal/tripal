@@ -1,5 +1,10 @@
 <?php
 /**
+ * @file
+ * @todo Add file header description
+ */
+
+/**
  * A handler to provide proper displays for sequence residues.
  *
  * @ingroup tripal_feature

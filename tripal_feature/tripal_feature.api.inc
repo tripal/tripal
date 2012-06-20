@@ -1,4 +1,8 @@
 <?php
+/**
+ * @file
+ * @todo Add file header description
+ */
 
 /**
  * Implements hook_chado_feature_schema()

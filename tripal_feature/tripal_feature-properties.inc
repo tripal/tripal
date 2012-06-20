@@ -1,4 +1,8 @@
 <?php
+/**
+ * @file
+ * @todo Add file header description
+ */
 
 /**
  *
@@ -125,10 +129,10 @@ function tripal_feature_add_ONE_property_form_submit($form, &$form_state) {
 
    $succes = tripal_feature_insert_property($feature_id, $property, $value, 0, $cv_name);
    if ($succes) {
-      drupal_set_message("Successfully Added Property: $property => $value");
+      drupal_set_message(t("Successfully Added Property: %property => %value", array('%property' => $property), array('%value' => $value)));
    }
    else {
-      drupal_set_message("Failed to Add Property: $property => $value");
+      drupal_set_message(t("Failed to Add Property: %property => %value", array('%property' => $property), array('%value' => $value)));
    }
 }
 
@@ -236,7 +240,7 @@ function tripal_feature_edit_ALL_properties_form_submit($form, &$form_state) {
        $value = $form_state['values']["value-$i"];
        $success = tripal_feature_update_property_by_id($featureprop_id, $property, $value, $cv_name);
        if (!$success) {
-          drupal_set_message("Failed to Update Property: $property => $value");
+          drupal_set_message(t("Failed to Update Property: %property => %value", array('%property' => $property), array('%value' => $value)));
           $all_good = 0;
        }
      }

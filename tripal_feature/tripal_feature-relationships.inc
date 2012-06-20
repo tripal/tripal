@@ -1,5 +1,8 @@
 <?php
-
+/**
+ * @file
+ * @todo Add file header description
+ */
 
 /**
  *
@@ -245,7 +248,7 @@ function tripal_feature_edit_ALL_relationships_form($form_state, $node) {
        $i++;
        $form["num-$i"] = array(
          '#type' => 'fieldset',
-         '#title' => "Relationship $i",
+         '#title' => t("Relationship %i", array('%i' => $i)),
        );
 
        $form["num-$i"]["id-$i"] = array(
@@ -269,7 +272,7 @@ function tripal_feature_edit_ALL_relationships_form($form_state, $node) {
          '#required'   => TRUE,
          '#size' => 30,
          '#default_value' => $default,
-         '#description' => $description,
+         '#description' => t('%description', array('%description' => $description)),
        );
 
        $cv = tripal_cv_get_cv_by_name('relationship');

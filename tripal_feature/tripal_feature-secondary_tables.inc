@@ -1,4 +1,8 @@
 <?php
+/**
+ * @file
+ * @todo Add file header description
+ */
 
 /**
  *
@@ -161,7 +165,7 @@ function tripal_feature_implement_add_chado_properties_navigate_submit($form, $f
 
   if (strcmp($current_index, 'EMPTY') == 0) {
     // No Matching Step
-    drupal_set_message('Could not determine next step -' . $form_state['values']['current_step'] . ', please contact the administrator', 'error');
+    drupal_set_message(t('Could not determine next step - %currentstep, please contact the administrator', array('%currentstep' => $form_state['values']['current_step'])), 'error');
   }
   elseif ($current_index == 0) {
     $next_goto = $steps[$current_index+1][1];

@@ -1,6 +1,11 @@
 <?php
 
 /**
+ * @file
+ * @todo Add file header description
+ */
+
+/**
  * @defgroup tripal_feature Feature
  * @{
  * Provides functions for managing chado features including creating details pages for each feature
@@ -2345,7 +2350,7 @@ function tripal_features_cleanup($dummy = NULL, $job_id = NULL) {
       }
       $node = db_fetch_object(db_query($nsql, $nid->nid));
       if (!$node) {
-         db_query("DELETE FROM {chado_feature} WHERE nid = $nid->nid");
+         db_query("DELETE FROM {chado_feature} WHERE nid = %nid", $nid->nid);
          $message = "chado_feature missing node.... DELETING: $nid->nid\n";
          watchdog('tripal_feature', $message, array(), WATCHDOG_WARNING);
       }
