@@ -1,5 +1,10 @@
 <?php
 /**
+ * @file
+ * @todo Add file header description
+ */
+
+/**
  * Field handler for terms.
  */
 class views_handler_field_chado_relationship_all extends views_handler_field_prerender_list {

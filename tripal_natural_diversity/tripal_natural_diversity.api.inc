@@ -1,4 +1,8 @@
 <?php
+/**
+ * @file
+ * @todo Add file header description
+ */
 
 function tripal_natural_diversity_chado_nd_experiment_schema() {
   $description = array();
