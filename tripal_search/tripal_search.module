@@ -1,4 +1,9 @@
 <?php
+/**
+ * @file
+ * @todo Add file header description
+ */
+
 //
 // Copyright 2009 Clemson University
 //
@@ -117,7 +122,7 @@ function tripal_do_search($keywords, $type, $join1 = '', $where1 = '1 = 1', $arg
   }
 
   // Calculate maximum keyword relevance, to normalize it.
-  $select = "SELECT SUM(i.score * t.count) AS score FROM {search_index} i $join WHERE $conditions GROUP BY i.type, i.sid HAVING COUNT(*) >= %d ORDER BY score DESC";
+  $select = "SELECT SUM(i.score * t.count) AS score FROM {search_index} i " . $join . " WHERE $conditions GROUP BY i.type, i.sid HAVING COUNT(*) >= %d ORDER BY score DESC";
   $arguments = array_merge($arguments1, array($query[4]));
   $normalize = db_result(db_query_range($select, $arguments, 0, 1));
   if (!$normalize) {
@@ -126,7 +131,7 @@ function tripal_do_search($keywords, $type, $join1 = '', $where1 = '1 = 1', $arg
   $columns2 = str_replace('i.relevance', '('. (1.0 / $normalize) .' * SUM(i.score * t.count))', $columns2);
 
   // Build query to retrieve results.
-  $select = "SELECT i.type, i.sid, $columns2 FROM {search_index} i $join $join2 WHERE $conditions GROUP BY i.type, i.sid HAVING COUNT(*) >= %d";
+  $select = "SELECT i.type, i.sid, $columns2 FROM {search_index} i " . $join . " " . $join2 . " WHERE $conditions GROUP BY i.type, i.sid HAVING COUNT(*) >= %d";
   $count_select =  "SELECT COUNT(*) FROM ($select) n1";
   $arguments = array_merge($arguments2, $arguments1, array($query[4]));
 
