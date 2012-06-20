@@ -40,7 +40,7 @@ class views_handler_filter_stockprop_id extends views_handler_filter {
     if (preg_match('/NULL/', $form_state['values']['options']['operator'])) {
       $value = $form_state['values']['options']['value'];
       if (!empty($value)) {
-        drupal_set_message('The Value (' . $value . ') will be IGNORED when the Operator is set to "Is Present" or Is Absent".', 'warning');
+        drupal_set_message(t('The Value %value will be IGNORED when the Operator is set to "Is Present" or Is Absent". ', array('%value' => $value), 'warning'));
       }
     }
     else {
@@ -107,7 +107,7 @@ class views_handler_filter_stockprop_id extends views_handler_filter {
       }
       $form['value'] = array(
         '#type' => 'select',
-        '#title' => $this->options['label'],
+        '#title' => t('%label', array('%title' => $this->options['label'])),
         '#options' => $options,
         '#default_value' => $this->value,
       );

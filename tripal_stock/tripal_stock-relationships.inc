@@ -1,4 +1,8 @@
 <?php
+/**
+ * @file
+ * @todo Add file header description
+ */
 
 /**
  *
@@ -273,7 +277,7 @@ function tripal_stock_edit_ALL_relationships_form($form_state, $node) {
       '#required'   => TRUE,
       '#size' => 30,
       '#default_value' => $default,
-      '#description' => $description,
+      '#description' => t('%description', array('%description' => $description)),
     );
 
     $type_options = tripal_cv_get_cvterm_options( variable_get('chado_stock_relationship_cv', 'null') );

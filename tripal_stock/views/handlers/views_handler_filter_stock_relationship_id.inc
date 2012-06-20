@@ -1,4 +1,8 @@
 <?php
+/**
+ * @file
+ * @todo Add file header description
+ */
 
 class views_handler_filter_stock_relationship_id extends views_handler_filter {
 
@@ -78,7 +82,7 @@ class views_handler_filter_stock_relationship_id extends views_handler_filter {
           $this->query->add_where($this->options['group'], $where);
         }
         else {
-          drupal_set_message('No stock with the name or uniquename ' . $this->value . ' was found -No filtering done.', 'error');
+          drupal_set_message(t('No stock with the name or uniquename %value was found -No filtering done.',  array('%value' => $this->value ), 'error'));
         }
       } //end of not just checking presence
     }
@@ -135,9 +139,15 @@ class views_handler_filter_stock_relationship_id extends views_handler_filter {
   function value_form(&$form, &$form_state) {
     parent::value_form($form, $form_state);
 
+    if ($this->options['label']) {
+      $label = $this->options['label'];
+    }
+    else {
+      $label = 'Stock Name';
+    }
     $form['value'] = array(
       '#type' => 'textfield',
-      '#title' => ($this->options['label']) ? $this->options['label'] : t('Stock Name'),
+      '#title' => t('%label', array('%label' => $label)),
       '#default_value' => $this->value,
       '#size' => 40,
     );
