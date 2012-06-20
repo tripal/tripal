@@ -17,7 +17,7 @@
 function tripal_stock_add_ALL_dbreferences_page($node) {
   $output = '';
 
-  $output .= tripal_stock_add_chado_properties_progress('db_references').'<br>';
+  $output .= tripal_stock_add_chado_properties_progress('db_references') . '<br>';
   $output .= '<b>All Database References should strictly pertain to THE CURRENT Individual</b><br>';
   $output .= '<br>';
   $output .= theme('tripal_stock_references', $node);
@@ -112,29 +112,30 @@ function tripal_stock_add_ONE_dbreference_form_validate($form, &$form_state) {
 
     // Check database is valid db_id in chado
     if ( $form_state['values']['database'] > 0) {
-    	$previous_db = tripal_db_set_active('chado');
-    	$tmp_obj = db_fetch_object(db_query("SELECT count(*) as count FROM db WHERE db_id=%d",$form_state['values']['database']));
-    	tripal_db_set_active($previous_db);
-    	
+      $previous_db = tripal_db_set_active('chado');
+      $tmp_obj = db_fetch_object(db_query("SELECT count(*) as count FROM {db} WHERE db_id=%d", $form_state['values']['database']));
+      tripal_db_set_active($previous_db);
+
       if ($tmp_obj->count != 1) {
-        form_set_error('database', 'The database you selected is not valid. Please choose another one.'); 
+        form_set_error('database', 'The database you selected is not valid. Please choose another one.');
       }
-    } else {
+    }
+    else {
       form_set_error('database', 'Please select a database');
     }
 
     // Check Accession is unique for database
     $previous_db = tripal_db_set_active('chado');
-    $tmp_obj = db_fetch_object(db_query("SELECT count(*) as count FROM dbxref WHERE accession='%s'",$form_state['values']['accession']));
+    $tmp_obj = db_fetch_object(db_query("SELECT count(*) as count FROM {dbxref} WHERE accession='%s'", $form_state['values']['accession']));
     tripal_db_set_active($previous_db);
-    	
+
     if ($tmp_obj->count > 0) {
-      form_set_error('accession', 'This accession has already been assigned to another stock.'); 
+      form_set_error('accession', 'This accession has already been assigned to another stock.');
     }
 
   } //end of if adding
 
-} 
+}
 
 /**
  * Implements hoook_form_submit(): Actually adds the db reference to the stock
@@ -149,17 +150,18 @@ function tripal_stock_add_ONE_dbreference_form_validate($form, &$form_state) {
 function tripal_stock_add_ONE_dbreference_form_submit($form, &$form_state) {
 
   // FIX: Sometimes on programatic submission of form (drupal_execute) values in the form state get lost
-  // 	  however, the post values always seem to be correct
-  if (empty($form_state['values']['db_stock_id'])) { $form_state['values']['db_stock_id'] = $form_state['clicked_button']['#post']['db_stock_id']; }
+  //     however, the post values always seem to be correct
+  if (empty($form_state['values']['db_stock_id'])) {
+  $form_state['values']['db_stock_id'] = $form_state['clicked_button']['#post']['db_stock_id']; }
 
   // Only Create if valid
   if ($form_state['values']['database'] > 0) {
-    
+
 
     // create dbxref
     $previous_db = tripal_db_set_active('chado');
     db_query(
-      "INSERT INTO dbxref (db_id, accession, description) VALUES (%d, '%s', '%s')",
+      "INSERT INTO {dbxref} (db_id, accession, description) VALUES (%d, '%s', '%s')",
       $form_state['values']['database'],
       $form_state['values']['accession'],
       $form_state['values']['db_description']
@@ -168,18 +170,19 @@ function tripal_stock_add_ONE_dbreference_form_submit($form, &$form_state) {
 
     //create stock_dbxref
     $dbxref = tripal_db_get_dbxref_by_accession($form_state['values']['accession'], $form_state['values']['database']);
-		if (!empty($dbxref->dbxref_id)) {
-			$previous_db = tripal_db_set_active('chado');
-    	db_query(
-      	"INSERT INTO stock_dbxref (stock_id, dbxref_id) VALUES (%d, %d)",
-      	$form_state['values']['db_stock_id'],
-      	$dbxref->dbxref_id
-    	);
-			tripal_db_set_active($previous_db);
+    if (!empty($dbxref->dbxref_id)) {
+      $previous_db = tripal_db_set_active('chado');
+      db_query(
+        "INSERT INTO {stock_dbxref} (stock_id, dbxref_id) VALUES (%d, %d)",
+        $form_state['values']['db_stock_id'],
+        $dbxref->dbxref_id
+      );
+      tripal_db_set_active($previous_db);
 
-    	drupal_set_message('Successfully Added Database Reference');
-    } else {
-    	drupal_set_message('Database reference NOT successfully created...','error');
+      drupal_set_message('Successfully Added Database Reference');
+    }
+    else {
+      drupal_set_message('Database reference NOT successfully created...', 'error');
     } //end of if dbxref was created successfully
   } //end of if valid db reference
 
@@ -197,7 +200,7 @@ function tripal_stock_add_ONE_dbreference_form_submit($form, &$form_state) {
  *   HTML formatted output
  *
  * @ingroup tripal_stock
- */                                            
+ */
 function tripal_stock_edit_ALL_dbreferences_page($node) {
   $output = '';
 
@@ -209,10 +212,10 @@ function tripal_stock_edit_ALL_dbreferences_page($node) {
 
   return $output;
 }
-                                               
-/**                                            
+
+/**
  * Implements Hook_form(): Handles adding of Database References to Stocks
- * 
+ *
  * Specifically this adds dbxrefs to a current stock using the stock_dbxref table
  *
  * @param $form_state
@@ -224,7 +227,7 @@ function tripal_stock_edit_ALL_dbreferences_page($node) {
  *   An array describing the form to be rendered
  *
  * @ingroup tripal_stock
- */                                        
+ */
 function tripal_stock_edit_ALL_db_references_form($form_state, $node) {
   $form = array();
 
@@ -237,17 +240,18 @@ function tripal_stock_edit_ALL_db_references_form($form_state, $node) {
   );
 
   $i=0;
-  if (!$node->stock->stock_dbxref) { 
-    $node->stock->stock_dbxref = array(); 
-  } elseif (!is_array($node->stock->stock_dbxref)) { 
-    $node->stock->stock_dbxref = array($node->stock->stock_dbxref); 
-  }  
+  if (!$node->stock->stock_dbxref) {
+    $node->stock->stock_dbxref = array();
+  }
+  elseif (!is_array($node->stock->stock_dbxref)) {
+    $node->stock->stock_dbxref = array($node->stock->stock_dbxref);
+  }
   if (sizeof($node->stock->stock_dbxref) != 0) {
   foreach ($node->stock->stock_dbxref as $ref) {
     $i++;
     $form["num-$i"] = array(
       '#type' => 'item',
-      '#value' => $i.'.'
+      '#value' => $i . '.'
     );
 
     $form["accession-$i"] = array(
@@ -261,10 +265,10 @@ function tripal_stock_edit_ALL_db_references_form($form_state, $node) {
     $db_options = tripal_db_get_db_options();
     $db_options[0] = 'Select a Database';
     ksort($db_options);
-    $form["database-$i"] = array( 
-      '#type' => 'select', 
+    $form["database-$i"] = array(
+      '#type' => 'select',
       //'#title' => t('Database'),
-      '#options' => $db_options, 
+      '#options' => $db_options,
       '#default_value' => $ref->dbxref_id->db_id->db_id
     );
 
@@ -311,22 +315,24 @@ function tripal_stock_edit_ALL_db_references_form_submit($form, &$form_state) {
      //Update all
      for ($i=1; $i<=$form_state['values']['num_db_references']; $i++) {
        tripal_stock_update_db_reference(
-					$form_state['values']["id-$i"], 
-					$form_state['values']["database-$i"], 
-					$form_state['values']["accession-$i"]
-			);
+          $form_state['values']["id-$i"],
+          $form_state['values']["database-$i"],
+          $form_state['values']["accession-$i"]
+      );
      }
      drupal_set_message("Updated all Database References");
-     drupal_goto('node/'.$form_state['values']['nid']);
+     drupal_goto('node/' . $form_state['values']['nid']);
 
-  } elseif ( preg_match('/Delete #(\d+)/', $form_state['clicked_button']['#value'], $matches) ) {
+  }
+  elseif ( preg_match('/Delete #(\d+)/', $form_state['clicked_button']['#value'], $matches) ) {
 
      $i = $matches[1];
      tripal_stock_delete_db_reference($form_state['values']["id-$i"]);
      drupal_set_message("Deleted Database Reference");
 
-  } else {
-    drupal_set_message("Unrecognized Button Pressed",'error');
+  }
+  else {
+    drupal_set_message("Unrecognized Button Pressed", 'error');
   }
 
 }
@@ -349,8 +355,8 @@ function tripal_stock_update_db_reference($dbxref_id, $database_id, $accession) 
 
   $previous_db = tripal_db_set_active('chado');
   db_query(
-    "UPDATE dbxref SET db_id=%d, accession='%s' WHERE dbxref_id=%d",
-    $database_id, 
+    "UPDATE {dbxref} SET db_id=%d, accession='%s' WHERE dbxref_id=%d",
+    $database_id,
     $accession,
     $dbxref_id
   );
@@ -373,12 +379,12 @@ function tripal_stock_delete_db_reference($dbxref_id) {
 
   $previous_db = tripal_db_set_active('chado');
   db_query(
-    "DELETE FROM dbxref WHERE dbxref_id=%d",
+    "DELETE FROM {dbxref} WHERE dbxref_id=%d",
     $dbxref_id
   );
 
   db_query(
-    "DELETE FROM stock_dbxref WHERE dbxref_id=%d",
+    "DELETE FROM {stock_dbxref} WHERE dbxref_id=%d",
     $dbxref_id
   );
   tripal_db_set_active($previous_db);
@@ -391,26 +397,26 @@ function tripal_stock_delete_db_reference($dbxref_id) {
  * @param $form
  *   An array describing the form to be themed
  *
- * @return 
+ * @return
  *   An HTML rendering of the form
  *
  * @ingroup tripal_stock
  */
-function theme_tripal_stock_edit_ALL_db_references_form ($form) {
+function theme_tripal_stock_edit_ALL_db_references_form($form) {
   $output = '';
 
   $output .= '<br><fieldset>';
   $output .= '<legend>Edit Existing Database References<span class="form-optional" title="This field is optional">(optional)</span></legend>';
   $output .= '<p>Below is a list of already existing database references, one per line. When entering a database reference, the accession '
-  	     .'is a unique identifier for this stock in the specified database.</p>';
+         .'is a unique identifier for this stock in the specified database.</p>';
   $output .= '<table>';
   $output .= '<tr><th>#</th><th>Database</th><th>Accession</th><th></th></tr>';
 
   for ($i=1; $i<=$form['num_db_references']['#value']; $i++) {
-    $output .= '<tr><td>'.drupal_render($form["num-$i"]).'</td><td>'
-    	       .drupal_render($form["database-$i"]).'</td><td>'
-	       .drupal_render($form["accession-$i"]).'</td><td>'
-	       .drupal_render($form["submit-$i"]).'</td></tr>';
+    $output .= '<tr><td>' . drupal_render($form["num-$i"]) . '</td><td>'
+             . drupal_render($form["database-$i"]) . '</td><td>'
+         . drupal_render($form["accession-$i"]) . '</td><td>'
+         . drupal_render($form["submit-$i"]) . '</td></tr>';
   }
 
   $output .= '</table><br>';
@@ -441,14 +447,15 @@ function tripal_stock_list_dbreferences_for_node($db_references) {
     $output .= '<tr><th>Database</th><th>Accession</th></tr>';
 
     foreach ($db_references as $db) {
-        $output .= '<tr><td>'.$db->db_name.'</td><td>'.$db->accession.'</td></tr>';
-    } // end of foreach db reference 
+        $output .= '<tr><td>' . $db->db_name . '</td><td>' . $db->accession . '</td></tr>';
+    } // end of foreach db reference
 
-    $output .= '</table>'; 
+    $output .= '</table>';
 
-  } else {
+  }
+  else {
     $output = 'No Database References Added to the Current Stock';
-  }              
+  }
 
   return $output;
-}     
+}

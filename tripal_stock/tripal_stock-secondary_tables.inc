@@ -1,8 +1,7 @@
 <?php
-// $Id$
 
 /**
- * 
+ *
  *
  * @ingroup tripal_stock
  */
@@ -14,48 +13,52 @@ function tripal_stock_back_to_stock_button($form_state, $nid) {
     '#value' => $nid
   );
 
-  $form["submit-back"] = array( 
+  $form["submit-back"] = array(
     '#type' => 'submit',
-    '#value' => t('Back to Stock') 
+    '#value' => t('Back to Stock')
   );
 
   return $form;
 }
 
 /**
- * 
+ *
  *
  * @ingroup tripal_stock
  */
 function tripal_stock_back_to_stock_button_submit($form, $form_state) {
-  drupal_goto('node/'.$form_state['values']['nid']);
+  drupal_goto('node/' . $form_state['values']['nid']);
 }
 
 /**
- * 
+ *
  *
  * @ingroup tripal_stock
  */
 function tripal_stock_add_chado_properties_progress($current) {
 
-    $value = '<div class="form_progress"><div class="form_progress-text">'; 
+    $value = '<div class="form_progress"><div class="form_progress-text">';
 
-    if ($current == 'main') { $value .= '<span id="form-step-current">Create Basic Stock</span>'; } 
+    if ($current == 'main') {
+    $value .= '<span id="form-step-current">Create Basic Stock</span>'; }
     else { $value .= '<span id="form-step">Create Basic Stock</span>'; }
 
     $value .= '<span id="form-segway">  >>  </span>';
 
-    if ($current == 'properties') { $value .= '<span id="form-step-current">Add Synonyms & Properties</span>'; }
+    if ($current == 'properties') {
+    $value .= '<span id="form-step-current">Add Synonyms & Properties</span>'; }
     else { $value .= '<span id="form-step">Add Synonyms & Properties</span>'; }
 
-    $value .= '<span id="form-segway">  >>  </span>';                       
+    $value .= '<span id="form-segway">  >>  </span>';
 
-    if ($current == 'db_references') { $value .= '<span id="form-step-current">Add Database References</span>'; }
+    if ($current == 'db_references') {
+    $value .= '<span id="form-step-current">Add Database References</span>'; }
     else { $value .= '<span id="form-step">Add Database References</span>'; }
 
-    $value .= '<span id="form-segway">  >>  </span>';         
+    $value .= '<span id="form-segway">  >>  </span>';
 
-    if ($current == 'relationships') { $value .= '<span id="form-step-current">Add Relationships</span>'; }
+    if ($current == 'relationships') {
+    $value .= '<span id="form-step-current">Add Relationships</span>'; }
     else { $value .= '<span id="form-step">Add Relationships</span>'; }
 
     $value .= '</div></div>';
@@ -65,7 +68,7 @@ function tripal_stock_add_chado_properties_progress($current) {
 }
 
 /**
- * 
+ *
  *
  * @ingroup tripal_stock
  */
@@ -85,7 +88,8 @@ function tripal_stock_add_chado_properties_navigate($form_state, $step, $nid) {
     'relationships' => 'node/%node/relationships'
   );
   $steps_value = array();
-  foreach ($steps as $k => $v) { $steps_value[] = $k.';'.$v; }
+  foreach ($steps as $k => $v) {
+  $steps_value[] = $k . ';' . $v; }
   $form['steps'] = array(
     '#type' => 'hidden',
     '#value' => implode('::', $steps_value)
@@ -114,7 +118,7 @@ function tripal_stock_add_chado_properties_navigate($form_state, $step, $nid) {
   }
 
   if ($step != $form['last_step']['#value']) {
-    $form['submit-next'] = array( 
+    $form['submit-next'] = array(
       '#type' => 'submit',
       '#value' => t('Next Step')
     );
@@ -122,7 +126,7 @@ function tripal_stock_add_chado_properties_navigate($form_state, $step, $nid) {
 
   if ($step == $form['last_step']['#value']) {
     $form['submit-finish'] = array(
-      '#type' => 'submit', 
+      '#type' => 'submit',
       '#value' => t('Finish')
     );
   }
@@ -131,13 +135,13 @@ function tripal_stock_add_chado_properties_navigate($form_state, $step, $nid) {
 }
 
 /**
- * 
+ *
  *
  * @ingroup tripal_stock
  */
 function tripal_stock_add_chado_properties_navigate_submit($form, $form_state) {
 
-  $raw_steps = preg_split('/::/', $form_state['values']['steps']); 
+  $raw_steps = preg_split('/::/', $form_state['values']['steps']);
 
   $steps = array();
   $current_index = 'EMPTY';
@@ -146,7 +150,7 @@ function tripal_stock_add_chado_properties_navigate_submit($form, $form_state) {
   foreach ($raw_steps as $raw_step) {
     $step = preg_split('/;/', $raw_step);
     $steps[$i] = $step;
-    
+
     if ($step[0] == $form_state['values']['current_step']) {
       $current_index = $i;
     }
@@ -154,16 +158,19 @@ function tripal_stock_add_chado_properties_navigate_submit($form, $form_state) {
     $i++;
   }
   $num_steps = $i;
-  
-  if (strcmp($current_index,'EMPTY') == 0) {
+
+  if (strcmp($current_index, 'EMPTY') == 0) {
     // No Matching Step
-    drupal_set_message('Could not determine next step -'.$form_state['values']['current_step'].', please contact the administrator', 'error');
-  } elseif ($current_index == 0) {
+    drupal_set_message('Could not determine next step -' . $form_state['values']['current_step'] . ', please contact the administrator', 'error');
+  }
+  elseif ($current_index == 0) {
     $next_goto = $steps[$current_index+1][1];
-  } elseif ($current_index == ($num_steps-1)) {
+  }
+  elseif ($current_index == ($num_steps-1)) {
     $prev_goto = $steps[$current_index-1][1];
     $next_goto = 'node/%node';
-  } else {
+  }
+  else {
     $prev_goto = $steps[$current_index-1][1];
     $next_goto = $steps[$current_index+1][1];
   }
@@ -172,10 +179,12 @@ function tripal_stock_add_chado_properties_navigate_submit($form, $form_state) {
     //replace %node
     $prev_goto = preg_replace('/%node/', $form_state['values']['nid'], $prev_goto);
     $_REQUEST['destination'] = $prev_goto;
-  } elseif ($form_state['clicked_button']['#value'] == t('Next Step') ) {
+  }
+  elseif ($form_state['clicked_button']['#value'] == t('Next Step') ) {
     $next_goto = preg_replace('/%node/', $form_state['values']['nid'], $next_goto);
     $_REQUEST['destination'] = $next_goto;
-  } elseif ($form_state['clicked_button']['#value'] == t('Finish') ) {
+  }
+  elseif ($form_state['clicked_button']['#value'] == t('Finish') ) {
     $next_goto = preg_replace('/%node/', $form_state['values']['nid'], $next_goto);
     $_REQUEST['destination'] = $next_goto;
   }
@@ -183,7 +192,7 @@ function tripal_stock_add_chado_properties_navigate_submit($form, $form_state) {
 }
 
 /**
- * 
+ *
  *
  * @ingroup tripal_stock
  */
@@ -204,7 +213,7 @@ function tripal_stock_is_obsolete_form($node, $stock_id) {
 }
 
 /**
- * 
+ *
  *
  * @ingroup tripal_stock
  */
@@ -212,7 +221,7 @@ function tripal_stock_is_obsolete_form_submit($form, &$form_state) {
 
   $previous_db = tripal_db_set_active('chado');
   db_query(
-    "UPDATE stock SET is_obsolete='t' WHERE stock_id=%d",
+    "UPDATE {stock} SET is_obsolete='t' WHERE stock_id=%d",
     $form_state['values']['make_obsolete_stock_id']
   );
   tripal_db_set_active($previous_db);

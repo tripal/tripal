@@ -2,111 +2,120 @@
 
 class views_handler_filter_stock_relationship_id extends views_handler_filter {
 
-	function query () {
-	  if ($this->value) {
-	  
+  function query() {
+    if ($this->value) {
+
       // get variable position
       if ($this->options['fixed_position'] == 'subject_id') {
         $this->options['variable_position'] = 'object_id';
-      } else {
+      }
+      else {
         $this->options['variable_position'] = 'subject_id';
       }
-        
-	    // determine if just checking presence
-	    if (preg_match('/NULL/', $this->operator)) {
+
+      // determine if just checking presence
+      if (preg_match('/NULL/', $this->operator)) {
           $where = 'stock.stock_id IN ('
-            .'SELECT '.$this->options['variable_position'].' FROM stock_relationship '
-            .'WHERE '.$this->options['fixed_position'].' '.$this->operator.' AND type_id = '.$this->options['type']
-          .')';
-          $this->query->add_where($this->options['group'], $where);	      
-	    } else {
-        
+            . 'SELECT ' . $this->options['variable_position'] . ' FROM {stock_relationship} '
+            . 'WHERE ' . $this->options['fixed_position'] . ' ' . $this->operator . ' AND type_id = ' . $this->options['type']
+          . ')';
+          $this->query->add_where($this->options['group'], $where);
+      }
+      else {
+
         // determine whether regex was requested
         if ($this->operator == '~') {
-          $search_options = array('regex_columns' => array('name','uniquename'));
+          $search_options = array('regex_columns' => array('name', 'uniquename'));
           $this->operator = '=';
-        } elseif ($this->operator == '!~') {
-          $search_options = array('regex_columns' => array('name','uniquename'));
+        }
+        elseif ($this->operator == '!~') {
+          $search_options = array('regex_columns' => array('name', 'uniquename'));
           $this->operator = '!=';
-        } else {
+        }
+        else {
           $search_options = array();
         }
-        
+
         // get fixed stock id(s)
-        $fixed_stock = tripal_core_chado_select('stock',array('stock_id'),array('uniquename' => $this->value), $search_options);
+        $fixed_stock = tripal_core_chado_select('stock', array('stock_id'), array('uniquename' => $this->value), $search_options);
         $fixed_stock_ids = array();
         if ($fixed_stock[0]->stock_id) {
           $fixed_stock_ids[] = $fixed_stock[0]->stock_id;
-        } else {
-          $fixed_stock = tripal_core_chado_select('stock',array('stock_id'),array('name' => $this->value), $search_options);
+        }
+        else {
+          $fixed_stock = tripal_core_chado_select('stock', array('stock_id'), array('name' => $this->value), $search_options);
           if (sizeof($fixed_stock) > 1) {
             foreach ($fixed_stock as $s) {
               $fixed_stock_ids[] = $s->stock_id;
             }
-          } elseif (sizeof($fixed_stock) == 1) {
+          }
+          elseif (sizeof($fixed_stock) == 1) {
             $fixed_stock_ids[] = $fixed_stock[0]->stock_id;
           }
         }
-        
+
         // determine operator
         if ($this->operator == '=' && sizeof($fixed_stock_ids) > 1) {
           $this->operator = 'IN';
-        } elseif ($this->operator == '!=' && sizeof($fixed_stock_ids) > 1) {
+        }
+        elseif ($this->operator == '!=' && sizeof($fixed_stock_ids) > 1) {
           $this->operator = 'NOT IN';
         }
-        
+
         //generate where
         if (sizeof($fixed_stock_ids) == 1) {
           $where = 'stock.stock_id IN ('
-            .'SELECT '.$this->options['variable_position'].' FROM stock_relationship '
-            .'WHERE '.$this->options['fixed_position'].' '.$this->operator.' '.$fixed_stock_ids[0].' AND type_id = '.$this->options['type']
-          .')';
+            . 'SELECT ' . $this->options['variable_position'] . ' FROM {stock_relationship} '
+            . 'WHERE ' . $this->options['fixed_position'] . ' ' . $this->operator . ' ' . $fixed_stock_ids[0] . ' AND type_id = ' . $this->options['type']
+          . ')';
           $this->query->add_where($this->options['group'], $where);
-        } elseif (sizeof($fixed_stock_ids) > 1) {
+        }
+        elseif (sizeof($fixed_stock_ids) > 1) {
           $where = 'stock.stock_id IN ('
-            .'SELECT '.$this->options['variable_position'].' FROM stock_relationship '
-            .'WHERE '.$this->options['fixed_position'].' '.$this->operator.' ('.implode(', ',$fixed_stock_ids).') AND type_id = '.$this->options['type']
-          .')';
+            . 'SELECT ' . $this->options['variable_position'] . ' FROM {stock_relationship} '
+            . 'WHERE ' . $this->options['fixed_position'] . ' ' . $this->operator . ' (' . implode(', ', $fixed_stock_ids) . ') AND type_id = ' . $this->options['type']
+          . ')';
           $this->query->add_where($this->options['group'], $where);
-        } else {
-          drupal_set_message('No stock with the name or uniquename '.$this->value.' was found -No filtering done.','error');
+        }
+        else {
+          drupal_set_message('No stock with the name or uniquename ' . $this->value . ' was found -No filtering done.', 'error');
         }
       } //end of not just checking presence
     }
-	}
-	
+  }
+
   function options_form(&$form, &$form_state) {
-  	
+
     if ($this->can_expose()) {
       $this->show_expose_button($form, $form_state);
     }
 
-  	$instructions = 'This filter allows you to enter a stock, the position of that stock in the '
-  		.'relationship and relationship type and only stocks with a relationship of the type described '
-  		.'will be shown. For example, if you want all stocks where Fred is_paternal_parent_of, then '
-  		.'you would enter Fred as the value, select is_paternal_parent_of as the Relationship Type '
-  		.'and subject as the Fixed Position.';
-  	$form['instructions'] = array(
-  		'#type' => 'item',
-  		'#value' => t($instructions)
-  	);
-  	
+    $instructions = 'This filter allows you to enter a stock, the position of that stock in the '
+      .'relationship and relationship type and only stocks with a relationship of the type described '
+      .'will be shown. For example, if you want all stocks where Fred is_paternal_parent_of, then '
+      .'you would enter Fred as the value, select is_paternal_parent_of as the Relationship Type '
+      .'and subject as the Fixed Position.';
+    $form['instructions'] = array(
+      '#type' => 'item',
+      '#value' => t($instructions)
+    );
+
     $form['op_val_start'] = array('#value' => '<div class="clear-block">');
 
     // left side
-    
+
     $this->types_form($form, $form_state);
-		$form['type']['#prefix'] = '<div class="views-left-50">';
-		$form['type']['#suffix'] = '</div>';
+    $form['type']['#prefix'] = '<div class="views-left-50">';
+    $form['type']['#suffix'] = '</div>';
 
     $this->show_operator_form($form, $form_state);
     $form['operator']['#prefix'] = '<div class="views-right-50">';
-		$form['operator']['#suffix'] = '</div>';
-		
-		$this->show_value_form($form, $form_state);
-		$form['value']['#prefix'] = '<div class="views-right-50">';
-		$form['value']['#suffix'] = '</div>';
-		
+    $form['operator']['#suffix'] = '</div>';
+
+    $this->show_value_form($form, $form_state);
+    $form['value']['#prefix'] = '<div class="views-right-50">';
+    $form['value']['#suffix'] = '</div>';
+
     // right side
 
 
@@ -114,11 +123,11 @@ class views_handler_filter_stock_relationship_id extends views_handler_filter {
     $form['fixed_position']['#prefix'] = '<div class="views-right-50">';
     $form['fixed_position']['#suffix'] = '</div>';
 
-		
+
     if ($this->can_expose()) {
       $this->show_expose_form($form, $form_state);
     }
-    
+
     $form['op_val_start'] = array('#value' => '</div>');
 
   }
@@ -126,29 +135,30 @@ class views_handler_filter_stock_relationship_id extends views_handler_filter {
   function value_form(&$form, &$form_state) {
     parent::value_form($form, $form_state);
 
-		$form['value'] = array(
-			'#type' => 'textfield',
-			'#title' => ($this->options['label']) ? $this->options['label'] : t('Stock Name'),
-			'#default_value' => $this->value,
-			'#size' => 40,
-		);
-    	
+    $form['value'] = array(
+      '#type' => 'textfield',
+      '#title' => ($this->options['label']) ? $this->options['label'] : t('Stock Name'),
+      '#default_value' => $this->value,
+      '#size' => 40,
+    );
+
   }
 
-  function type_options () {
+  function type_options() {
 
     $previous_db = tripal_db_set_active('chado');
-    $result = db_query("SELECT cvt.cvterm_id as type_id, cvt.name FROM cvterm cvt WHERE cvt.cvterm_id IN (SELECT type_id FROM stock_relationship)");
+    $result = db_query("SELECT cvt.cvterm_id as type_id, cvt.name FROM {cvterm} cvt WHERE cvt.cvterm_id IN (SELECT type_id FROM {stock_relationship})");
     tripal_db_set_active($previous_db);
 
     $types = array();
-    while ($r = db_fetch_object($result)) { $types[$r->type_id] = $r->name; }
-    
+    while ($r = db_fetch_object($result)) {
+    $types[$r->type_id] = $r->name; }
+
     return $types;
   }
-  
+
   function types_form(&$form, &$form_state) {
-  	
+
     $form['type'] = array(
       '#type' => count($options) < 10 ? 'radios' : 'select',
       '#title' => t('Relationship Types'),
@@ -157,21 +167,21 @@ class views_handler_filter_stock_relationship_id extends views_handler_filter {
     );
 
   }
-  
-  function fixed_position_form (&$form, &$form_state) {
-  
-  	$form['fixed_position'] = array(
-  		'#type' => 'radios',
-  		'#title' => 'Position of Stock to Filter on',
-  		'#description' => t('Where a relationship consists of a subject type object, this field indicates '
-  			.'what position in the relationship remains fixed (is the stock entered as the value).'),
-  		'#options' => array(
-  			'subject_id' => 'Subject',
-  			'object_id' => 'Object'
-  		),
-  		'#default_value' => ($this->options['fixed_position']) ? $this->options['fixed_position'] : 'subject_id',
-  	);
-  	
+
+  function fixed_position_form(&$form, &$form_state) {
+
+    $form['fixed_position'] = array(
+      '#type' => 'radios',
+      '#title' => 'Position of Stock to Filter on',
+      '#description' => t('Where a relationship consists of a subject type object, this field indicates '
+        .'what position in the relationship remains fixed (is the stock entered as the value).'),
+      '#options' => array(
+        'subject_id' => 'Subject',
+        'object_id' => 'Object'
+      ),
+      '#default_value' => ($this->options['fixed_position']) ? $this->options['fixed_position'] : 'subject_id',
+    );
+
   }
 
   function operator_options() {
@@ -247,7 +257,7 @@ class views_handler_filter_stock_relationship_id extends views_handler_filter {
       '#size' => 40,
       '#description' => t('This will appear in the URL after the ? to identify this filter. Cannot be blank.'),
     );
-    
+
   }
 
   function expose_form_right(&$form, &$form_state) {
@@ -285,7 +295,7 @@ class views_handler_filter_stock_relationship_id extends views_handler_filter {
         '#value' => '',
       );
     }
-    
+
     $form['expose']['optional'] = array(
       '#type' => 'checkbox',
       '#title' => t('Optional'),

@@ -1,6 +1,7 @@
 <?php
 
 /**
+ * @file
  * Purpose: Allows the stock module to add fields to other module views
  *
  *   For example, a field counting the number of stocks associted with a given organism would be
@@ -13,14 +14,14 @@
           'handler' => 'views_handler_field_chado_count',
           'table_to_query' => 'stock',
         ),
-      ); 
+      );
  *   @endcode
  *
  * @ingroup tripal_stock_views
  */
 function retrieve_stock_misc_tables_views_data() {
   $data = array();
- 
+
   // Table: Organism--------------------------------------------------------------------------------
   // Calculated Field: Number of stocks (Count -Int)
   // Provides the number of stocks for a given organism
@@ -31,7 +32,7 @@ function retrieve_stock_misc_tables_views_data() {
       'handler' => 'views_handler_field_chado_count',
       'table_to_query' => 'stock',
     ),
-  );  
-  
+  );
+
   return $data;
 }

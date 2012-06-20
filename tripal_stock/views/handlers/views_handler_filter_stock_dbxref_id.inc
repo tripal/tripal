@@ -1,6 +1,7 @@
 <?php
 
 /**
+ * @file
  * Allows stocks to be filtered by associated database reference accession
  *
  * @ingroup tripal_stock
@@ -12,7 +13,7 @@ class views_handler_filter_stock_dbxref_id extends views_handler_filter {
     parent::init($view, $options);
     $this->db = $this->options['db'];
   }
-  
+
   function options_form(&$form, &$form_state) {
     if ($this->can_expose()) {
       $this->show_expose_button($form, $form_state);
@@ -33,32 +34,34 @@ class views_handler_filter_stock_dbxref_id extends views_handler_filter {
 
   }
 
-	function query () {
-		$this-> db = array_filter($this->db);
-		
-		if (preg_match('/IS NOT NULL/', $this->options['operator'])) {
-			$new_where_sql = "stock.stock_id IN "
-			."(SELECT stock_dbxref.stock_id FROM stock_dbxref, dbxref WHERE stock_dbxref.dbxref_id=dbxref.dbxref_id AND dbxref.db_id IN (".implode(', ',$this->db)."))";
-			$this->query->add_where($this->options['group'], $new_where_sql);
-		} elseif (preg_match('/IS NULL/', $this->options['operator'])) {
-			$new_where_sql = "stock.stock_id NOT IN "
-			."(SELECT stock_dbxref.stock_id FROM stock_dbxref, dbxref WHERE stock_dbxref.dbxref_id=dbxref.dbxref_id AND dbxref.db_id IN (".implode(', ',$this->db)."))";
-			$this->query->add_where($this->options['group'], $new_where_sql);
-		} else {
-			if (!empty($this->value)) {
-				$new_where_sql = "stock.stock_id IN "
-					."(SELECT stock_dbxref.stock_id FROM stock_dbxref, dbxref WHERE stock_dbxref.dbxref_id=dbxref.dbxref_id "
-					."AND dbxref.db_id IN (".implode(', ',$this->db).") AND dbxref.accession".$this->operator."'".$this->value."')";
-				$this->query->add_where($this->options['group'], $new_where_sql);
-			}
-		}
-	}
-  
+  function query() {
+    $this-> db = array_filter($this->db);
+
+    if (preg_match('/IS NOT NULL/', $this->options['operator'])) {
+      $new_where_sql = "stock.stock_id IN "
+      . "(SELECT stock_dbxref.stock_id FROM stock_dbxref, dbxref WHERE stock_dbxref.dbxref_id=dbxref.dbxref_id AND dbxref.db_id IN (" . implode(', ', $this->db) . "))";
+      $this->query->add_where($this->options['group'], $new_where_sql);
+    }
+    elseif (preg_match('/IS NULL/', $this->options['operator'])) {
+      $new_where_sql = "stock.stock_id NOT IN "
+      . "(SELECT stock_dbxref.stock_id FROM stock_dbxref, dbxref WHERE stock_dbxref.dbxref_id=dbxref.dbxref_id AND dbxref.db_id IN (" . implode(', ', $this->db) . "))";
+      $this->query->add_where($this->options['group'], $new_where_sql);
+    }
+    else {
+      if (!empty($this->value)) {
+        $new_where_sql = "stock.stock_id IN "
+          . "(SELECT stock_dbxref.stock_id FROM stock_dbxref, dbxref WHERE stock_dbxref.dbxref_id=dbxref.dbxref_id "
+          . "AND dbxref.db_id IN (" . implode(', ', $this->db) . ") AND dbxref.accession" . $this->operator . "'" . $this->value . "')";
+        $this->query->add_where($this->options['group'], $new_where_sql);
+      }
+    }
+  }
+
   /////////// Form Parts/////////////////////////
   function types_form(&$form, &$form_state) {
-  
+
     $db_options = tripal_db_get_db_options();
-	  ksort($db_options);
+    ksort($db_options);
     $form['db'] = array(
       '#type' => 'checkboxes',
       '#title' => t('Databases'),
@@ -72,10 +75,10 @@ class views_handler_filter_stock_dbxref_id extends views_handler_filter {
 
   function value_form(&$form, &$form_state) {
     parent::value_form($form, $form_state);
-    
-		$form['value'] = array(
-  	  '#type' => 'textfield',
-    	'#title' => t('Accession'),
+
+    $form['value'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Accession'),
       '#default_value' => $this->value,
     );
   }
@@ -105,7 +108,7 @@ class views_handler_filter_stock_dbxref_id extends views_handler_filter {
         '#type' => 'select',
         '#title' => t('Database References'),
         '#options' => $this->type_options(),
-        '#default_value' => $this->type,  
+        '#default_value' => $this->type,
       );
 
       if (isset($form[$type]['#title'])) {
@@ -230,7 +233,7 @@ class views_handler_filter_stock_dbxref_id extends views_handler_filter {
         '#value' => '',
       );
     }
-    
+
     $form['expose']['optional'] = array(
       '#type' => 'checkbox',
       '#title' => t('Optional'),

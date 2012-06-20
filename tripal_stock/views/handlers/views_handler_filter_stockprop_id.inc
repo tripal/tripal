@@ -1,6 +1,7 @@
 <?php
 
 /**
+ * @file
  * Allows stocks to be filtered by proeprty values
  *
  * @ingroup tripal_stock
@@ -36,46 +37,50 @@ class views_handler_filter_stockprop_id extends views_handler_filter {
   function options_validate(&$form, &$form_state) {
     parent::options_validate($form, $form_state);
 
-    if (preg_match('/NULL/',$form_state['values']['options']['operator'])) {
+    if (preg_match('/NULL/', $form_state['values']['options']['operator'])) {
       $value = $form_state['values']['options']['value'];
       if (!empty($value)) {
-        drupal_set_message('The Value ('.$value.') will be IGNORED when the Operator is set to "Is Present" or Is Absent".', 'warning');
+        drupal_set_message('The Value (' . $value . ') will be IGNORED when the Operator is set to "Is Present" or Is Absent".', 'warning');
       }
-    } else {
+    }
+    else {
       $value = $form_state['values']['options']['value'];
       if (empty($value)) {
         form_error($form['value'], t('Value required. The value will be used in conjunction with the operator. For example, if the '
-				   .'operator="Is equal to" and the value="2010" then only properties with a value of 2010 and the type specified will be displayed.'));
+           . 'operator="Is equal to" and the value="2010" then only properties with a value of 2010 and the type specified will be displayed.'));
       }
     }
 
     if (empty($form_state['values']['options']['type'])) {
       drupal_set_message('No Property Type was choosen. As such, any property type whose value '
-      			     .$form_state['values']['options']['operator'].' '.$form_state['values']['options']['value'].' will be displayed', 'warning');
+                 . $form_state['values']['options']['operator'] . ' ' . $form_state['values']['options']['value'] . ' will be displayed', 'warning');
     }
   }
 
-	function query () {
-		if (preg_match('/IS NOT NULL/', $this->options['operator'])) {
-			$new_where_sql = "stock.stock_id IN (SELECT stockprop.stock_id FROM stockprop WHERE stockprop.type_id=".$this->type.")";
-			$this->query->add_where($this->options['group'], $new_where_sql);
-		} elseif (preg_match('/IS NULL/', $this->options['operator'])) {
-			$new_where_sql = "stock.stock_id NOT IN (SELECT stockprop.stock_id FROM stockprop WHERE stockprop.type_id=".$this->type.")";
-			$this->query->add_where($this->options['group'], $new_where_sql);
-		} elseif ($this->value) {
-			$new_where_sql = "stock.stock_id IN (SELECT stockprop.stock_id FROM stockprop WHERE stockprop.type_id=".$this->type." AND stockprop.value".$this->operator."'".$this->value."')";
-			$this->query->add_where($this->options['group'], $new_where_sql);
-		}
-		
-	}
-	
+  function query() {
+    if (preg_match('/IS NOT NULL/', $this->options['operator'])) {
+      $new_where_sql = "stock.stock_id IN (SELECT stockprop.stock_id FROM stockprop WHERE stockprop.type_id=" . $this->type . ")";
+      $this->query->add_where($this->options['group'], $new_where_sql);
+    }
+    elseif (preg_match('/IS NULL/', $this->options['operator'])) {
+      $new_where_sql = "stock.stock_id NOT IN (SELECT stockprop.stock_id FROM stockprop WHERE stockprop.type_id=" . $this->type . ")";
+      $this->query->add_where($this->options['group'], $new_where_sql);
+    }
+    elseif ($this->value) {
+      $new_where_sql = "stock.stock_id IN (SELECT stockprop.stock_id FROM stockprop WHERE stockprop.type_id=" . $this->type . " AND stockprop.value" . $this->operator . "'" . $this->value . "')";
+      $this->query->add_where($this->options['group'], $new_where_sql);
+    }
+
+  }
+
   function types_form(&$form, &$form_state) {
     $previous_db = tripal_db_set_active('chado');
-    $result = db_query("SELECT cvt.cvterm_id as type_id, cvt.name FROM cvterm cvt WHERE cvt.cvterm_id IN (SELECT type_id FROM stockprop)");
+    $result = db_query("SELECT cvt.cvterm_id as type_id, cvt.name FROM {cvterm} cvt WHERE cvt.cvterm_id IN (SELECT type_id FROM {stockprop})");
     tripal_db_set_active($previous_db);
 
     $types = array();
-    while ($r = db_fetch_object($result)) { $types[$r->type_id] = $r->name; }
+    while ($r = db_fetch_object($result)) {
+    $types[$r->type_id] = $r->name; }
 
     $form['type'] = array(
       '#type' => count($options) < 10 ? 'radios' : 'select',
@@ -90,28 +95,29 @@ class views_handler_filter_stockprop_id extends views_handler_filter {
 
   function value_form(&$form, &$form_state) {
     parent::value_form($form, $form_state);
-	
-		if ($this->options['expose']['display_type'] == 'select') {
-		
-			// Get options
-			$previous_db = tripal_db_set_active('chado');
-			$resource = db_query("SELECT value FROM stockprop WHERE type_id=".$this->type." ORDER BY value");
-		 tripal_db_set_active($previous_db);
-			while ($r = db_fetch_object($resource)) {
-				$options[$r->value] = $r->value;
-			}
-			$form['value'] = array(
+
+    if ($this->options['expose']['display_type'] == 'select') {
+
+      // Get options
+      $previous_db = tripal_db_set_active('chado');
+      $resource = db_query("SELECT value FROM {stockprop} WHERE type_id=" . $this->type . " ORDER BY value");
+     tripal_db_set_active($previous_db);
+      while ($r = db_fetch_object($resource)) {
+        $options[$r->value] = $r->value;
+      }
+      $form['value'] = array(
         '#type' => 'select',
         '#title' => $this->options['label'],
         '#options' => $options,
         '#default_value' => $this->value,
       );
-		} else {
-			$form['value'] = array(
-  	    '#type' => 'textfield',
-    	  '#title' => t('Value'),
-      	'#default_value' => $this->value,
-    	);
+    }
+    else {
+      $form['value'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Value'),
+        '#default_value' => $this->value,
+      );
     }
   }
 
@@ -140,7 +146,7 @@ class views_handler_filter_stockprop_id extends views_handler_filter {
         '#type' => 'select',
         '#title' => t('Property Types'),
         '#options' => $this->type_options(),
-        '#default_value' => $this->type,  
+        '#default_value' => $this->type,
       );
 
       if (isset($form[$type]['#title'])) {
@@ -202,16 +208,16 @@ class views_handler_filter_stockprop_id extends views_handler_filter {
       '#size' => 40,
       '#description' => t('This will appear in the URL after the ? to identify this filter. Cannot be blank.'),
     );
-    
+
     $form['expose']['display_type'] = array(
-    	'#type' => 'radios',
-    	'#default_value' => $this->options['expose']['display_type'],
-    	'#title' => t('Display Type'),
-    	'#description' => t('This will change the form item type of the exposed value form. ie: it can be used to let the user select the property value from a select box rather than a textfield.'),
-			'#options' => array(
-				'textfield' => 'Text Field',
-				'select' => 'Drop Down',
-			),
+      '#type' => 'radios',
+      '#default_value' => $this->options['expose']['display_type'],
+      '#title' => t('Display Type'),
+      '#description' => t('This will change the form item type of the exposed value form. ie: it can be used to let the user select the property value from a select box rather than a textfield.'),
+      '#options' => array(
+        'textfield' => 'Text Field',
+        'select' => 'Drop Down',
+      ),
     );
   }
 
@@ -275,7 +281,7 @@ class views_handler_filter_stockprop_id extends views_handler_filter {
         '#value' => '',
       );
     }
-    
+
     $form['expose']['optional'] = array(
       '#type' => 'checkbox',
       '#title' => t('Optional'),
@@ -283,6 +289,6 @@ class views_handler_filter_stockprop_id extends views_handler_filter {
       '#default_value' => $this->options['expose']['optional'],
     );
   }
-  
-  
+
+
 }

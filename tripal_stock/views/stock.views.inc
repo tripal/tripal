@@ -1,7 +1,8 @@
 <?php
 
 /**
- * Purpose: this function returns the portion of the data array 
+ * @file
+ * Purpose: this function returns the portion of the data array
  *   which describes the stock table, it's fields and any joins between it and other tables
  * @see tripal_stock_views_data() --in tripal_stock.views.inc
  *
@@ -37,59 +38,60 @@ function retrieve_stock_views_data() {
   // if the chado database is not local to the drupal database
   // then we need to set the database name.  This should always
   // be 'chado'.
-  if(is_array($db_url) and array_key_exists('chado',$db_url)){
+  if (is_array($db_url) and array_key_exists('chado', $db_url)) {
      $database = 'chado';
   }
 
 
-	// Basic table definition
+  // Basic table definition
   $data['stock']['table']['group'] = t('Chado Stock');
   $data['stock']['table']['base'] = array(
     'field' => 'stock_id',
     'title' => t('Chado Stock'),
     'help' => t('Chado Stocks are a record of any material upon which an experiment can be done. For example, a DNA sample, an individual or a population.'),
   );
-  if($database){
+  if ($database) {
      $data['stock']['table']['base']['database'] = $database;
   }
 
-	// Define relationships between this table and others
+  // Define relationships between this table and others
   $data['stock']['table']['join'] = array(
     'organism' => array(
       'left_field' => 'organism_id',
       'field' => 'organism_id',
     ),
-  ); 
+  );
 
-	// Table Field Definitions----------------------
+  // Table Field Definitions----------------------
   // Field: feature_id (primary key)
   $data['stock']['stock_id'] = array(
     'title' => 'Stock ID',
     'help' => 'The primary key of a stock',
     'field' => array(
-     	'handler' => 'views_handler_field_numeric',
- 		  'click sortable' => TRUE,
+       'handler' => 'views_handler_field_numeric',
+       'click sortable' => TRUE,
     ),
     'filter' => array(
-     	'handler' => 'views_handler_filter_numeric',
+       'handler' => 'views_handler_filter_numeric',
     ),
     'sort' => array(
-     	'handler' => 'views_handler_sort',
+       'handler' => 'views_handler_sort',
     ),
   );
-  
+
   // Calculated Field: Node ID
   //  use custom field handler to query drupal for the node ID
   //  this is only needed if chado is in a separate database from drupal
-	if ($database){
-  	$data['stock']['stock_nid'] = array(
-    	'title' => 'Node ID',
-    	'help' => 'This is the node ID of this feature. It can be used as a link to the node.',
-    	'field' => array(
+  if ($database) {
+    $data['stock']['stock_nid'] = array(
+      'title' => 'Node ID',
+      'help' => 'This is the node ID of this feature. It can be used as a link to the node.',
+      'field' => array(
        'handler' => 'views_handler_field_computed_stock_nid',
       ),
-  	);
-  } else {
+    );
+  }
+  else {
     // Add relationship between chado_stock and stock
     $data['stock']['stock_nid'] = array(
       'group' => 'Stock',
@@ -126,11 +128,11 @@ function retrieve_stock_views_data() {
       'handler' => 'views_handler_argument_string',
     ),
   );
-  // if joined to the node table add a "Link to Node" option for the field  
+  // if joined to the node table add a "Link to Node" option for the field
   if (!$database) {
     $data['stock']['uniquename']['field']['handler'] = 'views_handler_field_node_optional';
   }
-  
+
   //Field: name (varchar 255)
   $data['stock']['name'] = array(
     'title' => t('Name'),
@@ -149,11 +151,11 @@ function retrieve_stock_views_data() {
       'handler' => 'views_handler_argument_string',
     ),
   );
-  // if joined to the node table add a "Link to Node" option for the field  
+  // if joined to the node table add a "Link to Node" option for the field
   if (!$database) {
     $data['stock']['name']['field']['handler'] = 'views_handler_field_node_optional';
   }
-  
+
   //Field: description (varchar 255)
   $data['stock']['description'] = array(
     'title' => t('Description'),
@@ -184,17 +186,17 @@ function retrieve_stock_views_data() {
     'filter' => array(
        'handler' => 'views_handler_filter_chado_boolean',
        'label' => t('Is Obsolete?'),
-       'type' => 'yes-no',    
+       'type' => 'yes-no',
     ),
     'sort' => array(
       'handler' => 'views_handler_sort',
     ),
   );
 
-	//Calculated Field: stock properties
-	// uses a custom field handler which pulls results from the view
-	// actual query performed in chado_stock_views_views_pre_render	(&$view) -file:tripal_stock.views.inc
-	$data['stock']['properties'] = array(
+  //Calculated Field: stock properties
+  // uses a custom field handler which pulls results from the view
+  // actual query performed in chado_stock_views_views_pre_render  (&$view) -file:tripal_stock.views.inc
+  $data['stock']['properties'] = array(
     'title' => t('Stock Properties'),
     'help' => t('Properties of the current stock.'),
     'field' => array(
@@ -203,34 +205,34 @@ function retrieve_stock_views_data() {
       'handler' => 'views_handler_field_stockprop_by_type',
     ),
     'filter' => array(
-    	'title' => t('Properties'),
-    	'help' => t('Filter by a given property type or value.'),
-    	'handler' => 'views_handler_filter_stockprop_id',
+      'title' => t('Properties'),
+      'help' => t('Filter by a given property type or value.'),
+      'handler' => 'views_handler_filter_stockprop_id',
     ),
     'argument' => array(
-    	'title' => t('Properties'),
-    	'help' => t('Allow a property to be supplied in the path'),
-    	'handler' => 'views_handler_argument_stockprop_id',
+      'title' => t('Properties'),
+      'help' => t('Allow a property to be supplied in the path'),
+      'handler' => 'views_handler_argument_stockprop_id',
     ),
   );
 
-	//Calculated Field: stock properties (ALL)
-	// uses a custom field handler which pulls results from the view
-	// actual query performed in chado_stock_views_views_pre_render	(&$view) -file:tripal_stock.views.inc
-	$data['stock']['all_properties'] = array(
-  	'title' => t('All Stock Properties'),
-  	'help' => t('Properties of the current stock.'),
-  	'field' => array(
-    	'title' => t('All Properties'),
-    	'help' => t('Display all properties associated with a stock.'),
-    	'handler' => 'views_handler_field_stockprop_all',
-  	),
-	);
-	
-	//Calculated Field: stock relationships
-	// uses a custom field handler which pulls results from the view
-	// actual query performed in chado_stock_views_views_pre_render	(&$view) -file:tripal_stock.views.inc
-	$data['stock']['relationships'] = array(
+  //Calculated Field: stock properties (ALL)
+  // uses a custom field handler which pulls results from the view
+  // actual query performed in chado_stock_views_views_pre_render  (&$view) -file:tripal_stock.views.inc
+  $data['stock']['all_properties'] = array(
+    'title' => t('All Stock Properties'),
+    'help' => t('Properties of the current stock.'),
+    'field' => array(
+      'title' => t('All Properties'),
+      'help' => t('Display all properties associated with a stock.'),
+      'handler' => 'views_handler_field_stockprop_all',
+    ),
+  );
+
+  //Calculated Field: stock relationships
+  // uses a custom field handler which pulls results from the view
+  // actual query performed in chado_stock_views_views_pre_render  (&$view) -file:tripal_stock.views.inc
+  $data['stock']['relationships'] = array(
     'title' => t('Stock Relationships'),
     'help' => t('Relationships including the current stock.'),
     'field' => array(
@@ -239,27 +241,27 @@ function retrieve_stock_views_data() {
       'handler' => 'views_handler_field_stockrel_by_type',
     ),
     'filter' => array(
-    	'handler' => 'views_handler_filter_stock_relationship_id'
+      'handler' => 'views_handler_filter_stock_relationship_id'
     ),
   );
 
-	//Calculated Field: stock relationships (ALL)
-	// uses a custom field handler which pulls results from the view
-	// actual query performed in chado_stock_views_views_pre_render	(&$view) -file:tripal_stock.views.inc
-	$data['stock']['all_relationships'] = array(
-  	'title' => t('All Stock Relationships'),
-  	'help' => t('Relationships including the current stock.'),
-  	'field' => array(
-    	'title' => t('All Relationships'),
-    	'help' => t('Display all relationships including the stock.'),
-    	'handler' => 'views_handler_field_stockrel_all',
-  	),
-	);
-	
-	//Calculated Field: stock dbxrefs 
-	// uses a custom field handler which pulls results from the view
-	// actual query performed in chado_stock_views_views_pre_render	(&$view) -file:tripal_stock.views.inc
-	$data['stock']['dbxref'] = array(
+  //Calculated Field: stock relationships (ALL)
+  // uses a custom field handler which pulls results from the view
+  // actual query performed in chado_stock_views_views_pre_render  (&$view) -file:tripal_stock.views.inc
+  $data['stock']['all_relationships'] = array(
+    'title' => t('All Stock Relationships'),
+    'help' => t('Relationships including the current stock.'),
+    'field' => array(
+      'title' => t('All Relationships'),
+      'help' => t('Display all relationships including the stock.'),
+      'handler' => 'views_handler_field_stockrel_all',
+    ),
+  );
+
+  //Calculated Field: stock dbxrefs
+  // uses a custom field handler which pulls results from the view
+  // actual query performed in chado_stock_views_views_pre_render  (&$view) -file:tripal_stock.views.inc
+  $data['stock']['dbxref'] = array(
     'title' => t('Stock Database References'),
     'help' => t('Database References associated with the current stock.'),
     'field' => array(
@@ -268,23 +270,23 @@ function retrieve_stock_views_data() {
       'handler' => 'views_handler_field_stock_dbxref_by_type',
     ),
     'filter' => array(
-    	'title' => t('Database References'),
-    	'help' => t('Filter by a given database reference type and/or value.'),
-    	'handler' => 'views_handler_filter_stock_dbxref_id',
+      'title' => t('Database References'),
+      'help' => t('Filter by a given database reference type and/or value.'),
+      'handler' => 'views_handler_filter_stock_dbxref_id',
     ),
   );
 
-	//Calculated Field: stock dbxrefs (ALL)
-	// uses a custom field handler which pulls results from the view
-	// actual query performed in chado_stock_views_views_pre_render	(&$view) -file:tripal_stock.views.inc
-	$data['stock']['all_dbxref'] = array(
-  	'title' => t('All Stock Database References'),
-  	'help' => t('Database References associated with the current stock.'),
-  	'field' => array(
-    	'title' => t('All Database References'),
-    	'help' => t('Display all database references for the current stock.'),
-    	'handler' => 'views_handler_field_stock_dbxref_all',
-  	),
-	);
+  //Calculated Field: stock dbxrefs (ALL)
+  // uses a custom field handler which pulls results from the view
+  // actual query performed in chado_stock_views_views_pre_render  (&$view) -file:tripal_stock.views.inc
+  $data['stock']['all_dbxref'] = array(
+    'title' => t('All Stock Database References'),
+    'help' => t('Database References associated with the current stock.'),
+    'field' => array(
+      'title' => t('All Database References'),
+      'help' => t('Display all database references for the current stock.'),
+      'handler' => 'views_handler_field_stock_dbxref_all',
+    ),
+  );
   return $data;
 }

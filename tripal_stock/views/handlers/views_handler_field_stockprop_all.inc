@@ -1,6 +1,7 @@
 <?php
 
 /**
+ * @file
  * Field handler allowing all properties for a given stock to be displayed in a single cell
  *
  * @ingroup tripal_stock
@@ -18,32 +19,32 @@ class views_handler_field_stockprop_all extends views_handler_field_prerender_li
     $this->add_additional_fields();
   }
 
-	function pre_render($values) {
-		$this->aliases['properties'] = 'properties';
-		$this->aliases['stock_id'] = 'stock_id';
-		$this->field_alias = $this->aliases['stock_id'];
-		
-		//for each stock in this view page
-		foreach ($values as $result) {
-			if (!empty($result->{$this->aliases['properties']})) {
-				
-				// all properties for the current stock
-				$properties = $result->{$this->aliases['properties']};
-				foreach ($properties as $property) {					
-					// Add property to the list of items to be rendered
-					$this->items[$property->stock_id][$property->stockprop_id]['stock_id'] = $property->stock_id;
-					$this->items[$property->stock_id][$property->stockprop_id]['stockprop_id'] = $property->stockprop_id;
-					$this->items[$property->stock_id][$property->stockprop_id]['type_id'] = $property->type_id;
-					$this->items[$property->stock_id][$property->stockprop_id]['type_name'] = check_plain($property->type_name);
-					$this->items[$property->stock_id][$property->stockprop_id]['value'] = check_plain($property->value);
-					$this->items[$property->stock_id][$property->stockprop_id]['rank'] = $property->rank;
-				}
-			}
-		}
-	}
+  function pre_render($values) {
+    $this->aliases['properties'] = 'properties';
+    $this->aliases['stock_id'] = 'stock_id';
+    $this->field_alias = $this->aliases['stock_id'];
+
+    //for each stock in this view page
+    foreach ($values as $result) {
+      if (!empty($result->{$this->aliases['properties']})) {
+
+        // all properties for the current stock
+        $properties = $result->{$this->aliases['properties']};
+        foreach ($properties as $property) {
+          // Add property to the list of items to be rendered
+          $this->items[$property->stock_id][$property->stockprop_id]['stock_id'] = $property->stock_id;
+          $this->items[$property->stock_id][$property->stockprop_id]['stockprop_id'] = $property->stockprop_id;
+          $this->items[$property->stock_id][$property->stockprop_id]['type_id'] = $property->type_id;
+          $this->items[$property->stock_id][$property->stockprop_id]['type_name'] = check_plain($property->type_name);
+          $this->items[$property->stock_id][$property->stockprop_id]['value'] = check_plain($property->value);
+          $this->items[$property->stock_id][$property->stockprop_id]['rank'] = $property->rank;
+        }
+      }
+    }
+  }
 
   function render_item($count, $item) {
-		return $item['value'].' ('.$item['type_name'].')';
+    return $item['value'] . ' (' . $item['type_name'] . ')';
   }
 
   function document_self_tokens(&$tokens) {

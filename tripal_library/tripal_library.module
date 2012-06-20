@@ -1693,7 +1693,7 @@ function tripal_library_cleanup($dummy = NULL, $job_id = NULL) {
       if ($job_id and $i % $interval == 0) {
          tripal_job_set_progress($job_id, intval(($i/$count)*100));
       }
-      $node = db_fetch_object(db_query($nsql, ß$nid->nid));
+      $node = db_fetch_object(db_query($nsql, $nid->nid));
       if (!$node) {
          db_query("DELETE FROM {chado_library} WHERE nid = $nid->nid");
          $message = "chado_library missing node.... DELETING: $nid->nid\n";
