@@ -1,4 +1,8 @@
 <?php
+/**
+ * @file
+ * @todo Add file header description
+ */
 
 class views_handler_field_computed_library_nid extends views_handler_field_numeric {
   function construct() {
