@@ -12,7 +12,7 @@
 
 
 /**
- * Implementation of hook_install()
+ * Implementation of hook_install().
  */
 function tripal_pub_install() {
 
@@ -20,14 +20,13 @@ function tripal_pub_install() {
   $dbxref = array('accession' => 'abstract', 'db_id' => array('name' => 'tripal'));
   $success = tripal_core_chado_insert('dbxref', $dbxref);
   if ($success) {
-    tripal_core_chado_insert('cvterm', array('name' => 'abstract', 'cv_id' => array('name' => 'tripal'), 'db
-xref_id' => $dbxref));
+    tripal_core_chado_insert('cvterm', array('name' => 'abstract', 'cv_id' => array('name' => 'tripal'), 'dbxref_id' => $dbxref));
   }
 }
 
 
 /**
- * Implementation of hook_uninstall()
+ * Implementation of hook_uninstall().
  */
 function tripal_pub_uninstall() {
   //Remove tables
@@ -37,7 +36,7 @@ function tripal_pub_uninstall() {
 
 
 /**
- * Implementation of hook_schema()
+ * Implementation of hook_schema().
  */
 function tripal_pub_schema() {
 //specification for 'tripal_pub_instances'
@@ -78,7 +77,7 @@ function tripal_pub_schema() {
         'default' => '',
         'description' => 'The Author Name.',
       ),
-     ),
+      ),
      //end of shema
 
     'primary key' => array('nid'),
