@@ -18,9 +18,9 @@ require_once('tripal_natural_diversity.api.inc');
  *  views integration code is
  */
 function tripal_natural_diversity_views_api() {
-   return array(
+  return array(
       'api' => 2.0,
-   );
+  );
 }
 
 /**
