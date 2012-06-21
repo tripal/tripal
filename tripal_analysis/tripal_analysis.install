@@ -20,7 +20,7 @@ function tripal_analysis_install() {
   // table is used to store Blast xml and Interpro html/goterms
   $previous_db = tripal_db_set_active('chado');
   if (!db_table_exists('analysisfeatureprop')) {
-     $sql = "CREATE TABLE {analysisfeatureprop} (".
+    $sql = "CREATE TABLE {analysisfeatureprop} (".
             "  analysisfeatureprop_id SERIAL PRIMARY KEY, ".
             "  analysisfeature_id INTEGER NOT NULL REFERENCES analysisfeature(analysisfeature_id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED, ".
             "  type_id INTEGER NOT NULL REFERENCES cvterm(cvterm_id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED, ".
@@ -28,11 +28,11 @@ function tripal_analysis_install() {
             "  rank INTEGER NOT NULL, ".
             "  CONSTRAINT analysisfeature_id_type_id_rank UNIQUE(analysisfeature_id, type_id, rank)".
             ")";
-     db_query($sql);
+    db_query($sql);
   }
   tripal_db_set_active($previous_db);
 
-   tripal_cv_add_cvterm(array('name' => 'analysis_type', 'def' => 'The type of analysis was performed. This value is automatically set by each Tripal Analysis module and should be equal to the module name (e.g. tripal_analysis_blast, tripal_analysis_go).'), 'tripal', 0, 1, 'tripal');
+  tripal_cv_add_cvterm(array('name' => 'analysis_type', 'def' => 'The type of analysis was performed. This value is automatically set by each Tripal Analysis module and should be equal to the module name (e.g. tripal_analysis_blast, tripal_analysis_go).'), 'tripal', 0, 1, 'tripal');
   tripal_cv_add_cvterm(array('name' => 'analysis_date', 'def' => 'The date that an analysis was performed.'), 'tripal', 0, 1, 'tripal');
   tripal_cv_add_cvterm(array('name' => 'analysis_short_name', 'def' => 'A computer legible (no spaces ' .
       'or special characters) abbreviation for the analysis.'), 'tripal', 0, 1 , 'tripal');
@@ -116,17 +116,17 @@ function tripal_analysis_schema() {
  * before installation
  */
 function tripal_analysis_requirements($phase) {
-   $requirements = array();
-   if ($phase == 'install') {
-      if (!function_exists('tripal_create_moddir')) {
-         $requirements ['tripal_analysis'] = array(
+  $requirements = array();
+  if ($phase == 'install') {
+    if (!function_exists('tripal_create_moddir')) {
+      $requirements ['tripal_analysis'] = array(
             'title' => "tripal_analysis",
             'value' => "error. Some required modules are just being installed. Please try again.",
             'severity' => REQUIREMENT_ERROR,
-         );
+      );
       }
-   }
-   return $requirements;
+  }
+  return $requirements;
 }
 
 /*******************************************************************************
@@ -134,10 +134,10 @@ function tripal_analysis_requirements($phase) {
  */
 function tripal_analysis_update_6001() {
    // we have some new cvterms to add
-   tripal_cv_add_cvterm(array('name' => 'based_on_analysis', 'def' => 'The analysis that this analysis was based on. For example, blast/kegg/interpro analyses are based on a unigene analysis. The unigene analysis_id should be stored in analysisprop as the rank using this cvterm. The name of said unigene analysis can be inserted as the value in analysisprop.'), 'tripal', 0, 1, 'tripal');
-   tripal_cv_add_cvterm(array('name' => 'additional_files', 'def' => 'Additional files for this analysis. Each file should be separated by a semi-colon and have this format: <file description>, <file path>;'), 'tripal', 0, 1, 'tripal');
-   $ret = array(
+  tripal_cv_add_cvterm(array('name' => 'based_on_analysis', 'def' => 'The analysis that this analysis was based on. For example, blast/kegg/interpro analyses are based on a unigene analysis. The unigene analysis_id should be stored in analysisprop as the rank using this cvterm. The name of said unigene analysis can be inserted as the value in analysisprop.'), 'tripal', 0, 1, 'tripal');
+  tripal_cv_add_cvterm(array('name' => 'additional_files', 'def' => 'Additional files for this analysis. Each file should be separated by a semi-colon and have this format: <file description>, <file path>;'), 'tripal', 0, 1, 'tripal');
+  $ret = array(
       '#finished' => 1,
-   );
-   return $ret;
+  );
+  return $ret;
 }
