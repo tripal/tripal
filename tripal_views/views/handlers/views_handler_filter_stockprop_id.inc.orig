@@ -40,23 +40,53 @@ class views_handler_filter_stockprop_id extends views_handler_filter {
     if (preg_match('/NULL/', $form_state['values']['options']['operator'])) {
       $value = $form_state['values']['options']['value'];
       if (!empty($value)) {
+<<<<<<< HEAD:tripal_views/views/handlers/views_handler_filter_stockprop_id.inc
         drupal_set_message(t('The Value (%value) will be IGNORED when the Operator is set to "Is Present" or Is Absent".', array('%value' => $value)), 'warning');
+=======
+        drupal_set_message(t('The Value %value will be IGNORED when the Operator is set to "Is Present" or Is Absent". ', array('%value' => $value), 'warning'));
+>>>>>>> 6.x-0.4-dev:tripal_stock/views/handlers/views_handler_filter_stockprop_id.inc
       }
     }
     else {
       $value = $form_state['values']['options']['value'];
       if (empty($value)) {
         form_error($form['value'], t('Value required. The value will be used in conjunction with the operator. For example, if the '
+<<<<<<< HEAD:tripal_views/views/handlers/views_handler_filter_stockprop_id.inc
            .'operator="Is equal to" and the value="2010" then only properties with a value of 2010 and the type specified will be displayed.'));
+=======
+           . 'operator="Is equal to" and the value="2010" then only properties with a value of 2010 and the type specified will be displayed.'));
+>>>>>>> 6.x-0.4-dev:tripal_stock/views/handlers/views_handler_filter_stockprop_id.inc
       }
     }
 
     if (empty($form_state['values']['options']['type'])) {
+<<<<<<< HEAD:tripal_views/views/handlers/views_handler_filter_stockprop_id.inc
       drupal_set_message(t('No Property Type was choosen. As such, any property type whose value %op %value will be displayed.',
         array('%op' => $form_state['values']['options']['operator'], '%value' => $form_state['values']['options']['value'])), 'warning');
+=======
+      drupal_set_message('No Property Type was choosen. As such, any property type whose value '
+                 . $form_state['values']['options']['operator'] . ' ' . $form_state['values']['options']['value'] . ' will be displayed', 'warning');
     }
   }
 
+  function query() {
+    if (preg_match('/IS NOT NULL/', $this->options['operator'])) {
+      $new_where_sql = "stock.stock_id IN (SELECT stockprop.stock_id FROM stockprop WHERE stockprop.type_id=" . $this->type . ")";
+      $this->query->add_where($this->options['group'], $new_where_sql);
+>>>>>>> 6.x-0.4-dev:tripal_stock/views/handlers/views_handler_filter_stockprop_id.inc
+    }
+    elseif (preg_match('/IS NULL/', $this->options['operator'])) {
+      $new_where_sql = "stock.stock_id NOT IN (SELECT stockprop.stock_id FROM stockprop WHERE stockprop.type_id=" . $this->type . ")";
+      $this->query->add_where($this->options['group'], $new_where_sql);
+    }
+    elseif ($this->value) {
+      $new_where_sql = "stock.stock_id IN (SELECT stockprop.stock_id FROM stockprop WHERE stockprop.type_id=" . $this->type . " AND stockprop.value" . $this->operator . "'" . $this->value . "')";
+      $this->query->add_where($this->options['group'], $new_where_sql);
+    }
+
+  }
+
+<<<<<<< HEAD:tripal_views/views/handlers/views_handler_filter_stockprop_id.inc
   function query() {
     if (preg_match('/IS NOT NULL/', $this->options['operator'])) {
       $new_where_sql = "stock.stock_id IN (SELECT stockprop.stock_id FROM stockprop WHERE stockprop.type_id=" . $this->type . ")";
@@ -73,6 +103,8 @@ class views_handler_filter_stockprop_id extends views_handler_filter {
 
   }
 
+=======
+>>>>>>> 6.x-0.4-dev:tripal_stock/views/handlers/views_handler_filter_stockprop_id.inc
   function types_form(&$form, &$form_state) {
     $previous_db = tripal_db_set_active('chado');
     $result = db_query("SELECT cvt.cvterm_id as type_id, cvt.name FROM {cvterm} cvt WHERE cvt.cvterm_id IN (SELECT type_id FROM {stockprop})");
@@ -80,8 +112,12 @@ class views_handler_filter_stockprop_id extends views_handler_filter {
 
     $types = array();
     while ($r = db_fetch_object($result)) {
+<<<<<<< HEAD:tripal_views/views/handlers/views_handler_filter_stockprop_id.inc
       $types[$r->type_id] = $r->name;
     }
+=======
+    $types[$r->type_id] = $r->name; }
+>>>>>>> 6.x-0.4-dev:tripal_stock/views/handlers/views_handler_filter_stockprop_id.inc
 
     $form['type'] = array(
       '#type' => count($options) < 10 ? 'radios' : 'select',
@@ -101,14 +137,23 @@ class views_handler_filter_stockprop_id extends views_handler_filter {
 
       // Get options
       $previous_db = tripal_db_set_active('chado');
+<<<<<<< HEAD:tripal_views/views/handlers/views_handler_filter_stockprop_id.inc
       $resource = db_query("SELECT value FROM stockprop WHERE type_id=" . $this->type . " ORDER BY value");
       tripal_db_set_active($previous_db);
+=======
+      $resource = db_query("SELECT value FROM {stockprop} WHERE type_id=" . $this->type . " ORDER BY value");
+     tripal_db_set_active($previous_db);
+>>>>>>> 6.x-0.4-dev:tripal_stock/views/handlers/views_handler_filter_stockprop_id.inc
       while ($r = db_fetch_object($resource)) {
         $options[$r->value] = $r->value;
       }
       $form['value'] = array(
         '#type' => 'select',
+<<<<<<< HEAD:tripal_views/views/handlers/views_handler_filter_stockprop_id.inc
         '#title' => t('%label', array('%label' => $this->options['label'])),
+=======
+        '#title' => t('%label', array('%title' => $this->options['label'])),
+>>>>>>> 6.x-0.4-dev:tripal_stock/views/handlers/views_handler_filter_stockprop_id.inc
         '#options' => $options,
         '#default_value' => $this->value,
       );

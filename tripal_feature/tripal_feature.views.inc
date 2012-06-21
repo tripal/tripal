@@ -105,7 +105,7 @@ function tripal_feature_views_handlers() {
  */
 function tripal_feature_views_data_alter(&$data) {
 
-  if( !(is_array($db_url) and array_key_exists('chado',$db_url)) ){
+  if ( !(is_array($db_url) and array_key_exists('chado', $db_url)) ) {
 
     // Add featuer relationship to node
     $data['node']['feature_chado_nid'] = array(
@@ -130,7 +130,7 @@ function tripal_feature_views_data_alter(&$data) {
  *
  * @ingroup tripal_feature_views
  */
-function tripal_feature_views_default_views () {
+function tripal_feature_views_default_views() {
   $views = array();
 
   // Main default view

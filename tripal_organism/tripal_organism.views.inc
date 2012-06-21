@@ -88,7 +88,7 @@ function tripal_organism_views_handlers() {
  */
 function tripal_organism_views_data_alter(&$data) {
 
-  if( !(is_array($db_url) and array_key_exists('chado',$db_url)) ){
+  if ( !(is_array($db_url) and array_key_exists('chado', $db_url)) ) {
 
     // Add featuer relationship to node
     $data['node']['organism_chado_nid'] = array(
@@ -113,7 +113,7 @@ function tripal_organism_views_data_alter(&$data) {
  *
  * @ingroup tripal_organism_views
  */
-function tripal_organism_views_default_views () {
+function tripal_organism_views_default_views() {
   $views = array();
 
   // Main default view

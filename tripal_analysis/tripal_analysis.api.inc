@@ -1,6 +1,11 @@
 <?php
 
 /**
+ * @file
+ * @todo Add file header description
+ */
+
+/**
  * @defgroup tripal_analysis_api Analysis Module API
  * @ingroup tripal_analysis
  * @ingroup tripal_api
@@ -20,9 +25,9 @@
  */
 function tripal_analysis_chado_analysis_schema() {
   $description = array();
-  
+
   // Default table description in tripal_core.schema.api.inc: tripal_core_chado_analysis_schema()
-  
+
   $referring_tables = array(
       'analysisfeature',
       'analysisprop',
@@ -30,7 +35,7 @@ function tripal_analysis_chado_analysis_schema() {
       'quantification'
   );
   $description['referring_tables'] = $referring_tables;
-  
+
   return $description;
 }
 
@@ -60,7 +65,7 @@ function tripal_analysis_chado_analysisfeature_schema() {
           'analysis_id' => 'analysis_id',
         ),
   );
-  
+
   return $description;
 }
 
@@ -137,8 +142,8 @@ function tripal_analysis_chado_analysisprop_schema() {
  *
  * @ingroup tripal_analysis_api
  */
-function tripal_analysis_get_property($analysis_id,$property){
-   return tripal_core_get_property('analysis',$analysis_id,$property,'tripal');
+function tripal_analysis_get_property($analysis_id, $property) {
+   return tripal_core_get_property('analysis', $analysis_id, $property, 'tripal');
 }
 
 /**
@@ -158,8 +163,8 @@ function tripal_analysis_get_property($analysis_id,$property){
  *
  * @ingroup tripal_analysis_api
  */
-function tripal_analysis_insert_property($analysis_id,$property,$value,$update_if_present = 0){
-    return tripal_core_insert_property('analysis',$analysis_id,$property,'tripal',$value,$update_if_present);
+function tripal_analysis_insert_property($analysis_id, $property, $value, $update_if_present = 0) {
+    return tripal_core_insert_property('analysis', $analysis_id, $property, 'tripal', $value, $update_if_present);
 }
 
 /**
@@ -171,7 +176,7 @@ function tripal_analysis_insert_property($analysis_id,$property,$value,$update_i
  *   The cvterm name of the property to update
  * @param $value
  *   The value of the property to update
- * @param $insert_if_missing 
+ * @param $insert_if_missing
  *   A boolean indicated whether to insert the record if it's absent
  *
  * Note: The property will be identified using the unique combination of the $analysis_id and $property
@@ -182,8 +187,8 @@ function tripal_analysis_insert_property($analysis_id,$property,$value,$update_i
  *
  * @ingroup tripal_analysis_api
  */
-function tripal_analysis_update_property($analysis_id,$property,$value,$insert_if_missing = 0){
-   return tripal_core_update_property('analysis',$analysis_id,$property,'tripal',$value, $insert_if_missing);
+function tripal_analysis_update_property($analysis_id, $property, $value, $insert_if_missing = 0) {
+   return tripal_core_update_property('analysis', $analysis_id, $property, 'tripal', $value, $insert_if_missing);
 }
 
 /**
@@ -198,12 +203,12 @@ function tripal_analysis_update_property($analysis_id,$property,$value,$insert_i
  * and then it will be deleted
  *
  * @return
- *   True of success, False otherwise 
+ *   True of success, False otherwise
  *
  * @ingroup tripal_analysis_api
  */
-function tripal_analysis_delete_property($analysis_id,$property){
-   return tripal_core_delete_property('analysis',$analysis_id,$property,'tripal');
+function tripal_analysis_delete_property($analysis_id, $property) {
+   return tripal_core_delete_property('analysis', $analysis_id, $property, 'tripal');
 }
 /**
  * Retreives the node of a sync'ed analysis
@@ -212,15 +217,15 @@ function tripal_analysis_delete_property($analysis_id,$property){
  *   The analysis_id of the property to delete
  *
  * @return
- *   node of analysis on success, null otherwise 
+ *   node of analysis on success, null otherwise
  *
  * @ingroup tripal_analysis_api
  */
-function tripal_analysis_get_node($analysis_id){
-   $sql = "SELECT * 
+function tripal_analysis_get_node($analysis_id) {
+   $sql = "SELECT *
            FROM chado_analysis CA
               INNER JOIN node N on CA.nid = N.nid
            WHERE analysis_id = %d";
-   $node = db_fetch_object(db_query($sql,$analysis_id));
+   $node = db_fetch_object(db_query($sql, $analysis_id));
    return $node;
 }

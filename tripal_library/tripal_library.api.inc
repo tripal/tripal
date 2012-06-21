@@ -1,11 +1,15 @@
 <?php
+/**
+ * @file
+ * @todo Add file header description
+ */
 
 /**
  * @defgroup tripal_library_api Library Module API
  * @ingroup tripal_api
  * @ingroup tripal_library
  */
- 
+
 /**
  * Implements hook_chado_library_schema()
  * Purpose: To add descriptions and foreign keys to default table description
@@ -18,7 +22,7 @@
  */
 function tripal_library_chado_library_schema() {
   $description = array();
-  
+
   // Default table description in tripal_core.schema.api.inc: tripal_core_chado_feature_schema()
 
   $description['foreign keys']['organism'] = array(
@@ -26,24 +30,24 @@ function tripal_library_chado_library_schema() {
         'columns' => array(
           'organism_id' => 'organism_id',
         ),
-  );  
-  
+  );
+
   $description['foreign keys']['cvterm'] = array(
         'table' => 'cvterm',
         'columns' => array(
           'type_id' => 'cvterm_id',
         ),
   );
-  
+
   $referring_tables = array(
       'library_cvterm',
       'library_feature',
       'library_pub',
       'library_synonym',
-      'libraryprop' 
+      'libraryprop'
   );
   $description['referring_tables'] = $referring_tables;
-  
+
   return $description;
 }
 
@@ -59,7 +63,7 @@ function tripal_library_chado_library_schema() {
  */
 function tripal_library_chado_library_feature_schema() {
   $description = array();
-  
+
   // Default table description in tripal_core.schema.api.inc: tripal_core_chado_library_feature_schema()
 
   $description['foreign keys']['library'] = array(
@@ -67,15 +71,15 @@ function tripal_library_chado_library_feature_schema() {
         'columns' => array(
           'library_id' => 'library_id',
         ),
-  );  
-  
+  );
+
   $description['foreign keys']['feature'] = array(
         'table' => 'feature',
         'columns' => array(
           'feature_id' => 'feature_id',
         ),
   );
-  
+
   return $description;
 }
 /**
@@ -90,7 +94,7 @@ function tripal_library_chado_library_feature_schema() {
  */
 function tripal_library_chado_libraryprop_schema() {
   $description = array();
-  
+
   // Default table description in tripal_core.schema.api.inc: tripal_core_chado_library_feature_schema()
 
   $description['foreign keys']['library'] = array(
@@ -98,15 +102,15 @@ function tripal_library_chado_libraryprop_schema() {
         'columns' => array(
           'library_id' => 'library_id',
         ),
-  );  
-  
+  );
+
   $description['foreign keys']['cvterm'] = array(
         'table' => 'cvterm',
         'columns' => array(
           'type_id' => 'cvterm_id',
         ),
   );
-  
+
   return $description;
 }
 
@@ -123,8 +127,8 @@ function tripal_library_chado_libraryprop_schema() {
  *
  * @ingroup tripal_library_api
  */
-function tripal_library_get_property($library_id,$property){
-   return tripal_core_get_property('library',$library_id,$property,'tripal');
+function tripal_library_get_property($library_id, $property) {
+   return tripal_core_get_property('library', $library_id, $property, 'tripal');
 }
 
 /**
@@ -144,8 +148,8 @@ function tripal_library_get_property($library_id,$property){
  *
  * @ingroup tripal_library_api
  */
-function tripal_library_insert_property($library_id,$property,$value,$update_if_present = 0){
-   return tripal_core_insert_property('library',$library_id,$property,'tripal',$value,$update_if_present);
+function tripal_library_insert_property($library_id, $property, $value, $update_if_present = 0) {
+   return tripal_core_insert_property('library', $library_id, $property, 'tripal', $value, $update_if_present);
 }
 
 /**
@@ -157,7 +161,7 @@ function tripal_library_insert_property($library_id,$property,$value,$update_if_
  *   The cvterm name of the property to update
  * @param $value
  *   The value of the property to update
- * @param $insert_if_missing 
+ * @param $insert_if_missing
  *   A boolean indicated whether to insert the record if it's absent
  *
  * Note: The property will be identified using the unique combination of the $library_id and $property
@@ -168,8 +172,8 @@ function tripal_library_insert_property($library_id,$property,$value,$update_if_
  *
  * @ingroup tripal_library_api
  */
-function tripal_library_update_property($library_id,$property,$value,$insert_if_missing = 0){
-   return tripal_core_update_property('library',$library_id,$property,'tripal',$value, $insert_if_missing);
+function tripal_library_update_property($library_id, $property, $value, $insert_if_missing = 0) {
+   return tripal_core_update_property('library', $library_id, $property, 'tripal', $value, $insert_if_missing);
 }
 /**
  * Delete a given property
@@ -183,10 +187,10 @@ function tripal_library_update_property($library_id,$property,$value,$insert_if_
  * and then it will be deleted
  *
  * @return
- *   True of success, False otherwise 
+ *   True of success, False otherwise
  *
  * @ingroup tripal_library_api
  */
-function tripal_library_delete_property($library_id,$property){
-   return tripal_core_delete_property('library',$library_id,$property,'tripal');
+function tripal_library_delete_property($library_id, $property) {
+   return tripal_core_delete_property('library', $library_id, $property, 'tripal');
 }

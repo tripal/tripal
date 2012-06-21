@@ -1,22 +1,27 @@
 <?php
 
 /**
+ * @file
+ * Functions pertaining to the install/uninstall of this module
+ */
+
+/**
 *  Implementation of hook_install();
 *
 * @ingroup tripal_organism
 */
-function tripal_organism_install(){
+function tripal_organism_install() {
 
    // create the module's data directory
    tripal_create_moddir('tripal_organism');
 
-   // create the directory where image files will be stored.  We create this 
+   // create the directory where image files will be stored.  We create this
    // here otherwise it will get created when the first organism is synced.
-   // The user that performs the syncing will receive ownership of the 
+   // The user that performs the syncing will receive ownership of the
    // images directory which may not allow for write access by the web server
    // user.  So, we create it here
    $dest = file_directory_path() . "/tripal/tripal_organism/images";
-   file_check_directory($dest,FILE_CREATE_DIRECTORY);
+   file_check_directory($dest, FILE_CREATE_DIRECTORY);
 
    // create the tables that correlate drupal nodes with chado
    // features, organisms, etc....
@@ -31,7 +36,7 @@ function tripal_organism_install(){
 */
 function tripal_organism_schema() {
    $schema = tripal_organism_get_schemas();
-	return $schema;
+  return $schema;
 }
 
 /**
@@ -39,7 +44,7 @@ function tripal_organism_schema() {
 *
 * @ingroup tripal_organism
 */
-function tripal_organism_uninstall(){
+function tripal_organism_uninstall() {
    drupal_uninstall_schema('tripal_organism');
 
    // Get the list of nodes to remove
@@ -52,11 +57,11 @@ function tripal_organism_uninstall(){
    }
 
    // remove the materialized views
-   
+
    // Remove the custom view if exists
    if (db_table_exists('tripal_organism_views_common_name')) {
       $sql = "DROP TABLE {tripal_organism_views_common_name}";
-      db_query ($sql);
+      db_query($sql);
    }
 }
 
@@ -68,7 +73,7 @@ function tripal_organism_uninstall(){
 *
 * @ingroup tripal_organism
 */
-function tripal_organism_get_schemas (){
+function tripal_organism_get_schemas() {
   $schema = array();
 
   $schema['chado_organism'] = array(
@@ -95,7 +100,7 @@ function tripal_organism_get_schemas (){
          'organism_id' => array('organism_id')
       ),
       'unique keys' => array(
-         'nid_vid' => array('nid','vid'),
+         'nid_vid' => array('nid', 'vid'),
          'vid' => array('vid')
       ),
       'primary key' => array('nid'),

@@ -16,6 +16,12 @@
  * @ingroup tripal_analysis
  */
 
+<<<<<<< HEAD
+=======
+require('views/analysis.views.inc');
+require('views/chado_analysis.views.inc');
+require('views/misc_tables.views.inc');
+>>>>>>> 6.x-0.4-dev
 /**
  * Implements hook_views_data()
  *

@@ -1,4 +1,8 @@
 <?php
+/**
+ * @file
+ * @todo Add file header description
+ */
 
 /**
  * @file
@@ -20,9 +24,15 @@ class views_handler_filter_stock_relationship_id extends views_handler_filter {
       // determine if just checking presence
       if (preg_match('/NULL/', $this->operator)) {
           $where = 'stock.stock_id IN ('
+<<<<<<< HEAD:tripal_views/views/handlers/views_handler_filter_stock_relationship_id.inc
             .'SELECT ' . $this->options['variable_position'] . ' FROM stock_relationship '
             .'WHERE ' . $this->options['fixed_position'] . ' ' . $this->operator . ' AND type_id = ' . $this->options['type']
           .')';
+=======
+            . 'SELECT ' . $this->options['variable_position'] . ' FROM {stock_relationship} '
+            . 'WHERE ' . $this->options['fixed_position'] . ' ' . $this->operator . ' AND type_id = ' . $this->options['type']
+          . ')';
+>>>>>>> 6.x-0.4-dev:tripal_stock/views/handlers/views_handler_filter_stock_relationship_id.inc
           $this->query->add_where($this->options['group'], $where);
       }
       else {
@@ -69,13 +79,20 @@ class views_handler_filter_stock_relationship_id extends views_handler_filter {
         //generate where
         if (sizeof($fixed_stock_ids) == 1) {
           $where = 'stock.stock_id IN ('
+<<<<<<< HEAD:tripal_views/views/handlers/views_handler_filter_stock_relationship_id.inc
             .'SELECT ' . $this->options['variable_position'] . ' FROM stock_relationship '
             .'WHERE ' . $this->options['fixed_position'] . ' ' . $this->operator . ' ' . $fixed_stock_ids[0] . ' AND type_id = ' . $this->options['type']
           .')';
+=======
+            . 'SELECT ' . $this->options['variable_position'] . ' FROM {stock_relationship} '
+            . 'WHERE ' . $this->options['fixed_position'] . ' ' . $this->operator . ' ' . $fixed_stock_ids[0] . ' AND type_id = ' . $this->options['type']
+          . ')';
+>>>>>>> 6.x-0.4-dev:tripal_stock/views/handlers/views_handler_filter_stock_relationship_id.inc
           $this->query->add_where($this->options['group'], $where);
         }
         elseif (sizeof($fixed_stock_ids) > 1) {
           $where = 'stock.stock_id IN ('
+<<<<<<< HEAD:tripal_views/views/handlers/views_handler_filter_stock_relationship_id.inc
             .'SELECT ' . $this->options['variable_position'] . ' FROM stock_relationship '
             .'WHERE ' . $this->options['fixed_position'] . ' ' . $this->operator . ' (' . implode(', ', $fixed_stock_ids) . ') AND type_id = ' . $this->options['type']
           .')';
@@ -83,6 +100,15 @@ class views_handler_filter_stock_relationship_id extends views_handler_filter {
         }
         else {
           drupal_set_message(t('No stock with the name or uniquename %value was found -No filtering done.', array('%value' => $this->value)), 'error');
+=======
+            . 'SELECT ' . $this->options['variable_position'] . ' FROM {stock_relationship} '
+            . 'WHERE ' . $this->options['fixed_position'] . ' ' . $this->operator . ' (' . implode(', ', $fixed_stock_ids) . ') AND type_id = ' . $this->options['type']
+          . ')';
+          $this->query->add_where($this->options['group'], $where);
+        }
+        else {
+          drupal_set_message(t('No stock with the name or uniquename %value was found -No filtering done.',  array('%value' => $this->value ), 'error'));
+>>>>>>> 6.x-0.4-dev:tripal_stock/views/handlers/views_handler_filter_stock_relationship_id.inc
         }
       } //end of not just checking presence
     }
@@ -139,11 +165,19 @@ class views_handler_filter_stock_relationship_id extends views_handler_filter {
   function value_form(&$form, &$form_state) {
     parent::value_form($form, $form_state);
 
+<<<<<<< HEAD:tripal_views/views/handlers/views_handler_filter_stock_relationship_id.inc
+    if (!$this->options['label']) {
+      $label = 'Stock Name';
+    }
+    else {
+      $label = $this->options['label'];
+=======
     if ($this->options['label']) {
       $label = $this->options['label'];
     }
     else {
       $label = 'Stock Name';
+>>>>>>> 6.x-0.4-dev:tripal_stock/views/handlers/views_handler_filter_stock_relationship_id.inc
     }
     $form['value'] = array(
       '#type' => 'textfield',
@@ -162,8 +196,12 @@ class views_handler_filter_stock_relationship_id extends views_handler_filter {
 
     $types = array();
     while ($r = db_fetch_object($result)) {
+<<<<<<< HEAD:tripal_views/views/handlers/views_handler_filter_stock_relationship_id.inc
       $types[$r->type_id] = $r->name;
     }
+=======
+    $types[$r->type_id] = $r->name; }
+>>>>>>> 6.x-0.4-dev:tripal_stock/views/handlers/views_handler_filter_stock_relationship_id.inc
 
     return $types;
   }

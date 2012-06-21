@@ -55,6 +55,7 @@ function tripal_bulk_loader_add_loader_job_form_submit($form, $form_state) {
 
   if (preg_match('/Submit Job/', $form_state['values']['op'])) {
     //Submit Tripal Job
+<<<<<<< HEAD
     $job_args[1] = $form_state['values']['nid'];
     if (is_readable($form_state['values']['file'])) {
       $fname = basename($form_state['values']['file']);
@@ -71,14 +72,34 @@ function tripal_bulk_loader_add_loader_job_form_submit($form, $form_state) {
     }
   }
   elseif (preg_match('/Re-Submit Job/', $form_state['values']['op'])) {
+=======
+		$job_args[1] = $form_state['values']['nid'];
+		if (is_readable($form_state['values']['file'])) {
+			$fname = basename($form_state['values']['file']);
+			$job_id = tripal_add_job("Bulk Loading Job: $fname",'tripal_bulk_loader', 'tripal_bulk_loader_load_data', $job_args, $user->uid);
+
+			// add job_id to bulk_loader node
+      $success = db_query("UPDATE {tripal_bulk_loader} SET job_id=%d WHERE nid=%d", $job_id, $form_state['values']['nid']);
+
+      // change status
+      db_query("UPDATE tripal_bulk_loader SET job_status='%s' WHERE nid=%d",'Submitted to Queue', $form_state['values']['nid']);
+		} else {
+			drupal_set_message("Can not open ".$form_state['values']['file'].". Job not scheduled.");
+		}
+  } elseif (preg_match('/Re-Submit Job/', $form_state['values']['op'])) {
+>>>>>>> 6.x-0.4-dev
     tripal_jobs_rerun($form_state['values']['job_id']);
     db_query("UPDATE {tripal_bulk_loader} SET job_status='%s' WHERE nid=%d", 'Submitted to Queue', $form_state['values']['nid']);
   }
   elseif (preg_match('/Cancel Job/', $form_state['values']['op'])) {
     db_query("UPDATE {tripal_bulk_loader} SET job_status='%s' WHERE nid=%d", 'Job Cancelled', $form_state['values']['nid']);
     tripal_jobs_cancel($form_state['values']['job_id']);
+<<<<<<< HEAD
   }
   elseif (preg_match('/Revert/', $form_state['values']['op'])) {
+=======
+  } elseif (preg_match('/Revert/', $form_state['values']['op'])) {
+>>>>>>> 6.x-0.4-dev
 
     // Remove the records from the database that were already inserted
     $resource = db_query('SELECT * FROM {tripal_bulk_loader_inserted} WHERE nid=%d ORDER BY tripal_bulk_loader_inserted_id DESC', $form_state['values']['nid']);
@@ -122,11 +143,19 @@ function tripal_bulk_loader_load_data($nid) {
   db_query("UPDATE {tripal_bulk_loader} SET job_status='%s' WHERE nid=%d", 'Loading...', $nid);
 
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 6.x-0.4-dev
   $node = node_load($nid);
   print "Template: " . $node->template->name . " (" . $node->template_id . ")\n";
 
   $total_lines = trim(`wc --lines < $node->file`);
+<<<<<<< HEAD
   print "File: " . $node->file . " (" . $total_lines . " lines)\n";
+=======
+  print "File: ".$node->file." (".$total_lines." lines)\n";
+>>>>>>> 6.x-0.4-dev
 
   // Prep Work ==================================================================================
   $loaded_without_errors = TRUE;
@@ -163,19 +192,31 @@ function tripal_bulk_loader_load_data($nid) {
         $default_data[$priority]['need_further_processing'] = TRUE;
         $field2column[$priority][$field_array['field']] = $field_array['spreadsheet column'];
 
+<<<<<<< HEAD
       }
       elseif (preg_match('/constant/', $field_array['type'])) {
         $default_data[$priority]['values_array'][$field_array['field']] = $field_array['constant value'];
 
       }
       elseif (preg_match('/foreign key/', $field_array['type'])) {
+=======
+      } elseif (preg_match('/constant/', $field_array['type'])) {
+        $default_data[$priority]['values_array'][$field_array['field']] = $field_array['constant value'];
+
+      } elseif (preg_match('/foreign key/', $field_array['type'])) {
+>>>>>>> 6.x-0.4-dev
         $default_data[$priority]['values_array'][$field_array['field']] = array();
         $default_data[$priority]['values_array'][$field_array['field']]['foreign record'] = $field_array['foreign key'];
         $default_data[$priority]['need_further_processing'] = TRUE;
 
+<<<<<<< HEAD
       }
       else {
         print 'WARNING: Unsupported type: ' . $field_array['type'] . ' for ' . $table . '.' . $field_array['field'] . "!\n";
+=======
+      } else {
+        print 'WARNING: Unsupported type: '. $field_array['type'] . ' for ' . $table . '.' . $field_array['field']."!\n";
+>>>>>>> 6.x-0.4-dev
       }
 
       $three = $default_data[$priority];
@@ -202,7 +243,11 @@ function tripal_bulk_loader_load_data($nid) {
       foreach ($set as $priority => $record) {
         foreach ($record as $field_id => $field) {
 
+<<<<<<< HEAD
           print "\t- " . $field['chado_table'] . '.' . $field['chado_field'] . ' = ' . $field['value'] . "\n";
+=======
+          print "\t- ".$field['chado_table'].'.'.$field['chado_field'].' = '.$field['value']."\n";
+>>>>>>> 6.x-0.4-dev
 
           if ($default_data[$priority]['table'] == $field['chado_table']) {
             if (isset($default_data[$priority]['values_array'][$field['chado_field']])) {
@@ -284,7 +329,11 @@ function tripal_bulk_loader_load_data($nid) {
             ."\t- ".$job_progress."% of the current job has been completed.\n";
         */
 
+<<<<<<< HEAD
         tripal_job_set_progress($node->job_id, $job_progress);
+=======
+        tripal_job_set_progress($node->job_id,$job_progress);
+>>>>>>> 6.x-0.4-dev
       }
 
       $data = $default_data;
@@ -351,22 +400,37 @@ function process_data_array_for_line($priority, &$data, &$default_data, $field2c
   }
 
   if (!$values) {
+<<<<<<< HEAD
     $msg = 'Line ' . $line_num . ' ' . $table_data['record_id'] . ' (' . $table_data['mode'] . ') Aborted due to error in previous record. Values of current record:' . print_r($table_data['values_array'], TRUE);
     watchdog('T_bulk_loader', $msg, array(), WATCHDOG_WARNING);
     print "ERROR: " . $msg . "\n";
+=======
+    $msg = 'Line '.$line_num.' '.$table_data['record_id'].' ('.$table_data['mode'].') Aborted due to error in previous record. Values of current record:'.print_r($table_data['values_array'],TRUE);
+    watchdog('T_bulk_loader', $msg, array(), WATCHDOG_WARNING);
+    print "ERROR: ".$msg."\n";
+>>>>>>> 6.x-0.4-dev
     $data[$priority]['error'] = TRUE;
     $no_errors = FALSE;
   }
 
+<<<<<<< HEAD
   $table_desc = module_invoke_all('chado_' . $table . '_schema');
+=======
+  $table_desc = module_invoke_all('chado_'.$table.'_schema');
+>>>>>>> 6.x-0.4-dev
   if (preg_match('/optional/', $table_array['mode'])) {
     // Check all db required fields are set
     $fields = $table_desc['fields'];
     foreach ($fields as $field => $def) {
       // a field is considered missing if it cannot be null and there is no default
       // value for it or it is of type 'serial'
+<<<<<<< HEAD
       if ($def['not null'] == 1 and !array_key_exists($field, $insert_values) and !isset($def['default']) and strcmp($def['type'], serial)!=0) {
          $msg = 'Line ' . $line_num . ' ' . $table_data['record_id'] . ' (' . $table_data['mode'] . ') Missing Database Required Value: ' . $table . '.' . $field;
+=======
+      if($def['not null'] == 1 and !array_key_exists($field,$insert_values) and !isset($def['default']) and strcmp($def['type'],serial)!=0){
+         $msg = 'Line '.$line_num.' '.$table_data['record_id'].' ('.$table_data['mode'].') Missing Database Required Value: '.$table.'.'.$field;
+>>>>>>> 6.x-0.4-dev
          watchdog('T_bulk_loader', $msg, array(), WATCHDOG_NOTICE);
          $data[$priority]['error'] = TRUE;
       }
@@ -377,7 +441,11 @@ function process_data_array_for_line($priority, &$data, &$default_data, $field2c
   foreach ($table_data['required'] as $field => $required) {
     if ($required) {
       if (!isset($values[$field])) {
+<<<<<<< HEAD
         $msg = 'Line ' . $line_num . ' ' . $table_data['record_id'] . ' (' . $table_data['mode'] . ') Missing Template Required Value: ' . $table . '.' . $field;
+=======
+        $msg = 'Line '.$line_num.' '.$table_data['record_id'].' ('.$table_data['mode'].') Missing Template Required Value: '.$table.'.'.$field;
+>>>>>>> 6.x-0.4-dev
         watchdog('T_bulk_loader', $msg, array(), WATCHDOG_NOTICE);
         $data[$priority]['error'] = TRUE;
       }
@@ -418,7 +486,11 @@ function process_data_array_for_line($priority, &$data, &$default_data, $field2c
   }
 
 
+<<<<<<< HEAD
   if (!preg_match('/select/', $table_data['mode'])) {
+=======
+  if (!preg_match('/select/',$table_data['mode'])) {
+>>>>>>> 6.x-0.4-dev
     //watchdog('T_bulk_loader',$header.': Inserting:'.print_r($values, TRUE), array(), WATCHDOG_NOTICE);
     if (variable_get('tripal_bulk_loader_prepare',TRUE)) {
       $options = array('statement_name' => $priority);
@@ -433,9 +505,15 @@ function process_data_array_for_line($priority, &$data, &$default_data, $field2c
     $record = tripal_core_chado_insert($table, $values, $options);
 
     if (!$record) {
+<<<<<<< HEAD
       $msg = 'Line ' . $line_num . ' ' . $table_data['record_id'] . ' (' . $table_data['mode'] . ') Unable to insert record into ' . $table . ' where values:' . print_r($values, TRUE);
       watchdog('T_bulk_loader', $msg, array(), WATCHDOG_ERROR);
       print "ERROR: " . $msg . "\n";
+=======
+      $msg = 'Line '.$line_num.' '.$table_data['record_id'].' ('.$table_data['mode'].') Unable to insert record into '.$table.' where values:'.print_r($values,TRUE);
+      watchdog('T_bulk_loader', $msg, array(), WATCHDOG_ERROR);
+      print "ERROR: ".$msg."\n";
+>>>>>>> 6.x-0.4-dev
       $data[$priority]['error'] = TRUE;
       $no_errors = FALSE;
     }
@@ -479,7 +557,11 @@ function process_data_array_for_line($priority, &$data, &$default_data, $field2c
     $exists = tripal_core_chado_select($table, array_keys($table_desc['fields']), $values, array('has_record' => TRUE));
     if (!$exists) {
       // No record on select
+<<<<<<< HEAD
       $msg = 'Line ' . $line_num . ' ' . $table_data['record_id'] . ' (' . $table_data['mode'] . ') No Matching record in ' . $table . ' where values:' . print_r($values, TRUE);
+=======
+      $msg = 'Line '.$line_num.' '.$table_data['record_id'].' ('.$table_data['mode'].') No Matching record in '.$table.' where values:'.print_r($values,TRUE);
+>>>>>>> 6.x-0.4-dev
       watchdog('T_bulk_loader', $msg, array(), WATCHDOG_WARNING);
       $data[$priority]['error'] = TRUE;
     }
@@ -502,6 +584,7 @@ function process_data_array_for_line($priority, &$data, &$default_data, $field2c
 function tripal_bulk_loader_add_spreadsheetdata_to_values($values, $line, $field2column) {
 
   foreach ($values as $field => $value) {
+<<<<<<< HEAD
     if (is_array($value)) {
       continue;
     }
@@ -512,6 +595,14 @@ function tripal_bulk_loader_add_spreadsheetdata_to_values($values, $line, $field
     }
 
     if (preg_match('/\S+/', $line[$column])) {
+=======
+    if (is_array($value)) { continue; }
+
+    $column = $field2column[$field] - 1;
+    if ($column < 0) { continue; }
+
+    if (preg_match('/\S+/',$line[$column])) {
+>>>>>>> 6.x-0.4-dev
       $values[$field] = $line[$column];
     }
     else {
@@ -560,12 +651,21 @@ function tripal_bulk_loader_regex_tranform_values($values, $table_data, $line) {
     return $values;
   }
 
+<<<<<<< HEAD
   //watchdog('T_bulk_loader','Regex Transformation:<pre>'.print_r($table_data['regex_transform'], TRUE).'</pre>', array(), WATCHDOG_NOTICE);
 
   foreach ($table_data['regex_transform'] as $field => $regex_array) {
     if (!is_array($regex_array['replace'])) {
        continue;
      }
+=======
+  if (empty($table_data['regex_transform']) OR !is_array($table_data['regex_transform'])) { return $values; }
+
+  //watchdog('T_bulk_loader','Regex Transformation:<pre>'.print_r($table_data['regex_transform'], TRUE).'</pre>', array(), WATCHDOG_NOTICE);
+
+  foreach ($table_data['regex_transform'] as $field => $regex_array) {
+    if (!is_array($regex_array['replace'])) { continue; }
+>>>>>>> 6.x-0.4-dev
 
     //print 'Match:'.print_r($regex_array['pattern'],TRUE)."\n";
     //print 'Replace:'.print_r($regex_array['replace'],TRUE)."\n";
@@ -624,5 +724,10 @@ function tripal_bulk_loader_flatten_array($values) {
     $flattened_values[] = $k . '=>' . $v;
   }
 
+<<<<<<< HEAD
   return implode(', ', $flattened_values);
 }
+=======
+  return implode(', ',$flattened_values);
+}
+>>>>>>> 6.x-0.4-dev

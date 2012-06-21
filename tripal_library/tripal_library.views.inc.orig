@@ -16,6 +16,12 @@
  * @ingroup tripal_library
  */
 
+<<<<<<< HEAD
+=======
+require_once('views/library.views.inc');
+require_once('views/chado_library.views.inc');
+require_once('views/misc_tables.views.inc');
+>>>>>>> 6.x-0.4-dev
 /*************************************************************************
  * Implements hook_views_data()
  * Purpose: Describe chado/tripal tables & fields to views
@@ -30,6 +36,7 @@
 function tripal_library_views_data()  {
   $data = array();
 
+<<<<<<< HEAD
   if (module_exists('tripal_views')) {
     $tables = array(
       'library'
@@ -55,6 +62,11 @@ function tripal_library_views_data()  {
       }
     }
   }
+=======
+  $data = array_merge($data, retrieve_library_views_data());
+  $data = array_merge($data, retrieve_chado_library_views_data());
+  $data = array_merge($data, retrieve_library_misc_tables_views_data());
+>>>>>>> 6.x-0.4-dev
 
   return $data;
 }

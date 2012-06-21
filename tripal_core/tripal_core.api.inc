@@ -104,6 +104,21 @@ require_once "tripal_core.schema.api.inc";
  */
 function tripal_core_chado_insert($table, $values) {
   $insert_values = array();
+  $chado_db = tripal_db_persistent_chado();
+
+  // Determine plan of action
+  if ($options['statement_name']) {
+    $prepared = TRUE;
+    if ($options['prepare']) {
+      $build_sql = TRUE;
+    }
+    else {
+      $build_sql = FALSE;
+    }
+  }
+  else {
+    $build_sql = TRUE;
+  }
 
   // get the table description
   $table_desc = module_invoke_all('chado_' . $table . '_schema');
@@ -177,47 +192,101 @@ function tripal_core_chado_insert($table, $values) {
   }
 
   // Now build the insert SQL statement
-  $ifields = array();
-  $ivalues = array();
-  $itypes = array();
-  foreach ($insert_values as $field => $value) {
-    array_push($ifields, $field);
-    array_push($ivalues, $value);
-    if (strcmp($value, '__NULL__') == 0) {
-      array_push($itypes, "NULL");
+  $ifields = array(); //contains the names of the fields
+  $ivalues = array(); //contains the values of the fields
+  $itypes = array(); // contains %d/%s placeholders for the sql query
+  $iplaceholders = array(); // contains $1/$2 placeholders for the prepare query
+  $idatatypes = array(); //contains the data type of the fields (int, text, etc.)
+  $i = 1;
+  foreach ($insert_values as $field => $value){
+    $ifields[] = $field;
+    $ivalues[] = $value;
+    $iplaceholders[] = '$'.$i;
+    $i++;
+    if(strcmp($value,'__NULL__')==0){
+      $itypes[] = "NULL";
+      $idatatypes[] = "NULL";
     }
-    elseif (strcmp($fields[$field]['type'], 'serial') == 0 or
-      strcmp($fields[$field]['type'], 'int') == 0) {
-      array_push($itypes, "%d");
+    elseif(strcmp($fields[$field]['type'],'serial')==0 or
+      strcmp($fields[$field]['type'],'int')==0){
+      $itypes[] = "%d";
+      $idatatypes[] = 'int';
     }
     else {
-      array_push($itypes, "'%s'");
+      $itypes[] = "'%s'";
+      $idatatypes[] = 'text';
     }
   }
-  $sql = "INSERT INTO {$table} (" . implode(", ", $ifields) . ") VALUES (". implode(", ", $itypes) .")";
+
+  if ($build_sql) {
+    // prepare the statement
+    if ($prepared) {
+      $prepare_sql = "PREPARE " . $options['statement_name'] . " (" . implode(', ', $idatatypes) . ") AS INSERT INTO {$table} (" . implode(", ", $ifields) . ") VALUES (" . implode(", ", $iplaceholders) . ")";
+
+      $previous_db = tripal_db_set_active('chado');
+      $status = db_query($prepare_sql);
+      tripal_db_set_active($previous_db);
+
+      if (!$status) {
+        watchdog('tripal_core',"tripal_core_chado_insert: not able to prepare '%name' statement for: %sql", array('%name' => $options['statement_name'], '%sql' => $sql), 'WATCHDOG ERROR');
+        return FALSE;
+       }
+    } else {
+      $sql = "INSERT INTO {$table} (" . implode(", ",$ifields) . ") VALUES (". implode(", ",$itypes) .")";
+    }
+  }
 
   // finally perform the insert.
-  $previous_db = tripal_db_set_active('chado');  // use chado database
-  $result = db_query($sql, $ivalues);
-  tripal_db_set_active($previous_db);  // now use drupal database
-  if ($result) {
-    // add primary keys to values before return
-    $primary_key = array();
-    if (!is_array($table_desc['primary key'])) {
-      $table_desc['primary key'] = array();
-      watchdog('tripal_core', "tripal_core_chado_insert: %table not defined in tripal schema api", array('%table' => $table), 'WATCHDOG WARNING');
+  if ($prepared) {
+
+    $sql = "EXECUTE " . $options['statement_name'] . "(" . implode(", ", $itypes) . ")";
+
+    $previous_db = tripal_db_set_active('chado');
+    $result = db_query($sql, $ivalues);
+    tripal_db_set_active($previous_db);
+    if ($result) {
+      // add primary keys to values before return
+      $primary_key = array();
+      if (!is_array($table_desc['primary key'])) {
+        $table_desc['primary key'] = array();
+        watchdog('tripal_core',"tripal_core_chado_insert: %table not defined in tripal schema api", array('%table' => $table), 'WATCHDOG WARNING');
+      }
+      foreach ($table_desc['primary key'] as $field) {
+        $value = db_last_insert_id($table, $field);
+        $values[$field] = $value;
+      }
+      return $values;
     }
-    foreach ($table_desc['primary key'] as $field) {
-      $value = db_last_insert_id($table, $field);
-      $values[$field] = $value;
+    else {
+      watchdog('tripal_core',"tripal_core_chado_insert: not able to execute prepared statement '%name' with values: %values", array('%name' => $options['statement_name'], '%values' => print_r($values,1)), 'WATCHDOG ERROR');
+      return FALSE;
     }
-    return $values;
   }
   else {
-    watchdog('tripal_core', "tripal_core_chado_insert: Cannot insert record into $table table: " . print_r($values, 1), array(), 'WATCHDOG_ERROR');
-    return FALSE;
+    $previous_db = tripal_db_set_active('chado');  // use chado database
+    $result = db_query($sql, $ivalues);
+    tripal_db_set_active($previous_db);  // now use drupal database
+    if ($result) {
+      // add primary keys to values before return
+      $primary_key = array();
+      if (!is_array($table_desc['primary key'])) {
+        $table_desc['primary key'] = array();
+        watchdog('tripal_core', "tripal_core_chado_insert: %table not defined in tripal schema api", array('%table' => $table), 'WATCHDOG WARNING');
+      }
+      foreach ($table_desc['primary key'] as $field) {
+        $value = db_last_insert_id($table, $field);
+        $values[$field] = $value;
+      }
+      return $values;
+    }
+    else {
+      watchdog('tripal_core', "tripal_core_chado_insert: Cannot insert record into $table table: " . print_r($values, 1), array(), 'WATCHDOG_ERROR');
+      return FALSE;
+    }
   }
+
   return FALSE;
+
 }
 
 /**
@@ -1781,6 +1850,48 @@ function tripal_db_set_active($dbname) {
   }
 }
 
+
+/**
+ * Instantiate or Return a persistent chado connection
+ *
+ * NOTE: cannot use $active_db since a new connection is created each time
+ * db_set_active() is called
+ *
+ * @return
+ *   A postgresql connection object which can be used by pg_prepare, pg_execute, etc.
+ */
+function tripal_db_persistent_chado () {
+  global $db_url;
+
+  // get connection if it already exists
+  $connection = variable_get('tripal_perisistent_chado',NULL);
+
+  if ($connection) {
+    return $connection;
+
+  // Otherwise we need to set it
+  } else {
+    if (is_array($db_url) && isset($db_url['chado'])) {
+      $connection = db_connect($db_url['chado']);
+      variable_set('tripal_perisistent_chado', $connection);
+    } else {
+      $connection = db_connect($db_url);
+      variable_set('tripal_perisistent_chado', $connection);
+    }
+
+    return $connection;
+  }
+  return FALSE;
+}
+
+/**
+ * Release a persistent chado connection
+ */
+function tripal_db_release_persistent_chado () {
+  variable_del('tripal_perisistent_chado');
+}
+
+
 /**
  * Purpose: Get max rank for a given set of criteria
  *   This function was developed with the many property tables in chado in mind
@@ -1958,3 +2069,4 @@ function tripal_core_chado_schema_exists() {
     return FALSE;
   }
 }
+

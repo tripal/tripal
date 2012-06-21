@@ -1,9 +1,14 @@
 <?php
 
+/**
+ * @file
+ * @todo Add file header description
+ */
+
 /****************************************************************************
  * @section Chado Table Descriptions
  ****************************************************************************/
- 
+
  /**
  * Implements hook_chado_contact_schema()
  * Purpose: To add descriptions and foreign keys to default table description
@@ -50,6 +55,6 @@ function tripal_stock_chado_contact_relationship_schema() {
           'object_id' => 'contact_id',
         ),
   );
-  
+
   return $description;
 }

@@ -11,12 +11,17 @@
  */
 
 /**
- * @defgroup tripal_library_views Library Views Integration
+ * @defgroup tripal_organism_views Organism Views Integration
  * @ingroup views
- * @ingroup tripal_library
+ * @ingroup tripal_organism
  */
 
-/*************************************************************************
+<<<<<<< HEAD
+=======
+require_once('views/organism.views.inc');
+require_once('views/chado_organism.views.inc');
+>>>>>>> 6.x-0.4-dev
+/**
  * Implements hook_views_data()
  * Purpose: Describe chado/tripal tables & fields to views
  * @return: a data array which follows the structure outlined in the
@@ -25,14 +30,16 @@
  *   includes basic details about the table, fields in that table and
  *   relationships between that table and others (joins)
  *
- * @ingroup tripal_library_views
+ * @ingroup tripal_organism_views
  */
-function tripal_library_views_data()  {
+function tripal_organism_views_data()  {
   $data = array();
 
+<<<<<<< HEAD
   if (module_exists('tripal_views')) {
+    // Base Table
     $tables = array(
-      'library'
+      'organism'
     );
     foreach ($tables as $tablename) {
       if (!tripal_views_is_integrated($tablename, 10)) {
@@ -41,12 +48,10 @@ function tripal_library_views_data()  {
       }
     }
 
+    // Additional Tables
     $tables = array(
-      'library_cvterm',
-      'library_feature',
-      'library_pub',
-      'library_synonym',
-      'libraryprop'
+      'organismprop',
+      'organism_dbxref'
     );
     foreach ($tables as $tablename) {
       if (!tripal_views_is_integrated($tablename, 10)) {
@@ -55,27 +60,34 @@ function tripal_library_views_data()  {
       }
     }
   }
+=======
+  $data = array_merge($data, retrieve_organism_views_data());
+  $data = array_merge($data, retrieve_chado_organism_views_data());
+>>>>>>> 6.x-0.4-dev
 
   return $data;
 }
 
-/*************************************************************************
+/**
  * Implements hook_views_handlers()
  * Purpose: Register all custom handlers with views
  *   where a handler describes either "the type of field",
  *   "how a field should be filtered", "how a field should be sorted"
  * @return: An array of handler definitions
  *
- * @ingroup tripal_library_views
+ * @ingroup tripal_organism_views
  */
-function tripal_library_views_handlers() {
+function tripal_organism_views_handlers() {
  return array(
    'info' => array(
-     'path' => drupal_get_path('module', 'tripal_library') . '/views/handlers',
+     'path' => drupal_get_path('module', 'tripal_organism') . '/views/handlers',
    ),
    'handlers' => array(
-     'views_handler_field_computed_library_nid' => array(
+     'views_handler_field_computed_organism_nid' => array(
        'parent' => 'views_handler_field_numeric',
+     ),
+     'views_handler_filter_organism_common_name' => array(
+      'parent' => 'views_handler_filter_string',
      ),
    ),
  );
@@ -84,22 +96,22 @@ function tripal_library_views_handlers() {
 /**
  * Implementation of hook_views_data_alter().
  */
-function tripal_library_views_data_alter(&$data) {
+function tripal_organism_views_data_alter(&$data) {
 
   if ( !(is_array($db_url) and array_key_exists('chado', $db_url)) ) {
 
     // Add featuer relationship to node
-    $data['node']['library_chado_nid'] = array(
-      'group' => 'Library',
-      'title' => 'Library Node',
-      'help' => 'Links Chado Library Fields/Data to the Nodes in the current View.',
+    $data['node']['organism_chado_nid'] = array(
+      'group' => 'Organism',
+      'title' => 'Organism Node',
+      'help' => 'Links Chado Organism Fields/Data to the Nodes in the current View.',
       'real field' => 'nid',
       'relationship' => array(
         'handler' => 'views_handler_relationship',
         'title' => t('Node => Chado'),
         'label' => t('Node => Chado'),
         'real field' => 'nid',
-        'base' => 'chado_library',
+        'base' => 'chado_organism',
         'base field' => 'nid'
       ),
     );
@@ -109,87 +121,26 @@ function tripal_library_views_data_alter(&$data) {
 
 /**
  *
- *
- * @ingroup tripal_library_views
+ * @ingroup tripal_organism_views
  */
-function tripal_library_views_default_views() {
+function tripal_organism_views_default_views() {
   $views = array();
 
   // Main default view
   // List all cvterms based on cv
   $view = new view;
-  $view->name = 'all_libraries';
-  $view->description = 'A listing of all libraries';
+  $view->name = 'all_organisms';
+  $view->description = 'A listing of all organism in chado';
   $view->tag = 'chado';
   $view->view_php = '';
-  $view->base_table = 'library';
+  $view->base_table = 'organism';
   $view->is_cacheable = FALSE;
   $view->api_version = 2;
   $view->disabled = FALSE; /* Edit this to true to make a default view disabled initially */
   $handler = $view->new_display('default', 'Defaults', 'default');
   $handler->override_option('fields', array(
-    'uniquename' => array(
-      'label' => 'Unique Name',
-      'alter' => array(
-        'alter_text' => 0,
-        'text' => '',
-        'make_link' => 0,
-        'path' => '',
-        'link_class' => '',
-        'alt' => '',
-        'prefix' => '',
-        'suffix' => '',
-        'target' => '',
-        'help' => '',
-        'trim' => 0,
-        'max_length' => '',
-        'word_boundary' => 1,
-        'ellipsis' => 1,
-        'html' => 0,
-        'strip_tags' => 0,
-      ),
-      'empty' => '',
-      'hide_empty' => 0,
-      'empty_zero' => 0,
-      'link_to_node' => 1,
-      'exclude' => 0,
-      'id' => 'uniquename',
-      'table' => 'library',
-      'field' => 'uniquename',
-      'relationship' => 'none',
-    ),
-    'name_1' => array(
-      'label' => 'Name',
-      'alter' => array(
-        'alter_text' => 0,
-        'text' => '',
-        'make_link' => 0,
-        'path' => '',
-        'link_class' => '',
-        'alt' => '',
-        'prefix' => '',
-        'suffix' => '',
-        'target' => '',
-        'help' => '',
-        'trim' => 0,
-        'max_length' => '',
-        'word_boundary' => 1,
-        'ellipsis' => 1,
-        'html' => 0,
-        'strip_tags' => 0,
-      ),
-      'empty' => '',
-      'hide_empty' => 0,
-      'empty_zero' => 0,
-      'link_to_node' => 1,
-      'exclude' => 0,
-      'id' => 'name_1',
-      'table' => 'library',
-      'field' => 'name',
-      'relationship' => 'none',
-    ),
     'common_name' => array(
-      'label' => 'Organism',
+      'label' => 'Common Name',
       'alter' => array(
         'alter_text' => 0,
         'text' => '',
@@ -218,8 +169,8 @@ function tripal_library_views_default_views() {
       'field' => 'common_name',
       'relationship' => 'none',
     ),
-    'name' => array(
-      'label' => 'Type',
+    'abbreviation' => array(
+      'label' => 'Abbreviation',
       'alter' => array(
         'alter_text' => 0,
         'text' => '',
@@ -241,14 +192,15 @@ function tripal_library_views_default_views() {
       'empty' => '',
       'hide_empty' => 0,
       'empty_zero' => 0,
+      'link_to_node' => 0,
       'exclude' => 0,
-      'id' => 'name',
-      'table' => 'cvterm',
-      'field' => 'name',
+      'id' => 'abbreviation',
+      'table' => 'organism',
+      'field' => 'abbreviation',
       'relationship' => 'none',
     ),
-    'is_obsolete' => array(
-      'label' => 'Is Obsolete?',
+    'genus' => array(
+      'label' => 'Genus',
       'alter' => array(
         'alter_text' => 0,
         'text' => '',
@@ -270,12 +222,39 @@ function tripal_library_views_default_views() {
       'empty' => '',
       'hide_empty' => 0,
       'empty_zero' => 0,
-      'type' => 'yes-no',
-      'not' => 0,
       'exclude' => 0,
-      'id' => 'is_obsolete',
-      'table' => 'library',
-      'field' => 'is_obsolete',
+      'id' => 'genus',
+      'table' => 'organism',
+      'field' => 'genus',
+      'relationship' => 'none',
+    ),
+    'species' => array(
+      'label' => 'Species',
+      'alter' => array(
+        'alter_text' => 0,
+        'text' => '',
+        'make_link' => 0,
+        'path' => '',
+        'link_class' => '',
+        'alt' => '',
+        'prefix' => '',
+        'suffix' => '',
+        'target' => '',
+        'help' => '',
+        'trim' => 0,
+        'max_length' => '',
+        'word_boundary' => 1,
+        'ellipsis' => 1,
+        'html' => 0,
+        'strip_tags' => 0,
+      ),
+      'empty' => '',
+      'hide_empty' => 0,
+      'empty_zero' => 0,
+      'exclude' => 0,
+      'id' => 'species',
+      'table' => 'organism',
+      'field' => 'species',
       'relationship' => 'none',
     ),
     'num_features' => array(
@@ -303,43 +282,80 @@ function tripal_library_views_default_views() {
       'empty_zero' => 0,
       'exclude' => 0,
       'id' => 'num_features',
-      'table' => 'library',
+      'table' => 'organism',
       'field' => 'num_features',
       'relationship' => 'none',
     ),
-  ));
-  $handler->override_option('filters', array(
-    'common_name' => array(
-      'operator' => '=',
-      'value' => 'All',
-      'group' => '0',
-      'exposed' => TRUE,
-      'expose' => array(
-        'use_operator' => 0,
-        'operator' => 'common_name_op',
-        'identifier' => 'organism_common_name',
-        'label' => 'Organism',
-        'optional' => 1,
-        'remember' => 0,
+    'num_stocks' => array(
+      'label' => 'Number of Stocks',
+      'alter' => array(
+        'alter_text' => 0,
+        'text' => '',
+        'make_link' => 0,
+        'path' => '',
+        'link_class' => '',
+        'alt' => '',
+        'prefix' => '',
+        'suffix' => '',
+        'target' => '',
+        'help' => '',
+        'trim' => 0,
+        'max_length' => '',
+        'word_boundary' => 1,
+        'ellipsis' => 1,
+        'html' => 0,
+        'strip_tags' => 0,
       ),
-      'case' => 1,
-      'id' => 'common_name',
+      'empty' => '',
+      'hide_empty' => 0,
+      'empty_zero' => 0,
+      'exclude' => 0,
+      'id' => 'num_stocks',
       'table' => 'organism',
-      'field' => 'common_name',
+      'field' => 'num_stocks',
+      'relationship' => 'none',
+    ),
+    'num_libraries' => array(
+      'label' => 'Number of Libraries',
+      'alter' => array(
+        'alter_text' => 0,
+        'text' => '',
+        'make_link' => 0,
+        'path' => '',
+        'link_class' => '',
+        'alt' => '',
+        'prefix' => '',
+        'suffix' => '',
+        'target' => '',
+        'help' => '',
+        'trim' => 0,
+        'max_length' => '',
+        'word_boundary' => 1,
+        'ellipsis' => 1,
+        'html' => 0,
+        'strip_tags' => 0,
+      ),
+      'empty' => '',
+      'hide_empty' => 0,
+      'empty_zero' => 0,
+      'exclude' => 0,
+      'id' => 'num_libraries',
+      'table' => 'organism',
+      'field' => 'num_libraries',
       'relationship' => 'none',
     ),
   ));
   $handler->override_option('access', array(
     'type' => 'perm',
-    'perm' => 'access chado_library content',
+    'perm' => 'access chado_organism content',
   ));
   $handler->override_option('cache', array(
     'type' => 'none',
   ));
-  $handler->override_option('title', 'Libraries');
-  $handler->override_option('empty', 'There are no libraries matching the current criteria. If you think there should be, check that all chado libraries are sync\'d with your website.');
+  $handler->override_option('title', 'Organisms');
+  $handler->override_option('empty', 'No organism currently in your chado database.');
   $handler->override_option('empty_format', '1');
-  $handler->override_option('use_pager', '1');
+  $handler->override_option('items_per_page', 0);
   $handler->override_option('style_plugin', 'table');
   $handler->override_option('style_options', array(
     'grouping' => '',
@@ -347,37 +363,13 @@ function tripal_library_views_default_views() {
     'sticky' => 0,
     'order' => 'asc',
     'columns' => array(
-      'name' => 'name',
-      'timeaccessioned' => 'timeaccessioned',
-      'timelastmodified' => 'timelastmodified',
-      'is_obsolete' => 'is_obsolete',
-      'name_1' => 'name_1',
-      'uniquename' => 'uniquename',
+      'abbreviation' => 'abbreviation',
       'common_name' => 'common_name',
-      'num_libraries' => 'num_libraries',
+      'genus' => 'genus',
+      'species' => 'species',
     ),
     'info' => array(
-      'name' => array(
-        'sortable' => 0,
-        'separator' => '',
-      ),
-      'timeaccessioned' => array(
-        'sortable' => 0,
-        'separator' => '',
-      ),
-      'timelastmodified' => array(
-        'sortable' => 0,
-        'separator' => '',
-      ),
-      'is_obsolete' => array(
-        'sortable' => 0,
-        'separator' => '',
-      ),
-      'name_1' => array(
-        'sortable' => 0,
-        'separator' => '',
-      ),
-      'uniquename' => array(
+      'abbreviation' => array(
         'sortable' => 0,
         'separator' => '',
       ),
@@ -385,17 +377,22 @@ function tripal_library_views_default_views() {
         'sortable' => 0,
         'separator' => '',
       ),
-      'num_libraries' => array(
+      'genus' => array(
+        'sortable' => 0,
+        'separator' => '',
+      ),
+      'species' => array(
+        'sortable' => 0,
         'separator' => '',
       ),
     ),
     'default' => '-1',
   ));
   $handler = $view->new_display('page', 'Page', 'page_1');
-  $handler->override_option('path', 'libraries');
+  $handler->override_option('path', 'organisms');
   $handler->override_option('menu', array(
     'type' => 'normal',
-    'title' => 'Sequence Libraries',
+    'title' => 'Organisms',
     'description' => '',
     'weight' => '0',
     'name' => 'primary-links',

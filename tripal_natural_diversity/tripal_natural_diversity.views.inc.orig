@@ -23,6 +23,7 @@
 function tripal_natural_diversity_views_data()  {
   $data = array();
 
+<<<<<<< HEAD
   if (module_exists('tripal_views')) {
     $tables = array(
       'nd_experiment',
@@ -62,6 +63,19 @@ function tripal_natural_diversity_views_data()  {
       }
     }
   }
+=======
+  //EXPERIMENT
+  $data = array_merge($data, retrieve_nd_experiment_views_data());
+  $data = array_merge($data, retrieve_nd_experimentprop_views_data());
+
+  // GEOLOCATION
+  $data = array_merge($data, retrieve_nd_geolocation_views_data());
+  $data = array_merge($data, retrieve_nd_geolocationprop_views_data());
+
+  // REAGENTS
+  $data = array_merge($data, retrieve_nd_reagent_views_data());
+  $data = array_merge($data, retrieve_nd_reagentprop_views_data());
+>>>>>>> 6.x-0.4-dev
 
   return $data;
 }

@@ -1,10 +1,15 @@
 <?php
- 
-/*************************************************************************
+
+/**
+ * @file
+ * Provides an API to tripal organisms
+ */
+
+/**
  * Purpose: Create an options array to be used in a form element
  *   which provides a list of all chado organisms
  *
- * @return an array(organism_id => common_name) 
+ * @return an array(organism_id => common_name)
  *   for each organism in the chado organism table
  *
  * @ingroup tripal_organism_api
@@ -13,7 +18,7 @@ function tripal_organism_get_organism_options() {
 
   $previous_db = tripal_db_set_active('chado');
   $result = db_query(
-    "SELECT organism_id, common_name FROM organism"
+    "SELECT organism_id, common_name FROM {organism}"
   );
   tripal_db_set_active($previous_db);
 
@@ -26,41 +31,42 @@ function tripal_organism_get_organism_options() {
 
 }
 
-/*************************************************************************
+/**
  * Purpose: Return a given organism object using the nid
  *
  * @return organism object created by node load
  *
  * @ingroup tripal_organism_api
  */
-function tripal_organism_get_organism_by_nid ($nid) {
+function tripal_organism_get_organism_by_nid($nid) {
 
-	return node_load($nid);
-	
+  return node_load($nid);
+
 }
 
-/*************************************************************************
+/**
  * Purpose: Return a given organism object using the organism id
  *
  * @return organism object created by node load
  *
  * @ingroup tripal_organism_api
  */
-function tripal_organism_get_organism_by_organism_id ($organism_id) {
+function tripal_organism_get_organism_by_organism_id($organism_id) {
 
-	$sql = "SELECT nid FROM {chado_organism} WHERE organism_id=%d";
-	$r = db_fetch_object(db_query($sql, $organism_id));
-	if (!empty($r->nid)) {
-		return node_load($r->nid);
-	} else {
-		drupal_set_message("Function: tripal_organism_get_organism_by_organism_id() -no organism with that organism id sync'd with drupal", 'error');
-	}
-	
-	return 0;
-	
+  $sql = "SELECT nid FROM {chado_organism} WHERE organism_id=%d";
+  $r = db_fetch_object(db_query($sql, $organism_id));
+  if (!empty($r->nid)) {
+    return node_load($r->nid);
+  }
+  else {
+    drupal_set_message("Function: tripal_organism_get_organism_by_organism_id() -no organism with that organism id sync'd with drupal", 'error');
+  }
+
+  return 0;
+
 }
 
-/****************************************************************************
+/*****
  * @section Chado Table Descriptions
  * There should be a default table description for all chado tables included
  * in core.
@@ -79,7 +85,7 @@ function tripal_organism_get_organism_by_organism_id ($organism_id) {
  */
 function tripal_organism_chado_organism_schema() {
   $description = array();
-  
+
   $referring_tables = array(
     'biomaterial',
     'feature',
@@ -91,7 +97,7 @@ function tripal_organism_chado_organism_schema() {
     'wwwuser_organism'
   );
   $description['referring_tables'] = $referring_tables;
-  
+
   return $description;
 }
 
@@ -108,21 +114,21 @@ function tripal_organism_chado_organism_schema() {
  */
 function tripal_organism_chado_organismprop_schema() {
   $description = array();
-  
+
   $description['foreign keys']['cvterm'] = array(
         'table' => 'cvterm',
         'columns' => array(
           'type_id' => 'cvterm_id',
         ),
   );
-  
+
   $description['foreign keys']['organism'] = array(
         'table' => 'organism',
         'columns' => array(
           'organism_id' => 'organism_id',
         ),
   );
-  
+
   return $description;
 }
 /**
@@ -142,11 +148,11 @@ function tripal_organism_get_synced() {
    $org_list = array();
 
    // iterate through the organisms and build an array of those that are synced
-   while($org = db_fetch_object($orgs)){
+   while ($org = db_fetch_object($orgs)) {
       $previous_db = tripal_db_set_active('chado');  // use chado database
-      $info = db_fetch_object(db_query($csql,$org->organism_id));
+      $info = db_fetch_object(db_query($csql, $org->organism_id));
       tripal_db_set_active($previous_db);  // now use drupal database
       $org_list[] = $info;
-   }  
+   }
    return $org_list;
 }

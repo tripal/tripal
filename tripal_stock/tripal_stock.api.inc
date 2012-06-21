@@ -1,11 +1,15 @@
 <?php
+/**
+ * @file
+ * @todo Add file header description
+ */
 
 /**
  * @defgroup tripal_stock_api Stock Module API
  * @ingroup tripal_api
  * @ingroup tripal_stock
  */
- 
+
 /**
  * Purpose: Return a given stock node using the nid
  *
@@ -17,53 +21,54 @@
  *
  * @ingroup tripal_stock_api
  */
-function tripal_stock_get_stock_by_nid ($nid) {
-	
-	return node_load($nid);
-	
+function tripal_stock_get_stock_by_nid($nid) {
+
+  return node_load($nid);
+
 }
 
 /**
  * Purpose: Return a given stock object using the stock id
  *
- * @return 
+ * @return
  *   Stock object created by node load
  *
  * @ingroup tripal_stock_api
  */
-function tripal_stock_get_stock_by_stock_id ($stock_id) {
+function tripal_stock_get_stock_by_stock_id($stock_id) {
 
   $sql = "SELECT nid FROM {chado_stock} WHERE stock_id=%d";
   $r = db_fetch_object(db_query($sql, $stock_id));
   if (!empty($r->nid)) {
     return node_load($r->nid);
-  } else {
+  }
+  else {
     watchdog('tripal_stock', 'tripal_stock_get_stock_by_stock_id(!stock_id): no stock with that stock_id is sync\'d with drupal', array('!stock_id' => $stock_id), WATCHDOG_WARNING);
-	}
+  }
 
-	return 0;
-	
+  return 0;
+
 }
 
 /**
  * Purpose: Returns all stocks currently sync'd with drupal
  *
- * @return 
+ * @return
  *   An array of node objects keyed by stock_id
  *
  * @ingroup tripal_stock_api
  */
 function tripal_stock_get_all_stocks() {
-	$sql = "SELECT stock_id, nid from {chado_stock}";
-	$resource = db_query($sql);
-	$stocks = array();
-	while ($r = db_fetch_object($resource)) {
-		$node = node_load($r->nid);
-		if ($node) {
+  $sql = "SELECT stock_id, nid from {chado_stock}";
+  $resource = db_query($sql);
+  $stocks = array();
+  while ($r = db_fetch_object($resource)) {
+    $node = node_load($r->nid);
+    if ($node) {
       $stocks[$r->stock_id] = $node;
     }
-	}
-	return $stocks;
+  }
+  return $stocks;
 }
 
 /**
@@ -72,7 +77,7 @@ function tripal_stock_get_all_stocks() {
  * @param $values
  *   An associative array containing the values for filtering the results.
  *
- * @return 
+ * @return
  *   An array of matching stock objects (produced using node_load)
  *   matching the given criteria
  *
@@ -96,20 +101,20 @@ function tripal_stock_get_all_stocks() {
  * @endcode
  * The above code selects a record from the chado stock table using three fields with values which
  * identify a stock or multiple stocks. Then the node for each stock identified is returned, if it
- * exists. The $values array is nested such that the organism is identified by way of the 
- * organism_id foreign key constraint by specifying the genus and species.  The cvterm is also 
+ * exists. The $values array is nested such that the organism is identified by way of the
+ * organism_id foreign key constraint by specifying the genus and species.  The cvterm is also
  * specified using its foreign key and the cv_id for the cvterm is nested as well.
  *
  * @ingroup tripal_stock_api
  */
 function tripal_stock_get_stocks($values) {
 
-  $stock_ids = tripal_core_chado_select('stock',array('stock_id'),$values);
+  $stock_ids = tripal_core_chado_select('stock', array('stock_id'), $values);
 
   // Change from stock_ids to nodes-----------------------------------
   $stock_ids = array_filter($stock_ids);
   $stock_ids = array_unique($stock_ids);
-  
+
   $stocks = array();
   foreach ($stock_ids as $stock_id) {
     $node = tripal_stock_get_stock_by_stock_id($stock_id->stock_id);
@@ -117,7 +122,7 @@ function tripal_stock_get_stocks($values) {
       $stocks[] = $node;
     }
   }
-  
+
   return $stocks;
 }
 
@@ -131,7 +136,7 @@ function tripal_stock_get_stocks($values) {
  * @param $stock_values
  *   An array of column_name => value where column_name is any column in the stock table
  *   and value is the value you want that column to be. This is used as a tripal_core_chado_select
- *   values array so nesting is allowed. 
+ *   values array so nesting is allowed.
  *
  * @return
  *   An array of stock node objects
@@ -167,14 +172,14 @@ function tripal_stock_get_stocks_by_stockprop($stockprop_values, $stock_values) 
   if (!empty($stock_values)) {
     $stockprop_values['stock_id'] = $stock_values;
   }
-  
+
   //get stock_ids from stockprop table
-  $stock_ids = tripal_core_chado_select('stockprop',array('stock_id'),$stockprop_values);
+  $stock_ids = tripal_core_chado_select('stockprop', array('stock_id'), $stockprop_values);
 
   // Change from stock_ids to nodes-----------------------------------
   $stock_ids = array_filter($stock_ids);
   $stock_ids = array_unique($stock_ids);
-  
+
   $stocks = array();
   foreach ($stock_ids as $stock_id) {
     $node = tripal_stock_get_stock_by_stock_id($stock_id->stock_id);
@@ -182,13 +187,13 @@ function tripal_stock_get_stocks_by_stockprop($stockprop_values, $stock_values) 
       $stocks[] = $node;
     }
   }
-  
+
   return $stocks;
 }
 
 /**
  * Purpose: Return all stocks with a given name identifier
- *  which might match stock.name, stock.uniquename, dbxref.accession, 
+ *  which might match stock.name, stock.uniquename, dbxref.accession,
  *  stockprop.value where stockprop.type='synonym'
  *
  * @param $name
@@ -203,13 +208,13 @@ function tripal_stock_get_stocks_by_stockprop($stockprop_values, $stock_values) 
  */
 function tripal_stock_get_stock_by_name_identifier($name, $organism_id) {
   $stock_ids = array();
-  
+
   $options = array(
     'case_insensitive_columns' => array('name', 'uniquename', 'accession', 'value')
   );
-  
+
   // where name_identifier = stock.name-------------------------------
-  $current_stocks = tripal_core_chado_select('stock',array('stock_id'),
+  $current_stocks = tripal_core_chado_select('stock', array('stock_id'),
     array(
       'name' => $name,
       'organism_id' => $organism_id,
@@ -219,11 +224,12 @@ function tripal_stock_get_stock_by_name_identifier($name, $organism_id) {
     )
   );
   if (!empty($current_stocks)) {
-    foreach ($current_stocks as $c) { $stock_ids[] = $c->stock_id; }
+    foreach ($current_stocks as $c) {
+    $stock_ids[] = $c->stock_id; }
   }
 
   // where name_identifier = stock.uniquename-------------------------------
-  $current_stocks = tripal_core_chado_select('stock',array('stock_id'),
+  $current_stocks = tripal_core_chado_select('stock', array('stock_id'),
     array(
       'uniquename' => $name,
       'organism_id' => $organism_id,
@@ -233,12 +239,13 @@ function tripal_stock_get_stock_by_name_identifier($name, $organism_id) {
     )
   );
   if (!empty($current_stocks)) {
-    foreach ($current_stocks as $c) { $stock_ids[] = $c->stock_id; }
+    foreach ($current_stocks as $c) {
+    $stock_ids[] = $c->stock_id; }
   }
-  
+
   // where name_identifier = dbxref.accession-------------------------------
   // linked to stock through stock.dbxref
-  $current_stocks = tripal_core_chado_select('stock',array('stock_id'),
+  $current_stocks = tripal_core_chado_select('stock', array('stock_id'),
     array(
       'dbxref_id' => array(
         'accession' => $name,
@@ -250,11 +257,12 @@ function tripal_stock_get_stock_by_name_identifier($name, $organism_id) {
     )
   );
   if (!empty($current_stocks)) {
-    foreach ($current_stocks as $c) { $stock_ids[] = $c->stock_id; }  
+    foreach ($current_stocks as $c) {
+    $stock_ids[] = $c->stock_id; }
   }
-  
+
   // linked to stock through stock_dbxref?
-  $current_stocks = tripal_core_chado_select('stock_dbxref',array('stock_id'),
+  $current_stocks = tripal_core_chado_select('stock_dbxref', array('stock_id'),
     array(
       'dbxref_id' => array(
         'accession' => $name,
@@ -268,12 +276,14 @@ function tripal_stock_get_stock_by_name_identifier($name, $organism_id) {
     )
   );
   if (!empty($current_stocks)) {
-    foreach ($current_stocks as $c) { $stock_ids[] = $c->stock_id; }  
+    foreach ($current_stocks as $c) {
+      $stock_ids[] = $c->stock_id;
+    }
   }
-  
+
   // where name_identifier = stockprop.value-------------------------------
-  // where type='synonym' 
-  $current_stocks = tripal_core_chado_select('stockprop',array('stock_id'),
+  // where type='synonym'
+  $current_stocks = tripal_core_chado_select('stockprop', array('stock_id'),
     array(
       'stock_id' => array(
         'organism_id' => $organism_id,
@@ -289,13 +299,15 @@ function tripal_stock_get_stock_by_name_identifier($name, $organism_id) {
     )
   );
   if (!empty($current_stocks)) {
-    foreach ($current_stocks as $c) { $stock_ids[] = $c->stock_id; }
+    foreach ($current_stocks as $c) {
+      $stock_ids[] = $c->stock_id;
+    }
   }
-  
+
   // Change from stock_ids to nodes-----------------------------------
   $stock_ids = array_filter($stock_ids);
   $stock_ids = array_unique($stock_ids);
-  
+
   $stocks = array();
   foreach ($stock_ids as $stock_id) {
     $node = tripal_stock_get_stock_by_stock_id($stock_id);
@@ -303,10 +315,10 @@ function tripal_stock_get_stock_by_name_identifier($name, $organism_id) {
       $stocks[] = $node;
     }
   }
-  
+
   return $stocks;
 }
- 
+
 /**
  * Implements hook_chado_stock_schema()
  *
@@ -329,21 +341,21 @@ function tripal_stock_chado_stock_schema() {
           'organism_id' => 'organism_id',
         ),
   );
-      
+
   $description['foreign keys']['dbxref'] = array(
         'table' => 'dbxref',
         'columns' => array(
           'dbxref_id' => 'dbxref_id',
         ),
   );
-      
+
   $description['foreign keys']['cvterm'] = array(
         'table' => 'cvterm',
         'columns' => array(
           'type_id' => 'cvterm_id',
         ),
   );
-     
+
   $referring_tables = array(
     'stock_cvterm',
     'stock_dbxref',
@@ -351,10 +363,10 @@ function tripal_stock_chado_stock_schema() {
     'stock_pub',
     'stock_relationship',
     'stockcollection_stock',
-    'stockprop'  
+    'stockprop'
   );
   $description['referring_tables'] = $referring_tables;
-  
+
   return $description;
 }
 
@@ -371,21 +383,21 @@ function tripal_stock_chado_stock_schema() {
  */
 function tripal_stock_chado_stockprop_schema() {
   $description = array();
-  
+
   $description['foreign keys']['cvterm'] = array(
         'table' => 'cvterm',
         'columns' => array(
           'type_id' => 'cvterm_id',
         ),
   );
-  
+
   $description['foreign keys']['stock'] = array(
         'table' => 'stock',
         'columns' => array(
           'stock_id' => 'stock_id',
         ),
   );
-  
+
   return $description;
 }
 
@@ -402,21 +414,21 @@ function tripal_stock_chado_stockprop_schema() {
  */
 function tripal_stock_chado_stockprop_pub_schema() {
   $description = array();
-  
+
   $description['foreign keys']['pub'] = array(
         'table' => 'pub',
         'columns' => array(
           'pub_id' => 'pub_id',
         ),
   );
-  
+
   $description['foreign keys']['stockprop'] = array(
         'table' => 'stockprop',
         'columns' => array(
           'stockprop_id' => 'stockprop_id',
         ),
   );
-  
+
   return $description;
 }
 
@@ -433,14 +445,14 @@ function tripal_stock_chado_stockprop_pub_schema() {
  */
 function tripal_stock_chado_stock_cvterm_schema() {
   $description = array();
-  
+
   $description['foreign keys']['cvterm'] = array(
         'table' => 'cvterm',
         'columns' => array(
           'cvterm_id' => 'cvterm_id',
         ),
   );
-  
+
   $description['foreign keys']['stock'] = array(
         'table' => 'stock',
         'columns' => array(
@@ -454,7 +466,7 @@ function tripal_stock_chado_stock_cvterm_schema() {
           'pub_id' => 'pub_id',
         ),
   );
-  
+
   return $description;
 }
 
@@ -471,21 +483,21 @@ function tripal_stock_chado_stock_cvterm_schema() {
  */
 function tripal_stock_chado_stock_dbxref_schema() {
   $description = array();
-  
+
   $description['foreign keys']['dbxref'] = array(
         'table' => 'dbxref',
         'columns' => array(
           'dbxref_id' => 'dbxref_id',
         ),
   );
-  
+
   $description['foreign keys']['stock'] = array(
         'table' => 'stock',
         'columns' => array(
           'stock_id' => 'stock_id',
         ),
   );
-  
+
   return $description;
 }
 
@@ -502,21 +514,21 @@ function tripal_stock_chado_stock_dbxref_schema() {
  */
 function tripal_stock_chado_stock_genotype_schema() {
   $description = array();
-  
+
   $description['foreign keys']['genotype'] = array(
         'table' => 'genotype',
         'columns' => array(
           'genotype_id' => 'genotype_id',
         ),
   );
-  
+
   $description['foreign keys']['stock'] = array(
         'table' => 'stock',
         'columns' => array(
           'stock_id' => 'stock_id',
         ),
   );
-  
+
   return $description;
 }
 
@@ -533,21 +545,21 @@ function tripal_stock_chado_stock_genotype_schema() {
  */
 function tripal_stock_chado_stock_pub_schema() {
   $description = array();
-  
+
   $description['foreign keys']['pub'] = array(
         'table' => 'pub',
         'columns' => array(
           'pub_id' => 'pub_id',
         ),
   );
-  
+
   $description['foreign keys']['stock'] = array(
         'table' => 'stock',
         'columns' => array(
           'stock_id' => 'stock_id',
         ),
   );
-  
+
   return $description;
 }
 
@@ -564,14 +576,14 @@ function tripal_stock_chado_stock_pub_schema() {
  */
 function tripal_stock_chado_stock_relationship_schema() {
   $description = array();
-  
+
   $description['foreign keys']['cvterm'] = array(
         'table' => 'cvterm',
         'columns' => array(
           'type_id' => 'cvterm_id',
         ),
   );
-  
+
   $description['foreign keys']['stock'] = array(
         'table' => 'stock',
         'columns' => array(
@@ -579,7 +591,7 @@ function tripal_stock_chado_stock_relationship_schema() {
           'object_id' => 'stock_id',
         ),
   );
-  
+
   return $description;
 }
 
@@ -596,21 +608,21 @@ function tripal_stock_chado_stock_relationship_schema() {
  */
 function tripal_stock_chado_stock_relationship_pub_schema() {
   $description = array();
-  
+
   $description['foreign keys']['pub'] = array(
         'table' => 'pub',
         'columns' => array(
           'pub_id' => 'pub_id',
         ),
   );
-  
+
   $description['foreign keys']['stock_relationship'] = array(
         'table' => 'stock_relationship',
         'columns' => array(
           'stock_relationship_id' => 'stock_relationship_id',
         ),
   );
-  
+
   return $description;
 }
 
@@ -627,21 +639,21 @@ function tripal_stock_chado_stock_relationship_pub_schema() {
  */
 function tripal_stock_chado_stockcollection_schema() {
   $description = array();
-  
+
   $description['foreign keys']['cvterm'] = array(
         'table' => 'cvterm',
         'columns' => array(
           'type_id' => 'cvterm_id',
         ),
   );
-  
+
   $description['foreign keys']['contact'] = array(
         'table' => 'contact',
         'columns' => array(
           'contact_id' => 'contact_id',
         ),
   );
-  
+
   return $description;
 }
 
@@ -658,21 +670,21 @@ function tripal_stock_chado_stockcollection_schema() {
  */
 function tripal_stock_chado_stockcollection_stock_schema() {
   $description = array();
-  
+
   $description['foreign keys']['stock'] = array(
         'table' => 'stock',
         'columns' => array(
           'stock_id' => 'stock_id',
         ),
   );
-  
+
   $description['foreign keys']['stockcollection'] = array(
         'table' => 'stockcollection',
         'columns' => array(
           'stockcollection_id' => 'stockcollection_id',
         ),
   );
-  
+
   return $description;
 }
 
@@ -689,20 +701,20 @@ function tripal_stock_chado_stockcollection_stock_schema() {
  */
 function tripal_stock_chado_stockcollectionprop_schema() {
   $description = array();
-  
+
   $description['foreign keys']['cvterm'] = array(
         'table' => 'cvterm',
         'columns' => array(
           'type_id' => 'cvterm_id',
         ),
   );
-  
+
   $description['foreign keys']['stockcollection'] = array(
         'table' => 'stockcollection',
         'columns' => array(
           'stockcollection_id' => 'stockcollection_id',
         ),
   );
-  
+
   return $description;
 }
