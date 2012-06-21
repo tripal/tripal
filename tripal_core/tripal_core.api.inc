@@ -102,13 +102,14 @@ require_once "tripal_core.schema.api.inc";
  *
  * @ingroup tripal_chado_api
  */
-function tripal_core_chado_insert($table, $values) {
+function tripal_core_chado_insert($table, $values, $options) {
   $insert_values = array();
   $chado_db = tripal_db_persistent_chado();
 
   // Determine plan of action
   if ($options['statement_name']) {
     $prepared = TRUE;
+    $connection = tripal_db_persistent_chado();
     if ($options['prepare']) {
       $build_sql = TRUE;
     }
@@ -222,10 +223,7 @@ function tripal_core_chado_insert($table, $values) {
     // prepare the statement
     if ($prepared) {
       $prepare_sql = "PREPARE " . $options['statement_name'] . " (" . implode(', ', $idatatypes) . ") AS INSERT INTO {$table} (" . implode(", ", $ifields) . ") VALUES (" . implode(", ", $iplaceholders) . ")";
-
-      $previous_db = tripal_db_set_active('chado');
-      $status = db_query($prepare_sql);
-      tripal_db_set_active($previous_db);
+      $status = chado_query($prepare_sql);
 
       if (!$status) {
         watchdog('tripal_core',"tripal_core_chado_insert: not able to prepare '%name' statement for: %sql", array('%name' => $options['statement_name'], '%sql' => $sql), 'WATCHDOG ERROR');
@@ -240,10 +238,8 @@ function tripal_core_chado_insert($table, $values) {
   if ($prepared) {
 
     $sql = "EXECUTE " . $options['statement_name'] . "(" . implode(", ", $itypes) . ")";
+    $result = chado_query($sql, $ivalues);
 
-    $previous_db = tripal_db_set_active('chado');
-    $result = db_query($sql, $ivalues);
-    tripal_db_set_active($previous_db);
     if ($result) {
       // add primary keys to values before return
       $primary_key = array();
@@ -1406,10 +1402,17 @@ function tripal_core_exclude_field_from_feature_by_default() {
 }
 
 /**
- *  Use this function instead of db_query() to avoid switching databases
- *  when making query to the chado database
+ * Use this function instead of db_query() to avoid switching databases
+ * when making query to the chado database
+ *
+ * Will use a chado persistent connection if it already exists
+ *
+ * @param $sql
+ *   The sql statement to execute
  */
 function chado_query($sql) {
+  global $active_db;
+
   $args = func_get_args();
   array_shift($args);
   $sql = db_prefix_tables($sql);
@@ -1418,9 +1421,22 @@ function chado_query($sql) {
   }
   _db_query_callback($args, TRUE);
   $sql = preg_replace_callback(DB_QUERY_REGEXP, '_db_query_callback', $sql);
-  $previous_db = tripal_db_set_active('chado');
-  $results = _db_query($sql);
-  tripal_db_set_active($previous_db);
+
+  // Execute the query on the chado database/schema
+  // Use the persistent chado connection if it already exists
+  $persistent_connection = variable_get('tripal_perisistent_chado',NULL);
+  if ($persistent_connection) {
+    $previously_active_db = $active_db;
+    $active_db = $persistent_connection;
+    $results = _db_query($sql);
+    $active_db = $previously_active_db;
+  }
+  else {
+    $previous_db = tripal_db_set_active('chado');
+    $results = _db_query($sql);
+    tripal_db_set_active($previous_db);
+  }
+
   return $results;
 }
 
@@ -1860,7 +1876,7 @@ function tripal_db_set_active($dbname) {
  * @return
  *   A postgresql connection object which can be used by pg_prepare, pg_execute, etc.
  */
-function tripal_db_persistent_chado () {
+function tripal_db_persistent_chado() {
   global $db_url;
 
   // get connection if it already exists
@@ -1890,7 +1906,6 @@ function tripal_db_persistent_chado () {
 function tripal_db_release_persistent_chado () {
   variable_del('tripal_perisistent_chado');
 }
-
 
 /**
  * Purpose: Get max rank for a given set of criteria
