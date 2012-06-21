@@ -5,10 +5,10 @@
  */
 
 function tripal_project_administration_description_page() {
- $output = '';
+  $output = '';
 
 
- return $output;
+  return $output;
 }
 
 function tripal_project_configuration_page() {
@@ -91,7 +91,7 @@ function tripal_project_sync_all_projects() {
       $node = node_submit($new_node);
       node_save($node);
       if ($node->nid) {
-         print "Added " . $project[0]->name . " (Node ID:" . $node->nid . ")\n";
+        print "Added " . $project[0]->name . " (Node ID:" . $node->nid . ")\n";
       }
     }
     else {
