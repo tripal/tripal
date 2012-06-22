@@ -4,6 +4,10 @@ include('views/handlers/views_handler_join_chado_through_linking.inc');
 include('views/handlers/views_handler_join_chado_aggregator.inc');
 include('tripal_views.api.inc');
 
+
+// TEMPORARY
+include('views/chado_linking.TMP.inc');
+
 /**
  * @file
  * Tripal Views Integration
@@ -578,6 +582,10 @@ function tripal_views_views_data() {
       }
     }
   }
+
+  // TEMPORARY: needed to join chado base tables to node linking tables
+  // currently done using old-style data arrays
+  $data = tripal_views_TEMPORARY_chado_linking_data($data);
 
   return $data;
 }
