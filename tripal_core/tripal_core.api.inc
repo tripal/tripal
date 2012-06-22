@@ -1908,6 +1908,52 @@ function tripal_db_release_persistent_chado () {
 }
 
 /**
+ * Start a transaction block. Ensures the use of a persistent chado connection
+ */
+function tripal_db_start_transaction() {
+  $connection = tripal_db_persistent_chado();
+  chado_query("BEGIN");
+}
+
+/**
+ *
+ */
+function tripal_db_set_savepoint_transaction($savepoint, $release = FALSE) {
+  // Postgresql requires a savepoint of the same name to be unset before re-use
+  if ($release) {
+    chado_query("RELEASE SAVEPOINT %s",$savepoint);
+  }
+  chado_query("SAVEPOINT %s",$savepoint);
+}
+
+/**
+ * Commit changes made during the current transaction
+ */
+function tripal_db_commit_transaction() {
+  chado_query("COMMIT");
+}
+
+/**
+ * Rollback changes.
+ *
+ * If $savepoint is NULL then rollback to the beginning of the transaction,
+ * Otherwise, rollback to the point at which the named $savepoint was created
+ *
+ * @param $savepoint
+ *   The name of the saved point in the transaction to rollback to
+ */
+function tripal_db_rollback_transaction($savepoint = NULL) {
+
+  if ($savepoint) {
+    chado_query("ROLLBACK TO SAVEPOINT %s",$savepoint);
+  }
+  else {
+    chado_query("ROLLBACK");
+  }
+
+}
+
+/**
  * Purpose: Get max rank for a given set of criteria
  *   This function was developed with the many property tables in chado in mind
  *
