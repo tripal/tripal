@@ -167,7 +167,6 @@ function tripal_core_chado_insert($table, $values, $options) {
   }
 
   if ($validate) {
-    dpm('validate');
 
     // check for violation of any unique constraints
     $ukeys = $table_desc['unique keys'];
