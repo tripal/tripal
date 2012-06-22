@@ -5,56 +5,56 @@
  */
 
 /**
-*  Implementation of hook_install();
-*
-* @ingroup tripal_library
-*/
+ * Implementation of hook_install().
+ *
+ * @ingroup tripal_library
+ */
 function tripal_library_install() {
-   // create the module's data directory
-   tripal_create_moddir('tripal_library');
+  // create the module's data directory
+  tripal_create_moddir('tripal_library');
 
-   // create the tables that correlate drupal nodes with chado
-   // features, librarys, etc....
-   drupal_install_schema('tripal_library');
+  // create the tables that correlate drupal nodes with chado
+  // features, librarys, etc....
+  drupal_install_schema('tripal_library');
 
-   // Insert cvterm 'library_description' into cvterm table of chado
-   // database. This CV term is used to keep track of the library
-   // description in the libraryprop table.
-   tripal_cv_add_cvterm(array('name' => 'library_description', 'def' => 'Description of a library'), 'tripal', 0, 1, 'tripal');
+  // Insert cvterm 'library_description' into cvterm table of chado
+  // database. This CV term is used to keep track of the library
+  // description in the libraryprop table.
+  tripal_cv_add_cvterm(array('name' => 'library_description', 'def' => 'Description of a library'), 'tripal', 0, 1, 'tripal');
 
-   // Add CVTerms for the library types
-   tripal_cv_add_cvterm(array('name' => 'cdna_library', 'def' => 'cDNA Library'), 'tripal', 0, 1, 'tripal');
-   tripal_cv_add_cvterm(array('name' => 'bac_library', 'def' => 'BAC Library'), 'tripal', 0, 1, 'tripal');
-   tripal_cv_add_cvterm(array('name' => 'fosmid_library', 'def' => 'FOSMID Library'), 'tripal', 0, 1, 'tripal');
-   tripal_cv_add_cvterm(array('name' => 'cosmid_library', 'def' => 'COSMID Library'), 'tripal', 0, 1, 'tripal');
-   tripal_cv_add_cvterm(array('name' => 'yac_library', 'def' => 'YAC Library'), 'tripal', 0, 1, 'tripal');
+  // Add CVTerms for the library types
+  tripal_cv_add_cvterm(array('name' => 'cdna_library', 'def' => 'cDNA Library'), 'tripal', 0, 1, 'tripal');
+  tripal_cv_add_cvterm(array('name' => 'bac_library', 'def' => 'BAC Library'), 'tripal', 0, 1, 'tripal');
+  tripal_cv_add_cvterm(array('name' => 'fosmid_library', 'def' => 'FOSMID Library'), 'tripal', 0, 1, 'tripal');
+  tripal_cv_add_cvterm(array('name' => 'cosmid_library', 'def' => 'COSMID Library'), 'tripal', 0, 1, 'tripal');
+  tripal_cv_add_cvterm(array('name' => 'yac_library', 'def' => 'YAC Library'), 'tripal', 0, 1, 'tripal');
 
-   // Add the materialized view needed to count the features for the library
-   // Drop the MView table if it exists
-   $previous_db = tripal_db_set_active('chado');
-   if (db_table_exists('library_feature_count')) {
-      $sql = "DROP TABLE library_feature_count";
-      db_query($sql);
-   }
-   tripal_db_set_active($previous_db);
-   // Create the MView
-   tripal_add_mview('library_feature_count', 'tripal_library',
-      'library_feature_count',
-      'library_id integer, name character varying(255), '.
-    '  num_features integer, feature_type character varying(255)',
-     'library_id',
-     'SELECT '.
-      '   L.library_id, '.
-      '   L.name, '.
-      '    count(F.feature_id) as num_features, '.
-      '    CVT.name as feature_type '.
-      'FROM {Library} L '.
-      '    INNER JOIN Library_Feature LF  ON LF.library_id = L.library_id '.
-      '    INNER JOIN Feature F           ON LF.feature_id = F.feature_id '.
-      '    INNER JOIN Cvterm CVT          ON F.type_id = CVT.cvterm_id '.
-      'GROUP BY L.library_id, L.name, CVT.name',
-     ''
-   );
+  // Add the materialized view needed to count the features for the library
+  // Drop the MView table if it exists
+  $previous_db = tripal_db_set_active('chado');
+  if (db_table_exists('library_feature_count')) {
+    $sql = "DROP TABLE library_feature_count";
+    db_query($sql);
+  }
+  tripal_db_set_active($previous_db);
+  // Create the MView
+  tripal_add_mview('library_feature_count', 'tripal_library',
+    'library_feature_count',
+    'library_id integer, name character varying(255), '.
+  '  num_features integer, feature_type character varying(255)',
+   'library_id',
+   'SELECT '.
+    '   L.library_id, '.
+    '   L.name, '.
+    '    count(F.feature_id) as num_features, '.
+    '    CVT.name as feature_type '.
+    'FROM {Library} L '.
+    '    INNER JOIN Library_Feature LF  ON LF.library_id = L.library_id '.
+    '    INNER JOIN Feature F           ON LF.feature_id = F.feature_id '.
+    '    INNER JOIN Cvterm CVT          ON F.type_id = CVT.cvterm_id '.
+    'GROUP BY L.library_id, L.name, CVT.name',
+   ''
+  );
 
 }
 
@@ -64,37 +64,37 @@ function tripal_library_install() {
  * @ingroup tripal_library
  */
 function tripal_library_schema() {
-   $schema = tripal_library_get_schemas();
-   return $schema;
+  $schema = tripal_library_get_schemas();
+  return $schema;
 }
 
 /**
- * Implementation of hook_uninstall()
+ * Implementation of hook_uninstall().
  *
  * @ingroup tripal_library
  */
 function tripal_library_uninstall() {
-   drupal_uninstall_schema('tripal_library');
+  drupal_uninstall_schema('tripal_library');
 
-   // remove the materialized view
-   $sql = "SELECT * FROM {tripal_mviews} ".
-          "WHERE name = 'library_feature_count'";
+  // remove the materialized view
+  $sql = "SELECT * FROM {tripal_mviews} ".
+        "WHERE name = 'library_feature_count'";
 
-   if (db_table_exists('tripal_mviews')) {
-      $mview = db_fetch_object(db_query($sql));
-      if ($mview) {
-         tripal_mviews_action('delete', $mview->mview_id);
-      }
-   }
+  if (db_table_exists('tripal_mviews')) {
+    $mview = db_fetch_object(db_query($sql));
+    if ($mview) {
+      tripal_mviews_action('delete', $mview->mview_id);
+    }
+  }
 
-   // Get the list of nodes to remove
-   $sql_lib_id = "SELECT nid, vid ".
-                 "FROM {node} ".
-                 "WHERE type='chado_library'";
-   $result = db_query($sql_lib_id);
-   while ($node = db_fetch_object($result)) {
-      node_delete($node->nid);
-   }
+  // Get the list of nodes to remove
+  $sql_lib_id = "SELECT nid, vid ".
+               "FROM {node} ".
+               "WHERE type='chado_library'";
+  $result = db_query($sql_lib_id);
+  while ($node = db_fetch_object($result)) {
+    node_delete($node->nid);
+  }
 }
 
 /**
@@ -108,33 +108,33 @@ function tripal_library_uninstall() {
 function tripal_library_get_schemas() {
   $schema = array();
   $schema['chado_library'] = array(
-      'fields' => array(
-         'vid' => array(
-            'type' => 'int',
-            'unsigned' => TRUE,
-            'not null' => TRUE,
-            'default' => 0
-         ),
-         'nid' => array(
-            'type' => 'int',
-            'unsigned' => TRUE,
-            'not null' => TRUE,
-            'default' => 0
-         ),
-         'library_id' => array(
-            'type' => 'int',
-            'not null' => TRUE,
-            'default' => 0
-         )
+    'fields' => array(
+      'vid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0
       ),
-      'indexes' => array(
-         'library_id' => array('library_id')
+    'nid' => array(
+      'type' => 'int',
+      'unsigned' => TRUE,
+      'not null' => TRUE,
+      'default' => 0
       ),
-      'unique keys' => array(
-         'nid_vid' => array('nid', 'vid'),
-         'vid' => array('vid')
+    'library_id' => array(
+      'type' => 'int',
+      'not null' => TRUE,
+      'default' => 0
+      )
       ),
-      'primary key' => array('nid'),
+    'indexes' => array(
+      'library_id' => array('library_id')
+      ),
+    'unique keys' => array(
+      'nid_vid' => array('nid', 'vid'),
+      'vid' => array('vid')
+      ),
+    'primary key' => array('nid'),
   );
   return $schema;
 }
@@ -146,15 +146,15 @@ function tripal_library_get_schemas() {
  * @ingroup tripal_library
  */
 function tripal_library_requirements($phase) {
-   $requirements = array();
-   if ($phase == 'install') {
-      if (!function_exists('tripal_create_moddir')) {
-         $requirements ['tripal_library'] = array(
-            'title' => "tripal_library",
-            'value' => "error. Some required modules are just being installed. Please try again.",
-            'severity' => REQUIREMENT_ERROR,
-         );
-      }
-   }
-   return $requirements;
+  $requirements = array();
+  if ($phase == 'install') {
+    if (!function_exists('tripal_create_moddir')) {
+      $requirements ['tripal_library'] = array(
+        'title' => "tripal_library",
+        'value' => "error. Some required modules are just being installed. Please try again.",
+        'severity' => REQUIREMENT_ERROR,
+        );
+    }
+  }
+  return $requirements;
 }
