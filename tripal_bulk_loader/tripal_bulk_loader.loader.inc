@@ -135,13 +135,14 @@ function tripal_bulk_loader_load_data($nid) {
   $default_data = array();
   $field2column = array();
   $record2priority = array();
+  $tables = array();
 
   foreach ($node->template->template_array as $priority => $record_array) {
     if (!is_array($record_array)) {
       continue;
     }
 
-    //watchdog('T_bulk_loader','1)'.$record_array['record_id']." => \n<pre>".print_r($record_array,TRUE).'</pre>', array(), WATCHDOG_NOTICE);
+    $tables[$record_array['table']] = $record_array['table'];
 
     foreach ($record_array['fields'] as $field_index => $field_array) {
 
@@ -257,12 +258,21 @@ function tripal_bulk_loader_load_data($nid) {
         break;
       case "all":
         tripal_db_start_transaction();
+        $transactions = TRUE;
         $savepoint = "";
         break;
       case "row":
         tripal_db_start_transaction();
+        $transactions = TRUE;
         $savepoint = "last_row_complete";
         break;
+    }
+
+    // Disable triggers
+    $triggers_disabled = FALSE;
+    if ($transactions AND variable_get('tripal_bulk_loader_disable_triggers', TRUE)) {
+      $triggers_disabled = TRUE;
+      chado_query("SET CONSTRAINTS ALL DEFERRED");
     }
 
     while (!feof($file_handle)) {
@@ -305,7 +315,7 @@ function tripal_bulk_loader_load_data($nid) {
         $status = process_data_array_for_line($priority, $data, $default_data, $field2column, $record2priority, $line, $nid, $num_lines, $group_index);
         if (!$status ) {
           // Encountered an error
-          if (variable_get('tripal_bulk_loader_transactions','row') != 'none') {
+          if ($transactions) {
             tripal_db_rollback_transaction($savepoint);
           }
           $failed = TRUE;
@@ -333,11 +343,13 @@ function tripal_bulk_loader_load_data($nid) {
     } //end of foreach line of file
 
     // END Transaction
-    if (variable_get('tripal_bulk_loader_transactions','row') != 'none') {
+    if ($transactions) {
+      // end the transaction
       tripal_db_commit_transaction();
     }
 
     if ($failed) {
+      $loaded_without_errors = FALSE;
       break;
     }
 

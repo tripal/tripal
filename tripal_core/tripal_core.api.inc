@@ -1916,7 +1916,7 @@ function tripal_db_start_transaction() {
 }
 
 /**
- *
+ * Set a savepoint to roll the current transaction back to if an error is encountered
  */
 function tripal_db_set_savepoint_transaction($savepoint, $release = FALSE) {
   // Postgresql requires a savepoint of the same name to be unset before re-use
