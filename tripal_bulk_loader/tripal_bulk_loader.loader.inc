@@ -235,7 +235,11 @@ function tripal_bulk_loader_load_data($nid) {
     //print "\nField to Column Mapping: ".print_r($field2column, TRUE)."\n";
 
     // Parse File adding records as we go ========================================================
+
+    // Open File
     $file_handle = fopen($node->file, 'r');
+
+    // Set defaults
     if (preg_match('/(t|true|1)/', $node->file_has_header)) {
       fgets($file_handle, 4096);
     }
@@ -244,8 +248,23 @@ function tripal_bulk_loader_load_data($nid) {
     $num_errors = 0;
     $interval = intval($total_lines * 0.10);
     if ($interval == 0) {
-       $interval = 1;
-     }
+      $interval = 1;
+    }
+
+    // Start Transaction
+    switch (variable_get('tripal_bulk_loader_transactions','row')) {
+      case "none":
+        break;
+      case "all":
+        tripal_db_start_transaction();
+        $savepoint = "";
+        break;
+      case "row":
+        tripal_db_start_transaction();
+        $savepoint = "last_row_complete";
+        break;
+    }
+
     while (!feof($file_handle)) {
 
       // Clear variables
@@ -276,14 +295,6 @@ function tripal_bulk_loader_load_data($nid) {
         // and had a group percentage of 50% then the job progress would be
         // (2*100 + 50%) / 3 = 250%/3 = 83%
         $job_progress = round(((($group_index-1)*100)+$group_progress)/$total_num_groups);
-
-        /**
-          print "\nProgress Update:\n"
-            ."\t- ".$num_lines." lines have been processed for the current constant set.\n"
-            ."\t- ".$group_progress."% of the lines in the file have been processed for the current constant set.\n"
-            ."\t- ".$job_progress."% of the current job has been completed.\n";
-        */
-
         tripal_job_set_progress($node->job_id, $job_progress);
       }
 
@@ -293,11 +304,43 @@ function tripal_bulk_loader_load_data($nid) {
       foreach ($data_keys as $priority) {
         $status = process_data_array_for_line($priority, $data, $default_data, $field2column, $record2priority, $line, $nid, $num_lines, $group_index);
         if (!$status ) {
-          $loaded_without_errors = FALSE;
+          // Encountered an error
+          if (variable_get('tripal_bulk_loader_transactions','row') != 'none') {
+            tripal_db_rollback_transaction($savepoint);
+          }
+          $failed = TRUE;
+          break;
         }
       } // end of foreach table in default data array
 
+      if ($failed) {
+        break;
+      }
+      else {
+        // Row inserted successfully
+        // Set savepoint if supplied
+        if ($savepoint) {
+          if ($num_lines == 1) {
+            tripal_db_set_savepoint_transaction($savepoint);
+          }
+          else {
+            // Tell it to remove the previous savepoint of the same name
+            tripal_db_set_savepoint_transaction($savepoint, TRUE);
+          }
+        }
+      }
+
     } //end of foreach line of file
+
+    // END Transaction
+    if (variable_get('tripal_bulk_loader_transactions','row') != 'none') {
+      tripal_db_commit_transaction();
+    }
+
+    if ($failed) {
+      break;
+    }
+
   } //end of foreach constant set
 
   // check that data was inserted and update job_status
@@ -310,11 +353,11 @@ function tripal_bulk_loader_load_data($nid) {
 
   // set the status of the job (in the node not the tripal jobs)
   if ($loaded_without_errors) {
-      $status = 'Loading Completed Successfully';
-    }
-    else {
-      $status = 'Errors Encountered';
-      }
+    $status = 'Loading Completed Successfully';
+  }
+  else {
+    $status = 'Errors Encountered';
+  }
   db_query("UPDATE {tripal_bulk_loader} SET job_status='%s' WHERE nid=%d", $status, $nid);
 
 }
@@ -421,7 +464,7 @@ function process_data_array_for_line($priority, &$data, &$default_data, $field2c
   if (!preg_match('/select/', $table_data['mode'])) {
     //watchdog('T_bulk_loader',$header.': Inserting:'.print_r($values, TRUE), array(), WATCHDOG_NOTICE);
     if (variable_get('tripal_bulk_loader_prepare',TRUE)) {
-      $options = array('statement_name' => $priority);
+      $options = array('statement_name' => 'record_'.$priority);
       if ($line_num == 1 && $group_index == 1) {
         $options['prepare'] = TRUE;
       }
@@ -482,6 +525,7 @@ function process_data_array_for_line($priority, &$data, &$default_data, $field2c
       $msg = 'Line ' . $line_num . ' ' . $table_data['record_id'] . ' (' . $table_data['mode'] . ') No Matching record in ' . $table . ' where values:' . print_r($values, TRUE);
       watchdog('T_bulk_loader', $msg, array(), WATCHDOG_WARNING);
       $data[$priority]['error'] = TRUE;
+      $no_errors = FALSE;
     }
   }
   return $no_errors;

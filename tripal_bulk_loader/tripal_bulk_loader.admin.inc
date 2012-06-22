@@ -64,6 +64,22 @@ function tripal_bulk_loader_configuration_form($form_state = NULL) {
     '#default_value' => variable_get('tripal_bulk_loader_prepare', TRUE),
   );
 
+  $form['speed']['transactions'] = array(
+    '#type' => 'radios',
+    '#title' => t('Transaction Rollback when an error is encountered'),
+    '#options' => array(
+      'all' => t('<b>Rollback the last constant set.</b> This is the fastest option. If '
+        .'you added more then one constant set then the successfully loaded constant '
+        .'sets will not be rolled back. However, once an error is encountered no further '
+        .'constant sets will be loaded either.'),
+      'row' => t('<b>Only Rollback the last line of the input file.</b> This option '
+        .'may allow you to restart the job after fixing the error (manual intervention '
+        .'needed) but is also slower are requires additional memory.'),
+      'none' => t('<b>Do not use transactions</b> This is not recommended.')
+    ),
+    '#default_value' => variable_get('tripal_bulk_loader_transactions','row')
+  );
+
   $form['submit1'] = array(
     '#type' => 'submit',
     '#value' => t('Save')
@@ -78,6 +94,8 @@ function tripal_bulk_loader_configuration_form($form_state = NULL) {
 function tripal_bulk_loader_configuration_form_submit($form, $form_state) {
 
   variable_set('tripal_bulk_loader_prepare', $form_state['values']['prepare']);
+  variable_set('tripal_bulk_loader_transactions',$form_state['values']['transactions']);
+
 }
 
 //////////////////////////////////////////////////////////////////////////////////////
