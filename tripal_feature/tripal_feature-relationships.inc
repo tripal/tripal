@@ -12,13 +12,13 @@
 function tripal_feature_add_ALL_relationships_page($node) {
   $output = '';
 
-  $output .= tripal_feature_implement_add_chado_properties_progress('relationships') . '<br>';
-  $output .= '<b>All Relationships should include the CURRENT Individual (' . $node->uniquename . ')</b><br>';
-  $output .= '<br><b>Current Relationships</b><br>';
+  $output .= tripal_feature_implement_add_chado_properties_progress('relationships') . '<br />';
+  $output .= '<b>All Relationships should include the CURRENT Individual (' . $node->uniquename . ')</b><br />';
+  $output .= '<br /><b>Current Relationships</b><br />';
   $output .= list_relationships_for_node($node->uniquename, $node->subject_relationships, $node->object_relationships);
-  $output .= '<br><br>';
+  $output .= '<br /><br />';
   $output .= drupal_get_form('tripal_feature_add_ONE_relationship_form', $node);
-  $output .= '<br>';
+  $output .= '<br />';
   $output .= drupal_get_form('tripal_feature_implement_add_chado_properties_navigate', 'relationships', $node->nid);
   return $output;
 }
@@ -120,13 +120,13 @@ function tripal_feature_add_ONE_relationship_form_validate($form, &$form_state) 
       for ($i=0; $i<sizeof($subject_results); $i++) {
       $links[] = l($i+1, "node/" . $subject_results[$i]->nid); }
       $message = "Too many stocks match '" . $form_state['values']['subject_id'] . "'! "
-                  . " Please refine your input to match ONLY ONE stock. <br>"
+                  . " Please refine your input to match ONLY ONE stock. <br />"
      . "To aid in this process, here are the stocks that match your initial input: "
      . join(', ', $links);
       form_set_error('subject_id', $message);
     }
     elseif (sizeof($subject_results) < 1) {
-      form_set_error('subject_id', "There are no stocks matching your input. Please check your input for typos and/or lookup the stock " . l('here', 'stocks'));
+      form_set_error('subject_id', t("There are no stocks matching your input. Please check your input for typos and/or lookup the stock %link", array('%link' => l(t('here'), 'stocks'))));
     }
     elseif (sizeof($subject_results) == 1) {
       $form_state['values']['subject_id'] = $subject_results[0]->stock_id;
@@ -141,13 +141,13 @@ function tripal_feature_add_ONE_relationship_form_validate($form, &$form_state) 
       for ($i=0; $i<sizeof($object_results); $i++) {
       $links[] = l($i+1, "node/" . $object_results[$i]->nid); }
       $message = "Too many stocks match '" . $form_state['values']['object_id'] . "'! "
-                 . "Please refine your input to match ONLY ONE stock. <br>"
+                 . "Please refine your input to match ONLY ONE stock. <br />"
                  . "To aid in this process, here are the stocks that match your initial input: "
                  . join(', ', $links);
       form_set_error('object_id', $message);
     }
     elseif (sizeof($object_results) < 1) {
-      form_set_error('object_id', "There are no stocks matching your input. Please check your input for typos and/or lookup the stock " . l('here', 'stocks'));
+      form_set_error('object_id', t("There are no stocks matching your input. Please check your input for typos and/or lookup the stock %link", array('%link' => l(t('here'), 'stocks'))));
     }
     elseif (sizeof($object_results) == 1) {
       $form_state['values']['object_id'] = $object_results[0]->stock_id;
@@ -194,7 +194,7 @@ function tripal_feature_add_ONE_relationship_form_submit($form, &$form_state) {
     );
     db_set_active($previous_db);
 
-    drupal_set_message('Successfully Added Relationship.');
+    drupal_set_message(t('Successfully Added Relationship.'));
   } //end of insert relationship
 
 }
@@ -208,9 +208,9 @@ function tripal_feature_edit_ALL_relationships_page($node) {
   $output = '';
 
   $output .= drupal_get_form('tripal_feature_edit_ALL_relationships_form', $node);
-  $output .= '<br>';
+  $output .= '<br />';
   $output .= drupal_get_form('tripal_feature_add_ONE_relationship_form', $node);
-  $output .= '<br>';
+  $output .= '<br />';
   $output .= drupal_get_form('tripal_feature_implement_back_to_feature_button', $node->nid);
 
   return $output;
@@ -243,92 +243,90 @@ function tripal_feature_edit_ALL_relationships_form($form_state, $node) {
   $relationships = array_merge($orelationships, $srelationships);
 
   if (sizeof($relationships) != 0) {
-     foreach ($relationships as $r) {
+    foreach ($relationships as $r) {
 
-       $i++;
-       $form["num-$i"] = array(
-         '#type' => 'fieldset',
-         '#title' => t("Relationship %i", array('%i' => $i)),
-       );
+      $i++;
+      $form["num-$i"] = array(
+        '#type' => 'fieldset',
+        '#title' => t("Relationship %i", array('%i' => $i)),
+      );
 
-       $form["num-$i"]["id-$i"] = array(
-         '#type' => 'hidden',
-         '#value' => $r->stock_relationship_id
-       );
+      $form["num-$i"]["id-$i"] = array(
+        '#type' => 'hidden',
+        '#value' => $r->stock_relationship_id
+      );
 
-       //Enter relationship specific fields
-       if ( !empty($r->subject_id) ) {
-         $default = $r->subject_uniquename;
-         $description = l($r->subject_name, 'node/' . $r->subject_nid);
-       }
-       else {
-          $default = $node->uniquename;
-          $description = "Current Feature";
-       }
-       $description .= " (" . $r->subject_type . ")";
-       $form["num-$i"]["subject_id-$i"] = array(
-         '#type' => 'textfield',
-         //'#title' => t('Subject'),
-         '#required'   => TRUE,
-         '#size' => 30,
-         '#default_value' => $default,
-         '#description' => t('%description', array('%description' => $description)),
-       );
+      //Enter relationship specific fields
+      if ( !empty($r->subject_id) ) {
+        $default = $r->subject_uniquename;
+        $description = l($r->subject_name, 'node/' . $r->subject_nid);
+      }
+      else {
+        $default = $node->uniquename;
+        $description = "Current Feature";
+      }
+      $description .= " (" . $r->subject_type . ")";
+      $form["num-$i"]["subject_id-$i"] = array(
+        '#type' => 'textfield',
+        //'#title' => t('Subject'),
+        '#required'   => TRUE,
+        '#size' => 30,
+        '#default_value' => $default,
+        '#description' => t('%description', array('%description' => $description)),
+      );
 
-       $cv = tripal_cv_get_cv_by_name('relationship');
-       $type_options = tripal_cv_get_cvterm_options($cv->cv_id);
-       ksort($type_options);
-       $form["num-$i"]["type_id-$i"] = array(
-         '#type' => 'select',
-         //'#title' => t('Type of Relationship'),
-         '#options' => $type_options,
-         '#required' => TRUE,
-         '#default_value' => $r->relationship_type_id
-       );
+      $cv = tripal_cv_get_cv_by_name('relationship');
+      $type_options = tripal_cv_get_cvterm_options($cv->cv_id);
+      ksort($type_options);
+      $form["num-$i"]["type_id-$i"] = array(
+        '#type' => 'select',
+        //'#title' => t('Type of Relationship'),
+        '#options' => $type_options,
+        '#required' => TRUE,
+        '#default_value' => $r->relationship_type_id
+      );
 
-       if (!empty($r->object_id) ) {
-         $default = $r->object_uniquename;
-         $description = l($r->object_name, 'node/' . $r->object_nid);
-       }
-       else {
-         $default = $node->uniquename;
-         $description = 'Current Feature';
-       }
-       $description .= " (" . $r->object_type . ")";
-       $form["num-$i"]["object_id-$i"] = array(
-         '#type' => 'textfield',
-         //'#title' => t('Object'),
-         '#required'   => TRUE,
-         '#size' => 30,
-         '#default_value' => $default,
-         '#description' => $description
-       );
+      if (!empty($r->object_id) ) {
+        $default = $r->object_uniquename;
+        $description = l($r->object_name, 'node/' . $r->object_nid);
+      }
+      else {
+        $default = $node->uniquename;
+        $description = 'Current Feature';
+      }
+      $description .= " (" . $r->object_type . ")";
+      $form["num-$i"]["object_id-$i"] = array(
+        '#type' => 'textfield',
+        //'#title' => t('Object'),
+        '#required'   => TRUE,
+        '#size' => 30,
+        '#default_value' => $default,
+        '#description' => $description
+      );
 
-       $form["num-$i"]["delete-$i"] = array(
-         '#type' => 'submit',
-         '#value' => t("Delete"),
-         '#name' => "delete-$i",
-       );
+      $form["num-$i"]["delete-$i"] = array(
+        '#type' => 'submit',
+        '#value' => t("Delete"),
+        '#name' => "delete-$i",
+      );
 
-     } //end of foreach relationship
-     $form['num_relationships'] = array(
-       '#type' => 'hidden',
-       '#value' => $i
-     );
+    } //end of foreach relationship
+    $form['num_relationships'] = array(
+      '#type' => 'hidden',
+      '#value' => $i
+    );
 
-     $form["submit-edits"] = array(
-       '#type' => 'submit',
-       '#value' => t('Update All Relationships')
-     );
+    $form["submit-edits"] = array(
+      '#type' => 'submit',
+      '#value' => t('Update All Relationships')
+    );
   }
   else {
-     $form["info"] = array(
-       '#type' => 'markup',
-       '#value' => t('No relationships currently exist for this feature.')
-     );
+    $form["info"] = array(
+      '#type' => 'markup',
+      '#value' => t('No relationships currently exist for this feature.')
+    );
   }
-
-
 
   return $form;
 }
@@ -354,13 +352,13 @@ function tripal_feature_edit_ALL_relationships_form_validate($form, &$form_state
         for ($j=0; $j<sizeof($subject_results); $j++) {
         $links[] = l($j+1, "node/" . $subject_results[$j]->nid); }
         $message = "Too many stocks match '" . $form_state['values']["subject_id-$i"] . "'! "
-                 . "Please refine your input to match ONLY ONE stock. <br>"
+                 . "Please refine your input to match ONLY ONE stock. <br />"
                  . "To aid in this process, here are the stocks that match your initial input: "
                  . join(', ', $links);
         form_set_error("subject_id-$i", $message);
       }
       elseif (sizeof($subject_results) < 1) {
-        form_set_error("subject_id-$i", "There are no stocks matching your input. Please check your input for typos and/or lookup the stock " . l('here', 'stocks'));
+        form_set_error("subject_id-$i", t("There are no stocks matching your input. Please check your input for typos and/or lookup the stock %link", array('%link' => l(t('here'), 'stocks'))));
       }
       elseif (sizeof($subject_results) == 1) {
         $form_state['values']["subject_id-$i"] = $subject_results[0]->stock_id;
@@ -375,13 +373,13 @@ function tripal_feature_edit_ALL_relationships_form_validate($form, &$form_state
         for ($j=0; $j<sizeof($object_results); $j++) {
         $links[] = l($j+1, "node/" . $object_results[$j]->nid); }
         $message = "Too many stocks match '" . $form_state['values']["object_id-$i"] . "'! "
-                 . "Please refine your input to match ONLY ONE stock. <br>"
+                 . "Please refine your input to match ONLY ONE stock. <br />"
                  . "To aid in this process, here are the stocks that match your initial input: "
                  . join(', ', $links);
         form_set_error("object_id-$i", $message);
       }
       elseif (sizeof($object_results) < 1) {
-        form_set_error("object_id-$i", "There are no stocks matching your input. Please check your input for typos and/or lookup the stock " . l('here', 'stocks'));
+        form_set_error("object_id-$i", t("There are no stocks matching your input. Please check your input for typos and/or lookup the stock %link", array('%link' => l(t('here'), 'stocks'))));
       }
       elseif (sizeof($object_results) == 1) {
         $form_state['values']["object_id-$i"] = $object_results[0]->stock_id;
@@ -421,33 +419,33 @@ function tripal_feature_edit_ALL_relationships_form_validate($form, &$form_state
 function tripal_feature_edit_ALL_relationships_form_submit($form, &$form_state) {
 
   if ($form_state['clicked_button']['#value'] == t('Update Relationships') ) {
-     //Update all
-     for ($i=1; $i<=$form_state['values']['num_relationships']; $i++) {
+    //Update all
+    for ($i=1; $i<=$form_state['values']['num_relationships']; $i++) {
 
-       //process stock textfields
-       tripal_feature_update_relationship(
+      //process stock textfields
+      tripal_feature_update_relationship(
         $form_state['values']["id-$i"],
         $form_state['values']["subject_id-$i"],
         $form_state['values']["type_id-$i"],
         $form_state['values']["object_id-$i"]
       );
-     }
-     drupal_set_message("Updated all Relationships");
-     drupal_goto('node/' . $form_state['values']['nid']);
+    }
+    drupal_set_message(t("Updated all Relationships"));
+    drupal_goto('node/' . $form_state['values']['nid']);
 
   }
   elseif ( preg_match('/Delete #(\d+)/', $form_state['clicked_button']['#value'], $matches) ) {
 
-     $i = $matches[1];
-     tripal_feature_delete_relationship($form_state['values']["id-$i"]);
-     drupal_set_message("Deleted Relationship");
+    $i = $matches[1];
+    tripal_feature_delete_relationship($form_state['values']["id-$i"]);
+    drupal_set_message(t("Deleted Relationship"));
 
   }
   elseif ($form_state['clicked_button']['#value'] == t('Back to Stock') ) {
     drupal_goto('node/' . $form_state['values']['nid']);
   }
   else {
-    drupal_set_message("Unrecognized Button Pressed", 'error');
+    drupal_set_message(t("Unrecognized Button Pressed"), 'error');
   }
 
 }
@@ -495,7 +493,7 @@ function tripal_feature_delete_relationship($stock_relationship_id) {
 function theme_tripal_feature_edit_ALL_relationships_form($form) {
   $output = '';
 
-  $output .= '<br><fieldset>';
+  $output .= '<br /><fieldset>';
   $output .= '<legend>Edit Already Existing Relationships<span class="form-optional" title="This field is optional">(optional)</span></legend>';
   $output .= '<p>Each relationship for this stock is listed below, one per line. The textboxes indicating '
         .'the subject and object of the relationship can contain the uniquename, name, database '
@@ -511,7 +509,7 @@ function theme_tripal_feature_edit_ALL_relationships_form($form) {
               '<td>' . drupal_render($form["submit-$i"]) . '</td></tr>';
   }
 
-  $output .= '</table><br>';
+  $output .= '</table><br />';
   $output .= drupal_render($form);
   $output .= '</fieldset>';
 
