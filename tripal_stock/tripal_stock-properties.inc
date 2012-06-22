@@ -12,13 +12,13 @@
 function tripal_stock_add_ALL_property_page($node) {
   $output = '';
 
-  $output .= tripal_stock_add_chado_properties_progress('properties') . '<br>';
-  $output .= '<b>All Properties should strictly pertain to THE CURRENT Individual</b><br>';
-  $output .= '<br>';
+  $output .= tripal_stock_add_chado_properties_progress('properties') . '<br />';
+  $output .= '<b>All Properties should strictly pertain to THE CURRENT Individual</b><br />';
+  $output .= '<br />';
   $output .= theme('tripal_stock_properties', $node);
-  $output .= '<br><br>';
+  $output .= '<br /><br />';
   $output .= drupal_get_form('tripal_stock_add_ONE_property_form', $node);
-  $output .= '<br>';
+  $output .= '<br />';
   $output .= drupal_get_form('tripal_stock_add_chado_properties_navigate', 'properties', $node->nid);
   return $output;
 }
@@ -147,7 +147,7 @@ function tripal_stock_add_ONE_property_form_submit($form, &$form_state) {
     );
     tripal_db_set_active($previous_db);
 
-    drupal_set_message("Successfully Added Property");
+    drupal_set_message(t("Successfully Added Property"));
 
     // Set Preferred Synonym
     if ($form_state['values']['preferred_synonym'] == 1) {
@@ -178,9 +178,9 @@ function tripal_stock_edit_ALL_properties_page($node) {
   $output = '';
 
   $output .= drupal_get_form('tripal_stock_edit_ALL_properties_form', $node);
-  $output .= '<br>';
+  $output .= '<br />';
   $output .= drupal_get_form('tripal_stock_add_ONE_property_form', $node);
-  $output .= '<br>';
+  $output .= '<br />';
   $output .= drupal_get_form('tripal_stock_back_to_stock_button', $node->nid);
 
   return $output;
@@ -265,20 +265,20 @@ function tripal_stock_edit_ALL_properties_form($form_state, $node) {
 function tripal_stock_edit_ALL_properties_form_submit($form, &$form_state) {
 
   if ($form_state['clicked_button']['#value'] == t('Update Properties') ) {
-     //Update all
-     for ($i=1; $i<=$form_state['values']['num_properties']; $i++) {
-       tripal_stock_update_property($form_state['values']["id-$i"], $form_state['values']["type-$i"], $form_state['values']["value-$i"], $form_state['values']["preferred-$i"], $form_state['values']["nid"]);
-     }
-     drupal_set_message("Updated all Properties");
-     drupal_goto('node/' . $form_state['values']['nid']);
+    //Update all
+    for ($i=1; $i<=$form_state['values']['num_properties']; $i++) {
+      tripal_stock_update_property($form_state['values']["id-$i"], $form_state['values']["type-$i"], $form_state['values']["value-$i"], $form_state['values']["preferred-$i"], $form_state['values']["nid"]);
+    }
+    drupal_set_message(t("Updated all Properties"));
+    drupal_goto('node/' . $form_state['values']['nid']);
   }
   elseif ( preg_match('/Delete #(\d+)/', $form_state['clicked_button']['#value'], $matches) ) {
-     $i = $matches[1];
-     tripal_stock_delete_property($form_state['values']["id-$i"], $form_state['values']["type-$i"], $form_state['values']["value-$i"]);
-     drupal_set_message("Deleted Property");
+    $i = $matches[1];
+    tripal_stock_delete_property($form_state['values']["id-$i"], $form_state['values']["type-$i"], $form_state['values']["value-$i"]);
+    drupal_set_message(t("Deleted Property"));
   }
   else {
-    drupal_set_message("Unrecognized Button Pressed", 'error');
+    drupal_set_message(t("Unrecognized Button Pressed"), 'error');
   }
 
 
@@ -367,7 +367,7 @@ function tripal_stock_delete_property($stockprop_id) {
 function theme_tripal_stock_edit_ALL_properties_form($form) {
   $output = '';
 
-  $output .= '<br><fieldset>';
+  $output .= '<br /><fieldset>';
   $output .= '<legend>Edit Already Existing Properties<span class="form-optional" title="This field is optional">(optional)</span></legend>';
   $output .= '<p>Below is a list of already existing properties for this stock, one property per line. The type refers to the type of '
          .'property and the value is the value for that property. For example, if this stock has a seed coat colour of green then '
@@ -380,7 +380,7 @@ function theme_tripal_stock_edit_ALL_properties_form($form) {
     $output .= '<tr><td>' . drupal_render($form["num-$i"]) . '</td><td>' . drupal_render($form["type-$i"]) . '</td><td>' . drupal_render($form["value-$i"]) . drupal_render($form["preferred-$i"]) . '</td><td>' . drupal_render($form["submit-$i"]) . '</td></tr>';
   }
 
-  $output .= '</table><br>';
+  $output .= '</table><br />';
   $output .= drupal_render($form);
   $output .= '</fieldset>';
 

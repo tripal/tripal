@@ -12,13 +12,13 @@
 function tripal_stock_add_ALL_relationships_page($node) {
   $output = '';
 
-  $output .= tripal_stock_add_chado_properties_progress('relationships') . '<br>';
-  $output .= '<b>All Relationships should include the CURRENT Individual (' . $node->stock->uniquename . ')</b><br>';
-  $output .= '<br>';
+  $output .= tripal_stock_add_chado_properties_progress('relationships') . '<br />';
+  $output .= '<b>All Relationships should include the CURRENT Individual (' . $node->stock->uniquename . ')</b><br />';
+  $output .= '<br />';
   $output .= theme('tripal_stock_relationships', $node);
-  $output .= '<br><br>';
+  $output .= '<br /><br />';
   $output .= drupal_get_form('tripal_stock_add_ONE_relationship_form', $node);
-  $output .= '<br>';
+  $output .= '<br />';
   $output .= drupal_get_form('tripal_stock_add_chado_properties_navigate', 'relationships', $node->nid);
   return $output;
 }
@@ -115,13 +115,13 @@ function tripal_stock_add_ONE_relationship_form_validate($form, &$form_state) {
       for ($i=0; $i<sizeof($subject_results); $i++) {
       $links[] = l($i+1, "node/" . $subject_results[$i]->nid); }
       $message = "Too many stocks match '" . $form_state['values']['subject_id'] . "'! "
-                  . " Please refine your input to match ONLY ONE stock. <br>"
+                  . " Please refine your input to match ONLY ONE stock. <br />"
      . "To aid in this process, here are the stocks that match your initial input: "
      . join(', ', $links);
       form_set_error('subject_id', $message);
     }
     elseif (sizeof($subject_results) < 1) {
-      form_set_error('subject_id', "There are no stocks matching your input. Please check your input for typos and/or lookup the stock " . l('here', 'stocks'));
+      form_set_error('subject_id', t("There are no stocks matching your input. Please check your input for typos and/or lookup the stock %link", array('%link' => l(t('here'), 'stocks'))));
     }
     elseif (sizeof($subject_results) == 1) {
       $form_state['values']['subject_id'] = $subject_results[0]->stock->stock_id;
@@ -134,13 +134,13 @@ function tripal_stock_add_ONE_relationship_form_validate($form, &$form_state) {
       for ($i=0; $i<sizeof($object_results); $i++) {
       $links[] = l($i+1, "node/" . $object_results[$i]->nid); }
       $message = "Too many stocks match '" . $form_state['values']['object_id'] . "'! "
-                 . "Please refine your input to match ONLY ONE stock. <br>"
+                 . "Please refine your input to match ONLY ONE stock. <br />"
                  . "To aid in this process, here are the stocks that match your initial input: "
                  . join(', ', $links);
       form_set_error('object_id', $message);
     }
     elseif (sizeof($object_results) < 1) {
-      form_set_error('object_id', "There are no stocks matching your input. Please check your input for typos and/or lookup the stock " . l('here', 'stocks'));
+      form_set_error('object_id', t("There are no stocks matching your input. Please check your input for typos and/or lookup the stock %link", array('%link' => l(t('here'), 'stocks'))));
     }
     elseif (sizeof($object_results) == 1) {
       $form_state['values']['object_id'] = $object_results[0]->stock->stock_id;
@@ -187,7 +187,7 @@ function tripal_stock_add_ONE_relationship_form_submit($form, &$form_state) {
     );
     tripal_db_set_active($previous_db);
 
-    drupal_set_message('Successfully Added Relationship.');
+    drupal_set_message(t('Successfully Added Relationship.'));
   } //end of insert relationship
 
 }
@@ -201,9 +201,9 @@ function tripal_stock_edit_ALL_relationships_page($node) {
   $output = '';
 
   $output .= drupal_get_form('tripal_stock_edit_ALL_relationships_form', $node);
-  $output .= '<br>';
+  $output .= '<br />';
   $output .= drupal_get_form('tripal_stock_add_ONE_relationship_form', $node);
-  $output .= '<br>';
+  $output .= '<br />';
   $output .= drupal_get_form('tripal_stock_back_to_stock_button', $node->nid);
 
   return $output;
@@ -343,13 +343,13 @@ function tripal_stock_edit_ALL_relationships_form_validate($form, &$form_state) 
         for ($j=0; $j<sizeof($subject_results); $j++) {
         $links[] = l($j+1, "node/" . $subject_results[$j]->nid); }
         $message = "Too many stocks match '" . $form_state['values']["subject_id-$i"] . "'! "
-                 . "Please refine your input to match ONLY ONE stock. <br>"
+                 . "Please refine your input to match ONLY ONE stock. <br />"
                  . "To aid in this process, here are the stocks that match your initial input: "
                  . join(', ', $links);
         form_set_error("subject_id-$i", $message);
       }
       elseif (sizeof($subject_results) < 1) {
-        form_set_error("subject_id-$i", "There are no stocks matching your input. Please check your input for typos and/or lookup the stock " . l('here', 'stocks'));
+        form_set_error("subject_id-$i", t("There are no stocks matching your input. Please check your input for typos and/or lookup the stock %link", array('%link' => l(t('here'), 'stocks'))));
       }
       elseif (sizeof($subject_results) == 1) {
         $form_state['values']["subject_id-$i"] = $subject_results[0]->stock->stock_id;
@@ -362,13 +362,13 @@ function tripal_stock_edit_ALL_relationships_form_validate($form, &$form_state) 
         for ($j=0; $j<sizeof($object_results); $j++) {
         $links[] = l($j+1, "node/" . $object_results[$j]->nid); }
         $message = "Too many stocks match '" . $form_state['values']["object_id-$i"] . "'! "
-                 . "Please refine your input to match ONLY ONE stock. <br>"
+                 . "Please refine your input to match ONLY ONE stock. <br />"
                  . "To aid in this process, here are the stocks that match your initial input: "
                  . join(', ', $links);
         form_set_error("object_id-$i", $message);
       }
       elseif (sizeof($object_results) < 1) {
-        form_set_error("object_id-$i", "There are no stocks matching your input. Please check your input for typos and/or lookup the stock " . l('here', 'stocks'));
+        form_set_error("object_id-$i", t("There are no stocks matching your input. Please check your input for typos and/or lookup the stock %link", array('%link' => l(t('here'), 'stocks'))));
       }
       elseif (sizeof($object_results) == 1) {
         $form_state['values']["object_id-$i"] = $object_results[0]->stock->stock_id;
@@ -408,33 +408,33 @@ function tripal_stock_edit_ALL_relationships_form_validate($form, &$form_state) 
 function tripal_stock_edit_ALL_relationships_form_submit($form, &$form_state) {
 
   if ($form_state['clicked_button']['#value'] == t('Update Relationships') ) {
-     //Update all
-     for ($i=1; $i<=$form_state['values']['num_relationships']; $i++) {
+    //Update all
+    for ($i=1; $i<=$form_state['values']['num_relationships']; $i++) {
 
-       //process stock textfields
-       tripal_stock_update_relationship(
+      //process stock textfields
+      tripal_stock_update_relationship(
         $form_state['values']["id-$i"],
         $form_state['values']["subject_id-$i"],
         $form_state['values']["type_id-$i"],
         $form_state['values']["object_id-$i"]
       );
-     }
-     drupal_set_message("Updated all Relationships");
-     drupal_goto('node/' . $form_state['values']['nid']);
+    }
+    drupal_set_message(t("Updated all Relationships"));
+    drupal_goto('node/' . $form_state['values']['nid']);
 
   }
   elseif ( preg_match('/Delete #(\d+)/', $form_state['clicked_button']['#value'], $matches) ) {
 
-     $i = $matches[1];
-     tripal_stock_delete_relationship($form_state['values']["id-$i"]);
-     drupal_set_message("Deleted Relationship");
+    $i = $matches[1];
+    tripal_stock_delete_relationship($form_state['values']["id-$i"]);
+    drupal_set_message(t("Deleted Relationship"));
 
   }
   elseif ($form_state['clicked_button']['#value'] == t('Back to Stock') ) {
     drupal_goto('node/' . $form_state['values']['nid']);
   }
   else {
-    drupal_set_message("Unrecognized Button Pressed", 'error');
+    drupal_set_message(t("Unrecognized Button Pressed"), 'error');
   }
 
 }
@@ -482,7 +482,7 @@ function tripal_stock_delete_relationship($stock_relationship_id) {
 function theme_tripal_stock_edit_ALL_relationships_form($form) {
   $output = '';
 
-  $output .= '<br><fieldset>';
+  $output .= '<br /><fieldset>';
   $output .= '<legend>Edit Already Existing Relationships<span class="form-optional" title="This field is optional">(optional)</span></legend>';
   $output .= '<p>Each relationship for this stock is listed below, one per line. The textboxes indicating '
         . 'the subject and object of the relationship can contain the uniquename, name, database '
@@ -498,7 +498,7 @@ function theme_tripal_stock_edit_ALL_relationships_form($form) {
          . drupal_render($form["submit-$i"]) . '</td></tr>';
   }
 
-  $output .= '</table><br>';
+  $output .= '</table><br />';
   $output .= drupal_render($form);
   $output .= '</fieldset>';
 

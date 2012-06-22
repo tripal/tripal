@@ -17,8 +17,8 @@ function tripal_stock_module_description_page() {
 
   $text = '<h3>Tripal Stock Administrative Tools Quick Links</h3>';
     $text .= '<ul>';
-      $text .= '<li>' . l('Configuration', 'admin/tripal/tripal_stock/configuration') . '</li>';
-      $text .= '<li>' . l('Stock Listing', 'stocks') . '</li>';
+      $text .= '<li>' . l(t('Configuration'), 'admin/tripal/tripal_stock/configuration') . '</li>';
+      $text .= '<li>' . l(t('Stock Listing'), 'stocks') . '</li>';
     $text .= '</ul>';
 
   $text .= '<h3>Module Description:</h3>';
@@ -81,8 +81,8 @@ function tripal_stock_module_description_page() {
   $text .= '<p>In order to access a more flexible listing of stocks you must first install the <a href="http://drupal.org/project/views">Drupal Views2 module</a>. You should then be able to access the default views <a href="../build/views/">here</a>. Essentially, Views is a module which allows you to create custom SQL queries completely through the web interface without knowing SQL. Furthermore, it also does some formatting of the results allowing you to display them as HTML lists, tables or grids. You can also expose filters to the user to let them customize the results they see and even implement various sorting.</p>';
   $text .= '<p>To use one of the Default Views simply click "Enable" and then "Edit" to change it to show exactly what you want. To view the current listing simply clikc "View Page" at the top of the Edit user interface. There are a number of good tutorials out there for Views2, any of which can be used to help you create your own custom listings of biological content. (Note: there aren\'t any tutorials specifically for tripal content but any tutorial for Views2 will show you how to use the views interface.</p></li>';
 
-   $text .= '<h3>Page Customizations</h3>';
-   $text .= '<p>There are several ways to customize the look-and-feel for the way Chado data is presented through Tripal.
+  $text .= '<h3>Page Customizations</h3>';
+  $text .= '<p>There are several ways to customize the look-and-feel for the way Chado data is presented through Tripal.
              Below is a description of several methods.  These methods may be used in conjunction with one another to
              provide fine-grained control.
              <ul>
@@ -148,90 +148,90 @@ function tripal_stock_module_description_page() {
 function tripal_stock_admin() {
   $form = array();
 
-   // before proceeding check to see if we have any
-   // currently processing jobs. If so, we don't want
-   // to give the opportunity to sync Stocks
-   $active_jobs = FALSE;
-   if (tripal_get_module_active_jobs('tripal_stock')) {
-      $active_jobs = TRUE;
-   }
-   if ($active_jobs) {
+  // before proceeding check to see if we have any
+  // currently processing jobs. If so, we don't want
+  // to give the opportunity to sync Stocks
+  $active_jobs = FALSE;
+  if (tripal_get_module_active_jobs('tripal_stock')) {
+    $active_jobs = TRUE;
+  }
+  if ($active_jobs) {
 
-   $form['notice'] = array(
-         '#type' => 'fieldset',
-         '#title' => t('Stock Management Temporarily Unavailable')
-      );
+  $form['notice'] = array(
+       '#type' => 'fieldset',
+       '#title' => t('Stock Management Temporarily Unavailable')
+    );
 
-   $form['notice']['message'] = array(
-         '#value' => t("Currently, stock management jobs are waiting or ".
-            "are running. Managemment features have been hidden until these ".
-            "jobs complete.  Please check back later once these jobs have ".
-            "finished.  You can view the status of pending jobs in the Tripal ".
-            "jobs page."),
-      );
+  $form['notice']['message'] = array(
+       '#value' => t("Currently, stock management jobs are waiting or ".
+          "are running. Managemment features have been hidden until these ".
+          "jobs complete.  Please check back later once these jobs have ".
+          "finished.  You can view the status of pending jobs in the Tripal ".
+          "jobs page."),
+    );
 
-   }
-   else {
+  }
+  else {
 
-   // SET Vocabularies -----------------------------------------------------------------------------------------
-   $form['set_cv'] = array(
+    // SET Vocabularies -----------------------------------------------------------------------------------------
+    $form['set_cv'] = array(
       '#type' => 'fieldset',
       '#title' => t('Set Stock Controlled Vocabularies'),
       '#weight' => -10
-   );
+    );
 
-   $form['set_cv']['message'] = array(
+    $form['set_cv']['message'] = array(
          '#value' => t("This setting allows you to set which chado controlled vocabularies (cv)"
                 ." are used. Cvs are used to control user input for the type of stock,"
           ." any properties they enter for a stock & the types of relationships"
           ." between stocks. Only cvs already loaded into chado can be selected here.")
-   );
+    );
 
-   $cv_options = tripal_cv_get_cv_options();
+    $cv_options = tripal_cv_get_cv_options();
 
-   $form['set_cv']['stock_types_cv'] = array(
+    $form['set_cv']['stock_types_cv'] = array(
      '#type' => 'select',
      '#title' => t('Controlled Vocabulary governing Stock Types'),
      '#options' => $cv_options,
      '#default_value' => variable_get('chado_stock_types_cv', 0)
-   );
+    );
 
-   $form['set_cv']['stock_prop_types_cv'] = array(
+    $form['set_cv']['stock_prop_types_cv'] = array(
      '#type' => 'select',
      '#title' => t('Controlled Vocabulary governing Types of Stock Properties'),
      '#description' => t("This cv must contain a cvterm entry where name='synonym'."),
      '#options' => $cv_options,
      '#default_value' => variable_get('chado_stock_prop_types_cv', 0)
-   );
+    );
 
-   $form['set_cv']['stock_relationship_cv'] = array(
+    $form['set_cv']['stock_relationship_cv'] = array(
      '#type' => 'select',
      '#title' => t('Controlled Vocabulary governing Types of Relationsips between Stocks'),
      '#options' => $cv_options,
      '#default_value' => variable_get('chado_stock_relationship_cv', 0)
-   );
+    );
 
-   $form['set_cv']['button'] = array(
+    $form['set_cv']['button'] = array(
       '#type' => 'submit',
       '#value' => t('Set Controlled Vacabularies')
-   );
+    );
 
-   // SYNC STOCKS-----------------------------------------------------------------------------------------------
-   $form['sync'] = array(
+    // SYNC STOCKS-----------------------------------------------------------------------------------------------
+    $form['sync'] = array(
       '#type' => 'fieldset',
       '#title' => t('Sync Stocks'),
       '#weight' => -10
-   );
+    );
 
-   $form['sync']['description'] = array(
+    $form['sync']['description'] = array(
       '#type' => 'item',
       '#value' => t("Click the 'Sync all Germplasm' button to create Drupal ".
          "content for stocks in chado. Depending on the ".
          "number of stocks in the chado database this may take a long ".
          "time to complete. ")
-   );
+    );
 
-   $form['sync']['organisms'] = array(
+    $form['sync']['organisms'] = array(
       '#type' => 'checkboxes',
       '#title' => t('Organisms for which Stocks should be sync\'d'),
       '#description' => t('Only sync\'d Organisms are listed. Leaving an organism unchecked does not delete already sync\'d Stocks.'),
@@ -239,13 +239,13 @@ function tripal_stock_admin() {
       '#required'    => FALSE,
       '#prefix'      => '<div id="lib_boxes">',
       '#suffix'      => '</div>'
-   );
+    );
 
-   $form['sync']['button'] = array(
+    $form['sync']['button'] = array(
       '#type' => 'submit',
       '#value' => t('Sync Stocks')
-   );
-}
+    );
+  }
 
   return system_settings_form($form);
 
@@ -262,31 +262,31 @@ function tripal_stock_admin() {
  * @ingroup tripal_stock
  */
 function tripal_stock_admin_validate($form, &$form_state) {
-   global $user;  // we need access to the user info
-   $job_args = array();
+  global $user;  // we need access to the user info
+  $job_args = array();
 
-   // Sync Stocks
-   if ($form_state['values']['op'] == t('Sync Stocks')) {
-      // Array organism_id => organims common_name
-      //  which only includes those organisms which the user wants to select stocks for
-      $organisms_2b_syncd = $form_state['values']['organisms'];
+  // Sync Stocks
+  if ($form_state['values']['op'] == t('Sync Stocks')) {
+    // Array organism_id => organims common_name
+    //  which only includes those organisms which the user wants to select stocks for
+    $organisms_2b_syncd = $form_state['values']['organisms'];
 
-      //for each organism selected submit job (handled by tripal_stock_sync_stock_set)
-      //  which syncs all stocks with an organism_id equal to the selelcted organism
-      foreach ( $organisms_2b_syncd as $organism_id ) {
-        if ($organism_id != 0) {
-          $job_args[0] = $organism_id;
-          tripal_add_job("Sync Stocks from Organism $organism_id", 'tripal_stock',
-            'tripal_stock_sync_stock_set', $job_args, $user->uid);
-        }
+    //for each organism selected submit job (handled by tripal_stock_sync_stock_set)
+    //  which syncs all stocks with an organism_id equal to the selelcted organism
+    foreach ( $organisms_2b_syncd as $organism_id ) {
+      if ($organism_id != 0) {
+        $job_args[0] = $organism_id;
+        tripal_add_job("Sync Stocks from Organism $organism_id", 'tripal_stock',
+          'tripal_stock_sync_stock_set', $job_args, $user->uid);
       }
     }
+  }
 
-    if ($form_state['values']['op'] == t('Set Controlled Vacabularies')) {
-      variable_set('chado_stock_types_cv', $form_state['values']['stock_types_cv']);
-      variable_set('chado_stock_prop_types_cv', $form_state['values']['stock_prop_types_cv']);
-      variable_set('chado_stock_relationship_cv', $form_state['values']['stock_relationship_cv']);
-    }
+  if ($form_state['values']['op'] == t('Set Controlled Vacabularies')) {
+    variable_set('chado_stock_types_cv', $form_state['values']['stock_types_cv']);
+    variable_set('chado_stock_prop_types_cv', $form_state['values']['stock_prop_types_cv']);
+    variable_set('chado_stock_relationship_cv', $form_state['values']['stock_relationship_cv']);
+  }
 }
 
 /**
@@ -304,7 +304,7 @@ function tripal_stock_admin_validate($form, &$form_state) {
  *
  * @ingroup tripal_stock
  */
- function tripal_stock_sync_stock_set($organism_id, $job_id) {
+function tripal_stock_sync_stock_set($organism_id, $job_id) {
   global $user;
 
   if (!$organism_id) {
@@ -312,86 +312,86 @@ function tripal_stock_admin_validate($form, &$form_state) {
   }
   else {
 
-    // Get list of stocks to sync
-    $previous_db = tripal_db_set_active('chado');
-    $result = db_query(
-       "SELECT stock_id, uniquename, type_id, organism_id FROM {stock} WHERE organism_id=%d",
-       $organism_id
+  // Get list of stocks to sync
+  $previous_db = tripal_db_set_active('chado');
+  $result = db_query(
+     "SELECT stock_id, uniquename, type_id, organism_id FROM {stock} WHERE organism_id=%d",
+      $organism_id
+  );
+  tripal_db_set_active($previous_db);
+
+  $stocks_created_count = 0; //keeps track of total number of stocks successfully created
+  $stocks_attempted = 0;
+  // foreach stock to be sync'd -> create node & add stock_id
+  while ( $r = db_fetch_object($result) ) {
+    // $r is the current stock to be sync'd
+    $stocks_attempted++;
+
+    print 'Processing ' . $r->uniquename . "... ";
+
+    // check not already in drupal
+    $in_drupal_query = db_query(
+      "SELECT * FROM {chado_stock} WHERE stock_id=%d",
+      $r->stock_id
     );
-    tripal_db_set_active($previous_db);
+    if ( !db_fetch_object($in_drupal_query) ) {
 
-    $stocks_created_count = 0; //keeps track of total number of stocks successfully created
-    $stocks_attempted = 0;
-    // foreach stock to be sync'd -> create node & add stock_id
-    while ( $r = db_fetch_object($result) ) {
-      // $r is the current stock to be sync'd
-      $stocks_attempted++;
+      //create new chado_stock node
+      $new_node = new stdClass();
+      $new_node->type = 'chado_stock';
+      $new_node->uid = $user->uid;
+      $new_node->title = $r->uniquename;
+      $new_node->type_id = $r->type_id;
+      $new_node->organism_id = $r->organism_id;
+      $new_node->stock_id = $r->stock_id;
+      $new_node->chado_stock_exists = TRUE;
 
-      print 'Processing ' . $r->uniquename . "... ";
+      //print 'New Node:';
+      //print_r($new_node);
 
-      // check not already in drupal
-      $in_drupal_query = db_query(
-        "SELECT * FROM {chado_stock} WHERE stock_id=%d",
-         $r->stock_id
-      );
-      if ( !db_fetch_object($in_drupal_query) ) {
+      node_validate($new_node);
 
-        //create new chado_stock node
-        $new_node = new stdClass();
-         $new_node->type = 'chado_stock';
-        $new_node->uid = $user->uid;
-         $new_node->title = $r->uniquename;
-         $new_node->type_id = $r->type_id;
-         $new_node->organism_id = $r->organism_id;
-         $new_node->stock_id = $r->stock_id;
-        $new_node->chado_stock_exists = TRUE;
+      if (!form_get_errors()) {
+        //print 'Try to Create Node ';
+        $node = node_submit($new_node);
+        node_save($node);
+        if ($node->nid) {
+          $stocks_created_count++;
 
-         //print 'New Node:';
-         //print_r($new_node);
-
-         node_validate($new_node);
-
-        if (!form_get_errors()) {
-          //print 'Try to Create Node ';
-          $node = node_submit($new_node);
-          node_save($node);
-          if ($node->nid) {
-            $stocks_created_count++;
-
-            //Add stock id to chado_stock table
-            /**
-             db_query(
-               "INSERT INTO chado_stock (stock_id, nid, vid) VALUES (%d, %d, %d)",
-               $r->stock_id,
-               $node->nid,
-               $node->vid
-             );
-             */
-          }
+          //Add stock id to chado_stock table
+          /**
+           db_query(
+             "INSERT INTO chado_stock (stock_id, nid, vid) VALUES (%d, %d, %d)",
+             $r->stock_id,
+             $node->nid,
+             $node->vid
+           );
+           */
         }
-        else {
-          print "Not completed due to errors:\nCreate Stock Form Errors: ";
-           print_r(form_get_errors());
-        }
-         print "Nid=" . $node->nid . "\n";
       }
       else {
-        print "Skipped $r->uniquename because it's already in drupal.\n";
-      } //end of if not already in drupal
-    } //end of while still stocks to be sync'd
+        print "Not completed due to errors:\nCreate Stock Form Errors: ";
+        print_r(form_get_errors());
+      }
+        print "Nid=" . $node->nid . "\n";
+    }
+    else {
+      print "Skipped $r->uniquename because it's already in drupal.\n";
+    } //end of if not already in drupal
+  } //end of while still stocks to be sync'd
   } //end of if organism_id not supplied
 
   if ($stocks_attempted == 0) {
-    print "No stocks retrieved for organism (" . $organism_id . ")\n";
+  print "No stocks retrieved for organism (" . $organism_id . ")\n";
+  return 1;
+  }
+  else {
+  if ($stocks_created_count > 0) {
+    print "$stocks_created_count Stocks Successfully Created\n";
     return 1;
   }
   else {
-    if ($stocks_created_count > 0) {
-      print "$stocks_created_count Stocks Successfully Created\n";
-      return 1;
-    }
-    else {
-      return 0;
-    }
+    return 0;
+  }
   }
 }

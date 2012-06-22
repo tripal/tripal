@@ -35,11 +35,11 @@ function get_max_chado_rank($tablename, $where_options) {
     if (preg_match('/INT/', $val_array['type'])) {
       $where[] = $key . "=" . $val_array['value'];
     }
-     else {
+    else {
       if ($val_array['exact']) {
-      $operator='='; }
+        $operator='='; }
       else { $operator='~'; }
-      $where[] = $key . $operator . "'" . $val_array['value'] . "'";
+        $where[] = $key . $operator . "'" . $val_array['value'] . "'";
     }
   }
 
