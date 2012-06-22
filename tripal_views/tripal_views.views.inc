@@ -204,7 +204,6 @@ function tripal_views_views_pre_render(&$view) {
   // custom form element which adds the file_path variable to the $_GET after the
   // view has populated the $view->exposed_input variable
   unset($view->exposed_input);
-  $query = $view->get_exposed_input();  // retrieves elements in $_GET array
 
   // we want to add to the bottom of the views the form for downloading
   // results in other formats (e.g. Excel, FASTA, CSV, etc.).  The Views Data
@@ -729,6 +728,7 @@ function tripal_views_data_export_download_form(&$form_state, $view, $display_id
       }
 
       $path = $display->display_options['path'];
+      $query = $view->get_exposed_input();  // retrieves elements in $_GET array
       $urls[$display->id]['path'] = $path;
       $urls[$display->id]['query'] = $query;
 
@@ -767,7 +767,6 @@ function tripal_views_data_export_download_form(&$form_state, $view, $display_id
       '#type' => 'submit',
     );
   }
-
   return $form;
 }
 
