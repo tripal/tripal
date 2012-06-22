@@ -71,6 +71,16 @@ require_once "tripal_core.schema.api.inc";
  *  The name of the chado table for inserting
  * @param $values
  *  An associative array containing the values for inserting.
+ * @param $options
+ *  An array of options such as:
+ *    -prepare: TRUE or FALSE. Whether or not to prepare the current statement.
+ *       statement_name must also be supplied.
+ *    -statement_name: the name of the prepared statement to use. If prepare is TRUE,
+ *       this indicates the name of the prepared statement to created; otherwise,
+ *       it indicates the name of the already prepared statement to use.
+ *    -skip_validation: TRUE or FALSE. If TRUE will skip all the validation steps and
+ *       just try to insert as is. This is much faster but results in unhandled
+ *       non user-friendly errors if the insert fails.
  *
  * @return
  *  On success this function returns TRUE. On failure, it returns FALSE.
@@ -121,6 +131,13 @@ function tripal_core_chado_insert($table, $values, $options) {
     $build_sql = TRUE;
   }
 
+  if (array_key_exists('skip_validation', $options)) {
+    $validate = !$options['skip_validation'];
+  }
+  else {
+    $validate = TRUE;
+  }
+
   // get the table description
   $table_desc = module_invoke_all('chado_' . $table . '_schema');
   if (empty($table_desc)) {
@@ -149,48 +166,52 @@ function tripal_core_chado_insert($table, $values, $options) {
     }
   }
 
-  // check for violation of any unique constraints
-  $ukeys = $table_desc['unique keys'];
-  $ukselect_cols = array();
-  $ukselect_vals = array();
-  if ($ukeys) {
-    foreach ($ukeys as $name => $fields) {
-      foreach ($fields as $index => $field) {
-        // build the arrays for performing a select that will check the contraint
-        array_push($ukselect_cols, $field);
-        $ukselect_vals[$field] = $insert_values[$field];
+  if ($validate) {
+    dpm('validate');
+
+    // check for violation of any unique constraints
+    $ukeys = $table_desc['unique keys'];
+    $ukselect_cols = array();
+    $ukselect_vals = array();
+    if ($ukeys) {
+      foreach ($ukeys as $name => $fields) {
+        foreach ($fields as $index => $field) {
+          // build the arrays for performing a select that will check the contraint
+          array_push($ukselect_cols, $field);
+          $ukselect_vals[$field] = $insert_values[$field];
+        }
+        // now check the constraint
+        if (tripal_core_chado_select($table, $ukselect_cols, $ukselect_vals)) {
+          watchdog('tripal_core', "tripal_core_chado_insert: Cannot insert duplicate record into $table table: " . print_r($values, 1), array(), 'WATCHDOG_ERROR');
+          return FALSE;
+        }
       }
-      // now check the constraint
-      if (tripal_core_chado_select($table, $ukselect_cols, $ukselect_vals)) {
-        watchdog('tripal_core', "tripal_core_chado_insert: Cannot insert duplicate record into $table table: " . print_r($values, 1), array(), 'WATCHDOG_ERROR');
+    }
+
+    // if trying to insert a field that is the primary key, make sure it also is unique
+    $pkey = $table_desc['primary key'][0];
+    if ($insert_values[$pkey]) {
+      if (tripal_core_chado_select($table, array($pkey), array($pkey => $insert_values[$pkey]))) {
+        watchdog('tripal_core', "tripal_core_chado_insert: Cannot insert duplicate primary key into $table table: " . print_r($values, 1), array(), 'WATCHDOG_ERROR');
         return FALSE;
       }
     }
-  }
 
-  // if trying to insert a field that is the primary key, make sure it also is unique
-  $pkey = $table_desc['primary key'][0];
-  if ($insert_values[$pkey]) {
-    if (tripal_core_chado_select($table, array($pkey), array($pkey => $insert_values[$pkey]))) {
-      watchdog('tripal_core', "tripal_core_chado_insert: Cannot insert duplicate primary key into $table table: " . print_r($values, 1), array(), 'WATCHDOG_ERROR');
-      return FALSE;
+    // make sure required fields have a value
+    $fields = $table_desc['fields'];
+    if (!is_array($fields)) {
+      $fields = array();
+      watchdog('tripal_core', "tripal_core_chado_insert: %table not defined in tripal schema api", array('%table' => $table), 'WATCHDOG WARNING');
     }
-  }
-
-  // make sure required fields have a value
-  $fields = $table_desc['fields'];
-  if (!is_array($fields)) {
-    $fields = array();
-    watchdog('tripal_core', "tripal_core_chado_insert: %table not defined in tripal schema api", array('%table' => $table), 'WATCHDOG WARNING');
-  }
-  foreach ($fields as $field => $def) {
-    // a field is considered missing if it cannot be NULL and there is no default
-    // value for it or it is of type 'serial'
-    if ($def['not NULL'] == 1 and !array_key_exists($field, $insert_values) and !isset($def['default']) and strcmp($def['type'], serial) != 0) {
-      watchdog('tripal_core', "tripal_core_chado_insert: Field $table.$field cannot be NULL: " . print_r($values, 1), array(), 'WATCHDOG_ERROR');
-      return FALSE;
+    foreach ($fields as $field => $def) {
+      // a field is considered missing if it cannot be NULL and there is no default
+      // value for it or it is of type 'serial'
+      if ($def['not NULL'] == 1 and !array_key_exists($field, $insert_values) and !isset($def['default']) and strcmp($def['type'], serial) != 0) {
+        watchdog('tripal_core', "tripal_core_chado_insert: Field $table.$field cannot be NULL: " . print_r($values, 1), array(), 'WATCHDOG_ERROR');
+        return FALSE;
+      }
     }
-  }
+  } //end of validation
 
   // Now build the insert SQL statement
   $ifields = array(); //contains the names of the fields
