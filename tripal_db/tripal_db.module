@@ -188,7 +188,7 @@ function tripal_db_select_form() {
  */
 function tripal_ajax_db_edit() {
   // get the database id, build the form and then return the JSON object
-  $dbid = $_POST['dbid'];
+  $dbid = filter_xss($_POST['dbid']);
   $form = drupal_get_form('tripal_db_form', $dbid);
   drupal_json(array('status' => TRUE, 'data' => $form));
 }
@@ -364,4 +364,3 @@ function tripal_db_form_submit($form, &$form_state) {
 
   return '';
 }
-
