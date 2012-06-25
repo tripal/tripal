@@ -98,7 +98,22 @@ function tripal_bulk_loader_configuration_form($form_state = NULL) {
     '#default_value' => variable_get('tripal_bulk_loader_transactions','row')
   );
 
-  $form['submit1'] = array(
+  $form['speed']['lock'] = array(
+    '#type' => 'radios',
+    '#title' => t('Lock Type'),
+    '#description' => t('The type of lock used by the bulk loading jobs. The lock is '
+      .'acquired at the beginning of the job and kept till the end. A lock of the type '
+      .'selected will be acquired for every table being inserted into.'),
+    '#options' => array(
+      'ROW EXCLUSIVE' => t('ROW EXCLUSIVE: The default lock type for insert queries.'),
+      'EXCLUSIVE' => t('EXCLUSIVE: Only Select Queries can access the table.'),
+      'ACCESS EXCLUSIVE' => t('ACCESS EXCLUSIVE: No other queries can access the table.'),
+    ),
+    '#default_value' => variable_get('tripal_bulk_loader_lock', 'ROW EXCLUSIVE'),
+  );
+
+
+ $form['submit1'] = array(
     '#type' => 'submit',
     '#value' => t('Save')
   );
@@ -115,6 +130,7 @@ function tripal_bulk_loader_configuration_form_submit($form, $form_state) {
   variable_set('tripal_bulk_loader_disable_triggers', $form_state['values']['disable_triggers']);
   variable_set('tripal_bulk_loader_skip_validation', $form_state['values']['no_validate']);
   variable_set('tripal_bulk_loader_transactions',$form_state['values']['transactions']);
+  variable_set('tripal_bulk_loader_lock', $form_state['values']['lock']);
 
 }
 

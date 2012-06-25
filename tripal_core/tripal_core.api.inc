@@ -197,12 +197,11 @@ function tripal_core_chado_insert($table, $values, $options) {
     }
 
     // make sure required fields have a value
-    $fields = $table_desc['fields'];
-    if (!is_array($fields)) {
-      $fields = array();
+    if (!is_array($table_desc['fields'])) {
+      $table_desc['fields'] = array();
       watchdog('tripal_core', "tripal_core_chado_insert: %table not defined in tripal schema api", array('%table' => $table), 'WATCHDOG WARNING');
     }
-    foreach ($fields as $field => $def) {
+    foreach ($table_desc['fields'] as $field => $def) {
       // a field is considered missing if it cannot be NULL and there is no default
       // value for it or it is of type 'serial'
       if ($def['not NULL'] == 1 and !array_key_exists($field, $insert_values) and !isset($def['default']) and strcmp($def['type'], serial) != 0) {
@@ -228,8 +227,9 @@ function tripal_core_chado_insert($table, $values, $options) {
       $itypes[] = "NULL";
       $idatatypes[] = "NULL";
     }
-    elseif(strcmp($fields[$field]['type'],'serial')==0 or
-      strcmp($fields[$field]['type'],'int')==0){
+    elseif(strcasecmp($table_desc['fields'][$field]['type'],'serial')==0 or
+      strcasecmp($table_desc['fields'][$field]['type'],'int')==0 or
+      strcasecmp($table_desc['fields'][$field]['type'],'integer')==0){
       $itypes[] = "%d";
       $idatatypes[] = 'int';
     }
@@ -1923,7 +1923,7 @@ function tripal_db_persistent_chado() {
 /**
  * Release a persistent chado connection
  */
-function tripal_db_release_persistent_chado () {
+function tripal_db_release_persistent_chado() {
   variable_del('tripal_perisistent_chado');
 }
 

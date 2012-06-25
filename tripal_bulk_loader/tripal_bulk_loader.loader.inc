@@ -142,7 +142,11 @@ function tripal_bulk_loader_load_data($nid) {
       continue;
     }
 
-    $tables[$record_array['table']] = $record_array['table'];
+    // Add tables being inserted into to a list to be treated differently
+    // this is used to acquire locks on these tables
+    if (preg_match('/insert/',$record_array['mode'])) {
+      $tables[$record_array['table']] = $record_array['table'];
+    }
 
     foreach ($record_array['fields'] as $field_index => $field_array) {
 
@@ -273,6 +277,12 @@ function tripal_bulk_loader_load_data($nid) {
     if ($transactions AND variable_get('tripal_bulk_loader_disable_triggers', TRUE)) {
       $triggers_disabled = TRUE;
       chado_query("SET CONSTRAINTS ALL DEFERRED");
+    }
+
+    // Acquire Locks
+    $lockmode = variable_get('tripal_bulk_loader_lock', 'ROW EXCLUSIVE');
+    foreach ($tables as $table) {
+      chado_query("LOCK TABLE %s IN %s MODE", $table, $lockmode);
     }
 
     while (!feof($file_handle)) {
