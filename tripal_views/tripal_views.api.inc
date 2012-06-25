@@ -134,7 +134,7 @@ function tripal_views_integration_add_entry($defn_array) {
     'name' => $defn_array['name'],
     'comment' => $defn_array['description'],
     'priority' => $defn_array['priority'],
-    'base_table' => ($defn_array['base_table']) ? 1 : 0,
+    'base_table' => $defn_array['base_table'],
   );
   if ($defn_array['type'] == 'mview') {
       $mview = db_fetch_object(db_query("SELECT mview_id FROM {tripal_mviews} WHERE mv_table='%s'", $defn_array['table']));
@@ -152,6 +152,16 @@ function tripal_views_integration_add_entry($defn_array) {
   }
 
   if ($status) {
+
+    // Need to update the tripal_views record so base_table can be false
+    // this is a fix because drupal_write_record() puts in defaults if !isset()
+    // and a variable is considered not set if its null!
+    db_query(
+      "UPDATE {tripal_views} SET base_table=%d WHERE table_name='%s' AND priority=%d",
+      $defn_array['base_table'],
+      $defn_array['table'],
+      $defn_array['priority']
+    );
 
     // Insert Field Definitions
     foreach ($defn_array['fields'] as $field) {

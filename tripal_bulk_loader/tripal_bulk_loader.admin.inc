@@ -64,7 +64,56 @@ function tripal_bulk_loader_configuration_form($form_state = NULL) {
     '#default_value' => variable_get('tripal_bulk_loader_prepare', TRUE),
   );
 
-  $form['submit1'] = array(
+  $form['speed']['disable_triggers'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Delay Constraint Checking during loading job.'),
+    '#description' => t('This delays the constraint checking until the end of the
+    loading proccess.'),
+    '#default_value' => variable_get('tripal_bulk_loader_disable_triggers', TRUE),
+  );
+
+  $form['speed']['no_validate'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Skip Validation at the Tripal Core API level'),
+    '#description' => t('If an error is encountered, the Tripal core API will try
+      to provide informative error messages. With this turned off, you will not benifit
+      from these more informative error messages; however, your job will load faster
+      since it doesn\'t have to do the additional checking before inserting.'),
+    '#default_value' => variable_get('tripal_bulk_loader_skip_validation', FALSE),
+  );
+
+  $form['speed']['transactions'] = array(
+    '#type' => 'radios',
+    '#title' => t('Transaction Rollback when an error is encountered'),
+    '#options' => array(
+      'all' => t('Rollback the last constant set.'
+        .'<div class="description"If you added more then one constant set then the
+        successfully loaded constant sets will not be rolled back. However, once an error
+        is encountered no further constant sets will be loaded either.</div>'),
+      'row' => t('Only Rollback the last line of the input file.'
+        .'<div class="description">This option may allow you to restart the job after
+        fixing the error (manual intervention needed).</div>'),
+      'none' => t('Do not use transactions<div class="description">This is not recommended.</div>')
+    ),
+    '#default_value' => variable_get('tripal_bulk_loader_transactions','row')
+  );
+
+  $form['speed']['lock'] = array(
+    '#type' => 'radios',
+    '#title' => t('Lock Type'),
+    '#description' => t('The type of lock used by the bulk loading jobs. The lock is '
+      .'acquired at the beginning of the job and kept till the end. A lock of the type '
+      .'selected will be acquired for every table being inserted into.'),
+    '#options' => array(
+      'ROW EXCLUSIVE' => t('ROW EXCLUSIVE: The default lock type for insert queries.'),
+      'EXCLUSIVE' => t('EXCLUSIVE: Only Select Queries can access the table.'),
+      'ACCESS EXCLUSIVE' => t('ACCESS EXCLUSIVE: No other queries can access the table.'),
+    ),
+    '#default_value' => variable_get('tripal_bulk_loader_lock', 'ROW EXCLUSIVE'),
+  );
+
+
+ $form['submit1'] = array(
     '#type' => 'submit',
     '#value' => t('Save')
   );
@@ -78,6 +127,11 @@ function tripal_bulk_loader_configuration_form($form_state = NULL) {
 function tripal_bulk_loader_configuration_form_submit($form, $form_state) {
 
   variable_set('tripal_bulk_loader_prepare', $form_state['values']['prepare']);
+  variable_set('tripal_bulk_loader_disable_triggers', $form_state['values']['disable_triggers']);
+  variable_set('tripal_bulk_loader_skip_validation', $form_state['values']['no_validate']);
+  variable_set('tripal_bulk_loader_transactions',$form_state['values']['transactions']);
+  variable_set('tripal_bulk_loader_lock', $form_state['values']['lock']);
+
 }
 
 //////////////////////////////////////////////////////////////////////////////////////
