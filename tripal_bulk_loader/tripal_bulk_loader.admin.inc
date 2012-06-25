@@ -72,6 +72,16 @@ function tripal_bulk_loader_configuration_form($form_state = NULL) {
     '#default_value' => variable_get('tripal_bulk_loader_disable_triggers', TRUE),
   );
 
+  $form['speed']['no_validate'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Skip Validation at the Tripal Core API level'),
+    '#description' => t('If an error is encountered, the Tripal core API will try
+      to provide informative error messages. With this turned off, you will not benifit
+      from these more informative error messages; however, your job will load faster
+      since it doesn\'t have to do the additional checking before inserting.'),
+    '#default_value' => variable_get('tripal_bulk_loader_skip_validation', FALSE),
+  );
+
   $form['speed']['transactions'] = array(
     '#type' => 'radios',
     '#title' => t('Transaction Rollback when an error is encountered'),
@@ -103,6 +113,7 @@ function tripal_bulk_loader_configuration_form_submit($form, $form_state) {
 
   variable_set('tripal_bulk_loader_prepare', $form_state['values']['prepare']);
   variable_set('tripal_bulk_loader_disable_triggers', $form_state['values']['disable_triggers']);
+  variable_set('tripal_bulk_loader_skip_validation', $form_state['values']['no_validate']);
   variable_set('tripal_bulk_loader_transactions',$form_state['values']['transactions']);
 
 }

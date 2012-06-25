@@ -474,7 +474,7 @@ function process_data_array_for_line($priority, &$data, &$default_data, $field2c
 
 
   if (!preg_match('/select/', $table_data['mode'])) {
-    //watchdog('T_bulk_loader',$header.': Inserting:'.print_r($values, TRUE), array(), WATCHDOG_NOTICE);
+    // Use prepared statement?
     if (variable_get('tripal_bulk_loader_prepare',TRUE)) {
       $options = array('statement_name' => 'record_'.$priority);
       if ($line_num == 1 && $group_index == 1) {
@@ -483,6 +483,11 @@ function process_data_array_for_line($priority, &$data, &$default_data, $field2c
     }
     else {
       $options = array();
+    }
+
+    // Skip tripal_core_chado_insert() built-in validation?
+    if (variable_get('tripal_bulk_loader_skip_validation', FALSE)) {
+      $options['skip_validation'] = TRUE;
     }
 
     $record = tripal_core_chado_insert($table, $values, $options);
