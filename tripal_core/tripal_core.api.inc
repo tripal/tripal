@@ -71,6 +71,16 @@ require_once "tripal_core.schema.api.inc";
  *  The name of the chado table for inserting
  * @param $values
  *  An associative array containing the values for inserting.
+ * @param $options
+ *  An array of options such as:
+ *    -prepare: TRUE or FALSE. Whether or not to prepare the current statement.
+ *       statement_name must also be supplied.
+ *    -statement_name: the name of the prepared statement to use. If prepare is TRUE,
+ *       this indicates the name of the prepared statement to created; otherwise,
+ *       it indicates the name of the already prepared statement to use.
+ *    -skip_validation: TRUE or FALSE. If TRUE will skip all the validation steps and
+ *       just try to insert as is. This is much faster but results in unhandled
+ *       non user-friendly errors if the insert fails.
  *
  * @return
  *  On success this function returns TRUE. On failure, it returns FALSE.
@@ -102,13 +112,14 @@ require_once "tripal_core.schema.api.inc";
  *
  * @ingroup tripal_chado_api
  */
-function tripal_core_chado_insert($table, $values) {
+function tripal_core_chado_insert($table, $values, $options) {
   $insert_values = array();
   $chado_db = tripal_db_persistent_chado();
 
   // Determine plan of action
   if ($options['statement_name']) {
     $prepared = TRUE;
+    $connection = tripal_db_persistent_chado();
     if ($options['prepare']) {
       $build_sql = TRUE;
     }
@@ -118,6 +129,13 @@ function tripal_core_chado_insert($table, $values) {
   }
   else {
     $build_sql = TRUE;
+  }
+
+  if (array_key_exists('skip_validation', $options)) {
+    $validate = !$options['skip_validation'];
+  }
+  else {
+    $validate = TRUE;
   }
 
   // get the table description
@@ -148,48 +166,50 @@ function tripal_core_chado_insert($table, $values) {
     }
   }
 
-  // check for violation of any unique constraints
-  $ukeys = $table_desc['unique keys'];
-  $ukselect_cols = array();
-  $ukselect_vals = array();
-  if ($ukeys) {
-    foreach ($ukeys as $name => $fields) {
-      foreach ($fields as $index => $field) {
-        // build the arrays for performing a select that will check the contraint
-        array_push($ukselect_cols, $field);
-        $ukselect_vals[$field] = $insert_values[$field];
+  if ($validate) {
+
+    // check for violation of any unique constraints
+    $ukeys = $table_desc['unique keys'];
+    $ukselect_cols = array();
+    $ukselect_vals = array();
+    if ($ukeys) {
+      foreach ($ukeys as $name => $fields) {
+        foreach ($fields as $index => $field) {
+          // build the arrays for performing a select that will check the contraint
+          array_push($ukselect_cols, $field);
+          $ukselect_vals[$field] = $insert_values[$field];
+        }
+        // now check the constraint
+        if (tripal_core_chado_select($table, $ukselect_cols, $ukselect_vals)) {
+          watchdog('tripal_core', "tripal_core_chado_insert: Cannot insert duplicate record into $table table: " . print_r($values, 1), array(), 'WATCHDOG_ERROR');
+          return FALSE;
+        }
       }
-      // now check the constraint
-      if (tripal_core_chado_select($table, $ukselect_cols, $ukselect_vals)) {
-        watchdog('tripal_core', "tripal_core_chado_insert: Cannot insert duplicate record into $table table: " . print_r($values, 1), array(), 'WATCHDOG_ERROR');
+    }
+
+    // if trying to insert a field that is the primary key, make sure it also is unique
+    $pkey = $table_desc['primary key'][0];
+    if ($insert_values[$pkey]) {
+      if (tripal_core_chado_select($table, array($pkey), array($pkey => $insert_values[$pkey]))) {
+        watchdog('tripal_core', "tripal_core_chado_insert: Cannot insert duplicate primary key into $table table: " . print_r($values, 1), array(), 'WATCHDOG_ERROR');
         return FALSE;
       }
     }
-  }
 
-  // if trying to insert a field that is the primary key, make sure it also is unique
-  $pkey = $table_desc['primary key'][0];
-  if ($insert_values[$pkey]) {
-    if (tripal_core_chado_select($table, array($pkey), array($pkey => $insert_values[$pkey]))) {
-      watchdog('tripal_core', "tripal_core_chado_insert: Cannot insert duplicate primary key into $table table: " . print_r($values, 1), array(), 'WATCHDOG_ERROR');
-      return FALSE;
+    // make sure required fields have a value
+    if (!is_array($table_desc['fields'])) {
+      $table_desc['fields'] = array();
+      watchdog('tripal_core', "tripal_core_chado_insert: %table not defined in tripal schema api", array('%table' => $table), 'WATCHDOG WARNING');
     }
-  }
-
-  // make sure required fields have a value
-  $fields = $table_desc['fields'];
-  if (!is_array($fields)) {
-    $fields = array();
-    watchdog('tripal_core', "tripal_core_chado_insert: %table not defined in tripal schema api", array('%table' => $table), 'WATCHDOG WARNING');
-  }
-  foreach ($fields as $field => $def) {
-    // a field is considered missing if it cannot be NULL and there is no default
-    // value for it or it is of type 'serial'
-    if ($def['not NULL'] == 1 and !array_key_exists($field, $insert_values) and !isset($def['default']) and strcmp($def['type'], serial) != 0) {
-      watchdog('tripal_core', "tripal_core_chado_insert: Field $table.$field cannot be NULL: " . print_r($values, 1), array(), 'WATCHDOG_ERROR');
-      return FALSE;
+    foreach ($table_desc['fields'] as $field => $def) {
+      // a field is considered missing if it cannot be NULL and there is no default
+      // value for it or it is of type 'serial'
+      if ($def['not NULL'] == 1 and !array_key_exists($field, $insert_values) and !isset($def['default']) and strcmp($def['type'], serial) != 0) {
+        watchdog('tripal_core', "tripal_core_chado_insert: Field $table.$field cannot be NULL: " . print_r($values, 1), array(), 'WATCHDOG_ERROR');
+        return FALSE;
+      }
     }
-  }
+  } //end of validation
 
   // Now build the insert SQL statement
   $ifields = array(); //contains the names of the fields
@@ -207,8 +227,9 @@ function tripal_core_chado_insert($table, $values) {
       $itypes[] = "NULL";
       $idatatypes[] = "NULL";
     }
-    elseif(strcmp($fields[$field]['type'],'serial')==0 or
-      strcmp($fields[$field]['type'],'int')==0){
+    elseif(strcasecmp($table_desc['fields'][$field]['type'],'serial')==0 or
+      strcasecmp($table_desc['fields'][$field]['type'],'int')==0 or
+      strcasecmp($table_desc['fields'][$field]['type'],'integer')==0){
       $itypes[] = "%d";
       $idatatypes[] = 'int';
     }
@@ -222,10 +243,7 @@ function tripal_core_chado_insert($table, $values) {
     // prepare the statement
     if ($prepared) {
       $prepare_sql = "PREPARE " . $options['statement_name'] . " (" . implode(', ', $idatatypes) . ") AS INSERT INTO {$table} (" . implode(", ", $ifields) . ") VALUES (" . implode(", ", $iplaceholders) . ")";
-
-      $previous_db = tripal_db_set_active('chado');
-      $status = db_query($prepare_sql);
-      tripal_db_set_active($previous_db);
+      $status = chado_query($prepare_sql);
 
       if (!$status) {
         watchdog('tripal_core',"tripal_core_chado_insert: not able to prepare '%name' statement for: %sql", array('%name' => $options['statement_name'], '%sql' => $sql), 'WATCHDOG ERROR');
@@ -240,10 +258,8 @@ function tripal_core_chado_insert($table, $values) {
   if ($prepared) {
 
     $sql = "EXECUTE " . $options['statement_name'] . "(" . implode(", ", $itypes) . ")";
+    $result = chado_query($sql, $ivalues);
 
-    $previous_db = tripal_db_set_active('chado');
-    $result = db_query($sql, $ivalues);
-    tripal_db_set_active($previous_db);
     if ($result) {
       // add primary keys to values before return
       $primary_key = array();
@@ -1406,10 +1422,17 @@ function tripal_core_exclude_field_from_feature_by_default() {
 }
 
 /**
- *  Use this function instead of db_query() to avoid switching databases
- *  when making query to the chado database
+ * Use this function instead of db_query() to avoid switching databases
+ * when making query to the chado database
+ *
+ * Will use a chado persistent connection if it already exists
+ *
+ * @param $sql
+ *   The sql statement to execute
  */
 function chado_query($sql) {
+  global $active_db;
+
   $args = func_get_args();
   array_shift($args);
   $sql = db_prefix_tables($sql);
@@ -1418,9 +1441,22 @@ function chado_query($sql) {
   }
   _db_query_callback($args, TRUE);
   $sql = preg_replace_callback(DB_QUERY_REGEXP, '_db_query_callback', $sql);
-  $previous_db = tripal_db_set_active('chado');
-  $results = _db_query($sql);
-  tripal_db_set_active($previous_db);
+
+  // Execute the query on the chado database/schema
+  // Use the persistent chado connection if it already exists
+  $persistent_connection = variable_get('tripal_perisistent_chado',NULL);
+  if ($persistent_connection) {
+    $previously_active_db = $active_db;
+    $active_db = $persistent_connection;
+    $results = _db_query($sql);
+    $active_db = $previously_active_db;
+  }
+  else {
+    $previous_db = tripal_db_set_active('chado');
+    $results = _db_query($sql);
+    tripal_db_set_active($previous_db);
+  }
+
   return $results;
 }
 
@@ -1860,7 +1896,7 @@ function tripal_db_set_active($dbname) {
  * @return
  *   A postgresql connection object which can be used by pg_prepare, pg_execute, etc.
  */
-function tripal_db_persistent_chado () {
+function tripal_db_persistent_chado() {
   global $db_url;
 
   // get connection if it already exists
@@ -1887,10 +1923,55 @@ function tripal_db_persistent_chado () {
 /**
  * Release a persistent chado connection
  */
-function tripal_db_release_persistent_chado () {
+function tripal_db_release_persistent_chado() {
   variable_del('tripal_perisistent_chado');
 }
 
+/**
+ * Start a transaction block. Ensures the use of a persistent chado connection
+ */
+function tripal_db_start_transaction() {
+  $connection = tripal_db_persistent_chado();
+  chado_query("BEGIN");
+}
+
+/**
+ * Set a savepoint to roll the current transaction back to if an error is encountered
+ */
+function tripal_db_set_savepoint_transaction($savepoint, $release = FALSE) {
+  // Postgresql requires a savepoint of the same name to be unset before re-use
+  if ($release) {
+    chado_query("RELEASE SAVEPOINT %s",$savepoint);
+  }
+  chado_query("SAVEPOINT %s",$savepoint);
+}
+
+/**
+ * Commit changes made during the current transaction
+ */
+function tripal_db_commit_transaction() {
+  chado_query("COMMIT");
+}
+
+/**
+ * Rollback changes.
+ *
+ * If $savepoint is NULL then rollback to the beginning of the transaction,
+ * Otherwise, rollback to the point at which the named $savepoint was created
+ *
+ * @param $savepoint
+ *   The name of the saved point in the transaction to rollback to
+ */
+function tripal_db_rollback_transaction($savepoint = NULL) {
+
+  if ($savepoint) {
+    chado_query("ROLLBACK TO SAVEPOINT %s",$savepoint);
+  }
+  else {
+    chado_query("ROLLBACK");
+  }
+
+}
 
 /**
  * Purpose: Get max rank for a given set of criteria
