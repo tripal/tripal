@@ -7,15 +7,15 @@
  */
 
 /**
-  * Implementation of hook_install() .
-  */
+ * Implementation of hook_install().
+ */
 function tripal_stock_install() {
   drupal_install_schema('tripal_stock');
 }
 
 /**
-  * Implementation of hook_uninstall().
-  */
+ * Implementation of hook_uninstall().
+ */
 
 function tripal_stock_uninstall() {
   drupal_uninstall_schema('tripal_stock');
@@ -34,8 +34,8 @@ function tripal_stock_uninstall() {
 }
 
 /**
-  * Implementation of hook_schema().
-  */
+ * Implementation of hook_schema().
+ */
 function tripal_stock_schema() {
   $schema['chado_stock'] = array(
     'fields' => array(
