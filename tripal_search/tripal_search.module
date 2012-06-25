@@ -45,7 +45,7 @@ function tripal_search_form_alter(&$form, $form_state, $form_id) {
           '#value' => "<br /><br /><a id=\"tripal_search_link\" href=\"".
                       url('tripal_search/'. arg(1) .'/'. urlencode(search_get_keys()),
                       array('query' => trim($get)?$get:NULL)) .
-                      "\">Download features (multi-FASTA format)</a><br><br>");
+                      "\">Download features (multi-FASTA format)</a><br /><br />");
 
     }
   }
