@@ -38,7 +38,7 @@ function tripal_genetic_views_data()  {
 
     $tables = array(
       'environment_cvterm',
-      'feautre_genotype',
+      'feature_genotype',
       'phendesc',
       'phenotype_comparison'
     );

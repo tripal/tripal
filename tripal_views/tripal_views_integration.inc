@@ -90,7 +90,7 @@ function tripal_views_integration_setup_list() {
   $rows = array();
 
   // get the list of materialized views
-  $tviews = db_query('SELECT tv.name, tv.table_name, tc.table_id, tv.priority, tv.comment '
+  $tviews = db_query('SELECT tv.setup_id, tv.name, tv.table_name, tc.table_id, tv.priority, tv.comment '
                      .'FROM {tripal_views} tv '
                      .'LEFT JOIN {tripal_custom_tables} tc ON tc.table_name=tv.table_name '
                      .'WHERE tv.mview_id IS NOT NULL '
@@ -107,7 +107,12 @@ function tripal_views_integration_setup_list() {
     );
   }
 
-  $output .= theme('table', $header, $rows);
+  if ($rows) {
+    $output .= theme('table', $header, $rows);
+  }
+  else {
+    $output .= '<p>There are currently no Materialized Views defined.</p>';
+  }
 
   // Now list non-mview custom tables
   $output .= '<br /><h3>Custom Tables</h3>';
@@ -115,7 +120,7 @@ function tripal_views_integration_setup_list() {
   $rows = array();
 
   // get the list of chado tables
-  $tviews = db_query('SELECT tv.name, tv.table_name, tv.priority, tv.comment '
+  $tviews = db_query('SELECT tv.setup_id, tv.name, tv.table_name, tv.priority, tv.comment '
                      .'FROM {tripal_views} tv '
                      .'LEFT JOIN {tripal_custom_tables} tc ON tc.table_name=tv.table_name '
                      .'WHERE mview_id IS NULL AND tc.table_id IS NOT NULL '
@@ -144,7 +149,7 @@ function tripal_views_integration_setup_list() {
   $rows = array();
 
   // get the list of chado tables
-  $tviews = db_query('SELECT tv.name, tv.table_name, tv.priority, tv.comment '
+  $tviews = db_query('SELECT tv.setup_id, tv.name, tv.table_name, tv.priority, tv.comment '
                      .'FROM {tripal_views} tv '
                      .'LEFT JOIN {tripal_custom_tables} tc ON tc.table_name=tv.table_name '
                      .'WHERE mview_id IS NULL AND tc.table_id IS NULL '
