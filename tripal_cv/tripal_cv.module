@@ -404,8 +404,7 @@ function tripal_cv_select_form() {
 function tripal_ajax_cv_edit() {
 
   // get the database id, build the form and then return the JSON object
-  // @coder-ignore: Use $POST as part of AJAX
-  $cvid = $_POST['cvid'];
+  $cvid = filter_xss($_POST['cvid']);
   $form = drupal_get_form('tripal_cv_edit_form', $cvid);
   drupal_json(array('status' => TRUE, 'data' => $form));
 
@@ -811,8 +810,7 @@ function tripal_cv_add_cvterm_callback() {
 
   // Retrieve the form from the cache
   $form_state = array('storage' => NULL);
-  // @coder-ignore: Use $POST as part of AJAX
-  $form_build_id = $_POST['form_build_id'];
+  $form_build_id = filter_xss($_POST['form_build_id']);
   $form = form_get_cache($form_build_id, $form_state);
 
   // Preparing to process the form

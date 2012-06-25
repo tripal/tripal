@@ -5,7 +5,3 @@
 ; This query selects from a non-drupal schema where the database prefixes are not
 ; applied and thus the curcly brackets ({}) are not needed
 tripal_cv.module:1062:sql
-
-; Need to use POST since this is part of a JS callback
-tripal_cv.module:408:security
-tripal_cv.module:815:security
