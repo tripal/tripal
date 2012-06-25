@@ -8,69 +8,69 @@ require_once "tripal_db.api.inc";
  */
 
 /**
-*
-* @ingroup tripal_db
-*/
+ *
+ * @ingroup tripal_db
+ */
 function tripal_db_init() {
 
-   // add the tripal_db JS and CSS
-   drupal_add_css(drupal_get_path('theme', 'tripal') . '/css/tripal_db.css');
-   drupal_add_js(drupal_get_path('theme', 'tripal') . '/js/tripal_db.js');
+  // add the tripal_db JS and CSS
+  drupal_add_css(drupal_get_path('theme', 'tripal') . '/css/tripal_db.css');
+  drupal_add_js(drupal_get_path('theme', 'tripal') . '/js/tripal_db.js');
 }
 /**
-*
-* @ingroup tripal_db
-*/
+ *
+ * @ingroup tripal_db
+ */
 function tripal_db_menu() {
-   $items = array();
+  $items = array();
 
-   $items['admin/tripal/tripal_db'] = array(
-     'title' => 'Databases',
-     'description' => 'Basic Description of Tripal DB Module Functionality',
-     'page callback' => 'tripal_db_module_description_page',
-     'access arguments' => array('administer site configuration'),
-     'type' => MENU_NORMAL_ITEM,
-   );
+  $items['admin/tripal/tripal_db'] = array(
+    'title' => 'Databases',
+    'description' => 'Basic Description of Tripal DB Module Functionality',
+    'page callback' => 'tripal_db_module_description_page',
+    'access arguments' => array('administer site configuration'),
+    'type' => MENU_NORMAL_ITEM,
+  );
 
-   $items['admin/tripal/tripal_db/edit_db'] = array(
-     'title' => 'Update/Delete Database References',
-     'description' => 'Manage Databases ',
-     'page callback' => 'tripal_db_admin_page',
-     'access arguments' => array('administer site configuration'),
-     'type' => MENU_NORMAL_ITEM,
-   );
+  $items['admin/tripal/tripal_db/edit_db'] = array(
+    'title' => 'Update/Delete Database References',
+    'description' => 'Manage Databases ',
+    'page callback' => 'tripal_db_admin_page',
+    'access arguments' => array('administer site configuration'),
+    'type' => MENU_NORMAL_ITEM,
+  );
 
-   $items['admin/tripal/tripal_db/add_db'] = array(
-     'title' => 'Add a Database',
-     'page callback' => 'drupal_get_form',
-     'page arguments' => array('tripal_db_form'),
-     'access arguments' => array('access administration pages'),
-     'type' => MENU_NORMAL_ITEM,
-   );
-   $items['admin/tripal/tripal_db/edit/js'] = array(
-     'title' => 'Edit Databases',
-     'page callback' => 'tripal_ajax_db_edit',
-     'access arguments' => array('access administration pages'),
-     'type' => MENU_CALLBACK,
-   );
+  $items['admin/tripal/tripal_db/add_db'] = array(
+    'title' => 'Add a Database',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_db_form'),
+    'access arguments' => array('access administration pages'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+  $items['admin/tripal/tripal_db/edit/js'] = array(
+    'title' => 'Edit Databases',
+    'page callback' => 'tripal_ajax_db_edit',
+    'access arguments' => array('access administration pages'),
+    'type' => MENU_CALLBACK,
+  );
 
-   return $items;
+  return $items;
 }
 
 /**
-*  Set the permission types that the chado module uses.  Essentially we
-*  want permissionis that protect creation, editing and deleting of chado
-*  data objects
-*
-* @ingroup tripal_db
-*/
+ *  Set the permission types that the chado module uses.  Essentially we
+ *  want permissionis that protect creation, editing and deleting of chado
+ *  data objects
+ *
+ * @ingroup tripal_db
+ */
 function tripal_db_perm() {
-   return array(
-      'access chado_db content',
-      'create chado_db content',
-      'delete chado_db content',
-      'edit chado_db content',
-   );
+  return array(
+    'access chado_db content',
+    'create chado_db content',
+    'delete chado_db content',
+    'edit chado_db content',
+  );
 }
 
 /**
@@ -137,22 +137,22 @@ function tripal_db_module_description_page() {
 }
 
 /**
-*
-*
-* @ingroup tripal_db
-*/
+ *
+ *
+ * @ingroup tripal_db
+ */
 function tripal_db_admin_page() {
-   $add_url = url("admin/tripal/tripal_db/add_db");
-   $output = "<a href=\"$add_url\">Add a new external database</a>";
-   $output .= drupal_get_form('tripal_db_select_form');
-   $output .= '<div id="db-edit-div">Please select a database above to view or edit</div>';
-   return $output;
+  $add_url = url("admin/tripal/tripal_db/add_db");
+  $output = "<a href=\"$add_url\">Add a new external database</a>";
+  $output .= drupal_get_form('tripal_db_select_form');
+  $output .= '<div id="db-edit-div">Please select a database above to view or edit</div>';
+  return $output;
 }
 /**
-*
-*
-* @ingroup tripal_db
-*/
+ *
+ *
+ * @ingroup tripal_db
+ */
 function tripal_db_select_form() {
 
   $previous_db = tripal_db_set_active('chado');  // use chado database
@@ -162,206 +162,206 @@ function tripal_db_select_form() {
   tripal_db_set_active($previous_db); // use drupal database
 
   $dbs = array();
-   $dbs[] = '';
+  $dbs[] = '';
   while ($db = db_fetch_object($results)) {
     $dbs[$db->db_id] = $db->name;
   }
 
   $form['dbid'] = array(
-      '#title' => t('External Database Name'),
-      '#type' => 'select',
-      '#options' => $dbs,
-      '#ahah' => array(
-         'path' => 'admin/tripal/tripal_db/edit/js',
-         'wrapper' => 'db-edit-div',
-         'effect' => 'fade',
-         'event' => 'change',
-         'method' => 'replace',
-      ),
+    '#title' => t('External Database Name'),
+    '#type' => 'select',
+    '#options' => $dbs,
+    '#ahah' => array(
+      'path' => 'admin/tripal/tripal_db/edit/js',
+      'wrapper' => 'db-edit-div',
+      'effect' => 'fade',
+      'event' => 'change',
+      'method' => 'replace',
+    ),
   );
 
-   return $form;
+  return $form;
 }
 /**
-*
-* @ingroup tripal_db
-*/
+ *
+ * @ingroup tripal_db
+ */
 function tripal_ajax_db_edit() {
-   // get the database id, build the form and then return the JSON object
-   $dbid = $_POST['dbid'];
-   $form = drupal_get_form('tripal_db_form', $dbid);
-   drupal_json(array('status' => TRUE, 'data' => $form));
+  // get the database id, build the form and then return the JSON object
+  $dbid = $_POST['dbid'];
+  $form = drupal_get_form('tripal_db_form', $dbid);
+  drupal_json(array('status' => TRUE, 'data' => $form));
 }
 /**
-*
-* @ingroup tripal_db
-*/
+ *
+ * @ingroup tripal_db
+ */
 function tripal_db_form(&$form_state = NULL, $dbid = NULL) {
 
-   // get this requested database
-   if ($dbid) {
-      $sql = "SELECT * FROM {db} WHERE db_id = %d ";
-      $previous_db = tripal_db_set_active('chado');
-      $db = db_fetch_object(db_query($sql, $dbid));
-      tripal_db_set_active($previous_db);
+  // get this requested database
+  if ($dbid) {
+    $sql = "SELECT * FROM {db} WHERE db_id = %d ";
+    $previous_db = tripal_db_set_active('chado');
+    $db = db_fetch_object(db_query($sql, $dbid));
+    tripal_db_set_active($previous_db);
 
 
-      // set the default values.  If there is a value set in the
-      // form_state then let's use that, otherwise, we'll pull
-      // the values from the database
-      $default_db = $form_state['values']['name'];
-      $default_desc = $form_state['values']['description'];
-      $default_url = $form_state['values']['url'];
-      $default_urlprefix = $form_state['values']['urlprefix'];
-      if (!$default_db) {
-         $default_db = $db->name;
-      }
-      if (!$default_desc) {
-         $default_desc = $db->description;
-      }
-      if (!$default_url) {
-         $default_url = $db->url;
-      }
-      if (!$default_urlprefix) {
-         $default_urlprefix = $db->urlprefix;
-      }
-      $action = 'Update';
-   }
-   else {
-      $action = 'Add';
-   }
+    // set the default values.  If there is a value set in the
+    // form_state then let's use that, otherwise, we'll pull
+    // the values from the database
+    $default_db = $form_state['values']['name'];
+    $default_desc = $form_state['values']['description'];
+    $default_url = $form_state['values']['url'];
+    $default_urlprefix = $form_state['values']['urlprefix'];
+    if (!$default_db) {
+      $default_db = $db->name;
+    }
+    if (!$default_desc) {
+      $default_desc = $db->description;
+    }
+    if (!$default_url) {
+      $default_url = $db->url;
+    }
+    if (!$default_urlprefix) {
+      $default_urlprefix = $db->urlprefix;
+    }
+    $action = 'Update';
+  }
+  else {
+    $action = 'Add';
+  }
 
-   $form['dbid'] = array(
-      '#type' => 'hidden',
-      '#value' => $dbid
-   );
+  $form['dbid'] = array(
+    '#type' => 'hidden',
+    '#value' => $dbid
+  );
 
-   $form['name']= array(
-      '#type'          => 'textfield',
-      '#title'         => t("Database Name"),
-      '#description'   => t('Please enter the name for this external database.'),
-      '#required'      => TRUE,
-      '#default_value' => $default_db,
-      '#weight'        => 1
-   );
+  $form['name']= array(
+    '#type'          => 'textfield',
+    '#title'         => t("Database Name"),
+    '#description'   => t('Please enter the name for this external database.'),
+    '#required'      => TRUE,
+    '#default_value' => $default_db,
+    '#weight'        => 1
+  );
 
-   $form['description']= array(
-      '#type'          => 'textarea',
-      '#title'         => t('Description'),
-      '#description'   => t('Please enter a description for this database'),
-      '#default_value' => $default_desc,
-      '#weight'        => 2
-   );
-   $form['url']= array(
-      '#type'          => 'textfield',
-      '#title'         => t('URL'),
-      '#description'   => t('Please enter the web address for this database.'),
-      '#default_value' => $default_url,
-      '#weight'        => 3
-   );
-   $form['urlprefix']= array(
-      '#type'          => 'textfield',
-      '#title'         => t('URL prefix'),
-      '#description'   => t('Tripal can provide links to external databases when accession numbers or unique identifiers are known.  Typically, a database will provide a unique web address for each accession and the accession usually is the last component of the page address.  Please enter the web address, minus the accession number for this database.  When an accession number is present, Tripal will combine this web address with the accession and provide a link to the external site.'),
-      '#default_value' => $default_urlprefix,
-      '#weight'        => 4
-   );
-
-
-   if (strcmp($action, 'Update')==0) {
-      $form['update'] = array(
-        '#type'         => 'submit',
-        '#value'        => t('Update'),
-        '#weight'       => 5,
-        '#executes_submit_callback' => TRUE,
-      );
-      $form['delete'] = array(
-        '#type'         => 'submit',
-        '#value'        => t('Delete'),
-        '#weight'       => 6,
-        '#executes_submit_callback' => TRUE,
-      );
-   }
-   else {
-      $form['add'] = array(
-        '#type'         => 'submit',
-        '#value'        => t('Add'),
-        '#weight'       => 5,
-        '#executes_submit_callback' => TRUE,
-      );
-   }
-   $form['#redirect'] = 'admin/tripal/tripal_db';
+  $form['description']= array(
+    '#type'          => 'textarea',
+    '#title'         => t('Description'),
+    '#description'   => t('Please enter a description for this database'),
+    '#default_value' => $default_desc,
+    '#weight'        => 2
+  );
+  $form['url']= array(
+    '#type'          => 'textfield',
+    '#title'         => t('URL'),
+    '#description'   => t('Please enter the web address for this database.'),
+    '#default_value' => $default_url,
+    '#weight'        => 3
+  );
+  $form['urlprefix']= array(
+    '#type'          => 'textfield',
+    '#title'         => t('URL prefix'),
+    '#description'   => t('Tripal can provide links to external databases when accession numbers or unique identifiers are known.  Typically, a database will provide a unique web address for each accession and the accession usually is the last component of the page address.  Please enter the web address, minus the accession number for this database.  When an accession number is present, Tripal will combine this web address with the accession and provide a link to the external site.'),
+    '#default_value' => $default_urlprefix,
+    '#weight'        => 4
+  );
 
 
-   return $form;
+  if (strcmp($action, 'Update')==0) {
+    $form['update'] = array(
+      '#type'         => 'submit',
+      '#value'        => t('Update'),
+      '#weight'       => 5,
+      '#executes_submit_callback' => TRUE,
+    );
+    $form['delete'] = array(
+      '#type'         => 'submit',
+      '#value'        => t('Delete'),
+      '#weight'       => 6,
+      '#executes_submit_callback' => TRUE,
+    );
+  }
+  else {
+    $form['add'] = array(
+      '#type'         => 'submit',
+      '#value'        => t('Add'),
+      '#weight'       => 5,
+      '#executes_submit_callback' => TRUE,
+    );
+  }
+  $form['#redirect'] = 'admin/tripal/tripal_db';
+
+
+  return $form;
 }
 /**
-*
-* @ingroup tripal_db
-*/
+ *
+ * @ingroup tripal_db
+ */
 function tripal_db_form_submit($form, &$form_state) {
 
-   $name =  $form_state['values']['name'];
-   $desc =  $form_state['values']['description'];
-   $url  =  $form_state['values']['url'];
-   $urlp =  $form_state['values']['urlprefix'];
-   $dbid =  $form_state['values']['dbid'];
-   $op   =  $form_state['values']['op'];
+  $name =  $form_state['values']['name'];
+  $desc =  $form_state['values']['description'];
+  $url  =  $form_state['values']['url'];
+  $urlp =  $form_state['values']['urlprefix'];
+  $dbid =  $form_state['values']['dbid'];
+  $op   =  $form_state['values']['op'];
 
-   if ($dbid) {
-      if (strcmp($op, 'Update')==0) {
-         $sql = "
-            UPDATE {db} SET
-              name = '%s',
-              description = '%s',
-              url = '%s',
-              urlprefix = '%s'
-            WHERE db_id = %d
-         ";
-         $previous_db = tripal_db_set_active('chado');
-         $db = db_query($sql, $name, $desc, $url, $urlp, $dbid);
-         tripal_db_set_active($previous_db);
-         if ($db) {
-           drupal_set_message("External database updated");
-         }
-         else {
-           drupal_set_message("Failed to update external database.");
-         }
-      }
-      if (strcmp($op, 'Delete')==0) {
-         $sql = "
-            DELETE FROM {db}
-            WHERE db_id = %d
-         ";
-         $previous_db = tripal_db_set_active('chado');
-         $db = db_query($sql, $dbid);
-         tripal_db_set_active($previous_db);
-         if ($db) {
-           drupal_set_message("External database deleted");
-         }
-         else {
-           drupal_set_message("Failed to delete external database.");
-         }
-      }
-   }
-   else {
+  if ($dbid) {
+    if (strcmp($op, 'Update')==0) {
       $sql = "
-         INSERT INTO {db}
-          (name,description,url,urlprefix)
-         VALUES
-          ('%s','%s','%s','%s')
+        UPDATE {db} SET
+          name = '%s',
+          description = '%s',
+          url = '%s',
+          urlprefix = '%s'
+        WHERE db_id = %d
       ";
       $previous_db = tripal_db_set_active('chado');
-      $db = db_query($sql, $name, $desc, $url, $urlp);
+      $db = db_query($sql, $name, $desc, $url, $urlp, $dbid);
       tripal_db_set_active($previous_db);
       if ($db) {
-        drupal_set_message("External database added");
+        drupal_set_message(t("External database updated"));
       }
       else {
-        drupal_set_message("Failed to add external database.");
+        drupal_set_message(t("Failed to update external database."));
       }
-   }
+    }
+    if (strcmp($op, 'Delete')==0) {
+      $sql = "
+        DELETE FROM {db}
+        WHERE db_id = %d
+        ";
+      $previous_db = tripal_db_set_active('chado');
+      $db = db_query($sql, $dbid);
+      tripal_db_set_active($previous_db);
+      if ($db) {
+        drupal_set_message(t("External database deleted"));
+      }
+      else {
+        drupal_set_message(t("Failed to delete external database."));
+      }
+    }
+  }
+  else {
+    $sql = "
+          INSERT INTO {db}
+          (name,description,url,urlprefix)
+          VALUES
+          ('%s','%s','%s','%s')
+          ";
+    $previous_db = tripal_db_set_active('chado');
+    $db = db_query($sql, $name, $desc, $url, $urlp);
+    tripal_db_set_active($previous_db);
+    if ($db) {
+      drupal_set_message(t("External database added"));
+    }
+    else {
+      drupal_set_message(t("Failed to add external database."));
+    }
+  }
 
-   return '';
+  return '';
 }
 
