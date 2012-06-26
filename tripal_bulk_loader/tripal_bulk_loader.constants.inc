@@ -509,7 +509,7 @@ function tripal_bulk_loader_edit_constant_set_form_submit($form, $form_state) {
         );
       }
     }
-    drupal_set_message('The constant set was successfully updated.');
+    drupal_set_message(t('The constant set was successfully updated.'));
 
   }
 
@@ -562,7 +562,7 @@ function tripal_bulk_loader_delete_constant_set_form_submit($form, $form_state) 
   $nid = $form_state['values']['nid'];
   if ($nid && $form_state['values']['confirm']) {
     db_query("DELETE FROM {tripal_bulk_loader_constants} WHERE nid=%d AND group_id=%d", $nid, $group_id);
-    drupal_set_message('Constant set successfully deleted.');
+    drupal_set_message(t('Constant set successfully deleted.'));
   }
 
 }

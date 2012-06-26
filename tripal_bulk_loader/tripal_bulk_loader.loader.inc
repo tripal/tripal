@@ -144,7 +144,7 @@ function tripal_bulk_loader_load_data($nid) {
 
     // Add tables being inserted into to a list to be treated differently
     // this is used to acquire locks on these tables
-    if (preg_match('/insert/',$record_array['mode'])) {
+    if (preg_match('/insert/', $record_array['mode'])) {
       $tables[$record_array['table']] = $record_array['table'];
     }
 
@@ -257,7 +257,7 @@ function tripal_bulk_loader_load_data($nid) {
     }
 
     // Start Transaction
-    switch (variable_get('tripal_bulk_loader_transactions','row')) {
+    switch (variable_get('tripal_bulk_loader_transactions', 'row')) {
       case "none":
         break;
       case "all":
@@ -431,9 +431,9 @@ function process_data_array_for_line($priority, &$data, &$default_data, $field2c
       // a field is considered missing if it cannot be null and there is no default
       // value for it or it is of type 'serial'
       if ($def['not null'] == 1 and !array_key_exists($field, $insert_values) and !isset($def['default']) and strcmp($def['type'], serial)!=0) {
-         $msg = 'Line ' . $line_num . ' ' . $table_data['record_id'] . ' (' . $table_data['mode'] . ') Missing Database Required Value: ' . $table . '.' . $field;
-         watchdog('T_bulk_loader', $msg, array(), WATCHDOG_NOTICE);
-         $data[$priority]['error'] = TRUE;
+        $msg = 'Line ' . $line_num . ' ' . $table_data['record_id'] . ' (' . $table_data['mode'] . ') Missing Database Required Value: ' . $table . '.' . $field;
+        watchdog('T_bulk_loader', $msg, array(), WATCHDOG_NOTICE);
+        $data[$priority]['error'] = TRUE;
       }
     }
   } //end of if optional record
@@ -485,8 +485,8 @@ function process_data_array_for_line($priority, &$data, &$default_data, $field2c
 
   if (!preg_match('/select/', $table_data['mode'])) {
     // Use prepared statement?
-    if (variable_get('tripal_bulk_loader_prepare',TRUE)) {
-      $options = array('statement_name' => 'record_'.$priority);
+    if (variable_get('tripal_bulk_loader_prepare', TRUE)) {
+      $options = array('statement_name' => 'record_' . $priority);
       if ($line_num == 1 && $group_index == 1) {
         $options['prepare'] = TRUE;
       }
@@ -635,8 +635,8 @@ function tripal_bulk_loader_regex_tranform_values($values, $table_data, $line) {
 
   foreach ($table_data['regex_transform'] as $field => $regex_array) {
     if (!is_array($regex_array['replace'])) {
-       continue;
-     }
+      continue;
+    }
 
     //print 'Match:'.print_r($regex_array['pattern'],TRUE)."\n";
     //print 'Replace:'.print_r($regex_array['replace'],TRUE)."\n";
@@ -680,8 +680,8 @@ function tripal_bulk_loader_flatten_array($values) {
     if (is_array($v)) {
       $vstr = array();
       foreach ($v as $vk => $vv) {
-        if (strlen($vv) > 20) {
-          $vstr[] = $vk . '=>' . substr($vv, 0, 20) . '...';
+        if (drupal_strlen($vv) > 20) {
+          $vstr[] = $vk . '=>' . drupal_substr($vv, 0, 20) . '...';
         }
         else {
           $vstr[] = $vk . '=>' . $vv;
@@ -689,8 +689,8 @@ function tripal_bulk_loader_flatten_array($values) {
       }
       $v = '{' . implode(',', $vstr) . '}';
     }
-    elseif (strlen($v) > 20) {
-      $v = substr($v, 0, 20) . '...';
+    elseif (drupal_strlen($v) > 20) {
+      $v = drupal_substr($v, 0, 20) . '...';
     }
     $flattened_values[] = $k . '=>' . $v;
   }
