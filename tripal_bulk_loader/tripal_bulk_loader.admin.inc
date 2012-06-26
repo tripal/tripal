@@ -799,7 +799,7 @@ function tripal_bulk_loader_edit_template_record_form(&$form_state = NULL) {
       'select' => 'SELECT: Don\'t insert this record: it\'s used to define a foreign key in another record',
       'insert' => 'INSERT: Insert the record',
       'optional' => 'OPTIONAL: Record will only be inserted if all required data is filled in',
-      'insert_once' => 'INSERT ONCE: Record will be inserted once for the entire spreadsheet',
+      'insert_once' => 'INSERT ONCE: Record will be inserted once for the entire file',
       'insert_unique' => 'INSERT UNIQUE: Only insert record if there isn\'t a record with the same values',
     ),
     '#default_value' => 'insert_unique'
@@ -1048,8 +1048,8 @@ function tripal_bulk_loader_add_template_field_form(&$form_state = NULL) {
     '#type' => 'radios',
     '#title' => t('Type of Field'),
     '#options' => array(
-      'table field' => t('Spreadsheet: Fields which maps to a Spreadsheet Column'),
-      'constant' => t('Constant: Field which remains Constant throughout the Spreadsheet'),
+      'table field' => t('Data: A Field which maps to a column in the supplied file.'),
+      'constant' => t('Constant: Field which remains Constant throughout the file'),
       'foreign key' => t('Foreign Key: Fields which map to a record in another table'),
     ),
     '#required' => TRUE,
@@ -1074,7 +1074,7 @@ function tripal_bulk_loader_add_template_field_form(&$form_state = NULL) {
     '#type' => 'select',
     '#title' => 'Record',
     '#description' => 'This is used to group a set of fields together allowing '
-      .'multiple records to be inserted into the same table per line of the spreadsheet',
+      .'multiple records to be inserted into the same table per line of the file',
     '#options' => $groups,
     '#default_value' => (preg_match('/\w+.*/', $form_state['values']['field_group'])) ? $form_state['values']['field_group'] : 'NONE',
     '#ahah' => array(
@@ -1099,14 +1099,15 @@ function tripal_bulk_loader_add_template_field_form(&$form_state = NULL) {
     '#default_value' => $form_state['values']['field_title'],
   );
 
-  // Spreadsheet column
+  // loading file data column
   $form['add_fields']['columns'] = array(
     '#type' => 'fieldset',
-    '#title' => t('Spreadsheet Column'),
+    '#title' => t('Data File Column'),
     '#collapsible' => TRUE,
     '#collapsed' => ($field_type == 'table field')? FALSE : TRUE,
   );
 
+  /**
   $form['add_fields']['columns']['sheet_name'] = array(
     '#type' => 'textfield',
     '#title' => t('Worksheet'),
@@ -1114,11 +1115,12 @@ function tripal_bulk_loader_add_template_field_form(&$form_state = NULL) {
     '#size' => 5,
     '#default_value' => ($form_state['values']['sheet_name'])? $form_state['values']['sheet_name'] : 'Sheet1',
   );
+  */
 
   $form['add_fields']['columns']['column_number'] = array(
     '#type' => 'textfield',
     '#title' => t('Column'),
-    '#description' => t('Specify the column in the spreadsheet that this field maps to where the first column is 1.'),
+    '#description' => t('Specify the column in the data that this field maps to where the first column is 1.'),
     '#size' => 5,
     '#default_value' => $form_state['values']['column_number'],
   );
@@ -1148,7 +1150,7 @@ function tripal_bulk_loader_add_template_field_form(&$form_state = NULL) {
   $form['add_fields']['constant']['constant_value'] = array(
     '#type' => 'textfield',
     '#title' => t('Constant Value'),
-    '#description' => t('Specify the value you wish this field to have regardless of spreadsheet data.'),
+    '#description' => t('Specify the value you wish this field to have regardless of data file value.'),
     '#default_value' => $form_state['values']['constant_value']
   );
 
@@ -1222,7 +1224,7 @@ function tripal_bulk_loader_add_template_field_form(&$form_state = NULL) {
 
   $form['add_fields']['additional']['regex_transform'] = array(
     '#type' => 'fieldset',
-    '#title' => 'Transform Spreadsheet Value Rules',
+    '#title' => 'Transform Data File Value Rules',
     '#collapsible' => TRUE,
     '#collapsed' => (!$form_state['storage']['regex']['pattern']) ? TRUE : FALSE,
   );
@@ -1230,7 +1232,7 @@ function tripal_bulk_loader_add_template_field_form(&$form_state = NULL) {
   $form['add_fields']['additional']['regex_transform']['regex_description'] = array(
     '#type' => 'item',
     '#value' => 'A transformation rule allows you to transform the original value '
-      .'(usually from a user submitted spreadsheet) into the form you would like it stored '
+      .'(usually from a user submitted data file) into the form you would like it stored '
       .'in the chado database. Each rule consists of a match pattern (a php regular expression '
       .'which determines which replacement patterns are applied and captures regions of the '
       .'original value) and a replacement pattern (a string which may contain capture references '
@@ -1290,7 +1292,7 @@ function tripal_bulk_loader_add_template_field_form(&$form_state = NULL) {
     '#type' => 'textfield',
     '#title' => 'Match Pattern',
     '#description' => 'You can use standard php regular expressions in this field to specify a '
-      .'pattern. Only if this pattern matches the value in the spreadsheet does the replacement '
+      .'pattern. Only if this pattern matches the value in the data file does the replacement '
       .'pattern get applied to the value. To capture a section of your value for use in the '
       .'replacement patten surround with round brackets. For example, <i>GI:(\d+)</i> will match '
       .' NCBI gi numbers and will capture the numerical digits for use in the replacement pattern. '
@@ -1309,8 +1311,8 @@ function tripal_bulk_loader_add_template_field_form(&$form_state = NULL) {
   if ($field_type == 'table field') {
     $tab = '&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp';
     $form['add_fields']['additional']['regex_transform']['new_regex']['replace']['#description'] .= '<p>'
-      .'The following references are also available for spreadsheet fields: <b><#column:<i>number</i>#></b>. '
-      .'This allows you to substitute other spreadsheet values into the current field. For example, '
+      .'The following references are also available for data file fields: <b><#column:<i>number</i>#></b>. '
+      .'This allows you to substitute other data file values into the current field. For example, '
       .'if you had the following line:<br />'
       . $tab . 'SNP' . $tab . '15-Jan-2011' . $tab . '1' . $tab . '54' . $tab . 'Contig34355'
       .'<br /> and your current field is for column #1 and you\'re inserting into the chado field '
@@ -1402,7 +1404,6 @@ function tripal_bulk_loader_add_template_field_form_submit($form, &$form_state) 
           'field' => $form_state['values']['chado_field'],
           'required' => $form_state['values']['required'],
           //'allowed values' => empty by default,
-          'spreadsheet sheet' => $form_state['values']['sheet_name'],
           'spreadsheet column' => $form_state['values']['column_number'],
           'exposed' => $form_state['values']['column_exposed'],
           'exposed_description' => $form_state['values']['column_exposed_desc'],
@@ -1655,8 +1656,8 @@ function tripal_bulk_loader_edit_template_field_form(&$form_state = NULL) {
     '#type' => 'radios',
     '#title' => t('Type of Field'),
     '#options' => array(
-      'table field' => t('Spreadsheet: Fields which maps to a Spreadsheet Column'),
-      'constant' => t('Constant: Field which remains Constant throughout the Spreadsheet'),
+      'table field' => t('Data Field: Fields which maps to a data file column'),
+      'constant' => t('Constant: Field which remains Constant throughout the data file'),
       'foreign key' => t('Foreign Key: Fields which map to a record in another table'),
     ),
     '#required' => TRUE,
@@ -1681,7 +1682,7 @@ function tripal_bulk_loader_edit_template_field_form(&$form_state = NULL) {
     '#type' => 'select',
     '#title' => 'Record',
     '#description' => 'This is used to group a set of fields together allowing '
-      .'multiple records to be inserted into the same table per line of the spreadsheet',
+      .'multiple records to be inserted into the same table per line of the data file',
     '#options' => $groups,
     '#default_value' => (preg_match('/(\d+|\w+)/', $form_state['values']['field_group'])) ? $form_state['values']['field_group'] : $priority,
     '#ahah' => array(
@@ -1706,14 +1707,15 @@ function tripal_bulk_loader_edit_template_field_form(&$form_state = NULL) {
     '#default_value' => ($form_state['values']['field_title']) ? $form_state['values']['field_title'] : $template_field['title'],
   );
 
-  // Spreadsheet column
+  // data file column
   $form['edit_fields']['columns'] = array(
     '#type' => 'fieldset',
-    '#title' => t('Spreadsheet Column'),
+    '#title' => t('Data File Column'),
     '#collapsible' => TRUE,
     '#collapsed' => ($field_type == 'table field')? FALSE : TRUE,
   );
 
+  /**
   $form['edit_fields']['columns']['sheet_name'] = array(
     '#type' => 'textfield',
     '#title' => t('Worksheet'),
@@ -1721,11 +1723,12 @@ function tripal_bulk_loader_edit_template_field_form(&$form_state = NULL) {
     '#size' => 5,
     '#default_value' => ($form_state['values']['sheet_name'])? $form_state['values']['sheet_name'] : $template_field['spreadsheet sheet'],
   );
+  */
 
   $form['edit_fields']['columns']['column_number'] = array(
     '#type' => 'textfield',
     '#title' => t('Column'),
-    '#description' => t('Specify the column in the spreadsheet that this field maps to where the first column is 1.'),
+    '#description' => t('Specify the column in the data file that this field maps to where the first column is 1.'),
     '#size' => 5,
     '#default_value' => ($form_state['values']['column_number']) ? $form_state['values']['column_number'] : $template_field['spreadsheet column'],
   );
@@ -1755,7 +1758,7 @@ function tripal_bulk_loader_edit_template_field_form(&$form_state = NULL) {
   $form['edit_fields']['constant']['constant_value'] = array(
     '#type' => 'textfield',
     '#title' => t('Constant Value'),
-    '#description' => t('Specify the value you wish this field to have regardless of spreadsheet data.'),
+    '#description' => t('Specify the value you wish this field to have regardless of data file value.'),
     '#default_value' => ($form_state['values']['constant_value']) ? $form_state['values']['constant_value'] : $template_field['constant value'],
   );
 
@@ -1832,13 +1835,13 @@ function tripal_bulk_loader_edit_template_field_form(&$form_state = NULL) {
 
   $form['edit_fields']['additional']['regex_transform'] = array(
     '#type' => 'fieldset',
-    '#title' => 'Transform Spreadsheet Value Rules',
+    '#title' => 'Transform Data File Value Rules',
     '#collapsible' => TRUE,
     '#collapsed' => (!$template_field['regex']['pattern']) ? TRUE : FALSE,
   );
 
   $transformation_msg = '<p>A transformation rule allows you to transform the original value '
-      .'(usually from a user submitted spreadsheet) into the form you would like it stored '
+      .'(usually from a user submitted data file) into the form you would like it stored '
       .'in the chado database. Each rule consists of a match pattern (a php regular expression '
       .'which determines which replacement patterns are applied and captures regions of the '
       .'original value) and a replacement pattern (a string which may contain capture references '
@@ -1898,7 +1901,7 @@ function tripal_bulk_loader_edit_template_field_form(&$form_state = NULL) {
     '#type' => 'textfield',
     '#title' => 'Match Pattern',
     '#description' => 'You can use standard <b>php regular expressions</b> in this field to specify a '
-      .'pattern. Only if this pattern matches the value in the spreadsheet does the replacement '
+      .'pattern. Only if this pattern matches the value in the data file does the replacement '
       .'pattern get applied to the value. To capture a section of your value for use in the '
       .'replacement patten surround with round brackets. For example, <i>GI:(\d+)</i> will match '
       .' NCBI gi numbers and will capture the numerical digits for use in the replacement pattern. '
@@ -1917,8 +1920,8 @@ function tripal_bulk_loader_edit_template_field_form(&$form_state = NULL) {
   if ($field_type == 'table field') {
     $tab = '&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp';
     $form['edit_fields']['additional']['regex_transform']['new_regex']['replace']['#description'] .= '<p>'
-      .'The following references are also available for spreadsheet fields: <b><#column:<i>number</i>#></b>. '
-      .'This allows you to substitute other spreadsheet values into the current field. For example, '
+      .'The following references are also available for data file fields: <b><#column:<i>number</i>#></b>. '
+      .'This allows you to substitute other data file values into the current field. For example, '
       .'if you had the following line:<br />'
       . $tab . 'SNP' . $tab . '15-Jan-2011' . $tab . '1' . $tab . '54' . $tab . 'Contig34355'
       .'<br /> and your current field is for column #1 and you\'re inserting into the chado field '
@@ -2017,7 +2020,6 @@ function tripal_bulk_loader_edit_template_field_form_submit($form, &$form_state)
           $field['field'] = $form_state['values']['chado_field'];
           $field['required'] = $form_state['values']['required'];
           //$field['allowed values'] = empty by default;
-          $field['spreadsheet sheet'] = $form_state['values']['sheet_name'];
           $field['spreadsheet column'] = $form_state['values']['column_number'];
           $field['exposed'] = $form_state['values']['column_exposed'];
           $field['exposed_description'] = $form_state['values']['column_exposed_desc'];

@@ -402,7 +402,7 @@ function process_data_array_for_line($priority, &$data, &$default_data, $field2c
   if ($table_data['need_further_processing']) {
     $values = tripal_bulk_loader_add_spreadsheetdata_to_values($values, $line, $field2column[$priority]);
     if (!$values) {
-      watchdog('T_bulk_loader', 'Line ' . $line_num . ' Spreadsheet Added:' . print_r($values, TRUE), array(), WATCHDOG_NOTICE);
+      watchdog('T_bulk_loader', 'Line ' . $line_num . ' Data File Added:' . print_r($values, TRUE), array(), WATCHDOG_NOTICE);
     }
 
     $values = tripal_bulk_loader_add_foreignkey_to_values($values, $data, $record2priority);
