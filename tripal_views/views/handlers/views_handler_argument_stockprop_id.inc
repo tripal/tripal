@@ -18,6 +18,7 @@ class views_handler_argument_stockprop_id extends views_handler_argument_string 
 
     //get options & display as options
     $previous_db = tripal_db_set_active('chado');
+    // @coder-ignore: non-drupal schema therefore table prefixing does not apply
     $result = db_query("SELECT cvt.cvterm_id as type_id, cvt.name FROM cvterm cvt WHERE cvt.cvterm_id IN (SELECT type_id FROM stockprop)");
     tripal_db_set_active($previous_db);
     $types = array();

@@ -163,7 +163,7 @@ function tripal_stock_views_pre_render  (&$view) {
   if (preg_match('/stock/', $view->base_table)) {
 
     //-----Node IDs---------------------------------------------
-    // @see file: tripal_core.views.inc function: tripal_core_add_node_ids_to_view (&$view);
+    // @see tripal_core.views.inc, tripal_core_add_node_ids_to_view()
 
     // retrieve the stock_id for each record in the views current page
     $stock_ids = array();

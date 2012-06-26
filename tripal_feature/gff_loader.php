@@ -158,6 +158,8 @@ function tripal_feature_gff3_load_form_validate($form, &$form_state) {
     form_set_error('gff_file', t("Cannot find the file on the system. Check that the file exists or that the web server has permissions to read the file."));
   }
 
+  // @coder-ignore: there are no functions being called here
+  // @todo: break each line of this conditional into separate variables to make more readable
   if (($add_only AND ($update OR $refresh OR $remove)) OR
     ($update AND ($add_only OR $refresh OR $remove)) OR
     ($refresh AND ($update OR $add_only OR $remove)) OR
@@ -237,6 +239,7 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id, $add_on
 
   // get the controlled vocaubulary that we'll be using.  The
   // default is the 'sequence' ontology
+  // @coder-ignore: non-drupal schema thus table prefixing does not apply
   $sql = "SELECT * FROM cv WHERE name = '%s'";
   $cv = db_fetch_object(db_query($sql, 'sequence'));
   if (!$cv) {
@@ -245,6 +248,7 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id, $add_on
   }
 
   // get the organism for which this GFF3 file belongs
+  // @coder-ignore: non-drupal schema thus table prefixing does not apply
   $sql = "SELECT * FROM organism WHERE organism_id = %d";
   $organism = db_fetch_object(db_query($sql, $organism_id));
 
@@ -908,6 +912,7 @@ function tripal_feature_load_gff3_alias($feature, $aliases) {
 
     // check to see if we have a NULL publication in the pub table.  If not,
     // then add one.
+    // @coder-ignore: non-drupal schema thus table prefixing does not apply
     $pubsql = "SELECT * FROM {pub} WHERE uniquename = 'null'";
     $pub = db_fetch_object(db_query($pubsql));
     if (!$pub) {
