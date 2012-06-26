@@ -44,6 +44,12 @@ class views_handler_filter_chado_select_string extends views_handler_filter_stri
       '#default_value' => (isset($this->options['max_length'])) ? $this->options['max_length'] : 40,
 
     );
+    $form['max_length'] = array(
+      '#type' => 'markup',
+      '#value' => t('<strong><font color="red">Note:</font></strong> If another filter exists for the same table then '.
+                    'the values shown in the drop box will only include those from rows that are not filtered.'),
+
+    );
 
   }
 
