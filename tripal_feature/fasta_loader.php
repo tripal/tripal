@@ -651,9 +651,11 @@ function tripal_feature_fasta_loader_handle_feature($name, $uname, $db_id, $acce
 
   // add in the analysis link
   if ($analysis_id) {
+    // @coder-ignore: non-drupal table thus table prefixing doesn't apply
     $analysis_link_sql = 'SELECT * FROM analysisfeature WHERE analysis_id=%d AND feature_id=%d';
     $analysis_link = db_fetch_object(db_query($analysis_link_sql, $analysis_id, $feature->feature_id));
     if (!$analysis_link) {
+      // @coder-ignore: non-drupal table thus table prefixing doesn't apply
       $sql = "INSERT INTO analysisfeature (analysis_id, feature_id) VALUES (%d, %d)";
       $result = db_query($sql, $analysis_id, $feature->feature_id);
       if (!$result) {
@@ -666,9 +668,11 @@ function tripal_feature_fasta_loader_handle_feature($name, $uname, $db_id, $acce
    // now add the database cross reference
   if ($db_id) {
     // check to see if this accession reference exists, if not add it
+    // @coder-ignore: non-drupal table thus table prefixing doesn't apply
     $dbxrefsql = "SELECT * FROM dbxref WHERE db_id = %d and accession = '%s'";
     $dbxref = db_fetch_object(db_query($dbxrefsql, $db_id, $accession));
     if (!$dbxref) {
+      // @coder-ignore: non-drupal table thus table prefixing doesn't apply
       $sql = "INSERT INTO dbxref (db_id,accession) VALUES (%d, '%s')";
       $result = db_query($sql, $db_id, $accession);
       if (!$result) {

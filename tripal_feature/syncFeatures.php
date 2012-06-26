@@ -344,6 +344,7 @@ function tripal_feature_sync_feature($feature_id) {
   // if we have a chado feature, we want to check to see if we have a node
   $cfsql = "SELECT * FROM {chado_feature} ".
           "WHERE feature_id = %d";
+  // @coder-ignore: don't need to use db_rewrite_sql() since need all nodes regardless of access control
   $nsql =  "SELECT * FROM {node} ".
           "WHERE nid = %d";
   $chado_feature = db_fetch_object(db_query($cfsql, $feature->feature_id));
