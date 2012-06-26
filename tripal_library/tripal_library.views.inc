@@ -36,7 +36,7 @@ function tripal_library_views_data()  {
     );
     foreach ($tables as $tablename) {
       if (!tripal_views_is_integrated($tablename, 10)) {
-        $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename,TRUE);
+        $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename, TRUE);
         tripal_views_integration_add_entry($table_integration_array);
       }
     }
@@ -50,7 +50,7 @@ function tripal_library_views_data()  {
     );
     foreach ($tables as $tablename) {
       if (!tripal_views_is_integrated($tablename, 10)) {
-        $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename,FALSE);
+        $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename, FALSE);
         tripal_views_integration_add_entry($table_integration_array);
       }
     }
@@ -69,16 +69,16 @@ function tripal_library_views_data()  {
  * @ingroup tripal_library_views
  */
 function tripal_library_views_handlers() {
- return array(
+  return array(
    'info' => array(
      'path' => drupal_get_path('module', 'tripal_library') . '/views/handlers',
-   ),
+      ),
    'handlers' => array(
      'views_handler_field_computed_library_nid' => array(
        'parent' => 'views_handler_field_numeric',
-     ),
-   ),
- );
+      ),
+    ),
+  );
 }
 
 /**

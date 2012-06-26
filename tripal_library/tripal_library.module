@@ -20,15 +20,15 @@ require('tripal_library.api.inc');
  * @ingroup tripal_library
  */
 function tripal_library_help($path, $arg) {
-   $output = '';
-   switch ($path) {
-      case "admin/help#tripal_library":
-         $output = '<p>'.
-         t("Displays links to nodes created on this date") .
-                   '</p>';
-         break;
-   }
-   return $output;
+  $output = '';
+  switch ($path) {
+    case "admin/help#tripal_library":
+      $output = '<p>'.
+      t("Displays links to nodes created on this date") .
+               '</p>';
+      break;
+  }
+  return $output;
 }
 
 /**
@@ -38,8 +38,8 @@ function tripal_library_help($path, $arg) {
  * @ingroup tripal_library
  */
 function tripal_library_node_info() {
-   $nodes = array();
-   $nodes['chado_library'] = array(
+  $nodes = array();
+  $nodes['chado_library'] = array(
       'name' => t('Library'),
       'module' => 'chado_library',
       'description' => t('A library from the chado database'),
@@ -48,8 +48,8 @@ function tripal_library_node_info() {
       'has_body' => FALSE,
       'body_label' => t('Library Description'),
       'locked' => TRUE
-   );
-   return $nodes;
+  );
+  return $nodes;
 }
 
 /**
@@ -60,12 +60,12 @@ function tripal_library_node_info() {
  * @ingroup tripal_library
  */
 function tripal_library_perm() {
-   return array(
-      'access chado_library content',
-      'create chado_library content',
-      'delete chado_library content',
-      'edit chado_library content',
-   );
+  return array(
+    'access chado_library content',
+    'create chado_library content',
+    'delete chado_library content',
+    'edit chado_library content',
+  );
 }
 /**
  *  Set the permission types that the module uses.
@@ -73,27 +73,27 @@ function tripal_library_perm() {
  * @ingroup tripal_library
  */
 function chado_library_access($op, $node, $account) {
-   if ($op == 'create') {
-      if (!user_access('create chado_library content', $account)) {
-         return FALSE;
-      }
-   }
-   if ($op == 'update') {
-      if (!user_access('edit chado_library content', $account)) {
-         return FALSE;
-      }
-   }
-   if ($op == 'delete') {
-      if (!user_access('delete chado_library content', $account)) {
-         return FALSE;
-      }
-   }
-   if ($op == 'view') {
-      if (!user_access('access chado_library content', $account)) {
-         return FALSE;
-      }
-   }
-   return NULL;
+  if ($op == 'create') {
+    if (!user_access('create chado_library content', $account)) {
+      return FALSE;
+    }
+  }
+  if ($op == 'update') {
+    if (!user_access('edit chado_library content', $account)) {
+      return FALSE;
+    }
+  }
+  if ($op == 'delete') {
+    if (!user_access('delete chado_library content', $account)) {
+      return FALSE;
+    }
+  }
+  if ($op == 'view') {
+    if (!user_access('access chado_library content', $account)) {
+      return FALSE;
+    }
+  }
+  return NULL;
 }
 /**
  * Menu items are automatically added for the new node types created
@@ -103,42 +103,42 @@ function chado_library_access($op, $node, $account) {
  * @ingroup tripal_library
  */
 function tripal_library_menu() {
-   $items = array();
-   // The administative settings menu
-   $items['admin/tripal/tripal_library'] = array(
-      'title' => 'Libraries',
-      'description' => 'Basic Description of Tripal Library Module Functionality',
-      'page callback' => 'tripal_library_module_description_page',
-      'access arguments' => array('access administration pages'),
-      'type' => MENU_NORMAL_ITEM,
-   );
+  $items = array();
+  // The administative settings menu
+  $items['admin/tripal/tripal_library'] = array(
+    'title' => 'Libraries',
+    'description' => 'Basic Description of Tripal Library Module Functionality',
+    'page callback' => 'tripal_library_module_description_page',
+    'access arguments' => array('access administration pages'),
+    'type' => MENU_NORMAL_ITEM,
+  );
 
-   $items['admin/tripal/tripal_library/configuration'] = array(
-      'title' => 'Configuration',
-      'description' => 'Manage integration of Chado libraries including associated features.',
-      'page callback' => 'drupal_get_form',
-      'page arguments' => array('tripal_library_admin'),
-      'access arguments' => array('access administration pages'),
-      'type' => MENU_NORMAL_ITEM,
-   );
+  $items['admin/tripal/tripal_library/configuration'] = array(
+    'title' => 'Configuration',
+    'description' => 'Manage integration of Chado libraries including associated features.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_library_admin'),
+    'access arguments' => array('access administration pages'),
+    'type' => MENU_NORMAL_ITEM,
+  );
 
-   // Synchronizing libraries from Chado to Drupal
-   $items['chado_sync_libraries'] = array(
-      'title' => t('Sync Data'),
-      'page callback' => 'tripal_library_sync_libraries',
-      'access arguments' => array('access administration pages'),
-      'type' => MENU_CALLBACK
-   );
-   // Displaying libraries
-   $items['libraries'] = array(
-      'menu_name' => ('primary-links'), //Enable the 'Library' primary link
-      'title' => t('DNA Libraries'),
-      'page callback' => 'tripal_library_show_libraries',
-      'access arguments' => array('access chado_library content'),
-      'type' => MENU_NORMAL_ITEM
-   );
+  // Synchronizing libraries from Chado to Drupal
+  $items['chado_sync_libraries'] = array(
+    'title' => 'Sync Data',
+    'page callback' => 'tripal_library_sync_libraries',
+    'access arguments' => array('access administration pages'),
+    'type' => MENU_CALLBACK
+  );
+  // Displaying libraries
+  $items['libraries'] = array(
+    'menu_name' => ('primary-links'), //Enable the 'Library' primary link
+    'title' => 'DNA Libraries',
+    'page callback' => 'tripal_library_show_libraries',
+    'access arguments' => array('access chado_library content'),
+    'type' => MENU_NORMAL_ITEM
+  );
 
-   return $items;
+  return $items;
 }
 
 /**
@@ -150,9 +150,9 @@ function tripal_library_menu() {
  * @ingroup tripal_library
  */
 function tripal_library_views_api() {
-   return array(
-      'api' => 2.0,
-   );
+  return array(
+    'api' => 2.0,
+  );
 }
 
 /**
@@ -204,8 +204,8 @@ function tripal_library_module_description_page() {
               on Drupal Views.  <a href="http://drupal.org/project/views">Drupal Views</a> must be installed.</li>';
   $text .= '</ul>';
 
-   $text .= '<h3>Page Customizations</h3>';
-   $text .= '<p>There are several ways to customize the look-and-feel for the way Chado data is presented through Tripal.
+  $text .= '<h3>Page Customizations</h3>';
+  $text .= '<p>There are several ways to customize the look-and-feel for the way Chado data is presented through Tripal.
              Below is a description of several methods.  These methods may be used in conjunction with one another to
              provide fine-grained control.
              <ul>
@@ -265,39 +265,39 @@ function tripal_library_module_description_page() {
  * @ingroup tripal_library
  */
 function tripal_library_admin() {
-   $form = array();
+  $form = array();
 
-   // before proceeding check to see if we have any
-   // currently processing jobs. If so, we don't want
-   // to give the opportunity to sync libraries
-   $active_jobs = FALSE;
-   if (tripal_get_module_active_jobs('tripal_library')) {
-      $active_jobs = TRUE;
-   }
+  // before proceeding check to see if we have any
+  // currently processing jobs. If so, we don't want
+  // to give the opportunity to sync libraries
+  $active_jobs = FALSE;
+  if (tripal_get_module_active_jobs('tripal_library')) {
+    $active_jobs = TRUE;
+  }
 
-   // add the field set for syncing libraries
-   if (!$active_jobs) {
-      get_tripal_library_admin_form_sync_set($form);
-      get_tripal_library_admin_form_reindex_set($form);
-      get_tripal_library_admin_form_taxonomy_set($form);
-      get_tripal_library_admin_form_cleanup_set($form);
-      get_tripal_library_admin_form_menu_set($form);
-   }
-   else {
-      $form['notice'] = array(
-       '#type' => 'fieldset',
-       '#title' => t('Library Management Temporarily Unavailable')
-      );
-      $form['notice']['message'] = array(
-          '#value' => t('Currently, library management jobs are waiting or are running. . Managemment features have been hidden until these jobs complete.  Please check back later once these jobs have finished.  You can view the status of pending jobs in the Tripal jobs page.'),
-      );
-   }
+  // add the field set for syncing libraries
+  if (!$active_jobs) {
+    get_tripal_library_admin_form_sync_set($form);
+    get_tripal_library_admin_form_reindex_set($form);
+    get_tripal_library_admin_form_taxonomy_set($form);
+    get_tripal_library_admin_form_cleanup_set($form);
+    get_tripal_library_admin_form_menu_set($form);
+  }
+  else {
+    $form['notice'] = array(
+     '#type' => 'fieldset',
+     '#title' => t('Library Management Temporarily Unavailable')
+    );
+    $form['notice']['message'] = array(
+        '#value' => t('Currently, library management jobs are waiting or are running. . Managemment features have been hidden until these jobs complete.  Please check back later once these jobs have finished.  You can view the status of pending jobs in the Tripal jobs page.'),
+    );
+  }
 
-   return system_settings_form($form);
+  return system_settings_form($form);
 }
 
 /**
- * HOOK: Implementation of hook_nodeapi()
+ * Implementation of hook_nodeapi().
  * Display library information for associated features or organisms
  * This function also provides contents for indexing
  *
@@ -305,39 +305,39 @@ function tripal_library_admin() {
  */
 function tripal_library_nodeapi(&$node, $op, $teaser, $page) {
 
-   switch ($op) {
-      // Note that this function only adds library view to an organism/feature
-      // node.
-      case 'view':
-         // add the library to the organism/feature search indexing
-         if ($node->build_mode == NODE_BUILD_SEARCH_INDEX) {
-            $node->content['tripal_library_index_version'] = array(
-          '#value' => theme('tripal_library_search_index', $node),
-            );
-         }
-         elseif ($node->build_mode == NODE_BUILD_SEARCH_RESULT) {
-            $node->content['tripal_library_index_version'] = array(
-          '#value' => theme('tripal_library_search_result', $node),
-            );
-         }
-         else {
-            switch ($node->type) {
-               case 'chado_organism':
-                  // Show library if the organism/feature is not at teaser view
-                  $node->content['tripal_organism_libraries'] = array(
-                '#value' => theme('tripal_organism_libraries', $node),
-                  );
-                  break;
-               case 'chado_feature':
-                  // Show library if the organism/feature is not at teaser view
-                  $node->content['tripal_feature_libraries'] = array(
-                '#value' => theme('tripal_feature_libraries', $node),
-                  );
-                  break;
-            }
-         }
-         break;
-   }
+  switch ($op) {
+    // Note that this function only adds library view to an organism/feature
+    // node.
+    case 'view':
+      // add the library to the organism/feature search indexing
+    if ($node->build_mode == NODE_BUILD_SEARCH_INDEX) {
+      $node->content['tripal_library_index_version'] = array(
+    '#value' => theme('tripal_library_search_index', $node),
+      );
+    }
+    elseif ($node->build_mode == NODE_BUILD_SEARCH_RESULT) {
+      $node->content['tripal_library_index_version'] = array(
+    '#value' => theme('tripal_library_search_result', $node),
+      );
+    }
+    else {
+      switch ($node->type) {
+        case 'chado_organism':
+          // Show library if the organism/feature is not at teaser view
+          $node->content['tripal_organism_libraries'] = array(
+        '#value' => theme('tripal_organism_libraries', $node),
+          );
+        break;
+        case 'chado_feature':
+          // Show library if the organism/feature is not at teaser view
+          $node->content['tripal_feature_libraries'] = array(
+        '#value' => theme('tripal_feature_libraries', $node),
+          );
+        break;
+        }
+      }
+    break;
+  }
 }
 
 /**
@@ -348,43 +348,43 @@ function tripal_library_nodeapi(&$node, $op, $teaser, $page) {
  * @ingroup tripal_library
  */
 function tripal_library_theme() {
-   return array(
-      'tripal_library_library_table' => array(
-         'arguments' => array('libraries'),
-      ),
-      'tripal_library_search_index' => array(
-         'arguments' => array('node'),
-      ),
-      'tripal_library_search_result' => array(
-         'arguments' => array('node'),
-      ),
+  return array(
+    'tripal_library_library_table' => array(
+       'arguments' => array('libraries'),
+    ),
+    'tripal_library_search_index' => array(
+       'arguments' => array('node'),
+    ),
+    'tripal_library_search_result' => array(
+       'arguments' => array('node'),
+    ),
 
-      'tripal_organism_libraries' => array(
-         'arguments' => array('node' => NULL),
-         'template' => 'tripal_organism_libraries',
-      ),
-      'tripal_feature_libraries' => array(
-         'arguments' => array('node' => NULL),
-         'template' => 'tripal_feature_libraries',
-      ),
+    'tripal_organism_libraries' => array(
+       'arguments' => array('node' => NULL),
+       'template' => 'tripal_organism_libraries',
+    ),
+    'tripal_feature_libraries' => array(
+       'arguments' => array('node' => NULL),
+       'template' => 'tripal_feature_libraries',
+    ),
 
-      'tripal_library_base' => array(
-         'arguments' => array('node' => NULL),
-         'template' => 'tripal_library_base',
-      ),
-      'tripal_library_synonyms' => array(
-         'arguments' => array('node' => NULL),
-         'template' => 'tripal_library_synonyms',
-      ),
-      'tripal_library_references' => array(
-         'arguments' => array('node' => NULL),
-         'template' => 'tripal_library_references',
-      ),
-      'tripal_library_properties' => array(
-         'arguments' => array('node' => NULL),
-         'template' => 'tripal_library_properties',
-      ),
-   );
+    'tripal_library_base' => array(
+       'arguments' => array('node' => NULL),
+       'template' => 'tripal_library_base',
+    ),
+    'tripal_library_synonyms' => array(
+       'arguments' => array('node' => NULL),
+       'template' => 'tripal_library_synonyms',
+    ),
+    'tripal_library_references' => array(
+       'arguments' => array('node' => NULL),
+       'template' => 'tripal_library_references',
+    ),
+    'tripal_library_properties' => array(
+       'arguments' => array('node' => NULL),
+       'template' => 'tripal_library_properties',
+    ),
+  );
 }
 
 /**
@@ -396,54 +396,54 @@ function tripal_library_theme() {
  */
 function theme_tripal_library_search_index($node) {
 
-   if ($node->type == 'chado_organism') {
-      $content = "";
-      // get the libraries for the organism
-      $previous_db = tripal_db_set_active('chado');
-      $sql = "SELECT * FROM {library} L ".
-              "WHERE L.organism_id = %d";
-      $libraries = array();
-      $results = db_query($sql, $node->organism->organism_id);
-      while ($library = db_fetch_object($results)) {
-         // get the description
-         $sql = "SELECT * FROM {libraryprop} LP ".
-                 "  INNER JOIN CVTerm CVT ON CVT.cvterm_id = LP.type_id ".
-                "WHERE LP.library_id = $library->library_id ".
-                "  AND CVT.name = 'library_description'";
-         $desc = db_fetch_object(db_query($sql));
-         $library->description = $desc->value;
-         $libraries[] = $library;
-      }
-      tripal_db_set_active($previous_db);
-      if (count($libraries) > 0) {
-         foreach ($libraries as $library) {
-            $content .= "$library->name ";
-            $content .= "$library->description";
-         };
-      }
-      // Provide library names to show in a feature page
-   }
-   elseif ($node->type == 'chado_feature') {
-      $content = "";
-      $organism_id = $node->feature->organism_id;
-      $previous_db = tripal_db_set_active('chado');
-      $sql = "SELECT * FROM {library} L ".
-             "  INNER JOIN Library_feature LF ON L.library_id = LF.library_id ".
-              "WHERE LF.feature_id = " . $node->feature->feature_id;
-      $libraries = array();
-      $results = db_query($sql);
-      while ($library = db_fetch_object($results)) {
-         $libraries[] = $library;
-      }
-      tripal_db_set_active($previous_db);
-      if (count($libraries) > 0) {
-         $lib_additions = array();
-         foreach ($libraries as $library) {
-            $content .= $library->name;
-         };
-      }
-   }
-   return $content;
+  if ($node->type == 'chado_organism') {
+    $content = "";
+    // get the libraries for the organism
+    $previous_db = tripal_db_set_active('chado');
+    $sql = "SELECT * FROM {library} L ".
+            "WHERE L.organism_id = %d";
+    $libraries = array();
+    $results = db_query($sql, $node->organism->organism_id);
+    while ($library = db_fetch_object($results)) {
+      // get the description
+      $sql = "SELECT * FROM {libraryprop} LP ".
+             "  INNER JOIN CVTerm CVT ON CVT.cvterm_id = LP.type_id ".
+            "WHERE LP.library_id = $library->library_id ".
+            "  AND CVT.name = 'library_description'";
+      $desc = db_fetch_object(db_query($sql));
+      $library->description = $desc->value;
+      $libraries[] = $library;
+    }
+    tripal_db_set_active($previous_db);
+    if (count($libraries) > 0) {
+      foreach ($libraries as $library) {
+        $content .= "$library->name ";
+        $content .= "$library->description";
+      };
+    }
+    // Provide library names to show in a feature page
+  }
+  elseif ($node->type == 'chado_feature') {
+    $content = "";
+    $organism_id = $node->feature->organism_id;
+    $previous_db = tripal_db_set_active('chado');
+    $sql = "SELECT * FROM {library} L ".
+           "  INNER JOIN Library_feature LF ON L.library_id = LF.library_id ".
+            "WHERE LF.feature_id = " . $node->feature->feature_id;
+    $libraries = array();
+    $results = db_query($sql);
+    while ($library = db_fetch_object($results)) {
+      $libraries[] = $library;
+    }
+    tripal_db_set_active($previous_db);
+    if (count($libraries) > 0) {
+      $lib_additions = array();
+      foreach ($libraries as $library) {
+        $content .= $library->name;
+      };
+    }
+  }
+  return $content;
 }
 
 /**
@@ -452,48 +452,48 @@ function theme_tripal_library_search_index($node) {
  * @ingroup tripal_library
  */
 function theme_tripal_library_node_libraries($node) {
-   $content = "";
+  $content = "";
 
-   // Show library information in a expandable box for a organism page.
-   // Make sure we have $node->organism_id. In the case of creating a new
-   // organism, the organism_id is not created until we save. This will cause
-   // an error when users preview the creation without a $node->organism_id
-   if ($node->type == 'chado_organism' && $node->organism_id) {
-      $box_status = variable_get("tripal_library-box-libraries", "menu_off");
+  // Show library information in a expandable box for a organism page.
+  // Make sure we have $node->organism_id. In the case of creating a new
+  // organism, the organism_id is not created until we save. This will cause
+  // an error when users preview the creation without a $node->organism_id
+  if ($node->type == 'chado_organism' && $node->organism_id) {
+    $box_status = variable_get("tripal_library-box-libraries", "menu_off");
 
-      if (strcmp($box_status, "menu_off")==0) {
-         return get_tripal_library_organism_libraries($node->nid);
+    if (strcmp($box_status, "menu_off")==0) {
+      return get_tripal_library_organism_libraries($node->nid);
+    }
+  }
+  // Provide library names to show in a feature page.
+  // Make sure we have $node->feature->feature_id or there will be an error
+  // when a feature is previewed at its creation
+  elseif ($node->type == 'chado_feature' && $node->feature->feature_id) {
+    $organism_id = $node->feature->organism_id;
+    $previous_db = tripal_db_set_active('chado');
+    $sql = "SELECT * FROM {library} L ".
+           " INNER JOIN Library_feature LF ON L.library_id = LF.library_id ".
+            "WHERE LF.feature_id = " . $node->feature->feature_id;
+    $libraries = array();
+    $results = db_query($sql);
+    while ($library = db_fetch_object($results)) {
+      $libraries[] = $library;
+    }
+    tripal_db_set_active($previous_db);
+  if (count($libraries) > 0) {
+    $lib_additions = array();
+    foreach ($libraries as $library) {
+      $sql = "SELECT nid FROM {chado_library} WHERE library_id = %d";
+      $lib_nid = db_result(db_query($sql, $library->library_id));
+      if ($lib_nid) {
+        $lib_url = url("node/$lib_nid");
       }
-   }
-   // Provide library names to show in a feature page.
-   // Make sure we have $node->feature->feature_id or there will be an error
-   // when a feature is previewed at its creation
-   elseif ($node->type == 'chado_feature' && $node->feature->feature_id) {
-      $organism_id = $node->feature->organism_id;
-      $previous_db = tripal_db_set_active('chado');
-      $sql = "SELECT * FROM {library} L ".
-             " INNER JOIN Library_feature LF ON L.library_id = LF.library_id ".
-              "WHERE LF.feature_id = " . $node->feature->feature_id;
-      $libraries = array();
-      $results = db_query($sql);
-      while ($library = db_fetch_object($results)) {
-         $libraries[] = $library;
-      }
-      tripal_db_set_active($previous_db);
-      if (count($libraries) > 0) {
-         $lib_additions = array();
-         foreach ($libraries as $library) {
-            $sql = "SELECT nid FROM {chado_library} WHERE library_id = %d";
-            $lib_nid = db_result(db_query($sql, $library->library_id));
-            if ($lib_nid) {
-               $lib_url = url("node/$lib_nid");
-            }
-            $lib_additions[$lib_url] = $library->name;
-         };
-         $node->lib_additions = $lib_additions;
-      }
-   }
-   return $content;
+      $lib_additions[$lib_url] = $library->name;
+    };
+    $node->lib_additions = $lib_additions;
+  }
+  }
+  return $content;
 }
 
 /**
@@ -502,33 +502,33 @@ function theme_tripal_library_node_libraries($node) {
  * @ingroup tripal_library
  */
 function get_tripal_library_admin_form_menu_set(&$form) {
-   $form['menu'] = array(
-      '#type' => 'fieldset',
-      '#title' => t('Set Menu')
-   );
+  $form['menu'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Set Menu')
+  );
 
 
-   $types = array(
-      'tripal_organism' => t('Organism Page'),
-      'tripal_feature' => t('Feature Page'),
-   );
+  $types = array(
+    'tripal_organism' => t('Organism Page'),
+    'tripal_feature' => t('Feature Page'),
+  );
 
-   $defaults = variable_get('tripal_lib_menu_node_types', '');
+  $defaults = variable_get('tripal_lib_menu_node_types', '');
 
-   $form['menu']['tripal_lib_menu_node_types'] = array(
-      '#title' => 'Page Types',
-      '#type'  => 'checkboxes',
-      '#description' => t("Libraries can be associated with other data types ".
-         "such as organisms, features, analyses, etc.  The library module ".
-         "will add to the respective pages a box or menu item with a ".
-         "list of libraries associated with the data type.  This list ".
-         "will appear in a box on the page by default.  To place this ".
-         "list as a menu item rather than a box, check the appropriate boxes ".
-         "above"),
-      '#options' => $types,
-      '#default_value' => $defaults,
-      '#weight' => 1,
-   );
+  $form['menu']['tripal_lib_menu_node_types'] = array(
+    '#title' => 'Page Types',
+    '#type'  => 'checkboxes',
+    '#description' => t("Libraries can be associated with other data types ".
+       "such as organisms, features, analyses, etc.  The library module ".
+       "will add to the respective pages a box or menu item with a ".
+       "list of libraries associated with the data type.  This list ".
+       "will appear in a box on the page by default.  To place this ".
+       "list as a menu item rather than a box, check the appropriate boxes ".
+       "above"),
+    '#options' => $types,
+    '#default_value' => $defaults,
+    '#weight' => 1,
+  );
 }
 /**
  *
@@ -536,24 +536,24 @@ function get_tripal_library_admin_form_menu_set(&$form) {
  * @ingroup tripal_library
  */
 function get_tripal_library_admin_form_cleanup_set(&$form) {
-   $form['cleanup'] = array(
-      '#type' => 'fieldset',
-      '#title' => t('Clean Up')
-   );
-   $form['cleanup']['description'] = array(
-       '#type' => 'item',
-       '#value' => t("With Drupal and chado residing in different databases ".
-          "it is possible that nodes in Drupal and libraries in Chado become ".
-          "\"orphaned\".  This can occur if an library node in Drupal is ".
-          "deleted but the corresponding chado library is not and/or vice ".
-          "versa. Click the button below to resolve these discrepancies."),
-       '#weight' => 1,
-   );
-   $form['cleanup']['button'] = array(
-      '#type' => 'submit',
-      '#value' => t('Clean up orphaned libraries'),
-      '#weight' => 2,
-   );
+  $form['cleanup'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Clean Up')
+  );
+  $form['cleanup']['description'] = array(
+     '#type' => 'item',
+     '#value' => t("With Drupal and chado residing in different databases ".
+        "it is possible that nodes in Drupal and libraries in Chado become ".
+        "\"orphaned\".  This can occur if an library node in Drupal is ".
+        "deleted but the corresponding chado library is not and/or vice ".
+        "versa. Click the button below to resolve these discrepancies."),
+     '#weight' => 1,
+  );
+  $form['cleanup']['button'] = array(
+    '#type' => 'submit',
+    '#value' => t('Clean up orphaned libraries'),
+    '#weight' => 2,
+  );
 }
 /**
  *
@@ -561,46 +561,46 @@ function get_tripal_library_admin_form_cleanup_set(&$form) {
  * @ingroup tripal_library
  */
 function get_tripal_library_admin_form_taxonomy_set(&$form) {
-   $form['taxonify'] = array(
-      '#type' => 'fieldset',
-      '#title' => t('Assign Drupal Taxonomy to Library Features')
-   );
+  $form['taxonify'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Assign Drupal Taxonomy to Library Features')
+  );
 
-   // get the list of libraries
-   $sql = "SELECT * FROM {Library} ORDER BY uniquename";
-   $previous_db = tripal_db_set_active('chado');  // use chado database
-   $lib_rset = db_query($sql);
-   tripal_db_set_active($previous_db);  // now use drupal database
+  // get the list of libraries
+  $sql = "SELECT * FROM {Library} ORDER BY uniquename";
+  $previous_db = tripal_db_set_active('chado');  // use chado database
+  $lib_rset = db_query($sql);
+  tripal_db_set_active($previous_db);  // now use drupal database
 
-   // iterate through all of the libraries
-   $lib_boxes = array();
-   while ($library = db_fetch_object($lib_rset)) {
-      $lib_boxes[$library->library_id] = "$library->name";
-   }
+  // iterate through all of the libraries
+  $lib_boxes = array();
+  while ($library = db_fetch_object($lib_rset)) {
+    $lib_boxes[$library->library_id] = "$library->name";
+  }
 
-   $form['taxonify']['description'] = array(
-       '#type' => 'item',
-       '#value' => t("Drupal allows for assignment of \"taxonomy\" or catagorical terms to " .
-                     "nodes. These terms allow for advanced filtering during searching. This option allows ".
-                     "for setting taxonomy only for features that belong to the selected libraries below.  All other features will be unaffected.  To set taxonomy for all features in the site see the Feature Administration page."),
-     '#weight' => 1,
-   );
+  $form['taxonify']['description'] = array(
+     '#type' => 'item',
+     '#value' => t("Drupal allows for assignment of \"taxonomy\" or catagorical terms to " .
+                   "nodes. These terms allow for advanced filtering during searching. This option allows ".
+                   "for setting taxonomy only for features that belong to the selected libraries below.  All other features will be unaffected.  To set taxonomy for all features in the site see the Feature Administration page."),
+   '#weight' => 1,
+  );
 
-   $form['taxonify']['tx-libraries'] = array(
-     '#title'       => t('Libraries'),
-     '#type'        => t('checkboxes'),
-     '#description' => t("Check the libraries whose features you want to reset taxonomy.  Note: this list contains all libraries, even those that may not be synced."),
-     '#required'    => FALSE,
-     '#prefix'      => '<div id="lib_boxes">',
-     '#suffix'      => '</div>',
-     '#options'     => $lib_boxes,
-     '#weight'      => 2
-   );
-   $form['taxonify']['tx-button'] = array(
-      '#type' => 'submit',
-      '#value' => t('Set Feature Taxonomy'),
-      '#weight'      => 3
-   );
+  $form['taxonify']['tx-libraries'] = array(
+   '#title'       => t('Libraries'),
+   '#type'        => t('checkboxes'),
+   '#description' => t("Check the libraries whose features you want to reset taxonomy.  Note: this list contains all libraries, even those that may not be synced."),
+   '#required'    => FALSE,
+   '#prefix'      => '<div id="lib_boxes">',
+   '#suffix'      => '</div>',
+   '#options'     => $lib_boxes,
+   '#weight'      => 2
+  );
+  $form['taxonify']['tx-button'] = array(
+    '#type' => 'submit',
+    '#value' => t('Set Feature Taxonomy'),
+    '#weight'      => 3
+  );
 }
 /**
  *
@@ -608,43 +608,43 @@ function get_tripal_library_admin_form_taxonomy_set(&$form) {
  */
 function get_tripal_library_admin_form_reindex_set(&$form) {
    // define the fieldsets
-   $form['reindex'] = array(
-      '#type' => 'fieldset',
-      '#title' => t('Reindex Library Features')
-   );
+  $form['reindex'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Reindex Library Features')
+  );
 
-   // get the list of libraries
-   $sql = "SELECT * FROM {Library} ORDER BY uniquename";
-   $previous_db = tripal_db_set_active('chado');  // use chado database
-   $lib_rset = db_query($sql);
-   tripal_db_set_active($previous_db);  // now use drupal database
+  // get the list of libraries
+  $sql = "SELECT * FROM {Library} ORDER BY uniquename";
+  $previous_db = tripal_db_set_active('chado');  // use chado database
+  $lib_rset = db_query($sql);
+  tripal_db_set_active($previous_db);  // now use drupal database
 
-   // iterate through all of the libraries
-   $lib_boxes = array();
-   while ($library = db_fetch_object($lib_rset)) {
-      $lib_boxes[$library->library_id] = "$library->name";
-   }
-   $form['reindex']['description'] = array(
-       '#type' => 'item',
-       '#value' => t("This option allows for reindexing of only those features that belong to the selected libraries below. All other features will be unaffected.  To reindex all features in the site see the Feature Administration page."),
-     '#weight' => 1,
-   );
+  // iterate through all of the libraries
+  $lib_boxes = array();
+  while ($library = db_fetch_object($lib_rset)) {
+    $lib_boxes[$library->library_id] = "$library->name";
+  }
+  $form['reindex']['description'] = array(
+     '#type' => 'item',
+     '#value' => t("This option allows for reindexing of only those features that belong to the selected libraries below. All other features will be unaffected.  To reindex all features in the site see the Feature Administration page."),
+   '#weight' => 1,
+  );
 
-   $form['reindex']['re-libraries'] = array(
-     '#title'       => t('Libraries'),
-     '#type'        => t('checkboxes'),
-     '#description' => t("Check the libraries whoee features you want to reindex. Note: this list contains all libraries, even those that may not be synced."),
-     '#required'    => FALSE,
-     '#prefix'      => '<div id="lib_boxes">',
-     '#suffix'      => '</div>',
-     '#options'     => $lib_boxes,
-     '#weight' => 2,
-   );
-   $form['reindex']['re-button'] = array(
-      '#type' => 'submit',
-      '#value' => t('Reindex Features'),
-      '#weight' => 3,
-   );
+  $form['reindex']['re-libraries'] = array(
+   '#title'       => t('Libraries'),
+   '#type'        => t('checkboxes'),
+   '#description' => t("Check the libraries whoee features you want to reindex. Note: this list contains all libraries, even those that may not be synced."),
+   '#required'    => FALSE,
+   '#prefix'      => '<div id="lib_boxes">',
+   '#suffix'      => '</div>',
+   '#options'     => $lib_boxes,
+   '#weight' => 2,
+  );
+  $form['reindex']['re-button'] = array(
+    '#type' => 'submit',
+    '#value' => t('Reindex Features'),
+    '#weight' => 3,
+  );
 }
 /**
  *
@@ -652,173 +652,173 @@ function get_tripal_library_admin_form_reindex_set(&$form) {
  */
 function get_tripal_library_admin_form_sync_set(&$form) {
    // define the fieldsets
-   $form['sync'] = array(
-      '#type' => 'fieldset',
-      '#title' => t('Sync Libraries')
-   );
+  $form['sync'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Sync Libraries')
+  );
 
 
-   // get the list of libraries
-   $sql = "SELECT * FROM {Library} ORDER BY uniquename";
-   $previous_db = tripal_db_set_active('chado');  // use chado database
-   $lib_rset = db_query($sql);
-   tripal_db_set_active($previous_db);  // now use drupal database
+  // get the list of libraries
+  $sql = "SELECT * FROM {Library} ORDER BY uniquename";
+  $previous_db = tripal_db_set_active('chado');  // use chado database
+  $lib_rset = db_query($sql);
+  tripal_db_set_active($previous_db);  // now use drupal database
 
-   // if we've added any libraries to the list that can be synced
-   // then we want to build the form components to allow the user
-   // to select one or all of them.  Otherwise, just present
-   // a message stating that all libraries are currently synced.
-   $lib_boxes = array();
-   $added = 0;
-   while ($library = db_fetch_object($lib_rset)) {
-      // check to see if the library is already present as a node in drupal.
-      // if so, then skip it.
-      $sql = "SELECT * FROM {chado_library} WHERE library_id = %d";
-      if (!db_fetch_object(db_query($sql, $library->library_id))) {
-         $lib_boxes[$library->library_id] = "$library->name";
-         $added++;
-      }
-   }
+  // if we've added any libraries to the list that can be synced
+  // then we want to build the form components to allow the user
+  // to select one or all of them.  Otherwise, just present
+  // a message stating that all libraries are currently synced.
+  $lib_boxes = array();
+  $added = 0;
+  while ($library = db_fetch_object($lib_rset)) {
+    // check to see if the library is already present as a node in drupal.
+    // if so, then skip it.
+    $sql = "SELECT * FROM {chado_library} WHERE library_id = %d";
+    if (!db_fetch_object(db_query($sql, $library->library_id))) {
+      $lib_boxes[$library->library_id] = "$library->name";
+      $added++;
+    }
+  }
 
-   // if we have libraries we need to add to the checkbox then
-   // build that form element
-   if ($added > 0) {
-      $lib_boxes['all'] = "All Libraries";
+  // if we have libraries we need to add to the checkbox then
+  // build that form element
+  if ($added > 0) {
+    $lib_boxes['all'] = "All Libraries";
 
-      $form['reindex']['description'] = array(
-       '#type' => 'item',
-       '#value' => t("This option allows for the creation of Drupal content for libraries in chado. Only the selected libraries will be synced."),
-     '#weight' => 1,
-      );
+    $form['reindex']['description'] = array(
+     '#type' => 'item',
+     '#value' => t("This option allows for the creation of Drupal content for libraries in chado. Only the selected libraries will be synced."),
+   '#weight' => 1,
+    );
 
 
-      $form['sync']['libraries'] = array(
-        '#title'       => t('Available Libraries'),
-        '#type'        => t('checkboxes'),
-        '#description' => t("Check the libraries you want to sync.  Drupal content will be created for each of the libraries listed above.  Select 'All Libraries' to sync all of them."),
-        '#required'    => FALSE,
-        '#prefix'      => '<div id="lib_boxes">',
-        '#suffix'      => '</div>',
-        '#options'     => $lib_boxes,
-      '#weight' => 2,
-      );
-      $form['sync']['button'] = array(
-         '#type' => 'submit',
-         '#value' => t('Sync Libraries'),
-       '#weight' => 3,
-      );
-   }
+    $form['sync']['libraries'] = array(
+      '#title'       => t('Available Libraries'),
+      '#type'        => t('checkboxes'),
+      '#description' => t("Check the libraries you want to sync.  Drupal content will be created for each of the libraries listed above.  Select 'All Libraries' to sync all of them."),
+      '#required'    => FALSE,
+      '#prefix'      => '<div id="lib_boxes">',
+      '#suffix'      => '</div>',
+      '#options'     => $lib_boxes,
+    '#weight' => 2,
+    );
+    $form['sync']['button'] = array(
+       '#type' => 'submit',
+       '#value' => t('Sync Libraries'),
+     '#weight' => 3,
+    );
+  }
    // we don't have any libraries to select from
-   else {
-      $form['sync']['value'] = array(
-         '#value' => t('All libraries in Chado are currently synced with Drupal.')
-      );
-   }
+  else {
+    $form['sync']['value'] = array(
+       '#value' => t('All libraries in Chado are currently synced with Drupal.')
+    );
+  }
 }
 /**
  *
  * @ingroup tripal_library
  */
 function tripal_library_admin_validate($form, &$form_state) {
-   global $user;  // we need access to the user info
-   $job_args = array();
+  global $user;  // we need access to the user info
+  $job_args = array();
 
-   // Submit the Sync Job if selected
-   if ($form_state['values']['op'] == t('Sync Libraries')) {
+  // Submit the Sync Job if selected
+  if ($form_state['values']['op'] == t('Sync Libraries')) {
 
-      // check to see if the user wants to sync chado and drupal.  If
-      // so then we need to register a job to do so with tripal
-      $libraries = $form_state['values']['libraries'];
-      $do_all = FALSE;
-      $to_sync = array();
+    // check to see if the user wants to sync chado and drupal.  If
+    // so then we need to register a job to do so with tripal
+    $libraries = $form_state['values']['libraries'];
+    $do_all = FALSE;
+    $to_sync = array();
 
-      foreach ($libraries as $library_id) {
-         if (preg_match("/^all$/i", $library_id)) {
-            $do_all = TRUE;
-         }
-         if ($library_id and preg_match("/^\d+$/i", $library_id)) {
-            // get the library info
-            $sql = "SELECT * FROM {Library} WHERE library_id = %d";
-            $previous_db = tripal_db_set_active('chado');  // use chado database
-            $library = db_fetch_object(db_query($sql, $library_id));
-            tripal_db_set_active($previous_db);  // now use drupal database
-            $to_sync[$library_id] = $library->name;
-         }
+  foreach ($libraries as $library_id) {
+    if (preg_match("/^all$/i", $library_id)) {
+      $do_all = TRUE;
+    }
+    if ($library_id and preg_match("/^\d+$/i", $library_id)) {
+      // get the library info
+      $sql = "SELECT * FROM {Library} WHERE library_id = %d";
+      $previous_db = tripal_db_set_active('chado');  // use chado database
+      $library = db_fetch_object(db_query($sql, $library_id));
+      tripal_db_set_active($previous_db);  // now use drupal database
+      $to_sync[$library_id] = $library->name;
+    }
+  }
+
+  // submit the job to the tripal job manager
+  if ($do_all) {
+    tripal_add_job('Sync all libraries', 'tripal_library', 'tripal_library_sync_libraries', $job_args, $user->uid);
+  }
+  else{
+    foreach ($to_sync as $library_id => $name) {
+      $job_args[0] = $library_id;
+      tripal_add_job("Sync library: $name", 'tripal_library', 'tripal_library_sync_libraries', $job_args, $user->uid);
       }
+    }
+  }
 
-      // submit the job to the tripal job manager
-      if ($do_all) {
-         tripal_add_job('Sync all libraries', 'tripal_library', 'tripal_library_sync_libraries', $job_args, $user->uid);
+  // -------------------------------------
+  // Submit the Reindex Job if selected
+  if ($form_state['values']['op'] == t('Reindex Features')) {
+    $libraries = $form_state['values']['re-libraries'];
+    foreach ($libraries as $library_id) {
+      if ($library_id and preg_match("/^\d+$/i", $library_id)) {
+        // get the library info
+        $sql = "SELECT * FROM {Library} WHERE library_id = %d";
+        $previous_db = tripal_db_set_active('chado');  // use chado database
+        $library = db_fetch_object(db_query($sql, $library_id));
+        tripal_db_set_active($previous_db);  // now use drupal database
+        $job_args[0] = $library_id;
+        tripal_add_job("Reindex features for library: $library->name", 'tripal_library',
+         'tripal_library_reindex_features', $job_args, $user->uid);
       }
-      else{
-         foreach ($to_sync as $library_id => $name) {
-            $job_args[0] = $library_id;
-            tripal_add_job("Sync library: $name", 'tripal_library', 'tripal_library_sync_libraries', $job_args, $user->uid);
-         }
-      }
-   }
+    }
+  }
 
-   // -------------------------------------
-   // Submit the Reindex Job if selected
-   if ($form_state['values']['op'] == t('Reindex Features')) {
-      $libraries = $form_state['values']['re-libraries'];
-      foreach ($libraries as $library_id) {
-         if ($library_id and preg_match("/^\d+$/i", $library_id)) {
-            // get the library info
-            $sql = "SELECT * FROM {Library} WHERE library_id = %d";
-            $previous_db = tripal_db_set_active('chado');  // use chado database
-            $library = db_fetch_object(db_query($sql, $library_id));
-            tripal_db_set_active($previous_db);  // now use drupal database
-            $job_args[0] = $library_id;
-            tripal_add_job("Reindex features for library: $library->name", 'tripal_library',
-             'tripal_library_reindex_features', $job_args, $user->uid);
-         }
+  // -------------------------------------
+  // Submit the Taxonomy Job if selected
+  if ($form_state['values']['op'] == t('Set Feature Taxonomy')) {
+    $libraries = $form_state['values']['tx-libraries'];
+    foreach ($libraries as $library_id) {
+      if ($library_id and preg_match("/^\d+$/i", $library_id)) {
+        // get the library info
+        $sql = "SELECT * FROM {Library} WHERE library_id = %d";
+        $previous_db = tripal_db_set_active('chado');  // use chado database
+        $library = db_fetch_object(db_query($sql, $library_id));
+        tripal_db_set_active($previous_db);  // now use drupal database
+        $job_args[0] = $library_id;
+        tripal_add_job("Set taxonomy for features in library: $library->name", 'tripal_library',
+         'tripal_library_taxonify_features', $job_args, $user->uid);
       }
-   }
-
-   // -------------------------------------
-   // Submit the Taxonomy Job if selected
-   if ($form_state['values']['op'] == t('Set Feature Taxonomy')) {
-      $libraries = $form_state['values']['tx-libraries'];
-      foreach ($libraries as $library_id) {
-         if ($library_id and preg_match("/^\d+$/i", $library_id)) {
-            // get the library info
-            $sql = "SELECT * FROM {Library} WHERE library_id = %d";
-            $previous_db = tripal_db_set_active('chado');  // use chado database
-            $library = db_fetch_object(db_query($sql, $library_id));
-            tripal_db_set_active($previous_db);  // now use drupal database
-            $job_args[0] = $library_id;
-            tripal_add_job("Set taxonomy for features in library: $library->name", 'tripal_library',
-             'tripal_library_taxonify_features', $job_args, $user->uid);
-         }
-      }
-   }
-   // -------------------------------------
-   // Submit the Cleanup Job if selected
-   if ($form_state['values']['op'] == t('Clean up orphaned libraries')) {
+    }
+  }
+    // -------------------------------------
+    // Submit the Cleanup Job if selected
+    if ($form_state['values']['op'] == t('Clean up orphaned libraries')) {
       tripal_add_job('Cleanup orphaned libraries', 'tripal_library',
          'tripal_library_cleanup', $job_args, $user->uid);
-   }
+    }
 }
 /**
  *
  * @ingroup tripal_library
  */
 function tripal_library_show_libraries() {
-   // Show libraries stored in Drupal's {chado_library} table
-   $sql = "SELECT COUNT(library_id) FROM {chado_library}";
-   $no_libs = db_result(db_query($sql));
-   if ($no_libs != 0) {
-      $libraries = get_chado_libraries();
-      if ($no_libs != count($libraries)) {
-         drupal_set_message("Synchronization needed.");
-      }
+  // Show libraries stored in Drupal's {chado_library} table
+  $sql = "SELECT COUNT(library_id) FROM {chado_library}";
+  $no_libs = db_result(db_query($sql));
+  if ($no_libs != 0) {
+    $libraries = get_chado_libraries();
+    if ($no_libs != count($libraries)) {
+      drupal_set_message(t("Synchronization needed."));
+    }
       return theme('tripal_library_library_table', $libraries);
-   }
-   else {
-      return t("No library exists. Please contact administrators to ".
-               "synchronize libraries.");
-   }
+  }
+  else {
+    return t("No library exists. Please contact administrators to ".
+             "synchronize libraries.");
+  }
 }
 
 /**
@@ -838,34 +838,34 @@ function tripal_library_cron() {
  * @ingroup tripal_library
  */
 function tripal_library_library_access($op, $node, $account) {
-   if ($op == 'create') {
-      if (!user_access('create chado_library content', $account)) {
+  if ($op == 'create') {
+    if (!user_access('create chado_library content', $account)) {
+      return FALSE;
+    }
+  }
+
+  if ($op == 'update') {
+    if (!user_access('edit any chado_library content', $account) &&
+        !user_access('edit own chado_library content', $account)) {
         return FALSE;
-      }
-   }
+    }
+    if (user_access('edit own chado_library content', $account) &&
+      $account->uid != $node->uid) {
+      return FALSE;
+    }
+  }
 
-   if ($op == 'update') {
-      if (!user_access('edit any chado_library content', $account) &&
-          !user_access('edit own chado_library content', $account)) {
-          return FALSE;
-      }
-      if (user_access('edit own chado_library content', $account) &&
-         $account->uid != $node->uid) {
-         return FALSE;
-      }
-   }
-
-   if ($op == 'delete') {
-      if (!user_access('delete any chado_library content', $account) &&
-         !user_access('delete own chado_library content', $account)) {
-         return FALSE;
-      }
-      if (user_access('delete own chado_library content', $account) &&
-          $account->uid != $node->uid) {
-         return FALSE;
-      }
-   }
-   return NULL;
+  if ($op == 'delete') {
+    if (!user_access('delete any chado_library content', $account) &&
+      !user_access('delete own chado_library content', $account)) {
+      return FALSE;
+    }
+    if (user_access('delete own chado_library content', $account) &&
+      $account->uid != $node->uid) {
+      return FALSE;
+    }
+  }
+  return NULL;
 }
 /**
  *  validates submission of form when adding or updating a library node
@@ -873,31 +873,31 @@ function tripal_library_library_access($op, $node, $account) {
  * @ingroup tripal_library
  */
 function chado_library_validate($node) {
-   $lib = 0;
-   // check to make sure the unique name on the library is unique
-   // before we try to insert into chado.
-   if ($node->library_id) {
-      $sql = "SELECT * FROM ".
-             "{Library} WHERE ".
-             "uniquename = '%s' ".
-             "AND NOT library_id = %d";
-      $previous_db = tripal_db_set_active('chado');
-      $lib = db_fetch_object(db_query($sql, $node->uniquename,
-      $node->library_id));
-      tripal_db_set_active($previous_db);
-   }
-   else {
-      $sql = "SELECT * FROM ".
-             "{Library} ".
-             "WHERE uniquename = '%s'";
-      $previous_db = tripal_db_set_active('chado');
-      $lib = db_fetch_object(db_query($sql, $node->uniquename));
-      tripal_db_set_active($previous_db);
-   }
-   if ($lib) {
-      form_set_error('uniquename', t('The unique library name already exists. '.
-                                    'Please choose another'));
-   }
+  $lib = 0;
+  // check to make sure the unique name on the library is unique
+  // before we try to insert into chado.
+  if ($node->library_id) {
+    $sql = "SELECT * FROM ".
+           "{Library} WHERE ".
+           "uniquename = '%s' ".
+           "AND NOT library_id = %d";
+    $previous_db = tripal_db_set_active('chado');
+    $lib = db_fetch_object(db_query($sql, $node->uniquename,
+    $node->library_id));
+    tripal_db_set_active($previous_db);
+  }
+  else {
+    $sql = "SELECT * FROM ".
+           "{Library} ".
+           "WHERE uniquename = '%s'";
+    $previous_db = tripal_db_set_active('chado');
+    $lib = db_fetch_object(db_query($sql, $node->uniquename));
+    tripal_db_set_active($previous_db);
+  }
+  if ($lib) {
+    form_set_error('uniquename', t('The unique library name already exists. '.
+                                  'Please choose another'));
+  }
 }
 
 /**
@@ -913,44 +913,44 @@ function chado_library_insert($node) {
     $library['library_id'] = $node->library_id;
   }
   else {
-     // get the library type id
-     $values = array(
-        'cv_id' => array(
-           'name' => 'tripal'
-        ),
-        'name' => $node->library_type
-     );
-     $type = tripal_core_chado_select('cvterm', array('cvterm_id'), $values);
+    // get the library type id
+    $values = array(
+      'cv_id' => array(
+         'name' => 'tripal'
+      ),
+      'name' => $node->library_type
+    );
+    $type = tripal_core_chado_select('cvterm', array('cvterm_id'), $values);
 
-     $values = array(
-        'name' => $node->title,
-        'uniquename' => $node->uniquename,
-        'organism_id' => $node->organism_id,
-        'type_id' => $type[0]->cvterm_id
-     );
-     $library = tripal_core_chado_insert('library', $values);
-   }
+    $values = array(
+      'name' => $node->title,
+      'uniquename' => $node->uniquename,
+      'organism_id' => $node->organism_id,
+      'type_id' => $type[0]->cvterm_id
+    );
+    $library = tripal_core_chado_insert('library', $values);
+  }
 
-   if ($library) {
-       // add the description property
-      tripal_library_insert_property($library['library_id'], 'library_description', $node->library_description);
+  if ($library) {
+     // add the description property
+    tripal_library_insert_property($library['library_id'], 'library_description', $node->library_description);
 
-      // make sure the entry for this feature doesn't already exist in the chado_library table
-      // if it doesn't exist then we want to add it.
-      $library_id = chado_get_id_for_node('library', $node) ;
-      if (!$library_id) {
-         // next add the item to the drupal table
-         $sql = "INSERT INTO {chado_library} (nid, vid, library_id) ".
-                "VALUES (%d, %d, %d)";
-         db_query($sql, $node->nid, $node->vid, $library['library_id']);
-      }
-   }
-   else {
-    drupal_set_message('Unable to add library.', 'warning');
+    // make sure the entry for this feature doesn't already exist in the chado_library table
+    // if it doesn't exist then we want to add it.
+    $library_id = chado_get_id_for_node('library', $node) ;
+    if (!$library_id) {
+       // next add the item to the drupal table
+      $sql = "INSERT INTO {chado_library} (nid, vid, library_id) ".
+            "VALUES (%d, %d, %d)";
+      db_query($sql, $node->nid, $node->vid, $library['library_id']);
+    }
+  }
+  else {
+    drupal_set_message(t('Unable to add library.', 'warning'));
     watchdog('tripal_library',
-      'Insert feature: Unable to create library where values: %values',
-      array('%values' => print_r($values, TRUE)),
-      WATCHDOG_WARNING
+    'Insert feature: Unable to create library where values: %values',
+    array('%values' => print_r($values, TRUE)),
+    WATCHDOG_WARNING
     );
   }
 }
@@ -960,35 +960,35 @@ function chado_library_insert($node) {
  * @ingroup tripal_library
  */
 function chado_library_update($node) {
-   if ($node->revision) {
-      // TODO -- decide what to do about revisions
-   }
-   else {
-      $library_id = chado_get_id_for_node('library', $node) ;
+  if ($node->revision) {
+    // TODO -- decide what to do about revisions
+  }
+  else {
+    $library_id = chado_get_id_for_node('library', $node) ;
 
-      // get the library type id
-      $values = array(
-         'cv_id' => array(
-            'name' => 'tripal'
-         ),
-         'name' => $node->library_type
-      );
-      $type = tripal_core_chado_select('cvterm', array('cvterm_id'), $values);
+    // get the library type id
+    $values = array(
+       'cv_id' => array(
+          'name' => 'tripal'
+        ),
+       'name' => $node->library_type
+    );
+    $type = tripal_core_chado_select('cvterm', array('cvterm_id'), $values);
 
-      // update the library record
-      $match = array(
-         'library_id' => $library_id,
-      );
-      $values = array(
-         'name' => $node->title,
-         'uniquename' => $node->uniquename,
-         'organism_id' => $node->organism_id,
-         'type_id' => $type[0]->cvterm_id
-      );
-      $status = tripal_core_chado_update('library', $match, $values);
+    // update the library record
+    $match = array(
+       'library_id' => $library_id,
+    );
+    $values = array(
+       'name' => $node->title,
+       'uniquename' => $node->uniquename,
+       'organism_id' => $node->organism_id,
+       'type_id' => $type[0]->cvterm_id
+    );
+    $status = tripal_core_chado_update('library', $match, $values);
 
-      tripal_library_update_property($library_id, 'library_description', $node->library_description);
-   }
+    tripal_library_update_property($library_id, 'library_description', $node->library_description);
+  }
 }
 
 
@@ -999,10 +999,10 @@ function chado_library_update($node) {
  */
 function tripal_library_add_taxonomy($node, $library_id) {
 
-   //include the file containing the required functions.  We only have to
-   // do this because Drupal 6 fails to do this globally for us and
-   // the drupal_execute function below won't work
-   module_load_include('inc', 'taxonomy', 'taxonomy.admin');
+    //include the file containing the required functions.  We only have to
+    // do this because Drupal 6 fails to do this globally for us and
+    // the drupal_execute function below won't work
+    module_load_include('inc', 'taxonomy', 'taxonomy.admin');
 
    /*   // get the vocabulary id
     $vocabularies = taxonomy_get_vocabularies();
@@ -1015,32 +1015,32 @@ function tripal_library_add_taxonomy($node, $library_id) {
 
     if(!$vid){  */
    // add the vocabulary
-   $vocab_form['values']['name'] = 'DNA Libraries';
-   $vocab_form['values']['description'] = 'Allows for associating/searching of library features by library name';
-   $vocab_form['values']['help'] = '';
-   $vocab_form['values']['module'] = 'taxonomy';
-   drupal_execute('taxonomy_form_vocabulary', $vocab_form);
-   return;
+  $vocab_form['values']['name'] = 'DNA Libraries';
+  $vocab_form['values']['description'] = 'Allows for associating/searching of library features by library name';
+  $vocab_form['values']['help'] = '';
+  $vocab_form['values']['module'] = 'taxonomy';
+  drupal_execute('taxonomy_form_vocabulary', $vocab_form);
+  return;
    //   }
 
    // make sure this term doesn't already exist.  If it doesn't then add it
-   if ($vid) {
-      $tree = taxonomy_get_tree($vid);
-      $found = 0;
-      foreach ($tree as $term) {
-         if ($term->name == $node->title) {
-            $found = 1;
-         }
+  if ($vid) {
+    $tree = taxonomy_get_tree($vid);
+    $found = 0;
+    foreach ($tree as $term) {
+      if ($term->name == $node->title) {
+        $found = 1;
       }
+    }
 
       // add the term to the vocabulary
-      if (!$found) {
-         $form_state = array();
-         $form_state['values']['name'] = $node->title;
-         $form_state['values']['description'] = $library_id;
-         drupal_execute('taxonomy_form_term', $form_state, $vid);
-      }
-   }
+    if (!$found) {
+      $form_state = array();
+      $form_state['values']['name'] = $node->title;
+      $form_state['values']['description'] = $library_id;
+      drupal_execute('taxonomy_form_term', $form_state, $vid);
+    }
+  }
 }
 
 /**
@@ -1050,109 +1050,109 @@ function tripal_library_add_taxonomy($node, $library_id) {
  * @ingroup tripal_library
  */
 function chado_library_form($node) {
-   $form = array();
+  $form = array();
 
-   $library = $node->library;
+  $library = $node->library;
 
-   // get the default values
-   $uniquename = $node->uniquename;
-   if (!$uniquename) {
-     $uniquename = $library->uniquename;
-   }
-   $library_type = $node->library_type;
-   if (!$library_type) {
-      $library_type = $library->type_id->name;
-   }
-   $organism_id = $node->organism_id;
-   if (!$organism_id) {
-      $organism_id = $library->organism_id->organism_id;
-   }
-   $library_description = $node->library_description;
-   if (!$library_description) {
-     $libprop = tripal_library_get_property($library->library_id, 'library_description');
-     $library_description = $libprop->value;
-   }
+  // get the default values
+  $uniquename = $node->uniquename;
+  if (!$uniquename) {
+    $uniquename = $library->uniquename;
+  }
+  $library_type = $node->library_type;
+  if (!$library_type) {
+    $library_type = $library->type_id->name;
+  }
+  $organism_id = $node->organism_id;
+  if (!$organism_id) {
+    $organism_id = $library->organism_id->organism_id;
+  }
+  $library_description = $node->library_description;
+  if (!$library_description) {
+    $libprop = tripal_library_get_property($library->library_id, 'library_description');
+    $library_description = $libprop->value;
+  }
 
-   // keep track of the library id if we have.  If we do have one then
-   // this is an update as opposed to an insert.
-   $form['library_id'] = array(
-      '#type' => 'value',
-      '#value' => $library->library_id,
-   );
+  // keep track of the library id if we have.  If we do have one then
+  // this is an update as opposed to an insert.
+  $form['library_id'] = array(
+    '#type' => 'value',
+    '#value' => $library->library_id,
+  );
 
-   $form['title']= array(
-      '#type'          => 'textfield',
-      '#title'         => t('Library Title'),
-      '#description'   => t('Please enter the title for this library. '.
-                            'This appears at the top of the library page.'),
-      '#required'      => TRUE,
-      '#default_value' => $node->title,
-      '#weight'        => 1
-   );
+  $form['title']= array(
+    '#type'          => 'textfield',
+    '#title'         => t('Library Title'),
+    '#description'   => t('Please enter the title for this library. '.
+                          'This appears at the top of the library page.'),
+    '#required'      => TRUE,
+    '#default_value' => $node->title,
+    '#weight'        => 1
+  );
 
-   $form['uniquename']= array(
-      '#type'          => 'textfield',
-      '#title'         => t('Unique Library Name'),
-      '#description'   => t('Please enter a unique name for this library'),
-      '#required'      => TRUE,
-      '#default_value' => $uniquename,
-      '#weight'        => 2
-   );
+  $form['uniquename']= array(
+    '#type'          => 'textfield',
+    '#title'         => t('Unique Library Name'),
+    '#description'   => t('Please enter a unique name for this library'),
+    '#required'      => TRUE,
+    '#default_value' => $uniquename,
+    '#weight'        => 2
+  );
 
-   // These library types should not be hard coded, but for now the are...
-   $library_types = array();
-   $library_types[''] = '';
-   $library_types['cdna_library'] = 'cDNA Library';
-   $library_types['bac_library'] = 'BAC Library';
-   $library_types['fosmid_library'] = 'FOSMID Library';
-   $library_types['cosmid_library'] = 'COSMID Library';
-   $library_types['yac_library'] = 'YAC Library';
+  // These library types should not be hard coded, but for now the are...
+  $library_types = array();
+  $library_types[''] = '';
+  $library_types['cdna_library'] = 'cDNA Library';
+  $library_types['bac_library'] = 'BAC Library';
+  $library_types['fosmid_library'] = 'FOSMID Library';
+  $library_types['cosmid_library'] = 'COSMID Library';
+  $library_types['yac_library'] = 'YAC Library';
 
 
-   $form['library_type'] = array(
-      '#title'       => t('Library Type'),
-      '#type'        => t('select'),
-      '#description' => t("Choose the library type."),
-      '#required'    => TRUE,
-      '#default_value' => $library_type,
-      '#options'     => $library_types,
-      '#weight'      => 3
-   );
+  $form['library_type'] = array(
+    '#title'       => t('Library Type'),
+    '#type'        => t('select'),
+    '#description' => t("Choose the library type."),
+    '#required'    => TRUE,
+    '#default_value' => $library_type,
+    '#options'     => $library_types,
+    '#weight'      => 3
+  );
 
-   // get the list of organisms
-   $sql = "SELECT * FROM {Organism}";
-   $previous_db = tripal_db_set_active('chado');  // use chado database
-   $org_rset = db_query($sql);
-   tripal_db_set_active($previous_db);  // now use drupal database
+  // get the list of organisms
+  $sql = "SELECT * FROM {Organism}";
+  $previous_db = tripal_db_set_active('chado');  // use chado database
+  $org_rset = db_query($sql);
+  tripal_db_set_active($previous_db);  // now use drupal database
 
-   $organisms = array();
-   $organisms[''] = '';
-   while ($organism = db_fetch_object($org_rset)) {
-      $organisms[$organism->organism_id] =
-      "$organism->genus $organism->species ($organism->common_name)";
-   }
+  $organisms = array();
+  $organisms[''] = '';
+  while ($organism = db_fetch_object($org_rset)) {
+    $organisms[$organism->organism_id] =
+    "$organism->genus $organism->species ($organism->common_name)";
+  }
 
-   $form['organism_id'] = array(
-     '#title'       => t('Organism'),
-     '#type'        => t('select'),
-     '#description' => t("Choose the organism with which this library is ".
-                         "associated."),
-     '#required'    => TRUE,
-     '#default_value' => $organism_id,
-     '#options'     => $organisms,
-     '#weight'      => 4,
-   );
+  $form['organism_id'] = array(
+   '#title'       => t('Organism'),
+   '#type'        => t('select'),
+   '#description' => t("Choose the organism with which this library is ".
+                       "associated."),
+   '#required'    => TRUE,
+   '#default_value' => $organism_id,
+   '#options'     => $organisms,
+   '#weight'      => 4,
+  );
 
-   $form['library_description']= array(
-      '#type'          => 'textarea',
-      '#title'         => t('Library Description'),
-      '#description'   => t('A brief description of the library'),
-      '#required'      => TRUE,
-      '#default_value' => $library_description,
-      '#weight'        => 5
-   );
+  $form['library_description']= array(
+    '#type'          => 'textarea',
+    '#title'         => t('Library Description'),
+    '#description'   => t('A brief description of the library'),
+    '#required'      => TRUE,
+    '#default_value' => $library_description,
+    '#weight'        => 5
+  );
 
-   return $form;
+  return $form;
 }
 /**
  *
@@ -1161,64 +1161,64 @@ function chado_library_form($node) {
  */
 function tripal_library_sync_libraries($library_id = NULL, $job_id = NULL) {
 
-   global $user;
-   $page_content = '';
+  global $user;
+  $page_content = '';
 
-   // get the list of libraries and create new nodes
-   if (!$library_id) {
-      $sql = "SELECT * FROM {Library} L";
-      $previous_db = tripal_db_set_active('chado');  // use chado database
-      $results = db_query($sql);
-      tripal_db_set_active($previous_db);  // now use drupal database
-   }
-   else {
-      $sql = "SELECT * FROM {Library} L WHERE library_id = %d";
-      $previous_db = tripal_db_set_active('chado');  // use chado database
-      $results = db_query($sql, $library_id);
-      tripal_db_set_active($previous_db);  // now use drupal database
-   }
+  // get the list of libraries and create new nodes
+  if (!$library_id) {
+    $sql = "SELECT * FROM {Library} L";
+    $previous_db = tripal_db_set_active('chado');  // use chado database
+    $results = db_query($sql);
+    tripal_db_set_active($previous_db);  // now use drupal database
+  }
+  else {
+    $sql = "SELECT * FROM {Library} L WHERE library_id = %d";
+    $previous_db = tripal_db_set_active('chado');  // use chado database
+    $results = db_query($sql, $library_id);
+    tripal_db_set_active($previous_db);  // now use drupal database
+  }
 
-   // We'll use the following SQL statement for checking if the library
-   // already exists as a drupal node.
-   $sql = "SELECT * FROM {chado_library} ".
-          "WHERE library_id = %d";
+  // We'll use the following SQL statement for checking if the library
+  // already exists as a drupal node.
+  $sql = "SELECT * FROM {chado_library} ".
+        "WHERE library_id = %d";
 
-   while ($library = db_fetch_object($results)) {
+  while ($library = db_fetch_object($results)) {
 
-      // check if this library already exists in the drupal database. if it
-      // does then skip this library and go to the next one.
-      if (!db_fetch_object(db_query($sql, $library->library_id))) {
+    // check if this library already exists in the drupal database. if it
+    // does then skip this library and go to the next one.
+    if (!db_fetch_object(db_query($sql, $library->library_id))) {
 
-         $new_node = new stdClass();
-         $new_node->type = 'chado_library';
-         $new_node->uid = $user->uid;
-         $new_node->title = "$library->name";
-         $new_node->library_id = $library->library_id;
-         $new_node->organism_id = $library->organism_id;
-         $new_node->uniquename = $library->uniquename;
-         $new_node->type_id = $library->type_id;
+    $new_node = new stdClass();
+    $new_node->type = 'chado_library';
+    $new_node->uid = $user->uid;
+    $new_node->title = "$library->name";
+    $new_node->library_id = $library->library_id;
+    $new_node->organism_id = $library->organism_id;
+    $new_node->uniquename = $library->uniquename;
+    $new_node->type_id = $library->type_id;
 
-         node_validate($new_node);
-         $errors = form_get_errors();
-         if (!$errors) {
-            $node = node_submit($new_node);
-            node_save($node);
-            if ($node->nid) {
-              print "Added " . $library->name . "\n";
-            }
-            else {
-              print "ERROR: Unable to create " . $library->name . "\n";
-            }
-         }
-         else {
-           print "ERROR: Unable to create " . $library->name . "\n" . print_r($errors, TRUE) . "\n";
-         }
+    node_validate($new_node);
+    $errors = form_get_errors();
+    if (!$errors) {
+      $node = node_submit($new_node);
+      node_save($node);
+      if ($node->nid) {
+        print "Added " . $library->name . "\n";
       }
       else {
-         print "Skipped " . $library->name . "\n";
+        print "ERROR: Unable to create " . $library->name . "\n";
       }
-   }
-   return $page_content;
+    }
+    else {
+      print "ERROR: Unable to create " . $library->name . "\n" . print_r($errors, TRUE) . "\n";
+    }
+    }
+    else {
+      print "Skipped " . $library->name . "\n";
+    }
+    }
+  return $page_content;
 }
 
 /**
@@ -1228,15 +1228,15 @@ function tripal_library_sync_libraries($library_id = NULL, $job_id = NULL) {
  * @ingroup tripal_library
  */
 function chado_library_load($node) {
-   // get the feature details from chado
-   $library_id = chado_get_id_for_node('library', $node);
+  // get the feature details from chado
+  $library_id = chado_get_id_for_node('library', $node);
 
-   $values = array('library_id' => $library_id);
-   $library = tripal_core_generate_chado_var('library', $values);
+  $values = array('library_id' => $library_id);
+  $library = tripal_core_generate_chado_var('library', $values);
 
-   $additions = new stdClass();
-   $additions->library = $library;
-   return $additions;
+  $additions = new stdClass();
+  $additions->library = $library;
+  return $additions;
 
 }
 /**
@@ -1247,24 +1247,24 @@ function chado_library_load($node) {
  */
 function chado_library_view($node, $teaser = FALSE, $page = FALSE) {
    // use drupal's default node view:
-   if (!$teaser) {
+  if (!$teaser) {
 
-      $node = node_prepare($node, $teaser);
+    $node = node_prepare($node, $teaser);
 
-      // If Hook_view() is called by Hook_form(), we'll only have orgnism_id
-      // but not genus/species/common_name. We need to get those from chado
-      // database so they will show up in preview
-      if (!$node->genus) {
-         $previous_db = tripal_db_set_active('chado');
-         $sql = "SELECT * FROM {organism} WHERE organism_id = %d";
-         $data = db_fetch_object(db_query($sql, $node->organism_id));
-         $node->genus = $data->genus;
-         $node->species = $data->species;
-         $node->common_name = $data->common_name;
-         tripal_db_set_active($previous_db);
-      }
-   }
-   return $node;
+    // If Hook_view() is called by Hook_form(), we'll only have orgnism_id
+    // but not genus/species/common_name. We need to get those from chado
+    // database so they will show up in preview
+    if (!$node->genus) {
+      $previous_db = tripal_db_set_active('chado');
+      $sql = "SELECT * FROM {organism} WHERE organism_id = %d";
+      $data = db_fetch_object(db_query($sql, $node->organism_id));
+      $node->genus = $data->genus;
+      $node->species = $data->species;
+      $node->common_name = $data->common_name;
+      tripal_db_set_active($previous_db);
+    }
+  }
+  return $node;
 }
 
 /**
@@ -1278,44 +1278,44 @@ function chado_library_view($node, $teaser = FALSE, $page = FALSE) {
 
 function theme_tripal_library_library_table($libraries) {
 
-   // cycle through the libraries and build the libraries page
-   $output = "<div id=\"libraries\">";
-   $output .= '<table>';
-   $output .= "<tr>";
-   $output .= "<th>Name</th>";
-   $output .= "<th>Type</th>";
-   $output .= "<th>Organism</th>";
-   $output .= "<th>Description</th>";
-   $output .= "</tr>";
+  // cycle through the libraries and build the libraries page
+  $output = "<div id=\"libraries\">";
+  $output .= '<table>';
+  $output .= "<tr>";
+  $output .= "<th>Name</th>";
+  $output .= "<th>Type</th>";
+  $output .= "<th>Organism</th>";
+  $output .= "<th>Description</th>";
+  $output .= "</tr>";
 
-   foreach ($libraries as $library) {
-      $lib_url = url("node/$library->node_id");
-      $output .= "<tr>";
-      $output .= "<td>".
-                 "  <a href=\"$lib_url\">$library->name</a>".
-                 "</td>";
+  foreach ($libraries as $library) {
+    $lib_url = url("node/$library->node_id");
+    $output .= "<tr>";
+    $output .= "<td>".
+               "  <a href=\"$lib_url\">$library->name</a>".
+               "</td>";
 
-      if (strcasecmp($library->type_name, 'bac_library') == 0) {
-         $output .= "<td>BAC</td>";
-      }
-      elseif (strcasecmp($library->type_name, 'cdna_library') == 0) {
-         $output .= "<td>cDNA</td>";
-      }
-      else{
-         $output .= "<td>$library->type_name</td>";
-      }
-      $output .= "<td nowrap>".
-                 " $library->common_name".
-                 "</td>";
-      $description = $library->library_description;
-      $output .= "<td>$description</td>";
+    if (strcasecmp($library->type_name, 'bac_library') == 0) {
+      $output .= "<td>BAC</td>";
+    }
+    elseif (strcasecmp($library->type_name, 'cdna_library') == 0) {
+      $output .= "<td>cDNA</td>";
+    }
+    else{
+      $output .= "<td>$library->type_name</td>";
+    }
+    $output .= "<td nowrap>".
+               " $library->common_name".
+               "</td>";
+    $description = $library->library_description;
+    $output .= "<td>$description</td>";
 
-      $output .= "</tr>";
-   }
-   $output .= "</table>";
-   $output .= "</div>";
+    $output .= "</tr>";
+  }
+  $output .= "</table>";
+  $output .= "</div>";
 
-   return $output;
+  return $output;
 }
 
 /**
@@ -1326,191 +1326,191 @@ function tripal_library_feature_set_taxonomy($library_id = NULL) {
 
    //TO DO : return usable error if vocabs don't exist
    // get the list of vocabularies and find our two vocabularies of interest
-   $vocabularies = taxonomy_get_vocabularies();
-   $vid = NULL;
-   foreach ($vocabularies as $vocab) {
-      if ($vocab->name == 'Library') {
-         $vid = $vocab->vid;
-      }
-   }
-   if (!$vid) {
-      return;
-   }
+  $vocabularies = taxonomy_get_vocabularies();
+  $vid = NULL;
+  foreach ($vocabularies as $vocab) {
+    if ($vocab->name == 'Library') {
+      $vid = $vocab->vid;
+    }
+  }
+  if (!$vid) {
+    return;
+  }
 
-   // We'll use the following SQL statement for getting the node info
-   if ($library_id) {
-      print "Finding features for library with ID: $library_id\n";
-      $sql = "SELECT LF.feature_id, L.library_id, L.name as libname ".
-             "FROM {library_feature} LF ".
-             "INNER JOIN Library L ON LF.library_id = L.library_id ".
-             "WHERE L.library_id = $library_id ".
-             "ORDER BY LF.feature_id";
-      $previous_db = tripal_db_set_active('chado');  // use chado database
-      $features = db_query($sql);
-      tripal_db_set_active($previous_db);  // now use drupal database
-   }
-   else {
-      print "Finding features for all libraries\n";
-      $sql = "SELECT LF.feature_id, L.library_id, L.name as libname ".
-             "FROM {library_feature} LF ".
-             "INNER JOIN Library L ON LF.library_id = L.library_id ".
-             "ORDER BY LF.feature_id";
-      $previous_db = tripal_db_set_active('chado');  // use chado database
-      $features = db_query($sql);
-      tripal_db_set_active($previous_db);  // now use drupal database
-   }
+  // We'll use the following SQL statement for getting the node info
+  if ($library_id) {
+    print "Finding features for library with ID: $library_id\n";
+    $sql = "SELECT LF.feature_id, L.library_id, L.name as libname ".
+           "FROM {library_feature} LF ".
+           "INNER JOIN Library L ON LF.library_id = L.library_id ".
+           "WHERE L.library_id = $library_id ".
+           "ORDER BY LF.feature_id";
+    $previous_db = tripal_db_set_active('chado');  // use chado database
+    $features = db_query($sql);
+    tripal_db_set_active($previous_db);  // now use drupal database
+  }
+  else {
+    print "Finding features for all libraries\n";
+    $sql = "SELECT LF.feature_id, L.library_id, L.name as libname ".
+           "FROM {library_feature} LF ".
+           "INNER JOIN Library L ON LF.library_id = L.library_id ".
+           "ORDER BY LF.feature_id";
+    $previous_db = tripal_db_set_active('chado');  // use chado database
+    $features = db_query($sql);
+    tripal_db_set_active($previous_db);  // now use drupal database
+  }
 
-   $node_sql = "SELECT * FROM {chado_feature} CF ".
-               "  INNER JOIN {node} N ON CF.nid = N.nid ".
-               "WHERE feature_id = %d";
+  $node_sql = "SELECT * FROM {chado_feature} CF ".
+             "  INNER JOIN {node} N ON CF.nid = N.nid ".
+             "WHERE feature_id = %d";
 
-   // iterate through the features and add the taxonomy
-   while ($feature = db_fetch_object($features)) {
-      $node = db_fetch_object(db_query($node_sql, $feature->feature_id));
-      $tags["$vid"] = $feature->libname;
-      $terms['tags'] = $tags;
-      taxonomy_node_save($node, $terms);
-      print "Updated $feature->feature_id as $feature->libname\n";
-   }
+  // iterate through the features and add the taxonomy
+  while ($feature = db_fetch_object($features)) {
+    $node = db_fetch_object(db_query($node_sql, $feature->feature_id));
+    $tags["$vid"] = $feature->libname;
+    $terms['tags'] = $tags;
+    taxonomy_node_save($node, $terms);
+    print "Updated $feature->feature_id as $feature->libname\n";
+  }
 }
 /**
  *
  * @ingroup tripal_library
  */
 function tripal_library_reindex_features($library_id = NULL, $job_id = NULL) {
-   $i = 0;
+  $i = 0;
 
-   // if the caller provided a library_id then get all of the features
-   // associated with the library. Otherwise get all sequences assoicated
-   // with all libraries.
-   if ($library_id) {
-      $sql = "SELECT LF.feature_id, L.library_id, L.name as libname ".
-             " FROM {library_feature} LF ".
-             "  INNER JOIN Library L ON LF.library_id = L.library_id ".
-             "WHERE L.library_id = $library_id ".
-             "ORDER BY LF.feature_id";
-      $previous_db = tripal_db_set_active('chado');  // use chado database
-      $results = db_query($sql);
-      tripal_db_set_active($previous_db);  // now use drupal database
-   }
-   else {
-      $sql = "SELECT LF.feature_id, L.library_id, L.name as libname ".
-             " FROM {library_feature} LF ".
-             "  INNER JOIN Library L ON LF.library_id = L.library_id ".
-             "ORDER BY LF.feature_id";
-      $previous_db = tripal_db_set_active('chado');  // use chado database
-      $results = db_query($sql);
-      tripal_db_set_active($previous_db);  // now use drupal database
-   }
+  // if the caller provided a library_id then get all of the features
+  // associated with the library. Otherwise get all sequences assoicated
+  // with all libraries.
+  if ($library_id) {
+    $sql = "SELECT LF.feature_id, L.library_id, L.name as libname ".
+           " FROM {library_feature} LF ".
+           "  INNER JOIN Library L ON LF.library_id = L.library_id ".
+           "WHERE L.library_id = $library_id ".
+           "ORDER BY LF.feature_id";
+    $previous_db = tripal_db_set_active('chado');  // use chado database
+    $results = db_query($sql);
+    tripal_db_set_active($previous_db);  // now use drupal database
+  }
+  else {
+    $sql = "SELECT LF.feature_id, L.library_id, L.name as libname ".
+           " FROM {library_feature} LF ".
+           "  INNER JOIN Library L ON LF.library_id = L.library_id ".
+           "ORDER BY LF.feature_id";
+    $previous_db = tripal_db_set_active('chado');  // use chado database
+    $results = db_query($sql);
+    tripal_db_set_active($previous_db);  // now use drupal database
+  }
 
    // load into ids array
-   $count = 0;
-   $ids = array();
-   while ($id = db_fetch_object($results)) {
-      $ids[$count] = $id->feature_id;
-      $count++;
-   }
+  $count = 0;
+  $ids = array();
+  while ($id = db_fetch_object($results)) {
+    $ids[$count] = $id->feature_id;
+    $count++;
+  }
 
-   $interval = intval($count * 0.01);
-   foreach ($ids as $feature_id) {
-      // update the job status every 1% features
-      if ($job_id and $i % interval == 0) {
-         tripal_job_set_progress($job_id, intval(($i/$count)*100));
-      }
-      tripal_feature_sync_feature($feature_id);
-      $i++;
-   }
+  $interval = intval($count * 0.01);
+  foreach ($ids as $feature_id) {
+    // update the job status every 1% features
+    if ($job_id and $i % interval == 0) {
+      tripal_job_set_progress($job_id, intval(($i/$count)*100));
+    }
+    tripal_feature_sync_feature($feature_id);
+    $i++;
+  }
 }
 /**
  *
  * @ingroup tripal_library
  */
 function tripal_library_taxonify_features($library_id = NULL, $job_id = NULL) {
-   $i = 0;
+  $i = 0;
 
-   // if the caller provided a library_id then get all of the features
-   // associated with the library. Otherwise get all sequences assoicated
-   // with all libraries.
-   if ($library_id) {
-      $sql = "SELECT LF.feature_id, L.library_id, L.name as libname ".
-             " FROM {library_feature} LF ".
-             "  INNER JOIN Library L ON LF.library_id = L.library_id ".
-             "WHERE L.library_id = $library_id ".
-             "ORDER BY LF.feature_id";
-      $previous_db = tripal_db_set_active('chado');  // use chado database
-      $results = db_query($sql);
-      tripal_db_set_active($previous_db);  // now use drupal database
-   }
-   else {
-      $sql = "SELECT LF.feature_id, L.library_id, L.name as libname ".
-             " FROM {library_feature} LF ".
-             "  INNER JOIN Library L ON LF.library_id = L.library_id ".
-             "ORDER BY LF.feature_id";
-      $previous_db = tripal_db_set_active('chado');  // use chado database
-      $results = db_query($sql);
-      tripal_db_set_active($previous_db);  // now use drupal database
-   }
+  // if the caller provided a library_id then get all of the features
+  // associated with the library. Otherwise get all sequences assoicated
+  // with all libraries.
+  if ($library_id) {
+    $sql = "SELECT LF.feature_id, L.library_id, L.name as libname ".
+           " FROM {library_feature} LF ".
+           "  INNER JOIN Library L ON LF.library_id = L.library_id ".
+           "WHERE L.library_id = $library_id ".
+           "ORDER BY LF.feature_id";
+    $previous_db = tripal_db_set_active('chado');  // use chado database
+    $results = db_query($sql);
+    tripal_db_set_active($previous_db);  // now use drupal database
+  }
+  else {
+    $sql = "SELECT LF.feature_id, L.library_id, L.name as libname ".
+           " FROM {library_feature} LF ".
+           "  INNER JOIN Library L ON LF.library_id = L.library_id ".
+           "ORDER BY LF.feature_id";
+    $previous_db = tripal_db_set_active('chado');  // use chado database
+    $results = db_query($sql);
+    tripal_db_set_active($previous_db);  // now use drupal database
+  }
 
-   // load into ids array
-   $count = 0;
-   $ids = array();
-   while ($id = db_fetch_object($results)) {
-      $ids[$count] = $id->feature_id;
-      $count++;
-   }
+  // load into ids array
+  $count = 0;
+  $ids = array();
+  while ($id = db_fetch_object($results)) {
+    $ids[$count] = $id->feature_id;
+    $count++;
+  }
 
-   // make sure our vocabularies are set before proceeding
-   tripal_feature_set_vocabulary();
+  // make sure our vocabularies are set before proceeding
+  tripal_feature_set_vocabulary();
 
-   // use this SQL for getting the nodes
-   $nsql =  "SELECT * FROM {chado_feature} CF ".
-            "  INNER JOIN {node} N ON N.nid = CF.nid ".
-            "WHERE feature_id = %d";
+  // use this SQL for getting the nodes
+  $nsql =  "SELECT * FROM {chado_feature} CF ".
+          "  INNER JOIN {node} N ON N.nid = CF.nid ".
+          "WHERE feature_id = %d";
 
    // iterate through the features and set the taxonomy
-   $interval = intval($count * 0.01);
-   foreach ($ids as $feature_id) {
-      // update the job status every 1% features
-      if ($job_id and $i % interval == 0) {
-         tripal_job_set_progress($job_id, intval(($i/$count)*100));
-      }
+  $interval = intval($count * 0.01);
+  foreach ($ids as $feature_id) {
+    // update the job status every 1% features
+    if ($job_id and $i % interval == 0) {
+      tripal_job_set_progress($job_id, intval(($i/$count)*100));
+    }
       $node = db_fetch_object(db_query($nsql, $feature_id));
       tripal_feature_set_taxonomy($node, $feature_id);
       $i++;
-   }
+  }
 }
 /**
  * Delete data from drupal and chado databases when a node is deleted
  * @ingroup tripal_library
  */
 function chado_library_delete(&$node) {
-   // Before removing, get library_id so we can remove it from chado database
-   // later
-   $sql_drupal = "SELECT library_id ".
-                 "FROM {chado_library} ".
-                 "WHERE nid = %d AND vid = %d";
-   $library_id = db_result(db_query($sql_drupal, $node->nid, $node->vid));
+  // Before removing, get library_id so we can remove it from chado database
+  // later
+  $sql_drupal = "SELECT library_id ".
+               "FROM {chado_library} ".
+               "WHERE nid = %d AND vid = %d";
+  $library_id = db_result(db_query($sql_drupal, $node->nid, $node->vid));
 
-   // Remove data from {chado_library}, {node} and {node_revisions} tables of
-   // drupal database
-   $sql_del = "DELETE FROM {chado_library} ".
-              "WHERE nid = %d ".
-              "AND vid = %d";
-   db_query($sql_del, $node->nid, $node->vid);
-   $sql_del = "DELETE FROM {node} ".
-              "WHERE nid = %d ".
-              "AND vid = %d";
-   db_query($sql_del, $node->nid, $node->vid);
-   $sql_del = "DELETE FROM {node_revisions} ".
-              "WHERE nid = %d ".
-              "AND vid = %d";
-   db_query($sql_del, $node->nid, $node->vid);
+  // Remove data from {chado_library}, {node} and {node_revisions} tables of
+  // drupal database
+  $sql_del = "DELETE FROM {chado_library} ".
+            "WHERE nid = %d ".
+            "AND vid = %d";
+  db_query($sql_del, $node->nid, $node->vid);
+  $sql_del = "DELETE FROM {node} ".
+            "WHERE nid = %d ".
+            "AND vid = %d";
+  db_query($sql_del, $node->nid, $node->vid);
+  $sql_del = "DELETE FROM {node_revisions} ".
+            "WHERE nid = %d ".
+            "AND vid = %d";
+  db_query($sql_del, $node->nid, $node->vid);
 
-   // Remove data from library and libraryprop tables of chado database as well
-   $previous_db = tripal_db_set_active('chado');
-   db_query("DELETE FROM {library} WHERE library_id = %d", $library_id);
-   db_query("DELETE FROM {libraryprop} WHERE library_id = %d", $library_id);
-   tripal_db_set_active($previous_db);
+  // Remove data from library and libraryprop tables of chado database as well
+  $previous_db = tripal_db_set_active('chado');
+  db_query("DELETE FROM {library} WHERE library_id = %d", $library_id);
+  db_query("DELETE FROM {libraryprop} WHERE library_id = %d", $library_id);
+  tripal_db_set_active($previous_db);
 }
 
 /**
@@ -1522,65 +1522,65 @@ function chado_library_delete(&$node) {
  * @ingroup tripal_library
  */
 function tripal_library_block($op = 'list', $delta = '0', $edit = array()) {
-   switch ($op) {
-      case 'list':
+  switch ($op) {
+    case 'list':
 
-         $blocks['libreferences']['info'] = t('Tripal Library References');
-         $blocks['libreferences']['cache'] = BLOCK_NO_CACHE;
+    $blocks['libreferences']['info'] = t('Tripal Library References');
+    $blocks['libreferences']['cache'] = BLOCK_NO_CACHE;
 
-         $blocks['libbase']['info'] = t('Tripal Library Details');
-         $blocks['libbase']['cache'] = BLOCK_NO_CACHE;
+    $blocks['libbase']['info'] = t('Tripal Library Details');
+    $blocks['libbase']['cache'] = BLOCK_NO_CACHE;
 
-         $blocks['libsynonyms']['info'] = t('Tripal Library Synonyms');
-         $blocks['libsynonyms']['cache'] = BLOCK_NO_CACHE;
+    $blocks['libsynonyms']['info'] = t('Tripal Library Synonyms');
+    $blocks['libsynonyms']['cache'] = BLOCK_NO_CACHE;
 
-         $blocks['libproperties']['info'] = t('Tripal Library Properties');
-         $blocks['libproperties']['cache'] = BLOCK_NO_CACHE;
+    $blocks['libproperties']['info'] = t('Tripal Library Properties');
+    $blocks['libproperties']['cache'] = BLOCK_NO_CACHE;
 
-         $blocks['featurelibs']['info'] = t('Tripal Feature Libraries');
-         $blocks['featurelibs']['cache'] = BLOCK_NO_CACHE;
+    $blocks['featurelibs']['info'] = t('Tripal Feature Libraries');
+    $blocks['featurelibs']['cache'] = BLOCK_NO_CACHE;
 
-         $blocks['orglibs']['info'] = t('Tripal Organism Libraries');
-         $blocks['orglibs']['cache'] = BLOCK_NO_CACHE;
+    $blocks['orglibs']['info'] = t('Tripal Organism Libraries');
+    $blocks['orglibs']['cache'] = BLOCK_NO_CACHE;
 
-         return $blocks;
+    return $blocks;
 
-      case 'view':
-         if (user_access('access chado_library content') and arg(0) == 'node' and is_numeric(arg(1))) {
-            $nid = arg(1);
-            $node = node_load($nid);
+    case 'view':
+      if (user_access('access chado_library content') and arg(0) == 'node' and is_numeric(arg(1))) {
+        $nid = arg(1);
+        $node = node_load($nid);
 
-            $block = array();
-            switch ($delta) {
-               case 'libreferences':
-                  $block['subject'] = t('References');
-                  $block['content'] = theme('tripal_library_references', $node);
-                  break;
-               case 'libbase':
-                  $block['subject'] = t('Library Details');
-                  $block['content'] = theme('tripal_library_base', $node);
-                  break;
-               case 'libsynonyms':
-                  $block['subject'] = t('Synonyms');
-                  $block['content'] = theme('tripal_library_synonyms', $node);
-                  break;
-               case 'libproperties':
-                  $block['subject'] = t('Properties');
-                  $block['content'] = theme('tripal_library_properties', $node);
-                  break;
-               case 'featurelibs':
-                  $block['subject'] = t('Libraries');
-                  $block['content'] = theme('tripal_feature_libraries', $node);
-                  break;
-               case 'orglibs':
-                  $block['subject'] = t('Libraries');
-                  $block['content'] = theme('tripal_organism_libraries', $node);
-                  break;
-               default :
-            }
-            return $block;
-         }
-   }
+        $block = array();
+        switch ($delta) {
+          case 'libreferences':
+            $block['subject'] = t('References');
+            $block['content'] = theme('tripal_library_references', $node);
+            break;
+          case 'libbase':
+            $block['subject'] = t('Library Details');
+            $block['content'] = theme('tripal_library_base', $node);
+            break;
+          case 'libsynonyms':
+            $block['subject'] = t('Synonyms');
+            $block['content'] = theme('tripal_library_synonyms', $node);
+            break;
+          case 'libproperties':
+            $block['subject'] = t('Properties');
+            $block['content'] = theme('tripal_library_properties', $node);
+            break;
+          case 'featurelibs':
+            $block['subject'] = t('Libraries');
+            $block['content'] = theme('tripal_feature_libraries', $node);
+            break;
+          case 'orglibs':
+            $block['subject'] = t('Libraries');
+            $block['content'] = theme('tripal_organism_libraries', $node);
+            break;
+            default :
+        }
+        return $block;
+        }
+  }
 }
 
 /**
@@ -1595,114 +1595,114 @@ function tripal_library_block($op = 'list', $delta = '0', $edit = array()) {
  * @ingroup tripal_library_api
  */
 function get_chado_libraries() {
-   $sql_drupal = "SELECT COUNT (library_id) FROM {chado_library}";
-   $no_libs = db_result(db_query($sql_drupal));
-   if ($no_libs != 0) {
-      // Get library_id's from drupal
-      $sql = "SELECT library_id, nid FROM {chado_library}";
-      $result = db_query($sql);
-      $previous_db = tripal_db_set_active('chado');
-      // Get library info from chado's library, organism, and cvterm tables
-      $sql_info = "SELECT L.name, uniquename, genus, species, common_name, ".
-                  "  CVT.name as type_name ".
-                  "FROM {Library} L ".
-                  "INNER JOIN Organism O ON L.organism_id = O.organism_id ".
-                  "INNER JOIN CVTerm CVT ON L.type_id = CVT.cvterm_id ".
-                  "WHERE library_id=%d";
-      // Get library description from libraryprop if there is any
-      $sql_desc = "SELECT value ".
-                  "FROM {Libraryprop} LP ".
-                  "INNER JOIN CVTerm CVT ON LP.type_id = CVT.cvterm_id ".
-                  "WHERE library_id = %d AND CVT.name = 'library_description'";
-      $libraries = array();
-      while ($data = db_fetch_object($result)) {
-         $library = db_fetch_object(db_query($sql_info, $data->library_id));
-         $library->node_id = $data->nid;
-         $desc = db_fetch_object(db_query($sql_desc, $data->library_id))->value;
-         if ($desc) {
-            $library->library_description = $desc;
-         }
-         else {
-            $library->library_description = "NA";
-         }
-         // Use uniquename as the key so we can sort by uniquename later
-         $key = strtolower($library->uniquename);
-         $libraries [$key] = $library;
+  $sql_drupal = "SELECT COUNT (library_id) FROM {chado_library}";
+  $no_libs = db_result(db_query($sql_drupal));
+  if ($no_libs != 0) {
+    // Get library_id's from drupal
+    $sql = "SELECT library_id, nid FROM {chado_library}";
+    $result = db_query($sql);
+    $previous_db = tripal_db_set_active('chado');
+    // Get library info from chado's library, organism, and cvterm tables
+    $sql_info = "SELECT L.name, uniquename, genus, species, common_name, ".
+                "  CVT.name as type_name ".
+                "FROM {Library} L ".
+                "INNER JOIN Organism O ON L.organism_id = O.organism_id ".
+                "INNER JOIN CVTerm CVT ON L.type_id = CVT.cvterm_id ".
+                "WHERE library_id=%d";
+    // Get library description from libraryprop if there is any
+    $sql_desc = "SELECT value ".
+                "FROM {Libraryprop} LP ".
+                "INNER JOIN CVTerm CVT ON LP.type_id = CVT.cvterm_id ".
+                "WHERE library_id = %d AND CVT.name = 'library_description'";
+    $libraries = array();
+    while ($data = db_fetch_object($result)) {
+      $library = db_fetch_object(db_query($sql_info, $data->library_id));
+      $library->node_id = $data->nid;
+      $desc = db_fetch_object(db_query($sql_desc, $data->library_id))->value;
+      if ($desc) {
+        $library->library_description = $desc;
       }
-      tripal_db_set_active($previous_db);
+      else {
+        $library->library_description = "NA";
+      }
+      // Use uniquename as the key so we can sort by uniquename later
+      $key = drupal_strtolower($library->uniquename);
+      $libraries [$key] = $library;
+    }
+    tripal_db_set_active($previous_db);
 
-      //Sort libraries by uniquename
-      ksort($libraries, SORT_STRING);
-      return $libraries;
-   }
-}
+    //Sort libraries by uniquename
+    ksort($libraries, SORT_STRING);
+    return $libraries;
+  }
+  }
 /**
  *
  * @ingroup tripal_library
  */
 function tripal_library_cleanup($dummy = NULL, $job_id = NULL) {
 
-   // build the SQL statments needed to check if nodes point to valid analyses
-   $dsql = "SELECT * FROM {node} WHERE type = 'chado_library' order by nid";
-   $nsql = "SELECT * FROM {node} WHERE nid = %d";
-   $csql = "SELECT * FROM {chado_library} where nid = %d ";
-   $cosql= "SELECT * FROM {chado_library}";
-   $tsql = "SELECT * FROM {library} L WHERE library_id = %d";
+  // build the SQL statments needed to check if nodes point to valid analyses
+  $dsql = "SELECT * FROM {node} WHERE type = 'chado_library' order by nid";
+  $nsql = "SELECT * FROM {node} WHERE nid = %d";
+  $csql = "SELECT * FROM {chado_library} where nid = %d ";
+  $cosql= "SELECT * FROM {chado_library}";
+  $tsql = "SELECT * FROM {library} L WHERE library_id = %d";
 
-   // load into nodes array
-   $results = db_query($dsql);
-   $count = 0;
-   $nodes = array();
-   while ($node = db_fetch_object($results)) {
-      $nodes[$count] = $node;
-      $count++;
-   }
+  // load into nodes array
+  $results = db_query($dsql);
+  $count = 0;
+  $nodes = array();
+  while ($node = db_fetch_object($results)) {
+    $nodes[$count] = $node;
+    $count++;
+  }
 
-   // load the chado_analyses into an array
-   $results = db_query($cosql);
-   $cnodes = array();
-   while ($node = db_fetch_object($results)) {
-      $cnodes[$count] = $node;
-      $count++;
-   }
-   $interval = intval($count * 0.01);
+  // load the chado_analyses into an array
+  $results = db_query($cosql);
+  $cnodes = array();
+  while ($node = db_fetch_object($results)) {
+    $cnodes[$count] = $node;
+    $count++;
+  }
+  $interval = intval($count * 0.01);
 
-   // iterate through all of the chado_library nodes and delete those that aren't valid
-   foreach ($nodes as $nid) {
+  // iterate through all of the chado_library nodes and delete those that aren't valid
+  foreach ($nodes as $nid) {
 
-      // update the job status every 1% analyses
-      if ($job_id and $i % $interval == 0) {
-         tripal_job_set_progress($job_id, intval(($i/$count)*100));
-      }
+    // update the job status every 1% analyses
+    if ($job_id and $i % $interval == 0) {
+      tripal_job_set_progress($job_id, intval(($i/$count)*100));
+    }
 
-      // first check to see if the node has a corresponding entry
-      // in the chado_library table. If not then delete the node.
-      $library = db_fetch_object(db_query($csql, $nid->nid));
-      if (!$library) {
-         node_delete($nid->nid);
-         $message = "Missing in chado_library table.... DELETING: $nid->nid\n";
-         watchdog('tripal_library', $message, array(), WATCHDOG_WARNING);
-         continue;
-      }
-      $i++;
-   }
+    // first check to see if the node has a corresponding entry
+    // in the chado_library table. If not then delete the node.
+    $library = db_fetch_object(db_query($csql, $nid->nid));
+    if (!$library) {
+      node_delete($nid->nid);
+      $message = "Missing in chado_library table.... DELETING: $nid->nid\n";
+      watchdog('tripal_library', $message, array(), WATCHDOG_WARNING);
+      continue;
+    }
+    $i++;
+  }
 
-   // iterate through all of the chado_library nodes and delete those  that aren't valid
-   foreach ($cnodes as $nid) {
-      // update the job status every 1% analyses
-      if ($job_id and $i % $interval == 0) {
-         tripal_job_set_progress($job_id, intval(($i/$count)*100));
-      }
-      $node = db_fetch_object(db_query($nsql, $nid->nid));
-      if (!$node) {
-         db_query("DELETE FROM {chado_library} WHERE nid = '%nid'", $nid->nid);
-         $message = "chado_library missing node.... DELETING: $nid->nid\n";
-         watchdog('tripal_library', $message, array(), WATCHDOG_WARNING);
-      }
+  // iterate through all of the chado_library nodes and delete those  that aren't valid
+  foreach ($cnodes as $nid) {
+    // update the job status every 1% analyses
+    if ($job_id and $i % $interval == 0) {
+      tripal_job_set_progress($job_id, intval(($i/$count)*100));
+    }
+    $node = db_fetch_object(db_query($nsql, $nid->nid));
+    if (!$node) {
+      db_query("DELETE FROM {chado_library} WHERE nid = '%nid'", $nid->nid);
+      $message = "chado_library missing node.... DELETING: $nid->nid\n";
+      watchdog('tripal_library', $message, array(), WATCHDOG_WARNING);
+    }
 
-      $i++;
-   }
-   return '';
+    $i++;
+  }
+  return '';
 }
 /************************************************************************
  */

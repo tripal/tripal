@@ -5,9 +5,9 @@
  * @todo Add file header description
  */
 
-/****************************************************************************
+/**
  * @section Chado Table Descriptions
- ****************************************************************************/
+ */
 
  /**
  * Implements hook_chado_contact_schema()

@@ -20,13 +20,13 @@
 function tripal_stock_add_ALL_dbreferences_page($node) {
   $output = '';
 
-  $output .= tripal_stock_add_chado_properties_progress('db_references') . '<br>';
-  $output .= '<b>All Database References should strictly pertain to THE CURRENT Individual</b><br>';
-  $output .= '<br>';
+  $output .= tripal_stock_add_chado_properties_progress('db_references') . '<br />';
+  $output .= '<b>All Database References should strictly pertain to THE CURRENT Individual</b><br />';
+  $output .= '<br />';
   $output .= theme('tripal_stock_references', $node);
-  $output .= '<br><br>';
+  $output .= '<br /><br />';
   $output .= drupal_get_form('tripal_stock_add_ONE_dbreference_form', $node);
-  $output .= '<br>';
+  $output .= '<br />';
   $output .= drupal_get_form('tripal_stock_add_chado_properties_navigate', 'db_references', $node->nid);
   return $output;
 }
@@ -182,10 +182,10 @@ function tripal_stock_add_ONE_dbreference_form_submit($form, &$form_state) {
       );
       tripal_db_set_active($previous_db);
 
-      drupal_set_message('Successfully Added Database Reference');
+      drupal_set_message(t('Successfully Added Database Reference'));
     }
     else {
-      drupal_set_message('Database reference NOT successfully created...', 'error');
+      drupal_set_message(t('Database reference NOT successfully created...'), 'error');
     } //end of if dbxref was created successfully
   } //end of if valid db reference
 
@@ -208,9 +208,9 @@ function tripal_stock_edit_ALL_dbreferences_page($node) {
   $output = '';
 
   $output .= drupal_get_form('tripal_stock_edit_ALL_db_references_form', $node);
-  $output .= '<br>';
+  $output .= '<br />';
   $output .= drupal_get_form('tripal_stock_add_ONE_dbreference_form', $node);
-  $output .= '<br>';
+  $output .= '<br />';
   $output .= drupal_get_form('tripal_stock_back_to_stock_button', $node->nid);
 
   return $output;
@@ -315,29 +315,29 @@ function tripal_stock_edit_ALL_db_references_form_submit($form, &$form_state) {
 
   if ($form_state['clicked_button']['#value'] == t('Update DB References') ) {
 
-     //Update all
-     for ($i=1; $i<=$form_state['values']['num_db_references']; $i++) {
-       tripal_stock_update_db_reference(
-          $form_state['values']["id-$i"],
-          $form_state['values']["database-$i"],
-          $form_state['values']["accession-$i"]
+       //Update all
+    for ($i=1; $i<=$form_state['values']['num_db_references']; $i++) {
+      tripal_stock_update_db_reference(
+        $form_state['values']["id-$i"],
+        $form_state['values']["database-$i"],
+        $form_state['values']["accession-$i"]
       );
-     }
-     drupal_set_message("Updated all Database References");
-     drupal_goto('node/' . $form_state['values']['nid']);
+    }
+      drupal_set_message(t("Updated all Database References"));
+      drupal_goto('node/' . $form_state['values']['nid']);
 
   }
   elseif ( preg_match('/Delete #(\d+)/', $form_state['clicked_button']['#value'], $matches) ) {
 
-     $i = $matches[1];
-     tripal_stock_delete_db_reference($form_state['values']["id-$i"]);
-     drupal_set_message("Deleted Database Reference");
+    $i = $matches[1];
+    tripal_stock_delete_db_reference($form_state['values']["id-$i"]);
+    drupal_set_message(t("Deleted Database Reference"));
 
   }
   else {
-    drupal_set_message("Unrecognized Button Pressed", 'error');
-  }
+    drupal_set_message(t("Unrecognized Button Pressed"), 'error');
 
+  }
 }
 
 /**
@@ -408,7 +408,7 @@ function tripal_stock_delete_db_reference($dbxref_id) {
 function theme_tripal_stock_edit_ALL_db_references_form($form) {
   $output = '';
 
-  $output .= '<br><fieldset>';
+  $output .= '<br /><fieldset>';
   $output .= '<legend>Edit Existing Database References<span class="form-optional" title="This field is optional">(optional)</span></legend>';
   $output .= '<p>Below is a list of already existing database references, one per line. When entering a database reference, the accession '
          .'is a unique identifier for this stock in the specified database.</p>';
@@ -422,7 +422,7 @@ function theme_tripal_stock_edit_ALL_db_references_form($form) {
          . drupal_render($form["submit-$i"]) . '</td></tr>';
   }
 
-  $output .= '</table><br>';
+  $output .= '</table><br />';
   $output .= drupal_render($form);
   $output .= '</fieldset>';
 

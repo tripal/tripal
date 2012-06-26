@@ -160,15 +160,15 @@ function tripal_bulk_loader_set_constants_form($form_state, $node) {
           $group = $field['group_id'];
           $form['exposed_fields']['existing'][$group][$index] = array(
             '#type' => 'markup',
-            '#value' => $field['value'],
+            '#value' => filter_xss($field['value']),
           );
         }
       }
 
       $form['exposed_fields']['existing'][$group]['delete'] = array(
         '#type' => 'markup',
-        '#value' => l(t('Edit'), 'node/' . $node->nid . '/constants/' . $group . '/edit') . '<br />'  .
-          l(t('Delete'), 'node/' . $node->nid . '/constants/' . $group . '/delete'),
+        '#value' => filter_xss(l(t('Edit'), 'node/' . $node->nid . '/constants/' . $group . '/edit') . '&nbsp&nbsp|&nbsp&nbsp'  .
+          l(t('Delete'), 'node/' . $node->nid . '/constants/' . $group . '/delete')),
       );
 
     }
@@ -364,6 +364,7 @@ function theme_tripal_bulk_loader_set_constants_form($form) {
       $i++;
     }
     //drupal_add_tabledrag('mytable', 'order', 'sibling', 'weight-group');
+    // @coder-ignore: no user input thus don't need to filter
     $form['exposed_fields']['existing'] = array(
       '#type' => 'markup',
       '#value' => theme('table', $header, $rows, array('id' => 'mytable')) . '<br />'
@@ -509,7 +510,7 @@ function tripal_bulk_loader_edit_constant_set_form_submit($form, $form_state) {
         );
       }
     }
-    drupal_set_message('The constant set was successfully updated.');
+    drupal_set_message(t('The constant set was successfully updated.'));
 
   }
 
@@ -562,7 +563,7 @@ function tripal_bulk_loader_delete_constant_set_form_submit($form, $form_state) 
   $nid = $form_state['values']['nid'];
   if ($nid && $form_state['values']['confirm']) {
     db_query("DELETE FROM {tripal_bulk_loader_constants} WHERE nid=%d AND group_id=%d", $nid, $group_id);
-    drupal_set_message('Constant set successfully deleted.');
+    drupal_set_message(t('Constant set successfully deleted.'));
   }
 
 }

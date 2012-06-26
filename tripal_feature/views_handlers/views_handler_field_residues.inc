@@ -24,7 +24,7 @@ class views_handler_field_residues extends views_handler_field {
 
   function render($values) {
     // add a <br> every 100 bp
-    return ereg_replace("(.{100})", "\\1<br>", $values->feature_residues);
+    return ereg_replace("(.{100})", "\\1<br />", $values->feature_residues);
 
   }
 }

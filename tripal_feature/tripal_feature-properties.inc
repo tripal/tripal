@@ -101,19 +101,19 @@ function tripal_feature_add_ONE_property_form($form_state, $node, $expand) {
  */
 function tripal_feature_add_ONE_property_form_validate($form, &$form_state) {
 
-   // Only Require if Adding Property
-   if ($form_state['clicked_button']['#value'] == t('Add Property') ) {
+  // Only Require if Adding Property
+  if ($form_state['clicked_button']['#value'] == t('Add Property') ) {
 
-      // Check that there is a feature
-      if ( $form_state['values']['feature_id'] <= 0 ) {
-         form_set_error('feature_id', 'There is no associated feature.');
-      }
+    // Check that there is a feature
+    if ( $form_state['values']['feature_id'] <= 0 ) {
+      form_set_error('feature_id', 'There is no associated feature.');
+    }
 
-      // Check that Selected a type
-      if ( !$form_state['values']['property']) {
-         form_set_error('property', 'Please select a type of property.');
-      }
-   }
+    // Check that Selected a type
+    if ( !$form_state['values']['property']) {
+      form_set_error('property', 'Please select a type of property.');
+    }
+  }
 }
 
 /**
@@ -122,18 +122,18 @@ function tripal_feature_add_ONE_property_form_validate($form, &$form_state) {
  * @ingroup tripal_feature
  */
 function tripal_feature_add_ONE_property_form_submit($form, &$form_state) {
-   $feature_id = $form_state['values']['feature_id'];
-   $property = $form_state['values']['property'];
-   $value = $form_state['values']['prop_value'];
-   $cv_name = $form_state['values']['cv_name'];
+  $feature_id = $form_state['values']['feature_id'];
+  $property = $form_state['values']['property'];
+  $value = $form_state['values']['prop_value'];
+  $cv_name = $form_state['values']['cv_name'];
 
-   $succes = tripal_feature_insert_property($feature_id, $property, $value, 0, $cv_name);
-   if ($succes) {
-      drupal_set_message(t("Successfully Added Property: %property => %value", array('%property' => $property), array('%value' => $value)));
-   }
-   else {
-      drupal_set_message(t("Failed to Add Property: %property => %value", array('%property' => $property), array('%value' => $value)));
-   }
+  $succes = tripal_feature_insert_property($feature_id, $property, $value, 0, $cv_name);
+  if ($succes) {
+    drupal_set_message(t("Successfully Added Property: %property => %value", array('%property' => $property), array('%value' => $value)));
+  }
+  else {
+    drupal_set_message(t("Failed to Add Property: %property => %value", array('%property' => $property), array('%value' => $value)));
+  }
 }
 
 /**
@@ -170,9 +170,9 @@ function tripal_feature_edit_ALL_properties_form($form_state, $node, $properties
     $prop_type_options = array();
     $columns = array('cvterm_id', 'name');
     $values = array(
-       'cv_id' => array(
-          'name' => $form['cv_name']['#value']
-       )
+      'cv_id' => array(
+        'name' => $form['cv_name']['#value']
+      )
     );
     $results = tripal_core_chado_select('cvterm', $columns, $values);
     foreach ($results as $r) {
@@ -180,30 +180,30 @@ function tripal_feature_edit_ALL_properties_form($form_state, $node, $properties
     }
 
     // iterate through all of the properties and create a set of form elements
-    foreach ($properties as $i => $property) {
-       $form["num-$i"] = array(
-          '#type' => 'fieldset',
-          '#value' => "Property $i"
-       );
-       $form["num-$i"]["id-$i"] = array(
-          '#type' => 'hidden',
-          '#value' => $property->featureprop_id
-       );
-       $default = array_search($property->type, $prop_type_options);
-       $form["num-$i"]["type-$i"] = array(
-          '#type' => 'select',
-          '#options' => $prop_type_options,
-          '#default_value' => $property->type_id->name
-       );
-       $form["num-$i"]["value-$i"] = array(
-          '#type' => 'textfield',
-          '#default_value' => $property->value
-       );
-       $form["num-$i"]["delete-$i"] = array(
-          '#type' => 'submit',
-          '#value' => t("Delete"),
-         '#name' => "delete-$i",
-       );
+  foreach ($properties as $i => $property) {
+    $form["num-$i"] = array(
+      '#type' => 'fieldset',
+      '#value' => "Property $i"
+    );
+    $form["num-$i"]["id-$i"] = array(
+      '#type' => 'hidden',
+      '#value' => $property->featureprop_id
+    );
+    $default = array_search($property->type, $prop_type_options);
+    $form["num-$i"]["type-$i"] = array(
+      '#type' => 'select',
+      '#options' => $prop_type_options,
+      '#default_value' => $property->type_id->name
+    );
+    $form["num-$i"]["value-$i"] = array(
+      '#type' => 'textfield',
+      '#default_value' => $property->value
+    );
+    $form["num-$i"]["delete-$i"] = array(
+      '#type' => 'submit',
+      '#value' => t("Delete"),
+      '#name' => "delete-$i",
+    );
     } //end of foreach property
 
     $form['num_properties'] = array(
@@ -233,38 +233,38 @@ function tripal_feature_edit_ALL_properties_form_submit($form, &$form_state) {
 
   // if the update button was clicked then do the update
   if ($form_state['clicked_button']['#value'] == t('Update All Properties') ) {
-     // iterate through each of the properties and set each one
-     for ($i=1; $i<=$form_state['values']['num_properties']; $i++) {
-       $featureprop_id = $form_state['values']["id-$i"];
-       $property = $form_state['values']["type-$i"];
-       $value = $form_state['values']["value-$i"];
-       $success = tripal_feature_update_property_by_id($featureprop_id, $property, $value, $cv_name);
-       if (!$success) {
-          drupal_set_message(t("Failed to Update Property: %property => %value", array('%property' => $property), array('%value' => $value)));
-          $all_good = 0;
-       }
-     }
-     if ($all_good) {
-        drupal_set_message("Updated all Properties");
-     }
-     drupal_goto('node/' . $form_state['values']['nid']);
+    // iterate through each of the properties and set each one
+    for ($i=1; $i<=$form_state['values']['num_properties']; $i++) {
+      $featureprop_id = $form_state['values']["id-$i"];
+      $property = $form_state['values']["type-$i"];
+      $value = $form_state['values']["value-$i"];
+      $success = tripal_feature_update_property_by_id($featureprop_id, $property, $value, $cv_name);
+      if (!$success) {
+        drupal_set_message(t("Failed to Update Property: %property => %value", array('%property' => $property), array('%value' => $value)));
+        $all_good = 0;
+      }
+    }
+    if ($all_good) {
+      drupal_set_message(t("Updated all Properties"));
+    }
+    drupal_goto('node/' . $form_state['values']['nid']);
   }
   // if the delete button was clicked then remove the property
   elseif (preg_match('/delete-(\d+)/', $form_state['clicked_button']['#name'], $matches) ) {
-     $i = $matches[1];
-     $featureprop_id = $form_state['values']["id-$i"];
-     $property = $form_state['values']["type-$i"];
-     $value = $form_state['values']["value-$i"];
-     $success = tripal_feature_delete_property_by_id($featureprop_id);
-     if ($success) {
-        drupal_set_message("Deleted Property");
-     }
-     else {
-        drupal_set_message("Unable to Delete Property");
-     }
+    $i = $matches[1];
+    $featureprop_id = $form_state['values']["id-$i"];
+    $property = $form_state['values']["type-$i"];
+    $value = $form_state['values']["value-$i"];
+    $success = tripal_feature_delete_property_by_id($featureprop_id);
+    if ($success) {
+      drupal_set_message(t("Deleted Property"));
+    }
+    else {
+      drupal_set_message(t("Unable to Delete Property"));
+    }
   }
   else {
-    drupal_set_message("Unrecognized Button Pressed", 'error');
+    drupal_set_message(t("Unrecognized Button Pressed"), 'error');
   }
 }
 /**
@@ -275,7 +275,7 @@ function tripal_feature_edit_ALL_properties_form_submit($form, &$form_state) {
 function theme_tripal_feature_edit_ALL_properties_form($form) {
   $output = '';
 
-  $output .= '<br><fieldset>';
+  $output .= '<br /><fieldset>';
   $output .= '<legend>Edit Already Existing Properties<span class="form-optional" title="This field is optional">(optional)</span></legend>';
   $output .= '<p>Below is a list of already existing properties for this feature, one property per line. The type refers to the type of '
          .'property and the value is the value for that property. </p>';
@@ -289,7 +289,7 @@ function theme_tripal_feature_edit_ALL_properties_form($form) {
     }
   }
 
-  $output .= '</table><br>';
+  $output .= '</table><br />';
   $output .= drupal_render($form);
   $output .= '</fieldset>';
 

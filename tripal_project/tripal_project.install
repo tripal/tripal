@@ -11,21 +11,21 @@
  */
 
 /**
- * Implementation of hook_install()
+ * Implementation of hook_install().
  */
 function tripal_project_install() {
   drupal_install_schema('tripal_project');
 }
 
 /**
- * Implementation of hook_uninstall()
+ * Implementation of hook_uninstall().
  */
 function tripal_project_uninstall() {
   drupal_uninstall_schema('tripal_project');
 }
 
 /**
- * Implementation of hook_schema()
+ * Implementation of hook_schema().
  */
 function tripal_project_schema() {
 

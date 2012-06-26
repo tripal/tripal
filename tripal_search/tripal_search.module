@@ -7,15 +7,15 @@
 //
 // Copyright 2009 Clemson University
 //
-/*******************************************************************************
+/**
  * Tripal Search initiation
- ******************************************************************************/
+ */
 function tripal_search_init() {
-   // Add javascript
-   drupal_add_js(drupal_get_path('theme', 'tripal') .
+  // Add javascript
+  drupal_add_js(drupal_get_path('theme', 'tripal') .
                                   '/js/tripal_search.js');
 }
-/*******************************************************************************
+/**
  *  Tripal Search adds advanced search functions to Drupal's Search module
  */
 function tripal_search_menu() {
@@ -33,8 +33,8 @@ function tripal_search_menu() {
   return $items;
 }
 
-/*******************************************************************************
- * Implementation of hook_form_alter
+/**
+ * Implementation of hook_form_alter().
  */
 function tripal_search_form_alter(&$form, $form_state, $form_id) {
   if ($form_id == 'search_form' && arg(2)) {
@@ -42,10 +42,10 @@ function tripal_search_form_alter(&$form, $form_state, $form_id) {
     $get = drupal_query_string_encode($_GET, array('q'));
     if (preg_match("/node/", arg(1))) {
       $form['basic']['inline']['fasta'] = array('#type' => 'markup',
-          '#value' => "<br><br><a id=\"tripal_search_link\" href=\"".
+          '#value' => "<br /><br /><a id=\"tripal_search_link\" href=\"".
                       url('tripal_search/'. arg(1) .'/'. urlencode(search_get_keys()),
                       array('query' => trim($get)?$get:NULL)) .
-                      "\">Download features (multi-FASTA format)</a><br><br>");
+                      "\">Download features (multi-FASTA format)</a><br /><br />");
 
     }
   }
@@ -82,12 +82,12 @@ function tripal_search_file($type, $keys, $results) {
     $sqld = "SELECT * FROM {chado_feature} CF INNER JOIN {node} N on N.nid = CF.nid WHERE CF.nid = %d";
     if ($f_objd = db_fetch_object(db_query($sqld, $result->sid))) {
 
-       // Get sequence from chado database
-       $previous_db = tripal_db_set_active('chado');  // use chado database
-       $sqlc = "SELECT * FROM {feature} WHERE feature_id = '%s'";
-       $f_objc = db_fetch_object(db_query($sqlc, $f_objd->feature_id));
-       tripal_db_set_active($previous_db);  // now use drupal database
-       print tripal_feature_return_fasta($f_objc, $desc);
+      // Get sequence from chado database
+      $previous_db = tripal_db_set_active('chado');  // use chado database
+      $sqlc = "SELECT * FROM {feature} WHERE feature_id = '%s'";
+      $f_objc = db_fetch_object(db_query($sqlc, $f_objd->feature_id));
+      tripal_db_set_active($previous_db);  // now use drupal database
+      print tripal_feature_return_fasta($f_objc, $desc);
     }
   }
 }
@@ -122,6 +122,7 @@ function tripal_do_search($keywords, $type, $join1 = '', $where1 = '1 = 1', $arg
   }
 
   // Calculate maximum keyword relevance, to normalize it.
+  // @coder-ignore: can't use placeholders since variable defines a join
   $select = "SELECT SUM(i.score * t.count) AS score FROM {search_index} i " . $join . " WHERE $conditions GROUP BY i.type, i.sid HAVING COUNT(*) >= %d ORDER BY score DESC";
   $arguments = array_merge($arguments1, array($query[4]));
   $normalize = db_result(db_query_range($select, $arguments, 0, 1));
@@ -131,6 +132,7 @@ function tripal_do_search($keywords, $type, $join1 = '', $where1 = '1 = 1', $arg
   $columns2 = str_replace('i.relevance', '('. (1.0 / $normalize) .' * SUM(i.score * t.count))', $columns2);
 
   // Build query to retrieve results.
+  // @coder-ignore: can't use placeholders since variable defines a join
   $select = "SELECT i.type, i.sid, $columns2 FROM {search_index} i " . $join . " " . $join2 . " WHERE $conditions GROUP BY i.type, i.sid HAVING COUNT(*) >= %d";
   $count_select =  "SELECT COUNT(*) FROM ($select) n1";
   $arguments = array_merge($arguments2, $arguments1, array($query[4]));
@@ -143,4 +145,15 @@ function tripal_do_search($keywords, $type, $join1 = '', $where1 = '1 = 1', $arg
     $results[] = $item;
   }
   return $results;
+}
+
+/**
+ * Implements hook_coder_ignore().
+ * Defines the path to the file (tripal_search.coder_ignores.txt) where ignore rules for coder are stored
+ */
+function tripal_search_coder_ignore() {
+  return array(
+    'path' => drupal_get_path('module', 'tripal_search'),
+    'line prefix' => drupal_get_path('module', 'tripal_search'),
+  );
 }

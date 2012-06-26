@@ -90,7 +90,7 @@ function tripal_views_integration_setup_list() {
   $rows = array();
 
   // get the list of materialized views
-  $tviews = db_query('SELECT tv.name, tv.table_name, tc.table_id, tv.priority, tv.comment '
+  $tviews = db_query('SELECT tv.setup_id, tv.name, tv.table_name, tc.table_id, tv.priority, tv.comment '
                      .'FROM {tripal_views} tv '
                      .'LEFT JOIN {tripal_custom_tables} tc ON tc.table_name=tv.table_name '
                      .'WHERE tv.mview_id IS NOT NULL '
@@ -107,7 +107,12 @@ function tripal_views_integration_setup_list() {
     );
   }
 
-  $output .= theme('table', $header, $rows);
+  if ($rows) {
+    $output .= theme('table', $header, $rows);
+  }
+  else {
+    $output .= '<p>There are currently no Materialized Views defined.</p>';
+  }
 
   // Now list non-mview custom tables
   $output .= '<br /><h3>Custom Tables</h3>';
@@ -115,7 +120,7 @@ function tripal_views_integration_setup_list() {
   $rows = array();
 
   // get the list of chado tables
-  $tviews = db_query('SELECT tv.name, tv.table_name, tv.priority, tv.comment '
+  $tviews = db_query('SELECT tv.setup_id, tv.name, tv.table_name, tv.priority, tv.comment '
                      .'FROM {tripal_views} tv '
                      .'LEFT JOIN {tripal_custom_tables} tc ON tc.table_name=tv.table_name '
                      .'WHERE mview_id IS NULL AND tc.table_id IS NOT NULL '
@@ -144,7 +149,7 @@ function tripal_views_integration_setup_list() {
   $rows = array();
 
   // get the list of chado tables
-  $tviews = db_query('SELECT tv.name, tv.table_name, tv.priority, tv.comment '
+  $tviews = db_query('SELECT tv.setup_id, tv.name, tv.table_name, tv.priority, tv.comment '
                      .'FROM {tripal_views} tv '
                      .'LEFT JOIN {tripal_custom_tables} tc ON tc.table_name=tv.table_name '
                      .'WHERE mview_id IS NULL AND tc.table_id IS NULL '
@@ -363,9 +368,9 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL) {
   // we need a div block where the table fields will get put when the
   // AHAH callback is made
   $form['view_setup_table'] = array(
-     '#type' => 'item',
-       '#prefix' => '<div id="table-rows-div">',
-       '#suffix' => '</div>',
+    '#type' => 'item',
+    '#prefix' => '<div id="table-rows-div">',
+    '#suffix' => '</div>',
   );
 
 
@@ -376,10 +381,10 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL) {
     $mview_id = $form_state['storage']['mview_id'];
     $table_name = $form_state['storage']['table_name'];
     $form['view_setup_table'] = array(
-     '#type' => 'fieldset',
-     '#title' => 'Join Selection',
-     '#prefix' => '<div id="fieldset-table-rows-wrapper">',
-     '#suffix' => '</div>',
+      '#type' => 'fieldset',
+      '#title' => 'Join Selection',
+      '#prefix' => '<div id="fieldset-table-rows-wrapper">',
+      '#suffix' => '</div>',
     );
 
     // get the columns in this materialized view.  They are separated by commas
@@ -481,8 +486,8 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL) {
       $form['view_setup_table']["$table_id-$i"]["fields_name_$table_id-$i"] = array(
         '#type' => 'markup',
         '#prefix' => "<div class=\"column-one\">",
-        '#value' => "<span class=\"column-name\">$column_name</span>".
-                    "<br /><span class=\"column-type\">$column_type</span>",
+        '#value' => "<span class=\"column-name\">" . filter_xss($column_name) . "</span>".
+                    "<br /><span class=\"column-type\">" . filter_xss($column_type) . "</span>",
         '#suffix' => "</div>",
       );
       $data['field_types'][$column_name] = $column_type;

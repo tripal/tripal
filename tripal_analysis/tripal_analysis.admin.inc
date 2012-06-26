@@ -73,8 +73,8 @@ function tripal_analysis_module_description_page() {
             </ul>
             </p>';
 
-   $text .= '<h3>Page Customizations</h3>';
-   $text .= '<p>There are several ways to customize the look-and-feel for the way Chado data is presented through Tripal.
+  $text .= '<h3>Page Customizations</h3>';
+  $text .= '<p>There are several ways to customize the look-and-feel for the way Chado data is presented through Tripal.
              Below is a description of several methods.  These methods may be used in conjunction with one another to
              provide fine-grained control.
              <ul>

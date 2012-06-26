@@ -44,16 +44,16 @@ function tripal_stock_menu() {
 
   //Administrative settings menu-----------------
   $items['admin/tripal/tripal_stock'] = array(
-    'title' => t('Stocks'),
-    'description' => t('Basic Description of Tripal Stock Module Functionality'),
+    'title' => 'Stocks',
+    'description' => 'Basic Description of Tripal Stock Module Functionality',
     'page callback' => 'tripal_stock_module_description_page',
     'access arguments' => array('administer site configuration'),
     'type' => MENU_NORMAL_ITEM
   );
 
   $items['admin/tripal/tripal_stock/configuration'] = array(
-    'title' => t('Configuration'),
-    'description' => t('Settings for Chado Stocks'),
+    'title' => 'Configuration',
+    'description' => 'Settings for Chado Stocks',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_stock_admin'),
     'access arguments' => array('administer site configuration'),
@@ -63,7 +63,7 @@ function tripal_stock_menu() {
   //Displaying stocks----------------------------
   $items['stocks'] = array(
     'menu_name' => ('primary-links'),
-    'title' => t('Stocks'),
+    'title' => 'Stocks',
     'page callback' => 'tripal_stock_show_stocks',
     'access arguments' => array('access chado_stock content'),
     'type' => MENU_NORMAL_ITEM,
@@ -71,8 +71,8 @@ function tripal_stock_menu() {
 
   // Adding Secondary Properties-----------------
   $items['node/%cs_node/properties'] = array(
-    'title' => t('Add Properties & Synonyms'),
-    'description' => t('Settings for Chado Stocks'),
+    'title' => 'Add Properties & Synonyms',
+    'description' => 'Settings for Chado Stocks',
     'page callback' => 'tripal_stock_add_ALL_property_page',
     'page arguments' => array(1),
     'access arguments' => array('create chado_stock content'),
@@ -80,8 +80,8 @@ function tripal_stock_menu() {
   );
 
   $items['node/%cs_node/db_references'] = array(
-    'title' => t('Add Database References'),
-    'description' => t('Settings for Chado Stocks'),
+    'title' => 'Add Database References',
+    'description' => 'Settings for Chado Stocks',
     'page callback' => 'tripal_stock_add_ALL_dbreferences_page',
     'page arguments' => array(1),
     'access arguments' => array('create chado_stock content'),
@@ -89,8 +89,8 @@ function tripal_stock_menu() {
   );
 
   $items['node/%cs_node/relationships'] = array(
-    'title' => t('Add Relationships'),
-    'description' => t('Settings for Chado Stocks'),
+    'title' => 'Add Relationships',
+    'description' => 'Settings for Chado Stocks',
     'page callback' => 'tripal_stock_add_ALL_relationships_page',
     'page arguments' => array(1),
     'access arguments' => array('create chado_stock content'),
@@ -99,8 +99,8 @@ function tripal_stock_menu() {
 
   //Edit/Deleting Secondary Properties-------------
   $items['node/%cs_node/edit_properties'] = array(
-    'title' => t('Edit Properties'),
-    'description' => t('Settings for Chado Stocks'),
+    'title' => 'Edit Properties',
+    'description' => 'Settings for Chado Stocks',
     'page callback' => 'tripal_stock_edit_ALL_properties_page',
     'page arguments' => array(1),
     'access arguments' => array('edit chado_stock content'),
@@ -109,8 +109,8 @@ function tripal_stock_menu() {
   );
 
     $items['node/%cs_node/edit_relationships'] = array(
-    'title' => t('Edit Relationships'),
-    'description' => t('Settings for Chado Stocks'),
+    'title' => 'Edit Relationships',
+    'description' => 'Settings for Chado Stocks',
     'page callback' => 'tripal_stock_edit_ALL_relationships_page',
     'page arguments' => array(1),
     'access arguments' => array('edit chado_stock content'),
@@ -119,8 +119,8 @@ function tripal_stock_menu() {
   );
 
   $items['node/%cs_node/edit_db_references'] = array(
-    'title' => t('Edit DB References'),
-    'description' => t('Settings for Chado Stocks'),
+    'title' => 'Edit DB References',
+    'description' => 'Settings for Chado Stocks',
     'page callback' => 'tripal_stock_edit_ALL_dbreferences_page',
     'page arguments' => array(1),
     'access arguments' => array('edit chado_stock content'),
@@ -158,7 +158,7 @@ function cs_node_load($nid) {
 }
 
 /**
- * Implementation of hook_perm()
+ * Implementation of hook_perm().
  *
  * Purpose: Set the permission types that the chado stock module uses
  *
@@ -192,27 +192,27 @@ function tripal_stock_perm() {
  * @ingroup tripal_stock
  */
 function chado_stock_access($op, $node, $account) {
-   if ($op == 'create') {
-      if (!user_access('create chado_stock content', $account)) {
-        return FALSE;
-      }
-   }
-   if ($op == 'update') {
-      if (!user_access('edit chado_stock content', $account)) {
-         return FALSE;
-      }
-   }
-   if ($op == 'delete') {
-      if (!user_access('delete chado_stock content', $account)) {
-         return FALSE;
-      }
-   }
-   if ($op == 'view') {
-      if (!user_access('access chado_stock content', $account)) {
-         return FALSE;
-      }
-   }
-   return NULL;
+  if ($op == 'create') {
+    if (!user_access('create chado_stock content', $account)) {
+      return FALSE;
+    }
+  }
+  if ($op == 'update') {
+    if (!user_access('edit chado_stock content', $account)) {
+      return FALSE;
+    }
+  }
+  if ($op == 'delete') {
+    if (!user_access('delete chado_stock content', $account)) {
+      return FALSE;
+    }
+  }
+  if ($op == 'view') {
+    if (!user_access('access chado_stock content', $account)) {
+      return FALSE;
+    }
+  }
+  return NULL;
 }
 
 /**
@@ -228,9 +228,9 @@ function chado_stock_access($op, $node, $account) {
  * @ingroup tripal_stock
  */
 function tripal_stock_views_api() {
-   return array(
-      'api' => 2.0,
-   );
+  return array(
+    'api' => 2.0,
+  );
 }
 
 /**
@@ -297,18 +297,18 @@ function tripal_stock_theme() {
  */
 function tripal_stock_show_stocks() {
   $sql = "SELECT COUNT(stock_id) FROM {chado_stock}";
-   $no_stocks = db_result(db_query($sql));
-   if ($no_stocks != 0) {
-      $stocks = tripal_stock_get_all_stocks();
-      if ($no_stocks != count($stocks)) {
-         drupal_set_message("Synchronization needed.");
-      }
-      return theme('tripal_stock_stock_table', &$stocks);
-   }
-   else {
-      return t("No Stocks exists. Please contact administrators to " .
-               "synchronize stocks.");
-   }
+  $no_stocks = db_result(db_query($sql));
+  if ($no_stocks != 0) {
+    $stocks = tripal_stock_get_all_stocks();
+    if ($no_stocks != count($stocks)) {
+      drupal_set_message(t("Synchronization needed."));
+    }
+    return theme('tripal_stock_stock_table', &$stocks);
+  }
+  else {
+    return t("No Stocks exists. Please contact administrators to " .
+             "synchronize stocks.");
+  }
 }
 
 /**
@@ -345,7 +345,7 @@ function theme_tripal_stock_stock_table(&$stocks) {
   $output .= "</table>";
   $output .= "</div>";
 
-   return $output;
+  return $output;
 }
 
 /**
@@ -677,7 +677,7 @@ function chado_stock_insert($node) {
         $values['version'] = '1';
         $dbxref_status = tripal_core_chado_insert('dbxref', $values);
         if (!$dbxref_status) {
-          drupal_set_message('Unable to add database reference to this stock.', 'warning');
+          drupal_set_message(t('Unable to add database reference to this stock.'), 'warning');
           watchdog('tripal_stock',
             'Insert Stock: Unable to create dbxref where values:%values',
             array('%values' => print_r($values, TRUE)),
@@ -739,7 +739,7 @@ function chado_stock_insert($node) {
       }
     }
     else {
-      drupal_set_message('Error during stock creation.', 'error');
+      drupal_set_message(t('Error during stock creation.'), 'error');
       watchdog('tripal_stock',
         'Insert Stock: Unable to find newly created stock where values:%values',
         array('%values' => print_r($values, TRUE)),
@@ -749,7 +749,7 @@ function chado_stock_insert($node) {
     }
   }
   else {
-    drupal_set_message('Error during stock creation.', 'error');
+    drupal_set_message(t('Error during stock creation.'), 'error');
     watchdog('tripal_stock',
       'Insert Stock: Unable to create stock where values:%values',
       array('%values' => print_r($values, TRUE)),
@@ -820,7 +820,7 @@ function chado_stock_update($node) {
             $dbxref_mode = 'Create';
           }
           else {
-            drupal_set_message('Unable to find stock to Update', 'error');
+            drupal_set_message(t('Unable to find stock to Update'), 'error');
             watchdog(
               'tripal_stock',
               'Stock Update: Unable to find stock to update using values: %values',
@@ -863,7 +863,7 @@ function chado_stock_update($node) {
     );
 
     if (!$status) {
-      drupal_set_message('Unable to update stock', 'error');
+      drupal_set_message(t('Unable to update stock'), 'error');
       watchdog(
         'tripal_stock',
         'Stock Update: Unable to update stock using match values: %mvalues and update values: %uvalues',
@@ -943,39 +943,39 @@ function tripal_stock_block($op = 'list', $delta = 0, $edit=array()) {
 
       return $blocks;
 
-     case 'view':
-       if (user_access('access chado_stock content') and arg(0) == 'node' and is_numeric(arg(1))) {
-        $nid = arg(1);
-        $node = node_load($nid);
+    case 'view':
+      if (user_access('access chado_stock content') and arg(0) == 'node' and is_numeric(arg(1))) {
+      $nid = arg(1);
+      $node = node_load($nid);
 
-        $block = array();
-        switch ($delta) {
-          case 'base':
-            $block['subject'] = t('Stock Details');
-            $block['content'] = theme('tripal_stock_base', $node);
-            break;
+      $block = array();
+      switch ($delta) {
+        case 'base':
+          $block['subject'] = t('Stock Details');
+          $block['content'] = theme('tripal_stock_base', $node);
+          break;
 
-          case 'properties':
-            $block['subject'] = t('Properties');
-            $block['content'] = theme('tripal_stock_properties', $node);
-            break;
+        case 'properties':
+          $block['subject'] = t('Properties');
+          $block['content'] = theme('tripal_stock_properties', $node);
+          break;
 
-          case 'references':
-            $block['subject'] = t('References');
-            $block['content'] = theme('tripal_stock_references', $node);
-            break;
+        case 'references':
+          $block['subject'] = t('References');
+          $block['content'] = theme('tripal_stock_references', $node);
+          break;
 
-          case 'relationships':
-            $block['subject'] = t('Relationships');
-            $block['content'] = theme('tripal_stock_relationships', $node);
-            break;
+        case 'relationships':
+          $block['subject'] = t('Relationships');
+          $block['content'] = theme('tripal_stock_relationships', $node);
+          break;
 
-          case 'synonyms':
-            $block['subject'] = t('Synonyms');
-            $block['content'] = theme('tripal_stock_synonyms', $node);
-            break;
+        case 'synonyms':
+          $block['subject'] = t('Synonyms');
+          $block['content'] = theme('tripal_stock_synonyms', $node);
+          break;
 
-        }
+      }
         return $block;
       }
   }
