@@ -456,7 +456,7 @@ function chado_feature_insert($node) {
   $istatus = tripal_core_chado_insert('feature', $values);
   if (!$istatus) {
     drupal_set_message(t('Unable to add feature.'), 'warning');
-    watchdog('tripal_organism',
+    watchdog('tripal_feature',
     'Insert feature: Unable to create feature where values: %values',
     array('%values' => print_r($values, TRUE)),
     WATCHDOG_WARNING
@@ -531,7 +531,7 @@ function chado_feature_update($node) {
     }
     else {
       drupal_set_message(t('Unable to update feature.'), 'warning');
-      watchdog('tripal_organism',
+      watchdog('tripal_feature',
       'Update feature: Unable to update feature where values: %values',
       array('%values' => print_r($values, TRUE)),
       WATCHDOG_WARNING

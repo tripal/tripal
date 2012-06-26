@@ -44,6 +44,12 @@ class views_handler_filter_chado_select_string extends views_handler_filter_stri
       '#default_value' => (isset($this->options['max_length'])) ? $this->options['max_length'] : 40,
 
     );
+    $form['max_length'] = array(
+      '#type' => 'markup',
+      '#value' => t('<strong><font color="red">Note:</font></strong> If another filter exists for the same table then '.
+                    'the values shown in the drop box will only include those from rows that are not filtered.'),
+
+    );
 
   }
 
@@ -64,18 +70,42 @@ class views_handler_filter_chado_select_string extends views_handler_filter_stri
     }
     else {
 
-      // Get Options
-      if ($this->options['optional']) {
-        //$options['<select '.$this->table.'>'] = '--None--';
-        $options['All'] = '--Any--';
+      // build a where clause that will filter the list in the drop box
+      // using fields that are not exposed and that are for the table
+      // from whcih the values in the drop box will be slected and
+      // we only want to use non-exposed fields because these are not
+      // available to the user to edit--their fixed.
+      $where = '';
+      $filters = $this->view->filter;
+      foreach($filters as $filter_name => $details){
+         // we only want to inclue non-exposed filters 
+         if($details->options['exposed'] == FALSE){
+            // we only want to filter on the table we're getting the list from
+            if(strcmp($details->table,$this->table)==0){
+              $where .= "$details->field $details->operator ". $details->value['value'];
+              $where .= ' AND ';
+            }
+         }
+      } 
+      if($where){
+         $where = "WHERE $where";
+         $where = substr($where,0,-5); # remove the final ' AND '
       }
-      $sql = "SELECT $this->field FROM $this->table ORDER BY $this->field ASC";
+
+      // get the values from the table
+      $sql = "SELECT $this->real_field FROM $this->table $where ORDER BY $this->field ASC";
       $previous_db = tripal_db_set_active('chado');  // use chado database
       $results = db_query($sql);
       tripal_db_set_active($previous_db);  // now use drupal database
+
+      // Build the select box options
       $max_length = $this->options['max_length'];
       if (!$max_length) {
         $max_length = 40;
+      }
+      if ($this->options['optional']) {
+        //$options['<select '.$this->table.'>'] = '--None--';
+        $options['All'] = '--Any--';
       }
       while ($r = db_fetch_object($results)) {
         if (drupal_strlen($r->{$this->field}) > $max_length) {
