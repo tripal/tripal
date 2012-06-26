@@ -80,12 +80,13 @@ function tripal_bulk_loader_admin_manage_templates() {
  */
 function tripal_bulk_loader_admin_jobs() {
   $output = '';
+  $num_jobs_per_page = 50;
 
   $output .= '<p>' . t('Jobs are not automatically submitted to the tripal jobs management system when they are first created. Any jobs listed below with a status of "Initialized" will not have a Job ID until you go to the bulk loader page and submit the job.') . '</p>';
 
   $header = array('Job ID', 'Name','Template','Status');
   $rows = array();
-  $resource = db_query("SELECT n.*, t.name as template_name FROM tripal_bulk_loader n LEFT JOIN tripal_bulk_loader_template t ON cast(n.template_id as integer)=t.template_id ORDER BY n.job_id DESC");
+  $resource = pager_query("SELECT n.*, t.name as template_name FROM tripal_bulk_loader n LEFT JOIN tripal_bulk_loader_template t ON cast(n.template_id as integer)=t.template_id ORDER BY n.job_id DESC", $num_jobs_per_page);
   while ($n = db_fetch_object($resource)) {
     $rows[] = array(
       l($n->job_id, 'admin/tripal/tripal_jobs/view/' . $n->job_id),
@@ -95,6 +96,8 @@ function tripal_bulk_loader_admin_jobs() {
     );
   }
   $output .= theme_table($header, $rows);
+
+  $output .= theme('pager');
 
   return $output;
 }

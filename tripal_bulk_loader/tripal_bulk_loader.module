@@ -226,35 +226,6 @@ function tripal_bulk_loader_perm() {
   );
 }
 
-/**
- * Creates a listing page for all bulk loading jobs
- */
-function tripal_bulk_loader_list() {
-  $num_results_per_page = 50;
-  $output = '';
-
-  $header = array('', 'Status', 'Loader', 'File');
-  $rows = array();
-
-  $query = 'SELECT * FROM {tripal_bulk_loader} l '
-    .'LEFT JOIN {node} n ON n.nid = l.nid '
-    .'LEFT JOIN {tripal_bulk_loader_template} t ON t.template_id = cast(l.template_id as integer)';
-  $resource = pager_query($query, $num_results_per_page, 0, NULL);
-  while ($r = db_fetch_object($resource)) {
-    $row = array(
-      l($r->title, 'node/' . $r->nid),
-      $r->job_status,
-      $r->name,
-      $r->file
-    );
-    $rows[] = $row;
-  }
-
-  $output .= theme('table', $header, $rows);
-  return $output;
-
-}
-
 //////////////////////////////////////////////////////////////////////////////////////////////
 // Node Functions
 //////////////////////////////////////////////////////////////////////////////////////////////
@@ -330,7 +301,7 @@ function tripal_bulk_loader_form($node, $form_state) {
   $form['loader']['file']= array(
     '#type'          => 'textfield',
     '#title'         => t('Data File'),
-    '#description'   => t('Please specify the data file to be loaded.'),
+    '#description'   => t('Please specify the data file to be loaded. This must be a tab-delimited text file with UNIX line endings.'),
     '#weight'        => -8,
     '#default_value' => $node->file
   );
