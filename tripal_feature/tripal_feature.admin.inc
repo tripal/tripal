@@ -837,7 +837,7 @@ function tripal_feature_aggregator_form_submit($form, &$form_state) {
  */
 function tripal_feature_aggregator_ajax_edit() {
   // get the database id, build the form and then return the JSON object
-  $type_id = $_POST['type_id'];
+  $type_id = filter_xss($_POST['type_id']);
   $form = drupal_get_form('tripal_feature_aggregator_form', $type_id);
   drupal_json(array('status' => TRUE, 'data' => $form));
 }

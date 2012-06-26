@@ -2441,3 +2441,13 @@ function tripal_feature_job_describe_args($callback, $args) {
   return $new_args;
 }
 
+/**
+ * Implements hook_coder_ignore().
+ * Defines the path to the file (tripal_core.coder_ignores.txt) where ignore rules for coder are stored
+ */
+function tripal_feature_coder_ignore() {
+  return array(
+    'path' => drupal_get_path('module', 'tripal_feature'),
+    'line prefix' => drupal_get_path('module', 'tripal_feature'),
+  );
+}

@@ -51,11 +51,13 @@
 function tripal_core_get_chado_tables($include_custom = NULL) {
   if (is_array($db_url) AND array_key_exists('chado', $db_url)) {
     $previous_db = tripal_db_set_active('chado');
+    // @coder-ignore: acting on pg_catalog schema rather then drupal schema therefore, table prefixing does not apply
     $sql = 'SELECT tablename FROM pg_tables';
     $resource = db_query($sql);
     tripal_db_set_active($previous_db);
   }
   else {
+    // @coder-ignore: acting on pg_catalog schema rather then drupal schema therefore, table prefixing does not apply
     $sql = "SELECT tablename FROM pg_tables WHERE schemaname='chado'";
     $resource = db_query($sql);
   }

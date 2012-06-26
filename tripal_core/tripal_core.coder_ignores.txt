@@ -2,20 +2,17 @@
 ; file:line:warning-type
 ; where warning-type is one of security, style, sql, i18n, comment, etc.
 
-; This select statement is acting upon the pg_catalog schema rather then the Drupal
-; schema and thus the curly brackets ({}) are not needed.
-tripal_core.schema.api.inc:54:sql
-tripal_core.schema.api.inc:59:sql
-tripal_core.api.inc:1953:sql
-
 ; This query selects from a non-drupal schema where the database prefixes are not
 ; applied and thus the curcly brackets ({}) are not needed
-tripal_core.api.inc:971:sql
+tripal_core.schema.api.inc:55:sql
+tripal_core.schema.api.inc:61:sql
+tripal_core.api.inc:1060:sql
+tripal_core.api.inc:2153:sql
 
 ; Only module designers can create the criteria evaluated by drupal_eval since it
-; is designed in a hook. Since module designers can already write php code to act on 
-; the database and the criteria is never subject to user input, this is not a security 
+; is designed in a hook. Since module designers can already write php code to act on
+; the database and the criteria is never subject to user input, this is not a security
 ; risk.
-tripal_core.api.inc:906:security
-tripal_core.api.inc:941:security
-tripal_core.api.inc:992:security
+tripal_core.api.inc:993:security
+tripal_core.api.inc:1029:security
+tripal_core.api.inc:1082:security
