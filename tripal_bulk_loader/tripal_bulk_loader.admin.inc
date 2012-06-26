@@ -263,11 +263,11 @@ function tripal_bulk_loader_modify_template_base_form($form_state = NULL, $mode)
         $form['records']['records-data'][$priority] = array(
           'title' => array(
             '#type' => 'markup',
-            '#value' => $table_array['record_id'],
+            '#value' => filter_xss($table_array['record_id']),
           ),
           'chado_table' => array(
             '#type' => 'markup',
-            '#value' => $table_array['table'],
+            '#value' => filter_xss($table_array['table']),
           ),
           'mode' => array(
             '#type' => 'item',
@@ -393,6 +393,7 @@ function tripal_bulk_loader_modify_template_base_form($form_state = NULL, $mode)
     '#value' => $value,
     '#weight' => 4,
   );
+
   return $form;
 }
 
@@ -2206,7 +2207,7 @@ function tripal_bulk_loader_edit_template_field_form_submit($form, &$form_state)
 function tripal_bulk_loader_add_field_ahah() {
 
   $form_state = array('storage' => NULL, 'submitted' => FALSE);
-  $form_build_id = $_POST['form_build_id'];
+  $form_build_id = filter_xss($_POST['form_build_id']);
   $form = form_get_cache($form_build_id, $form_state);
   $args = $form['#parameters'];
   $form_id = array_shift($args);
@@ -2241,7 +2242,7 @@ function tripal_bulk_loader_add_field_ahah() {
 function tripal_bulk_loader_edit_field_ahah() {
 
   $form_state = array('storage' => NULL, 'submitted' => FALSE);
-  $form_build_id = $_POST['form_build_id'];
+  $form_build_id = filter_xss($_POST['form_build_id']);
   $form = form_get_cache($form_build_id, $form_state);
   $args = $form['#parameters'];
   $form_id = array_shift($args);

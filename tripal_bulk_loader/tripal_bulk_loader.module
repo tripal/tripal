@@ -504,3 +504,13 @@ function tripal_bulk_loader_job_describe_args($callback, $args) {
 
 }
 
+/**
+ * Implements hook_coder_ignore().
+ * Defines the path to the file (tripal_bulk_loader.coder_ignores.txt) where ignore rules for coder are stored
+ */
+function tripal_bulk_loader_coder_ignore() {
+  return array(
+    'path' => drupal_get_path('module', 'tripal_bulk_loader'),
+    'line prefix' => drupal_get_path('module', 'tripal_bulk_loader'),
+  );
+}

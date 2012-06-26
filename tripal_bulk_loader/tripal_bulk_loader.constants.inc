@@ -160,15 +160,15 @@ function tripal_bulk_loader_set_constants_form($form_state, $node) {
           $group = $field['group_id'];
           $form['exposed_fields']['existing'][$group][$index] = array(
             '#type' => 'markup',
-            '#value' => $field['value'],
+            '#value' => filter_xss($field['value']),
           );
         }
       }
 
       $form['exposed_fields']['existing'][$group]['delete'] = array(
         '#type' => 'markup',
-        '#value' => l(t('Edit'), 'node/' . $node->nid . '/constants/' . $group . '/edit') . '<br />'  .
-          l(t('Delete'), 'node/' . $node->nid . '/constants/' . $group . '/delete'),
+        '#value' => filter_xss(l(t('Edit'), 'node/' . $node->nid . '/constants/' . $group . '/edit') . '&nbsp&nbsp|&nbsp&nbsp'  .
+          l(t('Delete'), 'node/' . $node->nid . '/constants/' . $group . '/delete')),
       );
 
     }
@@ -364,6 +364,7 @@ function theme_tripal_bulk_loader_set_constants_form($form) {
       $i++;
     }
     //drupal_add_tabledrag('mytable', 'order', 'sibling', 'weight-group');
+    // @coder-ignore: no user input thus don't need to filter
     $form['exposed_fields']['existing'] = array(
       '#type' => 'markup',
       '#value' => theme('table', $header, $rows, array('id' => 'mytable')) . '<br />'
