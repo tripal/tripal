@@ -1259,10 +1259,11 @@ function tripal_core_expand_chado_vars($object, $type, $to_expand, $table_option
             $table_options
           );
           if ($foreign_object) {
-            // in the case where the a foreign key relationships exists more
+            // in the case where the foreign key relationships exists more
             // than once with the same table we want to alter the
             // array structure
             if (count($foreign_table_desc['foreign keys'][$base_table]['columns']) > 1) {
+              $object->{$foreign_table} = new stdClass();
               $object->{$foreign_table}->{$left} = $foreign_object;
               $object->expanded = $to_expand;
             }
