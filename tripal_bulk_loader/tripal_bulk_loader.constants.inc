@@ -167,7 +167,7 @@ function tripal_bulk_loader_set_constants_form($form_state, $node) {
 
       $form['exposed_fields']['existing'][$group]['delete'] = array(
         '#type' => 'markup',
-        '#value' => filter_xss(l(t('Edit'), 'node/' . $node->nid . '/constants/' . $group . '/edit') . '&nbsp&nbsp|&nbsp&nbsp'  .
+        '#value' => filter_xss(l(t('Edit'), 'node/' . $node->nid . '/constants/' . $group . '/edit') . '  |  '  .
           l(t('Delete'), 'node/' . $node->nid . '/constants/' . $group . '/delete')),
       );
 
