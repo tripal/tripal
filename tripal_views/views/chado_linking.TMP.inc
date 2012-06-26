@@ -1,6 +1,7 @@
 <?php
 
 /**
+ * @file
  * This is a temporary function holding all the old-style views integration
  * needed to link the base tables to their node. This will remain to keep things working
  * until it has been best determined how to do this via the new tripal_views integration
@@ -13,9 +14,9 @@ function tripal_views_TEMPORARY_chado_linking_data($data) {
   // if the chado database is not local to the drupal database
   // then we need to set the database name.  This should always
   // be 'chado'.
-  if(is_array($db_url) and array_key_exists('chado',$db_url)){
-     // return empty data array b/c if chado is external then no join to the nodetable can be made
-     return $data;
+  if (is_array($db_url) and array_key_exists('chado', $db_url)) {
+    // return empty data array b/c if chado is external then no join to the nodetable can be made
+    return $data;
   }
 
   // FEATURE ====================================

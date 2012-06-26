@@ -101,6 +101,7 @@ class views_handler_filter_stockprop_id extends views_handler_filter {
 
       // Get options
       $previous_db = tripal_db_set_active('chado');
+      // @coder-ignore: non-drupal schema therefore table prefixing does not apply
       $resource = db_query("SELECT value FROM stockprop WHERE type_id=" . $this->type . " ORDER BY value");
       tripal_db_set_active($previous_db);
       while ($r = db_fetch_object($resource)) {

@@ -19,6 +19,7 @@ class views_handler_filter_stock_relationship_id extends views_handler_filter {
 
       // determine if just checking presence
       if (preg_match('/NULL/', $this->operator)) {
+          // @coder-ignore: non-drupal schema therefore table prefixing does not apply
           $where = 'stock.stock_id IN ('
             .'SELECT ' . $this->options['variable_position'] . ' FROM stock_relationship '
             .'WHERE ' . $this->options['fixed_position'] . ' ' . $this->operator . ' AND type_id = ' . $this->options['type']
@@ -68,6 +69,7 @@ class views_handler_filter_stock_relationship_id extends views_handler_filter {
 
         //generate where
         if (sizeof($fixed_stock_ids) == 1) {
+          // @coder-ignore: non-drupal schema therefore table prefixing does not apply
           $where = 'stock.stock_id IN ('
             .'SELECT ' . $this->options['variable_position'] . ' FROM stock_relationship '
             .'WHERE ' . $this->options['fixed_position'] . ' ' . $this->operator . ' ' . $fixed_stock_ids[0] . ' AND type_id = ' . $this->options['type']
@@ -75,6 +77,7 @@ class views_handler_filter_stock_relationship_id extends views_handler_filter {
           $this->query->add_where($this->options['group'], $where);
         }
         elseif (sizeof($fixed_stock_ids) > 1) {
+          // @coder-ignore: non-drupal schema therefore table prefixing does not apply
           $where = 'stock.stock_id IN ('
             .'SELECT ' . $this->options['variable_position'] . ' FROM stock_relationship '
             .'WHERE ' . $this->options['fixed_position'] . ' ' . $this->operator . ' (' . implode(', ', $fixed_stock_ids) . ') AND type_id = ' . $this->options['type']

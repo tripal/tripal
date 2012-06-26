@@ -84,6 +84,7 @@ class views_handler_field_chado_rel_by_type extends views_handler_field_prerende
       );
 
       $options = array();
+      // @coder-ignore: non-drupal schema therefore table prefixing does not apply
       $sql = 'SELECT rel.type_id, cvt.name FROM %s_relationship rel LEFT JOIN cvterm cvt ON cvt.cvterm_id=rel.type_id GROUP BY rel.type_id,cvt.name';
       $previous_db = tripal_db_set_active('chado');
       $resource = db_query($sql, $this->table);
@@ -124,6 +125,7 @@ class views_handler_field_chado_rel_by_type extends views_handler_field_prerende
       }
 
       // Add relationships to the view results
+      // @coder-ignore: non-drupal schema therefore table prefixing does not apply
       $sql = "SELECT rel.*, cvterm.name as type_name, "
         ."subject.name as subject_name, object.name as object_name "
         ."FROM " . $this->table . "_relationship rel "
