@@ -13,17 +13,41 @@ function tripal_bulk_loader_admin_template() {
 
   $output .= '<br /><h3>Quick Links:</h3>';
   $output .= '<ul>'
-    .'<li>'.t('<a href="@link">Configure settings</a>', array('@link' => url('admin/tripal/tripal_bulk_loader_template/configure'))).'</li>'
-    .'<li>'.t('List <a href="@link">Bulk Loader Jobs</a>', array('@link' => url('admin/tripal/tripal_bulk_loader_template/jobs'))).'</li>'
-    .'<li>'.t('List <a href="@link">Manage Templates</a>', array('@link' => url('admin/tripal/tripal_bulk_loader_template/manage_templates'))).'</li>'
-      .'<ul>'
-      .'<li>'.t('<a href="@create">Create</a> a new template', array('@create' => url('admin/tripal/tripal_bulk_loader_template/manage_templates/create'))).'</li>'
-      .'<li>'.t('<a href="@edit">Edit</a> an existing template', array('@edit' => url('admin/tripal/tripal_bulk_loader_template/manage_templates/edit'))).'</li>'
-      .'<li>'.t('<a href="@delete">Delete</a> an existing template', array('@delete' => url('admin/tripal/tripal_bulk_loader_template/manage_templates/delete'))).'</li>'
-      .'<li>'.t('<a href="@import">Import</a> a new template', array('@import' => url('admin/tripal/tripal_bulk_loader_template/manage_templates/import'))).'</li>'
-      .'<li>'.t('<a href="@export">Export</a> an existing template', array('@export' => url('admin/tripal/tripal_bulk_loader_template/manage_templates/export'))).'</li>'
-      .'</ul>'
-    .'</ul>';
+    . '<li>'
+      . t('<a href="@link">Configure settings</a>',
+        array('@link' => url('admin/tripal/tripal_bulk_loader_template/configure')))
+      . '</li>'
+    . '<li>'
+      . t('List <a href="@link">Bulk Loader Jobs</a>',
+      array('@link' => url('admin/tripal/tripal_bulk_loader_template/jobs')))
+      . '</li>'
+    . '<li>'
+      . t('List <a href="@link">Manage Templates</a>',
+      array('@link' => url('admin/tripal/tripal_bulk_loader_template/manage_templates')))
+      . '</li>'
+      . '<ul>'
+      . '<li>'
+        . t('<a href="@create">Create</a> a new template',
+        array('@create' => url('admin/tripal/tripal_bulk_loader_template/manage_templates/create')))
+        . '</li>'
+      . '<li>'
+        . t('<a href="@edit">Edit</a> an existing template',
+        array('@edit' => url('admin/tripal/tripal_bulk_loader_template/manage_templates/edit')))
+        . '</li>'
+      . '<li>'
+        . t('<a href="@delete">Delete</a> an existing template',
+        array('@delete' => url('admin/tripal/tripal_bulk_loader_template/manage_templates/delete')))
+        . '</li>'
+      . '<li>'
+        . t('<a href="@import">Import</a> a new template',
+        array('@import' => url('admin/tripal/tripal_bulk_loader_template/manage_templates/import')))
+        . '</li>'
+      . '<li>'
+        . t('<a href="@export">Export</a> an existing template',
+        array('@export' => url('admin/tripal/tripal_bulk_loader_template/manage_templates/export')))
+        . '</li>'
+      . '</ul>'
+    . '</ul>';
 
   $output .= '<h3>Module Description:</h3>';
   $output .= '<p>This module provides the ability to create loading templates for any tab-delimited '
@@ -57,18 +81,33 @@ function tripal_bulk_loader_admin_manage_templates() {
 
   $output .= '<br /><h3>Quick Links:</h3>';
   $output .= '<ul>'
-    .'<li>'.t('<a href="@create">Create</a> a new template', array('@create' => url('admin/tripal/tripal_bulk_loader_template/manage_templates/create'))).'</li>'
-    .'<li>'.t('<a href="@edit">Edit</a> an existing template', array('@edit' => url('admin/tripal/tripal_bulk_loader_template/manage_templates/edit'))).'</li>'
-    .'<li>'.t('<a href="@delete">Delete</a> an existing template', array('@delete' => url('admin/tripal/tripal_bulk_loader_template/manage_templates/delete'))).'</li>'
-    .'<li>'.t('<a href="@import">Import</a> a new template', array('@import' => url('admin/tripal/tripal_bulk_loader_template/manage_templates/import'))).'</li>'
-    .'<li>'.t('<a href="@export">Export</a> an existing template', array('@export' => url('admin/tripal/tripal_bulk_loader_template/manage_templates/export'))).'</li>'
-    .'</ul>';
+    . '<li>'
+      . t('<a href="@create">Create</a> a new template',
+      array('@create' => url('admin/tripal/tripal_bulk_loader_template/manage_templates/create')))
+      . '</li>'
+    . '<li>'
+      . t('<a href="@edit">Edit</a> an existing template',
+      array('@edit' => url('admin/tripal/tripal_bulk_loader_template/manage_templates/edit')))
+      . '</li>'
+    . '<li>'
+      . t('<a href="@delete">Delete</a> an existing template',
+      array('@delete' => url('admin/tripal/tripal_bulk_loader_template/manage_templates/delete')))
+      . '</li>'
+    . '<li>'
+      . t('<a href="@import">Import</a> a new template',
+      array('@import' => url('admin/tripal/tripal_bulk_loader_template/manage_templates/import')))
+      . '</li>'
+    . '<li>'
+      . t('<a href="@export">Export</a> an existing template',
+      array('@export' => url('admin/tripal/tripal_bulk_loader_template/manage_templates/export')))
+      . '</li>'
+    . '</ul>';
 
-  $output .= '<p>'.t('Templates, as the term is used for this module, refer to plans
+  $output .= '<p>' . t('Templates, as the term is used for this module, refer to plans
   describing how the columns in the data file supplied to a bulk loading job map to tables
   and fields in chado. Templates are created independently of bulk loading jobs so that
   they can be re-used. Thus you only need one template to load any number of files of the
-  same format.').'</p>';
+  same format.') . '</p>';
 
 
 
@@ -82,11 +121,16 @@ function tripal_bulk_loader_admin_jobs() {
   $output = '';
   $num_jobs_per_page = 50;
 
-  $output .= '<p>' . t('Jobs are not automatically submitted to the tripal jobs management system when they are first created. Any jobs listed below with a status of "Initialized" will not have a Job ID until you go to the bulk loader page and submit the job.') . '</p>';
+  $output .= '<p>' . t('Jobs are not automatically submitted to the tripal jobs management
+  system when they are first created. Any jobs listed below with a status of "Initialized"
+  will not have a Job ID until you go to the bulk loader page and submit the job.') . '</p>';
 
-  $header = array('Job ID', 'Name','Template','Status');
+  $header = array('Job ID', 'Name', 'Template', 'Status');
   $rows = array();
-  $resource = pager_query("SELECT n.*, t.name as template_name FROM tripal_bulk_loader n LEFT JOIN tripal_bulk_loader_template t ON cast(n.template_id as integer)=t.template_id ORDER BY n.job_id DESC", $num_jobs_per_page);
+  $resource = pager_query("SELECT n.*, t.name as template_name
+    FROM {tripal_bulk_loader} n
+    LEFT JOIN {tripal_bulk_loader_template} t ON cast(n.template_id as integer)=t.template_id
+    ORDER BY n.job_id DESC", $num_jobs_per_page);
   while ($n = db_fetch_object($resource)) {
     $rows[] = array(
       l($n->job_id, 'admin/tripal/tripal_jobs/view/' . $n->job_id),
