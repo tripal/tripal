@@ -125,18 +125,25 @@ function tripal_bulk_loader_admin_jobs() {
   system when they are first created. Any jobs listed below with a status of "Initialized"
   will not have a Job ID until you go to the bulk loader page and submit the job.') . '</p>';
 
-  $header = array('Job ID', 'Name', 'Template', 'Status');
+  $header = array(
+    array('data' => 'Job ID', 'field' => 'job_id', 'sort' => 'DESC'),
+    array('data' => 'Name', 'field' => 'loader_name'),
+    array('data' =>  'Template', 'field' => 'template_name'),
+    array('data' =>  'Status', 'field' => 'job_status'),
+    '');
   $rows = array();
   $resource = pager_query("SELECT n.*, t.name as template_name
     FROM {tripal_bulk_loader} n
-    LEFT JOIN {tripal_bulk_loader_template} t ON cast(n.template_id as integer)=t.template_id
-    ORDER BY n.job_id DESC", $num_jobs_per_page);
+    LEFT JOIN {tripal_bulk_loader_template} t ON cast(n.template_id as integer)=t.template_id"
+    . tablesort_sql($header),
+    $num_jobs_per_page);
   while ($n = db_fetch_object($resource)) {
     $rows[] = array(
       l($n->job_id, 'admin/tripal/tripal_jobs/view/' . $n->job_id),
       l($n->loader_name, 'node/' . $n->nid),
       l($n->template_name, 'admin/tripal/tripal_bulk_loader_template/manage_templates/edit', array('query' => 'template_id=' . $n->template_id)),
-      $n->job_status
+      $n->job_status,
+      l('View', 'node/' . $n->nid) . ' | ' .  l('Edit', 'node/' . $n->nid . '/edit')
     );
   }
   $output .= theme_table($header, $rows);
