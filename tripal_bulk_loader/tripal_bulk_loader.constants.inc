@@ -143,7 +143,7 @@ function tripal_bulk_loader_set_constants_form($form_state, $node) {
       '#type' => 'item',
       '#value' => t('You have already added constants to this bulk loading job. Each '
         .'row in the following table represents a set of constants. Each set will be used '
-        .'to load your spreadsheet with the specified template resulting in the each record '
+        .'to load your data file with the specified template resulting in the each record '
         .'in the template to be loaded x number of times where there are x sets of '
         .'constants (rows in the following table).')
     );
@@ -167,7 +167,7 @@ function tripal_bulk_loader_set_constants_form($form_state, $node) {
 
       $form['exposed_fields']['existing'][$group]['delete'] = array(
         '#type' => 'markup',
-        '#value' => filter_xss(l(t('Edit'), 'node/' . $node->nid . '/constants/' . $group . '/edit') . '&nbsp&nbsp|&nbsp&nbsp'  .
+        '#value' => filter_xss(l(t('Edit'), 'node/' . $node->nid . '/constants/' . $group . '/edit') . '  |  '  .
           l(t('Delete'), 'node/' . $node->nid . '/constants/' . $group . '/delete')),
       );
 
@@ -211,7 +211,7 @@ function tripal_bulk_loader_set_constants_form($form_state, $node) {
             $form['exposed_fields']['new'][$record_id . '-' . $field_id] = array(
               '#type' => 'textfield',
               '#title' => t('%title', array('%title' => $field['title']) ),
-              '#description' => t('Enter the case-sensitive value of this constant for your spreadsheet'),
+              '#description' => t('Enter the case-sensitive value of this constant for your data file'),
               '#default_value' => (isset($node->constants[$record_id][$field_id]['value'])) ? $node->constants[$record_id][$field_id]['value'] : $field['constant value'],
             );
           break;
@@ -440,7 +440,7 @@ function tripal_bulk_loader_edit_constant_set_form($form_state, $node, $group_id
             $form[$record_id . '-' . $field_id] = array(
               '#type' => 'textfield',
               '#title' => t('%title', array('%title' => $field['title'])),
-              '#description' => t('Enter the case-sensitive value of this constant for your spreadsheet'),
+              '#description' => t('Enter the case-sensitive value of this constant for your data file'),
               '#default_value' => (isset($node->constants[$group_id][$record_id][$field_id]['value'])) ? $node->constants[$group_id][$record_id][$field_id]['value'] : $field['constant value'],
             );
           break;

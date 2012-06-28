@@ -727,8 +727,15 @@ function tripal_views_data_export_download_form(&$form_state, $view, $display_id
   $displays = $view->display;
   $options = array();
   $default = '';
+  $current_display = $view->current_display;
   foreach ($displays as $name => $display) {
     if (preg_match("/^views_data_export/", $name)) {
+    
+      // only add this display to the form if it is attached 
+      $display_options = $display->display_options;
+      if(strcmp($display_options['displays'][$current_display],$current_display)!=0){
+         continue;
+      } 
 
       // set the first item as default
       if (!$default) {
