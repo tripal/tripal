@@ -1970,13 +1970,17 @@ function tripal_db_commit_transaction() {
  * @param $savepoint
  *   The name of the saved point in the transaction to rollback to
  */
-function tripal_db_rollback_transaction($savepoint = NULL) {
+function tripal_db_rollback_transaction($savepoint = NULL, $commit = TRUE) {
 
   if ($savepoint) {
     chado_query("ROLLBACK TO SAVEPOINT %s", $savepoint);
   }
   else {
     chado_query("ROLLBACK");
+  }
+
+  if ($commit) {
+    tripal_db_commit_transaction();
   }
 
 }
