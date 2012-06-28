@@ -272,8 +272,8 @@ function chado_analysis_update($node) {
     // get the analysis_id for this node:
     $sql = "SELECT analysis_id ".
              "FROM {chado_analysis} ".
-             "WHERE vid = %d";
-    $analysis_id = db_fetch_object(db_query($sql, $node->vid))->analysis_id;
+             "WHERE nid = %d";
+    $analysis_id = db_fetch_object(db_query($sql, $node->nid))->analysis_id;
 
     $sql = "UPDATE {analysis} ".
              "SET name = '%s', ".
