@@ -112,7 +112,7 @@ require_once "tripal_core.schema.api.inc";
  *
  * @ingroup tripal_chado_api
  */
-function tripal_core_chado_insert($table, $values, $options) {
+function tripal_core_chado_insert($table, $values, $options = array()) {
   $insert_values = array();
   $chado_db = tripal_db_persistent_chado();
 
