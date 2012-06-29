@@ -14,6 +14,10 @@
 function tripal_bulk_loader_add_loader_job_form($form_state, $node) {
   $form = array();
 
+  if (($node->job_status == 'Loading...') AND (variable_get('tripal_bulk_loader_transactions',   'row') != 'none')) {
+    drupal_set_message("Job Progress and Loading Summary will only be updated at the end of each constant set.","warning");
+  }
+
   $form['nid'] = array(
     '#type' => 'hidden',
     '#value' => $node->nid,
@@ -285,6 +289,7 @@ function tripal_bulk_loader_load_data($nid) {
       chado_query("LOCK TABLE %s IN %s MODE", $table, $lockmode);
     }
 
+    tripal_bulk_loader_progress_bar(0,$total_lines);
     while (!feof($file_handle)) {
 
       // Clear variables
@@ -306,7 +311,7 @@ function tripal_bulk_loader_load_data($nid) {
       if ($node->job_id and $num_lines % $interval == 0) {
         // percentage of lines processed for the current group
         $group_progress = round(($num_lines/$total_lines)*100);
-
+        tripal_bulk_loader_progress_bar($num_lines,$total_lines);
         // percentage of lines processed for all groups
         // <previous group index> * 100 + <current group progress>
         // --------------------------------------------------------
@@ -363,6 +368,7 @@ function tripal_bulk_loader_load_data($nid) {
       break;
     }
 
+    tripal_bulk_loader_progress_bar($total_lines,$total_lines);
   } //end of foreach constant set
 
   // check that data was inserted and update job_status
@@ -402,17 +408,17 @@ function process_data_array_for_line($priority, &$data, &$default_data, $field2c
   if ($table_data['need_further_processing']) {
     $values = tripal_bulk_loader_add_spreadsheetdata_to_values($values, $line, $field2column[$priority]);
     if (!$values) {
-      watchdog('T_bulk_loader', 'Line ' . $line_num . ' Data File Added:' . print_r($values, TRUE), array(), WATCHDOG_NOTICE);
+      //watchdog('T_bulk_loader', 'Line ' . $line_num . ' Data File Added:' . print_r($values, TRUE), array(), WATCHDOG_NOTICE);
     }
 
     $values = tripal_bulk_loader_add_foreignkey_to_values($values, $data, $record2priority);
     if (!$values) {
-      watchdog('T_bulk_loader', 'Line ' . $line_num . ' FK Added:<pre>' . print_r($values, TRUE) . print_r($data[$priority], TRUE) . '</pre>', array(), WATCHDOG_NOTICE);
+      //watchdog('T_bulk_loader', 'Line ' . $line_num . ' FK Added:<pre>' . print_r($values, TRUE) . print_r($data[$priority], TRUE) . '</pre>', array(), WATCHDOG_NOTICE);
     }
   }
   $values = tripal_bulk_loader_regex_tranform_values($values, $table_data, $line);
   if (!$values) {
-    watchdog('T_bulk_loader', 'Line ' . $line_num . ' Regex:<pre>' . print_r($values, TRUE) . print_r($table_data, TRUE) . '</pre>' . '</pre>', array(), WATCHDOG_NOTICE);
+    //watchdog('T_bulk_loader', 'Line ' . $line_num . ' Regex:<pre>' . print_r($values, TRUE) . print_r($table_data, TRUE) . '</pre>' . '</pre>', array(), WATCHDOG_NOTICE);
   }
 
   if (!$values) {
@@ -696,4 +702,57 @@ function tripal_bulk_loader_flatten_array($values) {
   }
 
   return implode(', ', $flattened_values);
+}
+
+/**
+ * Used to display loader progress to the user
+ */
+function tripal_bulk_loader_progress_bar($current=0, $total=100, $size=50) {
+
+  // First iteration
+  if($current == 0) {
+    $new_bar = TRUE;
+    fputs(STDOUT,"Progress:\n");
+  }
+
+  //Percentage round off for a more clean, consistent look
+  $perc = round(($current/$total)*100,2);
+  // percent indicator must be four characters, if shorter, add some spaces
+  for($i=strlen($perc); $i<=4; $i++) {
+    $perc = ' '.$perc;
+  }
+
+  $total_size = $size + $i + 3 + 2;
+  // if it's not first go, remove the previous bar
+  if(!$new_bar) {
+    for($place = $total_size; $place > 0; $place--) {
+      // echo a backspace (hex:08) to remove the previous character
+      echo "\x08";
+    }
+  }
+
+  // output the progess bar as it should be
+  // Start with a border
+  echo '[';
+  for($place = 0; $place <= $size; $place++) {
+    // output "full" spaces if this portion is completed
+    if($place <= ($current / $total * $size)) {
+      echo '|';
+    }
+    else {
+      // Otherwise empty space
+      echo '-';
+    }
+  }
+  // End with a border
+  echo ']';
+
+  // end a bar with a percent indicator
+  echo " $perc%";
+
+  // if it's the end, add a new line
+  if($current == $total) {
+    echo "\n";
+  }
+
 }
