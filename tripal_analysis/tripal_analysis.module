@@ -3,9 +3,7 @@
 /**
  * @file
  * Contains all the main hook implementations for the tripal_analysis module
- */
-
-/**
+ *
  * @defgroup tripal_analysis Analysis Module
  * @{
  * Provides functions for managing chado analysis' including creating details pages for each one
@@ -16,9 +14,11 @@
 require('tripal_analysis.api.inc');
 require('tripal_analysis_privacy.inc');
 
-
 /**
+ * Register tripal_analysis sub-modules
  *
+ * @param $modulename
+ *  The name of the module to be registered as a tripal analysis submodule
  *
  * @ingroup tripal_analysis
  */
@@ -26,8 +26,12 @@ function tripal_analysis_register_child($modulename) {
   $sql = "INSERT INTO {tripal_analysis} (modulename) VALUES ('%s')";
   db_query($sql, $modulename);
 }
+
 /**
+ * Un-register a tripal analysis sub-module
  *
+ * @param $modulename
+ *  The name of the module to un-register
  *
  * @ingroup tripal_analysis
  */
@@ -39,6 +43,7 @@ function tripal_analysis_unregister_child($modulename) {
 }
 
 /**
+ * Add tripal javascript to page headers
  *
  * @ingroup tripal_analysis
  */
@@ -47,7 +52,6 @@ function tripal_analysis_init() {
 }
 
 /**
- * tripal_analysis_menu().
  * Implementation of hook_menu().
  * Entry points and paths of the module
  *
@@ -112,8 +116,8 @@ function tripal_analysis_show_analyses() {
 }
 
 /**
- *  Provide information to drupal about the node types that we're creating
- *  in this module
+ * Provide information to drupal about the node types that we're creating
+ * in this module
  *
  * @ingroup tripal_analysis
  */
@@ -131,6 +135,7 @@ function tripal_analysis_node_info() {
   );
   return $nodes;
 }
+
 /**
  *  When a new chado_analysis node is created we also need to add information
  *  to our chado_analysis table.  This function is called on insert of a new
@@ -218,7 +223,12 @@ function chado_analysis_insert($node) {
     $node->analysis = $analysis;
     $node->analysis_id = $analysis_id; // we need to set this for children
 }
+
 /**
+ * Removes analysis from the chado database
+ *
+ * @param $node
+ *   The node object specifying which chado record to delete
  *
  * @ingroup tripal_analysis
  */
@@ -253,6 +263,9 @@ function chado_analysis_delete($node) {
 
 /**
  * Update analyses
+ *
+ * @param $node
+ *   The updated node object
  *
  * @ingroup tripal_analysis
  */
@@ -661,6 +674,7 @@ function tripal_analysis_sync_analyses($analysis_id = NULL, $job_id = NULL) {
 }
 
 /**
+ * Validates the user input before creating an analysis node
  *
  * @ingroup tripal_analysis
  */
@@ -668,17 +682,16 @@ function chado_analysis_validate($node, &$form) {
    // use the analysis parent to validate the node
   tripal_analysis_validate($node, $form);
 }
-/**
-  *
-  * @ingroup tripal_analysis
-  */
-function tripal_analysis_validate($node, &$form) {
-##dprint_r($node);
 
-    // This validation is being used for three activities:
-    // CASE A: Update a node that exists in both drupal and chado
-    // CASE B: Synchronizing a node from chado to drupal
-    // CASE C: Inserting a new node that exists in niether drupal nor chado
+/**
+ * This validation is being used for three activities:
+ *   CASE A: Update a node that exists in both drupal and chado
+ *   CASE B: Synchronizing a node from chado to drupal
+ *   CASE C: Inserting a new node that exists in niether drupal nor chado
+ *
+ * @ingroup tripal_analysis
+ */
+function tripal_analysis_validate($node, &$form) {
 
     // Only nodes being updated will have an nid already
     if ($node->nid) {
@@ -722,6 +735,7 @@ function tripal_analysis_validate($node, &$form) {
         }
     }
 }
+
 /**
  * Display help and module information
  * @param path which path of the site we're displaying help
@@ -742,6 +756,7 @@ function tripal_analysis_help($path, $arg) {
   }
   return $output;
 }
+
 /**
  *  The following function proves access control for users trying to
  *  perform actions on data managed by this module
@@ -776,7 +791,7 @@ function chado_analysis_access($op, $node, $account) {
 /**
  *  Set the permission types that the chado module uses.  Essentially we
  *  want permissionis that protect creation, editing and deleting of chado
- #  data objects
+ *  data objects
  *
  * @ingroup tripal_analysis
  */
@@ -846,8 +861,12 @@ function get_chado_analyses() {
     return $analyses;
   }
 }
+
 /**
+ * Theme the List Analysis page
  *
+ * @param $analyses
+ *   An array of analyses to list
  *
  * @ingroup tripal_analysis
  */
@@ -902,7 +921,12 @@ function theme_tripal_analysis_analysis_page($analyses) {
 }
 
 /**
+ * Remove orphaned drupal nodes or chado analysis
  *
+ * @param $dummy
+ *   Not Used -kept for backwards compatibility
+ * @param $job_id
+ *   The id of the tripal job executing this function
  *
  * @ingroup tripal_analysis
  */
@@ -1058,6 +1082,7 @@ function tripal_analysis_taxonify_features ($analysis_id = NULL, $job_id = NULL)
   }
 }
  */
+
 /**
  * Implements hook_views_api()
  * Purpose: Essentially this hook tells drupal that there is views support for

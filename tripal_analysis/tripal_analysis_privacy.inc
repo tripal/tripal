@@ -1,11 +1,14 @@
 <?php
 /**
  * @file
- * @todo Add file header description
+ * Perform permission check (required node_privacy_byrole module)
  */
 
-/*
- *  Perform permission check by analysis_id only if 'node_privacy_byrole' module is enabled
+/**
+ * Perform permission check by analysis_id only if 'node_privacy_byrole' module is enabled
+ *
+ * @param $analysis_id
+ *   Which analysis to check if the user has permission to view
  */
 function tripal_analysis_check_permission($analysis_id) {
   if (module_exists('node_privacy_byrole')) {
@@ -34,8 +37,14 @@ function tripal_analysis_check_permission($analysis_id) {
   }
 }
 
-/*
+/**
  * Set permissions for features associated with an analysis
+ * @todo Stephen: ensure the $nid param is defined correctly
+ *
+ * @param $analysis_id
+ *   Features associated with this analysis will have their permissions set
+ * @param $nid
+ *   The node ID of the analysis
  */
 function tripal_analysis_set_feature_permission($analysis_id, $nid) {
 

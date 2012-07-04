@@ -112,7 +112,7 @@ function tripal_analysis_views_data_alter(&$data) {
 }
 
 /**
- *
+ * Implements hook_views_default_views().
  *
  * @ingroup tripal_analysis_views
  */

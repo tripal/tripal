@@ -1,10 +1,10 @@
 <?php
 /**
  * @file
- * @todo Add file header description
+ * Implements hooks from the Schema API
  */
 
-/*******************************************************************************
+/**
  * Implementation of hook_install().
  */
 function tripal_analysis_install() {
@@ -38,7 +38,7 @@ function tripal_analysis_install() {
       'or special characters) abbreviation for the analysis.'), 'tripal', 0, 1 , 'tripal');
 }
 
-/*******************************************************************************
+/**
  * Implementation of hook_uninstall().
  */
 function tripal_analysis_uninstall() {
@@ -54,66 +54,71 @@ function tripal_analysis_uninstall() {
   }
 }
 
-/*******************************************************************************
- * Implementation of hook_schema() creates two tables. chado_analysis table
- * stores nodes that are also saved in the analysis table of chado database.
- * tripal_analysis table stores the sub-module names, such as
- * tripal_analysis_blast, that are registered with this module.
+/**
+ * Implementation of hook_schema() creates two tables.
+ *
+ * - chado_analysis table
+ *     stores nodes that are also saved in the analysis table of chado database.
+ * - tripal_analysis table
+ *     stores the sub-module names, such as tripal_analysis_blast, that are registered
+ *     with this module.
  */
 function tripal_analysis_schema() {
   // chado_analysis table
   $schema['chado_analysis'] = array(
-      'fields' => array(
-         'vid' => array(
-            'type' => 'int',
-            'unsigned' => TRUE,
-            'not null' => TRUE,
-            'default' => 0
-  ),
-         'nid' => array(
-            'type' => 'int',
-            'unsigned' => TRUE,
-            'not null' => TRUE,
-            'default' => 0
-  ),
-         'analysis_id' => array(
-            'type' => 'int',
-            'not null' => TRUE,
-            'default' => 0
-  )
-  ),
-      'indexes' => array(
-         'analysis_id' => array('analysis_id')
-  ),
-      'unique keys' => array(
-         'nid_vid' => array('nid', 'vid'),
-         'vid' => array('vid')
-  ),
-      'primary key' => array('nid'),
+    'fields' => array(
+      'vid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0
+      ),
+      'nid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0
+      ),
+      'analysis_id' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0
+      )
+    ),
+    'indexes' => array(
+      'analysis_id' => array('analysis_id')
+    ),
+    'unique keys' => array(
+      'nid_vid' => array('nid', 'vid'),
+      'vid' => array('vid')
+    ),
+    'primary key' => array('nid'),
   );
 
   // tripal_analysis table
   $schema['tripal_analysis'] = array(
-      'description' => t('Table to store analysis sub-modules'),
-      'fields' => array(
-         'modulename' => array(
-            'type' => 'text',
-            'size' => 'small',
-            'not null' => TRUE,
-            'description' => t('The module name. Tripal Analysis will use the '.
-                               'module name to call module_setting_form()')
-  )
-  ),
-      'unique keys' => array(
-         'modulename' => array('modulename')
-  )
+    'description' => t('Table to store analysis sub-modules'),
+    'fields' => array(
+      'modulename' => array(
+        'type' => 'text',
+        'size' => 'small',
+        'not null' => TRUE,
+        'description' => t('The module name. Tripal Analysis will use the '.
+                            'module name to call module_setting_form()')
+      )
+    ),
+    'unique keys' => array(
+      'modulename' => array('modulename')
+    )
   );
+
   return $schema;
 }
 
-/*******************************************************************************
+/**
  * Implementation of hook_requirements(). Make sure 'Tripal Core' is enabled
  * before installation
+ * @todo: Check if this is needed
  */
 function tripal_analysis_requirements($phase) {
   $requirements = array();
@@ -129,7 +134,7 @@ function tripal_analysis_requirements($phase) {
   return $requirements;
 }
 
-/*******************************************************************************
+/**
  * Provide update script for adding new cvterms
  */
 function tripal_analysis_update_6001() {
