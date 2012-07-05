@@ -360,6 +360,15 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL) {
     '#default_value' => (isset($setup_obj->priority)) ? $setup_obj->priority : -1,
   );
 
+  $form['views_type']['base_table'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Base Table?'),
+    '#description' => t('If you want this table to show up as one of the options in the '
+      . 'add view page, then check this checkbox. It allows you to create listings '
+      . 'primarily from this table'),
+    '#default_value' => (isset($setup_obj->base_table)) ? $setup_obj->base_table : 1,
+  );
+
   $form['views_type']['row_description'] = array(
     '#title' => t('Comment'),
     '#type' => 'textarea',
@@ -893,6 +902,7 @@ function tripal_views_integration_form_submit($form, &$form_state) {
      'name' => $name,
      'priority' => $priority,
      'comment' => $comment,
+     'base_table' => $form_state['values']['base_table']
     );
   }
   // if a chado table then...
@@ -903,6 +913,7 @@ function tripal_views_integration_form_submit($form, &$form_state) {
      'name' => $name,
      'priority' => $priority,
      'comment' => $comment,
+     'base_table' => $form_state['values']['base_table']
     );
   }
 
