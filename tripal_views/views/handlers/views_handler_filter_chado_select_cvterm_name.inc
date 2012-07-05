@@ -87,7 +87,7 @@ class views_handler_filter_chado_select_cvterm_name extends views_handler_filter
         'textfield' => 'Text Field',
         'select' => 'Drop-Down Box',
       ),
-      '#default_value' => $this->options['values_form_type'],
+      '#default_value' => ($this->options['values_form_type']) ? $this->options['values_form_type'] : 'select',
     );
 
     $form['multiple'] = array(
@@ -134,7 +134,7 @@ class views_handler_filter_chado_select_cvterm_name extends views_handler_filter
         $where = "cvterm.cvterm_id IN (" . implode(", ", $holders) . ")";
       }
     }
-    else {
+    elseif ($this->value != 'All') {
       if (preg_match('/^\d+$/', $this->value)) {
         $where = 'cvterm.cvterm_id=%d';
       }
