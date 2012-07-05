@@ -90,9 +90,6 @@ function tripal_views_views_handlers() {
       'views_handler_field_node_optional' => array(
         'parent' => 'views_handler_field_node',
       ),
-      'views_handler_field_cvterm_name' => array(
-        'parent' => 'views_handler_field',
-      ),
       'views_handler_field_chado_tf_boolean' => array(
         'parent' => 'views_handler_field_boolean',
       ),
@@ -101,9 +98,6 @@ function tripal_views_views_handlers() {
       ),
       'views_handler_filter_chado_boolean' => array(
         'parent' => 'views_handler_filter_boolean_operator',
-      ),
-      'views_handler_field_chado_rel_by_type' => array(
-        'parent' => 'views_handler_field_prerender_list',
       ),
       'views_handler_field_dbxref_accession_link' => array(
         'parent' => 'views_handler_field',
