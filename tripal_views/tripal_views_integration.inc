@@ -375,14 +375,15 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL) {
     '#description' => '(Optional). Provide any details regarding this setup you would like. This '.
                       'description will appear when selecting a type for a new Drupal View',
     '#required' => FALSE,
+    '#default_value' => (isset($setup_obj->comment)) ? $setup_obj->comment : '',
   );
 
   // we need a div block where the table fields will get put when the
   // AHAH callback is made
   $form['view_setup_table'] = array(
-     '#type' => 'item',
-       '#prefix' => '<div id="table-rows-div">',
-       '#suffix' => '</div>',
+    '#type' => 'item',
+    '#prefix' => '<div id="table-rows-div">',
+    '#suffix' => '</div>',
   );
 
 

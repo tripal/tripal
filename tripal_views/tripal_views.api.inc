@@ -381,12 +381,11 @@ function tripal_views_get_integration_array_for_chado_table($table_name, $base_t
     'table' => $table_name,
     'type' => 'chado',
     'name' => ucwords(str_replace('_', ' ', $table_name)),
-    'description' => ($schema['description']) ? $schema['description'] : ' ',
+    'description' => (!empty($schema['description'])) ? $schema['description'] : ' ',
     'priority' => 10,
     'base_table' => $base_table,
     'fields' => array(),
   );
-
   // Add fields
   if (!isset($schema['fields'])) {
     $schema['fields'] = array();
@@ -400,7 +399,7 @@ function tripal_views_get_integration_array_for_chado_table($table_name, $base_t
         'name' => $field_name,
         'title' => ucwords(str_replace('_', ' ', $field_name)),
         'type' => $field_schema['type'],
-        'description' => ($field_schema['description']) ? $field_schema['description'] : ' ',
+        'description' => ($field_schema['description']) ? $field_schema['description'] : ucwords(str_replace('_', ' ', $field_name)),
         'handlers' => array(),
         'joins' => array()
       );
