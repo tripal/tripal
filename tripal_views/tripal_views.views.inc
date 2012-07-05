@@ -444,7 +444,6 @@ function tripal_views_views_data() {
     // holds the base table name and fields
     $base_table = '';
     $base_fields = array();
-    $type_prefix = '';
 
     // indicated whether the current table is a base table or not
     $is_base_table = $tvi_row->base_table;
@@ -452,7 +451,6 @@ function tripal_views_views_data() {
     // populate the base table name and fields.  If an $mview_id is given
     // then get the materialized view info, otherwise get the Chado table info
     if ($mview_id) {
-      $type_prefix = 'MView';
 
       // get the base table name from the materialized view
       $sql = "SELECT name, mv_specs FROM {tripal_mviews} WHERE mview_id = %d";
@@ -482,7 +480,6 @@ function tripal_views_views_data() {
       }
     }
     else {
-      $type_prefix = 'Chado Table';
       $base_table = $tvi_row->table_name;
 
       // The chado table could be a regular Chado table or a custom table
@@ -513,19 +510,19 @@ function tripal_views_views_data() {
     }
 
       // Setup the base table info in the data array
-      $data[$base_table]['table']['group'] = t("$type_prefix $tvi_row->name");
+      $data[$base_table]['table']['group'] = t("$tvi_row->name");
 
       if ($is_base_table) {
         $data[$base_table]['table']['base'] = array(
-          'group' => "$type_prefix $tvi_row->name",
-          'title' => "$type_prefix $tvi_row->name",
+          'group' => "$tvi_row->name",
+          'title' => "$tvi_row->name",
           'help'  => $tvi_row->comment,
         );
       }
       else {
         $data[$base_table]['table'] = array(
-          'group' => "$type_prefix $tvi_row->name",
-          'title' => "$type_prefix $tvi_row->name",
+          'group' => "$tvi_row->name",
+          'title' => "$tvi_row->name",
           'help'  => $tvi_row->comment,
         );
       }

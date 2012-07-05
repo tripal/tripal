@@ -380,7 +380,7 @@ function tripal_views_get_integration_array_for_chado_table($table_name, $base_t
   $defn_array = array(
     'table' => $table_name,
     'type' => 'chado',
-    'name' => ucwords(str_replace('_', ' ', $table_name)),
+    'name' => 'Chado ' . ucwords(str_replace('_', ' ', $table_name)),
     'description' => (!empty($schema['description'])) ? $schema['description'] : ' ',
     'priority' => 10,
     'base_table' => $base_table,
