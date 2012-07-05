@@ -86,7 +86,7 @@ function tripal_views_integration_setup_list() {
 
   // Start with materialized views
   $output .= '<br /><h3>Materialized Views</h3>';
-  $header = array('', 'Drupal Views Type Name', 'Table Name', 'Is Legacy?', 'Priority', 'Comment', '');
+  $header = array('', 'Drupal Views Type Name', 'Table Name', 'Is Legacy?', 'Priority', 'Comment');
   $rows = array();
 
   // get the list of materialized views
@@ -97,13 +97,14 @@ function tripal_views_integration_setup_list() {
                      .'ORDER BY tv.table_name ASC, tv.priority ASC');
   while ($tview = db_fetch_object($tviews)) {
     $rows[] = array(
-      l(t('Edit'), "admin/tripal/views/integration/edit/" . $tview->setup_id) ,
+      l(t('Edit'), "admin/tripal/views/integration/edit/" . $tview->setup_id) . "<br />"
+        . l(t('Export'), "admin/tripal/views/integration/export/" . $tview->setup_id) . "<br />"
+        . l(t('Delete'), "admin/tripal/views/integration/delete/" . $tview->setup_id),
       $tview->name,
       $tview->table_name,
       ($tview->table_id) ? 'No' : 'Yes',
       $tview->priority,
       $tview->comment,
-      l(t('Delete'), "admin/tripal/views/integration/delete/" . $tview->setup_id),
     );
   }
 
@@ -116,7 +117,7 @@ function tripal_views_integration_setup_list() {
 
   // Now list non-mview custom tables
   $output .= '<br /><h3>Custom Tables</h3>';
-  $header = array('', 'Drupal Views Type Name', 'Table Name', 'Priority', 'Comment', '');
+  $header = array('', 'Drupal Views Type Name', 'Table Name', 'Priority', 'Comment');
   $rows = array();
 
   // get the list of chado tables
@@ -127,12 +128,13 @@ function tripal_views_integration_setup_list() {
                      .'ORDER BY table_name ASC, priority ASC');
   while ($tview = db_fetch_object($tviews)) {
     $rows[] = array(
-      l(t('Edit'), "admin/tripal/views/integration/edit/" . $tview->setup_id) ,
+      l(t('Edit'), "admin/tripal/views/integration/edit/" . $tview->setup_id) . "<br />"
+        . l(t('Export'), "admin/tripal/views/integration/export/" . $tview->setup_id) . "<br />"
+        . l(t('Delete'), "admin/tripal/views/integration/delete/" . $tview->setup_id),
       $tview->name,
       $tview->table_name,
       $tview->priority,
       $tview->comment,
-      l(t('Delete'), "admin/tripal/views/integration/delete/" . $tview->setup_id),
     );
   }
 
@@ -145,7 +147,7 @@ function tripal_views_integration_setup_list() {
 
   // Now list chado tables
   $output .= '<br /><h3>Chado Tables</h3>';
-  $header = array('', 'Drupal Views Type Name', 'Table Name', 'Priority', 'Comment', '');
+  $header = array('', 'Drupal Views Type Name', 'Table Name', 'Priority', 'Comment');
   $rows = array();
 
   // get the list of chado tables
@@ -156,12 +158,13 @@ function tripal_views_integration_setup_list() {
                      .'ORDER BY table_name ASC, priority ASC');
   while ($tview = db_fetch_object($tviews)) {
     $rows[] = array(
-      l(t('Edit'), "admin/tripal/views/integration/edit/" . $tview->setup_id),
+      l(t('Edit'), "admin/tripal/views/integration/edit/" . $tview->setup_id) . "<br />"
+        . l(t('Export'), "admin/tripal/views/integration/export/" . $tview->setup_id) . "<br />"
+        . l(t('Delete'), "admin/tripal/views/integration/delete/" . $tview->setup_id),
       $tview->name,
       $tview->table_name,
       $tview->priority,
       $tview->comment,
-      l(t('Delete'), "admin/tripal/views/integration/delete/" . $tview->setup_id),
     );
   }
 

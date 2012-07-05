@@ -263,6 +263,63 @@ function tripal_views_integration_add_entry($defn_array) {
 }
 
 /**
+ * Export Views integration records
+ *
+ * @param $setup_id
+ *   The unique setup id of the tripal views integration
+ *
+ * @return
+ *   A views integration definition array as used by tripal_views_integration_add_entry()
+ */
+function tripal_views_integration_export_entry($setup_id) {
+
+  // Main setup details
+  $r = db_fetch_object(db_query("SELECT * FROM {tripal_views} WHERE setup_id=%d", $setup_id));
+  $defn_array = array(
+    'table' => $r->table_name,
+    'name' => $r->name,
+    'type' => ($r->mview_id) ? 'mview' : 'chado',
+    'description' => $r->comment,
+    'priority' => $r->priority,
+    'base_table' => $r->base_table,
+    'fields' => array(),
+  );
+
+  // Add fields
+  $resource = db_query("SELECT * FROM {tripal_views_field} WHERE setup_id=%d", $setup_id);
+  while ($r = db_fetch_object($resource)) {
+    $defn_array['fields'][ $r->column_name ] = array(
+        'name' => $r->column_name,
+        'title' => $r->name,
+        'description' => $r->description,
+        'type' => $r->type,
+        'handlers' => array(),
+        'joins' => array()
+    );
+  }
+
+  // Add handlers
+  $resource = db_query("SELECT * FROM {tripal_views_handlers} WHERE setup_id=%d", $setup_id);
+  while ($r = db_fetch_object($resource)) {
+    $defn_array['fields'][ $r->column_name ]['handlers'][ $r->handler_type ] = array(
+      'name' => $r->handler_name
+    );
+  }
+
+  // Add joins
+  $resource = db_query("SELECT * FROM {tripal_views_join} WHERE setup_id=%d", $setup_id);
+  while ($r = db_fetch_object($resource)) {
+    $defn_array['fields'][ $r->base_field ]['joins'][ $r->left_table ] = array(
+      'table' => $r->left_table,
+      'field' => $r->left_field,
+      'handler' => $r->handler,
+    );
+  }
+
+  return $defn_array;
+}
+
+/**
  * Removes a View Integration Entry
  *
  * @param $table_name

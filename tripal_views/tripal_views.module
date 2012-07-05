@@ -3,6 +3,7 @@
 require_once "tripal_views_integration.inc";
 require_once "tripal_views.views.inc";
 require_once "tripal_views_form_elements.inc";
+require_once "tripal_views_integration_port.inc";
 
 /**
  * Implements hook_menu()
@@ -50,6 +51,22 @@ function tripal_views_menu() {
     'title' => 'Delete Views Integration',
     'page callback' => 'tripal_views_integration_delete',
     'page arguments' => array(5),
+    'access arguments' => array('manage tripal_views_integration'), //TODO: figure out the proper permissions arguments
+    'type' => MENU_CALLBACK,
+  );
+
+  $items['admin/tripal/views/import'] = array(
+    'title' => 'Import Views Integration',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_views_integration_import_form'),
+    'access arguments' => array('manage tripal_views_integration'), //TODO: figure out the proper permissions arguments
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  $items['admin/tripal/views/integration/export/%'] = array(
+    'title' => 'Import Views Integration',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_views_integration_export_form', 5),
     'access arguments' => array('manage tripal_views_integration'), //TODO: figure out the proper permissions arguments
     'type' => MENU_CALLBACK,
   );
