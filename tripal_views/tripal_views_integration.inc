@@ -519,6 +519,7 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL) {
         '#description' => 'This is the name of the field in the Views UI',
         '#required' => TRUE,
         '#default_value' => $default_name,
+        '#size' => 42,
       );
 
       $form['view_setup_table']["$table_id-$i"]['column-2']["fields_description_$table_id-$i"] = array(
