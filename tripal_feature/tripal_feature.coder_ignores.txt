@@ -1,0 +1,21 @@
+; The file should be formatted this way :
+; file:line:warning-type
+; where warning-type is one of security, style, sql, i18n, comment, etc.
+
+; This query selects from a non-drupal schema where the database prefixes are not
+; applied and thus the curcly brackets ({}) are not needed
+fasta_loader.php:655:sql
+fasta_loader.php:659:sql
+fasta_loader.php:672:sql
+fasta_loader.php:676:sql
+gff_loader.php:243:sql
+gff_loader.php:252:sql
+gff_loader.php:919:sql
+
+; This is a multi-line conditional that needs to be re-written to be more readable
+gff_loader.php:164:style
+gff_loader.php:165:style
+gff_loader.php:166:style
+
+; Don't need to use db_rewrite_sql() since need all nodes regardless of access control
+syncFeatures.php:425:sql

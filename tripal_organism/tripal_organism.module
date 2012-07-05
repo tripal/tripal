@@ -9,14 +9,14 @@ require_once "tripal_organism.api.inc";
  */
 
 /**
-*
-* @ingroup tripal_organism
-*/
+ *
+ * @ingroup tripal_organism
+ */
 function tripal_organism_init() {
 
-   // add the jGCharts JS and CSS
-   drupal_add_js(drupal_get_path('theme', 'tripal') . '/js/tripal_organism.js');
-   drupal_add_css(drupal_get_path('theme', 'tripal') . '/css/tripal_organism.css');
+  // add the jGCharts JS and CSS
+  drupal_add_js(drupal_get_path('theme', 'tripal') . '/js/tripal_organism.js');
+  drupal_add_css(drupal_get_path('theme', 'tripal') . '/css/tripal_organism.css');
 }
 /**
  *  Provide information to drupal about the node types that we're creating
@@ -25,18 +25,18 @@ function tripal_organism_init() {
  * @ingroup tripal_organism
  */
 function tripal_organism_node_info() {
-   $nodes = array();
-   $nodes['chado_organism'] = array(
-      'name' => t('Organism'),
-      'module' => 'chado_organism',
-      'description' => t('An organism from the chado database'),
-      'has_title' => FALSE,
-      'title_label' => t('Organism'),
-      'has_body' => FALSE,
-      'body_label' => t('Organism Description'),
-      'locked' => TRUE
-   );
-   return $nodes;
+  $nodes = array();
+  $nodes['chado_organism'] = array(
+    'name' => t('Organism'),
+    'module' => 'chado_organism',
+    'description' => t('An organism from the chado database'),
+    'has_title' => FALSE,
+    'title_label' => t('Organism'),
+    'has_body' => FALSE,
+    'body_label' => t('Organism Description'),
+    'locked' => TRUE
+  );
+  return $nodes;
 }
 
 /**
@@ -48,43 +48,43 @@ function tripal_organism_node_info() {
  * @ingroup tripal_organism
  */
 function tripal_organism_block($op = 'list', $delta = '0', $edit = array()) {
-   switch ($op) {
-      case 'list':
-         $blocks['base']['info'] = t('Tripal Organism Details');
-         $blocks['base']['cache'] = BLOCK_NO_CACHE;
+  switch ($op) {
+    case 'list':
+      $blocks['base']['info'] = t('Tripal Organism Details');
+      $blocks['base']['cache'] = BLOCK_NO_CACHE;
 
-         $blocks['description']['info'] = t('Tripal Organism Description');
-         $blocks['description']['cache'] = BLOCK_NO_CACHE;
+      $blocks['description']['info'] = t('Tripal Organism Description');
+      $blocks['description']['cache'] = BLOCK_NO_CACHE;
 
-         $blocks['image']['info'] = t('Tripal Organism Image');
-         $blocks['image']['cache'] = BLOCK_NO_CACHE;
+      $blocks['image']['info'] = t('Tripal Organism Image');
+      $blocks['image']['cache'] = BLOCK_NO_CACHE;
 
-         return $blocks;
+      return $blocks;
 
-      case 'view':
-         if (user_access('access chado_feature content') and arg(0) == 'node' and is_numeric(arg(1))) {
-            $nid = arg(1);
-            $node = node_load($nid);
+    case 'view':
+      if (user_access('access chado_feature content') and arg(0) == 'node' and is_numeric(arg(1))) {
+        $nid = arg(1);
+        $node = node_load($nid);
 
-            $block = array();
-            switch ($delta) {
-               case 'base':
-                  $block['subject'] = t('Organism Details');
-                  $block['content'] = theme('tripal_organism_base', $node);
-                  break;
-               case 'description':
-                  $block['subject'] = t('Organism Description');
-                  $block['content'] = theme('tripal_organism_description', $node);
-                  break;
-               case 'image':
-                  $block['subject'] = t('Organism Image');
-                  $block['content'] = theme('tripal_organism_image', $node);
-                  break;
-               default:
-            }
-            return $block;
+        $block = array();
+        switch ($delta) {
+          case 'base':
+            $block['subject'] = t('Organism Details');
+            $block['content'] = theme('tripal_organism_base', $node);
+            break;
+          case 'description':
+            $block['subject'] = t('Organism Description');
+            $block['content'] = theme('tripal_organism_description', $node);
+            break;
+          case 'image':
+            $block['subject'] = t('Organism Image');
+            $block['content'] = theme('tripal_organism_image', $node);
+            break;
+          default:
+        }
+        return $block;
       }
-   }
+  }
 }
 /**
  *  Menu items are automatically added for the new node types created
@@ -96,30 +96,30 @@ function tripal_organism_block($op = 'list', $delta = '0', $edit = array()) {
 function tripal_organism_menu() {
   $items = array();
 
-   $items['organisms'] = array(
-      'menu_name' => ('primary-links'), //Enable the 'Organism' primary link
-      'title' => t('Organisms'),
-      'page callback' => 'tripal_organism_show_organisms',
-      'access arguments' => array('access chado_organism content'),
-      'type' => MENU_NORMAL_ITEM
-   );
-   // the administative settings menu
-   $items['admin/tripal/tripal_organism'] = array(
-     'title' => 'Organisms',
-     'description' => 'Basic Description of Tripal Organism Module Functionality',
-     'page callback' => 'tripal_organism_module_description_page',
-     'access arguments' => array('administer site configuration'),
-     'type' => MENU_NORMAL_ITEM,
-   );
+  $items['organisms'] = array(
+    'menu_name' => ('primary-links'), //Enable the 'Organism' primary link
+    'title' => 'Organisms',
+    'page callback' => 'tripal_organism_show_organisms',
+    'access arguments' => array('access chado_organism content'),
+    'type' => MENU_NORMAL_ITEM
+  );
+  // the administative settings menu
+  $items['admin/tripal/tripal_organism'] = array(
+   'title' => 'Organisms',
+   'description' => 'Basic Description of Tripal Organism Module Functionality',
+   'page callback' => 'tripal_organism_module_description_page',
+   'access arguments' => array('administer site configuration'),
+   'type' => MENU_NORMAL_ITEM,
+  );
 
-   $items['admin/tripal/tripal_organism/configuration'] = array(
-     'title' => 'Configuration',
-     'description' => 'Manage integration of Chado organisms including associated features',
-     'page callback' => 'drupal_get_form',
-     'page arguments' => array('tripal_organism_admin'),
-     'access arguments' => array('administer site configuration'),
-     'type' => MENU_NORMAL_ITEM,
-   );
+  $items['admin/tripal/tripal_organism/configuration'] = array(
+   'title' => 'Configuration',
+   'description' => 'Manage integration of Chado organisms including associated features',
+   'page callback' => 'drupal_get_form',
+   'page arguments' => array('tripal_organism_admin'),
+   'access arguments' => array('administer site configuration'),
+   'type' => MENU_NORMAL_ITEM,
+  );
 
 
   return $items;
@@ -148,25 +148,26 @@ function chado_organism_access($op, $node, $account) {
   }
   if ($op == 'view') {
     if (!user_access('access chado_organism content', $account)) {
-         return FALSE;
+      return FALSE;
       }
   }
-   return NULL;
+  return NULL;
 }
 /**
-*  Set the permission types that the chado module uses.  Essentially we
-*  want permissionis that protect creation, editing and deleting of chado
-*  data objects
-*
-* @ingroup tripal_organism
-*/
+  *  Set the permission types that the chado module uses.  Essentially we
+  *  want permissionis that protect creation, editing and deleting of chado
+  *  data objects
+  *
+  *
+  @ingroup tripal_organism
+  */
 function tripal_organism_perm() {
-   return array(
-      'access chado_organism content',
-      'create chado_organism content',
-      'delete chado_organism content',
-      'edit chado_organism content',
-   );
+  return array(
+    'access chado_organism content',
+    'create chado_organism content',
+    'delete chado_organism content',
+    'edit chado_organism content',
+  );
 }
 
 /**
@@ -251,8 +252,8 @@ function tripal_organism_module_description_page() {
             </ul>
             </p>';
 
-   $text .= '<h3>Page Customizations</h3>';
-   $text .= '<p>There are several ways to customize the look-and-feel for the way Chado data is presented through Tripal.
+  $text .= '<h3>Page Customizations</h3>';
+  $text .= '<p>There are several ways to customize the look-and-feel for the way Chado data is presented through Tripal.
              Below is a description of several methods.  These methods may be used in conjunction with one another to
              provide fine-grained control.
              <ul>
@@ -313,34 +314,34 @@ function tripal_organism_module_description_page() {
  */
 function tripal_organism_admin() {
 
-   $form = array();
+  $form = array();
 
-   // before proceeding check to see if we have any
-   // currently processing jobs. If so, we don't want
-   // to give the opportunity to sync libraries
-   $active_jobs = FALSE;
-   if (tripal_get_module_active_jobs('tripal_organism')) {
-      $active_jobs = TRUE;
-   }
+  // before proceeding check to see if we have any
+  // currently processing jobs. If so, we don't want
+  // to give the opportunity to sync libraries
+  $active_jobs = FALSE;
+  if (tripal_get_module_active_jobs('tripal_organism')) {
+    $active_jobs = TRUE;
+  }
 
-   // add the field set for syncing libraries
-   if (!$active_jobs) {
-     get_tripal_organism_admin_form_sync_set($form);
+  // add the field set for syncing libraries
+  if (!$active_jobs) {
+    get_tripal_organism_admin_form_sync_set($form);
     get_tripal_organism_admin_form_reindex_set($form);
     get_tripal_organism_admin_form_taxonomy_set($form);
-      get_tripal_organism_admin_form_cleanup_set($form);
-   }
-   else {
+    get_tripal_organism_admin_form_cleanup_set($form);
+  }
+  else {
     $form['notice'] = array(
-       '#type' => 'fieldset',
-       '#title' => t('Organism Management Temporarily Unavailable')
+    '#type' => 'fieldset',
+    '#title' => t('Organism Management Temporarily Unavailable')
     );
-      $form['notice']['message'] = array(
-          '#value' => t('Currently, organism management jobs are waiting or are running. . Managemment features have been hidden until these jobs complete.  Please check back later once these jobs have finished.  You can view the status of pending jobs in the Tripal jobs page.'),
-      );
-   }
+    $form['notice']['message'] = array(
+      '#value' => t('Currently, organism management jobs are waiting or are running. . Managemment features have been hidden until these jobs complete.  Please check back later once these jobs have finished.  You can view the status of pending jobs in the Tripal jobs page.'),
+    );
+  }
 
-   return system_settings_form($form);
+  return system_settings_form($form);
 }
 /**
  *
@@ -348,35 +349,35 @@ function tripal_organism_admin() {
  * @ingroup tripal_organism
  */
 function get_tripal_organism_admin_form_cleanup_set(&$form) {
-   $form['cleanup'] = array(
-      '#type' => 'fieldset',
-      '#title' => t('Clean Up')
-   );
-   $form['cleanup']['description'] = array(
-       '#type' => 'item',
-       '#value' => t("With Drupal and chado residing in different databases ".
-          "it is possible that nodes in Drupal and organisms in Chado become ".
-          "\"orphaned\".  This can occur if an organism node in Drupal is ".
-          "deleted but the corresponding chado organism is not and/or vice ".
-          "versa. Click the button below to resolve these discrepancies."),
-       '#weight' => 1,
-   );
-   $form['cleanup']['button'] = array(
-      '#type' => 'submit',
-      '#value' => t('Clean up orphaned organisms'),
-      '#weight' => 2,
-   );
+  $form['cleanup'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Clean Up')
+  );
+  $form['cleanup']['description'] = array(
+    '#type' => 'item',
+    '#value' => t("With Drupal and chado residing in different databases ".
+    "it is possible that nodes in Drupal and organisms in Chado become ".
+    "\"orphaned\".  This can occur if an organism node in Drupal is ".
+    "deleted but the corresponding chado organism is not and/or vice ".
+    "versa. Click the button below to resolve these discrepancies."),
+    '#weight' => 1,
+  );
+  $form['cleanup']['button'] = array(
+    '#type' => 'submit',
+    '#value' => t('Clean up orphaned organisms'),
+    '#weight' => 2,
+  );
 }
 /**
-*
-*
-* @ingroup tripal_organism
-*/
+ *
+ *
+ * @ingroup tripal_organism
+ */
 function get_tripal_organism_admin_form_taxonomy_set(&$form) {
-   $form['taxonify'] = array(
-      '#type' => 'fieldset',
-      '#title' => t('Assign Drupal Taxonomy to Organism Features')
-   );
+  $form['taxonify'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Assign Drupal Taxonomy to Organism Features')
+  );
 
   // get the list of libraries
   $sql = "SELECT * FROM {Organism} ORDER BY genus,species";
@@ -387,43 +388,43 @@ function get_tripal_organism_admin_form_taxonomy_set(&$form) {
   // iterate through all of the libraries
   $org_boxes = array();
   while ($organism = db_fetch_object($org_rset)) {
-     $org_boxes[$organism->organism_id] = "$organism->genus $organism->species";
+    $org_boxes[$organism->organism_id] = "$organism->genus $organism->species";
   }
 
   $form['taxonify']['description'] = array(
-       '#type' => 'item',
-       '#value' => t("Drupal allows for assignment of \"taxonomy\" or catagorical terms to " .
-                     "nodes. These terms allow for advanced filtering during searching. This option allows ".
-                     "for setting taxonomy only for features that belong to the selected organisms below.  All other features will be unaffected.  To set taxonomy for all features in the site see the Feature Administration page."),
-     '#weight' => 1,
+    '#type' => 'item',
+    '#value' => t("Drupal allows for assignment of \"taxonomy\" or catagorical terms to " .
+                 "nodes. These terms allow for advanced filtering during searching. This option allows ".
+                 "for setting taxonomy only for features that belong to the selected organisms below.  All other features will be unaffected.  To set taxonomy for all features in the site see the Feature Administration page."),
+    '#weight' => 1,
   );
 
   $form['taxonify']['tx-organisms'] = array(
-     '#title'       => t('Organisms'),
-     '#type'        => t('checkboxes'),
-     '#description' => t("Check the organisms whose features you want to reset taxonomy.  Note: this list contains all organisms, even those that may not be synced."),
-     '#required'    => FALSE,
-     '#prefix'      => '<div id="lib_boxes">',
-     '#suffix'      => '</div>',
-     '#options'     => $org_boxes,
-     '#weight'      => 2
+    '#title'       => t('Organisms'),
+    '#type'        => t('checkboxes'),
+    '#description' => t("Check the organisms whose features you want to reset taxonomy.  Note: this list contains all organisms, even those that may not be synced."),
+    '#required'    => FALSE,
+    '#prefix'      => '<div id="lib_boxes">',
+    '#suffix'      => '</div>',
+    '#options'     => $org_boxes,
+    '#weight'      => 2
   );
   $form['taxonify']['tx-button'] = array(
-      '#type' => 'submit',
-      '#value' => t('Set Feature Taxonomy'),
-      '#weight'      => 3
+    '#type' => 'submit',
+    '#value' => t('Set Feature Taxonomy'),
+    '#weight'      => 3
   );
 }
 /**
-*
-* @ingroup tripal_organism
-*/
+ *
+ * @ingroup tripal_organism
+ */
 function get_tripal_organism_admin_form_reindex_set(&$form) {
-   // define the fieldsets
-   $form['reindex'] = array(
-      '#type' => 'fieldset',
-      '#title' => t('Reindex Organism Features')
-   );
+  // define the fieldsets
+  $form['reindex'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Reindex Organism Features')
+  );
 
   // get the list of libraries
   $sql = "SELECT * FROM {Organism} ORDER BY genus,species";
@@ -434,194 +435,194 @@ function get_tripal_organism_admin_form_reindex_set(&$form) {
   // iterate through all of the libraries
   $org_boxes = array();
   while ($organism = db_fetch_object($org_rset)) {
-     $org_boxes[$organism->organism_id] = "$organism->genus $organism->species";
+    $org_boxes[$organism->organism_id] = "$organism->genus $organism->species";
   }
-   $form['reindex']['description'] = array(
-       '#type' => 'item',
-       '#value' => t("This option allows for reindexing of only those features that belong to the selected organisms below. All other features will be unaffected.  To reindex all features in the site see the Feature Administration page."),
-     '#weight' => 1,
-   );
+  $form['reindex']['description'] = array(
+    '#type' => 'item',
+    '#value' => t("This option allows for reindexing of only those features that belong to the selected organisms below. All other features will be unaffected.  To reindex all features in the site see the Feature Administration page."),
+    '#weight' => 1,
+  );
 
   $form['reindex']['re-organisms'] = array(
-     '#title'       => t('Organisms'),
-     '#type'        => t('checkboxes'),
-     '#description' => t("Check the organisms whoee features you want to reindex. Note: this list contains all organisms, even those that may not be synced."),
-     '#required'    => FALSE,
-     '#prefix'      => '<div id="lib_boxes">',
-     '#suffix'      => '</div>',
-     '#options'     => $org_boxes,
-     '#weight' => 2,
+    '#title'       => t('Organisms'),
+    '#type'        => t('checkboxes'),
+    '#description' => t("Check the organisms whoee features you want to reindex. Note: this list contains all organisms, even those that may not be synced."),
+    '#required'    => FALSE,
+    '#prefix'      => '<div id="lib_boxes">',
+    '#suffix'      => '</div>',
+    '#options'     => $org_boxes,
+    '#weight' => 2,
   );
   $form['reindex']['re-button'] = array(
-      '#type' => 'submit',
-      '#value' => t('Reindex Features'),
-      '#weight' => 3,
+    '#type' => 'submit',
+    '#value' => t('Reindex Features'),
+    '#weight' => 3,
   );
 }
 /**
-*
-* @ingroup tripal_organism
-*/
+ *
+ * @ingroup tripal_organism
+ */
 function get_tripal_organism_admin_form_sync_set(&$form) {
-   // define the fieldsets
-   $form['sync'] = array(
-      '#type' => 'fieldset',
-      '#title' => t('Sync Organisms')
-   );
+  // define the fieldsets
+  $form['sync'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Sync Organisms')
+  );
 
-   // before proceeding check to see if we have any
-   // currently processing jobs. If so, we don't want
-   // to give the opportunity to sync libraries
-   $active_jobs = FALSE;
-   if (tripal_get_module_active_jobs('tripal_organism')) {
-      $active_jobs = TRUE;
-   }
+  // before proceeding check to see if we have any
+  // currently processing jobs. If so, we don't want
+  // to give the opportunity to sync libraries
+  $active_jobs = FALSE;
+  if (tripal_get_module_active_jobs('tripal_organism')) {
+    $active_jobs = TRUE;
+  }
 
-   if (!$active_jobs) {
+  if (!$active_jobs) {
 
-     // get the list of organisms
-     $sql = "SELECT * FROM {Organism} ORDER BY genus,species";
-     $previous_db = tripal_db_set_active('chado');  // use chado database
-     $org_rset = db_query($sql);
-     tripal_db_set_active($previous_db);  // now use drupal database
+    // get the list of organisms
+    $sql = "SELECT * FROM {Organism} ORDER BY genus,species";
+    $previous_db = tripal_db_set_active('chado');  // use chado database
+    $org_rset = db_query($sql);
+    tripal_db_set_active($previous_db);  // now use drupal database
 
-     // if we've added any organisms to the list that can be synced
-     // then we want to build the form components to allow the user
-     // to select one or all of them.  Otherwise, just present
-     // a message stating that all organisms are currently synced.
-     $org_boxes = array();
-     $added = 0;
-     while ($organism = db_fetch_object($org_rset)) {
-        // check to see if the organism is already present as a node in drupal.
-        // if so, then skip it.
-        $sql = "SELECT * FROM {chado_organism} WHERE organism_id = %d";
-        if (!db_fetch_object(db_query($sql, $organism->organism_id))) {
-           $org_boxes[$organism->organism_id] = "$organism->genus $organism->species ($organism->common_name)";
-           $added++;
-        }
-     }
+    // if we've added any organisms to the list that can be synced
+    // then we want to build the form components to allow the user
+    // to select one or all of them.  Otherwise, just present
+    // a message stating that all organisms are currently synced.
+    $org_boxes = array();
+    $added = 0;
+    while ($organism = db_fetch_object($org_rset)) {
+      // check to see if the organism is already present as a node in drupal.
+      // if so, then skip it.
+      $sql = "SELECT * FROM {chado_organism} WHERE organism_id = %d";
+      if (!db_fetch_object(db_query($sql, $organism->organism_id))) {
+        $org_boxes[$organism->organism_id] = "$organism->genus $organism->species ($organism->common_name)";
+        $added++;
+      }
+    }
 
-     // if we have organisms we need to add to the checkbox then
-     // build that form element
-     if ($added > 0) {
-        $org_boxes['all'] = "All Organisms";
+    // if we have organisms we need to add to the checkbox then
+    // build that form element
+    if ($added > 0) {
+      $org_boxes['all'] = "All Organisms";
 
-        $form['sync']['organisms'] = array(
-           '#title'       => t('Available Organisms'),
-           '#type'        => t('checkboxes'),
-           '#description' => t("Check the organisms you want to sync.  Drupal content will be created for each of the organisms listed above.  Select 'All Organisms' to sync all of them."),
-           '#required'    => FALSE,
-           '#prefix'      => '<div id="org_boxes">',
-           '#suffix'      => '</div>',
-           '#options'     => $org_boxes,
-        );
-        $form['sync']['button'] = array(
-            '#type' => 'submit',
-            '#value' => t('Submit Sync Job')
-        );
-     }
-     // we don't have any organisms to select from
-     else {
-        $form['sync']['value'] = array(
-            '#value' => t('All organisms in Chado are currently synced with Drupal.')
-        );
-     }
-   }
-   // we don't want to present a form since we have an active job running
-   else {
-      $form['sync']['value'] = array(
-          '#value' => t('Currently, jobs exist related to chado organisms. Please check back later for organisms that can by synced once these jobs have finished.  You can view the status of pending jobs in the Tripal jobs page.')
+      $form['sync']['organisms'] = array(
+        '#title'       => t('Available Organisms'),
+        '#type'        => t('checkboxes'),
+        '#description' => t("Check the organisms you want to sync.  Drupal content will be created for each of the organisms listed above.  Select 'All Organisms' to sync all of them."),
+        '#required'    => FALSE,
+        '#prefix'      => '<div id="org_boxes">',
+        '#suffix'      => '</div>',
+        '#options'     => $org_boxes,
       );
-   }
+      $form['sync']['button'] = array(
+        '#type' => 'submit',
+        '#value' => t('Submit Sync Job')
+      );
+    }
+    // we don't have any organisms to select from
+    else {
+    $form['sync']['value'] = array(
+        '#value' => t('All organisms in Chado are currently synced with Drupal.')
+    );
+    }
+  }
+  // we don't want to present a form since we have an active job running
+  else {
+    $form['sync']['value'] = array(
+        '#value' => t('Currently, jobs exist related to chado organisms. Please check back later for organisms that can by synced once these jobs have finished.  You can view the status of pending jobs in the Tripal jobs page.')
+    );
+  }
 }
 /**
-*
-* @ingroup tripal_organism
-*/
+ *
+ * @ingroup tripal_organism
+ */
 function tripal_organism_admin_validate($form, &$form_state) {
-   global $user;  // we need access to the user info
-   $job_args = array();
+  global $user;  // we need access to the user info
+  $job_args = array();
 
-   if ($form_state['values']['op'] == t('Submit Sync Job')) {
+  if ($form_state['values']['op'] == t('Submit Sync Job')) {
 
-     // check to see if the user wants to sync chado and drupal.  If
-     // so then we need to register a job to do so with tripal
-     $organisms = $form_state['values']['organisms'];
-     $do_all = FALSE;
-     $to_sync = array();
+    // check to see if the user wants to sync chado and drupal.  If
+    // so then we need to register a job to do so with tripal
+    $organisms = $form_state['values']['organisms'];
+    $do_all = FALSE;
+    $to_sync = array();
 
-     foreach ($organisms as $organism_id) {
-        if (preg_match("/^all$/i" , $organism_id)) {
-           $do_all = TRUE;
-        }
-        if ($organism_id and preg_match("/^\d+$/i" , $organism_id)) {
-           // get the list of organisms
-           $sql = "SELECT * FROM {Organism} WHERE organism_id = %d";
-           $previous_db = tripal_db_set_active('chado');  // use chado database
-           $organism = db_fetch_object(db_query($sql, $organism_id));
-           tripal_db_set_active($previous_db);  // now use drupal database
-           $to_sync[$organism_id] = "$organism->genus $organism->species";
-        }
-     }
+    foreach ($organisms as $organism_id) {
+      if (preg_match("/^all$/i" , $organism_id)) {
+        $do_all = TRUE;
+      }
+      if ($organism_id and preg_match("/^\d+$/i" , $organism_id)) {
+        // get the list of organisms
+        $sql = "SELECT * FROM {Organism} WHERE organism_id = %d";
+        $previous_db = tripal_db_set_active('chado');  // use chado database
+        $organism = db_fetch_object(db_query($sql, $organism_id));
+        tripal_db_set_active($previous_db);  // now use drupal database
+        $to_sync[$organism_id] = "$organism->genus $organism->species";
+      }
+    }
 
-     // submit the job the tripal job manager
-     if ($do_all) {
-       tripal_add_job('Sync all organisms' , 'tripal_organism',
+    // submit the job the tripal job manager
+    if ($do_all) {
+      tripal_add_job('Sync all organisms' , 'tripal_organism',
+      'tripal_organism_sync_organisms' , $job_args , $user->uid);
+    }
+    else{
+      foreach ($to_sync as $organism_id => $name) {
+        $job_args[0] = $organism_id;
+        tripal_add_job("Sync organism: $name" , 'tripal_organism',
           'tripal_organism_sync_organisms' , $job_args , $user->uid);
-     }
-     else{
-        foreach ($to_sync as $organism_id => $name) {
-            $job_args[0] = $organism_id;
-            tripal_add_job("Sync organism: $name" , 'tripal_organism',
-               'tripal_organism_sync_organisms' , $job_args , $user->uid);
-        }
-     }
-   }
+      }
+    }
+  }
 
-   // -------------------------------------
-   // Submit the Reindex Job if selected
-   if ($form_state['values']['op'] == t('Reindex Features')) {
-     $organisms = $form_state['values']['re-organisms'];
-     foreach ($organisms as $organism_id) {
-       if ($organism_id and preg_match("/^\d+$/i" , $organism_id)) {
-          // get the organism info
-          $sql = "SELECT * FROM {organism} WHERE organism_id = %d";
-          $previous_db = tripal_db_set_active('chado');  // use chado database
-          $organism = db_fetch_object(db_query($sql , $organism_id));
-          tripal_db_set_active($previous_db);  // now use drupal database
-          $job_args[0] = $organism_id;
-          tripal_add_job("Reindex features for organism: $organism->genus ".
-             "$organism->species", 'tripal_organism' ,
-             'tripal_organism_reindex_features', $job_args, $user->uid);
-       }
-     }
-   }
+  // -------------------------------------
+  // Submit the Reindex Job if selected
+  if ($form_state['values']['op'] == t('Reindex Features')) {
+    $organisms = $form_state['values']['re-organisms'];
+    foreach ($organisms as $organism_id) {
+      if ($organism_id and preg_match("/^\d+$/i" , $organism_id)) {
+        // get the organism info
+        $sql = "SELECT * FROM {organism} WHERE organism_id = %d";
+        $previous_db = tripal_db_set_active('chado');  // use chado database
+        $organism = db_fetch_object(db_query($sql , $organism_id));
+        tripal_db_set_active($previous_db);  // now use drupal database
+        $job_args[0] = $organism_id;
+        tripal_add_job("Reindex features for organism: $organism->genus ".
+         "$organism->species", 'tripal_organism' ,
+         'tripal_organism_reindex_features', $job_args, $user->uid);
+      }
+    }
+  }
 
-   // -------------------------------------
-   // Submit the taxonomy Job if selected
-   if ($form_state['values']['op'] == t('Set Feature Taxonomy')) {
-     $organisms = $form_state['values']['tx-organisms'];
-     foreach ($organisms as $organism_id) {
-       if ($organism_id and preg_match("/^\d+$/i", $organism_id)) {
-          // get the organism info
-          $sql = "SELECT * FROM {organism} WHERE organism_id = %d";
-          $previous_db = tripal_db_set_active('chado');  // use chado database
-          $organism = db_fetch_object(db_query($sql , $organism_id));
-          tripal_db_set_active($previous_db);  // now use drupal database
-          $job_args[0] = $organism_id;
-          tripal_add_job("Set taxonomy for features in organism: ".
-             "$organism->genus $organism->species" , 'tripal_organism',
-             'tripal_organism_taxonify_features', $job_args, $user->uid);
-       }
-     }
-   }
+  // -------------------------------------
+  // Submit the taxonomy Job if selected
+  if ($form_state['values']['op'] == t('Set Feature Taxonomy')) {
+    $organisms = $form_state['values']['tx-organisms'];
+    foreach ($organisms as $organism_id) {
+      if ($organism_id and preg_match("/^\d+$/i", $organism_id)) {
+        // get the organism info
+        $sql = "SELECT * FROM {organism} WHERE organism_id = %d";
+        $previous_db = tripal_db_set_active('chado');  // use chado database
+        $organism = db_fetch_object(db_query($sql , $organism_id));
+        tripal_db_set_active($previous_db);  // now use drupal database
+        $job_args[0] = $organism_id;
+        tripal_add_job("Set taxonomy for features in organism: ".
+          "$organism->genus $organism->species" , 'tripal_organism',
+          'tripal_organism_taxonify_features', $job_args, $user->uid);
+      }
+    }
+  }
 
-   // -------------------------------------
-   // Submit the Cleanup Job if selected
-   if ($form_state['values']['op'] == t('Clean up orphaned organisms')) {
-      tripal_add_job('Cleanup orphaned organisms', 'tripal_organism',
-         'tripal_organisms_cleanup', $job_args, $user->uid);
-   }
+  // -------------------------------------
+  // Submit the Cleanup Job if selected
+  if ($form_state['values']['op'] == t('Clean up orphaned organisms')) {
+    tripal_add_job('Cleanup orphaned organisms', 'tripal_organism',
+      'tripal_organisms_cleanup', $job_args, $user->uid);
+  }
 }
 /**
  *  We need to let drupal know about our theme functions and their arguments.
@@ -631,23 +632,23 @@ function tripal_organism_admin_validate($form, &$form_state) {
  * @ingroup tripal_organism
  */
 function tripal_organism_theme() {
-   return array(
-      'tripal_organism_organism_page' => array(
-         'arguments' => array('organisms'),
-      ),
-      'tripal_organism_base' => array(
-         'arguments' => array('node' => NULL),
-         'template' => 'tripal_organism_base',
-      ),
-      'tripal_organism_description' => array(
-         'arguments' => array('node' => NULL),
-         'template' => 'tripal_organism_description',
-      ),
-      'tripal_organism_image' => array(
-         'arguments' => array('node' => NULL),
-         'template' => 'tripal_organism_image',
-      ),
-   );
+  return array(
+    'tripal_organism_organism_page' => array(
+       'arguments' => array('organisms'),
+    ),
+    'tripal_organism_base' => array(
+       'arguments' => array('node' => NULL),
+       'template' => 'tripal_organism_base',
+    ),
+    'tripal_organism_description' => array(
+       'arguments' => array('node' => NULL),
+       'template' => 'tripal_organism_description',
+    ),
+    'tripal_organism_image' => array(
+       'arguments' => array('node' => NULL),
+       'template' => 'tripal_organism_image',
+    ),
+  );
 }
 /**
  *
@@ -655,12 +656,12 @@ function tripal_organism_theme() {
  */
 function tripal_organism_nodeapi(&$node, $op, $teaser, $page) {
 
-   switch ($op) {
-      case 'view':
-         switch ($node->type) {
+  switch ($op) {
+    case 'view':
+      switch ($node->type) {
 
-         }
-   }
+      }
+  }
 }
 /**
  *
@@ -674,44 +675,44 @@ function tripal_organism_cron() {
 }
 
 /**
-*
-* @ingroup tripal_organism
-*/
+ *
+ * @ingroup tripal_organism
+ */
 function chado_organism_validate($node, &$form) {
-   // if this is an update, we want to make sure that a different organism doesn't
-   // already have this genus and speces
-   if ($node->organism_id) {
-       $sql = "SELECT *
-              FROM {organism} O
-              WHERE genus = '%s' and species = '%s' AND NOT organism_id = %d";
-      $previous_db = tripal_db_set_active('chado');
-      $result = db_fetch_object(db_query($sql, $node->genus, $node->species, $node->organism_id));
-      tripal_db_set_active($previous_db);
-      if ($result) {
-         form_set_error('genus', t("Update cannot proceed. The organism genus
-           '$node->genus' and species '$node->species' is already present in the database."));
-       watchdog('tripal_organism',
-         'Update organism: genus and species already exists: %values',
-         array('%values' => "genus = $node->genus, species = $node->species"),
-         WATCHDOG_WARNING);
-      }
-   }
-   // if this is an insert then check to make sure the genus and species are unique
-   else {
-      $values = array(
-         'genus' => $node->genus,
-         'species' => $node->species,
-      );
-      $organism = tripal_core_chado_select('organism', array('organism_id'), $values);
-      if (sizeof($organism) > 0) {
-         form_set_error('genus', 'Cannot add the organism with this genus and species.
-            The organism already exists.');
-       watchdog('tripal_organism',
-         'Insert organism: genus and species already exists: %values',
-         array('%values' => "genus = $node->genus, species = $node->species"),
-         WATCHDOG_WARNING);
-      }
-   }
+  // if this is an update, we want to make sure that a different organism doesn't
+  // already have this genus and speces
+  if ($node->organism_id) {
+    $sql = "SELECT *
+          FROM {organism} O
+          WHERE genus = '%s' and species = '%s' AND NOT organism_id = %d";
+    $previous_db = tripal_db_set_active('chado');
+    $result = db_fetch_object(db_query($sql, $node->genus, $node->species, $node->organism_id));
+    tripal_db_set_active($previous_db);
+    if ($result) {
+      form_set_error('genus', t("Update cannot proceed. The organism genus
+        '$node->genus' and species '$node->species' is already present in the database."));
+      watchdog('tripal_organism',
+        'Update organism: genus and species already exists: %values',
+        array('%values' => "genus = $node->genus, species = $node->species"),
+        WATCHDOG_WARNING);
+    }
+  }
+  // if this is an insert then check to make sure the genus and species are unique
+  else {
+    $values = array(
+      'genus' => $node->genus,
+      'species' => $node->species,
+    );
+    $organism = tripal_core_chado_select('organism', array('organism_id'), $values);
+    if (sizeof($organism) > 0) {
+      form_set_error('genus', 'Cannot add the organism with this genus and species.
+        The organism already exists.');
+      watchdog('tripal_organism',
+        'Insert organism: genus and species already exists: %values',
+        array('%values' => "genus = $node->genus, species = $node->species"),
+        WATCHDOG_WARNING);
+    }
+  }
 }
 /**
  *  When a new chado_organism node is created we also need to add information
@@ -722,52 +723,52 @@ function chado_organism_validate($node, &$form) {
  */
 function chado_organism_insert($node) {
 
-   $values = array(
-      'genus' => $node->genus,
-      'species' => $node->species,
-      'abbreviation' => $node->abbreviation,
-      'common_name' => $node->common_name,
-      'comment' => $node->description
-   );
-   // if there is an organism_id in the $node object then this must be a sync so
-   // we can skip adding the organism as it is already there, although
-   // we do need to proceed with the rest of the insert
-   if (!$node->organism_id) {
-      $organism = tripal_core_chado_insert('organism', $values);
-      if (!$organism) {
-       drupal_set_message('Unable to add organism.', 'warning');
-       watchdog('tripal_organism',
-         'Insert Organism: Unable to create organism where values:%values',
-         array('%values' => print_r($values, TRUE)),
-         WATCHDOG_WARNING
-       );
-         return;
-     }
-      $organism_id = $organism['organism_id'];
-   }
-   else {
-      $organism_id = $node->organism_id;
-   }
+  $values = array(
+    'genus' => $node->genus,
+    'species' => $node->species,
+    'abbreviation' => $node->abbreviation,
+    'common_name' => $node->common_name,
+    'comment' => $node->description
+  );
+  // if there is an organism_id in the $node object then this must be a sync so
+  // we can skip adding the organism as it is already there, although
+  // we do need to proceed with the rest of the insert
+  if (!$node->organism_id) {
+    $organism = tripal_core_chado_insert('organism', $values);
+    if (!$organism) {
+      drupal_set_message(t('Unable to add organism.', 'warning'));
+      watchdog('tripal_organism',
+        'Insert Organism: Unable to create organism where values:%values',
+        array('%values' => print_r($values, TRUE)),
+        WATCHDOG_WARNING
+      );
+    return;
+    }
+  $organism_id = $organism['organism_id'];
+  }
+  else {
+    $organism_id = $node->organism_id;
+  }
 
-   // Make sure the entry for this organism doesn't already exist in the
-   // chado_organism table if it doesn't exist then we want to add it.
+  // Make sure the entry for this organism doesn't already exist in the
+  // chado_organism table if it doesn't exist then we want to add it.
 
-   if (!chado_get_id_for_node('organism', $node) ) {
-      // next add the item to the drupal table
-      $sql = "INSERT INTO {chado_organism} (nid, vid, organism_id) ".
-             "VALUES (%d, %d, %d)";
-      chado_query($sql, $node->nid, $node->vid, $organism_id);
-   }
+  if (!chado_get_id_for_node('organism', $node) ) {
+  // next add the item to the drupal table
+  $sql = "INSERT INTO {chado_organism} (nid, vid, organism_id) ".
+         "VALUES (%d, %d, %d)";
+  chado_query($sql, $node->nid, $node->vid, $organism_id);
+  }
 
-   // set the title for the node
-   $record = new stdClass();
-   $record->title = "$node->genus $node->species";
-   $record->nid = $node->nid;
-   drupal_write_record('node', $record, 'nid');
-   drupal_write_record('node_revisions', $record, 'nid');
+  // set the title for the node
+  $record = new stdClass();
+  $record->title = "$node->genus $node->species";
+  $record->nid = $node->nid;
+  drupal_write_record('node', $record, 'nid');
+  drupal_write_record('node_revisions', $record, 'nid');
 
-   // add the image
-   chado_organism_add_image($node);
+  // add the image
+  chado_organism_add_image($node);
 }
 /**
  * Update organisms
@@ -775,33 +776,33 @@ function chado_organism_insert($node) {
  * @ingroup tripal_organism
  */
 function chado_organism_update($node) {
-   if ($node->revision) {
-      // TODO -- decide what to do about revisions
-   }
+  if ($node->revision) {
+    // TODO -- decide what to do about revisions
+  }
   else {
-      $match = array(
-         'organism_id' => chado_get_id_for_node('organism', $node),
-      );
-      $values = array(
-         'genus' => $node->genus,
-         'species' => $node->species,
-         'abbreviation' => $node->abbreviation,
-         'common_name' => $node->common_name,
-         'comment' => $node->description
-      );
-      $org_status = tripal_core_chado_update('organism', $match, $values);
+    $match = array(
+      'organism_id' => chado_get_id_for_node('organism', $node),
+    );
+    $values = array(
+      'genus' => $node->genus,
+      'species' => $node->species,
+      'abbreviation' => $node->abbreviation,
+      'common_name' => $node->common_name,
+      'comment' => $node->description
+    );
+    $org_status = tripal_core_chado_update('organism', $match, $values);
 
-      // set the title for the node
-      $record = new stdClass();
-      $record->title = "$node->genus $node->species";
-      $record->nid = $node->nid;
-      drupal_write_record('node', $record, 'nid');
-      drupal_write_record('node_revisions', $record, 'nid');
+    // set the title for the node
+    $record = new stdClass();
+    $record->title = "$node->genus $node->species";
+    $record->nid = $node->nid;
+    drupal_write_record('node', $record, 'nid');
+    drupal_write_record('node_revisions', $record, 'nid');
 
-      // add the image
-      chado_organism_add_image($node);
+    // add the image
+    chado_organism_add_image($node);
 
-   }
+  }
 }
 /**
  * Delete organism from both drupal and chado databases. Check dependency before
@@ -810,62 +811,62 @@ function chado_organism_update($node) {
  * @ingroup tripal_organism
  */
 function chado_organism_delete($node) {
-   $organism_id = chado_get_id_for_node('organism', $node);
+  $organism_id = chado_get_id_for_node('organism', $node);
 
-   // Remove data from the {chado_organism}, {node}, and {node_revisions} tables
-   $sql_del = "DELETE FROM {chado_organism} ".
-              "WHERE nid = %d ".
-              "AND vid = %d";
-   db_query($sql_del, $node->nid, $node->vid);
-   $sql_del = "DELETE FROM {node} ".
-              "WHERE nid = %d ".
-              "AND vid = %d";
-   db_query($sql_del, $node->nid, $node->vid);
-   $sql_del = "DELETE FROM {node_revisions} ".
-              "WHERE nid = %d ".
-              "AND vid = %d";
-   db_query($sql_del, $node->nid, $node->vid);
+  // Remove data from the {chado_organism}, {node}, and {node_revisions} tables
+  $sql_del = "DELETE FROM {chado_organism} ".
+            "WHERE nid = %d ".
+            "AND vid = %d";
+  db_query($sql_del, $node->nid, $node->vid);
+  $sql_del = "DELETE FROM {node} ".
+            "WHERE nid = %d ".
+            "AND vid = %d";
+  db_query($sql_del, $node->nid, $node->vid);
+  $sql_del = "DELETE FROM {node_revisions} ".
+            "WHERE nid = %d ".
+            "AND vid = %d";
+  db_query($sql_del, $node->nid, $node->vid);
 
-   // Test dependency before deleting from chado database. If a library or
-   // feature depends on this organism, don't delete it
+  // Test dependency before deleting from chado database. If a library or
+  // feature depends on this organism, don't delete it
 
-   $sql = "SELECT feature_id FROM {feature} WHERE organism_id = %d";
-   $previous_db = tripal_db_set_active('chado');
-   $check_feature = db_result(db_query($sql, $organism_id));
-   $sql = "SELECT library_id FROM {library} WHERE organism_id = %d";
-   $check_lib = db_result(db_query($sql, $organism_id));
+  $sql = "SELECT feature_id FROM {feature} WHERE organism_id = %d";
+  $previous_db = tripal_db_set_active('chado');
+  $check_feature = db_result(db_query($sql, $organism_id));
+  $sql = "SELECT library_id FROM {library} WHERE organism_id = %d";
+  $check_lib = db_result(db_query($sql, $organism_id));
 
-   if ($check_lib == 0 && $check_feature == 0) {
-      tripal_core_chado_delete('organism', array('organism_id' => $organism_id));
-   }
-   else {
-      drupal_set_message("Organism deleted from drupal. Warning: at least one ".
-                         "library or feature depends on this organism. It was ".
-                 "not removed from chado.");
-   }
-   tripal_db_set_active($previous_db);
+  if ($check_lib == 0 && $check_feature == 0) {
+    tripal_core_chado_delete('organism', array('organism_id' => $organism_id));
+  }
+  else {
+    drupal_set_message(t("Organism deleted from drupal. Warning: at least one ".
+                       "library or feature depends on this organism. It was ".
+               "not removed from chado."));
+  }
+  tripal_db_set_active($previous_db);
 }
 /**
-*
-*
-* @ingroup tripal_organism
-*/
+ *
+ *
+ * @ingroup tripal_organism
+ */
 function chado_organism_add_image($node) {
-   // check to see if a file was uploaded. If so then copy it to the images
-   // directory for display with the organism
-   if (isset($_FILES['files']) && $_FILES['files']['name']['organism_image'] &&
-       is_uploaded_file($_FILES['files']['tmp_name']['organism_image'])) {
+  // check to see if a file was uploaded. If so then copy it to the images
+  // directory for display with the organism
+  if (isset($_FILES['files']) && $_FILES['files']['name']['organism_image'] &&
+    is_uploaded_file($_FILES['files']['tmp_name']['organism_image'])) {
       $dest = file_directory_path() . "/tripal/tripal_organism/images";
       $validators = array(
-         'file_validate_is_image' => array(),
+        'file_validate_is_image' => array(),
       );
       file_check_directory($dest, FILE_CREATE_DIRECTORY, 'organism_image');
       if (!$file = file_save_upload('organism_image', $validators, $dest)) {
-         drupal_set_message("Organism image was not uploaded.");
+        drupal_set_message(t("Organism image was not uploaded."));
       }
       // move this image into the images directory
       file_move($file->filepath, $dest . "/" . $node->nid . ".jpg", FILE_EXISTS_REPLACE);
-   }
+  }
 }
 
 
@@ -876,88 +877,88 @@ function chado_organism_add_image($node) {
  * @ingroup tripal_organism
  */
 function chado_organism_form($node, $param) {
-   $organism = $node->organism;
+  $organism = $node->organism;
 
-   // add in the comment since it is a text field and may not be included if too big
-   $organism = tripal_core_expand_chado_vars($organism, 'field', 'organism.comment');
+  // add in the comment since it is a text field and may not be included if too big
+  $organism = tripal_core_expand_chado_vars($organism, 'field', 'organism.comment');
 
-   // get form defaults
-   $abbreviation = $node->abbreviation;
-   if (!$abbreviation) {
-      $abbreviation = $organism->abbreviation;
-   }
-   $genus = $node->genus;
-   if (!$genus) {
-      $genus = $organism->genus;
-   }
-   $species = $node->species;
-   if (!$species) {
-      $species = $organism->species;
-   }
-   $common_name = $node->common_name;
-   if (!$common_name) {
-      $common_name = $organism->common_name;
-   }
-   $description = $node->description;
-   if (!$description) {
-      $description = $organism->comment;
-   }
-   $organism_image = $node->organism_image;
+  // get form defaults
+  $abbreviation = $node->abbreviation;
+  if (!$abbreviation) {
+    $abbreviation = $organism->abbreviation;
+  }
+  $genus = $node->genus;
+  if (!$genus) {
+    $genus = $organism->genus;
+  }
+  $species = $node->species;
+  if (!$species) {
+    $species = $organism->species;
+  }
+  $common_name = $node->common_name;
+  if (!$common_name) {
+    $common_name = $organism->common_name;
+  }
+  $description = $node->description;
+  if (!$description) {
+    $description = $organism->comment;
+  }
+  $organism_image = $node->organism_image;
 
 
-   $form = array();
-   $form['#attributes']['enctype'] = 'multipart/form-data';
+  $form = array();
+  $form['#attributes']['enctype'] = 'multipart/form-data';
 
-   // keep track of the organism id if we have one.  If we do have one then
-   // this would indicate an update as opposed to an insert.
-   $form['organism_id'] = array(
-      '#type' => 'value',
-      '#value' => $organism->organism_id,
-   );
+  // keep track of the organism id if we have one.  If we do have one then
+  // this would indicate an update as opposed to an insert.
+  $form['organism_id'] = array(
+    '#type' => 'value',
+    '#value' => $organism->organism_id,
+  );
 
-   $form['abbreviation']= array(
-      '#type' => 'textfield',
-      '#title' => t('Abbreviation'),
-      '#required' => TRUE,
-      '#default_value' => $organism->abbreviation,
-      '#weight' => 3
-   );
-   $form['genus']= array(
-      '#type' => 'textfield',
-      '#title' => t('Genus'),
-      '#required' => TRUE,
-      '#default_value' => $organism->genus,
-      '#weight' => 1
-   );
-   $form['species']= array(
-      '#type' => 'textfield',
-      '#title' => t('Species'),
-      '#required' => TRUE,
-      '#default_value' => $organism->species,
-      '#weight' => 2
-   );
-   $form['common_name']= array(
-      '#type' => 'textfield',
-      '#title' => t('Common Name'),
-      '#required' => TRUE,
-      '#default_value' => $organism->common_name,
-      '#weight' => 4
-   );
-   $form['description']= array(
-      '#type' => 'textarea',
-      '#rows' => 15,
-      '#title' => t('Description'),
-      '#required' => TRUE,
-      '#default_value' => $organism->comment,
-      '#weight' => 5
-   );
-   $form['organism_image']= array(
-      '#type' => 'file',
-      '#title' => t('Organism Image'),
-      '#description' => 'Add an image for this organism',
-      '#weight' => 6
-   );
-   return $form;
+  $form['abbreviation']= array(
+    '#type' => 'textfield',
+    '#title' => t('Abbreviation'),
+    '#required' => TRUE,
+    '#default_value' => $organism->abbreviation,
+    '#weight' => 3
+  );
+  $form['genus']= array(
+    '#type' => 'textfield',
+    '#title' => t('Genus'),
+    '#required' => TRUE,
+    '#default_value' => $organism->genus,
+    '#weight' => 1
+  );
+  $form['species']= array(
+    '#type' => 'textfield',
+    '#title' => t('Species'),
+    '#required' => TRUE,
+    '#default_value' => $organism->species,
+    '#weight' => 2
+  );
+  $form['common_name']= array(
+    '#type' => 'textfield',
+    '#title' => t('Common Name'),
+    '#required' => TRUE,
+    '#default_value' => $organism->common_name,
+    '#weight' => 4
+  );
+  $form['description']= array(
+    '#type' => 'textarea',
+    '#rows' => 15,
+    '#title' => t('Description'),
+    '#required' => TRUE,
+    '#default_value' => $organism->comment,
+    '#weight' => 5
+  );
+  $form['organism_image']= array(
+    '#type' => 'file',
+    '#title' => t('Organism Image'),
+    '#description' => 'Add an image for this organism',
+    '#weight' => 6
+  );
+  return $form;
 }
 
 /**
@@ -967,17 +968,17 @@ function chado_organism_form($node, $param) {
  * @ingroup tripal_organism
  */
 function chado_organism_load($node) {
-   // find the organism and add in the details
-   $organism_id = chado_get_id_for_node('organism', $node);
-   $values = array('organism_id' => $organism_id);
-   $organism = tripal_core_generate_chado_var('organism', $values);
+  // find the organism and add in the details
+  $organism_id = chado_get_id_for_node('organism', $node);
+  $values = array('organism_id' => $organism_id);
+  $organism = tripal_core_generate_chado_var('organism', $values);
 
-   // add in the description field
-   $organism = tripal_core_expand_chado_vars($organism, 'field', 'organism.comment');
+  // add in the description field
+  $organism = tripal_core_expand_chado_vars($organism, 'field', 'organism.comment');
 
-   $additions = new stdClass();
-   $additions->organism = $organism;
-   return $additions;
+  $additions = new stdClass();
+  $additions->organism = $organism;
+  return $additions;
 }
 
 /**
@@ -987,9 +988,9 @@ function chado_organism_load($node) {
  * @ingroup tripal_organism
  */
 function chado_organism_view($node, $teaser = FALSE, $page = FALSE) {
-   // use drupal's default node view:
-   $node = node_prepare($node, $teaser);
-   return $node;
+  // use drupal's default node view:
+  $node = node_prepare($node, $teaser);
+  return $node;
 }
 
 /**
@@ -998,58 +999,58 @@ function chado_organism_view($node, $teaser = FALSE, $page = FALSE) {
  * @ingroup tripal_organism
  */
 function tripal_organism_sync_organisms($organism_id = NULL, $job_id = NULL) {
-   global $user;
-   $page_content = '';
+  global $user;
+  $page_content = '';
 
-   if (!$organism_id) {
-      $sql = "SELECT * FROM {Organism} O";
-      $previous_db = tripal_db_set_active('chado');  // use chado database
-      $results = db_query($sql);
-      tripal_db_set_active($previous_db);  // now use drupal database
-   }
-   else {
-      $sql = "SELECT * FROM {Organism} L WHERE organism_id = %d";
-      $previous_db = tripal_db_set_active('chado');  // use chado database
-      $results = db_query($sql, $organism_id);
-      tripal_db_set_active($previous_db);  // now use drupal database
-   }
+  if (!$organism_id) {
+    $sql = "SELECT * FROM {Organism} O";
+    $previous_db = tripal_db_set_active('chado');  // use chado database
+    $results = db_query($sql);
+    tripal_db_set_active($previous_db);  // now use drupal database
+  }
+  else {
+    $sql = "SELECT * FROM {Organism} L WHERE organism_id = %d";
+    $previous_db = tripal_db_set_active('chado');  // use chado database
+    $results = db_query($sql, $organism_id);
+    tripal_db_set_active($previous_db);  // now use drupal database
+  }
 
-   // We'll use the following SQL statement for checking if the organism
-   // already exists as a drupal node.
-   $sql = "SELECT * FROM {chado_organism} ".
-          "WHERE organism_id = %d";
+  // We'll use the following SQL statement for checking if the organism
+  // already exists as a drupal node.
+  $sql = "SELECT * FROM {chado_organism} ".
+        "WHERE organism_id = %d";
 
-   while ($organism = db_fetch_object($results)) {
+  while ($organism = db_fetch_object($results)) {
 
-      // check if this organism already exists in the drupal database. if it
-      // does then skip this organism and go to the next one.
-      if (!db_fetch_object(db_query($sql, $organism->organism_id))) {
+    // check if this organism already exists in the drupal database. if it
+    // does then skip this organism and go to the next one.
+    if (!db_fetch_object(db_query($sql, $organism->organism_id))) {
 
-         $new_node = new stdClass();
-         $new_node->type = 'chado_organism';
-         $new_node->uid = $user->uid;
-         $new_node->title = "$organism->genus $organism->species";
-         $new_node->organism_id = $organism->organism_id;
-         $new_node->genus = $organism->genus;
-         $new_node->species = $organism->species;
-         $new_node->description = '';
-         node_validate($new_node);
-         if (!form_get_errors()) {
-            $node = node_submit($new_node);
-            node_save($node);
-            if ($node->nid) {
-               print "Added $organism->common_name\n";
-            }
-         }
-         else {
-            print "Failed to insert organism $organism->common_name\n";
-         }
+      $new_node = new stdClass();
+      $new_node->type = 'chado_organism';
+      $new_node->uid = $user->uid;
+      $new_node->title = "$organism->genus $organism->species";
+      $new_node->organism_id = $organism->organism_id;
+      $new_node->genus = $organism->genus;
+      $new_node->species = $organism->species;
+      $new_node->description = '';
+      node_validate($new_node);
+      if (!form_get_errors()) {
+        $node = node_submit($new_node);
+        node_save($node);
+        if ($node->nid) {
+          print "Added $organism->common_name\n";
+        }
       }
       else {
-         print "Skipped $organism->common_name\n";
+        print "Failed to insert organism $organism->common_name\n";
       }
-   }
-   return $page_content;
+    }
+    else {
+      print "Skipped $organism->common_name\n";
+    }
+  }
+  return $page_content;
 }
 /**
  * Display help and module information
@@ -1079,55 +1080,55 @@ function tripal_organism_help($path, $arg) {
  * @ingroup tripal_organism
  */
 function tripal_organism_show_organisms() {
-   // Show libraries stored in Drupal's {chado_organism} table
-   $sql = "SELECT COUNT(organism_id) FROM {chado_organism}";
-   $no_orgs = db_result(db_query($sql));
-   if ($no_orgs != 0) {
-      $organisms = get_chado_organisms();
-      return theme('tripal_organism_organism_page', $organisms);
-   }
-   else {
-      return t("No organism exists. Please contact administrators to " .
-               "synchronize organisms.");
-   }
+  // Show libraries stored in Drupal's {chado_organism} table
+  $sql = "SELECT COUNT(organism_id) FROM {chado_organism}";
+  $no_orgs = db_result(db_query($sql));
+  if ($no_orgs != 0) {
+    $organisms = get_chado_organisms();
+    return theme('tripal_organism_organism_page', $organisms);
+  }
+  else {
+    return t("No organism exists. Please contact administrators to " .
+             "synchronize organisms.");
+  }
 }
 /**
-*
-* @ingroup tripal_organism
-*/
+ *
+ * @ingroup tripal_organism
+ */
 function theme_tripal_organism_organism_page($organisms) {
 
-  $output = "<br><a id=\"tripal_expandableBox_toggle_button\" onClick=\"toggleExpandableBoxes()\">[-] Collapse All</a>";
-   foreach ($organisms as $organism) {
-      // Prepare information for html output
-     $org_url = url("node/$organism->node_id");
+  $output = "<br /><a id=\"tripal_expandableBox_toggle_button\" onClick=\"toggleExpandableBoxes()\">[-] Collapse All</a>";
+  foreach ($organisms as $organism) {
+    // Prepare information for html output
+    $org_url = url("node/$organism->node_id");
 
-     // Generate html output
-      $output .= "<div class=\"tripal_chado_organism-info-box\" style=\"padding:5px\">
-                         <div class=\"tripal_expandableBox\">
-                           <h3>$organism->common_name</h3>
-                         </div>
-                         <div class=\"tripal_expandableBoxContent\">
-                           <span>
-                             <table class=\"tripal_chado_analysis_content\">
-                               <tr><td>
-                                 Name: <a href=\"$org_url\">$organism->common_name</a>
-                               </td></tr>
-                               <tr><td>
-                                 Genus: $organism->genus
-                               </td></tr>
-                               <tr><td>
-                                 Species: $organism->species
-                               </td></tr>
-                               <tr><td>
-                                 Description: $organism->comment
-                               </td></tr>
-                             </table>
-                           </span>
-                         </div>
-                       </div>";
-   }
-   return $output;
+    // Generate html output
+    $output .= "<div class=\"tripal_chado_organism-info-box\" style=\"padding:5px\">
+                       <div class=\"tripal_expandableBox\">
+                         <h3>$organism->common_name</h3>
+                       </div>
+                       <div class=\"tripal_expandableBoxContent\">
+                         <span>
+                           <table class=\"tripal_chado_analysis_content\">
+                             <tr><td>
+                               Name: <a href=\"$org_url\">$organism->common_name</a>
+                             </td></tr>
+                             <tr><td>
+                               Genus: $organism->genus
+                             </td></tr>
+                             <tr><td>
+                               Species: $organism->species
+                             </td></tr>
+                             <tr><td>
+                               Description: $organism->comment
+                             </td></tr>
+                           </table>
+                         </span>
+                       </div>
+                     </div>";
+  }
+  return $output;
 }
 
 /**
@@ -1139,117 +1140,117 @@ function theme_tripal_organism_organism_page($organisms) {
  * @ingroup tripal_organism
  */
 function get_chado_organisms() {
-   $sql_drupal = "SELECT COUNT (organism_id) FROM {chado_organism}";
-   $no_orgs = db_result(db_query($sql_drupal));
-   if ($no_orgs != 0) {
-      $sql = "SELECT organism_id, nid FROM {chado_organism}";
-      $result = db_query($sql);
-      $previous_db = tripal_db_set_active('chado');
-      $sql = "SELECT genus, species, common_name, comment ".
-             "FROM {Organism} ".
-             "WHERE organism_id=%d";
-      $organisms = array();
-      $count = 0;
-      while ($data = db_fetch_object($result)) {
-         $organism = db_fetch_object(db_query($sql, $data->organism_id));
-         $organism->node_id = $data->nid;
-         // Use common_name plus $count as the key so we can sort by common
-         // name later. Since common_name is not unique, we need to add $count
-         // to the key
-         $key = strtolower($organism->common_name) . $count;
-         $organisms [$key] = $organism;
-         $count ++;
-      }
-      tripal_db_set_active($previous_db);
+  $sql_drupal = "SELECT COUNT (organism_id) FROM {chado_organism}";
+  $no_orgs = db_result(db_query($sql_drupal));
+  if ($no_orgs != 0) {
+    $sql = "SELECT organism_id, nid FROM {chado_organism}";
+    $result = db_query($sql);
+    $previous_db = tripal_db_set_active('chado');
+    $sql = "SELECT genus, species, common_name, comment ".
+           "FROM {Organism} ".
+           "WHERE organism_id=%d";
+    $organisms = array();
+    $count = 0;
+    while ($data = db_fetch_object($result)) {
+      $organism = db_fetch_object(db_query($sql, $data->organism_id));
+      $organism->node_id = $data->nid;
+      // Use common_name plus $count as the key so we can sort by common
+      // name later. Since common_name is not unique, we need to add $count
+      // to the key
+      $key = drupal_strtolower($organism->common_name) . $count;
+      $organisms [$key] = $organism;
+      $count ++;
+    }
+    tripal_db_set_active($previous_db);
 
-      //Sort organisms by common name
-      ksort($organisms, SORT_STRING);
-      return $organisms;
-   }
+    //Sort organisms by common name
+    ksort($organisms, SORT_STRING);
+    return $organisms;
+  }
 }
 /**
  *
  * @ingroup tripal_organism
  */
 function tripal_organism_reindex_features($organism_id = NULL, $job_id = NULL) {
-   $i = 0;
+  $i = 0;
 
-   if (!$organism_id) {
-      return;
-   }
+  if (!$organism_id) {
+    return;
+  }
 
-   $sql = "SELECT * ".
-          "FROM {feature} ".
-          "WHERE organism_id = $organism_id ".
-          "ORDER BY feature_id";
-   $previous_db = tripal_db_set_active('chado');  // use chado database
-   $results = db_query($sql);
-   tripal_db_set_active($previous_db);  // now use drupal databa  tripal_db_set_active($previous_db);  // now use drupal database
+  $sql = "SELECT * ".
+        "FROM {feature} ".
+        "WHERE organism_id = $organism_id ".
+        "ORDER BY feature_id";
+  $previous_db = tripal_db_set_active('chado');  // use chado database
+  $results = db_query($sql);
+  tripal_db_set_active($previous_db);  // now use drupal databa  tripal_db_set_active($previous_db);  // now use drupal database
 
-   // load into ids array
-   $count = 0;
-   $ids = array();
-   while ($id = db_fetch_object($results)) {
-      $ids[$count] = $id->feature_id;
-      $count++;
-   }
+  // load into ids array
+  $count = 0;
+  $ids = array();
+  while ($id = db_fetch_object($results)) {
+    $ids[$count] = $id->feature_id;
+    $count++;
+  }
 
-   $interval = intval($count * 0.01);
-   foreach ($ids as $feature_id) {
-      // update the job status every 1% features
-      if ($job_id and $i % $interval == 0) {
-       tripal_job_set_progress($job_id , intval(($i/$count)*100));
-     }
-      tripal_feature_sync_feature($feature_id);
-      $i++;
-   }
+  $interval = intval($count * 0.01);
+  foreach ($ids as $feature_id) {
+    // update the job status every 1% features
+    if ($job_id and $i % $interval == 0) {
+      tripal_job_set_progress($job_id , intval(($i/$count)*100));
+    }
+    tripal_feature_sync_feature($feature_id);
+    $i++;
+  }
 }
 /**
  *
  * @ingroup tripal_organism
  */
 function tripal_organism_taxonify_features($organism_id = NULL, $job_id = NULL) {
-   $i = 0;
+  $i = 0;
 
-   if (!$organism_id) {
-      return;
-   }
+  if (!$organism_id) {
+    return;
+  }
 
-   $sql = "SELECT * ".
-          "FROM {feature} ".
-          "WHERE organism_id = $organism_id ".
-          "ORDER BY feature_id";
-   $previous_db = tripal_db_set_active('chado');  // use chado database
-   $results = db_query($sql);
-   tripal_db_set_active($previous_db);  // now use drupal database
+  $sql = "SELECT * ".
+        "FROM {feature} ".
+        "WHERE organism_id = $organism_id ".
+        "ORDER BY feature_id";
+  $previous_db = tripal_db_set_active('chado');  // use chado database
+  $results = db_query($sql);
+  tripal_db_set_active($previous_db);  // now use drupal database
 
-   // load into ids array
-   $count = 0;
-   $ids = array();
-   while ($id = db_fetch_object($results)) {
-      $ids[$count] = $id->feature_id;
-      $count++;
-   }
+  // load into ids array
+  $count = 0;
+  $ids = array();
+  while ($id = db_fetch_object($results)) {
+    $ids[$count] = $id->feature_id;
+    $count++;
+  }
 
-   // make sure our vocabularies are set before proceeding
+  // make sure our vocabularies are set before proceeding
   tripal_feature_set_vocabulary();
 
-   // use this SQL for getting the nodes
-   $nsql =  "SELECT * FROM {chado_feature} CF ".
-            "  INNER JOIN {node} N ON N.nid = CF.nid ".
-            "WHERE feature_id = %d";
+  // use this SQL for getting the nodes
+  $nsql =  "SELECT * FROM {chado_feature} CF ".
+          "  INNER JOIN {node} N ON N.nid = CF.nid ".
+          "WHERE feature_id = %d";
 
-   // iterate through the features and set the taxonomy
-   $interval = intval($count * 0.01);
-   foreach ($ids as $feature_id) {
-      // update the job status every 1% features
-      if ($job_id and $i % $interval == 0) {
-       tripal_job_set_progress($job_id, intval(($i/$count)*100));
-     }
-      $node = db_fetch_object(db_query($nsql, $feature_id));
-      tripal_feature_set_taxonomy($node, $feature_id);
-      $i++;
-   }
+  // iterate through the features and set the taxonomy
+  $interval = intval($count * 0.01);
+  foreach ($ids as $feature_id) {
+    // update the job status every 1% features
+    if ($job_id and $i % $interval == 0) {
+      tripal_job_set_progress($job_id, intval(($i/$count)*100));
+    }
+    $node = db_fetch_object(db_query($nsql, $feature_id));
+    tripal_feature_set_taxonomy($node, $feature_id);
+    $i++;
+  }
 }
 /**
  *
@@ -1257,68 +1258,68 @@ function tripal_organism_taxonify_features($organism_id = NULL, $job_id = NULL) 
  */
 function tripal_organisms_cleanup($dummy = NULL, $job_id = NULL) {
 
-   // build the SQL statments needed to check if nodes point to valid organisms
-   $dsql = "SELECT * FROM {node} WHERE type = 'chado_organism' order by nid";
-   $nsql = "SELECT * FROM {node} WHERE nid = %d";
-   $csql = "SELECT * FROM {chado_organism} where nid = %d ";
-   $cosql= "SELECT * FROM {chado_organism}";
-   $tsql = "SELECT * FROM {Organism} O ".
-           "WHERE organism_id = %d";
+  // build the SQL statments needed to check if nodes point to valid organisms
+  $dsql = "SELECT * FROM {node} WHERE type = 'chado_organism' order by nid";
+  $nsql = "SELECT * FROM {node} WHERE nid = %d";
+  $csql = "SELECT * FROM {chado_organism} where nid = %d ";
+  $cosql= "SELECT * FROM {chado_organism}";
+  $tsql = "SELECT * FROM {Organism} O ".
+         "WHERE organism_id = %d";
 
-   // load into nodes array
-   $results = db_query($dsql);
-   $count = 0;
-   $nodes = array();
-   while ($node = db_fetch_object($results)) {
-      $nodes[$count] = $node;
-      $count++;
-   }
+  // load into nodes array
+  $results = db_query($dsql);
+  $count = 0;
+  $nodes = array();
+  while ($node = db_fetch_object($results)) {
+    $nodes[$count] = $node;
+    $count++;
+  }
 
-   // load the chado_organisms into an array
-   $results = db_query($cosql);
-   $cnodes = array();
-   while ($node = db_fetch_object($results)) {
-      $cnodes[$count] = $node;
-      $count++;
-   }
-   $interval = intval($count * 0.01);
+  // load the chado_organisms into an array
+  $results = db_query($cosql);
+  $cnodes = array();
+  while ($node = db_fetch_object($results)) {
+    $cnodes[$count] = $node;
+    $count++;
+  }
+  $interval = intval($count * 0.01);
 
-   // iterate through all of the chado_organism nodes and delete those that aren't valid
-   foreach ($nodes as $nid) {
+  // iterate through all of the chado_organism nodes and delete those that aren't valid
+  foreach ($nodes as $nid) {
 
-      // update the job status every 1% organisms
-      if ($job_id and $i % $interval == 0) {
-         tripal_job_set_progress($job_id, intval(($i/$count)*100));
-      }
+    // update the job status every 1% organisms
+    if ($job_id and $i % $interval == 0) {
+      tripal_job_set_progress($job_id, intval(($i/$count)*100));
+    }
 
-      // first check to see if the node has a corresponding entry
-      // in the chado_organism table. If not then delete the node.
-      $organism = db_fetch_object(db_query($csql, $nid->nid));
-      if (!$organism) {
-         node_delete($nid->nid);
-         $message = "Missing in chado_organism table.... DELETING: $nid->nid\n";
-         watchdog('tripal_organism', $message, array(), WATCHDOG_WARNING);
-         continue;
-      }
-      $i++;
-   }
+    // first check to see if the node has a corresponding entry
+    // in the chado_organism table. If not then delete the node.
+    $organism = db_fetch_object(db_query($csql, $nid->nid));
+    if (!$organism) {
+      node_delete($nid->nid);
+      $message = "Missing in chado_organism table.... DELETING: $nid->nid\n";
+      watchdog('tripal_organism', $message, array(), WATCHDOG_WARNING);
+      continue;
+    }
+    $i++;
+  }
 
-   // iterate through all of the chado_organism nodes and delete those  that aren't valid
-   foreach ($cnodes as $nid) {
-      // update the job status every 1% organisms
-      if ($job_id and $i % $interval == 0) {
-         tripal_job_set_progress($job_id, intval(($i/$count)*100));
-      }
-      $node = db_fetch_object(db_query($nsql, $nid->nid));
-      if (!$node) {
-         db_query("DELETE FROM {chado_organism} WHERE nid = %d", $nid->nid);
-         $message = "chado_organism missing node.... DELETING: $nid->nid\n";
-         watchdog('tripal_organism', $message, array(), WATCHDOG_WARNING);
-      }
+  // iterate through all of the chado_organism nodes and delete those  that aren't valid
+  foreach ($cnodes as $nid) {
+    // update the job status every 1% organisms
+    if ($job_id and $i % $interval == 0) {
+      tripal_job_set_progress($job_id, intval(($i/$count)*100));
+    }
+    $node = db_fetch_object(db_query($nsql, $nid->nid));
+    if (!$node) {
+      db_query("DELETE FROM {chado_organism} WHERE nid = %d", $nid->nid);
+      $message = "chado_organism missing node.... DELETING: $nid->nid\n";
+      watchdog('tripal_organism', $message, array(), WATCHDOG_WARNING);
+    }
 
-      $i++;
-   }
-   return '';
+    $i++;
+  }
+  return '';
 }
 
 /**
@@ -1330,9 +1331,9 @@ function tripal_organisms_cleanup($dummy = NULL, $job_id = NULL) {
  * @ingroup tripal_organism
  */
 function tripal_organism_views_api() {
-   return array(
-      'api' => 2.0,
-   );
+  return array(
+    'api' => 2.0,
+  );
 }
 /**
  *
@@ -1341,10 +1342,10 @@ function tripal_organism_views_api() {
  */
 function tripal_organism_job_describe_args($callback, $args) {
 
-   $new_args = array();
-   if ($callback == 'tripal_organism_sync_organisms') {
-      $organism = tripal_core_chado_select('organism', array('genus', 'species'), array('organism_id' => $args[0]));
-      $new_args['Organism'] = $organism[0]->genus ." ". $organism[0]->species;
-   }
-   return $new_args;
+  $new_args = array();
+  if ($callback == 'tripal_organism_sync_organisms') {
+    $organism = tripal_core_chado_select('organism', array('genus', 'species'), array('organism_id' => $args[0]));
+    $new_args['Organism'] = $organism[0]->genus ." ". $organism[0]->species;
+  }
+  return $new_args;
 }

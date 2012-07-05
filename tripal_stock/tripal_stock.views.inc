@@ -38,7 +38,7 @@ function tripal_stock_views_data()  {
     );
     foreach ($tables as $tablename) {
       if (!tripal_views_is_integrated($tablename, 10)) {
-        $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename,TRUE);
+        $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename, TRUE);
         tripal_views_integration_add_entry($table_integration_array);
       }
     }
@@ -57,7 +57,7 @@ function tripal_stock_views_data()  {
     );
     foreach ($tables as $tablename) {
       if (!tripal_views_is_integrated($tablename, 10)) {
-        $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename,FALSE);
+        $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename, FALSE);
         tripal_views_integration_add_entry($table_integration_array);
       }
     }
@@ -79,46 +79,46 @@ function tripal_stock_views_data()  {
  * @ingroup tripal_stock_views
  */
 function tripal_stock_views_handlers() {
- return array(
-   'info' => array(
-     'path' => drupal_get_path('module', 'tripal_stock') . '/views/handlers',
-   ),
-   'handlers' => array(
-     'views_handler_field_computed_stock_nid' => array(
-       'parent' => 'views_handler_field_numeric',
-     ),
-     'views_handler_field_stockprop_by_type' => array(
-       'parent' => 'views_handler_field_prerender_list',
-     ),
-    'views_handler_field_stockprop_all' => array(
-       'parent' => 'views_handler_field_prerender_list',
-     ),
-    'views_handler_field_stockrel_by_type' => array(
-       'parent' => 'views_handler_field_prerender_list',
-     ),
-    'views_handler_field_stockrel_all' => array(
-       'parent' => 'views_handler_field_prerender_list',
-     ),
-    'views_handler_field_stock_dbxref_by_type' => array(
-       'parent' => 'views_handler_field_prerender_list',
-     ),
-    'views_handler_field_stock_dbxref_all' => array(
-       'parent' => 'views_handler_field_prerender_list',
-     ),
-     'views_handler_filter_stockprop_id' => array(
-       'parent' => 'views_handler_filter',
-     ),
-     'views_handler_filter_stock_dbxref_id' => array(
-       'parent' => 'views_handler_filter',
-     ),
-     'views_handler_filter_stock_relationship_id' => array(
-       'parent' => 'views_handler_filter',
-     ),
-     'views_handler_argument_stockprop_id' => array(
-       'parent' => 'views_handler_argument_string',
-     ),
-   ),
- );
+  return array(
+  'info' => array(
+    'path' => drupal_get_path('module', 'tripal_stock') . '/views/handlers',
+  ),
+  'handlers' => array(
+    'views_handler_field_computed_stock_nid' => array(
+      'parent' => 'views_handler_field_numeric',
+    ),
+  'views_handler_field_stockprop_by_type' => array(
+    'parent' => 'views_handler_field_prerender_list',
+    ),
+  'views_handler_field_stockprop_all' => array(
+    'parent' => 'views_handler_field_prerender_list',
+    ),
+  'views_handler_field_stockrel_by_type' => array(
+    'parent' => 'views_handler_field_prerender_list',
+    ),
+  'views_handler_field_stockrel_all' => array(
+    'parent' => 'views_handler_field_prerender_list',
+    ),
+  'views_handler_field_stock_dbxref_by_type' => array(
+    'parent' => 'views_handler_field_prerender_list',
+    ),
+  'views_handler_field_stock_dbxref_all' => array(
+    'parent' => 'views_handler_field_prerender_list',
+    ),
+  'views_handler_filter_stockprop_id' => array(
+    'parent' => 'views_handler_filter',
+    ),
+  'views_handler_filter_stock_dbxref_id' => array(
+    'parent' => 'views_handler_filter',
+    ),
+  'views_handler_filter_stock_relationship_id' => array(
+    'parent' => 'views_handler_filter',
+    ),
+  'views_handler_argument_stockprop_id' => array(
+    'parent' => 'views_handler_argument_string',
+    ),
+  ),
+  );
 }
 
 /**
@@ -163,7 +163,7 @@ function tripal_stock_views_pre_render  (&$view) {
   if (preg_match('/stock/', $view->base_table)) {
 
     //-----Node IDs---------------------------------------------
-    // @see file: tripal_core.views.inc function: tripal_core_add_node_ids_to_view (&$view);
+    // @see tripal_core.views.inc, tripal_core_add_node_ids_to_view()
 
     // retrieve the stock_id for each record in the views current page
     $stock_ids = array();
@@ -183,7 +183,7 @@ function tripal_stock_views_pre_render  (&$view) {
           ."WHERE stockprop.stock_id IN (" . implode(',', $stock_ids) . ")";
         $previous_db = tripal_db_set_active('chado');
         $resource = db_query($sql);
-       tripal_db_set_active($previous_db);
+        tripal_db_set_active($previous_db);
 
         $view->result[$key]->properties = array();
         while ($r = db_fetch_object($resource)) {
@@ -206,7 +206,7 @@ function tripal_stock_views_pre_render  (&$view) {
           ."OR stock_relationship.object_id IN (" . implode(',', $stock_ids) . ") ";
         $previous_db = tripal_db_set_active('chado');
         $resource = db_query($sql);
-       tripal_db_set_active($previous_db);
+        tripal_db_set_active($previous_db);
 
         while ($r = db_fetch_object($resource)) {
           if (in_array($r->subject_id, $stock_ids)) {
@@ -234,7 +234,7 @@ function tripal_stock_views_pre_render  (&$view) {
           ."WHERE stock_dbxref.stock_id IN (" . implode(',', $stock_ids) . ")";
         $previous_db = tripal_db_set_active('chado');
         $resource = db_query($sql);
-       tripal_db_set_active($previous_db);
+        tripal_db_set_active($previous_db);
 
         $view->result[$key]->dbxref = array();
         while ($r = db_fetch_object($resource)) {

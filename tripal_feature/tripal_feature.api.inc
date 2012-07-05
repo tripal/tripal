@@ -225,13 +225,13 @@ function tripal_feature_chado_feature_cvterm_schema() {
           'pub_id' => 'pub_id',
         ),
   );
-  
+
   return $description;
 }
 /**
-*
-* @ingroup tripal_schema_api
-*/
+ *
+ * @ingroup tripal_schema_api
+ */
 function tripal_feature_chado_feature_synonym_schema() {
   $description = array();
 
@@ -286,26 +286,26 @@ function tripal_feature_chado_feature_synonym_schema() {
  * @ingroup tripal_feature_api
  */
 function tripal_feature_analysis_get_property($analysis_id = NULL, $feature_id = NUll,
-   $analysisfeature_id = NULL, $property, $cv_name = 'tripal') {
+  $analysisfeature_id = NULL, $property, $cv_name = 'tripal') {
 
-   // check that the incoming arguments are correct
-   if (($analysis_id and !$feature_id) or
-       (!$analysis_id and $feature_id)) {
-       watchdog('tripal_feature',
-          'tripal_feature_analysis_get_property: Both an analysis ID and feature ID should be specified',
-           array(), WATCHDOG_WARNING);
-   }
+  // check that the incoming arguments are correct
+  if (($analysis_id and !$feature_id) or
+    (!$analysis_id and $feature_id)) {
+      watchdog('tripal_feature',
+      'tripal_feature_analysis_get_property: Both an analysis ID and feature ID should be specified',
+      array(), WATCHDOG_WARNING);
+  }
 
-   // get the analysisfeature_id if one is not provided
-   if (!$analysisfeature_id) {
-      $columns = array('analysisfeature_id');
-      $values = array('analysis_id' => $analysis_id, 'feature_id' => $feature_id);
-      $result = tripal_core_chado_select('analysisfeature', $columns, $values);
-      $analysisfeature_id = $result[0]->analysisfeature_id;
-   }
+  // get the analysisfeature_id if one is not provided
+  if (!$analysisfeature_id) {
+    $columns = array('analysisfeature_id');
+    $values = array('analysis_id' => $analysis_id, 'feature_id' => $feature_id);
+    $result = tripal_core_chado_select('analysisfeature', $columns, $values);
+    $analysisfeature_id = $result[0]->analysisfeature_id;
+  }
 
-   // get the property.
-   return tripal_core_get_property('analysisfeature', $analysisfeature_id, $property, $cv_name);
+  // get the property.
+  return tripal_core_get_property('analysisfeature', $analysisfeature_id, $property, $cv_name);
 }
 
 /**
@@ -339,28 +339,28 @@ function tripal_feature_analysis_get_property($analysis_id = NULL, $feature_id =
  * @ingroup tripal_feature_api
  */
 function tripal_feature_analysis_insert_property($analysis_id = NULL, $feature_id = NUll,
-   $analysisfeature_id = NULL, $property, $value, $update_if_present = 0,
-   $cv_name = 'tripal') {
+  $analysisfeature_id = NULL, $property, $value, $update_if_present = 0,
+  $cv_name = 'tripal') {
 
-   // check that the incoming arguments are correct
-   if (($analysis_id and !$feature_id) or
-       (!$analysis_id and $feature_id)) {
-       watchdog('tripal_feature',
-          'tripal_feature_analysis_insert_property: Both an analysis ID and feature ID should be specified',
-           array(), WATCHDOG_WARNING);
-   }
+  // check that the incoming arguments are correct
+  if (($analysis_id and !$feature_id) or
+    (!$analysis_id and $feature_id)) {
+    watchdog('tripal_feature',
+      'tripal_feature_analysis_insert_property: Both an analysis ID and feature ID should be specified',
+      array(), WATCHDOG_WARNING);
+  }
 
-   // get the analysisfeature_id if one is not provided
-   if (!$analysisfeature_id) {
-      $columns = array('analysisfeature_id');
-      $values = array('analysis_id' => $analysis_id, 'feature_id' => $feature_id);
-      $result = tripal_core_chado_select('analysisfeature', $columns, $values);
-      $analysisfeature_id = $result[0]->analysisfeature_id;
-   }
+  // get the analysisfeature_id if one is not provided
+  if (!$analysisfeature_id) {
+    $columns = array('analysisfeature_id');
+    $values = array('analysis_id' => $analysis_id, 'feature_id' => $feature_id);
+    $result = tripal_core_chado_select('analysisfeature', $columns, $values);
+    $analysisfeature_id = $result[0]->analysisfeature_id;
+  }
 
-   // insert the property.
-   return tripal_core_insert_property('analysisfeature', $analysisfeature_id,
-      $property, $cv_name, $value, $update_if_present);
+  // insert the property.
+  return tripal_core_insert_property('analysisfeature', $analysisfeature_id,
+    $property, $cv_name, $value, $update_if_present);
 }
 
 /**
@@ -400,27 +400,27 @@ function tripal_feature_analysis_insert_property($analysis_id = NULL, $feature_i
  * @ingroup tripal_feature_api
  */
 function tripal_feature_analysis_update_property($analysis_id = NULL, $feature_id = NUll,
-   $analysisfeature_id = NULL, $property, $value, $insert_if_missing = 0,
-   $cv_name = 'tripal') {
+  $analysisfeature_id = NULL, $property, $value, $insert_if_missing = 0,
+  $cv_name = 'tripal') {
 
-   // check that the incoming arguments are correct
-   if (($analysis_id and !$feature_id) or
-       (!$analysis_id and $feature_id)) {
-       watchdog('tripal_feature',
-          'tripal_feature_analysis_update_property: Both an analysis ID and feature ID should be specified',
-           array(), WATCHDOG_WARNING);
-   }
+  // check that the incoming arguments are correct
+  if (($analysis_id and !$feature_id) or
+    (!$analysis_id and $feature_id)) {
+      watchdog('tripal_feature',
+      'tripal_feature_analysis_update_property: Both an analysis ID and feature ID should be specified',
+      array(), WATCHDOG_WARNING);
+  }
 
-   // get the analysisfeature_id if one is not provided
-   if (!$analysisfeature_id) {
-      $columns = array('analysisfeature_id');
-      $values = array('analysis_id' => $analysis_id, 'feature_id' => $feature_id);
-      $result = tripal_core_chado_select('analysisfeature', $columns, $values);
-      $analysisfeature_id = $result[0]->analysisfeature_id;
-   }
+  // get the analysisfeature_id if one is not provided
+  if (!$analysisfeature_id) {
+    $columns = array('analysisfeature_id');
+    $values = array('analysis_id' => $analysis_id, 'feature_id' => $feature_id);
+    $result = tripal_core_chado_select('analysisfeature', $columns, $values);
+    $analysisfeature_id = $result[0]->analysisfeature_id;
+  }
 
-   // update the property.
-   return tripal_core_update_property('analysisfeature', $analysisfeature_id, $property, $cv_name, $value, $insert_if_missing);
+  // update the property.
+  return tripal_core_update_property('analysisfeature', $analysisfeature_id, $property, $cv_name, $value, $insert_if_missing);
 }
 
 /**
@@ -442,10 +442,10 @@ function tripal_feature_analysis_update_property($analysis_id = NULL, $feature_i
  * @ingroup tripal_feature_api
  */
 function tripal_feature_analysis_update_property_by_id($analysisfeatureprop_id,
-   $property, $value, $cv_name = 'tripal') {
+  $property, $value, $cv_name = 'tripal') {
 
-   // update the property.
-   return tripal_core_update_property_by_id('analysisfeature',
+    // update the property.
+    return tripal_core_update_property_by_id('analysisfeature',
       $analysisfeatureprop_id, $property, $cv_name, $value);
 }
 /**
@@ -481,25 +481,25 @@ function tripal_feature_analysis_update_property_by_id($analysisfeatureprop_id,
  * @ingroup tripal_feature_api
  */
 function tripal_feature_analysis_delete_property($analysis_id = NULL, $feature_id = NUll,
-   $analysisfeature_id = NULL, $property, $cv_name = 'tripal') {
-   // check that the incoming arguments are correct
-   if (($analysis_id and !$feature_id) or
-       (!$analysis_id and $feature_id)) {
-       watchdog('tripal_feature',
-          'tripal_feature_analysis_delete_property: Both an analysis ID and feature ID should be specified',
-           array(), WATCHDOG_WARNING);
-   }
+  $analysisfeature_id = NULL, $property, $cv_name = 'tripal') {
+  // check that the incoming arguments are correct
+  if (($analysis_id and !$feature_id) or
+    (!$analysis_id and $feature_id)) {
+      watchdog('tripal_feature',
+      'tripal_feature_analysis_delete_property: Both an analysis ID and feature ID should be specified',
+        array(), WATCHDOG_WARNING);
+  }
 
-   // get the analysisfeature_id if one is not provided
-   if (!$analysisfeature_id) {
-      $columns = array('analysisfeature_id');
-      $values = array('analysis_id' => $analysis_id, 'feature_id' => $feature_id);
-      $result = tripal_core_chado_select('analysisfeature', $columns, $values);
-      $analysisfeature_id = $result[0]->analysisfeature_id;
-   }
+  // get the analysisfeature_id if one is not provided
+  if (!$analysisfeature_id) {
+    $columns = array('analysisfeature_id');
+    $values = array('analysis_id' => $analysis_id, 'feature_id' => $feature_id);
+    $result = tripal_core_chado_select('analysisfeature', $columns, $values);
+    $analysisfeature_id = $result[0]->analysisfeature_id;
+  }
 
-   // get the property.
-   return tripal_core_delete_property('analysisfeature', $analysisfeature_id, $property, $cv_name);
+  // get the property.
+  return tripal_core_delete_property('analysisfeature', $analysisfeature_id, $property, $cv_name);
 }
 /**
  * Delete a property using the analysisfeatureprop_id
@@ -513,8 +513,8 @@ function tripal_feature_analysis_delete_property($analysis_id = NULL, $feature_i
  * @ingroup tripal_feature_api
  */
 function tripal_feature_analysis_delete_property_by_id($analysisfeatureprop_id) {
-   // get the property.
-   return tripal_core_delete_property_by_id('analysisfeature', $analysisfeatureprop_id);
+  // get the property.
+  return tripal_core_delete_property_by_id('analysisfeature', $analysisfeatureprop_id);
 }
 /**
  * Retrieve properties of a given type for a given feature
@@ -533,7 +533,7 @@ function tripal_feature_analysis_delete_property_by_id($analysisfeatureprop_id) 
  * @ingroup tripal_feature_api
  */
 function tripal_feature_get_property($feature_id, $property, $cv_name='tripal') {
-   return tripal_core_get_property('feature', $feature_id, $property, $cv_name);
+  return tripal_core_get_property('feature', $feature_id, $property, $cv_name);
 }
 
 /**
@@ -557,9 +557,9 @@ function tripal_feature_get_property($feature_id, $property, $cv_name='tripal') 
  * @ingroup tripal_feature_api
  */
 function tripal_feature_insert_property($feature_id, $property, $value,
-   $update_if_present = 0, $cv_name = 'tripal') {
-    return tripal_core_insert_property('feature', $feature_id, $property,
-       $cv_name, $value, $update_if_present);
+  $update_if_present = 0, $cv_name = 'tripal') {
+  return tripal_core_insert_property('feature', $feature_id, $property,
+    $cv_name, $value, $update_if_present);
 }
 /**
  * Update a feature property using the property name. Only use this
@@ -587,7 +587,7 @@ function tripal_feature_insert_property($feature_id, $property, $value,
  */
 function tripal_feature_update_property($feature_id, $property,
   $value, $insert_if_missing = 0, $cv_name = 'tripal') {
-   return tripal_core_update_property('feature', $feature_id, $property, $cv_name, $value, $insert_if_missing);
+    return tripal_core_update_property('feature', $feature_id, $property, $cv_name, $value, $insert_if_missing);
 }
 
 /**
@@ -610,7 +610,7 @@ function tripal_feature_update_property($feature_id, $property,
  */
 function tripal_feature_update_property_by_id($featureprop_id, $property,
   $value, $cv_name = 'tripal') {
-   return tripal_core_update_property_by_id('feature', $featureprop_id, $property, $cv_name, $value);
+    return tripal_core_update_property_by_id('feature', $featureprop_id, $property, $cv_name, $value);
 }
 
 /**
@@ -634,7 +634,7 @@ function tripal_feature_update_property_by_id($featureprop_id, $property,
  * @ingroup tripal_feature_api
  */
 function tripal_feature_delete_property($feature_id, $property, $cv_name='tripal') {
-   return tripal_core_delete_property('feature', $feature_id, $property, $cv_name);
+  return tripal_core_delete_property('feature', $feature_id, $property, $cv_name);
 }
 /**
  * Delete a given feature property using the featureprop_id
@@ -648,5 +648,5 @@ function tripal_feature_delete_property($feature_id, $property, $cv_name='tripal
  * @ingroup tripal_feature_api
  */
 function tripal_feature_delete_property_by_id($featureprop_id) {
-   return tripal_core_delete_property_by_id('feature', $featureprop_id);
+  return tripal_core_delete_property_by_id('feature', $featureprop_id);
 }

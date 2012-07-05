@@ -2,25 +2,18 @@
 ; file:line:warning-type
 ; where warning-type is one of security, style, sql, i18n, comment, etc.
 
-; All <?php should be closed with a ?> in theme template files
-tripal_views_integration_fields_form.tpl.php:48:style
-tripal_views_data_export_download_form.tpl.php:8:style
-
-; All variables are set through the code and thus don't need to be filtered
-tripal_views_integration.inc:809:security
+; All variables are filtered
+tripal_views_integration.inc:814:security
 
 ; SQL queries the chado database which does not use the drupal prefixing functionality
 ; therefore, curly brackets ({}) are not appropriate.
-views/handlers/views_handler_filter_chado_select_cvterm_name.inc:53:sql
-views/handlers/views_handler_filter_chado_select_cvterm_name.inc:61:sql
-views/handlers/views_handler_field_dbxref_accession_link.inc:31:sql
-views/handlers/views_handler_filter_stockprop_id.inc:78:sql
-views/handlers/views_handler_filter_stockprop_id.inc:104:sql
-views/handlers/views_handler_filter_stock_relationship_id.inc:23:sql
-views/handlers/views_handler_filter_stock_relationship_id.inc:72:sql
-views/handlers/views_handler_filter_stock_relationship_id.inc:79:sql
-views/handlers/views_handler_filter_stock_relationship_id.inc:160:sql
-views/handlers/views_handler_argument_stockprop_id.inc:21:sql
+views/handlers/views_handler_filter_chado_select_cvterm_name.inc:62:sql
+views/handlers/views_handler_field_dbxref_accession_link.inc:32:sql
+views/handlers/views_handler_filter_stockprop_id.inc:105:sql
+views/handlers/views_handler_filter_stock_relationship_id.inc:24:sql
+views/handlers/views_handler_filter_stock_relationship_id.inc:74:sql
+views/handlers/views_handler_filter_stock_relationship_id.inc:82:sql
+views/handlers/views_handler_argument_stockprop_id.inc:22:sql
 
 ; SQL queries the pg_tables table to check if a table exists in chado; drupal
 ; prefixing is not appropriate

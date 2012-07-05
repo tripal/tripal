@@ -18,9 +18,9 @@ require('tripal_genetic.api.inc');
  *  views integration code is
  */
 function tripal_genetic_views_api() {
-   return array(
+  return array(
       'api' => 2.0,
-   );
+  );
 }
 
 function tripal_genetic_theme() {

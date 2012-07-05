@@ -394,10 +394,10 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL) {
     $mview_id = $form_state['storage']['mview_id'];
     $table_name = $form_state['storage']['table_name'];
     $form['view_setup_table'] = array(
-     '#type' => 'fieldset',
-     '#title' => 'Join Selection',
-     '#prefix' => '<div id="fieldset-table-rows-wrapper">',
-     '#suffix' => '</div>',
+      '#type' => 'fieldset',
+      '#title' => 'Join Selection',
+      '#prefix' => '<div id="fieldset-table-rows-wrapper">',
+      '#suffix' => '</div>',
     );
 
     // get the columns in this materialized view.  They are separated by commas
@@ -499,8 +499,8 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL) {
       $form['view_setup_table']["$table_id-$i"]["fields_name_$table_id-$i"] = array(
         '#type' => 'markup',
         '#prefix' => "<div class=\"column-one\">",
-        '#value' => "<span class=\"column-name\">$column_name</span>".
-                    "<br /><span class=\"column-type\">$column_type</span>",
+        '#value' => "<span class=\"column-name\">" . filter_xss($column_name) . "</span>".
+                    "<br /><span class=\"column-type\">" . filter_xss($column_type) . "</span>",
         '#suffix' => "</div>",
       );
       $data['field_types'][$column_name] = $column_type;

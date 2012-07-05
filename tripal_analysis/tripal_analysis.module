@@ -3,9 +3,7 @@
 /**
  * @file
  * Contains all the main hook implementations for the tripal_analysis module
- */
-
-/**
+ *
  * @defgroup tripal_analysis Analysis Module
  * @{
  * Provides functions for managing chado analysis' including creating details pages for each one
@@ -16,39 +14,45 @@
 require('tripal_analysis.api.inc');
 require('tripal_analysis_privacy.inc');
 
-
 /**
+ * Register tripal_analysis sub-modules
  *
+ * @param $modulename
+ *  The name of the module to be registered as a tripal analysis submodule
  *
  * @ingroup tripal_analysis
  */
 function tripal_analysis_register_child($modulename) {
-   $sql = "INSERT INTO {tripal_analysis} (modulename) VALUES ('%s')";
-   db_query($sql, $modulename);
+  $sql = "INSERT INTO {tripal_analysis} (modulename) VALUES ('%s')";
+  db_query($sql, $modulename);
 }
+
 /**
+ * Un-register a tripal analysis sub-module
  *
+ * @param $modulename
+ *  The name of the module to un-register
  *
  * @ingroup tripal_analysis
  */
 function tripal_analysis_unregister_child($modulename) {
-   if (db_table_exists('tripal_analysis')) {
+  if (db_table_exists('tripal_analysis')) {
       $sql = "DELETE FROM {tripal_analysis} WHERE modulename = '%s'";
       db_query($sql, $modulename);
-   }
+  }
 }
 
 /**
+ * Add tripal javascript to page headers
  *
  * @ingroup tripal_analysis
  */
 function tripal_analysis_init() {
-   drupal_add_js(drupal_get_path('theme', 'tripal') . '/js/tripal_analysis.js');
+  drupal_add_js(drupal_get_path('theme', 'tripal') . '/js/tripal_analysis.js');
 }
 
 /**
- * tripal_analysis_menu()
- * HOOK: Implementation of hook_menu()
+ * Implementation of hook_menu().
  * Entry points and paths of the module
  *
  * @ingroup tripal_analysis
@@ -57,14 +61,14 @@ function tripal_analysis_menu() {
   // Display available analyses
   $items['analyses'] = array(
       'menu_name' => ('primary-links'), //Enable the 'Analysis' primary link
-      'title' => t('Analyses'),
+      'title' => 'Analyses',
       'page callback' => 'tripal_analysis_show_analyses',
       'access arguments' => array('access chado_analysis content'),
       'type' => MENU_NORMAL_ITEM
   );
   //Sync analysis
   $items['chado_sync_analyses'] = array(
-     'title' => t('Sync Data'),
+     'title' => 'Sync Data',
      'page callback' => 'tripal_analysis_sync_analyses',
      'access arguments' => array('administer site configuration'),
      'type' => MENU_CALLBACK
@@ -112,8 +116,8 @@ function tripal_analysis_show_analyses() {
 }
 
 /**
- *  Provide information to drupal about the node types that we're creating
- *  in this module
+ * Provide information to drupal about the node types that we're creating
+ * in this module
  *
  * @ingroup tripal_analysis
  */
@@ -131,6 +135,7 @@ function tripal_analysis_node_info() {
   );
   return $nodes;
 }
+
 /**
  *  When a new chado_analysis node is created we also need to add information
  *  to our chado_analysis table.  This function is called on insert of a new
@@ -174,8 +179,8 @@ function chado_analysis_insert($node) {
           'timeexecuted' => $timestamp
       );
       if (tripal_core_chado_insert('analysis', $values)) {
-         $analysis = tripal_core_chado_select('analysis', array('*'), $values);
-         $analysis_id = $analysis[0]->analysis_id;
+        $analysis = tripal_core_chado_select('analysis', array('*'), $values);
+        $analysis_id = $analysis[0]->analysis_id;
       }
   }
 
@@ -215,10 +220,15 @@ function chado_analysis_insert($node) {
 
    // add the analysis to the node object for
    // use by other analysis modules that may be using this function
-   $node->analysis = $analysis;
-   $node->analysis_id = $analysis_id; // we need to set this for children
+    $node->analysis = $analysis;
+    $node->analysis_id = $analysis_id; // we need to set this for children
 }
+
 /**
+ * Removes analysis from the chado database
+ *
+ * @param $node
+ *   The node object specifying which chado record to delete
  *
  * @ingroup tripal_analysis
  */
@@ -254,6 +264,9 @@ function chado_analysis_delete($node) {
 /**
  * Update analyses
  *
+ * @param $node
+ *   The updated node object
+ *
  * @ingroup tripal_analysis
  */
 function chado_analysis_update($node) {
@@ -272,8 +285,8 @@ function chado_analysis_update($node) {
     // get the analysis_id for this node:
     $sql = "SELECT analysis_id ".
              "FROM {chado_analysis} ".
-             "WHERE vid = %d";
-    $analysis_id = db_fetch_object(db_query($sql, $node->vid))->analysis_id;
+             "WHERE nid = %d";
+    $analysis_id = db_fetch_object(db_query($sql, $node->nid))->analysis_id;
 
     $sql = "UPDATE {analysis} ".
              "SET name = '%s', ".
@@ -327,53 +340,53 @@ function chado_analysis_update($node) {
  */
 function chado_analysis_form($node) {
 
-   $analysis = $node->analysis;
+  $analysis = $node->analysis;
 
-   // add in the description column. It is a text field and may not be included
-   // if the text is too big.
-   $analysis = tripal_core_expand_chado_vars($analysis, 'field', 'analysis.description');
+  // add in the description column. It is a text field and may not be included
+  // if the text is too big.
+  $analysis = tripal_core_expand_chado_vars($analysis, 'field', 'analysis.description');
 
-   // get form defaults
-   $analysis_id = $node->analysis_id;
-   if (!$analysis_id) {
-      $analysis_id = $analysis->analysis_id;
-   }
-   $analysisname = $node->analysisname;
-   if (!$analysisname) {
-      $analysisname = $analysis->name;
-   }
-   $program = $node->program;
-   if (!$program) {
-      $program = $analysis->program;
-   }
-   $programversion = $node->programversion;
-   if (!$programversion) {
-      $programversion = $analysis->programversion;
-   }
-   $algorithm = $node->algorithm;
-   if (!$algorithm) {
-      $algorithm = $analysis->algorithm;
-   }
-   $sourcename = $node->sourcename;
-   if (!$sourcename) {
-      $sourcename = $analysis->sourcename;
-   }
-   $sourceversion = $node->sourceversion;
-   if (!$sourceversion) {
-      $sourceversion = $analysis->sourceversion;
-   }
-   $sourceuri = $node->sourceuri;
-   if (!$sourceuri) {
-      $sourceuri = $analysis->sourceuri;
-   }
-   $timeexecuted = $node->timeexecuted;
-   if (!$timeexecuted) {
-      $timeexecuted = $analysis->timeexecuted;
-   }
-   $description = $node->description;
-   if (!$description) {
-      $description = $analysis->description;
-   }
+  // get form defaults
+  $analysis_id = $node->analysis_id;
+  if (!$analysis_id) {
+    $analysis_id = $analysis->analysis_id;
+  }
+    $analysisname = $node->analysisname;
+  if (!$analysisname) {
+    $analysisname = $analysis->name;
+  }
+    $program = $node->program;
+  if (!$program) {
+    $program = $analysis->program;
+  }
+    $programversion = $node->programversion;
+  if (!$programversion) {
+    $programversion = $analysis->programversion;
+  }
+    $algorithm = $node->algorithm;
+  if (!$algorithm) {
+    $algorithm = $analysis->algorithm;
+  }
+    $sourcename = $node->sourcename;
+  if (!$sourcename) {
+    $sourcename = $analysis->sourcename;
+  }
+    $sourceversion = $node->sourceversion;
+  if (!$sourceversion) {
+    $sourceversion = $analysis->sourceversion;
+  }
+    $sourceuri = $node->sourceuri;
+  if (!$sourceuri) {
+    $sourceuri = $analysis->sourceuri;
+  }
+    $timeexecuted = $node->timeexecuted;
+  if (!$timeexecuted) {
+    $timeexecuted = $analysis->timeexecuted;
+  }
+    $description = $node->description;
+  if (!$description) {
+    $description = $analysis->description;
+  }
   $form = array();
   $form['title']= array(
       '#type' => 'hidden',
@@ -482,23 +495,23 @@ function chado_analysis_form($node) {
   return $form;
 }
 
-/**
- *  When a node is requested by the user this function is called to allow us
- *  to add auxiliary data to the node object.
- *
- * @ingroup tripal_analysis
- */
+ /**
+  *  When a node is requested by the user this function is called to allow us
+  *  to add auxiliary data to the node object.
+  *
+  * @ingroup tripal_analysis
+  */
 function chado_analysis_load($node) {
 
    // get the feature details from chado
-   $analysis_id = chado_get_id_for_node('analysis', $node);
+  $analysis_id = chado_get_id_for_node('analysis', $node);
 
-   $values = array('analysis_id' => $analysis_id);
-   $analysis = tripal_core_generate_chado_var('analysis', $values);
+  $values = array('analysis_id' => $analysis_id);
+  $analysis = tripal_core_generate_chado_var('analysis', $values);
 
-   $additions = new stdClass();
-   $additions->analysis = $analysis;
-   return $additions;
+  $additions = new stdClass();
+  $additions->analysis = $analysis;
+  return $additions;
 }
 
 /**
@@ -601,10 +614,10 @@ function tripal_analysis_sync_analyses($analysis_id = NULL, $job_id = NULL) {
          // This is a kegg analysis
         }
         elseif ($analysis_type->value == 'tripal_analysis_kegg' ) {
-           $new_node->type = 'chado_analysis_kegg';
+          $new_node->type = 'chado_analysis_kegg';
         }
         else {
-           $new_node->type = 'chado_analysis';
+          $new_node->type = 'chado_analysis';
         }
       // If it doesn't exist, this analysis is generic
       }
@@ -649,36 +662,36 @@ function tripal_analysis_sync_analyses($analysis_id = NULL, $job_id = NULL) {
         node_save($node);
 
         if ($node->nid) {
-          $page_content .= "Added $new_node->title<br>";
+          $page_content .= "Added $new_node->title<br />";
         }
       }
     }
     else {
-      $page_content .= "Skipped $new_node->title<br>";
+      $page_content .= "Skipped $new_node->title<br />";
     }
   }
   return $page_content;
 }
 
 /**
+ * Validates the user input before creating an analysis node
  *
  * @ingroup tripal_analysis
  */
 function chado_analysis_validate($node, &$form) {
    // use the analysis parent to validate the node
-   tripal_analysis_validate($node, $form);
+  tripal_analysis_validate($node, $form);
 }
+
 /**
+ * This validation is being used for three activities:
+ *   CASE A: Update a node that exists in both drupal and chado
+ *   CASE B: Synchronizing a node from chado to drupal
+ *   CASE C: Inserting a new node that exists in niether drupal nor chado
  *
- *@ingroup tripal_analysis
+ * @ingroup tripal_analysis
  */
 function tripal_analysis_validate($node, &$form) {
-##dprint_r($node);
-
-    // This validation is being used for three activities:
-    // CASE A: Update a node that exists in both drupal and chado
-    // CASE B: Synchronizing a node from chado to drupal
-    // CASE C: Inserting a new node that exists in niether drupal nor chado
 
     // Only nodes being updated will have an nid already
     if ($node->nid) {
@@ -715,13 +728,14 @@ function tripal_analysis_validate($node, &$form) {
             );
             $analysis = tripal_core_chado_select('analysis', array('analysis_id'), $values);
             if (sizeof($analysis) > 0) {
-               form_set_error('program', 'Cannot add the analysis with this program,
+              form_set_error('program', 'Cannot add the analysis with this program,
                   program version and source name. An analysis with these values already exists.');
-               return;
+              return;
             }
         }
     }
 }
+
 /**
  * Display help and module information
  * @param path which path of the site we're displaying help
@@ -742,6 +756,7 @@ function tripal_analysis_help($path, $arg) {
   }
   return $output;
 }
+
 /**
  *  The following function proves access control for users trying to
  *  perform actions on data managed by this module
@@ -767,16 +782,16 @@ function chado_analysis_access($op, $node, $account) {
   }
   if ($op == 'view') {
     if (!user_access('access chado_analysis content', $account)) {
-         return FALSE;
+      return FALSE;
       }
   }
-   return NULL;
+    return NULL;
 }
 
 /**
  *  Set the permission types that the chado module uses.  Essentially we
  *  want permissionis that protect creation, editing and deleting of chado
- #  data objects
+ *  data objects
  *
  * @ingroup tripal_analysis
  */
@@ -846,20 +861,24 @@ function get_chado_analyses() {
     return $analyses;
   }
 }
+
 /**
+ * Theme the List Analysis page
  *
+ * @param $analyses
+ *   An array of analyses to list
  *
  * @ingroup tripal_analysis
  */
 function theme_tripal_analysis_analysis_page($analyses) {
 
-  $output = "<br>Analyses are listed in the descending order of their execution time.<br><a id=\"tripal_expandableBox_toggle_button\" onClick=\"toggleExpandableBoxes()\">[-] Collapse All</a>";
+  $output = "<br />Analyses are listed in the descending order of their execution time.<br /><a id=\"tripal_expandableBox_toggle_button\" onClick=\"toggleExpandableBoxes()\">[-] Collapse All</a>";
 
-   foreach ($analyses as $analysis) {
+  foreach ($analyses as $analysis) {
     // Prepare information for html output
     $ana_node_url = url("node/$analysis->node_id");
-     if ($analysis->sourceversion) {
-         $ver = "($analysis->sourceversion)";
+    if ($analysis->sourceversion) {
+      $ver = "($analysis->sourceversion)";
       }
       $date =  preg_replace("/^(\d+-\d+-\d+) .*/", "$1", $analysis->timeexecuted);
 
@@ -902,7 +921,12 @@ function theme_tripal_analysis_analysis_page($analyses) {
 }
 
 /**
+ * Remove orphaned drupal nodes or chado analysis
  *
+ * @param $dummy
+ *   Not Used -kept for backwards compatibility
+ * @param $job_id
+ *   The id of the tripal job executing this function
  *
  * @ingroup tripal_analysis
  */
@@ -1057,7 +1081,8 @@ function tripal_analysis_taxonify_features ($analysis_id = NULL, $job_id = NULL)
     $i++;
   }
 }
-*/
+ */
+
 /**
  * Implements hook_views_api()
  * Purpose: Essentially this hook tells drupal that there is views support for
@@ -1067,7 +1092,7 @@ function tripal_analysis_taxonify_features ($analysis_id = NULL, $job_id = NULL)
  * @ingroup tripal_analysis
  */
 function tripal_analysis_views_api() {
-   return array(
-      'api' => 2.0,
-   );
+    return array(
+    'api' => 2.0,
+  );
 }

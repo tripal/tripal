@@ -59,18 +59,18 @@ function tripal_organism_get_organism_by_organism_id($organism_id) {
     return node_load($r->nid);
   }
   else {
-    drupal_set_message("Function: tripal_organism_get_organism_by_organism_id() -no organism with that organism id sync'd with drupal", 'error');
+    drupal_set_message(t("Function: tripal_organism_get_organism_by_organism_id() -no organism with that organism id sync'd with drupal"), 'error');
   }
 
   return 0;
 
 }
 
-/*****
+/**
  * @section Chado Table Descriptions
  * There should be a default table description for all chado tables included
  * in core.
- ****************************************************************************/
+ */
 
 /**
  * Implements hook_chado_organism_schema()
@@ -137,22 +137,22 @@ function tripal_organism_chado_organismprop_schema() {
  */
 function tripal_organism_get_synced() {
 
-   // use this SQL for getting synced organisms
-   $dsql =  "SELECT * FROM {chado_organism}";
-   $orgs = db_query($dsql);
+  // use this SQL for getting synced organisms
+  $dsql =  "SELECT * FROM {chado_organism}";
+  $orgs = db_query($dsql);
 
-   // use this SQL statement for getting the organisms
-   $csql =  "SELECT * FROM {Organism} ".
-            "WHERE organism_id = %d";
+  // use this SQL statement for getting the organisms
+  $csql =  "SELECT * FROM {Organism} ".
+          "WHERE organism_id = %d";
 
-   $org_list = array();
+  $org_list = array();
 
-   // iterate through the organisms and build an array of those that are synced
-   while ($org = db_fetch_object($orgs)) {
-      $previous_db = tripal_db_set_active('chado');  // use chado database
-      $info = db_fetch_object(db_query($csql, $org->organism_id));
-      tripal_db_set_active($previous_db);  // now use drupal database
-      $org_list[] = $info;
-   }
-   return $org_list;
+  // iterate through the organisms and build an array of those that are synced
+  while ($org = db_fetch_object($orgs)) {
+    $previous_db = tripal_db_set_active('chado');  // use chado database
+    $info = db_fetch_object(db_query($csql, $org->organism_id));
+    tripal_db_set_active($previous_db);  // now use drupal database
+    $org_list[] = $info;
+  }
+  return $org_list;
 }

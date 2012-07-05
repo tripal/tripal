@@ -16,7 +16,7 @@
  *  views integration code is
  */
 function tripal_phenotype_views_api() {
-   return array(
+  return array(
       'api' => 2.0,
-   );
+  );
 }

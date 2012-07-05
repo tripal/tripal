@@ -1,11 +1,8 @@
 <?php
-//
-// Copyright 2009 Clemson University
-//
 
 /**
  * @file
- * @todo Add file header description
+ * Contains functions displaying administrative pages and forms
  */
 
 /**
@@ -73,8 +70,8 @@ function tripal_analysis_module_description_page() {
             </ul>
             </p>';
 
-   $text .= '<h3>Page Customizations</h3>';
-   $text .= '<p>There are several ways to customize the look-and-feel for the way Chado data is presented through Tripal.
+  $text .= '<h3>Page Customizations</h3>';
+  $text .= '<p>There are several ways to customize the look-and-feel for the way Chado data is presented through Tripal.
              Below is a description of several methods.  These methods may be used in conjunction with one another to
              provide fine-grained control.
              <ul>
@@ -136,11 +133,15 @@ function tripal_analysis_module_description_page() {
   return $text;
 }
 
-/*******************************************************************************
+/**
  * Administration page callbacks for the Tripal Analysis module
+ *
  * We have defined a hook_get_settings() function. When a sub-module
  * is enabled, we'll look for this function to provide a form for the
  * administrative setting.
+ *
+ * @return
+ *  A form API array describing an administrative form
  *
  * @ingroup tripal_analysis
  */
@@ -209,6 +210,13 @@ function tripal_analysis_admin() {
 }
 
 /**
+ * Displays the Set Drupal Taxonomy for Analysis Features From
+ *
+ * @param $form
+ *  The administrative form as it is currently
+ *
+ * @return
+ *  A form API array describing an administrative form
  *
  * @ingroup tripal_analysis
  */
@@ -254,7 +262,15 @@ function get_tripal_analysis_admin_form_taxonomy_set(&$form) {
       '#weight'      => 3
   );
 }
+
 /**
+ * The "Reindex Analysis Nodes" form
+ *
+ * @param $form
+ *  The administrative form as it is currently
+ *
+ * @return
+ *  A form API array describing an administrative form
  *
  * @ingroup tripal_analysis
  */
@@ -298,7 +314,15 @@ function get_tripal_analysis_admin_form_reindex_set(&$form) {
       '#weight' => 3,
   );
 }
+
 /**
+ * The "Clean-up orphaned analysis & nodes" Form
+ *
+ * @param $form
+ *  The administrative form as it is currently
+ *
+ * @return
+ *  A form API array describing an administrative form
  *
  * @ingroup tripal_analysis
  */
@@ -322,7 +346,15 @@ function get_tripal_analysis_admin_form_cleanup_set(&$form) {
       '#weight' => 2,
   );
 }
+
 /**
+ * The "sync Analysis in chado with drupal" form
+ *
+ * @param $form
+ *  The administrative form as it is currently
+ *
+ * @return
+ *  A form API array describing an administrative form
  *
  * @ingroup tripal_analysis
  */
@@ -400,7 +432,15 @@ function get_tripal_analysis_admin_form_sync_set(&$form) {
     );
   }
 }
+
 /**
+ * Validate the administrative form
+ * @todo Stephen: Why is validate used rather then submit?
+ *
+ * @param $form
+ *   The form API array of the form to be validated
+ * @form_state
+ *   The user submitted values
  *
  * @ingroup tripal_analysis
  */
