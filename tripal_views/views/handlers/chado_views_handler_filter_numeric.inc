@@ -47,8 +47,14 @@ class chado_views_handler_filter_numeric extends views_handler_filter_numeric {
    * However, if it is uses postgresql any() function to compare
    */
   function query() {
-    $this->ensure_my_table();
 
+    // make optional
+    // if it is not set or empty then don't restrict the query
+    if (!$this->value) {
+      return;
+    }
+
+    $this->ensure_my_table();
 
     $table = $this->query->get_table_info($this->table);
     if (preg_match('/aggregator/', $table['join']->definition['handler'])) {

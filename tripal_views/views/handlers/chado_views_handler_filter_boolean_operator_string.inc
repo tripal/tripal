@@ -47,6 +47,13 @@ class chado_views_handler_filter_boolean_operator_string extends views_handler_f
    * However, if it is uses postgresql any() function to compare
    */
   function query() {
+
+    // make optional
+    // if it is not set or empty then don't restrict the query
+    if (!$this->value) {
+      return;
+    }
+
     $this->ensure_my_table();
 
     $table = $this->query->get_table_info($this->table);
