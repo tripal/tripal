@@ -441,6 +441,11 @@ function tripal_views_get_integration_array_for_chado_table($table_name, $base_t
           'sort' => array('name' => 'chado_views_handler_sort'),
         );
       }
+
+      // Specify specialty handlers
+      if ($field_name == 'type_id') {
+        $defn_array['fields'][$field_name]['handlers']['filter']['name'] = 'views_handler_filter_chado_select_cvterm_name';
+      }
     }
   }
 
