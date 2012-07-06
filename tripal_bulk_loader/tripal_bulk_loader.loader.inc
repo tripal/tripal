@@ -14,8 +14,11 @@
 function tripal_bulk_loader_add_loader_job_form($form_state, $node) {
   $form = array();
 
-  if (($node->job_status == 'Loading...') AND (variable_get('tripal_bulk_loader_transactions',   'row') != 'none')) {
-    drupal_set_message("Job Progress and Loading Summary will only be updated at the end of each constant set.","warning");
+  // --notify--
+  if ($node->job_status == 'Loading...' AND (variable_get('tripal_bulk_loader_transactions',   'row') != 'none')) {
+    drupal_set_message(t("The Loading Summary only updates at the end of each constant set.
+      %num records have already been inserted; however, they won't be available until the
+      current constant set is full loaded and no errors are encountered.", array('%num' => $progress->num_records)), 'warning');
   }
 
   $form['nid'] = array(
@@ -117,7 +120,7 @@ function tripal_bulk_loader_add_loader_job_form_submit($form, $form_state) {
  * Note: Instead of returning a value this function updates the tripal_bulk_loader.status.
  *   Errors are thrown through watchdog and can be viewed at admin/reports/dblog.
  */
-function tripal_bulk_loader_load_data($nid) {
+function tripal_bulk_loader_load_data($nid, $job_id) {
 
   // ensure no timeout
   set_time_limit(0);
@@ -328,6 +331,7 @@ function tripal_bulk_loader_load_data($nid) {
       $data_keys = array_keys($data);
       foreach ($data_keys as $priority) {
         $status = process_data_array_for_line($priority, $data, $default_data, $field2column, $record2priority, $line, $nid, $num_lines, $group_index);
+        tripal_bulk_loader_progress_file_track_job($job_id, $status);
         if (!$status ) {
           // Encountered an error
           if ($transactions) {
@@ -337,6 +341,8 @@ function tripal_bulk_loader_load_data($nid) {
           break;
         }
       } // end of foreach table in default data array
+
+      tripal_bulk_loader_progress_file_track_job($job_id, FALSE, TRUE);
 
       if ($failed) {
         break;
@@ -369,6 +375,7 @@ function tripal_bulk_loader_load_data($nid) {
     }
 
     tripal_bulk_loader_progress_bar($total_lines,$total_lines);
+    tripal_bulk_loader_progress_file_track_job($job_id, FALSE, FALSE, TRUE);
   } //end of foreach constant set
 
   // check that data was inserted and update job_status
@@ -755,4 +762,49 @@ function tripal_bulk_loader_progress_bar($current=0, $total=100, $size=50) {
     echo "\n";
   }
 
+}
+
+/**
+ * Keep track of progress in file rather then database
+ *
+ * This provides an alternative method to keep track of progress that doesn't require the
+ * database. It was needed because you can't switch databases within a transaction...
+ * Waiting until the end of a constant set is much too long to wait for any indication
+ * that things are working.
+ *
+ * Each line represents a line processed in the loading file. Each period (.) represents
+ * a successfully inserted record.
+ *
+ * @param $job_id
+ *   The ID of the current tripal job
+ * @param $record_added
+ *   A boolean indicated whether a record was added successfully
+ * @param $line_complete
+ *   A boolean indicating whether the current line is finished
+ * @param $close
+ *   A boolean indicating that the file should be closed
+ */
+function tripal_bulk_loader_progress_file_track_job($job_id, $record_added, $line_complete = FALSE, $close = FALSE) {
+  // retrieve the file handle
+  $file_handle = variable_get('tripal_bulk_loader_progress_file_handle',NULL);
+
+  // open file for reading if not already
+  if (!$file_handle) {
+    $file_handle = fopen('/tmp/tripal_bulk_loader_progress-'.$job_id.'.out', 'w');
+    variable_set('tripal_bulk_loader_progress_file_handle', $file_handle);
+  }
+
+  if ($record_added) {
+    fwrite($file_handle,'.');
+  }
+
+  if ($line_complete) {
+    fwrite($file_handle,"\n");
+  }
+
+  // close the file if finished
+  if ($close) {
+    fclose($file_handle);
+    variable_set('tripal_bulk_loader_progress_file_handle', NULL);
+  }
 }
