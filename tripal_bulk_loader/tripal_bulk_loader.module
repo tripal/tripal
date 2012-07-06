@@ -327,6 +327,10 @@ function tripal_bulk_loader_load($node) {
 
   $node->title = 'Bulk Loading Job: ' . $node->loader_name;
 
+  // Add job details
+  $sql = "SELECT * FROM {tripal_jobs} WHERE job_id=%d";
+  $node->job = db_fetch_object(db_query($sql, $node->job_id));
+
   // Add the loader template
   $sql = "SELECT * FROM {tripal_bulk_loader_template} WHERE template_id=%d";
   $results = db_fetch_object(db_query($sql, $node->template_id));
