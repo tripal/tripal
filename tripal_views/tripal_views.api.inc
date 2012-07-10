@@ -459,7 +459,7 @@ function tripal_views_get_integration_array_for_chado_table($table_name, $base_t
       $defn_array['fields'][$left_field]['joins'][ $foreign_key_schema['table'] ] = array(
         'table' => $foreign_key_schema['table'],
         'field' => $right_field,
-        'handler' => 'views_handler_join_chado_aggregtor'
+        'handler' => 'views_handler_join_chado_aggregator'
       );
     }
   }
