@@ -167,6 +167,20 @@ function tripal_bulk_loader_admin_jobs() {
 function tripal_bulk_loader_configuration_form($form_state = NULL) {
   $form = array();
 
+  $form['space'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Enable/Disable Functionality'),
+  );
+
+  $form['space']['keep_track_inserted'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Keep track of inserted record IDs'),
+    '#description' => t('This enables the ability to revert an entire loading job even if '
+      .'it completed successfully. Furthermore, it displays the number of records '
+      .'successfully inserted into each table.'),
+    '#default_value' => variable_get('tripal_bulk_loader_keep_track_inserted', FALSE),
+  );
+
   $form['speed'] = array(
     '#type' => 'fieldset',
     '#title' => t('Possible Speed Improvements'),
@@ -248,5 +262,7 @@ function tripal_bulk_loader_configuration_form_submit($form, $form_state) {
   variable_set('tripal_bulk_loader_skip_validation', $form_state['values']['no_validate']);
   variable_set('tripal_bulk_loader_transactions', $form_state['values']['transactions']);
   variable_set('tripal_bulk_loader_lock', $form_state['values']['lock']);
+
+  variable_set('tripal_bulk_loader_keep_track_inserted', $form_state['values']['keep_track_inserted']);
 
 }

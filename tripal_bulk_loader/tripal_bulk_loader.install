@@ -30,17 +30,17 @@ function tripal_bulk_loader_uninstall() {
 function tripal_bulk_loader_schema() {
   $schema = array();
   $schema['tripal_bulk_loader'] = array(
-      'fields' => array(
-         'nid' => array(
-            'type' => 'int',
-            'unsigned' => TRUE,
-            'not null' => TRUE,
+    'fields' => array(
+      'nid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
       ),
-         'loader_name' => array(
-            'type' => 'varchar',
+      'loader_name' => array(
+        'type' => 'varchar',
       ),
-         'template_id' => array(
-            'type' => 'varchar',
+      'template_id' => array(
+        'type' => 'varchar',
       ),
       'file' => array(
         'type' => 'varchar',
@@ -57,6 +57,12 @@ function tripal_bulk_loader_schema() {
         'size' => 'tiny',
         'not null' => TRUE,
         'default' => 0,
+      ),
+      'keep_track_inserted' => array(
+        'type' => 'int',
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 1
       ),
     ),
       'primary key' => array('nid'),
@@ -187,6 +193,24 @@ function tripal_bulk_loader_update_6151() {
         'default' => 0
       )
     );
+
+  return $ret;
+}
+
+function tripal_bulk_loader_update_6152() {
+  $ret = array();
+
+  db_add_field(
+    $ret,
+    'tripal_bulk_loader',
+    'keep_track_inserted',
+    array(
+      'type' => 'int',
+      'size' => 'tiny',
+      'not null' => TRUE,
+      'default' => 1
+    )
+  );
 
   return $ret;
 }

@@ -314,6 +314,17 @@ function tripal_bulk_loader_form($node, $form_state) {
     '#default_value' => $node->file_has_header,
   );
 
+  $form['loader']['keep_track_inserted'] = array(
+    '#type' => 'radios',
+    '#title' => t('Keep track of inserted record IDs'),
+    '#description' => t('This enables the ability to revert an entire loading job even if '
+      .'it completed successfully. Furthermore, it displays the number of records '
+      .'successfully inserted into each table.'),
+    '#options' => array( 1 => 'Yes', 0 => 'No'),
+    '#weight' => -7,
+    '#default_value' => (isset($node->keep_track_inserted)) ? $node->keep_track_inserted : variable_get('tripal_bulk_loader_keep_track_inserted', FALSE),
+  );
+
   return $form;
 }
 
@@ -396,8 +407,8 @@ function tripal_bulk_loader_load($node) {
 function tripal_bulk_loader_insert($node) {
 
   // Insert into tripal_bulk_loader
-  $sql = "INSERT INTO {tripal_bulk_loader} (nid, loader_name, template_id, file, file_has_header, job_status) VALUES (%d, '%s', %d, '%s', %d, '%s')";
-  db_query($sql, $node->nid, $node->loader_name, $node->template_id, $node->file, $node->has_header, 'Initialized');
+  $sql = "INSERT INTO {tripal_bulk_loader} (nid, loader_name, template_id, file, file_has_header, job_status, keep_track_inserted) VALUES (%d, '%s', %d, '%s', %d, '%s', %d)";
+  db_query($sql, $node->nid, $node->loader_name, $node->template_id, $node->file, $node->has_header, 'Initialized', $node->keep_track_inserted);
 
   // Update title
   $node->title =$node->loader_name;
@@ -424,8 +435,8 @@ function tripal_bulk_loader_delete($node) {
 function tripal_bulk_loader_update($node) {
 
   // Update tripal_bulk_loader
-  $sql = "UPDATE {tripal_bulk_loader} SET nid = %d, loader_name = '%s', template_id = %d, file = '%s', file_has_header = '%s' WHERE nid = %d";
-  db_query($sql, $node->nid, $node->loader_name, $node->template_id, $node->file, $node->has_header, $node->nid);
+  $sql = "UPDATE {tripal_bulk_loader} SET nid = %d, loader_name = '%s', template_id = %d, file = '%s', file_has_header = '%s', keep_track_inserted = %d WHERE nid = %d";
+  db_query($sql, $node->nid, $node->loader_name, $node->template_id, $node->file, $node->has_header, $node->keep_track_inserted, $node->nid);
 
   // Add a job if the user want to load the data
   global $user;

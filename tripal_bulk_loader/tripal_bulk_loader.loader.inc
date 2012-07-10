@@ -15,7 +15,8 @@ function tripal_bulk_loader_add_loader_job_form($form_state, $node) {
   $form = array();
 
   // --notify--
-  if ($node->job_status == 'Loading...' AND (variable_get('tripal_bulk_loader_transactions',   'row') != 'none')) {
+  if ($node->job_status == 'Loading...') {
+    $progress = tripal_bulk_loader_progess_file_get_progress($node->job_id);
     drupal_set_message(t("The Loading Summary only updates at the end of each constant set.
       %num records have already been inserted; however, they won't be available until the
       current constant set is full loaded and no errors are encountered.", array('%num' => $progress->num_records)), 'warning');
@@ -46,10 +47,12 @@ function tripal_bulk_loader_add_loader_job_form($form_state, $node) {
     '#value' => 'Cancel Job',
   );
 
-  $form['submit-revert'] = array(
-    '#type' => ($node->job_id) ? 'submit' : 'hidden',
-    '#value' => 'Revert',
-  );
+  if ($node->keep_track_inserted) {
+    $form['submit-revert'] = array(
+      '#type' => ($node->job_id) ? 'submit' : 'hidden',
+      '#value' => 'Revert',
+    );
+  }
 
   return $form;
 }
@@ -330,7 +333,16 @@ function tripal_bulk_loader_load_data($nid, $job_id) {
 
       $data_keys = array_keys($data);
       foreach ($data_keys as $priority) {
-        $status = process_data_array_for_line($priority, $data, $default_data, $field2column, $record2priority, $line, $nid, $num_lines, $group_index);
+        $options = array(
+          'field2column' => $field2column,
+          'record2priority' => $record2priority,
+          'line' => $line,
+          'line_num' => $num_lines,
+          'group_index' => $group_index,
+          'node' => $node,
+          'nid' => $node->nid,
+        );
+        $status = process_data_array_for_line($priority, $data, $default_data, $options);
         tripal_bulk_loader_progress_file_track_job($job_id, $status);
         if (!$status ) {
           // Encountered an error
@@ -378,14 +390,6 @@ function tripal_bulk_loader_load_data($nid, $job_id) {
     tripal_bulk_loader_progress_file_track_job($job_id, FALSE, FALSE, TRUE);
   } //end of foreach constant set
 
-  // check that data was inserted and update job_status
-  $sql = 'SELECT count(*) as num_tables FROM {tripal_bulk_loader_inserted} WHERE nid=%d GROUP BY nid';
-  $result = db_fetch_object(db_query($sql, $nid));
-  if ($result->num_tables > 0) {
-    $node->job_status = 'Data Inserted';
-    drupal_write_record('node', $node, 'nid');
-  }
-
   // set the status of the job (in the node not the tripal jobs)
   if ($loaded_without_errors) {
     $status = 'Loading Completed Successfully';
@@ -400,10 +404,19 @@ function tripal_bulk_loader_load_data($nid, $job_id) {
 /**
  *
  *
+         $options = array(
+          'field2column' => $field2column,
+          'record2priority' => $record2priority,
+          'line' => $line,
+          'line_num' => $num_lines,
+          'group_index' => $group_index,
+          'node' => $node,
+          'nid' => $node->nid,
+        );
  */
-function process_data_array_for_line($priority, &$data, &$default_data, $field2column, $record2priority, $line, $nid, $line_num, $group_index) {
+function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
   $table_data = $data[$priority];
-
+  $addt = (object) $addt;
   $no_errors = TRUE;
 
   $table = $table_data['table'];
@@ -413,23 +426,23 @@ function process_data_array_for_line($priority, &$data, &$default_data, $field2c
 
   //print 'default values:'.print_r($values,TRUE)."\n";
   if ($table_data['need_further_processing']) {
-    $values = tripal_bulk_loader_add_spreadsheetdata_to_values($values, $line, $field2column[$priority]);
+    $values = tripal_bulk_loader_add_spreadsheetdata_to_values($values, $addt->line, $addt->field2column[$priority]);
     if (!$values) {
-      //watchdog('T_bulk_loader', 'Line ' . $line_num . ' Data File Added:' . print_r($values, TRUE), array(), WATCHDOG_NOTICE);
+      //watchdog('T_bulk_loader', 'Line ' . $addt->line_num . ' Data File Added:' . print_r($values, TRUE), array(), WATCHDOG_NOTICE);
     }
 
-    $values = tripal_bulk_loader_add_foreignkey_to_values($values, $data, $record2priority);
+    $values = tripal_bulk_loader_add_foreignkey_to_values($values, $data, $addt->record2priority);
     if (!$values) {
-      //watchdog('T_bulk_loader', 'Line ' . $line_num . ' FK Added:<pre>' . print_r($values, TRUE) . print_r($data[$priority], TRUE) . '</pre>', array(), WATCHDOG_NOTICE);
+      //watchdog('T_bulk_loader', 'Line ' . $addt->line_num . ' FK Added:<pre>' . print_r($values, TRUE) . print_r($data[$priority], TRUE) . '</pre>', array(), WATCHDOG_NOTICE);
     }
   }
-  $values = tripal_bulk_loader_regex_tranform_values($values, $table_data, $line);
+  $values = tripal_bulk_loader_regex_tranform_values($values, $table_data, $addt->line);
   if (!$values) {
-    //watchdog('T_bulk_loader', 'Line ' . $line_num . ' Regex:<pre>' . print_r($values, TRUE) . print_r($table_data, TRUE) . '</pre>' . '</pre>', array(), WATCHDOG_NOTICE);
+    //watchdog('T_bulk_loader', 'Line ' . $addt->line_num . ' Regex:<pre>' . print_r($values, TRUE) . print_r($table_data, TRUE) . '</pre>' . '</pre>', array(), WATCHDOG_NOTICE);
   }
 
   if (!$values) {
-    $msg = 'Line ' . $line_num . ' ' . $table_data['record_id'] . ' (' . $table_data['mode'] . ') Aborted due to error in previous record. Values of current record:' . print_r($table_data['values_array'], TRUE);
+    $msg = 'Line ' . $addt->line_num . ' ' . $table_data['record_id'] . ' (' . $table_data['mode'] . ') Aborted due to error in previous record. Values of current record:' . print_r($table_data['values_array'], TRUE);
     watchdog('T_bulk_loader', $msg, array(), WATCHDOG_WARNING);
     print "ERROR: " . $msg . "\n";
     $data[$priority]['error'] = TRUE;
@@ -444,7 +457,7 @@ function process_data_array_for_line($priority, &$data, &$default_data, $field2c
       // a field is considered missing if it cannot be null and there is no default
       // value for it or it is of type 'serial'
       if ($def['not null'] == 1 and !array_key_exists($field, $insert_values) and !isset($def['default']) and strcmp($def['type'], serial)!=0) {
-        $msg = 'Line ' . $line_num . ' ' . $table_data['record_id'] . ' (' . $table_data['mode'] . ') Missing Database Required Value: ' . $table . '.' . $field;
+        $msg = 'Line ' . $addt->line_num . ' ' . $table_data['record_id'] . ' (' . $table_data['mode'] . ') Missing Database Required Value: ' . $table . '.' . $field;
         watchdog('T_bulk_loader', $msg, array(), WATCHDOG_NOTICE);
         $data[$priority]['error'] = TRUE;
       }
@@ -455,7 +468,7 @@ function process_data_array_for_line($priority, &$data, &$default_data, $field2c
   foreach ($table_data['required'] as $field => $required) {
     if ($required) {
       if (!isset($values[$field])) {
-        $msg = 'Line ' . $line_num . ' ' . $table_data['record_id'] . ' (' . $table_data['mode'] . ') Missing Template Required Value: ' . $table . '.' . $field;
+        $msg = 'Line ' . $addt->line_num . ' ' . $table_data['record_id'] . ' (' . $table_data['mode'] . ') Missing Template Required Value: ' . $table . '.' . $field;
         watchdog('T_bulk_loader', $msg, array(), WATCHDOG_NOTICE);
         $data[$priority]['error'] = TRUE;
       }
@@ -500,7 +513,7 @@ function process_data_array_for_line($priority, &$data, &$default_data, $field2c
     // Use prepared statement?
     if (variable_get('tripal_bulk_loader_prepare', TRUE)) {
       $options = array('statement_name' => 'record_' . $priority);
-      if ($line_num == 1 && $group_index == 1) {
+      if ($addt->line_num == 1 && $addt->group_index == 1) {
         $options['prepare'] = TRUE;
       }
     }
@@ -516,7 +529,7 @@ function process_data_array_for_line($priority, &$data, &$default_data, $field2c
     $record = tripal_core_chado_insert($table, $values, $options);
 
     if (!$record) {
-      $msg = 'Line ' . $line_num . ' ' . $table_data['record_id'] . ' (' . $table_data['mode'] . ') Unable to insert record into ' . $table . ' where values:' . print_r($values, TRUE);
+      $msg = 'Line ' . $addt->line_num . ' ' . $table_data['record_id'] . ' (' . $table_data['mode'] . ') Unable to insert record into ' . $table . ' where values:' . print_r($values, TRUE);
       watchdog('T_bulk_loader', $msg, array(), WATCHDOG_ERROR);
       print "ERROR: " . $msg . "\n";
       $data[$priority]['error'] = TRUE;
@@ -533,28 +546,30 @@ function process_data_array_for_line($priority, &$data, &$default_data, $field2c
       }
 
       // add to tripal_bulk_loader_inserted
-      $insert_record = db_fetch_object(db_query(
-        "SELECT * FROM {tripal_bulk_loader_inserted} WHERE table_inserted_into='%s' AND nid=%d",
-        $table,
-        $nid
-      ));
-      if ($insert_record) {
-        $insert_record->ids_inserted .= ',' . $values[ $table_desc['primary key'][0] ];
-        drupal_write_record('tripal_bulk_loader_inserted', $insert_record, 'tripal_bulk_loader_inserted_id');
-        //print 'Update: '.print_r($insert_record,TRUE)."\n";
-        return $no_errors;
-      }
-      else {
-        $insert_record = array(
-          'nid' => $nid,
-          'table_inserted_into' => $table,
-          'table_primary_key' => $table_desc['primary key'][0],
-          'ids_inserted' => $values[ $table_desc['primary key'][0] ],
-        );
-        //print 'New: '.print_r($insert_record,TRUE)."\n";
-        $success = drupal_write_record('tripal_bulk_loader_inserted', $insert_record);
-        return $no_errors;
-      }//end of if insert record
+      if ($addt->node->keep_track_inserted) {
+        $insert_record = db_fetch_object(db_query(
+          "SELECT * FROM {tripal_bulk_loader_inserted} WHERE table_inserted_into='%s' AND nid=%d",
+          $table,
+          $addt->nid
+        ));
+        if ($insert_record) {
+          $insert_record->ids_inserted .= ',' . $values[ $table_desc['primary key'][0] ];
+          drupal_write_record('tripal_bulk_loader_inserted', $insert_record, 'tripal_bulk_loader_inserted_id');
+          //print 'Update: '.print_r($insert_record,TRUE)."\n";
+          return $no_errors;
+        }
+        else {
+          $insert_record = array(
+            'nid' => $addt->nid,
+            'table_inserted_into' => $table,
+            'table_primary_key' => $table_desc['primary key'][0],
+            'ids_inserted' => $values[ $table_desc['primary key'][0] ],
+          );
+          //print 'New: '.print_r($insert_record,TRUE)."\n";
+          $success = drupal_write_record('tripal_bulk_loader_inserted', $insert_record);
+          return $no_errors;
+        }//end of if insert record
+      }// end of if keeping track of records inserted
 
     } //end of if insert was successful
   }
@@ -562,7 +577,7 @@ function process_data_array_for_line($priority, &$data, &$default_data, $field2c
     $exists = tripal_core_chado_select($table, array_keys($table_desc['fields']), $values, array('has_record' => TRUE));
     if (!$exists) {
       // No record on select
-      $msg = 'Line ' . $line_num . ' ' . $table_data['record_id'] . ' (' . $table_data['mode'] . ') No Matching record in ' . $table . ' where values:' . print_r($values, TRUE);
+      $msg = 'Line ' . $addt->line_num . ' ' . $table_data['record_id'] . ' (' . $table_data['mode'] . ') No Matching record in ' . $table . ' where values:' . print_r($values, TRUE);
       watchdog('T_bulk_loader', $msg, array(), WATCHDOG_WARNING);
       $data[$priority]['error'] = TRUE;
       $no_errors = FALSE;
