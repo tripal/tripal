@@ -2,13 +2,26 @@
 
 /**
  * @file
- * A chado wrapper for the views_handler_filter_string.
+ * Purpose: This Handler provides a select list for the type field
  *
- * Handles fields which may be aggregated during the chado join process. There are options
- * to filter the base table based on an aggregated table or just filter the aggregated
- * table (showing blank for that field if there are no records in the aggregated table).
+ *  NOTE: This handler only works when applied to the type_id field in the base_table of
+ *  this view.
+ *
+ * @ingroup views_filter_handlers
+ * @ingroup tripal_core
  */
-class chado_views_handler_filter_string extends views_handler_filter_string {
+class chado_views_handler_filter_select_cvterm extends views_handler_filter_chado_select_cvterm_name {
+
+ /**
+  * Executed when the field is added
+  * Determine which cv to limit the cvterms to
+  */
+  function init(&$view, $options) {
+
+    include_once('chado_wrapper_functions.inc');
+    parent::init($view, $options);
+
+  }
 
   /**
    * Defines the options form (form available to admin when they add a field to a view)
@@ -82,10 +95,11 @@ class chado_views_handler_filter_string extends views_handler_filter_string {
       // Tell the join handler about the filter
       // so it can be done in the join query
       if ($this->options['agg']['aggregates_with']) {
-        $table['join']->filter[] = $field . " = '" . $this->value . "'";
+        if (sizeof($this->value) == 1) {
+          $table['join']->filter[] = $field . " = '" . array_pop($this->value) . "'";
+        }
       }
     }
 
   }
-
 }

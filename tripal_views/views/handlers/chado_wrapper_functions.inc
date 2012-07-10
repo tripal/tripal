@@ -65,7 +65,13 @@ function chado_wrapper_is_aggregated_by_join($handler) {
 function chado_wrapper_is_aggregated_by_result($handler, $values) {
   $aggregated = FALSE;
 
-  if (preg_match('/^{.*}$/', $values[0]->{$handler->field_alias})) {
+
+  $i = 0;
+  while (empty($values[$i]->{$handler->field_alias}) AND $i <= sizeof($values)) {
+    $i++;
+  }
+
+  if (preg_match('/^{.*}$/', $values[$i]->{$handler->field_alias})) {
     $aggregated = TRUE;
   }
 

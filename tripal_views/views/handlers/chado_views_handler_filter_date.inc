@@ -30,14 +30,14 @@ class chado_views_handler_filter_date extends views_handler_filter_date {
       '#type' => 'checkbox',
       '#title' => t('Filter base table records'),
       '#description' => t('Filters %base_table to only those with the value in the aggregate array.', array('%base_table' => $this->view->base_table)),
-      '#default_value' => (isset($this->options['records_with'])) ? $this->options['records_with'] : TRUE,
+      '#default_value' => (isset($this->options['agg']['records_with'])) ? $this->options['agg']['records_with'] : TRUE,
     );
 
     $form['agg']['aggregates_with'] = array(
       '#type' => 'checkbox',
       '#title' => t('Filter aggregates displayed'),
       '#description' => t('Filters the aggregates shown based on the value. Doesn\'t affect the number of %base_table records.', array('%base_table' => $this->view->base_table)),
-      '#default_value' => (isset($this->options['aggregates_with'])) ? $this->options['aggregates_with'] : TRUE,
+      '#default_value' => (isset($this->options['agg']['aggregates_with'])) ? $this->options['agg']['aggregates_with'] : TRUE,
     );
 
   }
