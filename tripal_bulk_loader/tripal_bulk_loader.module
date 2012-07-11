@@ -490,6 +490,10 @@ function tripal_bulk_loader_preprocess_tripal_bulk_loader_template(&$variables) 
  */
 function tripal_bulk_loader_progess_file_get_progress($job_id, $update_progress = TRUE) {
   $filename = '/tmp/tripal_bulk_loader_progress-'.$job_id.'.out';
+  if (!file_exists($filename)) {
+    return (object) array();
+  }
+
   $num_lines = trim(`wc --lines < $filename`);
   $num_records = trim(`grep -c "." $filename`);
 
