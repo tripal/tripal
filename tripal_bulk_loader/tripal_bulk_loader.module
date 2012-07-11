@@ -489,7 +489,7 @@ function tripal_bulk_loader_preprocess_tripal_bulk_loader_template(&$variables) 
  *     num_records = the number of records successfully inserted
  */
 function tripal_bulk_loader_progess_file_get_progress($job_id, $update_progress = TRUE) {
-  $filename = '/tmp/tripal_bulk_loader_progress-'.$job_id.'.out';
+  $filename = '/tmp/tripal_bulk_loader_progress-' . $job_id . '.out';
   if (!file_exists($filename)) {
     return (object) array();
   }
@@ -507,7 +507,7 @@ function tripal_bulk_loader_progess_file_get_progress($job_id, $update_progress 
                                 ) c ON c.nid=b.nid
                               WHERE j.job_id=%d", $job_id));
   if ($job->num_constant_sets) {
-    $num_constant_sets_loaded = round($job->progress / (100 / $job->num_constant_sets),4);
+    $num_constant_sets_loaded = round($job->progress / (100 / $job->num_constant_sets), 4);
 
     // If the next constant set has started loading
     if ($job->num_constant_sets != $num_constant_sets_loaded) {
