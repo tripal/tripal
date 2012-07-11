@@ -10,7 +10,7 @@
  */
 class chado_views_handler_field_counter extends views_handler_field_counter {
 
-  function init =(&$view, $options) {
+  function init (&$view, $options) {
     include_once('chado_wrapper_functions.inc');
     parent::init($view, $options);
   }
