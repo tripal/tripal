@@ -1,4 +1,4 @@
--- $Id: general.sql,v 1.31 2007-03-01 02:45:54 briano Exp $
+
 -- ==========================================
 -- Chado general module
 --
@@ -131,7 +131,7 @@ CREATE OR REPLACE FUNCTION store_dbxref (VARCHAR,VARCHAR)
  END;
 ' LANGUAGE 'plpgsql';
   
--- $Id: cv.sql,v 1.37 2007-02-28 15:08:48 briano Exp $
+
 -- ==========================================
 -- Chado cv module
 --
@@ -947,7 +947,7 @@ BEGIN
 END;   
 '
 LANGUAGE 'plpgsql';
--- $Id: pub.sql,v 1.27 2007-02-19 20:50:44 briano Exp $
+
 -- ==========================================
 -- Chado pub module
 --
@@ -1083,7 +1083,7 @@ create index pubprop_idx1 on pubprop (pub_id);
 create index pubprop_idx2 on pubprop (type_id);
 
 COMMENT ON TABLE pubprop IS 'Property-value pairs for a pub. Follows standard chado pattern.';
--- $Id: organism.sql,v 1.19 2007-04-01 18:45:41 briano Exp $
+
 -- ==========================================
 -- Chado organism module
 --
@@ -1211,7 +1211,7 @@ CREATE OR REPLACE FUNCTION store_organism (VARCHAR,VARCHAR,VARCHAR)
  END;
 ' LANGUAGE 'plpgsql';
   
--- $Id: sequence.sql,v 1.69 2009-05-14 02:44:23 scottcain Exp $
+
 -- ==========================================
 -- Chado sequence module
 --
@@ -33779,7 +33779,7 @@ BEGIN
 END;
 '
 LANGUAGE 'plpgsql';
--- $Id: companalysis.sql,v 1.37 2007-03-23 15:18:02 scottcain Exp $
+
 -- ==========================================
 -- Chado companalysis module
 --
@@ -33914,7 +33914,7 @@ CREATE OR REPLACE FUNCTION store_analysis (VARCHAR,VARCHAR,VARCHAR)
 --'DECLARE
 --  v_srcfeature_id       ALIAS FOR $1;
   
--- $Id: phenotype.sql,v 1.6 2007-04-27 16:09:46 emmert Exp $
+
 -- ==========================================
 -- Chado phenotype module
 --
@@ -33994,7 +33994,7 @@ CREATE INDEX feature_phenotype_idx1 ON feature_phenotype (feature_id);
 CREATE INDEX feature_phenotype_idx2 ON feature_phenotype (phenotype_id);
 
 COMMENT ON TABLE feature_phenotype IS NULL;
--- $Id: genetic.sql,v 1.31 2008-08-25 19:53:14 scottcain Exp $
+
 -- ==========================================
 -- Chado genetics module
 --
@@ -34201,7 +34201,7 @@ CREATE TABLE phenotype_comparison_cvterm (
 );
 CREATE INDEX phenotype_comparison_cvterm_idx1 on phenotype_comparison_cvterm (phenotype_comparison_id);
 CREATE INDEX  phenotype_comparison_cvterm_idx2 on phenotype_comparison_cvterm (cvterm_id);
--- $Id: map.sql,v 1.14 2007-03-23 15:18:02 scottcain Exp $
+
 -- ==========================================
 -- Chado map module
 --
@@ -34296,7 +34296,7 @@ create table featuremap_pub (
 );
 create index featuremap_pub_idx1 on featuremap_pub (featuremap_id);
 create index featuremap_pub_idx2 on featuremap_pub (pub_id);
--- $Id: phylogeny.sql,v 1.11 2007-04-12 17:00:30 briano Exp $
+
 -- ==========================================
 -- Chado phylogenetics module
 --
@@ -34528,7 +34528,7 @@ CREATE OR REPLACE FUNCTION phylonode_height(INT)
 '
 LANGUAGE 'sql';
 
--- $Id: contact.sql,v 1.5 2007-02-25 17:00:17 briano Exp $
+
 -- ==========================================
 -- Chado contact module
 --
@@ -34578,7 +34578,7 @@ COMMENT ON TABLE contact_relationship IS 'Model relationships between contacts';
 COMMENT ON COLUMN contact_relationship.subject_id IS 'The subject of the subj-predicate-obj sentence. In a DAG, this corresponds to the child node.';
 COMMENT ON COLUMN contact_relationship.object_id IS 'The object of the subj-predicate-obj sentence. In a DAG, this corresponds to the parent node.';
 COMMENT ON COLUMN contact_relationship.type_id IS 'Relationship type between subject and object. This is a cvterm, typically from the OBO relationship ontology, although other relationship types are allowed.';
--- $Id: expression.sql,v 1.14 2007-03-23 15:18:02 scottcain Exp $
+
 -- ==========================================
 -- Chado expression module
 --
@@ -34771,7 +34771,7 @@ create table expression_image (
 );
 create index expression_image_idx1 on expression_image (expression_id);
 create index expression_image_idx2 on expression_image (eimage_id);
--- $Id: mage.sql,v 1.3 2008-03-19 18:32:51 scottcain Exp $
+
 -- ==========================================
 -- Chado mage module
 --
@@ -35596,7 +35596,7 @@ CREATE TABLE studyprop_feature (
 create index studyprop_feature_idx1 on studyprop_feature (studyprop_id);
 create index studyprop_feature_idx2 on studyprop_feature (feature_id);
 
--- $Id: stock.sql,v 1.7 2007-03-23 15:18:03 scottcain Exp $
+
 -- ==========================================
 -- Chado stock module
 --
@@ -35884,7 +35884,7 @@ create index stockcollection_stock_idx2 on stockcollection_stock (stock_id);
 
 COMMENT ON TABLE stockcollection_stock IS 'stockcollection_stock links
 a stock collection to the stocks which are contained in the collection.';
--- $Id: library.sql,v 1.10 2008-03-25 16:00:43 emmert Exp $
+
 -- =================================================================
 -- Dependencies:
 --
