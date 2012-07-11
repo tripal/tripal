@@ -1,4 +1,4 @@
-; $Id$
+
 package = Tripal
 name = Tripal Stock
 version = 6.x-0.3.1b

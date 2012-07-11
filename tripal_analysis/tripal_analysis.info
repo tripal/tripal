@@ -1,4 +1,4 @@
-; $Id:
+
 name = Tripal Analysis
 description = A module that controls the display of all analysis sub-modules. This module also interfaces the GMOD chado database with Drupal, providing viewing, inserting and editing of chado analyses.
 core = 6.x

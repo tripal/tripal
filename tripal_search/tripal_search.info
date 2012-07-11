@@ -1,4 +1,4 @@
-; $Id:
+
 name = Tripal Search
 description = A module that adds advanced search functions to Drupal, including feature fasta file export from the search result.
 core = 6.x
