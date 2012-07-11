@@ -1,10 +1,8 @@
-
 name = Tripal CV
 description = The controlled vocabulary module for the Tripal package that integrates Drupal and GMOD chado. This module provides support for managing and viewing controlled vocabularies.
 core = 6.x
 project = tripal_cv
 package = Tripal
-version = 6.x-0.3.1b
-
+version = 6.x-1.0
 dependencies[] = tripal_core
 dependencies[] = tripal_db
