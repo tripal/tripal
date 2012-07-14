@@ -10,23 +10,37 @@
  *
  * @ingroup tripal_core
  */
-function tripal_core_chado_v1_11_load_form() {
+function tripal_core_chado_load_form() {
 
   $form['description'] = array(
     '#type' => 'item',
-    '#value' => t("Click the submit button below to install Chado into the Drupal "
-      ."database. <br /><font color=\"red\">WARNING:</font> use this only for a new "
-      ."chado installation or reinstall completely.  This will erase any data currently "
-      ."in the chado database.  If you are using chado in a database external to the "
+    '#value' => t("<font color=\"red\">WARNING:</font> A new install of Chado v1.2 or v1.11 "
+      ."will install Chado within the Drupal database in a \"chado\" schema. If the \"chado\" schema already exists it will "
+      ."be overwritten and all data will be lost.  You may choose to update an existing Chado v1.11 if it was installed with a previous "
+      ."version of Tripal (e.g. v0.3b or v0.3.1). The update will not erase any data. "
+      ."If you are using chado in a database external to the "
       ."Drupal database with a 'chado' entry in the 'settings.php' \$db_url argument "
-      ."then this option will intall chado but it will not be usable.  The external "
+      ."then Chado will be installed but will not be used .  The external "
       ."database specified in the settings.php file takes precedence."),
     '#weight' => 1,
   );
 
+  $form['action_to_do'] = array(
+     '#type' => 'radios',
+     '#title' => 'Installation/Upgrade Action',
+     '#options' => array(
+        'Chado v1.2' => t('New Install of Chado v1.2 (erases all existing Chado data if Chado already exists)'),
+        'Upgrade v1.11 to v1.2' => t('Upgrade existing Chado v1.11 to v1.2 (no data is lost)'),
+        'Chado v1.11' => t('New Install of Chado v1.11 (erases all existing Chado data if Chado already exists)')
+     ),
+     '#description' => t('Select an action to perform'),
+     '#required' => TRUE
+     
+  );
+
   $form['button'] = array(
     '#type' => 'submit',
-    '#value' => t('Install Chado'),
+    '#value' => t('Install/Upgrade Chado'),
     '#weight' => 2,
   );
 
@@ -40,11 +54,11 @@ function tripal_core_chado_v1_11_load_form() {
  */
 function tripal_core_chado_v1_11_load_form_submit($form, &$form_state) {
   global $user;
+  $action_to_do   = trim($form_state['values']['action_to_do']);
 
-  $args = array();
+  $args = array($action_to_do);
   tripal_add_job("Install Chado", 'tripal_core',
     'tripal_core_install_chado', $args, $user->uid);
-
 }
 
 /**
