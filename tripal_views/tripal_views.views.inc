@@ -93,9 +93,6 @@ function tripal_views_views_handlers() {
       'views_handler_field_node_optional' => array(
         'parent' => 'views_handler_field_node',
       ),
-      'views_handler_field_chado_tf_boolean' => array(
-        'parent' => 'views_handler_field_boolean',
-      ),
       'views_handler_field_chado_count' => array(
         'parent' => 'views_handler_field',
       ),
