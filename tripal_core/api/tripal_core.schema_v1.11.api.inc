@@ -1,4 +1,38 @@
 <?php
+/* @file: This file contains default schema definitions for all chado v1.11 tables
+ *        to be used by other function. Specifically these functions are used
+ *        by the tripal_core select/insert/update API functions and by
+ *        the Tripal Views module.
+ *
+ *        These schema definitions can be augmented by anohter modules
+ *        (specifically to add missing definitions) by implementing
+ *        hook_chado_schema_v1_11_<table name>().
+ *
+ * @defgroup tripal_schema_api Core Module Schema API
+ * @{
+ * Provides an application programming interface (API) for describing Chado tables.
+ * This API consists of a set of functions, one for each table in Chado.  Each
+ * function simply returns a Drupal style array that defines the table.
+ *
+ * Because Drupal 6 does not handle foreign key (FK) relationships, however FK 
+ * relationships are needed to for Tripal Views.  Therefore, FK relationships
+ * have been added to the schema defintitions below.
+ *
+ * The functions provided in this documentation should not be called as is, but if you need
+ * the Drupal-style array definition for any table, use the following function
+ * call:
+ *
+ *   $table_desc = tripal_core_get_chado_table_schema($table)
+ *
+ * where the variable $table contains the name of the table you want to
+ * retireve.  The tripal_core_get_chado_table_schema function determines the appropriate version of 
+ * Chado and uses the Drupal hook infrastructure to call the appropriate 
+ * hook function to retrieve the table schema.
+ *
+ * @}
+ * @ingroup tripal_api
+ */
+ 
 /**
  * Implements hook_chado_schema_v1_11_acquisition()
  * Purpose: To describe the structure of 'acquisition' to tripal
