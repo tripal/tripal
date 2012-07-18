@@ -66,14 +66,11 @@ function tripal_views_views_handlers() {
       'chado_views_handler_field_aggregate' => array(
         'parent' => 'chado_views_handler_field',
       ),
-      'views_handler_filter_chado_select_string' => array(
-        'parent' => 'views_handler_filter_string',
-      ),
-      'views_handler_filter_chado_select_cvterm_name' => array(
-        'parent' => 'views_handler_filter_string',
-      ),
       'chado_views_handler_filter_select_cvterm' => array(
         'parent' => 'views_handler_filter_chado_select_cvterm_name',
+      ),
+      'chado_views_handler_filter_select_string' => array(
+        'parent' => 'chado_views_handler_filter_string',
       ),
 
       // Join Handlers
@@ -105,7 +102,12 @@ function tripal_views_views_handlers() {
       'views_handler_field_readable_date' => array(
         'parent' => 'views_handler_field',
       ),
-
+      'views_handler_filter_chado_select_string' => array(
+        'parent' => 'views_handler_filter_string',
+      ),
+      'views_handler_filter_chado_select_cvterm_name' => array(
+        'parent' => 'views_handler_filter_string',
+      ),
 
       // Wrappers for Default Views Handlers-----
       // Field Handlers
