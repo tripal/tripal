@@ -1,7 +1,7 @@
 <?php
 
-require_once "tripal_core.schema_v1.11.api.inc";
 require_once "tripal_core.schema_v1.2.api.inc";
+require_once "tripal_core.schema_v1.11.api.inc";
 
 /**
  * @file
@@ -2286,5 +2286,4 @@ function tripal_core_get_chado_table_schema($table) {
    $table_arr = module_invoke_all("chado_schema_v".$v."_" . $table);
 
    return $table_arr;
-   
 }

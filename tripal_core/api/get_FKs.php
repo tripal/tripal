@@ -11,8 +11,11 @@
 //
 // example usage in drupal directory root:
 //
-// php ./sites/all/modules/tripal/tripal_core/get_FKs.php -v 1.2 > \
-//   ./sites/all/modules/tripal/tripal_core/tripal_core.schema_v1.2.api.inc.new
+// php ./sites/all/modules/tripal/tripal_core/api/get_FKs.php -v 1.11 > \
+//   ./sites/all/modules/tripal/tripal_core/apitripal_core.schema_v1.11.api.inc.new
+//
+// php ./sites/all/modules/tripal/tripal_core/api/get_FKs.php -v 1.2 > \
+//   ./sites/all/modules/tripal/tripal_core/api/tripal_core.schema_v1.2.api.inc.new
 
 
 $arguments = getopt("v:");
@@ -56,8 +59,13 @@ function get_chado_fk_relationships($version){
   // iterate through the tables and get the foreign keys
   print "<?php\n";
   foreach ($tables as $table){
+
      // get the existing table array
      $table_arr = tripal_core_get_chado_table_schema($table);
+     
+     if(empty($table_arr)){
+        print "ERROR: emptye table definition $table\n";
+     }
 
      // get the foreign keys and add them to the array
      $fks = db_query($sql,$table);

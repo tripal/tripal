@@ -14,10 +14,10 @@
  *
  * @ingroup tripal_schema_api
  */
-function tripal_feature_chado_feature_schema() {
+function tripal_feature_chado_schema_v1_11_feature() {
   $description = array();
 
-  // Default table description in tripal_core.schema.api.inc: tripal_core_chado_feature_schema()
+  // Default table description in tripal_core.schema.api.inc: tripal_core_chado_schema_v1_11_feature()
 
   $description['foreign keys']['organism'] = array(
         'table' => 'organism',
@@ -73,10 +73,10 @@ function tripal_feature_chado_feature_schema() {
  *
  * @ingroup tripal_schema_api
  */
-function tripal_feature_chado_featureprop_schema() {
+function tripal_feature_chado_schema_v1_11_featureprop() {
   $description = array();
 
-  // Default table description in tripal_core.schema.api.inc: tripal_core_chado_featureprop_schema()
+  // Default table description in tripal_core.schema.api.inc: tripal_core_chado_schema_v1_11_featureprop()
 
   $description['foreign keys']['feature'] = array(
         'table' => 'feature',
@@ -101,7 +101,7 @@ function tripal_feature_chado_featureprop_schema() {
 }
 
 /**
- * Implements hook_chado_featureloc_schema()
+ * Implements hook_chado_schema_v1_11_table()
  * Purpose: To add descriptions and foreign keys to default table description
  * Note: This array will be merged with the array from all other implementations
  *
@@ -110,18 +110,28 @@ function tripal_feature_chado_featureprop_schema() {
  *
  * @ingroup tripal_schema_api
  */
-function tripal_feature_chado_featureloc_schema() {
+function tripal_feature_chado_schema_v1_11_featureloc() {
   $description = array();
 
-  // Default table description in tripal_core.schema.api.inc: tripal_core_chado_featureloc_schema()
-
-  $description['foreign keys']['feature'] = array(
-        'table' => 'feature',
-        'columns' => array(
-          'feature_id' => 'feature_id',
-          'srcfeature_id' => 'feature_id'
-        ),
+  $referring_tables = array('analysisfeature',
+    'featureloc_pub',
   );
+  $description['referring_tables'] = $referring_tables;
+
+  return $description;
+}
+/**
+ * Implements hook_chado_schema_v1_2_table()
+ * Purpose: To add descriptions and foreign keys to default table description
+ * Note: This array will be merged with the array from all other implementations
+ *
+ * @return
+ *    Array describing the featureloc table
+ *
+ * @ingroup tripal_schema_api
+ */
+function tripal_feature_chado_schema_v1_2_featureloc() {
+  $description = array();
 
   $referring_tables = array('analysisfeature',
     'featureloc_pub',
@@ -141,10 +151,10 @@ function tripal_feature_chado_featureloc_schema() {
  *
  * @ingroup tripal_schema_api
  */
-function tripal_feature_chado_feature_dbxref_schema() {
+function tripal_feature_chado_schema_v1_11_feature_dbxref() {
   $description = array();
 
-  // Default table description in tripal_core.schema.api.inc: tripal_core_chado_feature_dbxref_schema()
+  // Default table description in tripal_core.schema.api.inc: tripal_core_chado_schema_v1_11_feature_dbxref()
 
   $description['foreign keys']['feature'] = array(
         'table' => 'feature',
@@ -172,10 +182,10 @@ function tripal_feature_chado_feature_dbxref_schema() {
  *
  * @ingroup tripal_schema_api
  */
-function tripal_feature_chado_feature_relationship_schema() {
+function tripal_feature_chado_schema_v1_11_feature_relationship() {
   $description = array();
 
-  // Default table description in tripal_core.schema.api.inc: tripal_core_chado_feature_dbxref_schema()
+  // Default table description in tripal_core.schema.api.inc: tripal_core_chado_schema_v1_11_feature_dbxref()
 
   $description['foreign keys']['feature'] = array(
         'table' => 'feature',
@@ -202,10 +212,10 @@ function tripal_feature_chado_feature_relationship_schema() {
  *
  * @ingroup tripal_schema_api
  */
-function tripal_feature_chado_feature_cvterm_schema() {
+function tripal_feature_chado_schema_v1_11_feature_cvterm() {
   $description = array();
 
-  // Default table description in tripal_core.schema.api.inc: tripal_core_chado_feature_dbxref_schema()
+  // Default table description in tripal_core.schema.api.inc: tripal_core_chado_schema_v1_11_feature_dbxref()
 
   $description['foreign keys']['feature'] = array(
         'table' => 'feature',
@@ -232,10 +242,10 @@ function tripal_feature_chado_feature_cvterm_schema() {
  *
  * @ingroup tripal_schema_api
  */
-function tripal_feature_chado_feature_synonym_schema() {
+function tripal_feature_chado_schema_v1_11_feature_synonym() {
   $description = array();
 
-  // Default table description in tripal_core.schema.api.inc: tripal_core_chado_feature_dbxref_schema()
+  // Default table description in tripal_core.schema.api.inc: tripal_core_chado_schema_v1_11_feature_dbxref()
 
   $description['foreign keys']['feature'] = array(
         'table' => 'feature',

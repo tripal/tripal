@@ -11,7 +11,7 @@
  */
 
 /**
- * Implements hook_chado_library_schema()
+ * Implements hook_chado_schema_v1_11_table()
  * Purpose: To add descriptions and foreign keys to default table description
  * Note: This array will be merged with the array from all other implementations
  *
@@ -20,25 +20,8 @@
  *
  * @ingroup tripal_schema_api
  */
-function tripal_library_chado_library_schema() {
+function tripal_library_chado_schema_v1_11_library() {
   $description = array();
-
-  // Default table description in tripal_core.schema.api.inc: tripal_core_chado_feature_schema()
-
-  $description['foreign keys']['organism'] = array(
-        'table' => 'organism',
-        'columns' => array(
-          'organism_id' => 'organism_id',
-        ),
-  );
-
-  $description['foreign keys']['cvterm'] = array(
-        'table' => 'cvterm',
-        'columns' => array(
-          'type_id' => 'cvterm_id',
-        ),
-  );
-
   $referring_tables = array(
       'library_cvterm',
       'library_feature',
@@ -52,67 +35,30 @@ function tripal_library_chado_library_schema() {
 }
 
 /**
- * Implements hook_chado_library_feature_schema()
+ * Implements hook_chado_schema_v1_2_table()
  * Purpose: To add descriptions and foreign keys to default table description
  * Note: This array will be merged with the array from all other implementations
  *
  * @return
- *    Array describing the library_feature table
+ *    Array describing the library table
  *
  * @ingroup tripal_schema_api
  */
-function tripal_library_chado_library_feature_schema() {
+function tripal_library_chado_schema_v1_2_library() {
   $description = array();
-
-  // Default table description in tripal_core.schema.api.inc: tripal_core_chado_library_feature_schema()
-
-  $description['foreign keys']['library'] = array(
-        'table' => 'library',
-        'columns' => array(
-          'library_id' => 'library_id',
-        ),
+  $referring_tables = array(
+      'library_cvterm',
+      'library_feature',
+      'library_pub',
+      'library_synonym',
+      'libraryprop'
   );
-
-  $description['foreign keys']['feature'] = array(
-        'table' => 'feature',
-        'columns' => array(
-          'feature_id' => 'feature_id',
-        ),
-  );
+  $description['referring_tables'] = $referring_tables;
 
   return $description;
 }
-/**
- * Implements hook_chado_libraryprop_schema()
- * Purpose: To add descriptions and foreign keys to default table description
- * Note: This array will be merged with the array from all other implementations
- *
- * @return
- *    Array describing the libraryprop table
- *
- * @ingroup tripal_schema_api
- */
-function tripal_library_chado_libraryprop_schema() {
-  $description = array();
 
-  // Default table description in tripal_core.schema.api.inc: tripal_core_chado_library_feature_schema()
 
-  $description['foreign keys']['library'] = array(
-        'table' => 'library',
-        'columns' => array(
-          'library_id' => 'library_id',
-        ),
-  );
-
-  $description['foreign keys']['cvterm'] = array(
-        'table' => 'cvterm',
-        'columns' => array(
-          'type_id' => 'cvterm_id',
-        ),
-  );
-
-  return $description;
-}
 
 /**
  * Retrieve properties of a given type for a given library

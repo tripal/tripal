@@ -116,7 +116,7 @@ function tripal_analysis_get_node($analysis_id) {
  */
 
 /**
- * Implements hook_chado_analysis_schema()
+ * Implements hook_chado_schema_v1_11_table()
  * Purpose: To add descriptions and foreign keys to default table description
  * Note: This array will be merged with the array from all other implementations
  *
@@ -125,10 +125,10 @@ function tripal_analysis_get_node($analysis_id) {
  *
  * @ingroup tripal_schema_api
  */
-function tripal_analysis_chado_analysis_schema() {
+function tripal_analysis_chado_schema_v1_11_analysis() {
   $description = array();
 
-  // Default table description in tripal_core.schema.api.inc: tripal_core_chado_analysis_schema()
+  // Default table description in tripal_core.schema.api.inc: tripal_core_chado_schema_v1_11_analysis()
 
   $referring_tables = array(
       'analysisfeature',
@@ -142,91 +142,27 @@ function tripal_analysis_chado_analysis_schema() {
 }
 
 /**
- * Implements hook_chado_analysisfeature_schema()
+ * Implements hook_chado_schema_v1_2_table()
  * Purpose: To add descriptions and foreign keys to default table description
  * Note: This array will be merged with the array from all other implementations
  *
  * @return
- *    Array describing the analysisfeature table
+ *    Array describing the analysis table
  *
  * @ingroup tripal_schema_api
  */
-function tripal_analysis_chado_analysisfeature_schema() {
+function tripal_analysis_chado_schema_v1_2_analysis() {
   $description = array();
 
-  $description['foreign keys']['feature'] = array(
-        'table' => 'feature',
-        'columns' => array(
-          'feature_id' => 'feature_id',
-        ),
+  // Default table description in tripal_core.schema.api.inc: tripal_core_chado_schema_v1_2_analysis()
+
+  $referring_tables = array(
+      'analysisfeature',
+      'analysisprop',
+      'phylotree',
+      'quantification'
   );
-
-  $description['foreign keys']['analysis'] = array(
-        'table' => 'analysis',
-        'columns' => array(
-          'analysis_id' => 'analysis_id',
-        ),
-  );
-
-  return $description;
-}
-
-/**
- * Implements hook_chado_analysisfeatureprop_schema()
- * Purpose: To add descriptions and foreign keys to default table description
- * Note: This array will be merged with the array from all other implementations
- *
- * @return
- *    Array describing the analysisfeatureprop table
- *
- * @ingroup tripal_schema_api
- */
-function tripal_analysis_chado_analysisfeatureprop_schema() {
-  $description = array();
-
-  $description['foreign keys']['analysisfeature'] = array(
-        'table' => 'analysisfeature',
-        'columns' => array(
-          'analysisfeature_id' => 'analysisfeature_id',
-        ),
-  );
-
-  $description['foreign keys']['cvterm'] = array(
-        'table' => 'cvterm',
-        'columns' => array(
-          'type_id' => 'cvterm_id',
-        ),
-  );
-  return $description;
-}
-
-
-/**
-  * Implements hook_chado_analysisprop_schema()
-  * Purpose: To add descriptions and foreign keys to default table description
-  * Note: This array will be merged with the array from all other implementations
-  *
-  * @return
-  *    Array describing the analysisprop table
-  *
-  * @ingroup tripal_schema_api
-  */
-function tripal_analysis_chado_analysisprop_schema() {
-  $description = array();
-
-  $description['foreign keys']['cvterm'] = array(
-        'table' => 'cvterm',
-        'columns' => array(
-          'type_id' => 'cvterm_id',
-        ),
-  );
-
-  $description['foreign keys']['analysis'] = array(
-        'table' => 'analysis',
-        'columns' => array(
-          'analysis_id' => 'analysis_id',
-        ),
-  );
+  $description['referring_tables'] = $referring_tables;
 
   return $description;
 }
