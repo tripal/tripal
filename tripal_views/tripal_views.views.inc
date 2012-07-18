@@ -478,7 +478,7 @@ function tripal_views_views_data() {
 
       // The chado table could be a regular Chado table or a custom table
       // in the chado database.  Therefore we'll check both
-      $table_desc = module_invoke_all('chado_' . $base_table . '_schema');
+      $table_desc = tripal_core_get_chado_table_schema($base_table);
       if (!$table_desc) {
         $table_desc = tripal_get_chado_custom_schema($base_table);
       }

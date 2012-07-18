@@ -449,7 +449,7 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
     $no_errors = FALSE;
   }
 
-  $table_desc = module_invoke_all('chado_' . $table . '_schema');
+  $table_desc = tripal_core_get_chado_table_schema($table);
   if (preg_match('/optional/', $table_array['mode'])) {
     // Check all db required fields are set
     $fields = $table_desc['fields'];

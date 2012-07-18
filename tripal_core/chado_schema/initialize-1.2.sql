@@ -234,4 +234,3 @@ insert into cvterm (name,definition,cv_id,dbxref_id) values ('version','Chado sc
                                 special_index TEXT
                                 );
 
-

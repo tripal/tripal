@@ -374,7 +374,7 @@ function tripal_views_integration_remove_entry_by_setup_id($setup_id) {
 function tripal_views_get_integration_array_for_chado_table($table_name, $base_table = TRUE) {
 
   // Get the schema for this table (via the chado schema api)
-  $schema = module_invoke_all('chado_' . $table_name . '_schema');
+  $schema = tripal_core_get_chado_table_schema($table_name);
 
   // Base definition array
   $defn_array = array(
