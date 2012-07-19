@@ -85,6 +85,32 @@ class chado_views_handler_field_boolean extends views_handler_field_boolean {
    *   The values retrieved from the database.
    */
   function render($values) {
+
+    // check to see if this is a t/f boolean field or a 1/0 boolean field
+    // parent render expects 1/0 so need to translate to that form before rendering
+    if (!is_array($values->{$this->field_alias})) {
+      if (!preg_match('/[01]/',$values->{$this->field_alias})) {
+        if (preg_match('/^[tT]/',$values->{$this->field_alias})) {
+          $values->{$this->field_alias} = 1;
+        }
+        elseif (preg_match('/^[fF]/',$values->{$this->field_alias})) {
+          $values->{$this->field_alias} = 0;
+        }
+      }
+    }
+    else {
+      if (!preg_match('/[01]/',$values->{$this->field_alias}[0])) {
+        foreach ($values->{$this->field_alias} as $k => $v) {
+          if (preg_match('/^[tT]/',$v)) {
+            $values->{$this->field_alias}[$k] = 1;
+          }
+          elseif (preg_match('/^[fF]/',$v)) {
+            $values->{$this->field_alias}[$k] = 0;
+          }
+        }
+      }
+    }
+
     return chado_wrapper_render_items($this, $values);
   }
 
