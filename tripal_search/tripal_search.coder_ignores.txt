@@ -1,8 +1,0 @@
-; The file should be formatted this way :
-; file:line:warning-type
-; where warning-type is one of security, style, sql, i18n, comment, etc.
-
-; Can't use db placeholders in this case since the variable contains the SQL describing
-; a join and this would be sanitized if that was added through a placeholder
-tripal_search.module:126:sql
-tripal_search.module:136:sql

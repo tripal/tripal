@@ -130,11 +130,13 @@ function tripal_bulk_loader_admin_jobs() {
     array('data' => 'Name', 'field' => 'loader_name'),
     array('data' =>  'Template', 'field' => 'template_name'),
     array('data' =>  'Status', 'field' => 'job_status'),
+    array('data' => 'Progress', 'field' => 'progress'),
     '');
   $rows = array();
-  $resource = pager_query("SELECT n.*, t.name as template_name
+  $resource = pager_query("SELECT n.*, t.name as template_name, j.progress
     FROM {tripal_bulk_loader} n
-    LEFT JOIN {tripal_bulk_loader_template} t ON cast(n.template_id as integer)=t.template_id"
+    LEFT JOIN {tripal_bulk_loader_template} t ON cast(n.template_id as integer) = t.template_id
+    LEFT JOIN {tripal_jobs} j ON n.job_id = j.job_id"
     . tablesort_sql($header),
     $num_jobs_per_page);
   while ($n = db_fetch_object($resource)) {
@@ -143,6 +145,7 @@ function tripal_bulk_loader_admin_jobs() {
       l($n->loader_name, 'node/' . $n->nid),
       l($n->template_name, 'admin/tripal/tripal_bulk_loader_template/manage_templates/edit', array('query' => 'template_id=' . $n->template_id)),
       $n->job_status,
+      ($n->progress) ? $n->progress . '%' : '',
       l('View', 'node/' . $n->nid) . ' | ' .  l('Edit', 'node/' . $n->nid . '/edit')
     );
   }
@@ -163,6 +166,20 @@ function tripal_bulk_loader_admin_jobs() {
  */
 function tripal_bulk_loader_configuration_form($form_state = NULL) {
   $form = array();
+
+  $form['space'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Enable/Disable Functionality'),
+  );
+
+  $form['space']['keep_track_inserted'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Keep track of inserted record IDs'),
+    '#description' => t('This enables the ability to revert an entire loading job even if '
+      .'it completed successfully. Furthermore, it displays the number of records '
+      .'successfully inserted into each table.'),
+    '#default_value' => variable_get('tripal_bulk_loader_keep_track_inserted', FALSE),
+  );
 
   $form['speed'] = array(
     '#type' => 'fieldset',
@@ -245,5 +262,7 @@ function tripal_bulk_loader_configuration_form_submit($form, $form_state) {
   variable_set('tripal_bulk_loader_skip_validation', $form_state['values']['no_validate']);
   variable_set('tripal_bulk_loader_transactions', $form_state['values']['transactions']);
   variable_set('tripal_bulk_loader_lock', $form_state['values']['lock']);
+
+  variable_set('tripal_bulk_loader_keep_track_inserted', $form_state['values']['keep_track_inserted']);
 
 }

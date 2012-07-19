@@ -45,6 +45,21 @@
  * @return
  *    The job_id of the registered job
  *
+ * Example usage:
+ * @code
+ *  $args = array($dfile, $organism_id, $type, $library_id, $re_name, $re_uname,
+ *        $re_accession, $db_id, $rel_type, $re_subject, $parent_type, $method,
+ *         $user->uid, $analysis_id, $match_type);
+ *
+ * tripal_add_job("Import FASTA file: $dfile", 'tripal_feature',
+ *   'tripal_feature_load_fasta', $args, $user->uid);
+ * @endcode
+ * The code above is copied from the tripal_feature/fasta_loader.php file. The 
+ * snipped first builds an array of arguments that will then be passed to the
+ * tripal_add_job function.  The number of arguments provided in the $arguments
+ * variable should match the argument set for the callback function provided
+ * as the third argument.
+ *
  * @ingroup tripal_jobs_api
  */
 function tripal_add_job($job_name, $modulename, $callback, $arguments, $uid, $priority = 10) {

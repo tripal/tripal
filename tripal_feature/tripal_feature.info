@@ -1,9 +1,9 @@
-; $Id: tripal_feature.info,v 1.4 2009/10/01 17:52:24 ccheng Exp $
 name = Tripal Feature
 description = A module for interfacing the GMOD chado database with Drupal, providing viewing, inserting and editing of chado features.
 core = 6.x
 project = tripal_feature
 package = Tripal
+version = 6.x-1.0
 dependencies[] = search
 dependencies[] = path
 dependencies[] = tripal_core
@@ -11,4 +11,4 @@ dependencies[] = tripal_db
 dependencies[] = tripal_cv
 dependencies[] = tripal_organism
 dependencies[] = tripal_analysis
-version = 6.x-0.3.1b
+

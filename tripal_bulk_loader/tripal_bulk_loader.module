@@ -314,6 +314,17 @@ function tripal_bulk_loader_form($node, $form_state) {
     '#default_value' => $node->file_has_header,
   );
 
+  $form['loader']['keep_track_inserted'] = array(
+    '#type' => 'radios',
+    '#title' => t('Keep track of inserted record IDs'),
+    '#description' => t('This enables the ability to revert an entire loading job even if '
+      .'it completed successfully. Furthermore, it displays the number of records '
+      .'successfully inserted into each table.'),
+    '#options' => array( 1 => 'Yes', 0 => 'No'),
+    '#weight' => -7,
+    '#default_value' => (isset($node->keep_track_inserted)) ? $node->keep_track_inserted : variable_get('tripal_bulk_loader_keep_track_inserted', FALSE),
+  );
+
   return $form;
 }
 
@@ -326,6 +337,11 @@ function tripal_bulk_loader_load($node) {
   $node = db_fetch_object(db_query($sql, $node->nid));
 
   $node->title = 'Bulk Loading Job: ' . $node->loader_name;
+
+  // Add job details
+  $progress = tripal_bulk_loader_progess_file_get_progress($node->job_id);
+  $sql = "SELECT * FROM {tripal_jobs} WHERE job_id=%d";
+  $node->job = db_fetch_object(db_query($sql, $node->job_id));
 
   // Add the loader template
   $sql = "SELECT * FROM {tripal_bulk_loader_template} WHERE template_id=%d";
@@ -391,8 +407,8 @@ function tripal_bulk_loader_load($node) {
 function tripal_bulk_loader_insert($node) {
 
   // Insert into tripal_bulk_loader
-  $sql = "INSERT INTO {tripal_bulk_loader} (nid, loader_name, template_id, file, file_has_header, job_status) VALUES (%d, '%s', %d, '%s', %d, '%s')";
-  db_query($sql, $node->nid, $node->loader_name, $node->template_id, $node->file, $node->has_header, 'Initialized');
+  $sql = "INSERT INTO {tripal_bulk_loader} (nid, loader_name, template_id, file, file_has_header, job_status, keep_track_inserted) VALUES (%d, '%s', %d, '%s', %d, '%s', %d)";
+  db_query($sql, $node->nid, $node->loader_name, $node->template_id, $node->file, $node->has_header, 'Initialized', $node->keep_track_inserted);
 
   // Update title
   $node->title =$node->loader_name;
@@ -419,8 +435,8 @@ function tripal_bulk_loader_delete($node) {
 function tripal_bulk_loader_update($node) {
 
   // Update tripal_bulk_loader
-  $sql = "UPDATE {tripal_bulk_loader} SET nid = %d, loader_name = '%s', template_id = %d, file = '%s', file_has_header = '%s' WHERE nid = %d";
-  db_query($sql, $node->nid, $node->loader_name, $node->template_id, $node->file, $node->has_header, $node->nid);
+  $sql = "UPDATE {tripal_bulk_loader} SET nid = %d, loader_name = '%s', template_id = %d, file = '%s', file_has_header = '%s', keep_track_inserted = %d WHERE nid = %d";
+  db_query($sql, $node->nid, $node->loader_name, $node->template_id, $node->file, $node->has_header, $node->keep_track_inserted, $node->nid);
 
   // Add a job if the user want to load the data
   global $user;
@@ -451,6 +467,80 @@ function tripal_bulk_loader_preprocess_tripal_bulk_loader_template(&$variables) 
   $template->template_array = unserialize($template->template_array);
   $variables['template'] = $template;
 
+}
+
+/**
+ * Get the progress of the current constant set from the progress file
+ *
+ * When transactions are used, database updates to drupal cannot be made. Thus a separate
+ * method to keep track of progress was implemented: save a period to the file for each
+ * record successfully inserted; each line in the file represents a processed line.
+ *
+ * @param $job_id
+ *   The id of the tripal job to check the progress of
+ * @param $node
+ *   The tripal_bulk_loader node associated with the job
+ *
+ * @return
+ *   An array with the following keys:
+ *     num_lines = the number of lines in the file processed so far
+ *     total_lines = the total number of lines in the input file
+ *     percent_file = the percent the input file has been loaded
+ *     num_records = the number of records successfully inserted
+ */
+function tripal_bulk_loader_progess_file_get_progress($job_id, $update_progress = TRUE) {
+  $filename = '/tmp/tripal_bulk_loader_progress-' . $job_id . '.out';
+  if (!file_exists($filename)) {
+    return (object) array();
+  }
+
+  $num_lines = trim(`wc --lines < $filename`);
+  $num_records = trim(`grep -c "." $filename`);
+
+  $job = db_fetch_object(db_query("SELECT j.*, b.file, b.file_has_header, c.num as num_constant_sets
+                              FROM {tripal_jobs} j
+                              LEFT JOIN {tripal_bulk_loader} b ON b.job_id=j.job_id
+                              LEFT JOIN (
+                                  SELECT nid, count(distinct(group_id)) as num
+                                  FROM {tripal_bulk_loader_constants}
+                                  GROUP BY nid
+                                ) c ON c.nid=b.nid
+                              WHERE j.job_id=%d", $job_id));
+  if ($job->num_constant_sets) {
+    $num_constant_sets_loaded = round($job->progress / (100 / $job->num_constant_sets), 4);
+
+    // If the next constant set has started loading
+    if ($job->num_constant_sets != $num_constant_sets_loaded) {
+
+      // total lines in input file
+      $total_lines = trim(`wc --lines < $job->file`);
+      if ($job->file_has_header) {
+        $total_lines--;
+      }
+
+      // percent of the current constant set loaded
+      $percent = round($num_lines/$total_lines * 100, 2);
+
+      // percent of the total job = (<# fully loaded constant sets> * 100 )
+      //                           + <percent of current constant set>
+      //                           / <total number of constant sets>
+      $total_percent = (($num_constant_sets_loaded * 100) + $percent) / $job->num_constant_sets;
+
+      // update the progress of the job
+      if ($update_progress AND ($percent != 0 OR $percent != 100)) {
+        tripal_job_set_progress($job_id, round($total_percent, 0));
+      }
+    }
+  }
+
+  return (object) array(
+    'num_lines' => $num_lines,
+    'total_lines' => $total_lines,
+    'percent_file' => $percent,
+    'num_constant_sets_loaded' => $num_constant_sets_loaded,
+    'total_percent' => $total_percent,
+    'num_records' => $num_records
+  );
 }
 
 /**
