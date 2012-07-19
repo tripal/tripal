@@ -437,7 +437,7 @@ function tripal_views_get_integration_array_for_chado_table($table_name, $base_t
       elseif (preg_match('/^boolean/', $field_schema['type'])) {
         $defn_array['fields'][$field_name]['handlers'] = array(
           'field' => array('name' => 'chado_views_handler_field_boolean'),
-          'filter' => array('name' => 'chado_views_handler_filter_string'),
+          'filter' => array('name' => 'chado_views_handler_filter_boolean_operator'),
           'sort' => array('name' => 'chado_views_handler_sort'),
         );
       }
