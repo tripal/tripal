@@ -161,18 +161,6 @@ function tripal_views_views_handlers() {
       'chado_views_handler_sort' => array(
         'parent' => 'views_handler_sort'
       ),
-      'chado_views_handler_sort_date' => array(
-        'parent' => 'views_handler_sort_date'
-      ),
-      'chado_views_handler_sort_formula' => array(
-        'parent' => 'views_handler_sort_formula'
-      ),
-      'chado_views_handler_sort_menu_hierarchy' => array(
-        'parent' => 'views_handler_sort_menu_hierarchy'
-      ),
-      'chado_views_handler_sort_random' => array(
-        'parent' => 'views_handler_sort_random'
-      ),
     ),
   );
 }

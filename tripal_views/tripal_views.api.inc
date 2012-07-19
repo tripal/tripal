@@ -441,6 +441,13 @@ function tripal_views_get_integration_array_for_chado_table($table_name, $base_t
           'sort' => array('name' => 'chado_views_handler_sort'),
         );
       }
+      elseif (preg_match('/^datetime/', $field_schema['type'])) {
+        $defn_array['fields'][$field_name]['handlers'] = array(
+          'field' => array('name' => 'chado_views_handler_field_date'),
+          'filter' => array('name' => 'chado_views_handler_filter_date'),
+          'sort' => array('name' => 'views_handler_sort_date'),
+        );
+      }
       else {
         $defn_array['fields'][$field_name]['handlers'] = array(
           'field' => array('name' => 'chado_views_handler_field'),
