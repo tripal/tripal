@@ -35,7 +35,7 @@ function tripal_analysis_views_data()  {
   if (module_exists('tripal_views')) {
     // Base Table: Analysis
     $tablename = 'analysis';
-    if (!tripal_views_is_integrated($tablename, 10)) {
+    if (!tripal_views_is_integrated($tablename, 9)) {
       $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename, TRUE);
       tripal_views_integration_add_entry($table_integration_array);
     }
@@ -46,7 +46,7 @@ function tripal_analysis_views_data()  {
       'analysisprop'
     );
     foreach ($tables as $tablename) {
-      if (!tripal_views_is_integrated($tablename, 10)) {
+      if (!tripal_views_is_integrated($tablename, 9)) {
         $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename, FALSE);
         tripal_views_integration_add_entry($table_integration_array);
       }
