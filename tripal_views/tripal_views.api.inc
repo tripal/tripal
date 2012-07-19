@@ -363,6 +363,22 @@ function tripal_views_integration_remove_entry_by_setup_id($setup_id) {
 }
 
 /**
+ * Integrate all chado tables in the schema api
+ */
+function tripal_views_integrate_all_chado_tables() {
+
+  $tables = tripal_core_get_chado_tables();
+  foreach ($tables as $tablename) {
+    if (!tripal_views_is_integrated($tablename, 10)) {
+      $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename, TRUE, 10);
+      if ($table_integration_array) {
+        tripal_views_integration_add_entry($table_integration_array);
+      }
+    }
+  }
+}
+
+/**
  * Returns the array needed to integrate a given chado table with views
  *
  * @param $tablename
@@ -390,6 +406,7 @@ function tripal_views_get_integration_array_for_chado_table($table_name, $base_t
   if (!isset($schema['fields'])) {
     $schema['fields'] = array();
     drupal_set_message(t('There are no fields defined for %table in the Chado Schema API.', array('%table' => $table_name)), 'warning');
+    return FALSE;
   }
   foreach ($schema['fields'] as $field_name => $field_schema) {
 

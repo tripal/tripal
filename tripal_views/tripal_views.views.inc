@@ -394,6 +394,9 @@ function tripal_views_add_node_ids_to_view(&$view) {
 
 function tripal_views_views_data() {
 
+  // Make sure all chado tables are integrated
+  tripal_views_integrate_all_chado_tables();
+
   // Define Global Fields
   // Filter handler that lets the admin say:
   // "Show no results until they enter search parameters"
