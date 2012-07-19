@@ -371,7 +371,7 @@ function tripal_views_integration_remove_entry_by_setup_id($setup_id) {
  *   The tripal views integration array which is the parameter for
  *   tripal_views_integration_add_entry($defn_array)
  */
-function tripal_views_get_integration_array_for_chado_table($table_name, $base_table = TRUE) {
+function tripal_views_get_integration_array_for_chado_table($table_name, $base_table = TRUE, $priority = 9) {
 
   // Get the schema for this table (via the chado schema api)
   $schema = module_invoke_all('chado_' . $table_name . '_schema');
@@ -382,7 +382,7 @@ function tripal_views_get_integration_array_for_chado_table($table_name, $base_t
     'type' => 'chado',
     'name' => 'Chado ' . ucwords(str_replace('_', ' ', $table_name)),
     'description' => (!empty($schema['description'])) ? $schema['description'] : ' ',
-    'priority' => 10,
+    'priority' => $priority,
     'base_table' => $base_table,
     'fields' => array(),
   );
