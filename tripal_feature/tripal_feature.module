@@ -1983,13 +1983,13 @@ function tripal_feature_preprocess_tripal_feature_alignments(&$variables) {
      $alignment->name = $rfeature->name;
      $alignment->nid = $rfeature->nid;
      $alignment->type = $rfeature->type_id->name;
-     $alignment->fmin = $left_featureloc->fmin;
+     $alignment->fmin = $featureloc->fmin;
      $alignment->is_fmin_partial = $featureloc->left_is_fmin_partial;
      $alignment->fmax = $featureloc->left_fmax;
      $alignment->is_fmax_partial = $featureloc->left_is_fmax_partial;
      $alignment->phase = $featureloc->left_phase;
      $alignment->strand = $featureloc->left_strand;
-     $alignment->right_fmin = $left_featureloc->fmin;
+     $alignment->right_fmin = $featureloc->fmin;
      $alignment->right_is_fmin_partial = $featureloc->right_is_fmin_partial;
      $alignment->right_fmax = $featureloc->right_fmax;
      $alignment->right_is_fmax_partial = $featureloc->right_is_fmax_partial;
