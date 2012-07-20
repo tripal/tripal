@@ -17,8 +17,9 @@ function tripal_views_description_page() {
 
   $text .= '<h3>Tripal Views Quick Links:</h3>';
   $text .= "<ul>
-             <li><a href=\"" . url("admin/tripal/views/integration/mviews")  .  "\">List of integrated tables</a></li>
-             <li><a href=\"" . url("admin/tripal/views/integration/mviews/new") .  "\">Integrate a new table</a></li>
+             <li><a href=\"" . url("admin/tripal/views/integration/list")  .  "\">List of integrated tables</a></li>
+             <li><a href=\"" . url("admin/tripal/views/integration/new") .  "\">Integrate a new table</a></li>
+             <li><a href=\"" . url("admin/tripal/views/integration/import") .  "\">Import a previously exported table integration.</a></li>
            </ul>";
 
   $text .= '<h3>Views Integration Description:</h3>';
