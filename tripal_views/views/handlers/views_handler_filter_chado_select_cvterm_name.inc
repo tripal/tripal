@@ -61,7 +61,7 @@ class views_handler_filter_chado_select_cvterm_name extends views_handler_filter
       // @coder-ignore: non-drupal schema therefore table prefixing does not apply
       $sql = "SELECT cvterm_id, name FROM cvterm WHERE cvterm_id IN (SELECT distinct(type_id) FROM %s)";
       $previous_db = tripal_db_set_active('chado');
-      $resource = db_query($sql, $this->view->base_table);
+      $resource = db_query($sql, $this->table);
       tripal_db_set_active($previous_db);
       $cvterms = array();
       while ( $r = db_fetch_object($resource) ) {

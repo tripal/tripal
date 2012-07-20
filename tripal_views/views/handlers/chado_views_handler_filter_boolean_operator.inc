@@ -30,14 +30,14 @@ class chado_views_handler_filter_boolean_operator extends views_handler_filter_b
       '#type' => 'checkbox',
       '#title' => t('Filter base table records'),
       '#description' => t('Filters %base_table to only those with the value in the aggregate array.', array('%base_table' => $this->view->base_table)),
-      '#default_value' => (isset($this->options['records_with'])) ? $this->options['records_with'] : TRUE,
+      '#default_value' => (isset($this->options['agg']['records_with'])) ? $this->options['agg']['records_with'] : TRUE,
     );
 
     $form['agg']['aggregates_with'] = array(
       '#type' => 'checkbox',
       '#title' => t('Filter aggregates displayed'),
       '#description' => t('Filters the aggregates shown based on the value. Doesn\'t affect the number of %base_table records.', array('%base_table' => $this->view->base_table)),
-      '#default_value' => (isset($this->options['aggregates_with'])) ? $this->options['aggregates_with'] : TRUE,
+      '#default_value' => (isset($this->options['agg']['aggregates_with'])) ? $this->options['agg']['aggregates_with'] : TRUE,
     );
 
   }
@@ -50,12 +50,13 @@ class chado_views_handler_filter_boolean_operator extends views_handler_filter_b
 
     // make optional
     // if it is not set or empty then don't restrict the query
-    if (!$this->value) {
+    if ($this->value == 'All') {
       return;
     }
 
     $this->ensure_my_table();
 
+    // determine whether it is aggregated or not
     $table = $this->query->get_table_info($this->table);
     if (preg_match('/aggregator/', $table['join']->definition['handler'])) {
       $this->aggregated = TRUE;
@@ -64,8 +65,46 @@ class chado_views_handler_filter_boolean_operator extends views_handler_filter_b
       $this->aggregated = FALSE;
     }
 
+    // check if its a t/f or 1/0 boolean
+    $check = db_fetch_object(db_query("SELECT %s as val FROM %s LIMIT 1", $this->real_field, $this->table));
+    if (preg_match('/^[tTfF]/',$check->val)) {
+      $true = 't';
+      $false = 'f';
+    }
+    else {
+      $true = 1;
+      $false = 0;
+    }
+
     if (!$this->aggregated) {
-      parent::query();
+
+      // Only base records with value in the aggregated field
+      // This doesn't restrict the items in the aggregate field
+      if ($this->options['agg']['records_with']) {
+        $where = "$this->table_alias.$this->real_field ";
+        if (empty($this->value)) {
+          $where .= "= '".$false."'";
+          if ($this->accept_null) {
+            $where = '(' . $where . " OR $this->table_alias.$this->real_field IS NULL)";
+          }
+        }
+        else {
+          if (!empty($this->definition['use equal'])) {
+            $where .= "= '".$true."'";
+          }
+          else {
+            $where .= "<> '".$false."'";
+          }
+        }
+        $this->query->add_where($this->options['group'], $where);
+      }
+
+      // To restrict the items in the aggregate...
+      // Tell the join handler about the filter
+      // so it can be done in the join query
+      if ($this->options['agg']['aggregates_with']) {
+        //Do nothing b/c it's not aggregated!
+      }
     }
     else {
 
@@ -75,14 +114,24 @@ class chado_views_handler_filter_boolean_operator extends views_handler_filter_b
       $field = "$this->table_alias.$this->real_field";
       if ($this->options['agg']['records_with']) {
         $where = "'%s' = ANY($field)";
-        $this->query->add_where($this->options['group'], $where, $this->value);
+        if ($this->value) {
+          $this->query->add_where($this->options['group'], $where, $true);
+        }
+        else {
+          $this->query->add_where($this->options['group'], $where, $false);
+        }
       }
 
       // To restrict the items in the aggregate...
       // Tell the join handler about the filter
       // so it can be done in the join query
       if ($this->options['agg']['aggregates_with']) {
-        $table['join']->filter[] = $field . " = '" . $this->value . "'";
+        if ($this->value) {
+          $table['join']->filter[] = $field . " = '" . $true . "'";
+        }
+        else {
+          $table['join']->filter[] = $field . " = '" . $false . "'";
+        }
       }
     }
 

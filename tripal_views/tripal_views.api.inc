@@ -434,6 +434,20 @@ function tripal_views_get_integration_array_for_chado_table($table_name, $base_t
           'sort' => array('name' => 'chado_views_handler_sort'),
         );
       }
+      elseif (preg_match('/^boolean/', $field_schema['type'])) {
+        $defn_array['fields'][$field_name]['handlers'] = array(
+          'field' => array('name' => 'chado_views_handler_field_boolean'),
+          'filter' => array('name' => 'chado_views_handler_filter_boolean_operator'),
+          'sort' => array('name' => 'chado_views_handler_sort'),
+        );
+      }
+      elseif (preg_match('/^datetime/', $field_schema['type'])) {
+        $defn_array['fields'][$field_name]['handlers'] = array(
+          'field' => array('name' => 'chado_views_handler_field_date'),
+          'filter' => array('name' => 'chado_views_handler_filter_date'),
+          'sort' => array('name' => 'views_handler_sort_date'),
+        );
+      }
       else {
         $defn_array['fields'][$field_name]['handlers'] = array(
           'field' => array('name' => 'chado_views_handler_field'),
@@ -443,8 +457,8 @@ function tripal_views_get_integration_array_for_chado_table($table_name, $base_t
       }
 
       // Specify specialty handlers
-      if ($field_name == 'type_id') {
-        $defn_array['fields'][$field_name]['handlers']['filter']['name'] = 'views_handler_filter_chado_select_cvterm_name';
+      if ($field_name == 'type_id' OR $field_name == 'cvterm_id') {
+        $defn_array['fields'][$field_name]['handlers']['filter']['name'] = 'chado_views_handler_filter_select_cvterm';
       }
     }
   }
@@ -459,7 +473,7 @@ function tripal_views_get_integration_array_for_chado_table($table_name, $base_t
       $defn_array['fields'][$left_field]['joins'][ $foreign_key_schema['table'] ] = array(
         'table' => $foreign_key_schema['table'],
         'field' => $right_field,
-        'handler' => 'views_handler_join_chado_aggregtor'
+        'handler' => 'views_handler_join_chado_aggregator'
       );
     }
   }

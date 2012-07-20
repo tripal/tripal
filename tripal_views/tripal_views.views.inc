@@ -62,20 +62,27 @@ function tripal_views_views_handlers() {
     ),
     'handlers' => array(
 
-      // Custom Chado Handlers
-      'chado_views_handler_field_aggregate' => array(
-        'parent' => 'chado_views_handler_field',
-      ),
-      // the following is deprecated but left for backwards compatibility
-      'views_handler_filter_chado_select_string' => array(
-        'parent' => 'views_handler_filter_string',
+      // Custom Tripal Handlers
+      'views_handler_filter_file_upload' => array(
+        'parent' => 'views_handler_filter',
       ),
       'tripal_views_handler_filter_string_selectbox' => array(
         'parent' => 'views_handler_filter_string',
       ),
+      'views_handler_filter_no_results' => array(
+        'parent' => 'views_handler_filter'
+      ),
 
-      'views_handler_filter_chado_select_cvterm_name' => array(
-        'parent' => 'views_handler_filter_string',
+      // Custom Chado Handlers
+      'chado_views_handler_field_aggregate' => array(
+        'parent' => 'chado_views_handler_field',
+      ),
+      'chado_views_handler_filter_select_cvterm' => array(
+        'parent' => 'views_handler_filter_chado_select_cvterm_name',
+      ),
+      'chado_views_handler_filter_select_string' => array(
+        'parent' => 'chado_views_handler_filter_string',
+
       ),
 
       // Join Handlers
@@ -86,12 +93,7 @@ function tripal_views_views_handlers() {
         'parent' => 'views_join',
       ),
 
-      // Other Custom Handlers
-      'views_handler_filter_no_results' => array(
-        'parent' => 'views_handler_filter'
-      ),
-
-      // Old Handlers
+      // Old Handlers no longer used (deprecated)
       'views_handler_field_node_optional' => array(
         'parent' => 'views_handler_field_node',
       ),
@@ -111,6 +113,13 @@ function tripal_views_views_handlers() {
         'parent' => 'views_handler_field',
       ),
 
+      // Old handlers with new counterparts (deprecated)
+      'views_handler_filter_chado_select_string' => array(
+        'parent' => 'views_handler_filter_string',
+      ),
+      'views_handler_filter_chado_select_cvterm_name' => array(
+        'parent' => 'views_handler_filter_string',
+      ),
 
       // Wrappers for Default Views Handlers-----
       // Field Handlers
@@ -160,10 +169,6 @@ function tripal_views_views_handlers() {
       'chado_views_handler_filter_numeric' => array(
         'parent' => 'views_handler_filter_numeric',
       ),
-      'views_handler_filter_file_upload' => array(
-        'parent' => 'views_handler_filter',
-      ),
-
       // Sort Handlers
       'chado_views_handler_sort' => array(
         'parent' => 'views_handler_sort'
@@ -726,12 +731,12 @@ function tripal_views_data_export_download_form(&$form_state, $view, $display_id
   $current_display = $view->current_display;
   foreach ($displays as $name => $display) {
     if (preg_match("/^views_data_export/", $name)) {
-    
-      // only add this display to the form if it is attached 
+
+      // only add this display to the form if it is attached
       $display_options = $display->display_options;
       if(strcmp($display_options['displays'][$current_display],$current_display)!=0){
          continue;
-      } 
+      }
 
       // set the first item as default
       if (!$default) {

@@ -2,13 +2,26 @@
 
 /**
  * @file
- * A chado wrapper for the views_handler_filter_boolean_operator_string.
+ * Purpose: This Handler provides a select list for the type field
  *
- * Handles fields which may be aggregated during the chado join process. There are options
- * to filter the base table based on an aggregated table or just filter the aggregated
- * table (showing blank for that field if there are no records in the aggregated table).
+ *  NOTE: This handler only works when applied to the type_id field in the base_table of
+ *  this view.
+ *
+ * @ingroup views_filter_handlers
+ * @ingroup tripal_core
  */
-class chado_views_handler_filter_boolean_operator_string extends views_handler_filter_boolean_operator_string {
+class chado_views_handler_filter_select_cvterm extends views_handler_filter_chado_select_cvterm_name {
+
+ /**
+  * Executed when the field is added
+  * Determine which cv to limit the cvterms to
+  */
+  function init(&$view, $options) {
+
+    include_once('chado_wrapper_functions.inc');
+    parent::init($view, $options);
+
+  }
 
   /**
    * Defines the options form (form available to admin when they add a field to a view)
@@ -29,15 +42,15 @@ class chado_views_handler_filter_boolean_operator_string extends views_handler_f
     $form['agg']['records_with'] = array(
       '#type' => 'checkbox',
       '#title' => t('Filter base table records'),
-      '#description' => t('Filters %table to only those with the value in the aggregate array.', array('%table' => $this->view->base_table)),
-      '#default_value' => (isset($this->options['records_with'])) ? $this->options['records_with'] : TRUE,
+      '#description' => t('Filters %base_table to only those with the value in the aggregate array.', array('%base_table' => $this->view->base_table)),
+      '#default_value' => (isset($this->options['agg']['records_with'])) ? $this->options['agg']['records_with'] : TRUE,
     );
 
     $form['agg']['aggregates_with'] = array(
       '#type' => 'checkbox',
       '#title' => t('Filter aggregates displayed'),
-      '#description' => t('Filters the aggregates shown based on the value. Doesn\'t affect the number of %table records.', array('%table' => $this->view->base_table)),
-      '#default_value' => (isset($this->options['aggregates_with'])) ? $this->options['aggregates_with'] : TRUE,
+      '#description' => t('Filters the aggregates shown based on the value. Doesn\'t affect the number of %base_table records.', array('%base_table' => $this->view->base_table)),
+      '#default_value' => (isset($this->options['agg']['aggregates_with'])) ? $this->options['agg']['aggregates_with'] : TRUE,
     );
 
   }
@@ -82,10 +95,11 @@ class chado_views_handler_filter_boolean_operator_string extends views_handler_f
       // Tell the join handler about the filter
       // so it can be done in the join query
       if ($this->options['agg']['aggregates_with']) {
-        $table['join']->filter[] = $field . " = '" . $this->value . "'";
+        if (sizeof($this->value) == 1) {
+          $table['join']->filter[] = $field . " = '" . array_pop($this->value) . "'";
+        }
       }
     }
 
   }
-
 }

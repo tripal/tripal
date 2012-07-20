@@ -606,7 +606,7 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL) {
       $default_join_handler = 0;
       if (isset($setup_id) && !isset($form_state['storage']["fields_join_handler_$table_id-$i"])) {
         $default_join_handler = $default_handlers[$column_name]['join']['handler_name'];
-        $form_state['storage']["fields_join_handler_$table_id-$i"]=$default_join_handler;
+        $form_state['storage']["fields_join_handler_$table_id-$i"] = $default_join_handler;
       }
       else {
         $default_join_handler = $form_state['storage']["fields_join_handler_$table_id-$i"];
