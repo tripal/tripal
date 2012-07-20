@@ -708,7 +708,7 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
           //   '!field' => $field,
           // ),
           // WATCHDOG_WARNING);
-          return FALSE;
+          return array();
         }
         else {
           $where[$field] = $results;
@@ -777,6 +777,12 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
     return array('sql' => $sql, 'args' => $args);
   }
   $previous_db = tripal_db_set_active('chado');  // use chado database
+  // if we got to this point and we have no arguments for our where
+  // clause then a recursive call to a FK relationship has returned nothing
+  // we can't continue so just return nothing.
+  if($where and empty($args)){
+     return array();
+  }
   $resource = db_query($sql, $args);
   tripal_db_set_active($previous_db);  // now use drupal database
   $results = array();
@@ -859,7 +865,7 @@ function tripal_core_chado_get_foreign_key($table_desc, $field, $values, $option
       if (is_array($def['table'])) {
         //foreign key was described 2X
         $message = "The foreign key " . $name . " was defined twice. Please check modules "
-          ."to determine if hook_chado_" . $table_desc['table'] . "_schema() was "
+          ."to determine if hook_chado_schema_<version>_" . $table_desc['table'] . "() was "
           ."implemented and defined this foreign key when it wasn't supposed to. Modules "
           ."this hook was implemented in: " . implode(', ',
           module_implements("chado_" . $table_desc['table'] . "_schema")) . ".";
@@ -902,7 +908,7 @@ function tripal_core_chado_get_foreign_key($table_desc, $field, $values, $option
     drupal_set_message(check_plain($message), 'error');
   }
 
-  return FALSE;
+  return array();
 }
 
 /**
