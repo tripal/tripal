@@ -776,13 +776,13 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
   if ($options['return_sql']) {
     return array('sql' => $sql, 'args' => $args);
   }
-  $previous_db = tripal_db_set_active('chado');  // use chado database
   // if we got to this point and we have no arguments for our where
   // clause then a recursive call to a FK relationship has returned nothing
   // we can't continue so just return nothing.
   if($where and empty($args)){
      return array();
   }
+  $previous_db = tripal_db_set_active('chado');  // use chado database
   $resource = db_query($sql, $args);
   tripal_db_set_active($previous_db);  // now use drupal database
   $results = array();
