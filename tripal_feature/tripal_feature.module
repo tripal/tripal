@@ -343,8 +343,11 @@ function tripal_feature_block($op = 'list', $delta = 0, $edit=array()) {
       $blocks['alignments']['info'] = t('Tripal Feature Alignments');
       $blocks['alignments']['cache'] = BLOCK_NO_CACHE;
 
-      $blocks['relationships']['info'] = t('Tripal Feature Relationships');
-      $blocks['relationships']['cache'] = BLOCK_NO_CACHE;
+      $blocks['object_relationships']['info'] = t('Tripal Feature Object Relationships');
+      $blocks['object_relationships']['cache'] = BLOCK_NO_CACHE;
+
+      $blocks['subject_relationships']['info'] = t('Tripal Feature Subject Relationships');
+      $blocks['subject_relationships']['cache'] = BLOCK_NO_CACHE;
 
       $blocks['org_feature_counts']['info'] = t('Tripal Organism Feature Counts');
       $blocks['org_feature_counts']['cache'] = BLOCK_NO_CACHE;
@@ -392,11 +395,15 @@ function tripal_feature_block($op = 'list', $delta = 0, $edit=array()) {
           break;
         case 'alignments':
           $block['subject'] = t('Alignments');
-          $block['content'] = theme('tripal_feature_featurelocs', $node);
+          $block['content'] = theme('tripal_feature_alignments', $node);
           break;
-        case 'relationships':
-          $block['subject'] = t('Relationships');
-          $block['content'] = theme('tripal_feature_relationships', $node);
+        case 'object_relationships':
+          $block['subject'] = t('Object Relationships');
+          $block['content'] = theme('tripal_feature_object_relationships', $node);
+          break;
+        case 'subject_relationships':
+          $block['subject'] = t('Subject Relationships');
+          $block['content'] = theme('tripal_feature_object_relationships', $node);
           break;
         case 'org_feature_counts':
           $block['subject'] = t('Feature Type Summary');
@@ -1339,6 +1346,73 @@ function tripal_feature_load_featureloc_sequences($feature_id, $featurelocs) {
  *
  * @ingroup tripal_feature
  */
+function tripal_feature_get_matched_alignments($feature){
+  // This function is for features that align through an intermediate such
+  // as 'EST_match' or 'match'.  This occurs in the case where two sequences
+  // align but where one does not align perfectly.  Some ESTs may be in a contig
+  // but not all of the EST.  Portions may overhang and not be included in the 
+  // consensus if quality is bad.
+  // For example:
+  //
+  //    Feature 1: Contig --------------------
+  //    Feature 2: EST_match           -------
+  //    Feature 3: EST                 ---------
+  //
+  // The feature provided to the function will always be the feature 1.  The 
+  // featureloc columns prefixed with 'right' (e.g. right_fmin) belong to the 
+  // alignment of feature 3 with feature 2
+  // 
+  // Features may align to more than one feature and are not matches. We do
+  // not want to include these, so we have to filter on the SO terms:
+  // match, or %_match
+  //
+   $sql = "SELECT  ".
+          "   FL1.featureloc_id    as left_featureloc_id, ".
+          "   FL1.srcfeature_id    as left_srcfeature_id, ".
+          "   FL1.feature_id       as left_feature_id, ".
+          "   FL1.fmin             as left_fmin, ".
+          "   FL1.is_fmin_partial  as left_is_fmin_partial, ".
+          "   FL1.fmax             as left_fmax, ".
+          "   FL1.is_fmax_partial  as left_is_fmax_partial, ".
+          "   FL1.strand           as left_strand,  ".
+          "   FL1.phase            as left_phase, ".
+          "   FL1.locgroup         as left_locgroup, ".
+          "   FL1.rank             as left_rank, ".
+          "   FL2.featureloc_id    as right_featureloc_id, ".
+          "   FL2.srcfeature_id    as right_srcfeature_id, ".
+          "   FL2.feature_id       as right_feature_id, ".
+          "   FL2.fmin             as right_fmin, ".
+          "   FL2.is_fmin_partial  as right_is_fmin_partial, ".
+          "   FL2.fmax             as right_fmax, ".
+          "   FL2.is_fmax_partial  as right_is_fmax_partial, ".
+          "   FL2.strand           as right_strand,  ".
+          "   FL2.phase            as right_phase, ".
+          "   FL2.locgroup         as right_locgroup, ".
+          "   FL2.rank             as right_rank ".
+          "FROM feature F1 ".
+          "  INNER JOIN featureloc FL1 on FL1.srcfeature_id = F1.feature_id ".
+          "  INNER JOIN feature F2 on FL1.feature_id = F2.feature_id ".
+          "  INNER JOIN featureloc FL2 on FL2.feature_id = F2.feature_id ".
+          "  INNER JOIN feature F3 on FL2.srcfeature_id = F3.feature_id ".
+          "  INNER JOIN cvterm CVT2 on F2.type_id = CVT2.cvterm_id ".
+          "WHERE F1.feature_id = %d and NOT F3.feature_id = %d ".
+          "  AND (CVT2.name = 'match' or CVT2.name like '%_match') ".
+          "ORDER BY FL1.fmin";
+
+   $results = db_query($sql,$feature->feature_id,$feature->feature_id);
+   
+   // iterate through the results and add them to our featurelocs array
+   $featurelocs = array();
+   while($fl = db_fetch_object($results)){
+      $featurelocs[] = $fl ;
+   }   
+   return $featurelocs;
+}
+/**
+ *
+ *
+ * @ingroup tripal_feature
+ */
 function tripal_feature_load_organism_feature_counts($organism) {
 
   // don't show the browser if the settings in the admin page is turned off
@@ -1812,13 +1886,17 @@ function tripal_feature_theme() {
        'arguments' => array('node' => NULL),
        'template' => 'tripal_feature_properties',
   ),
-    'tripal_feature_featurelocs' => array(
+    'tripal_feature_alignments' => array(
        'arguments' => array('node' => NULL),
-       'template' => 'tripal_feature_featurelocs',
+       'template' => 'tripal_feature_alignments',
   ),
-    'tripal_feature_relationships' => array(
+    'tripal_feature_object_relationships' => array(
        'arguments' => array('node' => NULL),
-       'template' => 'tripal_feature_relationships',
+       'template' => 'tripal_feature_object_relationships',
+  ),
+    'tripal_feature_subject_relationships' => array(
+       'arguments' => array('node' => NULL),
+       'template' => 'tripal_feature_subject_relationships',
   ),
     'tripal_feature_edit_ALL_properties_form' => array(
       'arguments' => array('form' => NULL),
@@ -1827,7 +1905,100 @@ function tripal_feature_theme() {
   );
 }
 
+/**
+ *
+ *
+ * @ingroup tripal_feature
+ */
+function tripal_feature_preprocess_tripal_feature_alignments(&$variables) {
+  // we want to provide a new variable that contains the matched features.
+  $feature = $variables['node']->feature;
+  
+  // get alignments as child
+  $cfeaturelocs = $feature->featureloc->feature_id;
+  if (!$cfeaturelocs) {
+     $cfeaturelocs = array();
+  } elseif (!is_array($cfeaturelocs)) { 
+     $cfeaturelocs = array($cfeaturelocs); 
+  }
+  // get alignment as parent
+  $pfeaturelocs = $feature->featureloc->srcfeature_id;
+  if (!$pfeaturelocs) {
+     $pfeaturelocs = array();
+  } elseif (!is_array($pfeaturelocs)) { 
+     $pfeaturelocs = array($pfeaturelocs); 
+  }
 
+  // get matched alignments (those with an itermediate 'match' or 'EST_match', etc
+  $mfeaturelocs = tripal_feature_get_matched_alignments($feature);
+  $feature->matched_featurelocs = tripal_feature_get_matched_alignments($feature);
+  
+  // combine all three alignments into a single array for printing together in
+  // a single list
+  $alignments = array();
+  foreach ($pfeaturelocs as $featureloc){
+     // if type is a 'match' then ignore it. We will handle those below
+     if(preg_match('/(^match$|^.*?_match)$/',$featureloc->feature_id->type_id->name)){
+        continue;
+     }
+     $alignment = new stdClass();
+     $alignment->record = $featureloc;
+     $alignment->name = $featureloc->feature_id->name;
+     $alignment->nid = $featureloc->feature_id->nid;
+     $alignment->type = $featureloc->feature_id->type_id->name;
+     $alignment->fmin = $featureloc->fmin;
+     $alignment->fmax = $featureloc->fmax;
+     $alignment->phase = $featureloc->phase;
+     $alignment->strand = $featureloc->strand;
+     $alignments[] = $alignment;
+  }
+  foreach ($cfeaturelocs as $featureloc){
+     // if type is a 'match' then ignore it. We will handle those below
+     if(preg_match('/(^match$|^.*?_match)$/',$featureloc->feature_id->type_id->name)){
+        continue;
+     }
+     $alignment = new stdClass();
+     $alignment->record = $featureloc;
+     $alignment->name = $featureloc->srcfeature_id->name;
+     $alignment->nid = $featureloc->srcfeature_id->nid;
+     $alignment->type = $featureloc->srcfeature_id->type_id->name;
+     $alignment->fmin = $featureloc->fmin;
+     $alignment->is_fmin_partial = $featureloc->is_fmin_partial;
+     $alignment->fmax = $featureloc->fmax;
+     $alignment->is_fmax_partial = $featureloc->is_fmax_partial;
+     $alignment->phase = $featureloc->phase;
+     $alignment->strand = $featureloc->strand;
+     $alignments[] = $alignment;
+  }
+  // in matching features, the left feature is always the feature
+  // provided to this function. 
+  foreach ($mfeaturelocs as $featureloc){
+     // get more information about the right feature
+     $select = array('feature_id' => $featureloc->right_srcfeature_id);
+     $rfeature = tripal_core_generate_chado_var('feature',$select);
+     // now add to the list
+     $alignment = new stdClass();
+     $alignment->record = $featureloc;
+     $alignment->right_feature = $rfeature;
+     $alignment->name = $rfeature->name;
+     $alignment->nid = $rfeature->nid;
+     $alignment->type = $rfeature->type_id->name;
+     $alignment->fmin = $left_featureloc->fmin;
+     $alignment->is_fmin_partial = $featureloc->left_is_fmin_partial;
+     $alignment->fmax = $featureloc->left_fmax;
+     $alignment->is_fmax_partial = $featureloc->left_is_fmax_partial;
+     $alignment->phase = $featureloc->left_phase;
+     $alignment->strand = $featureloc->left_strand;
+     $alignment->right_fmin = $left_featureloc->fmin;
+     $alignment->right_is_fmin_partial = $featureloc->right_is_fmin_partial;
+     $alignment->right_fmax = $featureloc->right_fmax;
+     $alignment->right_is_fmax_partial = $featureloc->right_is_fmax_partial;
+     $alignment->right_phase = $featureloc->right_phase;
+     $alignment->right_strand = $featureloc->right_strand;
+     $alignments[] = $alignment;
+  }
+  $feature->all_featurelocs = $alignments;
+}
 /**
  *
  *

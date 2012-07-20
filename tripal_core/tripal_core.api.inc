@@ -695,7 +695,7 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
           'case_insensitive_columns' => $options['case_insensitive_columns']
         );
         $results = tripal_core_chado_get_foreign_key($table_desc, $field, $value, $foreign_options);
-        if (count($results) ==0) {
+        if (!$results or count($results) ==0) {
 
           // foreign key records are required
           // thus if none matched then return FALSE and alert the admin through watchdog
@@ -775,6 +775,7 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
   if ($options['return_sql']) {
     return array('sql' => $sql, 'args' => $args);
   }
+
   $previous_db = tripal_db_set_active('chado');  // use chado database
   $resource = db_query($sql, $args);
   tripal_db_set_active($previous_db);  // now use drupal database
