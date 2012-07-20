@@ -47,7 +47,7 @@ function tripal_cv_views_data() {
         // add specialty handlers
         if ($tablename == 'cvterm') {
           $table_integration_array['fields']['name']['handlers']['filter']['name'] = 'views_handler_filter_chado_select_cvterm_name';
-        }
+        }  
 
         // add integration
         tripal_views_integration_add_entry($table_integration_array);
@@ -109,7 +109,7 @@ function tripal_cv_views_default_views() {
   // List all cvterms based on cv
   $view = new view;
   $view->name = 'all_cvterms';
-  $view->description = 'A listing of all controlled vocabulary terms filtered by controlled vocabulary';
+  $view->description = 'A listing of all controlled vocabulary terms';
   $view->tag = 'chado';
   $view->view_php = '';
   $view->base_table = 'cvterm';

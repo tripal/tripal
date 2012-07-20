@@ -848,7 +848,7 @@ function tripal_bulk_loader_add_template_field_form(&$form_state = NULL) {
   $chado_fields = array();
   $fk_options = array();
   $fk_options['NULL'] = 'None';
-  $table_description = tripal_core_get_chado_table_schema($table)
+  $table_description = tripal_core_get_chado_table_schema($table);
   //dpm($table_description, 'table description for |'.$table.'|');
   if ($field_type == 'foreign key') {
     $foreign_field2table = array();

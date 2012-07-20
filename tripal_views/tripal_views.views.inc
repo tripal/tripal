@@ -66,9 +66,14 @@ function tripal_views_views_handlers() {
       'chado_views_handler_field_aggregate' => array(
         'parent' => 'chado_views_handler_field',
       ),
+      // the following is deprecated but left for backwards compatibility
       'views_handler_filter_chado_select_string' => array(
         'parent' => 'views_handler_filter_string',
       ),
+      'tripal_views_handler_filter_string_selectbox' => array(
+        'parent' => 'views_handler_filter_string',
+      ),
+
       'views_handler_filter_chado_select_cvterm_name' => array(
         'parent' => 'views_handler_filter_string',
       ),
