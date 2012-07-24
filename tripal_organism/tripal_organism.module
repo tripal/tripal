@@ -742,9 +742,9 @@ function chado_organism_insert($node) {
         array('%values' => print_r($values, TRUE)),
         WATCHDOG_WARNING
       );
-    return;
+      return;
     }
-  $organism_id = $organism['organism_id'];
+    $organism_id = $organism['organism_id'];
   }
   else {
     $organism_id = $node->organism_id;
@@ -777,32 +777,29 @@ function chado_organism_insert($node) {
  */
 function chado_organism_update($node) {
   if ($node->revision) {
-    // TODO -- decide what to do about revisions
-  }
-  else {
-    $match = array(
-      'organism_id' => chado_get_id_for_node('organism', $node),
-    );
-    $values = array(
-      'genus' => $node->genus,
-      'species' => $node->species,
-      'abbreviation' => $node->abbreviation,
-      'common_name' => $node->common_name,
-      'comment' => $node->description
-    );
-    $org_status = tripal_core_chado_update('organism', $match, $values);
-
-    // set the title for the node
-    $record = new stdClass();
-    $record->title = "$node->genus $node->species";
-    $record->nid = $node->nid;
-    drupal_write_record('node', $record, 'nid');
-    drupal_write_record('node_revisions', $record, 'nid');
-
-    // add the image
-    chado_organism_add_image($node);
 
   }
+  $match = array(
+    'organism_id' => chado_get_id_for_node('organism', $node),
+  );
+  $values = array(
+    'genus' => $node->genus,
+    'species' => $node->species,
+    'abbreviation' => $node->abbreviation,
+    'common_name' => $node->common_name,
+    'comment' => $node->description
+  );
+  $org_status = tripal_core_chado_update('organism', $match, $values);
+
+  // set the title for the node
+  $record = new stdClass();
+  $record->title = "$node->genus $node->species";
+  $record->nid = $node->nid;
+  drupal_write_record('node', $record, 'nid');
+  drupal_write_record('node_revisions', $record, 'nid');
+
+  // add the image
+  chado_organism_add_image($node);
 }
 /**
  * Delete organism from both drupal and chado databases. Check dependency before
