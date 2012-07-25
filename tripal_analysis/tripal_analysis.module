@@ -813,10 +813,43 @@ function tripal_analysis_perm() {
  */
 function tripal_analysis_theme() {
   return array(
-      'tripal_analysis_analysis_page' => array(
+    'tripal_analysis_analysis_page' => array(
          'arguments' => array('analyses'),
-      ),
+    ),
+    'tripal_analysis_base' => array(
+       'arguments' => array('node' => NULL),
+       'template' => 'tripal_analysis_base',
+    ),
   );
+}
+/**
+ *
+ *
+ * @ingroup tripal_feature
+ */
+function tripal_analysis_block($op = 'list', $delta = 0, $edit=array()) {
+  switch ($op) {
+    case 'list':
+      $blocks['base']['info'] = t('Tripal Analysis Details');
+      $blocks['base']['cache'] = BLOCK_NO_CACHE;
+      return $blocks;
+
+  case 'view':
+    if (user_access('access chado_analysis content') and arg(0) == 'node' and is_numeric(arg(1))) {
+      $nid = arg(1);
+      $node = node_load($nid);
+
+      $block = array();
+      switch ($delta) {       
+        case 'base':
+          $block['subject'] = t('Analysis Details');
+          $block['content'] = theme('tripal_analysis_base', $node);
+          break;
+        default :
+      }
+      return $block;
+    }
+  }
 }
 
 /**
