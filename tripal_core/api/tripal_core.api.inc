@@ -1,6 +1,7 @@
 <?php
 
-require_once "tripal_core.schema.api.inc";
+require_once "tripal_core.schema_v1.2.api.inc";
+require_once "tripal_core.schema_v1.11.api.inc";
 
 /**
  * @file
@@ -139,7 +140,7 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
   }
 
   // get the table description
-  $table_desc = module_invoke_all('chado_' . $table . '_schema');
+  $table_desc = tripal_core_get_chado_table_schema($table);
   if (empty($table_desc)) {
     watchdog('tripal_core', 'tripal_core_chado_insert: There is no table description for !table_name', array('!table_name' => $table), WATCHDOG_WARNING);
   }
@@ -364,7 +365,7 @@ function tripal_core_chado_delete($table, $match) {
   $delete_matches = array();  // contains the values for the where clause
 
   // get the table description
-  $table_desc = module_invoke_all('chado_' . $table . '_schema');
+  $table_desc = tripal_core_get_chado_table_schema($table);
 
   // get the values needed for matching in the SQL statement
   foreach ($match as $field => $value) {
@@ -494,7 +495,7 @@ function tripal_core_chado_update($table, $match, $values) {
   $update_matches = array();  // contains the values for the where clause
 
   // get the table description
-  $table_desc = module_invoke_all('chado_' . $table . '_schema');
+  $table_desc = tripal_core_get_chado_table_schema($table);
 
   // get the values needed for matching in the SQL statement
   foreach ($match as $field => $value) {
@@ -674,7 +675,7 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
   }
 
   // get the table description
-  $table_desc = module_invoke_all('chado_' . $table . '_schema');
+  $table_desc = tripal_core_get_chado_table_schema($table);
   $select = '';
   $from = '';
   $where = '';
@@ -707,7 +708,7 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
           //   '!field' => $field,
           // ),
           // WATCHDOG_WARNING);
-          return FALSE;
+          return array();
         }
         else {
           $where[$field] = $results;
@@ -859,7 +860,7 @@ function tripal_core_chado_get_foreign_key($table_desc, $field, $values, $option
       if (is_array($def['table'])) {
         //foreign key was described 2X
         $message = "The foreign key " . $name . " was defined twice. Please check modules "
-          ."to determine if hook_chado_" . $table_desc['table'] . "_schema() was "
+          ."to determine if hook_chado_schema_<version>_" . $table_desc['table'] . "() was "
           ."implemented and defined this foreign key when it wasn't supposed to. Modules "
           ."this hook was implemented in: " . implode(', ',
           module_implements("chado_" . $table_desc['table'] . "_schema")) . ".";
@@ -892,16 +893,17 @@ function tripal_core_chado_get_foreign_key($table_desc, $field, $values, $option
     // TODO: what do we do if we get to this point and we have a fk
     // relationship expected but we don't have any definition for one in the
     // table schema??
-    $message = "There is no foreign key relationship defined for " . $field . ".
+    $version = tripal_core_get_chado_version();
+    $message = t("There is no foreign key relationship defined for " . $field . ".
        To define a foreign key relationship, determine the table this foreign
        key referrs to (<foreign table>) and then implement
-       hook_chado_<foreign table>_schema(). See
-       tripal_feature_chado_feature_schema for an example.";
+       hook_chado_chado_schema_v<version>_<foreign table>(). See
+       tripal_feature_chado_v1_2_schema_feature for an example. Chado version: $version");
     watchdog('tripal_core', $message);
     drupal_set_message(check_plain($message), 'error');
   }
 
-  return FALSE;
+  return array();
 }
 
 /**
@@ -965,7 +967,7 @@ function tripal_core_generate_chado_var($table, $values, $base_options = array()
   $all = new stdClass();
 
   // get description for the current table----------------------------------------------------------
-  $table_desc = module_invoke_all('chado_' . $table . '_schema');
+  $table_desc = tripal_core_get_chado_table_schema($table);
   $table_primary_key = $table_desc['primary key'][0];
   $table_columns = array_keys($table_desc['fields']);
 
@@ -1202,7 +1204,7 @@ function tripal_core_expand_chado_vars($object, $type, $to_expand, $table_option
       if (preg_match('/(\w+)\.(\w+)/', $to_expand, $matches)) {
         $tablename = $matches[1];
         $fieldname = $matches[2];
-        $table_desc = module_invoke_all('chado_' . $tablename . '_schema');
+        $table_desc = tripal_core_get_chado_table_schema($tablename);
         $values = array();
         foreach ($table_desc['primary key'] as $key) {
           $values[$key] = $object->{$key};
@@ -1240,7 +1242,7 @@ function tripal_core_expand_chado_vars($object, $type, $to_expand, $table_option
     break;
     case "table": //--------------------------------------------------------------------------------
       $foreign_table = $to_expand;
-      $foreign_table_desc = module_invoke_all('chado_' . $foreign_table . '_schema');
+      $foreign_table_desc = tripal_core_get_chado_table_schema($foreign_table);
       // If it's connected to the base table
       if ($foreign_table_desc['foreign keys'][$base_table]) {
         foreach ($foreign_table_desc['foreign keys'][$base_table]['columns'] as $left => $right) {
@@ -1515,7 +1517,7 @@ function chado_get_node_id($table, $id) {
  */
 function tripal_core_get_property($basetable, $record_id, $property, $cv_name) {
   // get the foreign key for this property table
-  $table_desc = module_invoke_all('chado_' . $basetable . 'prop_schema');
+  $table_desc = tripal_core_get_chado_table_schema($basetable . 'prop');
   $fkcol = key($table_desc['foreign keys'][$basetable]['columns']);
 
   // construct the array of values to be selected
@@ -1595,7 +1597,7 @@ function tripal_core_insert_property($basetable, $record_id, $property,
   }
 
   // get the foreign key for this property table
-  $table_desc = module_invoke_all('chado_' . $basetable . 'prop_schema');
+  $table_desc = tripal_core_get_chado_table_schema($basetable . 'prop');
   $fkcol = key($table_desc['foreign keys'][$basetable]['columns']);
 
   // construct the array of values to be inserted
@@ -1660,7 +1662,7 @@ function tripal_core_update_property($basetable, $record_id, $property,
   }
 
   // get the foreign key for this property table
-  $table_desc = module_invoke_all('chado_' . $basetable . 'prop_schema');
+  $table_desc = tripal_core_get_chado_table_schema($basetable . 'prop');
   $fkcol = key($table_desc['foreign keys'][$basetable]['columns']);
 
   // construct the array that will match the exact record to update
@@ -1710,7 +1712,7 @@ function tripal_core_update_property_by_id($basetable, $record_id, $property,
   $cv_name, $value) {
 
   // get the primary key for this property table
-  $table_desc = module_invoke_all('chado_' . $basetable . 'prop_schema');
+  $table_desc = tripal_core_get_chado_table_schema($basetable . 'prop');
   $pkcol = $table_desc['primary key'][0];
 
   // construct the array that will match the exact record to update
@@ -1755,7 +1757,7 @@ function tripal_core_update_property_by_id($basetable, $record_id, $property,
 function tripal_core_delete_property($basetable, $record_id, $property, $cv_name) {
 
   // get the foreign key for this property table
-  $table_desc = module_invoke_all('chado_' . $basetable . 'prop_schema');
+  $table_desc = tripal_core_get_chado_table_schema($basetable . 'prop');
   $fkcol = key($table_desc['foreign keys'][$basetable]['columns']);
 
   // construct the array that will match the exact record to update
@@ -1789,7 +1791,7 @@ function tripal_core_delete_property($basetable, $record_id, $property, $cv_name
 function tripal_core_delete_property_by_id($basetable, $record_id) {
 
   // get the foreign key for this property table
-  $table_desc = module_invoke_all('chado_' . $basetable . 'prop_schema');
+  $table_desc = tripal_core_get_chado_table_schema($basetable . 'prop');
   $pkcol = $table_desc['primary key'][0];
 
   // construct the array that will match the exact record to update
@@ -2166,3 +2168,122 @@ function tripal_core_chado_schema_exists() {
   }
 }
 
+/**
+ * Retrieves the list tables in the Chado schema.  By default it only retursn
+ * the default Chado tables, but may also return custom tables added to the
+ * Chado schema as well.
+ *
+ * @param $include_custom
+ *   Optional.  Set as TRUE to include any custom tables created in the
+ *   Chado schema. Custom tables are added to Chado using the
+ *   tripal_core_chado_create_table() function.
+ *
+ * @returns
+ *   An associative array where the key and value pairs are the Chado table names.
+ *
+ * @ingroup tripal_core_api
+ */
+function tripal_core_get_chado_tables($include_custom = NULL) {
+
+  if (is_array($db_url) AND array_key_exists('chado', $db_url)) {
+    $previous_db = tripal_db_set_active('chado');
+    // @coder-ignore: acting on pg_catalog schema rather then drupal schema therefore, table prefixing does not apply
+    $sql = 'SELECT tablename FROM pg_tables';
+    $resource = db_query($sql);
+    tripal_db_set_active($previous_db);
+  }
+  else {
+    // @coder-ignore: acting on pg_catalog schema rather then drupal schema therefore, table prefixing does not apply
+    $sql = "SELECT tablename FROM pg_tables WHERE schemaname='chado'";
+    $resource = db_query($sql);
+  }
+
+  $tables = array();
+  while ($r = db_fetch_object($resource)) {
+    $tables[$r->tablename] = $r->tablename;
+  }
+
+  // now add in the custom tables too
+  if ($include_custom) {
+    $sql = "SELECT table_name FROM {tripal_custom_tables}";
+    $resource = db_query($sql);
+  }
+  while ($r = db_fetch_object($resource)) {
+    $tables[$r->table_name] = $r->table_name;
+  }
+
+  asort($tables);
+  return $tables;
+}
+/**
+ * Retrieves the version number of the Chado schema.  
+ *
+ * @returns
+ *   The numeric version of Chado
+ *
+ * @ingroup tripal_core_api
+ */
+function tripal_core_get_chado_version () {
+
+  // check that Chado is installed if not return 'uninstalled as the version'
+  $chado_exists = tripal_core_chado_schema_exists();
+  if(!$chado_exists){
+     return 'not installed';
+  }
+
+  // if the table doesn't exist then we don't know what version but we know
+  // it must be 1.11 or older.
+  $previous_db = tripal_db_set_active('chado');
+  $prop_exists = db_table_exists('chadoprop');
+  tripal_db_set_active($previous_db);
+  if(!$prop_exists){
+     return "1.11 or older";
+  }
+  
+  // we can't use the Tripal API to query this table
+  // because the Tripal API depends on this fucntion to 
+  // tell it the version. So, we need a typical SQL statement
+  $sql = "SELECT value "
+        ."FROM chadoprop CP "
+        ."  INNER JOIN cvterm CVT on CVT.cvterm_id = CP.type_id "
+        ."  INNER JOIN cv CV on CVT.cv_id = CV.cv_id "
+        ."WHERE CV.name = 'chado_properties' and CVT.name = 'version'";
+  $previous_db = tripal_db_set_active('chado');
+  $v = db_fetch_object(db_query($sql));
+  $previous_db = tripal_db_set_active('chado');
+  
+  // if we don't have a version in the chadoprop table then it must be 
+  // v1.11 or older 
+  if(!$v->value){
+     return "1.11 or older";
+  }
+  return $v->value;
+}
+/**
+ * Retrieves the chado tables Schema API array.  
+ *
+ * @param $table
+ *   The name of the table to retrieve.  The function will use the appopriate
+ *   Tripal chado schema API hooks (e.g. v1.11 or v1.2).
+ *
+ * @returns
+ *   A Drupal Schema API array defining the table.
+ *
+ * @ingroup tripal_core_api
+ */
+function tripal_core_get_chado_table_schema($table) {
+
+   // first get the chado version that is installed
+   $v = tripal_core_get_chado_version();
+   
+   // Tripal only supports v1.11 or newer
+   if(strcmp($v,'1.11 or older')==0){
+      $v = "1.11";
+   }
+
+   // get the table array from the proper chado schema
+   $v = preg_replace("/\./","_",$v); // reformat version for hook name
+   $table_arr = module_invoke_all("chado_schema_v".$v."_" . $table);
+
+   return $table_arr;
+}

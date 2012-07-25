@@ -23,20 +23,21 @@ function tripal_views_menu() {
     'type' => MENU_NORMAL_ITEM,
   );
 
-  $items['admin/tripal/views/integration'] = array(
-    'title' => 'Integrated Tables',
+  $items['admin/tripal/views/integration/list'] = array(
+    'title' => 'List of Integrated Tables',
     'description' => 'Provide a list of all integrated tables and allows for adding new tables or editing already integrated tables.',
     'page callback' => 'tripal_views_integration_setup_list',
     'access arguments' => array('manage tripal_views_integration'),
     'type' => MENU_NORMAL_ITEM,
+    'weight' => 0,
   );
 
   $items['admin/tripal/views/integration/new'] = array(
-    'title' => 'Integrate Views',
+    'title' => 'Integrate A Table',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_views_integration_form'),
     'access arguments' => array('manage tripal_views_integration'), //TODO: figure out the proper permissions arguments
-    'type' => MENU_CALLBACK,
+    'type' => MENU_NORMAL_ITEM,
   );
 
   $items['admin/tripal/views/integration/edit/%'] = array(

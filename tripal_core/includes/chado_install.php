@@ -12,17 +12,11 @@
  */
 function tripal_core_chado_load_form() {
 
-  $form['description'] = array(
+  $version = tripal_core_get_chado_version();
+  $form['current_version'] = array(
     '#type' => 'item',
-    '#value' => t("<font color=\"red\">WARNING:</font> A new install of Chado v1.2 or v1.11 "
-      ."will install Chado within the Drupal database in a \"chado\" schema. If the \"chado\" schema already exists it will "
-      ."be overwritten and all data will be lost.  You may choose to update an existing Chado v1.11 if it was installed with a previous "
-      ."version of Tripal (e.g. v0.3b or v0.3.1). The update will not erase any data. "
-      ."If you are using chado in a database external to the "
-      ."Drupal database with a 'chado' entry in the 'settings.php' \$db_url argument "
-      ."then Chado will be installed but will not be used .  The external "
-      ."database specified in the settings.php file takes precedence."),
-    '#weight' => 1,
+    '#title' => t("Current installed version of Chado"),
+    '#value' => $version,
   );
 
   $form['action_to_do'] = array(
@@ -35,7 +29,18 @@ function tripal_core_chado_load_form() {
      ),
      '#description' => t('Select an action to perform'),
      '#required' => TRUE
-     
+  );
+
+  $form['description'] = array(
+    '#type' => 'item',
+    '#value' => t("<font color=\"red\">WARNING:</font> A new install of Chado v1.2 or v1.11 "
+      ."will install Chado within the Drupal database in a \"chado\" schema. If the \"chado\" schema already exists it will "
+      ."be overwritten and all data will be lost.  You may choose to update an existing Chado v1.11 if it was installed with a previous "
+      ."version of Tripal (e.g. v0.3b or v0.3.1). The update will not erase any data. "
+      ."If you are using chado in a database external to the "
+      ."Drupal database with a 'chado' entry in the 'settings.php' \$db_url argument "
+      ."then Chado will be installed but will not be used .  The external "
+      ."database specified in the settings.php file takes precedence."),
   );
 
   $form['button'] = array(
@@ -68,12 +73,20 @@ function tripal_core_chado_load_form_submit($form, &$form_state) {
  */
 function tripal_core_install_chado($action) {
 
+  $vsql = "INSERT INTO chadoprop (type_id, value) VALUES  "
+        ."((SELECT cvterm_id "
+        ."FROM cvterm CVT "
+        ." INNER JOIN cv CV on CVT.cv_id = CV.cv_id "
+        ."WHERE CV.name = 'chado_properties' AND CVT.name = 'version'), "
+        ."'%s') ";
+
   if($action == 'Install Chado v1.2'){
     $schema_file = drupal_get_path('module', 'tripal_core') . '/chado_schema/default_schema-1.2.sql';
     $init_file = drupal_get_path('module', 'tripal_core') . '/chado_schema/initialize-1.2.sql';
     if (tripal_core_reset_chado_schema()) {
       tripal_core_install_sql($schema_file);
       tripal_core_install_sql($init_file);
+      db_query($vsql,'1.2'); # set the version
     }
     else {
       print "ERROR: cannot install chado.  Please check database permissions\n";
@@ -82,9 +95,10 @@ function tripal_core_install_chado($action) {
   }
   elseif($action == 'Upgrade Chado v1.11 to v1.2') {
     $schema_file = drupal_get_path('module', 'tripal_core') . '/chado_schema/default_schema-1.11-1.2-diff.sql';
-    $init_file = drupal_get_path('module', 'tripal_core') . '/chado_schema/initialize-1.11-1.2.sql';
-#    tripal_core_install_sql($schema_file);
+    $init_file = drupal_get_path('module', 'tripal_core') . '/chado_schema/upgrade-1.11-1.2.sql';
+    tripal_core_install_sql($schema_file);
     tripal_core_install_sql($init_file);
+    db_query($vsql,'1.2'); # set the version
   }
   elseif($action == 'Install Chado v1.11'){
     $schema_file = drupal_get_path('module', 'tripal_core') . '/chado_schema/default_schema-1.11.sql';

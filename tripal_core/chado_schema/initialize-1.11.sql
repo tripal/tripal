@@ -228,5 +228,3 @@ insert into cv (name,definition) values ('autocreated','Terms that are automatic
                                 query TEXT,
                                 special_index TEXT
                                 );
-
-

@@ -732,9 +732,9 @@ function chado_organism_insert($node) {
         array('%values' => print_r($values, TRUE)),
         WATCHDOG_WARNING
       );
-    return;
+      return;
     }
-  $organism_id = $organism['organism_id'];
+    $organism_id = $organism['organism_id'];
   }
   else {
     $organism_id = $node->organism_id;
@@ -769,7 +769,6 @@ function chado_organism_update($node) {
   if ($node->revision) {
     // TODO -- decide what to do about revisions
   }
-
   $match = array(
     'organism_id' => chado_get_id_for_node('organism', $node),
   );

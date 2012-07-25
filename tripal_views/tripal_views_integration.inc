@@ -17,8 +17,9 @@ function tripal_views_description_page() {
 
   $text .= '<h3>Tripal Views Quick Links:</h3>';
   $text .= "<ul>
-             <li><a href=\"" . url("admin/tripal/views/integration/mviews")  .  "\">List of integrated tables</a></li>
-             <li><a href=\"" . url("admin/tripal/views/integration/mviews/new") .  "\">Integrate a new table</a></li>
+             <li><a href=\"" . url("admin/tripal/views/integration/list")  .  "\">List of integrated tables</a></li>
+             <li><a href=\"" . url("admin/tripal/views/integration/new") .  "\">Integrate a new table</a></li>
+             <li><a href=\"" . url("admin/tripal/views/integration/import") .  "\">Import a previously exported table integration.</a></li>
            </ul>";
 
   $text .= '<h3>Views Integration Description:</h3>';
@@ -409,7 +410,7 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL) {
       $columns = explode(",", $mview->mv_specs);
     }
     else {
-      $table_desc = module_invoke_all('chado_' . $table_name .  '_schema');
+      $table_desc = tripal_core_get_chado_table_schema($table_name);
       if ($table_desc) {
         $fields = $table_desc['fields'];
         // iterate through the columns and build the format
@@ -586,7 +587,7 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL) {
       if ($default_join_table) {
         // get the table description in the typical way and if it returns
         // nothing then get the custom table description
-        $table_desc = module_invoke_all('chado_' . $default_join_table . '_schema');
+        $table_desc = tripal_core_get_chado_table_schema($default_join_table);
         if (!$table_desc) {
           $table_desc = tripal_get_chado_custom_schema($default_join_table);
         }
