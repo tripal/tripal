@@ -325,27 +325,18 @@ function tripal_stock_show_stocks() {
 function theme_tripal_stock_stock_table(&$stocks) {
 
   // cycle through the stocks and build the stocks page
-  $output = "<div id=\"stocks\">";
-  $output .= '<table>';
-  $output .= "<tr>";
-  $output .= "<th>Name</th>";
-  $output .= "<th>Type</th>";
-  $output .= "<th>Organism</th>";
-  $output .= "<th>Description</th>";
-  $output .= "</tr>";
-
+  $header = array('Name', 'Type','Organism','Description');
+  $rows = array();
   foreach ($stocks as $node) {
     $output .= "<tr>";
-    $output .= "<td>" . l($node->stock->name, "node/" . $node->nid) . "</td>";
-    $output .= "<td>" . $node->stock->type_id->name . "</td>";
-    $output .= "<td nowrap>" . $node->stock->organism_id->common_name . "</td>";
-    $output .= "<td>" . $node->stock->description . "</td>";
-    $output .= "</tr>";
+    $rows[]= array(
+       l($node->stock->name, "node/" . $node->nid),
+       $node->stock->type_id->name,
+       $node->stock->organism_id->common_name,
+       $node->stock->description
+    );
   }
-  $output .= "</table>";
-  $output .= "</div>";
-
-  return $output;
+  return theme('table', $header, $rows);
 }
 
 /**

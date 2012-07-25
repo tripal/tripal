@@ -96,13 +96,6 @@ function tripal_organism_block($op = 'list', $delta = '0', $edit = array()) {
 function tripal_organism_menu() {
   $items = array();
 
-  $items['organisms'] = array(
-    'menu_name' => ('primary-links'), //Enable the 'Organism' primary link
-    'title' => 'Organisms',
-    'page callback' => 'tripal_organism_show_organisms',
-    'access arguments' => array('access chado_organism content'),
-    'type' => MENU_NORMAL_ITEM
-  );
   // the administative settings menu
   $items['admin/tripal/tripal_organism'] = array(
    'title' => 'Organisms',
@@ -633,9 +626,6 @@ function tripal_organism_admin_validate($form, &$form_state) {
  */
 function tripal_organism_theme() {
   return array(
-    'tripal_organism_organism_page' => array(
-       'arguments' => array('organisms'),
-    ),
     'tripal_organism_base' => array(
        'arguments' => array('node' => NULL),
        'template' => 'tripal_organism_base',
@@ -1071,63 +1061,6 @@ function tripal_organism_help($path, $arg) {
   return $output;
 }
 
-/**
- * Display the summary view of organisms when click on the 'Organisms'
- * primary-link
- *
- * @ingroup tripal_organism
- */
-function tripal_organism_show_organisms() {
-  // Show libraries stored in Drupal's {chado_organism} table
-  $sql = "SELECT COUNT(organism_id) FROM {chado_organism}";
-  $no_orgs = db_result(db_query($sql));
-  if ($no_orgs != 0) {
-    $organisms = get_chado_organisms();
-    return theme('tripal_organism_organism_page', $organisms);
-  }
-  else {
-    return t("No organism exists. Please contact administrators to " .
-             "synchronize organisms.");
-  }
-}
-/**
- *
- * @ingroup tripal_organism
- */
-function theme_tripal_organism_organism_page($organisms) {
-
-  $output = "<br /><a id=\"tripal_expandableBox_toggle_button\" onClick=\"toggleExpandableBoxes()\">[-] Collapse All</a>";
-  foreach ($organisms as $organism) {
-    // Prepare information for html output
-    $org_url = url("node/$organism->node_id");
-
-    // Generate html output
-    $output .= "<div class=\"tripal_chado_organism-info-box\" style=\"padding:5px\">
-                       <div class=\"tripal_expandableBox\">
-                         <h3>$organism->common_name</h3>
-                       </div>
-                       <div class=\"tripal_expandableBoxContent\">
-                         <span>
-                           <table class=\"tripal_chado_analysis_content\">
-                             <tr><td>
-                               Name: <a href=\"$org_url\">$organism->common_name</a>
-                             </td></tr>
-                             <tr><td>
-                               Genus: $organism->genus
-                             </td></tr>
-                             <tr><td>
-                               Species: $organism->species
-                             </td></tr>
-                             <tr><td>
-                               Description: $organism->comment
-                             </td></tr>
-                           </table>
-                         </span>
-                       </div>
-                     </div>";
-  }
-  return $output;
-}
 
 /**
  * This function uses organism_id's of all drupal organism nodes as input and
