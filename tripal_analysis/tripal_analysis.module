@@ -274,62 +274,60 @@ function chado_analysis_update($node) {
   if ($node->revision) {
     // TODO -- decide what to do about revisions
   }
-  else {
-    // Create a timestamp so we can insert it into the chado database
-    $time = $node->timeexecuted;
-    $month = $time['month'];
-    $day = $time['day'];
-    $year = $time['year'];
-    $timestamp = $month . '/' . $day . '/' . $year;
+  // Create a timestamp so we can insert it into the chado database
+  $time = $node->timeexecuted;
+  $month = $time['month'];
+  $day = $time['day'];
+  $year = $time['year'];
+  $timestamp = $month . '/' . $day . '/' . $year;
 
-    // get the analysis_id for this node:
-    $sql = "SELECT analysis_id ".
-             "FROM {chado_analysis} ".
-             "WHERE nid = %d";
-    $analysis_id = db_fetch_object(db_query($sql, $node->nid))->analysis_id;
+  // get the analysis_id for this node:
+  $sql = "SELECT analysis_id ".
+           "FROM {chado_analysis} ".
+           "WHERE nid = %d";
+  $analysis_id = db_fetch_object(db_query($sql, $node->nid))->analysis_id;
 
-    $sql = "UPDATE {analysis} ".
-             "SET name = '%s', ".
-             "    description = '%s', ".
-             "    program = '%s', ".
-             "    programversion = '%s', ".
-             "    algorithm = '%s', ".
-             "    sourcename = '%s', ".
-             "    sourceversion = '%s', ".
-             "    sourceuri = '%s', ".
-             "    timeexecuted = '%s' ".
-             "WHERE analysis_id = %d ";
+  $sql = "UPDATE {analysis} ".
+           "SET name = '%s', ".
+           "    description = '%s', ".
+           "    program = '%s', ".
+           "    programversion = '%s', ".
+           "    algorithm = '%s', ".
+           "    sourcename = '%s', ".
+           "    sourceversion = '%s', ".
+           "    sourceuri = '%s', ".
+           "    timeexecuted = '%s' ".
+           "WHERE analysis_id = %d ";
 
-    $previous_db = tripal_db_set_active('chado');  // use chado database
-    db_query($sql, $node->analysisname, $node->description, $node->program,
-    $node->programversion, $node->algorithm, $node->sourcename,
-    $node->sourceversion, $node->sourceuri, $timestamp, $analysis_id);
-      tripal_db_set_active($previous_db);  // switch back to drupal database
+  $previous_db = tripal_db_set_active('chado');  // use chado database
+  db_query($sql, $node->analysisname, $node->description, $node->program,
+  $node->programversion, $node->algorithm, $node->sourcename,
+  $node->sourceversion, $node->sourceuri, $timestamp, $analysis_id);
+    tripal_db_set_active($previous_db);  // switch back to drupal database
 
-    // Create a title for the analysis node using the unique keys so when the
-    // node is saved, it will have a title
-    $record = new stdClass();
-    // If the analysis has a name, use it as the node title. If not, construct
-    // the title using program, programversion, and sourcename
-    if ($node->analysisname) {
-      $record->title = $node->analysisname;
-    }
-    else {
-      //Construct node title as "program (version)
-      $record->title = "$node->program ($node->programversion)";
-    }
-
-    if ($node->setpermissions) {
-      $job_args[0] = $analysis_id;
-      $job_args[1] = $node->nid;
-      tripal_add_job("Set permission for analysis associated features", 'tripal_analysis',
-                                  'tripal_analysis_set_feature_permission', $job_args, $user->uid);
-    }
-
-    $record->nid = $node->nid;
-    drupal_write_record('node', $record, 'nid');
-    drupal_write_record('node_revisions', $record, 'nid');
+  // Create a title for the analysis node using the unique keys so when the
+  // node is saved, it will have a title
+  $record = new stdClass();
+  // If the analysis has a name, use it as the node title. If not, construct
+  // the title using program, programversion, and sourcename
+  if ($node->analysisname) {
+    $record->title = $node->analysisname;
   }
+  else {
+    //Construct node title as "program (version)
+    $record->title = "$node->program ($node->programversion)";
+  }
+
+  if ($node->setpermissions) {
+    $job_args[0] = $analysis_id;
+    $job_args[1] = $node->nid;
+    tripal_add_job("Set permission for analysis associated features", 'tripal_analysis',
+                                'tripal_analysis_set_feature_permission', $job_args, $user->uid);
+  }
+
+  $record->nid = $node->nid;
+  drupal_write_record('node', $record, 'nid');
+  drupal_write_record('node_revisions', $record, 'nid');
 }
 
 /**
