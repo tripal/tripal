@@ -51,7 +51,7 @@ class chado_views_handler_filter_date extends views_handler_filter_date {
 
     // Check whether we have a UNIX timestamp or an ISO Timestamp
     $check = db_fetch_object(db_query("SELECT $this->real_field as val FROM $this->table WHERE $this->real_field IS NOT NULL LIMIT 1"));
-    if (preg_match('/^\d+$/',$check->val)) {
+    if (preg_match('/^\d+$/', $check->val)) {
       // this is a unix timestamp
       $is_unix = TRUE;
     }
@@ -103,7 +103,7 @@ class chado_views_handler_filter_date extends views_handler_filter_date {
 
     // Check whether we have a UNIX timestamp or an ISO Timestamp
     $check = db_fetch_object(db_query("SELECT $this->real_field as val FROM $this->table WHERE $this->real_field IS NOT NULL LIMIT 1"));
-    if (preg_match('/^\d+$/',$check->val)) {
+    if (preg_match('/^\d+$/', $check->val)) {
       // this is a unix timestamp
       $is_unix = TRUE;
     }

@@ -1057,8 +1057,7 @@ function tripal_core_generate_chado_var($table, $values, $base_options = array()
       if (db_table_exists('chado_' . $table)) {
         // that has a foreign key to this one ($table_desc['primary key'][0]
         // and to the node table (nid)
-        // @coder-ignore: acting on chado schema rather then drupal schema therefore, table prefixing does not apply
-        $sql = "SELECT %s, nid FROM chado_%s WHERE %s=%d";
+        $sql = "SELECT %s, nid FROM {chado_%s} WHERE %s=%d";
         $mapping = db_fetch_object(db_query(
           $sql,
           $table_primary_key,
@@ -1264,7 +1263,7 @@ function tripal_core_expand_chado_vars($object, $type, $to_expand, $table_option
             // than once with the same table we want to alter the
             // array structure
             if (count($foreign_table_desc['foreign keys'][$base_table]['columns']) > 1) {
-              if(!is_object($object->{$foreign_table})){
+              if (!is_object($object->{$foreign_table})) {
                  $object->{$foreign_table} = new stdClass();
               }
               $object->{$foreign_table}->{$left} = $foreign_object;

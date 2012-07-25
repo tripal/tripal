@@ -1346,7 +1346,7 @@ function tripal_feature_load_featureloc_sequences($feature_id, $featurelocs) {
  *
  * @ingroup tripal_feature
  */
-function tripal_feature_get_matched_alignments($feature){
+function tripal_feature_get_matched_alignments($feature) {
   // This function is for features that align through an intermediate such
   // as 'EST_match' or 'match'.  This occurs in the case where two sequences
   // align but where one does not align perfectly.  Some ESTs may be in a contig
@@ -1399,11 +1399,11 @@ function tripal_feature_get_matched_alignments($feature){
           "  AND (CVT2.name = 'match' or CVT2.name like '%_match') ".
           "ORDER BY FL1.fmin";
 
-   $results = db_query($sql,$feature->feature_id,$feature->feature_id);
+   $results = db_query($sql, $feature->feature_id, $feature->feature_id);
    
    // iterate through the results and add them to our featurelocs array
    $featurelocs = array();
-   while($fl = db_fetch_object($results)){
+   while ($fl = db_fetch_object($results)) {
       $featurelocs[] = $fl ;
    }   
    return $featurelocs;
@@ -1918,14 +1918,16 @@ function tripal_feature_preprocess_tripal_feature_alignments(&$variables) {
   $cfeaturelocs = $feature->featureloc->feature_id;
   if (!$cfeaturelocs) {
      $cfeaturelocs = array();
-  } elseif (!is_array($cfeaturelocs)) { 
+  } 
+  elseif (!is_array($cfeaturelocs)) { 
      $cfeaturelocs = array($cfeaturelocs); 
   }
   // get alignment as parent
   $pfeaturelocs = $feature->featureloc->srcfeature_id;
   if (!$pfeaturelocs) {
      $pfeaturelocs = array();
-  } elseif (!is_array($pfeaturelocs)) { 
+  } 
+  elseif (!is_array($pfeaturelocs)) { 
      $pfeaturelocs = array($pfeaturelocs); 
   }
 
@@ -1936,9 +1938,9 @@ function tripal_feature_preprocess_tripal_feature_alignments(&$variables) {
   // combine all three alignments into a single array for printing together in
   // a single list
   $alignments = array();
-  foreach ($pfeaturelocs as $featureloc){
+  foreach ($pfeaturelocs as $featureloc) {
      // if type is a 'match' then ignore it. We will handle those below
-     if(preg_match('/(^match$|^.*?_match)$/',$featureloc->feature_id->type_id->name)){
+     if (preg_match('/(^match$|^.*?_match)$/', $featureloc->feature_id->type_id->name)) {
         continue;
      }
      $alignment = new stdClass();
@@ -1952,9 +1954,9 @@ function tripal_feature_preprocess_tripal_feature_alignments(&$variables) {
      $alignment->strand = $featureloc->strand;
      $alignments[] = $alignment;
   }
-  foreach ($cfeaturelocs as $featureloc){
+  foreach ($cfeaturelocs as $featureloc) {
      // if type is a 'match' then ignore it. We will handle those below
-     if(preg_match('/(^match$|^.*?_match)$/',$featureloc->feature_id->type_id->name)){
+     if (preg_match('/(^match$|^.*?_match)$/', $featureloc->feature_id->type_id->name)) {
         continue;
      }
      $alignment = new stdClass();
@@ -1972,10 +1974,10 @@ function tripal_feature_preprocess_tripal_feature_alignments(&$variables) {
   }
   // in matching features, the left feature is always the feature
   // provided to this function. 
-  foreach ($mfeaturelocs as $featureloc){
+  foreach ($mfeaturelocs as $featureloc) {
      // get more information about the right feature
      $select = array('feature_id' => $featureloc->right_srcfeature_id);
-     $rfeature = tripal_core_generate_chado_var('feature',$select);
+     $rfeature = tripal_core_generate_chado_var('feature', $select);
      // now add to the list
      $alignment = new stdClass();
      $alignment->record = $featureloc;

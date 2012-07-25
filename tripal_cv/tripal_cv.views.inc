@@ -42,7 +42,7 @@ function tripal_cv_views_data() {
     foreach ($tables as $tablename) {
       if (!tripal_views_is_integrated($tablename, 10)) {
         // get default integration array
-        $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename,TRUE);
+        $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename, TRUE);
 
         // add specialty handlers
         if ($tablename == 'cvterm') {

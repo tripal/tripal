@@ -88,12 +88,12 @@ class chado_views_handler_field_date extends views_handler_field_date {
 
     // Check the format of the date is a UNIX timestamp and otherwise convert
     if (!is_array($values->{$this->field_alias})) {
-      if (!preg_match('/^\d+$/',$values->{$this->field_alias})) {
+      if (!preg_match('/^\d+$/', $values->{$this->field_alias})) {
          $values->{$this->field_alias} = strtotime($values->{$this->field_alias});
       }
     }
     else {
-      if (!preg_match('/^\d+$/',$values->{$this->field_alias}[0])) {
+      if (!preg_match('/^\d+$/', $values->{$this->field_alias}[0])) {
         foreach ($values->{$this->field_alias} as $k => $v) {
          $values->{$this->field_alias}[$k] = strtotime($v);
         }

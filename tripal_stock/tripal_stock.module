@@ -325,7 +325,7 @@ function tripal_stock_show_stocks() {
 function theme_tripal_stock_stock_table(&$stocks) {
 
   // cycle through the stocks and build the stocks page
-  $header = array('Name', 'Type','Organism','Description');
+  $header = array('Name', 'Type', 'Organism', 'Description');
   $rows = array();
   foreach ($stocks as $node) {
     $output .= "<tr>";

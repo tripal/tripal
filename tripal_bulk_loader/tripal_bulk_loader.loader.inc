@@ -295,7 +295,7 @@ function tripal_bulk_loader_load_data($nid, $job_id) {
       chado_query("LOCK TABLE %s IN %s MODE", $table, $lockmode);
     }
 
-    tripal_bulk_loader_progress_bar(0,$total_lines);
+    tripal_bulk_loader_progress_bar(0, $total_lines);
     while (!feof($file_handle)) {
 
       // Clear variables
@@ -317,7 +317,7 @@ function tripal_bulk_loader_load_data($nid, $job_id) {
       if ($node->job_id and $num_lines % $interval == 0) {
         // percentage of lines processed for the current group
         $group_progress = round(($num_lines/$total_lines)*100);
-        tripal_bulk_loader_progress_bar($num_lines,$total_lines);
+        tripal_bulk_loader_progress_bar($num_lines, $total_lines);
         // percentage of lines processed for all groups
         // <previous group index> * 100 + <current group progress>
         // --------------------------------------------------------
@@ -386,7 +386,7 @@ function tripal_bulk_loader_load_data($nid, $job_id) {
       break;
     }
 
-    tripal_bulk_loader_progress_bar($total_lines,$total_lines);
+    tripal_bulk_loader_progress_bar($total_lines, $total_lines);
     tripal_bulk_loader_progress_file_track_job($job_id, FALSE, FALSE, TRUE);
   } //end of foreach constant set
 
@@ -732,22 +732,22 @@ function tripal_bulk_loader_flatten_array($values) {
 function tripal_bulk_loader_progress_bar($current=0, $total=100, $size=50) {
 
   // First iteration
-  if($current == 0) {
+  if ($current == 0) {
     $new_bar = TRUE;
-    fputs(STDOUT,"Progress:\n");
+    fputs(STDOUT, "Progress:\n");
   }
 
   //Percentage round off for a more clean, consistent look
-  $perc = round(($current/$total)*100,2);
+  $perc = round(($current/$total)*100, 2);
   // percent indicator must be four characters, if shorter, add some spaces
-  for($i=strlen($perc); $i<=4; $i++) {
-    $perc = ' '.$perc;
+  for ($i = strlen($perc); $i <= 4; $i++) {
+    $perc = ' ' . $perc;
   }
 
   $total_size = $size + $i + 3 + 2;
   // if it's not first go, remove the previous bar
-  if(!$new_bar) {
-    for($place = $total_size; $place > 0; $place--) {
+  if (!$new_bar) {
+    for ($place = $total_size; $place > 0; $place--) {
       // echo a backspace (hex:08) to remove the previous character
       echo "\x08";
     }
@@ -756,9 +756,9 @@ function tripal_bulk_loader_progress_bar($current=0, $total=100, $size=50) {
   // output the progess bar as it should be
   // Start with a border
   echo '[';
-  for($place = 0; $place <= $size; $place++) {
+  for ($place = 0; $place <= $size; $place++) {
     // output "full" spaces if this portion is completed
-    if($place <= ($current / $total * $size)) {
+    if ($place <= ($current / $total * $size)) {
       echo '|';
     }
     else {
@@ -773,7 +773,7 @@ function tripal_bulk_loader_progress_bar($current=0, $total=100, $size=50) {
   echo " $perc%";
 
   // if it's the end, add a new line
-  if($current == $total) {
+  if ($current == $total) {
     echo "\n";
   }
 
@@ -801,20 +801,20 @@ function tripal_bulk_loader_progress_bar($current=0, $total=100, $size=50) {
  */
 function tripal_bulk_loader_progress_file_track_job($job_id, $record_added, $line_complete = FALSE, $close = FALSE) {
   // retrieve the file handle
-  $file_handle = variable_get('tripal_bulk_loader_progress_file_handle',NULL);
+  $file_handle = variable_get('tripal_bulk_loader_progress_file_handle', NULL);
 
   // open file for reading if not already
   if (!$file_handle) {
-    $file_handle = fopen('/tmp/tripal_bulk_loader_progress-'.$job_id.'.out', 'w');
+    $file_handle = fopen('/tmp/tripal_bulk_loader_progress-'. $job_id . '.out', 'w');
     variable_set('tripal_bulk_loader_progress_file_handle', $file_handle);
   }
 
   if ($record_added) {
-    fwrite($file_handle,'.');
+    fwrite($file_handle, '.');
   }
 
   if ($line_complete) {
-    fwrite($file_handle,"\n");
+    fwrite($file_handle, "\n");
   }
 
   // close the file if finished

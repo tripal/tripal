@@ -249,7 +249,7 @@ function tripal_core_job_describe_args($callback, $args) {
     $mview = db_fetch_object(db_query($sql, $args[0]));
     $new_args['View Name'] = $mview->name;
   }
-  elseif($callback == 'tripal_core_install_chado'){
+  elseif ($callback == 'tripal_core_install_chado') {
      $new_args['Action'] = $args[0];
   }
   return $new_args;

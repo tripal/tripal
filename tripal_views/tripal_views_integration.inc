@@ -433,9 +433,9 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL) {
     $i=1;
     $form['view_setup_table']["instructions"] = array(
          '#type' => 'markup',
-         '#value' => "Select an optional table to which the fields of the ".
+         '#value' => filter_xss("Select an optional table to which the fields of the ".
                      "materialized view can join.  If a field does not need to ".
-                     "join you may leave the selection blank.",
+                     "join you may leave the selection blank."),
     );
     $data['field_types'] = array();
 
@@ -492,7 +492,8 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL) {
       $form['view_setup_table']["$table_id-$i"] = array(
            '#type' => 'markup',
            '#prefix' => "<div class=\"fields-new-row\">",
-           '#suffix' => "</div>"
+           '#suffix' => "</div>",
+           '#value' => filter_xss('')
       );
 
       // COLUMN I
@@ -501,7 +502,7 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL) {
         '#prefix' => "<div class=\"column-one\">",
         '#value' => "<span class=\"column-name\">" . filter_xss($column_name) . "</span>".
                     "<br /><span class=\"column-type\">" . filter_xss($column_type) . "</span>",
-        '#suffix' => "</div>",
+        '#suffix' => "</div>",        
       );
       $data['field_types'][$column_name] = $column_type;
 
@@ -509,7 +510,8 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL) {
       $form['view_setup_table']["$table_id-$i"]['column-2'] = array(
            '#type' => 'markup',
            '#prefix' => "<div class=\"column-two\">",
-           '#suffix' => "</div>"
+           '#suffix' => "</div>",
+           '#value' => filter_xss('')
       );
 
       // set the default values for the human-readable name and description
@@ -546,7 +548,8 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL) {
       $form['view_setup_table']["$table_id-$i"]['column-3'] = array(
            '#type' => 'markup',
            '#prefix' => "<div class=\"column-three\">",
-           '#suffix' => "</div>"
+           '#suffix' => "</div>",
+           '#value' => filter_xss('')
       );
 
       // set the default values for the join table and columns
@@ -624,7 +627,8 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL) {
       $form['view_setup_table']["$table_id-$i"]['column-4'] = array(
         '#type' => 'markup',
         '#prefix' => "<div class=\"column-four\">",
-        '#suffix' => "</div>"
+        '#suffix' => "</div>",
+        '#value' => filter_xss('')
       );
 
       // create the handler fields
