@@ -183,13 +183,6 @@ function chado_analysis_insert($node) {
     drupal_write_record('node_revisions', $record, 'nid');
   }
 
-  if ($node->setpermissions) {
-    $job_args[0] = $analysis_id;
-    $job_args[1] = $node->nid;
-    tripal_add_job("Set permission for analysis associated features", 'tripal_analysis',
-                                'tripal_analysis_set_feature_permission', $job_args, $user->uid);
-  }
-
    // add the analysis to the node object for
    // use by other analysis modules that may be using this function
     $node->analysis = $analysis;
@@ -288,13 +281,6 @@ function chado_analysis_update($node) {
   else {
     //Construct node title as "program (version)
     $record->title = "$node->program ($node->programversion)";
-  }
-
-  if ($node->setpermissions) {
-    $job_args[0] = $analysis_id;
-    $job_args[1] = $node->nid;
-    tripal_add_job("Set permission for analysis associated features", 'tripal_analysis',
-                                'tripal_analysis_set_feature_permission', $job_args, $user->uid);
   }
 
   $record->nid = $node->nid;
@@ -452,15 +438,6 @@ function chado_analysis_form($node) {
          someone to recreate the analysis, including materials and methods
          for collection of the source data and performing the analysis'),
   );
-  /* Set permissions for all features associated with this analysis */
-  if (module_exists('node_privacy_byrole')) {
-    $form['setpermissions'] = array(
-        '#type' => 'checkbox',
-          '#title' => t('Submit a job to set the same permissions for all features associated with this analysis'),
-          '#default_value' => FALSE,
-         '#weight' => 10
-    );
-  }
 
   return $form;
 }
