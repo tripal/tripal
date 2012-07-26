@@ -361,13 +361,13 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id, $add_on
       if (strcmp($attr, '')==0) {
         continue;
       }
-      if (!preg_match('/^[^\=]+\=[^\=]+$/', $attr)) {
+      if (!preg_match('/^[^\=]+\=.+$/', $attr)) {
         print "ERROR: attribute is not correctly formatted on line $line_num: $attr\n";
         return '';
       }
 
       // break apart each tag
-      $tag = explode("=", $attr);  // split by equals sign
+      $tag = preg_split("/=/", $attr,2);  // split by equals sign
       // multiple instances of an attribute are separated by commas
       $tags[$tag[0]] = explode(",", $tag[1]);  // split by comma
       if (strcmp($tag[0], 'ID')==0) {

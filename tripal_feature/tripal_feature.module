@@ -13,19 +13,19 @@
  * @ingroup tripal_modules
  */
 
-require_once "tripal_feature.admin.inc";
-require_once "syncFeatures.php";
-require_once "indexFeatures.php";
-require_once "fasta_loader.php";
-require_once "gff_loader.php";
+require_once "includes/tripal_feature.admin.inc";
+require_once "includes/syncFeatures.inc";
+require_once "includes/indexFeatures.inc";
+require_once "includes/fasta_loader.inc";
+require_once "includes/gff_loader.inc";
 
-require_once "tripal_feature.api.inc";
+require_once "includes/tripal_feature.api.inc";
 
-require_once "tripal_feature-delete.inc";
-require_once "tripal_feature-secondary_tables.inc";
-require_once "tripal_feature-properties.inc";
-require_once "tripal_feature-relationships.inc";
-require_once "tripal_feature-db_references.inc";
+require_once "includes/tripal_feature-delete.inc";
+require_once "includes/tripal_feature-secondary_tables.inc";
+require_once "includes/tripal_feature-properties.inc";
+require_once "includes/tripal_feature-relationships.inc";
+require_once "includes/tripal_feature-db_references.inc";
 
 
 /**
