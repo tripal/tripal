@@ -43,7 +43,7 @@ function tripal_genetic_get_genotypes_by_feature_id($feature_id) {
 
 
 /**
- * Implements hook_chado_genotype_schema()
+ * Implements hook_chado_schema_v1_11_table()
  * Purpose: To add descriptions and foreign keys to default table description
  * Note: This array will be merged with the array from all other implementations
  *
@@ -52,7 +52,7 @@ function tripal_genetic_get_genotypes_by_feature_id($feature_id) {
  *
  * @ingroup tripal_schema_api
  */
-function tripal_genetic_chado_genotype_schema() {
+function tripal_genetic_chado_schema_v1_11_genotype() {
   $description = array();
 
   $referring_tables = array('analysisfeature',
@@ -67,9 +67,8 @@ function tripal_genetic_chado_genotype_schema() {
   return $description;
 
 }
-
 /**
- * Implements hook_chado_genotype_schema()
+ * Implements hook_chado_schema_v1_2_table()
  * Purpose: To add descriptions and foreign keys to default table description
  * Note: This array will be merged with the array from all other implementations
  *
@@ -78,30 +77,17 @@ function tripal_genetic_chado_genotype_schema() {
  *
  * @ingroup tripal_schema_api
  */
-function tripal_genetic_chado_feature_genotype_schema() {
+function tripal_genetic_chado_schema_v1_2_genotype() {
   $description = array();
 
-  $description['foreign keys']['feature'] = array(
-        'table' => 'feature',
-        'columns' => array(
-          'feature_id' => 'feature_id',
-          'chromosome_id' => 'feature_id',
-        ),
+  $referring_tables = array('analysisfeature',
+    'feature_genotype',
+    'phendesc',
+    'phenotype_comparison',
+    'phenstatement',
+    'stock_genotype',
   );
-
-  $description['foreign keys']['genotype'] = array(
-        'table' => 'genotype',
-        'columns' => array(
-          'genotype_id' => 'genotype_id',
-        ),
-  );
-
-  $description['foreign keys']['cvterm'] = array(
-        'table' => 'cvterm',
-        'columns' => array(
-          'cvterm_id' => 'cvterm_id',
-        ),
-  );
+  $description['referring_tables'] = $referring_tables;
 
   return $description;
 

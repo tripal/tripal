@@ -1,9 +1,9 @@
 <?php
 
-require_once "jobs.php";
-require_once "mviews.php";
-require_once "chado_install.php";
-require_once "tripal_core.api.inc";
+require_once "includes/jobs.php";
+require_once "includes/mviews.php";
+require_once "includes/chado_install.php";
+require_once "api/tripal_core.api.inc";
 
 /**
  * @defgroup tripal_modules Tripal Modules
@@ -249,7 +249,7 @@ function tripal_core_job_describe_args($callback, $args) {
     $mview = db_fetch_object(db_query($sql, $args[0]));
     $new_args['View Name'] = $mview->name;
   }
-  elseif($callback == 'tripal_core_install_chado'){
+  elseif ($callback == 'tripal_core_install_chado') {
      $new_args['Action'] = $args[0];
   }
   return $new_args;

@@ -390,7 +390,7 @@ function tripal_views_integrate_all_chado_tables() {
 function tripal_views_get_integration_array_for_chado_table($table_name, $base_table = TRUE, $priority = 9) {
 
   // Get the schema for this table (via the chado schema api)
-  $schema = module_invoke_all('chado_' . $table_name . '_schema');
+  $schema = tripal_core_get_chado_table_schema($table_name);
 
   // Base definition array
   $defn_array = array(

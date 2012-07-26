@@ -14,10 +14,10 @@ class chado_views_handler_field_aggregate extends chado_views_handler_field {
     parent::init($view, $options);
 
     if (!isset($this->chado_table_description)) {
-      $this->chado_table_description = module_invoke_all('chado_' . $this->table . '_schema');
+      $this->chado_table_description = tripal_core_get_chado_table_schema($this->table);
       foreach ($this->chado_table_description['foreign keys'] as $defn) {
         if ($defn['table'] != $this->view->base_table) {
-          $join_table = module_invoke_all('chado_' . $defn['table'] . '_schema');
+          $join_table = tripal_core_get_chado_table_schema($defn['table']);
           foreach ($join_table['fields'] as $fname => $f) {
             $this->chado_table_description['fields'][$defn['table'] . '_' . $fname] = $f;
           }

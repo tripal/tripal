@@ -367,7 +367,7 @@ function theme_tripal_bulk_loader_set_constants_form($form) {
     // @coder-ignore: no user input thus don't need to filter
     $form['exposed_fields']['existing'] = array(
       '#type' => 'markup',
-      '#value' => theme('table', $header, $rows, array('id' => 'mytable')) . '<br />'
+      '#value' => filter_xss(theme('table', $header, $rows, array('id' => 'mytable')) . '<br />'),
     );
   }
 

@@ -77,19 +77,19 @@ class chado_views_handler_filter_select_string extends chado_views_handler_filte
       // available to the user to edit--their fixed.
       $where = '';
       $filters = ($this->view->filter) ? $this->view->filter : array();
-      foreach($filters as $filter_name => $details){
+      foreach ($filters as $filter_name => $details) {
          // we only want to inclue non-exposed filters
-         if($details->options['exposed'] == FALSE){
+         if ($details->options['exposed'] == FALSE) {
             // we only want to filter on the table we're getting the list from
-            if(strcmp($details->table,$this->table)==0){
-              $where .= "$details->field $details->operator ". $details->value['value'];
+            if (strcmp($details->table, $this->table)==0) {
+              $where .= "$details->field $details->operator " . $details->value['value'];
               $where .= ' AND ';
             }
          }
       }
-      if($where){
+      if ($where) {
          $where = "WHERE $where";
-         $where = substr($where,0,-5); # remove the final ' AND '
+         $where = substr($where, 0, -5); # remove the final ' AND '
       }
 
       // get the values from the table

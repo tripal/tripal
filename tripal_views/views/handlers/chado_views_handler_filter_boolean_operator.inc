@@ -67,7 +67,7 @@ class chado_views_handler_filter_boolean_operator extends views_handler_filter_b
 
     // check if its a t/f or 1/0 boolean
     $check = db_fetch_object(db_query("SELECT %s as val FROM %s LIMIT 1", $this->real_field, $this->table));
-    if (preg_match('/^[tTfF]/',$check->val)) {
+    if (preg_match('/^[tTfF]/', $check->val)) {
       $true = 't';
       $false = 'f';
     }
@@ -83,17 +83,17 @@ class chado_views_handler_filter_boolean_operator extends views_handler_filter_b
       if ($this->options['agg']['records_with']) {
         $where = "$this->table_alias.$this->real_field ";
         if (empty($this->value)) {
-          $where .= "= '".$false."'";
+          $where .= "= '" . $false . "'";
           if ($this->accept_null) {
             $where = '(' . $where . " OR $this->table_alias.$this->real_field IS NULL)";
           }
         }
         else {
           if (!empty($this->definition['use equal'])) {
-            $where .= "= '".$true."'";
+            $where .= "= '" . $true . "'";
           }
           else {
-            $where .= "<> '".$false."'";
+            $where .= "<> '" . $false . "'";
           }
         }
         $this->query->add_where($this->options['group'], $where);

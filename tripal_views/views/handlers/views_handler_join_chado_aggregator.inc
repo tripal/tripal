@@ -59,7 +59,7 @@ class views_handler_join_chado_aggregator extends views_join {
       }
 
       // get table description (if defined via schema api)
-      $table_desc = module_invoke_all('chado_' . $this->definition['table'] . '_schema');
+      $table_desc = tripal_core_get_chado_table_schema($this->definition['table']);
       $select_fields[ $this->definition['table'] ] = $table_desc['fields'];
 
       if (!empty($table_desc)) {
@@ -75,7 +75,7 @@ class views_handler_join_chado_aggregator extends views_join {
             }
 
             // Fields to be selected from joined table
-            $join_table = module_invoke_all('chado_' . $defn['table'] . '_schema');
+            $join_table = tripal_core_get_chado_table_schema($defn['table']);
             $select_fields[ $defn['table'] ] = $join_table['fields'];
           }
         }

@@ -73,7 +73,7 @@ function tripal_organism_get_organism_by_organism_id($organism_id) {
  */
 
 /**
- * Implements hook_chado_organism_schema()
+ * Implements hook_chado_schema_v1_11_table()
  *
  * Purpose: To add descriptions and foreign keys to default table description
  * Note: This array will be merged with the array from all other implementations
@@ -83,7 +83,7 @@ function tripal_organism_get_organism_by_organism_id($organism_id) {
  *
  * @ingroup tripal_schema_api
  */
-function tripal_organism_chado_organism_schema() {
+function tripal_organism_chado_schema_v1_11_organism() {
   $description = array();
 
   $referring_tables = array(
@@ -102,35 +102,34 @@ function tripal_organism_chado_organism_schema() {
 }
 
 /**
- * Implements hook_chado_organismprop_schema()
+ * Implements hook_chado_schema_v1_2_table()
  *
  * Purpose: To add descriptions and foreign keys to default table description
  * Note: This array will be merged with the array from all other implementations
  *
  * @return
- *    Array describing the organismprop table
+ *    Array describing the organism table
  *
  * @ingroup tripal_schema_api
  */
-function tripal_organism_chado_organismprop_schema() {
+function tripal_organism_chado_schema_v1_2_organism() {
   $description = array();
 
-  $description['foreign keys']['cvterm'] = array(
-        'table' => 'cvterm',
-        'columns' => array(
-          'type_id' => 'cvterm_id',
-        ),
+  $referring_tables = array(
+    'biomaterial',
+    'feature',
+    'library',
+    'organism_dbxref',
+    'organismprop',
+    'phylonode_organism',
+    'stock',
+    'wwwuser_organism'
   );
-
-  $description['foreign keys']['organism'] = array(
-        'table' => 'organism',
-        'columns' => array(
-          'organism_id' => 'organism_id',
-        ),
-  );
+  $description['referring_tables'] = $referring_tables;
 
   return $description;
 }
+
 /**
  *  Returns a list of organisms that are currently synced with Drupal
  * @ingroup tripal_organism_api

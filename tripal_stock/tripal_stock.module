@@ -60,15 +60,6 @@ function tripal_stock_menu() {
     'type' => MENU_NORMAL_ITEM
   );
 
-  //Displaying stocks----------------------------
-  $items['stocks'] = array(
-    'menu_name' => ('primary-links'),
-    'title' => 'Stocks',
-    'page callback' => 'tripal_stock_show_stocks',
-    'access arguments' => array('access chado_stock content'),
-    'type' => MENU_NORMAL_ITEM,
-  );
-
   // Adding Secondary Properties-----------------
   $items['node/%cs_node/properties'] = array(
     'title' => 'Add Properties & Synonyms',
@@ -243,9 +234,7 @@ function tripal_stock_views_api() {
  */
 function tripal_stock_theme() {
   return array(
-    'tripal_stock_stock_table' => array(
-      'arguments' => array('stocks'),
-    ),
+
     // Property edit forms--------------------------
     'tripal_stock_edit_ALL_properties_form' => array(
       'arguments' => array('form'),
@@ -281,71 +270,6 @@ function tripal_stock_theme() {
       'template' => 'tripal_stock_synonyms',
     ),
   );
-}
-
-/**
- * Purpose: show stocks stored in drupals chado_stock table
- *
- * This function provides the default html representation of the stock table. This
- * representation can be overridden using Drupal Views2 to create more flexible tables
- * listing stocks.
- *
- * @return
- *   HTML representation of a table of stocks
- *
- * @ingroup tripal_stock
- */
-function tripal_stock_show_stocks() {
-  $sql = "SELECT COUNT(stock_id) FROM {chado_stock}";
-  $no_stocks = db_result(db_query($sql));
-  if ($no_stocks != 0) {
-    $stocks = tripal_stock_get_all_stocks();
-    if ($no_stocks != count($stocks)) {
-      drupal_set_message(t("Synchronization needed."));
-    }
-    return theme('tripal_stock_stock_table', &$stocks);
-  }
-  else {
-    return t("No Stocks exists. Please contact administrators to " .
-             "synchronize stocks.");
-  }
-}
-
-/**
- * A themeing funtion for the default tripal stock table
- *
- * @param $stocks
- *   An array of all stock nodes
- *
- * @return
- *   HTML representation of a table of stocks
- *
- * @ingroup tripal_stock
- */
-function theme_tripal_stock_stock_table(&$stocks) {
-
-  // cycle through the stocks and build the stocks page
-  $output = "<div id=\"stocks\">";
-  $output .= '<table>';
-  $output .= "<tr>";
-  $output .= "<th>Name</th>";
-  $output .= "<th>Type</th>";
-  $output .= "<th>Organism</th>";
-  $output .= "<th>Description</th>";
-  $output .= "</tr>";
-
-  foreach ($stocks as $node) {
-    $output .= "<tr>";
-    $output .= "<td>" . l($node->stock->name, "node/" . $node->nid) . "</td>";
-    $output .= "<td>" . $node->stock->type_id->name . "</td>";
-    $output .= "<td nowrap>" . $node->stock->organism_id->common_name . "</td>";
-    $output .= "<td>" . $node->stock->description . "</td>";
-    $output .= "</tr>";
-  }
-  $output .= "</table>";
-  $output .= "</div>";
-
-  return $output;
 }
 
 /**

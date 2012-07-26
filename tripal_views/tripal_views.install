@@ -18,6 +18,9 @@ function tripal_views_install() {
   // create the tables that manage materialized views and jobs
   drupal_install_schema('tripal_views');
 
+  // we want views to pick up our changes  
+  views_invalidate_cache();
+
 }
 
 /**
@@ -100,7 +103,7 @@ function tripal_views_update_6040() {
 function tripal_views_views_schema() {
   $schema = array();
   $schema['tripal_views'] = array(
-    'description' => 'contains the setupes, their materialized view id and base table name that was used.',
+    'description' => 'contains the setups, their materialized view id and base table name that was used.',
     'fields' => array(
       'setup_id' => array(
         'description' => 'the id of the setup',
@@ -113,8 +116,14 @@ function tripal_views_views_schema() {
         'type' => 'int',
         'unsigned' => TRUE,
       ),
+      'base_table' => array(
+         'description' => 'either TRUE (1) or FALSE (0) depending on whether the current table should be a bast table of a View',
+         'type' => 'int', 
+         'not null ' => TRUE,
+         'default' => 1
+      ),
       'table_name' => array(
-        'description' => 'the base table name to be used when using this setup. Use this field when not using a materialized view',
+        'description' => 'the table name being integrated.',
         'type' => 'varchar',
         'length' => 255,
         'not null' => TRUE,

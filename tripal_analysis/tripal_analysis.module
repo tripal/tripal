@@ -58,14 +58,6 @@ function tripal_analysis_init() {
  * @ingroup tripal_analysis
  */
 function tripal_analysis_menu() {
-  // Display available analyses
-  $items['analyses'] = array(
-      'menu_name' => ('primary-links'), //Enable the 'Analysis' primary link
-      'title' => 'Analyses',
-      'page callback' => 'tripal_analysis_show_analyses',
-      'access arguments' => array('access chado_analysis content'),
-      'type' => MENU_NORMAL_ITEM
-  );
   //Sync analysis
   $items['chado_sync_analyses'] = array(
      'title' => 'Sync Data',
@@ -93,26 +85,6 @@ function tripal_analysis_menu() {
       'file' => 'tripal_analysis.admin.inc',
   );
   return $items;
-}
-
-/**
- * Display the summary view of analyses when click on the 'Analyses'
- * primary-link
- *
- * @ingroup tripal_analysis
- */
-function tripal_analysis_show_analyses() {
-  // Show libraries stored in Drupal's {chado_analysis} table
-  $sql = "SELECT COUNT(analysis_id) FROM {chado_analysis}";
-  $no_ana = db_result(db_query($sql));
-  if ($no_ana != 0) {
-    $analyses = get_chado_analyses();
-    return theme('tripal_analysis_analysis_page', $analyses);
-  }
-  else {
-    return t("No analysis available at this time.");
-  }
-
 }
 
 /**
@@ -211,13 +183,6 @@ function chado_analysis_insert($node) {
     drupal_write_record('node_revisions', $record, 'nid');
   }
 
-  if ($node->setpermissions) {
-    $job_args[0] = $analysis_id;
-    $job_args[1] = $node->nid;
-    tripal_add_job("Set permission for analysis associated features", 'tripal_analysis',
-                                'tripal_analysis_set_feature_permission', $job_args, $user->uid);
-  }
-
    // add the analysis to the node object for
    // use by other analysis modules that may be using this function
     $node->analysis = $analysis;
@@ -274,62 +239,53 @@ function chado_analysis_update($node) {
   if ($node->revision) {
     // TODO -- decide what to do about revisions
   }
-  else {
-    // Create a timestamp so we can insert it into the chado database
-    $time = $node->timeexecuted;
-    $month = $time['month'];
-    $day = $time['day'];
-    $year = $time['year'];
-    $timestamp = $month . '/' . $day . '/' . $year;
+  // Create a timestamp so we can insert it into the chado database
+  $time = $node->timeexecuted;
+  $month = $time['month'];
+  $day = $time['day'];
+  $year = $time['year'];
+  $timestamp = $month . '/' . $day . '/' . $year;
 
-    // get the analysis_id for this node:
-    $sql = "SELECT analysis_id ".
-             "FROM {chado_analysis} ".
-             "WHERE nid = %d";
-    $analysis_id = db_fetch_object(db_query($sql, $node->nid))->analysis_id;
+  // get the analysis_id for this node:
+  $sql = "SELECT analysis_id ".
+           "FROM {chado_analysis} ".
+           "WHERE nid = %d";
+  $analysis_id = db_fetch_object(db_query($sql, $node->nid))->analysis_id;
 
-    $sql = "UPDATE {analysis} ".
-             "SET name = '%s', ".
-             "    description = '%s', ".
-             "    program = '%s', ".
-             "    programversion = '%s', ".
-             "    algorithm = '%s', ".
-             "    sourcename = '%s', ".
-             "    sourceversion = '%s', ".
-             "    sourceuri = '%s', ".
-             "    timeexecuted = '%s' ".
-             "WHERE analysis_id = %d ";
+  $sql = "UPDATE {analysis} ".
+           "SET name = '%s', ".
+           "    description = '%s', ".
+           "    program = '%s', ".
+           "    programversion = '%s', ".
+           "    algorithm = '%s', ".
+           "    sourcename = '%s', ".
+           "    sourceversion = '%s', ".
+           "    sourceuri = '%s', ".
+           "    timeexecuted = '%s' ".
+           "WHERE analysis_id = %d ";
 
-    $previous_db = tripal_db_set_active('chado');  // use chado database
-    db_query($sql, $node->analysisname, $node->description, $node->program,
-    $node->programversion, $node->algorithm, $node->sourcename,
-    $node->sourceversion, $node->sourceuri, $timestamp, $analysis_id);
-      tripal_db_set_active($previous_db);  // switch back to drupal database
+  $previous_db = tripal_db_set_active('chado');  // use chado database
+  db_query($sql, $node->analysisname, $node->description, $node->program,
+  $node->programversion, $node->algorithm, $node->sourcename,
+  $node->sourceversion, $node->sourceuri, $timestamp, $analysis_id);
+    tripal_db_set_active($previous_db);  // switch back to drupal database
 
-    // Create a title for the analysis node using the unique keys so when the
-    // node is saved, it will have a title
-    $record = new stdClass();
-    // If the analysis has a name, use it as the node title. If not, construct
-    // the title using program, programversion, and sourcename
-    if ($node->analysisname) {
-      $record->title = $node->analysisname;
-    }
-    else {
-      //Construct node title as "program (version)
-      $record->title = "$node->program ($node->programversion)";
-    }
-
-    if ($node->setpermissions) {
-      $job_args[0] = $analysis_id;
-      $job_args[1] = $node->nid;
-      tripal_add_job("Set permission for analysis associated features", 'tripal_analysis',
-                                  'tripal_analysis_set_feature_permission', $job_args, $user->uid);
-    }
-
-    $record->nid = $node->nid;
-    drupal_write_record('node', $record, 'nid');
-    drupal_write_record('node_revisions', $record, 'nid');
+  // Create a title for the analysis node using the unique keys so when the
+  // node is saved, it will have a title
+  $record = new stdClass();
+  // If the analysis has a name, use it as the node title. If not, construct
+  // the title using program, programversion, and sourcename
+  if ($node->analysisname) {
+    $record->title = $node->analysisname;
   }
+  else {
+    //Construct node title as "program (version)
+    $record->title = "$node->program ($node->programversion)";
+  }
+
+  $record->nid = $node->nid;
+  drupal_write_record('node', $record, 'nid');
+  drupal_write_record('node_revisions', $record, 'nid');
 }
 
 /**
@@ -351,39 +307,39 @@ function chado_analysis_form($node) {
   if (!$analysis_id) {
     $analysis_id = $analysis->analysis_id;
   }
-    $analysisname = $node->analysisname;
+  $analysisname = $node->analysisname;
   if (!$analysisname) {
     $analysisname = $analysis->name;
   }
-    $program = $node->program;
+  $program = $node->program;
   if (!$program) {
     $program = $analysis->program;
   }
-    $programversion = $node->programversion;
+  $programversion = $node->programversion;
   if (!$programversion) {
     $programversion = $analysis->programversion;
   }
-    $algorithm = $node->algorithm;
+  $algorithm = $node->algorithm;
   if (!$algorithm) {
     $algorithm = $analysis->algorithm;
   }
-    $sourcename = $node->sourcename;
+  $sourcename = $node->sourcename;
   if (!$sourcename) {
     $sourcename = $analysis->sourcename;
   }
-    $sourceversion = $node->sourceversion;
+  $sourceversion = $node->sourceversion;
   if (!$sourceversion) {
     $sourceversion = $analysis->sourceversion;
   }
-    $sourceuri = $node->sourceuri;
+  $sourceuri = $node->sourceuri;
   if (!$sourceuri) {
     $sourceuri = $analysis->sourceuri;
   }
-    $timeexecuted = $node->timeexecuted;
+  $timeexecuted = $node->timeexecuted;
   if (!$timeexecuted) {
     $timeexecuted = $analysis->timeexecuted;
   }
-    $description = $node->description;
+  $description = $node->description;
   if (!$description) {
     $description = $analysis->description;
   }
@@ -482,15 +438,6 @@ function chado_analysis_form($node) {
          someone to recreate the analysis, including materials and methods
          for collection of the source data and performing the analysis'),
   );
-  /* Set permissions for all features associated with this analysis */
-  if (module_exists('node_privacy_byrole')) {
-    $form['setpermissions'] = array(
-        '#type' => 'checkbox',
-          '#title' => t('Submit a job to set the same permissions for all features associated with this analysis'),
-          '#default_value' => FALSE,
-         '#weight' => 10
-    );
-  }
 
   return $form;
 }
@@ -813,10 +760,40 @@ function tripal_analysis_perm() {
  */
 function tripal_analysis_theme() {
   return array(
-      'tripal_analysis_analysis_page' => array(
-         'arguments' => array('analyses'),
-      ),
+    'tripal_analysis_base' => array(
+       'arguments' => array('node' => NULL),
+       'template' => 'tripal_analysis_base',
+    ),
   );
+}
+/**
+ *
+ *
+ * @ingroup tripal_feature
+ */
+function tripal_analysis_block($op = 'list', $delta = 0, $edit=array()) {
+  switch ($op) {
+    case 'list':
+      $blocks['base']['info'] = t('Tripal Analysis Details');
+      $blocks['base']['cache'] = BLOCK_NO_CACHE;
+      return $blocks;
+
+  case 'view':
+    if (user_access('access chado_analysis content') and arg(0) == 'node' and is_numeric(arg(1))) {
+      $nid = arg(1);
+      $node = node_load($nid);
+
+      $block = array();
+      switch ($delta) {       
+        case 'base':
+          $block['subject'] = t('Analysis Details');
+          $block['content'] = theme('tripal_analysis_base', $node);
+          break;
+        default :
+      }
+      return $block;
+    }
+  }
 }
 
 /**
@@ -860,64 +837,6 @@ function get_chado_analyses() {
 
     return $analyses;
   }
-}
-
-/**
- * Theme the List Analysis page
- *
- * @param $analyses
- *   An array of analyses to list
- *
- * @ingroup tripal_analysis
- */
-function theme_tripal_analysis_analysis_page($analyses) {
-
-  $output = "<br />Analyses are listed in the descending order of their execution time.<br /><a id=\"tripal_expandableBox_toggle_button\" onClick=\"toggleExpandableBoxes()\">[-] Collapse All</a>";
-
-  foreach ($analyses as $analysis) {
-    // Prepare information for html output
-    $ana_node_url = url("node/$analysis->node_id");
-    if ($analysis->sourceversion) {
-      $ver = "($analysis->sourceversion)";
-      }
-      $date =  preg_replace("/^(\d+-\d+-\d+) .*/", "$1", $analysis->timeexecuted);
-
-      // Generate html output
-    $output .= "<div class=\"tripal_chado_analysis-info-box\" style=\"padding:5px\">
-                         <div class=\"tripal_expandableBox\">
-                           <h3>$analysis->name ($date)</h3>
-                         </div>
-                         <div class=\"tripal_expandableBoxContent\">
-                           <span>
-                             <table class=\"tripal_chado_analysis_content\">
-                               <tr><td>
-                                 Name: <a href=\"$ana_node_url\">$analysis->name</a>
-                               </td></tr>
-                               <tr><td>
-                                 Program: $analysis->program ($analysis->programversion)
-                               </td></tr>
-                               <tr><td>
-                                 Algorithm: $analysis->algorithm
-                               </td></tr>
-                             <tr><td>
-                                 Source: $analysis->sourcename $ver
-                             </td></tr>
-                             <tr><td>
-                                 Source URI: $analysis->sourceuri
-                               </td></tr>
-                               <tr><td>
-                                 Executed Time:$date
-                               </td></tr>
-                               <tr><td>
-                                 Description: $analysis->description
-                               </td></tr>
-                             </table>
-                           </span>
-                         </div>
-                       </div>";
-  }
-
-  return $output;
 }
 
 /**
@@ -985,103 +904,6 @@ function tripal_analyses_cleanup($dummy = NULL, $job_id = NULL) {
   }
   return '';
 }
-
-/**
-function tripal_analysis_reindex_features ($analysis_id = NULL, $job_id = NULL){
-  $i = 0;
-
-  // if the caller provided a analysis_id then get all of the features
-  // associated with the analysis. Otherwise get all sequences associated
-  // with all libraries.
-  if(!$analysis_id){
-    $sql = "SELECT Analysis_id, Feature_id ".
-          "FROM {Analysisfeature} ".
-          "ORDER BY analysis_id";
-    $previous_db = tripal_db_set_active('chado');  // use chado database
-    $results = db_query($sql);
-    tripal_db_set_active($previous_db);  // now use drupal database
-  } else {
-    $sql = "SELECT Analysis_id, Feature_id ".
-             "FROM {Analysisfeature} ".
-             "WHERE analysis_id = %d";
-             "ORDER BY analysis_id";
-    $previous_db = tripal_db_set_active('chado');  // use chado database
-    $results = db_query($sql,$analysis_id);
-    tripal_db_set_active($previous_db);  // now use drupal database
-  }
-
-  // load into ids array
-  $count = 0;
-  $ids = array();
-  while($id = db_fetch_object($results)){
-    $ids[$count] = $id->feature_id;
-    $count++;
-  }
-
-  $interval = intval($count * 0.01);
-  foreach($ids as $feature_id){
-    // update the job status every 1% features
-    if($job_id and $i % interval == 0){
-      tripal_job_set_progress($job_id,intval(($i/$count)*100));
-    }
-    tripal_feature_sync_feature ($feature_id);
-    $i++;
-  }
-} */
-
-/**
-function tripal_analysis_taxonify_features ($analysis_id = NULL, $job_id = NULL){
-  $i = 0;
-
-  // if the caller provided a analysis_id then get all of the features
-  // associated with the analysis. Otherwise get all sequences assoicated
-  // with all libraries.
-  if(!$analysis_id){
-    $sql = "SELECT Analysis_id, Feature_id ".
-          "FROM {Analysisfeature} ".
-          "ORDER BY analysis_id";
-    $previous_db = tripal_db_set_active('chado');  // use chado database
-    $results = db_query($sql);
-    tripal_db_set_active($previous_db);  // now use drupal database
-  } else {
-    $sql = "SELECT Analysis_id, Feature_id ".
-             "FROM {Analysisfeature} ".
-             "WHERE analysis_id = %d";
-             "ORDER BY analysis_id";
-    $previous_db = tripal_db_set_active('chado');  // use chado database
-    $results = db_query($sql,$analysis_id);
-    tripal_db_set_active($previous_db);  // now use drupal database
-  }
-
-  // load into ids array
-  $count = 0;
-  $ids = array();
-  while($id = db_fetch_object($results)){
-    $ids[$count] = $id->feature_id;
-    $count++;
-  }
-
-  // make sure our vocabularies are set before proceeding
-  tripal_feature_set_vocabulary();
-
-  // use this SQL for getting the nodes
-  $nsql =  "SELECT * FROM {chado_feature} CF ".
-            "  INNER JOIN {node} N ON N.nid = CF.nid ".
-            "WHERE feature_id = %d";
-
-  // iterate through the features and set the taxonomy
-  $interval = intval($count * 0.01);
-  foreach($ids as $feature_id){
-    // update the job status every 1% features
-    if($job_id and $i % $interval == 0){
-      tripal_job_set_progress($job_id,intval(($i/$count)*100));
-    }
-    $node = db_fetch_object(db_query($nsql,$feature_id));
-    tripal_feature_set_taxonomy($node,$feature_id);
-    $i++;
-  }
-}
- */
 
 /**
  * Implements hook_views_api()

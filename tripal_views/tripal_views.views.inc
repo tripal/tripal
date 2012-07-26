@@ -62,6 +62,17 @@ function tripal_views_views_handlers() {
     ),
     'handlers' => array(
 
+      // Custom Tripal Handlers
+      'views_handler_filter_file_upload' => array(
+        'parent' => 'views_handler_filter',
+      ),
+      'tripal_views_handler_filter_string_selectbox' => array(
+        'parent' => 'views_handler_filter_string',
+      ),
+      'views_handler_filter_no_results' => array(
+        'parent' => 'views_handler_filter'
+      ),
+
       // Custom Chado Handlers
       'chado_views_handler_field_aggregate' => array(
         'parent' => 'chado_views_handler_field',
@@ -71,6 +82,7 @@ function tripal_views_views_handlers() {
       ),
       'chado_views_handler_filter_select_string' => array(
         'parent' => 'chado_views_handler_filter_string',
+
       ),
 
       // Join Handlers
@@ -81,17 +93,18 @@ function tripal_views_views_handlers() {
         'parent' => 'views_join',
       ),
 
-      // Other Custom Handlers
-      'views_handler_filter_no_results' => array(
-        'parent' => 'views_handler_filter'
-      ),
-
-      // Old Handlers (deprecated)
+      // Old Handlers no longer used (deprecated)
       'views_handler_field_node_optional' => array(
         'parent' => 'views_handler_field_node',
       ),
+      'views_handler_field_chado_tf_boolean' => array(
+        'parent' => 'views_handler_field_boolean',
+      ),
       'views_handler_field_chado_count' => array(
         'parent' => 'views_handler_field',
+      ),
+      'views_handler_filter_chado_boolean' => array(
+        'parent' => 'views_handler_filter_boolean_operator',
       ),
       'views_handler_field_dbxref_accession_link' => array(
         'parent' => 'views_handler_field',
@@ -138,6 +151,9 @@ function tripal_views_views_handlers() {
       'chado_views_handler_filter_string' => array(
         'parent' => 'views_handler_filter_string',
       ),
+      'chado_views_handler_filter_boolean_operator_string' => array(
+        'parent' => 'views_handler_filter_boolean_operator_string',
+      ),
       'chado_views_handler_filter_boolean_operator' => array(
         'parent' => 'views_handler_filter_boolean_operator',
       ),
@@ -153,13 +169,21 @@ function tripal_views_views_handlers() {
       'chado_views_handler_filter_numeric' => array(
         'parent' => 'views_handler_filter_numeric',
       ),
-      'views_handler_filter_file_upload' => array(
-        'parent' => 'views_handler_filter',
-      ),
-
       // Sort Handlers
       'chado_views_handler_sort' => array(
         'parent' => 'views_handler_sort'
+      ),
+      'chado_views_handler_sort_date' => array(
+        'parent' => 'views_handler_sort_date'
+      ),
+      'chado_views_handler_sort_formula' => array(
+        'parent' => 'views_handler_sort_formula'
+      ),
+      'chado_views_handler_sort_menu_hierarchy' => array(
+        'parent' => 'views_handler_sort_menu_hierarchy'
+      ),
+      'chado_views_handler_sort_random' => array(
+        'parent' => 'views_handler_sort_random'
       ),
     ),
   );
@@ -467,7 +491,7 @@ function tripal_views_views_data() {
 
       // The chado table could be a regular Chado table or a custom table
       // in the chado database.  Therefore we'll check both
-      $table_desc = module_invoke_all('chado_' . $base_table . '_schema');
+      $table_desc = tripal_core_get_chado_table_schema($base_table);
       if (!$table_desc) {
         $table_desc = tripal_get_chado_custom_schema($base_table);
       }
@@ -713,7 +737,7 @@ function tripal_views_data_export_download_form(&$form_state, $view, $display_id
 
       // only add this display to the form if it is attached
       $display_options = $display->display_options;
-      if(strcmp($display_options['displays'][$current_display],$current_display)!=0){
+      if (strcmp($display_options['displays'][$current_display], $current_display) != 0) {
          continue;
       }
 

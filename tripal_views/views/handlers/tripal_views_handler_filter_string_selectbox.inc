@@ -8,7 +8,7 @@
  * @ingroup views_filter_handlers
  * @ingroup tripal_core
  */
-class views_handler_filter_chado_select_string extends views_handler_filter_string {
+class tripal_views_handler_filter_string_selectbox extends views_handler_filter_string {
 
   function options_form(&$form, &$form_state) {
     parent::options_form($form, $form_state);
@@ -77,19 +77,19 @@ class views_handler_filter_chado_select_string extends views_handler_filter_stri
       // available to the user to edit--their fixed.
       $where = '';
       $filters = $this->view->filter;
-      foreach ($filters as $filter_name => $details) {
+      foreach($filters as $filter_name => $details){
          // we only want to inclue non-exposed filters 
-         if ($details->options['exposed'] == FALSE) {
+         if($details->options['exposed'] == FALSE){
             // we only want to filter on the table we're getting the list from
-            if (strcmp($details->table, $this->table)==0) {
+            if(strcmp($details->table,$this->table)==0){
               $where .= "$details->field $details->operator ". $details->value['value'];
               $where .= ' AND ';
             }
          }
       } 
-      if ($where) {
+      if($where){
          $where = "WHERE $where";
-         $where = substr($where, 0, -5); # remove the final ' AND '
+         $where = substr($where,0,-5); # remove the final ' AND '
       }
 
       // get the values from the table
