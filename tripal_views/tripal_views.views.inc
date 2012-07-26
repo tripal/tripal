@@ -93,6 +93,11 @@ function tripal_views_views_handlers() {
         'parent' => 'views_join',
       ),
 
+      // Relationship Handlers
+      'chado_views_handler_relationship' => array(
+        'parent' => 'views_handler_relationship'
+      ),
+
       // Old Handlers no longer used (deprecated)
       'views_handler_field_node_optional' => array(
         'parent' => 'views_handler_field_node',
@@ -550,6 +555,12 @@ function tripal_views_views_data() {
         $handlers = db_query($sql, $setup_id, $column_name);
         while ($handler = db_fetch_object($handlers)) {
           $data[$base_table][$column_name][$handler->handler_type]['handler'] = $handler->handler_name;
+
+          // Add in any additional arguments
+          // This should be a serialized array including (at a minimum) name => <handler name>
+          if ($handler->arguments) {
+            $data[$base_table][$column_name][$handler->handler_type] = array_merge($data[$base_table][$column_name][$handler->handler_type], unserialize($handler->arguments));
+          }
         };
     }
 
@@ -650,6 +661,7 @@ function tripal_views_views_data_alter(&$data) {
         }
       }
     }
+
     return $data;
 }
 
