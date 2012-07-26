@@ -405,7 +405,7 @@ function tripal_views_get_integration_array_for_chado_table($table_name, $base_t
   // Add fields
   if (!isset($schema['fields'])) {
     $schema['fields'] = array();
-    drupal_set_message(t('There are no fields defined for %table in the Chado Schema API.', array('%table' => $table_name)), 'warning');
+    watchdog('tripal_views', 'There are no fields defined for %table in the Chado Schema API.', array('%table' => $table_name), WATCHDOG_WARNING);
     return FALSE;
   }
   foreach ($schema['fields'] as $field_name => $field_schema) {

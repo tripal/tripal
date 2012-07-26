@@ -498,7 +498,7 @@ function tripal_views_views_data() {
       $fields = $table_desc['fields'];
       if (!is_array($fields)) {
         $fields = array();
-        drupal_set_message(t('No fields were described for this table (%table) through the Tripal Schema API.', array('%table' => $base_table)), 'error');
+        watchdog('tripal_views', 'No fields were described for this table (%table) through the Tripal Schema API.', array('%table' => $base_table), WATCHDOG_ERROR);
       }
       foreach ($fields as $column => $attrs) {
         $base_fields[$column] = array(
