@@ -19,7 +19,7 @@ require_once "includes/indexFeatures.inc";
 require_once "includes/fasta_loader.inc";
 require_once "includes/gff_loader.inc";
 
-require_once "includes/tripal_feature.api.inc";
+require_once "api/tripal_feature.api.inc";
 
 require_once "includes/tripal_feature-delete.inc";
 require_once "includes/tripal_feature-secondary_tables.inc";
