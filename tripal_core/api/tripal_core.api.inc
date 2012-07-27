@@ -73,18 +73,18 @@ require_once "tripal_core.schema_v1.11.api.inc";
  * @param $values
  *  An associative array containing the values for inserting.
  * @param $options
- *  An array of options such as:
- *    -prepare: TRUE or FALSE. Whether or not to prepare the current statement.
- *       statement_name must also be supplied.  This option should only be 
- *       used the first time a statement is run. It prepares then executes
- *       the statement.  For subsequence calls set prepare to FALSE and 
- *       provide the statement name.
- *    -statement_name: the name of the prepared statement to use. If prepare is TRUE,
- *       this indicates the name of the prepared statement to created; otherwise,
- *       it indicates the name of the already prepared statement to use.
- *    -skip_validation: TRUE or FALSE. If TRUE will skip all the validation steps and
- *       just try to insert as is. This is much faster but results in unhandled
- *       non user-friendly errors if the insert fails.
+ *  An array of options such as:  
+ *  - statement_name: the name of the prepared statement to use. If the statement
+ *     has not yet been prepared it will be prepared automatically. On subsequent
+ *     calls with the same statement_name only an execute on the previously
+ *     prepared statement will occur.
+ *  - is_prepared: TRUE or FALSE. Whether or not the statement is prepared. By
+ *     default if the statement is not prepared it will be automatically. 
+ *     However to avoid this check, which requires a database query you can
+ *     set this value to true and the check will not be performed. 
+ *  - skip_validation: TRUE or FALSE. If TRUE will skip all the validation steps and
+ *     just try to insert as is. This is much faster but results in unhandled
+ *     non user-friendly errors if the insert fails.
  *
  * @return
  *  On success this function returns TRUE. On failure, it returns FALSE.
@@ -243,8 +243,10 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
 
   // if this is a prepared statement then execute it
   if ($prepared) {
-  
-    if(!tripal_core_is_sql_prepared($options['statement_name'])) { 
+    // if this is the first time we've run this query 
+    // then we need to do the prepare, otherwise just execute
+    if ($options['is_prepared'] != TRUE and
+       !tripal_core_is_sql_prepared($options['statement_name'])) { 
       // prepare the statement
       $psql = "PREPARE " . $options['statement_name'] . " (" . implode(', ', $idatatypes) . ") AS INSERT INTO {$table} (" . implode(", ", $ifields) . ") VALUES (" . implode(", ", $iplaceholders) . ")";
       $status = chado_query($psql);
@@ -598,6 +600,14 @@ function tripal_core_chado_update($table, $match, $values) {
  *     An associative array containing the column names of the table as keys
  *     and the type of sort (i.e. ASC, DESC) as the values.  The results in the
  *     query will be sorted by the key values in the direction listed by the value
+ *  - statement_name: the name of the prepared statement to use. If the statement
+ *     has not yet been prepared it will be prepared automatically. On subsequent
+ *     calls with the same statement_name only an execute on the previously
+ *     prepared statement will occur.
+ *  - is_prepared: TRUE or FALSE. Whether or not the statement is prepared. By
+ *     default if the statement is not prepared it will be automatically. 
+ *     However to avoid this check, which requires a database query you can
+ *     set this value to true and the check will not be performed. 
  *
  * @return
  *  A database query result resource, FALSE if the query was not executed
@@ -828,7 +838,8 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
   if ($prepared) {
     // if this is the first time we've run this query 
     // then we need to do the prepare, otherwise just execute
-    if(!tripal_core_is_sql_prepared($options['statement_name'])){
+    if ($options['is_prepared'] != TRUE and
+        !tripal_core_is_sql_prepared($options['statement_name'])) {
       $status = chado_query($psql);
 #      print "$psql\n";
       if (!$status) {
