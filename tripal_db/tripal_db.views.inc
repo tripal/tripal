@@ -330,7 +330,7 @@ function tripal_db_views_default_views() {
     'default' => 'name',
   ));
   $handler = $view->new_display('page', 'Page', 'page_1');
-  $handler->override_option('path', 'admin/tripal/tripal_db/list_dbxrefs ');
+  $handler->override_option('path', 'admin/tripal/tripal_db/list_dbs');
   $handler->override_option('menu', array(
     'type' => 'normal',
     'title' => 'DB Listing',

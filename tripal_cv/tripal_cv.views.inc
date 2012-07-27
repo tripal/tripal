@@ -445,5 +445,236 @@ function tripal_cv_views_default_views() {
   ));
   $views[$view->name] = $view;
 
+  // Main cv default listing
+  $view = new view;
+  $view->name = 'cv_listing';
+  $view->description = 'A listing of all controlled vocabularies';
+  $view->tag = 'chado default';
+  $view->base_table = 'cv';
+  $view->core = 6;
+  $view->api_version = '2';
+  $view->disabled = FALSE; /* Edit this to true to make a default view disabled initially */
+  $handler = $view->new_display('default', 'Defaults', 'default');
+  $handler->override_option('fields', array(
+    'name' => array(
+      'label' => 'Name',
+      'alter' => array(
+        'alter_text' => 0,
+        'text' => '',
+        'make_link' => 0,
+        'path' => '',
+        'absolute' => 0,
+        'link_class' => '',
+        'alt' => '',
+        'rel' => '',
+        'prefix' => '',
+        'suffix' => '',
+        'target' => '',
+        'help' => '',
+        'trim' => 0,
+        'max_length' => '',
+        'word_boundary' => 1,
+        'ellipsis' => 1,
+        'html' => 0,
+        'strip_tags' => 0,
+      ),
+      'empty' => '',
+      'hide_empty' => 0,
+      'empty_zero' => 0,
+      'hide_alter_empty' => 1,
+      'type' => 'separator',
+      'separator' => ', ',
+      'exclude' => 0,
+      'id' => 'name',
+      'table' => 'cv',
+      'field' => 'name',
+      'relationship' => 'none',
+    ),
+    'definition' => array(
+      'label' => 'Definition',
+      'alter' => array(
+        'alter_text' => 0,
+        'text' => '',
+        'make_link' => 0,
+        'path' => '',
+        'absolute' => 0,
+        'link_class' => '',
+        'alt' => '',
+        'rel' => '',
+        'prefix' => '',
+        'suffix' => '',
+        'target' => '',
+        'help' => '',
+        'trim' => 0,
+        'max_length' => '',
+        'word_boundary' => 1,
+        'ellipsis' => 1,
+        'html' => 0,
+        'strip_tags' => 0,
+      ),
+      'empty' => '',
+      'hide_empty' => 0,
+      'empty_zero' => 0,
+      'hide_alter_empty' => 1,
+      'type' => 'separator',
+      'separator' => ', ',
+      'exclude' => 0,
+      'id' => 'definition',
+      'table' => 'cv',
+      'field' => 'definition',
+      'relationship' => 'none',
+    ),
+    'nothing' => array(
+      'label' => 'Terms',
+      'alter' => array(
+        'text' => 'view',
+        'make_link' => 1,
+        'path' => 'admin/tripal/tripal_cv/list_cvterms?cv%5B%5D=[name]',
+        'absolute' => 0,
+        'link_class' => '',
+        'alt' => '',
+        'rel' => '',
+        'prefix' => '',
+        'suffix' => '',
+        'target' => '',
+        'help' => '',
+        'trim' => 0,
+        'max_length' => '',
+        'word_boundary' => 1,
+        'ellipsis' => 1,
+        'html' => 0,
+        'strip_tags' => 0,
+      ),
+      'empty' => '',
+      'hide_empty' => 0,
+      'empty_zero' => 0,
+      'hide_alter_empty' => 1,
+      'exclude' => 0,
+      'id' => 'nothing',
+      'table' => 'views',
+      'field' => 'nothing',
+      'relationship' => 'none',
+    ),
+  ));
+  $handler->override_option('filters', array(
+    'name' => array(
+      'operator' => 'contains',
+      'value' => '',
+      'group' => '0',
+      'exposed' => TRUE,
+      'expose' => array(
+        'use_operator' => 0,
+        'operator' => 'name_op',
+        'identifier' => 'name',
+        'label' => 'Name Contains',
+        'remember' => 0,
+      ),
+      'case' => 0,
+      'id' => 'name',
+      'table' => 'cv',
+      'field' => 'name',
+      'relationship' => 'none',
+      'values_form_type' => 'textfield',
+      'multiple' => 0,
+      'optional' => 0,
+    ),
+    'definition' => array(
+      'operator' => 'contains',
+      'value' => '',
+      'group' => '0',
+      'exposed' => TRUE,
+      'expose' => array(
+        'use_operator' => 0,
+        'operator' => 'definition_op',
+        'identifier' => 'definition',
+        'label' => 'Definition Contains',
+        'remember' => 0,
+      ),
+      'case' => 0,
+      'id' => 'definition',
+      'table' => 'cv',
+      'field' => 'definition',
+      'relationship' => 'none',
+      'agg' => array(
+        'records_with' => 1,
+        'aggregates_with' => 0,
+      ),
+    ),
+    'search_results' => array(
+      'operator' => '=',
+      'value' => '',
+      'group' => '0',
+      'exposed' => FALSE,
+      'expose' => array(
+        'operator' => FALSE,
+        'label' => '',
+      ),
+      'id' => 'search_results',
+      'table' => 'views',
+      'field' => 'search_results',
+      'relationship' => 'none',
+      'apply_button' => 'Show',
+      'no_results_text' => 'Click "Show" to see a list of all controlled vocabularies matching the entered criteria. If you leave a any of the criteria blank then the controlled vocabularies will be not be filtered based on that field. Furthermore, if you leave all criteria blank then all controlled vocabularies will be listed.',
+    ),
+  ));
+  $handler->override_option('access', array(
+    'type' => 'perm',
+    'perm' => 'access chado_cv content',
+  ));
+  $handler->override_option('cache', array(
+    'type' => 'none',
+  ));
+  $handler->override_option('title', 'Controlled Vocabularies');
+  $handler->override_option('header', 'Click "Show" to see a list of all controlled vocabularies matching the entered criteria. If you leave a any of the criteria blank then the controlled vocabularies will be not be filtered based on that field. Furthermore, if you leave all criteria blank then all controlled vocabularies will be listed.');
+  $handler->override_option('header_format', '2');
+  $handler->override_option('header_empty', 0);
+  $handler->override_option('empty', 'No controlled vocabularies match the supplied criteria.');
+  $handler->override_option('empty_format', '2');
+  $handler->override_option('items_per_page', 50);
+  $handler->override_option('style_plugin', 'table');
+  $handler->override_option('style_options', array(
+    'grouping' => '',
+    'override' => 1,
+    'sticky' => 0,
+    'order' => 'asc',
+    'summary' => '',
+    'columns' => array(
+      'name' => 'name',
+      'definition' => 'definition',
+      'nothing' => 'nothing',
+    ),
+    'info' => array(
+      'name' => array(
+        'sortable' => 1,
+        'separator' => '',
+      ),
+      'definition' => array(
+        'sortable' => 0,
+        'separator' => '',
+      ),
+      'nothing' => array(
+        'separator' => '',
+      ),
+    ),
+    'default' => 'name',
+  ));
+  $handler = $view->new_display('page', 'Page', 'page_1');
+  $handler->override_option('path', 'admin/tripal/tripal_cv/list_cvs');
+  $handler->override_option('menu', array(
+    'type' => 'normal',
+    'title' => 'CV Listing',
+    'description' => 'A listing of all controlled vocabularies',
+    'weight' => '0',
+    'name' => 'navigation',
+  ));
+  $handler->override_option('tab_options', array(
+    'type' => 'none',
+    'title' => '',
+    'description' => '',
+    'weight' => 0,
+    'name' => 'navigation',
+  ));
+  $views[$view->name] = $view;
+
   return $views;
 }
