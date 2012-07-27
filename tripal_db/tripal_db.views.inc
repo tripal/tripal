@@ -72,7 +72,282 @@ function tripal_db_views_data()  {
 function tripal_db_views_default_views() {
   $views = array();
 
-  // Main default view
+  // Main DB default view
+  $view = new view;
+  $view->name = 'db_listing';
+  $view->description = 'A listing of all databases.';
+  $view->tag = 'chado default';
+  $view->base_table = 'db';
+  $view->core = 6;
+  $view->api_version = '2';
+  $view->disabled = FALSE; /* Edit this to true to make a default view disabled initially */
+  $handler = $view->new_display('default', 'Defaults', 'default');
+  $handler->override_option('fields', array(
+    'name' => array(
+      'label' => 'Name',
+      'alter' => array(
+        'alter_text' => 0,
+        'text' => '',
+        'make_link' => 0,
+        'path' => '',
+        'absolute' => 0,
+        'link_class' => '',
+        'alt' => '',
+        'rel' => '',
+        'prefix' => '',
+        'suffix' => '',
+        'target' => '',
+        'help' => '',
+        'trim' => 0,
+        'max_length' => '',
+        'word_boundary' => 1,
+        'ellipsis' => 1,
+        'html' => 0,
+        'strip_tags' => 0,
+      ),
+      'empty' => '',
+      'hide_empty' => 0,
+      'empty_zero' => 0,
+      'hide_alter_empty' => 1,
+      'type' => 'separator',
+      'separator' => ', ',
+      'exclude' => 0,
+      'id' => 'name',
+      'table' => 'db',
+      'field' => 'name',
+      'relationship' => 'none',
+    ),
+    'description' => array(
+      'label' => 'Description',
+      'alter' => array(
+        'alter_text' => 0,
+        'text' => '',
+        'make_link' => 0,
+        'path' => '',
+        'absolute' => 0,
+        'link_class' => '',
+        'alt' => '',
+        'rel' => '',
+        'prefix' => '',
+        'suffix' => '',
+        'target' => '',
+        'help' => '',
+        'trim' => 0,
+        'max_length' => '',
+        'word_boundary' => 1,
+        'ellipsis' => 1,
+        'html' => 0,
+        'strip_tags' => 0,
+      ),
+      'empty' => '',
+      'hide_empty' => 0,
+      'empty_zero' => 0,
+      'hide_alter_empty' => 1,
+      'type' => 'separator',
+      'separator' => ', ',
+      'exclude' => 0,
+      'id' => 'description',
+      'table' => 'db',
+      'field' => 'description',
+      'relationship' => 'none',
+    ),
+    'url' => array(
+      'label' => 'Url',
+      'alter' => array(
+        'alter_text' => 0,
+        'text' => '',
+        'make_link' => 1,
+        'path' => '[url]',
+        'absolute' => 1,
+        'link_class' => '',
+        'alt' => '',
+        'rel' => '',
+        'prefix' => '',
+        'suffix' => '',
+        'target' => '_blank',
+        'help' => '',
+        'trim' => 0,
+        'max_length' => '',
+        'word_boundary' => 1,
+        'ellipsis' => 1,
+        'html' => 0,
+        'strip_tags' => 0,
+      ),
+      'empty' => '',
+      'hide_empty' => 0,
+      'empty_zero' => 0,
+      'hide_alter_empty' => 1,
+      'type' => 'separator',
+      'separator' => ', ',
+      'exclude' => 0,
+      'id' => 'url',
+      'table' => 'db',
+      'field' => 'url',
+      'relationship' => 'none',
+    ),
+    'urlprefix' => array(
+      'label' => 'Urlprefix',
+      'alter' => array(
+        'alter_text' => 0,
+        'text' => '',
+        'make_link' => 0,
+        'path' => '',
+        'absolute' => 0,
+        'link_class' => '',
+        'alt' => '',
+        'rel' => '',
+        'prefix' => '',
+        'suffix' => '',
+        'target' => '',
+        'help' => '',
+        'trim' => 0,
+        'max_length' => '',
+        'word_boundary' => 1,
+        'ellipsis' => 1,
+        'html' => 0,
+        'strip_tags' => 0,
+      ),
+      'empty' => '',
+      'hide_empty' => 0,
+      'empty_zero' => 0,
+      'hide_alter_empty' => 1,
+      'type' => 'separator',
+      'separator' => ', ',
+      'exclude' => 0,
+      'id' => 'urlprefix',
+      'table' => 'db',
+      'field' => 'urlprefix',
+      'relationship' => 'none',
+    ),
+  ));
+  $handler->override_option('filters', array(
+    'name' => array(
+      'operator' => 'contains',
+      'value' => '',
+      'group' => '0',
+      'exposed' => TRUE,
+      'expose' => array(
+        'use_operator' => 0,
+        'operator' => 'name_op',
+        'identifier' => 'name',
+        'label' => 'Name Contains',
+        'remember' => 0,
+      ),
+      'case' => 0,
+      'id' => 'name',
+      'table' => 'db',
+      'field' => 'name',
+      'relationship' => 'none',
+      'values_form_type' => 'textfield',
+      'multiple' => 0,
+      'optional' => 0,
+    ),
+    'description' => array(
+      'operator' => 'contains',
+      'value' => '',
+      'group' => '0',
+      'exposed' => TRUE,
+      'expose' => array(
+        'use_operator' => 0,
+        'operator' => 'description_op',
+        'identifier' => 'description',
+        'label' => 'Description Contains',
+        'remember' => 0,
+      ),
+      'case' => 0,
+      'id' => 'description',
+      'table' => 'db',
+      'field' => 'description',
+      'relationship' => 'none',
+      'agg' => array(
+        'records_with' => 1,
+        'aggregates_with' => 0,
+      ),
+    ),
+    'search_results' => array(
+      'operator' => '=',
+      'value' => '',
+      'group' => '0',
+      'exposed' => FALSE,
+      'expose' => array(
+        'operator' => FALSE,
+        'label' => '',
+      ),
+      'id' => 'search_results',
+      'table' => 'views',
+      'field' => 'search_results',
+      'relationship' => 'none',
+      'apply_button' => 'Show',
+      'no_results_text' => 'Click "Show" to see a list of all databases matching the entered criteria. If you leave a any of the criteria blank then the databases will be not be filtered based on that field. Furthermore, if you leave all criteria blank then all databases will be listed.',
+    ),
+  ));
+  $handler->override_option('access', array(
+    'type' => 'perm',
+    'perm' => 'access chado_db content',
+  ));
+  $handler->override_option('cache', array(
+    'type' => 'none',
+  ));
+  $handler->override_option('title', 'Databases');
+  $handler->override_option('header', 'Click "Show" to see a list of all databases matching the entered criteria. If you leave a any of the criteria blank then the databases will be not be filtered based on that field. Furthermore, if you leave all criteria blank then all databases will be listed.');
+  $handler->override_option('header_format', '2');
+  $handler->override_option('header_empty', 0);
+  $handler->override_option('empty', 'No databases match the supplied criteria.');
+  $handler->override_option('empty_format', '2');
+  $handler->override_option('items_per_page', 50);
+  $handler->override_option('use_pager', '1');
+  $handler->override_option('style_plugin', 'table');
+  $handler->override_option('style_options', array(
+    'grouping' => '',
+    'override' => 1,
+    'sticky' => 0,
+    'order' => 'asc',
+    'summary' => '',
+    'columns' => array(
+      'name' => 'name',
+      'url' => 'url',
+      'urlprefix' => 'urlprefix',
+      'description' => 'description',
+    ),
+    'info' => array(
+      'name' => array(
+        'sortable' => 1,
+        'separator' => '',
+      ),
+      'url' => array(
+        'sortable' => 1,
+        'separator' => '',
+      ),
+      'urlprefix' => array(
+        'sortable' => 0,
+        'separator' => '',
+      ),
+      'description' => array(
+        'sortable' => 0,
+        'separator' => '',
+      ),
+    ),
+    'default' => 'name',
+  ));
+  $handler = $view->new_display('page', 'Page', 'page_1');
+  $handler->override_option('path', 'admin/tripal/tripal_db/list_dbxrefs ');
+  $handler->override_option('menu', array(
+    'type' => 'normal',
+    'title' => 'DB Listing',
+    'description' => 'Lists all databases available to create database references for.',
+    'weight' => '0',
+    'name' => 'navigation',
+  ));
+  $handler->override_option('tab_options', array(
+    'type' => 'none',
+    'title' => '',
+    'description' => '',
+    'weight' => 0,
+    'name' => 'navigation',
+  ));
+  $views[$view->name] = $view;
+
+  // Main dbxref default view
   $view = new view;
   $view->name = 'dbxref_listing';
   $view->description = 'A listing of all database references filtered by database';
