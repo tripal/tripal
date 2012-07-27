@@ -37,6 +37,13 @@ function tripal_analysis_views_data()  {
     $tablename = 'analysis';
     if (!tripal_views_is_integrated($tablename, 9)) {
       $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename, TRUE);
+
+      // Make table-specific modifications
+      $table_integration_array['fields']['program']['handlers']['filter']['name'] = 'chado_views_handler_filter_select_string';
+      $table_integration_array['fields']['algorithm']['handlers']['filter']['name'] = 'chado_views_handler_filter_select_string';
+
+      dpm($table_integration_array, 'analysis integration');
+
       tripal_views_integration_add_entry($table_integration_array);
     }
 
@@ -120,15 +127,13 @@ function tripal_analysis_views_default_views() {
   $views = array();
 
   // Main default view
-  // List all cvterms based on cv
   $view = new view;
-  $view->name = 'all_analysis';
-  $view->description = 'A listing of all analysis\'';
-  $view->tag = 'chado';
-  $view->view_php = '';
+  $view->name = 'analysis_listing';
+  $view->description = 'A default listing of analyses provided by Tripal';
+  $view->tag = 'chado default';
   $view->base_table = 'analysis';
-  $view->is_cacheable = FALSE;
-  $view->api_version = 2;
+  $view->core = 0;
+  $view->api_version = '2';
   $view->disabled = FALSE; /* Edit this to true to make a default view disabled initially */
   $handler = $view->new_display('default', 'Defaults', 'default');
   $handler->override_option('fields', array(
@@ -139,8 +144,10 @@ function tripal_analysis_views_default_views() {
         'text' => '',
         'make_link' => 0,
         'path' => '',
+        'absolute' => 0,
         'link_class' => '',
         'alt' => '',
+        'rel' => '',
         'prefix' => '',
         'suffix' => '',
         'target' => '',
@@ -155,40 +162,14 @@ function tripal_analysis_views_default_views() {
       'empty' => '',
       'hide_empty' => 0,
       'empty_zero' => 0,
-      'link_to_node' => 1,
+      'hide_alter_empty' => 1,
+      'type' => 'separator',
+      'separator' => ', ',
       'exclude' => 0,
+      'link_to_node' => 1,
       'id' => 'name',
       'table' => 'analysis',
       'field' => 'name',
-      'relationship' => 'none',
-    ),
-    'algorithm' => array(
-      'label' => 'Algorithm',
-      'alter' => array(
-        'alter_text' => 0,
-        'text' => '',
-        'make_link' => 0,
-        'path' => '',
-        'link_class' => '',
-        'alt' => '',
-        'prefix' => '',
-        'suffix' => '',
-        'target' => '',
-        'help' => '',
-        'trim' => 0,
-        'max_length' => '',
-        'word_boundary' => 1,
-        'ellipsis' => 1,
-        'html' => 0,
-        'strip_tags' => 0,
-      ),
-      'empty' => '',
-      'hide_empty' => 0,
-      'empty_zero' => 0,
-      'exclude' => 0,
-      'id' => 'algorithm',
-      'table' => 'analysis',
-      'field' => 'algorithm',
       'relationship' => 'none',
     ),
     'program' => array(
@@ -198,8 +179,10 @@ function tripal_analysis_views_default_views() {
         'text' => '',
         'make_link' => 0,
         'path' => '',
+        'absolute' => 0,
         'link_class' => '',
         'alt' => '',
+        'rel' => '',
         'prefix' => '',
         'suffix' => '',
         'target' => '',
@@ -214,79 +197,24 @@ function tripal_analysis_views_default_views() {
       'empty' => '',
       'hide_empty' => 0,
       'empty_zero' => 0,
+      'hide_alter_empty' => 1,
       'exclude' => 0,
       'id' => 'program',
       'table' => 'analysis',
       'field' => 'program',
       'relationship' => 'none',
     ),
-    'programversion' => array(
-      'label' => 'Program Version',
-      'alter' => array(
-        'alter_text' => 0,
-        'text' => '',
-        'make_link' => 0,
-        'path' => '',
-        'link_class' => '',
-        'alt' => '',
-        'prefix' => '',
-        'suffix' => '',
-        'target' => '',
-        'help' => '',
-        'trim' => 0,
-        'max_length' => '',
-        'word_boundary' => 1,
-        'ellipsis' => 1,
-        'html' => 0,
-        'strip_tags' => 0,
-      ),
-      'empty' => '',
-      'hide_empty' => 0,
-      'empty_zero' => 0,
-      'exclude' => 0,
-      'id' => 'programversion',
-      'table' => 'analysis',
-      'field' => 'programversion',
-      'relationship' => 'none',
-    ),
-    'description' => array(
-      'label' => 'Description',
-      'alter' => array(
-        'alter_text' => 0,
-        'text' => '',
-        'make_link' => 0,
-        'path' => '',
-        'link_class' => '',
-        'alt' => '',
-        'prefix' => '',
-        'suffix' => '',
-        'target' => '',
-        'help' => '',
-        'trim' => 0,
-        'max_length' => '',
-        'word_boundary' => 1,
-        'ellipsis' => 1,
-        'html' => 0,
-        'strip_tags' => 0,
-      ),
-      'empty' => '',
-      'hide_empty' => 0,
-      'empty_zero' => 0,
-      'exclude' => 0,
-      'id' => 'description',
-      'table' => 'analysis',
-      'field' => 'description',
-      'relationship' => 'none',
-    ),
     'sourcename' => array(
-      'label' => 'Source Name',
+      'label' => 'Source',
       'alter' => array(
         'alter_text' => 0,
         'text' => '',
         'make_link' => 0,
         'path' => '',
+        'absolute' => 0,
         'link_class' => '',
         'alt' => '',
+        'rel' => '',
         'prefix' => '',
         'suffix' => '',
         'target' => '',
@@ -301,97 +229,11 @@ function tripal_analysis_views_default_views() {
       'empty' => '',
       'hide_empty' => 0,
       'empty_zero' => 0,
+      'hide_alter_empty' => 1,
       'exclude' => 0,
       'id' => 'sourcename',
       'table' => 'analysis',
       'field' => 'sourcename',
-      'relationship' => 'none',
-    ),
-    'sourceuri' => array(
-      'label' => 'Source URL',
-      'alter' => array(
-        'alter_text' => 0,
-        'text' => '',
-        'make_link' => 0,
-        'path' => '',
-        'link_class' => '',
-        'alt' => '',
-        'prefix' => '',
-        'suffix' => '',
-        'target' => '',
-        'help' => '',
-        'trim' => 0,
-        'max_length' => '',
-        'word_boundary' => 1,
-        'ellipsis' => 1,
-        'html' => 0,
-        'strip_tags' => 0,
-      ),
-      'empty' => '',
-      'hide_empty' => 0,
-      'empty_zero' => 0,
-      'exclude' => 0,
-      'id' => 'sourceuri',
-      'table' => 'analysis',
-      'field' => 'sourceuri',
-      'relationship' => 'none',
-    ),
-    'sourceversion' => array(
-      'label' => 'Source Version',
-      'alter' => array(
-        'alter_text' => 0,
-        'text' => '',
-        'make_link' => 0,
-        'path' => '',
-        'link_class' => '',
-        'alt' => '',
-        'prefix' => '',
-        'suffix' => '',
-        'target' => '',
-        'help' => '',
-        'trim' => 0,
-        'max_length' => '',
-        'word_boundary' => 1,
-        'ellipsis' => 1,
-        'html' => 0,
-        'strip_tags' => 0,
-      ),
-      'empty' => '',
-      'hide_empty' => 0,
-      'empty_zero' => 0,
-      'exclude' => 0,
-      'id' => 'sourceversion',
-      'table' => 'analysis',
-      'field' => 'sourceversion',
-      'relationship' => 'none',
-    ),
-    'num_features' => array(
-      'label' => 'Number of Features',
-      'alter' => array(
-        'alter_text' => 0,
-        'text' => '',
-        'make_link' => 0,
-        'path' => '',
-        'link_class' => '',
-        'alt' => '',
-        'prefix' => '',
-        'suffix' => '',
-        'target' => '',
-        'help' => '',
-        'trim' => 0,
-        'max_length' => '',
-        'word_boundary' => 1,
-        'ellipsis' => 1,
-        'html' => 0,
-        'strip_tags' => 0,
-      ),
-      'empty' => '',
-      'hide_empty' => 0,
-      'empty_zero' => 0,
-      'exclude' => 0,
-      'id' => 'num_features',
-      'table' => 'analysis',
-      'field' => 'num_features',
       'relationship' => 'none',
     ),
     'timeexecuted' => array(
@@ -401,8 +243,10 @@ function tripal_analysis_views_default_views() {
         'text' => '',
         'make_link' => 0,
         'path' => '',
+        'absolute' => 0,
         'link_class' => '',
         'alt' => '',
+        'rel' => '',
         'prefix' => '',
         'suffix' => '',
         'target' => '',
@@ -417,19 +261,39 @@ function tripal_analysis_views_default_views() {
       'empty' => '',
       'hide_empty' => 0,
       'empty_zero' => 0,
-      'date_format' => 'large',
-      'custom_date_format' => '',
+      'hide_alter_empty' => 1,
+      'date_format' => 'custom',
+      'custom_date_format' => 'F j, Y',
       'exclude' => 0,
       'id' => 'timeexecuted',
       'table' => 'analysis',
       'field' => 'timeexecuted',
+      'override' => array(
+        'button' => 'Override',
+      ),
       'relationship' => 'none',
     ),
   ));
   $handler->override_option('filters', array(
+    'search_results' => array(
+      'operator' => '=',
+      'value' => '',
+      'group' => '0',
+      'exposed' => FALSE,
+      'expose' => array(
+        'operator' => FALSE,
+        'label' => '',
+      ),
+      'id' => 'search_results',
+      'table' => 'views',
+      'field' => 'search_results',
+      'relationship' => 'none',
+      'apply_button' => 'Show ',
+      'no_results_text' => 'Click "Show" to see a list of all analysis matching the entered criteria. If you leave a any of the criteria blank then the analysis will be not be filtered based on that field. Furthermore, if you leave all criteria blank then all analysis will be listed.',
+    ),
     'program' => array(
       'operator' => '=',
-      'value' => 'All',
+      'value' => array(),
       'group' => '0',
       'exposed' => TRUE,
       'expose' => array(
@@ -437,14 +301,69 @@ function tripal_analysis_views_default_views() {
         'operator' => 'program_op',
         'identifier' => 'program',
         'label' => 'Program',
-        'optional' => 1,
         'remember' => 0,
       ),
-      'case' => 0,
+      'case' => 1,
       'id' => 'program',
       'table' => 'analysis',
       'field' => 'program',
       'relationship' => 'none',
+      'values_form_type' => 'select',
+      'multiple' => 1,
+      'optional' => 0,
+      'agg' => array(
+        'records_with' => 1,
+        'aggregates_with' => 0,
+      ),
+    ),
+    'timeexecuted' => array(
+      'operator' => '>',
+      'value' => array(
+        'type' => 'date',
+        'value' => '',
+        'min' => '',
+        'max' => '',
+      ),
+      'group' => '0',
+      'exposed' => TRUE,
+      'expose' => array(
+        'use_operator' => 1,
+        'operator' => 'timeexecuted_op',
+        'identifier' => 'timeexecuted',
+        'label' => 'Time Executed',
+        'optional' => 1,
+        'remember' => 0,
+      ),
+      'id' => 'timeexecuted',
+      'table' => 'analysis',
+      'field' => 'timeexecuted',
+      'relationship' => 'none',
+      'agg' => array(
+        'records_with' => 1,
+        'aggregates_with' => 0,
+      ),
+    ),
+    'name' => array(
+      'operator' => 'contains',
+      'value' => '',
+      'group' => '0',
+      'exposed' => TRUE,
+      'expose' => array(
+        'use_operator' => 0,
+        'operator' => 'name_op',
+        'identifier' => 'name',
+        'label' => 'Name Contains',
+        'bef_filter_description' => '',
+        'remember' => 0,
+      ),
+      'case' => 0,
+      'id' => 'name',
+      'table' => 'analysis',
+      'field' => 'name',
+      'relationship' => 'none',
+      'values_form_type' => 'textfield',
+      'multiple' => 0,
+      'optional' => 0,
     ),
     'sourcename' => array(
       'operator' => 'contains',
@@ -455,8 +374,8 @@ function tripal_analysis_views_default_views() {
         'use_operator' => 0,
         'operator' => 'sourcename_op',
         'identifier' => 'sourcename',
-        'label' => 'Source Name Contains',
-        'optional' => 1,
+        'label' => 'Source Contains',
+        'bef_filter_description' => '',
         'remember' => 0,
       ),
       'case' => 0,
@@ -474,6 +393,9 @@ function tripal_analysis_views_default_views() {
     'type' => 'none',
   ));
   $handler->override_option('title', 'Analysis');
+  $handler->override_option('header', 'Click "Show" to see a list of all analysis matching the entered criteria. If you leave a any of the criteria blank then the analysis will be not be filtered based on that field. Furthermore, if you leave all criteria blank then all analysis will be listed.');
+  $handler->override_option('header_format', '2');
+  $handler->override_option('header_empty', 1);
   $handler->override_option('empty', 'No analysis match the supplied criteria.');
   $handler->override_option('empty_format', '1');
   $handler->override_option('items_per_page', 50);
@@ -484,39 +406,20 @@ function tripal_analysis_views_default_views() {
     'override' => 1,
     'sticky' => 0,
     'order' => 'asc',
+    'summary' => '',
     'columns' => array(
-      'algorithm' => 'algorithm',
-      'description' => 'description',
       'name' => 'name',
-      'num_features' => 'num_features',
       'program' => 'program',
-      'programversion' => 'programversion',
       'sourcename' => 'sourcename',
-      'sourceuri' => 'sourceuri',
-      'sourceversion' => 'sourceversion',
+      'num_features' => 'num_features',
       'timeexecuted' => 'timeexecuted',
     ),
     'info' => array(
-      'algorithm' => array(
-        'sortable' => 1,
-        'separator' => '',
-      ),
-      'description' => array(
-        'sortable' => 1,
-        'separator' => '',
-      ),
       'name' => array(
         'sortable' => 1,
         'separator' => '',
       ),
-      'num_features' => array(
-        'separator' => '',
-      ),
       'program' => array(
-        'sortable' => 1,
-        'separator' => '',
-      ),
-      'programversion' => array(
         'sortable' => 1,
         'separator' => '',
       ),
@@ -524,12 +427,7 @@ function tripal_analysis_views_default_views() {
         'sortable' => 1,
         'separator' => '',
       ),
-      'sourceuri' => array(
-        'sortable' => 1,
-        'separator' => '',
-      ),
-      'sourceversion' => array(
-        'sortable' => 1,
+      'num_features' => array(
         'separator' => '',
       ),
       'timeexecuted' => array(
@@ -537,7 +435,7 @@ function tripal_analysis_views_default_views() {
         'separator' => '',
       ),
     ),
-    'default' => 'timeexecuted',
+    'default' => 'name',
   ));
   $handler = $view->new_display('page', 'Page', 'page_1');
   $handler->override_option('path', 'analyses');
