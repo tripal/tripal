@@ -46,8 +46,11 @@ function tripal_cv_views_data() {
 
         // add specialty handlers
         if ($tablename == 'cvterm') {
-          $table_integration_array['fields']['name']['handlers']['filter']['name'] = 'views_handler_filter_chado_select_cvterm_name';
-        }  
+          $table_integration_array['fields']['name']['handlers']['filter']['name'] = 'views_handler_filter_chado_select_string';
+        }
+        elseif ($tablename == 'cv') {
+          $table_integration_array['fields']['name']['handlers']['filter']['name'] = 'views_handler_filter_chado_select_string';
+        }
 
         // add integration
         tripal_views_integration_add_entry($table_integration_array);
@@ -108,16 +111,49 @@ function tripal_cv_views_default_views() {
   // Main default view
   // List all cvterms based on cv
   $view = new view;
-  $view->name = 'all_cvterms';
-  $view->description = 'A listing of all controlled vocabulary terms';
-  $view->tag = 'chado';
-  $view->view_php = '';
+  $view->name = 'cvterm_listing';
+  $view->description = 'A listing of all controlled vocabulary terms filtered by controlled vocabulary';
+  $view->tag = 'chado default';
   $view->base_table = 'cvterm';
-  $view->is_cacheable = FALSE;
-  $view->api_version = 2;
+  $view->core = 0;
+  $view->api_version = '2';
   $view->disabled = FALSE; /* Edit this to true to make a default view disabled initially */
   $handler = $view->new_display('default', 'Defaults', 'default');
   $handler->override_option('fields', array(
+    'name_1' => array(
+      'label' => 'Vocabulary',
+      'alter' => array(
+        'alter_text' => 0,
+        'text' => '',
+        'make_link' => 0,
+        'path' => '',
+        'absolute' => 0,
+        'link_class' => '',
+        'alt' => '',
+        'rel' => '',
+        'prefix' => '',
+        'suffix' => '',
+        'target' => '',
+        'help' => '',
+        'trim' => 0,
+        'max_length' => '',
+        'word_boundary' => 1,
+        'ellipsis' => 1,
+        'html' => 0,
+        'strip_tags' => 0,
+      ),
+      'empty' => '',
+      'hide_empty' => 0,
+      'empty_zero' => 0,
+      'hide_alter_empty' => 1,
+      'type' => 'separator',
+      'separator' => ', ',
+      'exclude' => 0,
+      'id' => 'name_1',
+      'table' => 'cv',
+      'field' => 'name',
+      'relationship' => 'none',
+    ),
     'name' => array(
       'label' => 'Name',
       'alter' => array(
@@ -238,40 +274,27 @@ function tripal_cv_views_default_views() {
       'field' => 'is_relationshiptype',
       'relationship' => 'none',
     ),
-    'accession_link' => array(
-      'label' => 'Accession Link',
-      'alter' => array(
-        'alter_text' => 0,
-        'text' => '',
-        'make_link' => 0,
-        'path' => '',
-        'link_class' => '',
-        'alt' => '',
-        'prefix' => '',
-        'suffix' => '',
-        'target' => '',
-        'help' => '',
-        'trim' => 0,
-        'max_length' => '',
-        'word_boundary' => 1,
-        'ellipsis' => 1,
-        'html' => 0,
-        'strip_tags' => 0,
-      ),
-      'empty' => '',
-      'hide_empty' => 0,
-      'empty_zero' => 0,
-      'exclude' => 0,
-      'id' => 'accession_link',
-      'table' => 'dbxref',
-      'field' => 'accession_link',
+  ));
+  $handler->override_option('sorts', array(
+    'name' => array(
+      'order' => 'ASC',
+      'id' => 'name',
+      'table' => 'cv',
+      'field' => 'name',
+      'relationship' => 'none',
+    ),
+    'name_1' => array(
+      'order' => 'ASC',
+      'id' => 'name_1',
+      'table' => 'cvterm',
+      'field' => 'name',
       'relationship' => 'none',
     ),
   ));
   $handler->override_option('filters', array(
     'name' => array(
       'operator' => '=',
-      'value' => '<select cv>',
+      'value' => array(),
       'group' => '0',
       'exposed' => TRUE,
       'expose' => array(
@@ -279,7 +302,6 @@ function tripal_cv_views_default_views() {
         'operator' => 'name_op',
         'identifier' => 'cv',
         'label' => 'Vocabulary',
-        'optional' => 0,
         'remember' => 0,
       ),
       'case' => 1,
@@ -287,9 +309,12 @@ function tripal_cv_views_default_views() {
       'table' => 'cv',
       'field' => 'name',
       'relationship' => 'none',
+      'values_form_type' => 'select',
+      'multiple' => 1,
+      'optional' => 0,
     ),
     'name_1' => array(
-      'operator' => '~',
+      'operator' => 'contains',
       'value' => '',
       'group' => '0',
       'exposed' => TRUE,
@@ -298,7 +323,6 @@ function tripal_cv_views_default_views() {
         'operator' => '',
         'identifier' => 'name',
         'label' => 'Name Contains',
-        'optional' => 1,
         'remember' => 0,
       ),
       'case' => 0,
@@ -307,6 +331,9 @@ function tripal_cv_views_default_views() {
       'field' => 'name',
       'relationship' => 'none',
       'values_form_type' => 'textfield',
+      'multiple' => 0,
+      'optional' => 0,
+      'show_all' => 0,
     ),
     'definition' => array(
       'operator' => 'contains',
@@ -318,7 +345,6 @@ function tripal_cv_views_default_views() {
         'operator' => 'definition_op',
         'identifier' => 'definition',
         'label' => 'Definition Contains',
-        'optional' => 1,
         'remember' => 0,
       ),
       'case' => 0,
@@ -326,6 +352,26 @@ function tripal_cv_views_default_views() {
       'table' => 'cvterm',
       'field' => 'definition',
       'relationship' => 'none',
+      'agg' => array(
+        'records_with' => 1,
+        'aggregates_with' => 0,
+      ),
+    ),
+    'search_results' => array(
+      'operator' => '=',
+      'value' => '',
+      'group' => '0',
+      'exposed' => FALSE,
+      'expose' => array(
+        'operator' => FALSE,
+        'label' => '',
+      ),
+      'id' => 'search_results',
+      'table' => 'views',
+      'field' => 'search_results',
+      'relationship' => 'none',
+      'apply_button' => 'Show',
+      'no_results_text' => 'Click "Show" to see a list of all controlled vocabulary terms matching the entered criteria. If you leave a any of the criteria blank then the controlled vocabulary terms will be not be filtered based on that field. Furthermore, if you leave all criteria blank then all controlled vocabulary terms will be listed.',
     ),
   ));
   $handler->override_option('access', array(
@@ -336,6 +382,9 @@ function tripal_cv_views_default_views() {
     'type' => 'none',
   ));
   $handler->override_option('title', 'Controlled Vocabulary Terms');
+  $handler->override_option('header', 'Click "Show" to see a list of all controlled vocabulary terms matching the entered criteria. If you leave a any of the criteria blank then the controlled vocabulary terms will be not be filtered based on that field. Furthermore, if you leave all criteria blank then all controlled vocabulary terms will be listed.');
+  $handler->override_option('header_format', '2');
+  $handler->override_option('header_empty', 0);
   $handler->override_option('empty', 'There are no terms associated with the selected controlled vocabulary. Please select a different vocabulary from the list above.');
   $handler->override_option('empty_format', '1');
   $handler->override_option('items_per_page', 50);
@@ -346,14 +395,23 @@ function tripal_cv_views_default_views() {
     'override' => 1,
     'sticky' => 0,
     'order' => 'asc',
+    'summary' => '',
     'columns' => array(
+      'name_1' => 'name_1',
+      'name' => 'name',
       'definition' => 'definition',
       'is_obsolete' => 'is_obsolete',
       'is_relationshiptype' => 'is_relationshiptype',
-      'name' => 'name',
-      'accession_link' => 'accession_link',
     ),
     'info' => array(
+      'name_1' => array(
+        'sortable' => 1,
+        'separator' => '',
+      ),
+      'name' => array(
+        'sortable' => 1,
+        'separator' => '',
+      ),
       'definition' => array(
         'sortable' => 0,
         'separator' => '',
@@ -363,14 +421,6 @@ function tripal_cv_views_default_views() {
         'separator' => '',
       ),
       'is_relationshiptype' => array(
-        'sortable' => 1,
-        'separator' => '',
-      ),
-      'name' => array(
-        'sortable' => 1,
-        'separator' => '',
-      ),
-      'accession_link' => array(
         'sortable' => 1,
         'separator' => '',
       ),
