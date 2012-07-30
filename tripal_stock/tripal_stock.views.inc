@@ -254,14 +254,14 @@ function tripal_stock_views_pre_render  (&$view) {
 function tripal_stock_views_default_views() {
   $views = array();
 
+  // Main default view
   $view = new view;
-  $view->name = 'all_stocks';
-  $view->description = 'This view lists all stocks by default. There are exposed filters available but no arguments are used.';
-  $view->tag = 'chado';
-  $view->view_php = '';
+  $view->name = 'stock_listing';
+  $view->description = 'This view lists all stocks by default.';
+  $view->tag = 'chado default';
   $view->base_table = 'stock';
-  $view->is_cacheable = FALSE;
-  $view->api_version = 2;
+  $view->core = 0;
+  $view->api_version = '2';
   $view->disabled = FALSE; /* Edit this to true to make a default view disabled initially */
   $handler = $view->new_display('default', 'Defaults', 'default');
   $handler->override_option('fields', array(
@@ -384,99 +384,6 @@ function tripal_stock_views_default_views() {
       'field' => 'common_name',
       'relationship' => 'none',
     ),
-    'all_dbxref' => array(
-      'label' => 'All Database References',
-      'alter' => array(
-        'alter_text' => 0,
-        'text' => '',
-        'make_link' => 0,
-        'path' => '',
-        'link_class' => '',
-        'alt' => '',
-        'prefix' => '',
-        'suffix' => '',
-        'target' => '',
-        'help' => '',
-        'trim' => 0,
-        'max_length' => '',
-        'word_boundary' => 1,
-        'ellipsis' => 1,
-        'html' => 0,
-        'strip_tags' => 0,
-      ),
-      'empty' => '',
-      'hide_empty' => 0,
-      'empty_zero' => 0,
-      'type' => 'ul',
-      'separator' => ', ',
-      'exclude' => 0,
-      'id' => 'all_dbxref',
-      'table' => 'stock',
-      'field' => 'all_dbxref',
-      'relationship' => 'none',
-    ),
-    'all_properties' => array(
-      'label' => 'All Properties',
-      'alter' => array(
-        'alter_text' => 0,
-        'text' => '',
-        'make_link' => 0,
-        'path' => '',
-        'link_class' => '',
-        'alt' => '',
-        'prefix' => '',
-        'suffix' => '',
-        'target' => '',
-        'help' => '',
-        'trim' => 0,
-        'max_length' => '',
-        'word_boundary' => 1,
-        'ellipsis' => 1,
-        'html' => 0,
-        'strip_tags' => 0,
-      ),
-      'empty' => '',
-      'hide_empty' => 0,
-      'empty_zero' => 0,
-      'type' => 'ul',
-      'separator' => ', ',
-      'exclude' => 0,
-      'id' => 'all_properties',
-      'table' => 'stock',
-      'field' => 'all_properties',
-      'relationship' => 'none',
-    ),
-    'all_relationships' => array(
-      'label' => 'All Relationships',
-      'alter' => array(
-        'alter_text' => 0,
-        'text' => '',
-        'make_link' => 0,
-        'path' => '',
-        'link_class' => '',
-        'alt' => '',
-        'prefix' => '',
-        'suffix' => '',
-        'target' => '',
-        'help' => '',
-        'trim' => 0,
-        'max_length' => '',
-        'word_boundary' => 1,
-        'ellipsis' => 1,
-        'html' => 0,
-        'strip_tags' => 0,
-      ),
-      'empty' => '',
-      'hide_empty' => 0,
-      'empty_zero' => 0,
-      'type' => 'ul',
-      'separator' => ', ',
-      'exclude' => 0,
-      'id' => 'all_relationships',
-      'table' => 'stock',
-      'field' => 'all_relationships',
-      'relationship' => 'none',
-    ),
   ));
   $handler->override_option('sorts', array(
     'common_name' => array(
@@ -497,7 +404,7 @@ function tripal_stock_views_default_views() {
   $handler->override_option('filters', array(
     'common_name' => array(
       'operator' => '=',
-      'value' => 'All',
+      'value' => array(),
       'group' => '0',
       'exposed' => TRUE,
       'expose' => array(
@@ -505,7 +412,6 @@ function tripal_stock_views_default_views() {
         'operator' => 'common_name_op',
         'identifier' => 'organism_common_name',
         'label' => 'Organism',
-        'optional' => 1,
         'remember' => 0,
       ),
       'case' => 1,
@@ -513,25 +419,73 @@ function tripal_stock_views_default_views() {
       'table' => 'organism',
       'field' => 'common_name',
       'relationship' => 'none',
+      'values_form_type' => 'select',
+      'multiple' => 1,
+      'optional' => 0,
+    ),
+    'search_results' => array(
+      'operator' => '=',
+      'value' => '',
+      'group' => '0',
+      'exposed' => FALSE,
+      'expose' => array(
+        'operator' => FALSE,
+        'label' => '',
+      ),
+      'id' => 'search_results',
+      'table' => 'views',
+      'field' => 'search_results',
+      'relationship' => 'none',
+      'apply_button' => 'Show',
+      'no_results_text' => 'Click "Show" to see a list of all stocks matching the entered criteria. If you leave a any of the criteria blank then the stocks will be not be filtered based on that field. Furthermore, if you leave all criteria blank then all stocks will be listed.',
+    ),
+    'type_id' => array(
+      'operator' => '=',
+      'value' => '',
+      'group' => '0',
+      'exposed' => TRUE,
+      'expose' => array(
+        'use_operator' => 0,
+        'operator' => 'type_id_op',
+        'identifier' => 'type_id',
+        'label' => 'Type',
+        'remember' => 0,
+      ),
+      'case' => 1,
+      'id' => 'type_id',
+      'table' => 'stock',
+      'field' => 'type_id',
+      'relationship' => 'none',
+      'values_form_type' => 'select',
+      'multiple' => 1,
+      'optional' => 0,
+      'show_all' => 0,
+      'agg' => array(
+        'records_with' => 1,
+        'aggregates_with' => 1,
+      ),
     ),
     'name' => array(
-      'operator' => '=',
-      'value' => 'All',
+      'operator' => 'contains',
+      'value' => '',
       'group' => '0',
       'exposed' => TRUE,
       'expose' => array(
         'use_operator' => 0,
         'operator' => 'name_op',
         'identifier' => 'name',
-        'label' => 'Chado CV Terms: Name',
-        'optional' => 1,
+        'label' => 'Name Contains',
         'remember' => 0,
       ),
-      'case' => 1,
+      'case' => 0,
       'id' => 'name',
-      'table' => 'cvterm',
+      'table' => 'stock',
       'field' => 'name',
       'relationship' => 'none',
+      'agg' => array(
+        'records_with' => 1,
+        'aggregates_with' => 1,
+      ),
     ),
   ));
   $handler->override_option('access', array(
@@ -542,9 +496,12 @@ function tripal_stock_views_default_views() {
     'type' => 'none',
   ));
   $handler->override_option('title', 'Stocks');
+  $handler->override_option('header', 'Click "Show" to see a list of all stocks matching the entered criteria. If you leave a any of the criteria blank then the stocks will be not be filtered based on that field. Furthermore, if you leave all criteria blank then all stocks will be listed.');
+  $handler->override_option('header_format', '2');
+  $handler->override_option('header_empty', 0);
   $handler->override_option('empty', 'There are no stocks that match this criteria. If you think there should be, ensure that all stocks in chado are sync\'d with your website.');
   $handler->override_option('empty_format', '1');
-  $handler->override_option('items_per_page', 25);
+  $handler->override_option('items_per_page', 50);
   $handler->override_option('use_pager', '1');
   $handler->override_option('style_plugin', 'table');
   $handler->override_option('style_options', array(
