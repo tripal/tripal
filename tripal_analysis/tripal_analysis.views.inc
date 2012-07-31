@@ -42,8 +42,6 @@ function tripal_analysis_views_data()  {
       $table_integration_array['fields']['program']['handlers']['filter']['name'] = 'chado_views_handler_filter_select_string';
       $table_integration_array['fields']['algorithm']['handlers']['filter']['name'] = 'chado_views_handler_filter_select_string';
 
-      dpm($table_integration_array, 'analysis integration');
-
       tripal_views_integration_add_entry($table_integration_array);
     }
 
