@@ -155,7 +155,7 @@ function tripal_views_integration_add_entry($defn_array) {
 
     // Need to update the tripal_views record so base_table can be false
     // this is a fix because drupal_write_record() puts in defaults if !isset()
-    // and a variable is considered not set if its null!
+    // and a variable is considered not set if it's null!
     db_query(
       "UPDATE {tripal_views} SET base_table=%d WHERE table_name='%s' AND priority=%d",
       $defn_array['base_table'],
@@ -176,7 +176,7 @@ function tripal_views_integration_add_entry($defn_array) {
         $status = drupal_write_record('tripal_views_field', $field_record);
       }
       else {
-        drupal_set_message(t('Unable to integrate %name field due to a missing required fields.', array('%name' => $field['name'])), 'error');
+        drupal_set_message(t('Unable to integrate %name field due to missing required fields.', array('%name' => $field['name'])), 'error');
         $status = FALSE;
       }
 
@@ -248,7 +248,7 @@ function tripal_views_integration_add_entry($defn_array) {
 
       }
       else {
-        drupal_set_message(t('Unable to integrate field: %field_name', array('%field_name' => $field['name'])), 'error');
+        drupal_set_message(t('Unable to integrate %field_name field', array('%field_name' => $field['name'])), 'error');
         $no_errors = FALSE;
       }
     }
@@ -479,17 +479,26 @@ function tripal_views_get_integration_array_for_chado_table($table_name, $base_t
     }
   }
 
-  // Add Joins to fields
+  // Add Joins & Relationship Handlers to fields
   if (!isset($schema['foreign keys'])) {
     $schema['foreign keys'] = array();
     watchdog('tripal_views','There are no foreign keys defined for %table in the Chado Schema API.', array('%table' => $table_name), WATCHDOG_WARNING);
   }
   foreach ($schema['foreign keys'] as $foreign_key_schema) {
     foreach ($foreign_key_schema['columns'] as $left_field => $right_field) {
+      // Join
       $defn_array['fields'][$left_field]['joins'][ $foreign_key_schema['table'] ] = array(
         'table' => $foreign_key_schema['table'],
         'field' => $right_field,
         'handler' => 'views_handler_join_chado_aggregator'
+      );
+
+      // Relationship Handler
+      $defn_array['fields'][$left_field]['handlers']['relationship'] = array(
+        'name' => 'chado_views_handler_relationship',
+        'base' => $foreign_key_schema['table'],
+        'base field' => $right_field,
+        'label' => $table_name . ' ' . $left_field . ' to ' . $foreign_key_schema['table'] . ' ' .$right_field
       );
     }
   }
