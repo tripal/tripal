@@ -8,4 +8,3 @@ dependencies[] = tripal_core
 dependencies[] = tripal_cv
 dependencies[] = tripal_feature
 dependencies[] = tripal_phenotype
-dependencies[] = tripal_pub
