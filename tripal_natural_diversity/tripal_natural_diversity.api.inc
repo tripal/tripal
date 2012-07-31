@@ -553,7 +553,7 @@ function tripal_natural_diversity_chado_schema_v1_11_nd_experiment_stock() {
 function tripal_natural_diversity_chado_schema_v1_2_nd_experiment_stock() {
   $description = array();
 
-  $description = array( 
+  $description = array(
     'referring_tables' => array(
       'nd_experiment_stock_dbxref',
       'nd_experiment_stockprop',
@@ -1077,6 +1077,11 @@ function tripal_natural_diversity_chado_schema_v1_11_nd_reagent() {
       'nd_reagent_id' => array(
         'type' => 'serial',
         'not null' => '1',
+      ),
+      'name' => array(
+        'type' => 'varchar',
+        'length' => 80,
+        'not null' => TRUE
       ),
       'type_id' => array(
         'type' => 'int',
