@@ -54,7 +54,7 @@
  * tripal_add_job("Import FASTA file: $dfile", 'tripal_feature',
  *   'tripal_feature_load_fasta', $args, $user->uid);
  * @endcode
- * The code above is copied from the tripal_feature/fasta_loader.php file. The 
+ * The code above is copied from the tripal_feature/fasta_loader.php file. The
  * snipped first builds an array of arguments that will then be passed to the
  * tripal_add_job function.  The number of arguments provided in the $arguments
  * variable should match the argument set for the callback function provided
@@ -79,7 +79,7 @@ function tripal_add_job($job_name, $modulename, $callback, $arguments, $uid, $pr
   }
   if (drupal_write_record('tripal_jobs', $record)) {
     $jobs_url = url("admin/tripal/tripal_jobs");
-    drupal_set_message(t("Job '%job_name' submitted.  Check the %jobs_link for status", array('%job_name' => $job_name, '%jobs_link' => l($jobs_url, 'jobs page'))));
+    drupal_set_message(t("Job '%job_name' submitted.  Check the <a href='!jobs_url'>jobs page</a> for status", array('%job_name' => $job_name, '!jobs_url' => url($jobs_url))));
   }
   else {
     drupal_set_message(t("Failed to add job %job_name.", array('%job_name' => $job_name)), 'error');

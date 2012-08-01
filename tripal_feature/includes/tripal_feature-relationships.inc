@@ -119,14 +119,17 @@ function tripal_feature_add_ONE_relationship_form_validate($form, &$form_state) 
       $links= array();
       for ($i=0; $i<sizeof($subject_results); $i++) {
       $links[] = l($i+1, "node/" . $subject_results[$i]->nid); }
-      $message = "Too many stocks match '" . $form_state['values']['subject_id'] . "'! "
-                  . " Please refine your input to match ONLY ONE stock. <br />"
-     . "To aid in this process, here are the stocks that match your initial input: "
-     . join(', ', $links);
+      $message = t("Too many features match '%object'! Please refine your input to match
+        ONLY ONE feature. <br />To aid in this process, here are the features that
+        match your initial input: %features",
+        array('%object' => $form_state['values']['subject_id'],
+          '%features' => join(', ', $links)
+        )
+      );
       form_set_error('subject_id', $message);
     }
     elseif (sizeof($subject_results) < 1) {
-      form_set_error('subject_id', t("There are no stocks matching your input. Please check your input for typos and/or lookup the stock %link", array('%link' => l(t('here'), 'stocks'))));
+      form_set_error('subject_id', t("There are no features matching your input. Please check your input for typos and/or lookup the feature <a href='!url'>here</a>", array('!url' => url('features'))));
     }
     elseif (sizeof($subject_results) == 1) {
       $form_state['values']['subject_id'] = $subject_results[0]->stock_id;
@@ -140,14 +143,17 @@ function tripal_feature_add_ONE_relationship_form_validate($form, &$form_state) 
       $links= array();
       for ($i=0; $i<sizeof($object_results); $i++) {
       $links[] = l($i+1, "node/" . $object_results[$i]->nid); }
-      $message = "Too many stocks match '" . $form_state['values']['object_id'] . "'! "
-                 . "Please refine your input to match ONLY ONE stock. <br />"
-                 . "To aid in this process, here are the stocks that match your initial input: "
-                 . join(', ', $links);
+      $message = t("Too many features match '%object'! Please refine your input to match
+        ONLY ONE stock. <br />To aid in this process, here are the stocks that match
+        your initial input: %features",
+        array('%object' => $form_state['values']['object_id'],
+        '%features' => join(', ', $links)
+        )
+      );
       form_set_error('object_id', $message);
     }
     elseif (sizeof($object_results) < 1) {
-      form_set_error('object_id', t("There are no stocks matching your input. Please check your input for typos and/or lookup the stock %link", array('%link' => l(t('here'), 'stocks'))));
+      form_set_error('object_id', t("There are no features matching your input. Please check your input for typos and/or lookup the feature <a href='!url'>here</a>", array('!url' => url('features'))));
     }
     elseif (sizeof($object_results) == 1) {
       $form_state['values']['object_id'] = $object_results[0]->stock_id;
@@ -351,14 +357,17 @@ function tripal_feature_edit_ALL_relationships_form_validate($form, &$form_state
         $links= array();
         for ($j=0; $j<sizeof($subject_results); $j++) {
         $links[] = l($j+1, "node/" . $subject_results[$j]->nid); }
-        $message = "Too many stocks match '" . $form_state['values']["subject_id-$i"] . "'! "
-                 . "Please refine your input to match ONLY ONE stock. <br />"
-                 . "To aid in this process, here are the stocks that match your initial input: "
-                 . join(', ', $links);
+        $message = t("Too many features match '%subject'!  Please refine your input to
+          match ONLY ONE feature. <br /> To aid in this process, here are the features that
+          match your initial input: %features",
+          array('%subject' => $form_state['values']["subject_id-$i"],
+            '%features' => join(', ', $links)
+          )
+        );
         form_set_error("subject_id-$i", $message);
       }
       elseif (sizeof($subject_results) < 1) {
-        form_set_error("subject_id-$i", t("There are no stocks matching your input. Please check your input for typos and/or lookup the stock %link", array('%link' => l(t('here'), 'stocks'))));
+        form_set_error("subject_id-$i", t("There are no features matching your input. Please check your input for typos and/or lookup the <a href='!url'>here</a>", array('!url' => url('features'))));
       }
       elseif (sizeof($subject_results) == 1) {
         $form_state['values']["subject_id-$i"] = $subject_results[0]->stock_id;
@@ -379,7 +388,7 @@ function tripal_feature_edit_ALL_relationships_form_validate($form, &$form_state
         form_set_error("object_id-$i", $message);
       }
       elseif (sizeof($object_results) < 1) {
-        form_set_error("object_id-$i", t("There are no stocks matching your input. Please check your input for typos and/or lookup the stock %link", array('%link' => l(t('here'), 'stocks'))));
+        form_set_error("object_id-$i", t("There are no features matching your input. Please check your input for typos and/or lookup the <a href='!url'>here</a>", array('!url' => url('features'))));
       }
       elseif (sizeof($object_results) == 1) {
         $form_state['values']["object_id-$i"] = $object_results[0]->stock_id;

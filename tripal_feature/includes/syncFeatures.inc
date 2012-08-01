@@ -261,7 +261,7 @@ function tripal_feature_sync_features($max_sync = 0, $organism_id = NULL,
       # to avoid this problem we will call this script through an
       # independent system call
       print "$i of $num_ids Syncing feature id: $feature_id\n";
-      $cmd = "php " . drupal_get_path('module', 'tripal_feature') . "/syncFeatures.php -f $feature_id ";
+      $cmd = "php " . drupal_get_path('module', 'tripal_feature') . "/includes/syncFeatures.inc -f $feature_id ";
       system($cmd);
 
     }
