@@ -161,9 +161,9 @@ function tripal_feature_gff3_load_form_validate($form, &$form_state) {
   // @coder-ignore: there are no functions being called here
   // @todo: break each line of this conditional into separate variables to make more readable
   if (($add_only AND ($update OR $refresh OR $remove)) OR
-    ($update AND ($add_only OR $refresh OR $remove)) OR
-    ($refresh AND ($update OR $add_only OR $remove)) OR
-    ($remove AND ($update OR $refresh OR $add_only))) {
+      ($update AND ($add_only OR $refresh OR $remove)) OR
+      ($refresh AND ($update OR $add_only OR $remove)) OR
+      ($remove AND ($update OR $refresh OR $add_only))) {
       form_set_error('add_only', t("Please select only one checkbox from the import options section"));
   }
 }
@@ -367,7 +367,7 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id, $add_on
       }
 
       // break apart each tag
-      $tag = preg_split("/=/", $attr,2);  // split by equals sign
+      $tag = preg_split("/=/", $attr, 2);  // split by equals sign
       // multiple instances of an attribute are separated by commas
       $tags[$tag[0]] = explode(",", $tag[1]);  // split by comma
       if (strcmp($tag[0], 'ID')==0) {

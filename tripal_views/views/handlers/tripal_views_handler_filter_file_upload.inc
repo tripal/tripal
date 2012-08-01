@@ -7,7 +7,7 @@
  *
  * @ingroup tripal_views_integration
  */
-class views_handler_filter_file_upload extends views_handler_filter {
+class tripal_views_handler_filter_file_upload extends views_handler_filter {
 
   /**
    * Defines the value field in both the views filter options form

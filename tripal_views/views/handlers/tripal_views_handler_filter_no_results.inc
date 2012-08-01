@@ -6,7 +6,7 @@
  * query is not run). This imitates an advanced search form allowing users to fist
  * enter other filter values and then retrieve results.
  */
-class views_handler_filter_no_results extends views_handler_filter {
+class tripal_views_handler_filter_no_results extends views_handler_filter {
 
   /**
    * Ensure this filter is not exposed

@@ -63,24 +63,19 @@ function tripal_views_views_handlers() {
     'handlers' => array(
 
       // Custom Tripal Handlers
-      'views_handler_filter_file_upload' => array(
+      'tripal_views_handler_filter_file_upload' => array(
         'parent' => 'views_handler_filter',
       ),
-      'tripal_views_handler_filter_string_selectbox' => array(
-        'parent' => 'views_handler_filter_string',
-      ),
-      'views_handler_filter_no_results' => array(
+      'tripal_views_handler_filter_no_results' => array(
         'parent' => 'views_handler_filter'
       ),
-
-      // Custom Chado Handlers
-      'chado_views_handler_field_aggregate' => array(
+      'tripal_views_handler_field_aggregate' => array(
         'parent' => 'chado_views_handler_field',
       ),
-      'chado_views_handler_filter_select_cvterm' => array(
+      'tripal_views_handler_filter_select_cvterm' => array(
         'parent' => 'views_handler_filter_chado_select_cvterm_name',
       ),
-      'chado_views_handler_filter_select_string' => array(
+      'tripal_views_handler_filter_select_string' => array(
         'parent' => 'chado_views_handler_filter_string',
 
       ),

@@ -8,7 +8,7 @@
  * @ingroup views_filter_handlers
  * @ingroup tripal_core
  */
-class chado_views_handler_filter_select_string extends chado_views_handler_filter_string {
+class tripal_views_handler_filter_select_string extends chado_views_handler_filter_string {
 
   function options_form(&$form, &$form_state) {
     parent::options_form($form, $form_state);
