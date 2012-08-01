@@ -699,13 +699,13 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
           'regex_columns' => $options['regex_columns'],
           'case_insensitive_columns' => $options['case_insensitive_columns']
         );
-        if($options['statement_name']){
+        if ($options['statement_name']) {
            // add the fk relationship info to the prepared statement name so that
            // we can prepare the selects run by the recrusive tripal_core_chado_get_foreign_key
            // function.
            $foreign_options['statement_name'] = $options['statement_name'] . "fk_" . $table . "_" . $field;
         }
-        if($options['prepare']){
+        if ($options['prepare']) {
            $foreign_options['prepare'] = $options['prepare'];
         }
         $results = tripal_core_chado_get_foreign_key($table_desc, $field, $value, $foreign_options);
@@ -867,7 +867,7 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
   }
 #  print "$psql\n";
 #  print "$sql\n";
-#  print '$results = ' . print_r($results,1);
+#  print '$results = ' . print_r($results, 1);
   return $results;
 }
 
@@ -958,7 +958,7 @@ function tripal_core_chado_get_foreign_key($table_desc, $field, $values, $option
           $select_cols = array($right);
           $result = tripal_core_chado_select($table, $select_cols, $values, $options);
           $fields = array();
-          if (count($result) > 0) {
+          if ($result and count($result) > 0) {
             foreach ($result as $obj) {
               $fields[] = $obj->$right;
             }
@@ -1985,9 +1985,10 @@ function tripal_db_set_active($dbname) {
  *   TRUE if the statement is preapred, FALSE otherwise
  */
 function tripal_core_is_sql_prepared($statement_name) {
+  // @coder-ignore: acting on postgres tables rather then drupal schema therefore, table prefixing does not apply
   $sql = "SELECT name FROM pg_prepared_statements WHERE name = '%s'";
-  $result = db_fetch_object(chado_query($sql,$statement_name));
-  if($result){
+  $result = db_fetch_object(chado_query($sql, $statement_name));
+  if ($result) {
      return TRUE;
   }
   return FALSE;
@@ -2318,11 +2319,11 @@ function tripal_core_get_chado_tables($include_custom = NULL) {
  *
  * @ingroup tripal_core_api
  */
-function tripal_core_get_chado_version () {
+function tripal_core_get_chado_version() {
 
   // check that Chado is installed if not return 'uninstalled as the version'
   $chado_exists = tripal_core_chado_schema_exists();
-  if(!$chado_exists){
+  if (!$chado_exists) {
      return 'not installed';
   }
 
@@ -2331,7 +2332,7 @@ function tripal_core_get_chado_version () {
   $previous_db = tripal_db_set_active('chado');
   $prop_exists = db_table_exists('chadoprop');
   tripal_db_set_active($previous_db);
-  if(!$prop_exists){
+  if (!$prop_exists) {
      return "1.11 or older";
   }
   
@@ -2349,7 +2350,7 @@ function tripal_core_get_chado_version () {
   
   // if we don't have a version in the chadoprop table then it must be 
   // v1.11 or older 
-  if(!$v->value){
+  if (!$v->value) {
      return "1.11 or older";
   }
   return $v->value;
@@ -2372,13 +2373,13 @@ function tripal_core_get_chado_table_schema($table) {
    $v = tripal_core_get_chado_version();
    
    // Tripal only supports v1.11 or newer
-   if(strcmp($v,'1.11 or older')==0){
+   if (strcmp($v, '1.11 or older')==0) {
       $v = "1.11";
    }
 
    // get the table array from the proper chado schema
-   $v = preg_replace("/\./","_",$v); // reformat version for hook name
-   $table_arr = module_invoke_all("chado_schema_v".$v."_" . $table);
+   $v = preg_replace("/\./", "_", $v); // reformat version for hook name
+   $table_arr = module_invoke_all("chado_schema_v" . $v . "_" . $table);
 
    return $table_arr;
 }

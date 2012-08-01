@@ -10,7 +10,7 @@
  * @ingroup views_filter_handlers
  * @ingroup tripal_core
  */
-class chado_views_handler_filter_select_cvterm extends views_handler_filter_chado_select_cvterm_name {
+class tripal_views_handler_filter_select_cvterm extends views_handler_filter_chado_select_cvterm_name {
 
  /**
   * Executed when the field is added

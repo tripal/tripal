@@ -8,7 +8,7 @@
  * will render an aggregated field as a pre_rendered list and will dynamically detect
  * whether the field is aggregated or not.
  */
-class chado_views_handler_field_aggregate extends chado_views_handler_field {
+class tripal_views_handler_field_aggregate extends chado_views_handler_field {
 
   function init(&$view, $options) {
     parent::init($view, $options);
