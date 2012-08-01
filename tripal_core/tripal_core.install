@@ -73,7 +73,7 @@ function tripal_core_schema() {
   // installation we don't want to make these custom tables available as we don't
   // want them created in the Drupal database.  The custom tables go in the
   // Chado database.
-  if(db_table_exists('tripal_custom_tables')){
+  if (db_table_exists('tripal_custom_tables')) {
     $sql = 'SELECT * FROM {tripal_custom_tables}';
     $q = db_query($sql);
     while ($custom = db_fetch_object($q)) {
