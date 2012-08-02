@@ -426,6 +426,10 @@ function tripal_feature_views_default_views() {
       'override' => array(
         'button' => 'Override',
       ),
+      'agg' => array(
+        'records_with' => 1,
+        'aggregates_with' => 1,
+      ),
     ),
     'type_id' => array(
       'operator' => '=',

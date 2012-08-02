@@ -312,6 +312,10 @@ function tripal_cv_views_default_views() {
       'values_form_type' => 'select',
       'multiple' => 1,
       'optional' => 0,
+      'agg' => array(
+        'records_with' => 1,
+        'aggregates_with' => 1,
+      ),
     ),
     'name_1' => array(
       'operator' => 'contains',
@@ -334,6 +338,10 @@ function tripal_cv_views_default_views() {
       'multiple' => 0,
       'optional' => 0,
       'show_all' => 0,
+      'agg' => array(
+        'records_with' => 1,
+        'aggregates_with' => 1,
+      ),
     ),
     'definition' => array(
       'operator' => 'contains',
@@ -577,6 +585,10 @@ function tripal_cv_views_default_views() {
       'values_form_type' => 'textfield',
       'multiple' => 0,
       'optional' => 0,
+      'agg' => array(
+        'records_with' => 1,
+        'aggregates_with' => 0,
+      ),
     ),
     'definition' => array(
       'operator' => 'contains',
