@@ -39,8 +39,8 @@ function tripal_analysis_views_data()  {
       $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename, TRUE);
 
       // Make table-specific modifications
-      $table_integration_array['fields']['program']['handlers']['filter']['name'] = 'chado_views_handler_filter_select_string';
-      $table_integration_array['fields']['algorithm']['handlers']['filter']['name'] = 'chado_views_handler_filter_select_string';
+      $table_integration_array['fields']['program']['handlers']['filter']['name'] = 'tripal_views_handler_filter_select_string';
+      $table_integration_array['fields']['algorithm']['handlers']['filter']['name'] = 'tripal_views_handler_filter_select_string';
 
       tripal_views_integration_add_entry($table_integration_array);
     }

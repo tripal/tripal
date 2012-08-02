@@ -40,10 +40,10 @@ function tripal_organism_views_data()  {
         $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename, TRUE);
 
         // Add specialty handlers
-        $table_integration_array['fields']['common_name']['handlers']['filter']['name'] = 'views_handler_filter_chado_select_string';
-        $table_integration_array['fields']['genus']['handlers']['filter']['name'] = 'views_handler_filter_chado_select_string';
-        $table_integration_array['fields']['species']['handlers']['filter']['name'] = 'views_handler_filter_chado_select_string';
-        $table_integration_array['fields']['abbreviation']['handlers']['filter']['name'] = 'views_handler_filter_chado_select_string';
+        $table_integration_array['fields']['common_name']['handlers']['filter']['name'] = 'tripal_views_handler_filter_select_string';
+        $table_integration_array['fields']['genus']['handlers']['filter']['name'] = 'tripal_views_handler_filter_select_string';
+        $table_integration_array['fields']['species']['handlers']['filter']['name'] = 'tripal_views_handler_filter_select_string';
+        $table_integration_array['fields']['abbreviation']['handlers']['filter']['name'] = 'tripal_views_handler_filter_select_string';
 
         tripal_views_integration_add_entry($table_integration_array);
       }

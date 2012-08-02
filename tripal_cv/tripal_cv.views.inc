@@ -46,10 +46,10 @@ function tripal_cv_views_data() {
 
         // add specialty handlers
         if ($tablename == 'cvterm') {
-          $table_integration_array['fields']['name']['handlers']['filter']['name'] = 'views_handler_filter_chado_select_string';
+          $table_integration_array['fields']['name']['handlers']['filter']['name'] = 'tripal_views_handler_filter_select_string';
         }
         elseif ($tablename == 'cv') {
-          $table_integration_array['fields']['name']['handlers']['filter']['name'] = 'views_handler_filter_chado_select_string';
+          $table_integration_array['fields']['name']['handlers']['filter']['name'] = 'tripal_views_handler_filter_select_string';
         }
 
         // add integration

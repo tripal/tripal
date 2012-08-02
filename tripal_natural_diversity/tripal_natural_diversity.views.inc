@@ -36,8 +36,8 @@ function tripal_natural_diversity_views_data()  {
         // Add specialty handlers
         switch ($tablename) {
           case 'nd_geolocation':
-            $table_integration_array['fields']['description']['handlers']['filter']['name'] = 'chado_views_handler_filter_select_string';
-            $table_integration_array['fields']['geodetic_datum']['handlers']['filter']['name'] = 'chado_views_handler_filter_select_string';
+            $table_integration_array['fields']['description']['handlers']['filter']['name'] = 'tripal_views_handler_filter_select_string';
+            $table_integration_array['fields']['geodetic_datum']['handlers']['filter']['name'] = 'tripal_views_handler_filter_select_string';
             $table_integration_array['fields']['latitude']['handlers']['filter']['name'] = 'chado_views_handler_filter_float';
             $table_integration_array['fields']['longitude']['handlers']['filter']['name'] = 'chado_views_handler_filter_float';
             $table_integration_array['fields']['altitude']['handlers']['filter']['name'] = 'chado_views_handler_filter_float';

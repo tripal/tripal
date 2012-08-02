@@ -42,7 +42,7 @@ function tripal_db_views_data()  {
 
         // add specialty handlers
         if ($tablename == 'db') {
-          $table_integration_array['fields']['name']['handlers']['filter']['name'] = 'views_handler_filter_chado_select_string';
+          $table_integration_array['fields']['name']['handlers']['filter']['name'] = 'tripal_views_handler_filter_select_string';
         }
 
         tripal_views_integration_add_entry($table_integration_array);
