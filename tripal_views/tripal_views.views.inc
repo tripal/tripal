@@ -70,7 +70,7 @@ function tripal_views_views_handlers() {
         'parent' => 'views_handler_filter'
       ),
       'tripal_views_handler_filter_select_cvterm' => array(
-        'parent' => 'views_handler_filter_chado_select_cvterm_name',
+        'parent' => 'views_handler_filter_string',
       ),
       'tripal_views_handler_filter_select_string' => array(
         'parent' => 'chado_views_handler_filter_string',
