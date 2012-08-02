@@ -97,34 +97,6 @@ function tripal_views_views_handlers() {
         'parent' => 'views_handler_relationship'
       ),
 
-      // Old Handlers no longer used (deprecated)
-      'views_handler_field_node_optional' => array(
-        'parent' => 'views_handler_field_node',
-      ),
-      'views_handler_field_chado_tf_boolean' => array(
-        'parent' => 'views_handler_field_boolean',
-      ),
-      'views_handler_field_chado_count' => array(
-        'parent' => 'views_handler_field',
-      ),
-      'views_handler_filter_chado_boolean' => array(
-        'parent' => 'views_handler_filter_boolean_operator',
-      ),
-      'views_handler_field_dbxref_accession_link' => array(
-        'parent' => 'views_handler_field',
-      ),
-      'views_handler_field_readable_date' => array(
-        'parent' => 'views_handler_field',
-      ),
-
-      // Old handlers with new counterparts (deprecated)
-      'views_handler_filter_chado_select_string' => array(
-        'parent' => 'views_handler_filter_string',
-      ),
-      'views_handler_filter_chado_select_cvterm_name' => array(
-        'parent' => 'views_handler_filter_string',
-      ),
-
       // Wrappers for Default Views Handlers-----
       // Field Handlers
       'chado_views_handler_field' => array(
@@ -246,7 +218,7 @@ function tripal_views_views_data() {
     'title' => t('Search Results'),
     'help' => t('Delay results until Apply/Search is clicked by the user.'),
     'filter' => array(
-      'handler' => 'views_handler_filter_no_results',
+      'handler' => 'tripal_views_handler_filter_no_results',
     ),
   );
 
