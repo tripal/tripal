@@ -233,8 +233,8 @@ function tripal_natural_diversity_views_default_views() {
       ),
     ),
     'description' => array(
-      'operator' => 'contains',
-      'value' => '',
+      'operator' => '=',
+      'value' => 'University of Saskatchewan',
       'group' => '0',
       'exposed' => TRUE,
       'expose' => array(
@@ -244,7 +244,7 @@ function tripal_natural_diversity_views_default_views() {
         'label' => 'Location Experiment Performed',
         'remember' => 0,
       ),
-      'case' => 0,
+      'case' => 1,
       'id' => 'description',
       'table' => 'nd_geolocation',
       'field' => 'description',
@@ -253,6 +253,9 @@ function tripal_natural_diversity_views_default_views() {
         'records_with' => 1,
         'aggregates_with' => 1,
       ),
+      'values_form_type' => 'select',
+      'multiple' => 1,
+      'optional' => 0,
     ),
     'search_results' => array(
       'operator' => '=',
@@ -510,8 +513,33 @@ function tripal_natural_diversity_views_default_views() {
     ),
   ));
   $handler->override_option('filters', array(
+    'geodetic_datum' => array(
+      'operator' => '=',
+      'value' => array(),
+      'group' => '0',
+      'exposed' => TRUE,
+      'expose' => array(
+        'use_operator' => 0,
+        'operator' => 'geodetic_datum_op',
+        'identifier' => 'geodetic_datum',
+        'label' => 'Geodetic Datum',
+        'remember' => 0,
+      ),
+      'case' => 1,
+      'id' => 'geodetic_datum',
+      'table' => 'nd_geolocation',
+      'field' => 'geodetic_datum',
+      'relationship' => 'none',
+      'agg' => array(
+        'records_with' => 1,
+        'aggregates_with' => 1,
+      ),
+      'values_form_type' => 'select',
+      'multiple' => 1,
+      'optional' => 0,
+    ),
     'latitude' => array(
-      'operator' => 'between',
+      'operator' => '=',
       'value' => array(
         'value' => '',
         'min' => '',
@@ -538,7 +566,7 @@ function tripal_natural_diversity_views_default_views() {
       ),
     ),
     'longitude' => array(
-      'operator' => 'between',
+      'operator' => '=',
       'value' => array(
         'value' => '',
         'min' => '',
@@ -565,7 +593,7 @@ function tripal_natural_diversity_views_default_views() {
       ),
     ),
     'altitude' => array(
-      'operator' => 'between',
+      'operator' => '=',
       'value' => array(
         'value' => '',
         'min' => '',
@@ -590,31 +618,6 @@ function tripal_natural_diversity_views_default_views() {
         'records_with' => 1,
         'aggregates_with' => 1,
       ),
-    ),
-    'geodetic_datum' => array(
-      'operator' => '=',
-      'value' => array(),
-      'group' => '0',
-      'exposed' => TRUE,
-      'expose' => array(
-        'use_operator' => 0,
-        'operator' => 'geodetic_datum_op',
-        'identifier' => 'geodetic_datum',
-        'label' => 'Geodetic Datum',
-        'remember' => 0,
-      ),
-      'case' => 1,
-      'id' => 'geodetic_datum',
-      'table' => 'nd_geolocation',
-      'field' => 'geodetic_datum',
-      'relationship' => 'none',
-      'agg' => array(
-        'records_with' => 1,
-        'aggregates_with' => 1,
-      ),
-      'values_form_type' => 'select',
-      'multiple' => 1,
-      'optional' => 0,
     ),
     'description' => array(
       'operator' => 'contains',
@@ -1037,7 +1040,7 @@ function tripal_natural_diversity_views_default_views() {
   $handler->override_option('cache', array(
     'type' => 'none',
   ));
-  $handler->override_option('title', 'Natural Diversity Protocol Reagents');
+  $handler->override_option('title', 'Reagents');
   $handler->override_option('header', 'Click "Show" to see a list of all reagents matching the entered criteria. If you leave a any of the criteria blank then the reagents will be not be filtered based on that field. Furthermore, if you leave all criteria blank then all reagents will be listed.');
   $handler->override_option('header_format', '2');
   $handler->override_option('header_empty', 0);

@@ -81,7 +81,7 @@ function tripal_project_views_default_views() {
   $view->base_table = 'project';
   $view->core = 6;
   $view->api_version = '2';
-  $view->disabled = TRUE; /* Edit this to true to make a default view disabled initially */
+  $view->disabled = FALSE; /* Edit this to true to make a default view disabled initially */
   $handler = $view->new_display('default', 'Defaults', 'default');
   $handler->override_option('fields', array(
     'name' => array(
@@ -151,6 +151,52 @@ function tripal_project_views_default_views() {
       'table' => 'project',
       'field' => 'description',
       'relationship' => 'none',
+    ),
+  ));
+  $handler->override_option('filters', array(
+    'name' => array(
+      'operator' => 'contains',
+      'value' => '',
+      'group' => '0',
+      'exposed' => TRUE,
+      'expose' => array(
+        'use_operator' => 0,
+        'operator' => 'name_op',
+        'identifier' => 'name',
+        'label' => 'Name Contains',
+        'remember' => 0,
+      ),
+      'case' => 0,
+      'id' => 'name',
+      'table' => 'project',
+      'field' => 'name',
+      'relationship' => 'none',
+      'agg' => array(
+        'records_with' => 1,
+        'aggregates_with' => 1,
+      ),
+    ),
+    'description' => array(
+      'operator' => 'contains',
+      'value' => '',
+      'group' => '0',
+      'exposed' => TRUE,
+      'expose' => array(
+        'use_operator' => 0,
+        'operator' => 'description_op',
+        'identifier' => 'description',
+        'label' => 'Description Contains',
+        'remember' => 0,
+      ),
+      'case' => 1,
+      'id' => 'description',
+      'table' => 'project',
+      'field' => 'description',
+      'relationship' => 'none',
+      'agg' => array(
+        'records_with' => 1,
+        'aggregates_with' => 1,
+      ),
     ),
   ));
   $handler->override_option('access', array(

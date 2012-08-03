@@ -305,10 +305,14 @@ function tripal_library_views_default_views() {
       'values_form_type' => 'select',
       'multiple' => 1,
       'optional' => 0,
+      'agg' => array(
+        'records_with' => 1,
+        'aggregates_with' => 1,
+      ),
     ),
     'type_id' => array(
       'operator' => '=',
-      'value' => '',
+      'value' => array(),
       'group' => '0',
       'exposed' => TRUE,
       'expose' => array(
@@ -331,22 +335,6 @@ function tripal_library_views_default_views() {
         'records_with' => 1,
         'aggregates_with' => 0,
       ),
-    ),
-    'search_results' => array(
-      'operator' => '=',
-      'value' => '',
-      'group' => '0',
-      'exposed' => FALSE,
-      'expose' => array(
-        'operator' => FALSE,
-        'label' => '',
-      ),
-      'id' => 'search_results',
-      'table' => 'views',
-      'field' => 'search_results',
-      'relationship' => 'none',
-      'apply_button' => 'Show',
-      'no_results_text' => 'Click "Show" to see a list of all libraries matching the entered criteria. If you leave a any of the criteria blank then the libraries will be not be filtered based on that field. Furthermore, if you leave all criteria blank then all libraries will be listed.',
     ),
   ));
   $handler->override_option('access', array(

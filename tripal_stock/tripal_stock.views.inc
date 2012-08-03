@@ -422,6 +422,10 @@ function tripal_stock_views_default_views() {
       'values_form_type' => 'select',
       'multiple' => 1,
       'optional' => 0,
+      'agg' => array(
+        'records_with' => 1,
+        'aggregates_with' => 1,
+      ),
     ),
     'search_results' => array(
       'operator' => '=',
