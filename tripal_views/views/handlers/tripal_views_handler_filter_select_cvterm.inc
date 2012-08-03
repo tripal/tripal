@@ -62,9 +62,9 @@ class tripal_views_handler_filter_select_cvterm extends views_handler_filter_str
     }
     else {
       // @coder-ignore: non-drupal schema therefore table prefixing does not apply
-      $sql = "SELECT cvterm_id, name FROM cvterm WHERE cvterm_id IN (SELECT distinct(type_id) FROM %s)";
+      $sql = "SELECT cvterm_id, name FROM cvterm WHERE cvterm_id IN (SELECT distinct(%s) FROM %s)";
       $previous_db = tripal_db_set_active('chado');
-      $resource = db_query($sql, $this->table);
+      $resource = db_query($sql, $this->field, $this->table);
       tripal_db_set_active($previous_db);
       $cvterms = array();
       while ( $r = db_fetch_object($resource) ) {
@@ -154,6 +154,7 @@ class tripal_views_handler_filter_select_cvterm extends views_handler_filter_str
     }
 
     $this->ensure_my_table();
+    $field = "$this->table_alias.$this->real_field";
 
     $table = $this->query->get_table_info($this->table);
     if (preg_match('/aggregator/', $table['join']->definition['handler'])) {
@@ -179,15 +180,15 @@ class tripal_views_handler_filter_select_cvterm extends views_handler_filter_str
               $holders[] = "'%s'";
             }
           }
-          $where = "cvterm.cvterm_id IN (" . implode(", ", $holders) . ")";
+          $where = $field . " IN (" . implode(", ", $holders) . ")";
         }
       }
       elseif ($this->value != 'All') {
         if (preg_match('/^\d+$/', $this->value)) {
-          $where = 'cvterm.cvterm_id=%d';
+          $where = $field . ' = %d';
         }
         else {
-          $where = "cvterm.name" . $this->operator . "'%s'";
+          $where = $field . " " . $this->operator . " '%s'";
         }
       }
 
@@ -200,7 +201,6 @@ class tripal_views_handler_filter_select_cvterm extends views_handler_filter_str
       // Only base records with value in the aggregated field
       // This doesn't restrict the items in the aggregate field
       $this->ensure_my_table();
-      $field = "$this->table_alias.$this->real_field";
       if ($this->options['agg']['records_with']) {
         $where = "'%s' = ANY($field)";
         $this->query->add_where($this->options['group'], $where, $this->value);
