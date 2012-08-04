@@ -232,6 +232,10 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
       $itypes[] = "%d";
       $idatatypes[] = 'int';
     }
+    elseif (strcasecmp($table_desc['fields'][$field]['type'], 'boolean')==0) {
+      $itypes[] = "%s";
+      $idatatypes[] = 'bool';    
+    }
     else {
       $itypes[] = "'%s'";
       $idatatypes[] = 'text';
@@ -630,7 +634,13 @@ function tripal_core_chado_update($table, $match, $values) {
  *         'is_obsolete' => 0
  *      ),
  *   );
- *   $result = tripal_core_chado_select('feature',$columns,$values);
+ *   $options = array(
+ *     'statement_name' => 'sel_feature_genus_species_cvname'
+ *     'order_by' => array(
+ *        'name' => 'ASC'
+ *     ),
+ *   ); 
+ *   $result = tripal_core_chado_select('feature',$columns,$values,$options);
  * @endcode
  * The above code selects a record from the feature table using the three fields
  * that uniquely identify a feature.  The $columns array simply lists the columns
@@ -788,6 +798,14 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
           // set the variables needed for the prepared statement
           $idatatypes[] = 'int';
           $pvalues[] = $value[0];
+        }
+        elseif (strcasecmp($table_desc['fields'][$field]['type'], 'boolean')==0) {
+          $sql .= "$field $operator %s AND ";
+          $psql .= "$field $operator \$" . $i . " AND ";
+          $args[] = $value[0];
+          // set the variables needed for the prepared statement
+          $idatatypes[] = 'bool';
+          $pvalues[] = $value[0];             
         }
         // else the type is a text
         else {

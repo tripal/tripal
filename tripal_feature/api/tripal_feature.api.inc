@@ -496,3 +496,35 @@ function tripal_feature_delete_property($feature_id, $property, $cv_name='tripal
 function tripal_feature_delete_property_by_id($featureprop_id) {
   return tripal_core_delete_property_by_id('feature', $featureprop_id);
 }
+
+/**
+ * Performs a reverse compliment of a nucleotide sequence
+ *
+ * @param $sequence
+ *   The nucelotide sequence
+ *
+ * @return
+ *   an upper-case reverse complemented sequence
+ *
+ * @ingroup tripal_feature_api
+ */
+ function trpial_feature_reverse_complement($sequence) {
+
+    $seq = strtoupper($sequence);
+    $seq = strrev($seq);
+    $seq = str_replace("A", "t", $seq);
+    $seq = str_replace("T", "a", $seq);
+    $seq = str_replace("G", "c", $seq);
+    $seq = str_replace("C", "g", $seq);
+    $seq = str_replace("Y", "r", $seq);
+    $seq = str_replace("R", "y", $seq);
+    $seq = str_replace("W", "w", $seq);
+    $seq = str_replace("S", "s", $seq);
+    $seq = str_replace("K", "m", $seq);
+    $seq = str_replace("M", "k", $seq);
+    $seq = str_replace("D", "h", $seq);
+    $seq = str_replace("V", "b", $seq);
+    $seq = str_replace("H", "d", $seq);
+    $seq = str_replace("B", "v", $seq);
+    return strtoupper($seq);
+ }

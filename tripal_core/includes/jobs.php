@@ -79,7 +79,7 @@ function tripal_add_job($job_name, $modulename, $callback, $arguments, $uid, $pr
   }
   if (drupal_write_record('tripal_jobs', $record)) {
     $jobs_url = url("admin/tripal/tripal_jobs");
-    drupal_set_message(t("Job '%job_name' submitted.  Check the <a href='!jobs_url'>jobs page</a> for status", array('%job_name' => $job_name, '!jobs_url' => url($jobs_url))));
+    drupal_set_message(t("Job '%job_name' submitted.  Check the <a href='!jobs_url'>jobs page</a> for status", array('%job_name' => $job_name, '!jobs_url' => $jobs_url)));
   }
   else {
     drupal_set_message(t("Failed to add job %job_name.", array('%job_name' => $job_name)), 'error');

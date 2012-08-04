@@ -75,6 +75,9 @@ function tripal_views_views_handlers() {
       'tripal_views_handler_filter_select_string' => array(
         'parent' => 'chado_views_handler_filter_string',
       ),
+      'tripal_views_handler_filter_sequence' => array(
+        'parent' => 'chado_views_handler_filter_string',
+      ),
       
       // Custom Tripal Field Handlers
       'tripal_views_handler_field_aggregate' => array(
@@ -424,7 +427,7 @@ function tripal_views_views_data() {
     'title' => t('Search Results'),
     'help' => t('Delay results until Apply/Search is clicked by the user.'),
     'filter' => array(
-      'handler' => 'views_handler_filter_no_results',
+      'handler' => 'tripal_views_handler_filter_no_results',
     ),
   );
 

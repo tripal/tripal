@@ -488,14 +488,21 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id, $add_on
         }
         // add target relationships
         if (array_key_exists('Target', $tags)) {
-          $target = explode(" ", $tags['Target'][0]);
+          $target = preg_split('/\s+/', $tags['Target'][0]);
           $target_feature = $target[0];
-          $target_start = $target[1];
-          $target_end = $target[2];
-          $target_dir = $target[3];
-          #print "Target: $target_feature, $target_start-$target_end\n";
+          $start = $target[1];
+          $end = $target[2];
+          $target_strand = $target[3];          
+          $target_fmin = $start - 1;
+          $target_fmax = $end;
+          if ($end < $start) {
+            $target_fmin = $end - 1;
+            $target_fmax = $start;
+          }
+          
+          #print "Target: $target_feature, $target_fmin-$target_fmax $target_dir\n";
           tripal_feature_load_gff3_featureloc($feature, $organism,
-            $target_feature, $target_start, $target_end, $strand, $phase, $attr_fmin_partial,
+            $target_feature, $target_fmin, $target_fmax, $target_strand, $phase, $attr_fmin_partial,
             $attr_fmax_partial, $attr_residue_info, $attr_locgroup);
         }
         // add gap information.  This goes in simply as a property
@@ -1080,67 +1087,109 @@ function tripal_feature_load_gff3_feature($organism, $analysis_id, $cvterm, $uni
 function tripal_feature_load_gff3_featureloc($feature, $organism, $landmark, $fmin,
   $fmax, $strand, $phase, $is_fmin_partial, $is_fmax_partial, $residue_info, $locgroup) {
 
-  // get the source feature
-  $sql = "SELECT * FROM {feature}
-         WHERE organism_id = %d and uniquename = '%s'";
-  $srcfeature = db_fetch_object(db_query($sql, $organism->organism_id, $landmark));
-  if (!$srcfeature) {
+  $select = array(
+    'organism_id' => $organism->organism_id,
+    'uniquename' => $landmark,
+  );
+  $options = array('statement_name' => 'sel_feature_organism_id_uniquename');
+  $r = tripal_core_chado_select('feature', array('*'), $select, $options);
+  if (count($r)==0) {
     print "ERROR: cannot find landmark feature $landmark.  Cannot add the feature location record\n";
     return 0;
   }
+  $srcfeature = $r[0];
 
-
-  // TODO: create an attribute that recognizes the residue_info,locgroup, is_fmin_partial and is_fmax_partial, right now these are
-  //       hardcoded to be false and 0 below.
+  // TODO: create an attribute that recognizes the residue_info,locgroup, 
+  //  is_fmin_partial and is_fmax_partial, right now these are
+  //  hardcoded to be false and 0 below.
 
 
   // check to see if this featureloc already exists, but also keep track of the
   // last rank value
   $rank = 0;
   $exists = 0;
-  $featureloc_sql = "SELECT FL.featureloc_id,FL.fmin,FL.fmax,F.uniquename as srcname,
-                       rank
-                    FROM {featureloc} FL
-                      INNER JOIN {feature} F on F.feature_id = FL.srcfeature_id
-                    WHERE FL.feature_id = %d
-                    ORDER BY rank ASC";
-  $recs = db_query($featureloc_sql, $feature->feature_id);
-  while ($featureloc = db_fetch_object($recs)) {
-    if (strcmp($featureloc->srcname, $landmark)==0 and
-      $featureloc->fmin == $fmin and $featureloc->fmax == $fmax) {
-        // this is the same featureloc, so do nothing... no need to update
-        //TODO: need more checks here
+  $select = array('feature_id' => $feature->feature_id);
+  $options = array(
+    'statement_name' => 'sel_featureloc_feature_id',
+    'order_by' => array(
+       'rank' => 'ASC'
+    ),
+  );  
+  $locrecs = tripal_core_chado_select('featureloc', array('*'), $select, $options);
+
+  foreach ($locrecs as $featureloc) {
+    $select = array('feature_id' => $featureloc->srcfeature_id);
+    $options = array('statement_name' => 'sel_feature_feature_id');
+    $locsfeature = tripal_core_chado_select('feature', array('*'), $select, $options);
+
+    // check to make sure we don't already have this featureloc record
+    // if we do we don't want to readd it
+//    print "Src Name:'" . $locsfeature[0]->name . "' == '$landmark'\n";
+//    print "Fmin:    '$featureloc->fmin' == '$fmin'\n";
+//    print "Fmax:    '$featureloc->fmax' == '$fmax'\n";
+//    print "Strand:  '$featureloc->strand' == '$strand'\n";        
+    
+    // the source feature name and at least the fmin and fmax must be the same
+    // for an update of the featureloc, otherwise we'll insert a new record.
+    if (strcmp($locsfeature[0]->name, $landmark)==0 and 
+       ($featureloc->fmin == $fmin or $featureloc->fmax == $fmax)){
+      $match = array('featureloc_id' => $featureloc->featureloc_id);
+      $values = array();
+      $exists = 1;
+      if($featureloc->fmin != $fmin){
+         $values['fmin'] = $fmin;
+      }
+      if($featureloc->fmax != $fmax) {
+         $values['fmax'] = $fmax;
+      }
+      if($featureloc->strand != $strand){
+         $values['strand'] = $strand;
+      }
+      if(count($values) > 0){
+        tripal_core_chado_update('featureloc', $match, $values);
+        print "   Updated featureloc\n";
+      }
+      else {
         print "   No change to featureloc\n";
-        $exists = 1;
+      }
     }
-  $rank = $featureloc->rank + 1;
+    $rank = $featureloc->rank + 1;
   }
   if (!$exists) {
-    $rank++;
+
     // this feature location is new so add it
     if (!$phase) {
       $phase = 'NULL';
     }
-    if (strcmp($is_fmin_partial, 'f')==0) {
+    if (strcmp($is_fmin_partial, 'f')==0 or !$is_fmin_partial) {
       $is_fmin_partial = 'false';
     }
-    elseif (strcmp($is_fmin_partial, 't')==0) {
+    elseif (strcmp($is_fmin_partial, 't')==0 or $is_fmin_partial = 1) {
       $is_fmin_partial = 'true';
     }
-    if (strcmp($is_fmax_partial, 'f')==0) {
+    if (strcmp($is_fmax_partial, 'f')==0 or !$is_fmax_partial) {
       $is_fmax_partial = 'false';
     }
-    elseif (strcmp($is_fmax_partial, 't')==0) {
+    elseif (strcmp($is_fmax_partial, 't')==0 or $is_fmax_partial = 1) {
       $is_fmax_partial = 'true';
     }
-    print "   Adding featureloc $srcfeature->uniquename fmin: $fmin, fmax: $fmax, strand: $strand, phase: $phase, rank: $rank\n";
-    $fl_isql = "INSERT INTO {featureloc}
-                  (feature_id, srcfeature_id, fmin, is_fmin_partial, fmax, is_fmax_partial,
-                   strand, phase, residue_info, locgroup, rank)
-               VALUES (%d,%d,%d,%s,%d,%s,%d,%s,'%s',%d,%d)";
-    $result = db_query($fl_isql, $feature->feature_id, $srcfeature->feature_id, $fmin, $is_fmin_partial, $fmax, $is_fmax_partial,
-      $strand, $phase, $residue_info, $locgroup, $rank);
-    if (!$result) {
+    print "   Adding featureloc $srcfeature->uniquename fmin: $fmin (is_partial: $is_fmin_partial), fmax: $fmax (is_partial: $is_fmin_partial), strand: $strand, phase: $phase, rank: $rank\n";
+    $values = array(
+       'feature_id'      => $feature->feature_id,
+       'srcfeature_id'   => $srcfeature->feature_id,
+       'fmin'            => $fmin,
+       'is_fmin_partial' => $is_fmin_partial,
+       'fmax'            => $fmax,
+       'is_fmax_partial' => $is_fmax_partial,
+       'strand'          => $strand,
+       'phase'           => $phase,
+       'residue_info'    => $residue_info,
+       'locgroup'        => $locgroup,
+       'rank'            => $rank 
+    );
+    $options = array('statement_name' => 'ins_featureloc_all');
+    $success = tripal_core_chado_insert('featureloc', $values, $options);
+    if (!$success) {
       print "ERROR: failed to insert featureloc\n";
       exit;
       return 0;
