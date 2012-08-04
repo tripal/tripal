@@ -153,6 +153,7 @@ function tripal_feature_fasta_load_form( ) {
   $form['advanced'] = array(
     '#type' => 'fieldset',
     '#title' => t('Advanced Options'),
+    '#collapsible' => TRUE,
     '#collapsed' => TRUE
   );
   $form['advanced']['re_help']= array(

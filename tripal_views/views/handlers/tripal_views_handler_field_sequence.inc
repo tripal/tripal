@@ -186,6 +186,7 @@ class tripal_views_handler_field_sequence extends chado_views_handler_field {
     if($this->options['display']['derive_from_parent']){
       $this->ensure_my_table();
       $this->query->add_field($this->table,'feature_id');
+      $this->query->add_field($this->table,'name');
     }
   }
     
@@ -203,6 +204,7 @@ class tripal_views_handler_field_sequence extends chado_views_handler_field {
     
     // get the feature id
     $feature_id = $values->feature_feature_id;
+    $feature_name = $values->feature_name;
     
     // the upstream and downstream values get set by the 
     // tripal_views_handlers_filter_sequence.inc
@@ -312,7 +314,7 @@ class tripal_views_handler_field_sequence extends chado_views_handler_field {
         
         // now format for display
         $seq = wordwrap($seq, $num_bases_per_line, "<br>", TRUE);
-        $residues .= ">" . $parent->srcname . ":" . ($parent->adjfmin + 1) . ".." . $parent->adjfmax ." ($dir). ";
+        $residues .= ">" . $feature_name . " " . $parent->srcname . ":" . ($parent->adjfmin + 1) . ".." . $parent->adjfmax ." ($dir). ";
         if (count($types) > 0) {
           $residues .= "Excludes all bases but those of type(s): " . implode(', ',$types) . ". " ;
         }
@@ -322,7 +324,12 @@ class tripal_views_handler_field_sequence extends chado_views_handler_field {
         if ($parent->downstream > 0) {
            $residues .= "Includes " . $parent->downstream . " bases downstream.  ";
         }
-        $residues .= "<br>\n$seq\n<br>";          
+        if (!$seq) {
+          $residues .= "<br>\nNo sequence available\n<br>";          
+        }
+        else {
+          $residues .= "<br>\n$seq\n<br>";          
+        }
       }
     }
     // if we are not getting the sequence from the parent sequence then
