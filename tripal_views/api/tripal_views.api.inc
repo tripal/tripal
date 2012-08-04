@@ -155,7 +155,7 @@ function tripal_views_integration_add_entry($defn_array) {
 
     // Need to update the tripal_views record so base_table can be false
     // this is a fix because drupal_write_record() puts in defaults if !isset()
-    // and a variable is considered not set if its null!
+    // and a variable is considered not set if it's null!
     db_query(
       "UPDATE {tripal_views} SET base_table=%d WHERE table_name='%s' AND priority=%d",
       $defn_array['base_table'],
@@ -176,7 +176,7 @@ function tripal_views_integration_add_entry($defn_array) {
         $status = drupal_write_record('tripal_views_field', $field_record);
       }
       else {
-        drupal_set_message(t('Unable to integrate %name field due to a missing required fields.', array('%name' => $field['name'])), 'error');
+        drupal_set_message(t('Unable to integrate %name field due to missing required fields.', array('%name' => $field['name'])), 'error');
         $status = FALSE;
       }
 
@@ -248,14 +248,14 @@ function tripal_views_integration_add_entry($defn_array) {
 
       }
       else {
-        drupal_set_message(t('Unable to integrate field: %field_name', array('%field_name' => $field['name'])), 'error');
+        drupal_set_message(t('Unable to integrate %field_name field', array('%field_name' => $field['name'])), 'error');
         $no_errors = FALSE;
       }
     }
 
   }
   else {
-    drupal_set_message(t('Unable to set default views integration'), 'error');
+    drupal_set_message(t('Unable to set default tripal views integration'), 'error');
     $no_errors = FALSE;
   }
 
@@ -363,6 +363,22 @@ function tripal_views_integration_remove_entry_by_setup_id($setup_id) {
 }
 
 /**
+ * Integrate all chado tables in the schema api
+ */
+function tripal_views_integrate_all_chado_tables() {
+
+  $tables = tripal_core_get_chado_tables();
+  foreach ($tables as $tablename) {
+    if (!tripal_views_is_integrated($tablename, 10)) {
+      $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename, TRUE, 10);
+      if ($table_integration_array) {
+        tripal_views_integration_add_entry($table_integration_array);
+      }
+    }
+  }
+}
+
+/**
  * Returns the array needed to integrate a given chado table with views
  *
  * @param $tablename
@@ -371,7 +387,7 @@ function tripal_views_integration_remove_entry_by_setup_id($setup_id) {
  *   The tripal views integration array which is the parameter for
  *   tripal_views_integration_add_entry($defn_array)
  */
-function tripal_views_get_integration_array_for_chado_table($table_name, $base_table = TRUE) {
+function tripal_views_get_integration_array_for_chado_table($table_name, $base_table = TRUE, $priority = 9) {
 
   // Get the schema for this table (via the chado schema api)
   $schema = tripal_core_get_chado_table_schema($table_name);
@@ -382,14 +398,14 @@ function tripal_views_get_integration_array_for_chado_table($table_name, $base_t
     'type' => 'chado',
     'name' => 'Chado ' . ucwords(str_replace('_', ' ', $table_name)),
     'description' => (!empty($schema['description'])) ? $schema['description'] : ' ',
-    'priority' => 10,
+    'priority' => $priority,
     'base_table' => $base_table,
     'fields' => array(),
   );
   // Add fields
   if (!isset($schema['fields'])) {
-    $schema['fields'] = array();
-    drupal_set_message(t('There are no fields defined for %table in the Chado Schema API.', array('%table' => $table_name)), 'warning');
+    watchdog('tripal_views', 'There are no fields defined for %table in the Chado Schema API.', array('%table' => $table_name), WATCHDOG_NOTICE);
+    return FALSE;
   }
   foreach ($schema['fields'] as $field_name => $field_schema) {
 
@@ -458,22 +474,31 @@ function tripal_views_get_integration_array_for_chado_table($table_name, $base_t
 
       // Specify specialty handlers
       if ($field_name == 'type_id' OR $field_name == 'cvterm_id') {
-        $defn_array['fields'][$field_name]['handlers']['filter']['name'] = 'chado_views_handler_filter_select_cvterm';
+        $defn_array['fields'][$field_name]['handlers']['filter']['name'] = 'tripal_views_handler_filter_select_cvterm';
       }
     }
   }
 
-  // Add Joins to fields
+  // Add Joins & Relationship Handlers to fields
   if (!isset($schema['foreign keys'])) {
     $schema['foreign keys'] = array();
-    drupal_set_message(t('There are no foreign keys defined for %table in the Chado Schema API.', array('%table' => $table_name)), 'warning');
+    watchdog('tripal_views','There are no foreign keys defined for %table in the Chado Schema API.', array('%table' => $table_name), WATCHDOG_WARNING);
   }
   foreach ($schema['foreign keys'] as $foreign_key_schema) {
     foreach ($foreign_key_schema['columns'] as $left_field => $right_field) {
+      // Join
       $defn_array['fields'][$left_field]['joins'][ $foreign_key_schema['table'] ] = array(
         'table' => $foreign_key_schema['table'],
         'field' => $right_field,
         'handler' => 'views_handler_join_chado_aggregator'
+      );
+
+      // Relationship Handler
+      $defn_array['fields'][$left_field]['handlers']['relationship'] = array(
+        'name' => 'chado_views_handler_relationship',
+        'base' => $foreign_key_schema['table'],
+        'base field' => $right_field,
+        'label' => $table_name . ' ' . $left_field . ' to ' . $foreign_key_schema['table'] . ' ' .$right_field
       );
     }
   }

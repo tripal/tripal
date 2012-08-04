@@ -37,7 +37,7 @@ function tripal_feature_views_data()  {
       'feature',
     );
     foreach ($tables as $tablename) {
-      if (!tripal_views_is_integrated($tablename, 10)) {
+      if (!tripal_views_is_integrated($tablename, 9)) {
         $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename, TRUE);
         tripal_views_integration_add_entry($table_integration_array);
       }
@@ -66,7 +66,7 @@ function tripal_feature_views_data()  {
       'featurerange'
     );
     foreach ($tables as $tablename) {
-      if (!tripal_views_is_integrated($tablename, 10)) {
+      if (!tripal_views_is_integrated($tablename, 9)) {
         $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename, FALSE);
         tripal_views_integration_add_entry($table_integration_array);
       }
@@ -134,17 +134,15 @@ function tripal_feature_views_default_views() {
   $views = array();
 
   // Main default view
-  // List all cvterms based on cv
   $view = new view;
-  $view->name = 'all_features';
-  $view->description = 'A listing of all Sequence FEatures';
-  $view->tag = 'chado';
-  $view->view_php = '';
+  $view->name = 'feature_listing';
+  $view->description = 'A listing of chado sequence features.';
+  $view->tag = 'chado default';
   $view->base_table = 'feature';
-  $view->is_cacheable = FALSE;
-  $view->api_version = 2;
+  $view->core = 0;
+  $view->api_version = '2';
   $view->disabled = FALSE; /* Edit this to true to make a default view disabled initially */
-  $handler = $view->new_display('default', 'Defaults', 'default');
+  $handler = $view->new_display('default', 'features_all', 'default');
   $handler->override_option('fields', array(
     'uniquename' => array(
       'label' => 'Unique Name',
@@ -152,7 +150,7 @@ function tripal_feature_views_default_views() {
         'alter_text' => 0,
         'text' => '',
         'make_link' => 0,
-        'path' => '',
+        'path' => 'node/[nid]',
         'link_class' => '',
         'alt' => '',
         'prefix' => '',
@@ -169,12 +167,15 @@ function tripal_feature_views_default_views() {
       'empty' => '',
       'hide_empty' => 0,
       'empty_zero' => 0,
-      'link_to_node' => 1,
+      'link_to_node' => 0,
       'exclude' => 0,
       'id' => 'uniquename',
       'table' => 'feature',
       'field' => 'uniquename',
       'relationship' => 'none',
+      'override' => array(
+        'button' => 'Override',
+      ),
     ),
     'name' => array(
       'label' => 'Name',
@@ -205,38 +206,11 @@ function tripal_feature_views_default_views() {
       'table' => 'feature',
       'field' => 'name',
       'relationship' => 'none',
-    ),
-    'common_name' => array(
-      'label' => 'Organism',
-      'alter' => array(
-        'alter_text' => 0,
-        'text' => '',
-        'make_link' => 0,
-        'path' => '',
-        'link_class' => '',
-        'alt' => '',
-        'prefix' => '',
-        'suffix' => '',
-        'target' => '',
-        'help' => '',
-        'trim' => 0,
-        'max_length' => '',
-        'word_boundary' => 1,
-        'ellipsis' => 1,
-        'html' => 0,
-        'strip_tags' => 0,
+      'override' => array(
+        'button' => 'Override',
       ),
-      'empty' => '',
-      'hide_empty' => 0,
-      'empty_zero' => 0,
-      'link_to_node' => 1,
-      'exclude' => 0,
-      'id' => 'common_name',
-      'table' => 'organism',
-      'field' => 'common_name',
-      'relationship' => 'none',
     ),
-    'name_3' => array(
+    'name_1' => array(
       'label' => 'Type',
       'alter' => array(
         'alter_text' => 0,
@@ -260,42 +234,13 @@ function tripal_feature_views_default_views() {
       'hide_empty' => 0,
       'empty_zero' => 0,
       'exclude' => 0,
-      'id' => 'name_3',
+      'id' => 'name_1',
       'table' => 'cvterm',
       'field' => 'name',
       'relationship' => 'none',
     ),
-    'accession_link' => array(
-      'label' => 'External Reference',
-      'alter' => array(
-        'alter_text' => 0,
-        'text' => '',
-        'make_link' => 0,
-        'path' => '',
-        'link_class' => '',
-        'alt' => '',
-        'prefix' => '',
-        'suffix' => '',
-        'target' => '',
-        'help' => '',
-        'trim' => 0,
-        'max_length' => '',
-        'word_boundary' => 1,
-        'ellipsis' => 1,
-        'html' => 0,
-        'strip_tags' => 0,
-      ),
-      'empty' => '',
-      'hide_empty' => 0,
-      'empty_zero' => 0,
-      'exclude' => 0,
-      'id' => 'accession_link',
-      'table' => 'dbxref',
-      'field' => 'accession_link',
-      'relationship' => 'none',
-    ),
-    'name_1' => array(
-      'label' => 'Library',
+    'common_name' => array(
+      'label' => 'Common Name',
       'alter' => array(
         'alter_text' => 0,
         'text' => '',
@@ -319,38 +264,140 @@ function tripal_feature_views_default_views() {
       'empty_zero' => 0,
       'link_to_node' => 1,
       'exclude' => 0,
-      'id' => 'name_1',
-      'table' => 'library',
+      'id' => 'common_name',
+      'table' => 'organism',
+      'field' => 'common_name',
+      'relationship' => 'none',
+      'override' => array(
+        'button' => 'Override',
+      ),
+    ),
+    'seqlen' => array(
+      'label' => 'Sequence Length',
+      'alter' => array(
+        'alter_text' => 0,
+        'text' => '',
+        'make_link' => 0,
+        'path' => '',
+        'link_class' => '',
+        'alt' => '',
+        'prefix' => '',
+        'suffix' => '',
+        'target' => '',
+        'help' => '',
+        'trim' => 0,
+        'max_length' => '',
+        'word_boundary' => 1,
+        'ellipsis' => 1,
+        'html' => 0,
+        'strip_tags' => 0,
+      ),
+      'empty' => '',
+      'hide_empty' => 0,
+      'empty_zero' => 0,
+      'set_precision' => FALSE,
+      'precision' => 0,
+      'decimal' => '.',
+      'separator' => ',',
+      'prefix' => '',
+      'suffix' => '',
+      'exclude' => 0,
+      'id' => 'seqlen',
+      'table' => 'feature',
+      'field' => 'seqlen',
+      'relationship' => 'none',
+    ),
+    'is_obsolete' => array(
+      'label' => 'Is Obsolete',
+      'alter' => array(
+        'alter_text' => 0,
+        'text' => '',
+        'make_link' => 0,
+        'path' => '',
+        'absolute' => 0,
+        'link_class' => '',
+        'alt' => '',
+        'rel' => '',
+        'prefix' => '',
+        'suffix' => '',
+        'target' => '',
+        'help' => '',
+        'trim' => 0,
+        'max_length' => '',
+        'word_boundary' => 1,
+        'ellipsis' => 1,
+        'html' => 0,
+        'strip_tags' => 0,
+      ),
+      'empty' => '',
+      'hide_empty' => 0,
+      'empty_zero' => 0,
+      'hide_alter_empty' => 1,
+      'type' => 'separator',
+      'not' => 0,
+      'separator' => ', ',
+      'exclude' => 0,
+      'id' => 'is_obsolete',
+      'table' => 'feature',
+      'field' => 'is_obsolete',
+      'relationship' => 'none',
+    ),
+    'timeaccessioned' => array(
+      'label' => 'Accessioned On',
+      'alter' => array(
+        'alter_text' => 0,
+        'text' => '',
+        'make_link' => 0,
+        'path' => '',
+        'absolute' => 0,
+        'link_class' => '',
+        'alt' => '',
+        'rel' => '',
+        'prefix' => '',
+        'suffix' => '',
+        'target' => '',
+        'help' => '',
+        'trim' => 0,
+        'max_length' => '',
+        'word_boundary' => 1,
+        'ellipsis' => 1,
+        'html' => 0,
+        'strip_tags' => 0,
+      ),
+      'empty' => '',
+      'hide_empty' => 0,
+      'empty_zero' => 0,
+      'hide_alter_empty' => 1,
+      'date_format' => 'large',
+      'custom_date_format' => '',
+      'type' => 'separator',
+      'separator' => ', ',
+      'exclude' => 0,
+      'id' => 'timeaccessioned',
+      'table' => 'feature',
+      'field' => 'timeaccessioned',
+      'relationship' => 'none',
+    ),
+  ));
+  $handler->override_option('sorts', array(
+    'common_name' => array(
+      'order' => 'ASC',
+      'id' => 'common_name',
+      'table' => 'organism',
+      'field' => 'common_name',
+      'relationship' => 'none',
+    ),
+    'name' => array(
+      'order' => 'ASC',
+      'id' => 'name',
+      'table' => 'cvterm',
       'field' => 'name',
       'relationship' => 'none',
     ),
-    'name_2' => array(
-      'label' => 'Analysis',
-      'alter' => array(
-        'alter_text' => 0,
-        'text' => '',
-        'make_link' => 0,
-        'path' => '',
-        'link_class' => '',
-        'alt' => '',
-        'prefix' => '',
-        'suffix' => '',
-        'target' => '',
-        'help' => '',
-        'trim' => 0,
-        'max_length' => '',
-        'word_boundary' => 1,
-        'ellipsis' => 1,
-        'html' => 0,
-        'strip_tags' => 0,
-      ),
-      'empty' => '',
-      'hide_empty' => 0,
-      'empty_zero' => 0,
-      'link_to_node' => 1,
-      'exclude' => 0,
-      'id' => 'name_2',
-      'table' => 'analysis',
+    'name_1' => array(
+      'order' => 'ASC',
+      'id' => 'name_1',
+      'table' => 'feature',
       'field' => 'name',
       'relationship' => 'none',
     ),
@@ -358,15 +405,14 @@ function tripal_feature_views_default_views() {
   $handler->override_option('filters', array(
     'common_name' => array(
       'operator' => '=',
-      'value' => '<select organism>',
+      'value' => array(),
       'group' => '0',
       'exposed' => TRUE,
       'expose' => array(
         'use_operator' => 0,
         'operator' => 'common_name_op',
         'identifier' => 'organism',
-        'label' => 'Organism',
-        'optional' => 1,
+        'label' => 'Organism Common Name',
         'remember' => 0,
       ),
       'case' => 1,
@@ -374,63 +420,81 @@ function tripal_feature_views_default_views() {
       'table' => 'organism',
       'field' => 'common_name',
       'relationship' => 'none',
+      'values_form_type' => 'select',
+      'multiple' => 1,
+      'optional' => 0,
+      'override' => array(
+        'button' => 'Override',
+      ),
+      'agg' => array(
+        'records_with' => 1,
+        'aggregates_with' => 1,
+      ),
     ),
-    'name' => array(
-      'operator' => 'contains',
-      'value' => '',
+    'type_id' => array(
+      'operator' => '=',
+      'value' => array(),
       'group' => '0',
       'exposed' => TRUE,
       'expose' => array(
         'use_operator' => 0,
-        'operator' => 'name_op',
-        'identifier' => 'name',
-        'label' => 'Name Contains',
-        'optional' => 1,
+        'operator' => 'type_id_op',
+        'identifier' => 'type_id',
+        'label' => 'Type',
         'remember' => 0,
       ),
-      'case' => 0,
-      'id' => 'name',
+      'case' => 1,
+      'id' => 'type_id',
       'table' => 'feature',
-      'field' => 'name',
+      'field' => 'type_id',
       'relationship' => 'none',
+      'values_form_type' => 'select',
+      'multiple' => 1,
+      'optional' => 0,
+      'show_all' => 0,
+      'agg' => array(
+        'records_with' => 1,
+        'aggregates_with' => 1,
+      ),
     ),
     'name_1' => array(
-      'operator' => 'contains',
+      'operator' => 'allwords',
       'value' => '',
       'group' => '0',
       'exposed' => TRUE,
       'expose' => array(
         'use_operator' => 0,
         'operator' => 'name_1_op',
-        'identifier' => 'library',
-        'label' => 'Library Name Contains',
-        'optional' => 1,
+        'identifier' => 'name',
+        'label' => 'Name Contains',
+        'bef_filter_description' => '',
         'remember' => 0,
       ),
       'case' => 0,
       'id' => 'name_1',
-      'table' => 'library',
+      'table' => 'feature',
       'field' => 'name',
       'relationship' => 'none',
+      'agg' => array(
+        'records_with' => 1,
+        'aggregates_with' => 1,
+      ),
     ),
-    'name_2' => array(
-      'operator' => 'contains',
+    'search_results' => array(
+      'operator' => '=',
       'value' => '',
       'group' => '0',
-      'exposed' => TRUE,
+      'exposed' => FALSE,
       'expose' => array(
-        'use_operator' => 0,
-        'operator' => 'name_2_op',
-        'identifier' => 'analysis',
-        'label' => 'Analysis Name Contains',
-        'optional' => 1,
-        'remember' => 0,
+        'operator' => FALSE,
+        'label' => '',
       ),
-      'case' => 0,
-      'id' => 'name_2',
-      'table' => 'analysis',
-      'field' => 'name',
+      'id' => 'search_results',
+      'table' => 'views',
+      'field' => 'search_results',
       'relationship' => 'none',
+      'apply_button' => 'Show',
+      'no_results_text' => 'Click "Show" to see a list of all features matching the entered criteria. If you leave a any of the criteria blank then the features will be not be filtered based on that field. Furthermore, if you leave all criteria blank then all features will be listed.',
     ),
   ));
   $handler->override_option('access', array(
@@ -441,16 +505,80 @@ function tripal_feature_views_default_views() {
     'type' => 'none',
   ));
   $handler->override_option('title', 'Sequence Features');
-  $handler->override_option('empty', 'There are no features matching that criteria. Please select a different organism above.');
-  $handler->override_option('empty_format', '1');
+  $handler->override_option('header', 'Click "Show" to see a list of all features matching the entered criteria. If you leave a any of the criteria blank then the features will be not be filtered based on that field. Furthermore, if you leave all criteria blank then all features will be listed.');
+  $handler->override_option('header_format', '2');
+  $handler->override_option('header_empty', 0);
+  $handler->override_option('empty', 'There are currently no features sync\'d with drupal.');
+  $handler->override_option('empty_format', '2');
   $handler->override_option('items_per_page', 50);
+  $handler->override_option('use_pager', '1');
   $handler->override_option('style_plugin', 'table');
+  $handler->override_option('style_options', array(
+    'grouping' => '',
+    'override' => 1,
+    'sticky' => 0,
+    'order' => 'asc',
+    'columns' => array(
+      'accession' => 'accession',
+      'accession_link' => 'accession_link',
+      'name' => 'name',
+      'uniquename' => 'uniquename',
+      'name_1' => 'name_1',
+      'common_name' => 'common_name',
+      'seqlen' => 'seqlen',
+      'is_obsolete' => 'is_obsolete',
+      'is_analysis' => 'is_analysis',
+      'nid' => 'nid',
+    ),
+    'info' => array(
+      'accession' => array(
+        'sortable' => 1,
+        'separator' => '',
+      ),
+      'accession_link' => array(
+        'sortable' => 1,
+        'separator' => '',
+      ),
+      'name' => array(
+        'sortable' => 1,
+        'separator' => '',
+      ),
+      'uniquename' => array(
+        'sortable' => 1,
+        'separator' => '',
+      ),
+      'name_1' => array(
+        'sortable' => 1,
+        'separator' => '',
+      ),
+      'common_name' => array(
+        'sortable' => 1,
+        'separator' => '',
+      ),
+      'seqlen' => array(
+        'sortable' => 1,
+        'separator' => '',
+      ),
+      'is_obsolete' => array(
+        'sortable' => 1,
+        'separator' => '',
+      ),
+      'is_analysis' => array(
+        'sortable' => 1,
+        'separator' => '',
+      ),
+      'nid' => array(
+        'separator' => '',
+      ),
+    ),
+    'default' => '-1',
+  ));
   $handler = $view->new_display('page', 'Page', 'page_1');
   $handler->override_option('path', 'features');
   $handler->override_option('menu', array(
     'type' => 'normal',
-    'title' => 'Sequence Features',
-    'description' => '',
+    'title' => 'Features View',
+    'description' => 'Provides a table of sequence features',
     'weight' => '0',
     'name' => 'primary-links',
   ));

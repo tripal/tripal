@@ -35,7 +35,7 @@ function tripal_library_views_data()  {
       'library'
     );
     foreach ($tables as $tablename) {
-      if (!tripal_views_is_integrated($tablename, 10)) {
+      if (!tripal_views_is_integrated($tablename, 9)) {
         $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename, TRUE);
         tripal_views_integration_add_entry($table_integration_array);
       }
@@ -49,7 +49,7 @@ function tripal_library_views_data()  {
       'libraryprop'
     );
     foreach ($tables as $tablename) {
-      if (!tripal_views_is_integrated($tablename, 10)) {
+      if (!tripal_views_is_integrated($tablename, 9)) {
         $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename, FALSE);
         tripal_views_integration_add_entry($table_integration_array);
       }
@@ -116,15 +116,13 @@ function tripal_library_views_default_views() {
   $views = array();
 
   // Main default view
-  // List all cvterms based on cv
   $view = new view;
-  $view->name = 'all_libraries';
+  $view->name = 'library_listing';
   $view->description = 'A listing of all libraries';
-  $view->tag = 'chado';
-  $view->view_php = '';
+  $view->tag = 'chado default';
   $view->base_table = 'library';
-  $view->is_cacheable = FALSE;
-  $view->api_version = 2;
+  $view->core = 0;
+  $view->api_version = '2';
   $view->disabled = FALSE; /* Edit this to true to make a default view disabled initially */
   $handler = $view->new_display('default', 'Defaults', 'default');
   $handler->override_option('fields', array(
@@ -278,40 +276,18 @@ function tripal_library_views_default_views() {
       'field' => 'is_obsolete',
       'relationship' => 'none',
     ),
-    'num_features' => array(
-      'label' => 'Number of Features',
-      'alter' => array(
-        'alter_text' => 0,
-        'text' => '',
-        'make_link' => 0,
-        'path' => '',
-        'link_class' => '',
-        'alt' => '',
-        'prefix' => '',
-        'suffix' => '',
-        'target' => '',
-        'help' => '',
-        'trim' => 0,
-        'max_length' => '',
-        'word_boundary' => 1,
-        'ellipsis' => 1,
-        'html' => 0,
-        'strip_tags' => 0,
-      ),
-      'empty' => '',
-      'hide_empty' => 0,
-      'empty_zero' => 0,
-      'exclude' => 0,
-      'id' => 'num_features',
+  ));
+  $handler->override_option('sorts', array(
+    'name' => array(
+      'id' => 'name',
       'table' => 'library',
-      'field' => 'num_features',
-      'relationship' => 'none',
+      'field' => 'name',
     ),
   ));
   $handler->override_option('filters', array(
     'common_name' => array(
       'operator' => '=',
-      'value' => 'All',
+      'value' => array(),
       'group' => '0',
       'exposed' => TRUE,
       'expose' => array(
@@ -319,7 +295,6 @@ function tripal_library_views_default_views() {
         'operator' => 'common_name_op',
         'identifier' => 'organism_common_name',
         'label' => 'Organism',
-        'optional' => 1,
         'remember' => 0,
       ),
       'case' => 1,
@@ -327,6 +302,39 @@ function tripal_library_views_default_views() {
       'table' => 'organism',
       'field' => 'common_name',
       'relationship' => 'none',
+      'values_form_type' => 'select',
+      'multiple' => 1,
+      'optional' => 0,
+      'agg' => array(
+        'records_with' => 1,
+        'aggregates_with' => 1,
+      ),
+    ),
+    'type_id' => array(
+      'operator' => '=',
+      'value' => array(),
+      'group' => '0',
+      'exposed' => TRUE,
+      'expose' => array(
+        'use_operator' => 0,
+        'operator' => 'type_id_op',
+        'identifier' => 'type_id',
+        'label' => 'Type',
+        'remember' => 0,
+      ),
+      'case' => 1,
+      'id' => 'type_id',
+      'table' => 'library',
+      'field' => 'type_id',
+      'relationship' => 'none',
+      'values_form_type' => 'select',
+      'multiple' => 1,
+      'optional' => 0,
+      'show_all' => 0,
+      'agg' => array(
+        'records_with' => 1,
+        'aggregates_with' => 0,
+      ),
     ),
   ));
   $handler->override_option('access', array(
@@ -337,8 +345,12 @@ function tripal_library_views_default_views() {
     'type' => 'none',
   ));
   $handler->override_option('title', 'Libraries');
+  $handler->override_option('header', 'Click "Show" to see a list of all libraries matching the entered criteria. If you leave a any of the criteria blank then the libraries will be not be filtered based on that field. Furthermore, if you leave all criteria blank then all libraries will be listed.');
+  $handler->override_option('header_format', '2');
+  $handler->override_option('header_empty', 0);
   $handler->override_option('empty', 'There are no libraries matching the current criteria. If you think there should be, check that all chado libraries are sync\'d with your website.');
   $handler->override_option('empty_format', '1');
+  $handler->override_option('items_per_page', 50);
   $handler->override_option('use_pager', '1');
   $handler->override_option('style_plugin', 'table');
   $handler->override_option('style_options', array(
@@ -346,50 +358,37 @@ function tripal_library_views_default_views() {
     'override' => 1,
     'sticky' => 0,
     'order' => 'asc',
+    'summary' => '',
     'columns' => array(
-      'name' => 'name',
-      'timeaccessioned' => 'timeaccessioned',
-      'timelastmodified' => 'timelastmodified',
-      'is_obsolete' => 'is_obsolete',
-      'name_1' => 'name_1',
       'uniquename' => 'uniquename',
+      'name_1' => 'name_1',
       'common_name' => 'common_name',
-      'num_libraries' => 'num_libraries',
+      'name' => 'name',
+      'is_obsolete' => 'is_obsolete',
     ),
     'info' => array(
-      'name' => array(
-        'sortable' => 0,
-        'separator' => '',
-      ),
-      'timeaccessioned' => array(
-        'sortable' => 0,
-        'separator' => '',
-      ),
-      'timelastmodified' => array(
-        'sortable' => 0,
-        'separator' => '',
-      ),
-      'is_obsolete' => array(
-        'sortable' => 0,
+      'uniquename' => array(
+        'sortable' => 1,
         'separator' => '',
       ),
       'name_1' => array(
-        'sortable' => 0,
-        'separator' => '',
-      ),
-      'uniquename' => array(
-        'sortable' => 0,
+        'sortable' => 1,
         'separator' => '',
       ),
       'common_name' => array(
-        'sortable' => 0,
+        'sortable' => 1,
         'separator' => '',
       ),
-      'num_libraries' => array(
+      'name' => array(
+        'sortable' => 1,
+        'separator' => '',
+      ),
+      'is_obsolete' => array(
+        'sortable' => 1,
         'separator' => '',
       ),
     ),
-    'default' => '-1',
+    'default' => 'uniquename',
   ));
   $handler = $view->new_display('page', 'Page', 'page_1');
   $handler->override_option('path', 'libraries');

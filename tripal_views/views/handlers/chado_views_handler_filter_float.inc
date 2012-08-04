@@ -50,8 +50,14 @@ class chado_views_handler_filter_float extends views_handler_filter_float {
 
     // make optional
     // if it is not set or empty then don't restrict the query
-    if (!$this->value) {
+    if (!$this->value AND !is_array($this->value)) {
       return;
+    }
+    elseif (is_array($this->value)) {
+      $tmp = array_filter($this->value);
+      if (!$tmp) {
+        return;
+      }
     }
 
     $this->ensure_my_table();

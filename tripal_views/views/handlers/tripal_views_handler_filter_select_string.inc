@@ -74,9 +74,9 @@ class tripal_views_handler_filter_select_string extends chado_views_handler_filt
       // using fields that are not exposed and that are for the table
       // from whcih the values in the drop box will be slected and
       // we only want to use non-exposed fields because these are not
-      // available to the user to edit--their fixed.
+      // available to the user to edit--they're fixed.
       $where = '';
-      $filters = ($this->view->filter) ? $this->view->filter : array();
+      $filters = (is_array($this->view->filter)) ? $this->view->filter : array();
       foreach ($filters as $filter_name => $details) {
          // we only want to inclue non-exposed filters
          if ($details->options['exposed'] == FALSE) {

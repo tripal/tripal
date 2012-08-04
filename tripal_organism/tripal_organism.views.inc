@@ -36,8 +36,15 @@ function tripal_organism_views_data()  {
       'organism'
     );
     foreach ($tables as $tablename) {
-      if (!tripal_views_is_integrated($tablename, 10)) {
+      if (!tripal_views_is_integrated($tablename, 9)) {
         $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename, TRUE);
+
+        // Add specialty handlers
+        $table_integration_array['fields']['common_name']['handlers']['filter']['name'] = 'tripal_views_handler_filter_select_string';
+        $table_integration_array['fields']['genus']['handlers']['filter']['name'] = 'tripal_views_handler_filter_select_string';
+        $table_integration_array['fields']['species']['handlers']['filter']['name'] = 'tripal_views_handler_filter_select_string';
+        $table_integration_array['fields']['abbreviation']['handlers']['filter']['name'] = 'tripal_views_handler_filter_select_string';
+
         tripal_views_integration_add_entry($table_integration_array);
       }
     }
@@ -48,7 +55,7 @@ function tripal_organism_views_data()  {
       'organism_dbxref'
     );
     foreach ($tables as $tablename) {
-      if (!tripal_views_is_integrated($tablename, 10)) {
+      if (!tripal_views_is_integrated($tablename, 9)) {
         $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename, FALSE);
         tripal_views_integration_add_entry($table_integration_array);
       }
@@ -117,15 +124,13 @@ function tripal_organism_views_default_views() {
   $views = array();
 
   // Main default view
-  // List all cvterms based on cv
   $view = new view;
-  $view->name = 'all_organisms';
+  $view->name = 'organism_listing';
   $view->description = 'A listing of all organism in chado';
-  $view->tag = 'chado';
-  $view->view_php = '';
+  $view->tag = 'chado default';
   $view->base_table = 'organism';
-  $view->is_cacheable = FALSE;
-  $view->api_version = 2;
+  $view->core = 0;
+  $view->api_version = '2';
   $view->disabled = FALSE; /* Edit this to true to make a default view disabled initially */
   $handler = $view->new_display('default', 'Defaults', 'default');
   $handler->override_option('fields', array(
@@ -157,36 +162,6 @@ function tripal_organism_views_default_views() {
       'id' => 'common_name',
       'table' => 'organism',
       'field' => 'common_name',
-      'relationship' => 'none',
-    ),
-    'abbreviation' => array(
-      'label' => 'Abbreviation',
-      'alter' => array(
-        'alter_text' => 0,
-        'text' => '',
-        'make_link' => 0,
-        'path' => '',
-        'link_class' => '',
-        'alt' => '',
-        'prefix' => '',
-        'suffix' => '',
-        'target' => '',
-        'help' => '',
-        'trim' => 0,
-        'max_length' => '',
-        'word_boundary' => 1,
-        'ellipsis' => 1,
-        'html' => 0,
-        'strip_tags' => 0,
-      ),
-      'empty' => '',
-      'hide_empty' => 0,
-      'empty_zero' => 0,
-      'link_to_node' => 0,
-      'exclude' => 0,
-      'id' => 'abbreviation',
-      'table' => 'organism',
-      'field' => 'abbreviation',
       'relationship' => 'none',
     ),
     'genus' => array(
@@ -247,8 +222,8 @@ function tripal_organism_views_default_views() {
       'field' => 'species',
       'relationship' => 'none',
     ),
-    'num_features' => array(
-      'label' => 'Number of Features',
+    'abbreviation' => array(
+      'label' => 'Abbreviation',
       'alter' => array(
         'alter_text' => 0,
         'text' => '',
@@ -270,68 +245,27 @@ function tripal_organism_views_default_views() {
       'empty' => '',
       'hide_empty' => 0,
       'empty_zero' => 0,
+      'link_to_node' => 0,
       'exclude' => 0,
-      'id' => 'num_features',
+      'id' => 'abbreviation',
       'table' => 'organism',
-      'field' => 'num_features',
+      'field' => 'abbreviation',
       'relationship' => 'none',
     ),
-    'num_stocks' => array(
-      'label' => 'Number of Stocks',
-      'alter' => array(
-        'alter_text' => 0,
-        'text' => '',
-        'make_link' => 0,
-        'path' => '',
-        'link_class' => '',
-        'alt' => '',
-        'prefix' => '',
-        'suffix' => '',
-        'target' => '',
-        'help' => '',
-        'trim' => 0,
-        'max_length' => '',
-        'word_boundary' => 1,
-        'ellipsis' => 1,
-        'html' => 0,
-        'strip_tags' => 0,
-      ),
-      'empty' => '',
-      'hide_empty' => 0,
-      'empty_zero' => 0,
-      'exclude' => 0,
-      'id' => 'num_stocks',
+  ));
+  $handler->override_option('sorts', array(
+    'genus' => array(
+      'order' => 'ASC',
+      'id' => 'genus',
       'table' => 'organism',
-      'field' => 'num_stocks',
+      'field' => 'genus',
       'relationship' => 'none',
     ),
-    'num_libraries' => array(
-      'label' => 'Number of Libraries',
-      'alter' => array(
-        'alter_text' => 0,
-        'text' => '',
-        'make_link' => 0,
-        'path' => '',
-        'link_class' => '',
-        'alt' => '',
-        'prefix' => '',
-        'suffix' => '',
-        'target' => '',
-        'help' => '',
-        'trim' => 0,
-        'max_length' => '',
-        'word_boundary' => 1,
-        'ellipsis' => 1,
-        'html' => 0,
-        'strip_tags' => 0,
-      ),
-      'empty' => '',
-      'hide_empty' => 0,
-      'empty_zero' => 0,
-      'exclude' => 0,
-      'id' => 'num_libraries',
+    'species' => array(
+      'order' => 'ASC',
+      'id' => 'species',
       'table' => 'organism',
-      'field' => 'num_libraries',
+      'field' => 'species',
       'relationship' => 'none',
     ),
   ));
@@ -352,27 +286,28 @@ function tripal_organism_views_default_views() {
     'override' => 1,
     'sticky' => 0,
     'order' => 'asc',
+    'summary' => '',
     'columns' => array(
-      'abbreviation' => 'abbreviation',
       'common_name' => 'common_name',
       'genus' => 'genus',
       'species' => 'species',
+      'abbreviation' => 'abbreviation',
     ),
     'info' => array(
-      'abbreviation' => array(
-        'sortable' => 0,
-        'separator' => '',
-      ),
       'common_name' => array(
-        'sortable' => 0,
+        'sortable' => 1,
         'separator' => '',
       ),
       'genus' => array(
-        'sortable' => 0,
+        'sortable' => 1,
         'separator' => '',
       ),
       'species' => array(
-        'sortable' => 0,
+        'sortable' => 1,
+        'separator' => '',
+      ),
+      'abbreviation' => array(
+        'sortable' => 1,
         'separator' => '',
       ),
     ),

@@ -139,9 +139,11 @@ class chado_views_handler_filter_date extends views_handler_filter_date {
     $operators = $this->operators();
 
     if ($operators[$operator]['values'] == 1) {
-      $convert = strtotime($value);
-      if (!empty($form) && ($convert == -1 || $convert === FALSE)) {
-        form_set_error($form['value'], t('Invalid date format.'));
+      if (!empty($value['value'])) {
+        $convert = strtotime($value['value']);
+        if (!empty($form) && ($convert == -1 || $convert === FALSE)) {
+          form_set_error($form['value'], t('Invalid date format.'));
+        }
       }
     }
     elseif ($operators[$operator]['values'] == 2) {
