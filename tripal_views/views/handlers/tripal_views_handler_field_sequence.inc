@@ -23,8 +23,8 @@ class tripal_views_handler_field_sequence extends chado_views_handler_field {
       // parent sequence.
       $psql ='PREPARE sequence_by_parent (int, int, int) AS 
               SELECT
-                OF.name srcname, FL.srcfeature_id, FL.strand,  
-
+                OF.name srcname, FL.srcfeature_id, FL.strand, OCVT.name as srctypename, SCVT.name as typename,
+                FL.fmin, FL.fmax,
                 CASE 
                   WHEN FL.strand >= 0 THEN 
                     CASE 
@@ -33,8 +33,8 @@ class tripal_views_handler_field_sequence extends chado_views_handler_field {
                     END
                   WHEN FL.strand < 0 THEN
                     CASE 
-                       WHEN FL.fmin - $1 <= 0 THEN 0
-                       ELSE FL.fmin - $1
+                       WHEN FL.fmin - $2 <= 0 THEN 0
+                       ELSE FL.fmin - $2
                     END                   
                 END as adjfmin,                                
                                 
@@ -46,8 +46,8 @@ class tripal_views_handler_field_sequence extends chado_views_handler_field {
                     END
                   WHEN FL.strand < 0 THEN
                     CASE
-                      WHEN FL.fmax + $2 > OF.seqlen THEN OF.seqlen
-                      ELSE FL.fmax + $2   
+                      WHEN FL.fmax + $1 > OF.seqlen THEN OF.seqlen
+                      ELSE FL.fmax + $1   
                     END               
                 END as adjfmax,     
                 
@@ -91,7 +91,9 @@ class tripal_views_handler_field_sequence extends chado_views_handler_field {
                 END as residues
               FROM featureloc FL 
                 INNER JOIN feature SF on FL.feature_id = SF.feature_id
+                INNER JOIN cvterm SCVT on SF.type_id = SCVT.cvterm_id
                 INNER JOIN feature OF on FL.srcfeature_id = OF.feature_id                
+                INNER JOIN cvterm OCVT on OF.type_id = OCVT.cvterm_id
               WHERE SF.feature_id = $3';
               
       $status = chado_query($psql);
@@ -242,7 +244,7 @@ class tripal_views_handler_field_sequence extends chado_views_handler_field {
                  
           // iterate through the sub features and concat their sequences. They
           // should already be in order.
-          $types = array();
+          $types = '';
           $i = 0;
           while($child = db_fetch_object($children)) {
             // keep up with the types
@@ -285,17 +287,11 @@ class tripal_views_handler_field_sequence extends chado_views_handler_field {
               $q = chado_query($sql, 0, 0, $child->feature_id);
             }
             
-            $j = 0;
             while($subseq = db_fetch_object($q)){
-              // there should only be one mapping for each sub feature to the 
-              // same parent.  If there are more then we can't resolve it so
-              // return a message 
-              if($j > 0 ){
-                return 'Cannot determine sequence.  Sub features map to multiple locations';
-              }
               // concatenate the sequences of all the sub features            
-              $seq .= $subseq->residues;   
-              $j++;
+              if($subseq->srcfeature_id == $parent->srcfeature_id){
+                $seq .= $subseq->residues;   
+              }
             }                 
             $i++;
           } 
@@ -314,7 +310,7 @@ class tripal_views_handler_field_sequence extends chado_views_handler_field {
         
         // now format for display
         $seq = wordwrap($seq, $num_bases_per_line, "<br>", TRUE);
-        $residues .= ">" . $feature_name . " " . $parent->srcname . ":" . ($parent->adjfmin + 1) . ".." . $parent->adjfmax ." ($dir). ";
+        $residues .= ">$feature_name ($parent->typename) $parent->srcname:" . ($parent->adjfmin + 1) . ".." . $parent->adjfmax ." ($dir). ";
         if (count($types) > 0) {
           $residues .= "Excludes all bases but those of type(s): " . implode(', ',$types) . ". " ;
         }
@@ -328,7 +324,7 @@ class tripal_views_handler_field_sequence extends chado_views_handler_field {
           $residues .= "<br>\nNo sequence available\n<br>";          
         }
         else {
-          $residues .= "<br>\n$seq\n<br>";          
+          $residues .= "<br>\n" . $seq . "\n<br>";          
         }
       }
     }
