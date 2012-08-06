@@ -28,8 +28,7 @@ class tripal_views_handler_filter_textarea extends views_handler_filter {
   }
 
   /**
-   * Ensures the upload field gets rendered when the filter is exposed. It also
-   * changes the form type from a GET to a POST so that file uploads will work.
+   * Ensures the textarea field gets rendered when the filter is exposed. 
    */
   function exposed_form(&$form, &$form_state) {
 
@@ -68,48 +67,17 @@ class tripal_views_handler_filter_textarea extends views_handler_filter {
     $field = "$this->table.$this->real_field";
 
     // get the form element value
-    $value = $this->value[0];
+    $value = $this->value;
 
-    // the form element value has sub values, so get those
-    $items =  $value['items'];
-    $file_path = $value['file_path'];
-
-    $holders = array();
-    $values = array();
-
-    // get the file upload content if one has been provided
-    if ($file_path) {
-      $fh = fopen($file_path, 'r');
-      while ($line = fgets($fh)) {
-        $items = trim($line);
-
-        // remove extra spaces and new lines
-        $items = preg_replace("/\s+,/", ",", $items);
-        $items = preg_replace("/\s+\n/", "\n", $items);
-        $items = preg_replace("/,\n/", "\n", $items);
-
-        // add the values from this line to the values[] array
-        $vals = preg_split("/[\n,]+/", $items);
-        $values = array_merge($values, $vals);
-      }
-    }
-
-    // if a file upload has not been provided then use the value in the textarea
-    if ($items) {
-
-      // remove extra spaces and new lines
-      $items = preg_replace("/\s+,/", ",", $items);
-      $items = preg_replace("/\s+\n/", "\n", $items);
-      $items = preg_replace("/,\n/", "\n", $items);
-
-      // in the event the user uploaded a file and provided items in the
-      // textbox then we need to merge these two lists
-      $vals = preg_split("/[\n,]+/", $items);
-      $values = array_merge($values, $vals);
-    }
-
+    // remove extra spaces and new lines
+    $value = preg_replace("/\s+,/", ",", $value);
+    $value = preg_replace("/\s+\n/", "\n", $value);
+    $value = preg_replace("/,\n/", "\n", $value);
+    $values = preg_split("/[\n,]+/", $value);
+    
     // iterate through all of the values and generate the corresponding
     // sprintf style holders
+    $holders = array();     
     for ($i = 0 ; $i < count($values); $i++) {
       $values[$i] = trim($values[$i]);
       $holders[] = "'%s'";
