@@ -125,6 +125,9 @@ function tripal_views_theme() {
     'file_upload_combo' => array(
       'arguments' => array('element' => NULL)
     ),
+    'sequence_combo' => array(
+      'arguments' => array('element' => NULL)
+    ),
   );
 }
 

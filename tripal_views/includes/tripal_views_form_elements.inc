@@ -15,6 +15,12 @@ function tripal_views_elements() {
     '#process' => array('expand_file_upload_combo'),
     '#element_validate' => array('file_upload_combo_validate'),
   );
+  
+  $type['sequence_combo'] = array(
+    '#input' => TRUE,
+    '#process' => array('expand_sequence_combo'),
+    '#element_validate' => array('sequence_combo_validate'),
+  );
 
   return $type;
 }
@@ -25,6 +31,7 @@ function tripal_views_elements() {
  */
 function expand_file_upload_combo($element, $edit, $form_state, $complete_form) {
 
+  // set the default values for each field
   if (empty($element['#value'])) {
     $element['#value'] = array(
       'items' => '',
@@ -35,12 +42,15 @@ function expand_file_upload_combo($element, $edit, $form_state, $complete_form) 
 
   $element['#tree'] = TRUE;
 
+  // add items text area element
   $parents = $element['#parents'];
   $parents[] = 'items';
   $element['items'] = array(
     '#type' => 'textarea',
     '#default_value' => $element['#value']['items'],
   );
+  
+  // add file upload element
   $parents = $element['#parents'];
   $parents[] = 'items_file';
   $element['items_file'] = array(
@@ -49,6 +59,7 @@ function expand_file_upload_combo($element, $edit, $form_state, $complete_form) 
     '#default_value' => $element['#value']['items_file'],
   );
 
+  // add hidden elelment
   $parents = $element['#parents'];
   $parents[] = 'file_path';
   $element['file_path'] = array(
@@ -58,11 +69,54 @@ function expand_file_upload_combo($element, $edit, $form_state, $complete_form) 
 
   return $element;
 }
+/**
+ * Form element description
+ */
+function expand_sequence_combo($element, $edit, $form_state, $complete_form) {
+ 
+  // set the default values for each field
+  if (empty($element['#value'])) {
+    $element['#value'] = array(
+      'upstream' => '',
+      'downstream' => '',
+    );
+  }
+  
+  $element['#tree'] = TRUE;
+
+  // add the upstream box
+  $parents = $element['#parents'];
+  $parents[] = 'upstream';
+  $element['upstream'] = array(
+     '#type' => 'textfield',
+     '#title' => t('Get Upstream Bases'),
+     '#description' => t('Specify the number of upstream bases to include in the sequnce'),
+     '#default_value' => $element['#value']['upstream'],
+  );
+  // add the downstream box
+  $parents = $element['#parents'];
+  $parents[] = 'downstream';
+  $element['downstream'] = array(
+     '#type' => 'textfield',
+     '#prefix' => '<br>',
+     '#title' => t('Get Downstream Bases'),
+     '#description' => t('Specify the number of downstream bases to include in the sequnce'),
+     '#default_value' => $element['#value']['downstream'],     
+  );
+  return $element;
+}
 
 /**
  * Theme the file upload combo form element
  */
 function theme_file_upload_combo($element) {
+  return theme('form_element', $element, '<div class="container-inline">' . $element['#children'] . '</div>');
+}
+
+/**
+ * Theme the file sequence form element
+ */
+function theme_sequence_combo($element) {
   return theme('form_element', $element, '<div class="container-inline">' . $element['#children'] . '</div>');
 }
 
@@ -76,5 +130,28 @@ function file_upload_combo_validate($element, &$form) {
     // we need to add our file path to the $_GET element as if it were
     // submitted along with the rest of the form
     $_GET[$element['#name']]['file_path'] = $file->filepath;
+  }
+}
+
+/**
+ * Validate all content passed into the sequence combo form element
+ */
+function sequence_combo_validate($element, &$form) {
+  $upstream = $form['values'][$element['#name']]['upstream'];
+  $downstream = $form['values'][$element['#name']]['downstream'];
+  
+
+  if ($upstream < 0) {
+    form_set_error($element['#name'], 'Please provide a positive number for upstream bases');
+  }
+  if ($upstream and !preg_match('/^\d+$/',$upstream)) {
+    form_set_error($element['#name'], 'Please provide a decimal number for upstream bases');
+  }
+
+  if ($downstream < 0) {
+    form_set_error($element['#name'], 'Please provide a positive number for downstream bases');
+  }
+  if ($downstream and !preg_match('/^\d+$/',$downstream)) {
+    form_set_error($element['#name'], 'Please provide a decimal number for downstream bases');
   }
 }

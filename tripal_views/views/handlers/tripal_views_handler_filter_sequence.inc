@@ -8,8 +8,8 @@
  * @ingroup tripal_views_integration
  */
 class tripal_views_handler_filter_sequence extends views_handler_filter {
-
-  /**
+ 
+ /**
    * Defines the value field in both the views filter options form
    *   and the exposed form
    */
@@ -17,15 +17,10 @@ class tripal_views_handler_filter_sequence extends views_handler_filter {
     parent::value_form($form, $form_state);
 
     $this->value_form = array(
-       '#type' => 'checkbox',
-       '#title' => t('Provide fields for upstream and downstream'),
+       '#type' => 'sequence_combo',
+       '#title' => t('%label', array('%label' => $this->options['expose']['label'])),
        '#default_value' => $this->value,
-       '#multiple' => FALSE,
-       '#description' => 
-         t('Check here to provide form fields to allow the user to retrieve ' .
-           'sequences beyond the feature residues.  This requires that the ' .
-           'feature is aligned to a parent sequence and the optin to derive ' .
-           'the sequence from the parent is turned on in the field settings.'),
+       '#multiple' => FALSE,       
     );
     $form['value'] = &$this->value_form;
   }
@@ -40,51 +35,31 @@ class tripal_views_handler_filter_sequence extends views_handler_filter {
     if (empty($this->options['exposed'])) {
       return;
     }
+    // rebuild the form elements
+    $value = $this->options['expose']['identifier'];
+    $this->value_form($form, $form_state);
+
     $form[$value] = $form['value'];
     unset($form[$value]['#title']);
 
-    // add the upstream and downstream boxes
-    $form['upstream'] = array(
-       '#type' => 'textfield',
-       '#title' => t('Get Upstream Bases'),
-       '#description' => t('Specify the number of upstream bases to include in the sequnce'),
-    );
-    $form['downstream'] = array(
-       '#type' => 'textfield',
-       '#title' => t('Get Downstream Bases'),
-       '#description' => t('Specify the number of upstream bases to include in the sequnce'),
-    );
+    $this->exposed_translate($form[$value], 'value');
+
+    if ($value != 'value') {
+      unset($form['value']);
+    }
   }
 
   /**
    *  Validates the input form
    */
   function exposed_validate(&$form, &$form_state) {
-     $upstream = $form_state['values']['upstream'];
-     $downstream = $form_state['values']['downstream'];
+    $upstream = $form_state['values'][$this->field]['upstream'];
+    $downstream = $form_state['values'][$this->field]['downstream'];       
      
-     if($upstream < 0){
-        form_set_error($form_state['values']['upstream'], 
-           'Please provide a positive number for upstream bases');
-     }
-     if($upstream and !preg_match('/^\d+$/',$upstream)){
-        form_set_error($form_state['values']['upstream'], 
-           'Please provide a decimal number for upstream bases');
-     }
-
-     if($downstream < 0){
-        form_set_error($form_state['values']['upstream'], 
-           'Please provide a positive number for downstream bases');
-     }
-     if($downstream and !preg_match('/^\d+$/',$downstream)){
-        form_set_error($form_state['values']['upstream'], 
-           'Please provide a decimal number for downstream bases');
-     }
-     
-     // we need the values provided by the user so that the field
-     // handler can generate the results properly.  These values
-     // will get stored in the view object.  This may not be the best place
-     $this->view->sequence_q['upstream'] = $upstream;
-     $this->view->sequence_q['downstream'] = $downstream;
+    // we need the values provided by the user so that the field
+    // handler can generate the results properly.  These values
+    // will get stored in the view object.  This may not be the best place
+    $this->view->sequence_q['upstream'] = $upstream;
+    $this->view->sequence_q['downstream'] = $downstream;
   }
 }

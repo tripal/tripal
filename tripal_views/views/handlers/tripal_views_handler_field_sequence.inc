@@ -177,8 +177,11 @@ class tripal_views_handler_field_sequence extends chado_views_handler_field {
         'without intronic sequence'),
       '#default_value' => $this->options['display']['aggregate'],
     );
-  }
+  }  
 
+  /**
+  * We need to add a few fields to our query
+  */
   function query() {
     parent::query();
     
