@@ -807,7 +807,7 @@ function trpial_feature_get_formatted_sequence($feature_id, $feature_name,
          $residues .= "Includes " . $parent->downstream . " bases downstream.  ";
       }
       if (!$seq) {
-        $residues .= "No sequence available\n<br>";          
+        $residues .= "No sequence available.";          
       }
       else {
         if ($output_format == 'fasta_html') {
