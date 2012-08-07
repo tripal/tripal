@@ -67,7 +67,12 @@ class tripal_views_handler_filter_textarea extends views_handler_filter {
     $field = "$this->table.$this->real_field";
 
     // get the form element value
-    $value = $this->value;
+    if (is_array($this->value)) {
+      $value = $this->value[0];
+    } 
+    else {
+      $value = $this->value;
+    }
 
     // remove extra spaces and new lines
     $value = preg_replace("/\s+,/", ",", $value);

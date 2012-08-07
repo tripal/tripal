@@ -49,17 +49,24 @@ class tripal_views_handler_filter_sequence extends views_handler_filter {
     }
   }
 
+ 
   /**
-   *  Validates the input form
+   *
    */
-  function exposed_validate(&$form, &$form_state) {
-    $upstream = $form_state['values'][$this->field]['upstream'];
-    $downstream = $form_state['values'][$this->field]['downstream'];       
-     
+  function query() {
+    $this->ensure_my_table();
+
+    $upstream = $this->value[0]['upstream'];
+    $downstream = $this->value[0]['downstream'];       
+    
     // we need the values provided by the user so that the field
-    // handler can generate the results properly.  These values
-    // will get stored in the view object.  This may not be the best place
-    $this->view->sequence_q['upstream'] = $upstream;
-    $this->view->sequence_q['downstream'] = $downstream;
+    // handler can generate the results properly.  Saving these as session
+    // variables may not be the best way but it works.
+    if($upstream){
+      $_SESSION['upstream'] = $upstream;
+    }
+    if($downstream){
+      $_SESSION['downstream'] = $downstream;
+    }    
   }
 }

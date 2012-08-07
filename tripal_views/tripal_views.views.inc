@@ -551,9 +551,10 @@ function tripal_views_data_export_download_form(&$form_state, $view, $display_id
 
       $path = $display->display_options['path'];
       $query = $view->get_exposed_input();  // retrieves elements in $_GET array
+
       $urls[$display->id]['path'] = $path;
       $urls[$display->id]['query'] = $query;
-
+      
       // add the new item to the options array
       $options[$display->id] = $display->display_title;
     }

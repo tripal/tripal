@@ -150,6 +150,14 @@ class tripal_views_handler_field_sequence extends chado_views_handler_field {
       '#title' => 'Format Output',
       '#description' => t('Alter the way a sequence is displayed')
     );
+    $default_num_bases_per_line = '50';
+    if($this->options['display']['num_bases_per_line']){
+       $default_num_bases_per_line = $this->options['display']['num_bases_per_line'];
+    }
+    $default_output_format = 'raw';
+    if($this->options['display']['output_format']){
+       $default_ouput_format = $this->options['display']['output_format'];
+    }
 
     $form['display']['num_bases_per_line'] = array(
       '#type' => 'textfield',
@@ -157,7 +165,7 @@ class tripal_views_handler_field_sequence extends chado_views_handler_field {
       '#description' => t('Specify the number of bases per line. An HTML <br> tag ' .
         'will be inserted after the number of bases indicated. If no value is ' .
         'provided. The sequence will be one long string (default)'),
-      '#default_value' => $this->options['display']['num_bases_per_line'],
+      '#default_value' => $default_num_bases_per_line,
     );
     $form['display']['derive_from_parent'] = array(
       '#type' => 'checkbox',
@@ -176,6 +184,17 @@ class tripal_views_handler_field_sequence extends chado_views_handler_field {
         'excluded from the sequence.  This is useful for obtaining a complete CDS from an mRNA '.
         'without intronic sequence'),
       '#default_value' => $this->options['display']['aggregate'],
+    );
+    $form['display']['output_format'] = array(
+      '#type' => 'radios',
+      '#title' => t('Output format'),
+      '#options' => array(
+         'raw' => 'Raw sequence data (no formatting)',
+         'fasta_html' => 'FASTA in HTML format',
+         'fasta_txt'  => 'FASTA in text format',
+      ),
+      '#description' => t('Select an output format.  Raw output cannot be used when the sequence is derived from the parent.'),
+      '#default_value' => $default_ouput_format,
     );
   }  
 
@@ -200,9 +219,10 @@ class tripal_views_handler_field_sequence extends chado_views_handler_field {
   */
   function render($values) {
     $residues = '';
-      
+             
     // get the number of bases to show per line
     $num_bases_per_line = $this->options['display']['num_bases_per_line'];
+    $output_format = $this->options['display']['output_format'];
 
     // get the residues from the feature.residues column
     $field = $this->field_alias;
@@ -210,11 +230,11 @@ class tripal_views_handler_field_sequence extends chado_views_handler_field {
     // get the feature id
     $feature_id = $values->feature_feature_id;
     $feature_name = $values->feature_name;
-    
+        
     // the upstream and downstream values get set by the 
     // tripal_views_handlers_filter_sequence.inc
-    $upstream = $this->view->sequence_q['upstream'];
-    $downstream = $this->view->sequence_q['downstream'];           
+    $upstream = $_SESSION['upstream'];
+    $downstream = $_SESSION['downstream'];
     if (!$upstream) {
        $upstream = 0;
     }
@@ -247,11 +267,11 @@ class tripal_views_handler_field_sequence extends chado_views_handler_field {
                  
           // iterate through the sub features and concat their sequences. They
           // should already be in order.
-          $types = '';
+          $types = array();
           $i = 0;
           while($child = db_fetch_object($children)) {
             // keep up with the types
-            if(!in_array($child->type_name,$types)){
+            if (!in_array($child->type_name,$types)) {
               $types[] = $child->type_name;
             }
             
@@ -312,7 +332,12 @@ class tripal_views_handler_field_sequence extends chado_views_handler_field {
         }
         
         // now format for display
-        $seq = wordwrap($seq, $num_bases_per_line, "<br>", TRUE);
+        if ($output_format == 'fasta_html') {
+           $seq = wordwrap($seq, $num_bases_per_line, "<br>", TRUE);
+        } 
+        elseif ($output_format == 'fasta_txt') {
+           $seq = wordwrap($seq, $num_bases_per_line, "\n", TRUE);
+        }
         $residues .= ">$feature_name ($parent->typename) $parent->srcname:" . ($parent->adjfmin + 1) . ".." . $parent->adjfmax ." ($dir). ";
         if (count($types) > 0) {
           $residues .= "Excludes all bases but those of type(s): " . implode(', ',$types) . ". " ;
@@ -324,10 +349,16 @@ class tripal_views_handler_field_sequence extends chado_views_handler_field {
            $residues .= "Includes " . $parent->downstream . " bases downstream.  ";
         }
         if (!$seq) {
-          $residues .= "<br>\nNo sequence available\n<br>";          
+          $residues .= "No sequence available\n<br>";          
         }
         else {
-          $residues .= "<br>\n" . $seq . "\n<br>";          
+          if ($output_format == 'fasta_html') {
+            $residues .= "<br>";
+          }
+          $residues .= "\n" . $seq . "\n";          
+          if ($output_format == 'fasta_html') {
+            $residues .= "<br>";
+          }
         }
       }
     }
@@ -335,12 +366,19 @@ class tripal_views_handler_field_sequence extends chado_views_handler_field {
     // use what comes through from the feature record
     else {
       $residues = $values->$field; 
-      $residues = wordwrap($residues, $num_bases_per_line, "<br>", TRUE);  
+      if ($output_format == 'fasta_html') {
+         $residues = wordwrap($residues, $num_bases_per_line, "<br>", TRUE);  
+      } 
+      elseif ($output_format == 'fasta_txt') {
+         $residues = wordwrap($residues, $num_bases_per_line, "\n", TRUE);  
+      }
     }
     
     // format the residues for display
     if($residues and $num_bases_per_line){
-      $residues = '<span style="font-family: monospace;">' . $residues . '</span>';
+      if ($output_format == 'fasta_html') {
+         $residues = '<span style="font-family: monospace;">' . $residues . '</span>';
+      }
     }
     return $residues;         
   } 
