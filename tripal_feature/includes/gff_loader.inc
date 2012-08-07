@@ -1132,20 +1132,20 @@ function tripal_feature_load_gff3_featureloc($feature, $organism, $landmark, $fm
     // the source feature name and at least the fmin and fmax must be the same
     // for an update of the featureloc, otherwise we'll insert a new record.
     if (strcmp($locsfeature[0]->name, $landmark)==0 and 
-       ($featureloc->fmin == $fmin or $featureloc->fmax == $fmax)){
+       ($featureloc->fmin == $fmin or $featureloc->fmax == $fmax)) {
       $match = array('featureloc_id' => $featureloc->featureloc_id);
       $values = array();
       $exists = 1;
-      if($featureloc->fmin != $fmin){
+      if ($featureloc->fmin != $fmin) {
          $values['fmin'] = $fmin;
       }
-      if($featureloc->fmax != $fmax) {
+      if ($featureloc->fmax != $fmax) {
          $values['fmax'] = $fmax;
       }
-      if($featureloc->strand != $strand){
+      if ($featureloc->strand != $strand) {
          $values['strand'] = $strand;
       }
-      if(count($values) > 0){
+      if (count($values) > 0) {
         tripal_core_chado_update('featureloc', $match, $values);
         print "   Updated featureloc\n";
       }

@@ -26,11 +26,11 @@ class tripal_views_handler_field_sequence extends chado_views_handler_field {
       '#description' => t('Alter the way a sequence is displayed')
     );
     $default_num_bases_per_line = '50';
-    if($this->options['display']['num_bases_per_line']){
+    if ($this->options['display']['num_bases_per_line']) {
        $default_num_bases_per_line = $this->options['display']['num_bases_per_line'];
     }
     $default_output_format = 'raw';
-    if($this->options['display']['output_format']){
+    if ($this->options['display']['output_format']) {
        $default_ouput_format = $this->options['display']['output_format'];
     }
 
@@ -82,10 +82,10 @@ class tripal_views_handler_field_sequence extends chado_views_handler_field {
     // if we are going to get the sequence from the parent then
     // we will need to do more queries in the render function
     // and we must have the feature_id to do those
-    if($this->options['display']['derive_from_parent']){
+    if ($this->options['display']['derive_from_parent']) {
       $this->ensure_my_table();
-      $this->query->add_field($this->table,'feature_id');
-      $this->query->add_field($this->table,'name');
+      $this->query->add_field($this->table, 'feature_id');
+      $this->query->add_field($this->table, 'name');
     }
   }
     

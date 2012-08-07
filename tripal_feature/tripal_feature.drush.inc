@@ -51,7 +51,7 @@ function tripal_feature_drush_command() {
  *
  * NOTE: The following code is executed when drush 'trpjob-run' or 'drush tripal-launch-jobs' is called
  */
-function drush_tripal_feature_tripal_get_sequence(){
+function drush_tripal_feature_tripal_get_sequence() {
 
   $org_commonname = drush_get_option('org');  
   $type = drush_get_option('type');
@@ -62,11 +62,11 @@ function drush_tripal_feature_tripal_get_sequence(){
   $derive_from_parent = drush_get_option('parent');
   $aggregate = drush_get_option('agg');
   
-  if(!$output_format){
+  if (!$output_format) {
      $output_format = 'fasta_txt';
   }
   
-  if(!$type and !$feature_name and !$org_commonname){
+  if (!$type and !$feature_name and !$org_commonname) {
      print "Please provide a type, feature name or organism common name\n";
      return;
   }
@@ -91,8 +91,8 @@ function drush_tripal_feature_tripal_get_sequence(){
      $vars[] = $feature_name;
   }
   $num_bases_per_line = 50;
-  $q = chado_query($sql,$vars);
-  while($feature = db_fetch_object($q)){
+  $q = chado_query($sql, $vars);
+  while ($feature = db_fetch_object($q)) {
     $feature_id = $feature->feature_id;
     $feature_name = $feature->name;
       

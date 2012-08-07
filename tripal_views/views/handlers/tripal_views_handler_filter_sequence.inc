@@ -62,10 +62,10 @@ class tripal_views_handler_filter_sequence extends views_handler_filter {
     // we need the values provided by the user so that the field
     // handler can generate the results properly.  Saving these as session
     // variables may not be the best way but it works.
-    if($upstream){
+    if ($upstream) {
       $_SESSION['upstream'] = $upstream;
     }
-    if($downstream){
+    if ($downstream) {
       $_SESSION['downstream'] = $downstream;
     }    
   }

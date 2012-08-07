@@ -144,14 +144,14 @@ function sequence_combo_validate($element, &$form) {
   if ($upstream < 0) {
     form_set_error($element['#name'], 'Please provide a positive number for upstream bases');
   }
-  if ($upstream and !preg_match('/^\d+$/',$upstream)) {
+  if ($upstream and !preg_match('/^\d+$/', $upstream)) {
     form_set_error($element['#name'], 'Please provide a decimal number for upstream bases');
   }
 
   if ($downstream < 0) {
     form_set_error($element['#name'], 'Please provide a positive number for downstream bases');
   }
-  if ($downstream and !preg_match('/^\d+$/',$downstream)) {
+  if ($downstream and !preg_match('/^\d+$/', $downstream)) {
     form_set_error($element['#name'], 'Please provide a decimal number for downstream bases');
   }
 }

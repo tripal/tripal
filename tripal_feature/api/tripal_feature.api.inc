@@ -715,7 +715,7 @@ function trpial_feature_get_formatted_sequence($feature_id, $feature_name,
 
       // if we are to aggregate then we will ignore the feature returned
       // by the query above and rebuild it using the sub features
-      if ($aggregate){
+      if ($aggregate) {
         
         // now get the sub features that are located on the parent.
         $sql = "EXECUTE sub_features (%d, %d)";
@@ -727,9 +727,9 @@ function trpial_feature_get_formatted_sequence($feature_id, $feature_name,
         // should already be in order.
         $types = array();
         $i = 0;
-        while($child = db_fetch_object($children)) {
+        while ($child = db_fetch_object($children)) {
           // keep up with the types
-          if (!in_array($child->type_name,$types)) {
+          if (!in_array($child->type_name, $types)) {
             $types[] = $child->type_name;
           }
           
@@ -768,9 +768,9 @@ function trpial_feature_get_formatted_sequence($feature_id, $feature_name,
             $q = chado_query($sql, 0, 0, $child->feature_id);
           }
           
-          while($subseq = db_fetch_object($q)){
+          while ($subseq = db_fetch_object($q)) {
             // concatenate the sequences of all the sub features            
-            if($subseq->srcfeature_id == $parent->srcfeature_id){
+            if ($subseq->srcfeature_id == $parent->srcfeature_id) {
               $seq .= $subseq->residues;   
             }
           }                 
@@ -798,7 +798,7 @@ function trpial_feature_get_formatted_sequence($feature_id, $feature_name,
       }
       $residues .= ">$feature_name ($parent->typename) $parent->srcname:" . ($parent->adjfmin + 1) . ".." . $parent->adjfmax ." ($dir). ";
       if (count($types) > 0) {
-        $residues .= "Excludes all bases but those of type(s): " . implode(', ',$types) . ". " ;
+        $residues .= "Excludes all bases but those of type(s): " . implode(', ', $types) . ". " ;
       }
       if ($parent->upstream > 0) {
          $residues .= "Includes " . $parent->upstream . " bases upstream.  ";
@@ -810,7 +810,8 @@ function trpial_feature_get_formatted_sequence($feature_id, $feature_name,
         
         if ($output_format == 'fasta_html') {
           $residues .= "No sequence available.</br>"; 
-        } else {
+        } 
+        else {
           $residues .= "No sequence available.\n"; 
         }         
       }
@@ -838,7 +839,7 @@ function trpial_feature_get_formatted_sequence($feature_id, $feature_name,
   }
   
   // format the residues for display
-  if($residues and $num_bases_per_line){
+  if ($residues and $num_bases_per_line) {
     if ($output_format == 'fasta_html') {
        $residues = '<span style="font-family: monospace;">' . $residues . '</span>';
     }

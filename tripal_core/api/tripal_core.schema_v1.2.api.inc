@@ -47,81 +47,81 @@
  *
  */
 function tripal_core_chado_schema_v1_2_acquisition() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'acquisition_id' => array (
+    'fields' => array(
+      'acquisition_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'assay_id' => array (
+      'assay_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'protocol_id' => array (
+      'protocol_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'channel_id' => array (
+      'channel_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'acquisitiondate' => array (
+      'acquisitiondate' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'datetime',
-        'not null' => false,
+        'not null' => FALSE,
         'default' => 'ow(',
       ),
-      'name' => array (
+      'name' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'uri' => array (
+      'uri' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => false,
+        'not null' => FALSE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'acquisition_id',
     ),
-    'unique keys' => array (
-      'acquisition_c1' => array (
+    'unique keys' => array(
+      'acquisition_c1' => array(
         0 => 'name',
       ),
     ),
-    'indexes' => array (
-      'acquisition_idx1' => array (
+    'indexes' => array(
+      'acquisition_idx1' => array(
         0 => 'assay_id',
       ),
-      'acquisition_idx2' => array (
+      'acquisition_idx2' => array(
         0 => 'protocol_id',
       ),
-      'acquisition_idx3' => array (
+      'acquisition_idx3' => array(
         0 => 'channel_id',
       ),
     ),
-    'foreign keys' => array (
-      'protocol' => array (
+    'foreign keys' => array(
+      'protocol' => array(
         'table' => 'protocol',
-        'columns' => array (
+        'columns' => array(
           'protocol_id' => 'protocol_id',
         ),
       ),
-      'assay' => array (
+      'assay' => array(
         'table' => 'assay',
-        'columns' => array (
+        'columns' => array(
           'assay_id' => 'assay_id',
         ),
       ),
-      'channel' => array (
+      'channel' => array(
         'table' => 'channel',
-        'columns' => array (
+        'columns' => array(
           'channel_id' => 'channel_id',
         ),
       ),
@@ -143,73 +143,73 @@ function tripal_core_chado_schema_v1_2_acquisition() {
  *
  */
 function tripal_core_chado_schema_v1_2_acquisition_relationship() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'acquisition_relationship_id' => array (
+    'fields' => array(
+      'acquisition_relationship_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'subject_id' => array (
+      'subject_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'type_id' => array (
+      'type_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'object_id' => array (
+      'object_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'value' => array (
+      'value' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'rank' => array (
+      'rank' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 0,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'acquisition_relationship_id',
     ),
-    'unique keys' => array (
-      'acquisition_relationship_c1' => array (
+    'unique keys' => array(
+      'acquisition_relationship_c1' => array(
         0 => 'subject_id',
         1 => 'object_id',
         2 => 'type_id',
         3 => 'rank',
       ),
     ),
-    'indexes' => array (
-      'acquisition_relationship_idx1' => array (
+    'indexes' => array(
+      'acquisition_relationship_idx1' => array(
         0 => 'subject_id',
       ),
-      'acquisition_relationship_idx2' => array (
+      'acquisition_relationship_idx2' => array(
         0 => 'type_id',
       ),
-      'acquisition_relationship_idx3' => array (
+      'acquisition_relationship_idx3' => array(
         0 => 'object_id',
       ),
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'type_id' => 'cvterm_id',
         ),
       ),
-      'acquisition' => array (
+      'acquisition' => array(
         'table' => 'acquisition',
-        'columns' => array (
+        'columns' => array(
           'subject_id' => 'acquisition_id',
           'object_id' => 'acquisition_id',
         ),
@@ -232,64 +232,64 @@ function tripal_core_chado_schema_v1_2_acquisition_relationship() {
  *
  */
 function tripal_core_chado_schema_v1_2_acquisitionprop() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'acquisitionprop_id' => array (
+    'fields' => array(
+      'acquisitionprop_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'acquisition_id' => array (
+      'acquisition_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'type_id' => array (
+      'type_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'value' => array (
+      'value' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'rank' => array (
+      'rank' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 0,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'acquisitionprop_id',
     ),
-    'unique keys' => array (
-      'acquisitionprop_c1' => array (
+    'unique keys' => array(
+      'acquisitionprop_c1' => array(
         0 => 'acquisition_id',
         1 => 'type_id',
         2 => 'rank',
       ),
     ),
-    'indexes' => array (
-      'acquisitionprop_idx1' => array (
+    'indexes' => array(
+      'acquisitionprop_idx1' => array(
         0 => 'acquisition_id',
       ),
-      'acquisitionprop_idx2' => array (
+      'acquisitionprop_idx2' => array(
         0 => 'type_id',
       ),
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'type_id' => 'cvterm_id',
         ),
       ),
-      'acquisition' => array (
+      'acquisition' => array(
         'table' => 'acquisition',
-        'columns' => array (
+        'columns' => array(
           'acquisition_id' => 'acquisition_id',
         ),
       ),
@@ -311,78 +311,78 @@ function tripal_core_chado_schema_v1_2_acquisitionprop() {
  *
  */
 function tripal_core_chado_schema_v1_2_analysis() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'analysis_id' => array (
+    'fields' => array(
+      'analysis_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'name' => array (
+      'name' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'description' => array (
+      'description' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'program' => array (
+      'program' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'programversion' => array (
+      'programversion' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'algorithm' => array (
+      'algorithm' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'sourcename' => array (
+      'sourcename' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'sourceversion' => array (
+      'sourceversion' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'sourceuri' => array (
+      'sourceuri' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'timeexecuted' => array (
+      'timeexecuted' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'datetime',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 'ow(',
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'analysis_id',
     ),
-    'unique keys' => array (
-      'analysis_c1' => array (
+    'unique keys' => array(
+      'analysis_c1' => array(
         0 => 'program',
         1 => 'programversion',
         2 => 'sourcename',
       ),
     ),
-    'foreign keys' => array (
+    'foreign keys' => array(
     ),
   );
   return $description;
@@ -401,76 +401,76 @@ function tripal_core_chado_schema_v1_2_analysis() {
  *
  */
 function tripal_core_chado_schema_v1_2_analysisfeature() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'analysisfeature_id' => array (
+    'fields' => array(
+      'analysisfeature_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'feature_id' => array (
+      'feature_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'analysis_id' => array (
+      'analysis_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'rawscore' => array (
+      'rawscore' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'float',
         'size' => 'big',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'normscore' => array (
+      'normscore' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'float',
         'size' => 'big',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'significance' => array (
+      'significance' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'float',
         'size' => 'big',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'identity' => array (
+      'identity' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'float',
         'size' => 'big',
-        'not null' => false,
+        'not null' => FALSE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'analysisfeature_id',
     ),
-    'unique keys' => array (
-      'analysisfeature_c1' => array (
+    'unique keys' => array(
+      'analysisfeature_c1' => array(
         0 => 'feature_id',
         1 => 'analysis_id',
       ),
     ),
-    'indexes' => array (
-      'analysisfeature_idx1' => array (
+    'indexes' => array(
+      'analysisfeature_idx1' => array(
         0 => 'feature_id',
       ),
-      'analysisfeature_idx2' => array (
+      'analysisfeature_idx2' => array(
         0 => 'analysis_id',
       ),
     ),
-    'foreign keys' => array (
-      'analysis' => array (
+    'foreign keys' => array(
+      'analysis' => array(
         'table' => 'analysis',
-        'columns' => array (
+        'columns' => array(
           'analysis_id' => 'analysis_id',
         ),
       ),
-      'feature' => array (
+      'feature' => array(
         'table' => 'feature',
-        'columns' => array (
+        'columns' => array(
           'feature_id' => 'feature_id',
         ),
       ),
@@ -492,55 +492,55 @@ function tripal_core_chado_schema_v1_2_analysisfeature() {
  *
  */
 function tripal_core_chado_schema_v1_2_analysisfeatureprop() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'analysisfeatureprop_id' => array (
+    'fields' => array(
+      'analysisfeatureprop_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'analysisfeature_id' => array (
+      'analysisfeature_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'type_id' => array (
+      'type_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'value' => array (
+      'value' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'rank' => array (
+      'rank' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'analysisfeatureprop_id',
     ),
-    'unique keys' => array (
-      'analysisfeature_id_type_id_rank' => array (
+    'unique keys' => array(
+      'analysisfeature_id_type_id_rank' => array(
         0 => 'analysisfeature_id',
         1 => 'type_id',
         2 => 'rank',
       ),
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'type_id' => 'cvterm_id',
         ),
       ),
-      'analysisfeature' => array (
+      'analysisfeature' => array(
         'table' => 'analysisfeature',
-        'columns' => array (
+        'columns' => array(
           'analysisfeature_id' => 'analysisfeature_id',
         ),
       ),
@@ -562,64 +562,64 @@ function tripal_core_chado_schema_v1_2_analysisfeatureprop() {
  *
  */
 function tripal_core_chado_schema_v1_2_analysisprop() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'analysisprop_id' => array (
+    'fields' => array(
+      'analysisprop_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'analysis_id' => array (
+      'analysis_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'type_id' => array (
+      'type_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'value' => array (
+      'value' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'rank' => array (
+      'rank' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 0,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'analysisprop_id',
     ),
-    'unique keys' => array (
-      'analysisprop_c1' => array (
+    'unique keys' => array(
+      'analysisprop_c1' => array(
         0 => 'analysis_id',
         1 => 'type_id',
         2 => 'rank',
       ),
     ),
-    'indexes' => array (
-      'analysisprop_idx1' => array (
+    'indexes' => array(
+      'analysisprop_idx1' => array(
         0 => 'analysis_id',
       ),
-      'analysisprop_idx2' => array (
+      'analysisprop_idx2' => array(
         0 => 'type_id',
       ),
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'type_id' => 'cvterm_id',
         ),
       ),
-      'analysis' => array (
+      'analysis' => array(
         'table' => 'analysis',
-        'columns' => array (
+        'columns' => array(
           'analysis_id' => 'analysis_id',
         ),
       ),
@@ -641,148 +641,148 @@ function tripal_core_chado_schema_v1_2_analysisprop() {
  *
  */
 function tripal_core_chado_schema_v1_2_arraydesign() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'arraydesign_id' => array (
+    'fields' => array(
+      'arraydesign_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'manufacturer_id' => array (
+      'manufacturer_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'platformtype_id' => array (
+      'platformtype_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'substratetype_id' => array (
+      'substratetype_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'protocol_id' => array (
+      'protocol_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'dbxref_id' => array (
+      'dbxref_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'name' => array (
+      'name' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'version' => array (
+      'version' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'description' => array (
+      'description' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'array_dimensions' => array (
+      'array_dimensions' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'element_dimensions' => array (
+      'element_dimensions' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'num_of_elements' => array (
+      'num_of_elements' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'num_array_columns' => array (
+      'num_array_columns' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'num_array_rows' => array (
+      'num_array_rows' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'num_grid_columns' => array (
+      'num_grid_columns' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'num_grid_rows' => array (
+      'num_grid_rows' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'num_sub_columns' => array (
+      'num_sub_columns' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'num_sub_rows' => array (
+      'num_sub_rows' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => false,
+        'not null' => FALSE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'arraydesign_id',
     ),
-    'unique keys' => array (
-      'arraydesign_c1' => array (
+    'unique keys' => array(
+      'arraydesign_c1' => array(
         0 => 'name',
       ),
     ),
-    'indexes' => array (
-      'arraydesign_idx1' => array (
+    'indexes' => array(
+      'arraydesign_idx1' => array(
         0 => 'manufacturer_id',
       ),
-      'arraydesign_idx2' => array (
+      'arraydesign_idx2' => array(
         0 => 'platformtype_id',
       ),
-      'arraydesign_idx3' => array (
+      'arraydesign_idx3' => array(
         0 => 'substratetype_id',
       ),
-      'arraydesign_idx4' => array (
+      'arraydesign_idx4' => array(
         0 => 'protocol_id',
       ),
-      'arraydesign_idx5' => array (
+      'arraydesign_idx5' => array(
         0 => 'dbxref_id',
       ),
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'platformtype_id' => 'cvterm_id',
           'substratetype_id' => 'cvterm_id',
         ),
       ),
-      'dbxref' => array (
+      'dbxref' => array(
         'table' => 'dbxref',
-        'columns' => array (
+        'columns' => array(
           'dbxref_id' => 'dbxref_id',
         ),
       ),
-      'contact' => array (
+      'contact' => array(
         'table' => 'contact',
-        'columns' => array (
+        'columns' => array(
           'manufacturer_id' => 'contact_id',
         ),
       ),
-      'protocol' => array (
+      'protocol' => array(
         'table' => 'protocol',
-        'columns' => array (
+        'columns' => array(
           'protocol_id' => 'protocol_id',
         ),
       ),
@@ -804,64 +804,64 @@ function tripal_core_chado_schema_v1_2_arraydesign() {
  *
  */
 function tripal_core_chado_schema_v1_2_arraydesignprop() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'arraydesignprop_id' => array (
+    'fields' => array(
+      'arraydesignprop_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'arraydesign_id' => array (
+      'arraydesign_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'type_id' => array (
+      'type_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'value' => array (
+      'value' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'rank' => array (
+      'rank' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 0,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'arraydesignprop_id',
     ),
-    'unique keys' => array (
-      'arraydesignprop_c1' => array (
+    'unique keys' => array(
+      'arraydesignprop_c1' => array(
         0 => 'arraydesign_id',
         1 => 'type_id',
         2 => 'rank',
       ),
     ),
-    'indexes' => array (
-      'arraydesignprop_idx1' => array (
+    'indexes' => array(
+      'arraydesignprop_idx1' => array(
         0 => 'arraydesign_id',
       ),
-      'arraydesignprop_idx2' => array (
+      'arraydesignprop_idx2' => array(
         0 => 'type_id',
       ),
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'type_id' => 'cvterm_id',
         ),
       ),
-      'arraydesign' => array (
+      'arraydesign' => array(
         'table' => 'arraydesign',
-        'columns' => array (
+        'columns' => array(
           'arraydesign_id' => 'arraydesign_id',
         ),
       ),
@@ -883,105 +883,105 @@ function tripal_core_chado_schema_v1_2_arraydesignprop() {
  *
  */
 function tripal_core_chado_schema_v1_2_assay() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'assay_id' => array (
+    'fields' => array(
+      'assay_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'arraydesign_id' => array (
+      'arraydesign_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'protocol_id' => array (
+      'protocol_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'assaydate' => array (
+      'assaydate' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'datetime',
-        'not null' => false,
+        'not null' => FALSE,
         'default' => 'ow(',
       ),
-      'arrayidentifier' => array (
+      'arrayidentifier' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'arraybatchidentifier' => array (
+      'arraybatchidentifier' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'operator_id' => array (
+      'operator_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'dbxref_id' => array (
+      'dbxref_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'name' => array (
+      'name' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'description' => array (
+      'description' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => false,
+        'not null' => FALSE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'assay_id',
     ),
-    'unique keys' => array (
-      'assay_c1' => array (
+    'unique keys' => array(
+      'assay_c1' => array(
         0 => 'name',
       ),
     ),
-    'indexes' => array (
-      'assay_idx1' => array (
+    'indexes' => array(
+      'assay_idx1' => array(
         0 => 'arraydesign_id',
       ),
-      'assay_idx2' => array (
+      'assay_idx2' => array(
         0 => 'protocol_id',
       ),
-      'assay_idx3' => array (
+      'assay_idx3' => array(
         0 => 'operator_id',
       ),
-      'assay_idx4' => array (
+      'assay_idx4' => array(
         0 => 'dbxref_id',
       ),
     ),
-    'foreign keys' => array (
-      'dbxref' => array (
+    'foreign keys' => array(
+      'dbxref' => array(
         'table' => 'dbxref',
-        'columns' => array (
+        'columns' => array(
           'dbxref_id' => 'dbxref_id',
         ),
       ),
-      'contact' => array (
+      'contact' => array(
         'table' => 'contact',
-        'columns' => array (
+        'columns' => array(
           'operator_id' => 'contact_id',
         ),
       ),
-      'arraydesign' => array (
+      'arraydesign' => array(
         'table' => 'arraydesign',
-        'columns' => array (
+        'columns' => array(
           'arraydesign_id' => 'arraydesign_id',
         ),
       ),
-      'protocol' => array (
+      'protocol' => array(
         'table' => 'protocol',
-        'columns' => array (
+        'columns' => array(
           'protocol_id' => 'protocol_id',
         ),
       ),
@@ -1003,74 +1003,74 @@ function tripal_core_chado_schema_v1_2_assay() {
  *
  */
 function tripal_core_chado_schema_v1_2_assay_biomaterial() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'assay_biomaterial_id' => array (
+    'fields' => array(
+      'assay_biomaterial_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'assay_id' => array (
+      'assay_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'biomaterial_id' => array (
+      'biomaterial_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'channel_id' => array (
+      'channel_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'rank' => array (
+      'rank' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 0,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'assay_biomaterial_id',
     ),
-    'unique keys' => array (
-      'assay_biomaterial_c1' => array (
+    'unique keys' => array(
+      'assay_biomaterial_c1' => array(
         0 => 'assay_id',
         1 => 'biomaterial_id',
         2 => 'channel_id',
         3 => 'rank',
       ),
     ),
-    'indexes' => array (
-      'assay_biomaterial_idx1' => array (
+    'indexes' => array(
+      'assay_biomaterial_idx1' => array(
         0 => 'assay_id',
       ),
-      'assay_biomaterial_idx2' => array (
+      'assay_biomaterial_idx2' => array(
         0 => 'biomaterial_id',
       ),
-      'assay_biomaterial_idx3' => array (
+      'assay_biomaterial_idx3' => array(
         0 => 'channel_id',
       ),
     ),
-    'foreign keys' => array (
-      'assay' => array (
+    'foreign keys' => array(
+      'assay' => array(
         'table' => 'assay',
-        'columns' => array (
+        'columns' => array(
           'assay_id' => 'assay_id',
         ),
       ),
-      'biomaterial' => array (
+      'biomaterial' => array(
         'table' => 'biomaterial',
-        'columns' => array (
+        'columns' => array(
           'biomaterial_id' => 'biomaterial_id',
         ),
       ),
-      'channel' => array (
+      'channel' => array(
         'table' => 'channel',
-        'columns' => array (
+        'columns' => array(
           'channel_id' => 'channel_id',
         ),
       ),
@@ -1092,52 +1092,52 @@ function tripal_core_chado_schema_v1_2_assay_biomaterial() {
  *
  */
 function tripal_core_chado_schema_v1_2_assay_project() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'assay_project_id' => array (
+    'fields' => array(
+      'assay_project_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'assay_id' => array (
+      'assay_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'project_id' => array (
+      'project_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'assay_project_id',
     ),
-    'unique keys' => array (
-      'assay_project_c1' => array (
+    'unique keys' => array(
+      'assay_project_c1' => array(
         0 => 'assay_id',
         1 => 'project_id',
       ),
     ),
-    'indexes' => array (
-      'assay_project_idx1' => array (
+    'indexes' => array(
+      'assay_project_idx1' => array(
         0 => 'assay_id',
       ),
-      'assay_project_idx2' => array (
+      'assay_project_idx2' => array(
         0 => 'project_id',
       ),
     ),
-    'foreign keys' => array (
-      'project' => array (
+    'foreign keys' => array(
+      'project' => array(
         'table' => 'project',
-        'columns' => array (
+        'columns' => array(
           'project_id' => 'project_id',
         ),
       ),
-      'assay' => array (
+      'assay' => array(
         'table' => 'assay',
-        'columns' => array (
+        'columns' => array(
           'assay_id' => 'assay_id',
         ),
       ),
@@ -1159,64 +1159,64 @@ function tripal_core_chado_schema_v1_2_assay_project() {
  *
  */
 function tripal_core_chado_schema_v1_2_assayprop() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'assayprop_id' => array (
+    'fields' => array(
+      'assayprop_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'assay_id' => array (
+      'assay_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'type_id' => array (
+      'type_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'value' => array (
+      'value' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'rank' => array (
+      'rank' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 0,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'assayprop_id',
     ),
-    'unique keys' => array (
-      'assayprop_c1' => array (
+    'unique keys' => array(
+      'assayprop_c1' => array(
         0 => 'assay_id',
         1 => 'type_id',
         2 => 'rank',
       ),
     ),
-    'indexes' => array (
-      'assayprop_idx1' => array (
+    'indexes' => array(
+      'assayprop_idx1' => array(
         0 => 'assay_id',
       ),
-      'assayprop_idx2' => array (
+      'assayprop_idx2' => array(
         0 => 'type_id',
       ),
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'type_id' => 'cvterm_id',
         ),
       ),
-      'assay' => array (
+      'assay' => array(
         'table' => 'assay',
-        'columns' => array (
+        'columns' => array(
           'assay_id' => 'assay_id',
         ),
       ),
@@ -1238,75 +1238,75 @@ function tripal_core_chado_schema_v1_2_assayprop() {
  *
  */
 function tripal_core_chado_schema_v1_2_biomaterial() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'biomaterial_id' => array (
+    'fields' => array(
+      'biomaterial_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'taxon_id' => array (
+      'taxon_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'biosourceprovider_id' => array (
+      'biosourceprovider_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'dbxref_id' => array (
+      'dbxref_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'name' => array (
+      'name' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'description' => array (
+      'description' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => false,
+        'not null' => FALSE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'biomaterial_id',
     ),
-    'unique keys' => array (
-      'biomaterial_c1' => array (
+    'unique keys' => array(
+      'biomaterial_c1' => array(
         0 => 'name',
       ),
     ),
-    'indexes' => array (
-      'biomaterial_idx1' => array (
+    'indexes' => array(
+      'biomaterial_idx1' => array(
         0 => 'taxon_id',
       ),
-      'biomaterial_idx2' => array (
+      'biomaterial_idx2' => array(
         0 => 'biosourceprovider_id',
       ),
-      'biomaterial_idx3' => array (
+      'biomaterial_idx3' => array(
         0 => 'dbxref_id',
       ),
     ),
-    'foreign keys' => array (
-      'organism' => array (
+    'foreign keys' => array(
+      'organism' => array(
         'table' => 'organism',
-        'columns' => array (
+        'columns' => array(
           'taxon_id' => 'organism_id',
         ),
       ),
-      'dbxref' => array (
+      'dbxref' => array(
         'table' => 'dbxref',
-        'columns' => array (
+        'columns' => array(
           'dbxref_id' => 'dbxref_id',
         ),
       ),
-      'contact' => array (
+      'contact' => array(
         'table' => 'contact',
-        'columns' => array (
+        'columns' => array(
           'biosourceprovider_id' => 'contact_id',
         ),
       ),
@@ -1328,52 +1328,52 @@ function tripal_core_chado_schema_v1_2_biomaterial() {
  *
  */
 function tripal_core_chado_schema_v1_2_biomaterial_dbxref() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'biomaterial_dbxref_id' => array (
+    'fields' => array(
+      'biomaterial_dbxref_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'biomaterial_id' => array (
+      'biomaterial_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'dbxref_id' => array (
+      'dbxref_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'biomaterial_dbxref_id',
     ),
-    'unique keys' => array (
-      'biomaterial_dbxref_c1' => array (
+    'unique keys' => array(
+      'biomaterial_dbxref_c1' => array(
         0 => 'biomaterial_id',
         1 => 'dbxref_id',
       ),
     ),
-    'indexes' => array (
-      'biomaterial_dbxref_idx1' => array (
+    'indexes' => array(
+      'biomaterial_dbxref_idx1' => array(
         0 => 'biomaterial_id',
       ),
-      'biomaterial_dbxref_idx2' => array (
+      'biomaterial_dbxref_idx2' => array(
         0 => 'dbxref_id',
       ),
     ),
-    'foreign keys' => array (
-      'dbxref' => array (
+    'foreign keys' => array(
+      'dbxref' => array(
         'table' => 'dbxref',
-        'columns' => array (
+        'columns' => array(
           'dbxref_id' => 'dbxref_id',
         ),
       ),
-      'biomaterial' => array (
+      'biomaterial' => array(
         'table' => 'biomaterial',
-        'columns' => array (
+        'columns' => array(
           'biomaterial_id' => 'biomaterial_id',
         ),
       ),
@@ -1395,61 +1395,61 @@ function tripal_core_chado_schema_v1_2_biomaterial_dbxref() {
  *
  */
 function tripal_core_chado_schema_v1_2_biomaterial_relationship() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'biomaterial_relationship_id' => array (
+    'fields' => array(
+      'biomaterial_relationship_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'subject_id' => array (
+      'subject_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'type_id' => array (
+      'type_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'object_id' => array (
+      'object_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'biomaterial_relationship_id',
     ),
-    'unique keys' => array (
-      'biomaterial_relationship_c1' => array (
+    'unique keys' => array(
+      'biomaterial_relationship_c1' => array(
         0 => 'subject_id',
         1 => 'object_id',
         2 => 'type_id',
       ),
     ),
-    'indexes' => array (
-      'biomaterial_relationship_idx1' => array (
+    'indexes' => array(
+      'biomaterial_relationship_idx1' => array(
         0 => 'subject_id',
       ),
-      'biomaterial_relationship_idx2' => array (
+      'biomaterial_relationship_idx2' => array(
         0 => 'object_id',
       ),
-      'biomaterial_relationship_idx3' => array (
+      'biomaterial_relationship_idx3' => array(
         0 => 'type_id',
       ),
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'type_id' => 'cvterm_id',
         ),
       ),
-      'biomaterial' => array (
+      'biomaterial' => array(
         'table' => 'biomaterial',
-        'columns' => array (
+        'columns' => array(
           'subject_id' => 'biomaterial_id',
           'object_id' => 'biomaterial_id',
         ),
@@ -1472,77 +1472,77 @@ function tripal_core_chado_schema_v1_2_biomaterial_relationship() {
  *
  */
 function tripal_core_chado_schema_v1_2_biomaterial_treatment() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'biomaterial_treatment_id' => array (
+    'fields' => array(
+      'biomaterial_treatment_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'biomaterial_id' => array (
+      'biomaterial_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'treatment_id' => array (
+      'treatment_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'unittype_id' => array (
+      'unittype_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'value' => array (
+      'value' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'float',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'rank' => array (
+      'rank' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 0,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'biomaterial_treatment_id',
     ),
-    'unique keys' => array (
-      'biomaterial_treatment_c1' => array (
+    'unique keys' => array(
+      'biomaterial_treatment_c1' => array(
         0 => 'biomaterial_id',
         1 => 'treatment_id',
       ),
     ),
-    'indexes' => array (
-      'biomaterial_treatment_idx1' => array (
+    'indexes' => array(
+      'biomaterial_treatment_idx1' => array(
         0 => 'biomaterial_id',
       ),
-      'biomaterial_treatment_idx2' => array (
+      'biomaterial_treatment_idx2' => array(
         0 => 'treatment_id',
       ),
-      'biomaterial_treatment_idx3' => array (
+      'biomaterial_treatment_idx3' => array(
         0 => 'unittype_id',
       ),
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'unittype_id' => 'cvterm_id',
         ),
       ),
-      'biomaterial' => array (
+      'biomaterial' => array(
         'table' => 'biomaterial',
-        'columns' => array (
+        'columns' => array(
           'biomaterial_id' => 'biomaterial_id',
         ),
       ),
-      'treatment' => array (
+      'treatment' => array(
         'table' => 'treatment',
-        'columns' => array (
+        'columns' => array(
           'treatment_id' => 'treatment_id',
         ),
       ),
@@ -1564,64 +1564,64 @@ function tripal_core_chado_schema_v1_2_biomaterial_treatment() {
  *
  */
 function tripal_core_chado_schema_v1_2_biomaterialprop() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'biomaterialprop_id' => array (
+    'fields' => array(
+      'biomaterialprop_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'biomaterial_id' => array (
+      'biomaterial_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'type_id' => array (
+      'type_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'value' => array (
+      'value' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'rank' => array (
+      'rank' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 0,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'biomaterialprop_id',
     ),
-    'unique keys' => array (
-      'biomaterialprop_c1' => array (
+    'unique keys' => array(
+      'biomaterialprop_c1' => array(
         0 => 'biomaterial_id',
         1 => 'type_id',
         2 => 'rank',
       ),
     ),
-    'indexes' => array (
-      'biomaterialprop_idx1' => array (
+    'indexes' => array(
+      'biomaterialprop_idx1' => array(
         0 => 'biomaterial_id',
       ),
-      'biomaterialprop_idx2' => array (
+      'biomaterialprop_idx2' => array(
         0 => 'type_id',
       ),
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'type_id' => 'cvterm_id',
         ),
       ),
-      'biomaterial' => array (
+      'biomaterial' => array(
         'table' => 'biomaterial',
-        'columns' => array (
+        'columns' => array(
           'biomaterial_id' => 'biomaterial_id',
         ),
       ),
@@ -1643,57 +1643,57 @@ function tripal_core_chado_schema_v1_2_biomaterialprop() {
  *
  */
 function tripal_core_chado_schema_v1_2_cell_line() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'cell_line_id' => array (
+    'fields' => array(
+      'cell_line_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'name' => array (
+      'name' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'uniquename' => array (
+      'uniquename' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'organism_id' => array (
+      'organism_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'timeaccessioned' => array (
+      'timeaccessioned' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'datetime',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 'ow(',
       ),
-      'timelastmodified' => array (
+      'timelastmodified' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'datetime',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 'ow(',
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'cell_line_id',
     ),
-    'unique keys' => array (
-      'cell_line_c1' => array (
+    'unique keys' => array(
+      'cell_line_c1' => array(
         0 => 'uniquename',
         1 => 'organism_id',
       ),
     ),
-    'foreign keys' => array (
-      'organism' => array (
+    'foreign keys' => array(
+      'organism' => array(
         'table' => 'organism',
-        'columns' => array (
+        'columns' => array(
           'organism_id' => 'organism_id',
         ),
       ),
@@ -1715,63 +1715,63 @@ function tripal_core_chado_schema_v1_2_cell_line() {
  *
  */
 function tripal_core_chado_schema_v1_2_cell_line_cvterm() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'cell_line_cvterm_id' => array (
+    'fields' => array(
+      'cell_line_cvterm_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'cell_line_id' => array (
+      'cell_line_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'cvterm_id' => array (
+      'cvterm_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'pub_id' => array (
+      'pub_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'rank' => array (
+      'rank' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 0,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'cell_line_cvterm_id',
     ),
-    'unique keys' => array (
-      'cell_line_cvterm_c1' => array (
+    'unique keys' => array(
+      'cell_line_cvterm_c1' => array(
         0 => 'cell_line_id',
         1 => 'cvterm_id',
         2 => 'pub_id',
         3 => 'rank',
       ),
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'cvterm_id' => 'cvterm_id',
         ),
       ),
-      'pub' => array (
+      'pub' => array(
         'table' => 'pub',
-        'columns' => array (
+        'columns' => array(
           'pub_id' => 'pub_id',
         ),
       ),
-      'cell_line' => array (
+      'cell_line' => array(
         'table' => 'cell_line',
-        'columns' => array (
+        'columns' => array(
           'cell_line_id' => 'cell_line_id',
         ),
       ),
@@ -1793,56 +1793,56 @@ function tripal_core_chado_schema_v1_2_cell_line_cvterm() {
  *
  */
 function tripal_core_chado_schema_v1_2_cell_line_cvtermprop() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'cell_line_cvtermprop_id' => array (
+    'fields' => array(
+      'cell_line_cvtermprop_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'cell_line_cvterm_id' => array (
+      'cell_line_cvterm_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'type_id' => array (
+      'type_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'value' => array (
+      'value' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'rank' => array (
+      'rank' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 0,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'cell_line_cvtermprop_id',
     ),
-    'unique keys' => array (
-      'cell_line_cvtermprop_c1' => array (
+    'unique keys' => array(
+      'cell_line_cvtermprop_c1' => array(
         0 => 'cell_line_cvterm_id',
         1 => 'type_id',
         2 => 'rank',
       ),
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'type_id' => 'cvterm_id',
         ),
       ),
-      'cell_line_cvterm' => array (
+      'cell_line_cvterm' => array(
         'table' => 'cell_line_cvterm',
-        'columns' => array (
+        'columns' => array(
           'cell_line_cvterm_id' => 'cell_line_cvterm_id',
         ),
       ),
@@ -1864,50 +1864,50 @@ function tripal_core_chado_schema_v1_2_cell_line_cvtermprop() {
  *
  */
 function tripal_core_chado_schema_v1_2_cell_line_dbxref() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'cell_line_dbxref_id' => array (
+    'fields' => array(
+      'cell_line_dbxref_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'cell_line_id' => array (
+      'cell_line_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'dbxref_id' => array (
+      'dbxref_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'is_current' => array (
+      'is_current' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'boolean',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 'ru',
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'cell_line_dbxref_id',
     ),
-    'unique keys' => array (
-      'cell_line_dbxref_c1' => array (
+    'unique keys' => array(
+      'cell_line_dbxref_c1' => array(
         0 => 'cell_line_id',
         1 => 'dbxref_id',
       ),
     ),
-    'foreign keys' => array (
-      'dbxref' => array (
+    'foreign keys' => array(
+      'dbxref' => array(
         'table' => 'dbxref',
-        'columns' => array (
+        'columns' => array(
           'dbxref_id' => 'dbxref_id',
         ),
       ),
-      'cell_line' => array (
+      'cell_line' => array(
         'table' => 'cell_line',
-        'columns' => array (
+        'columns' => array(
           'cell_line_id' => 'cell_line_id',
         ),
       ),
@@ -1929,56 +1929,56 @@ function tripal_core_chado_schema_v1_2_cell_line_dbxref() {
  *
  */
 function tripal_core_chado_schema_v1_2_cell_line_feature() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'cell_line_feature_id' => array (
+    'fields' => array(
+      'cell_line_feature_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'cell_line_id' => array (
+      'cell_line_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'feature_id' => array (
+      'feature_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'pub_id' => array (
+      'pub_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'cell_line_feature_id',
     ),
-    'unique keys' => array (
-      'cell_line_feature_c1' => array (
+    'unique keys' => array(
+      'cell_line_feature_c1' => array(
         0 => 'cell_line_id',
         1 => 'feature_id',
         2 => 'pub_id',
       ),
     ),
-    'foreign keys' => array (
-      'pub' => array (
+    'foreign keys' => array(
+      'pub' => array(
         'table' => 'pub',
-        'columns' => array (
+        'columns' => array(
           'pub_id' => 'pub_id',
         ),
       ),
-      'feature' => array (
+      'feature' => array(
         'table' => 'feature',
-        'columns' => array (
+        'columns' => array(
           'feature_id' => 'feature_id',
         ),
       ),
-      'cell_line' => array (
+      'cell_line' => array(
         'table' => 'cell_line',
-        'columns' => array (
+        'columns' => array(
           'cell_line_id' => 'cell_line_id',
         ),
       ),
@@ -2000,56 +2000,56 @@ function tripal_core_chado_schema_v1_2_cell_line_feature() {
  *
  */
 function tripal_core_chado_schema_v1_2_cell_line_library() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'cell_line_library_id' => array (
+    'fields' => array(
+      'cell_line_library_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'cell_line_id' => array (
+      'cell_line_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'library_id' => array (
+      'library_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'pub_id' => array (
+      'pub_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'cell_line_library_id',
     ),
-    'unique keys' => array (
-      'cell_line_library_c1' => array (
+    'unique keys' => array(
+      'cell_line_library_c1' => array(
         0 => 'cell_line_id',
         1 => 'library_id',
         2 => 'pub_id',
       ),
     ),
-    'foreign keys' => array (
-      'pub' => array (
+    'foreign keys' => array(
+      'pub' => array(
         'table' => 'pub',
-        'columns' => array (
+        'columns' => array(
           'pub_id' => 'pub_id',
         ),
       ),
-      'library' => array (
+      'library' => array(
         'table' => 'library',
-        'columns' => array (
+        'columns' => array(
           'library_id' => 'library_id',
         ),
       ),
-      'cell_line' => array (
+      'cell_line' => array(
         'table' => 'cell_line',
-        'columns' => array (
+        'columns' => array(
           'cell_line_id' => 'cell_line_id',
         ),
       ),
@@ -2071,44 +2071,44 @@ function tripal_core_chado_schema_v1_2_cell_line_library() {
  *
  */
 function tripal_core_chado_schema_v1_2_cell_line_pub() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'cell_line_pub_id' => array (
+    'fields' => array(
+      'cell_line_pub_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'cell_line_id' => array (
+      'cell_line_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'pub_id' => array (
+      'pub_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'cell_line_pub_id',
     ),
-    'unique keys' => array (
-      'cell_line_pub_c1' => array (
+    'unique keys' => array(
+      'cell_line_pub_c1' => array(
         0 => 'cell_line_id',
         1 => 'pub_id',
       ),
     ),
-    'foreign keys' => array (
-      'pub' => array (
+    'foreign keys' => array(
+      'pub' => array(
         'table' => 'pub',
-        'columns' => array (
+        'columns' => array(
           'pub_id' => 'pub_id',
         ),
       ),
-      'cell_line' => array (
+      'cell_line' => array(
         'table' => 'cell_line',
-        'columns' => array (
+        'columns' => array(
           'cell_line_id' => 'cell_line_id',
         ),
       ),
@@ -2130,50 +2130,50 @@ function tripal_core_chado_schema_v1_2_cell_line_pub() {
  *
  */
 function tripal_core_chado_schema_v1_2_cell_line_relationship() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'cell_line_relationship_id' => array (
+    'fields' => array(
+      'cell_line_relationship_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'subject_id' => array (
+      'subject_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'object_id' => array (
+      'object_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'type_id' => array (
+      'type_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'cell_line_relationship_id',
     ),
-    'unique keys' => array (
-      'cell_line_relationship_c1' => array (
+    'unique keys' => array(
+      'cell_line_relationship_c1' => array(
         0 => 'subject_id',
         1 => 'object_id',
         2 => 'type_id',
       ),
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'type_id' => 'cvterm_id',
         ),
       ),
-      'cell_line' => array (
+      'cell_line' => array(
         'table' => 'cell_line',
-        'columns' => array (
+        'columns' => array(
           'subject_id' => 'cell_line_id',
           'object_id' => 'cell_line_id',
         ),
@@ -2196,68 +2196,68 @@ function tripal_core_chado_schema_v1_2_cell_line_relationship() {
  *
  */
 function tripal_core_chado_schema_v1_2_cell_line_synonym() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'cell_line_synonym_id' => array (
+    'fields' => array(
+      'cell_line_synonym_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'cell_line_id' => array (
+      'cell_line_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'synonym_id' => array (
+      'synonym_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'pub_id' => array (
+      'pub_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'is_current' => array (
+      'is_current' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'boolean',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 'als',
       ),
-      'is_internal' => array (
+      'is_internal' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'boolean',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 'als',
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'cell_line_synonym_id',
     ),
-    'unique keys' => array (
-      'cell_line_synonym_c1' => array (
+    'unique keys' => array(
+      'cell_line_synonym_c1' => array(
         0 => 'synonym_id',
         1 => 'cell_line_id',
         2 => 'pub_id',
       ),
     ),
-    'foreign keys' => array (
-      'pub' => array (
+    'foreign keys' => array(
+      'pub' => array(
         'table' => 'pub',
-        'columns' => array (
+        'columns' => array(
           'pub_id' => 'pub_id',
         ),
       ),
-      'synonym' => array (
+      'synonym' => array(
         'table' => 'synonym',
-        'columns' => array (
+        'columns' => array(
           'synonym_id' => 'synonym_id',
         ),
       ),
-      'cell_line' => array (
+      'cell_line' => array(
         'table' => 'cell_line',
-        'columns' => array (
+        'columns' => array(
           'cell_line_id' => 'cell_line_id',
         ),
       ),
@@ -2279,56 +2279,56 @@ function tripal_core_chado_schema_v1_2_cell_line_synonym() {
  *
  */
 function tripal_core_chado_schema_v1_2_cell_lineprop() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'cell_lineprop_id' => array (
+    'fields' => array(
+      'cell_lineprop_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'cell_line_id' => array (
+      'cell_line_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'type_id' => array (
+      'type_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'value' => array (
+      'value' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'rank' => array (
+      'rank' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 0,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'cell_lineprop_id',
     ),
-    'unique keys' => array (
-      'cell_lineprop_c1' => array (
+    'unique keys' => array(
+      'cell_lineprop_c1' => array(
         0 => 'cell_line_id',
         1 => 'type_id',
         2 => 'rank',
       ),
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'type_id' => 'cvterm_id',
         ),
       ),
-      'cell_line' => array (
+      'cell_line' => array(
         'table' => 'cell_line',
-        'columns' => array (
+        'columns' => array(
           'cell_line_id' => 'cell_line_id',
         ),
       ),
@@ -2350,44 +2350,44 @@ function tripal_core_chado_schema_v1_2_cell_lineprop() {
  *
  */
 function tripal_core_chado_schema_v1_2_cell_lineprop_pub() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'cell_lineprop_pub_id' => array (
+    'fields' => array(
+      'cell_lineprop_pub_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'cell_lineprop_id' => array (
+      'cell_lineprop_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'pub_id' => array (
+      'pub_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'cell_lineprop_pub_id',
     ),
-    'unique keys' => array (
-      'cell_lineprop_pub_c1' => array (
+    'unique keys' => array(
+      'cell_lineprop_pub_c1' => array(
         0 => 'cell_lineprop_id',
         1 => 'pub_id',
       ),
     ),
-    'foreign keys' => array (
-      'pub' => array (
+    'foreign keys' => array(
+      'pub' => array(
         'table' => 'pub',
-        'columns' => array (
+        'columns' => array(
           'pub_id' => 'pub_id',
         ),
       ),
-      'cell_lineprop' => array (
+      'cell_lineprop' => array(
         'table' => 'cell_lineprop',
-        'columns' => array (
+        'columns' => array(
           'cell_lineprop_id' => 'cell_lineprop_id',
         ),
       ),
@@ -2409,44 +2409,44 @@ function tripal_core_chado_schema_v1_2_cell_lineprop_pub() {
  *
  */
 function tripal_core_chado_schema_v1_2_chadoprop() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'chadoprop_id' => array (
+    'fields' => array(
+      'chadoprop_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'type_id' => array (
+      'type_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'value' => array (
+      'value' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'rank' => array (
+      'rank' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 0,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'chadoprop_id',
     ),
-    'unique keys' => array (
-      'chadoprop_c1' => array (
+    'unique keys' => array(
+      'chadoprop_c1' => array(
         0 => 'type_id',
         1 => 'rank',
       ),
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'type_id' => 'cvterm_id',
         ),
       ),
@@ -2468,34 +2468,34 @@ function tripal_core_chado_schema_v1_2_chadoprop() {
  *
  */
 function tripal_core_chado_schema_v1_2_channel() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'channel_id' => array (
+    'fields' => array(
+      'channel_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'name' => array (
+      'name' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'definition' => array (
+      'definition' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => true,
+        'not null' => TRUE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'channel_id',
     ),
-    'unique keys' => array (
-      'channel_c1' => array (
+    'unique keys' => array(
+      'channel_c1' => array(
         0 => 'name',
       ),
     ),
-    'foreign keys' => array (
+    'foreign keys' => array(
     ),
   );
   return $description;
@@ -2514,44 +2514,44 @@ function tripal_core_chado_schema_v1_2_channel() {
  *
  */
 function tripal_core_chado_schema_v1_2_contact() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'contact_id' => array (
+    'fields' => array(
+      'contact_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'type_id' => array (
+      'type_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'name' => array (
+      'name' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'description' => array (
+      'description' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => false,
+        'not null' => FALSE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'contact_id',
     ),
-    'unique keys' => array (
-      'contact_c1' => array (
+    'unique keys' => array(
+      'contact_c1' => array(
         0 => 'name',
       ),
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'type_id' => 'cvterm_id',
         ),
       ),
@@ -2573,61 +2573,61 @@ function tripal_core_chado_schema_v1_2_contact() {
  *
  */
 function tripal_core_chado_schema_v1_2_contact_relationship() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'contact_relationship_id' => array (
+    'fields' => array(
+      'contact_relationship_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'type_id' => array (
+      'type_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'subject_id' => array (
+      'subject_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'object_id' => array (
+      'object_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'contact_relationship_id',
     ),
-    'unique keys' => array (
-      'contact_relationship_c1' => array (
+    'unique keys' => array(
+      'contact_relationship_c1' => array(
         0 => 'subject_id',
         1 => 'object_id',
         2 => 'type_id',
       ),
     ),
-    'indexes' => array (
-      'contact_relationship_idx1' => array (
+    'indexes' => array(
+      'contact_relationship_idx1' => array(
         0 => 'type_id',
       ),
-      'contact_relationship_idx2' => array (
+      'contact_relationship_idx2' => array(
         0 => 'subject_id',
       ),
-      'contact_relationship_idx3' => array (
+      'contact_relationship_idx3' => array(
         0 => 'object_id',
       ),
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'type_id' => 'cvterm_id',
         ),
       ),
-      'contact' => array (
+      'contact' => array(
         'table' => 'contact',
-        'columns' => array (
+        'columns' => array(
           'subject_id' => 'contact_id',
           'object_id' => 'contact_id',
         ),
@@ -2650,84 +2650,84 @@ function tripal_core_chado_schema_v1_2_contact_relationship() {
  *
  */
 function tripal_core_chado_schema_v1_2_control() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'control_id' => array (
+    'fields' => array(
+      'control_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'type_id' => array (
+      'type_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'assay_id' => array (
+      'assay_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'tableinfo_id' => array (
+      'tableinfo_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'row_id' => array (
+      'row_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'name' => array (
+      'name' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'value' => array (
+      'value' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'rank' => array (
+      'rank' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 0,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'control_id',
     ),
-    'indexes' => array (
-      'control_idx1' => array (
+    'indexes' => array(
+      'control_idx1' => array(
         0 => 'type_id',
       ),
-      'control_idx2' => array (
+      'control_idx2' => array(
         0 => 'assay_id',
       ),
-      'control_idx3' => array (
+      'control_idx3' => array(
         0 => 'tableinfo_id',
       ),
-      'control_idx4' => array (
+      'control_idx4' => array(
         0 => 'row_id',
       ),
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'type_id' => 'cvterm_id',
         ),
       ),
-      'tableinfo' => array (
+      'tableinfo' => array(
         'table' => 'tableinfo',
-        'columns' => array (
+        'columns' => array(
           'tableinfo_id' => 'tableinfo_id',
         ),
       ),
-      'assay' => array (
+      'assay' => array(
         'table' => 'assay',
-        'columns' => array (
+        'columns' => array(
           'assay_id' => 'assay_id',
         ),
       ),
@@ -2749,35 +2749,35 @@ function tripal_core_chado_schema_v1_2_control() {
  *
  */
 function tripal_core_chado_schema_v1_2_cv() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'cv_id' => array (
+    'fields' => array(
+      'cv_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'name' => array (
+      'name' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'definition' => array (
+      'definition' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => false,
+        'not null' => FALSE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'cv_id',
     ),
-    'unique keys' => array (
-      'cv_c1' => array (
+    'unique keys' => array(
+      'cv_c1' => array(
         0 => 'name',
       ),
     ),
-    'foreign keys' => array (
+    'foreign keys' => array(
     ),
   );
   return $description;
@@ -2796,56 +2796,56 @@ function tripal_core_chado_schema_v1_2_cv() {
  *
  */
 function tripal_core_chado_schema_v1_2_cvprop() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'cvprop_id' => array (
+    'fields' => array(
+      'cvprop_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'cv_id' => array (
+      'cv_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'type_id' => array (
+      'type_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'value' => array (
+      'value' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'rank' => array (
+      'rank' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 0,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'cvprop_id',
     ),
-    'unique keys' => array (
-      'cvprop_c1' => array (
+    'unique keys' => array(
+      'cvprop_c1' => array(
         0 => 'cv_id',
         1 => 'type_id',
         2 => 'rank',
       ),
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'type_id' => 'cvterm_id',
         ),
       ),
-      'cv' => array (
+      'cv' => array(
         'table' => 'cv',
-        'columns' => array (
+        'columns' => array(
           'cv_id' => 'cv_id',
         ),
       ),
@@ -2867,82 +2867,82 @@ function tripal_core_chado_schema_v1_2_cvprop() {
  *
  */
 function tripal_core_chado_schema_v1_2_cvterm() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'cvterm_id' => array (
+    'fields' => array(
+      'cvterm_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'cv_id' => array (
+      'cv_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'name' => array (
+      'name' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '1024',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'definition' => array (
+      'definition' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'dbxref_id' => array (
+      'dbxref_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'is_obsolete' => array (
+      'is_obsolete' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 0,
       ),
-      'is_relationshiptype' => array (
+      'is_relationshiptype' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 0,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'cvterm_id',
     ),
-    'unique keys' => array (
-      'cvterm_c1' => array (
+    'unique keys' => array(
+      'cvterm_c1' => array(
         0 => 'name',
         1 => 'cv_id',
         2 => 'is_obsolete',
       ),
-      'cvterm_c2' => array (
+      'cvterm_c2' => array(
         0 => 'dbxref_id',
       ),
     ),
-    'indexes' => array (
-      'cvterm_idx1' => array (
+    'indexes' => array(
+      'cvterm_idx1' => array(
         0 => 'cv_id',
       ),
-      'cvterm_idx2' => array (
+      'cvterm_idx2' => array(
         0 => 'name',
       ),
-      'cvterm_idx3' => array (
+      'cvterm_idx3' => array(
         0 => 'dbxref_id',
       ),
     ),
-    'foreign keys' => array (
-      'cv' => array (
+    'foreign keys' => array(
+      'cv' => array(
         'table' => 'cv',
-        'columns' => array (
+        'columns' => array(
           'cv_id' => 'cv_id',
         ),
       ),
-      'dbxref' => array (
+      'dbxref' => array(
         'table' => 'dbxref',
-        'columns' => array (
+        'columns' => array(
           'dbxref_id' => 'dbxref_id',
         ),
       ),
@@ -2964,58 +2964,58 @@ function tripal_core_chado_schema_v1_2_cvterm() {
  *
  */
 function tripal_core_chado_schema_v1_2_cvterm_dbxref() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'cvterm_dbxref_id' => array (
+    'fields' => array(
+      'cvterm_dbxref_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'cvterm_id' => array (
+      'cvterm_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'dbxref_id' => array (
+      'dbxref_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'is_for_definition' => array (
+      'is_for_definition' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 0,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'cvterm_dbxref_id',
     ),
-    'unique keys' => array (
-      'cvterm_dbxref_c1' => array (
+    'unique keys' => array(
+      'cvterm_dbxref_c1' => array(
         0 => 'cvterm_id',
         1 => 'dbxref_id',
       ),
     ),
-    'indexes' => array (
-      'cvterm_dbxref_idx1' => array (
+    'indexes' => array(
+      'cvterm_dbxref_idx1' => array(
         0 => 'cvterm_id',
       ),
-      'cvterm_dbxref_idx2' => array (
+      'cvterm_dbxref_idx2' => array(
         0 => 'dbxref_id',
       ),
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'cvterm_id' => 'cvterm_id',
         ),
       ),
-      'dbxref' => array (
+      'dbxref' => array(
         'table' => 'dbxref',
-        'columns' => array (
+        'columns' => array(
           'dbxref_id' => 'dbxref_id',
         ),
       ),
@@ -3037,55 +3037,55 @@ function tripal_core_chado_schema_v1_2_cvterm_dbxref() {
  *
  */
 function tripal_core_chado_schema_v1_2_cvterm_relationship() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'cvterm_relationship_id' => array (
+    'fields' => array(
+      'cvterm_relationship_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'type_id' => array (
+      'type_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'subject_id' => array (
+      'subject_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'object_id' => array (
+      'object_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'cvterm_relationship_id',
     ),
-    'unique keys' => array (
-      'cvterm_relationship_c1' => array (
+    'unique keys' => array(
+      'cvterm_relationship_c1' => array(
         0 => 'subject_id',
         1 => 'object_id',
         2 => 'type_id',
       ),
     ),
-    'indexes' => array (
-      'cvterm_relationship_idx1' => array (
+    'indexes' => array(
+      'cvterm_relationship_idx1' => array(
         0 => 'type_id',
       ),
-      'cvterm_relationship_idx2' => array (
+      'cvterm_relationship_idx2' => array(
         0 => 'subject_id',
       ),
-      'cvterm_relationship_idx3' => array (
+      'cvterm_relationship_idx3' => array(
         0 => 'object_id',
       ),
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'type_id' => 'cvterm_id',
           'subject_id' => 'cvterm_id',
           'object_id' => 'cvterm_id',
@@ -3109,77 +3109,77 @@ function tripal_core_chado_schema_v1_2_cvterm_relationship() {
  *
  */
 function tripal_core_chado_schema_v1_2_cvtermpath() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'cvtermpath_id' => array (
+    'fields' => array(
+      'cvtermpath_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'type_id' => array (
+      'type_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'subject_id' => array (
+      'subject_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'object_id' => array (
+      'object_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'cv_id' => array (
+      'cv_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'pathdistance' => array (
+      'pathdistance' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => false,
+        'not null' => FALSE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'cvtermpath_id',
     ),
-    'unique keys' => array (
-      'cvtermpath_c1' => array (
+    'unique keys' => array(
+      'cvtermpath_c1' => array(
         0 => 'subject_id',
         1 => 'object_id',
         2 => 'type_id',
         3 => 'pathdistance',
       ),
     ),
-    'indexes' => array (
-      'cvtermpath_idx1' => array (
+    'indexes' => array(
+      'cvtermpath_idx1' => array(
         0 => 'type_id',
       ),
-      'cvtermpath_idx2' => array (
+      'cvtermpath_idx2' => array(
         0 => 'subject_id',
       ),
-      'cvtermpath_idx3' => array (
+      'cvtermpath_idx3' => array(
         0 => 'object_id',
       ),
-      'cvtermpath_idx4' => array (
+      'cvtermpath_idx4' => array(
         0 => 'cv_id',
       ),
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'type_id' => 'cvterm_id',
           'subject_id' => 'cvterm_id',
           'object_id' => 'cvterm_id',
         ),
       ),
-      'cv' => array (
+      'cv' => array(
         'table' => 'cv',
-        'columns' => array (
+        'columns' => array(
           'cv_id' => 'cv_id',
         ),
       ),
@@ -3201,60 +3201,60 @@ function tripal_core_chado_schema_v1_2_cvtermpath() {
  *
  */
 function tripal_core_chado_schema_v1_2_cvtermprop() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'cvtermprop_id' => array (
+    'fields' => array(
+      'cvtermprop_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'cvterm_id' => array (
+      'cvterm_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'type_id' => array (
+      'type_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'value' => array (
+      'value' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => '',
       ),
-      'rank' => array (
+      'rank' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 0,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'cvtermprop_id',
     ),
-    'unique keys' => array (
-      'cvterm_id' => array (
+    'unique keys' => array(
+      'cvterm_id' => array(
         0 => 'cvterm_id',
         1 => 'type_id',
         2 => 'value',
         3 => 'rank',
       ),
     ),
-    'indexes' => array (
-      'cvtermprop_idx1' => array (
+    'indexes' => array(
+      'cvtermprop_idx1' => array(
         0 => 'cvterm_id',
       ),
-      'cvtermprop_idx2' => array (
+      'cvtermprop_idx2' => array(
         0 => 'type_id',
       ),
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'cvterm_id' => 'cvterm_id',
           'type_id' => 'cvterm_id',
         ),
@@ -3277,49 +3277,49 @@ function tripal_core_chado_schema_v1_2_cvtermprop() {
  *
  */
 function tripal_core_chado_schema_v1_2_cvtermsynonym() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'cvtermsynonym_id' => array (
+    'fields' => array(
+      'cvtermsynonym_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'cvterm_id' => array (
+      'cvterm_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'synonym' => array (
+      'synonym' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '1024',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'type_id' => array (
+      'type_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => false,
+        'not null' => FALSE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'cvtermsynonym_id',
     ),
-    'unique keys' => array (
-      'cvtermsynonym_c1' => array (
+    'unique keys' => array(
+      'cvtermsynonym_c1' => array(
         0 => 'cvterm_id',
         1 => 'synonym',
       ),
     ),
-    'indexes' => array (
-      'cvtermsynonym_idx1' => array (
+    'indexes' => array(
+      'cvtermsynonym_idx1' => array(
         0 => 'cvterm_id',
       ),
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'cvterm_id' => 'cvterm_id',
           'type_id' => 'cvterm_id',
         ),
@@ -3342,48 +3342,48 @@ function tripal_core_chado_schema_v1_2_cvtermsynonym() {
  *
  */
 function tripal_core_chado_schema_v1_2_db() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'db_id' => array (
+    'fields' => array(
+      'db_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'name' => array (
+      'name' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'description' => array (
+      'description' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'urlprefix' => array (
+      'urlprefix' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'url' => array (
+      'url' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => false,
+        'not null' => FALSE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'db_id',
     ),
-    'unique keys' => array (
-      'db_c1' => array (
+    'unique keys' => array(
+      'db_c1' => array(
         0 => 'name',
       ),
     ),
-    'foreign keys' => array (
+    'foreign keys' => array(
     ),
   );
   return $description;
@@ -3402,63 +3402,63 @@ function tripal_core_chado_schema_v1_2_db() {
  *
  */
 function tripal_core_chado_schema_v1_2_dbxref() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'dbxref_id' => array (
+    'fields' => array(
+      'dbxref_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'db_id' => array (
+      'db_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'accession' => array (
+      'accession' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'version' => array (
+      'version' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => '',
       ),
-      'description' => array (
+      'description' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => false,
+        'not null' => FALSE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'dbxref_id',
     ),
-    'unique keys' => array (
-      'dbxref_c1' => array (
+    'unique keys' => array(
+      'dbxref_c1' => array(
         0 => 'db_id',
         1 => 'accession',
         2 => 'version',
       ),
     ),
-    'indexes' => array (
-      'dbxref_idx1' => array (
+    'indexes' => array(
+      'dbxref_idx1' => array(
         0 => 'db_id',
       ),
-      'dbxref_idx2' => array (
+      'dbxref_idx2' => array(
         0 => 'accession',
       ),
-      'dbxref_idx3' => array (
+      'dbxref_idx3' => array(
         0 => 'version',
       ),
     ),
-    'foreign keys' => array (
-      'db' => array (
+    'foreign keys' => array(
+      'db' => array(
         'table' => 'db',
-        'columns' => array (
+        'columns' => array(
           'db_id' => 'db_id',
         ),
       ),
@@ -3480,65 +3480,65 @@ function tripal_core_chado_schema_v1_2_dbxref() {
  *
  */
 function tripal_core_chado_schema_v1_2_dbxrefprop() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'dbxrefprop_id' => array (
+    'fields' => array(
+      'dbxrefprop_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'dbxref_id' => array (
+      'dbxref_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'type_id' => array (
+      'type_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'value' => array (
+      'value' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => '',
       ),
-      'rank' => array (
+      'rank' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 0,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'dbxrefprop_id',
     ),
-    'unique keys' => array (
-      'dbxrefprop_c1' => array (
+    'unique keys' => array(
+      'dbxrefprop_c1' => array(
         0 => 'dbxref_id',
         1 => 'type_id',
         2 => 'rank',
       ),
     ),
-    'indexes' => array (
-      'dbxrefprop_idx1' => array (
+    'indexes' => array(
+      'dbxrefprop_idx1' => array(
         0 => 'dbxref_id',
       ),
-      'dbxrefprop_idx2' => array (
+      'dbxrefprop_idx2' => array(
         0 => 'type_id',
       ),
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'type_id' => 'cvterm_id',
         ),
       ),
-      'dbxref' => array (
+      'dbxref' => array(
         'table' => 'dbxref',
-        'columns' => array (
+        'columns' => array(
           'dbxref_id' => 'dbxref_id',
         ),
       ),
@@ -3560,36 +3560,36 @@ function tripal_core_chado_schema_v1_2_dbxrefprop() {
  *
  */
 function tripal_core_chado_schema_v1_2_eimage() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'eimage_id' => array (
+    'fields' => array(
+      'eimage_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'eimage_data' => array (
+      'eimage_data' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'eimage_type' => array (
+      'eimage_type' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'image_uri' => array (
+      'image_uri' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => false,
+        'not null' => FALSE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'eimage_id',
     ),
-    'foreign keys' => array (
+    'foreign keys' => array(
     ),
   );
   return $description;
@@ -3608,80 +3608,80 @@ function tripal_core_chado_schema_v1_2_eimage() {
  *
  */
 function tripal_core_chado_schema_v1_2_element() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'element_id' => array (
+    'fields' => array(
+      'element_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'feature_id' => array (
+      'feature_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'arraydesign_id' => array (
+      'arraydesign_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'type_id' => array (
+      'type_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'dbxref_id' => array (
+      'dbxref_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => false,
+        'not null' => FALSE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'element_id',
     ),
-    'unique keys' => array (
-      'element_c1' => array (
+    'unique keys' => array(
+      'element_c1' => array(
         0 => 'feature_id',
         1 => 'arraydesign_id',
       ),
     ),
-    'indexes' => array (
-      'element_idx1' => array (
+    'indexes' => array(
+      'element_idx1' => array(
         0 => 'feature_id',
       ),
-      'element_idx2' => array (
+      'element_idx2' => array(
         0 => 'arraydesign_id',
       ),
-      'element_idx3' => array (
+      'element_idx3' => array(
         0 => 'type_id',
       ),
-      'element_idx4' => array (
+      'element_idx4' => array(
         0 => 'dbxref_id',
       ),
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'type_id' => 'cvterm_id',
         ),
       ),
-      'dbxref' => array (
+      'dbxref' => array(
         'table' => 'dbxref',
-        'columns' => array (
+        'columns' => array(
           'dbxref_id' => 'dbxref_id',
         ),
       ),
-      'feature' => array (
+      'feature' => array(
         'table' => 'feature',
-        'columns' => array (
+        'columns' => array(
           'feature_id' => 'feature_id',
         ),
       ),
-      'arraydesign' => array (
+      'arraydesign' => array(
         'table' => 'arraydesign',
-        'columns' => array (
+        'columns' => array(
           'arraydesign_id' => 'arraydesign_id',
         ),
       ),
@@ -3703,76 +3703,76 @@ function tripal_core_chado_schema_v1_2_element() {
  *
  */
 function tripal_core_chado_schema_v1_2_element_relationship() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'element_relationship_id' => array (
+    'fields' => array(
+      'element_relationship_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'subject_id' => array (
+      'subject_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'type_id' => array (
+      'type_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'object_id' => array (
+      'object_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'value' => array (
+      'value' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'rank' => array (
+      'rank' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 0,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'element_relationship_id',
     ),
-    'unique keys' => array (
-      'element_relationship_c1' => array (
+    'unique keys' => array(
+      'element_relationship_c1' => array(
         0 => 'subject_id',
         1 => 'object_id',
         2 => 'type_id',
         3 => 'rank',
       ),
     ),
-    'indexes' => array (
-      'element_relationship_idx1' => array (
+    'indexes' => array(
+      'element_relationship_idx1' => array(
         0 => 'subject_id',
       ),
-      'element_relationship_idx2' => array (
+      'element_relationship_idx2' => array(
         0 => 'type_id',
       ),
-      'element_relationship_idx3' => array (
+      'element_relationship_idx3' => array(
         0 => 'object_id',
       ),
-      'element_relationship_idx4' => array (
+      'element_relationship_idx4' => array(
         0 => 'value',
       ),
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'type_id' => 'cvterm_id',
         ),
       ),
-      'element' => array (
+      'element' => array(
         'table' => 'element',
-        'columns' => array (
+        'columns' => array(
           'subject_id' => 'element_id',
           'object_id' => 'element_id',
         ),
@@ -3795,61 +3795,61 @@ function tripal_core_chado_schema_v1_2_element_relationship() {
  *
  */
 function tripal_core_chado_schema_v1_2_elementresult() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'elementresult_id' => array (
+    'fields' => array(
+      'elementresult_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'element_id' => array (
+      'element_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'quantification_id' => array (
+      'quantification_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'signal' => array (
+      'signal' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'float',
         'size' => 'big',
-        'not null' => true,
+        'not null' => TRUE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'elementresult_id',
     ),
-    'unique keys' => array (
-      'elementresult_c1' => array (
+    'unique keys' => array(
+      'elementresult_c1' => array(
         0 => 'element_id',
         1 => 'quantification_id',
       ),
     ),
-    'indexes' => array (
-      'elementresult_idx1' => array (
+    'indexes' => array(
+      'elementresult_idx1' => array(
         0 => 'element_id',
       ),
-      'elementresult_idx2' => array (
+      'elementresult_idx2' => array(
         0 => 'quantification_id',
       ),
-      'elementresult_idx3' => array (
+      'elementresult_idx3' => array(
         0 => 'signal',
       ),
     ),
-    'foreign keys' => array (
-      'quantification' => array (
+    'foreign keys' => array(
+      'quantification' => array(
         'table' => 'quantification',
-        'columns' => array (
+        'columns' => array(
           'quantification_id' => 'quantification_id',
         ),
       ),
-      'element' => array (
+      'element' => array(
         'table' => 'element',
-        'columns' => array (
+        'columns' => array(
           'element_id' => 'element_id',
         ),
       ),
@@ -3871,76 +3871,76 @@ function tripal_core_chado_schema_v1_2_elementresult() {
  *
  */
 function tripal_core_chado_schema_v1_2_elementresult_relationship() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'elementresult_relationship_id' => array (
+    'fields' => array(
+      'elementresult_relationship_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'subject_id' => array (
+      'subject_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'type_id' => array (
+      'type_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'object_id' => array (
+      'object_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'value' => array (
+      'value' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'rank' => array (
+      'rank' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 0,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'elementresult_relationship_id',
     ),
-    'unique keys' => array (
-      'elementresult_relationship_c1' => array (
+    'unique keys' => array(
+      'elementresult_relationship_c1' => array(
         0 => 'subject_id',
         1 => 'object_id',
         2 => 'type_id',
         3 => 'rank',
       ),
     ),
-    'indexes' => array (
-      'elementresult_relationship_idx1' => array (
+    'indexes' => array(
+      'elementresult_relationship_idx1' => array(
         0 => 'subject_id',
       ),
-      'elementresult_relationship_idx2' => array (
+      'elementresult_relationship_idx2' => array(
         0 => 'type_id',
       ),
-      'elementresult_relationship_idx3' => array (
+      'elementresult_relationship_idx3' => array(
         0 => 'object_id',
       ),
-      'elementresult_relationship_idx4' => array (
+      'elementresult_relationship_idx4' => array(
         0 => 'value',
       ),
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'type_id' => 'cvterm_id',
         ),
       ),
-      'elementresult' => array (
+      'elementresult' => array(
         'table' => 'elementresult',
-        'columns' => array (
+        'columns' => array(
           'subject_id' => 'elementresult_id',
           'object_id' => 'elementresult_id',
         ),
@@ -3963,39 +3963,39 @@ function tripal_core_chado_schema_v1_2_elementresult_relationship() {
  *
  */
 function tripal_core_chado_schema_v1_2_environment() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'environment_id' => array (
+    'fields' => array(
+      'environment_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'uniquename' => array (
+      'uniquename' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'description' => array (
+      'description' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => false,
+        'not null' => FALSE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'environment_id',
     ),
-    'unique keys' => array (
-      'environment_c1' => array (
+    'unique keys' => array(
+      'environment_c1' => array(
         0 => 'uniquename',
       ),
     ),
-    'indexes' => array (
-      'environment_idx1' => array (
+    'indexes' => array(
+      'environment_idx1' => array(
         0 => 'uniquename',
       ),
     ),
-    'foreign keys' => array (
+    'foreign keys' => array(
     ),
   );
   return $description;
@@ -4014,52 +4014,52 @@ function tripal_core_chado_schema_v1_2_environment() {
  *
  */
 function tripal_core_chado_schema_v1_2_environment_cvterm() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'environment_cvterm_id' => array (
+    'fields' => array(
+      'environment_cvterm_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'environment_id' => array (
+      'environment_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'cvterm_id' => array (
+      'cvterm_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'environment_cvterm_id',
     ),
-    'unique keys' => array (
-      'environment_cvterm_c1' => array (
+    'unique keys' => array(
+      'environment_cvterm_c1' => array(
         0 => 'environment_id',
         1 => 'cvterm_id',
       ),
     ),
-    'indexes' => array (
-      'environment_cvterm_idx1' => array (
+    'indexes' => array(
+      'environment_cvterm_idx1' => array(
         0 => 'environment_id',
       ),
-      'environment_cvterm_idx2' => array (
+      'environment_cvterm_idx2' => array(
         0 => 'cvterm_id',
       ),
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'cvterm_id' => 'cvterm_id',
         ),
       ),
-      'environment' => array (
+      'environment' => array(
         'table' => 'environment',
-        'columns' => array (
+        'columns' => array(
           'environment_id' => 'environment_id',
         ),
       ),
@@ -4081,40 +4081,40 @@ function tripal_core_chado_schema_v1_2_environment_cvterm() {
  *
  */
 function tripal_core_chado_schema_v1_2_expression() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'expression_id' => array (
+    'fields' => array(
+      'expression_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'uniquename' => array (
+      'uniquename' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'md5checksum' => array (
+      'md5checksum' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'char',
         'length' => '32',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'description' => array (
+      'description' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => false,
+        'not null' => FALSE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'expression_id',
     ),
-    'unique keys' => array (
-      'expression_c1' => array (
+    'unique keys' => array(
+      'expression_c1' => array(
         0 => 'uniquename',
       ),
     ),
-    'foreign keys' => array (
+    'foreign keys' => array(
     ),
   );
   return $description;
@@ -4133,68 +4133,68 @@ function tripal_core_chado_schema_v1_2_expression() {
  *
  */
 function tripal_core_chado_schema_v1_2_expression_cvterm() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'expression_cvterm_id' => array (
+    'fields' => array(
+      'expression_cvterm_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'expression_id' => array (
+      'expression_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'cvterm_id' => array (
+      'cvterm_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'rank' => array (
+      'rank' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 0,
       ),
-      'cvterm_type_id' => array (
+      'cvterm_type_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'expression_cvterm_id',
     ),
-    'unique keys' => array (
-      'expression_cvterm_c1' => array (
+    'unique keys' => array(
+      'expression_cvterm_c1' => array(
         0 => 'expression_id',
         1 => 'cvterm_id',
         2 => 'cvterm_type_id',
       ),
     ),
-    'indexes' => array (
-      'expression_cvterm_idx1' => array (
+    'indexes' => array(
+      'expression_cvterm_idx1' => array(
         0 => 'expression_id',
       ),
-      'expression_cvterm_idx2' => array (
+      'expression_cvterm_idx2' => array(
         0 => 'cvterm_id',
       ),
-      'expression_cvterm_idx3' => array (
+      'expression_cvterm_idx3' => array(
         0 => 'cvterm_type_id',
       ),
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'cvterm_id' => 'cvterm_id',
           'cvterm_type_id' => 'cvterm_id',
         ),
       ),
-      'expression' => array (
+      'expression' => array(
         'table' => 'expression',
-        'columns' => array (
+        'columns' => array(
           'expression_id' => 'expression_id',
         ),
       ),
@@ -4216,64 +4216,64 @@ function tripal_core_chado_schema_v1_2_expression_cvterm() {
  *
  */
 function tripal_core_chado_schema_v1_2_expression_cvtermprop() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'expression_cvtermprop_id' => array (
+    'fields' => array(
+      'expression_cvtermprop_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'expression_cvterm_id' => array (
+      'expression_cvterm_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'type_id' => array (
+      'type_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'value' => array (
+      'value' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'rank' => array (
+      'rank' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 0,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'expression_cvtermprop_id',
     ),
-    'unique keys' => array (
-      'expression_cvtermprop_c1' => array (
+    'unique keys' => array(
+      'expression_cvtermprop_c1' => array(
         0 => 'expression_cvterm_id',
         1 => 'type_id',
         2 => 'rank',
       ),
     ),
-    'indexes' => array (
-      'expression_cvtermprop_idx1' => array (
+    'indexes' => array(
+      'expression_cvtermprop_idx1' => array(
         0 => 'expression_cvterm_id',
       ),
-      'expression_cvtermprop_idx2' => array (
+      'expression_cvtermprop_idx2' => array(
         0 => 'type_id',
       ),
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'type_id' => 'cvterm_id',
         ),
       ),
-      'expression_cvterm' => array (
+      'expression_cvterm' => array(
         'table' => 'expression_cvterm',
-        'columns' => array (
+        'columns' => array(
           'expression_cvterm_id' => 'expression_cvterm_id',
         ),
       ),
@@ -4295,52 +4295,52 @@ function tripal_core_chado_schema_v1_2_expression_cvtermprop() {
  *
  */
 function tripal_core_chado_schema_v1_2_expression_image() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'expression_image_id' => array (
+    'fields' => array(
+      'expression_image_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'expression_id' => array (
+      'expression_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'eimage_id' => array (
+      'eimage_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'expression_image_id',
     ),
-    'unique keys' => array (
-      'expression_image_c1' => array (
+    'unique keys' => array(
+      'expression_image_c1' => array(
         0 => 'expression_id',
         1 => 'eimage_id',
       ),
     ),
-    'indexes' => array (
-      'expression_image_idx1' => array (
+    'indexes' => array(
+      'expression_image_idx1' => array(
         0 => 'expression_id',
       ),
-      'expression_image_idx2' => array (
+      'expression_image_idx2' => array(
         0 => 'eimage_id',
       ),
     ),
-    'foreign keys' => array (
-      'expression' => array (
+    'foreign keys' => array(
+      'expression' => array(
         'table' => 'expression',
-        'columns' => array (
+        'columns' => array(
           'expression_id' => 'expression_id',
         ),
       ),
-      'eimage' => array (
+      'eimage' => array(
         'table' => 'eimage',
-        'columns' => array (
+        'columns' => array(
           'eimage_id' => 'eimage_id',
         ),
       ),
@@ -4362,52 +4362,52 @@ function tripal_core_chado_schema_v1_2_expression_image() {
  *
  */
 function tripal_core_chado_schema_v1_2_expression_pub() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'expression_pub_id' => array (
+    'fields' => array(
+      'expression_pub_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'expression_id' => array (
+      'expression_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'pub_id' => array (
+      'pub_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'expression_pub_id',
     ),
-    'unique keys' => array (
-      'expression_pub_c1' => array (
+    'unique keys' => array(
+      'expression_pub_c1' => array(
         0 => 'expression_id',
         1 => 'pub_id',
       ),
     ),
-    'indexes' => array (
-      'expression_pub_idx1' => array (
+    'indexes' => array(
+      'expression_pub_idx1' => array(
         0 => 'expression_id',
       ),
-      'expression_pub_idx2' => array (
+      'expression_pub_idx2' => array(
         0 => 'pub_id',
       ),
     ),
-    'foreign keys' => array (
-      'pub' => array (
+    'foreign keys' => array(
+      'pub' => array(
         'table' => 'pub',
-        'columns' => array (
+        'columns' => array(
           'pub_id' => 'pub_id',
         ),
       ),
-      'expression' => array (
+      'expression' => array(
         'table' => 'expression',
-        'columns' => array (
+        'columns' => array(
           'expression_id' => 'expression_id',
         ),
       ),
@@ -4429,64 +4429,64 @@ function tripal_core_chado_schema_v1_2_expression_pub() {
  *
  */
 function tripal_core_chado_schema_v1_2_expressionprop() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'expressionprop_id' => array (
+    'fields' => array(
+      'expressionprop_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'expression_id' => array (
+      'expression_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'type_id' => array (
+      'type_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'value' => array (
+      'value' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'rank' => array (
+      'rank' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 0,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'expressionprop_id',
     ),
-    'unique keys' => array (
-      'expressionprop_c1' => array (
+    'unique keys' => array(
+      'expressionprop_c1' => array(
         0 => 'expression_id',
         1 => 'type_id',
         2 => 'rank',
       ),
     ),
-    'indexes' => array (
-      'expressionprop_idx1' => array (
+    'indexes' => array(
+      'expressionprop_idx1' => array(
         0 => 'expression_id',
       ),
-      'expressionprop_idx2' => array (
+      'expressionprop_idx2' => array(
         0 => 'type_id',
       ),
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'type_id' => 'cvterm_id',
         ),
       ),
-      'expression' => array (
+      'expression' => array(
         'table' => 'expression',
-        'columns' => array (
+        'columns' => array(
           'expression_id' => 'expression_id',
         ),
       ),
@@ -4508,124 +4508,124 @@ function tripal_core_chado_schema_v1_2_expressionprop() {
  *
  */
 function tripal_core_chado_schema_v1_2_feature() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'feature_id' => array (
+    'fields' => array(
+      'feature_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'dbxref_id' => array (
+      'dbxref_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'organism_id' => array (
+      'organism_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'name' => array (
+      'name' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'uniquename' => array (
+      'uniquename' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'residues' => array (
+      'residues' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'seqlen' => array (
+      'seqlen' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'md5checksum' => array (
+      'md5checksum' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'char',
         'length' => '32',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'type_id' => array (
+      'type_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'is_analysis' => array (
+      'is_analysis' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'boolean',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 'als',
       ),
-      'is_obsolete' => array (
+      'is_obsolete' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'boolean',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 'als',
       ),
-      'timeaccessioned' => array (
+      'timeaccessioned' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'datetime',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 'ow(',
       ),
-      'timelastmodified' => array (
+      'timelastmodified' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'datetime',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 'ow(',
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'feature_id',
     ),
-    'unique keys' => array (
-      'feature_c1' => array (
+    'unique keys' => array(
+      'feature_c1' => array(
         0 => 'organism_id',
         1 => 'uniquename',
         2 => 'type_id',
       ),
     ),
-    'indexes' => array (
-      'feature_idx1' => array (
+    'indexes' => array(
+      'feature_idx1' => array(
         0 => 'dbxref_id',
       ),
-      'feature_idx2' => array (
+      'feature_idx2' => array(
         0 => 'organism_id',
       ),
-      'feature_idx3' => array (
+      'feature_idx3' => array(
         0 => 'type_id',
       ),
-      'feature_idx4' => array (
+      'feature_idx4' => array(
         0 => 'uniquename',
       ),
-      'feature_name_ind1' => array (
+      'feature_name_ind1' => array(
         0 => 'name',
       ),
     ),
-    'foreign keys' => array (
-      'organism' => array (
+    'foreign keys' => array(
+      'organism' => array(
         'table' => 'organism',
-        'columns' => array (
+        'columns' => array(
           'organism_id' => 'organism_id',
         ),
       ),
-      'cvterm' => array (
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'type_id' => 'cvterm_id',
         ),
       ),
-      'dbxref' => array (
+      'dbxref' => array(
         'table' => 'dbxref',
-        'columns' => array (
+        'columns' => array(
           'dbxref_id' => 'dbxref_id',
         ),
       ),
@@ -4647,80 +4647,80 @@ function tripal_core_chado_schema_v1_2_feature() {
  *
  */
 function tripal_core_chado_schema_v1_2_feature_cvterm() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'feature_cvterm_id' => array (
+    'fields' => array(
+      'feature_cvterm_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'feature_id' => array (
+      'feature_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'cvterm_id' => array (
+      'cvterm_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'pub_id' => array (
+      'pub_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'is_not' => array (
+      'is_not' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'boolean',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 'als',
       ),
-      'rank' => array (
+      'rank' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 0,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'feature_cvterm_id',
     ),
-    'unique keys' => array (
-      'feature_cvterm_c1' => array (
+    'unique keys' => array(
+      'feature_cvterm_c1' => array(
         0 => 'feature_id',
         1 => 'cvterm_id',
         2 => 'pub_id',
         3 => 'rank',
       ),
     ),
-    'indexes' => array (
-      'feature_cvterm_idx1' => array (
+    'indexes' => array(
+      'feature_cvterm_idx1' => array(
         0 => 'feature_id',
       ),
-      'feature_cvterm_idx2' => array (
+      'feature_cvterm_idx2' => array(
         0 => 'cvterm_id',
       ),
-      'feature_cvterm_idx3' => array (
+      'feature_cvterm_idx3' => array(
         0 => 'pub_id',
       ),
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'cvterm_id' => 'cvterm_id',
         ),
       ),
-      'pub' => array (
+      'pub' => array(
         'table' => 'pub',
-        'columns' => array (
+        'columns' => array(
           'pub_id' => 'pub_id',
         ),
       ),
-      'feature' => array (
+      'feature' => array(
         'table' => 'feature',
-        'columns' => array (
+        'columns' => array(
           'feature_id' => 'feature_id',
         ),
       ),
@@ -4742,52 +4742,52 @@ function tripal_core_chado_schema_v1_2_feature_cvterm() {
  *
  */
 function tripal_core_chado_schema_v1_2_feature_cvterm_dbxref() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'feature_cvterm_dbxref_id' => array (
+    'fields' => array(
+      'feature_cvterm_dbxref_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'feature_cvterm_id' => array (
+      'feature_cvterm_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'dbxref_id' => array (
+      'dbxref_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'feature_cvterm_dbxref_id',
     ),
-    'unique keys' => array (
-      'feature_cvterm_dbxref_c1' => array (
+    'unique keys' => array(
+      'feature_cvterm_dbxref_c1' => array(
         0 => 'feature_cvterm_id',
         1 => 'dbxref_id',
       ),
     ),
-    'indexes' => array (
-      'feature_cvterm_dbxref_idx1' => array (
+    'indexes' => array(
+      'feature_cvterm_dbxref_idx1' => array(
         0 => 'feature_cvterm_id',
       ),
-      'feature_cvterm_dbxref_idx2' => array (
+      'feature_cvterm_dbxref_idx2' => array(
         0 => 'dbxref_id',
       ),
     ),
-    'foreign keys' => array (
-      'feature_cvterm' => array (
+    'foreign keys' => array(
+      'feature_cvterm' => array(
         'table' => 'feature_cvterm',
-        'columns' => array (
+        'columns' => array(
           'feature_cvterm_id' => 'feature_cvterm_id',
         ),
       ),
-      'dbxref' => array (
+      'dbxref' => array(
         'table' => 'dbxref',
-        'columns' => array (
+        'columns' => array(
           'dbxref_id' => 'dbxref_id',
         ),
       ),
@@ -4809,52 +4809,52 @@ function tripal_core_chado_schema_v1_2_feature_cvterm_dbxref() {
  *
  */
 function tripal_core_chado_schema_v1_2_feature_cvterm_pub() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'feature_cvterm_pub_id' => array (
+    'fields' => array(
+      'feature_cvterm_pub_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'feature_cvterm_id' => array (
+      'feature_cvterm_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'pub_id' => array (
+      'pub_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'feature_cvterm_pub_id',
     ),
-    'unique keys' => array (
-      'feature_cvterm_pub_c1' => array (
+    'unique keys' => array(
+      'feature_cvterm_pub_c1' => array(
         0 => 'feature_cvterm_id',
         1 => 'pub_id',
       ),
     ),
-    'indexes' => array (
-      'feature_cvterm_pub_idx1' => array (
+    'indexes' => array(
+      'feature_cvterm_pub_idx1' => array(
         0 => 'feature_cvterm_id',
       ),
-      'feature_cvterm_pub_idx2' => array (
+      'feature_cvterm_pub_idx2' => array(
         0 => 'pub_id',
       ),
     ),
-    'foreign keys' => array (
-      'feature_cvterm' => array (
+    'foreign keys' => array(
+      'feature_cvterm' => array(
         'table' => 'feature_cvterm',
-        'columns' => array (
+        'columns' => array(
           'feature_cvterm_id' => 'feature_cvterm_id',
         ),
       ),
-      'pub' => array (
+      'pub' => array(
         'table' => 'pub',
-        'columns' => array (
+        'columns' => array(
           'pub_id' => 'pub_id',
         ),
       ),
@@ -4876,64 +4876,64 @@ function tripal_core_chado_schema_v1_2_feature_cvterm_pub() {
  *
  */
 function tripal_core_chado_schema_v1_2_feature_cvtermprop() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'feature_cvtermprop_id' => array (
+    'fields' => array(
+      'feature_cvtermprop_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'feature_cvterm_id' => array (
+      'feature_cvterm_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'type_id' => array (
+      'type_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'value' => array (
+      'value' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'rank' => array (
+      'rank' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 0,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'feature_cvtermprop_id',
     ),
-    'unique keys' => array (
-      'feature_cvtermprop_c1' => array (
+    'unique keys' => array(
+      'feature_cvtermprop_c1' => array(
         0 => 'feature_cvterm_id',
         1 => 'type_id',
         2 => 'rank',
       ),
     ),
-    'indexes' => array (
-      'feature_cvtermprop_idx1' => array (
+    'indexes' => array(
+      'feature_cvtermprop_idx1' => array(
         0 => 'feature_cvterm_id',
       ),
-      'feature_cvtermprop_idx2' => array (
+      'feature_cvtermprop_idx2' => array(
         0 => 'type_id',
       ),
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'type_id' => 'cvterm_id',
         ),
       ),
-      'feature_cvterm' => array (
+      'feature_cvterm' => array(
         'table' => 'feature_cvterm',
-        'columns' => array (
+        'columns' => array(
           'feature_cvterm_id' => 'feature_cvterm_id',
         ),
       ),
@@ -4955,58 +4955,58 @@ function tripal_core_chado_schema_v1_2_feature_cvtermprop() {
  *
  */
 function tripal_core_chado_schema_v1_2_feature_dbxref() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'feature_dbxref_id' => array (
+    'fields' => array(
+      'feature_dbxref_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'feature_id' => array (
+      'feature_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'dbxref_id' => array (
+      'dbxref_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'is_current' => array (
+      'is_current' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'boolean',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 'ru',
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'feature_dbxref_id',
     ),
-    'unique keys' => array (
-      'feature_dbxref_c1' => array (
+    'unique keys' => array(
+      'feature_dbxref_c1' => array(
         0 => 'feature_id',
         1 => 'dbxref_id',
       ),
     ),
-    'indexes' => array (
-      'feature_dbxref_idx1' => array (
+    'indexes' => array(
+      'feature_dbxref_idx1' => array(
         0 => 'feature_id',
       ),
-      'feature_dbxref_idx2' => array (
+      'feature_dbxref_idx2' => array(
         0 => 'dbxref_id',
       ),
     ),
-    'foreign keys' => array (
-      'dbxref' => array (
+    'foreign keys' => array(
+      'dbxref' => array(
         'table' => 'dbxref',
-        'columns' => array (
+        'columns' => array(
           'dbxref_id' => 'dbxref_id',
         ),
       ),
-      'feature' => array (
+      'feature' => array(
         'table' => 'feature',
-        'columns' => array (
+        'columns' => array(
           'feature_id' => 'feature_id',
         ),
       ),
@@ -5028,67 +5028,67 @@ function tripal_core_chado_schema_v1_2_feature_dbxref() {
  *
  */
 function tripal_core_chado_schema_v1_2_feature_expression() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'feature_expression_id' => array (
+    'fields' => array(
+      'feature_expression_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'expression_id' => array (
+      'expression_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'feature_id' => array (
+      'feature_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'pub_id' => array (
+      'pub_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'feature_expression_id',
     ),
-    'unique keys' => array (
-      'feature_expression_c1' => array (
+    'unique keys' => array(
+      'feature_expression_c1' => array(
         0 => 'expression_id',
         1 => 'feature_id',
         2 => 'pub_id',
       ),
     ),
-    'indexes' => array (
-      'feature_expression_idx1' => array (
+    'indexes' => array(
+      'feature_expression_idx1' => array(
         0 => 'expression_id',
       ),
-      'feature_expression_idx2' => array (
+      'feature_expression_idx2' => array(
         0 => 'feature_id',
       ),
-      'feature_expression_idx3' => array (
+      'feature_expression_idx3' => array(
         0 => 'pub_id',
       ),
     ),
-    'foreign keys' => array (
-      'pub' => array (
+    'foreign keys' => array(
+      'pub' => array(
         'table' => 'pub',
-        'columns' => array (
+        'columns' => array(
           'pub_id' => 'pub_id',
         ),
       ),
-      'feature' => array (
+      'feature' => array(
         'table' => 'feature',
-        'columns' => array (
+        'columns' => array(
           'feature_id' => 'feature_id',
         ),
       ),
-      'expression' => array (
+      'expression' => array(
         'table' => 'expression',
-        'columns' => array (
+        'columns' => array(
           'expression_id' => 'expression_id',
         ),
       ),
@@ -5110,64 +5110,64 @@ function tripal_core_chado_schema_v1_2_feature_expression() {
  *
  */
 function tripal_core_chado_schema_v1_2_feature_expressionprop() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'feature_expressionprop_id' => array (
+    'fields' => array(
+      'feature_expressionprop_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'feature_expression_id' => array (
+      'feature_expression_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'type_id' => array (
+      'type_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'value' => array (
+      'value' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'rank' => array (
+      'rank' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 0,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'feature_expressionprop_id',
     ),
-    'unique keys' => array (
-      'feature_expressionprop_c1' => array (
+    'unique keys' => array(
+      'feature_expressionprop_c1' => array(
         0 => 'feature_expression_id',
         1 => 'type_id',
         2 => 'rank',
       ),
     ),
-    'indexes' => array (
-      'feature_expressionprop_idx1' => array (
+    'indexes' => array(
+      'feature_expressionprop_idx1' => array(
         0 => 'feature_expression_id',
       ),
-      'feature_expressionprop_idx2' => array (
+      'feature_expressionprop_idx2' => array(
         0 => 'type_id',
       ),
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'type_id' => 'cvterm_id',
         ),
       ),
-      'feature_expression' => array (
+      'feature_expression' => array(
         'table' => 'feature_expression',
-        'columns' => array (
+        'columns' => array(
           'feature_expression_id' => 'feature_expression_id',
         ),
       ),
@@ -5189,50 +5189,50 @@ function tripal_core_chado_schema_v1_2_feature_expressionprop() {
  *
  */
 function tripal_core_chado_schema_v1_2_feature_genotype() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'feature_genotype_id' => array (
+    'fields' => array(
+      'feature_genotype_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'feature_id' => array (
+      'feature_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'genotype_id' => array (
+      'genotype_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'chromosome_id' => array (
+      'chromosome_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'rank' => array (
+      'rank' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'cgroup' => array (
+      'cgroup' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'cvterm_id' => array (
+      'cvterm_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'feature_genotype_id',
     ),
-    'unique keys' => array (
-      'feature_genotype_c1' => array (
+    'unique keys' => array(
+      'feature_genotype_c1' => array(
         0 => 'feature_id',
         1 => 'genotype_id',
         2 => 'cvterm_id',
@@ -5241,31 +5241,31 @@ function tripal_core_chado_schema_v1_2_feature_genotype() {
         5 => 'cgroup',
       ),
     ),
-    'indexes' => array (
-      'feature_genotype_idx1' => array (
+    'indexes' => array(
+      'feature_genotype_idx1' => array(
         0 => 'feature_id',
       ),
-      'feature_genotype_idx2' => array (
+      'feature_genotype_idx2' => array(
         0 => 'genotype_id',
       ),
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'cvterm_id' => 'cvterm_id',
         ),
       ),
-      'feature' => array (
+      'feature' => array(
         'table' => 'feature',
-        'columns' => array (
+        'columns' => array(
           'feature_id' => 'feature_id',
           'chromosome_id' => 'feature_id',
         ),
       ),
-      'genotype' => array (
+      'genotype' => array(
         'table' => 'genotype',
-        'columns' => array (
+        'columns' => array(
           'genotype_id' => 'genotype_id',
         ),
       ),
@@ -5287,52 +5287,52 @@ function tripal_core_chado_schema_v1_2_feature_genotype() {
  *
  */
 function tripal_core_chado_schema_v1_2_feature_phenotype() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'feature_phenotype_id' => array (
+    'fields' => array(
+      'feature_phenotype_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'feature_id' => array (
+      'feature_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'phenotype_id' => array (
+      'phenotype_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'feature_phenotype_id',
     ),
-    'unique keys' => array (
-      'feature_phenotype_c1' => array (
+    'unique keys' => array(
+      'feature_phenotype_c1' => array(
         0 => 'feature_id',
         1 => 'phenotype_id',
       ),
     ),
-    'indexes' => array (
-      'feature_phenotype_idx1' => array (
+    'indexes' => array(
+      'feature_phenotype_idx1' => array(
         0 => 'feature_id',
       ),
-      'feature_phenotype_idx2' => array (
+      'feature_phenotype_idx2' => array(
         0 => 'phenotype_id',
       ),
     ),
-    'foreign keys' => array (
-      'feature' => array (
+    'foreign keys' => array(
+      'feature' => array(
         'table' => 'feature',
-        'columns' => array (
+        'columns' => array(
           'feature_id' => 'feature_id',
         ),
       ),
-      'phenotype' => array (
+      'phenotype' => array(
         'table' => 'phenotype',
-        'columns' => array (
+        'columns' => array(
           'phenotype_id' => 'phenotype_id',
         ),
       ),
@@ -5354,52 +5354,52 @@ function tripal_core_chado_schema_v1_2_feature_phenotype() {
  *
  */
 function tripal_core_chado_schema_v1_2_feature_pub() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'feature_pub_id' => array (
+    'fields' => array(
+      'feature_pub_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'feature_id' => array (
+      'feature_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'pub_id' => array (
+      'pub_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'feature_pub_id',
     ),
-    'unique keys' => array (
-      'feature_pub_c1' => array (
+    'unique keys' => array(
+      'feature_pub_c1' => array(
         0 => 'feature_id',
         1 => 'pub_id',
       ),
     ),
-    'indexes' => array (
-      'feature_pub_idx1' => array (
+    'indexes' => array(
+      'feature_pub_idx1' => array(
         0 => 'feature_id',
       ),
-      'feature_pub_idx2' => array (
+      'feature_pub_idx2' => array(
         0 => 'pub_id',
       ),
     ),
-    'foreign keys' => array (
-      'pub' => array (
+    'foreign keys' => array(
+      'pub' => array(
         'table' => 'pub',
-        'columns' => array (
+        'columns' => array(
           'pub_id' => 'pub_id',
         ),
       ),
-      'feature' => array (
+      'feature' => array(
         'table' => 'feature',
-        'columns' => array (
+        'columns' => array(
           'feature_id' => 'feature_id',
         ),
       ),
@@ -5421,61 +5421,61 @@ function tripal_core_chado_schema_v1_2_feature_pub() {
  *
  */
 function tripal_core_chado_schema_v1_2_feature_pubprop() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'feature_pubprop_id' => array (
+    'fields' => array(
+      'feature_pubprop_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'feature_pub_id' => array (
+      'feature_pub_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'type_id' => array (
+      'type_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'value' => array (
+      'value' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'rank' => array (
+      'rank' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 0,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'feature_pubprop_id',
     ),
-    'unique keys' => array (
-      'feature_pubprop_c1' => array (
+    'unique keys' => array(
+      'feature_pubprop_c1' => array(
         0 => 'feature_pub_id',
         1 => 'type_id',
         2 => 'rank',
       ),
     ),
-    'indexes' => array (
-      'feature_pubprop_idx1' => array (
+    'indexes' => array(
+      'feature_pubprop_idx1' => array(
         0 => 'feature_pub_id',
       ),
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'type_id' => 'cvterm_id',
         ),
       ),
-      'feature_pub' => array (
+      'feature_pub' => array(
         'table' => 'feature_pub',
-        'columns' => array (
+        'columns' => array(
           'feature_pub_id' => 'feature_pub_id',
         ),
       ),
@@ -5497,73 +5497,73 @@ function tripal_core_chado_schema_v1_2_feature_pubprop() {
  *
  */
 function tripal_core_chado_schema_v1_2_feature_relationship() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'feature_relationship_id' => array (
+    'fields' => array(
+      'feature_relationship_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'subject_id' => array (
+      'subject_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'object_id' => array (
+      'object_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'type_id' => array (
+      'type_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'value' => array (
+      'value' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'rank' => array (
+      'rank' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 0,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'feature_relationship_id',
     ),
-    'unique keys' => array (
-      'feature_relationship_c1' => array (
+    'unique keys' => array(
+      'feature_relationship_c1' => array(
         0 => 'subject_id',
         1 => 'object_id',
         2 => 'type_id',
         3 => 'rank',
       ),
     ),
-    'indexes' => array (
-      'feature_relationship_idx1' => array (
+    'indexes' => array(
+      'feature_relationship_idx1' => array(
         0 => 'subject_id',
       ),
-      'feature_relationship_idx2' => array (
+      'feature_relationship_idx2' => array(
         0 => 'object_id',
       ),
-      'feature_relationship_idx3' => array (
+      'feature_relationship_idx3' => array(
         0 => 'type_id',
       ),
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'type_id' => 'cvterm_id',
         ),
       ),
-      'feature' => array (
+      'feature' => array(
         'table' => 'feature',
-        'columns' => array (
+        'columns' => array(
           'subject_id' => 'feature_id',
           'object_id' => 'feature_id',
         ),
@@ -5586,52 +5586,52 @@ function tripal_core_chado_schema_v1_2_feature_relationship() {
  *
  */
 function tripal_core_chado_schema_v1_2_feature_relationship_pub() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'feature_relationship_pub_id' => array (
+    'fields' => array(
+      'feature_relationship_pub_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'feature_relationship_id' => array (
+      'feature_relationship_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'pub_id' => array (
+      'pub_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'feature_relationship_pub_id',
     ),
-    'unique keys' => array (
-      'feature_relationship_pub_c1' => array (
+    'unique keys' => array(
+      'feature_relationship_pub_c1' => array(
         0 => 'feature_relationship_id',
         1 => 'pub_id',
       ),
     ),
-    'indexes' => array (
-      'feature_relationship_pub_idx1' => array (
+    'indexes' => array(
+      'feature_relationship_pub_idx1' => array(
         0 => 'feature_relationship_id',
       ),
-      'feature_relationship_pub_idx2' => array (
+      'feature_relationship_pub_idx2' => array(
         0 => 'pub_id',
       ),
     ),
-    'foreign keys' => array (
-      'feature_relationship' => array (
+    'foreign keys' => array(
+      'feature_relationship' => array(
         'table' => 'feature_relationship',
-        'columns' => array (
+        'columns' => array(
           'feature_relationship_id' => 'feature_relationship_id',
         ),
       ),
-      'pub' => array (
+      'pub' => array(
         'table' => 'pub',
-        'columns' => array (
+        'columns' => array(
           'pub_id' => 'pub_id',
         ),
       ),
@@ -5653,64 +5653,64 @@ function tripal_core_chado_schema_v1_2_feature_relationship_pub() {
  *
  */
 function tripal_core_chado_schema_v1_2_feature_relationshipprop() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'feature_relationshipprop_id' => array (
+    'fields' => array(
+      'feature_relationshipprop_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'feature_relationship_id' => array (
+      'feature_relationship_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'type_id' => array (
+      'type_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'value' => array (
+      'value' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'rank' => array (
+      'rank' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 0,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'feature_relationshipprop_id',
     ),
-    'unique keys' => array (
-      'feature_relationshipprop_c1' => array (
+    'unique keys' => array(
+      'feature_relationshipprop_c1' => array(
         0 => 'feature_relationship_id',
         1 => 'type_id',
         2 => 'rank',
       ),
     ),
-    'indexes' => array (
-      'feature_relationshipprop_idx1' => array (
+    'indexes' => array(
+      'feature_relationshipprop_idx1' => array(
         0 => 'feature_relationship_id',
       ),
-      'feature_relationshipprop_idx2' => array (
+      'feature_relationshipprop_idx2' => array(
         0 => 'type_id',
       ),
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'type_id' => 'cvterm_id',
         ),
       ),
-      'feature_relationship' => array (
+      'feature_relationship' => array(
         'table' => 'feature_relationship',
-        'columns' => array (
+        'columns' => array(
           'feature_relationship_id' => 'feature_relationship_id',
         ),
       ),
@@ -5732,52 +5732,52 @@ function tripal_core_chado_schema_v1_2_feature_relationshipprop() {
  *
  */
 function tripal_core_chado_schema_v1_2_feature_relationshipprop_pub() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'feature_relationshipprop_pub_id' => array (
+    'fields' => array(
+      'feature_relationshipprop_pub_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'feature_relationshipprop_id' => array (
+      'feature_relationshipprop_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'pub_id' => array (
+      'pub_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'feature_relationshipprop_pub_id',
     ),
-    'unique keys' => array (
-      'feature_relationshipprop_pub_c1' => array (
+    'unique keys' => array(
+      'feature_relationshipprop_pub_c1' => array(
         0 => 'feature_relationshipprop_id',
         1 => 'pub_id',
       ),
     ),
-    'indexes' => array (
-      'feature_relationshipprop_pub_idx1' => array (
+    'indexes' => array(
+      'feature_relationshipprop_pub_idx1' => array(
         0 => 'feature_relationshipprop_id',
       ),
-      'feature_relationshipprop_pub_idx2' => array (
+      'feature_relationshipprop_pub_idx2' => array(
         0 => 'pub_id',
       ),
     ),
-    'foreign keys' => array (
-      'feature_relationshipprop' => array (
+    'foreign keys' => array(
+      'feature_relationshipprop' => array(
         'table' => 'feature_relationshipprop',
-        'columns' => array (
+        'columns' => array(
           'feature_relationshipprop_id' => 'feature_relationshipprop_id',
         ),
       ),
-      'pub' => array (
+      'pub' => array(
         'table' => 'pub',
-        'columns' => array (
+        'columns' => array(
           'pub_id' => 'pub_id',
         ),
       ),
@@ -5799,79 +5799,79 @@ function tripal_core_chado_schema_v1_2_feature_relationshipprop_pub() {
  *
  */
 function tripal_core_chado_schema_v1_2_feature_synonym() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'feature_synonym_id' => array (
+    'fields' => array(
+      'feature_synonym_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'synonym_id' => array (
+      'synonym_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'feature_id' => array (
+      'feature_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'pub_id' => array (
+      'pub_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'is_current' => array (
+      'is_current' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'boolean',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 'als',
       ),
-      'is_internal' => array (
+      'is_internal' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'boolean',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 'als',
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'feature_synonym_id',
     ),
-    'unique keys' => array (
-      'feature_synonym_c1' => array (
+    'unique keys' => array(
+      'feature_synonym_c1' => array(
         0 => 'synonym_id',
         1 => 'feature_id',
         2 => 'pub_id',
       ),
     ),
-    'indexes' => array (
-      'feature_synonym_idx1' => array (
+    'indexes' => array(
+      'feature_synonym_idx1' => array(
         0 => 'synonym_id',
       ),
-      'feature_synonym_idx2' => array (
+      'feature_synonym_idx2' => array(
         0 => 'feature_id',
       ),
-      'feature_synonym_idx3' => array (
+      'feature_synonym_idx3' => array(
         0 => 'pub_id',
       ),
     ),
-    'foreign keys' => array (
-      'pub' => array (
+    'foreign keys' => array(
+      'pub' => array(
         'table' => 'pub',
-        'columns' => array (
+        'columns' => array(
           'pub_id' => 'pub_id',
         ),
       ),
-      'feature' => array (
+      'feature' => array(
         'table' => 'feature',
-        'columns' => array (
+        'columns' => array(
           'feature_id' => 'feature_id',
         ),
       ),
-      'synonym' => array (
+      'synonym' => array(
         'table' => 'synonym',
-        'columns' => array (
+        'columns' => array(
           'synonym_id' => 'synonym_id',
         ),
       ),
@@ -5893,109 +5893,109 @@ function tripal_core_chado_schema_v1_2_feature_synonym() {
  *
  */
 function tripal_core_chado_schema_v1_2_featureloc() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'featureloc_id' => array (
+    'fields' => array(
+      'featureloc_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'feature_id' => array (
+      'feature_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'srcfeature_id' => array (
+      'srcfeature_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'fmin' => array (
+      'fmin' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'is_fmin_partial' => array (
+      'is_fmin_partial' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'boolean',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 'als',
       ),
-      'fmax' => array (
+      'fmax' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'is_fmax_partial' => array (
+      'is_fmax_partial' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'boolean',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 'als',
       ),
-      'strand' => array (
+      'strand' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
         'size' => 'small',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'phase' => array (
+      'phase' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'residue_info' => array (
+      'residue_info' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'locgroup' => array (
+      'locgroup' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 0,
       ),
-      'rank' => array (
+      'rank' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 0,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'featureloc_id',
     ),
-    'unique keys' => array (
-      'featureloc_c1' => array (
+    'unique keys' => array(
+      'featureloc_c1' => array(
         0 => 'feature_id',
         1 => 'locgroup',
         2 => 'rank',
       ),
     ),
-    'indexes' => array (
-      'binloc_boxrange' => array (
+    'indexes' => array(
+      'binloc_boxrange' => array(
         0 => 'fmin',
       ),
-      'binloc_boxrange_src' => array (
+      'binloc_boxrange_src' => array(
         0 => 'srcfeature_id',
         1 => 'fmin',
       ),
-      'featureloc_idx1' => array (
+      'featureloc_idx1' => array(
         0 => 'feature_id',
       ),
-      'featureloc_idx2' => array (
+      'featureloc_idx2' => array(
         0 => 'srcfeature_id',
       ),
-      'featureloc_idx3' => array (
+      'featureloc_idx3' => array(
         0 => 'srcfeature_id',
         1 => 'fmin',
         2 => 'fmax',
       ),
     ),
-    'foreign keys' => array (
-      'feature' => array (
+    'foreign keys' => array(
+      'feature' => array(
         'table' => 'feature',
-        'columns' => array (
+        'columns' => array(
           'feature_id' => 'feature_id',
           'srcfeature_id' => 'feature_id',
         ),
@@ -6018,52 +6018,52 @@ function tripal_core_chado_schema_v1_2_featureloc() {
  *
  */
 function tripal_core_chado_schema_v1_2_featureloc_pub() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'featureloc_pub_id' => array (
+    'fields' => array(
+      'featureloc_pub_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'featureloc_id' => array (
+      'featureloc_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'pub_id' => array (
+      'pub_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'featureloc_pub_id',
     ),
-    'unique keys' => array (
-      'featureloc_pub_c1' => array (
+    'unique keys' => array(
+      'featureloc_pub_c1' => array(
         0 => 'featureloc_id',
         1 => 'pub_id',
       ),
     ),
-    'indexes' => array (
-      'featureloc_pub_idx1' => array (
+    'indexes' => array(
+      'featureloc_pub_idx1' => array(
         0 => 'featureloc_id',
       ),
-      'featureloc_pub_idx2' => array (
+      'featureloc_pub_idx2' => array(
         0 => 'pub_id',
       ),
     ),
-    'foreign keys' => array (
-      'featureloc' => array (
+    'foreign keys' => array(
+      'featureloc' => array(
         'table' => 'featureloc',
-        'columns' => array (
+        'columns' => array(
           'featureloc_id' => 'featureloc_id',
         ),
       ),
-      'pub' => array (
+      'pub' => array(
         'table' => 'pub',
-        'columns' => array (
+        'columns' => array(
           'pub_id' => 'pub_id',
         ),
       ),
@@ -6085,43 +6085,43 @@ function tripal_core_chado_schema_v1_2_featureloc_pub() {
  *
  */
 function tripal_core_chado_schema_v1_2_featuremap() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'featuremap_id' => array (
+    'fields' => array(
+      'featuremap_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'name' => array (
+      'name' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'description' => array (
+      'description' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'unittype_id' => array (
+      'unittype_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => false,
+        'not null' => FALSE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'featuremap_id',
     ),
-    'unique keys' => array (
-      'featuremap_c1' => array (
+    'unique keys' => array(
+      'featuremap_c1' => array(
         0 => 'name',
       ),
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'unittype_id' => 'cvterm_id',
         ),
       ),
@@ -6143,46 +6143,46 @@ function tripal_core_chado_schema_v1_2_featuremap() {
  *
  */
 function tripal_core_chado_schema_v1_2_featuremap_pub() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'featuremap_pub_id' => array (
+    'fields' => array(
+      'featuremap_pub_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'featuremap_id' => array (
+      'featuremap_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'pub_id' => array (
+      'pub_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'featuremap_pub_id',
     ),
-    'indexes' => array (
-      'featuremap_pub_idx1' => array (
+    'indexes' => array(
+      'featuremap_pub_idx1' => array(
         0 => 'featuremap_id',
       ),
-      'featuremap_pub_idx2' => array (
+      'featuremap_pub_idx2' => array(
         0 => 'pub_id',
       ),
     ),
-    'foreign keys' => array (
-      'pub' => array (
+    'foreign keys' => array(
+      'pub' => array(
         'table' => 'pub',
-        'columns' => array (
+        'columns' => array(
           'pub_id' => 'pub_id',
         ),
       ),
-      'featuremap' => array (
+      'featuremap' => array(
         'table' => 'featuremap',
-        'columns' => array (
+        'columns' => array(
           'featuremap_id' => 'featuremap_id',
         ),
       ),
@@ -6204,61 +6204,61 @@ function tripal_core_chado_schema_v1_2_featuremap_pub() {
  *
  */
 function tripal_core_chado_schema_v1_2_featurepos() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'featurepos_id' => array (
+    'fields' => array(
+      'featurepos_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'featuremap_id' => array (
+      'featuremap_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'feature_id' => array (
+      'feature_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'map_feature_id' => array (
+      'map_feature_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'mappos' => array (
+      'mappos' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'float',
         'size' => 'big',
-        'not null' => true,
+        'not null' => TRUE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'featurepos_id',
     ),
-    'indexes' => array (
-      'featurepos_idx1' => array (
+    'indexes' => array(
+      'featurepos_idx1' => array(
         0 => 'featuremap_id',
       ),
-      'featurepos_idx2' => array (
+      'featurepos_idx2' => array(
         0 => 'feature_id',
       ),
-      'featurepos_idx3' => array (
+      'featurepos_idx3' => array(
         0 => 'map_feature_id',
       ),
     ),
-    'foreign keys' => array (
-      'feature' => array (
+    'foreign keys' => array(
+      'feature' => array(
         'table' => 'feature',
-        'columns' => array (
+        'columns' => array(
           'feature_id' => 'feature_id',
           'map_feature_id' => 'feature_id',
         ),
       ),
-      'featuremap' => array (
+      'featuremap' => array(
         'table' => 'featuremap',
-        'columns' => array (
+        'columns' => array(
           'featuremap_id' => 'featuremap_id',
         ),
       ),
@@ -6280,64 +6280,64 @@ function tripal_core_chado_schema_v1_2_featurepos() {
  *
  */
 function tripal_core_chado_schema_v1_2_featureprop() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'featureprop_id' => array (
+    'fields' => array(
+      'featureprop_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'feature_id' => array (
+      'feature_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'type_id' => array (
+      'type_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'value' => array (
+      'value' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'rank' => array (
+      'rank' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 0,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'featureprop_id',
     ),
-    'unique keys' => array (
-      'featureprop_c1' => array (
+    'unique keys' => array(
+      'featureprop_c1' => array(
         0 => 'feature_id',
         1 => 'type_id',
         2 => 'rank',
       ),
     ),
-    'indexes' => array (
-      'featureprop_idx1' => array (
+    'indexes' => array(
+      'featureprop_idx1' => array(
         0 => 'feature_id',
       ),
-      'featureprop_idx2' => array (
+      'featureprop_idx2' => array(
         0 => 'type_id',
       ),
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'type_id' => 'cvterm_id',
         ),
       ),
-      'feature' => array (
+      'feature' => array(
         'table' => 'feature',
-        'columns' => array (
+        'columns' => array(
           'feature_id' => 'feature_id',
         ),
       ),
@@ -6359,52 +6359,52 @@ function tripal_core_chado_schema_v1_2_featureprop() {
  *
  */
 function tripal_core_chado_schema_v1_2_featureprop_pub() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'featureprop_pub_id' => array (
+    'fields' => array(
+      'featureprop_pub_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'featureprop_id' => array (
+      'featureprop_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'pub_id' => array (
+      'pub_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'featureprop_pub_id',
     ),
-    'unique keys' => array (
-      'featureprop_pub_c1' => array (
+    'unique keys' => array(
+      'featureprop_pub_c1' => array(
         0 => 'featureprop_id',
         1 => 'pub_id',
       ),
     ),
-    'indexes' => array (
-      'featureprop_pub_idx1' => array (
+    'indexes' => array(
+      'featureprop_pub_idx1' => array(
         0 => 'featureprop_id',
       ),
-      'featureprop_pub_idx2' => array (
+      'featureprop_pub_idx2' => array(
         0 => 'pub_id',
       ),
     ),
-    'foreign keys' => array (
-      'featureprop' => array (
+    'foreign keys' => array(
+      'featureprop' => array(
         'table' => 'featureprop',
-        'columns' => array (
+        'columns' => array(
           'featureprop_id' => 'featureprop_id',
         ),
       ),
-      'pub' => array (
+      'pub' => array(
         'table' => 'pub',
-        'columns' => array (
+        'columns' => array(
           'pub_id' => 'pub_id',
         ),
       ),
@@ -6426,78 +6426,78 @@ function tripal_core_chado_schema_v1_2_featureprop_pub() {
  *
  */
 function tripal_core_chado_schema_v1_2_featurerange() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'featurerange_id' => array (
+    'fields' => array(
+      'featurerange_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'featuremap_id' => array (
+      'featuremap_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'feature_id' => array (
+      'feature_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'leftstartf_id' => array (
+      'leftstartf_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'leftendf_id' => array (
+      'leftendf_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'rightstartf_id' => array (
+      'rightstartf_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'rightendf_id' => array (
+      'rightendf_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'rangestr' => array (
+      'rangestr' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => false,
+        'not null' => FALSE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'featurerange_id',
     ),
-    'indexes' => array (
-      'featurerange_idx1' => array (
+    'indexes' => array(
+      'featurerange_idx1' => array(
         0 => 'featuremap_id',
       ),
-      'featurerange_idx2' => array (
+      'featurerange_idx2' => array(
         0 => 'feature_id',
       ),
-      'featurerange_idx3' => array (
+      'featurerange_idx3' => array(
         0 => 'leftstartf_id',
       ),
-      'featurerange_idx4' => array (
+      'featurerange_idx4' => array(
         0 => 'leftendf_id',
       ),
-      'featurerange_idx5' => array (
+      'featurerange_idx5' => array(
         0 => 'rightstartf_id',
       ),
-      'featurerange_idx6' => array (
+      'featurerange_idx6' => array(
         0 => 'rightendf_id',
       ),
     ),
-    'foreign keys' => array (
-      'feature' => array (
+    'foreign keys' => array(
+      'feature' => array(
         'table' => 'feature',
-        'columns' => array (
+        'columns' => array(
           'feature_id' => 'feature_id',
           'leftstartf_id' => 'feature_id',
           'leftendf_id' => 'feature_id',
@@ -6505,9 +6505,9 @@ function tripal_core_chado_schema_v1_2_featurerange() {
           'rightendf_id' => 'feature_id',
         ),
       ),
-      'featuremap' => array (
+      'featuremap' => array(
         'table' => 'featuremap',
-        'columns' => array (
+        'columns' => array(
           'featuremap_id' => 'featuremap_id',
         ),
       ),
@@ -6529,56 +6529,56 @@ function tripal_core_chado_schema_v1_2_featurerange() {
  *
  */
 function tripal_core_chado_schema_v1_2_genotype() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'genotype_id' => array (
+    'fields' => array(
+      'genotype_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'name' => array (
+      'name' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'uniquename' => array (
+      'uniquename' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'description' => array (
+      'description' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'type_id' => array (
+      'type_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'genotype_id',
     ),
-    'unique keys' => array (
-      'genotype_c1' => array (
+    'unique keys' => array(
+      'genotype_c1' => array(
         0 => 'uniquename',
       ),
     ),
-    'indexes' => array (
-      'genotype_idx1' => array (
+    'indexes' => array(
+      'genotype_idx1' => array(
         0 => 'uniquename',
       ),
-      'genotype_idx2' => array (
+      'genotype_idx2' => array(
         0 => 'name',
       ),
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'type_id' => 'cvterm_id',
         ),
       ),
@@ -6600,64 +6600,64 @@ function tripal_core_chado_schema_v1_2_genotype() {
  *
  */
 function tripal_core_chado_schema_v1_2_genotypeprop() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'genotypeprop_id' => array (
+    'fields' => array(
+      'genotypeprop_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'genotype_id' => array (
+      'genotype_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'type_id' => array (
+      'type_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'value' => array (
+      'value' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'rank' => array (
+      'rank' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 0,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'genotypeprop_id',
     ),
-    'unique keys' => array (
-      'genotypeprop_c1' => array (
+    'unique keys' => array(
+      'genotypeprop_c1' => array(
         0 => 'genotype_id',
         1 => 'type_id',
         2 => 'rank',
       ),
     ),
-    'indexes' => array (
-      'genotypeprop_idx1' => array (
+    'indexes' => array(
+      'genotypeprop_idx1' => array(
         0 => 'genotype_id',
       ),
-      'genotypeprop_idx2' => array (
+      'genotypeprop_idx2' => array(
         0 => 'type_id',
       ),
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'type_id' => 'cvterm_id',
         ),
       ),
-      'genotype' => array (
+      'genotype' => array(
         'table' => 'genotype',
-        'columns' => array (
+        'columns' => array(
           'genotype_id' => 'genotype_id',
         ),
       ),
@@ -6679,88 +6679,88 @@ function tripal_core_chado_schema_v1_2_genotypeprop() {
  *
  */
 function tripal_core_chado_schema_v1_2_library() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'library_id' => array (
+    'fields' => array(
+      'library_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'organism_id' => array (
+      'organism_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'name' => array (
+      'name' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'uniquename' => array (
+      'uniquename' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'type_id' => array (
+      'type_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'is_obsolete' => array (
+      'is_obsolete' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 0,
       ),
-      'timeaccessioned' => array (
+      'timeaccessioned' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'datetime',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 'ow(',
       ),
-      'timelastmodified' => array (
+      'timelastmodified' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'datetime',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 'ow(',
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'library_id',
     ),
-    'unique keys' => array (
-      'library_c1' => array (
+    'unique keys' => array(
+      'library_c1' => array(
         0 => 'organism_id',
         1 => 'uniquename',
         2 => 'type_id',
       ),
     ),
-    'indexes' => array (
-      'library_idx1' => array (
+    'indexes' => array(
+      'library_idx1' => array(
         0 => 'organism_id',
       ),
-      'library_idx2' => array (
+      'library_idx2' => array(
         0 => 'type_id',
       ),
-      'library_idx3' => array (
+      'library_idx3' => array(
         0 => 'uniquename',
       ),
-      'library_name_ind1' => array (
+      'library_name_ind1' => array(
         0 => 'name',
       ),
     ),
-    'foreign keys' => array (
-      'organism' => array (
+    'foreign keys' => array(
+      'organism' => array(
         'table' => 'organism',
-        'columns' => array (
+        'columns' => array(
           'organism_id' => 'organism_id',
         ),
       ),
-      'cvterm' => array (
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'type_id' => 'cvterm_id',
         ),
       ),
@@ -6782,67 +6782,67 @@ function tripal_core_chado_schema_v1_2_library() {
  *
  */
 function tripal_core_chado_schema_v1_2_library_cvterm() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'library_cvterm_id' => array (
+    'fields' => array(
+      'library_cvterm_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'library_id' => array (
+      'library_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'cvterm_id' => array (
+      'cvterm_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'pub_id' => array (
+      'pub_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'library_cvterm_id',
     ),
-    'unique keys' => array (
-      'library_cvterm_c1' => array (
+    'unique keys' => array(
+      'library_cvterm_c1' => array(
         0 => 'library_id',
         1 => 'cvterm_id',
         2 => 'pub_id',
       ),
     ),
-    'indexes' => array (
-      'library_cvterm_idx1' => array (
+    'indexes' => array(
+      'library_cvterm_idx1' => array(
         0 => 'library_id',
       ),
-      'library_cvterm_idx2' => array (
+      'library_cvterm_idx2' => array(
         0 => 'cvterm_id',
       ),
-      'library_cvterm_idx3' => array (
+      'library_cvterm_idx3' => array(
         0 => 'pub_id',
       ),
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'cvterm_id' => 'cvterm_id',
         ),
       ),
-      'pub' => array (
+      'pub' => array(
         'table' => 'pub',
-        'columns' => array (
+        'columns' => array(
           'pub_id' => 'pub_id',
         ),
       ),
-      'library' => array (
+      'library' => array(
         'table' => 'library',
-        'columns' => array (
+        'columns' => array(
           'library_id' => 'library_id',
         ),
       ),
@@ -6864,58 +6864,58 @@ function tripal_core_chado_schema_v1_2_library_cvterm() {
  *
  */
 function tripal_core_chado_schema_v1_2_library_dbxref() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'library_dbxref_id' => array (
+    'fields' => array(
+      'library_dbxref_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'library_id' => array (
+      'library_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'dbxref_id' => array (
+      'dbxref_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'is_current' => array (
+      'is_current' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'boolean',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 'ru',
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'library_dbxref_id',
     ),
-    'unique keys' => array (
-      'library_dbxref_c1' => array (
+    'unique keys' => array(
+      'library_dbxref_c1' => array(
         0 => 'library_id',
         1 => 'dbxref_id',
       ),
     ),
-    'indexes' => array (
-      'library_dbxref_idx1' => array (
+    'indexes' => array(
+      'library_dbxref_idx1' => array(
         0 => 'library_id',
       ),
-      'library_dbxref_idx2' => array (
+      'library_dbxref_idx2' => array(
         0 => 'dbxref_id',
       ),
     ),
-    'foreign keys' => array (
-      'dbxref' => array (
+    'foreign keys' => array(
+      'dbxref' => array(
         'table' => 'dbxref',
-        'columns' => array (
+        'columns' => array(
           'dbxref_id' => 'dbxref_id',
         ),
       ),
-      'library' => array (
+      'library' => array(
         'table' => 'library',
-        'columns' => array (
+        'columns' => array(
           'library_id' => 'library_id',
         ),
       ),
@@ -6937,52 +6937,52 @@ function tripal_core_chado_schema_v1_2_library_dbxref() {
  *
  */
 function tripal_core_chado_schema_v1_2_library_feature() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'library_feature_id' => array (
+    'fields' => array(
+      'library_feature_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'library_id' => array (
+      'library_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'feature_id' => array (
+      'feature_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'library_feature_id',
     ),
-    'unique keys' => array (
-      'library_feature_c1' => array (
+    'unique keys' => array(
+      'library_feature_c1' => array(
         0 => 'library_id',
         1 => 'feature_id',
       ),
     ),
-    'indexes' => array (
-      'library_feature_idx1' => array (
+    'indexes' => array(
+      'library_feature_idx1' => array(
         0 => 'library_id',
       ),
-      'library_feature_idx2' => array (
+      'library_feature_idx2' => array(
         0 => 'feature_id',
       ),
     ),
-    'foreign keys' => array (
-      'feature' => array (
+    'foreign keys' => array(
+      'feature' => array(
         'table' => 'feature',
-        'columns' => array (
+        'columns' => array(
           'feature_id' => 'feature_id',
         ),
       ),
-      'library' => array (
+      'library' => array(
         'table' => 'library',
-        'columns' => array (
+        'columns' => array(
           'library_id' => 'library_id',
         ),
       ),
@@ -7004,52 +7004,52 @@ function tripal_core_chado_schema_v1_2_library_feature() {
  *
  */
 function tripal_core_chado_schema_v1_2_library_pub() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'library_pub_id' => array (
+    'fields' => array(
+      'library_pub_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'library_id' => array (
+      'library_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'pub_id' => array (
+      'pub_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'library_pub_id',
     ),
-    'unique keys' => array (
-      'library_pub_c1' => array (
+    'unique keys' => array(
+      'library_pub_c1' => array(
         0 => 'library_id',
         1 => 'pub_id',
       ),
     ),
-    'indexes' => array (
-      'library_pub_idx1' => array (
+    'indexes' => array(
+      'library_pub_idx1' => array(
         0 => 'library_id',
       ),
-      'library_pub_idx2' => array (
+      'library_pub_idx2' => array(
         0 => 'pub_id',
       ),
     ),
-    'foreign keys' => array (
-      'pub' => array (
+    'foreign keys' => array(
+      'pub' => array(
         'table' => 'pub',
-        'columns' => array (
+        'columns' => array(
           'pub_id' => 'pub_id',
         ),
       ),
-      'library' => array (
+      'library' => array(
         'table' => 'library',
-        'columns' => array (
+        'columns' => array(
           'library_id' => 'library_id',
         ),
       ),
@@ -7071,79 +7071,79 @@ function tripal_core_chado_schema_v1_2_library_pub() {
  *
  */
 function tripal_core_chado_schema_v1_2_library_synonym() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'library_synonym_id' => array (
+    'fields' => array(
+      'library_synonym_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'synonym_id' => array (
+      'synonym_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'library_id' => array (
+      'library_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'pub_id' => array (
+      'pub_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'is_current' => array (
+      'is_current' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'boolean',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 'ru',
       ),
-      'is_internal' => array (
+      'is_internal' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'boolean',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 'als',
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'library_synonym_id',
     ),
-    'unique keys' => array (
-      'library_synonym_c1' => array (
+    'unique keys' => array(
+      'library_synonym_c1' => array(
         0 => 'synonym_id',
         1 => 'library_id',
         2 => 'pub_id',
       ),
     ),
-    'indexes' => array (
-      'library_synonym_idx1' => array (
+    'indexes' => array(
+      'library_synonym_idx1' => array(
         0 => 'synonym_id',
       ),
-      'library_synonym_idx2' => array (
+      'library_synonym_idx2' => array(
         0 => 'library_id',
       ),
-      'library_synonym_idx3' => array (
+      'library_synonym_idx3' => array(
         0 => 'pub_id',
       ),
     ),
-    'foreign keys' => array (
-      'pub' => array (
+    'foreign keys' => array(
+      'pub' => array(
         'table' => 'pub',
-        'columns' => array (
+        'columns' => array(
           'pub_id' => 'pub_id',
         ),
       ),
-      'synonym' => array (
+      'synonym' => array(
         'table' => 'synonym',
-        'columns' => array (
+        'columns' => array(
           'synonym_id' => 'synonym_id',
         ),
       ),
-      'library' => array (
+      'library' => array(
         'table' => 'library',
-        'columns' => array (
+        'columns' => array(
           'library_id' => 'library_id',
         ),
       ),
@@ -7165,64 +7165,64 @@ function tripal_core_chado_schema_v1_2_library_synonym() {
  *
  */
 function tripal_core_chado_schema_v1_2_libraryprop() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'libraryprop_id' => array (
+    'fields' => array(
+      'libraryprop_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'library_id' => array (
+      'library_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'type_id' => array (
+      'type_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'value' => array (
+      'value' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'rank' => array (
+      'rank' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 0,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'libraryprop_id',
     ),
-    'unique keys' => array (
-      'libraryprop_c1' => array (
+    'unique keys' => array(
+      'libraryprop_c1' => array(
         0 => 'library_id',
         1 => 'type_id',
         2 => 'rank',
       ),
     ),
-    'indexes' => array (
-      'libraryprop_idx1' => array (
+    'indexes' => array(
+      'libraryprop_idx1' => array(
         0 => 'library_id',
       ),
-      'libraryprop_idx2' => array (
+      'libraryprop_idx2' => array(
         0 => 'type_id',
       ),
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'type_id' => 'cvterm_id',
         ),
       ),
-      'library' => array (
+      'library' => array(
         'table' => 'library',
-        'columns' => array (
+        'columns' => array(
           'library_id' => 'library_id',
         ),
       ),
@@ -7244,52 +7244,52 @@ function tripal_core_chado_schema_v1_2_libraryprop() {
  *
  */
 function tripal_core_chado_schema_v1_2_libraryprop_pub() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'libraryprop_pub_id' => array (
+    'fields' => array(
+      'libraryprop_pub_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'libraryprop_id' => array (
+      'libraryprop_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'pub_id' => array (
+      'pub_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'libraryprop_pub_id',
     ),
-    'unique keys' => array (
-      'libraryprop_pub_c1' => array (
+    'unique keys' => array(
+      'libraryprop_pub_c1' => array(
         0 => 'libraryprop_id',
         1 => 'pub_id',
       ),
     ),
-    'indexes' => array (
-      'libraryprop_pub_idx1' => array (
+    'indexes' => array(
+      'libraryprop_pub_idx1' => array(
         0 => 'libraryprop_id',
       ),
-      'libraryprop_pub_idx2' => array (
+      'libraryprop_pub_idx2' => array(
         0 => 'pub_id',
       ),
     ),
-    'foreign keys' => array (
-      'pub' => array (
+    'foreign keys' => array(
+      'pub' => array(
         'table' => 'pub',
-        'columns' => array (
+        'columns' => array(
           'pub_id' => 'pub_id',
         ),
       ),
-      'libraryprop' => array (
+      'libraryprop' => array(
         'table' => 'libraryprop',
-        'columns' => array (
+        'columns' => array(
           'libraryprop_id' => 'libraryprop_id',
         ),
       ),
@@ -7311,59 +7311,59 @@ function tripal_core_chado_schema_v1_2_libraryprop_pub() {
  *
  */
 function tripal_core_chado_schema_v1_2_magedocumentation() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'magedocumentation_id' => array (
+    'fields' => array(
+      'magedocumentation_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'mageml_id' => array (
+      'mageml_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'tableinfo_id' => array (
+      'tableinfo_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'row_id' => array (
+      'row_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'mageidentifier' => array (
+      'mageidentifier' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => true,
+        'not null' => TRUE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'magedocumentation_id',
     ),
-    'indexes' => array (
-      'magedocumentation_idx1' => array (
+    'indexes' => array(
+      'magedocumentation_idx1' => array(
         0 => 'mageml_id',
       ),
-      'magedocumentation_idx2' => array (
+      'magedocumentation_idx2' => array(
         0 => 'tableinfo_id',
       ),
-      'magedocumentation_idx3' => array (
+      'magedocumentation_idx3' => array(
         0 => 'row_id',
       ),
     ),
-    'foreign keys' => array (
-      'tableinfo' => array (
+    'foreign keys' => array(
+      'tableinfo' => array(
         'table' => 'tableinfo',
-        'columns' => array (
+        'columns' => array(
           'tableinfo_id' => 'tableinfo_id',
         ),
       ),
-      'mageml' => array (
+      'mageml' => array(
         'table' => 'mageml',
-        'columns' => array (
+        'columns' => array(
           'mageml_id' => 'mageml_id',
         ),
       ),
@@ -7385,29 +7385,29 @@ function tripal_core_chado_schema_v1_2_magedocumentation() {
  *
  */
 function tripal_core_chado_schema_v1_2_mageml() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'mageml_id' => array (
+    'fields' => array(
+      'mageml_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'mage_package' => array (
+      'mage_package' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'mage_ml' => array (
+      'mage_ml' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => true,
+        'not null' => TRUE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'mageml_id',
     ),
-    'foreign keys' => array (
+    'foreign keys' => array(
     ),
   );
   return $description;
@@ -7426,7 +7426,7 @@ function tripal_core_chado_schema_v1_2_mageml() {
  *
  */
 function tripal_core_chado_schema_v1_2_materialized_view() {
-  $description =  array (
+  $description =  array(
   );
   return $description;
 }
@@ -7444,38 +7444,38 @@ function tripal_core_chado_schema_v1_2_materialized_view() {
  *
  */
 function tripal_core_chado_schema_v1_2_nd_experiment() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'nd_experiment_id' => array (
+    'fields' => array(
+      'nd_experiment_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'nd_geolocation_id' => array (
+      'nd_geolocation_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'type_id' => array (
+      'type_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'nd_experiment_id',
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'type_id' => 'cvterm_id',
         ),
       ),
-      'nd_geolocation' => array (
+      'nd_geolocation' => array(
         'table' => 'nd_geolocation',
-        'columns' => array (
+        'columns' => array(
           'nd_geolocation_id' => 'nd_geolocation_id',
         ),
       ),
@@ -7497,38 +7497,38 @@ function tripal_core_chado_schema_v1_2_nd_experiment() {
  *
  */
 function tripal_core_chado_schema_v1_2_nd_experiment_contact() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'nd_experiment_contact_id' => array (
+    'fields' => array(
+      'nd_experiment_contact_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'nd_experiment_id' => array (
+      'nd_experiment_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'contact_id' => array (
+      'contact_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'nd_experiment_contact_id',
     ),
-    'foreign keys' => array (
-      'contact' => array (
+    'foreign keys' => array(
+      'contact' => array(
         'table' => 'contact',
-        'columns' => array (
+        'columns' => array(
           'contact_id' => 'contact_id',
         ),
       ),
-      'nd_experiment' => array (
+      'nd_experiment' => array(
         'table' => 'nd_experiment',
-        'columns' => array (
+        'columns' => array(
           'nd_experiment_id' => 'nd_experiment_id',
         ),
       ),
@@ -7550,38 +7550,38 @@ function tripal_core_chado_schema_v1_2_nd_experiment_contact() {
  *
  */
 function tripal_core_chado_schema_v1_2_nd_experiment_dbxref() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'nd_experiment_dbxref_id' => array (
+    'fields' => array(
+      'nd_experiment_dbxref_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'nd_experiment_id' => array (
+      'nd_experiment_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'dbxref_id' => array (
+      'dbxref_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'nd_experiment_dbxref_id',
     ),
-    'foreign keys' => array (
-      'dbxref' => array (
+    'foreign keys' => array(
+      'dbxref' => array(
         'table' => 'dbxref',
-        'columns' => array (
+        'columns' => array(
           'dbxref_id' => 'dbxref_id',
         ),
       ),
-      'nd_experiment' => array (
+      'nd_experiment' => array(
         'table' => 'nd_experiment',
-        'columns' => array (
+        'columns' => array(
           'nd_experiment_id' => 'nd_experiment_id',
         ),
       ),
@@ -7603,44 +7603,44 @@ function tripal_core_chado_schema_v1_2_nd_experiment_dbxref() {
  *
  */
 function tripal_core_chado_schema_v1_2_nd_experiment_genotype() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'nd_experiment_genotype_id' => array (
+    'fields' => array(
+      'nd_experiment_genotype_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'nd_experiment_id' => array (
+      'nd_experiment_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'genotype_id' => array (
+      'genotype_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'nd_experiment_genotype_id',
     ),
-    'unique keys' => array (
-      'nd_experiment_genotype_c1' => array (
+    'unique keys' => array(
+      'nd_experiment_genotype_c1' => array(
         0 => 'nd_experiment_id',
         1 => 'genotype_id',
       ),
     ),
-    'foreign keys' => array (
-      'genotype' => array (
+    'foreign keys' => array(
+      'genotype' => array(
         'table' => 'genotype',
-        'columns' => array (
+        'columns' => array(
           'genotype_id' => 'genotype_id',
         ),
       ),
-      'nd_experiment' => array (
+      'nd_experiment' => array(
         'table' => 'nd_experiment',
-        'columns' => array (
+        'columns' => array(
           'nd_experiment_id' => 'nd_experiment_id',
         ),
       ),
@@ -7662,44 +7662,44 @@ function tripal_core_chado_schema_v1_2_nd_experiment_genotype() {
  *
  */
 function tripal_core_chado_schema_v1_2_nd_experiment_phenotype() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'nd_experiment_phenotype_id' => array (
+    'fields' => array(
+      'nd_experiment_phenotype_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'nd_experiment_id' => array (
+      'nd_experiment_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'phenotype_id' => array (
+      'phenotype_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'nd_experiment_phenotype_id',
     ),
-    'unique keys' => array (
-      'nd_experiment_phenotype_c1' => array (
+    'unique keys' => array(
+      'nd_experiment_phenotype_c1' => array(
         0 => 'nd_experiment_id',
         1 => 'phenotype_id',
       ),
     ),
-    'foreign keys' => array (
-      'phenotype' => array (
+    'foreign keys' => array(
+      'phenotype' => array(
         'table' => 'phenotype',
-        'columns' => array (
+        'columns' => array(
           'phenotype_id' => 'phenotype_id',
         ),
       ),
-      'nd_experiment' => array (
+      'nd_experiment' => array(
         'table' => 'nd_experiment',
-        'columns' => array (
+        'columns' => array(
           'nd_experiment_id' => 'nd_experiment_id',
         ),
       ),
@@ -7721,38 +7721,38 @@ function tripal_core_chado_schema_v1_2_nd_experiment_phenotype() {
  *
  */
 function tripal_core_chado_schema_v1_2_nd_experiment_project() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'nd_experiment_project_id' => array (
+    'fields' => array(
+      'nd_experiment_project_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'project_id' => array (
+      'project_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'nd_experiment_id' => array (
+      'nd_experiment_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'nd_experiment_project_id',
     ),
-    'foreign keys' => array (
-      'project' => array (
+    'foreign keys' => array(
+      'project' => array(
         'table' => 'project',
-        'columns' => array (
+        'columns' => array(
           'project_id' => 'project_id',
         ),
       ),
-      'nd_experiment' => array (
+      'nd_experiment' => array(
         'table' => 'nd_experiment',
-        'columns' => array (
+        'columns' => array(
           'nd_experiment_id' => 'nd_experiment_id',
         ),
       ),
@@ -7774,38 +7774,38 @@ function tripal_core_chado_schema_v1_2_nd_experiment_project() {
  *
  */
 function tripal_core_chado_schema_v1_2_nd_experiment_protocol() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'nd_experiment_protocol_id' => array (
+    'fields' => array(
+      'nd_experiment_protocol_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'nd_experiment_id' => array (
+      'nd_experiment_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'nd_protocol_id' => array (
+      'nd_protocol_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'nd_experiment_protocol_id',
     ),
-    'foreign keys' => array (
-      'nd_experiment' => array (
+    'foreign keys' => array(
+      'nd_experiment' => array(
         'table' => 'nd_experiment',
-        'columns' => array (
+        'columns' => array(
           'nd_experiment_id' => 'nd_experiment_id',
         ),
       ),
-      'nd_protocol' => array (
+      'nd_protocol' => array(
         'table' => 'nd_protocol',
-        'columns' => array (
+        'columns' => array(
           'nd_protocol_id' => 'nd_protocol_id',
         ),
       ),
@@ -7827,52 +7827,52 @@ function tripal_core_chado_schema_v1_2_nd_experiment_protocol() {
  *
  */
 function tripal_core_chado_schema_v1_2_nd_experiment_pub() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'nd_experiment_pub_id' => array (
+    'fields' => array(
+      'nd_experiment_pub_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'nd_experiment_id' => array (
+      'nd_experiment_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'pub_id' => array (
+      'pub_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'nd_experiment_pub_id',
     ),
-    'unique keys' => array (
-      'nd_experiment_pub_c1' => array (
+    'unique keys' => array(
+      'nd_experiment_pub_c1' => array(
         0 => 'nd_experiment_id',
         1 => 'pub_id',
       ),
     ),
-    'indexes' => array (
-      'nd_experiment_pub_idx1' => array (
+    'indexes' => array(
+      'nd_experiment_pub_idx1' => array(
         0 => 'nd_experiment_id',
       ),
-      'nd_experiment_pub_idx2' => array (
+      'nd_experiment_pub_idx2' => array(
         0 => 'pub_id',
       ),
     ),
-    'foreign keys' => array (
-      'pub' => array (
+    'foreign keys' => array(
+      'pub' => array(
         'table' => 'pub',
-        'columns' => array (
+        'columns' => array(
           'pub_id' => 'pub_id',
         ),
       ),
-      'nd_experiment' => array (
+      'nd_experiment' => array(
         'table' => 'nd_experiment',
-        'columns' => array (
+        'columns' => array(
           'nd_experiment_id' => 'nd_experiment_id',
         ),
       ),
@@ -7894,49 +7894,49 @@ function tripal_core_chado_schema_v1_2_nd_experiment_pub() {
  *
  */
 function tripal_core_chado_schema_v1_2_nd_experiment_stock() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'nd_experiment_stock_id' => array (
+    'fields' => array(
+      'nd_experiment_stock_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'nd_experiment_id' => array (
+      'nd_experiment_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'stock_id' => array (
+      'stock_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'type_id' => array (
+      'type_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'nd_experiment_stock_id',
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'type_id' => 'cvterm_id',
         ),
       ),
-      'stock' => array (
+      'stock' => array(
         'table' => 'stock',
-        'columns' => array (
+        'columns' => array(
           'stock_id' => 'stock_id',
         ),
       ),
-      'nd_experiment' => array (
+      'nd_experiment' => array(
         'table' => 'nd_experiment',
-        'columns' => array (
+        'columns' => array(
           'nd_experiment_id' => 'nd_experiment_id',
         ),
       ),
@@ -7958,38 +7958,38 @@ function tripal_core_chado_schema_v1_2_nd_experiment_stock() {
  *
  */
 function tripal_core_chado_schema_v1_2_nd_experiment_stock_dbxref() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'nd_experiment_stock_dbxref_id' => array (
+    'fields' => array(
+      'nd_experiment_stock_dbxref_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'nd_experiment_stock_id' => array (
+      'nd_experiment_stock_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'dbxref_id' => array (
+      'dbxref_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'nd_experiment_stock_dbxref_id',
     ),
-    'foreign keys' => array (
-      'dbxref' => array (
+    'foreign keys' => array(
+      'dbxref' => array(
         'table' => 'dbxref',
-        'columns' => array (
+        'columns' => array(
           'dbxref_id' => 'dbxref_id',
         ),
       ),
-      'nd_experiment_stock' => array (
+      'nd_experiment_stock' => array(
         'table' => 'nd_experiment_stock',
-        'columns' => array (
+        'columns' => array(
           'nd_experiment_stock_id' => 'nd_experiment_stock_id',
         ),
       ),
@@ -8011,56 +8011,56 @@ function tripal_core_chado_schema_v1_2_nd_experiment_stock_dbxref() {
  *
  */
 function tripal_core_chado_schema_v1_2_nd_experiment_stockprop() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'nd_experiment_stockprop_id' => array (
+    'fields' => array(
+      'nd_experiment_stockprop_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'nd_experiment_stock_id' => array (
+      'nd_experiment_stock_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'type_id' => array (
+      'type_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'value' => array (
+      'value' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'rank' => array (
+      'rank' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 0,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'nd_experiment_stockprop_id',
     ),
-    'unique keys' => array (
-      'nd_experiment_stockprop_c1' => array (
+    'unique keys' => array(
+      'nd_experiment_stockprop_c1' => array(
         0 => 'nd_experiment_stock_id',
         1 => 'type_id',
         2 => 'rank',
       ),
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'type_id' => 'cvterm_id',
         ),
       ),
-      'nd_experiment_stock' => array (
+      'nd_experiment_stock' => array(
         'table' => 'nd_experiment_stock',
-        'columns' => array (
+        'columns' => array(
           'nd_experiment_stock_id' => 'nd_experiment_stock_id',
         ),
       ),
@@ -8082,56 +8082,56 @@ function tripal_core_chado_schema_v1_2_nd_experiment_stockprop() {
  *
  */
 function tripal_core_chado_schema_v1_2_nd_experimentprop() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'nd_experimentprop_id' => array (
+    'fields' => array(
+      'nd_experimentprop_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'nd_experiment_id' => array (
+      'nd_experiment_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'type_id' => array (
+      'type_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'value' => array (
+      'value' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'rank' => array (
+      'rank' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 0,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'nd_experimentprop_id',
     ),
-    'unique keys' => array (
-      'nd_experimentprop_c1' => array (
+    'unique keys' => array(
+      'nd_experimentprop_c1' => array(
         0 => 'nd_experiment_id',
         1 => 'type_id',
         2 => 'rank',
       ),
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'type_id' => 'cvterm_id',
         ),
       ),
-      'nd_experiment' => array (
+      'nd_experiment' => array(
         'table' => 'nd_experiment',
-        'columns' => array (
+        'columns' => array(
           'nd_experiment_id' => 'nd_experiment_id',
         ),
       ),
@@ -8153,46 +8153,46 @@ function tripal_core_chado_schema_v1_2_nd_experimentprop() {
  *
  */
 function tripal_core_chado_schema_v1_2_nd_geolocation() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'nd_geolocation_id' => array (
+    'fields' => array(
+      'nd_geolocation_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'description' => array (
+      'description' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'latitude' => array (
+      'latitude' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'float',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'longitude' => array (
+      'longitude' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'float',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'geodetic_datum' => array (
+      'geodetic_datum' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '32',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'altitude' => array (
+      'altitude' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'float',
-        'not null' => false,
+        'not null' => FALSE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'nd_geolocation_id',
     ),
-    'foreign keys' => array (
+    'foreign keys' => array(
     ),
   );
   return $description;
@@ -8211,56 +8211,56 @@ function tripal_core_chado_schema_v1_2_nd_geolocation() {
  *
  */
 function tripal_core_chado_schema_v1_2_nd_geolocationprop() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'nd_geolocationprop_id' => array (
+    'fields' => array(
+      'nd_geolocationprop_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'nd_geolocation_id' => array (
+      'nd_geolocation_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'type_id' => array (
+      'type_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'value' => array (
+      'value' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'rank' => array (
+      'rank' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 0,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'nd_geolocationprop_id',
     ),
-    'unique keys' => array (
-      'nd_geolocationprop_c1' => array (
+    'unique keys' => array(
+      'nd_geolocationprop_c1' => array(
         0 => 'nd_geolocation_id',
         1 => 'type_id',
         2 => 'rank',
       ),
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'type_id' => 'cvterm_id',
         ),
       ),
-      'nd_geolocation' => array (
+      'nd_geolocation' => array(
         'table' => 'nd_geolocation',
-        'columns' => array (
+        'columns' => array(
           'nd_geolocation_id' => 'nd_geolocation_id',
         ),
       ),
@@ -8282,38 +8282,38 @@ function tripal_core_chado_schema_v1_2_nd_geolocationprop() {
  *
  */
 function tripal_core_chado_schema_v1_2_nd_protocol() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'nd_protocol_id' => array (
+    'fields' => array(
+      'nd_protocol_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'name' => array (
+      'name' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'type_id' => array (
+      'type_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'nd_protocol_id',
     ),
-    'unique keys' => array (
-      'name' => array (
+    'unique keys' => array(
+      'name' => array(
         0 => 'name',
       ),
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'type_id' => 'cvterm_id',
         ),
       ),
@@ -8335,49 +8335,49 @@ function tripal_core_chado_schema_v1_2_nd_protocol() {
  *
  */
 function tripal_core_chado_schema_v1_2_nd_protocol_reagent() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'nd_protocol_reagent_id' => array (
+    'fields' => array(
+      'nd_protocol_reagent_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'nd_protocol_id' => array (
+      'nd_protocol_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'reagent_id' => array (
+      'reagent_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'type_id' => array (
+      'type_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'nd_protocol_reagent_id',
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'type_id' => 'cvterm_id',
         ),
       ),
-      'nd_protocol' => array (
+      'nd_protocol' => array(
         'table' => 'nd_protocol',
-        'columns' => array (
+        'columns' => array(
           'nd_protocol_id' => 'nd_protocol_id',
         ),
       ),
-      'nd_reagent' => array (
+      'nd_reagent' => array(
         'table' => 'nd_reagent',
-        'columns' => array (
+        'columns' => array(
           'reagent_id' => 'nd_reagent_id',
         ),
       ),
@@ -8399,56 +8399,56 @@ function tripal_core_chado_schema_v1_2_nd_protocol_reagent() {
  *
  */
 function tripal_core_chado_schema_v1_2_nd_protocolprop() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'nd_protocolprop_id' => array (
+    'fields' => array(
+      'nd_protocolprop_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'nd_protocol_id' => array (
+      'nd_protocol_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'type_id' => array (
+      'type_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'value' => array (
+      'value' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'rank' => array (
+      'rank' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 0,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'nd_protocolprop_id',
     ),
-    'unique keys' => array (
-      'nd_protocolprop_c1' => array (
+    'unique keys' => array(
+      'nd_protocolprop_c1' => array(
         0 => 'nd_protocol_id',
         1 => 'type_id',
         2 => 'rank',
       ),
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'type_id' => 'cvterm_id',
         ),
       ),
-      'nd_protocol' => array (
+      'nd_protocol' => array(
         'table' => 'nd_protocol',
-        'columns' => array (
+        'columns' => array(
           'nd_protocol_id' => 'nd_protocol_id',
         ),
       ),
@@ -8470,38 +8470,38 @@ function tripal_core_chado_schema_v1_2_nd_protocolprop() {
  *
  */
 function tripal_core_chado_schema_v1_2_nd_reagent() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'nd_reagent_id' => array (
+    'fields' => array(
+      'nd_reagent_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'name' => array (
+      'name' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '80',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'type_id' => array (
+      'type_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'feature_id' => array (
+      'feature_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => false,
+        'not null' => FALSE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'nd_reagent_id',
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'type_id' => 'cvterm_id',
         ),
       ),
@@ -8523,43 +8523,43 @@ function tripal_core_chado_schema_v1_2_nd_reagent() {
  *
  */
 function tripal_core_chado_schema_v1_2_nd_reagent_relationship() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'nd_reagent_relationship_id' => array (
+    'fields' => array(
+      'nd_reagent_relationship_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'subject_reagent_id' => array (
+      'subject_reagent_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'object_reagent_id' => array (
+      'object_reagent_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'type_id' => array (
+      'type_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'nd_reagent_relationship_id',
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'type_id' => 'cvterm_id',
         ),
       ),
-      'nd_reagent' => array (
+      'nd_reagent' => array(
         'table' => 'nd_reagent',
-        'columns' => array (
+        'columns' => array(
           'subject_reagent_id' => 'nd_reagent_id',
           'object_reagent_id' => 'nd_reagent_id',
         ),
@@ -8582,56 +8582,56 @@ function tripal_core_chado_schema_v1_2_nd_reagent_relationship() {
  *
  */
 function tripal_core_chado_schema_v1_2_nd_reagentprop() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'nd_reagentprop_id' => array (
+    'fields' => array(
+      'nd_reagentprop_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'nd_reagent_id' => array (
+      'nd_reagent_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'type_id' => array (
+      'type_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'value' => array (
+      'value' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'rank' => array (
+      'rank' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 0,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'nd_reagentprop_id',
     ),
-    'unique keys' => array (
-      'nd_reagentprop_c1' => array (
+    'unique keys' => array(
+      'nd_reagentprop_c1' => array(
         0 => 'nd_reagent_id',
         1 => 'type_id',
         2 => 'rank',
       ),
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'type_id' => 'cvterm_id',
         ),
       ),
-      'nd_reagent' => array (
+      'nd_reagent' => array(
         'table' => 'nd_reagent',
-        'columns' => array (
+        'columns' => array(
           'nd_reagent_id' => 'nd_reagent_id',
         ),
       ),
@@ -8653,54 +8653,54 @@ function tripal_core_chado_schema_v1_2_nd_reagentprop() {
  *
  */
 function tripal_core_chado_schema_v1_2_organism() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'organism_id' => array (
+    'fields' => array(
+      'organism_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'abbreviation' => array (
+      'abbreviation' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'genus' => array (
+      'genus' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'species' => array (
+      'species' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'common_name' => array (
+      'common_name' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'comment' => array (
+      'comment' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => false,
+        'not null' => FALSE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'organism_id',
     ),
-    'unique keys' => array (
-      'organism_c1' => array (
+    'unique keys' => array(
+      'organism_c1' => array(
         0 => 'genus',
         1 => 'species',
       ),
     ),
-    'foreign keys' => array (
+    'foreign keys' => array(
     ),
   );
   return $description;
@@ -8719,52 +8719,52 @@ function tripal_core_chado_schema_v1_2_organism() {
  *
  */
 function tripal_core_chado_schema_v1_2_organism_dbxref() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'organism_dbxref_id' => array (
+    'fields' => array(
+      'organism_dbxref_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'organism_id' => array (
+      'organism_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'dbxref_id' => array (
+      'dbxref_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'organism_dbxref_id',
     ),
-    'unique keys' => array (
-      'organism_dbxref_c1' => array (
+    'unique keys' => array(
+      'organism_dbxref_c1' => array(
         0 => 'organism_id',
         1 => 'dbxref_id',
       ),
     ),
-    'indexes' => array (
-      'organism_dbxref_idx1' => array (
+    'indexes' => array(
+      'organism_dbxref_idx1' => array(
         0 => 'organism_id',
       ),
-      'organism_dbxref_idx2' => array (
+      'organism_dbxref_idx2' => array(
         0 => 'dbxref_id',
       ),
     ),
-    'foreign keys' => array (
-      'organism' => array (
+    'foreign keys' => array(
+      'organism' => array(
         'table' => 'organism',
-        'columns' => array (
+        'columns' => array(
           'organism_id' => 'organism_id',
         ),
       ),
-      'dbxref' => array (
+      'dbxref' => array(
         'table' => 'dbxref',
-        'columns' => array (
+        'columns' => array(
           'dbxref_id' => 'dbxref_id',
         ),
       ),
@@ -8786,7 +8786,7 @@ function tripal_core_chado_schema_v1_2_organism_dbxref() {
  *
  */
 function tripal_core_chado_schema_v1_2_organism_feature_count() {
-  $description =  array (
+  $description =  array(
   );
   return $description;
 }
@@ -8804,64 +8804,64 @@ function tripal_core_chado_schema_v1_2_organism_feature_count() {
  *
  */
 function tripal_core_chado_schema_v1_2_organismprop() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'organismprop_id' => array (
+    'fields' => array(
+      'organismprop_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'organism_id' => array (
+      'organism_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'type_id' => array (
+      'type_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'value' => array (
+      'value' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'rank' => array (
+      'rank' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 0,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'organismprop_id',
     ),
-    'unique keys' => array (
-      'organismprop_c1' => array (
+    'unique keys' => array(
+      'organismprop_c1' => array(
         0 => 'organism_id',
         1 => 'type_id',
         2 => 'rank',
       ),
     ),
-    'indexes' => array (
-      'organismprop_idx1' => array (
+    'indexes' => array(
+      'organismprop_idx1' => array(
         0 => 'organism_id',
       ),
-      'organismprop_idx2' => array (
+      'organismprop_idx2' => array(
         0 => 'type_id',
       ),
     ),
-    'foreign keys' => array (
-      'organism' => array (
+    'foreign keys' => array(
+      'organism' => array(
         'table' => 'organism',
-        'columns' => array (
+        'columns' => array(
           'organism_id' => 'organism_id',
         ),
       ),
-      'cvterm' => array (
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'type_id' => 'cvterm_id',
         ),
       ),
@@ -8883,84 +8883,84 @@ function tripal_core_chado_schema_v1_2_organismprop() {
  *
  */
 function tripal_core_chado_schema_v1_2_phendesc() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'phendesc_id' => array (
+    'fields' => array(
+      'phendesc_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'genotype_id' => array (
+      'genotype_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'environment_id' => array (
+      'environment_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'description' => array (
+      'description' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'type_id' => array (
+      'type_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'pub_id' => array (
+      'pub_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'phendesc_id',
     ),
-    'unique keys' => array (
-      'phendesc_c1' => array (
+    'unique keys' => array(
+      'phendesc_c1' => array(
         0 => 'genotype_id',
         1 => 'environment_id',
         2 => 'type_id',
         3 => 'pub_id',
       ),
     ),
-    'indexes' => array (
-      'phendesc_idx1' => array (
+    'indexes' => array(
+      'phendesc_idx1' => array(
         0 => 'genotype_id',
       ),
-      'phendesc_idx2' => array (
+      'phendesc_idx2' => array(
         0 => 'environment_id',
       ),
-      'phendesc_idx3' => array (
+      'phendesc_idx3' => array(
         0 => 'pub_id',
       ),
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'type_id' => 'cvterm_id',
         ),
       ),
-      'pub' => array (
+      'pub' => array(
         'table' => 'pub',
-        'columns' => array (
+        'columns' => array(
           'pub_id' => 'pub_id',
         ),
       ),
-      'genotype' => array (
+      'genotype' => array(
         'table' => 'genotype',
-        'columns' => array (
+        'columns' => array(
           'genotype_id' => 'genotype_id',
         ),
       ),
-      'environment' => array (
+      'environment' => array(
         'table' => 'environment',
-        'columns' => array (
+        'columns' => array(
           'environment_id' => 'environment_id',
         ),
       ),
@@ -8982,73 +8982,73 @@ function tripal_core_chado_schema_v1_2_phendesc() {
  *
  */
 function tripal_core_chado_schema_v1_2_phenotype() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'phenotype_id' => array (
+    'fields' => array(
+      'phenotype_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'uniquename' => array (
+      'uniquename' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'name' => array (
+      'name' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'observable_id' => array (
+      'observable_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'attr_id' => array (
+      'attr_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'value' => array (
+      'value' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'cvalue_id' => array (
+      'cvalue_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'assay_id' => array (
+      'assay_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => false,
+        'not null' => FALSE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'phenotype_id',
     ),
-    'unique keys' => array (
-      'phenotype_c1' => array (
+    'unique keys' => array(
+      'phenotype_c1' => array(
         0 => 'uniquename',
       ),
     ),
-    'indexes' => array (
-      'phenotype_idx1' => array (
+    'indexes' => array(
+      'phenotype_idx1' => array(
         0 => 'cvalue_id',
       ),
-      'phenotype_idx2' => array (
+      'phenotype_idx2' => array(
         0 => 'observable_id',
       ),
-      'phenotype_idx3' => array (
+      'phenotype_idx3' => array(
         0 => 'attr_id',
       ),
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'observable_id' => 'cvterm_id',
           'attr_id' => 'cvterm_id',
           'cvalue_id' => 'cvterm_id',
@@ -9073,60 +9073,60 @@ function tripal_core_chado_schema_v1_2_phenotype() {
  *
  */
 function tripal_core_chado_schema_v1_2_phenotype_comparison() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'phenotype_comparison_id' => array (
+    'fields' => array(
+      'phenotype_comparison_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'genotype1_id' => array (
+      'genotype1_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'environment1_id' => array (
+      'environment1_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'genotype2_id' => array (
+      'genotype2_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'environment2_id' => array (
+      'environment2_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'phenotype1_id' => array (
+      'phenotype1_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'phenotype2_id' => array (
+      'phenotype2_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'pub_id' => array (
+      'pub_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'organism_id' => array (
+      'organism_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'phenotype_comparison_id',
     ),
-    'unique keys' => array (
-      'phenotype_comparison_c1' => array (
+    'unique keys' => array(
+      'phenotype_comparison_c1' => array(
         0 => 'genotype1_id',
         1 => 'environment1_id',
         2 => 'genotype2_id',
@@ -9135,47 +9135,47 @@ function tripal_core_chado_schema_v1_2_phenotype_comparison() {
         5 => 'pub_id',
       ),
     ),
-    'indexes' => array (
-      'phenotype_comparison_idx1' => array (
+    'indexes' => array(
+      'phenotype_comparison_idx1' => array(
         0 => 'genotype1_id',
       ),
-      'phenotype_comparison_idx2' => array (
+      'phenotype_comparison_idx2' => array(
         0 => 'genotype2_id',
       ),
-      'phenotype_comparison_idx4' => array (
+      'phenotype_comparison_idx4' => array(
         0 => 'pub_id',
       ),
     ),
-    'foreign keys' => array (
-      'organism' => array (
+    'foreign keys' => array(
+      'organism' => array(
         'table' => 'organism',
-        'columns' => array (
+        'columns' => array(
           'organism_id' => 'organism_id',
         ),
       ),
-      'pub' => array (
+      'pub' => array(
         'table' => 'pub',
-        'columns' => array (
+        'columns' => array(
           'pub_id' => 'pub_id',
         ),
       ),
-      'genotype' => array (
+      'genotype' => array(
         'table' => 'genotype',
-        'columns' => array (
+        'columns' => array(
           'genotype1_id' => 'genotype_id',
           'genotype2_id' => 'genotype_id',
         ),
       ),
-      'environment' => array (
+      'environment' => array(
         'table' => 'environment',
-        'columns' => array (
+        'columns' => array(
           'environment1_id' => 'environment_id',
           'environment2_id' => 'environment_id',
         ),
       ),
-      'phenotype' => array (
+      'phenotype' => array(
         'table' => 'phenotype',
-        'columns' => array (
+        'columns' => array(
           'phenotype1_id' => 'phenotype_id',
           'phenotype2_id' => 'phenotype_id',
         ),
@@ -9198,69 +9198,69 @@ function tripal_core_chado_schema_v1_2_phenotype_comparison() {
  *
  */
 function tripal_core_chado_schema_v1_2_phenotype_comparison_cvterm() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'phenotype_comparison_cvterm_id' => array (
+    'fields' => array(
+      'phenotype_comparison_cvterm_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'phenotype_comparison_id' => array (
+      'phenotype_comparison_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'cvterm_id' => array (
+      'cvterm_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'pub_id' => array (
+      'pub_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'rank' => array (
+      'rank' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 0,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'phenotype_comparison_cvterm_id',
     ),
-    'unique keys' => array (
-      'phenotype_comparison_cvterm_c1' => array (
+    'unique keys' => array(
+      'phenotype_comparison_cvterm_c1' => array(
         0 => 'phenotype_comparison_id',
         1 => 'cvterm_id',
       ),
     ),
-    'indexes' => array (
-      'phenotype_comparison_cvterm_idx1' => array (
+    'indexes' => array(
+      'phenotype_comparison_cvterm_idx1' => array(
         0 => 'phenotype_comparison_id',
       ),
-      'phenotype_comparison_cvterm_idx2' => array (
+      'phenotype_comparison_cvterm_idx2' => array(
         0 => 'cvterm_id',
       ),
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'cvterm_id' => 'cvterm_id',
         ),
       ),
-      'pub' => array (
+      'pub' => array(
         'table' => 'pub',
-        'columns' => array (
+        'columns' => array(
           'pub_id' => 'pub_id',
         ),
       ),
-      'phenotype_comparison' => array (
+      'phenotype_comparison' => array(
         'table' => 'phenotype_comparison',
-        'columns' => array (
+        'columns' => array(
           'phenotype_comparison_id' => 'phenotype_comparison_id',
         ),
       ),
@@ -9282,59 +9282,59 @@ function tripal_core_chado_schema_v1_2_phenotype_comparison_cvterm() {
  *
  */
 function tripal_core_chado_schema_v1_2_phenotype_cvterm() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'phenotype_cvterm_id' => array (
+    'fields' => array(
+      'phenotype_cvterm_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'phenotype_id' => array (
+      'phenotype_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'cvterm_id' => array (
+      'cvterm_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'rank' => array (
+      'rank' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 0,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'phenotype_cvterm_id',
     ),
-    'unique keys' => array (
-      'phenotype_cvterm_c1' => array (
+    'unique keys' => array(
+      'phenotype_cvterm_c1' => array(
         0 => 'phenotype_id',
         1 => 'cvterm_id',
         2 => 'rank',
       ),
     ),
-    'indexes' => array (
-      'phenotype_cvterm_idx1' => array (
+    'indexes' => array(
+      'phenotype_cvterm_idx1' => array(
         0 => 'phenotype_id',
       ),
-      'phenotype_cvterm_idx2' => array (
+      'phenotype_cvterm_idx2' => array(
         0 => 'cvterm_id',
       ),
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'cvterm_id' => 'cvterm_id',
         ),
       ),
-      'phenotype' => array (
+      'phenotype' => array(
         'table' => 'phenotype',
-        'columns' => array (
+        'columns' => array(
           'phenotype_id' => 'phenotype_id',
         ),
       ),
@@ -9356,45 +9356,45 @@ function tripal_core_chado_schema_v1_2_phenotype_cvterm() {
  *
  */
 function tripal_core_chado_schema_v1_2_phenstatement() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'phenstatement_id' => array (
+    'fields' => array(
+      'phenstatement_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'genotype_id' => array (
+      'genotype_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'environment_id' => array (
+      'environment_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'phenotype_id' => array (
+      'phenotype_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'type_id' => array (
+      'type_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'pub_id' => array (
+      'pub_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'phenstatement_id',
     ),
-    'unique keys' => array (
-      'phenstatement_c1' => array (
+    'unique keys' => array(
+      'phenstatement_c1' => array(
         0 => 'genotype_id',
         1 => 'phenotype_id',
         2 => 'environment_id',
@@ -9402,42 +9402,42 @@ function tripal_core_chado_schema_v1_2_phenstatement() {
         4 => 'pub_id',
       ),
     ),
-    'indexes' => array (
-      'phenstatement_idx1' => array (
+    'indexes' => array(
+      'phenstatement_idx1' => array(
         0 => 'genotype_id',
       ),
-      'phenstatement_idx2' => array (
+      'phenstatement_idx2' => array(
         0 => 'phenotype_id',
       ),
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'type_id' => 'cvterm_id',
         ),
       ),
-      'pub' => array (
+      'pub' => array(
         'table' => 'pub',
-        'columns' => array (
+        'columns' => array(
           'pub_id' => 'pub_id',
         ),
       ),
-      'genotype' => array (
+      'genotype' => array(
         'table' => 'genotype',
-        'columns' => array (
+        'columns' => array(
           'genotype_id' => 'genotype_id',
         ),
       ),
-      'environment' => array (
+      'environment' => array(
         'table' => 'environment',
-        'columns' => array (
+        'columns' => array(
           'environment_id' => 'environment_id',
         ),
       ),
-      'phenotype' => array (
+      'phenotype' => array(
         'table' => 'phenotype',
-        'columns' => array (
+        'columns' => array(
           'phenotype_id' => 'phenotype_id',
         ),
       ),
@@ -9459,92 +9459,92 @@ function tripal_core_chado_schema_v1_2_phenstatement() {
  *
  */
 function tripal_core_chado_schema_v1_2_phylonode() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'phylonode_id' => array (
+    'fields' => array(
+      'phylonode_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'phylotree_id' => array (
+      'phylotree_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'parent_phylonode_id' => array (
+      'parent_phylonode_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'left_idx' => array (
+      'left_idx' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'right_idx' => array (
+      'right_idx' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'type_id' => array (
+      'type_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'feature_id' => array (
+      'feature_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'label' => array (
+      'label' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'distance' => array (
+      'distance' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'float',
         'size' => 'big',
-        'not null' => false,
+        'not null' => FALSE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'phylonode_id',
     ),
-    'unique keys' => array (
-      'phylotree_id' => array (
+    'unique keys' => array(
+      'phylotree_id' => array(
         0 => 'phylotree_id',
         1 => 'left_idx',
       ),
-      'phylonode_phylotree_id_key1' => array (
+      'phylonode_phylotree_id_key1' => array(
         0 => 'phylotree_id',
         1 => 'right_idx',
       ),
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'type_id' => 'cvterm_id',
         ),
       ),
-      'feature' => array (
+      'feature' => array(
         'table' => 'feature',
-        'columns' => array (
+        'columns' => array(
           'feature_id' => 'feature_id',
         ),
       ),
-      'phylonode' => array (
+      'phylonode' => array(
         'table' => 'phylonode',
-        'columns' => array (
+        'columns' => array(
           'parent_phylonode_id' => 'phylonode_id',
         ),
       ),
-      'phylotree' => array (
+      'phylotree' => array(
         'table' => 'phylotree',
-        'columns' => array (
+        'columns' => array(
           'phylotree_id' => 'phylotree_id',
         ),
       ),
@@ -9566,52 +9566,52 @@ function tripal_core_chado_schema_v1_2_phylonode() {
  *
  */
 function tripal_core_chado_schema_v1_2_phylonode_dbxref() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'phylonode_dbxref_id' => array (
+    'fields' => array(
+      'phylonode_dbxref_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'phylonode_id' => array (
+      'phylonode_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'dbxref_id' => array (
+      'dbxref_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'phylonode_dbxref_id',
     ),
-    'unique keys' => array (
-      'phylonode_id' => array (
+    'unique keys' => array(
+      'phylonode_id' => array(
         0 => 'phylonode_id',
         1 => 'dbxref_id',
       ),
     ),
-    'indexes' => array (
-      'phylonode_dbxref_idx1' => array (
+    'indexes' => array(
+      'phylonode_dbxref_idx1' => array(
         0 => 'phylonode_id',
       ),
-      'phylonode_dbxref_idx2' => array (
+      'phylonode_dbxref_idx2' => array(
         0 => 'dbxref_id',
       ),
     ),
-    'foreign keys' => array (
-      'dbxref' => array (
+    'foreign keys' => array(
+      'dbxref' => array(
         'table' => 'dbxref',
-        'columns' => array (
+        'columns' => array(
           'dbxref_id' => 'dbxref_id',
         ),
       ),
-      'phylonode' => array (
+      'phylonode' => array(
         'table' => 'phylonode',
-        'columns' => array (
+        'columns' => array(
           'phylonode_id' => 'phylonode_id',
         ),
       ),
@@ -9633,51 +9633,51 @@ function tripal_core_chado_schema_v1_2_phylonode_dbxref() {
  *
  */
 function tripal_core_chado_schema_v1_2_phylonode_organism() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'phylonode_organism_id' => array (
+    'fields' => array(
+      'phylonode_organism_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'phylonode_id' => array (
+      'phylonode_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'organism_id' => array (
+      'organism_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'phylonode_organism_id',
     ),
-    'unique keys' => array (
-      'phylonode_id' => array (
+    'unique keys' => array(
+      'phylonode_id' => array(
         0 => 'phylonode_id',
       ),
     ),
-    'indexes' => array (
-      'phylonode_organism_idx1' => array (
+    'indexes' => array(
+      'phylonode_organism_idx1' => array(
         0 => 'phylonode_id',
       ),
-      'phylonode_organism_idx2' => array (
+      'phylonode_organism_idx2' => array(
         0 => 'organism_id',
       ),
     ),
-    'foreign keys' => array (
-      'organism' => array (
+    'foreign keys' => array(
+      'organism' => array(
         'table' => 'organism',
-        'columns' => array (
+        'columns' => array(
           'organism_id' => 'organism_id',
         ),
       ),
-      'phylonode' => array (
+      'phylonode' => array(
         'table' => 'phylonode',
-        'columns' => array (
+        'columns' => array(
           'phylonode_id' => 'phylonode_id',
         ),
       ),
@@ -9699,52 +9699,52 @@ function tripal_core_chado_schema_v1_2_phylonode_organism() {
  *
  */
 function tripal_core_chado_schema_v1_2_phylonode_pub() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'phylonode_pub_id' => array (
+    'fields' => array(
+      'phylonode_pub_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'phylonode_id' => array (
+      'phylonode_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'pub_id' => array (
+      'pub_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'phylonode_pub_id',
     ),
-    'unique keys' => array (
-      'phylonode_id' => array (
+    'unique keys' => array(
+      'phylonode_id' => array(
         0 => 'phylonode_id',
         1 => 'pub_id',
       ),
     ),
-    'indexes' => array (
-      'phylonode_pub_idx1' => array (
+    'indexes' => array(
+      'phylonode_pub_idx1' => array(
         0 => 'phylonode_id',
       ),
-      'phylonode_pub_idx2' => array (
+      'phylonode_pub_idx2' => array(
         0 => 'pub_id',
       ),
     ),
-    'foreign keys' => array (
-      'pub' => array (
+    'foreign keys' => array(
+      'pub' => array(
         'table' => 'pub',
-        'columns' => array (
+        'columns' => array(
           'pub_id' => 'pub_id',
         ),
       ),
-      'phylonode' => array (
+      'phylonode' => array(
         'table' => 'phylonode',
-        'columns' => array (
+        'columns' => array(
           'phylonode_id' => 'phylonode_id',
         ),
       ),
@@ -9766,78 +9766,78 @@ function tripal_core_chado_schema_v1_2_phylonode_pub() {
  *
  */
 function tripal_core_chado_schema_v1_2_phylonode_relationship() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'phylonode_relationship_id' => array (
+    'fields' => array(
+      'phylonode_relationship_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'subject_id' => array (
+      'subject_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'object_id' => array (
+      'object_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'type_id' => array (
+      'type_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'rank' => array (
+      'rank' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'phylotree_id' => array (
+      'phylotree_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'phylonode_relationship_id',
     ),
-    'unique keys' => array (
-      'subject_id' => array (
+    'unique keys' => array(
+      'subject_id' => array(
         0 => 'subject_id',
         1 => 'object_id',
         2 => 'type_id',
       ),
     ),
-    'indexes' => array (
-      'phylonode_relationship_idx1' => array (
+    'indexes' => array(
+      'phylonode_relationship_idx1' => array(
         0 => 'subject_id',
       ),
-      'phylonode_relationship_idx2' => array (
+      'phylonode_relationship_idx2' => array(
         0 => 'object_id',
       ),
-      'phylonode_relationship_idx3' => array (
+      'phylonode_relationship_idx3' => array(
         0 => 'type_id',
       ),
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'type_id' => 'cvterm_id',
         ),
       ),
-      'phylonode' => array (
+      'phylonode' => array(
         'table' => 'phylonode',
-        'columns' => array (
+        'columns' => array(
           'subject_id' => 'phylonode_id',
           'object_id' => 'phylonode_id',
         ),
       ),
-      'phylotree' => array (
+      'phylotree' => array(
         'table' => 'phylotree',
-        'columns' => array (
+        'columns' => array(
           'phylotree_id' => 'phylotree_id',
         ),
       ),
@@ -9859,66 +9859,66 @@ function tripal_core_chado_schema_v1_2_phylonode_relationship() {
  *
  */
 function tripal_core_chado_schema_v1_2_phylonodeprop() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'phylonodeprop_id' => array (
+    'fields' => array(
+      'phylonodeprop_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'phylonode_id' => array (
+      'phylonode_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'type_id' => array (
+      'type_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'value' => array (
+      'value' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => '',
       ),
-      'rank' => array (
+      'rank' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 0,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'phylonodeprop_id',
     ),
-    'unique keys' => array (
-      'phylonode_id' => array (
+    'unique keys' => array(
+      'phylonode_id' => array(
         0 => 'phylonode_id',
         1 => 'type_id',
         2 => 'value',
         3 => 'rank',
       ),
     ),
-    'indexes' => array (
-      'phylonodeprop_idx1' => array (
+    'indexes' => array(
+      'phylonodeprop_idx1' => array(
         0 => 'phylonode_id',
       ),
-      'phylonodeprop_idx2' => array (
+      'phylonodeprop_idx2' => array(
         0 => 'type_id',
       ),
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'type_id' => 'cvterm_id',
         ),
       ),
-      'phylonode' => array (
+      'phylonode' => array(
         'table' => 'phylonode',
-        'columns' => array (
+        'columns' => array(
           'phylonode_id' => 'phylonode_id',
         ),
       ),
@@ -9940,65 +9940,65 @@ function tripal_core_chado_schema_v1_2_phylonodeprop() {
  *
  */
 function tripal_core_chado_schema_v1_2_phylotree() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'phylotree_id' => array (
+    'fields' => array(
+      'phylotree_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'dbxref_id' => array (
+      'dbxref_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'name' => array (
+      'name' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'type_id' => array (
+      'type_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'analysis_id' => array (
+      'analysis_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'comment' => array (
+      'comment' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => false,
+        'not null' => FALSE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'phylotree_id',
     ),
-    'indexes' => array (
-      'phylotree_idx1' => array (
+    'indexes' => array(
+      'phylotree_idx1' => array(
         0 => 'phylotree_id',
       ),
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'type_id' => 'cvterm_id',
         ),
       ),
-      'dbxref' => array (
+      'dbxref' => array(
         'table' => 'dbxref',
-        'columns' => array (
+        'columns' => array(
           'dbxref_id' => 'dbxref_id',
         ),
       ),
-      'analysis' => array (
+      'analysis' => array(
         'table' => 'analysis',
-        'columns' => array (
+        'columns' => array(
           'analysis_id' => 'analysis_id',
         ),
       ),
@@ -10020,52 +10020,52 @@ function tripal_core_chado_schema_v1_2_phylotree() {
  *
  */
 function tripal_core_chado_schema_v1_2_phylotree_pub() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'phylotree_pub_id' => array (
+    'fields' => array(
+      'phylotree_pub_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'phylotree_id' => array (
+      'phylotree_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'pub_id' => array (
+      'pub_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'phylotree_pub_id',
     ),
-    'unique keys' => array (
-      'phylotree_id' => array (
+    'unique keys' => array(
+      'phylotree_id' => array(
         0 => 'phylotree_id',
         1 => 'pub_id',
       ),
     ),
-    'indexes' => array (
-      'phylotree_pub_idx1' => array (
+    'indexes' => array(
+      'phylotree_pub_idx1' => array(
         0 => 'phylotree_id',
       ),
-      'phylotree_pub_idx2' => array (
+      'phylotree_pub_idx2' => array(
         0 => 'pub_id',
       ),
     ),
-    'foreign keys' => array (
-      'pub' => array (
+    'foreign keys' => array(
+      'pub' => array(
         'table' => 'pub',
-        'columns' => array (
+        'columns' => array(
           'pub_id' => 'pub_id',
         ),
       ),
-      'phylotree' => array (
+      'phylotree' => array(
         'table' => 'phylotree',
-        'columns' => array (
+        'columns' => array(
           'phylotree_id' => 'phylotree_id',
         ),
       ),
@@ -10087,36 +10087,36 @@ function tripal_core_chado_schema_v1_2_phylotree_pub() {
  *
  */
 function tripal_core_chado_schema_v1_2_project() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'project_id' => array (
+    'fields' => array(
+      'project_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'name' => array (
+      'name' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'description' => array (
+      'description' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => true,
+        'not null' => TRUE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'project_id',
     ),
-    'unique keys' => array (
-      'project_c1' => array (
+    'unique keys' => array(
+      'project_c1' => array(
         0 => 'name',
       ),
     ),
-    'foreign keys' => array (
+    'foreign keys' => array(
     ),
   );
   return $description;
@@ -10135,52 +10135,52 @@ function tripal_core_chado_schema_v1_2_project() {
  *
  */
 function tripal_core_chado_schema_v1_2_project_contact() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'project_contact_id' => array (
+    'fields' => array(
+      'project_contact_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'project_id' => array (
+      'project_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'contact_id' => array (
+      'contact_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'project_contact_id',
     ),
-    'unique keys' => array (
-      'project_contact_c1' => array (
+    'unique keys' => array(
+      'project_contact_c1' => array(
         0 => 'project_id',
         1 => 'contact_id',
       ),
     ),
-    'indexes' => array (
-      'project_contact_idx1' => array (
+    'indexes' => array(
+      'project_contact_idx1' => array(
         0 => 'project_id',
       ),
-      'project_contact_idx2' => array (
+      'project_contact_idx2' => array(
         0 => 'contact_id',
       ),
     ),
-    'foreign keys' => array (
-      'contact' => array (
+    'foreign keys' => array(
+      'contact' => array(
         'table' => 'contact',
-        'columns' => array (
+        'columns' => array(
           'contact_id' => 'contact_id',
         ),
       ),
-      'project' => array (
+      'project' => array(
         'table' => 'project',
-        'columns' => array (
+        'columns' => array(
           'project_id' => 'project_id',
         ),
       ),
@@ -10202,52 +10202,52 @@ function tripal_core_chado_schema_v1_2_project_contact() {
  *
  */
 function tripal_core_chado_schema_v1_2_project_pub() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'project_pub_id' => array (
+    'fields' => array(
+      'project_pub_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'project_id' => array (
+      'project_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'pub_id' => array (
+      'pub_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'project_pub_id',
     ),
-    'unique keys' => array (
-      'project_pub_c1' => array (
+    'unique keys' => array(
+      'project_pub_c1' => array(
         0 => 'project_id',
         1 => 'pub_id',
       ),
     ),
-    'indexes' => array (
-      'project_pub_idx1' => array (
+    'indexes' => array(
+      'project_pub_idx1' => array(
         0 => 'project_id',
       ),
-      'project_pub_idx2' => array (
+      'project_pub_idx2' => array(
         0 => 'pub_id',
       ),
     ),
-    'foreign keys' => array (
-      'pub' => array (
+    'foreign keys' => array(
+      'pub' => array(
         'table' => 'pub',
-        'columns' => array (
+        'columns' => array(
           'pub_id' => 'pub_id',
         ),
       ),
-      'project' => array (
+      'project' => array(
         'table' => 'project',
-        'columns' => array (
+        'columns' => array(
           'project_id' => 'project_id',
         ),
       ),
@@ -10269,50 +10269,50 @@ function tripal_core_chado_schema_v1_2_project_pub() {
  *
  */
 function tripal_core_chado_schema_v1_2_project_relationship() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'project_relationship_id' => array (
+    'fields' => array(
+      'project_relationship_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'subject_project_id' => array (
+      'subject_project_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'object_project_id' => array (
+      'object_project_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'type_id' => array (
+      'type_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'project_relationship_id',
     ),
-    'unique keys' => array (
-      'project_relationship_c1' => array (
+    'unique keys' => array(
+      'project_relationship_c1' => array(
         0 => 'subject_project_id',
         1 => 'object_project_id',
         2 => 'type_id',
       ),
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'type_id' => 'cvterm_id',
         ),
       ),
-      'project' => array (
+      'project' => array(
         'table' => 'project',
-        'columns' => array (
+        'columns' => array(
           'subject_project_id' => 'project_id',
           'object_project_id' => 'project_id',
         ),
@@ -10335,56 +10335,56 @@ function tripal_core_chado_schema_v1_2_project_relationship() {
  *
  */
 function tripal_core_chado_schema_v1_2_projectprop() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'projectprop_id' => array (
+    'fields' => array(
+      'projectprop_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'project_id' => array (
+      'project_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'type_id' => array (
+      'type_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'value' => array (
+      'value' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'rank' => array (
+      'rank' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 0,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'projectprop_id',
     ),
-    'unique keys' => array (
-      'projectprop_c1' => array (
+    'unique keys' => array(
+      'projectprop_c1' => array(
         0 => 'project_id',
         1 => 'type_id',
         2 => 'rank',
       ),
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'type_id' => 'cvterm_id',
         ),
       ),
-      'project' => array (
+      'project' => array(
         'table' => 'project',
-        'columns' => array (
+        'columns' => array(
           'project_id' => 'project_id',
         ),
       ),
@@ -10406,90 +10406,90 @@ function tripal_core_chado_schema_v1_2_projectprop() {
  *
  */
 function tripal_core_chado_schema_v1_2_protocol() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'protocol_id' => array (
+    'fields' => array(
+      'protocol_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'type_id' => array (
+      'type_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'pub_id' => array (
+      'pub_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'dbxref_id' => array (
+      'dbxref_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'name' => array (
+      'name' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'uri' => array (
+      'uri' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'protocoldescription' => array (
+      'protocoldescription' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'hardwaredescription' => array (
+      'hardwaredescription' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'softwaredescription' => array (
+      'softwaredescription' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => false,
+        'not null' => FALSE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'protocol_id',
     ),
-    'unique keys' => array (
-      'protocol_c1' => array (
+    'unique keys' => array(
+      'protocol_c1' => array(
         0 => 'name',
       ),
     ),
-    'indexes' => array (
-      'protocol_idx1' => array (
+    'indexes' => array(
+      'protocol_idx1' => array(
         0 => 'type_id',
       ),
-      'protocol_idx2' => array (
+      'protocol_idx2' => array(
         0 => 'pub_id',
       ),
-      'protocol_idx3' => array (
+      'protocol_idx3' => array(
         0 => 'dbxref_id',
       ),
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'type_id' => 'cvterm_id',
         ),
       ),
-      'dbxref' => array (
+      'dbxref' => array(
         'table' => 'dbxref',
-        'columns' => array (
+        'columns' => array(
           'dbxref_id' => 'dbxref_id',
         ),
       ),
-      'pub' => array (
+      'pub' => array(
         'table' => 'pub',
-        'columns' => array (
+        'columns' => array(
           'pub_id' => 'pub_id',
         ),
       ),
@@ -10511,71 +10511,71 @@ function tripal_core_chado_schema_v1_2_protocol() {
  *
  */
 function tripal_core_chado_schema_v1_2_protocolparam() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'protocolparam_id' => array (
+    'fields' => array(
+      'protocolparam_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'protocol_id' => array (
+      'protocol_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'name' => array (
+      'name' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'datatype_id' => array (
+      'datatype_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'unittype_id' => array (
+      'unittype_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'value' => array (
+      'value' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'rank' => array (
+      'rank' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 0,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'protocolparam_id',
     ),
-    'indexes' => array (
-      'protocolparam_idx1' => array (
+    'indexes' => array(
+      'protocolparam_idx1' => array(
         0 => 'protocol_id',
       ),
-      'protocolparam_idx2' => array (
+      'protocolparam_idx2' => array(
         0 => 'datatype_id',
       ),
-      'protocolparam_idx3' => array (
+      'protocolparam_idx3' => array(
         0 => 'unittype_id',
       ),
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'datatype_id' => 'cvterm_id',
           'unittype_id' => 'cvterm_id',
         ),
       ),
-      'protocol' => array (
+      'protocol' => array(
         'table' => 'protocol',
-        'columns' => array (
+        'columns' => array(
           'protocol_id' => 'protocol_id',
         ),
       ),
@@ -10597,106 +10597,106 @@ function tripal_core_chado_schema_v1_2_protocolparam() {
  *
  */
 function tripal_core_chado_schema_v1_2_pub() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'pub_id' => array (
+    'fields' => array(
+      'pub_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'title' => array (
+      'title' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'volumetitle' => array (
+      'volumetitle' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'volume' => array (
+      'volume' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'series_name' => array (
+      'series_name' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'issue' => array (
+      'issue' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'pyear' => array (
+      'pyear' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'pages' => array (
+      'pages' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'miniref' => array (
+      'miniref' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'uniquename' => array (
+      'uniquename' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'type_id' => array (
+      'type_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'is_obsolete' => array (
+      'is_obsolete' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'boolean',
-        'not null' => false,
+        'not null' => FALSE,
         'default' => 'als',
       ),
-      'publisher' => array (
+      'publisher' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'pubplace' => array (
+      'pubplace' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => false,
+        'not null' => FALSE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'pub_id',
     ),
-    'unique keys' => array (
-      'pub_c1' => array (
+    'unique keys' => array(
+      'pub_c1' => array(
         0 => 'uniquename',
       ),
     ),
-    'indexes' => array (
-      'pub_idx1' => array (
+    'indexes' => array(
+      'pub_idx1' => array(
         0 => 'type_id',
       ),
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'type_id' => 'cvterm_id',
         ),
       ),
@@ -10718,58 +10718,58 @@ function tripal_core_chado_schema_v1_2_pub() {
  *
  */
 function tripal_core_chado_schema_v1_2_pub_dbxref() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'pub_dbxref_id' => array (
+    'fields' => array(
+      'pub_dbxref_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'pub_id' => array (
+      'pub_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'dbxref_id' => array (
+      'dbxref_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'is_current' => array (
+      'is_current' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'boolean',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 'ru',
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'pub_dbxref_id',
     ),
-    'unique keys' => array (
-      'pub_dbxref_c1' => array (
+    'unique keys' => array(
+      'pub_dbxref_c1' => array(
         0 => 'pub_id',
         1 => 'dbxref_id',
       ),
     ),
-    'indexes' => array (
-      'pub_dbxref_idx1' => array (
+    'indexes' => array(
+      'pub_dbxref_idx1' => array(
         0 => 'pub_id',
       ),
-      'pub_dbxref_idx2' => array (
+      'pub_dbxref_idx2' => array(
         0 => 'dbxref_id',
       ),
     ),
-    'foreign keys' => array (
-      'dbxref' => array (
+    'foreign keys' => array(
+      'dbxref' => array(
         'table' => 'dbxref',
-        'columns' => array (
+        'columns' => array(
           'dbxref_id' => 'dbxref_id',
         ),
       ),
-      'pub' => array (
+      'pub' => array(
         'table' => 'pub',
-        'columns' => array (
+        'columns' => array(
           'pub_id' => 'pub_id',
         ),
       ),
@@ -10791,61 +10791,61 @@ function tripal_core_chado_schema_v1_2_pub_dbxref() {
  *
  */
 function tripal_core_chado_schema_v1_2_pub_relationship() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'pub_relationship_id' => array (
+    'fields' => array(
+      'pub_relationship_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'subject_id' => array (
+      'subject_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'object_id' => array (
+      'object_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'type_id' => array (
+      'type_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'pub_relationship_id',
     ),
-    'unique keys' => array (
-      'pub_relationship_c1' => array (
+    'unique keys' => array(
+      'pub_relationship_c1' => array(
         0 => 'subject_id',
         1 => 'object_id',
         2 => 'type_id',
       ),
     ),
-    'indexes' => array (
-      'pub_relationship_idx1' => array (
+    'indexes' => array(
+      'pub_relationship_idx1' => array(
         0 => 'subject_id',
       ),
-      'pub_relationship_idx2' => array (
+      'pub_relationship_idx2' => array(
         0 => 'object_id',
       ),
-      'pub_relationship_idx3' => array (
+      'pub_relationship_idx3' => array(
         0 => 'type_id',
       ),
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'type_id' => 'cvterm_id',
         ),
       ),
-      'pub' => array (
+      'pub' => array(
         'table' => 'pub',
-        'columns' => array (
+        'columns' => array(
           'subject_id' => 'pub_id',
           'object_id' => 'pub_id',
         ),
@@ -10868,67 +10868,67 @@ function tripal_core_chado_schema_v1_2_pub_relationship() {
  *
  */
 function tripal_core_chado_schema_v1_2_pubauthor() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'pubauthor_id' => array (
+    'fields' => array(
+      'pubauthor_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'pub_id' => array (
+      'pub_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'rank' => array (
+      'rank' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'editor' => array (
+      'editor' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'boolean',
-        'not null' => false,
+        'not null' => FALSE,
         'default' => 'als',
       ),
-      'surname' => array (
+      'surname' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '100',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'givennames' => array (
+      'givennames' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '100',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'suffix' => array (
+      'suffix' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '100',
-        'not null' => false,
+        'not null' => FALSE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'pubauthor_id',
     ),
-    'unique keys' => array (
-      'pubauthor_c1' => array (
+    'unique keys' => array(
+      'pubauthor_c1' => array(
         0 => 'pub_id',
         1 => 'rank',
       ),
     ),
-    'indexes' => array (
-      'pubauthor_idx2' => array (
+    'indexes' => array(
+      'pubauthor_idx2' => array(
         0 => 'pub_id',
       ),
     ),
-    'foreign keys' => array (
-      'pub' => array (
+    'foreign keys' => array(
+      'pub' => array(
         'table' => 'pub',
-        'columns' => array (
+        'columns' => array(
           'pub_id' => 'pub_id',
         ),
       ),
@@ -10950,63 +10950,63 @@ function tripal_core_chado_schema_v1_2_pubauthor() {
  *
  */
 function tripal_core_chado_schema_v1_2_pubprop() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'pubprop_id' => array (
+    'fields' => array(
+      'pubprop_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'pub_id' => array (
+      'pub_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'type_id' => array (
+      'type_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'value' => array (
+      'value' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'rank' => array (
+      'rank' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => false,
+        'not null' => FALSE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'pubprop_id',
     ),
-    'unique keys' => array (
-      'pubprop_c1' => array (
+    'unique keys' => array(
+      'pubprop_c1' => array(
         0 => 'pub_id',
         1 => 'type_id',
         2 => 'rank',
       ),
     ),
-    'indexes' => array (
-      'pubprop_idx1' => array (
+    'indexes' => array(
+      'pubprop_idx1' => array(
         0 => 'pub_id',
       ),
-      'pubprop_idx2' => array (
+      'pubprop_idx2' => array(
         0 => 'type_id',
       ),
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'type_id' => 'cvterm_id',
         ),
       ),
-      'pub' => array (
+      'pub' => array(
         'table' => 'pub',
-        'columns' => array (
+        'columns' => array(
           'pub_id' => 'pub_id',
         ),
       ),
@@ -11028,96 +11028,96 @@ function tripal_core_chado_schema_v1_2_pubprop() {
  *
  */
 function tripal_core_chado_schema_v1_2_quantification() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'quantification_id' => array (
+    'fields' => array(
+      'quantification_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'acquisition_id' => array (
+      'acquisition_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'operator_id' => array (
+      'operator_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'protocol_id' => array (
+      'protocol_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'analysis_id' => array (
+      'analysis_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'quantificationdate' => array (
+      'quantificationdate' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'datetime',
-        'not null' => false,
+        'not null' => FALSE,
         'default' => 'ow(',
       ),
-      'name' => array (
+      'name' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'uri' => array (
+      'uri' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => false,
+        'not null' => FALSE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'quantification_id',
     ),
-    'unique keys' => array (
-      'quantification_c1' => array (
+    'unique keys' => array(
+      'quantification_c1' => array(
         0 => 'name',
         1 => 'analysis_id',
       ),
     ),
-    'indexes' => array (
-      'quantification_idx1' => array (
+    'indexes' => array(
+      'quantification_idx1' => array(
         0 => 'acquisition_id',
       ),
-      'quantification_idx2' => array (
+      'quantification_idx2' => array(
         0 => 'operator_id',
       ),
-      'quantification_idx3' => array (
+      'quantification_idx3' => array(
         0 => 'protocol_id',
       ),
-      'quantification_idx4' => array (
+      'quantification_idx4' => array(
         0 => 'analysis_id',
       ),
     ),
-    'foreign keys' => array (
-      'analysis' => array (
+    'foreign keys' => array(
+      'analysis' => array(
         'table' => 'analysis',
-        'columns' => array (
+        'columns' => array(
           'analysis_id' => 'analysis_id',
         ),
       ),
-      'contact' => array (
+      'contact' => array(
         'table' => 'contact',
-        'columns' => array (
+        'columns' => array(
           'operator_id' => 'contact_id',
         ),
       ),
-      'protocol' => array (
+      'protocol' => array(
         'table' => 'protocol',
-        'columns' => array (
+        'columns' => array(
           'protocol_id' => 'protocol_id',
         ),
       ),
-      'acquisition' => array (
+      'acquisition' => array(
         'table' => 'acquisition',
-        'columns' => array (
+        'columns' => array(
           'acquisition_id' => 'acquisition_id',
         ),
       ),
@@ -11139,61 +11139,61 @@ function tripal_core_chado_schema_v1_2_quantification() {
  *
  */
 function tripal_core_chado_schema_v1_2_quantification_relationship() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'quantification_relationship_id' => array (
+    'fields' => array(
+      'quantification_relationship_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'subject_id' => array (
+      'subject_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'type_id' => array (
+      'type_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'object_id' => array (
+      'object_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'quantification_relationship_id',
     ),
-    'unique keys' => array (
-      'quantification_relationship_c1' => array (
+    'unique keys' => array(
+      'quantification_relationship_c1' => array(
         0 => 'subject_id',
         1 => 'object_id',
         2 => 'type_id',
       ),
     ),
-    'indexes' => array (
-      'quantification_relationship_idx1' => array (
+    'indexes' => array(
+      'quantification_relationship_idx1' => array(
         0 => 'subject_id',
       ),
-      'quantification_relationship_idx2' => array (
+      'quantification_relationship_idx2' => array(
         0 => 'type_id',
       ),
-      'quantification_relationship_idx3' => array (
+      'quantification_relationship_idx3' => array(
         0 => 'object_id',
       ),
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'type_id' => 'cvterm_id',
         ),
       ),
-      'quantification' => array (
+      'quantification' => array(
         'table' => 'quantification',
-        'columns' => array (
+        'columns' => array(
           'subject_id' => 'quantification_id',
           'object_id' => 'quantification_id',
         ),
@@ -11216,64 +11216,64 @@ function tripal_core_chado_schema_v1_2_quantification_relationship() {
  *
  */
 function tripal_core_chado_schema_v1_2_quantificationprop() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'quantificationprop_id' => array (
+    'fields' => array(
+      'quantificationprop_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'quantification_id' => array (
+      'quantification_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'type_id' => array (
+      'type_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'value' => array (
+      'value' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'rank' => array (
+      'rank' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 0,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'quantificationprop_id',
     ),
-    'unique keys' => array (
-      'quantificationprop_c1' => array (
+    'unique keys' => array(
+      'quantificationprop_c1' => array(
         0 => 'quantification_id',
         1 => 'type_id',
         2 => 'rank',
       ),
     ),
-    'indexes' => array (
-      'quantificationprop_idx1' => array (
+    'indexes' => array(
+      'quantificationprop_idx1' => array(
         0 => 'quantification_id',
       ),
-      'quantificationprop_idx2' => array (
+      'quantificationprop_idx2' => array(
         0 => 'type_id',
       ),
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'type_id' => 'cvterm_id',
         ),
       ),
-      'quantification' => array (
+      'quantification' => array(
         'table' => 'quantification',
-        'columns' => array (
+        'columns' => array(
           'quantification_id' => 'quantification_id',
         ),
       ),
@@ -11295,95 +11295,95 @@ function tripal_core_chado_schema_v1_2_quantificationprop() {
  *
  */
 function tripal_core_chado_schema_v1_2_stock() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'stock_id' => array (
+    'fields' => array(
+      'stock_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'dbxref_id' => array (
+      'dbxref_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'organism_id' => array (
+      'organism_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'name' => array (
+      'name' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'uniquename' => array (
+      'uniquename' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'description' => array (
+      'description' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'type_id' => array (
+      'type_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'is_obsolete' => array (
+      'is_obsolete' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'boolean',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 'als',
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'stock_id',
     ),
-    'unique keys' => array (
-      'stock_c1' => array (
+    'unique keys' => array(
+      'stock_c1' => array(
         0 => 'organism_id',
         1 => 'uniquename',
         2 => 'type_id',
       ),
     ),
-    'indexes' => array (
-      'stock_idx1' => array (
+    'indexes' => array(
+      'stock_idx1' => array(
         0 => 'dbxref_id',
       ),
-      'stock_idx2' => array (
+      'stock_idx2' => array(
         0 => 'organism_id',
       ),
-      'stock_idx3' => array (
+      'stock_idx3' => array(
         0 => 'type_id',
       ),
-      'stock_idx4' => array (
+      'stock_idx4' => array(
         0 => 'uniquename',
       ),
-      'stock_name_ind1' => array (
+      'stock_name_ind1' => array(
         0 => 'name',
       ),
     ),
-    'foreign keys' => array (
-      'organism' => array (
+    'foreign keys' => array(
+      'organism' => array(
         'table' => 'organism',
-        'columns' => array (
+        'columns' => array(
           'organism_id' => 'organism_id',
         ),
       ),
-      'cvterm' => array (
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'type_id' => 'cvterm_id',
         ),
       ),
-      'dbxref' => array (
+      'dbxref' => array(
         'table' => 'dbxref',
-        'columns' => array (
+        'columns' => array(
           'dbxref_id' => 'dbxref_id',
         ),
       ),
@@ -11405,80 +11405,80 @@ function tripal_core_chado_schema_v1_2_stock() {
  *
  */
 function tripal_core_chado_schema_v1_2_stock_cvterm() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'stock_cvterm_id' => array (
+    'fields' => array(
+      'stock_cvterm_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'stock_id' => array (
+      'stock_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'cvterm_id' => array (
+      'cvterm_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'pub_id' => array (
+      'pub_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'is_not' => array (
+      'is_not' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'boolean',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 'als',
       ),
-      'rank' => array (
+      'rank' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 0,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'stock_cvterm_id',
     ),
-    'unique keys' => array (
-      'stock_cvterm_c1' => array (
+    'unique keys' => array(
+      'stock_cvterm_c1' => array(
         0 => 'stock_id',
         1 => 'cvterm_id',
         2 => 'pub_id',
         3 => 'rank',
       ),
     ),
-    'indexes' => array (
-      'stock_cvterm_idx1' => array (
+    'indexes' => array(
+      'stock_cvterm_idx1' => array(
         0 => 'stock_id',
       ),
-      'stock_cvterm_idx2' => array (
+      'stock_cvterm_idx2' => array(
         0 => 'cvterm_id',
       ),
-      'stock_cvterm_idx3' => array (
+      'stock_cvterm_idx3' => array(
         0 => 'pub_id',
       ),
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'cvterm_id' => 'cvterm_id',
         ),
       ),
-      'pub' => array (
+      'pub' => array(
         'table' => 'pub',
-        'columns' => array (
+        'columns' => array(
           'pub_id' => 'pub_id',
         ),
       ),
-      'stock' => array (
+      'stock' => array(
         'table' => 'stock',
-        'columns' => array (
+        'columns' => array(
           'stock_id' => 'stock_id',
         ),
       ),
@@ -11500,64 +11500,64 @@ function tripal_core_chado_schema_v1_2_stock_cvterm() {
  *
  */
 function tripal_core_chado_schema_v1_2_stock_cvtermprop() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'stock_cvtermprop_id' => array (
+    'fields' => array(
+      'stock_cvtermprop_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'stock_cvterm_id' => array (
+      'stock_cvterm_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'type_id' => array (
+      'type_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'value' => array (
+      'value' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'rank' => array (
+      'rank' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 0,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'stock_cvtermprop_id',
     ),
-    'unique keys' => array (
-      'stock_cvtermprop_c1' => array (
+    'unique keys' => array(
+      'stock_cvtermprop_c1' => array(
         0 => 'stock_cvterm_id',
         1 => 'type_id',
         2 => 'rank',
       ),
     ),
-    'indexes' => array (
-      'stock_cvtermprop_idx1' => array (
+    'indexes' => array(
+      'stock_cvtermprop_idx1' => array(
         0 => 'stock_cvterm_id',
       ),
-      'stock_cvtermprop_idx2' => array (
+      'stock_cvtermprop_idx2' => array(
         0 => 'type_id',
       ),
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'type_id' => 'cvterm_id',
         ),
       ),
-      'stock_cvterm' => array (
+      'stock_cvterm' => array(
         'table' => 'stock_cvterm',
-        'columns' => array (
+        'columns' => array(
           'stock_cvterm_id' => 'stock_cvterm_id',
         ),
       ),
@@ -11579,58 +11579,58 @@ function tripal_core_chado_schema_v1_2_stock_cvtermprop() {
  *
  */
 function tripal_core_chado_schema_v1_2_stock_dbxref() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'stock_dbxref_id' => array (
+    'fields' => array(
+      'stock_dbxref_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'stock_id' => array (
+      'stock_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'dbxref_id' => array (
+      'dbxref_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'is_current' => array (
+      'is_current' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'boolean',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 'ru',
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'stock_dbxref_id',
     ),
-    'unique keys' => array (
-      'stock_dbxref_c1' => array (
+    'unique keys' => array(
+      'stock_dbxref_c1' => array(
         0 => 'stock_id',
         1 => 'dbxref_id',
       ),
     ),
-    'indexes' => array (
-      'stock_dbxref_idx1' => array (
+    'indexes' => array(
+      'stock_dbxref_idx1' => array(
         0 => 'stock_id',
       ),
-      'stock_dbxref_idx2' => array (
+      'stock_dbxref_idx2' => array(
         0 => 'dbxref_id',
       ),
     ),
-    'foreign keys' => array (
-      'dbxref' => array (
+    'foreign keys' => array(
+      'dbxref' => array(
         'table' => 'dbxref',
-        'columns' => array (
+        'columns' => array(
           'dbxref_id' => 'dbxref_id',
         ),
       ),
-      'stock' => array (
+      'stock' => array(
         'table' => 'stock',
-        'columns' => array (
+        'columns' => array(
           'stock_id' => 'stock_id',
         ),
       ),
@@ -11652,64 +11652,64 @@ function tripal_core_chado_schema_v1_2_stock_dbxref() {
  *
  */
 function tripal_core_chado_schema_v1_2_stock_dbxrefprop() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'stock_dbxrefprop_id' => array (
+    'fields' => array(
+      'stock_dbxrefprop_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'stock_dbxref_id' => array (
+      'stock_dbxref_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'type_id' => array (
+      'type_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'value' => array (
+      'value' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'rank' => array (
+      'rank' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 0,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'stock_dbxrefprop_id',
     ),
-    'unique keys' => array (
-      'stock_dbxrefprop_c1' => array (
+    'unique keys' => array(
+      'stock_dbxrefprop_c1' => array(
         0 => 'stock_dbxref_id',
         1 => 'type_id',
         2 => 'rank',
       ),
     ),
-    'indexes' => array (
-      'stock_dbxrefprop_idx1' => array (
+    'indexes' => array(
+      'stock_dbxrefprop_idx1' => array(
         0 => 'stock_dbxref_id',
       ),
-      'stock_dbxrefprop_idx2' => array (
+      'stock_dbxrefprop_idx2' => array(
         0 => 'type_id',
       ),
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'type_id' => 'cvterm_id',
         ),
       ),
-      'stock_dbxref' => array (
+      'stock_dbxref' => array(
         'table' => 'stock_dbxref',
-        'columns' => array (
+        'columns' => array(
           'stock_dbxref_id' => 'stock_dbxref_id',
         ),
       ),
@@ -11731,52 +11731,52 @@ function tripal_core_chado_schema_v1_2_stock_dbxrefprop() {
  *
  */
 function tripal_core_chado_schema_v1_2_stock_genotype() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'stock_genotype_id' => array (
+    'fields' => array(
+      'stock_genotype_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'stock_id' => array (
+      'stock_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'genotype_id' => array (
+      'genotype_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'stock_genotype_id',
     ),
-    'unique keys' => array (
-      'stock_genotype_c1' => array (
+    'unique keys' => array(
+      'stock_genotype_c1' => array(
         0 => 'stock_id',
         1 => 'genotype_id',
       ),
     ),
-    'indexes' => array (
-      'stock_genotype_idx1' => array (
+    'indexes' => array(
+      'stock_genotype_idx1' => array(
         0 => 'stock_id',
       ),
-      'stock_genotype_idx2' => array (
+      'stock_genotype_idx2' => array(
         0 => 'genotype_id',
       ),
     ),
-    'foreign keys' => array (
-      'genotype' => array (
+    'foreign keys' => array(
+      'genotype' => array(
         'table' => 'genotype',
-        'columns' => array (
+        'columns' => array(
           'genotype_id' => 'genotype_id',
         ),
       ),
-      'stock' => array (
+      'stock' => array(
         'table' => 'stock',
-        'columns' => array (
+        'columns' => array(
           'stock_id' => 'stock_id',
         ),
       ),
@@ -11798,52 +11798,52 @@ function tripal_core_chado_schema_v1_2_stock_genotype() {
  *
  */
 function tripal_core_chado_schema_v1_2_stock_pub() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'stock_pub_id' => array (
+    'fields' => array(
+      'stock_pub_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'stock_id' => array (
+      'stock_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'pub_id' => array (
+      'pub_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'stock_pub_id',
     ),
-    'unique keys' => array (
-      'stock_pub_c1' => array (
+    'unique keys' => array(
+      'stock_pub_c1' => array(
         0 => 'stock_id',
         1 => 'pub_id',
       ),
     ),
-    'indexes' => array (
-      'stock_pub_idx1' => array (
+    'indexes' => array(
+      'stock_pub_idx1' => array(
         0 => 'stock_id',
       ),
-      'stock_pub_idx2' => array (
+      'stock_pub_idx2' => array(
         0 => 'pub_id',
       ),
     ),
-    'foreign keys' => array (
-      'pub' => array (
+    'foreign keys' => array(
+      'pub' => array(
         'table' => 'pub',
-        'columns' => array (
+        'columns' => array(
           'pub_id' => 'pub_id',
         ),
       ),
-      'stock' => array (
+      'stock' => array(
         'table' => 'stock',
-        'columns' => array (
+        'columns' => array(
           'stock_id' => 'stock_id',
         ),
       ),
@@ -11865,73 +11865,73 @@ function tripal_core_chado_schema_v1_2_stock_pub() {
  *
  */
 function tripal_core_chado_schema_v1_2_stock_relationship() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'stock_relationship_id' => array (
+    'fields' => array(
+      'stock_relationship_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'subject_id' => array (
+      'subject_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'object_id' => array (
+      'object_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'type_id' => array (
+      'type_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'value' => array (
+      'value' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'rank' => array (
+      'rank' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 0,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'stock_relationship_id',
     ),
-    'unique keys' => array (
-      'stock_relationship_c1' => array (
+    'unique keys' => array(
+      'stock_relationship_c1' => array(
         0 => 'subject_id',
         1 => 'object_id',
         2 => 'type_id',
         3 => 'rank',
       ),
     ),
-    'indexes' => array (
-      'stock_relationship_idx1' => array (
+    'indexes' => array(
+      'stock_relationship_idx1' => array(
         0 => 'subject_id',
       ),
-      'stock_relationship_idx2' => array (
+      'stock_relationship_idx2' => array(
         0 => 'object_id',
       ),
-      'stock_relationship_idx3' => array (
+      'stock_relationship_idx3' => array(
         0 => 'type_id',
       ),
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'type_id' => 'cvterm_id',
         ),
       ),
-      'stock' => array (
+      'stock' => array(
         'table' => 'stock',
-        'columns' => array (
+        'columns' => array(
           'subject_id' => 'stock_id',
           'object_id' => 'stock_id',
         ),
@@ -11954,49 +11954,49 @@ function tripal_core_chado_schema_v1_2_stock_relationship() {
  *
  */
 function tripal_core_chado_schema_v1_2_stock_relationship_cvterm() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'stock_relationship_cvterm_id' => array (
+    'fields' => array(
+      'stock_relationship_cvterm_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'stock_relationship_id' => array (
+      'stock_relationship_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'cvterm_id' => array (
+      'cvterm_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'pub_id' => array (
+      'pub_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => false,
+        'not null' => FALSE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'stock_relationship_cvterm_id',
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'cvterm_id' => 'cvterm_id',
         ),
       ),
-      'pub' => array (
+      'pub' => array(
         'table' => 'pub',
-        'columns' => array (
+        'columns' => array(
           'pub_id' => 'pub_id',
         ),
       ),
-      'stock_relationship' => array (
+      'stock_relationship' => array(
         'table' => 'stock_relationship',
-        'columns' => array (
+        'columns' => array(
           'stock_relationship_id' => 'stock_relationship_id',
         ),
       ),
@@ -12018,52 +12018,52 @@ function tripal_core_chado_schema_v1_2_stock_relationship_cvterm() {
  *
  */
 function tripal_core_chado_schema_v1_2_stock_relationship_pub() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'stock_relationship_pub_id' => array (
+    'fields' => array(
+      'stock_relationship_pub_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'stock_relationship_id' => array (
+      'stock_relationship_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'pub_id' => array (
+      'pub_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'stock_relationship_pub_id',
     ),
-    'unique keys' => array (
-      'stock_relationship_pub_c1' => array (
+    'unique keys' => array(
+      'stock_relationship_pub_c1' => array(
         0 => 'stock_relationship_id',
         1 => 'pub_id',
       ),
     ),
-    'indexes' => array (
-      'stock_relationship_pub_idx1' => array (
+    'indexes' => array(
+      'stock_relationship_pub_idx1' => array(
         0 => 'stock_relationship_id',
       ),
-      'stock_relationship_pub_idx2' => array (
+      'stock_relationship_pub_idx2' => array(
         0 => 'pub_id',
       ),
     ),
-    'foreign keys' => array (
-      'pub' => array (
+    'foreign keys' => array(
+      'pub' => array(
         'table' => 'pub',
-        'columns' => array (
+        'columns' => array(
           'pub_id' => 'pub_id',
         ),
       ),
-      'stock_relationship' => array (
+      'stock_relationship' => array(
         'table' => 'stock_relationship',
-        'columns' => array (
+        'columns' => array(
           'stock_relationship_id' => 'stock_relationship_id',
         ),
       ),
@@ -12085,69 +12085,69 @@ function tripal_core_chado_schema_v1_2_stock_relationship_pub() {
  *
  */
 function tripal_core_chado_schema_v1_2_stockcollection() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'stockcollection_id' => array (
+    'fields' => array(
+      'stockcollection_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'type_id' => array (
+      'type_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'contact_id' => array (
+      'contact_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'name' => array (
+      'name' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'uniquename' => array (
+      'uniquename' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => true,
+        'not null' => TRUE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'stockcollection_id',
     ),
-    'unique keys' => array (
-      'stockcollection_c1' => array (
+    'unique keys' => array(
+      'stockcollection_c1' => array(
         0 => 'uniquename',
         1 => 'type_id',
       ),
     ),
-    'indexes' => array (
-      'stockcollection_idx1' => array (
+    'indexes' => array(
+      'stockcollection_idx1' => array(
         0 => 'contact_id',
       ),
-      'stockcollection_idx2' => array (
+      'stockcollection_idx2' => array(
         0 => 'type_id',
       ),
-      'stockcollection_idx3' => array (
+      'stockcollection_idx3' => array(
         0 => 'uniquename',
       ),
-      'stockcollection_name_ind1' => array (
+      'stockcollection_name_ind1' => array(
         0 => 'name',
       ),
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'type_id' => 'cvterm_id',
         ),
       ),
-      'contact' => array (
+      'contact' => array(
         'table' => 'contact',
-        'columns' => array (
+        'columns' => array(
           'contact_id' => 'contact_id',
         ),
       ),
@@ -12169,52 +12169,52 @@ function tripal_core_chado_schema_v1_2_stockcollection() {
  *
  */
 function tripal_core_chado_schema_v1_2_stockcollection_stock() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'stockcollection_stock_id' => array (
+    'fields' => array(
+      'stockcollection_stock_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'stockcollection_id' => array (
+      'stockcollection_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'stock_id' => array (
+      'stock_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'stockcollection_stock_id',
     ),
-    'unique keys' => array (
-      'stockcollection_stock_c1' => array (
+    'unique keys' => array(
+      'stockcollection_stock_c1' => array(
         0 => 'stockcollection_id',
         1 => 'stock_id',
       ),
     ),
-    'indexes' => array (
-      'stockcollection_stock_idx1' => array (
+    'indexes' => array(
+      'stockcollection_stock_idx1' => array(
         0 => 'stockcollection_id',
       ),
-      'stockcollection_stock_idx2' => array (
+      'stockcollection_stock_idx2' => array(
         0 => 'stock_id',
       ),
     ),
-    'foreign keys' => array (
-      'stock' => array (
+    'foreign keys' => array(
+      'stock' => array(
         'table' => 'stock',
-        'columns' => array (
+        'columns' => array(
           'stock_id' => 'stock_id',
         ),
       ),
-      'stockcollection' => array (
+      'stockcollection' => array(
         'table' => 'stockcollection',
-        'columns' => array (
+        'columns' => array(
           'stockcollection_id' => 'stockcollection_id',
         ),
       ),
@@ -12236,64 +12236,64 @@ function tripal_core_chado_schema_v1_2_stockcollection_stock() {
  *
  */
 function tripal_core_chado_schema_v1_2_stockcollectionprop() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'stockcollectionprop_id' => array (
+    'fields' => array(
+      'stockcollectionprop_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'stockcollection_id' => array (
+      'stockcollection_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'type_id' => array (
+      'type_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'value' => array (
+      'value' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'rank' => array (
+      'rank' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 0,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'stockcollectionprop_id',
     ),
-    'unique keys' => array (
-      'stockcollectionprop_c1' => array (
+    'unique keys' => array(
+      'stockcollectionprop_c1' => array(
         0 => 'stockcollection_id',
         1 => 'type_id',
         2 => 'rank',
       ),
     ),
-    'indexes' => array (
-      'stockcollectionprop_idx1' => array (
+    'indexes' => array(
+      'stockcollectionprop_idx1' => array(
         0 => 'stockcollection_id',
       ),
-      'stockcollectionprop_idx2' => array (
+      'stockcollectionprop_idx2' => array(
         0 => 'type_id',
       ),
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'type_id' => 'cvterm_id',
         ),
       ),
-      'stockcollection' => array (
+      'stockcollection' => array(
         'table' => 'stockcollection',
-        'columns' => array (
+        'columns' => array(
           'stockcollection_id' => 'stockcollection_id',
         ),
       ),
@@ -12315,64 +12315,64 @@ function tripal_core_chado_schema_v1_2_stockcollectionprop() {
  *
  */
 function tripal_core_chado_schema_v1_2_stockprop() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'stockprop_id' => array (
+    'fields' => array(
+      'stockprop_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'stock_id' => array (
+      'stock_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'type_id' => array (
+      'type_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'value' => array (
+      'value' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'rank' => array (
+      'rank' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 0,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'stockprop_id',
     ),
-    'unique keys' => array (
-      'stockprop_c1' => array (
+    'unique keys' => array(
+      'stockprop_c1' => array(
         0 => 'stock_id',
         1 => 'type_id',
         2 => 'rank',
       ),
     ),
-    'indexes' => array (
-      'stockprop_idx1' => array (
+    'indexes' => array(
+      'stockprop_idx1' => array(
         0 => 'stock_id',
       ),
-      'stockprop_idx2' => array (
+      'stockprop_idx2' => array(
         0 => 'type_id',
       ),
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'type_id' => 'cvterm_id',
         ),
       ),
-      'stock' => array (
+      'stock' => array(
         'table' => 'stock',
-        'columns' => array (
+        'columns' => array(
           'stock_id' => 'stock_id',
         ),
       ),
@@ -12394,52 +12394,52 @@ function tripal_core_chado_schema_v1_2_stockprop() {
  *
  */
 function tripal_core_chado_schema_v1_2_stockprop_pub() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'stockprop_pub_id' => array (
+    'fields' => array(
+      'stockprop_pub_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'stockprop_id' => array (
+      'stockprop_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'pub_id' => array (
+      'pub_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'stockprop_pub_id',
     ),
-    'unique keys' => array (
-      'stockprop_pub_c1' => array (
+    'unique keys' => array(
+      'stockprop_pub_c1' => array(
         0 => 'stockprop_id',
         1 => 'pub_id',
       ),
     ),
-    'indexes' => array (
-      'stockprop_pub_idx1' => array (
+    'indexes' => array(
+      'stockprop_pub_idx1' => array(
         0 => 'stockprop_id',
       ),
-      'stockprop_pub_idx2' => array (
+      'stockprop_pub_idx2' => array(
         0 => 'pub_id',
       ),
     ),
-    'foreign keys' => array (
-      'pub' => array (
+    'foreign keys' => array(
+      'pub' => array(
         'table' => 'pub',
-        'columns' => array (
+        'columns' => array(
           'pub_id' => 'pub_id',
         ),
       ),
-      'stockprop' => array (
+      'stockprop' => array(
         'table' => 'stockprop',
-        'columns' => array (
+        'columns' => array(
           'stockprop_id' => 'stockprop_id',
         ),
       ),
@@ -12461,75 +12461,75 @@ function tripal_core_chado_schema_v1_2_stockprop_pub() {
  *
  */
 function tripal_core_chado_schema_v1_2_study() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'study_id' => array (
+    'fields' => array(
+      'study_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'contact_id' => array (
+      'contact_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'pub_id' => array (
+      'pub_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'dbxref_id' => array (
+      'dbxref_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'name' => array (
+      'name' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'description' => array (
+      'description' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => false,
+        'not null' => FALSE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'study_id',
     ),
-    'unique keys' => array (
-      'study_c1' => array (
+    'unique keys' => array(
+      'study_c1' => array(
         0 => 'name',
       ),
     ),
-    'indexes' => array (
-      'study_idx1' => array (
+    'indexes' => array(
+      'study_idx1' => array(
         0 => 'contact_id',
       ),
-      'study_idx2' => array (
+      'study_idx2' => array(
         0 => 'pub_id',
       ),
-      'study_idx3' => array (
+      'study_idx3' => array(
         0 => 'dbxref_id',
       ),
     ),
-    'foreign keys' => array (
-      'dbxref' => array (
+    'foreign keys' => array(
+      'dbxref' => array(
         'table' => 'dbxref',
-        'columns' => array (
+        'columns' => array(
           'dbxref_id' => 'dbxref_id',
         ),
       ),
-      'pub' => array (
+      'pub' => array(
         'table' => 'pub',
-        'columns' => array (
+        'columns' => array(
           'pub_id' => 'pub_id',
         ),
       ),
-      'contact' => array (
+      'contact' => array(
         'table' => 'contact',
-        'columns' => array (
+        'columns' => array(
           'contact_id' => 'contact_id',
         ),
       ),
@@ -12551,52 +12551,52 @@ function tripal_core_chado_schema_v1_2_study() {
  *
  */
 function tripal_core_chado_schema_v1_2_study_assay() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'study_assay_id' => array (
+    'fields' => array(
+      'study_assay_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'study_id' => array (
+      'study_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'assay_id' => array (
+      'assay_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'study_assay_id',
     ),
-    'unique keys' => array (
-      'study_assay_c1' => array (
+    'unique keys' => array(
+      'study_assay_c1' => array(
         0 => 'study_id',
         1 => 'assay_id',
       ),
     ),
-    'indexes' => array (
-      'study_assay_idx1' => array (
+    'indexes' => array(
+      'study_assay_idx1' => array(
         0 => 'study_id',
       ),
-      'study_assay_idx2' => array (
+      'study_assay_idx2' => array(
         0 => 'assay_id',
       ),
     ),
-    'foreign keys' => array (
-      'assay' => array (
+    'foreign keys' => array(
+      'assay' => array(
         'table' => 'assay',
-        'columns' => array (
+        'columns' => array(
           'assay_id' => 'assay_id',
         ),
       ),
-      'study' => array (
+      'study' => array(
         'table' => 'study',
-        'columns' => array (
+        'columns' => array(
           'study_id' => 'study_id',
         ),
       ),
@@ -12618,37 +12618,37 @@ function tripal_core_chado_schema_v1_2_study_assay() {
  *
  */
 function tripal_core_chado_schema_v1_2_studydesign() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'studydesign_id' => array (
+    'fields' => array(
+      'studydesign_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'study_id' => array (
+      'study_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'description' => array (
+      'description' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => false,
+        'not null' => FALSE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'studydesign_id',
     ),
-    'indexes' => array (
-      'studydesign_idx1' => array (
+    'indexes' => array(
+      'studydesign_idx1' => array(
         0 => 'study_id',
       ),
     ),
-    'foreign keys' => array (
-      'study' => array (
+    'foreign keys' => array(
+      'study' => array(
         'table' => 'study',
-        'columns' => array (
+        'columns' => array(
           'study_id' => 'study_id',
         ),
       ),
@@ -12670,64 +12670,64 @@ function tripal_core_chado_schema_v1_2_studydesign() {
  *
  */
 function tripal_core_chado_schema_v1_2_studydesignprop() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'studydesignprop_id' => array (
+    'fields' => array(
+      'studydesignprop_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'studydesign_id' => array (
+      'studydesign_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'type_id' => array (
+      'type_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'value' => array (
+      'value' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'rank' => array (
+      'rank' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 0,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'studydesignprop_id',
     ),
-    'unique keys' => array (
-      'studydesignprop_c1' => array (
+    'unique keys' => array(
+      'studydesignprop_c1' => array(
         0 => 'studydesign_id',
         1 => 'type_id',
         2 => 'rank',
       ),
     ),
-    'indexes' => array (
-      'studydesignprop_idx1' => array (
+    'indexes' => array(
+      'studydesignprop_idx1' => array(
         0 => 'studydesign_id',
       ),
-      'studydesignprop_idx2' => array (
+      'studydesignprop_idx2' => array(
         0 => 'type_id',
       ),
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'type_id' => 'cvterm_id',
         ),
       ),
-      'studydesign' => array (
+      'studydesign' => array(
         'table' => 'studydesign',
-        'columns' => array (
+        'columns' => array(
           'studydesign_id' => 'studydesign_id',
         ),
       ),
@@ -12749,56 +12749,56 @@ function tripal_core_chado_schema_v1_2_studydesignprop() {
  *
  */
 function tripal_core_chado_schema_v1_2_studyfactor() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'studyfactor_id' => array (
+    'fields' => array(
+      'studyfactor_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'studydesign_id' => array (
+      'studydesign_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'type_id' => array (
+      'type_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'name' => array (
+      'name' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'description' => array (
+      'description' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => false,
+        'not null' => FALSE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'studyfactor_id',
     ),
-    'indexes' => array (
-      'studyfactor_idx1' => array (
+    'indexes' => array(
+      'studyfactor_idx1' => array(
         0 => 'studydesign_id',
       ),
-      'studyfactor_idx2' => array (
+      'studyfactor_idx2' => array(
         0 => 'type_id',
       ),
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'type_id' => 'cvterm_id',
         ),
       ),
-      'studydesign' => array (
+      'studydesign' => array(
         'table' => 'studydesign',
-        'columns' => array (
+        'columns' => array(
           'studydesign_id' => 'studydesign_id',
         ),
       ),
@@ -12820,62 +12820,62 @@ function tripal_core_chado_schema_v1_2_studyfactor() {
  *
  */
 function tripal_core_chado_schema_v1_2_studyfactorvalue() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'studyfactorvalue_id' => array (
+    'fields' => array(
+      'studyfactorvalue_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'studyfactor_id' => array (
+      'studyfactor_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'assay_id' => array (
+      'assay_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'factorvalue' => array (
+      'factorvalue' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'name' => array (
+      'name' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'rank' => array (
+      'rank' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 0,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'studyfactorvalue_id',
     ),
-    'indexes' => array (
-      'studyfactorvalue_idx1' => array (
+    'indexes' => array(
+      'studyfactorvalue_idx1' => array(
         0 => 'studyfactor_id',
       ),
-      'studyfactorvalue_idx2' => array (
+      'studyfactorvalue_idx2' => array(
         0 => 'assay_id',
       ),
     ),
-    'foreign keys' => array (
-      'assay' => array (
+    'foreign keys' => array(
+      'assay' => array(
         'table' => 'assay',
-        'columns' => array (
+        'columns' => array(
           'assay_id' => 'assay_id',
         ),
       ),
-      'studyfactor' => array (
+      'studyfactor' => array(
         'table' => 'studyfactor',
-        'columns' => array (
+        'columns' => array(
           'studyfactor_id' => 'studyfactor_id',
         ),
       ),
@@ -12897,64 +12897,64 @@ function tripal_core_chado_schema_v1_2_studyfactorvalue() {
  *
  */
 function tripal_core_chado_schema_v1_2_studyprop() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'studyprop_id' => array (
+    'fields' => array(
+      'studyprop_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'study_id' => array (
+      'study_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'type_id' => array (
+      'type_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'value' => array (
+      'value' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'rank' => array (
+      'rank' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 0,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'studyprop_id',
     ),
-    'unique keys' => array (
-      'study_id' => array (
+    'unique keys' => array(
+      'study_id' => array(
         0 => 'study_id',
         1 => 'type_id',
         2 => 'rank',
       ),
     ),
-    'indexes' => array (
-      'studyprop_idx1' => array (
+    'indexes' => array(
+      'studyprop_idx1' => array(
         0 => 'study_id',
       ),
-      'studyprop_idx2' => array (
+      'studyprop_idx2' => array(
         0 => 'type_id',
       ),
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'type_id' => 'cvterm_id',
         ),
       ),
-      'study' => array (
+      'study' => array(
         'table' => 'study',
-        'columns' => array (
+        'columns' => array(
           'study_id' => 'study_id',
         ),
       ),
@@ -12976,63 +12976,63 @@ function tripal_core_chado_schema_v1_2_studyprop() {
  *
  */
 function tripal_core_chado_schema_v1_2_studyprop_feature() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'studyprop_feature_id' => array (
+    'fields' => array(
+      'studyprop_feature_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'studyprop_id' => array (
+      'studyprop_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'feature_id' => array (
+      'feature_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'type_id' => array (
+      'type_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => false,
+        'not null' => FALSE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'studyprop_feature_id',
     ),
-    'unique keys' => array (
-      'studyprop_id' => array (
+    'unique keys' => array(
+      'studyprop_id' => array(
         0 => 'studyprop_id',
         1 => 'feature_id',
       ),
     ),
-    'indexes' => array (
-      'studyprop_feature_idx1' => array (
+    'indexes' => array(
+      'studyprop_feature_idx1' => array(
         0 => 'studyprop_id',
       ),
-      'studyprop_feature_idx2' => array (
+      'studyprop_feature_idx2' => array(
         0 => 'feature_id',
       ),
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'type_id' => 'cvterm_id',
         ),
       ),
-      'feature' => array (
+      'feature' => array(
         'table' => 'feature',
-        'columns' => array (
+        'columns' => array(
           'feature_id' => 'feature_id',
         ),
       ),
-      'studyprop' => array (
+      'studyprop' => array(
         'table' => 'studyprop',
-        'columns' => array (
+        'columns' => array(
           'studyprop_id' => 'studyprop_id',
         ),
       ),
@@ -13054,50 +13054,50 @@ function tripal_core_chado_schema_v1_2_studyprop_feature() {
  *
  */
 function tripal_core_chado_schema_v1_2_synonym() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'synonym_id' => array (
+    'fields' => array(
+      'synonym_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'name' => array (
+      'name' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'type_id' => array (
+      'type_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'synonym_sgml' => array (
+      'synonym_sgml' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '255',
-        'not null' => true,
+        'not null' => TRUE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'synonym_id',
     ),
-    'unique keys' => array (
-      'synonym_c1' => array (
+    'unique keys' => array(
+      'synonym_c1' => array(
         0 => 'name',
         1 => 'type_id',
       ),
     ),
-    'indexes' => array (
-      'synonym_idx1' => array (
+    'indexes' => array(
+      'synonym_idx1' => array(
         0 => 'type_id',
       ),
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'type_id' => 'cvterm_id',
         ),
       ),
@@ -13119,64 +13119,64 @@ function tripal_core_chado_schema_v1_2_synonym() {
  *
  */
 function tripal_core_chado_schema_v1_2_tableinfo() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'tableinfo_id' => array (
+    'fields' => array(
+      'tableinfo_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'name' => array (
+      'name' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '30',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'primary_key_column' => array (
+      'primary_key_column' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'varchar',
         'length' => '30',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'is_view' => array (
+      'is_view' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 0,
       ),
-      'view_on_table_id' => array (
+      'view_on_table_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'superclass_table_id' => array (
+      'superclass_table_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'is_updateable' => array (
+      'is_updateable' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 1,
       ),
-      'modification_date' => array (
+      'modification_date' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'date',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 'ow(',
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'tableinfo_id',
     ),
-    'unique keys' => array (
-      'tableinfo_c1' => array (
+    'unique keys' => array(
+      'tableinfo_c1' => array(
         0 => 'name',
       ),
     ),
-    'foreign keys' => array (
+    'foreign keys' => array(
     ),
   );
   return $description;
@@ -13195,71 +13195,71 @@ function tripal_core_chado_schema_v1_2_tableinfo() {
  *
  */
 function tripal_core_chado_schema_v1_2_treatment() {
-  $description =  array (
+  $description =  array(
     'description' => 'TODO: please describe this table!',
-    'fields' => array (
-      'treatment_id' => array (
+    'fields' => array(
+      'treatment_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'serial',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'rank' => array (
+      'rank' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 0,
       ),
-      'biomaterial_id' => array (
+      'biomaterial_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'type_id' => array (
+      'type_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
       ),
-      'protocol_id' => array (
+      'protocol_id' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'int',
-        'not null' => false,
+        'not null' => FALSE,
       ),
-      'name' => array (
+      'name' => array(
         'description' => 'TODO: please describe this field!',
         'type' => 'text',
-        'not null' => false,
+        'not null' => FALSE,
       ),
     ),
-    'primary key' => array (
+    'primary key' => array(
       0 => 'treatment_id',
     ),
-    'indexes' => array (
-      'treatment_idx1' => array (
+    'indexes' => array(
+      'treatment_idx1' => array(
         0 => 'biomaterial_id',
       ),
-      'treatment_idx2' => array (
+      'treatment_idx2' => array(
         0 => 'type_id',
       ),
-      'treatment_idx3' => array (
+      'treatment_idx3' => array(
         0 => 'protocol_id',
       ),
     ),
-    'foreign keys' => array (
-      'cvterm' => array (
+    'foreign keys' => array(
+      'cvterm' => array(
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => array(
           'type_id' => 'cvterm_id',
         ),
       ),
-      'protocol' => array (
+      'protocol' => array(
         'table' => 'protocol',
-        'columns' => array (
+        'columns' => array(
           'protocol_id' => 'protocol_id',
         ),
       ),
-      'biomaterial' => array (
+      'biomaterial' => array(
         'table' => 'biomaterial',
-        'columns' => array (
+        'columns' => array(
           'biomaterial_id' => 'biomaterial_id',
         ),
       ),

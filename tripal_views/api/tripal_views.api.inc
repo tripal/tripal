@@ -482,7 +482,7 @@ function tripal_views_get_integration_array_for_chado_table($table_name, $base_t
   // Add Joins & Relationship Handlers to fields
   if (!isset($schema['foreign keys'])) {
     $schema['foreign keys'] = array();
-    watchdog('tripal_views','There are no foreign keys defined for %table in the Chado Schema API.', array('%table' => $table_name), WATCHDOG_WARNING);
+    watchdog('tripal_views', 'There are no foreign keys defined for %table in the Chado Schema API.', array('%table' => $table_name), WATCHDOG_WARNING);
   }
   foreach ($schema['foreign keys'] as $foreign_key_schema) {
     foreach ($foreign_key_schema['columns'] as $left_field => $right_field) {
@@ -498,7 +498,7 @@ function tripal_views_get_integration_array_for_chado_table($table_name, $base_t
         'name' => 'chado_views_handler_relationship',
         'base' => $foreign_key_schema['table'],
         'base field' => $right_field,
-        'label' => $table_name . ' ' . $left_field . ' to ' . $foreign_key_schema['table'] . ' ' .$right_field
+        'label' => $table_name . ' ' . $left_field . ' to ' . $foreign_key_schema['table'] . ' ' . $right_field
       );
     }
   }
