@@ -7,3 +7,5 @@ version = 6.x-1.0
 dependencies[] = views
 dependencies[] = ahah_helper
 dependencies[] = views_data_export
+dependencies[] = tripal_core
+

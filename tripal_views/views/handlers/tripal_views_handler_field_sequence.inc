@@ -10,133 +10,8 @@
 class tripal_views_handler_field_sequence extends chado_views_handler_field {
 
   function init(&$view, $options) {
-    parent::init($view, $options);
-    
-    // to speed things up we need to make sure we have a persistent connection
-    tripal_db_persistent_chado(); 
-    
-    if (!tripal_core_is_sql_prepared('sequence_by_parent')) {
-      // prepare the queries we're going to use later during the render phase
-      // This SQL statement uses conditionals in the select clause to handle
-      // cases cases where the alignment is in the reverse direction and when
-      // the upstream and downstream extensions go beyond the lenght of the 
-      // parent sequence.
-      $psql ='PREPARE sequence_by_parent (int, int, int) AS 
-              SELECT
-                OF.name srcname, FL.srcfeature_id, FL.strand, OCVT.name as srctypename, SCVT.name as typename,
-                FL.fmin, FL.fmax,
-                CASE 
-                  WHEN FL.strand >= 0 THEN 
-                    CASE 
-                       WHEN FL.fmin - $1 <= 0 THEN 0
-                       ELSE FL.fmin - $1
-                    END
-                  WHEN FL.strand < 0 THEN
-                    CASE 
-                       WHEN FL.fmin - $2 <= 0 THEN 0
-                       ELSE FL.fmin - $2
-                    END                   
-                END as adjfmin,                                
-                                
-                CASE 
-                  WHEN FL.strand >= 0 THEN
-                    CASE 
-                      WHEN FL.fmax + $2 > OF.seqlen THEN OF.seqlen 
-                      ELSE FL.fmax + $2
-                    END
-                  WHEN FL.strand < 0 THEN
-                    CASE
-                      WHEN FL.fmax + $1 > OF.seqlen THEN OF.seqlen
-                      ELSE FL.fmax + $1   
-                    END               
-                END as adjfmax,     
-                
-                CASE 
-                  WHEN FL.strand >= 0 THEN 
-                    CASE 
-                       WHEN FL.fmin - $1 <= 0 THEN FL.fmin
-                       ELSE $1
-                    END
-                  ELSE
-                    CASE 
-                       WHEN FL.fmax + $1 > OF.seqlen THEN OF.seqlen - FL.fmax
-                       ELSE $1
-                    END                   
-                END as upstream,
-                
-                CASE 
-                  WHEN FL.strand >= 0 THEN 
-                    CASE 
-                       WHEN FL.fmax + $2 > OF.seqlen THEN OF.seqlen - FL.fmax
-                       ELSE $2
-                    END
-                  ELSE
-                    CASE 
-                       WHEN FL.fmin - $2 <= 0 THEN FL.fmin
-                       ELSE $2
-                    END                   
-                END as downstream,            
-                              
-                CASE 
-                  WHEN FL.strand >= 0 THEN 
-                    CASE 
-                       WHEN FL.fmin - $1 <= 0 THEN substring(OF.residues from 1 for ((FL.fmax - FL.fmin) + $1 + $2)) 
-                       ELSE substring(OF.residues from (FL.fmin + 1 - $1) for ((FL.fmax - FL.fmin) + $1 + $2))
-                    END
-                  WHEN FL.strand < 0 THEN
-                    CASE 
-                      WHEN FL.fmin - $2 <= 0 THEN substring(OF.residues from 1 for ((FL.fmax - FL.fmin) + $1 + $2)) 
-                      ELSE substring(OF.residues from (FL.fmin + 1 - $2) for ((FL.fmax - FL.fmin) + $1 + $2))      
-                    END
-                END as residues
-              FROM featureloc FL 
-                INNER JOIN feature SF on FL.feature_id = SF.feature_id
-                INNER JOIN cvterm SCVT on SF.type_id = SCVT.cvterm_id
-                INNER JOIN feature OF on FL.srcfeature_id = OF.feature_id                
-                INNER JOIN cvterm OCVT on OF.type_id = OCVT.cvterm_id
-              WHERE SF.feature_id = $3';
-              
-      $status = chado_query($psql);
-      if (!$status) {
-        watchdog('tripal_views_handler_field_sequence', 
-          "init: not able to prepare SQL statement '%name'", 
-          array('%name' => 'sequence_by_parent'), 'WATCHDOG ERROR');
-      }
-      // this query is meant to get all of the sub features of any given
-      // feature (arg #1) and order them as they appear on the reference
-      // feature (arg #2).
-      $psql ='PREPARE sub_features (int, int) AS 
-              SELECT SF.feature_id, CVT.name as type_name, SF.type_id
-              FROM feature_relationship FR
-                INNER JOIN feature SF on SF.feature_id = FR.subject_id
-                INNER JOIN cvterm CVT on CVT.cvterm_id = SF.type_id
-                INNER JOIN featureloc FL on FL.feature_id = FR.subject_id
-                INNER JOIN feature PF on PF.feature_id = FL.srcfeature_id
-              WHERE FR.object_id = $1 and PF.feature_id = $2
-              ORDER BY FL.fmin ASC';
-              
-      $status = chado_query($psql);
-      if (!$status) {
-        watchdog('tripal_views_handler_field_sequence', 
-          "init: not able to prepare SQL statement '%name'", 
-          array('%name' => 'ssub_features'), 'WATCHDOG ERROR');
-      }
-      $psql ='PREPARE count_sub_features (int, int) AS 
-              SELECT count(*) as num_children
-              FROM feature_relationship FR
-                INNER JOIN feature SF on SF.feature_id = FR.subject_id
-                INNER JOIN cvterm CVT on CVT.cvterm_id = SF.type_id
-                INNER JOIN featureloc FL on FL.feature_id = FR.subject_id
-                INNER JOIN feature PF on PF.feature_id = FL.srcfeature_id
-              WHERE FR.object_id = $1 and PF.feature_id = $2';
-              
-      $status = chado_query($psql);
-      if (!$status) {
-        watchdog('tripal_views_handler_field_sequence', 
-          "init: not able to prepare SQL statement '%name'", 
-          array('%name' => 'count_sub_features'), 'WATCHDOG ERROR');
-      }
-    }
+    parent::init($view, $options);  
+        
   }
 
   /**
@@ -242,6 +117,13 @@ class tripal_views_handler_field_sequence extends chado_views_handler_field {
        $downstream = 0;
     }
     
+    $derive_from_parent = $this->options['display']['derive_from_parent'];
+    $aggregate = $this->options['display']['aggregate'];
+    
+    $residues = trpial_feature_get_formatted_sequence($feature_id, $feature_name, 
+      $num_bases_per_line, $derive_from_parent, $aggregate, $output_format,
+      $upstream, $downstream);
+ /*   
     // if we need to get the sequence from the parent but there is no aggregation
     // then do so now.
     if ($this->options['display']['derive_from_parent']) {             
@@ -379,7 +261,7 @@ class tripal_views_handler_field_sequence extends chado_views_handler_field {
       if ($output_format == 'fasta_html') {
          $residues = '<span style="font-family: monospace;">' . $residues . '</span>';
       }
-    }
+    } */
     return $residues;         
   } 
 }
