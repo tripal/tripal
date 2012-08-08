@@ -818,20 +818,7 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL) {
     $data['row_count'] = $i - 1;
   }
 
-  //use this to put values into $form_state['values']
-  $form['data'] = array();
-
-  //need to find out if storing $form['data'][$key]['#value'] = $value <- is an issue
-  //since it will give me errors if i try to stare an array instead of $value
-  //and yet $value can be an array ie "field_types"
-  foreach ($data as $key => $value) {
-    $form['data'][$key] = array(
-      '#type' => 'hidden',
-      '#value' => $value,
-    );
-  }
-
-  $form['#redirect'] = 'admin/tripal/views/integration';
+  $form['#redirect'] = 'admin/tripal/views/integration/list';
 
   return $form;
 }
