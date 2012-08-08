@@ -2379,7 +2379,7 @@ function tripal_core_get_chado_version() {
   }
   
   if($v->value != '1.11' and $v->value != '1.2'){
-     drupal_set_message(t("WARNING: Tripal does not fully support Chado versions other than v1.11 or v1.2."));
+     drupal_set_message(t("WARNING: This version of Chado is not fully supported."));
   
   }
   return $v->value;
