@@ -12,7 +12,7 @@
  */
 function tripal_core_chado_load_form() {
 
-  $version = tripal_core_get_chado_version();
+  $version = tripal_core_set_chado_version();
   $form['current_version'] = array(
     '#type' => 'item',
     '#title' => t("Current installed version of Chado"),
