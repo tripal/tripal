@@ -295,13 +295,14 @@ function tripal_jobs_launch($do_parallel = 0, $job_id = NULL) {
     $sql =  "SELECT * FROM {tripal_jobs} TJ ".
             "WHERE TJ.start_time IS NULL and TJ.end_time IS NULL and TJ.job_id = %d ".
             "ORDER BY priority ASC,job_id ASC";
+    $job_res = db_query($sql,$job_id);
   } 
   else {
     $sql =  "SELECT * FROM {tripal_jobs} TJ ".
             "WHERE TJ.start_time IS NULL and TJ.end_time IS NULL ".
             "ORDER BY priority ASC,job_id ASC";
+    $job_res = db_query($sql);
   }
-  $job_res = db_query($sql);
   while ($job = db_fetch_object($job_res)) {
     // set the start time for this job
     $record = new stdClass();
