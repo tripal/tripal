@@ -58,16 +58,14 @@ function tripal_core_drush_command() {
   $items['tripal-launch-jobs'] = array(
     // used by drush help
     'description' => dt('Lauches any jobs waiting in the queue.'),
-    'arguments' => array(
-      'parallel' => dt('Normally jobs are executed one at a time. But if you are certain no conflicts will occur with other currently running jobs you may set this argument to a value of 1 to make the job run in parallel with other running jobs.'),
-    ),
     'examples' => array(
       'Normal Job' => 'drush tripal-launch-jobs',
       'Parallel Job' => 'drush tripal-launch-jobs --parallel=1'
     ),
     // supply options
     'options' => array(
-      'parallel',
+      'parallel' => dt('Normally jobs are executed one at a time. But if you are certain no conflicts will occur with other currently running jobs you may set this argument to a value of 1 to make the job run in parallel with other running jobs.'),
+      'job_id' => dt('Provide a job_id to run a specific job. Only jobs that have not been run already can be used'),      
     ),
     'aliases' => array('trpjob-run')
   );
@@ -81,15 +79,16 @@ function tripal_core_drush_command() {
  */
 function drush_tripal_core_tripal_launch_jobs() {
   $parallel = drush_get_option('parallel');
+  $job_id = drush_get_option('job_id');
   if ($parallel) {
     print "Tripal Job Launcher (in parallel)\n";
     print "-------------------\n";
-    tripal_jobs_launch($parallel);
+    tripal_jobs_launch($parallel,$job_id);
   }
   else {
     print "Tripal Job Launcher\n";
     print "-------------------\n";
-    tripal_jobs_launch();
+    tripal_jobs_launch(0,$job_id);
   }
 }
 

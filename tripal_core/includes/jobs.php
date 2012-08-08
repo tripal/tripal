@@ -271,9 +271,16 @@ function tripal_jobs_get_submit_date($job) {
  * @param $do_parallel
  *   A boolean indicating whether jobs should be attempted to run in parallel
  *
+ * @param $job_id
+ *   To launch a specific job provide the job id.  This option should be
+ *   used sparingly as the jobs queue managment system should launch jobs
+ *   based on order and priority.  However there are times when a specific
+ *   job needs to be launched and this argument will allow it.  Only jobs 
+ *   which have not been run previously will run.
+ *
  * @ingroup tripal_jobs_api
  */
-function tripal_jobs_launch($do_parallel = 0) {
+function tripal_jobs_launch($do_parallel = 0, $job_id = NULL) {
 
   // first check if any jobs are currently running
   // if they are, don't continue, we don't want to have
@@ -284,9 +291,16 @@ function tripal_jobs_launch($do_parallel = 0) {
 
   // get all jobs that have not started and order them such that
   // they are processed in a FIFO manner.
-  $sql =  "SELECT * FROM {tripal_jobs} TJ ".
-         "WHERE TJ.start_time IS NULL and TJ.end_time IS NULL ".
-         "ORDER BY priority ASC,job_id ASC";
+  if ($job_id) {
+    $sql =  "SELECT * FROM {tripal_jobs} TJ ".
+            "WHERE TJ.start_time IS NULL and TJ.end_time IS NULL and TJ.job_id = %d ".
+            "ORDER BY priority ASC,job_id ASC";
+  } 
+  else {
+    $sql =  "SELECT * FROM {tripal_jobs} TJ ".
+            "WHERE TJ.start_time IS NULL and TJ.end_time IS NULL ".
+            "ORDER BY priority ASC,job_id ASC";
+  }
   $job_res = db_query($sql);
   while ($job = db_fetch_object($job_res)) {
     // set the start time for this job
