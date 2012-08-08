@@ -1,5 +1,8 @@
 <?php
 
+module_load_include('inc', 'views', 'includes/base');
+module_load_include('inc', 'views', 'includes/handlers');
+
 /**
  * @file
  * Handler to allow joins between records via a linking table
@@ -41,146 +44,45 @@ class views_handler_join_chado_aggregator extends views_join {
    * Creates SQL including aggregation query used in join
    */
   function join($table, &$query) {
-    $output = array();
 
+    $opt = array(
+      'table' => $this->definition['table'],
+      'field' => $this->definition['field'],
+      'left_table' => $this->definition['left_table'],
+      'left_field' => $this->definition['left_field'],
+      'table_aggregated' => $this->definition['table_aggregated'],
+      'sort' => $this->sort,
+      'filter' => $this->filter,
+      'postgresql_9up' => $this->postgresql_9up,
+    );
+
+    $output = $this->aggregate_join($query, $opt);
+    return implode("\n", $output);
+
+  }
+
+  function aggregate_join (&$query, $opt) {
     // Create the table SQL (used in join) -------
     // query creating one-to-one table using array_agg
 
     // Only aggregate each field if it the join table hadn't been pre-aggregated
     // Example where it might be pre-aggregated: Materialized view
     if (!$this->definition['pre-aggregated']) {
-      // Determine Order BY's for aggregates
-      $order_by = array();
-      if (!is_array($this->sort)) {
-        $this->sort = array();
-      }
-      foreach ($this->sort as $s) {
-        $order_by[] = $s['table'] . '.' . $s['field'] . ' ' . $s['order'];
-      }
 
-      // get table description (if defined via schema api)
-      $table_desc = tripal_core_get_chado_table_schema($this->definition['table']);
-      $select_fields[ $this->definition['table'] ] = $table_desc['fields'];
-
-      if (!empty($table_desc)) {
-        // Add joins to tables with a foreign key in this table
-        // (ie: add join to cvterm if this table has a type_id
-        $joins = array();
-        foreach ($table_desc['foreign keys'] as $defn) {
-          if ($defn['table'] != $this->left_table) {
-            foreach ( $defn['columns'] as $left => $right) {
-              $left = $this->definition['table'] . '.' . $left;
-              $right = $defn['table'] . '.' . $right;
-              $joins[] = "LEFT JOIN $defn[table] $defn[table] ON $left=$right";
-            }
-
-            // Fields to be selected from joined table
-            $join_table = tripal_core_get_chado_table_schema($defn['table']);
-            $select_fields[ $defn['table'] ] = $join_table['fields'];
-          }
-        }
-
-        // Fields to be selected
-        foreach ($select_fields as $table => $table_fields) {
-          foreach ($table_fields as $fname => $f) {
-            $alias = '';
-            if ($table != $this->definition['table']) {
-              $alias = $table . '_';
-            }
-
-            if ($fname != $this->definition['field']) {
-              // Add sort to aggregate field if postgreSQL 9.0+
-              if ($this->postgresql_9up && !empty($order_by)) {
-                $fields[] = 'array_agg(' . $table . '.' . $fname . ' ORDER BY ' . implode(',', $order_by) . ') as ' . $alias . $fname;
-              }
-              else {
-                $fields[] = 'array_agg(' . $table . '.' . $fname . ') as '. $alias . $fname;
-              }
-              $composite_field_parts[] = "'" . $alias . $fname . "::' ||" . $table . '.' . $fname;
-            }
-            else {
-              $fields[] = $fname;
-              $composite_field_parts[] = "'" . $alias . $fname . "::' ||" . $table . '.' . $fname;
-            }
-          }
-        }
-
-      // There is no definition in schema api
-      // then use postgresql select
-      }
-      else {
-
-        // No known foreign key reelationships
-        $joins = array();
-
-        // Fields to be selected
-        $sql = "SELECT
-                  attname as column,
-                  format_type(atttypid, atttypmod) as datatype
-                FROM pg_attribute, pg_type
-                WHERE typname='nd_genotype_experiment'
-                  AND attrelid=typrelid
-                  AND attname NOT IN ('cmin','cmax','ctid','oid','tableoid','xmin','xmax')";
-        $previous_db = tripal_db_set_active('chado');
-        $resource = db_query($sql);
-        tripal_db_set_active($previous_db);
-        while ($r = db_fetch_object($resource)) {
-          $table = $this->definition['table'];
-          $alias = ''; //no alias needed if table is current table (only option if no schema api definition)
-          $fname = $r->column;
-
-          if ($fname != $this->definition['field']) {
-            // Add sort to aggregate field if postgreSQL 9.0+
-            if ($this->postgresql_9up && !empty($order_by)) {
-              $fields[] = 'array_agg(' . $table . '.' . $fname . ' ORDER BY ' . implode(',', $order_by) . ') as ' . $alias . $fname;
-            }
-            else {
-              $fields[] = 'array_agg(' . $table . '.' . $fname . ') as ' . $alias . $fname;
-            }
-            $composite_field_parts[] = "'" . $alias . $fname . "::' ||" . $table . '.' . $fname;
-          }
-          else {
-            $fields[] = $fname;
-            $composite_field_parts[] = "'" . $alias . $fname . "::' ||" . $table . '.' . $fname;
-          }
-        }
-
-      }
-
-      // composite field
-      // (combines all other fields before aggregating)
-      // Add sort to aggregate field if postgreSQL 9.0+
-      if ($this->postgresql_9up && !empty($order_by)) {
-        $composite_field = "array_agg('{'||" . implode(" || ',' || ", $composite_field_parts) . "||'}' ORDER BY " . implode(',', $order_by) . ") as all";
-      }
-      else {
-        $composite_field = "array_agg('{'||" . implode(" || ',' || ", $composite_field_parts) . "||'}') as all";
-      }
-      $fields[] = $composite_field;
-
-      // SQL to use in the join
-      $sql = 'SELECT ' . implode(', ', $fields)
-        .' FROM ' . $this->definition['table']
-        .' ' . implode(' ', $joins);
-
-      if (!empty($this->filter)) {
-        $sql .= ' WHERE ' . implode(', ', $this->filter);
-      }
-
-      $sql .= ' GROUP BY ' . $this->definition['field'];
+      $sql = $this->get_aggregate_sql_for_table_field($opt);
 
       // Create the join (full SQL) ----------------
       $output[] = $this->create_single_join(
         $query,
         array(
-          'table' => $this->definition['table'],
-          'field' => $this->definition['field'],
+          'table' => $opt['table'],
+          'field' => $opt['field'],
           'table_sql' => $sql,
           'is_drupal' => FALSE,
         ),
         array(
-          'table' => $this->definition['left_table'],
-          'field' => $this->definition['left_field'],
+          'table' => $opt['left_table'],
+          'field' => $opt['left_field'],
         ),
         'LEFT'
       );
@@ -193,16 +95,16 @@ class views_handler_join_chado_aggregator extends views_join {
       // Create the join
 
       $current_table_spec = array(
-        'table' => $this->definition['table'],
-        'field' => $this->definition['field'],
+        'table' => $opt['table'],
+        'field' => $opt['field'],
         'is_drupal' => FALSE,
       );
       $left_table_spec = array(
-        'table' => $this->definition['left_table'],
-        'field' => $this->definition['left_field'],
+        'table' => $opt['left_table'],
+        'field' => $opt['left_field'],
       );
 
-      switch ($this->definition['table_aggregated']) {
+      switch ($opt['table_aggregated']) {
         default:
         case 'CURRENT':
           $current_table_spec['pre-aggregated'] = TRUE;
@@ -220,7 +122,135 @@ class views_handler_join_chado_aggregator extends views_join {
       );
     }
 
-    return implode("\n", $output);
+    return $output;
+  }
+
+  /**
+   * Create the SQL needed to aggregate a table
+   */
+  function get_aggregate_sql_for_table_field($opt) {
+
+    // Determine Order BY's for aggregates
+    $order_by = array();
+    if (!is_array($opt['sort'])) {
+      $opt['sort'] = array();
+    }
+    foreach ($opt['sort'] as $s) {
+      $order_by[] = $s['table'] . '.' . $s['field'] . ' ' . $s['order'];
+    }
+
+    // get table description (if defined via schema api)
+    $table_desc = tripal_core_get_chado_table_schema($opt['table']);
+    $select_fields[ $opt['table'] ] = $table_desc['fields'];
+
+    if (!empty($table_desc)) {
+      // Add joins to tables with a foreign key in this table
+      // (ie: add join to cvterm if this table has a type_id
+      $joins = array();
+      foreach ($table_desc['foreign keys'] as $defn) {
+        if ($defn['table'] != $opt['left_table']) {
+          foreach ( $defn['columns'] as $left => $right) {
+            $left = $opt['table'] . '.' . $left;
+            $right = $defn['table'] . '.' . $right;
+            $joins[] = "LEFT JOIN $defn[table] $defn[table] ON $left=$right";
+          }
+
+          // Fields to be selected from joined table
+          $join_table = tripal_core_get_chado_table_schema($defn['table']);
+          $select_fields[ $defn['table'] ] = $join_table['fields'];
+        }
+      }
+
+      // Fields to be selected
+      foreach ($select_fields as $table => $table_fields) {
+        foreach ($table_fields as $fname => $f) {
+          $alias = '';
+          if ($table != $opt['table']) {
+            $alias = $table . '_';
+          }
+
+          if ($fname != $opt['field']) {
+            // Add sort to aggregate field if postgreSQL 9.0+
+            if ($opt['postgresql_9up'] && !empty($order_by)) {
+              $fields[] = 'array_agg(' . $table . '.' . $fname . ' ORDER BY ' . implode(',', $order_by) . ') as ' . $alias . $fname;
+            }
+            else {
+              $fields[] = 'array_agg(' . $table . '.' . $fname . ') as '. $alias . $fname;
+            }
+            $composite_field_parts[] = "'" . $alias . $fname . "::' ||" . $table . '.' . $fname;
+          }
+          else {
+            $fields[] = $fname;
+            $composite_field_parts[] = "'" . $alias . $fname . "::' ||" . $table . '.' . $fname;
+          }
+        }
+      }
+
+    // There is no definition in schema api
+    // then use postgresql select
+    }
+    else {
+
+      // No known foreign key reelationships
+      $joins = array();
+
+      // Fields to be selected
+      $sql = "SELECT
+                attname as column,
+                format_type(atttypid, atttypmod) as datatype
+              FROM pg_attribute, pg_type
+              WHERE typname='nd_genotype_experiment'
+                AND attrelid=typrelid
+                AND attname NOT IN ('cmin','cmax','ctid','oid','tableoid','xmin','xmax')";
+      $previous_db = tripal_db_set_active('chado');
+      $resource = db_query($sql);
+      tripal_db_set_active($previous_db);
+      while ($r = db_fetch_object($resource)) {
+        $table = $opt['table'];
+        $alias = ''; //no alias needed if table is current table (only option if no schema api definition)
+        $fname = $r->column;
+
+        if ($fname != $opt['field']) {
+          // Add sort to aggregate field if postgreSQL 9.0+
+          if ($opt['postgresql_9up'] && !empty($order_by)) {
+            $fields[] = 'array_agg(' . $table . '.' . $fname . ' ORDER BY ' . implode(',', $order_by) . ') as ' . $alias . $fname;
+          }
+          else {
+            $fields[] = 'array_agg(' . $table . '.' . $fname . ') as ' . $alias . $fname;
+          }
+          $composite_field_parts[] = "'" . $alias . $fname . "::' ||" . $table . '.' . $fname;
+        }
+        else {
+          $fields[] = $fname;
+          $composite_field_parts[] = "'" . $alias . $fname . "::' ||" . $table . '.' . $fname;
+        }
+      }
+
+    }
+
+    // composite field
+    // (combines all other fields before aggregating)
+    // Add sort to aggregate field if postgreSQL 9.0+
+    if ($opt['postgresql_9up'] && !empty($order_by)) {
+      $composite_field = "array_agg('{'||" . implode(" || ',' || ", $composite_field_parts) . "||'}' ORDER BY " . implode(',', $order_by) . ") as all";
+    }
+    else {
+      $composite_field = "array_agg('{'||" . implode(" || ',' || ", $composite_field_parts) . "||'}') as all";
+    }
+    $fields[] = $composite_field;
+
+    // SQL to use in the join
+    $sql = 'SELECT ' . implode(', ', $fields)
+      .' FROM ' . $opt['table']
+      .' ' . implode(' ', $joins);
+
+    if (!empty($opt['filter'])) {
+      $sql .= ' WHERE ' . implode(', ', $opt['filter']);
+    }
+
+    $sql .= ' GROUP BY ' . $opt['field'];
+
+    return $sql;
   }
 
   /**
