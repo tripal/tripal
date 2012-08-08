@@ -79,19 +79,31 @@ function tripal_core_chado_load_form_submit($form, &$form_state) {
  */
 function tripal_core_install_chado($action) {
 
-  $vsql = "INSERT INTO chadoprop (type_id, value) VALUES  "
-        ."((SELECT cvterm_id "
-        ."FROM cvterm CVT "
-        ." INNER JOIN cv CV on CVT.cv_id = CV.cv_id "
-        ."WHERE CV.name = 'chado_properties' AND CVT.name = 'version'), "
-        ."'%s') ";
+  $vsql = "INSERT INTO chadoprop (type_id, value) VALUES  " .
+          "((SELECT cvterm_id " .
+          "FROM cvterm CVT " .
+          " INNER JOIN cv CV on CVT.cv_id = CV.cv_id " .
+          "WHERE CV.name = 'chado_properties' AND CVT.name = 'version'), " .
+          "'%s') ";
 
   if($action == 'Install Chado v1.2'){
     $schema_file = drupal_get_path('module', 'tripal_core') . '/chado_schema/default_schema-1.2.sql';
     $init_file = drupal_get_path('module', 'tripal_core') . '/chado_schema/initialize-1.2.sql';
     if (tripal_core_reset_chado_schema()) {
-      tripal_core_install_sql($schema_file);
-      tripal_core_install_sql($init_file);
+      $success = tripal_core_install_sql($schema_file);
+      if ($success) {
+        print "Installation Complete!\n";
+      }
+      else {
+        print "Installation Problems!  Please check output above for errors.\n";
+      }
+      $success = tripal_core_install_sql($init_file);
+      if ($success) {
+        print "Installation Complete!\n";
+      }
+      else {
+        print "Installation Problems!  Please check output above for errors.\n";
+      }
       db_query($vsql,'1.2'); # set the version
     }
     else {
@@ -102,16 +114,40 @@ function tripal_core_install_chado($action) {
   elseif($action == 'Upgrade Chado v1.11 to v1.2') {
     $schema_file = drupal_get_path('module', 'tripal_core') . '/chado_schema/default_schema-1.11-1.2-diff.sql';
     $init_file = drupal_get_path('module', 'tripal_core') . '/chado_schema/upgrade-1.11-1.2.sql';
-    tripal_core_install_sql($schema_file);
-    tripal_core_install_sql($init_file);
+    $success = tripal_core_install_sql($schema_file);
+    if ($success) {
+      print "Installation Complete!\n";
+    }
+    else {
+      print "Installation Problems!  Please check output above for errors.\n";
+    }
+    $success = tripal_core_install_sql($init_file);
+    if ($success) {
+      print "Installation Complete!\n";
+    }
+    else {
+      print "Installation Problems!  Please check output above for errors.\n";
+    }
     db_query($vsql,'1.2'); # set the version
   }
   elseif($action == 'Install Chado v1.11'){
     $schema_file = drupal_get_path('module', 'tripal_core') . '/chado_schema/default_schema-1.11.sql';
     $init_file = drupal_get_path('module', 'tripal_core') . '/chado_schema/initialize-1.11.sql';
     if (tripal_core_reset_chado_schema()) {
-      tripal_core_install_sql($schema_file);
-      tripal_core_install_sql($init_file);
+      $success = tripal_core_install_sql($schema_file);
+      if ($success) {
+        print "Installation Complete!\n";
+      }
+      else {
+        print "Installation Problems!  Please check output above for errors.\n";
+      }
+      $success = tripal_core_install_sql($init_file);
+      if ($success) {
+        print "Installation Complete!\n";
+      }
+      else {
+        print "Installation Problems!  Please check output above for errors.\n";
+      }
     }
     else {
       print "ERROR: cannot install chado.  Please check database permissions\n";
@@ -207,6 +243,7 @@ function tripal_core_install_sql($sql_file) {
   $in_string = 0;
   $query = '';
   $i = 0;
+  $success = 1;
   foreach ($lines as $line_num => $line) {
     $i++;
     $type = '';
@@ -320,11 +357,13 @@ function tripal_core_install_sql($sql_file) {
     }
     else {
       print "UNHANDLED $i, $in_string: $line";
-      return tripal_core_chado_install_done();
+      tripal_core_chado_install_done();
+      return FALSE;
     }
     if (preg_match_all("/\n/", $query, $temp) > 100) {
       print "SQL query is too long.  Terminating:\n$query\n";
-      return tripal_core_chado_install_done();
+      tripal_core_chado_install_done();
+      return FALSE;
     }
     if ($type and sizeof($stack) == 0) {
       print "Adding $type: line $i\n";
@@ -335,15 +374,15 @@ function tripal_core_install_sql($sql_file) {
       $result = pg_query($active_db, $query);
       if (!$result) {
         $error  = pg_last_error();
-        print "Installation failed:\nSQL $i, $in_string: $query\n$error\n";
+        print "FAILED!!\nError Message:\nSQL $i, $in_string: $query\n$error\n";
         pg_query($active_db, "set search_path to public,chado");
-        return tripal_core_chado_install_done();
+        $success = 0;
       }
       $query = '';
     }
   }
-  print "Installation Complete!\n";
   tripal_core_chado_install_done();
+  return $success;    
 }
 
 /**

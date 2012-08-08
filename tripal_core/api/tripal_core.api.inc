@@ -990,7 +990,7 @@ function tripal_core_chado_get_foreign_key($table_desc, $field, $values, $option
     // TODO: what do we do if we get to this point and we have a fk
     // relationship expected but we don't have any definition for one in the
     // table schema??
-    $version = tripal_core_get_chado_version(1);
+    $version = tripal_core_get_chado_version(TRUE);
     $message = t("There is no foreign key relationship defined for " . $field . ".
        To define a foreign key relationship, determine the table this foreign
        key referrs to (<foreign table>) and then implement
