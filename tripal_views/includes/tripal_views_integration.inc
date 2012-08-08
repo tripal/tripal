@@ -360,6 +360,10 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL) {
     '#options' => $priorities,
     '#default_value' => (isset($setup_obj->priority)) ? $setup_obj->priority : -1,
   );
+  if ($setup_obj->priority >= 9) {
+    drupal_set_message('You are editing a default views integration. To ensure your changes
+    are used, change the priority to -10.','warning');
+  }
 
   $form['views_type']['base_table'] = array(
     '#type' => 'checkbox',
@@ -503,7 +507,7 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL) {
         '#prefix' => "<div class=\"column-one\">",
         '#value' => "<span class=\"column-name\">" . filter_xss($column_name) . "</span>".
                     "<br /><span class=\"column-type\">" . filter_xss($column_type) . "</span>",
-        '#suffix' => "</div>",        
+        '#suffix' => "</div>",
       );
       $data['field_types'][$column_name] = $column_type;
 
