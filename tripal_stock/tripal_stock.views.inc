@@ -556,9 +556,9 @@ function tripal_stock_views_default_views() {
   $handler->override_option('menu', array(
     'type' => 'normal',
     'title' => 'Stocks',
-    'description' => 'A full listing of all chado stocks',
-    'weight' => '0',
-    'name' => 'primary-links',
+    'description' => '',
+    'weight' => '10',
+    'name' => 'navigation',
   ));
   $handler->override_option('tab_options', array(
     'type' => 'none',

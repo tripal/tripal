@@ -396,8 +396,8 @@ function tripal_library_views_default_views() {
     'type' => 'normal',
     'title' => 'Sequence Libraries',
     'description' => '',
-    'weight' => '0',
-    'name' => 'primary-links',
+    'weight' => '10',
+    'name' => 'navigation',
   ));
   $handler->override_option('tab_options', array(
     'type' => 'none',

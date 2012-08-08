@@ -339,7 +339,7 @@ function tripal_db_views_default_views() {
     'type' => 'normal',
     'title' => 'DB Listing',
     'description' => 'Lists all databases available to create database references for.',
-    'weight' => '0',
+    'weight' => '10',
     'name' => 'navigation',
   ));
   $handler->override_option('tab_options', array(
@@ -647,7 +647,7 @@ function tripal_db_views_default_views() {
     'type' => 'normal',
     'title' => 'DB Reference Listing',
     'description' => 'A listing of all database references associated with a given database',
-    'weight' => '0',
+    'weight' => '10',
     'name' => 'navigation',
   ));
   $handler->override_option('tab_options', array(

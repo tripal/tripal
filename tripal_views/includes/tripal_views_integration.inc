@@ -360,6 +360,10 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL) {
     '#options' => $priorities,
     '#default_value' => (isset($setup_obj->priority)) ? $setup_obj->priority : -1,
   );
+  if ($setup_obj->priority >= 9) {
+    drupal_set_message('You are editing a default views integration. To ensure your changes
+    are used, change the priority to -10.','warning');
+  }
 
   $form['views_type']['base_table'] = array(
     '#type' => 'checkbox',
@@ -503,7 +507,7 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL) {
         '#prefix' => "<div class=\"column-one\">",
         '#value' => "<span class=\"column-name\">" . filter_xss($column_name) . "</span>".
                     "<br /><span class=\"column-type\">" . filter_xss($column_type) . "</span>",
-        '#suffix' => "</div>",        
+        '#suffix' => "</div>",
       );
       $data['field_types'][$column_name] = $column_type;
 
@@ -817,17 +821,24 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL) {
   //use this to put values into $form_state['values']
   $form['data'] = array();
 
-  //need to find out if storing $form['data'][$key]['#value'] = $value <- is an issue
-  //since it will give me errors if i try to stare an array instead of $value
-  //and yet $value can be an array ie "field_types"
+  // Ensure that we don't store an array
+  // since we will get a check_plain:htmlspecial_characters error if we do
   foreach ($data as $key => $value) {
-    $form['data'][$key] = array(
-      '#type' => 'hidden',
-      '#value' => $value,
-    );
+    if (is_array($value)) {
+      $form['data'][$key] = array(
+        '#type' => 'hidden',
+        '#value' => serialize($value),
+      );
+    }
+    else {
+      $form['data'][$key] = array(
+        '#type' => 'hidden',
+        '#value' => $value,
+      );
+    }
   }
 
-  $form['#redirect'] = 'admin/tripal/views/integration';
+  $form['#redirect'] = 'admin/tripal/views/integration/list';
 
   return $form;
 }
@@ -948,7 +959,7 @@ function tripal_views_integration_form_submit($form, &$form_state) {
   // iterate through the columns of the form and add
   // the joins if provided, and the handlers
   $i = 1;
-  foreach ($form_state['values']['field_types'] as $key => $value) {
+  foreach (unserialize($form_state['values']['field_types']) as $key => $value) {
 
     // add the field definition
     $view_field_record = array(
