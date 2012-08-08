@@ -818,6 +818,26 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL) {
     $data['row_count'] = $i - 1;
   }
 
+  //use this to put values into $form_state['values']
+  $form['data'] = array();
+
+  // Ensure that we don't store an array
+  // since we will get a check_plain:htmlspecial_characters error if we do
+  foreach ($data as $key => $value) {
+    if (is_array($value)) {
+      $form['data'][$key] = array(
+        '#type' => 'hidden',
+        '#value' => serialize($value),
+      );
+    }
+    else {
+      $form['data'][$key] = array(
+        '#type' => 'hidden',
+        '#value' => $value,
+      );
+    }
+  }
+
   $form['#redirect'] = 'admin/tripal/views/integration/list';
 
   return $form;
@@ -939,7 +959,7 @@ function tripal_views_integration_form_submit($form, &$form_state) {
   // iterate through the columns of the form and add
   // the joins if provided, and the handlers
   $i = 1;
-  foreach ($form_state['values']['field_types'] as $key => $value) {
+  foreach (unserialize($form_state['values']['field_types']) as $key => $value) {
 
     // add the field definition
     $view_field_record = array(
