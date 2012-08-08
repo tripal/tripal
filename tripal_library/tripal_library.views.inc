@@ -391,11 +391,11 @@ function tripal_library_views_default_views() {
     'default' => 'uniquename',
   ));
   $handler = $view->new_display('page', 'Page', 'page_1');
-  $handler->override_option('path', 'libraries');
+  $handler->override_option('path', 'chado/libraries');
   $handler->override_option('menu', array(
     'type' => 'normal',
-    'title' => 'Sequence Libraries',
-    'description' => '',
+    'title' => 'Libraries',
+    'description' => 'A library is a collection of features of a given type. For example, a cDNA or BAC clone library.',
     'weight' => '10',
     'name' => 'navigation',
   ));

@@ -329,11 +329,11 @@ function tripal_contact_views_default_views() {
     'default' => 'name',
   ));
   $handler = $view->new_display('page', 'Page', 'page_1');
-  $handler->override_option('path', 'contacts');
+  $handler->override_option('path', 'chado/contacts');
   $handler->override_option('menu', array(
     'type' => 'normal',
     'title' => 'Contacts',
-    'description' => '',
+    'description' => 'Contacts can be persons, institutes, groups, or organizations.',
     'weight' => '10',
     'name' => 'navigation',
   ));

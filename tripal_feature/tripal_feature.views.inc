@@ -574,11 +574,11 @@ function tripal_feature_views_default_views() {
     'default' => '-1',
   ));
   $handler = $view->new_display('page', 'Page', 'page_1');
-  $handler->override_option('path', 'features');
+  $handler->override_option('path', 'chado/features');
   $handler->override_option('menu', array(
     'type' => 'normal',
-    'title' => 'Features View',
-    'description' => '',
+    'title' => 'Features',
+    'description' => 'A feature is a biological sequence or a section of a biological sequence, or a collection of such sections. Examples include genes, exons, transcripts, regulatory regions, polypeptides, protein domains, chromosome sequences, sequence variations, cross-genome match regions such as hits and HSPs and so on.',
     'weight' => '10',
     'name' => 'navigation',
   ));

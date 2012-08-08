@@ -16,6 +16,14 @@ require_once "includes/tripal_views_integration_port.inc";
 function tripal_views_menu() {
   $items = array();
 
+  $items['chado'] = array(
+    'title' => 'Biological Data',
+    'description' => 'Listings of the various biological data available categorized by type.',
+    'page callback' => 'tripal_views_biological_data_page',
+    'access arguments' => array('access content'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+
   $items['admin/tripal/views'] = array(
     'title' => 'Views Integration',
     'description' => 'Integration with Drupal Views',
@@ -140,4 +148,24 @@ function tripal_views_coder_ignore() {
     'path' => drupal_get_path('module', 'tripal_views'),
     'line prefix' => drupal_get_path('module', 'tripal_views'),
   );
+}
+
+/**
+ * A landing page for all views of chado content. Simply lists all menu items that
+ * are children of it.
+ */
+function tripal_views_biological_data_page() {
+  $output = '';
+
+  $item = menu_get_item();
+  $content = system_admin_menu_block($item);
+
+  $output .= '<dl class="admin-list">';
+  foreach ($content as $item) {
+    $output .= '<dt>'. l($item['title'], $item['href'], $item['localized_options']) .'</dt>';
+    $output .= '<dd>'. $item['description'] .'</dd>';
+  }
+  $output .= '</dl>';
+
+  return $output;
 }

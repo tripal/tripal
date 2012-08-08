@@ -314,11 +314,11 @@ function tripal_organism_views_default_views() {
     'default' => '-1',
   ));
   $handler = $view->new_display('page', 'Page', 'page_1');
-  $handler->override_option('path', 'organisms');
+  $handler->override_option('path', 'chado/organisms');
   $handler->override_option('menu', array(
     'type' => 'normal',
     'title' => 'Organisms',
-    'description' => '',
+    'description' => 'A biological organism.',
     'weight' => '10',
     'name' => 'navigation',
   ));

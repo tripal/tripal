@@ -313,11 +313,11 @@ function tripal_natural_diversity_views_default_views() {
     'default' => '-1',
   ));
   $handler = $view->new_display('page', 'Page', 'page_1');
-  $handler->override_option('path', 'natdiv_experiments');
+  $handler->override_option('path', 'chado/natdiv_experiments');
   $handler->override_option('menu', array(
     'type' => 'normal',
     'title' => 'Natural Diversity Experiments',
-    'description' => '',
+    'description' => 'A single assay resulting in a single genotype or phenotype. Multiple assays resulting in an entire experiment should be grouped together as a project.',
     'weight' => '10',
     'name' => 'navigation',
   ));
@@ -333,7 +333,7 @@ function tripal_natural_diversity_views_default_views() {
   // List geolocations
   $view = new view;
   $view->name = 'geolocation_listing';
-  $view->description = 'A listing of locations where natural diversity experiments took place';
+  $view->description = 'A listing of locations where natural diversity experiments took place.';
   $view->tag = 'chado default';
   $view->base_table = 'nd_geolocation';
   $view->core = 6;
@@ -699,11 +699,11 @@ function tripal_natural_diversity_views_default_views() {
     'default' => 'description',
   ));
   $handler = $view->new_display('page', 'Page', 'page_1');
-  $handler->override_option('path', 'natdiv_geolocations');
+  $handler->override_option('path', 'chado/natdiv_geolocations');
   $handler->override_option('menu', array(
     'type' => 'normal',
-    'title' => 'Geographical Locations',
-    'description' => '',
+    'title' => 'Locations',
+    'description' => 'Geographical locations in which natural diversity experiments might be performed.',
     'weight' => '10',
     'name' => 'navigation',
   ));
@@ -836,7 +836,7 @@ function tripal_natural_diversity_views_default_views() {
     'default' => 'name',
   ));
   $handler = $view->new_display('page', 'Page', 'page_1');
-  $handler->override_option('path', 'natdiv_protocols');
+  $handler->override_option('path', 'chado/natdiv_protocols');
   $handler->override_option('menu', array(
     'type' => 'normal',
     'title' => 'Protocols',
@@ -1050,7 +1050,7 @@ function tripal_natural_diversity_views_default_views() {
   $handler->override_option('use_pager', '1');
   $handler->override_option('style_plugin', 'table');
   $handler = $view->new_display('page', 'Page', 'page_1');
-  $handler->override_option('path', 'natdiv_reagents');
+  $handler->override_option('path', 'chado/natdiv_reagents');
   $handler->override_option('menu', array(
     'type' => 'normal',
     'title' => 'Reagents',

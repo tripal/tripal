@@ -552,11 +552,11 @@ function tripal_stock_views_default_views() {
     'default' => '-1',
   ));
   $handler = $view->new_display('page', 'Page', 'page_1');
-  $handler->override_option('path', 'stocks');
+  $handler->override_option('path', 'chado/stocks');
   $handler->override_option('menu', array(
     'type' => 'normal',
     'title' => 'Stocks',
-    'description' => '',
+    'description' => 'A stock is the physical entities, either living or preserved, held by collections and can be globally identified by the combination of organism, uniquename and stock type.',
     'weight' => '10',
     'name' => 'navigation',
   ));

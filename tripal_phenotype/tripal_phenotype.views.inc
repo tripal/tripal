@@ -541,11 +541,11 @@ function tripal_phenotype_views_default_views() {
     'default' => 'uniquename',
   ));
   $handler = $view->new_display('page', 'Page', 'page_1');
-  $handler->override_option('path', 'phenotypes');
+  $handler->override_option('path', 'chado/phenotypes');
   $handler->override_option('menu', array(
     'type' => 'normal',
     'title' => 'Phenotypes',
-    'description' => '',
+    'description' => 'A phenotypic statement, or a single atomic phenotypic observation, is a controlled sentence describing observable effects of non-wild type function.',
     'weight' => '10',
     'name' => 'navigation',
   ));

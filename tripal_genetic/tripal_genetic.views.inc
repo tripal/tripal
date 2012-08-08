@@ -305,11 +305,11 @@ function tripal_genetic_views_default_views() {
     'default' => 'uniquename',
   ));
   $handler = $view->new_display('page', 'Page', 'page_1');
-  $handler->override_option('path', 'genotypes');
+  $handler->override_option('path', 'chado/genotypes');
   $handler->override_option('menu', array(
     'type' => 'normal',
     'title' => 'Genotypes',
-    'description' => '',
+    'description' => 'A genotype is defined by a collection of features, mutations, balancers, deficiencies, haplotype blocks, or engineered constructs.',
     'weight' => '10',
     'name' => 'navigation',
   ));

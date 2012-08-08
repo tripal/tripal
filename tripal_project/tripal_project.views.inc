@@ -235,11 +235,11 @@ function tripal_project_views_default_views() {
     'default' => 'name',
   ));
   $handler = $view->new_display('page', 'Page', 'page_1');
-  $handler->override_option('path', 'projects');
+  $handler->override_option('path', 'chado/projects');
   $handler->override_option('menu', array(
     'type' => 'normal',
     'title' => 'Projects',
-    'description' => '',
+    'description' => 'A project is a collection of data resulting from a biological experiment.',
     'weight' => '10',
     'name' => 'navigation',
   ));

@@ -436,11 +436,11 @@ function tripal_analysis_views_default_views() {
     'default' => 'name',
   ));
   $handler = $view->new_display('page', 'Page', 'page_1');
-  $handler->override_option('path', 'analyses');
+  $handler->override_option('path', 'chado/analyses');
   $handler->override_option('menu', array(
     'type' => 'normal',
     'title' => 'Analyses',
-    'description' => '',
+    'description' => 'An analysis is a particular type of a computational analysis; it may be a blast of one sequence against another, or an all by all blast, or a different kind of analysis altogether. It is a single unit of computation.',
     'weight' => '10',
     'name' => 'navigation',
   ));
