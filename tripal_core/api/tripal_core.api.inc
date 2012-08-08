@@ -2351,6 +2351,9 @@ function tripal_core_get_chado_version() {
   $prop_exists = db_table_exists('chadoprop');
   tripal_db_set_active($previous_db);
   if (!$prop_exists) {
+     drupal_set_message(t("WARNING: Tripal does not fully support Chado version less than v1.11.  If you are certain this is v1.11 
+       of if Chado was installed using Tripal v0.3.1b then all is well. If not please check the version and either upgrade to 
+       v1.11 or a later version"));
      return "1.11 or older";
   }
   
@@ -2369,7 +2372,15 @@ function tripal_core_get_chado_version() {
   // if we don't have a version in the chadoprop table then it must be 
   // v1.11 or older 
   if (!$v->value) {
+     drupal_set_message(t("WARNING: Tripal does not fully support Chado version less than v1.11.  If you are certain this is v1.11 
+       of if Chado was installed using Tripal v0.3.1b then all is well. If not please check the version and either upgrade to 
+       v1.11 or a later version"));
      return "1.11 or older";
+  }
+  
+  if($v->value != '1.11' and $v->value != '1.2'){
+     drupal_set_message(t("WARNING: This version of Chado is not fully supported."));
+  
   }
   return $v->value;
 }
