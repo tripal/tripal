@@ -318,8 +318,8 @@ function tripal_natural_diversity_views_default_views() {
     'type' => 'normal',
     'title' => 'Natural Diversity Experiments',
     'description' => '',
-    'weight' => '0',
-    'name' => 'primary-links',
+    'weight' => '10',
+    'name' => 'navigation',
   ));
   $handler->override_option('tab_options', array(
     'type' => 'none',
@@ -704,7 +704,7 @@ function tripal_natural_diversity_views_default_views() {
     'type' => 'normal',
     'title' => 'Geographical Locations',
     'description' => '',
-    'weight' => '0',
+    'weight' => '10',
     'name' => 'navigation',
   ));
   $handler->override_option('tab_options', array(
@@ -839,9 +839,9 @@ function tripal_natural_diversity_views_default_views() {
   $handler->override_option('path', 'natdiv_protocols');
   $handler->override_option('menu', array(
     'type' => 'normal',
-    'title' => 'Natural Diversity Protocols',
+    'title' => 'Protocols',
     'description' => 'The protcols used for natural diversity experiments',
-    'weight' => '0',
+    'weight' => '10',
     'name' => 'navigation',
   ));
   $handler->override_option('tab_options', array(
@@ -1053,9 +1053,9 @@ function tripal_natural_diversity_views_default_views() {
   $handler->override_option('path', 'natdiv_reagents');
   $handler->override_option('menu', array(
     'type' => 'normal',
-    'title' => 'Natural Diversity Protocol Reagents',
+    'title' => 'Reagents',
     'description' => 'Reagents used in natural diversity experiments',
-    'weight' => '0',
+    'weight' => '10',
     'name' => 'navigation',
   ));
   $handler->override_option('tab_options', array(

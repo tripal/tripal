@@ -578,9 +578,9 @@ function tripal_feature_views_default_views() {
   $handler->override_option('menu', array(
     'type' => 'normal',
     'title' => 'Features View',
-    'description' => 'Provides a table of sequence features',
-    'weight' => '0',
-    'name' => 'primary-links',
+    'description' => '',
+    'weight' => '10',
+    'name' => 'navigation',
   ));
   $handler->override_option('tab_options', array(
     'type' => 'none',

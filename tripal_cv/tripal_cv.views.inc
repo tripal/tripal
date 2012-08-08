@@ -441,7 +441,7 @@ function tripal_cv_views_default_views() {
     'type' => 'normal',
     'title' => 'Term Listing',
     'description' => 'A listing of a controlled vocabulary terms for a given vocabulary',
-    'weight' => '0',
+    'weight' => '10',
     'name' => 'navigation',
   ));
   $handler->override_option('tab_options', array(
@@ -676,7 +676,7 @@ function tripal_cv_views_default_views() {
     'type' => 'normal',
     'title' => 'CV Listing',
     'description' => 'A listing of all controlled vocabularies',
-    'weight' => '0',
+    'weight' => '10',
     'name' => 'navigation',
   ));
   $handler->override_option('tab_options', array(

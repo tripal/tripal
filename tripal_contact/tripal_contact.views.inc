@@ -334,8 +334,8 @@ function tripal_contact_views_default_views() {
     'type' => 'normal',
     'title' => 'Contacts',
     'description' => '',
-    'weight' => '0',
-    'name' => 'primary-links',
+    'weight' => '10',
+    'name' => 'navigation',
   ));
   $handler->override_option('tab_options', array(
     'type' => 'none',

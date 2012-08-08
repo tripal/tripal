@@ -546,8 +546,8 @@ function tripal_phenotype_views_default_views() {
     'type' => 'normal',
     'title' => 'Phenotypes',
     'description' => '',
-    'weight' => '0',
-    'name' => 'primary-links',
+    'weight' => '10',
+    'name' => 'navigation',
   ));
   $handler->override_option('tab_options', array(
     'type' => 'none',
