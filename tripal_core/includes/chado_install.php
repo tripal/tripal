@@ -6,7 +6,7 @@
  */
 
 /**
- * Load Chado Schema 1.11 Form
+ * Load Chado Schema Form
  *
  * @ingroup tripal_core
  */
