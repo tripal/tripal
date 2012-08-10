@@ -648,13 +648,13 @@ function trpial_feature_get_formatted_sequence($feature_id, $feature_name,
                 CASE 
                   WHEN FL.strand >= 0 THEN 
                     CASE 
-                       WHEN FL.fmin - $1 <= 0 THEN substring(OF.residues from 1 for ((FL.fmax - FL.fmin) + 1 + FL.fmin)) 
-                       ELSE substring(OF.residues from (FL.fmin - $1) for ((FL.fmax - FL.fmin) + 1 + $1 + $2))
+                       WHEN FL.fmin - $1 <= 0 THEN substring(OF.residues from 1 for ((FL.fmax - FL.fmin) + FL.fmin)) 
+                       ELSE substring(OF.residues from (FL.fmin - $1 + 1) for ((FL.fmax - FL.fmin) + $1 + $2))
                     END
                   WHEN FL.strand < 0 THEN
                     CASE 
-                      WHEN FL.fmin - $2 <= 0 THEN substring(OF.residues from 1 for ((FL.fmax - FL.fmin) + 1 + FL.fmin)) 
-                      ELSE substring(OF.residues from (FL.fmin - $2) for ((FL.fmax - FL.fmin) + 1 + $1 + $2))      
+                      WHEN FL.fmin - $2 <= 0 THEN substring(OF.residues from 1 for ((FL.fmax - FL.fmin) + FL.fmin)) 
+                      ELSE substring(OF.residues from (FL.fmin - $2 + 1) for ((FL.fmax - FL.fmin) + $1 + $2))      
                     END
                 END as residues
               FROM featureloc FL 
