@@ -23,12 +23,23 @@ class chado_views_handler_relationship_to_node extends views_handler_relationshi
 
     $this->ensure_my_table();
 
+    // The base table in chado
+    $base_table = $this->definition['base table'];
+    $base_field = $this->definition['base field'];
+
+    // The drupal linking table
+    $chado_table = 'chado_' . $base_table;
+
+    // Need to remove the incorrectly added node join
+    unset($this->query->table_queue['node'],
+      $this->query->tables['stock']['node']);
+
     // First add base => chado_base join
     $def = array();
-    $def['table'] = 'chado_' . $this->table;
-    $def['field'] = $this->field;
-    $def['left_table'] = $this->table;
-    $def['left_field'] = $this->field;
+    $def['table'] = $chado_table;
+    $def['field'] = $base_field;
+    $def['left_table'] = $base_table;
+    $def['left_field'] = $base_field;
     //$def['handler'] = 'views_handler_join_chado_aggregator';
 
     $join = new views_join();
@@ -37,7 +48,8 @@ class chado_views_handler_relationship_to_node extends views_handler_relationshi
     $join->construct();
     $join->adjusted = TRUE;
 
-    $this->linker_alias = $this->query->add_relationship('stock_chado_stock', $join, $this->table);
+    $alias = $base_table . '_' . $chado_table;
+    $this->linker_alias = $this->query->add_relationship($alias, $join, $this->table);
 
     // Now add chado_base => node join
     $def = array();
@@ -53,6 +65,12 @@ class chado_views_handler_relationship_to_node extends views_handler_relationshi
     $join->construct();
     $join->adjusted = TRUE;
 
-    $this->alias = $this->query->add_relationship('chado_stock_node', $join, 'node');
+    if ($base_table == $this->view->base_table) {
+      $alias = 'node';
+    }
+    else {
+      $alias = $chado_table . '_node';
+    }
+    $this->alias = $this->query->add_relationship($alias, $join, 'node');
   }
 }

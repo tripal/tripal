@@ -288,6 +288,44 @@ function tripal_views_views_data() {
     else {
       $base_table = $tvi_row->table_name;
 
+      // Check if we are trying to integrate the node table
+      // if we are we want to add to a current integration
+      // as compared to create a whole new one
+      if ($base_table == 'node') {
+        // Add any joins between the node table and other tables
+        $sql = "SELECT * FROM {tripal_views_join} WHERE setup_id = %d";
+        $joins = db_query($sql, $setup_id);
+        while ($join = db_fetch_object($joins)) {
+          $left_table = $join->left_table;
+          $left_field = $join->left_field;
+          $base_field = $join->base_field;
+          $handler = $join->handler;
+
+          // add join entry
+          $data[$base_table]['table']['join'][$left_table] = array(
+            'left_field' => $left_field,
+            'field' => $base_field,
+          );
+          if ($handler) {
+            $data[$base_table]['table']['join'][$left_table]['handler'] = $handler;
+          }
+        }
+
+        // Add in any relationships for node fields
+        $sql = "SELECT * FROM {tripal_views_handlers} WHERE setup_id=%d";
+        $query = db_query($sql, $setup_id);
+        while ($handler = db_fetch_object($query)) {
+          $data[$base_table][$handler->column_name][$handler->handler_type]['handler'] = $handler->handler_name;
+
+          // Add in any additional arguments
+          // This should be a serialized array including (at a minimum) name => <handler name>
+          if ($handler->arguments) {
+            $data[$base_table][$handler->column_name][$handler->handler_type] = array_merge($data[$base_table][$handler->column_name][$handler->handler_type], unserialize($handler->arguments));
+          }
+        }
+        continue;
+      }
+
       // The chado table could be a regular Chado table or a custom table
       // in the chado database.  Therefore we'll check both
       $table_desc = tripal_core_get_chado_table_schema($base_table);
@@ -378,23 +416,12 @@ function tripal_views_views_data() {
       if ($handler) {
         $data[$base_table]['table']['join'][$left_table]['handler'] = $handler;
       }
-
-      // check to see if the join table is one that correlates with Drupal nodes
-      // if so, there will be a chado_<table_name> table in the Drupal database
-      // if there is, then we need to add the linking join information
-      if (db_table_exists("chado_$left_table")) {
-        // join the mview to the linker table
-        $data[$base_table]['table']['join']["chado_$left_table"] = array(
-          'left_field' => $left_field,
-          'field' => $base_field,
-        );
-      }
     }
   }
 
   // TEMPORARY: needed to join chado base tables to node linking tables
   // currently done using old-style data arrays
-  $data = tripal_views_TEMPORARY_chado_linking_data($data);
+  //$data = tripal_views_TEMPORARY_chado_linking_data($data);
 
   return $data;
 }
@@ -429,29 +456,6 @@ function tripal_views_views_data_alter(&$data) {
             'left_field' => $base_field,
             'field' => $left_field,
           );
-        }
-
-        // check to see if this table is one that correlates with Drupal nodes
-        // if so, there will be a chado_<table_name> table in the Drupal database
-        // if there is, then we need to add the linking join information.  We did
-        // this step in the hook_views_data function above, but now we need
-        // to add the reciprical joins
-        if (db_table_exists("chado_$left_table")) {
-
-          // join the linker table to the mview
-          if (array_key_exists("chado_$left_table", $data)) {
-            $data["chado_$left_table"]['table']['join'][$base_table] = array(
-              'left_field' => $base_field,
-              'field' => $left_field,
-            );
-
-            // Join the node table to the view by way of the chado linker table
-            $data['node']['table']['join'][$base_table] = array(
-              'left_table' => "chado_$left_table",
-              'left_field' => 'nid',
-              'field' => 'nid',
-            );
-          }
         }
       }
     }

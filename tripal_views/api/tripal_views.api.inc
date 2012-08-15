@@ -505,3 +505,95 @@ function tripal_views_get_integration_array_for_chado_table($table_name, $base_t
 
   return $defn_array;
 }
+
+/**
+ * Adds the joins necessary to link a chado table to it's node counterpart
+ *
+ * @param &$defn_array
+ *   The current definition array for a given table
+ */
+function tripal_views_add_node_relationship_to_chado_table_integration($defn_array) {
+  $integrations[$defn_array['table']] = $defn_array;
+  $primary_key = $defn_array['table'] . '_id';
+  $chado_linking = 'chado_' . $defn_array['table'];
+
+  // Add table.primary_key => chado_table.primary key join to $defn_array
+  $integrations[$defn_array['table']]['fields'][$primary_key]['joins'][$chado_linking] = array(
+    'table' => $chado_linking,
+    'field' => $primary_key,
+  );
+
+  // Create chado_table defn_array
+  $integrations[$chado_linking] = array(
+    'table' => $chado_linking,
+    'type' => 'drupal',
+    'name' => 'Chado ' . $defn_array['table'] . ' to Node',
+    'description' => 'Links chado content to its drupal node counterpart',
+    'priority' => $defn_array['priority'],
+    'base_table' => FALSE,
+    'fields' => array(
+      $primary_key => array(
+        'name' => $primary_key,
+        'title' => ucwords(str_replace('_', ' ', $primary_key)),
+        'type' => 'int',
+        'description' => 'The primary key of the chado ' . $defn_array['table'] . ' table',
+        'handlers' => array(),
+        'joins' => array(
+          $defn_array['table'] => array(
+            'table' => $defn_array['table'],
+            'field' => $primary_key,
+          )
+        ),
+      ),
+      'nid' => array(
+        'name' => 'nid',
+        'title' => 'Node ID',
+        'type' => 'int',
+        'description' => 'The primary key of the drupal node table',
+        'handlers' => array(),
+        'joins' => array(
+          'node' => array(
+            'table' => 'node',
+            'field' => 'nid',
+          ),
+        ),
+      )
+    ),
+  );
+
+  // Create node defn_array
+  $integrations['node'] = array(
+    'table' => 'node',
+    'name' => 'Node',
+    'description' => 'Primary Drupal Content',
+    'priority' => $defn_array['priority'],
+    'fields' => array(
+      'nid' => array(
+        'name' => 'nid',
+        'title' => 'Node ID',
+        'type' => 'int',
+        'description' => 'the primary key of the drupal node table',
+        'handlers' => array(
+          'relationship' => array(
+            'name' => 'chado_views_handler_relationship_to_node',
+            'label' => 'Node => Chado ' . ucwords($defn_array['table']),
+            'base table' => $defn_array['table'],
+            'base field' => $primary_key
+          )
+        ),
+        'joins' => array(
+          $defn_array['table'] => array(
+            'table' => $defn_array['table'],
+            'field' => 'nid',
+          ),
+          $chado_linking => array(
+            'table' => $chado_linking,
+            'field' => 'nid',
+          ),
+        ),
+      ),
+    ),
+  );
+
+  return $integrations;
+}
