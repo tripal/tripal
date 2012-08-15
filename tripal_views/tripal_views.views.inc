@@ -81,7 +81,7 @@ function tripal_views_views_handlers() {
       'tripal_views_handler_filter_sequence' => array(
         'parent' => 'chado_views_handler_filter_string',
       ),
-      
+
       // Custom Tripal Field Handlers
       'tripal_views_handler_field_aggregate' => array(
         'parent' => 'chado_views_handler_field',
@@ -100,6 +100,9 @@ function tripal_views_views_handlers() {
 
       // Relationship Handlers
       'chado_views_handler_relationship' => array(
+        'parent' => 'views_handler_relationship'
+      ),
+      'chado_views_handler_relationship_to_node' => array(
         'parent' => 'views_handler_relationship'
       ),
 
@@ -554,7 +557,7 @@ function tripal_views_data_export_download_form(&$form_state, $view, $display_id
 
       $urls[$display->id]['path'] = $path;
       $urls[$display->id]['query'] = $query;
-      
+
       // add the new item to the options array
       $options[$display->id] = $display->display_title;
     }

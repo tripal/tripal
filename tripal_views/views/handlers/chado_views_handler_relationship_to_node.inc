@@ -25,15 +25,11 @@ class chado_views_handler_relationship_to_node extends views_handler_relationshi
 
     // First add base => chado_base join
     $def = array();
-    $def['left_table'] = 'chado_' . $this->table;
-    $def['left_field'] = $this->field;
-    $def['table'] = $this->table;
+    $def['table'] = 'chado_' . $this->table;
     $def['field'] = $this->field;
+    $def['left_table'] = $this->table;
+    $def['left_field'] = $this->field;
     //$def['handler'] = 'views_handler_join_chado_aggregator';
-    $def['pre-aggregated'] = TRUE;
-    $def['table_aggregated'] = 'CURRENT';
-
-    dpm($def, 'definition in to node relationship handler');
 
     $join = new views_join();
 
@@ -41,7 +37,22 @@ class chado_views_handler_relationship_to_node extends views_handler_relationshi
     $join->construct();
     $join->adjusted = TRUE;
 
-    $this->alias = $this->query->add_relationship('stock_chado_stock', $join, $def['left_table']);
-    dpm($this->query, 'query');
+    $this->linker_alias = $this->query->add_relationship('stock_chado_stock', $join, $this->table);
+
+    // Now add chado_base => node join
+    $def = array();
+    $def['table'] = 'node';
+    $def['field'] = 'nid';
+    $def['left_table'] = $this->linker_alias;
+    $def['left_field'] = 'nid';
+    //$def['handler'] = 'views_handler_join_chado_aggregator';
+
+    $join = new views_join();
+
+    $join->definition = $def;
+    $join->construct();
+    $join->adjusted = TRUE;
+
+    $this->alias = $this->query->add_relationship('chado_stock_node', $join, 'node');
   }
 }
