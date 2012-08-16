@@ -32,15 +32,26 @@ function tripal_stock_views_data()  {
   $data = array();
 
   if (module_exists('tripal_views')) {
-    $tables = array(
-      'stock',
-      'stockcollection'
-    );
-    foreach ($tables as $tablename) {
-      if (!tripal_views_is_integrated($tablename, 9)) {
-        $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename, TRUE);
+    $tablename = 'stock';
+    if (!tripal_views_is_integrated($tablename, 9)) {
+      $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename, TRUE);
+
+      // Add in node relationships if chado is in the same db as drupal
+      if (tripal_core_chado_schema_exists()) {
+        $integrations = tripal_views_add_node_relationship_to_chado_table_integration($table_integration_array);
+        foreach ($integrations as $integration) {
+          tripal_views_integration_add_entry($integration);
+        }
+      }
+      else {
         tripal_views_integration_add_entry($table_integration_array);
       }
+    }
+
+    $tablename = 'stockcollection';
+    if (!tripal_views_is_integrated($tablename, 9)) {
+      $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename, TRUE);
+      tripal_views_integration_add_entry($table_integration_array);
     }
 
     $tables = array(

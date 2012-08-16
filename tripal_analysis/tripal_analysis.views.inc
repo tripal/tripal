@@ -42,7 +42,16 @@ function tripal_analysis_views_data()  {
       $table_integration_array['fields']['program']['handlers']['filter']['name'] = 'tripal_views_handler_filter_select_string';
       $table_integration_array['fields']['algorithm']['handlers']['filter']['name'] = 'tripal_views_handler_filter_select_string';
 
-      tripal_views_integration_add_entry($table_integration_array);
+      // Add in node relationships if chado is in the same db as drupal
+      if (tripal_core_chado_schema_exists()) {
+        $integrations = tripal_views_add_node_relationship_to_chado_table_integration($table_integration_array);
+        foreach ($integrations as $integration) {
+          tripal_views_integration_add_entry($integration);
+        }
+      }
+      else {
+        tripal_views_integration_add_entry($table_integration_array);
+      }
     }
 
 
