@@ -624,6 +624,17 @@ function tripal_stock_views_default_views() {
     $fields['name_2']['alter']['make_link'] = 1;
     $fields['name_2']['alter']['path'] = 'node/[nid]';
     $default_handler->override_option('fields', $fields);
+    // Adds stock => Node relationship
+    $default_handler->override_option('relationships', array(
+      'nid' => array(
+        'label' => 'Stock to Node',
+        'required' => 0,
+        'id' => 'nid',
+        'table' => 'chado_stock',
+        'field' => 'nid',
+        'relationship' => 'none',
+      ),
+    ));
     // Only show records with published nodes
     $filters = $view->get_items('filter', 'default');
     $filters['status'] = array(

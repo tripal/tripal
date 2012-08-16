@@ -459,6 +459,17 @@ function tripal_library_views_default_views() {
       )
     );
     $fields = $new_fields + $fields;
+    // Adds library => Node relationship
+    $default_handler->override_option('relationships', array(
+      'nid' => array(
+        'label' => 'Library to Node',
+        'required' => 0,
+        'id' => 'nid',
+        'table' => 'chado_library',
+        'field' => 'nid',
+        'relationship' => 'none',
+      ),
+    ));
     // Change analysis.name to have a link to the node
     $fields['name_1']['alter']['make_link'] = 1;
     $fields['name_1']['alter']['path'] = 'node/[nid]';

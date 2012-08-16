@@ -380,6 +380,17 @@ function tripal_organism_views_default_views() {
       )
     );
     $fields = $new_fields + $fields;
+    // Adds organism => Node relationship
+    $default_handler->override_option('relationships', array(
+      'nid' => array(
+        'label' => 'Organism to Node',
+        'required' => 0,
+        'id' => 'nid',
+        'table' => 'chado_organism',
+        'field' => 'nid',
+        'relationship' => 'none',
+      ),
+    ));
     // Change analysis.name to have a link to the node
     $fields['common_name']['alter']['make_link'] = 1;
     $fields['common_name']['alter']['path'] = 'node/[nid]';

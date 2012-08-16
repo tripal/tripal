@@ -503,6 +503,17 @@ function tripal_analysis_views_default_views() {
       )
     );
     $fields = $new_fields + $fields;
+    // Adds analysis => Node relationship
+    $default_handler->override_option('relationships', array(
+      'nid' => array(
+        'label' => 'Analysis to Node',
+        'required' => 0,
+        'id' => 'nid',
+        'table' => 'chado_analysis',
+        'field' => 'nid',
+        'relationship' => 'none',
+      ),
+    ));
     // Change analysis.name to have a link to the node
     $fields['name']['alter']['make_link'] = 1;
     $fields['name']['alter']['path'] = 'node/[nid]';
