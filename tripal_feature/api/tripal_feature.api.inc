@@ -643,20 +643,8 @@ function trpial_feature_get_formatted_sequence($feature_id, $feature_name,
                        WHEN FL.fmin - $2 <= 0 THEN FL.fmin
                        ELSE $2
                     END                   
-                END as downstream,            
-                              
-                CASE 
-                  WHEN FL.strand >= 0 THEN 
-                    CASE 
-                       WHEN FL.fmin - $1 <= 0 THEN substring(OF.residues from 1 for ((FL.fmax - FL.fmin) + $1 + $2)) 
-                       ELSE substring(OF.residues from (FL.fmin + 1 - $1) for ((FL.fmax - FL.fmin) + $1 + $2))
-                    END
-                  WHEN FL.strand < 0 THEN
-                    CASE 
-                      WHEN FL.fmin - $2 <= 0 THEN substring(OF.residues from 1 for ((FL.fmax - FL.fmin) + $1 + $2)) 
-                      ELSE substring(OF.residues from (FL.fmin + 1 - $2) for ((FL.fmax - FL.fmin) + $1 + $2))      
-                    END
-                END as residues
+                END as downstream,                                          
+                substring(OF.residues from (adjfmin + 1) for (upstream + (FL.fmax - FL.fmin) + downstream)  as residues
               FROM featureloc FL 
                 INNER JOIN feature SF on FL.feature_id = SF.feature_id
                 INNER JOIN cvterm SCVT on SF.type_id = SCVT.cvterm_id
@@ -736,26 +724,26 @@ function trpial_feature_get_formatted_sequence($feature_id, $feature_name,
           $sql = "EXECUTE sequence_by_parent (%d, %d, %d)";
 
           // if the first sub feature we need to include the upstream bases
-          if ($i == 0 and $parent->strand >= 0) {
+          if ($i == 0 and $parent->strand >= 0) {  // forward direction
             // -------------------------- ref
             //    ....---->  ---->        
             //     up    1       2         
             $q = chado_query($sql, $upstream, 0, $child->feature_id);
           }
-          elseif ($i == 0 and $parent->strand < 0) {
+          elseif ($i == 0 and $parent->strand < 0) { // reverse direction
             // -------------------------- ref
             //    ....<----  <----
             //    down  1       2
             $q = chado_query($sql, 0, $downstream, $child->feature_id);
           }          
           // if the last sub feature we need to include the downstream bases
-          elseif ($i == $num_children->num_children - 1 and $parent->strand >= 0) {
+          elseif ($i == $num_children->num_children - 1 and $parent->strand >= 0) {  // forward direction
             // -------------------------- ref
             //        ---->  ---->....
             //          1       2 down
             $q = chado_query($sql, 0, $downstream, $child->feature_id);
           }
-          elseif ($i == $num_children->num_children - 1 and $parent->strand < 0) {
+          elseif ($i == $num_children->num_children - 1 and $parent->strand < 0) { // reverse direction
             // -------------------------- ref
             //        <----  <----....
             //          1       2  up

@@ -990,7 +990,7 @@ function tripal_core_chado_get_foreign_key($table_desc, $field, $values, $option
     // TODO: what do we do if we get to this point and we have a fk
     // relationship expected but we don't have any definition for one in the
     // table schema??
-    $version = variable_get('chado_version', '');
+    $version = tripal_core_get_chado_version(TRUE);
     $message = t("There is no foreign key relationship defined for " . $field . ".
        To define a foreign key relationship, determine the table this foreign
        key referrs to (<foreign table>) and then implement
@@ -2330,8 +2330,8 @@ function tripal_core_get_chado_tables($include_custom = NULL) {
   return $tables;
 }
 /**
- * Queries the database to detrmine the Chado version and sets
- * a Drupal variable named 'chado_version'.  
+ * Sets a Drupal variable with the current version of Chado.  This variable
+ * can then be queried later using the tripal_core_get_chado_Version   
  *
  * @returns
  *   The version of Chado
@@ -2351,11 +2351,7 @@ function tripal_core_set_chado_version() {
   $previous_db = tripal_db_set_active('chado');
   $prop_exists = db_table_exists('chadoprop');
   tripal_db_set_active($previous_db);
-  if (!$prop_exists) {
-     drupal_set_message(t("WARNING: Tripal does not fully support Chado version less than v1.11.  If you are certain this is v1.11 
-       of if Chado was installed using Tripal v0.3.1b then all is well. If not please check the version and either upgrade to 
-       v1.11 or a later version"),'warning');
-     variable_set('chado_version', "1.11 or older");
+  if (!$prop_exists) {     
      return "1.11 or older";
   }
   
@@ -2374,18 +2370,67 @@ function tripal_core_set_chado_version() {
   // if we don't have a version in the chadoprop table then it must be 
   // v1.11 or older 
   if (!$v->value) {
-     drupal_set_message(t("WARNING: Tripal does not fully support Chado version less than v1.11.  If you are certain this is v1.11 
-       of if Chado was installed using Tripal v0.3.1b then all is well. If not please check the version and either upgrade to 
-       v1.11 or a later version"),'warning');
      variable_set('chado_version', "1.11 or older");  
      return "1.11 or older";
   }
   
-  if($v->value != '1.11' and $v->value != '1.2'){  
-     drupal_set_message(t("WARNING: This currently installed version of Chado is not fully supported."),'warning');  
-  }
-  variable_set('chado_version', "1.11 or older");
+  variable_set('chado_version', $v->value);
   return $v->value;
+}
+/**
+ * Returns the version number of the currently installed Chado instance.
+ * It can return the real or effective version.
+ *
+ * @param $exact
+ *   Set this argument to 1 to retrieve the exact version that is installed.
+ *   Otherwise, this function will set the version to the nearest 'tenth'.
+ *   Chado versioning numbers in the hundreds represent changes to the 
+ *   software and not the schema.  Changes in the tenth's represent changes
+ *   in the schema.
+ *
+ * @param $warn_if_unsupported
+ *   If the currently installed version of Chado is not supported by Tripal
+ *   the generatea a Drupal warning.
+ *
+ * @returns
+ *   The version of Chado
+ *
+ * @ingroup tripal_core_api
+ */
+function tripal_core_get_chado_version($exact = FALSE, $warn_if_unsupported = FALSE) {
+   // first get the chado version that is installed
+   $exact_version = variable_get('chado_version', '');
+   if (!$exact_version) {
+     $exact_version = tripal_core_set_chado_version();
+   }
+     
+   // Tripal only supports v1.11 or newer.. really this is the same as v1.1
+   // but at the time the v1.11 schema API was written we didn't know that so
+   // we'll return the version 1.11 so the schema API will work.
+   if (strcmp($exact_version, '1.11 or older') == 0) {
+     $exact_version = "1.11";
+     if($warn_if_unsupported){
+       drupal_set_message(t("WARNING: Tripal does not fully support Chado version less than v1.1.  If you are certain this is v1.1 
+         of if Chado was installed using an earlier version of Tripal then all is well. If not please upgrade to v1.1 or later"),
+         'warning');
+     }
+   }
+      
+   // if not returing an exact version, return the version to the nearest 10th.
+   // return 1.2 for all versions of 1.2x
+   $effective_version = $exact_version;
+   if (preg_match('/^1\.2\d+$/', $effective_version)){
+      $effective_version = "1.2";
+   }
+   if ($warn_if_unsupported and ($effective_version != 1.11 and $effective_version != 1.2)) {
+     drupal_set_message(t("WARNING: The currently installed version of Chado, v$exact_version, is not fully compatible with Tripal."),'warning');
+   }
+   // if the callee has requested the exact version then return it
+   if ($exact) {
+      return $exact_version;
+   }
+
+   return $effective_version;
 }
 /**
  * Retrieves the chado tables Schema API array.  
@@ -2402,16 +2447,8 @@ function tripal_core_set_chado_version() {
 function tripal_core_get_chado_table_schema($table) {
 
    // first get the chado version that is installed
-   $v = variable_get('chado_version', '');
-   if (!$v) {
-     $v = tripal_core_set_chado_version();
-   }
+   $v = tripal_core_get_chado_version();
    
-   // Tripal only supports v1.11 or newer
-   if (strcmp($v, '1.11 or older') == 0) {
-      $v = "1.11";
-   }
-
    // get the table array from the proper chado schema
    $v = preg_replace("/\./", "_", $v); // reformat version for hook name
    $table_arr = module_invoke_all("chado_schema_v" . $v . "_" . $table);

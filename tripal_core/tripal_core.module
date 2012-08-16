@@ -61,6 +61,9 @@ function tripal_core_init() {
   // otherwise PostgreSQL version that may have a different datestyle setting
   // will fail when inserting or updating a date column in a table.
   db_query("SET DATESTYLE TO '%s'", 'MDY');
+  
+  // make sure the current version of chado is set
+  tripal_core_set_chado_version();
 }
 
 /**
