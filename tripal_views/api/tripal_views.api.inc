@@ -144,7 +144,19 @@ function tripal_views_integration_add_entry($defn_array) {
       }
   }
   if ($view_record['name'] && $view_record['comment']) {
-    $status = drupal_write_record('tripal_views', $view_record);
+    if ($defn_array['additional_content']) {
+      $setup = db_fetch_object(db_query("SELECT * FROM {tripal_views} WHERE table_name='%s' AND priority=%d",$view_record['table_name'], $view_record['priority']));
+      if (empty($setup->setup_id)) {
+        $status = drupal_write_record('tripal_views', $view_record);
+      }
+      else {
+        $view_record['setup_id'] = $setup->setup_id;
+        $status = drupal_write_record('tripal_views', $view_record, 'setup_id');
+      }
+    }
+    else {
+      $status = drupal_write_record('tripal_views', $view_record);
+    }
   }
   else {
     $status = FALSE;
@@ -173,7 +185,18 @@ function tripal_views_integration_add_entry($defn_array) {
         'type' => $field['type'],
       );
       if ($view_record['setup_id'] && $field['name'] && $field['title'] && $field['description'] && $field['type']) {
-        $status = drupal_write_record('tripal_views_field', $field_record);
+        if ($defn_array['additional_content']) {
+          $is = db_fetch_object(db_query("SELECT true as present FROM {tripal_views_field} WHERE column_name='%s' AND setup_id=%d",$field_record['column_name'], $field_record['setup_id']));
+          if (!$is->present) {
+            $status = drupal_write_record('tripal_views_field', $field_record);
+          }
+          else {
+            $status = drupal_write_record('tripal_views_field', $field_record, array('setup_id', 'column_name'));
+          }
+        }
+        else {
+          $status = drupal_write_record('tripal_views_field', $field_record);
+        }
       }
       else {
         drupal_set_message(t('Unable to integrate %name field due to missing required fields.', array('%name' => $field['name'])), 'error');
@@ -527,7 +550,7 @@ function tripal_views_add_node_relationship_to_chado_table_integration($defn_arr
   $integrations[$chado_linking] = array(
     'table' => $chado_linking,
     'type' => 'drupal',
-    'name' => 'Chado ' . $defn_array['table'] . ' to Node',
+    'name' => 'Chado ' . $defn_array['table'] . ' Node',
     'description' => 'Links chado content to its drupal node counterpart',
     'priority' => $defn_array['priority'],
     'base_table' => FALSE,
@@ -549,8 +572,16 @@ function tripal_views_add_node_relationship_to_chado_table_integration($defn_arr
         'name' => 'nid',
         'title' => 'Node ID',
         'type' => 'int',
-        'description' => 'The primary key of the drupal node table',
-        'handlers' => array(),
+        'description' => 'Link ' . ucfirst($defn_array['table']) . ' to it\'s node',
+        'handlers' => array(
+          'relationship' => array(
+            'name' => 'chado_views_handler_relationship_to_node',
+            'title' => ucfirst($defn_array['table']) . ' to Node',
+            'label' => ucfirst($defn_array['table']) . ' to Node',
+            'base table' => $defn_array['table'],
+            'base field' => $primary_key
+          )
+        ),
         'joins' => array(
           'node' => array(
             'table' => 'node',
@@ -567,20 +598,14 @@ function tripal_views_add_node_relationship_to_chado_table_integration($defn_arr
     'name' => 'Node',
     'description' => 'Primary Drupal Content',
     'priority' => $defn_array['priority'],
+    'additional_content' => TRUE, // Allows multiple modules to add to the node setup
     'fields' => array(
       'nid' => array(
         'name' => 'nid',
         'title' => 'Node ID',
         'type' => 'int',
         'description' => 'the primary key of the drupal node table',
-        'handlers' => array(
-          'relationship' => array(
-            'name' => 'chado_views_handler_relationship_to_node',
-            'label' => 'Node => Chado ' . ucwords($defn_array['table']),
-            'base table' => $defn_array['table'],
-            'base field' => $primary_key
-          )
-        ),
+        'handlers' => array(),
         'joins' => array(
           $defn_array['table'] => array(
             'table' => $defn_array['table'],

@@ -30,9 +30,11 @@ class chado_views_handler_relationship_to_node extends views_handler_relationshi
     // The drupal linking table
     $chado_table = 'chado_' . $base_table;
 
-    // Need to remove the incorrectly added node join
+    // Need to remove the incorrectly added node & chado_table join
     unset($this->query->table_queue['node'],
-      $this->query->tables['stock']['node']);
+      $this->query->tables['stock']['node'],
+      $this->query->table_queue[$chado_table],
+      $this->query->tables['stock'][$chado_table]);
 
     // First add base => chado_base join
     $def = array();
