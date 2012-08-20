@@ -20,14 +20,6 @@ function tripal_bulk_loader_init() {
  */
 function tripal_bulk_loader_menu() {
   $items = array();
-  // Show all loaders
-  $items['tripal_bulk_loaders'] = array(
-    'title' => 'Tripal Bulk Loaders',
-    'description' => 'Tripal bulk loaders for loading tab-delimited file into chado database',
-    'page callback' => 'tripal_bulk_loader_list',
-    'access arguments' => array('access tripal_bulk_loader'),
-    'type' => MENU_NORMAL_ITEM,
-  );
   // Bulk Loading Job Node
   $items['node/%node/constants/%/edit'] = array(
     'title' => 'Edit Constant Set',
