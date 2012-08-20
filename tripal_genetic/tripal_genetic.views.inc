@@ -85,6 +85,10 @@ function tripal_genetic_views_handlers() {
 function tripal_genetic_views_default_views() {
   $views = array();
 
+  if (!module_exists('tripal_views')) {
+    return $views;
+  }
+
   // Main default view
   $view = new view;
   $view->name = 'genotype_listing';

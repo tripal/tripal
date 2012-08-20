@@ -126,6 +126,10 @@ function tripal_library_views_data_alter(&$data) {
 function tripal_library_views_default_views() {
   $views = array();
 
+  if (!module_exists('tripal_views')) {
+    return $views;
+  }
+
   // Main default view
   $view = new view;
   $view->name = 'library_listing';

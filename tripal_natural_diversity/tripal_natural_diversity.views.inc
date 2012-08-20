@@ -109,6 +109,12 @@ function tripal_natural_diversity_views_handlers() {
 function tripal_natural_diversity_views_default_views() {
   $views = array();
 
+
+  if (!module_exists('tripal_views')) {
+    return $views;
+  }
+
+
   // Experiment Listing
   $view = new view;
   $view->name = 'natdiv_experiment_listing';

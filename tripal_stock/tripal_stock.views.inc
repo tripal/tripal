@@ -265,6 +265,10 @@ function tripal_stock_views_pre_render  (&$view) {
 function tripal_stock_views_default_views() {
   $views = array();
 
+  if (!module_exists('tripal_views')) {
+    return $views;
+  }
+
   // Main default view
   $view = new view;
   $view->name = 'stock_listing';

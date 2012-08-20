@@ -108,6 +108,10 @@ function tripal_cv_views_handlers() {
 function tripal_cv_views_default_views() {
   $views = array();
 
+  if (!module_exists('tripal_views')) {
+    return $views;
+  }
+
   // Main default view
   // List all cvterms based on cv
   $view = new view;

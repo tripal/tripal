@@ -72,6 +72,10 @@ function tripal_db_views_data()  {
 function tripal_db_views_default_views() {
   $views = array();
 
+  if (!module_exists('tripal_views')) {
+    return $views;
+  }
+
   // Main DB default view
   $view = new view;
   $view->name = 'db_listing';
