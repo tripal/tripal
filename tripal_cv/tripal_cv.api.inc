@@ -460,10 +460,10 @@ function tripal_cv_add_cvterm($term, $defaultcv='', $is_relationship = 0, $updat
     }
     $cvterm = db_fetch_object(db_query($cvtermsql, $name, $dbname));
     if (!$is_relationship) {
-      print "Added CV term: $name ($dbname)\n";
+      drupal_set_message("Added CV term: $name ($dbname)");
     }
     else {
-      print "Added relationship CV term: $name ($dbname)\n";
+      drupal_set_message("Added relationship CV term: $name ($dbname)");
     }
   }
   elseif ($update) { // update the cvterm
@@ -478,10 +478,10 @@ function tripal_cv_add_cvterm($term, $defaultcv='', $is_relationship = 0, $updat
     }
     $cvterm = db_fetch_object(db_query($cvtermsql, $name, $dbname));
     if (!$is_relationship) {
-      print "Updated CV term: $name ($dbname)\n";
+      drupal_set_message("Updated CV term: $name ($dbname)");
     }
     else {
-      print "Updated relationship CV term: $name ($dbname)\n";
+      drupal_set_message("Updated relationship CV term: $name ($dbname)");
     }
   }
   // return the cvterm
