@@ -86,6 +86,21 @@ function tripal_views_menu() {
 }
 
 /**
+ * Implements hook_init().
+ */
+function tripal_views_init() {
+
+  // Need to ensure that all chado tables are integrated w/out making
+  // the user go to views UI. It would be ideal to do this in a hook called only once
+  // directly after install/enabling of the module but such a hook doesn't
+  // exist in Drupal 6
+  $tripal_views = db_fetch_object(db_query("SELECT true as has_rows FROM {tripal_views}"));
+  if (!$tripal_views->has_rows) {
+    tripal_views_integrate_all_chado_tables();
+  }
+}
+
+/**
  * Implements hook_views_api()
  *
  * Purpose: Set the permission types that the chado module uses.
