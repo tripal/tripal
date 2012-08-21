@@ -73,15 +73,15 @@ require_once "tripal_core.schema_v1.11.api.inc";
  * @param $values
  *  An associative array containing the values for inserting.
  * @param $options
- *  An array of options such as:  
+ *  An array of options such as:
  *  - statement_name: the name of the prepared statement to use. If the statement
  *     has not yet been prepared it will be prepared automatically. On subsequent
  *     calls with the same statement_name only an execute on the previously
  *     prepared statement will occur.
  *  - is_prepared: TRUE or FALSE. Whether or not the statement is prepared. By
- *     default if the statement is not prepared it will be automatically. 
+ *     default if the statement is not prepared it will be automatically.
  *     However to avoid this check, which requires a database query you can
- *     set this value to true and the check will not be performed. 
+ *     set this value to true and the check will not be performed.
  *  - skip_validation: TRUE or FALSE. If TRUE will skip all the validation steps and
  *     just try to insert as is. This is much faster but results in unhandled
  *     non user-friendly errors if the insert fails.
@@ -118,7 +118,7 @@ require_once "tripal_core.schema_v1.11.api.inc";
  */
 function tripal_core_chado_insert($table, $values, $options = array()) {
   $insert_values = array();
-  
+
   // we need to get a persistent connection.  If one exists this function
   // will not recreate it, but if not it will create one and store it in
   // a Drupal variable for reuse later.
@@ -234,23 +234,23 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
     }
     elseif (strcasecmp($table_desc['fields'][$field]['type'], 'boolean')==0) {
       $itypes[] = "%s";
-      $idatatypes[] = 'bool';    
+      $idatatypes[] = 'bool';
     }
     else {
       $itypes[] = "'%s'";
       $idatatypes[] = 'text';
     }
   }
-  
+
   // create the SQL
   $sql = "INSERT INTO {$table} (" . implode(", ", $ifields) . ") VALUES (" . implode(", ", $itypes) . ")";
 
   // if this is a prepared statement then execute it
   if ($prepared) {
-    // if this is the first time we've run this query 
+    // if this is the first time we've run this query
     // then we need to do the prepare, otherwise just execute
     if ($options['is_prepared'] != TRUE and
-       !tripal_core_is_sql_prepared($options['statement_name'])) { 
+       !tripal_core_is_sql_prepared($options['statement_name'])) {
       // prepare the statement
       $psql = "PREPARE " . $options['statement_name'] . " (" . implode(', ', $idatatypes) . ") AS INSERT INTO {$table} (" . implode(", ", $ifields) . ") VALUES (" . implode(", ", $iplaceholders) . ")";
       $status = chado_query($psql);
@@ -270,7 +270,7 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
     $result = db_query($sql, $ivalues);
     tripal_db_set_active($previous_db);  // now use drupal database
   }
-  
+
   // if we have a result then add primary keys to return array
   if ($result) {
     $primary_key = array();
@@ -609,9 +609,9 @@ function tripal_core_chado_update($table, $match, $values) {
  *     calls with the same statement_name only an execute on the previously
  *     prepared statement will occur.
  *  - is_prepared: TRUE or FALSE. Whether or not the statement is prepared. By
- *     default if the statement is not prepared it will be automatically. 
+ *     default if the statement is not prepared it will be automatically.
  *     However to avoid this check, which requires a database query you can
- *     set this value to true and the check will not be performed. 
+ *     set this value to true and the check will not be performed.
  *
  * @return
  *  A database query result resource, FALSE if the query was not executed
@@ -639,7 +639,7 @@ function tripal_core_chado_update($table, $match, $values) {
  *     'order_by' => array(
  *        'name' => 'ASC'
  *     ),
- *   ); 
+ *   );
  *   $result = tripal_core_chado_select('feature',$columns,$values,$options);
  * @endcode
  * The above code selects a record from the feature table using the three fields
@@ -658,7 +658,7 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
   // will not recreate it, but if not it will create one and store it in
   // a Drupal variable for reuse later.
   tripal_db_persistent_chado();
-  
+
   // get the options for this query
   if (!is_array($options)) {
     $options = array();
@@ -672,12 +672,12 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
   if (!$options['order_by']) {
     $options['order_by'] = array();
   }
-  
+
   // if this is a prepared statement check to see if it has already been prepared
   if ($options['statement_name']) {
-    $prepared = TRUE;  
+    $prepared = TRUE;
   }
-  
+
   // check that our columns and values arguments are proper arrays
   if (!is_array($columns)) {
     watchdog('tripal_core', 'the $columns argument for tripal_core_chado_select must be an array.');
@@ -762,22 +762,22 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
   else {
     $sql  = "SELECT " . implode(', ', $columns) . " ";
     $sql .= "FROM {$table} ";
-    $sql .= "WHERE ";    
+    $sql .= "WHERE ";
     $psql = $sql;  // prepared SQL statement;
     $i = 1;
     $pvalues = array();
-    foreach ($where as $field => $value) {       
-     
+    foreach ($where as $field => $value) {
+
       // if we have multiple values returned then we need an 'IN' statement
       // in our where statement
       if (count($value) > 1) {
         $sql .= "$field IN (" . db_placeholders($value, 'varchar') . ") AND ";
         foreach ($value as $v) {
-          $args[] = $v;            
-          // we can't do a prepared statement with an 'IN' statement in a 
-          // where clause because we can't guarantee we'll always have the 
-          // same number of elements. 
-          $prepared = FALSE;  
+          $args[] = $v;
+          // we can't do a prepared statement with an 'IN' statement in a
+          // where clause because we can't guarantee we'll always have the
+          // same number of elements.
+          $prepared = FALSE;
         }
       }
       // if we have a single value then we need an = in our where statement
@@ -786,7 +786,7 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
         if (in_array($field, $options['regex_columns'])) {
           $operator = '~*';
         }
-        
+
         // get the types for the prepared statement. First check if the type
         // is an integer
         if (strcasecmp($table_desc['fields'][$field]['type'], 'serial')==0 OR
@@ -805,7 +805,7 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
           $args[] = $value[0];
           // set the variables needed for the prepared statement
           $idatatypes[] = 'bool';
-          $pvalues[] = $value[0];             
+          $pvalues[] = $value[0];
         }
         // else the type is a text
         else {
@@ -818,7 +818,7 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
             $sql .= "$field $operator '%s' AND ";
             $psql .= "$field $operator \$" . $i . " AND ";
             $args[] = $value[0];
-          } 
+          }
           // set the variables needed for the prepared statement
           $idatatypes[] = 'text';
           $pvalues[] = "'" . $value[0] . "'";
@@ -828,7 +828,7 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
     }
     $sql = drupal_substr($sql, 0, -4);  // get rid of the trailing 'AND '
     $psql = drupal_substr($psql, 0, -4);  // get rid of the trailing 'AND '
-    
+
     // finally add any ordering of the results to the SQL statement
     if (count($options['order_by']) > 0) {
       $sql .= " ORDER BY ";
@@ -840,12 +840,12 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
       $sql = drupal_substr($sql, 0, -2);  // get rid of the trailing ', '
       $psql = drupal_substr($psql, 0, -2);  // get rid of the trailing ', '
     }
-    
+
     // finish constructing the prepared SQL statement
-    $psql =  "PREPARE " . $options['statement_name'] . " (" . implode(', ', $idatatypes) . ") AS " . $psql;                 
-    
+    $psql =  "PREPARE " . $options['statement_name'] . " (" . implode(', ', $idatatypes) . ") AS " . $psql;
+
   } // end if(empty($where)){ } else {
-  
+
   // if the caller has requested the SQL rather than the results...
   // which happens in the case of wanting to use the Drupal pager, then do so
   if ($options['return_sql']) {
@@ -854,7 +854,7 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
 
   // prepare the statement
   if ($prepared) {
-    // if this is the first time we've run this query 
+    // if this is the first time we've run this query
     // then we need to do the prepare, otherwise just execute
     if ($options['is_prepared'] != TRUE and
         !tripal_core_is_sql_prepared($options['statement_name'])) {
@@ -867,14 +867,14 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
     }
     $sql = "EXECUTE " . $options['statement_name'] . "(" . implode(", ", $pvalues) . ")";
 #    print "$sql\n";
-    $resource = chado_query($sql, $ivalues);   
+    $resource = chado_query($sql, $ivalues);
   }
   else {
     $previous_db = tripal_db_set_active('chado');  // use chado database
     $resource = db_query($sql, $args);
     tripal_db_set_active($previous_db);  // now use drupal database
   }
-  
+
   // format results into an array
   $results = array();
   while ($r = db_fetch_object($resource)) {
@@ -1538,7 +1538,6 @@ function tripal_core_exclude_field_from_feature_by_default() {
  *   The sql statement to execute
  */
 function chado_query($sql) {
-  global $active_db;
 
   $args = func_get_args();
   array_shift($args);
@@ -1553,10 +1552,42 @@ function chado_query($sql) {
   // Use the persistent chado connection if it already exists
   $persistent_connection = variable_get('tripal_perisistent_chado', NULL);
   if ($persistent_connection) {
-    $previously_active_db = $active_db;
-    $active_db = $persistent_connection;
-    $results = _db_query($sql);
-    $active_db = $previously_active_db;
+
+    $query = $sql;
+    // Duplicate the _db_query code in order to ensure that the drupal
+    // $active_db variable is never touched
+    // thus changed $active_db to $persistent_connection
+    // START COPY FROM _db_query in database.pgsql.inc
+    if (variable_get('dev_query', 0)) {
+      list($usec, $sec) = explode(' ', microtime());
+      $timer = (float) $usec + (float) $sec;
+    }
+
+    $last_result = pg_query($persistent_connection, $query);
+
+    if (variable_get('dev_query', 0)) {
+      $bt = debug_backtrace();
+      $query = $bt[2]['function'] . "\n" . $query;
+      list($usec, $sec) = explode(' ', microtime());
+      $stop = (float) $usec + (float) $sec;
+      $diff = $stop - $timer;
+      $queries[] = array($query, $diff);
+    }
+
+    if ($debug) {
+      print '<p>query: ' . $query . '<br />error:' . pg_last_error($persistent_connection) . '</p>';
+    }
+
+    if ($last_result !== FALSE) {
+      return $last_result;
+    }
+    else {
+      // Indicate to drupal_error_handler that this is a database error.
+      ${DB_ERROR} = TRUE;
+      trigger_error(check_plain(pg_last_error($persistent_connection) . "\nquery: " . $query), E_USER_WARNING);
+      return FALSE;
+    }
+    // END COPY FROM _db_query in database.pgsql.inc
   }
   else {
     $previous_db = tripal_db_set_active('chado');
@@ -2331,7 +2362,7 @@ function tripal_core_get_chado_tables($include_custom = NULL) {
 }
 /**
  * Sets a Drupal variable with the current version of Chado.  This variable
- * can then be queried later using the tripal_core_get_chado_Version   
+ * can then be queried later using the tripal_core_get_chado_Version
  *
  * @returns
  *   The version of Chado
@@ -2351,12 +2382,12 @@ function tripal_core_set_chado_version() {
   $previous_db = tripal_db_set_active('chado');
   $prop_exists = db_table_exists('chadoprop');
   tripal_db_set_active($previous_db);
-  if (!$prop_exists) {     
+  if (!$prop_exists) {
      return "1.11 or older";
   }
-  
+
   // we can't use the Tripal API to query this table
-  // because the Tripal API depends on this fucntion to 
+  // because the Tripal API depends on this fucntion to
   // tell it the version. So, we need a typical SQL statement
   $sql = "SELECT value "
         ."FROM chadoprop CP "
@@ -2366,14 +2397,14 @@ function tripal_core_set_chado_version() {
   $previous_db = tripal_db_set_active('chado');
   $v = db_fetch_object(db_query($sql));
   $previous_db = tripal_db_set_active('chado');
-  
-  // if we don't have a version in the chadoprop table then it must be 
-  // v1.11 or older 
+
+  // if we don't have a version in the chadoprop table then it must be
+  // v1.11 or older
   if (!$v->value) {
-     variable_set('chado_version', "1.11 or older");  
+     variable_set('chado_version', "1.11 or older");
      return "1.11 or older";
   }
-  
+
   variable_set('chado_version', $v->value);
   return $v->value;
 }
@@ -2384,7 +2415,7 @@ function tripal_core_set_chado_version() {
  * @param $exact
  *   Set this argument to 1 to retrieve the exact version that is installed.
  *   Otherwise, this function will set the version to the nearest 'tenth'.
- *   Chado versioning numbers in the hundreds represent changes to the 
+ *   Chado versioning numbers in the hundreds represent changes to the
  *   software and not the schema.  Changes in the tenth's represent changes
  *   in the schema.
  *
@@ -2403,19 +2434,19 @@ function tripal_core_get_chado_version($exact = FALSE, $warn_if_unsupported = FA
    if (!$exact_version) {
      $exact_version = tripal_core_set_chado_version();
    }
-     
+
    // Tripal only supports v1.11 or newer.. really this is the same as v1.1
    // but at the time the v1.11 schema API was written we didn't know that so
    // we'll return the version 1.11 so the schema API will work.
    if (strcmp($exact_version, '1.11 or older') == 0) {
      $exact_version = "1.11";
      if($warn_if_unsupported){
-       drupal_set_message(t("WARNING: Tripal does not fully support Chado version less than v1.1.  If you are certain this is v1.1 
+       drupal_set_message(t("WARNING: Tripal does not fully support Chado version less than v1.1.  If you are certain this is v1.1
          of if Chado was installed using an earlier version of Tripal then all is well. If not please upgrade to v1.1 or later"),
          'warning');
      }
    }
-      
+
    // if not returing an exact version, return the version to the nearest 10th.
    // return 1.2 for all versions of 1.2x
    $effective_version = $exact_version;
@@ -2433,7 +2464,7 @@ function tripal_core_get_chado_version($exact = FALSE, $warn_if_unsupported = FA
    return $effective_version;
 }
 /**
- * Retrieves the chado tables Schema API array.  
+ * Retrieves the chado tables Schema API array.
  *
  * @param $table
  *   The name of the table to retrieve.  The function will use the appopriate
@@ -2448,7 +2479,7 @@ function tripal_core_get_chado_table_schema($table) {
 
    // first get the chado version that is installed
    $v = tripal_core_get_chado_version();
-   
+
    // get the table array from the proper chado schema
    $v = preg_replace("/\./", "_", $v); // reformat version for hook name
    $table_arr = module_invoke_all("chado_schema_v" . $v . "_" . $table);

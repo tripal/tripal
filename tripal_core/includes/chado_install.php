@@ -14,11 +14,11 @@ function tripal_core_chado_load_form() {
 
   // we want to force the version of Chado to be set properly
   $real_version = tripal_core_set_chado_version();
-  
+
   // get the effective version.  Pass true as second argument
   // to warn the user if the current version is not compatible
   $version = tripal_core_get_chado_version(FALSE, TRUE);
-  
+
   $form['current_version'] = array(
     '#type' => 'item',
     '#title' => t("Current installed version of Chado"),
@@ -153,7 +153,7 @@ function tripal_core_install_chado($action) {
       print "ERROR: cannot install chado.  Please check database permissions\n";
       exit;
     }
-  }  
+  }
 }
 
 /**
@@ -168,26 +168,26 @@ function tripal_core_reset_chado_schema() {
   // drop current chado and chado-related schema
   if (tripal_core_schema_exists('chado')) {
     print "Dropping existing 'chado' schema\n";
-    pg_query($active_db, "drop schema chado cascade");
+    chado_query("drop schema chado cascade");
   }
   if (tripal_core_schema_exists('genetic_code')) {
     print "Dropping existing 'genetic_code' schema\n";
-    pg_query($active_db, "drop schema genetic_code cascade");
+    chado_query("drop schema genetic_code cascade");
   }
   if (tripal_core_schema_exists('so')) {
     print "Dropping existing 'so' schema\n";
-    pg_query($active_db, "drop schema so cascade");
+    chado_query("drop schema so cascade");
   }
   if (tripal_core_schema_exists('frange')) {
     print "Dropping existing 'frange' schema\n";
-    pg_query($active_db, "drop schema frange cascade");
+    chado_query("drop schema frange cascade");
   }
 
   // create the new chado schema
   print "Creating 'chado' schema\n";
-  pg_query($active_db, "create schema chado");
+  chado_query("create schema chado");
   if (tripal_core_schema_exists('chado')) {
-    pg_query($active_db, "create language plpgsql");
+    chado_query("create language plpgsql");
     return TRUE;
   }
 
@@ -229,9 +229,8 @@ function tripal_core_schema_exists($schema) {
  * @ingroup tripal_core
  */
 function tripal_core_install_sql($sql_file) {
-  global $active_db;
 
-  pg_query($active_db, "set search_path to chado,public");
+  chado_query("set search_path to chado,public");
   print "Loading $sql_file...\n";
   $lines = file($sql_file, FILE_SKIP_EMPTY_LINES);
 
@@ -371,18 +370,18 @@ function tripal_core_install_sql($sql_file) {
       if (strcmp($type, 'set')==0) {
         $query = preg_replace("/public/m", "chado", $query);
       }
-      $result = pg_query($active_db, $query);
+      $result = chado_query($query);
       if (!$result) {
         $error  = pg_last_error();
         print "FAILED!!\nError Message:\nSQL $i, $in_string: $query\n$error\n";
-        pg_query($active_db, "set search_path to public,chado");
+        chado_query("set search_path to public,chado");
         $success = 0;
       }
       $query = '';
     }
   }
   tripal_core_chado_install_done();
-  return $success;    
+  return $success;
 }
 
 /**
@@ -393,7 +392,6 @@ function tripal_core_install_sql($sql_file) {
 function tripal_core_chado_install_done() {
 
   // return the search path to normal
-  global $active_db;
-  pg_query($active_db, "set search_path to public,chado");
+  chado_query("set search_path to public,chado");
 
 }
