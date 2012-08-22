@@ -146,8 +146,8 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
     $connection = tripal_db_persistent_chado();
   }
   else {
-     print "NO STATEMENT (insert): $table\n";
-     debug_print_backtrace();
+     //print "NO STATEMENT (insert): $table\n";
+     //debug_print_backtrace();
   }
 
   if (array_key_exists('skip_validation', $options)) {
@@ -420,8 +420,8 @@ function tripal_core_chado_update($table, $match, $values, $options = NULL) {
     $connection = tripal_db_persistent_chado();
   }
   else {
-     print "NO STATEMENT (update): $table\n";
-     debug_print_backtrace();
+     //print "NO STATEMENT (update): $table\n";
+     //debug_print_backtrace();
   }
 
   // get the table description
@@ -906,8 +906,8 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
     $connection = tripal_db_persistent_chado();
   } 
   else {
-     print "NO STATEMENT (select): $table\n";
-     debug_print_backtrace();
+     //print "NO STATEMENT (select): $table\n";
+     //debug_print_backtrace();
   }
 
   // check that our columns and values arguments are proper arrays
