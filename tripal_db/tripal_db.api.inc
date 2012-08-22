@@ -352,7 +352,7 @@ function tripal_db_add_dbxref($db_id, $accession, $version='', $description='') 
       watchdog('tripal_cv', "Failed to insert the dbxref record $accession", NULL, WATCHDOG_WARNING);
       return 0;
     }
-    print "Added Dbxref accession: $accession\n";
+    drupal_set_message("Added Dbxref accession: $accession");
     $dbxref = db_fetch_object(db_query($dbxsql, $db_id, $accession));
   }
   return $dbxref;
