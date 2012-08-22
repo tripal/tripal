@@ -138,7 +138,8 @@ function tripal_bulk_loader_set_constants_form($form_state, $node) {
   );
 
   // Display table of already added constant sets with the ability to re-arrange and delete
-  if (sizeof($node->constants) > 0) {
+  $first_constant = reset($node->constants);
+  if (sizeof($node->constants) > 0 AND !empty($first_constant)) {
     $form['exposed_fields']['explanation-1'] = array(
       '#type' => 'item',
       '#value' => t('You have already added constants to this bulk loading job. Each '
@@ -360,14 +361,16 @@ function theme_tripal_bulk_loader_set_constants_form($form) {
       }
       $row[] = drupal_render($element['delete']);
       $row[] = drupal_render($element['group']) . drupal_render($element['id']);
-      $rows[] = array('data' => $row, 'class' => 'draggable');
+      if (!empty($row[0])) {
+        $rows[] = array('data' => $row, 'class' => 'draggable');
+      }
       $i++;
     }
     //drupal_add_tabledrag('mytable', 'order', 'sibling', 'weight-group');
     // @coder-ignore: no user input thus don't need to filter
     $form['exposed_fields']['existing'] = array(
       '#type' => 'markup',
-      '#value' => filter_xss(theme('table', $header, $rows, array('id' => 'mytable')) . '<br />'),
+      '#value' => theme('table', $header, $rows, array('id' => 'mytable')) . '<br />',
     );
   }
 
@@ -420,6 +423,7 @@ function tripal_bulk_loader_edit_constant_set_form($form_state, $node, $group_id
     foreach ($node->exposed_fields as $exposed_index) {
 
       $record_id = $exposed_index['record_id'];
+      $record = $node->template->template_array[$record_id];
       $field_id = $exposed_index['field_id'];
       $field = $node->template->template_array[$record_id]['fields'][$field_id];
 

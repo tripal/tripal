@@ -139,6 +139,7 @@ function tripal_bulk_loader_load_data($nid, $job_id) {
   print "File: " . $node->file . " (" . $total_lines . " lines)\n";
 
   // Prep Work ==================================================================================
+  print "\nPreparing to load...\n";
   $loaded_without_errors = TRUE;
 
   // Generate default values array
@@ -203,6 +204,7 @@ function tripal_bulk_loader_load_data($nid, $job_id) {
   ///////////////////////////////////////////////
   // For each set of constants
   ///////////////////////////////////////////////
+  print "Loading...\n";
   $original_default_data = $default_data;
   $group_index = 0;
   $total_num_groups = sizeof($node->constants);
@@ -251,7 +253,9 @@ function tripal_bulk_loader_load_data($nid, $job_id) {
 
     // Parse File adding records as we go ========================================================
 
+    print "\tPreparing to load the current constant set...\n";
     // Open File
+    print "\t\tOpen File...\n";
     $file_handle = fopen($node->file, 'r');
 
     // Set defaults
@@ -271,11 +275,13 @@ function tripal_bulk_loader_load_data($nid, $job_id) {
       case "none":
         break;
       case "all":
+        print "\t\tStart Transaction...\n";
         tripal_db_start_transaction();
         $transactions = TRUE;
         $savepoint = "";
         break;
       case "row":
+        print "\t\tStart Transaction...\n";
         tripal_db_start_transaction();
         $transactions = TRUE;
         $savepoint = "last_row_complete";
@@ -285,16 +291,22 @@ function tripal_bulk_loader_load_data($nid, $job_id) {
     // Disable triggers
     $triggers_disabled = FALSE;
     if ($transactions AND variable_get('tripal_bulk_loader_disable_triggers', TRUE)) {
+      print "\t\tDefer Constraints...\n";
       $triggers_disabled = TRUE;
       chado_query("SET CONSTRAINTS ALL DEFERRED");
     }
 
     // Acquire Locks
-    $lockmode = variable_get('tripal_bulk_loader_lock', 'ROW EXCLUSIVE');
-    foreach ($tables as $table) {
-      chado_query("LOCK TABLE %s IN %s MODE", $table, $lockmode);
+    if ($transactions) {
+      print "\t\tAcquiring Table Locks...\n";
+      $lockmode = variable_get('tripal_bulk_loader_lock', 'ROW EXCLUSIVE');
+      foreach ($tables as $table) {
+        print "\t\t\t$lockmode for $table\n";
+        chado_query("LOCK TABLE %s IN %s MODE", $table, $lockmode);
+      }
     }
 
+    print "\tLoading the current constant set...\n";
     tripal_bulk_loader_progress_bar(0, $total_lines);
     while (!feof($file_handle)) {
 
