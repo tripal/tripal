@@ -207,7 +207,7 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
           $ukselect_vals[$field] = $insert_values[$field];
         }
         // now check the constraint
-        $coptions = array('statement_name' => 'uqsel_' . $table . '_' . implode('_',$ukselect_cols));
+        $coptions = array('statement_name' => 'uqsel_' . $table . '_' . $name);
         if (tripal_core_chado_select($table, $ukselect_cols, $ukselect_vals, $coptions)) {
           watchdog('tripal_core', "tripal_core_chado_insert: Cannot insert duplicate record into $table table: " . print_r($values, 1), array(), 'WATCHDOG_ERROR');
           return FALSE;

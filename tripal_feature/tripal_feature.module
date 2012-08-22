@@ -949,12 +949,17 @@ function chado_feature_validate($node) {
  *
  * @ingroup tripal_feature
  */
-function chado_feature_load($node) {
+function chado_feature_load($node) {  
+
   // get the feature details from chado
   $feature_id = chado_get_id_for_node('feature', $node);
 
   $values = array('feature_id' => $feature_id);
   $feature = tripal_core_generate_chado_var('feature', $values);
+  
+  if(strcmp($feature->name,$feature->uniquename)==0){
+     $node->title = $feature->name ." (" . $feature->type_id->name . ") " . $feature->organism_id->genus . " " . $feature->organism_id->species ;
+  }
 
   $additions = new stdClass();
   $additions->feature = $feature;

@@ -757,8 +757,8 @@ function tripal_feature_load_gff3_parents($feature, $cvterm, $parents, &$gff_fea
       );
       $options = array('statement_name' => 'sel_featurerelationship_objectid_subjectid_typeid');
       $rel = tripal_core_chado_select('feature_relationship', array('*'), $values, $options);
-      
-      if (count($rel > 0)) {
+
+      if (count($rel) > 0) {
         fwrite($log, "   Relationship already exists, skipping '$uname' ($type) $rel_type '$parent' ($parent_type)\n");
       }
       else {
