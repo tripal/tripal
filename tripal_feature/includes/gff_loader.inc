@@ -235,7 +235,7 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
     return 0;
   }
 
-  $previous_db = tripal_db_set_active('chado');
+  //$previous_db = tripal_db_set_active('chado');
   print "Opening $gff_file\n";
 
   //$lines = file($dfile,FILE_SKIP_EMPTY_LINES);
@@ -274,8 +274,6 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
   print "Parsing Line $line_num (0.00%).\r";
   while ($line = fgets($fh)) {
   
-//print "1: " . memory_get_usage() . "\n";
-
     $line_num++;
     $num_read += drupal_strlen($line);   
     $intv_read += $num_read; 
@@ -361,11 +359,14 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
                WHERE CV.cv_id = $1 and (CVT.name = $2 or CVTS.synonym = $3)";
        $status = chado_query($psql);
        if (!$status) {
-        fwrite($log, "ERROR: cannot prepare statement 'sel_cvterm_cvid_cvtname_synonym' for ontology term $line_num\n");
-        return '';
+         fwrite($log, "ERROR: cannot prepare statement 'sel_cvterm_cvid_cvtname_synonym' for ontology term $line_num\n");
+         return '';
       }
+      
     } 
-    $cvterm = db_fetch_object(chado_query("EXECUTE sel_cvterm_cvid_cvtname_synonym (%d, '%s', '%s')", $cv->cv_id, $type, $type));
+
+    $result = chado_query("EXECUTE sel_cvterm_cvid_cvtname_synonym (%d, '%s', '%s')", $cv->cv_id, $type, $type);
+    $cvterm = db_fetch_object($result);
     if (!$cvterm) {
       fwrite($log, "ERROR: cannot find ontology term '$type' on line $line_num.\n");
       return '';
@@ -585,8 +586,7 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
   // ordering defined here.
   foreach ($gff_features as $parent => $details) {
     // only iterate through parents that have children
-
-    if ($details['children']) {
+    if (array_key_exists('children',$details)) {
       // get the parent
       $values = array(
         'organism_id' => $organism->organism_id,
@@ -598,8 +598,10 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
            'name' => $details['type'],
         ),
       );
+
       $options = array('statement_name' => 'sel_feature_organismid_uniquename_typeid');
-      $pfeature = tripal_core_chado_select('feature', array('*'), $values, $options);
+      $result = tripal_core_chado_select('feature', array('*'), $values, $options);
+      $pfeature = $result[0];
 
       // sort the children by order of their fmin positions (values of assoc. array)
       // if the parent is on the reverse strand then sort in reverse
@@ -615,7 +617,7 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
       fwrite($log,  "Updating child ranks for $parent (" . $details['type'] . ")\n");
       foreach ($details['children'] as $kfeature_id => $kfmin) {
         $match = array(
-           'object_id' => $pfeature[0]->feature_id,
+           'object_id' => $pfeature->feature_id,
            'subject_id' => $kfeature_id,
            'type_id' => array(
               'cv_id' => array(
@@ -627,19 +629,21 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
         $values = array(
            'rank' => $rank,
         );
+
         $options = array('statement_name' => 'upd_featurerelationship_all');
         tripal_core_chado_update('feature_relationship', $match, $values, $options);
         $rank++;
       }
-      }
+    }
   }
 
-  tripal_db_set_active($previous_db);
+  //tripal_db_set_active($previous_db);
   
   print "Done.\nSuccessful and failed entries have been saved in the log file:\n $logfile\n";
   fwrite($log, "\n");
   fclose($log);
-  return '';
+  
+  return 1;
 }
 /**
  *
@@ -1116,7 +1120,7 @@ function tripal_feature_load_gff3_feature($organism, $analysis_id, $cvterm, $uni
      'type_id' => $cvterm->cvterm_id
   );
   $options = array('statement_name' => 'sel_feature_organismid_uniquename_typeid');
-  $result = tripal_core_chado_select('feature', array('*'), $fselect, $options);  
+  $result = tripal_core_chado_select('feature', array('*'), $fselect, $options); 
   $feature = $result[0];
 
   if (strcmp($is_obsolete, 'f')==0 or $is_obsolete == 0) {

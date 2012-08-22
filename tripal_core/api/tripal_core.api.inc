@@ -117,17 +117,33 @@ require_once "tripal_core.schema_v1.11.api.inc";
  * @ingroup tripal_chado_api
  */
 function tripal_core_chado_insert($table, $values, $options = array()) {
-  $insert_values = array();
 
-  // we need to get a persistent connection.  If one exists this function
-  // will not recreate it, but if not it will create one and store it in
-  // a Drupal variable for reuse later.
-  tripal_db_persistent_chado();
+  // set defaults for options. If we don't set defaults then
+  // we get memory leaks when we try to access the elements
+  if (!is_array($options)) {
+    $options = array();
+  }
+  if (!array_key_exists('is_prepared', $options)) {
+    $options['is_prepared'] = FALSE;
+  }
+  if (!array_key_exists('statement_name',$options)) {
+    $options['statement_name'] = FALSE;
+  }
+  if (!array_key_exists('skip_validation',$options)) {
+    $options['skip_validation'] = FALSE;
+  }
+  
+  $insert_values = array();
 
   // Determine plan of action
   if ($options['statement_name']) {
     // we have a prepared statment (or want to create one) so set $prepared = TRUE
     $prepared = TRUE;
+    
+    // we need to get a persistent connection.  If one exists this function
+    // will not recreate it, but if not it will create one and store it in
+    // a Drupal variable for reuse later.
+    $connection = tripal_db_persistent_chado();
   }
   else {
      print "NO STATEMENT (insert): $table\n";
@@ -157,10 +173,7 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
         // add the fk relationship info to the prepared statement name so that
         // we can prepare the selects run by the recrusive tripal_core_chado_get_foreign_key
         // function.
-        $foreign_options['statement_name'] = $options['statement_name'] . "fk_" . $table . "_" . $field;
-      }
-      if ($options['prepare']) {
-         $foreign_options['prepare'] = $options['prepare'];
+        $foreign_options['statement_name'] = "fk_" . $table . "_" . $field;
       }
       // select the value from the foreign key relationship for this value
       $results = tripal_core_chado_get_foreign_key($table_desc, $field, $value, $foreign_options);
@@ -380,18 +393,31 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
  * @ingroup tripal_chado_api
  */
 function tripal_core_chado_update($table, $match, $values, $options = NULL) {
+
+  // set defaults for options. If we don't set defaults then
+  // we get memory leaks when we try to access the elements
+  if (!is_array($options)) {
+    $options = array();
+  }
+  if (!array_key_exists('is_prepared', $options)) {
+    $options['is_prepared'] = FALSE;
+  }
+  if (!array_key_exists('statement_name',$options)) {
+    $options['statement_name'] = FALSE;
+  }
+
   $update_values = array();   // contains the values to be updated
   $update_matches = array();  // contains the values for the where clause
   
-  // we need to get a persistent connection.  If one exists this function
-  // will not recreate it, but if not it will create one and store it in
-  // a Drupal variable for reuse later.
-  tripal_db_persistent_chado();
-
   // Determine plan of action
   if ($options['statement_name']) {
     // we have a prepared statment (or want to create one) so set $prepared = TRUE
     $prepared = TRUE;
+    
+    // we need to get a persistent connection.  If one exists this function
+    // will not recreate it, but if not it will create one and store it in
+    // a Drupal variable for reuse later.
+    $connection = tripal_db_persistent_chado();
   }
   else {
      print "NO STATEMENT (update): $table\n";
@@ -409,10 +435,7 @@ function tripal_core_chado_update($table, $match, $values, $options = NULL) {
         // add the fk relationship info to the prepared statement name so that
         // we can prepare the selects run by the recrusive tripal_core_chado_get_foreign_key
         // function.
-        $foreign_options['statement_name'] = $options['statement_name'] . "fk_" . $table . "_" . $field;
-      }
-      if ($options['prepare']) {
-         $foreign_options['prepare'] = $options['prepare'];
+        $foreign_options['statement_name'] =  "fk_" . $table . "_" . $field;
       }
       $results = tripal_core_chado_get_foreign_key($table_desc, $field, $value, $foreign_options);
       if (sizeof($results) > 1) {
@@ -433,7 +456,15 @@ function tripal_core_chado_update($table, $match, $values, $options = NULL) {
   // get the values used for updating
   foreach ($values as $field => $value) {
     if (is_array($value)) {
-      $results = tripal_core_chado_get_foreign_key($table_desc, $field, $value);
+      $foreign_options = array();
+      // select the value from the foreign key relationship for this value
+      if ($options['statement_name']) {
+         // add the fk relationship info to the prepared statement name so that
+         // we can prepare the selects run by the recrusive tripal_core_chado_get_foreign_key
+         // function.
+         $foreign_options['statement_name'] = "fk_" . $table . "_" . $field;
+      }
+      $results = tripal_core_chado_get_foreign_key($table_desc, $field, $value, $foreign_options);
       if (sizeof($results) > 1) {
         watchdog('tripal_core', 'tripal_core_chado_update: When trying to find update values, too many records match the criteria supplied for !foreign_key foreign key constraint (!criteria)', array('!foreign_key' => $field, '!criteria' => print_r($value, TRUE)), WATCHDOG_ERROR);
       }
@@ -603,7 +634,7 @@ function tripal_core_chado_update($table, $match, $values, $options = NULL) {
         !tripal_core_is_sql_prepared($options['statement_name'])) {
       $status = chado_query($psql);
       if (!$status) {
-        watchdog('tripal_core', "tripal_core_chado_select: not able to prepare '%name' statement for: %sql", array('%name' => $options['statement_name'], '%sql' => $sql), 'WATCHDOG ERROR');
+        watchdog('tripal_core', "tripal_core_chado_update: not able to prepare '%name' statement for: %sql", array('%name' => $options['statement_name'], '%sql' => $sql), 'WATCHDOG ERROR');
         return FALSE;
       }
     }
@@ -839,28 +870,40 @@ function tripal_core_chado_delete($table, $match) {
  */
 function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
 
-  // we need to get a persistent connection.  If one exists this function
-  // will not recreate it, but if not it will create one and store it in
-  // a Drupal variable for reuse later.
-  $connection = tripal_db_persistent_chado();
-
-  // get the options for this query
+  // set defaults for options. If we don't set defaults then
+  // we get memory leaks when we try to access the elements
   if (!is_array($options)) {
     $options = array();
   }
-  if (!$options['case_insensitive_columns']) {
+  if (!array_key_exists('case_insensitive_columns', $options)) {
     $options['case_insensitive_columns'] = array();
   }
-  if (!$options['regex_columns']) {
+  if (!array_key_exists('regex_columns', $options)) {
     $options['regex_columns'] = array();
   }
-  if (!$options['order_by']) {
+  if (!array_key_exists('order_by', $options)) {
     $options['order_by'] = array();
   }
-
+  if (!array_key_exists('is_prepared', $options)) {
+    $options['is_prepared'] = FALSE;
+  }
+  if (!array_key_exists('return_sql', $options)) {
+    $options['return_sql'] = FALSE;
+  }
+  if (!array_key_exists('has_record', $options)) {
+    $options['has_record'] = FALSE;
+  }
+  if (!array_key_exists('statement_name',$options)) {
+    $options['statement_name'] = FALSE;
+  }
+  
   // if this is a prepared statement check to see if it has already been prepared
   if ($options['statement_name']) {
     $prepared = TRUE;
+    // we need to get a persistent connection.  If one exists this function
+    // will not recreate it, but if not it will create one and store it in
+    // a Drupal variable for reuse later.
+    $connection = tripal_db_persistent_chado();
   } 
   else {
      print "NO STATEMENT (select): $table\n";
@@ -883,6 +926,7 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
   $from = '';
   $where = '';
   $args = array();
+
   foreach ($values as $field => $value) {
     $select[] = $field;
     if (is_array($value)) {
@@ -902,11 +946,9 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
            // add the fk relationship info to the prepared statement name so that
            // we can prepare the selects run by the recrusive tripal_core_chado_get_foreign_key
            // function.
-           $foreign_options['statement_name'] = $options['statement_name'] . "fk_" . $table . "_" . $field;
+           $foreign_options['statement_name'] = "fk_" . $table . "_" . $field;
         }
-        if ($options['prepare']) {
-           $foreign_options['prepare'] = $options['prepare'];
-        }
+
         $results = tripal_core_chado_get_foreign_key($table_desc, $field, $value, $foreign_options);
         if (!$results or count($results) ==0) {
 
@@ -1045,7 +1087,7 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
 
   // if the caller has requested the SQL rather than the results...
   // which happens in the case of wanting to use the Drupal pager, then do so
-  if ($options['return_sql']) {
+  if ($options['return_sql'] == TRUE) {
     return array('sql' => $sql, 'args' => $args);
   }
 
@@ -1062,8 +1104,10 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
       }
     }
     $sql = "EXECUTE " . $options['statement_name'] . "(" . implode(", ", $pvalues) . ")";
+    // WARNING: This call creates a memory leak:  if you remove the $ivalues it doesn't
+    // do this. Got to find out what's causing this.
     $resource = chado_query($sql, $ivalues);
-  }
+  }  
   else {
     $previous_db = tripal_db_set_active('chado');  // use chado database
     $resource = db_query($sql, $args);
@@ -1131,16 +1175,19 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
  * @ingroup tripal_chado_api
  */
 function tripal_core_chado_get_foreign_key($table_desc, $field, $values, $options = NULL) {
-
+ 
+  // set defaults for options. If we don't set defaults then
+  // we get memory leaks when we try to access the elements
   if (!is_array($options)) {
     $options = array();
   }
-  if (!$options['case_insensitive_columns']) {
+  if (!array_key_exists('case_insensitive_columns', $options)) {
     $options['case_insensitive_columns'] = array();
   }
-  if (!$options['regex_columns']) {
+  if (!array_key_exists('regex_columns', $options)) {
     $options['regex_columns'] = array();
   }
+  
 
   // get the list of foreign keys for this table description and
   // iterate through those until we find the one we're looking for
@@ -1733,17 +1780,18 @@ function tripal_core_exclude_field_from_feature_by_default() {
 function chado_query($sql) {
 
   $args = func_get_args();
-  array_shift($args);
+  array_shift($args); // remove the $sql from the argument list
   $sql = db_prefix_tables($sql);
   if (isset($args[0]) and is_array($args[0])) { // 'All arguments in one array' syntax
     $args = $args[0];
   }
+
   _db_query_callback($args, TRUE);
   $sql = preg_replace_callback(DB_QUERY_REGEXP, '_db_query_callback', $sql);
 
   // Execute the query on the chado database/schema
   // Use the persistent chado connection if it already exists
-  $persistent_connection = variable_get('tripal_perisistent_chado', NULL);
+  $persistent_connection = unserialize(variable_get('tripal_perisistent_chado', NULL));
   if ($persistent_connection) {
 
     $query = $sql;
@@ -2244,7 +2292,9 @@ function tripal_core_is_sql_prepared($statement_name) {
 
   // @coder-ignore: acting on postgres tables rather then drupal schema therefore, table prefixing does not apply
   $sql = "SELECT name FROM pg_prepared_statements WHERE name = '%s'";
-  $result = db_fetch_object(chado_query($sql, $statement_name));
+  // do not use 'chado_query' here or it causes memory-leaks
+  $result = db_fetch_object(db_query($sql, $statement_name));
+
   if ($result) {
      $_SESSION[$connection][] = $statement_name;
      //print "Is Prepared but in DB: $statement_name\n";
@@ -2267,7 +2317,7 @@ function tripal_db_persistent_chado() {
 
   // get connection if it already exists
   // Otherwise we need to set it
-  $connection = variable_get('tripal_perisistent_chado', NULL);
+  $connection = unserialize(variable_get('tripal_perisistent_chado', NULL));
 
   if ($connection) {
     return $connection;
@@ -2279,7 +2329,7 @@ function tripal_db_persistent_chado() {
     }
     else {
       $connection = db_connect($db_url);
-      variable_set('tripal_perisistent_chado', $connection);
+      variable_set('tripal_perisistent_chado', serialize($connection));
     }    
     return $connection;
   }
