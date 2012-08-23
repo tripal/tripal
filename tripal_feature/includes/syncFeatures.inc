@@ -239,7 +239,7 @@ function tripal_feature_sync_features($max_sync = 0, $organism_id = NULL,
 
   // Iterate through features that need to be synced
   $interval = intval($count * 0.01);
-  if ($interval > 1) {
+  if ($interval < 1) {
     $interval = 1;
   }
   $num_ids = sizeof($ids);
