@@ -399,27 +399,34 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
       $tag = preg_split("/=/", $attr, 2);  // split by equals sign
       
       // multiple instances of an attribute are separated by commas
-      $tags[$tag[0]] = explode(",", $tag[1]);  // split by comma
+      $tag_name = $tag[0];
+      if (!array_key_exists($tag_name, $tags)) {
+        $tags[$tag_name] = array();
+      }
+      $tags[$tag_name] = array_merge($tags[$tag_name], explode(",", $tag[1]));  // split by comma
+      
       
       // replace the URL escape codes for each tag
-      for ($i = 0; $i < count($tags[$tag[0]]); $i++) {
-        $tags[$tag[0]][$i] = urldecode($tags[$tag[0]][$i]);          
+      for ($i = 0; $i < count($tags[$tag_name]); $i++) {
+        $tags[$tag_name][$i] = urldecode($tags[$tag_name][$i]);          
       }
       
       // get the name and ID tags
-      if (strcmp($tag[0], 'ID')==0) {
+      if (strcmp($tag_name, 'ID') == 0) {
         $attr_uniquename = $tag[1];
       }
-      elseif (strcmp($tag[0], 'Name')==0) {
+      elseif (strcmp($tag_name, 'Name') == 0) {
         $attr_name = $tag[1];
       }
       // get the list of non-reserved attributes
-      elseif (strcmp($tag[0], 'Alias')!=0        and strcmp($tag[0], 'Parent')!=0 and
-              strcmp($tag[0], 'Target')!=0       and strcmp($tag[0], 'Gap')!=0 and
-              strcmp($tag[0], 'Derives_from')!=0 and strcmp($tag[0], 'Note')!=0 and
-              strcmp($tag[0], 'Dbxref')!=0       and strcmp($tag[0], 'Ontology_term')!=0 and
-              strcmp($tag[0], 'Is_circular')!=0) {
-          $attr_others[$tag[0]] = $tag[1];
+      elseif (strcmp($tag_name, 'Alias') !=0        and strcmp($tag_name, 'Parent') !=0 and
+              strcmp($tag_name, 'Target') !=0       and strcmp($tag_name, 'Gap') !=0 and
+              strcmp($tag_name, 'Derives_from') !=0 and strcmp($tag_name, 'Note') !=0 and
+              strcmp($tag_name, 'Dbxref') !=0       and strcmp($tag_name, 'Ontology_term') !=0 and
+              strcmp($tag_name, 'Is_circular') !=0) {
+        foreach ($tags[$tag_name] as $value){
+          $attr_others[$tag_name][] = $value;
+        }
       }
     }
 
@@ -556,11 +563,15 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
         }
         // add gap information.  This goes in simply as a property
         if (array_key_exists('Gap', $tags)) {
-          tripal_feature_load_gff3_property($feature, 'Gap', $tags['Gap'][0], $log);
+          foreach ($tags['Gap'] as $value) {
+            tripal_feature_load_gff3_property($feature, 'Gap', $value, $log);
+          }
         }
         // add notes. This goes in simply as a property
         if (array_key_exists('Note', $tags)) {
-          tripal_feature_load_gff3_property($feature, 'Note', $tags['Note'][0], $log);
+          foreach ($tags['Note'] as $value) {
+              tripal_feature_load_gff3_property($feature, 'Note', $value, $log);
+          }
         }
         // add the Derives_from relationship (e.g. polycistronic genes).
         if (array_key_exists('Derives_from', $tags)) {
@@ -573,8 +584,10 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
 
         // add any additional attributes
         if ($attr_others) {
-          foreach ($attr_others as $property => $value) {
-            tripal_feature_load_gff3_property($feature, $property, $value, $log);
+          foreach ($attr_others as $tag_name => $values) {
+            foreach ($values as $value){
+              tripal_feature_load_gff3_property($feature, $tag_name, $value, $log);
+            }
           }
         }
       }
