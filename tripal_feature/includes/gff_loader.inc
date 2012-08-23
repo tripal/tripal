@@ -965,7 +965,7 @@ function tripal_feature_load_gff3_alias($feature, $aliases, $log) {
   $select = array('name' => 'synonym_type');
   $options = array('statement_name' => 'sel_cv_name');  
   $results = tripal_core_chado_select('cv', array('*'), $selct, $options);
-  if (count($results) > 0) {
+  if (count($results) == 0) {
     // insert the 'synonym_type' vocabulary
     $values = array(
       'name' => 'synonym_type',
@@ -998,10 +998,10 @@ function tripal_feature_load_gff3_alias($feature, $aliases, $log) {
   $syntype = $result[0];
   if (!$syntype) {
     $term = array(
-      'name' => array('exact'),
-      'id' => array("internal:exact"),
-      'definition' => array(''),
-      'is_obsolete' => array(0),
+      'name' => 'exact',
+      'id' => "internal:exact",
+      'definition' => '',
+      'is_obsolete' => 0,
     );
     // TODO: fix the function so it uses prepared statements    
     $syntype = tripal_cv_add_cvterm($term, $syncv->name, 0, 1);
