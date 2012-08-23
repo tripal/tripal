@@ -348,7 +348,7 @@ function tripal_views_requirements($phase) {
         'value' => t("Chado must be available before Tripal Views can be enabled.  
                       Please ensure Chado is in the Drupal database in a 'chado' 
                       schema (desired) or defined in the \$db_url variable of 
-                      the settings.php file.",
+                      the settings.php file."),
         'severity' => REQUIREMENT_ERROR,
       );
     }
