@@ -17,7 +17,7 @@ function tripal_views_menu() {
   $items = array();
 
   $items['chado'] = array(
-    'title' => 'Biological Data',
+    'title' => 'Search Biological Data',
     'description' => 'Listings of the various biological data available categorized by type.',
     'page callback' => 'tripal_views_biological_data_page',
     'access arguments' => array('access content'),

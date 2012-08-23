@@ -321,3 +321,37 @@ function tripal_views_views_schema() {
 
   return $schema;
 }
+/**
+ * Implementation of hook_requirements(). Make sure Chado database is accessible
+ * before installation
+ *
+ * @ingroup tripal_views
+ */
+function tripal_views_requirements($phase) {
+  global $db_url;
+  
+  $requirements = array();
+  if ($phase == 'install') {
+    $is_remote = FALSE;
+    $is_local = FALSE;
+  
+    // check if chado is accessible but not local
+    if (is_array($db_url) && isset($db_url['chado'])) {
+       $is_remote = TRUE;
+    }
+    // check if chado is locally accessible
+    $is_local = tripal_core_chado_schema_exists();
+  
+    if (!$is_remote and $is_local) {
+      $requirements ['tripal_views'] = array(
+        'title' => "tripal_views",
+        'value' => t("Chado must be available before Tripal Views can be enabled.  
+                      Please ensure Chado is in the Drupal database in a 'chado' 
+                      schema (desired) or defined in the \$db_url variable of 
+                      the settings.php file.",
+        'severity' => REQUIREMENT_ERROR,
+      );
+    }
+  }
+  return $requirements;
+}

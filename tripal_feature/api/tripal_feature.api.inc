@@ -569,7 +569,7 @@ function trpial_feature_get_formatted_sequence($feature_id, $feature_name,
   $upstream, $downstream) {
   
   // to speed things up we need to make sure we have a persistent connection
-  tripal_db_persistent_chado(); 
+  $connection = tripal_db_persistent_chado(); 
   
   if (!$upstream) {
      $upstream = 0;
@@ -591,7 +591,8 @@ function trpial_feature_get_formatted_sequence($feature_id, $feature_name,
       // parent sequence.
       $psql ='PREPARE sequence_by_parent (int, int, int) AS 
               SELECT
-                OF.name srcname, FL.srcfeature_id, FL.strand, OCVT.name as srctypename, SCVT.name as typename,
+                OF.name srcname, FL.srcfeature_id, FL.strand, 
+                OCVT.name as srctypename, SCVT.name as typename,
                 FL.fmin, FL.fmax,
                 CASE 
                   WHEN FL.strand >= 0 THEN 
@@ -604,8 +605,7 @@ function trpial_feature_get_formatted_sequence($feature_id, $feature_name,
                        WHEN FL.fmin - $2 <= 0 THEN 0
                        ELSE FL.fmin - $2
                     END                   
-                END as adjfmin,                                
-                                
+                END as adjfmin,                                                                
                 CASE 
                   WHEN FL.strand >= 0 THEN
                     CASE 
@@ -617,8 +617,7 @@ function trpial_feature_get_formatted_sequence($feature_id, $feature_name,
                       WHEN FL.fmax + $1 > OF.seqlen THEN OF.seqlen
                       ELSE FL.fmax + $1   
                     END               
-                END as adjfmax,     
-                
+                END as adjfmax,                     
                 CASE 
                   WHEN FL.strand >= 0 THEN 
                     CASE 
@@ -630,8 +629,7 @@ function trpial_feature_get_formatted_sequence($feature_id, $feature_name,
                        WHEN FL.fmax + $1 > OF.seqlen THEN OF.seqlen - FL.fmax
                        ELSE $1
                     END                   
-                END as upstream,
-                
+                END as upstream,                
                 CASE 
                   WHEN FL.strand >= 0 THEN 
                     CASE 
@@ -644,7 +642,7 @@ function trpial_feature_get_formatted_sequence($feature_id, $feature_name,
                        ELSE $2
                     END                   
                 END as downstream,                                          
-                substring(OF.residues from (adjfmin + 1) for (upstream + (FL.fmax - FL.fmin) + downstream)  as residues
+                substring(OF.residues from (adjfmin + 1) for (upstream + (FL.fmax - FL.fmin) + downstream))  as residues
               FROM featureloc FL 
                 INNER JOIN feature SF on FL.feature_id = SF.feature_id
                 INNER JOIN cvterm SCVT on SF.type_id = SCVT.cvterm_id
@@ -653,6 +651,7 @@ function trpial_feature_get_formatted_sequence($feature_id, $feature_name,
               WHERE SF.feature_id = $3';
               
       $status = chado_query($psql);
+exit;    
       if (!$status) {
         watchdog('tripal_views_handler_field_sequence', 
           "init: not able to prepare SQL statement '%name'", 
@@ -697,7 +696,7 @@ function trpial_feature_get_formatted_sequence($feature_id, $feature_name,
     // execute the query
     $sql = "EXECUTE sequence_by_parent (%d, %d, %d)";
     $parents = chado_query($sql, $upstream, $downstream, $feature_id);
-    
+
     while ($parent = db_fetch_object($parents)) {  
       $seq = '';  // initialize the sequence for each parent
 
