@@ -331,14 +331,14 @@ function tripal_feature_block($op = 'list', $delta = 0, $edit=array()) {
       $blocks['sequence']['info'] = t('Tripal Feature Sequence');
       $blocks['sequence']['cache'] = BLOCK_NO_CACHE;
 
+      $blocks['featureloc_sequences']['info'] = t('Tripal Feature Annotated Sequence');
+      $blocks['featureloc_sequences']['cache'] = BLOCK_NO_CACHE;
+
       $blocks['synonyms']['info'] = t('Tripal Feature Synonyms');
       $blocks['synonyms']['cache'] = BLOCK_NO_CACHE;
 
       $blocks['properties']['info'] = t('Tripal Feature Properties');
       $blocks['properties']['cache'] = BLOCK_NO_CACHE;;
-
-      $blocks['featureloc_sequences']['info'] = t('Tripal Formatted Sequence');
-      $blocks['featureloc_sequences']['cache'] = BLOCK_NO_CACHE;
 
       $blocks['alignments']['info'] = t('Tripal Feature Alignments');
       $blocks['alignments']['cache'] = BLOCK_NO_CACHE;
@@ -1302,39 +1302,75 @@ function tripal_feature_load_featureloc_sequences($feature_id, $featurelocs) {
       // keep track of the individual parts for each relationship
       $start = $rel->featurelocs->$src->fmin;
       $end   = $rel->featurelocs->$src->fmax;
-      $rel_locs[$src]['parts'][$start]['type']  = $rel->subject_type;
-      $rel_locs[$src]['parts'][$start]['start'] = $start;
-      $rel_locs[$src]['parts'][$start]['end']   = $end;
+      $type  = $rel->subject_type;
+      $rel_locs[$src]['parts'][$start][$type]['start'] = $start;
+      $rel_locs[$src]['parts'][$start][$type]['end']   = $end;
+      $rel_locs[$src]['parts'][$start][$type]['type']  = $type;
     }
   }
 
-   // the featurelocs array provided to the function contains the locations
-   // where this feature is found.   We want to get the sequence for each
-   // location and then annotate it with the parts found from the relationships
-   // locations determiend above.
-  $sql = "SELECT residues FROM {feature} WHERE feature_id = %d";
+  // the featurelocs array provided to the function contains the locations
+  // where this feature is found.   We want to get the sequence for each
+  // location and then annotate it with the parts found from the relationships
+  // locations determiend above.
+  $sql = "SELECT substring(residues from %d for %d) as residues ".
+         "FROM {feature} ".
+         "WHERE feature_id = %d";
   $floc_sequences = array();
   foreach ($featurelocs as $featureloc) {
-    // get the residues for this feature
-    $previous_db = tripal_db_set_active('chado');  // use chado database
-    $feature = db_fetch_object(db_query($sql, $featureloc->srcfeature_id->feature_id));
-    tripal_db_set_active($previous_db);  // now use drupal database
-
+   
+    // build the src name so we can keep track of the different parts for each feature
     $src = $featureloc->srcfeature_id->feature_id ."-". $featureloc->srcfeature_id->type_id->cvterm_id;
 
     // orient the parts to the beginning of the feature sequence
     if (!empty($rel_locs[$src]['parts'])) {
       $parts = $rel_locs[$src]['parts'];
-      usort($parts, 'tripal_feature_sort_rel_parts');
-      foreach ($parts as $start => $attrs) {
-        $parts[$start]['start'] = $parts[$start]['start'] - $featureloc->fmin;
-        $parts[$start]['end']   = $parts[$start]['end'] - $featureloc->fmin;
+      usort($parts, 'tripal_feature_sort_rel_parts_by_start');
+      foreach ($parts as $start => $types) {
+        foreach ($types as $type_name => $type){ 
+          if ($featureloc->strand >= 0) {
+             // this is on the forward strand.  We need to convert the start on the src feature to the 
+             // start on this feature's sequence
+             $parts[$start][$type_name]['start'] = $parts[$start][$type_name]['start'] - $featureloc->fmin;
+             $parts[$start][$type_name]['end']   = $parts[$start][$type_name]['end'] - $featureloc->fmin;          
+          } 
+          else {
+             // this is on the reverse strand.  We need to swap the start and stop and calculate from the 
+             // begining of the reverse sequence
+             $size = ($featureloc->fmax - $featureloc->fmin);
+             $start_orig = $parts[$start][$type_name]['start'];
+             $end_orig = $parts[$start][$type_name]['end'];
+             $parts[$start][$type_name]['start'] = $size - ($end_orig - $featureloc->fmin);
+             $parts[$start][$type_name]['end']   = $size - ($start_orig - $featureloc->fmin);
+          }
+        }
       }
+      // if we're on the reverse strand we need to reverse sort our parts
+      if ($featureloc->strand < 0) {
+         $new = array();
+         $keys = array_keys($parts); 
+         for ($x = count($keys) - 1; $x >= 0 ; $x--) {
+            $new[] = $parts[$x];
+         }
+         $parts = $new;
+      }
+      
       $floc_sequences[$src]['src'] = $src;
       $floc_sequences[$src]['type'] = $featureloc->feature_id->type_id->name;
-      $sequence = drupal_substr($feature->residues, $featureloc->fmin-1, ($featureloc->fmax - $featureloc->fmin)+1);
-      $floc_sequences[$src]['formatted_seq'] =  tripal_feature_color_sequence(
-        $sequence, $parts);
+      $sequence = db_fetch_object(chado_query($sql, $featureloc->fmin + 1, ($featureloc->fmax - $featureloc->fmin), $featureloc->srcfeature_id->feature_id));
+      $residues = $sequence->residues;
+      if ($featureloc->strand < 0) {
+         $residues = tripal_feature_reverse_complement($residues);
+      }
+      $strand = '.';
+      if ($featureloc->strand == 1) {
+        $strand = '+';
+      }
+      elseif ($featureloc->strand == -1) {
+        $strand = '-';
+      }
+      $defline = $featureloc->feature_id->name . " " . $featureloc->srcfeature_id->name . ":" . ($featureloc->fmin + 1) . ".." . $featureloc->fmax . " " . $strand;
+      $floc_sequences[$src]['formatted_seq'] =  tripal_feature_color_sequence($residues, $parts, $defline);
     }
   }
   return $floc_sequences;
@@ -1687,8 +1723,28 @@ function tripal_feature_sort_rel_objects($a, $b) {
  *
  * @ingroup tripal_feature
  */
-function tripal_feature_sort_rel_parts($a, $b) {
-  return strnatcmp($a['start'], $b['start']);
+function tripal_feature_sort_rel_parts_by_start($a, $b) {
+  foreach ($a as $type_name => $details){
+     $astart = $a[$type_name]['start'];
+     break;
+  }
+  foreach ($b as $type_name => $details){
+     $bstart = $b[$type_name]['start'];
+     break;
+  }
+  return strnatcmp($astart, $bstart);
+}
+
+/**
+ *  used to sort the list of relationship parts by start position
+ *
+ * @ingroup tripal_feature
+ */
+function tripal_feature_sort_rel_parts_by_end($a, $b) {
+  if ($a['end'] == $b['end']) {
+     return strcmp($a['type'], $b['type']);
+  }
+  return strnatcmp($a['end'], $b['end']);
 }
 
 /**
@@ -1696,21 +1752,21 @@ function tripal_feature_sort_rel_parts($a, $b) {
  *
  * @ingroup tripal_feature
  */
-function tripal_feature_color_sequence($sequence, $parts) {
+function tripal_feature_color_sequence($sequence, $parts, $defline) {
 
   $types = array();
-
   // first get the list of types so we can create a color legend
-  foreach ($parts as $index => $child) {
-    $type = $child['type'];
-    if (!in_array($type, $types)) {
-      $types[] = $type;
+  foreach ($parts as $index => $types) {
+    foreach ($types as $type_name => $details){
+      //if (!in_array($type_name, $types)) {      
+        $types[$type_name] = 1;
+      //}
     }
   }
 
   $newseq .= "<div id=\"tripal_feature-featureloc_sequence-legend\">Legend: ";
-  foreach ($types as $type) {
-    $newseq .= "<span class=\"tripal_feature-featureloc_sequence-$type\">$type</span>";
+  foreach ($types as $type_name => $present) {
+    $newseq .= "<span class=\"tripal_feature-featureloc_sequence-$type_name\">$type_name</span>";
   }
   $newseq .= "</div>";
 
@@ -1718,33 +1774,56 @@ function tripal_feature_color_sequence($sequence, $parts) {
   // set the background color of the rows based on the type
   $pos = 0;
   $newseq .= "<pre id=\"tripal_feature-featureloc_sequence\">";
-  foreach ($parts as $index => $child) {
-    $type = $child['type'];
-    $start = $child['start'];
-    $end = $child['end']+1;
+  $newseq .= ">$defline\n";
+  
+  // iterate through the parts. They should be in order.
+  foreach ($parts as $index => $types) {
+  
+    // get the start for this part.  All types in this part start at the 
+    // same position so we only need the first record
+    foreach ($types as $type => $child) {
+      $start = $child['start'];
+      break;
+    }
+  
+    // add in the sequence up to the start of this part
+    for ($i = $pos; $i < $start; $i++) {    
+       $newseq .= $sequence{$pos};
+       $seqcount++;
+       if ($seqcount % 50 == 0) {
+         $newseq .= "\n";
+       }
+       $pos++;
+    }
 
-    $class = "class=\"tripal_feature-featureloc_sequence-$type\"";
+    // we want to sort the parts by their end. We want the span tag to
+    // to be added in the order the parts end. 
+    usort($types,'tripal_feature_sort_rel_parts_by_end');
+    
+    // now add the child span for all types that start at this position  
+    foreach ($types as $type) {
+      $class = "class=\"tripal_feature-featureloc_sequence-" . $type['type'] ."\"";
+      $newseq .= "<span $class>";
+    }     
 
-    // iterate through the sequence up to the end of the child
-    for ($i = $pos; $i < $end; $i++) {
+    // now continue adding sequence until we reach the end of the parts
+    // if we reach the end then close the span
+    $parts_done = 0;    
 
-      // if we're at the beginning of the child sequence then set the
-      // appropriate text color
-      if ($pos == $start) {
-        $newseq .= "<span $class>";
-        $func = 'uc';  // nucleotides within the child should be uppercase
-      }
-      $newseq .= $sequence{$pos};
-      $seqcount++;
-
-      if ($seqcount % 60 == 0) {
-        $newseq .= "\n";
-      }
-      $pos++;
-      if ($pos == $end) {
-        $newseq .= "</span>";
-        $func = 'lc';
-      }
+    while($parts_done < count($types)){
+       $newseq .= $sequence{$pos};
+       $seqcount++;
+       $pos++;
+       if ($seqcount % 50 == 0) {
+         $newseq .= "\n";
+       }
+       foreach ($types as $type => $child) {
+         $end = $child['end'];
+         if($pos == $end){
+           $newseq .= "</span>";
+           $parts_done++;
+         }
+       }
     }
   }
 

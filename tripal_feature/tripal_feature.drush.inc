@@ -37,6 +37,7 @@ function tripal_feature_drush_command() {
       'out'    => dt('The output format. Valid options are "fasta_html", "fasta_txt" and raw.'),
       'parent' => dt('Set this argument to 1 to retrieve the sequence from the parent in an alignment rather than the residues column of the feature itself.'),
       'agg'    => dt('Set this argument to 1 to aggregate sub features into a single sequence.  This is useful, for example, for obtaining CDS sequence from an mRNA'),
+      'child'  => dt('Set this argument to the sequence ontology term for the children to aggregate.  This is useful in the case where a gene has exons as well as CDSs and UTRs.  You may sepcify as many feature types as desired by separating each with a single comma (no spaces).'),
     ),
     'examples' => array(
       'Standard example' => 'drush tripal-current-job',
@@ -61,7 +62,10 @@ function drush_tripal_feature_tripal_get_sequence() {
   $output_format = drush_get_option('out');
   $derive_from_parent = drush_get_option('parent');
   $aggregate = drush_get_option('agg');
+  $child = drush_get_option('child');
   
+  $sub_features = explode(',',$child);
+    
   if (!$output_format) {
      $output_format = 'fasta_txt';
   }
@@ -98,7 +102,7 @@ function drush_tripal_feature_tripal_get_sequence() {
       
     $sequence = trpial_feature_get_formatted_sequence($feature_id, $feature_name, 
       $num_bases_per_line, $derive_from_parent, $aggregate, $output_format,
-      $upstream, $downstream);
+      $upstream, $downstream, $sub_features);
     print $sequence;
   }
 }

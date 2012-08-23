@@ -508,7 +508,7 @@ function tripal_feature_delete_property_by_id($featureprop_id) {
  *
  * @ingroup tripal_feature_api
  */
-function trpial_feature_reverse_complement($sequence) {
+function tripal_feature_reverse_complement($sequence) {
 
   $seq = strtoupper($sequence);
   $seq = strrev($seq);
@@ -566,7 +566,7 @@ function trpial_feature_reverse_complement($sequence) {
  */
 function trpial_feature_get_formatted_sequence($feature_id, $feature_name, 
   $num_bases_per_line, $derive_from_parent, $aggregate, $output_format,
-  $upstream, $downstream) {
+  $upstream, $downstream, $sub_features = array()) {
   
   // to speed things up we need to make sure we have a persistent connection
   $connection = tripal_db_persistent_chado(); 
@@ -578,18 +578,18 @@ function trpial_feature_get_formatted_sequence($feature_id, $feature_name,
      $downstream = 0;
   }
   
-  // if we need to get the sequence from the parent but there is no aggregation
-  // then do so now.
-  if ($derive_from_parent) {             
-    
-    // execute our prepared statement
-    if (!tripal_core_is_sql_prepared('sequence_by_parent')) {
-      // prepare the queries we're going to use later during the render phase
-      // This SQL statement uses conditionals in the select clause to handle
-      // cases cases where the alignment is in the reverse direction and when
-      // the upstream and downstream extensions go beyond the lenght of the 
-      // parent sequence.
-      $psql ='PREPARE sequence_by_parent (int, int, int) AS 
+  // prepare statements we'll need to use later
+  if (!tripal_core_is_sql_prepared('sequence_by_parent')) {
+    // prepare the queries we're going to use later during the render phase
+    // This SQL statement uses conditionals in the select clause to handle
+    // cases cases where the alignment is in the reverse direction and when
+    // the upstream and downstream extensions go beyond the lenght of the 
+    // parent sequence.
+    $psql ='PREPARE sequence_by_parent (int, int, int) AS 
+            SELECT srcname, srcfeature_id, strand, srctypename, typename,
+              fmin, fmax, upstream, downstream, adjfmin, adjfmax, 
+              substring(residues from (adjfmin + 1) for (upstream + (fmax - fmin) + downstream))  as residues
+            FROM (
               SELECT
                 OF.name srcname, FL.srcfeature_id, FL.strand, 
                 OCVT.name as srctypename, SCVT.name as typename,
@@ -641,59 +641,60 @@ function trpial_feature_get_formatted_sequence($feature_id, $feature_name,
                        WHEN FL.fmin - $2 <= 0 THEN FL.fmin
                        ELSE $2
                     END                   
-                END as downstream,                                          
-                substring(OF.residues from (adjfmin + 1) for (upstream + (FL.fmax - FL.fmin) + downstream))  as residues
+                END as downstream,  
+                OF.residues                                                     
               FROM featureloc FL 
                 INNER JOIN feature SF on FL.feature_id = SF.feature_id
                 INNER JOIN cvterm SCVT on SF.type_id = SCVT.cvterm_id
                 INNER JOIN feature OF on FL.srcfeature_id = OF.feature_id                
                 INNER JOIN cvterm OCVT on OF.type_id = OCVT.cvterm_id
-              WHERE SF.feature_id = $3';
-              
-      $status = chado_query($psql);
-exit;    
-      if (!$status) {
-        watchdog('tripal_views_handler_field_sequence', 
-          "init: not able to prepare SQL statement '%name'", 
-          array('%name' => 'sequence_by_parent'), 'WATCHDOG ERROR');
-      }
-      // this query is meant to get all of the sub features of any given
-      // feature (arg #1) and order them as they appear on the reference
-      // feature (arg #2).
-      $psql ='PREPARE sub_features (int, int) AS 
-              SELECT SF.feature_id, CVT.name as type_name, SF.type_id
-              FROM feature_relationship FR
-                INNER JOIN feature SF on SF.feature_id = FR.subject_id
-                INNER JOIN cvterm CVT on CVT.cvterm_id = SF.type_id
-                INNER JOIN featureloc FL on FL.feature_id = FR.subject_id
-                INNER JOIN feature PF on PF.feature_id = FL.srcfeature_id
-              WHERE FR.object_id = $1 and PF.feature_id = $2
-              ORDER BY FL.fmin ASC';
-              
-      $status = chado_query($psql);
-      if (!$status) {
-        watchdog('tripal_views_handler_field_sequence', 
-          "init: not able to prepare SQL statement '%name'", 
-          array('%name' => 'ssub_features'), 'WATCHDOG ERROR');
-      }
-      $psql ='PREPARE count_sub_features (int, int) AS 
-              SELECT count(*) as num_children
-              FROM feature_relationship FR
-                INNER JOIN feature SF on SF.feature_id = FR.subject_id
-                INNER JOIN cvterm CVT on CVT.cvterm_id = SF.type_id
-                INNER JOIN featureloc FL on FL.feature_id = FR.subject_id
-                INNER JOIN feature PF on PF.feature_id = FL.srcfeature_id
-              WHERE FR.object_id = $1 and PF.feature_id = $2';
-              
-      $status = chado_query($psql);
-      if (!$status) {
-        watchdog('tripal_views_handler_field_sequence', 
-          "init: not able to prepare SQL statement '%name'", 
-          array('%name' => 'count_sub_features'), 'WATCHDOG ERROR');
-      }
+              WHERE SF.feature_id = $3) as tbl1
+    ';              
+    $status = chado_query($psql);
+    if (!$status) {
+      watchdog('tripal_views_handler_field_sequence', 
+        "init: not able to prepare SQL statement '%name'", 
+        array('%name' => 'sequence_by_parent'), 'WATCHDOG ERROR');
     }
     
-    // execute the query
+    // this query is meant to get all of the sub features of any given
+    // feature (arg #1) and order them as they appear on the reference
+    // feature (arg #2).
+    $psql ='PREPARE sub_features (int, int) AS 
+            SELECT SF.feature_id, CVT.name as type_name, SF.type_id
+            FROM feature_relationship FR
+              INNER JOIN feature SF on SF.feature_id = FR.subject_id
+              INNER JOIN cvterm CVT on CVT.cvterm_id = SF.type_id
+              INNER JOIN featureloc FL on FL.feature_id = FR.subject_id
+              INNER JOIN feature PF on PF.feature_id = FL.srcfeature_id
+            WHERE FR.object_id = $1 and PF.feature_id = $2
+            ORDER BY FL.fmin ASC';            
+    $status = chado_query($psql);
+    if (!$status) {
+      watchdog('tripal_views_handler_field_sequence', 
+        "init: not able to prepare SQL statement '%name'", 
+        array('%name' => 'ssub_features'), 'WATCHDOG ERROR');
+    }
+    $psql ='PREPARE count_sub_features (int, int) AS 
+            SELECT count(*) as num_children
+            FROM feature_relationship FR
+              INNER JOIN feature SF on SF.feature_id = FR.subject_id
+              INNER JOIN cvterm CVT on CVT.cvterm_id = SF.type_id
+              INNER JOIN featureloc FL on FL.feature_id = FR.subject_id
+              INNER JOIN feature PF on PF.feature_id = FL.srcfeature_id
+            WHERE FR.object_id = $1 and PF.feature_id = $2';            
+    $status = chado_query($psql);
+    if (!$status) {
+      watchdog('tripal_views_handler_field_sequence', 
+        "init: not able to prepare SQL statement '%name'", 
+        array('%name' => 'count_sub_features'), 'WATCHDOG ERROR');
+    }
+  }
+    
+  // if we need to get the sequence from the parent then do so now.
+  if ($derive_from_parent) {                  
+    
+    // execute the query to get the sequence from the parent
     $sql = "EXECUTE sequence_by_parent (%d, %d, %d)";
     $parents = chado_query($sql, $upstream, $downstream, $feature_id);
 
@@ -715,6 +716,13 @@ exit;
         $types = array();
         $i = 0;
         while ($child = db_fetch_object($children)) {
+          // if the callee has specified that only certain sub features should be
+          // included then continue of this child is not one of those allowed
+          // subfeatures
+          if (count($sub_features) > 0 and !in_array($child->type_name, $sub_features)){
+             continue;
+          }
+        
           // keep up with the types
           if (!in_array($child->type_name, $types)) {
             $types[] = $child->type_name;
@@ -772,7 +780,7 @@ exit;
       // get the reverse compliment if feature is on the reverse strand
       $dir = 'forward';
       if ($parent->strand < 0) {
-        $seq = trpial_feature_reverse_complement($seq);
+        $seq = tripal_feature_reverse_complement($seq);
         $dir = 'reverse';
       }
       
