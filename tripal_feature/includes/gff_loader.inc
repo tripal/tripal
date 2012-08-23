@@ -1051,7 +1051,7 @@ function tripal_feature_load_gff3_alias($feature, $aliases, $log) {
     if (!$pub) {
       // prepare the statement
       if (!tripal_core_is_sql_prepared('ins_pub_uniquename_typeid')) {
-        $psql = "PREPARE ins_pub_uniquename_typeid (text, text)
+        $psql = "PREPARE ins_pub_uniquename_typeid (text, text) AS
                  INSERT INTO pub (uniquename,type_id) VALUES ('%s',
                  (SELECT cvterm_id
                   FROM cvterm CVT
