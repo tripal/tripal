@@ -34,12 +34,8 @@ require_once "includes/tripal_feature-db_references.inc";
  */
 function tripal_feature_init() {
 
-  // add the jGCharts JS and CSS
   drupal_add_js(drupal_get_path('theme', 'tripal') . '/js/tripal_feature.js');
-  drupal_add_js(drupal_get_path('theme', 'tripal') . '/js/jgcharts/jgcharts.js');
-
-  drupal_add_css(drupal_get_path('theme', 'tripal') .
-                              '/css/tripal_feature.css');
+  drupal_add_css(drupal_get_path('theme', 'tripal') . '/css/tripal_feature.css');
 }
 
 /**
@@ -1325,7 +1321,8 @@ function tripal_feature_load_featureloc_sequences($feature_id, $featurelocs) {
     // orient the parts to the beginning of the feature sequence
     if (!empty($rel_locs[$src]['parts'])) {
       $parts = $rel_locs[$src]['parts'];
-      usort($parts, 'tripal_feature_sort_rel_parts_by_start');
+      $rparts = array();  // we will fill this up if we're on the reverse strand
+
       foreach ($parts as $start => $types) {
         foreach ($types as $type_name => $type){ 
           if ($featureloc->strand >= 0) {
@@ -1333,6 +1330,7 @@ function tripal_feature_load_featureloc_sequences($feature_id, $featurelocs) {
              // start on this feature's sequence
              $parts[$start][$type_name]['start'] = $parts[$start][$type_name]['start'] - $featureloc->fmin;
              $parts[$start][$type_name]['end']   = $parts[$start][$type_name]['end'] - $featureloc->fmin;          
+             $parts[$start][$type_name]['type']  = $type_name;
           } 
           else {
              // this is on the reverse strand.  We need to swap the start and stop and calculate from the 
@@ -1340,19 +1338,23 @@ function tripal_feature_load_featureloc_sequences($feature_id, $featurelocs) {
              $size = ($featureloc->fmax - $featureloc->fmin);
              $start_orig = $parts[$start][$type_name]['start'];
              $end_orig = $parts[$start][$type_name]['end'];
-             $parts[$start][$type_name]['start'] = $size - ($end_orig - $featureloc->fmin);
-             $parts[$start][$type_name]['end']   = $size - ($start_orig - $featureloc->fmin);
+             $new_start = $size - ($end_orig - $featureloc->fmin);
+             $new_end = $size - ($start_orig - $featureloc->fmin);
+             
+             $rparts[$new_start][$type_name]['start'] = $new_start;
+             $rparts[$new_start][$type_name]['end']   = $new_end;
+             $rparts[$new_start][$type_name]['type']  = $type_name;
           }
         }
       }
-      // if we're on the reverse strand we need to reverse sort our parts
-      if ($featureloc->strand < 0) {
-         $new = array();
-         $keys = array_keys($parts); 
-         for ($x = count($keys) - 1; $x >= 0 ; $x--) {
-            $new[] = $parts[$x];
-         }
-         $parts = $new;
+      
+      // now sort the parts
+      // if we're on the reverse strand we need to resort
+      if ($featureloc->strand >= 0) {
+        usort($parts, 'tripal_feature_sort_rel_parts_by_start');         
+      } else {
+        usort($rparts, 'tripal_feature_sort_rel_parts_by_start');
+        $parts = $rparts;
       }
       
       $floc_sequences[$src]['src'] = $src;
@@ -1741,10 +1743,11 @@ function tripal_feature_sort_rel_parts_by_start($a, $b) {
  * @ingroup tripal_feature
  */
 function tripal_feature_sort_rel_parts_by_end($a, $b) {
-  if ($a['end'] == $b['end']) {
+  $val = strnatcmp($b['end'], $a['end']);
+  if ($val == 0) {
      return strcmp($a['type'], $b['type']);
   }
-  return strnatcmp($a['end'], $b['end']);
+  return $val;
 }
 
 /**
@@ -1754,21 +1757,20 @@ function tripal_feature_sort_rel_parts_by_end($a, $b) {
  */
 function tripal_feature_color_sequence($sequence, $parts, $defline) {
 
+
   $types = array();
   // first get the list of types so we can create a color legend
-  foreach ($parts as $index => $types) {
-    foreach ($types as $type_name => $details){
-      //if (!in_array($type_name, $types)) {      
-        $types[$type_name] = 1;
-      //}
+  foreach ($parts as $index => $t) {
+    foreach ($t as $type_name => $details){
+       $types[$type_name] = 1;
     }
   }
 
   $newseq .= "<div id=\"tripal_feature-featureloc_sequence-legend\">Legend: ";
   foreach ($types as $type_name => $present) {
-    $newseq .= "<span class=\"tripal_feature-featureloc_sequence-$type_name\">$type_name</span>";
+    $newseq .= "<span id=\"tripal_feature-legend-$type_name\" class=\"tripal_feature-legend-item tripal_feature-featureloc_sequence-$type_name\" script=\"\">$type_name</span>";
   }
-  $newseq .= "</div>";
+  $newseq .= "</div>Hold the cursor over a type above to highlight its positions in the sequence below. The colors in the sequence below merge when types overlap.";
 
 
   // set the background color of the rows based on the type
@@ -1777,6 +1779,7 @@ function tripal_feature_color_sequence($sequence, $parts, $defline) {
   $newseq .= ">$defline\n";
   
   // iterate through the parts. They should be in order.
+  $ends = array();
   foreach ($parts as $index => $types) {
   
     // get the start for this part.  All types in this part start at the 
@@ -1788,12 +1791,17 @@ function tripal_feature_color_sequence($sequence, $parts, $defline) {
   
     // add in the sequence up to the start of this part
     for ($i = $pos; $i < $start; $i++) {    
-       $newseq .= $sequence{$pos};
-       $seqcount++;
-       if ($seqcount % 50 == 0) {
-         $newseq .= "\n";
-       }
-       $pos++;
+      $newseq .= $sequence{$pos};
+      $seqcount++;
+      if ($seqcount % 50 == 0) {
+        $newseq .= "\n";
+      }
+      if (array_key_exists($pos, $ends)) {
+        foreach ($ends[$pos] as $end){
+          $newseq .= "</span>";
+        }
+      }
+      $pos++;
     }
 
     // we want to sort the parts by their end. We want the span tag to
@@ -1802,29 +1810,27 @@ function tripal_feature_color_sequence($sequence, $parts, $defline) {
     
     // now add the child span for all types that start at this position  
     foreach ($types as $type) {
-      $class = "class=\"tripal_feature-featureloc_sequence-" . $type['type'] ."\"";
-      $newseq .= "<span $class>";
-    }     
-
-    // now continue adding sequence until we reach the end of the parts
-    // if we reach the end then close the span
-    $parts_done = 0;    
-
-    while($parts_done < count($types)){
-       $newseq .= $sequence{$pos};
-       $seqcount++;
-       $pos++;
-       if ($seqcount % 50 == 0) {
-         $newseq .= "\n";
-       }
-       foreach ($types as $type => $child) {
-         $end = $child['end'];
-         if($pos == $end){
-           $newseq .= "</span>";
-           $parts_done++;
-         }
-       }
+      $class = "tripal_feature-featureloc_sequence-" . $type['type'];
+      $newseq .= "<span class=\"$class\">";
+      // add the end position
+      $end = $type['end'];
+      $ends[$end][] = $end;
+    }         
+  }
+  
+  // add in rest of the sequence
+  for ($i = $pos; $i <= strlen($sequence); $i++) {    
+    $newseq .= $sequence{$pos};
+    $seqcount++;
+    if ($seqcount % 50 == 0) {
+      $newseq .= "\n";
     }
+    if (array_key_exists($pos, $ends)) {
+      foreach ($ends[$pos] as $end){
+        $newseq .= "</span>";
+      }
+    }
+    $pos++;
   }
 
   $newseq .= "</pre>";
