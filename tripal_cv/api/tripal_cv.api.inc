@@ -465,6 +465,7 @@ function tripal_cv_add_cvterm($term, $defaultcv='', $is_relationship = 0, $updat
     else {
       drupal_set_message("Added relationship CV term: $name ($dbname)");
     }
+    return $cvterm;
   }
   elseif ($update) { // update the cvterm
     $sql = "
@@ -483,6 +484,7 @@ function tripal_cv_add_cvterm($term, $defaultcv='', $is_relationship = 0, $updat
     else {
       drupal_set_message("Updated relationship CV term: $name ($dbname)");
     }
+    return $cvterm;
   }
   // return the cvterm
   return $cvterm;

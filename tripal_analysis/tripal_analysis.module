@@ -431,7 +431,7 @@ function chado_analysis_form($node) {
   $form['description']= array(
       '#type' => 'textarea',
       '#rows' => 15,
-      '#title' => t('Description and/or Program Settings'),
+      '#title' => t('Materials & Methods (Description and/or Program Settings)'),
       '#required' => FALSE,
       '#default_value' => $description,
       '#description' => t('Please provide all necessary information to allow
