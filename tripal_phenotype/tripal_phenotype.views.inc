@@ -517,7 +517,7 @@ function tripal_phenotype_views_default_views() {
   $handler->override_option('header', 'Click "Show" to see a list of all phenotypes matching the entered criteria. If you leave a any of the criteria blank then the phenotypes will be not be filtered based on that field. Furthermore, if you leave all criteria blank then all phenotypes will be listed.');
   $handler->override_option('header_format', '2');
   $handler->override_option('header_empty', 0);
-  $handler->override_option('empty', 'No phenotypes match the current criteria.');
+  $handler->override_option('empty', 'No phenotypes match the supplied criteria.');
   $handler->override_option('empty_format', '2');
   $handler->override_option('items_per_page', 50);
   $handler->override_option('use_pager', '1');

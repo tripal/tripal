@@ -363,7 +363,7 @@ function tripal_library_views_default_views() {
   $handler->override_option('header', 'Click "Show" to see a list of all libraries matching the entered criteria. If you leave a any of the criteria blank then the libraries will be not be filtered based on that field. Furthermore, if you leave all criteria blank then all libraries will be listed.');
   $handler->override_option('header_format', '2');
   $handler->override_option('header_empty', 0);
-  $handler->override_option('empty', 'There are no libraries matching the current criteria. If you think there should be, check that all chado libraries are sync\'d with your website.');
+  $handler->override_option('empty', 'No libraries match the supplied criteria.');
   $handler->override_option('empty_format', '1');
   $handler->override_option('items_per_page', 50);
   $handler->override_option('use_pager', '1');

@@ -290,7 +290,7 @@ function tripal_organism_views_default_views() {
     'type' => 'none',
   ));
   $handler->override_option('title', 'Organisms');
-  $handler->override_option('empty', 'No organism currently in your chado database.');
+  $handler->override_option('empty', 'No organisms matched the supplied criteria.');
   $handler->override_option('empty_format', '1');
   $handler->override_option('items_per_page', 0);
   $handler->override_option('style_plugin', 'table');

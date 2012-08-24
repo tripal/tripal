@@ -221,7 +221,7 @@ function tripal_project_views_default_views() {
     'type' => 'none',
   ));
   $handler->override_option('title', 'Projects');
-  $handler->override_option('empty', 'There are currently no projects available.');
+  $handler->override_option('empty', 'No projects match the supplied criteria.');
   $handler->override_option('empty_format', '2');
   $handler->override_option('items_per_page', 50);
   $handler->override_option('use_pager', '1');

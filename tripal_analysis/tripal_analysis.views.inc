@@ -407,7 +407,7 @@ function tripal_analysis_views_default_views() {
   $handler->override_option('header', 'Click "Show" to see a list of all analysis matching the entered criteria. If you leave a any of the criteria blank then the analysis will be not be filtered based on that field. Furthermore, if you leave all criteria blank then all analysis will be listed.');
   $handler->override_option('header_format', '2');
   $handler->override_option('header_empty', 1);
-  $handler->override_option('empty', 'No analysis match the supplied criteria.');
+  $handler->override_option('empty', 'No analyses match the supplied criteria.');
   $handler->override_option('empty_format', '1');
   $handler->override_option('items_per_page', 50);
   $handler->override_option('use_pager', '1');
