@@ -23,7 +23,7 @@ function tripal_cv_init() {
   drupal_add_js(drupal_get_path('theme', 'tripal') . '/js/tripal_cv.js');
   
   // add the jgCharts.js
-  drupal_add_js(drupal_get_path('theme', 'tripal') . '/js/jgcharts.js');
+  drupal_add_js(drupal_get_path('theme', 'tripal') . '/js/jgcharts/jgcharts.js');
 
   // add the jsTree JS and CSS
   drupal_add_css(drupal_get_path('theme', 'tripal') . '/js/jsTree/source/tree_component.css');
