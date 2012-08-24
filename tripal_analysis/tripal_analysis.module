@@ -11,8 +11,8 @@
  * @ingroup tripal_modules
  */
 
-require('tripal_analysis.api.inc');
-require('tripal_analysis_privacy.inc');
+require('api/tripal_analysis.api.inc');
+require('includes/tripal_analysis_privacy.inc');
 
 /**
  * Register tripal_analysis sub-modules
@@ -72,7 +72,7 @@ function tripal_analysis_menu() {
       'page callback' => 'tripal_analysis_module_description_page',
       'access arguments' => array('administer site configuration'),
       'type' => MENU_NORMAL_ITEM,
-      'file' => 'tripal_analysis.admin.inc',
+      'file' => 'includes/tripal_analysis.admin.inc',
   );
 
   $items['admin/tripal/tripal_analysis/configuration'] = array(
@@ -82,7 +82,7 @@ function tripal_analysis_menu() {
       'page arguments' => array('tripal_analysis_admin'),
       'access arguments' => array('administer site configuration'),
       'type' => MENU_NORMAL_ITEM,
-      'file' => 'tripal_analysis.admin.inc',
+      'file' => 'includes/tripal_analysis.admin.inc',
   );
   return $items;
 }

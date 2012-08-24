@@ -207,7 +207,10 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
           $ukselect_vals[$field] = $insert_values[$field];
         }
         // now check the constraint
-        $coptions = array('statement_name' => 'uqsel_' . $table . '_' . $name);
+        $coptions = array();
+        if ($options['statement_name']) {
+          $coptions = array('statement_name' => 'uqsel_' . $table . '_' . $name);
+        }
         if (tripal_core_chado_select($table, $ukselect_cols, $ukselect_vals, $coptions)) {
           watchdog('tripal_core', "tripal_core_chado_insert: Cannot insert duplicate record into $table table: " . print_r($values, 1), array(), 'WATCHDOG_ERROR');
           return FALSE;
@@ -1941,10 +1944,10 @@ function tripal_core_insert_property($basetable, $record_id, $property,
   // insert
   $props = tripal_core_get_property($basetable, $record_id, $property, $cv_name);
   if (!is_array($props)) {
-  $props = array($props);
+    $props = array($props);
   }
   $rank = 0;
-  if (count($props)>0) {
+  if (count($props) > 0) {
     if ($update_if_present) {
       return tripal_core_update_property($basetable, $record_id, $property, $cv_name, $value);
     }
@@ -1963,7 +1966,12 @@ function tripal_core_insert_property($basetable, $record_id, $property,
       // now add 1 to the rank
       $rank++;
     }
+  } 
+  else {
+    watchdog('tripal_core', "Cannot find property '!prop_name'.",
+        array('!prop_name' => $property), WATCHDOG_ERROR);
   }
+  
 
   // get the foreign key for this property table
   $table_desc = tripal_core_get_chado_table_schema($basetable . 'prop');

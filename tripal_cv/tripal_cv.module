@@ -1,9 +1,9 @@
 <?php
 
-require_once "charts.php";
-require_once "trees.php";
-require_once "obo_loader.php";
-require_once "tripal_cv.api.inc";
+require_once "includes/charts.inc";
+require_once "includes/trees.inc";
+require_once "includes/obo_loader.inc";
+require_once "api/tripal_cv.api.inc";
 
 /**
  * @defgroup tripal_cv CV Module
@@ -1002,7 +1002,9 @@ function tripal_cv_cvtermpath_form() {
     '#title' => t('Controlled Vocabulary/Ontology Name'),
     '#type' => 'select',
     '#options' => $cvs,
-    '#description' => t('Select a controlled vocabulary for which you would like to upate the cvtermpath.'),
+    '#description' => t('The Chado cvtermpath is a database table that provides lineage for ontology terms 
+      and is useful for quickly finding any ancestor parent of a term.  This table must be populated for each
+      ontology.  Select a controlled vocabulary for which you would like to upate the cvtermpath.'),
   );
 
   $form['description'] = array(
