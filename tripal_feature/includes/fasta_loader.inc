@@ -610,7 +610,7 @@ function tripal_feature_fasta_loader_handle_feature($name, $uname, $db_id, $acce
           $sql = "UPDATE {feature}
                   SET residues = '%s', seqlen = '%s', md5checksum = '%s'
                   WHERE organism_id = %d and name = '%s' and type_id = %d";
-          $result = db_query($sql, $residues, durpal_strlen($residues), md5($residues), $organism_id, $name, $cvterm->cvterm_id);
+          $result = db_query($sql, $residues, drupal_strlen($residues), md5($residues), $organism_id, $name, $cvterm->cvterm_id);
         }
         }
         else {
