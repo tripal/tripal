@@ -327,7 +327,7 @@ function tripal_views_views_schema() {
  *
  * @ingroup tripal_views
  */
-function tripal_views_requirements($phase) {
+/*function tripal_views_requirements($phase) {
   global $db_url;
   
   $requirements = array();
@@ -354,4 +354,4 @@ function tripal_views_requirements($phase) {
     }
   }
   return $requirements;
-}
+}*/
