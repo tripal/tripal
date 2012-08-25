@@ -564,7 +564,7 @@ function tripal_feature_fasta_loader_handle_feature($name, $uname, $db_id, $acce
   }
 
   if (!$feature and (strcmp($method, 'Insert only')==0 or strcmp($method, 'Insert and update')==0)) {
-    // if we have a unique name but not a name then set them to be teh same
+    // if we have a unique name but not a name then set them to be the same
     // and vice versa
     if (!$uname) {
       $uname = $name;
@@ -587,7 +587,7 @@ function tripal_feature_fasta_loader_handle_feature($name, $uname, $db_id, $acce
       print "Inserted feature $name ($uname)\n";
     }
     $feature = db_fetch_object(db_query($feature_sql, $organism_id, $uname, $cvterm->cvterm_id));
-    }
+  }
   if (!$feature and (strcmp($method, 'Update only')==0 or drupal_strcmp($method, 'Insert and update')==0)) {
     print "WARNING: failed to find feature '$name' ('$uname') while matching on " . drupal_strtolower($match_type) . ". Skipping\n";
     return 0;
@@ -612,42 +612,36 @@ function tripal_feature_fasta_loader_handle_feature($name, $uname, $db_id, $acce
                   WHERE organism_id = %d and name = '%s' and type_id = %d";
           $result = db_query($sql, $residues, drupal_strlen($residues), md5($residues), $organism_id, $name, $cvterm->cvterm_id);
         }
+      }
+      else {
+        // if we're matching on the unique name but do not have a new name then we
+        // don't want to update the name.  If we do have a name then we
+        // should update it.  We only get a name if there was a regular expression
+        // provided for pulling it out
+        if ($name) {
+          $sql = "UPDATE {feature}
+                  SET name = '%s', residues = '%s', seqlen = '%s', md5checksum = '%s'
+                  WHERE organism_id = %d and uniquename = '%s' and type_id = %d";
+          $result = db_query($sql, $name, $residues, drupal_strlen($residues), md5($residues), $organism_id, $uname, $cvterm->cvterm_id);
         }
         else {
-          // if we're matching on the unique name but do not have a new name then we
-          // don't want to update the name.  If we do have a name then we
-          // should update it.  We only get a name if there was a regular expression
-          // provided for pulling it out
-          if ($name) {
-            $sql = "UPDATE {feature}
-                    SET name = '%s', residues = '%s', seqlen = '%s', md5checksum = '%s'
-                    WHERE organism_id = %d and uniquename = '%s' and type_id = %d";
-            $result = db_query($sql, $name, $residues, drupal_strlen($residues), md5($residues), $organism_id, $uname, $cvterm->cvterm_id);
-          }
-          else {
-            $sql = "UPDATE {feature}
-                    SET residues = '%s', seqlen = '%s', md5checksum = '%s'
-                    WHERE organism_id = %d and uniquename = '%s' and type_id = %d";
-            $result = db_query($sql, $residues, drupal_strlen($residues), md5($residues), $organism_id, $uname, $cvterm->cvterm_id);
-          }
-    }
-    if (!$result) {
-      print "ERROR: failed to update feature '$name ($uname)'\n";
-      return 0;
-    }
-    else {
-      print "Updated feature $name ($uname)\n";
-    }
+          $sql = "UPDATE {feature}
+                  SET residues = '%s', seqlen = '%s', md5checksum = '%s'
+                  WHERE organism_id = %d and uniquename = '%s' and type_id = %d";
+          $result = db_query($sql, $residues, drupal_strlen($residues), md5($residues), $organism_id, $uname, $cvterm->cvterm_id);
+        }
+      }
+      if (!$result) {
+        print "ERROR: failed to update feature '$name ($uname)'\n";
+        return 0;
+      }
+      else {
+        print "Updated feature $name ($uname)\n";
+      }
     }
     else {
       print "WARNING: feature already exists: '$name' ('$uname'). Skipping\n";
     }
-  }
-   // now get the feature
-  $feature = db_fetch_object(db_query($feature_sql, $organism_id, $uname, $cvterm->cvterm_id));
-  if (!$feature) {
-    print "Something bad has happened: $organism_id, $uname, $cvterm->cvterm_id\n";
-    return 0;
   }
 
   // add in the analysis link
@@ -695,7 +689,7 @@ function tripal_feature_fasta_loader_handle_feature($name, $uname, $db_id, $acce
         print "Added database crossreference $name ($uname) -> $accession\n";
       }
     }
-    }
+  }
 
    // now add in the relationship if one exists.  First, get the parent type for the relationship
    // then get the parent feature
