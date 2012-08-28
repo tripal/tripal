@@ -764,6 +764,10 @@ function tripal_analysis_theme() {
        'arguments' => array('node' => NULL),
        'template' => 'tripal_analysis_base',
     ),
+    'tripal_feature_analyses' => array(
+      'template' => 'tripal_feature_analyses',  
+      'arguments' =>  array('node' => NULL),  
+    ),
   );
 }
 /**
@@ -776,6 +780,10 @@ function tripal_analysis_block($op = 'list', $delta = 0, $edit=array()) {
     case 'list':
       $blocks['base']['info'] = t('Tripal Analysis Details');
       $blocks['base']['cache'] = BLOCK_NO_CACHE;
+      
+      $blocks['featureblast']['info'] = t('Tripal Feature Analyses');
+      $blocks['featureblast']['cache'] = BLOCK_NO_CACHE;
+      
       return $blocks;
 
   case 'view':
@@ -788,6 +796,10 @@ function tripal_analysis_block($op = 'list', $delta = 0, $edit=array()) {
         case 'base':
           $block['subject'] = t('Analysis Details');
           $block['content'] = theme('tripal_analysis_base', $node);
+          break;
+        case 'tripal_feature_analyses':
+          $block['subject'] = t('Feature Analyses');
+          $block['content'] = theme('tripal_feature_analyses', $node);
           break;
         default :
       }
@@ -904,6 +916,35 @@ function tripal_analyses_cleanup($dummy = NULL, $job_id = NULL) {
   }
   return '';
 }
+/*******************************************************************************
+ * tripal_analysis_nodeapi()
+ * HOOK: Implementation of hook_nodeapi()
+ * Display blast results for allowed node types
+ */
+function tripal_analysis_nodeapi(&$node,  $op, $teaser, $page) {
+
+  switch ($op) {
+    case 'view':
+
+      if ($teaser) {
+        return '';
+      }
+      // Abort if this node is not one of the types we should show.
+      if (strcmp($node->type,'chado_feature')==0) {
+        if ($node->build_mode == NODE_BUILD_SEARCH_INDEX) {
+           // return results for searching
+        } 
+        else {
+           // return normal results
+           $node->content['tripal_feature_analyses'] = array(
+                  '#value' => theme('tripal_feature_analyses',   $node),
+                  '#weight' => 8
+           );
+        }
+      }
+      break;
+  }
+}
 
 /**
  * Implements hook_views_api()
@@ -918,3 +959,5 @@ function tripal_analysis_views_api() {
     'api' => 2.0,
   );
 }
+
+
