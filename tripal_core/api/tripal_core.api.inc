@@ -173,7 +173,7 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
         // add the fk relationship info to the prepared statement name so that
         // we can prepare the selects run by the recrusive tripal_core_chado_get_foreign_key
         // function.
-        $foreign_options['statement_name'] = "fk_" . $table . "_" . $field;
+        $foreign_options['statement_name'] = "fk_" . $table . "_" . $field . '_' . sizeof($value) . 'args';
       }
       // select the value from the foreign key relationship for this value
       $results = tripal_core_chado_get_foreign_key($table_desc, $field, $value, $foreign_options);
