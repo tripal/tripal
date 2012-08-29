@@ -132,14 +132,14 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
   if (!array_key_exists('skip_validation',$options)) {
     $options['skip_validation'] = FALSE;
   }
-  
+
   $insert_values = array();
 
   // Determine plan of action
   if ($options['statement_name']) {
     // we have a prepared statment (or want to create one) so set $prepared = TRUE
     $prepared = TRUE;
-    
+
     // we need to get a persistent connection.  If one exists this function
     // will not recreate it, but if not it will create one and store it in
     // a Drupal variable for reuse later.
@@ -177,7 +177,7 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
       }
       // select the value from the foreign key relationship for this value
       $results = tripal_core_chado_get_foreign_key($table_desc, $field, $value, $foreign_options);
-      
+
       if (sizeof($results) > 1) {
         watchdog('tripal_core', 'tripal_core_chado_insert: Too many records match the criteria supplied for !foreign_key foreign key constraint (!criteria)', array('!foreign_key' => $field, '!criteria' => print_r($value, TRUE)), WATCHDOG_ERROR);
       }
@@ -286,11 +286,10 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
   if ($prepared) {
     // if this is the first time we've run this query
     // then we need to do the prepare, otherwise just execute
-    if ($options['is_prepared'] != TRUE and
-       !tripal_core_is_sql_prepared($options['statement_name'])) {
+    if ($options['is_prepared'] != TRUE) {
       // prepare the statement
       $psql = "PREPARE " . $options['statement_name'] . " (" . implode(', ', $idatatypes) . ") AS INSERT INTO {$table} (" . implode(", ", $ifields) . ") VALUES (" . implode(", ", $iplaceholders) . ")";
-      $status = chado_query($psql);
+      $status = tripal_core_chado_prepare($options['statement_name'], $psql, $idatatypes);
 
       if (!$status) {
         watchdog('tripal_core', "tripal_core_chado_insert: not able to prepare '%name' statement for: %sql", array('%name' => $options['statement_name'], '%sql' => $sql), 'WATCHDOG ERROR');
@@ -299,7 +298,7 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
     }
 
     $sql = "EXECUTE " . $options['statement_name'] . "(" . implode(", ", $itypes) . ")";
-    $result = chado_query($sql, $ivalues);
+    $result = tripal_core_chado_execute_prepared($options['statement_name'], $sql, $ivalues);
   }
   // if it's not a prepared statement then insert normally
   else {
@@ -411,12 +410,12 @@ function tripal_core_chado_update($table, $match, $values, $options = NULL) {
 
   $update_values = array();   // contains the values to be updated
   $update_matches = array();  // contains the values for the where clause
-  
+
   // Determine plan of action
   if ($options['statement_name']) {
     // we have a prepared statment (or want to create one) so set $prepared = TRUE
     $prepared = TRUE;
-    
+
     // we need to get a persistent connection.  If one exists this function
     // will not recreate it, but if not it will create one and store it in
     // a Drupal variable for reuse later.
@@ -492,7 +491,7 @@ function tripal_core_chado_update($table, $match, $values, $options = NULL) {
   $ivalues = array();
   $i = 1;
   foreach ($update_values as $field => $value) {
-    
+
     if (strcasecmp($table_desc['fields'][$field]['type'], 'serial')==0 OR
         strcasecmp($table_desc['fields'][$field]['type'], 'int')==0 OR
         strcasecmp($table_desc['fields'][$field]['type'], 'integer')==0) {
@@ -509,15 +508,15 @@ function tripal_core_chado_update($table, $match, $values, $options = NULL) {
         $uargs[] = $value;
       }
       $idatatypes[] = 'int';
-      
+
     }
     elseif (strcasecmp($table_desc['fields'][$field]['type'], 'boolean')==0) {
-      $sql .= " $field = %s, ";   
-      $pvalues[] = '%s';   
+      $sql .= " $field = %s, ";
+      $pvalues[] = '%s';
       if (strcmp($value, '__NULL__')==0) {
         $ivalues[] = 'NULL';
         $uargs[] = 'NULL';
-      } 
+      }
       else {
         $ivalues[] = $value;
         $uargs[] = $value;
@@ -525,19 +524,19 @@ function tripal_core_chado_update($table, $match, $values, $options = NULL) {
       $idatatypes[] = 'bool';
     }
     elseif (strcasecmp($table_desc['fields'][$field]['type'], 'float')==0) {
-      $sql .= " $field = %s, "; 
-      $pvalues[] = '%s';     
+      $sql .= " $field = %s, ";
+      $pvalues[] = '%s';
       if (strcmp($value, '__NULL__')==0) {
         $ivalues[] = 'NULL';
         $uargs[] = 'NULL';
-      } 
+      }
       else {
         $ivalues[] = $value;
         $uargs[] = $value;
       }
       $idatatypes[] = 'numeric';
     }
-    else {      
+    else {
       if (strcmp($value, '__NULL__') == 0) {
         $sql .= " $field = %s, ";
         $ivalues[] = 'NULL';
@@ -557,11 +556,11 @@ function tripal_core_chado_update($table, $match, $values, $options = NULL) {
   }
   $sql = drupal_substr($sql, 0, -2);  // get rid of the trailing comma & space
   $psql = drupal_substr($psql, 0, -2);  // get rid of the trailing comma & space
-  
+
   $sql .= " WHERE ";
   $psql .= " WHERE ";
   foreach ($update_matches as $field => $value) {
-    
+
     if (strcasecmp($table_desc['fields'][$field]['type'], 'serial')==0 OR
         strcasecmp($table_desc['fields'][$field]['type'], 'int')==0 OR
         strcasecmp($table_desc['fields'][$field]['type'], 'integer')==0) {
@@ -570,22 +569,22 @@ function tripal_core_chado_update($table, $match, $values, $options = NULL) {
         $ivalues[] = 'NULL';
         $uargs[] = 'NULL';
         $pvalues[] = '%s';
-      } 
+      }
       else {
         $sql .= " $field = %d AND ";
         $ivalues[] = $value;
-        $uargs[] = $value; 
-        $pvalues[] = '%s';       
+        $uargs[] = $value;
+        $pvalues[] = '%s';
       }
-      $idatatypes[] = 'int';     
+      $idatatypes[] = 'int';
     }
     elseif (strcasecmp($table_desc['fields'][$field]['type'], 'boolean')==0) {
-      $sql .= " $field = %s AND ";     
-      $pvalues[] = '%s'; 
+      $sql .= " $field = %s AND ";
+      $pvalues[] = '%s';
       if (strcmp($value, '__NULL__')==0) {
         $ivalues[] = 'NULL';
         $uargs[] = 'NULL';
-      } 
+      }
       else {
         $ivalues[] = $value;
         $uargs[] = $value;
@@ -594,18 +593,18 @@ function tripal_core_chado_update($table, $match, $values, $options = NULL) {
     }
     elseif (strcasecmp($table_desc['fields'][$field]['type'], 'float')==0) {
       $sql .= " $field = %s AND ";
-      $pvalues[] = '%s';      
+      $pvalues[] = '%s';
       if (strcmp($value, '__NULL__')==0) {
         $ivalues[] = 'NULL';
         $uargs[] = 'NULL';
-      } 
+      }
       else {
         $ivalues[] = $value;
         $uargs[] = $value;
       }
       $idatatypes[] = 'numeric';
     }
-    else {      
+    else {
       if (strcmp($value, '__NULL__')==0) {
         $sql .= " $field = %s AND ";
         $ivalues[] = 'NULL';
@@ -618,14 +617,14 @@ function tripal_core_chado_update($table, $match, $values, $options = NULL) {
         $uargs[] = $value;
         $pvalues[] = "'%s'";
       }
-      $idatatypes[] = 'text';      
+      $idatatypes[] = 'text';
     }
-    $psql .= "$field = \$" . $i . " AND ";    
+    $psql .= "$field = \$" . $i . " AND ";
     $i++;
   }
   $sql = drupal_substr($sql, 0, -4);  // get rid of the trailing 'AND'
   $psql = drupal_substr($psql, 0, -4);  // get rid of the trailing 'AND'
-  
+
   // finish constructing the prepared SQL statement
   $psql =  "PREPARE " . $options['statement_name'] . " (" . implode(', ', $idatatypes) . ") AS " . $psql;
 
@@ -650,7 +649,7 @@ function tripal_core_chado_update($table, $match, $values, $options = NULL) {
     $resource = db_query($sql, $uargs);
     tripal_db_set_active($previous_db);  // now use drupal database
   }
-  
+
   if ($resource) {
     return TRUE;
   }
@@ -899,7 +898,7 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
   if (!array_key_exists('statement_name',$options)) {
     $options['statement_name'] = FALSE;
   }
-  
+
   // if this is a prepared statement check to see if it has already been prepared
   if ($options['statement_name']) {
     $prepared = TRUE;
@@ -907,7 +906,7 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
     // will not recreate it, but if not it will create one and store it in
     // a Drupal variable for reuse later.
     $connection = tripal_db_persistent_chado();
-  } 
+  }
   else {
      //print "NO STATEMENT (select): $table\n";
      //debug_print_backtrace();
@@ -1000,6 +999,7 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
     $psql = $sql;  // prepared SQL statement;
     $i = 1;
     $pvalues = array();
+    $itypes = array();
     foreach ($where as $field => $value) {
 
       // if we have multiple values returned then we need an 'IN' statement
@@ -1031,6 +1031,7 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
           $args[] = $value[0];
           // set the variables needed for the prepared statement
           $idatatypes[] = 'int';
+          $itypes[] = '%d';
           $pvalues[] = $value[0];
         }
         elseif (strcasecmp($table_desc['fields'][$field]['type'], 'boolean')==0) {
@@ -1039,6 +1040,7 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
           $args[] = $value[0];
           // set the variables needed for the prepared statement
           $idatatypes[] = 'bool';
+          $itypes[] = '%d';
           $pvalues[] = $value[0];
         }
         elseif (strcasecmp($table_desc['fields'][$field]['type'], 'float')==0) {
@@ -1047,6 +1049,7 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
           $args[] = $value[0];
           // set the variables needed for the prepared statement
           $idatatypes[] = 'numeric';
+          $itypes[] = '%f';
           $pvalues[] = $value[0];
         }
         // else the type is a text
@@ -1063,7 +1066,8 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
           }
           // set the variables needed for the prepared statement
           $idatatypes[] = 'text';
-          $pvalues[] = "'" . $value[0] . "'";
+          $itypes[] = "'%s'";
+          $pvalues[] = $value[0];
         }
       }
       $i++;
@@ -1098,19 +1102,18 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
   if ($prepared) {
     // if this is the first time we've run this query
     // then we need to do the prepare, otherwise just execute
-    if ($options['is_prepared'] != TRUE and
-        !tripal_core_is_sql_prepared($options['statement_name'])) {
-      $status = chado_query($psql);
+    if ($options['is_prepared'] != TRUE) {
+
+      $status = tripal_core_chado_prepare($options['statement_name'], $psql, $idatatypes);
       if (!$status) {
-        watchdog('tripal_core', "tripal_core_chado_select: not able to prepare '%name' statement for: %sql", array('%name' => $options['statement_name'], '%sql' => $sql), 'WATCHDOG ERROR');
         return FALSE;
       }
     }
-    $sql = "EXECUTE " . $options['statement_name'] . "(" . implode(", ", $pvalues) . ")";
+    $sql = "EXECUTE " . $options['statement_name'] . "(" . implode(", ", $itypes) . ")";
     // WARNING: This call creates a memory leak:  if you remove the $ivalues it doesn't
     // do this. Got to find out what's causing this.
-    $resource = chado_query($sql, $ivalues);
-  }  
+    $resource = tripal_core_chado_execute_prepared($options['statement_name'], $sql, $pvalues);
+  }
   else {
     $previous_db = tripal_db_set_active('chado');  // use chado database
     $resource = db_query($sql, $args);
@@ -1178,7 +1181,7 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
  * @ingroup tripal_chado_api
  */
 function tripal_core_chado_get_foreign_key($table_desc, $field, $values, $options = NULL) {
- 
+
   // set defaults for options. If we don't set defaults then
   // we get memory leaks when we try to access the elements
   if (!is_array($options)) {
@@ -1190,7 +1193,7 @@ function tripal_core_chado_get_foreign_key($table_desc, $field, $values, $option
   if (!array_key_exists('regex_columns', $options)) {
     $options['regex_columns'] = array();
   }
-  
+
 
   // get the list of foreign keys for this table description and
   // iterate through those until we find the one we're looking for
@@ -1966,12 +1969,12 @@ function tripal_core_insert_property($basetable, $record_id, $property,
       // now add 1 to the rank
       $rank++;
     }
-  } 
+  }
   else {
     watchdog('tripal_core', "Cannot find property '!prop_name'.",
         array('!prop_name' => $property), WATCHDOG_ERROR);
   }
-  
+
 
   // get the foreign key for this property table
   $table_desc = tripal_core_get_chado_table_schema($basetable . 'prop');
@@ -2296,7 +2299,7 @@ function tripal_core_is_sql_prepared($statement_name) {
   if(in_array($statement_name,$_SESSION[$connection])){
      //print "Is Prepared and in Session var: $statement_name\n";
      return TRUE;
-  } 
+  }
 
   // @coder-ignore: acting on postgres tables rather then drupal schema therefore, table prefixing does not apply
   $sql = "SELECT name FROM pg_prepared_statements WHERE name = '%s'";
@@ -2311,6 +2314,110 @@ function tripal_core_is_sql_prepared($statement_name) {
   //print "Is Not prepared: $statement_name\n";
   return FALSE;
 }
+
+/**
+ * Prepare a chado query
+ *
+ * @param $statement_name
+ *   The name of the prepared statement
+ * @param $psql
+ *   The SQL statement to be executed via chado_query.
+ *   Should be of the form PREPARE <statement name> AS <SQL Statement to be prepared>
+ * @param $args
+ *   An array of arguements required to execute the prepared statement. The keys of
+ *   the array should correspond to the $\d in the prepare statement and the value should
+ *   be the type of value needed (ie: text, int, etc.)
+ */
+function tripal_core_chado_prepare($statement_name, $psql, $args) {
+  $connection = variable_get('tripal_perisistent_chado', NULL);
+
+  // Check to see if this statement was already prepared
+  if (tripal_core_is_sql_prepared($statement_name)) {
+    //if it was check that the arguments are the same
+    $prepared_args = $_SESSION['prepared_args'][$connection][$statement_name];
+    $prepared_sql = $_SESSION['prepared_sql'][$connection][$statement_name];
+    if ($prepared_args == $args) {
+      // This statement is already prepared
+      return TRUE;
+    }
+    else {
+      // Although a statement with this name is already prepared it is not the same!
+      watchdog('tripal_core', "chado_prepare: '%name' statement already prepared with different arguments! You want to prepare %sql with %values and the existing statement is %esql with %existing", array('%name' => $statement_name, '%sql' => $psql, '%values' => print_r($args,TRUE), '%esql' => $prepared_sql, '%existing' => print_r($prepared_args,TRUE)), WATCHDOG_ERROR);
+      return FALSE;
+    }
+  }
+
+  $status = chado_query($psql);
+  if (!$status) {
+    watchdog('tripal_core', "chado_prepare: not able to prepare '%name' statement for: %sql", array('%name' => $statement_name, '%sql' => $psql), WATCHDOG_ERROR);
+    return FALSE;
+  }
+  else {
+    watchdog('tripal_core', "tripal_core_chado_select: prepared '%name' statement as %sql", array('%name' => $statement_name, '%sql' => $psql), WATCHDOG_NOTICE);
+    $_SESSION[$connection][] = $statement_name;
+    $_SESSION['prepared_args'][$connection][$statement_name] = $args;
+    $_SESSION['prepared_sql'][$connection][$statement_name] = $psql;
+    return TRUE;
+  }
+}
+
+/**
+ * Execute a prepared statement with the supplied values
+ *
+ * @param $statement_name
+ *   The name of the prepared statement
+ * @param $sql
+ *   The SQL to execute using chado query.
+ *   Should be of the form EXECUTE <statement_name> (<arg1>,<arg2>...<argn>)
+ * @param $values
+ *   An array of values in the execute sql statement
+ */
+function tripal_core_chado_execute_prepared($statement_name, $sql, $values) {
+  $connection = variable_get('tripal_perisistent_chado', NULL);
+
+  // Before Executing, Ensure that all the values are supplied
+  $required_values = $_SESSION['prepared_args'][$connection][$statement_name];
+  if (sizeof($required_values) == sizeof($values)) {
+
+    $error = FALSE;
+    foreach ($values as $k => $v) {
+      if (isset($required_values[$k])) {
+        switch ($required_values[$k]) {
+          case 'text':
+            $check = is_string($v);
+            if (!$check) {
+              watchdog('tripal_core', "chado_execute_prepared:wrong argument type supplied for '%name' statement. Expected %required but recieved %value", array('%name' => $statement_name, '%required' => $required_values[$k], '%value' => print_r($v,TRUE)), WATCHDOG_ERROR);
+              return FALSE;
+            }
+            break;
+          case 'int':
+            $check = is_numeric($v);
+            if (!$check) {
+              watchdog('tripal_core', "chado_execute_prepared:wrong argument type supplied for '%name' statement. Expected %required but recieved %value", array('%name' => $statement_name, '%required' => $required_values[$k], '%value' => print_r($v,TRUE)), WATCHDOG_ERROR);
+              return FALSE;
+            }
+            break;
+          default:
+            watchdog('tripal_core', "chado_execute_prepared:unsupported argument type supplied for '%name' statement %type", array('%name' => $statement_name, '%type' => $required_values[$k]), WATCHDOG_WARNING);
+            break;
+        }
+      }
+      else {
+        watchdog('tripal_core', "chado_execute_prepared:wrong number of arguments supplied for '%name' statement. Expected %required but recieved %values", array('%name' => $statement_name, '%required' => print_r($required_values,TRUE), '%values' => print_r($values,TRUE)), WATCHDOG_ERROR);
+        return FALSE;
+      }
+    }
+
+    // Since all values are supplied, execute
+    $resource = chado_query($sql, $values);
+    return $resource;
+  }
+  else {
+    watchdog('tripal_core', "chado_execute_prepared: wrong number of arguments supplied for '%name' statement. Expected %required but recieved %values", array('%name' => $statement_name, '%required' => print_r($required_values,TRUE), '%values' => print_r($values,TRUE)), WATCHDOG_ERROR);
+    return FALSE;
+  }
+}
+
 /**
  * Instantiate or Return a persistent chado connection
  *
@@ -2338,7 +2445,7 @@ function tripal_db_persistent_chado() {
     else {
       $connection = db_connect($db_url);
       variable_set('tripal_perisistent_chado', serialize($connection));
-    }    
+    }
     return $connection;
   }
   return FALSE;
@@ -2356,7 +2463,7 @@ function tripal_db_release_persistent_chado() {
  */
 function tripal_db_start_transaction() {
   $connection = tripal_db_persistent_chado();
-  chado_query("BEGIN");  
+  chado_query("BEGIN");
 }
 
 /**
