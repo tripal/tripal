@@ -30,6 +30,7 @@ function tripal_feature_drush_command() {
     'description' => dt('Prints sequences that match specified categories.'),
     'options'   => array(
       'org'    => dt('The organism\'s common name. If specified, features for this organism will be retrieved.'),
+      'analysis' => dt('The analysis name. If specified, features for this analysis will be retrieved.'),
       'type'   => dt('The type of feature to retrieve (e.g. mRNA). All features that match this type will be retrieved.'),
       'name'   => dt('The name of the feature to retrieve.'),
       'up'     => dt('An integer value specifying the number of upstream bases to include.'),
@@ -55,6 +56,7 @@ function tripal_feature_drush_command() {
 function drush_tripal_feature_tripal_get_sequence() {
 
   $org_commonname = drush_get_option('org');  
+  $analysis_name = drush_get_option('analysis');  
   $type = drush_get_option('type');
   $feature_name = drush_get_option('name');
   $upstream = drush_get_option('up');
@@ -77,11 +79,15 @@ function drush_tripal_feature_tripal_get_sequence() {
 
   // get the list of features
   $vars = array();
-  $sql = "SELECT DISTINCT F.feature_id, F.name ".
-         "FROM feature F ".
-         "  INNER JOIN organism O on O.organism_id = F.organism_id ".
-         "  INNER JOIN cvterm CVT on CVT.cvterm_id = F.type_id ".
-         "WHERE (1=1) ";
+  $sql  = "SELECT DISTINCT F.feature_id, F.name ".
+          "FROM feature F ".
+          "  INNER JOIN organism O on O.organism_id = F.organism_id ".
+          "  INNER JOIN cvterm CVT on CVT.cvterm_id = F.type_id ";
+  if ($analysis_name) {
+     $sql .= "  INNER JOIN analysisfeature AF on AF.feature_id = F.feature_id ".
+             "  INNER JOIN analysis A on AF.analysis_id = A.analysis_id ";
+  }         
+  $sql .= "WHERE (1=1) ";
   if ($org_commonname) {
      $sql .= "AND O.common_name = '%s' ";
      $vars[] = $org_commonname;
@@ -94,13 +100,17 @@ function drush_tripal_feature_tripal_get_sequence() {
      $sql .= "AND F.name = '%s'";
      $vars[] = $feature_name;
   }
+  if ($analysis_name) {
+     $sql .= "AND A.name = '%s'";
+     $vars[] = $analysis_name;
+  }
   $num_bases_per_line = 50;
   $q = chado_query($sql, $vars);
   while ($feature = db_fetch_object($q)) {
     $feature_id = $feature->feature_id;
     $feature_name = $feature->name;
       
-    $sequence = trpial_feature_get_formatted_sequence($feature_id, $feature_name, 
+    $sequence = tripal_feature_get_formatted_sequence($feature_id, $feature_name, 
       $num_bases_per_line, $derive_from_parent, $aggregate, $output_format,
       $upstream, $downstream, $sub_features);
     print $sequence;

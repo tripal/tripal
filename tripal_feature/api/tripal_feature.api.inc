@@ -564,7 +564,7 @@ function tripal_feature_reverse_complement($sequence) {
  *
  * @ingroup tripal_feature_api
  */
-function trpial_feature_get_formatted_sequence($feature_id, $feature_name, 
+function tripal_feature_get_formatted_sequence($feature_id, $feature_name, 
   $num_bases_per_line, $derive_from_parent, $aggregate, $output_format,
   $upstream, $downstream, $sub_features = array()) {
   

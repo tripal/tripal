@@ -120,7 +120,7 @@ class tripal_views_handler_field_sequence extends chado_views_handler_field {
     $derive_from_parent = $this->options['display']['derive_from_parent'];
     $aggregate = $this->options['display']['aggregate'];
     
-    $residues = trpial_feature_get_formatted_sequence($feature_id, $feature_name, 
+    $residues = tripal_feature_get_formatted_sequence($feature_id, $feature_name, 
       $num_bases_per_line, $derive_from_parent, $aggregate, $output_format,
       $upstream, $downstream);
  /*   
