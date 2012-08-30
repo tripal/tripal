@@ -526,7 +526,7 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
     if (variable_get('tripal_bulk_loader_prepare', TRUE)) {
       $options = array('statement_name' => 'record_' . $priority);
       if (($addt->line_num > 1 && $addt->group_index == 1) OR $addt->group_index > 1) {
-        $options['is_prepared'] = TRUE;
+        //$options['is_prepared'] = TRUE;
       }
     }
     else {

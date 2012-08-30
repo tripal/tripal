@@ -173,7 +173,11 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
         // add the fk relationship info to the prepared statement name so that
         // we can prepare the selects run by the recrusive tripal_core_chado_get_foreign_key
         // function.
-        $foreign_options['statement_name'] = "fk_" . $table . "_" . $field . '_' . sizeof($value) . 'args';
+        $fk_sname = "fk_" . $table . "_" . $field;
+        foreach ($value as $k => $v){
+          $fk_sname .= substr($k, 0, 2);
+        }
+        $foreign_options['statement_name'] = $fk_sname;
       }
       // select the value from the foreign key relationship for this value
       $results = tripal_core_chado_get_foreign_key($table_desc, $field, $value, $foreign_options);
@@ -437,7 +441,11 @@ function tripal_core_chado_update($table, $match, $values, $options = NULL) {
         // add the fk relationship info to the prepared statement name so that
         // we can prepare the selects run by the recrusive tripal_core_chado_get_foreign_key
         // function.
-        $foreign_options['statement_name'] =  "fk_" . $table . "_" . $field;
+        $fk_sname = "fk_" . $table . "_" . $field;
+        foreach ($value as $k => $v){
+          $fk_sname .= substr($k, 0, 2);
+        }
+        $foreign_options['statement_name'] = $fk_sname;
       }
       $results = tripal_core_chado_get_foreign_key($table_desc, $field, $value, $foreign_options);
       if (sizeof($results) > 1) {
@@ -461,10 +469,14 @@ function tripal_core_chado_update($table, $match, $values, $options = NULL) {
       $foreign_options = array();
       // select the value from the foreign key relationship for this value
       if ($options['statement_name']) {
-         // add the fk relationship info to the prepared statement name so that
-         // we can prepare the selects run by the recrusive tripal_core_chado_get_foreign_key
-         // function.
-         $foreign_options['statement_name'] = "fk_" . $table . "_" . $field;
+        // add the fk relationship info to the prepared statement name so that
+        // we can prepare the selects run by the recrusive tripal_core_chado_get_foreign_key
+        // function.
+        $fk_sname = "fk_" . $table . "_" . $field;
+        foreach ($value as $k => $v){
+          $fk_sname .= substr($k, 0, 2);
+        }
+        $foreign_options['statement_name'] = $fk_sname;
       }
       $results = tripal_core_chado_get_foreign_key($table_desc, $field, $value, $foreign_options);
       if (sizeof($results) > 1) {
@@ -947,8 +959,12 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
         if ($options['statement_name']) {
            // add the fk relationship info to the prepared statement name so that
            // we can prepare the selects run by the recrusive tripal_core_chado_get_foreign_key
-           // function.
-           $foreign_options['statement_name'] = "fk_" . $table . "_" . $field;
+           // function. we need the statement name to be unique so take the first two characters of each column
+           $fk_sname = "fk_" . $table . "_" . $field;
+           foreach ($value as $k => $v){
+             $fk_sname .= substr($k, 0, 2);
+           }
+           $foreign_options['statement_name'] = $fk_sname;
         }
 
         $results = tripal_core_chado_get_foreign_key($table_desc, $field, $value, $foreign_options);
@@ -2375,8 +2391,16 @@ function tripal_core_chado_prepare($statement_name, $psql, $args) {
 function tripal_core_chado_execute_prepared($statement_name, $sql, $values) {
   $connection = variable_get('tripal_perisistent_chado', NULL);
 
+  if (!tripal_core_is_sql_prepared($statement_name)) {
+     watchdog('tripal_core', "tripal_core_chado_execute_prepared: Cannot execute an unprepared statement: '%name'", array('%name' => $statement_name), WATCHDOG_ERROR);
+  }
+  
   // Before Executing, Ensure that all the values are supplied
   $required_values = $_SESSION['prepared_args'][$connection][$statement_name];
+  if (!$required_values){
+     watchdog('tripal_core', "tripal_core_chado_execute_prepared: missing prepare arguments for this statement: '%name'", array('%name' => $statement_name), WATCHDOG_ERROR);
+  }
+  
   if (sizeof($required_values) == sizeof($values)) {
 
     $error = FALSE;
