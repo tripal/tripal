@@ -348,11 +348,6 @@ function tripal_feature_block($op = 'list', $delta = 0, $edit=array()) {
       $blocks['org_feature_browser']['info'] = t('Tripal Organism Feature Browser');
       $blocks['org_feature_browser']['cache'] = BLOCK_NO_CACHE;
 
-      $blocks['library_feature_browser']['info'] = t('Tripal Library Feature Browser');
-      $blocks['library_feature_browser']['cache'] = BLOCK_NO_CACHE;
-
-      $blocks['analysis_feature_browser']['info'] = t('Tripal Analysis Feature Browser');
-      $blocks['analysis_feature_browser']['cache'] = BLOCK_NO_CACHE;
       return $blocks;
 
   case 'view':
@@ -1885,31 +1880,20 @@ function tripal_feature_nodeapi(&$node, $op, $teaser, $page) {
     // Note that this function only adds feature view to an organism node.
     // The view of a feature node is controled by the theme *.tpl file
     case 'view':
-    switch ($node->type) {
-      case 'chado_organism':
-      // Show feature browser
-      $types_to_show = array('chado_organism', 'chado_library');
-      if (in_array($node->type, $types_to_show, TRUE)) {
-        $node->content['tripal_organism_feature_counts'] = array(
-          '#value' => theme('tripal_organism_feature_counts', $node),
-        );
-        $node->content['tripal_organism_feature_browser'] = array(
-          '#value' => theme('tripal_organism_feature_browser', $node),
-        );
-    }
-    break;
-    case 'chado_library':
-    $node->content['tripal_library_feature_browser'] = array(
-     '#value' => theme('tripal_library_feature_browser', $node),
-    );
-    break;
-    case 'chado_analysis':
-    $node->content['tripal_analysis_feature_browser'] = array(
-     '#value' => theme('tripal_analysis_feature_browser', $node),
-    );
-    break;
-    default:
-    }
+      switch ($node->type) {
+        case 'chado_organism':
+        // Show feature browser
+          $types_to_show = array('chado_organism', 'chado_library');
+          if (in_array($node->type, $types_to_show, TRUE)) {
+            $node->content['tripal_organism_feature_counts'] = array(
+              '#value' => theme('tripal_organism_feature_counts', $node),
+            );
+            $node->content['tripal_organism_feature_browser'] = array(
+              '#value' => theme('tripal_organism_feature_browser', $node),
+            );
+          }
+        break;
+      }
     break;
   }
 }
@@ -1936,14 +1920,6 @@ function tripal_feature_theme() {
     'tripal_organism_feature_counts' => array(
        'arguments' => array('node' => NULL),
        'template' => 'tripal_organism_feature_counts',
-    ),
-    'tripal_library_feature_browser' => array(
-       'arguments' => array('node' => NULL),
-       'template' => 'tripal_library_feature_browser',
-    ),
-    'tripal_analysis_feature_browser' => array(
-       'arguments' => array('node' => NULL),
-       'template' => 'tripal_analysis_feature_browser',
     ),
     'tripal_feature_base' => array(
        'arguments' => array('node' => NULL),
