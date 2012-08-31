@@ -198,13 +198,13 @@ function chado_analysis_insert($node) {
  * @ingroup tripal_analysis
  */
 function chado_analysis_delete($node) {
-  // Before removing, get analysis_id so we can remove it from chado database
-  // later
-  $sql_drupal = "SELECT analysis_id ".
-                 "FROM {chado_analysis} ".
-                 "WHERE nid = %d ".
-                 "AND vid = %d";
-  $analysis_id = db_result(db_query($sql_drupal, $node->nid, $node->vid));
+  $analysis_id = chado_get_id_for_node('analysis', $node);
+  
+  // if we don't have an organism id for this node then this isn't a node of
+  // type chado_organism or the entry in the chado_organism table was lost.
+  if (!$analysis_id){
+    return;
+  }
 
   // Remove data from the {chado_analysis}, {node}, and {node_revisions} tables
   $sql_del = "DELETE FROM {chado_analysis} ".
@@ -852,7 +852,7 @@ function get_chado_analyses() {
 }
 
 /**
- * Remove orphaned drupal nodes or chado analysis
+ * Remove orphaned drupal nodes
  *
  * @param $dummy
  *   Not Used -kept for backwards compatibility
@@ -863,58 +863,8 @@ function get_chado_analyses() {
  */
 function tripal_analyses_cleanup($dummy = NULL, $job_id = NULL) {
 
-    // select each node from node table with chado_analysis as type
-    // check to make sure it also exists in chado_analysis table, delete if it doesn't
-    // (this should never, ever happen, but we'll double check anyway)
-  $sql_drupal_node = "SELECT * FROM {node} WHERE type LIKE 'chado_analysis%' order by nid";
-    $sql_drupal_ca = "SELECT * from {chado_analysis} WHERE nid = %d";
-
-  $results = db_query($sql_drupal_node);
-  while ($node = db_fetch_object($results)) {
-        $ca_record = db_fetch_object(db_query($sql_drupal_ca, $node->nid));
-        if (!$ca_record) {
-            node_delete($node->nid);
-      $message = "Missing in chado_analysis table.... DELETING node: $nid->nid\n";
-      watchdog('tripal_analysis', $message, array(), WATCHDOG_WARNING);
-        }
-  }
-
-    // get nodes from chado_analysis table and load into array, saving chado analysis_id
-    // as we iterate through, we'll check that they are actual nodes and
-    // delete if they aren't
-    // (this should never, ever happen, but we'll double check anyway)
-  $sql_drupal_ca2 = "SELECT * FROM {chado_analysis}";
-  $sql_drupal_node2 = "SELECT * FROM {node} WHERE type LIKE 'chado_analysis%' AND nid = %d";
-
-  $results = db_query($sql_drupal_ca2);
-  $nid2aid = array();
-  while ($ca_record = db_fetch_object($results)) {
-        $node = db_fetch_object(db_query($sql_drupal_node2, $ca_record->nid));
-        if (!$node) {
-      db_query("DELETE FROM {chado_analysis} WHERE nid = %nid", $ca_record->nid);
-      $message = "chado_analysis missing node.... DELETING chado_analysis record with nid: $ca_record->nid\n";
-      watchdog('tripal_analysis', $message, array(), WATCHDOG_WARNING);
-        }
-        else{
-        $nid2aid[$ca_record->nid] = $ca_record->analysis_id;
-        }
-  }
-
-  // iterate through all of the chado_analysis nodes in drupal
-    // and delete those that aren't valid in chado
-    $sql_chado = "SELECT analysis_id from {analysis} WHERE analysis_id = %d";
-
-  foreach ($nid2aid as $nid => $aid) {
-        $previous_db = tripal_db_set_active('chado');
-    $chado_record = db_fetch_object(db_query($sql_chado, $aid));
-        tripal_db_set_active($previous_db);
-    if (!$chado_record) {
-            node_delete($nid);
-      $message = "Missing in analysis table in chado.... DELETING node: $nid\n";
-      watchdog('tripal_analysis', $message, array(), WATCHDOG_WARNING);
-    }
-  }
-  return '';
+  return tripal_core_clean_orphaned_nodes('analysis', $job_id);
+  
 }
 /*******************************************************************************
  * tripal_analysis_nodeapi()

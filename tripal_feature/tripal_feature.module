@@ -538,6 +538,12 @@ function chado_feature_update($node) {
 function chado_feature_delete($node) {
 
   $feature_id  = chado_get_id_for_node('feature', $node);
+  
+  // if we don't have a library id for this node then this isn't a node of
+  // type chado_library or the entry in the chado_library table was lost.
+  if (!$feature_id){
+    return;
+  }
 
   // remove the drupal content
   $sql_del = "DELETE FROM {chado_feature} ".
@@ -1528,6 +1534,10 @@ function tripal_feature_load_organism_feature_counts($organism) {
  * @ingroup tripal_feature
  */
 function tripal_feature_load_organism_feature_browser($organism) {
+
+  if (!$organism) {
+    return array();
+  }
 
   // don't show the browser if the settings in the admin page is turned off
   // instead return the array indicating the status of the browser
@@ -2650,75 +2660,19 @@ function tripal_feature_set_taxonomy($node, $feature_id) {
 
 /**
  *
+ * Remove orphaned drupal nodes
+ *
+ * @param $dummy
+ *   Not Used -kept for backwards compatibility
+ * @param $job_id
+ *   The id of the tripal job executing this function
  *
  * @ingroup tripal_feature
  */
 function tripal_features_cleanup($dummy = NULL, $job_id = NULL) {
 
-  // build the SQL statments needed to check if nodes point to valid features
-  $dsql = "SELECT * FROM {node} WHERE type = 'chado_feature' order by nid";
-  $nsql = "SELECT * FROM {node} WHERE nid = %d";
-  $csql = "SELECT * FROM {chado_feature} where nid = %d ";
-  $cfsql= "SELECT * FROM {chado_feature}";
-
-  // load into nodes array
-  $results = db_query($dsql);
-  $count = 0;
-  $nodes = array();
-  while ($node = db_fetch_object($results)) {
-    $nodes[$count] = $node;
-    $count++;
-  }
-
-  // load the chado_features into an array
-  $results = db_query($cfsql);
-  $cnodes = array();
-  while ($node = db_fetch_object($results)) {
-    $cnodes[$count] = $node;
-    $count++;
-  }
-  $interval = intval($count * 0.01);
-  if ($interval > 1) {
-    $interval = 1;
-  }
-
-  // iterate through all of the chado_feature nodes and delete those  that aren't valid
-  foreach ($nodes as $nid) {
-
-    // update the job status every 1% features
-    if ($job_id and $i % $interval == 0) {
-      tripal_job_set_progress($job_id, intval(($i/$count)*100));
-    }
-
-    // check to see if the node has a corresponding entry
-    // in the chado_feature table. If not then delete the node.
-    $feature = db_fetch_object(db_query($csql, $nid->nid));
-    if (!$feature) {
-      node_delete($nid->nid);
-      $message = "Missing in chado_feature table.... DELETING: $nid->nid\n";
-      watchdog('tripal_feature', $message, array(), WATCHDOG_WARNING);
-      continue;
-    }
-
-    $i++;
-  }
-
-  // iterate through all of the chado_feature nodes and delete those  that aren't valid
-  foreach ($cnodes as $nid) {
-    // update the job status every 1% features
-    if ($job_id and $i % $interval == 0) {
-      tripal_job_set_progress($job_id, intval(($i/$count)*100));
-    }
-    $node = db_fetch_object(db_query($nsql, $nid->nid));
-    if (!$node) {
-      db_query("DELETE FROM {chado_feature} WHERE nid = %nid", $nid->nid);
-      $message = "chado_feature missing node.... DELETING: $nid->nid\n";
-      watchdog('tripal_feature', $message, array(), WATCHDOG_WARNING);
-    }
-
-    $i++;
-  }
-  return '';
+  return tripal_core_clean_orphaned_nodes('feature', $job_id);
+ 
 }
 
 /**

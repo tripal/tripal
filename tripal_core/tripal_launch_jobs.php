@@ -26,9 +26,6 @@ $_SERVER['REQUEST_METHOD'] = NULL;
 require_once 'includes/bootstrap.inc';
 drupal_bootstrap(DRUPAL_BOOTSTRAP_FULL);
 
-fwrite($stdout, "Tripal Job Launcher\n");
-fwrite($stdout, "-------------------\n");
-
 // check to make sure the username is valid
 $username = $argv[1];
 $do_parallel = $argv[2];
@@ -39,6 +36,11 @@ if (!db_fetch_object(db_query("SELECT * FROM {users} WHERE name = '%s'", $userna
 
 global $user;
 $user = user_load(array('name' => $username));
+
+
+fwrite($stdout, "Tripal Job Launcher\n");
+fwrite($stdout,"Running as user '$username'\n";
+fwrite($stdout, "-------------------\n");
 
 tripal_jobs_launch($do_parallel);
 

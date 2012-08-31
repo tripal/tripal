@@ -2884,3 +2884,104 @@ function tripal_core_get_chado_table_schema($table) {
 
    return $table_arr;
 }
+/**
+ * This function will delete Drupal nodes for any sync'ed table (e.g.
+ * feature, organism, analysis, stock, library) if the chado record has been
+ * deleted or the entry in the chado_[table] table has been removed.
+ *
+ * @param $table
+ *   The name of the table that corresonds to the node type we want to clean up.
+ * @param $job_id
+ *   This should be the job id from the Tripal jobs system.  This function
+ *   will update the job status using the provided job ID.
+ *
+ * @ingroup tripal_core_api
+ */
+function tripal_core_clean_orphaned_nodes($table, $job_id) {
+  $count = 0;
+  
+  // build the SQL statments needed to check if nodes point to valid analyses
+  $dsql = "SELECT * FROM {node} WHERE type = 'chado_%s' order by nid";
+  $nsql = "SELECT * FROM {node} WHERE nid = %d";
+  $csql = "SELECT * FROM {chado_%s} where nid = %d ";
+  $clsql= "SELECT * FROM {chado_%s}";
+  $lsql = "SELECT * FROM %s where %s_id = %d ";
+
+  // load into nodes array
+  print "Getting nodes\n";
+  $nodes = array();
+  $res = db_query($dsql, $table);
+  while ($node = db_fetch_object($res)) {
+    $nodes[$count] = $node;
+    $count++;
+  }
+
+  // load the chado_$table into an array
+  print "Getting chado_$table\n";
+  $cnodes = array();
+  $res = db_query($clsql, $table);
+  while ($node = db_fetch_object($res)) {
+    $cnodes[$count] = $node;
+    $count++;
+  }
+  $interval = intval($count * 0.01);
+  if ($interval < 1) {
+    $interval = 1;
+  }
+  
+  // iterate through all of the chado_$table entries and remove those
+  // that don't have a node or don't have a $table record in chado.libary
+  foreach ($cnodes as $nid) {
+  
+    // update the job status every 1% analyses
+    if ($job_id and $i % $interval == 0) {
+      tripal_job_set_progress($job_id, intval(($i / $count) * 100));
+    }
+    
+    // see if the node exits, if not remove the entry from the chado_$table table
+    $node = db_fetch_object(db_query($nsql, $nid->nid));
+    if (!$node) {
+      db_query("DELETE FROM {chado_%s} WHERE nid = %d", $table, $nid->nid);
+      $message = "chado_$table missing node.... DELETING: $nid->nid";
+      watchdog('tripal_core', $message, array(), WATCHDOG_WARNING);
+    }
+    
+    // see if the record in chado exist, if not remove the entry from the chado_$table
+    $table_id = $table . "_id";
+    $record = db_fetch_object(chado_query($lsql, $table, $table, $nid->$table_id));
+    if (!$record) {
+      chado_query("DELETE FROM {chado_%s} WHERE %s_id = '%d'", $table, $table, $nid->$table_id);
+      $message = "chado_$table missing $table.... DELETING entry.";
+      watchdog('tripal_core', $message, array(), WATCHDOG_WARNING);
+    }
+    $i++;
+  }
+   
+  // iterate through all of the nodes and delete those that don't
+  // have a corresponding entry in chado_$table
+  foreach ($nodes as $node) {
+
+    // update the job status every 1% libraries
+    if ($job_id and $i % $interval == 0) {
+      tripal_job_set_progress($job_id, intval(($i / $count) * 100));
+    }
+
+    // check to see if the node has a corresponding entry
+    // in the chado_$table table. If not then delete the node.
+    $link = db_fetch_object(db_query($csql, $table, $node->nid));
+    if (!$link) {
+      if (node_access('delete', $node)) {
+        $message = "Node missing in chado_$table table.... DELETING node $node->nid";
+        watchdog("tripal_core", $message, array(), WATCHDOG_WARNING);
+        node_delete($node->nid);
+      } 
+      else {
+        $message = "Node missing in chado_$table table.... but cannot delete due to improper permissions (node $node->nid)";
+        watchdog("tripal_core", $message, array(), WATCHDOG_WARNING);
+      }
+    }    
+    $i++;
+  }
+
+  return '';
+}

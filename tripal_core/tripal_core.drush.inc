@@ -59,8 +59,11 @@ function tripal_core_drush_command() {
     // used by drush help
     'description' => dt('Lauches any jobs waiting in the queue.'),
     'examples' => array(
-      'Normal Job' => 'drush tripal-launch-jobs',
-      'Parallel Job' => 'drush tripal-launch-jobs --parallel=1'
+      'Normal Job' => 'drush tripal-launch-jobs admin',
+      'Parallel Job' => 'drush tripal-launch-jobs admin --parallel=1'
+    ),
+    'arguments' => array(
+      'user' => dt('The Drupal username under which the job should be run.  The permissions for this user will be used.'),
     ),
     // supply options
     'options' => array(
@@ -77,17 +80,29 @@ function tripal_core_drush_command() {
  *
  * NOTE: The following code is executed when drush 'trpjob-run' or 'drush tripal-launch-jobs' is called
  */
-function drush_tripal_core_tripal_launch_jobs() {
+function drush_tripal_core_tripal_launch_jobs($username) {
   $parallel = drush_get_option('parallel');
   $job_id = drush_get_option('job_id');
+
+  if($username){
+    global $user;
+    $user = user_load(array('name' => $username));
+  }
+  else {
+    drush_print('ERROR: Please provide a username for running this job.'); 
+    return;
+  }
+  
   if ($parallel) {
-    print "Tripal Job Launcher (in parallel)\n";
-    print "-------------------\n";
+    drush_print("Tripal Job Launcher (in parallel)");
+    drush_print("Running as user '$username'");
+    drush_print("-------------------");
     tripal_jobs_launch($parallel,$job_id);
   }
   else {
-    print "Tripal Job Launcher\n";
-    print "-------------------\n";
+    drush_print("Tripal Job Launcher");
+    drush_print("Running as user '$username'");
+    drush_print("-------------------");
     tripal_jobs_launch(0,$job_id);
   }
 }
