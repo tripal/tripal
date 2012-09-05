@@ -1232,7 +1232,7 @@ function tripal_bulk_loader_add_template_field_form(&$form_state = NULL) {
 
   $form['add_fields']['submit-add_field'] = array(
       '#type' => 'submit',
-      '#value' => 'Add Field'
+      '#value' => 'Save Changes'
   );
 
   $form['add_fields']['submit-cancel'] = array(
@@ -1241,6 +1241,23 @@ function tripal_bulk_loader_add_template_field_form(&$form_state = NULL) {
   );
 
   return $form;
+}
+
+function tripal_bulk_loader_add_template_field_form_validate($form, $form_state) {
+
+  // Don't worry about validation when Cancel button is clicked
+  if ($form_state['clicked_button']['#value'] == 'Save Changes') {
+    $is_unique = tripal_bulk_loader_is_record_name_unique(
+      $form_state['values']['record_name'],
+      $form_state['values']['template_id'],
+      $form_state['storage']['template_array']
+    );
+    $new_record = ($form_state['values']['field_group'] == 'NEW') ? TRUE : FALSE;
+    if ((!$is_unique) AND $new_record) {
+      form_set_error('record_name', "New Record Name must be unique. '".$form_state['values']['record_name']."' is not unique.");
+    }
+  }
+
 }
 
 /**
@@ -1256,7 +1273,7 @@ function tripal_bulk_loader_add_template_field_form_submit($form, &$form_state) 
   $op = $form_state['values'][ $form_state['clicked_button']['#name'] ];
 
   if (!$form_state['ahah_submission']) {
-    if ($op ==  'Add Field') {
+    if ($op ==  'Save Changes') {
 
       $template = $form_state['storage']['template_array'];
 
@@ -1841,7 +1858,7 @@ function tripal_bulk_loader_edit_template_field_form(&$form_state = NULL) {
 
   $form['edit_fields']['submit-edit_field'] = array(
       '#type' => 'submit',
-      '#value' => 'Edit Field'
+      '#value' => 'Save Changes'
   );
 
   $form['edit_fields']['submit-cancel'] = array(
@@ -1850,6 +1867,23 @@ function tripal_bulk_loader_edit_template_field_form(&$form_state = NULL) {
   );
 
   return $form;
+}
+
+function tripal_bulk_loader_edit_template_field_form_validate($form, $form_state) {
+
+  // Don't worry about validation when Cancel button is clicked
+  if ($form_state['clicked_button']['#value'] == 'Save Changes') {
+    $is_unique = tripal_bulk_loader_is_record_name_unique(
+      $form_state['values']['record_name'],
+      $form_state['values']['template_id'],
+      $form_state['storage']['template_array']
+    );
+    $new_record = ($form_state['values']['field_group'] == 'NEW') ? TRUE : FALSE;
+    if ((!$is_unique) AND $new_record) {
+      form_set_error('record_name', "New Record Name must be unique. '".$form_state['values']['record_name']."' is not unique.");
+    }
+  }
+
 }
 
 /**
@@ -1870,7 +1904,7 @@ function tripal_bulk_loader_edit_template_field_form_submit($form, &$form_state)
   $form_state['storage']['test_regex_test'] = NULL;
 
   if (!$form_state['ahah_submission']) {
-    if ($op ==  'Edit Field') {
+    if ($op ==  'Save Changes') {
 
       // If new record
       if (preg_match('/NEW/', $form_state['values']['field_group'])) {
@@ -2072,6 +2106,56 @@ function tripal_bulk_loader_edit_template_field_form_submit($form, &$form_state)
     }
   }
 
+}
+
+/**
+ * @section
+ * Helper Functions
+ */
+
+/**
+ * Meant to be called from a form_validate function to ensure a newly added bulk loader record
+ * name is unique and not empty.
+ *
+ * @param $new_record_name
+ *   The record name to check for uniqueness
+ * @param $template_id
+ *   The template_id of the template to add the record to
+ * @param $template_array
+ *   The array describing the template. Optional -will be loaded using template_id if not provided
+ *
+ * @return
+ *   TRUE if the record name is not empty and not already in the template_array; FALSE otherwise
+ */
+function tripal_bulk_loader_is_record_name_unique($new_record_name, $template_id, $template_array = NULL) {
+
+  // get the template array if it's not supplied
+  if (empty($template_array)) {
+    $template = db_fetch_object(db_query("SELECT * FROM {tripal_bulk_loader_template} WHERE template_id=%d",$template_id));
+    $template_array = unserialize($template->template_array);
+    if (!is_array($template_array)) {
+      watchdog(
+        'tripal_bulk_loader',
+        'Unable to retrieve template array from database where template_id=%template_id',
+        array('%template_id' => $template_id),
+        WATCHDOG_WARNING
+      );
+      return FALSE;
+    }
+  }
+
+  // Check that the new record name is not empty
+  if (empty($new_record_name)) {
+    return FALSE;
+  }
+
+  // Check the new record name is unique
+  foreach ($template_array as $t) {
+    if (strcmp($t['record_id'], $new_record_name) == 0) {
+      return FALSE;
+    }
+  }
+  return TRUE;
 }
 
 /**
