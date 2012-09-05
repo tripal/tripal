@@ -424,15 +424,6 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL) {
           $columns[] = "$column " . $attrs['type'];
         }
       }
-
-      // now do the same for the custom tables
-      $table_desc = tripal_get_chado_custom_schema($table_name);
-      if ($table_desc) {
-        $fields = $table_desc['fields'];
-        foreach ($fields as $column => $attrs) {
-          $columns[] = "$column " . $attrs['type'];
-        }
-      }
     }
 
     $i=1;
@@ -589,12 +580,8 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL) {
 
       $columns = array();
       if ($default_join_table) {
-        // get the table description in the typical way and if it returns
-        // nothing then get the custom table description
+        // get the table description
         $table_desc = tripal_core_get_chado_table_schema($default_join_table);
-        if (!$table_desc) {
-          $table_desc = tripal_get_chado_custom_schema($default_join_table);
-        }
         foreach ($table_desc['fields'] as $column => $def) {
           $columns[$column] = $column;
         }

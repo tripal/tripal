@@ -2803,6 +2803,11 @@ function tripal_core_get_chado_table_schema($table) {
    // get the table array from the proper chado schema
    $v = preg_replace("/\./", "_", $v); // reformat version for hook name
    $table_arr = module_invoke_all("chado_schema_v" . $v . "_" . $table);
+   
+   // if the table_arr is empty then maybe this is a custom table
+   if(!is_array($table_arr) or count($table_arr) == 0){
+     $table_arr = tripal_get_chado_custom_schema($table);
+   }
 
    return $table_arr;
 }
