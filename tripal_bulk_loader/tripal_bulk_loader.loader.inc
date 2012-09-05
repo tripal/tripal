@@ -524,7 +524,7 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
   if (!preg_match('/select/', $table_data['mode'])) {
     // Use prepared statement?
     if (variable_get('tripal_bulk_loader_prepare', TRUE)) {
-      $options = array('statement_name' => 'record_' . $priority);
+      $options = array('statement_name' =>  'record_' . $addt->nid . '_' . $priority);
       if (($addt->line_num > 1 && $addt->group_index == 1) OR $addt->group_index > 1) {
         //$options['is_prepared'] = TRUE;
       }
