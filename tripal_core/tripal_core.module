@@ -2,6 +2,7 @@
 
 require_once "includes/jobs.php";
 require_once "includes/mviews.php";
+require_once "includes/custom_tables.php";
 require_once "includes/chado_install.php";
 require_once "api/tripal_core.api.inc";
 
@@ -170,6 +171,46 @@ function tripal_core_menu() {
     'title' => 'Create MView',
     'description' => 'Materialized views are used to improve speed of large or complex queries.',
     'page callback' => 'tripal_mviews_action',
+    'page arguments' => array(4, 5, "1"),
+    'access arguments' => array('access administration pages'),
+    'type' => MENU_CALLBACK,
+  );
+  
+  // Custom Tables
+  $items['admin/tripal/custom_tables'] = array(
+    'title' => 'Custom Tables',
+    'description' => 'Custom tables are added to Chado.',
+    'page callback' => 'tripal_custom_tables_list',
+    'access arguments' => array('access administration pages'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+  $items['admin/tripal/custom_tables/view/%'] = array(
+    'title' => 'Custom Tables',
+    'description' => 'Custom tables are added to Chado.',
+    'page callback' => 'tripal_custom_table_view',
+    'page arguments' => array(4),
+    'access arguments' => array('access administration pages'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+  $items['admin/tripal/custom_tables/new'] = array(
+    'title' => 'Create Custom Table',
+    'description' => 'Custom tables are added to Chado.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_custom_tables_form'),
+    'access arguments' => array('access administration pages'),
+    'type' => MENU_CALLBACK,
+  );
+  $items['admin/tripal/custom_tables/edit/%'] = array(
+    'title' => 'Edit Custom Table',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_custom_tables_form', 4),
+    'access arguments' => array('access administration pages'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+  $items['admin/tripal/custom_tables/action/%/%'] = array(
+    'title' => 'Create Custom TAble',
+    'description' => 'Custom tables are added to Chado.',
+    'page callback' => 'tripal_custom_tables_action',
     'page arguments' => array(4, 5, "1"),
     'access arguments' => array('access administration pages'),
     'type' => MENU_CALLBACK,
