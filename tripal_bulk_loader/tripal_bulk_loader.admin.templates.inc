@@ -134,6 +134,32 @@ function tripal_bulk_loader_modify_template_base_form($form_state = NULL, $mode)
 
         $form['records']['no_records']['#value'] = FALSE;
 
+        // for backwards compatibility we want to convert insert_unique to be 'insert'
+        if (strcmp($table_array['mode'],'insert_unique')==0) {
+          $mode_value = 'insert or select if duplicate';
+        } 
+        elseif (strcmp($table_array['mode'],'optional')==0) {
+          $mode_value = 'optional insert';
+        } 
+        elseif (strcmp($table_array['mode'],'insert_once')==0) {
+          $mode_value = 'insert once';
+        } 
+        elseif ($table_array['mode']) {
+          $mode_value = $table_array['mode'];
+        }
+        else {
+          $mode_value = 'insert';
+        }
+        
+        // add in the select if duplicate 
+        if ($table_array['select_if_duplicate']) {
+          $mode_value .= ' or select if duplicate';
+        } 
+        
+        if ($table_array['disable']) {
+          $mode_value .= '. <font color="Red">DISABLED</font>';
+        } 
+        
         $form['records']['records-data'][$priority] = array(
           'title' => array(
             '#type' => 'markup',
@@ -145,7 +171,7 @@ function tripal_bulk_loader_modify_template_base_form($form_state = NULL, $mode)
           ),
           'mode' => array(
             '#type' => 'item',
-            '#value' => ($table_array['mode']) ? $table_array['mode'] : 'insert_unique',
+            '#value' => $mode_value,
           ),
           'new_priority' => array(
             '#type' => 'select',
@@ -612,13 +638,34 @@ function tripal_bulk_loader_edit_template_record_form(&$form_state = NULL) {
 
 
   // Tables and default table
-  $tables = tripal_core_get_chado_tables();
+  $tables = tripal_core_get_chado_tables(TRUE);
   if ($form_state['values']['chado_table']) {
     $table = $form_state['values']['chado_table'];
   }
   else {
     $table = $form_state['storage']['template_array'][$form_state['storage']['original_priority']]['table'];
   }
+  
+  // get the default of the mode
+  $mode = $form_state['storage']['template_array'][$form_state['storage']['original_priority']]['mode'];
+  if(!$mode){
+     $mode = 'insert';
+  }
+  // get default for the select if duplicate
+  $select_if_duplicate = $form_state['storage']['template_array'][$form_state['storage']['original_priority']]['select_if_duplicate'];
+  if(!isset($select_if_duplicate)){
+    $select_if_duplicate = 1;
+  }
+
+  // get the default for disabling the record
+  $disable = $form_state['storage']['template_array'][$form_state['storage']['original_priority']]['disable'];
+
+  // this is just for backwards compatibility. the insert_unique mode type is no longer available
+  if(strcmp($mode,'insert_unique')==0){
+     $mode = 'insert';
+     $select_if_duplicate = 1;
+  }
+  
 
   //dpm($form_state, 'form state');
 
@@ -675,11 +722,24 @@ function tripal_bulk_loader_edit_template_record_form(&$form_state = NULL) {
     '#options' => array(
       'select' => 'SELECT: Don\'t insert this record: it\'s used to define a foreign key in another record',
       'insert' => 'INSERT: Insert the record',
-      'optional' => 'OPTIONAL: Record will only be inserted if all required data is filled in',
+      'optional' => 'INSERT OPTIONAL: Record will only be inserted if all required data is filled in',
       'insert_once' => 'INSERT ONCE: Record will be inserted once for the entire file',
-      'insert_unique' => 'INSERT UNIQUE: Only insert record if there isn\'t a record with the same values',
     ),
-    '#default_value' => 'insert_unique'
+    '#default_value' => $mode
+  );
+  
+  $form['edit_record']['select_if_duplicate'] = array(
+     '#type' => 'checkbox',
+     '#title' => t('Do INSERT, or SELECT if Duplicate'),
+     '#description' => t('Perform the insert as selected above. If this is the first time this record has been added then perform an insert. Otherwise, perform a select.  The unique constraint for the table will be checked prior to insert.'),
+     '#default_value' => $select_if_duplicate
+  );
+  
+  $form['edit_record']['disable'] = array(
+     '#type' => 'checkbox',
+     '#title' => t('Disable this record'),
+     '#description' => t("Check this box to ignore this record (not perform select or insert) during template loading.  Uncheck to re-enable the record"),
+     '#default_value' => $disable,
   );
 
   $form['edit_record']['submit-edit_record'] = array(
@@ -717,6 +777,8 @@ function tripal_bulk_loader_edit_template_record_form_submit($form, &$form_state
       $record['record_id'] = $form_state['values']['record_name'];
       $record['mode'] = $form_state['values']['mode'];
       $record['table'] = $form_state['values']['chado_table'];
+      $record['select_if_duplicate'] = $form_state['values']['select_if_duplicate'];
+      $record['disable'] = $form_state['values']['disable'];
 
       if ($form_state['storage']['original_priority'] != $form_state['values']['field_group']) {
         $record['fields'] = array_merge($record['fields'], $template[ $form_state['values']['field_group'] ]['fields']);
@@ -816,7 +878,7 @@ function tripal_bulk_loader_add_template_field_form(&$form_state = NULL) {
   $field_type = ($form_state['values']['field_type'])? $form_state['values']['field_type'] : 'table field';
 
   // Tables and default table
-  $tables = tripal_core_get_chado_tables();
+  $tables = tripal_core_get_chado_tables(TRUE);
   if ($form_state['values']) {
     if (!preg_match('/^' . current($tables) . '$/', $form_state['values']['chado_table'])) {
       $table = $form_state['values']['chado_table'];
@@ -1451,7 +1513,7 @@ function tripal_bulk_loader_edit_template_field_form(&$form_state = NULL) {
   $field_type = ($form_state['values']['field_type'])? $form_state['values']['field_type'] : $template_field['type'];
 
   // Tables and default table
-  $tables = tripal_core_get_chado_tables();
+  $tables = tripal_core_get_chado_tables(TRUE);
   if ($form_state['values']) {
     $table = $form_state['values']['chado_table'];
   }

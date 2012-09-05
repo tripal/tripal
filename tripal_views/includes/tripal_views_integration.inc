@@ -282,7 +282,7 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL) {
   );
 
   // build the form element for the Chado tables
-  $chado_tables = tripal_core_get_chado_tables();
+  $chado_tables = tripal_core_get_chado_tables(TRUE);
   $chado_tables = array_merge(array('Select'), $chado_tables);
   $form['base_table_type']['table_name'] = array(
     '#title' => t('Chado/Custom Table'),
@@ -436,7 +436,7 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL) {
     $data['field_types'] = array();
 
     // get the list of chado tables to join on
-    $chado_join_tables = tripal_core_get_chado_tables();
+    $chado_join_tables = tripal_core_get_chado_tables(TRUE);
     $chado_join_tables = array_merge(array('Select a Join Table'), $chado_join_tables);
 
     // get list of all handlers

@@ -390,7 +390,7 @@ function tripal_views_integration_remove_entry_by_setup_id($setup_id) {
  */
 function tripal_views_integrate_all_chado_tables() {
 
-  $tables = tripal_core_get_chado_tables();
+  $tables = tripal_core_get_chado_tables(TRUE);
   foreach ($tables as $tablename) {
     if (!tripal_views_is_integrated($tablename, 10)) {
       $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename, TRUE, 10);

@@ -162,7 +162,9 @@ function tripal_bulk_loader_load_data($nid, $job_id) {
     foreach ($record_array['fields'] as $field_index => $field_array) {
 
       $default_data[$priority]['table'] = $record_array['table'];
-      $default_data[$priority]['mode'] = ($record_array['mode']) ? $record_array['mode'] : 'insert_unique';
+      $default_data[$priority]['mode'] = ($record_array['mode']) ? $record_array['mode'] : 'insert';
+      $default_data[$priority]['select_if_duplicate'] = ($record_array['select_if_duplicate']) ? $record_array['select_if_duplicate'] : 1;
+      $default_data[$priority]['disabled'] = ($record_array['disable']) ? $record_array['disable'] : 0;
       $default_data[$priority]['record_id'] = $record_array['record_id'];
       $record2priority[$record_array['record_id']] = $priority;
       $default_data[$priority]['required'][$field_array['field']] = $field_array['required'];
@@ -354,7 +356,14 @@ function tripal_bulk_loader_load_data($nid, $job_id) {
           'node' => $node,
           'nid' => $node->nid,
         );
-        $status = process_data_array_for_line($priority, $data, $default_data, $options);
+        // execute all records that are not disabled
+        if ($data[$priority]['disabled'] == 0) {
+          $status = process_data_array_for_line($priority, $data, $default_data, $options);
+        } 
+        else {
+          // set status to true for skipped records
+          $status = TRUE;
+        }
         tripal_bulk_loader_progress_file_track_job($job_id, $status);
         if (!$status ) {
           // Encountered an error
@@ -509,8 +518,11 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
     $header = $values['uniquename'] . ' ' . $table_data['record_id'];
   }
 
-  // if insert unique then check to ensure unique
-  if (preg_match('/insert_unique/', $table_data['mode'])) {
+  // if select if duplicate then check to ensure unique constraint is met.  If so,
+  // then return. We don't want to do any inserts.  We check for insert_unique for backwards compatibilty but that
+  // mode no longer exists
+  if (!preg_match('/insert_unique/', $table_data['mode']) or
+      (isset($table_data['select_if_duplicate']) and $table_data['select_if_duplicate'] == 1)) {
     $unique = tripal_core_chado_select($table, array_keys($table_desc['fields']), $values, array('has_record' => TRUE));
     //print 'Unique?'.print_r(array('table' => $table, 'columns' => array_keys($table_desc['fields']), 'values' => $values),TRUE).' returns '.$unique."\n";
     if ($unique > 0) {
