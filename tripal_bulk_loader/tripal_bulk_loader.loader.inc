@@ -446,37 +446,29 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
 
   //watchdog('T_bulk_loader','Original:<pre>'.print_r($table_data, TRUE).'</pre>', array(), WATCHDOG_NOTICE);
 
-  //print 'default values:'.print_r($values,TRUE)."\n";
   if ($table_data['need_further_processing']) {
+
     $values = tripal_bulk_loader_add_spreadsheetdata_to_values($values, $addt->line, $addt->field2column[$priority]);
     if (!$values) {
       //watchdog('T_bulk_loader', 'Line ' . $addt->line_num . ' Data File Added:' . print_r($values, TRUE), array(), WATCHDOG_NOTICE);
     }
 
     $values = tripal_bulk_loader_add_foreignkey_to_values($values, $data, $addt->record2priority);
+
     if (!$values) {
       //watchdog('T_bulk_loader', 'Line ' . $addt->line_num . ' FK Added:<pre>' . print_r($values, TRUE) . print_r($data[$priority], TRUE) . '</pre>', array(), WATCHDOG_NOTICE);
     }
+
   }
   $values = tripal_bulk_loader_regex_tranform_values($values, $table_data, $addt->line);
   if (!$values) {
     //watchdog('T_bulk_loader', 'Line ' . $addt->line_num . ' Regex:<pre>' . print_r($values, TRUE) . print_r($table_data, TRUE) . '</pre>' . '</pre>', array(), WATCHDOG_NOTICE);
   }
 
-// SPF: commented out 9/5/2012... It is possible a record has no values (it's optional). The
-// checks below I think negate the need for this check, so commented out.
-//  if (!$values) {
-//    $msg = 'Line ' . $addt->line_num . ' ' . $table_data['record_id'] . ' (' . $table_data['mode'] . ') Aborted due to error in previous record. Values of current record:' . print_r($table_data['values_array'], TRUE);
-//    watchdog('T_bulk_loader', $msg, array(), WATCHDOG_WARNING);
-//    print "ERROR: " . $msg . "\n";
-//    $data[$priority]['error'] = TRUE;
-//    $no_errors = FALSE;
-//  }
-
   // get the table description
   $table_desc = tripal_core_get_chado_table_schema($table);
   
-  // check that all database required fields are present if this is in an insert
+  // for an insert, check that all database required fields are present in the values array
   // we check for 'optional' in the mode for backwards compatibility. The 'optional' 
   // mode used to be a type of insert
   if (preg_match('/insert/', $table_data['mode']) or preg_match('/optional/', $table_data['mode'])) {
@@ -484,29 +476,38 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
     $fields = $table_desc['fields'];
     foreach ($fields as $field => $def) {
       // a field is considered missing if it cannot be null and there is no default
-      // value for it or it is not of type 'serial'{
+      // value for it or it is not of type 'serial'
       if ($def['not null'] == 1 and 
           !array_key_exists($field, $values) and 
           !isset($def['default']) and 
           strcmp($def['type'], serial) != 0) {
-        $msg = 'Line ' . $addt->line_num . ' ' . $table_data['record_id'] . ' (' . $table_data['mode'] . ') Missing Database Required Value: ' . $table . '.' . $field;
+        $msg = "\nLine " . $addt->line_num . ' ' . $table_data['record_id'] . ' (' . $table_data['mode'] . ') Missing Database Required Value: ' . $table . '.' . $field;
         watchdog('T_bulk_loader', $msg, array(), WATCHDOG_NOTICE);
         $data[$priority]['error'] = TRUE;
       }
     }
   } 
 
-  // Check required fields are present if a required field is missing and this
+  // Check that template required fields are present. if a required field is 
+  // missing and this
   // is an optional record then just return. otherwise raise an error
+  $skip_optional = 0;
   foreach ($table_data['required'] as $field => $required) {
     if ($required) {
       // check if the field has no value (or array is empty)
       if (!isset($values[$field]) or (is_array($values[$field]) and count($values[$field]) == 0)){
-        if ($table_data['optional']) {
-          return $no_errors;
+        // check if the record is optional.  For backwards compatiblity we need to
+        // check if the 'mode' is set to 'optional'
+        if ($table_data['optional'] or preg_match('/optional/', $table_data['mode'])) {
+          $skip_optional = 1;
+          // set the values array to be empty since we all required fields are
+          // optional and we can't do a select/insert so we don't want to keep
+          // the values if this record is used in a later FK relationship.
+          $values = array();
         }
         else {
-          $msg = 'Line ' . $addt->line_num . ' ' . $table_data['record_id'] . ' (' . $table_data['mode'] . ') Missing Template Required Value: ' . $table . '.' . $field;
+          $msg = "\nLine " . $addt->line_num . ' "' . $table_data['record_id'] . 
+            '" (' . $table_data['mode'] . ') Missing template required value: ' . $table . '.' . $field;
           watchdog('T_bulk_loader', $msg, array(), WATCHDOG_WARNING);
           $data[$priority]['error'] = TRUE;
           $no_errors = FALSE;
@@ -517,15 +518,20 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
 
   // add new values array into the data array
   $data[$priority]['values_array'] = $values;
+  
+  // if there was an error already -> don't insert
+  if ($data[$priority]['error']) {
+    return $no_errors;
+  }
+  
+  // skip optional fields 
+  if ($skip_optional) {
+    return $no_errors;
+  }
 
   // check if it is already inserted
   if ($table_data['inserted']) {
     //watchdog('T_bulk_loader','Already Inserted:'.print_r($values,TRUE),array(),WATCHDOG_NOTICE);
-    return $no_errors;
-  }
-
-  // if there was an error already -> don't insert
-  if ($data[$priority]['error']) {
     return $no_errors;
   }
 
@@ -572,7 +578,7 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
     $record = tripal_core_chado_insert($table, $values, $options);
 
     if (!$record) {
-      $msg = 'Line ' . $addt->line_num . ' ' . $table_data['record_id'] . ' (' . $table_data['mode'] . ') Unable to insert record into ' . $table . ' where values:' . print_r($values, TRUE);
+      $msg = "\nLine " . $addt->line_num . ' ' . $table_data['record_id'] . ' (' . $table_data['mode'] . ') Unable to insert record into ' . $table . ' where values:' . print_r($values, TRUE);
       watchdog('T_bulk_loader', $msg, array(), WATCHDOG_ERROR);
       print "ERROR: " . $msg . "\n";
       $data[$priority]['error'] = TRUE;
@@ -621,7 +627,7 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
     // if the record doesn't exists and it's not optional then generate an error
     if (!$exists and $table_data['optional'] != 1) {
       // No record on select
-      $msg = 'Line ' . $addt->line_num . ' ' . $table_data['record_id'] . ' (' . $table_data['mode'] . ') No Matching record in ' . $table . ' where values:' . print_r($values, TRUE);
+      $msg = "\nLine " . $addt->line_num . ' ' . $table_data['record_id'] . ' (' . $table_data['mode'] . ') No Matching record in ' . $table . ' where values:' . print_r($values, TRUE);
       watchdog('T_bulk_loader', $msg, array(), WATCHDOG_WARNING);
       $data[$priority]['error'] = TRUE;
       $no_errors = FALSE;
@@ -676,16 +682,24 @@ function tripal_bulk_loader_add_spreadsheetdata_to_values($values, $line, $field
 function tripal_bulk_loader_add_foreignkey_to_values($values, $data, $record2priority) {
 
   foreach ($values as $field => $value) {
+    // if the field value is an array then it is an FK
     if (is_array($value)) {
-      $foreign_record = $value['foreign record'];
+   
+      // get the name of the foreign record
+      $foreign_record   = $value['foreign record'];
+      
+      // get the corresponding priority of the foreign record
       $foreign_priority = $record2priority[$foreign_record];
-      $foreign_values = $data[$foreign_priority]['values_array'];
-
-      // add to current values array
+      
+      // get the values of the foreign record
+      $foreign_values   = $data[$foreign_priority]['values_array'];
+      
+      // substitue the foreign values for this fields values
       $values[$field] = $foreign_values;
     }
   }
 
+  // return the updated field values
   return $values;
 }
 

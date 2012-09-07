@@ -170,7 +170,7 @@ function tripal_bulk_loader_modify_template_base_form($form_state = NULL, $mode)
         $form['records']['records-data'][$priority] = array(
           'title' => array(
             '#type' => 'markup',
-            '#value' => filter_xss($table_array['record_id']),
+            '#value' => filter_xss($priority . ". " . $table_array['record_id']),
           ),
           'chado_table' => array(
             '#type' => 'markup',
