@@ -165,6 +165,7 @@ function tripal_bulk_loader_load_data($nid, $job_id) {
       $default_data[$priority]['mode'] = ($record_array['mode']) ? $record_array['mode'] : 'insert';
       $default_data[$priority]['select_if_duplicate'] = ($record_array['select_if_duplicate']) ? $record_array['select_if_duplicate'] : 1;
       $default_data[$priority]['disabled'] = ($record_array['disable']) ? $record_array['disable'] : 0;
+      $default_data[$priority]['optional'] = ($record_array['optional']) ? $record_array['optional'] : 0;
       $default_data[$priority]['record_id'] = $record_array['record_id'];
       $record2priority[$record_array['record_id']] = $priority;
       $default_data[$priority]['required'][$field_array['field']] = $field_array['required'];
@@ -267,7 +268,7 @@ function tripal_bulk_loader_load_data($nid, $job_id) {
     $num_records = 0;
     $num_lines = 0;
     $num_errors = 0;
-    $interval = intval($total_lines * 0.10);
+    $interval = intval($total_lines * 0.01);
     if ($interval == 0) {
       $interval = 1;
     }
@@ -327,10 +328,10 @@ function tripal_bulk_loader_load_data($nid, $job_id) {
       $line = explode("\t", $raw_line);
       $num_lines++;
 
-      // update the job status every 10% of lines processed for the current group
+      // update the job status every 1% of lines processed for the current group
       if ($node->job_id and $num_lines % $interval == 0) {
         // percentage of lines processed for the current group
-        $group_progress = round(($num_lines/$total_lines)*100);
+        $group_progress = round(($num_lines / $total_lines) * 100);
         tripal_bulk_loader_progress_bar($num_lines, $total_lines);
         // percentage of lines processed for all groups
         // <previous group index> * 100 + <current group progress>
@@ -339,7 +340,7 @@ function tripal_bulk_loader_load_data($nid, $job_id) {
         // For example, if you were in the third group of 3 constant sets
         // and had a group percentage of 50% then the job progress would be
         // (2*100 + 50%) / 3 = 250%/3 = 83%
-        $job_progress = round(((($group_index-1)*100)+$group_progress)/$total_num_groups);
+        $job_progress = round(((($group_index - 1) * 100) + $group_progress) / $total_num_groups);
         tripal_job_set_progress($node->job_id, $job_progress);
       }
 
@@ -462,36 +463,54 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
     //watchdog('T_bulk_loader', 'Line ' . $addt->line_num . ' Regex:<pre>' . print_r($values, TRUE) . print_r($table_data, TRUE) . '</pre>' . '</pre>', array(), WATCHDOG_NOTICE);
   }
 
-  if (!$values) {
-    $msg = 'Line ' . $addt->line_num . ' ' . $table_data['record_id'] . ' (' . $table_data['mode'] . ') Aborted due to error in previous record. Values of current record:' . print_r($table_data['values_array'], TRUE);
-    watchdog('T_bulk_loader', $msg, array(), WATCHDOG_WARNING);
-    print "ERROR: " . $msg . "\n";
-    $data[$priority]['error'] = TRUE;
-    $no_errors = FALSE;
-  }
+// SPF: commented out 9/5/2012... It is possible a record has no values (it's optional). The
+// checks below I think negate the need for this check, so commented out.
+//  if (!$values) {
+//    $msg = 'Line ' . $addt->line_num . ' ' . $table_data['record_id'] . ' (' . $table_data['mode'] . ') Aborted due to error in previous record. Values of current record:' . print_r($table_data['values_array'], TRUE);
+//    watchdog('T_bulk_loader', $msg, array(), WATCHDOG_WARNING);
+//    print "ERROR: " . $msg . "\n";
+//    $data[$priority]['error'] = TRUE;
+//    $no_errors = FALSE;
+//  }
 
+  // get the table description
   $table_desc = tripal_core_get_chado_table_schema($table);
-  if (preg_match('/optional/', $table_array['mode'])) {
+  
+  // check that all database required fields are present if this is in an insert
+  // we check for 'optional' in the mode for backwards compatibility. The 'optional' 
+  // mode used to be a type of insert
+  if (preg_match('/insert/', $table_data['mode']) or preg_match('/optional/', $table_data['mode'])) {
     // Check all db required fields are set
     $fields = $table_desc['fields'];
     foreach ($fields as $field => $def) {
       // a field is considered missing if it cannot be null and there is no default
-      // value for it or it is of type 'serial'
-      if ($def['not null'] == 1 and !array_key_exists($field, $insert_values) and !isset($def['default']) and strcmp($def['type'], serial)!=0) {
+      // value for it or it is not of type 'serial'{
+      if ($def['not null'] == 1 and 
+          !array_key_exists($field, $values) and 
+          !isset($def['default']) and 
+          strcmp($def['type'], serial) != 0) {
         $msg = 'Line ' . $addt->line_num . ' ' . $table_data['record_id'] . ' (' . $table_data['mode'] . ') Missing Database Required Value: ' . $table . '.' . $field;
         watchdog('T_bulk_loader', $msg, array(), WATCHDOG_NOTICE);
         $data[$priority]['error'] = TRUE;
       }
     }
-  } //end of if optional record
+  } 
 
-  // Check required fields are present
+  // Check required fields are present if a required field is missing and this
+  // is an optional record then just return. otherwise raise an error
   foreach ($table_data['required'] as $field => $required) {
     if ($required) {
-      if (!isset($values[$field])) {
-        $msg = 'Line ' . $addt->line_num . ' ' . $table_data['record_id'] . ' (' . $table_data['mode'] . ') Missing Template Required Value: ' . $table . '.' . $field;
-        watchdog('T_bulk_loader', $msg, array(), WATCHDOG_NOTICE);
-        $data[$priority]['error'] = TRUE;
+      // check if the field has no value (or array is empty)
+      if (!isset($values[$field]) or (is_array($values[$field]) and count($values[$field]) == 0)){
+        if ($table_data['optional']) {
+          return $no_errors;
+        }
+        else {
+          $msg = 'Line ' . $addt->line_num . ' ' . $table_data['record_id'] . ' (' . $table_data['mode'] . ') Missing Template Required Value: ' . $table . '.' . $field;
+          watchdog('T_bulk_loader', $msg, array(), WATCHDOG_WARNING);
+          $data[$priority]['error'] = TRUE;
+          $no_errors = FALSE;
+        }
       }
     }
   }
@@ -518,11 +537,11 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
     $header = $values['uniquename'] . ' ' . $table_data['record_id'];
   }
 
-  // if select if duplicate then check to ensure unique constraint is met.  If so,
-  // then return. We don't want to do any inserts.  We check for insert_unique for backwards compatibilty but that
-  // mode no longer exists
-  if (!preg_match('/insert_unique/', $table_data['mode']) or
-      (isset($table_data['select_if_duplicate']) and $table_data['select_if_duplicate'] == 1)) {
+  // if "select if duplicate" is enabled then check to ensure unique constraint is not violoated.  
+  // If it is violoated then simply return, the record already exists in the database.
+  // We check for insert_unique for backwards compatibilty but that mode no longer exists
+  if (preg_match('/insert_unique/', $table_data['mode']) or
+      $table_data['select_if_duplicate'] == 1) {
     $unique = tripal_core_chado_select($table, array_keys($table_desc['fields']), $values, array('has_record' => TRUE));
     //print 'Unique?'.print_r(array('table' => $table, 'columns' => array_keys($table_desc['fields']), 'values' => $values),TRUE).' returns '.$unique."\n";
     if ($unique > 0) {
@@ -599,13 +618,14 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
   }
   else {
     $exists = tripal_core_chado_select($table, array_keys($table_desc['fields']), $values, array('has_record' => TRUE));
-    if (!$exists) {
+    // if the record doesn't exists and it's not optional then generate an error
+    if (!$exists and $table_data['optional'] != 1) {
       // No record on select
       $msg = 'Line ' . $addt->line_num . ' ' . $table_data['record_id'] . ' (' . $table_data['mode'] . ') No Matching record in ' . $table . ' where values:' . print_r($values, TRUE);
       watchdog('T_bulk_loader', $msg, array(), WATCHDOG_WARNING);
       $data[$priority]['error'] = TRUE;
       $no_errors = FALSE;
-    }
+    } 
   }
   return $no_errors;
 }
@@ -762,7 +782,7 @@ function tripal_bulk_loader_progress_bar($current=0, $total=100, $size=50) {
   }
 
   //Percentage round off for a more clean, consistent look
-  $perc = round(($current/$total)*100, 2);
+  $perc = sprintf("%.02f",round(($current/$total)*100, 2));
   // percent indicator must be four characters, if shorter, add some spaces
   for ($i = strlen($perc); $i <= 4; $i++) {
     $perc = ' ' . $perc;

@@ -134,21 +134,27 @@ function tripal_bulk_loader_modify_template_base_form($form_state = NULL, $mode)
 
         $form['records']['no_records']['#value'] = FALSE;
 
+        $mode_value = '';
+        if ($table_array['optional']) {
+          $mode_value .= 'optional ';
+        } 
+
         // for backwards compatibility we want to convert insert_unique to be 'insert'
+        // and optional to 'insert'
         if (strcmp($table_array['mode'],'insert_unique')==0) {
-          $mode_value = 'insert or select if duplicate';
+          $mode_value .= 'insert or select if duplicate';
         } 
         elseif (strcmp($table_array['mode'],'optional')==0) {
-          $mode_value = 'optional insert';
+          $mode_value .= 'optional insert';
         } 
         elseif (strcmp($table_array['mode'],'insert_once')==0) {
-          $mode_value = 'insert once';
+          $mode_value .= 'insert once';
         } 
         elseif ($table_array['mode']) {
-          $mode_value = $table_array['mode'];
+          $mode_value .= $table_array['mode'];
         }
         else {
-          $mode_value = 'insert';
+          $mode_value .= 'insert';
         }
         
         // add in the select if duplicate 
@@ -156,6 +162,7 @@ function tripal_bulk_loader_modify_template_base_form($form_state = NULL, $mode)
           $mode_value .= ' or select if duplicate';
         } 
         
+        // add in the disabled
         if ($table_array['disable']) {
           $mode_value .= '. <font color="Red">DISABLED</font>';
         } 
@@ -646,15 +653,22 @@ function tripal_bulk_loader_edit_template_record_form(&$form_state = NULL) {
     $table = $form_state['storage']['template_array'][$form_state['storage']['original_priority']]['table'];
   }
   
-  // get the default of the mode
+  // get the default mode
   $mode = $form_state['storage']['template_array'][$form_state['storage']['original_priority']]['mode'];
   if(!$mode){
      $mode = 'insert';
   }
+  
   // get default for the select if duplicate
   $select_if_duplicate = $form_state['storage']['template_array'][$form_state['storage']['original_priority']]['select_if_duplicate'];
   if(!isset($select_if_duplicate)){
     $select_if_duplicate = 1;
+  }
+  
+  // get default for the select if duplicate
+  $optional = $form_state['storage']['template_array'][$form_state['storage']['original_priority']]['optional'];
+  if(!isset($optional)){
+    $optional = 0;
   }
 
   // get the default for disabling the record
@@ -666,6 +680,11 @@ function tripal_bulk_loader_edit_template_record_form(&$form_state = NULL) {
      $select_if_duplicate = 1;
   }
   
+  // this is just for backwards compatibility. the insert_unique mode type is no longer available
+  if(strcmp($mode,'optional')==0){
+     $mode = 'insert';
+     $optional = 1;
+  }
 
   //dpm($form_state, 'form state');
 
@@ -722,10 +741,16 @@ function tripal_bulk_loader_edit_template_record_form(&$form_state = NULL) {
     '#options' => array(
       'select' => 'SELECT: Don\'t insert this record: it\'s used to define a foreign key in another record',
       'insert' => 'INSERT: Insert the record',
-      'optional' => 'INSERT OPTIONAL: Record will only be inserted if all required data is filled in',
       'insert_once' => 'INSERT ONCE: Record will be inserted once for the entire file',
     ),
     '#default_value' => $mode
+  );
+  
+  $form['edit_record']['optional'] = array(
+     '#type' => 'checkbox',
+     '#title' => t('Optional'),
+     '#description' => t('The insert or select will only be performed if all required data are present'),
+     '#default_value' => $optional
   );
   
   $form['edit_record']['select_if_duplicate'] = array(
@@ -779,6 +804,7 @@ function tripal_bulk_loader_edit_template_record_form_submit($form, &$form_state
       $record['table'] = $form_state['values']['chado_table'];
       $record['select_if_duplicate'] = $form_state['values']['select_if_duplicate'];
       $record['disable'] = $form_state['values']['disable'];
+      $record['optional'] = $form_state['values']['optional'];
 
       if ($form_state['storage']['original_priority'] != $form_state['values']['field_group']) {
         $record['fields'] = array_merge($record['fields'], $template[ $form_state['values']['field_group'] ]['fields']);
