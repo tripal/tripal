@@ -281,10 +281,10 @@ function tripal_library_admin() {
   // add the field set for syncing libraries
   if (!$active_jobs) {
     get_tripal_library_admin_form_sync_set($form);
+    get_tripal_library_admin_form_cleanup_set($form);
     get_tripal_library_admin_form_reindex_set($form);
     get_tripal_library_admin_form_taxonomy_set($form);
     get_tripal_library_admin_form_cleanup_set($form);
-    get_tripal_library_admin_form_menu_set($form);
   }
   else {
     $form['notice'] = array(
@@ -504,40 +504,6 @@ function theme_tripal_library_node_libraries($node) {
  *
  * @ingroup tripal_library
  */
-function get_tripal_library_admin_form_menu_set(&$form) {
-  $form['menu'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Set Menu')
-  );
-
-
-  $types = array(
-    'tripal_organism' => t('Organism Page'),
-    'tripal_feature' => t('Feature Page'),
-  );
-
-  $defaults = variable_get('tripal_lib_menu_node_types', '');
-
-  $form['menu']['tripal_lib_menu_node_types'] = array(
-    '#title' => 'Page Types',
-    '#type'  => 'checkboxes',
-    '#description' => t("Libraries can be associated with other data types ".
-       "such as organisms, features, analyses, etc.  The library module ".
-       "will add to the respective pages a box or menu item with a ".
-       "list of libraries associated with the data type.  This list ".
-       "will appear in a box on the page by default.  To place this ".
-       "list as a menu item rather than a box, check the appropriate boxes ".
-       "above"),
-    '#options' => $types,
-    '#default_value' => $defaults,
-    '#weight' => 1,
-  );
-}
-/**
- *
- *
- * @ingroup tripal_library
- */
 function get_tripal_library_admin_form_cleanup_set(&$form) {
   $form['cleanup'] = array(
     '#type' => 'fieldset',
@@ -558,6 +524,7 @@ function get_tripal_library_admin_form_cleanup_set(&$form) {
     '#weight' => 2,
   );
 }
+
 /**
  *
  *
