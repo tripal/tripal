@@ -163,9 +163,11 @@ function tripal_bulk_loader_load_data($nid, $job_id) {
 
       $default_data[$priority]['table'] = $record_array['table'];
       $default_data[$priority]['mode'] = ($record_array['mode']) ? $record_array['mode'] : 'insert';
-      $default_data[$priority]['select_if_duplicate'] = ($record_array['select_if_duplicate']) ? $record_array['select_if_duplicate'] : 1;
+      $default_data[$priority]['select_if_duplicate'] = ($record_array['select_if_duplicate']) ? $record_array['select_if_duplicate'] : 0;
+      $default_data[$priority]['update_if_duplicate'] = ($record_array['update_if_duplicate']) ? $record_array['update_if_duplicate'] : 0;
       $default_data[$priority]['disabled'] = ($record_array['disable']) ? $record_array['disable'] : 0;
       $default_data[$priority]['optional'] = ($record_array['optional']) ? $record_array['optional'] : 0;
+      $default_data[$priority]['select_optional'] = ($record_array['select_optional']) ? $record_array['select_optional'] : 0;
       $default_data[$priority]['record_id'] = $record_array['record_id'];
       $record2priority[$record_array['record_id']] = $priority;
       $default_data[$priority]['required'][$field_array['field']] = $field_array['required'];
@@ -498,7 +500,7 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
       if (!isset($values[$field]) or (is_array($values[$field]) and count($values[$field]) == 0)){
         // check if the record is optional.  For backwards compatiblity we need to
         // check if the 'mode' is set to 'optional'
-        if ($table_data['optional'] or preg_match('/optional/', $table_data['mode'])) {
+        if ($table_data['optional'] or preg_match('/optional/', $table_data['mode']) or $table_data['select_optional'])  {
           $skip_optional = 1;
           // set the values array to be empty since we all required fields are
           // optional and we can't do a select/insert so we don't want to keep
@@ -546,17 +548,38 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
   // if "select if duplicate" is enabled then check to ensure unique constraint is not violoated.  
   // If it is violoated then simply return, the record already exists in the database.
   // We check for insert_unique for backwards compatibilty but that mode no longer exists
-  if (preg_match('/insert_unique/', $table_data['mode']) or
+  if (preg_match('/insert_unique/', $table_data['mode']) or 
       $table_data['select_if_duplicate'] == 1) {
-    $unique = tripal_core_chado_select($table, array_keys($table_desc['fields']), $values, array('has_record' => TRUE));
-    //print 'Unique?'.print_r(array('table' => $table, 'columns' => array_keys($table_desc['fields']), 'values' => $values),TRUE).' returns '.$unique."\n";
-    if ($unique > 0) {
-      //$default_data[$priority]['inserted'] = TRUE;
-      //watchdog('T_bulk_loader', $header.': Not unique ('.$unique.'):'.print_r($values,'values')."\n".print_r($data,TRUE),array(),WATCHDOG_NOTICE);;
+    $options = array('use_unique' => TRUE);
+    $duplicate = tripal_core_chado_select($table, array_keys($table_desc['fields']), $values, $options); 
+    // if this is a duplicate then substitute the values in the table_data array so
+    // that for future records that my depend on this one, they can get the values 
+    // needed
+    if (count($duplicate) > 0) {
+
+      // if all we have is one field then we will just use the value returned
+      // rather than create an array of values. This way it will prevent 
+      // the tripal_core_chado_(select|insert|update) from recursing on 
+      // foreign keys and make the loader go faster.
+      if (count($duplicate[0]) == 1) {
+        foreach($duplicate[0] as $key => $value){ 
+          $data[$priority]['values_array'] = $value;
+        } 
+      }
+      // if we have multiple fields returned then we need to set the values
+      // the new array.
+      else {
+        // convert object to array
+        $new_values = array();
+        foreach($duplicate[0] as $key => $value){ 
+          $new_values[$key] = $value;
+        } 
+        $data[$priority]['values_array'] = $new_values;        
+      }
+      // reset values in data array
       return $no_errors;
     }
   }
-
 
   if (!preg_match('/select/', $table_data['mode'])) {
     // Use prepared statement?
@@ -575,7 +598,13 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
       $options['skip_validation'] = TRUE;
     }
 
-    $record = tripal_core_chado_insert($table, $values, $options);
+    if ($table_data['update_if_duplicate'] == 1) {
+      // TODO: handle updates
+      //$record = tripal_core_chado_update($table, $values, $options);
+    }
+    else {
+      $record = tripal_core_chado_insert($table, $values, $options);      
+    }
 
     if (!$record) {
       $msg = "\nLine " . $addt->line_num . ' ' . $table_data['record_id'] . ' (' . $table_data['mode'] . ') Unable to insert record into ' . $table . ' where values:' . print_r($values, TRUE);
@@ -585,9 +614,18 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
       $no_errors = FALSE;
     }
     else {
-      //add changes back to values array
-      $data[$priority]['values_array'] = $record;
-      $values = $record;
+      // substitute the values array for the primary key if it exists
+      // and is a single field
+      if(array_key_exists('primary key',$table_desc)){
+        if(count($table_desc['primary key']) == 1){
+          $pkey_field = $table_desc['primary key'][0];
+          $data[$priority]['values_array'] = $record[$pkey_field];
+        }
+      } else {
+        //add changes back to values array
+        $data[$priority]['values_array'] = $record;
+        $values = $record;
+      }
 
       // if mode=insert_once then ensure we only insert it once
       if (preg_match('/insert_once/', $table_data['mode'])) {
@@ -623,11 +661,27 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
     } //end of if insert was successful
   }
   else {
-    $exists = tripal_core_chado_select($table, array_keys($table_desc['fields']), $values, array('has_record' => TRUE));
+    // get the matches for this select
+    $matches = tripal_core_chado_select($table, array_keys($table_desc['fields']), $values);
+    
     // if the record doesn't exists and it's not optional then generate an error
-    if (!$exists and $table_data['optional'] != 1) {
+    if (count($matches) == 0){
       // No record on select
-      $msg = "\nLine " . $addt->line_num . ' ' . $table_data['record_id'] . ' (' . $table_data['mode'] . ') No Matching record in ' . $table . ' where values:' . print_r($values, TRUE);
+      if ($table_data['select_optional'] != 1) {        
+        $msg = "\nLine " . $addt->line_num . ' ' . $table_data['record_id'] . ' (' . $table_data['mode'] . ') No Matching record in ' . $table . ' where values:' . print_r($values, TRUE);
+        watchdog('T_bulk_loader', $msg, array(), WATCHDOG_WARNING);
+        $data[$priority]['error'] = TRUE;
+        $no_errors = FALSE;
+      }
+      // there is no match and select optional is turned on, so we want to set
+      // the values to empty for any records with an FK relationship on this one
+      else {
+        $data[$priority]['values_array'] = NULL;
+      }
+    }
+    // if we have more than one record matching then this isn't good. We have to error out.
+    if(count($matches) > 1){
+      $msg = "\nLine " . $addt->line_num . ' ' . $table_data['record_id'] . ' (' . $table_data['mode'] . ') Too many matching records in ' . $table . ' where values:' . print_r($values, TRUE);
       watchdog('T_bulk_loader', $msg, array(), WATCHDOG_WARNING);
       $data[$priority]['error'] = TRUE;
       $no_errors = FALSE;

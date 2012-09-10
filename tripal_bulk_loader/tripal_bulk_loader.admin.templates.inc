@@ -161,6 +161,13 @@ function tripal_bulk_loader_modify_template_base_form($form_state = NULL, $mode)
         if ($table_array['select_if_duplicate']) {
           $mode_value .= ' or select if duplicate';
         } 
+        if ($table_array['select_optional']) {
+          $mode_value .= ' (no fail)';
+        }
+        if ($table_array['update_if_duplicate']) {
+          $mode_value .= ' or update if duplicate';
+        } 
+        
         
         // add in the disabled
         if ($table_array['disable']) {
@@ -659,10 +666,22 @@ function tripal_bulk_loader_edit_template_record_form(&$form_state = NULL) {
      $mode = 'insert';
   }
   
+  // get default for the select optional
+  $select_optional = $form_state['storage']['template_array'][$form_state['storage']['original_priority']]['select_optional'];
+  if(!isset($select_optional)){
+    $select_optional = 1;
+  }
+  
   // get default for the select if duplicate
   $select_if_duplicate = $form_state['storage']['template_array'][$form_state['storage']['original_priority']]['select_if_duplicate'];
   if(!isset($select_if_duplicate)){
     $select_if_duplicate = 1;
+  }
+  
+  // get default for the update if duplicate
+  $update_if_duplicate = $form_state['storage']['template_array'][$form_state['storage']['original_priority']]['update_if_duplicate'];
+  if(!isset($update_if_duplicate)){
+    $update_if_duplicate = 0;
   }
   
   // get default for the select if duplicate
@@ -670,7 +689,7 @@ function tripal_bulk_loader_edit_template_record_form(&$form_state = NULL) {
   if(!isset($optional)){
     $optional = 0;
   }
-
+  
   // get the default for disabling the record
   $disable = $form_state['storage']['template_array'][$form_state['storage']['original_priority']]['disable'];
 
@@ -746,20 +765,41 @@ function tripal_bulk_loader_edit_template_record_form(&$form_state = NULL) {
     '#default_value' => $mode
   );
   
+  $form['edit_record']['select_options'] = array(
+     '#type' => 'markup',
+     '#value' => t('Additional Select Options:'),
+  );
+  $form['edit_record']['select_optional'] = array(
+     '#type' => 'checkbox',
+     '#title' => t('Continue if no record exists.'),
+     '#description' => t('By default if a select does not find a match the loader will fail.  Check here to allow the loader to continue when no match is found.'),
+     '#default_value' => $select_optional
+  );
+  
+  $form['edit_record']['insert_options'] = array(
+     '#type' => 'markup',
+     '#prefix' => '<br>',
+     '#value' => t('Additional Insert Options:'),
+  );
+    
+  $form['edit_record']['select_if_duplicate'] = array(
+     '#type' => 'checkbox',
+     '#title' => t('SELECT if duplicate (no insert)'),
+     '#description' => t('If this is not the first time this record has been added then perform a select rather than an insert.'),
+     '#default_value' => $select_if_duplicate
+  );
+  $form['edit_record']['update_if_duplicate'] = array(
+     '#type' => 'checkbox',
+     '#title' => t('UPDATE if duplicate (no insert)'),
+     '#description' => t('If this is not the first time this record has been added then perform an update rather than an insert.'),
+     '#default_value' => $update_if_duplicate
+  );  
   $form['edit_record']['optional'] = array(
      '#type' => 'checkbox',
      '#title' => t('Optional'),
-     '#description' => t('The insert or select will only be performed if all required data are present'),
+     '#description' => t('The insert, update or select will only be performed if all required data are present'),
      '#default_value' => $optional
-  );
-  
-  $form['edit_record']['select_if_duplicate'] = array(
-     '#type' => 'checkbox',
-     '#title' => t('Do INSERT, or SELECT if Duplicate'),
-     '#description' => t('Perform the insert as selected above. If this is the first time this record has been added then perform an insert. Otherwise, perform a select.  The unique constraint for the table will be checked prior to insert.'),
-     '#default_value' => $select_if_duplicate
-  );
-  
+  );  
   $form['edit_record']['disable'] = array(
      '#type' => 'checkbox',
      '#title' => t('Disable this record'),
@@ -803,6 +843,8 @@ function tripal_bulk_loader_edit_template_record_form_submit($form, &$form_state
       $record['mode'] = $form_state['values']['mode'];
       $record['table'] = $form_state['values']['chado_table'];
       $record['select_if_duplicate'] = $form_state['values']['select_if_duplicate'];
+      $record['update_if_duplicate'] = $form_state['values']['update_if_duplicate'];      
+      $record['select_optional'] = $form_state['values']['select_optional'];            
       $record['disable'] = $form_state['values']['disable'];
       $record['optional'] = $form_state['values']['optional'];
 

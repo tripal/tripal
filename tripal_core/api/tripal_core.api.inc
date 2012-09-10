@@ -842,6 +842,16 @@ function tripal_core_chado_delete($table, $match) {
  *     default if the statement is not prepared it will be automatically.
  *     However to avoid this check, which requires a database query you can
  *     set this value to true and the check will not be performed.
+ *  - use_unique: TRUE or FALSE.  This will alter the values array provided
+ *     to the function and remove fields not in 
+ *     a unique constraint.  This is useful before an insert to check if 
+ *     another record exists with the same unique constraint (but possible differences
+ *     in the other fields) and cause a duplicate insert error.  If a field
+ *     in the unique constraint is missing from the values then the function
+ *     will return false.  If the table has a primary key, the resulting 
+ *     record will only have the pkey field. If there is no primary key the
+ *     resulting record will have the unique constraint fields.
+ *     
  *
  * @return
  *  A database query result resource, FALSE if the query was not executed
@@ -910,6 +920,9 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
   if (!array_key_exists('statement_name',$options)) {
     $options['statement_name'] = FALSE;
   }
+  if (!array_key_exists('use_unique',$options)) {
+    $options['use_unique'] = FALSE;
+  }
 
   // if this is a prepared statement check to see if it has already been prepared
   if ($options['statement_name']) {
@@ -940,6 +953,56 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
   $from = '';
   $where = '';
   $args = array();
+  
+  // if the 'use_unique' option is turned on then we want
+  // to remove all but unique keys 
+  if ($options['use_unique'] and array_key_exists('unique keys', $table_desc)) {
+    $ukeys = $table_desc['unique keys'];
+    $new_values = array();
+    $new_columns = array();
+    $uq_sname = "uq_" . $table . "_";
+    
+    // include the primary key in the results returned
+    $has_pkey = 0;
+    if (array_key_exists('primary key', $table_desc)){    
+      $has_pkey = 1;
+      $pkeys = $table_desc['primary key'];
+      foreach ($pkeys as $index => $key) {
+        array_push($new_columns, $key);
+      }
+    }
+    // iterate through the unique fields and reset the values and columns
+    // arrays to only include these fields
+    foreach ($ukeys as $cname => $fields) {
+      foreach ($fields as $field) {
+        if (array_key_exists($field, $values)) {
+          $new_values[$field] = $values[$field];
+          $uq_sname .= substr($field, 0, 2);
+          // if there is no primary key then use the unique contraint fields
+          if (!$has_pkey) {
+            array_push($new_columns,$field);
+          }
+        } 
+        elseif (array_key_exists('default',$table_desc['fields'][$field])) {
+          $new_values[$field] = $table_desc['fields'][$field]['default'];
+          $uq_sname .= substr($field, 0, 2);
+          if (!$has_pkey){
+            array_push($new_columns,$field);
+          }
+        }
+        else {
+          return FALSE;
+        }
+      }
+    }
+    // reset the values and columns
+    $values = $new_values;
+    $columns = $new_columns;
+    
+    // set the new statement name
+    $options['statement_name'] = $uq_sname;  
+  }
+
 
   foreach ($values as $field => $value) {
     $select[] = $field;
