@@ -771,8 +771,8 @@ function tripal_bulk_loader_edit_template_record_form(&$form_state = NULL) {
   );
   $form['edit_record']['select_optional'] = array(
      '#type' => 'checkbox',
-     '#title' => t('Continue if no record exists.'),
-     '#description' => t('By default if a select does not find a match the loader will fail.  Check here to allow the loader to continue when no match is found.'),
+     '#title' => t('Continue if no record exists or too many exist.'),
+     '#description' => t('By default if a select does not find a match the loader will fail, or if it finds too many matches it will fail.  Check here to allow the loader to continue when no match is found. In either case no value is passed on.'),
      '#default_value' => $select_optional
   );
   

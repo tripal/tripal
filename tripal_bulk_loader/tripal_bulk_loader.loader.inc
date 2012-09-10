@@ -607,9 +607,11 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
     }
 
     if (!$record) {
-      $msg = "\nLine " . $addt->line_num . ' ' . $table_data['record_id'] . ' (' . $table_data['mode'] . ') Unable to insert record into ' . $table . ' where values:' . print_r($values, TRUE);
+      $msg = "\nLine " . $addt->line_num . ' ' . $table_data['record_id'] . ' (' . 
+        $table_data['mode'] . ') Unable to insert record into ' . $table . 
+        ' where values:' . print_r($values, TRUE);
+        
       watchdog('T_bulk_loader', $msg, array(), WATCHDOG_ERROR);
-      print "ERROR: " . $msg . "\n";
       $data[$priority]['error'] = TRUE;
       $no_errors = FALSE;
     }
@@ -679,12 +681,19 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
         $data[$priority]['values_array'] = NULL;
       }
     }
-    // if we have more than one record matching then this isn't good. We have to error out.
-    if(count($matches) > 1){
-      $msg = "\nLine " . $addt->line_num . ' ' . $table_data['record_id'] . ' (' . $table_data['mode'] . ') Too many matching records in ' . $table . ' where values:' . print_r($values, TRUE);
-      watchdog('T_bulk_loader', $msg, array(), WATCHDOG_WARNING);
-      $data[$priority]['error'] = TRUE;
-      $no_errors = FALSE;
+    // if we have more than one record matching and this select isn't optional then fail
+    if (count($matches) > 1) { 
+      if ($table_data['select_optional'] != 1) {
+        $msg = "\nLine " . $addt->line_num . ' ' . $table_data['record_id'] . ' (' . $table_data['mode'] . ') Too many matching records in ' . $table . ' where values:' . print_r($values, TRUE);
+        watchdog('T_bulk_loader', $msg, array(), WATCHDOG_WARNING);
+        $data[$priority]['error'] = TRUE;
+        $no_errors = FALSE;
+      } 
+      // there are too many matches and this is an optional select so set
+      // the values to empty for any records with an FK relationship on this one
+      else {
+        $data[$priority]['values_array'] = NULL;
+      }
     } 
   }
   return $no_errors;
