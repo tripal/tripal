@@ -788,12 +788,14 @@ function tripal_bulk_loader_edit_template_record_form(&$form_state = NULL) {
      '#description' => t('If this is not the first time this record has been added then perform a select rather than an insert.'),
      '#default_value' => $select_if_duplicate
   );
-  $form['edit_record']['update_if_duplicate'] = array(
+// TODO: finish coding up the update_if_duplicate functionality  
+/*  $form['edit_record']['update_if_duplicate'] = array(
      '#type' => 'checkbox',
      '#title' => t('UPDATE if duplicate (no insert)'),
      '#description' => t('If this is not the first time this record has been added then perform an update rather than an insert.'),
      '#default_value' => $update_if_duplicate
   );  
+*/  
   $form['edit_record']['optional'] = array(
      '#type' => 'checkbox',
      '#title' => t('Optional'),
