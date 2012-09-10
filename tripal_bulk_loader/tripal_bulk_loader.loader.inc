@@ -613,19 +613,7 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
       $data[$priority]['error'] = TRUE;
       $no_errors = FALSE;
     }
-    else {
-      // substitute the values array for the primary key if it exists
-      // and is a single field
-      if(array_key_exists('primary key',$table_desc)){
-        if(count($table_desc['primary key']) == 1){
-          $pkey_field = $table_desc['primary key'][0];
-          $data[$priority]['values_array'] = $record[$pkey_field];
-        }
-      } else {
-        //add changes back to values array
-        $data[$priority]['values_array'] = $record;
-        $values = $record;
-      }
+    else {    
 
       // if mode=insert_once then ensure we only insert it once
       if (preg_match('/insert_once/', $table_data['mode'])) {
@@ -657,7 +645,19 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
           return $no_errors;
         }//end of if insert record
       }// end of if keeping track of records inserted
-
+      
+      // substitute the values array for the primary key if it exists
+      // and is a single field
+      if(array_key_exists('primary key',$table_desc)){
+        if(count($table_desc['primary key']) == 1){
+          $pkey_field = $table_desc['primary key'][0];
+          $data[$priority]['values_array'] = $record[$pkey_field];
+        }
+      } else {
+        //add changes back to values array
+        $data[$priority]['values_array'] = $record;
+        $values = $record;
+      }
     } //end of if insert was successful
   }
   else {
