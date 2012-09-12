@@ -555,14 +555,13 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
     // if this is a duplicate then substitute the values in the table_data array so
     // that for future records that my depend on this one, they can get the values 
     // needed
-    if (count($duplicate) > 0) {
+    if ($duplicate and is_array($duplicate) and count($duplicate) > 0) {
 
       // if all we have is one field then we will just use the value returned
       // rather than create an array of values. This way it will prevent 
       // the tripal_core_chado_(select|insert|update) from recursing on 
       // foreign keys and make the loader go faster.
       if (count($duplicate[0]) == 1) {
-        print_r($duplicate);
         foreach($duplicate[0] as $key => $value){ 
           $data[$priority]['values_array'] = $value;
         } 
