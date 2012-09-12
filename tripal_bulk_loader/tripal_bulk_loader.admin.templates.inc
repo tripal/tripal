@@ -1816,6 +1816,7 @@ function tripal_bulk_loader_edit_template_field_form(&$form_state = NULL) {
     '#title' => 'Record to refer to',
     '#descripion' => 'Select the record that this foreign key shouold refer to. The record needs to already exist and be of the correct table.',
     '#options' => $fk_options,
+    '#default_value' => ($form_state['values']['foreign_record']) ? $form_state['values']['foreign_record'] : $template_field['foreign key'],
   );
 
   // Chado Field
