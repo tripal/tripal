@@ -1,5 +1,5 @@
 <?php
-// This script will generate an updated schema API array for each 
+// This script will add FK relatinsions to an existing schema API array for each 
 // Chado table.  It requires Chado is installed in a 'chado' schema of 
 // the drupal database.  It also requires existing schema hooks for 
 // version of Chado.  The goal is to use the output of this script to 
@@ -58,26 +58,30 @@ function get_chado_fk_relationships($version){
     
   // iterate through the tables and get the foreign keys
   print "<?php\n";
-  foreach ($tables as $table){
+  $referring = array();
+  foreach ($tables as $table) {
 
      // get the existing table array
      $table_arr = tripal_core_get_chado_table_schema($table);
      
-     if(empty($table_arr)){
-        print "ERROR: emptye table definition $table\n";
+     if (empty($table_arr)) {
+        print "ERROR: empty table definition $table\n";
      }
 
      // get the foreign keys and add them to the array
      $fks = db_query($sql,$table);
-     while($fk = db_fetch_object($fks)){
+     while ($fk = db_fetch_object($fks)) {
         $table_arr['foreign keys'][$fk->foreign_table_name]['table'] = $fk->foreign_table_name;
         $table_arr['foreign keys'][$fk->foreign_table_name]['columns'][$fk->column_name] = $fk->foreign_column_name;
+        $reffering[$fk->foreign_table_name] = $table;
       }
       
       // reformat the array to be more legible
-      $arr = var_export($table_arr,1);
-      $arr = preg_replace("/\n\s+array/","array",$arr); // move array( to previous line
-      $arr = preg_replace("/\n/","\n  ",$arr); // add indentation
+      $arr = var_export($table_arr, 1);
+      $arr = preg_replace("/\n\s+array/","array", $arr); // move array( to previous line
+      $arr = preg_replace("/\n/","\n  ", $arr); // add indentation
+      $arr = preg_replace("/true/","TRUE", $arr); // add indentation
+      $arr = preg_replace("/array \(/","array(", $arr); // add indentation      
       
       // print out the new Schema API function for this table
 print "/**

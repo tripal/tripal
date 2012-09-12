@@ -562,6 +562,7 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
       // the tripal_core_chado_(select|insert|update) from recursing on 
       // foreign keys and make the loader go faster.
       if (count($duplicate[0]) == 1) {
+        print_r($duplicate);
         foreach($duplicate[0] as $key => $value){ 
           $data[$priority]['values_array'] = $value;
         } 
