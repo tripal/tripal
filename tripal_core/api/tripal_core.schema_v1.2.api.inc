@@ -4,7 +4,7 @@
  *        by the tripal_core select/insert/update API functions and by
  *        the Tripal Views module.
  *
- *        These schema definitions can be augmented by anohter modules
+ *        These schema definitions can be augmented by another modules
  *        (specifically to add missing definitions) by implementing
  *        hook_chado_schema_v1_2_<table name>().
  *
@@ -32,7 +32,7 @@
  * @}
  * @ingroup tripal_api
  */
- 
+
 /**
  * Implements hook_chado_schema_v1_2_acquisition()
  * Purpose: To describe the structure of 'acquisition' to tripal
@@ -126,6 +126,12 @@ function tripal_core_chado_schema_v1_2_acquisition() {
         ),
       ),
     ),
+    'table' => 'acquisition',
+    'referring_tables' => array(
+      0 => 'acquisition_relationship',
+      2 => 'acquisitionprop',
+      3 => 'quantification',
+    ),
   );
   return $description;
 }
@@ -215,6 +221,8 @@ function tripal_core_chado_schema_v1_2_acquisition_relationship() {
         ),
       ),
     ),
+    'table' => 'acquisition_relationship',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -294,6 +302,8 @@ function tripal_core_chado_schema_v1_2_acquisitionprop() {
         ),
       ),
     ),
+    'table' => 'acquisitionprop',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -312,6 +322,12 @@ function tripal_core_chado_schema_v1_2_acquisitionprop() {
  */
 function tripal_core_chado_schema_v1_2_analysis() {
   $description =  array(
+    'referring_tables' => array(
+      0 => 'analysisfeature',
+      1 => 'analysisprop',
+      2 => 'phylotree',
+      3 => 'quantification',
+    ),
     'description' => 'TODO: please describe this table!',
     'fields' => array(
       'analysis_id' => array(
@@ -384,6 +400,7 @@ function tripal_core_chado_schema_v1_2_analysis() {
     ),
     'foreign keys' => array(
     ),
+    'table' => 'analysis',
   );
   return $description;
 }
@@ -475,6 +492,10 @@ function tripal_core_chado_schema_v1_2_analysisfeature() {
         ),
       ),
     ),
+    'table' => 'analysisfeature',
+    'referring_tables' => array(
+      0 => 'analysisfeatureprop',
+    ),
   );
   return $description;
 }
@@ -545,6 +566,8 @@ function tripal_core_chado_schema_v1_2_analysisfeatureprop() {
         ),
       ),
     ),
+    'table' => 'analysisfeatureprop',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -624,6 +647,8 @@ function tripal_core_chado_schema_v1_2_analysisprop() {
         ),
       ),
     ),
+    'table' => 'analysisprop',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -787,6 +812,12 @@ function tripal_core_chado_schema_v1_2_arraydesign() {
         ),
       ),
     ),
+    'table' => 'arraydesign',
+    'referring_tables' => array(
+      0 => 'arraydesignprop',
+      1 => 'assay',
+      2 => 'element',
+    ),
   );
   return $description;
 }
@@ -866,6 +897,8 @@ function tripal_core_chado_schema_v1_2_arraydesignprop() {
         ),
       ),
     ),
+    'table' => 'arraydesignprop',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -986,6 +1019,16 @@ function tripal_core_chado_schema_v1_2_assay() {
         ),
       ),
     ),
+    'table' => 'assay',
+    'referring_tables' => array(
+      0 => 'acquisition',
+      1 => 'assay_biomaterial',
+      2 => 'assay_project',
+      3 => 'assayprop',
+      4 => 'control',
+      5 => 'study_assay',
+      6 => 'studyfactorvalue',
+    ),
   );
   return $description;
 }
@@ -1075,6 +1118,8 @@ function tripal_core_chado_schema_v1_2_assay_biomaterial() {
         ),
       ),
     ),
+    'table' => 'assay_biomaterial',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -1142,6 +1187,8 @@ function tripal_core_chado_schema_v1_2_assay_project() {
         ),
       ),
     ),
+    'table' => 'assay_project',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -1221,6 +1268,8 @@ function tripal_core_chado_schema_v1_2_assayprop() {
         ),
       ),
     ),
+    'table' => 'assayprop',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -1311,6 +1360,15 @@ function tripal_core_chado_schema_v1_2_biomaterial() {
         ),
       ),
     ),
+    'table' => 'biomaterial',
+    'referring_tables' => array(
+      0 => 'assay_biomaterial',
+      1 => 'biomaterial_dbxref',
+      2 => 'biomaterial_relationship',
+      4 => 'biomaterial_treatment',
+      5 => 'biomaterialprop',
+      6 => 'treatment',
+    ),
   );
   return $description;
 }
@@ -1378,6 +1436,8 @@ function tripal_core_chado_schema_v1_2_biomaterial_dbxref() {
         ),
       ),
     ),
+    'table' => 'biomaterial_dbxref',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -1455,6 +1515,8 @@ function tripal_core_chado_schema_v1_2_biomaterial_relationship() {
         ),
       ),
     ),
+    'table' => 'biomaterial_relationship',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -1547,6 +1609,8 @@ function tripal_core_chado_schema_v1_2_biomaterial_treatment() {
         ),
       ),
     ),
+    'table' => 'biomaterial_treatment',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -1626,9 +1690,12 @@ function tripal_core_chado_schema_v1_2_biomaterialprop() {
         ),
       ),
     ),
+    'table' => 'biomaterialprop',
+    'referring_tables' => NULL,
   );
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_2_cell_line()
  * Purpose: To describe the structure of 'cell_line' to tripal
@@ -1697,6 +1764,17 @@ function tripal_core_chado_schema_v1_2_cell_line() {
           'organism_id' => 'organism_id',
         ),
       ),
+    ),
+    'table' => 'cell_line',
+    'referring_tables' => array(
+      0 => 'cell_line_cvterm',
+      1 => 'cell_line_dbxref',
+      2 => 'cell_line_feature',
+      3 => 'cell_line_library',
+      4 => 'cell_line_pub',
+      5 => 'cell_line_relationship',
+      7 => 'cell_line_synonym',
+      8 => 'cell_lineprop',
     ),
   );
   return $description;
@@ -1776,6 +1854,10 @@ function tripal_core_chado_schema_v1_2_cell_line_cvterm() {
         ),
       ),
     ),
+    'table' => 'cell_line_cvterm',
+    'referring_tables' => array(
+      0 => 'cell_line_cvtermprop',
+    ),
   );
   return $description;
 }
@@ -1847,6 +1929,8 @@ function tripal_core_chado_schema_v1_2_cell_line_cvtermprop() {
         ),
       ),
     ),
+    'table' => 'cell_line_cvtermprop',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -1912,6 +1996,8 @@ function tripal_core_chado_schema_v1_2_cell_line_dbxref() {
         ),
       ),
     ),
+    'table' => 'cell_line_dbxref',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -1983,6 +2069,8 @@ function tripal_core_chado_schema_v1_2_cell_line_feature() {
         ),
       ),
     ),
+    'table' => 'cell_line_feature',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -2054,6 +2142,8 @@ function tripal_core_chado_schema_v1_2_cell_line_library() {
         ),
       ),
     ),
+    'table' => 'cell_line_library',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -2113,6 +2203,8 @@ function tripal_core_chado_schema_v1_2_cell_line_pub() {
         ),
       ),
     ),
+    'table' => 'cell_line_pub',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -2179,6 +2271,8 @@ function tripal_core_chado_schema_v1_2_cell_line_relationship() {
         ),
       ),
     ),
+    'table' => 'cell_line_relationship',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -2262,6 +2356,8 @@ function tripal_core_chado_schema_v1_2_cell_line_synonym() {
         ),
       ),
     ),
+    'table' => 'cell_line_synonym',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -2333,6 +2429,10 @@ function tripal_core_chado_schema_v1_2_cell_lineprop() {
         ),
       ),
     ),
+    'table' => 'cell_lineprop',
+    'referring_tables' => array(
+      0 => 'cell_lineprop_pub',
+    ),
   );
   return $description;
 }
@@ -2392,6 +2492,8 @@ function tripal_core_chado_schema_v1_2_cell_lineprop_pub() {
         ),
       ),
     ),
+    'table' => 'cell_lineprop_pub',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -2451,6 +2553,8 @@ function tripal_core_chado_schema_v1_2_chadoprop() {
         ),
       ),
     ),
+    'table' => 'chadoprop',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -2496,6 +2600,11 @@ function tripal_core_chado_schema_v1_2_channel() {
       ),
     ),
     'foreign keys' => array(
+    ),
+    'table' => 'channel',
+    'referring_tables' => array(
+      0 => 'acquisition',
+      1 => 'assay_biomaterial',
     ),
   );
   return $description;
@@ -2555,6 +2664,18 @@ function tripal_core_chado_schema_v1_2_contact() {
           'type_id' => 'cvterm_id',
         ),
       ),
+    ),
+    'table' => 'contact',
+    'referring_tables' => array(
+      0 => 'arraydesign',
+      1 => 'assay',
+      2 => 'biomaterial',
+      3 => 'contact_relationship',
+      5 => 'nd_experiment_contact',
+      6 => 'project_contact',
+      14 => 'quantification',
+      15 => 'stockcollection',
+      16 => 'study',
     ),
   );
   return $description;
@@ -2633,6 +2754,8 @@ function tripal_core_chado_schema_v1_2_contact_relationship() {
         ),
       ),
     ),
+    'table' => 'contact_relationship',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -2732,6 +2855,8 @@ function tripal_core_chado_schema_v1_2_control() {
         ),
       ),
     ),
+    'table' => 'control',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -2778,6 +2903,12 @@ function tripal_core_chado_schema_v1_2_cv() {
       ),
     ),
     'foreign keys' => array(
+    ),
+    'table' => 'cv',
+    'referring_tables' => array(
+      0 => 'cvprop',
+      1 => 'cvterm',
+      2 => 'cvtermpath',
     ),
   );
   return $description;
@@ -2850,6 +2981,8 @@ function tripal_core_chado_schema_v1_2_cvprop() {
         ),
       ),
     ),
+    'table' => 'cvprop',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -2947,6 +3080,101 @@ function tripal_core_chado_schema_v1_2_cvterm() {
         ),
       ),
     ),
+    'table' => 'cvterm',
+    'referring_tables' => array(
+      0 => 'acquisition_relationship',
+      1 => 'acquisitionprop',
+      2 => 'analysisfeatureprop',
+      3 => 'analysisprop',
+      4 => 'arraydesign',
+      6 => 'arraydesignprop',
+      7 => 'assayprop',
+      8 => 'biomaterial_relationship',
+      9 => 'biomaterial_treatment',
+      10 => 'biomaterialprop',
+      11 => 'cell_line_cvterm',
+      12 => 'cell_line_cvtermprop',
+      13 => 'cell_line_relationship',
+      14 => 'cell_lineprop',
+      15 => 'chadoprop',
+      23 => 'contact',
+      24 => 'contact_relationship',
+      25 => 'control',
+      26 => 'cvprop',
+      27 => 'cvterm_dbxref',
+      28 => 'cvterm_relationship',
+      31 => 'cvtermpath',
+      34 => 'cvtermprop',
+      36 => 'cvtermsynonym',
+      38 => 'dbxrefprop',
+      39 => 'element',
+      40 => 'element_relationship',
+      41 => 'elementresult_relationship',
+      42 => 'environment_cvterm',
+      43 => 'expression_cvterm',
+      45 => 'expression_cvtermprop',
+      46 => 'expressionprop',
+      47 => 'feature',
+      48 => 'feature_cvterm',
+      49 => 'feature_cvtermprop',
+      50 => 'feature_expressionprop',
+      51 => 'feature_genotype',
+      52 => 'feature_pubprop',
+      53 => 'feature_relationship',
+      54 => 'feature_relationshipprop',
+      55 => 'featuremap',
+      56 => 'featureprop',
+      57 => 'genotype',
+      58 => 'genotypeprop',
+      66 => 'library',
+      67 => 'library_cvterm',
+      68 => 'libraryprop',
+      69 => 'nd_experiment',
+      70 => 'nd_experiment_stock',
+      71 => 'nd_experiment_stockprop',
+      72 => 'nd_experimentprop',
+      73 => 'nd_geolocationprop',
+      74 => 'nd_protocol',
+      75 => 'nd_protocol_reagent',
+      76 => 'nd_protocolprop',
+      77 => 'nd_reagent',
+      78 => 'nd_reagent_relationship',
+      79 => 'nd_reagentprop',
+      80 => 'organismprop',
+      81 => 'phendesc',
+      82 => 'phenotype',
+      86 => 'phenotype_comparison_cvterm',
+      87 => 'phenotype_cvterm',
+      88 => 'phenstatement',
+      89 => 'phylonode',
+      90 => 'phylonode_relationship',
+      91 => 'phylonodeprop',
+      92 => 'phylotree',
+      93 => 'project_relationship',
+      101 => 'projectprop',
+      109 => 'protocol',
+      110 => 'protocolparam',
+      112 => 'pub',
+      113 => 'pub_relationship',
+      114 => 'pubprop',
+      115 => 'quantification_relationship',
+      116 => 'quantificationprop',
+      117 => 'stock',
+      118 => 'stock_cvterm',
+      119 => 'stock_cvtermprop',
+      127 => 'stock_dbxrefprop',
+      135 => 'stock_relationship',
+      136 => 'stock_relationship_cvterm',
+      144 => 'stockcollection',
+      145 => 'stockcollectionprop',
+      146 => 'stockprop',
+      147 => 'studydesignprop',
+      148 => 'studyfactor',
+      149 => 'studyprop',
+      150 => 'studyprop_feature',
+      151 => 'synonym',
+      152 => 'treatment',
+    ),
   );
   return $description;
 }
@@ -3020,6 +3248,8 @@ function tripal_core_chado_schema_v1_2_cvterm_dbxref() {
         ),
       ),
     ),
+    'table' => 'cvterm_dbxref',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -3092,6 +3322,8 @@ function tripal_core_chado_schema_v1_2_cvterm_relationship() {
         ),
       ),
     ),
+    'table' => 'cvterm_relationship',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -3184,6 +3416,8 @@ function tripal_core_chado_schema_v1_2_cvtermpath() {
         ),
       ),
     ),
+    'table' => 'cvtermpath',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -3260,6 +3494,8 @@ function tripal_core_chado_schema_v1_2_cvtermprop() {
         ),
       ),
     ),
+    'table' => 'cvtermprop',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -3325,6 +3561,8 @@ function tripal_core_chado_schema_v1_2_cvtermsynonym() {
         ),
       ),
     ),
+    'table' => 'cvtermsynonym',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -3384,6 +3622,10 @@ function tripal_core_chado_schema_v1_2_db() {
       ),
     ),
     'foreign keys' => array(
+    ),
+    'table' => 'db',
+    'referring_tables' => array(
+      0 => 'dbxref',
     ),
   );
   return $description;
@@ -3462,6 +3704,32 @@ function tripal_core_chado_schema_v1_2_dbxref() {
           'db_id' => 'db_id',
         ),
       ),
+    ),
+    'table' => 'dbxref',
+    'referring_tables' => array(
+      0 => 'arraydesign',
+      1 => 'assay',
+      2 => 'biomaterial',
+      3 => 'biomaterial_dbxref',
+      4 => 'cell_line_dbxref',
+      5 => 'cvterm',
+      6 => 'cvterm_dbxref',
+      7 => 'dbxrefprop',
+      8 => 'element',
+      9 => 'feature',
+      10 => 'feature_cvterm_dbxref',
+      11 => 'feature_dbxref',
+      12 => 'library_dbxref',
+      13 => 'nd_experiment_dbxref',
+      14 => 'nd_experiment_stock_dbxref',
+      15 => 'organism_dbxref',
+      16 => 'phylonode_dbxref',
+      17 => 'phylotree',
+      18 => 'protocol',
+      19 => 'pub_dbxref',
+      20 => 'stock',
+      21 => 'stock_dbxref',
+      22 => 'study',
     ),
   );
   return $description;
@@ -3543,6 +3811,8 @@ function tripal_core_chado_schema_v1_2_dbxrefprop() {
         ),
       ),
     ),
+    'table' => 'dbxrefprop',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -3590,6 +3860,10 @@ function tripal_core_chado_schema_v1_2_eimage() {
       0 => 'eimage_id',
     ),
     'foreign keys' => array(
+    ),
+    'table' => 'eimage',
+    'referring_tables' => array(
+      0 => 'expression_image',
     ),
   );
   return $description;
@@ -3686,6 +3960,11 @@ function tripal_core_chado_schema_v1_2_element() {
         ),
       ),
     ),
+    'table' => 'element',
+    'referring_tables' => array(
+      0 => 'element_relationship',
+      2 => 'elementresult',
+    ),
   );
   return $description;
 }
@@ -3778,6 +4057,8 @@ function tripal_core_chado_schema_v1_2_element_relationship() {
         ),
       ),
     ),
+    'table' => 'element_relationship',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -3853,6 +4134,10 @@ function tripal_core_chado_schema_v1_2_elementresult() {
           'element_id' => 'element_id',
         ),
       ),
+    ),
+    'table' => 'elementresult',
+    'referring_tables' => array(
+      0 => 'elementresult_relationship',
     ),
   );
   return $description;
@@ -3946,6 +4231,8 @@ function tripal_core_chado_schema_v1_2_elementresult_relationship() {
         ),
       ),
     ),
+    'table' => 'elementresult_relationship',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -3996,6 +4283,13 @@ function tripal_core_chado_schema_v1_2_environment() {
       ),
     ),
     'foreign keys' => array(
+    ),
+    'table' => 'environment',
+    'referring_tables' => array(
+      0 => 'environment_cvterm',
+      1 => 'phendesc',
+      2 => 'phenotype_comparison',
+      4 => 'phenstatement',
     ),
   );
   return $description;
@@ -4064,6 +4358,8 @@ function tripal_core_chado_schema_v1_2_environment_cvterm() {
         ),
       ),
     ),
+    'table' => 'environment_cvterm',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -4115,6 +4411,14 @@ function tripal_core_chado_schema_v1_2_expression() {
       ),
     ),
     'foreign keys' => array(
+    ),
+    'table' => 'expression',
+    'referring_tables' => array(
+      0 => 'expression_cvterm',
+      1 => 'expression_image',
+      2 => 'expression_pub',
+      3 => 'expressionprop',
+      4 => 'feature_expression',
     ),
   );
   return $description;
@@ -4199,6 +4503,10 @@ function tripal_core_chado_schema_v1_2_expression_cvterm() {
         ),
       ),
     ),
+    'table' => 'expression_cvterm',
+    'referring_tables' => array(
+      0 => 'expression_cvtermprop',
+    ),
   );
   return $description;
 }
@@ -4278,6 +4586,8 @@ function tripal_core_chado_schema_v1_2_expression_cvtermprop() {
         ),
       ),
     ),
+    'table' => 'expression_cvtermprop',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -4345,6 +4655,8 @@ function tripal_core_chado_schema_v1_2_expression_image() {
         ),
       ),
     ),
+    'table' => 'expression_image',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -4412,6 +4724,8 @@ function tripal_core_chado_schema_v1_2_expression_pub() {
         ),
       ),
     ),
+    'table' => 'expression_pub',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -4491,6 +4805,8 @@ function tripal_core_chado_schema_v1_2_expressionprop() {
         ),
       ),
     ),
+    'table' => 'expressionprop',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -4630,6 +4946,27 @@ function tripal_core_chado_schema_v1_2_feature() {
         ),
       ),
     ),
+    'table' => 'feature',
+    'referring_tables' => array(
+      0 => 'analysisfeature',
+      1 => 'cell_line_feature',
+      2 => 'element',
+      3 => 'feature_cvterm',
+      4 => 'feature_dbxref',
+      5 => 'feature_expression',
+      6 => 'feature_genotype',
+      8 => 'feature_phenotype',
+      9 => 'feature_pub',
+      10 => 'feature_relationship',
+      12 => 'feature_synonym',
+      13 => 'featureloc',
+      15 => 'featurepos',
+      17 => 'featureprop',
+      18 => 'featurerange',
+      23 => 'library_feature',
+      24 => 'phylonode',
+      25 => 'studyprop_feature',
+    ),
   );
   return $description;
 }
@@ -4725,6 +5062,12 @@ function tripal_core_chado_schema_v1_2_feature_cvterm() {
         ),
       ),
     ),
+    'table' => 'feature_cvterm',
+    'referring_tables' => array(
+      0 => 'feature_cvterm_dbxref',
+      1 => 'feature_cvterm_pub',
+      2 => 'feature_cvtermprop',
+    ),
   );
   return $description;
 }
@@ -4792,6 +5135,8 @@ function tripal_core_chado_schema_v1_2_feature_cvterm_dbxref() {
         ),
       ),
     ),
+    'table' => 'feature_cvterm_dbxref',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -4859,6 +5204,8 @@ function tripal_core_chado_schema_v1_2_feature_cvterm_pub() {
         ),
       ),
     ),
+    'table' => 'feature_cvterm_pub',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -4938,6 +5285,8 @@ function tripal_core_chado_schema_v1_2_feature_cvtermprop() {
         ),
       ),
     ),
+    'table' => 'feature_cvtermprop',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -5011,6 +5360,8 @@ function tripal_core_chado_schema_v1_2_feature_dbxref() {
         ),
       ),
     ),
+    'table' => 'feature_dbxref',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -5093,6 +5444,10 @@ function tripal_core_chado_schema_v1_2_feature_expression() {
         ),
       ),
     ),
+    'table' => 'feature_expression',
+    'referring_tables' => array(
+      0 => 'feature_expressionprop',
+    ),
   );
   return $description;
 }
@@ -5172,6 +5527,8 @@ function tripal_core_chado_schema_v1_2_feature_expressionprop() {
         ),
       ),
     ),
+    'table' => 'feature_expressionprop',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -5270,6 +5627,8 @@ function tripal_core_chado_schema_v1_2_feature_genotype() {
         ),
       ),
     ),
+    'table' => 'feature_genotype',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -5337,6 +5696,8 @@ function tripal_core_chado_schema_v1_2_feature_phenotype() {
         ),
       ),
     ),
+    'table' => 'feature_phenotype',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -5403,6 +5764,10 @@ function tripal_core_chado_schema_v1_2_feature_pub() {
           'feature_id' => 'feature_id',
         ),
       ),
+    ),
+    'table' => 'feature_pub',
+    'referring_tables' => array(
+      0 => 'feature_pubprop',
     ),
   );
   return $description;
@@ -5480,6 +5845,8 @@ function tripal_core_chado_schema_v1_2_feature_pubprop() {
         ),
       ),
     ),
+    'table' => 'feature_pubprop',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -5569,6 +5936,11 @@ function tripal_core_chado_schema_v1_2_feature_relationship() {
         ),
       ),
     ),
+    'table' => 'feature_relationship',
+    'referring_tables' => array(
+      0 => 'feature_relationship_pub',
+      1 => 'feature_relationshipprop',
+    ),
   );
   return $description;
 }
@@ -5636,6 +6008,8 @@ function tripal_core_chado_schema_v1_2_feature_relationship_pub() {
         ),
       ),
     ),
+    'table' => 'feature_relationship_pub',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -5715,6 +6089,10 @@ function tripal_core_chado_schema_v1_2_feature_relationshipprop() {
         ),
       ),
     ),
+    'table' => 'feature_relationshipprop',
+    'referring_tables' => array(
+      0 => 'feature_relationshipprop_pub',
+    ),
   );
   return $description;
 }
@@ -5782,9 +6160,12 @@ function tripal_core_chado_schema_v1_2_feature_relationshipprop_pub() {
         ),
       ),
     ),
+    'table' => 'feature_relationshipprop_pub',
+    'referring_tables' => NULL,
   );
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_2_feature_synonym()
  * Purpose: To describe the structure of 'feature_synonym' to tripal
@@ -5876,6 +6257,8 @@ function tripal_core_chado_schema_v1_2_feature_synonym() {
         ),
       ),
     ),
+    'table' => 'feature_synonym',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -6001,6 +6384,10 @@ function tripal_core_chado_schema_v1_2_featureloc() {
         ),
       ),
     ),
+    'referring_tables' => array(
+      0 => 'featureloc_pub',
+    ),
+    'table' => 'featureloc',
   );
   return $description;
 }
@@ -6068,6 +6455,8 @@ function tripal_core_chado_schema_v1_2_featureloc_pub() {
         ),
       ),
     ),
+    'table' => 'featureloc_pub',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -6125,6 +6514,12 @@ function tripal_core_chado_schema_v1_2_featuremap() {
           'unittype_id' => 'cvterm_id',
         ),
       ),
+    ),
+    'table' => 'featuremap',
+    'referring_tables' => array(
+      0 => 'featuremap_pub',
+      1 => 'featurepos',
+      2 => 'featurerange',
     ),
   );
   return $description;
@@ -6187,6 +6582,8 @@ function tripal_core_chado_schema_v1_2_featuremap_pub() {
         ),
       ),
     ),
+    'table' => 'featuremap_pub',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -6263,6 +6660,8 @@ function tripal_core_chado_schema_v1_2_featurepos() {
         ),
       ),
     ),
+    'table' => 'featurepos',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -6342,6 +6741,10 @@ function tripal_core_chado_schema_v1_2_featureprop() {
         ),
       ),
     ),
+    'table' => 'featureprop',
+    'referring_tables' => array(
+      0 => 'featureprop_pub',
+    ),
   );
   return $description;
 }
@@ -6409,6 +6812,8 @@ function tripal_core_chado_schema_v1_2_featureprop_pub() {
         ),
       ),
     ),
+    'table' => 'featureprop_pub',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -6512,6 +6917,8 @@ function tripal_core_chado_schema_v1_2_featurerange() {
         ),
       ),
     ),
+    'table' => 'featurerange',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -6582,6 +6989,16 @@ function tripal_core_chado_schema_v1_2_genotype() {
           'type_id' => 'cvterm_id',
         ),
       ),
+    ),
+    'table' => 'genotype',
+    'referring_tables' => array(
+      0 => 'feature_genotype',
+      1 => 'genotypeprop',
+      9 => 'nd_experiment_genotype',
+      10 => 'phendesc',
+      11 => 'phenotype_comparison',
+      13 => 'phenstatement',
+      14 => 'stock_genotype',
     ),
   );
   return $description;
@@ -6662,6 +7079,8 @@ function tripal_core_chado_schema_v1_2_genotypeprop() {
         ),
       ),
     ),
+    'table' => 'genotypeprop',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -6765,9 +7184,20 @@ function tripal_core_chado_schema_v1_2_library() {
         ),
       ),
     ),
+    'referring_tables' => array(
+      0 => 'cell_line_library',
+      1 => 'library_cvterm',
+      2 => 'library_dbxref',
+      3 => 'library_feature',
+      4 => 'library_pub',
+      5 => 'library_synonym',
+      6 => 'libraryprop',
+    ),
+    'table' => 'library',
   );
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_2_library_cvterm()
  * Purpose: To describe the structure of 'library_cvterm' to tripal
@@ -6847,6 +7277,8 @@ function tripal_core_chado_schema_v1_2_library_cvterm() {
         ),
       ),
     ),
+    'table' => 'library_cvterm',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -6920,6 +7352,8 @@ function tripal_core_chado_schema_v1_2_library_dbxref() {
         ),
       ),
     ),
+    'table' => 'library_dbxref',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -6987,6 +7421,8 @@ function tripal_core_chado_schema_v1_2_library_feature() {
         ),
       ),
     ),
+    'table' => 'library_feature',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -7054,9 +7490,12 @@ function tripal_core_chado_schema_v1_2_library_pub() {
         ),
       ),
     ),
+    'table' => 'library_pub',
+    'referring_tables' => NULL,
   );
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_2_library_synonym()
  * Purpose: To describe the structure of 'library_synonym' to tripal
@@ -7148,6 +7587,8 @@ function tripal_core_chado_schema_v1_2_library_synonym() {
         ),
       ),
     ),
+    'table' => 'library_synonym',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -7227,6 +7668,10 @@ function tripal_core_chado_schema_v1_2_libraryprop() {
         ),
       ),
     ),
+    'table' => 'libraryprop',
+    'referring_tables' => array(
+      0 => 'libraryprop_pub',
+    ),
   );
   return $description;
 }
@@ -7294,6 +7739,8 @@ function tripal_core_chado_schema_v1_2_libraryprop_pub() {
         ),
       ),
     ),
+    'table' => 'libraryprop_pub',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -7368,6 +7815,8 @@ function tripal_core_chado_schema_v1_2_magedocumentation() {
         ),
       ),
     ),
+    'table' => 'magedocumentation',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -7409,24 +7858,10 @@ function tripal_core_chado_schema_v1_2_mageml() {
     ),
     'foreign keys' => array(
     ),
-  );
-  return $description;
-}
-/**
- * Implements hook_chado_schema_v1_2_materialized_view()
- * Purpose: To describe the structure of 'materialized_view' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
- *
- * @return
- *    An array describing the 'materialized_view' table
- *
- * @ingroup tripal_chado_v1.2_schema_api
- *
- */
-function tripal_core_chado_schema_v1_2_materialized_view() {
-  $description =  array(
+    'table' => 'mageml',
+    'referring_tables' => array(
+      0 => 'magedocumentation',
+    ),
   );
   return $description;
 }
@@ -7479,6 +7914,18 @@ function tripal_core_chado_schema_v1_2_nd_experiment() {
           'nd_geolocation_id' => 'nd_geolocation_id',
         ),
       ),
+    ),
+    'table' => 'nd_experiment',
+    'referring_tables' => array(
+      0 => 'nd_experiment_contact',
+      1 => 'nd_experiment_dbxref',
+      2 => 'nd_experiment_genotype',
+      3 => 'nd_experiment_phenotype',
+      4 => 'nd_experiment_project',
+      5 => 'nd_experiment_protocol',
+      6 => 'nd_experiment_pub',
+      7 => 'nd_experiment_stock',
+      8 => 'nd_experimentprop',
     ),
   );
   return $description;
@@ -7533,6 +7980,8 @@ function tripal_core_chado_schema_v1_2_nd_experiment_contact() {
         ),
       ),
     ),
+    'table' => 'nd_experiment_contact',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -7586,6 +8035,8 @@ function tripal_core_chado_schema_v1_2_nd_experiment_dbxref() {
         ),
       ),
     ),
+    'table' => 'nd_experiment_dbxref',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -7645,6 +8096,8 @@ function tripal_core_chado_schema_v1_2_nd_experiment_genotype() {
         ),
       ),
     ),
+    'table' => 'nd_experiment_genotype',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -7704,6 +8157,8 @@ function tripal_core_chado_schema_v1_2_nd_experiment_phenotype() {
         ),
       ),
     ),
+    'table' => 'nd_experiment_phenotype',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -7757,6 +8212,8 @@ function tripal_core_chado_schema_v1_2_nd_experiment_project() {
         ),
       ),
     ),
+    'table' => 'nd_experiment_project',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -7810,6 +8267,8 @@ function tripal_core_chado_schema_v1_2_nd_experiment_protocol() {
         ),
       ),
     ),
+    'table' => 'nd_experiment_protocol',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -7877,6 +8336,8 @@ function tripal_core_chado_schema_v1_2_nd_experiment_pub() {
         ),
       ),
     ),
+    'table' => 'nd_experiment_pub',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -7941,6 +8402,11 @@ function tripal_core_chado_schema_v1_2_nd_experiment_stock() {
         ),
       ),
     ),
+    'table' => 'nd_experiment_stock',
+    'referring_tables' => array(
+      0 => 'nd_experiment_stock_dbxref',
+      1 => 'nd_experiment_stockprop',
+    ),
   );
   return $description;
 }
@@ -7994,6 +8460,8 @@ function tripal_core_chado_schema_v1_2_nd_experiment_stock_dbxref() {
         ),
       ),
     ),
+    'table' => 'nd_experiment_stock_dbxref',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -8065,6 +8533,8 @@ function tripal_core_chado_schema_v1_2_nd_experiment_stockprop() {
         ),
       ),
     ),
+    'table' => 'nd_experiment_stockprop',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -8136,6 +8606,8 @@ function tripal_core_chado_schema_v1_2_nd_experimentprop() {
         ),
       ),
     ),
+    'table' => 'nd_experimentprop',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -8193,6 +8665,11 @@ function tripal_core_chado_schema_v1_2_nd_geolocation() {
       0 => 'nd_geolocation_id',
     ),
     'foreign keys' => array(
+    ),
+    'table' => 'nd_geolocation',
+    'referring_tables' => array(
+      0 => 'nd_experiment',
+      1 => 'nd_geolocationprop',
     ),
   );
   return $description;
@@ -8265,6 +8742,8 @@ function tripal_core_chado_schema_v1_2_nd_geolocationprop() {
         ),
       ),
     ),
+    'table' => 'nd_geolocationprop',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -8317,6 +8796,12 @@ function tripal_core_chado_schema_v1_2_nd_protocol() {
           'type_id' => 'cvterm_id',
         ),
       ),
+    ),
+    'table' => 'nd_protocol',
+    'referring_tables' => array(
+      0 => 'nd_experiment_protocol',
+      1 => 'nd_protocol_reagent',
+      2 => 'nd_protocolprop',
     ),
   );
   return $description;
@@ -8382,6 +8867,8 @@ function tripal_core_chado_schema_v1_2_nd_protocol_reagent() {
         ),
       ),
     ),
+    'table' => 'nd_protocol_reagent',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -8453,6 +8940,8 @@ function tripal_core_chado_schema_v1_2_nd_protocolprop() {
         ),
       ),
     ),
+    'table' => 'nd_protocolprop',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -8505,6 +8994,12 @@ function tripal_core_chado_schema_v1_2_nd_reagent() {
           'type_id' => 'cvterm_id',
         ),
       ),
+    ),
+    'table' => 'nd_reagent',
+    'referring_tables' => array(
+      0 => 'nd_protocol_reagent',
+      1 => 'nd_reagent_relationship',
+      3 => 'nd_reagentprop',
     ),
   );
   return $description;
@@ -8565,6 +9060,8 @@ function tripal_core_chado_schema_v1_2_nd_reagent_relationship() {
         ),
       ),
     ),
+    'table' => 'nd_reagent_relationship',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -8636,6 +9133,8 @@ function tripal_core_chado_schema_v1_2_nd_reagentprop() {
         ),
       ),
     ),
+    'table' => 'nd_reagentprop',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -8702,6 +9201,18 @@ function tripal_core_chado_schema_v1_2_organism() {
     ),
     'foreign keys' => array(
     ),
+    'referring_tables' => array(
+      0 => 'biomaterial',
+      1 => 'cell_line',
+      2 => 'feature',
+      3 => 'library',
+      4 => 'organism_dbxref',
+      5 => 'organismprop',
+      6 => 'phenotype_comparison',
+      7 => 'phylonode_organism',
+      8 => 'stock',
+    ),
+    'table' => 'organism',
   );
   return $description;
 }
@@ -8769,24 +9280,8 @@ function tripal_core_chado_schema_v1_2_organism_dbxref() {
         ),
       ),
     ),
-  );
-  return $description;
-}
-/**
- * Implements hook_chado_schema_v1_2_organism_feature_count()
- * Purpose: To describe the structure of 'organism_feature_count' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
- *
- * @return
- *    An array describing the 'organism_feature_count' table
- *
- * @ingroup tripal_chado_v1.2_schema_api
- *
- */
-function tripal_core_chado_schema_v1_2_organism_feature_count() {
-  $description =  array(
+    'table' => 'organism_dbxref',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -8866,6 +9361,8 @@ function tripal_core_chado_schema_v1_2_organismprop() {
         ),
       ),
     ),
+    'table' => 'organismprop',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -8965,6 +9462,8 @@ function tripal_core_chado_schema_v1_2_phendesc() {
         ),
       ),
     ),
+    'table' => 'phendesc',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -9055,6 +9554,14 @@ function tripal_core_chado_schema_v1_2_phenotype() {
           'assay_id' => 'cvterm_id',
         ),
       ),
+    ),
+    'table' => 'phenotype',
+    'referring_tables' => array(
+      0 => 'feature_phenotype',
+      1 => 'nd_experiment_phenotype',
+      2 => 'phenotype_comparison',
+      4 => 'phenotype_cvterm',
+      5 => 'phenstatement',
     ),
   );
   return $description;
@@ -9181,6 +9688,10 @@ function tripal_core_chado_schema_v1_2_phenotype_comparison() {
         ),
       ),
     ),
+    'table' => 'phenotype_comparison',
+    'referring_tables' => array(
+      0 => 'phenotype_comparison_cvterm',
+    ),
   );
   return $description;
 }
@@ -9265,6 +9776,8 @@ function tripal_core_chado_schema_v1_2_phenotype_comparison_cvterm() {
         ),
       ),
     ),
+    'table' => 'phenotype_comparison_cvterm',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -9339,6 +9852,8 @@ function tripal_core_chado_schema_v1_2_phenotype_cvterm() {
         ),
       ),
     ),
+    'table' => 'phenotype_cvterm',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -9442,6 +9957,8 @@ function tripal_core_chado_schema_v1_2_phenstatement() {
         ),
       ),
     ),
+    'table' => 'phenstatement',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -9549,6 +10066,15 @@ function tripal_core_chado_schema_v1_2_phylonode() {
         ),
       ),
     ),
+    'table' => 'phylonode',
+    'referring_tables' => array(
+      0 => 'phylonode',
+      1 => 'phylonode_dbxref',
+      2 => 'phylonode_organism',
+      3 => 'phylonode_pub',
+      4 => 'phylonode_relationship',
+      6 => 'phylonodeprop',
+    ),
   );
   return $description;
 }
@@ -9616,6 +10142,8 @@ function tripal_core_chado_schema_v1_2_phylonode_dbxref() {
         ),
       ),
     ),
+    'table' => 'phylonode_dbxref',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -9682,6 +10210,8 @@ function tripal_core_chado_schema_v1_2_phylonode_organism() {
         ),
       ),
     ),
+    'table' => 'phylonode_organism',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -9749,6 +10279,8 @@ function tripal_core_chado_schema_v1_2_phylonode_pub() {
         ),
       ),
     ),
+    'table' => 'phylonode_pub',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -9842,6 +10374,8 @@ function tripal_core_chado_schema_v1_2_phylonode_relationship() {
         ),
       ),
     ),
+    'table' => 'phylonode_relationship',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -9923,6 +10457,8 @@ function tripal_core_chado_schema_v1_2_phylonodeprop() {
         ),
       ),
     ),
+    'table' => 'phylonodeprop',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -10003,6 +10539,12 @@ function tripal_core_chado_schema_v1_2_phylotree() {
         ),
       ),
     ),
+    'table' => 'phylotree',
+    'referring_tables' => array(
+      0 => 'phylonode',
+      1 => 'phylonode_relationship',
+      2 => 'phylotree_pub',
+    ),
   );
   return $description;
 }
@@ -10070,6 +10612,8 @@ function tripal_core_chado_schema_v1_2_phylotree_pub() {
         ),
       ),
     ),
+    'table' => 'phylotree_pub',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -10117,6 +10661,15 @@ function tripal_core_chado_schema_v1_2_project() {
       ),
     ),
     'foreign keys' => array(
+    ),
+    'table' => 'project',
+    'referring_tables' => array(
+      0 => 'assay_project',
+      1 => 'nd_experiment_project',
+      2 => 'project_contact',
+      10 => 'project_pub',
+      18 => 'project_relationship',
+      34 => 'projectprop',
     ),
   );
   return $description;
@@ -10185,6 +10738,8 @@ function tripal_core_chado_schema_v1_2_project_contact() {
         ),
       ),
     ),
+    'table' => 'project_contact',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -10252,6 +10807,8 @@ function tripal_core_chado_schema_v1_2_project_pub() {
         ),
       ),
     ),
+    'table' => 'project_pub',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -10318,6 +10875,8 @@ function tripal_core_chado_schema_v1_2_project_relationship() {
         ),
       ),
     ),
+    'table' => 'project_relationship',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -10389,6 +10948,8 @@ function tripal_core_chado_schema_v1_2_projectprop() {
         ),
       ),
     ),
+    'table' => 'projectprop',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -10494,6 +11055,15 @@ function tripal_core_chado_schema_v1_2_protocol() {
         ),
       ),
     ),
+    'table' => 'protocol',
+    'referring_tables' => array(
+      0 => 'acquisition',
+      1 => 'arraydesign',
+      2 => 'assay',
+      3 => 'protocolparam',
+      4 => 'quantification',
+      5 => 'treatment',
+    ),
   );
   return $description;
 }
@@ -10580,6 +11150,8 @@ function tripal_core_chado_schema_v1_2_protocolparam() {
         ),
       ),
     ),
+    'table' => 'protocolparam',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -10701,6 +11273,49 @@ function tripal_core_chado_schema_v1_2_pub() {
         ),
       ),
     ),
+    'table' => 'pub',
+    'referring_tables' => array(
+      0 => 'cell_line_cvterm',
+      1 => 'cell_line_feature',
+      2 => 'cell_line_library',
+      3 => 'cell_line_pub',
+      4 => 'cell_line_synonym',
+      5 => 'cell_lineprop_pub',
+      6 => 'expression_pub',
+      7 => 'feature_cvterm',
+      8 => 'feature_cvterm_pub',
+      9 => 'feature_expression',
+      10 => 'feature_pub',
+      11 => 'feature_relationship_pub',
+      12 => 'feature_relationshipprop_pub',
+      13 => 'feature_synonym',
+      14 => 'featureloc_pub',
+      15 => 'featuremap_pub',
+      16 => 'featureprop_pub',
+      17 => 'library_cvterm',
+      18 => 'library_pub',
+      19 => 'library_synonym',
+      20 => 'libraryprop_pub',
+      21 => 'nd_experiment_pub',
+      22 => 'phendesc',
+      23 => 'phenotype_comparison',
+      24 => 'phenotype_comparison_cvterm',
+      25 => 'phenstatement',
+      26 => 'phylonode_pub',
+      27 => 'phylotree_pub',
+      28 => 'project_pub',
+      36 => 'protocol',
+      37 => 'pub_dbxref',
+      38 => 'pub_relationship',
+      40 => 'pubauthor',
+      41 => 'pubprop',
+      42 => 'stock_cvterm',
+      43 => 'stock_pub',
+      44 => 'stock_relationship_cvterm',
+      52 => 'stock_relationship_pub',
+      53 => 'stockprop_pub',
+      54 => 'study',
+    ),
   );
   return $description;
 }
@@ -10774,6 +11389,8 @@ function tripal_core_chado_schema_v1_2_pub_dbxref() {
         ),
       ),
     ),
+    'table' => 'pub_dbxref',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -10851,6 +11468,8 @@ function tripal_core_chado_schema_v1_2_pub_relationship() {
         ),
       ),
     ),
+    'table' => 'pub_relationship',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -10933,6 +11552,8 @@ function tripal_core_chado_schema_v1_2_pubauthor() {
         ),
       ),
     ),
+    'table' => 'pubauthor',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -11011,6 +11632,8 @@ function tripal_core_chado_schema_v1_2_pubprop() {
         ),
       ),
     ),
+    'table' => 'pubprop',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -11122,6 +11745,12 @@ function tripal_core_chado_schema_v1_2_quantification() {
         ),
       ),
     ),
+    'table' => 'quantification',
+    'referring_tables' => array(
+      0 => 'elementresult',
+      1 => 'quantification_relationship',
+      3 => 'quantificationprop',
+    ),
   );
   return $description;
 }
@@ -11199,6 +11828,8 @@ function tripal_core_chado_schema_v1_2_quantification_relationship() {
         ),
       ),
     ),
+    'table' => 'quantification_relationship',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -11278,6 +11909,8 @@ function tripal_core_chado_schema_v1_2_quantificationprop() {
         ),
       ),
     ),
+    'table' => 'quantificationprop',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -11296,7 +11929,7 @@ function tripal_core_chado_schema_v1_2_quantificationprop() {
  */
 function tripal_core_chado_schema_v1_2_stock() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => 'Any stock can be globally identified by the combination of organism, uniquename and stock type. A stock is the physical entities, either living or preserved, held by collections. Stocks belong to a collection; they have IDs, type, organism, description and may have a genotype.',
     'fields' => array(
       'stock_id' => array(
         'description' => 'TODO: please describe this field!',
@@ -11388,6 +12021,17 @@ function tripal_core_chado_schema_v1_2_stock() {
         ),
       ),
     ),
+    'referring_tables' => array(
+      0 => 'nd_experiment_stock',
+      1 => 'stock_cvterm',
+      2 => 'stock_dbxref',
+      3 => 'stock_genotype',
+      4 => 'stock_pub',
+      5 => 'stock_relationship',
+      7 => 'stockcollection_stock',
+      8 => 'stockprop',
+    ),
+    'table' => 'stock',
   );
   return $description;
 }
@@ -11483,6 +12127,10 @@ function tripal_core_chado_schema_v1_2_stock_cvterm() {
         ),
       ),
     ),
+    'table' => 'stock_cvterm',
+    'referring_tables' => array(
+      0 => 'stock_cvtermprop',
+    ),
   );
   return $description;
 }
@@ -11562,6 +12210,8 @@ function tripal_core_chado_schema_v1_2_stock_cvtermprop() {
         ),
       ),
     ),
+    'table' => 'stock_cvtermprop',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -11634,6 +12284,10 @@ function tripal_core_chado_schema_v1_2_stock_dbxref() {
           'stock_id' => 'stock_id',
         ),
       ),
+    ),
+    'table' => 'stock_dbxref',
+    'referring_tables' => array(
+      0 => 'stock_dbxrefprop',
     ),
   );
   return $description;
@@ -11714,6 +12368,8 @@ function tripal_core_chado_schema_v1_2_stock_dbxrefprop() {
         ),
       ),
     ),
+    'table' => 'stock_dbxrefprop',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -11781,6 +12437,8 @@ function tripal_core_chado_schema_v1_2_stock_genotype() {
         ),
       ),
     ),
+    'table' => 'stock_genotype',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -11848,6 +12506,8 @@ function tripal_core_chado_schema_v1_2_stock_pub() {
         ),
       ),
     ),
+    'table' => 'stock_pub',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -11937,6 +12597,11 @@ function tripal_core_chado_schema_v1_2_stock_relationship() {
         ),
       ),
     ),
+    'table' => 'stock_relationship',
+    'referring_tables' => array(
+      0 => 'stock_relationship_cvterm',
+      8 => 'stock_relationship_pub',
+    ),
   );
   return $description;
 }
@@ -12001,6 +12666,8 @@ function tripal_core_chado_schema_v1_2_stock_relationship_cvterm() {
         ),
       ),
     ),
+    'table' => 'stock_relationship_cvterm',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -12068,6 +12735,8 @@ function tripal_core_chado_schema_v1_2_stock_relationship_pub() {
         ),
       ),
     ),
+    'table' => 'stock_relationship_pub',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -12152,6 +12821,11 @@ function tripal_core_chado_schema_v1_2_stockcollection() {
         ),
       ),
     ),
+    'table' => 'stockcollection',
+    'referring_tables' => array(
+      0 => 'stockcollection_stock',
+      1 => 'stockcollectionprop',
+    ),
   );
   return $description;
 }
@@ -12219,6 +12893,8 @@ function tripal_core_chado_schema_v1_2_stockcollection_stock() {
         ),
       ),
     ),
+    'table' => 'stockcollection_stock',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -12298,6 +12974,8 @@ function tripal_core_chado_schema_v1_2_stockcollectionprop() {
         ),
       ),
     ),
+    'table' => 'stockcollectionprop',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -12377,6 +13055,10 @@ function tripal_core_chado_schema_v1_2_stockprop() {
         ),
       ),
     ),
+    'table' => 'stockprop',
+    'referring_tables' => array(
+      0 => 'stockprop_pub',
+    ),
   );
   return $description;
 }
@@ -12444,6 +13126,8 @@ function tripal_core_chado_schema_v1_2_stockprop_pub() {
         ),
       ),
     ),
+    'table' => 'stockprop_pub',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -12534,6 +13218,12 @@ function tripal_core_chado_schema_v1_2_study() {
         ),
       ),
     ),
+    'table' => 'study',
+    'referring_tables' => array(
+      0 => 'study_assay',
+      1 => 'studydesign',
+      2 => 'studyprop',
+    ),
   );
   return $description;
 }
@@ -12601,6 +13291,8 @@ function tripal_core_chado_schema_v1_2_study_assay() {
         ),
       ),
     ),
+    'table' => 'study_assay',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -12652,6 +13344,11 @@ function tripal_core_chado_schema_v1_2_studydesign() {
           'study_id' => 'study_id',
         ),
       ),
+    ),
+    'table' => 'studydesign',
+    'referring_tables' => array(
+      0 => 'studydesignprop',
+      1 => 'studyfactor',
     ),
   );
   return $description;
@@ -12732,6 +13429,8 @@ function tripal_core_chado_schema_v1_2_studydesignprop() {
         ),
       ),
     ),
+    'table' => 'studydesignprop',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -12802,6 +13501,10 @@ function tripal_core_chado_schema_v1_2_studyfactor() {
           'studydesign_id' => 'studydesign_id',
         ),
       ),
+    ),
+    'table' => 'studyfactor',
+    'referring_tables' => array(
+      0 => 'studyfactorvalue',
     ),
   );
   return $description;
@@ -12880,6 +13583,8 @@ function tripal_core_chado_schema_v1_2_studyfactorvalue() {
         ),
       ),
     ),
+    'table' => 'studyfactorvalue',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -12959,6 +13664,10 @@ function tripal_core_chado_schema_v1_2_studyprop() {
         ),
       ),
     ),
+    'table' => 'studyprop',
+    'referring_tables' => array(
+      0 => 'studyprop_feature',
+    ),
   );
   return $description;
 }
@@ -13037,6 +13746,8 @@ function tripal_core_chado_schema_v1_2_studyprop_feature() {
         ),
       ),
     ),
+    'table' => 'studyprop_feature',
+    'referring_tables' => NULL,
   );
   return $description;
 }
@@ -13101,6 +13812,12 @@ function tripal_core_chado_schema_v1_2_synonym() {
           'type_id' => 'cvterm_id',
         ),
       ),
+    ),
+    'table' => 'synonym',
+    'referring_tables' => array(
+      0 => 'cell_line_synonym',
+      1 => 'feature_synonym',
+      2 => 'library_synonym',
     ),
   );
   return $description;
@@ -13177,6 +13894,11 @@ function tripal_core_chado_schema_v1_2_tableinfo() {
       ),
     ),
     'foreign keys' => array(
+    ),
+    'table' => 'tableinfo',
+    'referring_tables' => array(
+      0 => 'control',
+      1 => 'magedocumentation',
     ),
   );
   return $description;
@@ -13263,6 +13985,10 @@ function tripal_core_chado_schema_v1_2_treatment() {
           'biomaterial_id' => 'biomaterial_id',
         ),
       ),
+    ),
+    'table' => 'treatment',
+    'referring_tables' => array(
+      0 => 'biomaterial_treatment',
     ),
   );
   return $description;

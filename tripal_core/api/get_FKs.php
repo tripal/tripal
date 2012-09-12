@@ -7,7 +7,7 @@
 // a file and then replace the existing schema API include file (e.g. 
 // tripal_core.schema_v1.2.api.inc).  Be sure to check it before replacing
 
-// thie script requires a single argument (-v) which is the Chado version
+// this script requires a single argument (-v) which is the Chado version
 //
 // example usage in drupal directory root:
 //
@@ -37,7 +37,7 @@ if (isset($arguments['v'])) {
 /**
  *
  */
-function get_chado_fk_relationships($version){
+function get_chado_fk_relationships($version) {
 
   // convert the version to a form suitable for function names
   $v = $version;
@@ -57,31 +57,81 @@ function get_chado_fk_relationships($version){
   ";
     
   // iterate through the tables and get the foreign keys
-  print "<?php\n";
+  print "<?php
+/* @file: This file contains default schema definitions for all chado v$version tables
+ *        to be used by other function. Specifically these functions are used
+ *        by the tripal_core select/insert/update API functions and by
+ *        the Tripal Views module.
+ *
+ *        These schema definitions can be augmented by another modules
+ *        (specifically to add missing definitions) by implementing
+ *        hook_chado_schema_v" . $v . "_<table name>().
+ *
+ * @defgroup tripal_schema_api Core Module Schema API
+ * @{
+ * Provides an application programming interface (API) for describing Chado tables.
+ * This API consists of a set of functions, one for each table in Chado.  Each
+ * function simply returns a Drupal style array that defines the table.
+ *
+ * Because Drupal 6 does not handle foreign key (FK) relationships, however FK 
+ * relationships are needed to for Tripal Views.  Therefore, FK relationships
+ * have been added to the schema defintitions below.
+ *
+ * The functions provided in this documentation should not be called as is, but if you need
+ * the Drupal-style array definition for any table, use the following function
+ * call:
+ *
+ *   \$table_desc = tripal_core_get_chado_table_schema(\$table)
+ *
+ * where the variable \$table contains the name of the table you want to
+ * retireve.  The tripal_core_get_chado_table_schema function determines the appropriate version of 
+ * Chado and uses the Drupal hook infrastructure to call the appropriate 
+ * hook function to retrieve the table schema.
+ *
+ * @}
+ * @ingroup tripal_api
+ */
+";
   $referring = array();
+  $tables_def = array();
   foreach ($tables as $table) {
 
-     // get the existing table array
-     $table_arr = tripal_core_get_chado_table_schema($table);
-     
-     if (empty($table_arr)) {
-        print "ERROR: empty table definition $table\n";
-     }
-
-     // get the foreign keys and add them to the array
-     $fks = db_query($sql,$table);
-     while ($fk = db_fetch_object($fks)) {
-        $table_arr['foreign keys'][$fk->foreign_table_name]['table'] = $fk->foreign_table_name;
-        $table_arr['foreign keys'][$fk->foreign_table_name]['columns'][$fk->column_name] = $fk->foreign_column_name;
-        $reffering[$fk->foreign_table_name] = $table;
-      }
+    // get the existing table array
+    $table_arr = tripal_core_get_chado_table_schema($table);
+    
+    if (empty($table_arr)) {
+       print "ERROR: empty table definition $table\n";
+       continue;
+    }
+    
+    // add the table name to the array
+    $table_arr['table'] = $table;
+    
+    // get the foreign keys and add them to the array
+    $fks = db_query($sql,$table);
+    while ($fk = db_fetch_object($fks)) {
+      $table_arr['foreign keys'][$fk->foreign_table_name]['table'] = $fk->foreign_table_name;
+      $table_arr['foreign keys'][$fk->foreign_table_name]['columns'][$fk->column_name] = $fk->foreign_column_name;
+      $reffering[$fk->foreign_table_name][] = $table;
+    }
+    $tables_def[] = $table_arr;
+  }
+  
+  // now add in the referring tables and print
+  foreach ($tables_def as $table_arr) {
+    $table = $table_arr['table'];
+    
+    // add in the referring tables
+    $table_referring = array_unique($reffering[$table]);
+    $table_arr['referring_tables'] = $table_referring;
       
-      // reformat the array to be more legible
-      $arr = var_export($table_arr, 1);
-      $arr = preg_replace("/\n\s+array/","array", $arr); // move array( to previous line
-      $arr = preg_replace("/\n/","\n  ", $arr); // add indentation
-      $arr = preg_replace("/true/","TRUE", $arr); // add indentation
-      $arr = preg_replace("/array \(/","array(", $arr); // add indentation      
+    // reformat the array to be more legible
+    $arr = var_export($table_arr, 1);
+    $arr = preg_replace("/\n\s+array/","array", $arr); // move array( to previous line
+    $arr = preg_replace("/\n/","\n  ", $arr); // add indentation
+    $arr = preg_replace("/true/","TRUE", $arr); // add indentation
+    $arr = preg_replace("/false/","FALSE", $arr); // add indentation
+    $arr = preg_replace("/array \(/","array(", $arr); // add indentation      
       
       // print out the new Schema API function for this table
 print "/**
