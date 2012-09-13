@@ -569,13 +569,9 @@ function tripal_bulk_loader_import_export_template_form($form_state = NULL, $mod
       '#options'       => $templates,
       '#default_value' => $form_state['storage']['template_id'],
       '#weight'        => 0,
-      '#required'      => TRUE,
+      '#required'      => TRUE,     
     );
   }
-  $form['submit'] = array(
-    '#type' => 'submit',
-    '#value' => 'Submit',
-  );
 
   $form['template_array'] = array(
     '#type' => 'textarea',
@@ -583,14 +579,15 @@ function tripal_bulk_loader_import_export_template_form($form_state = NULL, $mod
     '#default_value' => $form_state['storage']['template_array'],
     '#description' => t('Use this serialized array for import.'),
     '#rows' => 15,
+    '#weight' => 5,
+  
   );
-  $form['template_array_no_serial'] = array(
-    '#type' => 'textarea',
-    '#title' => 'Template Array (Unsearialized)',
-    '#default_value' => $form_state['storage']['template_array_no_serial'],
-    '#rows' => 25,
+  
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => 'Submit',
+    '#weight' => 10,
   );
-
 
   return $form;
 }
@@ -607,14 +604,23 @@ function tripal_bulk_loader_import_export_template_form_submit($form, &$form_sta
   switch ($form_state['values']['mode']) {
     case 'export':
       $record = db_fetch_object(db_query("SELECT * FROM {tripal_bulk_loader_template} WHERE template_id=%d", $form_state['values']['template_id']));
-      $form_state['storage']['template_array'] = $record->template_array;
-      $form_state['storage']['template_array_no_serial'] = var_export(unserialize($record->template_array), TRUE);
+      //$form_state['storage']['template_array'] = $record->template_array;
+      $t = var_export(unserialize($record->template_array), TRUE);
+      $t = preg_replace("/\n\s+array/","array", $t); // move array( to previous line
+      $t = preg_replace("/true/","TRUE", $t); // upper case true
+      $t = preg_replace("/false/","FALSE", $t); // upper case false
+      $t = preg_replace("/array\(/","array (", $t); // put a space between array and paren      
+    
+      $form_state['storage']['template_array'] = $t; 
       $form_state['storage']['template_id'] = $form_state['values']['template_id'];
     break;
     case 'import':
+      // get the template array, and convert from text into an array.
+      $t = array();
+      eval("\$t = " . $form_state['values']['template_array'] . ";");
       $record = array(
         'name' => $form_state['values']['new_template_name'],
-        'template_array' => $form_state['values']['template_array'],
+        'template_array' => serialize($t),
       );
       drupal_write_record('tripal_bulk_loader_template', $record);
       if ($record->template_id) {
