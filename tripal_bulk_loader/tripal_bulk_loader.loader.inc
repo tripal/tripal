@@ -125,6 +125,11 @@ function tripal_bulk_loader_add_loader_job_form_submit($form, $form_state) {
  */
 function tripal_bulk_loader_load_data($nid, $job_id) {
 
+  // we need to get a persistent connection.  If one exists this function
+  // will not recreate it, but if not it will create one and store it in
+  // a Drupal variable for reuse later.
+  $connection = tripal_db_persistent_chado();
+	
   // ensure no timeout
   set_time_limit(0);
 
