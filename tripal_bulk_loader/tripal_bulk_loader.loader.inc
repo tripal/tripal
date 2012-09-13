@@ -147,8 +147,15 @@ function tripal_bulk_loader_load_data($nid, $job_id) {
   $field2column = array();
   $record2priority = array();
   $tables = array();
+  $template_array = $node->template->template_array;
 
-  foreach ($node->template->template_array as $priority => $record_array) {
+  // first build the record2priority array
+  foreach ($template_array as $priority => $record_array) {
+    $record2priority[$record_array['record_id']] = $priority;
+  }
+
+  //
+  foreach ($template_array as $priority => $record_array) {
     if (!is_array($record_array)) {
       continue;
     }
@@ -169,7 +176,6 @@ function tripal_bulk_loader_load_data($nid, $job_id) {
       $default_data[$priority]['optional'] = ($record_array['optional']) ? $record_array['optional'] : 0;
       $default_data[$priority]['select_optional'] = ($record_array['select_optional']) ? $record_array['select_optional'] : 0;
       $default_data[$priority]['record_id'] = $record_array['record_id'];
-      $record2priority[$record_array['record_id']] = $priority;
       $default_data[$priority]['required'][$field_array['field']] = $field_array['required'];
 
       $one = $default_data[$priority];
@@ -191,9 +197,31 @@ function tripal_bulk_loader_load_data($nid, $job_id) {
       }
       elseif (preg_match('/foreign key/', $field_array['type'])) {
         $default_data[$priority]['values_array'][$field_array['field']] = array();
-        $default_data[$priority]['values_array'][$field_array['field']]['foreign record'] = $field_array['foreign key'];
         $default_data[$priority]['need_further_processing'] = TRUE;
-
+        $default_data[$priority]['values_array'][$field_array['field']]['foreign record']['record'] = $field_array['foreign key'];        
+        
+        // Add in the FK / Referral table
+        $fk_priority = $record2priority[$field_array['foreign key']];
+        $fk_table = $template_array[$fk_priority]['table'];    
+        $default_data[$priority]['values_array'][$field_array['field']]['foreign record']['table'] = $fk_table;
+        
+        // Add in the FK / Referral field
+        // for backwards compatibility we need to get the FK relationship to find
+        // out what field we're joining on.  For templates created using a 
+        // previous version it was assumed that the FK field was always the field to join
+        if (!array_key_exists('foreign field', $field_array)) {
+          $tbl_description = tripal_core_get_chado_table_schema($record_array['table']);
+          foreach ($tbl_description['foreign keys'] as $key_table => $key_array) {
+            if ($key_table == $fk_table) {
+              foreach ($key_array['columns'] as $left_field => $right_field) {
+                if ($left_field == $field_array['field']) {                  
+                  $field_array['foreign field'] = $right_field;
+                }
+              }
+            }
+          }
+        }
+        $default_data[$priority]['values_array'][$field_array['field']]['foreign record']['field'] = $field_array['foreign field'];
       }
       else {
         print 'WARNING: Unsupported type: ' . $field_array['type'] . ' for ' . $table . '.' . $field_array['field'] . "!\n";
@@ -455,7 +483,7 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
       //watchdog('T_bulk_loader', 'Line ' . $addt->line_num . ' Data File Added:' . print_r($values, TRUE), array(), WATCHDOG_NOTICE);
     }
 
-    $values = tripal_bulk_loader_add_foreignkey_to_values($values, $data, $addt->record2priority);
+    $values = tripal_bulk_loader_add_foreignkey_to_values($table_data, $values, $data, $addt->record2priority, $addt->nid, $priority);
 
     if (!$values) {
       //watchdog('T_bulk_loader', 'Line ' . $addt->line_num . ' FK Added:<pre>' . print_r($values, TRUE) . print_r($data[$priority], TRUE) . '</pre>', array(), WATCHDOG_NOTICE);
@@ -473,8 +501,9 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
   // for an insert, check that all database required fields are present in the values array
   // we check for 'optional' in the mode for backwards compatibility. The 'optional' 
   // mode used to be a type of insert
-  if (preg_match('/insert/', $table_data['mode']) or preg_match('/optional/', $table_data['mode'])) {
-    // Check all db required fields are set
+  if (preg_match('/insert/', $table_data['mode']) or 
+      preg_match('/optional/', $table_data['mode'])) {
+    // Check all database table required fields are set
     $fields = $table_desc['fields'];
     foreach ($fields as $field => $def) {
       // a field is considered missing if it cannot be null and there is no default
@@ -500,7 +529,9 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
       if (!isset($values[$field]) or (is_array($values[$field]) and count($values[$field]) == 0)){
         // check if the record is optional.  For backwards compatiblity we need to
         // check if the 'mode' is set to 'optional'
-        if ($table_data['optional'] or preg_match('/optional/', $table_data['mode']) or $table_data['select_optional'])  {
+        if ($table_data['optional'] or preg_match('/optional/', $table_data['mode']) or 
+            $table_data['select_optional'])  {
+            
           $skip_optional = 1;
           // set the values array to be empty since we all required fields are
           // optional and we can't do a select/insert so we don't want to keep
@@ -518,7 +549,7 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
     }
   }
 
-  // add new values array into the data array
+  // add updated values array into the data array
   $data[$priority]['values_array'] = $values;
   
   // if there was an error already -> don't insert
@@ -647,7 +678,7 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
           return $no_errors;
         }//end of if insert record
       }// end of if keeping track of records inserted
-      
+    
       // substitute the values array for the primary key if it exists
       // and is a single field
       if(array_key_exists('primary key',$table_desc)){
@@ -742,23 +773,59 @@ function tripal_bulk_loader_add_spreadsheetdata_to_values($values, $line, $field
  * record is looked up and the values array is substituted in.
  *
  */
-function tripal_bulk_loader_add_foreignkey_to_values($values, $data, $record2priority) {
-
+function tripal_bulk_loader_add_foreignkey_to_values($table_array, $values, $data, $record2priority, $nid, $priority) {
+    
   foreach ($values as $field => $value) {
     // if the field value is an array then it is an FK
     if (is_array($value)) {
-   
-      // get the name of the foreign record
-      $foreign_record   = $value['foreign record'];
       
-      // get the corresponding priority of the foreign record
+      // get the name and priority of the foreign record
+      $foreign_record   = $value['foreign record']['record'];
       $foreign_priority = $record2priority[$foreign_record];
+      $foreign_table    = $value['foreign record']['table'];
+      $foreign_field    = $value['foreign record']['field'];
       
-      // get the values of the foreign record
+      // get the values of the foreign record and substitute those for the values
       $foreign_values   = $data[$foreign_priority]['values_array'];
-      
-      // substitue the foreign values for this fields values
-      $values[$field] = $foreign_values;
+            
+      // if the field in the Referral records is in a FK relationship with
+      // this field then we can simply keep the value we have
+      $tbl_description = tripal_core_get_chado_table_schema($table_array['table']);
+      if ($foreign_field = $tbl_description['foreign keys'][$foreign_table]['columns'][$field]){
+         $values[$field] = $foreign_values;      
+      } 
+      // if the field in the Referral records is not in an FK relationship
+      // with this field then we we have to get the requested value, we must
+      // return only a single value
+      else {      
+        // if the current value of the referral records is a non-array then this
+        // is the primary key, we can use it to select the value we need.
+        $fk_description = tripal_core_get_chado_table_schema($foreign_table);
+        if (!is_array($foreign_values)) {
+          // if we have a value then use it to get the field we need
+          if ($foreign_values) {
+            $values  = array($fk_description['primary key'][0] => $foreign_values);
+            $columns = array($foreign_field);
+            $options = array('statement_name' => 'pk_' . $foreign_table);
+            $record  = tripal_core_chado_select($foreign_table, $values, $columns, $options);
+            $values[$field] = $record[0]->$foreign_field;
+          }
+          // if we don't have a value then there's nothing we can do so
+          // set this value to nothing as well
+          else {
+            unset($values[$field]);
+          }
+        }
+        // if the current value is an array and our field is not in it, then
+        // we need to select a value for our field.
+        else {
+           $values  = $foreign_values;
+           $columns = array($foreign_field);
+           $options = array('statement_name' => 'blk_' . $nid . $priority . $foreign_table);        
+           $record  = tripal_core_chado_select($foreign_table, $values, $columns, $options);
+           $values[$field] = $record[0]->$foreign_field;
+        }         
+      }
     }
   }
 

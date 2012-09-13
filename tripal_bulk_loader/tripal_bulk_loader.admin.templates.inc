@@ -218,6 +218,28 @@ function tripal_bulk_loader_modify_template_base_form($form_state = NULL, $mode)
         );
 
         foreach ($table_array['fields'] as $field_index => $field) {
+          $fk_value = '';
+          if ($field['foreign key']) {
+            if ($field['foreign field']) {
+              $fk_value = $field['foreign key'] . " (" . $field['foreign field'] . ")";
+            }
+            else {
+              // for backwards compatibility we need to get the FK relationship to find
+              // out what field we're joining on.  For templates created using a 
+              // previous version this information isn't stored in the template 
+              // so we need to get it.
+              $fk_priority = $form_state['storage']['record2priority'][$field['foreign key']];
+              $fk_table = $form_state['storage']['template'][$fk_priority]['table'];    
+              $tbl_description = tripal_core_get_chado_table_schema($table_array['table']);
+              foreach ($tbl_description['foreign keys'] as $key_table => $key_array) {
+                foreach ($key_array['columns'] as $left_field => $right_field) {
+                  if($key_table == $fk_table and $left_field == $field['field']){                  
+                    $fk_value = $field['foreign key'] . " ($right_field)";
+                  }
+                }
+              }
+            }            
+          }
 
           $form['fields']['fields-data'][$i] = array(
             'record_id' => array(
@@ -262,7 +284,7 @@ function tripal_bulk_loader_modify_template_base_form($form_state = NULL, $mode)
             ),
             'foreign_record_id' => array(
               '#type' => 'item',
-              '#value' => $field['foreign key'],
+              '#value' => $fk_value,
             ),
             'edit_submit' => array(
               '#type' => 'submit',
@@ -932,12 +954,12 @@ function tripal_bulk_loader_add_template_field_form(&$form_state = NULL) {
     $form_state['storage']['template'] = $template;
 
     $form_state['storage']['record2priority'] = array();
-  foreach ($form_state['storage']['template_array'] as $priority => $record_array) {
-    if (!is_array($record_array)) {
-      continue;
+    foreach ($form_state['storage']['template_array'] as $priority => $record_array) {
+      if (!is_array($record_array)) {
+        continue;
+      }
+      $form_state['storage']['record2priority'][$record_array['record_id']] = $priority;
     }
-    $form_state['storage']['record2priority'][$record_array['record_id']] = $priority;
-  }
 
     $form_state['storage']['referring URL'] = $_SERVER["HTTP_REFERER"];
   }
@@ -967,7 +989,7 @@ function tripal_bulk_loader_add_template_field_form(&$form_state = NULL) {
     $table = reset($tables);
   }
 
-   // get the record_id from the path
+  // get the record_id from the path
   if ($_GET['record_id'] !== NULL) {
     $form_state['values']['field_group'] = $_GET['record_id'];
     if (preg_match('/\d+/', $_GET['record_id'])) {
@@ -975,22 +997,31 @@ function tripal_bulk_loader_add_template_field_form(&$form_state = NULL) {
       $table = $form_state['storage']['template_array'][$priority]['table'];
     }
   }
-
-  // Fields and foreign key mappings
+  
+  $show_all = $form_state['values']['show_all_records'];
+  
+  $table_description = tripal_core_get_chado_table_schema($table);
+  
+  // Fields and foreign key / referral mappings
+  // build the fields array
   $chado_fields = array();
+  foreach ($table_description['fields'] as $field_name => $field_array) {
+    $chado_fields[$field_name] = $field_name;
+  }  
+
+  $ref_chado_fields = array();
   $fk_options = array();
   $fk_options['NULL'] = 'None';
-  $table_description = tripal_core_get_chado_table_schema($table);
-  //dpm($table_description, 'table description for |'.$table.'|');
-  if ($field_type == 'foreign key') {
+  if ($field_type == 'foreign key' and !$show_all) {
+
     $foreign_field2table = array();
     foreach ($table_description['foreign keys'] as $key_table => $key_array) {
       foreach ($key_array['columns'] as $left_field => $right_field) {
-        $chado_fields[$left_field] = $left_field;
+        //$chado_fields[$left_field] = $left_field;
         $foreign_field2table[$left_field] = $key_table;
       }
     }
-    reset($chado_fields);
+//   reset($chado_fields);
 
     // set default field
     if (empty($chado_fields)) {
@@ -1001,7 +1032,7 @@ function tripal_bulk_loader_add_template_field_form(&$form_state = NULL) {
     }
     else {
       $field = current($chado_fields);
-    }
+    } 
 
     // Foreign key options
     $foreign_table = $foreign_field2table[$field];
@@ -1013,29 +1044,40 @@ function tripal_bulk_loader_add_template_field_form(&$form_state = NULL) {
       }
     }
   }
-  else {
-    foreach ($table_description['fields'] as $field_name => $field_array) {
-        $chado_fields[$field_name] = $field_name;
+  // the user wants to see all of the records
+  elseif ($field_type == 'foreign key' and $show_all) {
+    foreach ($form_state['storage']['record2priority'] as $record_name => $priority ) {
+      $fk_options[$record_name] = $record_name;
+    }
+  }
+    
+  // build the list of referrer table fields
+  if ($field_type == 'foreign key') {
+    $fk_rec = $form_state['values']['foreign_record']; 
+    if ($fk_rec and $fk_rec != 'None' and $fk_rec != 'NULL') {
+    
+      // first add in the primary keys
+      $fk_priority = $form_state['storage']['record2priority'][$fk_rec];
+      $fk_table = $form_state['storage']['template_array'][$fk_priority]['table'];
+      foreach ($table_description['foreign keys'] as $key_table => $key_array) {
+        foreach ($key_array['columns'] as $left_field => $right_field) {
+          if($key_table == $fk_table and $left_field == $field){                  
+            $ref_chado_fields['Foreign Key'][$right_field] = $right_field;
+          }
+        }
+      }      
+      $fk_description = tripal_core_get_chado_table_schema($fk_table);
+      foreach ($fk_description['fields'] as $fk_field_name => $fk_farray){
+         // don't include the FK field it's included above
+         if (in_array($fk_field_name,$ref_chado_fields['Foreign Key'])) {
+           continue;
+         }
+         $ref_chado_fields['Additional Table Fields'][$fk_field_name] = $fk_field_name;
+      }
     }
   }
 
-  $variables = array(
-    'form_state' => $form_state,
-    'tables' => $tables,
-    'default table' => $table,
-    'fields' => $chado_fields,
-    'default_field' => $field,
-    'priority' => $priority,
-    'record_name' => $record_name,
-    'table description' => $table_description,
-    'foreign key options' => $fk_options,
-    'foreign field=>table' => $foreign_field2table,
-    'foreign table' => $foreign_table,
-  );
-  //dpm($variables, 'variables');
-
-  // Start of Form Proper--------------------------------------------------------------
-  //dpm($form_state, 'Form State');
+  // Start of Form Proper-------------------------------------------------------------
 
   $form['template_name'] = array(
     '#type' => 'item',
@@ -1060,7 +1102,7 @@ function tripal_bulk_loader_add_template_field_form(&$form_state = NULL) {
     '#options' => array(
       'table field' => t('Data: A Field which maps to a column in the supplied file.'),
       'constant' => t('Constant: Field which remains Constant throughout the file'),
-      'foreign key' => t('Foreign Key: Fields which map to a record in another table'),
+      'foreign key' => t('Record Referral: Fields which map to a record in another table'),
     ),
     '#required' => TRUE,
     '#default_value' => $field_type,
@@ -1109,6 +1151,38 @@ function tripal_bulk_loader_add_template_field_form(&$form_state = NULL) {
     '#default_value' => $form_state['values']['field_title'],
   );
 
+
+  // Chado Field
+  $form['add_fields']['chado'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Chado Field/Column Details'),
+    '#description' => t('Specify the Table/Field in chado that this field maps to.'),
+  );
+
+  $form['add_fields']['chado']['chado_table'] = array(
+    '#type' => 'select',
+    '#title' => t('Chado Table'),
+    '#options' => $tables,
+    '#default_value' => $table,
+    '#ahah' => array(
+      'path' => 'admin/tripal/tripal_bulk_loader_template/add_field_ahah',
+      'wrapper' => 'tripal_bulk_loader_template-add_field',
+      'effect' => 'fade'
+      ),
+  );
+
+  $form['add_fields']['chado']['chado_field'] = array(
+    '#type' => 'select',
+    '#title' => t('Chado Field/Column'),
+    '#options' => $chado_fields,
+    '#default_value' => $form_state['values']['chado_field'],
+    '#ahah' => array(
+      'path' => 'admin/tripal/tripal_bulk_loader_template/add_field_ahah',
+      'wrapper' => 'tripal_bulk_loader_template-add_field',
+      'effect' => 'fade'
+    ),
+  );
+  
   // loading file data column
   $form['add_fields']['columns'] = array(
     '#type' => 'fieldset',
@@ -1126,7 +1200,7 @@ function tripal_bulk_loader_add_template_field_form(&$form_state = NULL) {
     '#default_value' => ($form_state['values']['sheet_name'])? $form_state['values']['sheet_name'] : 'Sheet1',
   );
   */
-
+  
   $form['add_fields']['columns']['column_number'] = array(
     '#type' => 'textfield',
     '#title' => t('Column'),
@@ -1176,52 +1250,48 @@ function tripal_bulk_loader_add_template_field_form(&$form_state = NULL) {
     '#description' => t('Checks the database when a bulk loading job is created to ensure the value entered already exists in the database.'),
   );
 
-  // Foreign Key
+  // Foreign Key / Referrer
   $form['add_fields']['foreign_key'] = array(
     '#type' => 'fieldset',
-    '#title' => 'Foreign Key',
+    '#title' => 'Record Referral',
     '#collapsible' => TRUE,
     '#collapsed' => ($field_type == 'foreign key')? FALSE : TRUE,
   );
-
+  
+  $form['add_fields']['foreign_key']['show_all_records'] = array(
+    '#type' => 'checkbox',
+    '#title' => 'Refer to any record',
+    '#description' => t('By default, the bulk loader will only allow referral to records in a foreign key relationship.  To allow referral to any previous record, check this box'),
+    '#default_value' => $show_all,
+    '#ahah' => array(
+      'path' => 'admin/tripal/tripal_bulk_loader_template/add_field_ahah',
+      'wrapper' => 'tripal_bulk_loader_template-add_field',
+      'effect' => 'fade'
+    ),    
+  );
+  
   $form['add_fields']['foreign_key']['foreign_record'] = array(
     '#type' => 'select',
     '#title' => 'Record to refer to',
-    '#descripion' => 'Select the record that this foreign key shouold refer to. The record needs to already exist and be of the correct table.',
+    '#descripion' => 'Select the record that this value should refer to. The record needs to already exist.',
     '#options' => $fk_options,
-  );
-
-  // Chado Field
-  $form['add_fields']['chado'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Chado Field/Column Details'),
-    '#description' => t('Specify the Table/Field in chado that this field maps to.'),
-  );
-
-  $form['add_fields']['chado']['chado_table'] = array(
-    '#type' => 'select',
-    '#title' => t('Chado Table'),
-    '#options' => $tables,
-    '#default_value' => $table,
     '#ahah' => array(
       'path' => 'admin/tripal/tripal_bulk_loader_template/add_field_ahah',
       'wrapper' => 'tripal_bulk_loader_template-add_field',
       'effect' => 'fade'
-      ),
+    ),  
+    '#default_value' => ($form_state['values']['foreign_record']) ? $form_state['values']['foreign_record'] : $template_field['foreign key'],
   );
-
-  $form['add_fields']['chado']['chado_field'] = array(
+  
+  $form['add_fields']['foreign_key']['foreign_field'] = array(
     '#type' => 'select',
-    '#title' => t('Chado Field/Column'),
-    '#options' => $chado_fields,
-    '#default_value' => $form_state['values']['chado_field'],
-    '#ahah' => array(
-      'path' => 'admin/tripal/tripal_bulk_loader_template/add_field_ahah',
-      'wrapper' => 'tripal_bulk_loader_template-add_field',
-      'effect' => 'fade'
-    ),
+    '#title' => 'Field to refer to',
+    '#descripion' => 'Select the record that this value should refer to. The record needs to already exist.',
+    '#options' => $ref_chado_fields,
+    '#default_value' => ($form_state['values']['foreign_field']) ? $form_state['values']['foreign_field'] : $template_field['foreign_field'],
   );
-
+  
+  
   $form['add_fields']['additional'] = array(
     '#type' => 'fieldset',
     '#title' => 'Additional Options',
@@ -1453,7 +1523,9 @@ function tripal_bulk_loader_add_template_field_form_submit($form, &$form_state) 
           'type' => 'foreign key',
           'title' => $form_state['values']['field_title'],
           'field' => $form_state['values']['chado_field'],
+          'show_all_records' => $form_state['values']['show_all_records'],
           'foreign key' => $form_state['values']['foreign_record'],
+          'foreign field' => $form_state['values']['foreign_field'],
           'required' => $form_state['values']['required'],
         );
       }
@@ -1599,7 +1671,7 @@ function tripal_bulk_loader_edit_template_field_form(&$form_state = NULL) {
 
   $field_type = ($form_state['values']['field_type'])? $form_state['values']['field_type'] : $template_field['type'];
 
-  // Tables and default table
+  // Get the tables array and default table
   $tables = tripal_core_get_chado_tables(TRUE);
   if ($form_state['values']) {
     $table = $form_state['values']['chado_table'];
@@ -1608,21 +1680,29 @@ function tripal_bulk_loader_edit_template_field_form(&$form_state = NULL) {
     $table = $form_state['storage']['template_array'][$priority]['table'];
   }
 
+  $show_all = ($form_state['values']['show_all_records'] ? $form_state['values']['show_all_records'] : $template_field['show_all_records']);
+  $table_description = tripal_core_get_chado_table_schema($table);
 
-  // Fields and foreign key mappings
+  // Fields and foreign key / referral mappings
+  // build the fields array
   $chado_fields = array();
+  foreach ($table_description['fields'] as $field_name => $field_array) {
+    $chado_fields[$field_name] = $field_name;
+  }  
+
+  $ref_chado_fields = array();
   $fk_options = array();
   $fk_options['NULL'] = 'None';
-  $table_description = tripal_core_get_chado_table_schema($table);
-  if ($field_type == 'foreign key') {
+  if ($field_type == 'foreign key' and !$show_all) {
+  
     $foreign_field2table = array();
     foreach ($table_description['foreign keys'] as $key_table => $key_array) {
       foreach ($key_array['columns'] as $left_field => $right_field) {
-        $chado_fields[$left_field] = $left_field;
+        //$chado_fields[$left_field] = $left_field;
         $foreign_field2table[$left_field] = $key_table;
       }
     }
-    reset($chado_fields);
+//    reset($chado_fields);
 
     // set default field
     if (empty($chado_fields)) {
@@ -1637,7 +1717,6 @@ function tripal_bulk_loader_edit_template_field_form(&$form_state = NULL) {
     else {
       $field = current($chado_fields);
     }
-    //dpm($field, 'field');
 
     // Foreign key options
     $foreign_table = $foreign_field2table[$field];
@@ -1649,16 +1728,40 @@ function tripal_bulk_loader_edit_template_field_form(&$form_state = NULL) {
       }
     }
   }
-  else {
-    foreach ($table_description['fields'] as $field_name => $field_array) {
-        $chado_fields[$field_name] = $field_name;
+  // the user wants to see all of the records
+  elseif ($field_type == 'foreign key' and $show_all) {
+    foreach ($form_state['storage']['record2priority'] as $record_name => $priority ) {
+      $fk_options[$record_name] = $record_name;
+    }
+  }
+  
+  // build the list of referrer table fields
+  if ($field_type == 'foreign key') {
+    $fk_rec = $form_state['values']['foreign_record'] ?  $form_state['values']['foreign_record'] : $template_field['foreign key'];
+    if ($fk_rec and $fk_rec != 'None' and $fk_rec != 'NULL') {
+    
+      // first add in the foreign keys
+      $fk_priority = $form_state['storage']['record2priority'][$fk_rec];
+      $fk_table = $form_state['storage']['template_array'][$fk_priority]['table'];
+      foreach ($table_description['foreign keys'] as $key_table => $key_array) {
+        foreach ($key_array['columns'] as $left_field => $right_field) {
+          if($key_table == $fk_table and $left_field == $field){                  
+            $ref_chado_fields['Foreign Key'][$right_field] = $right_field;
+          }
+        }
+      }      
+      $fk_description = tripal_core_get_chado_table_schema($fk_table);
+      foreach ($fk_description['fields'] as $fk_field_name => $fk_farray){
+         // don't include the FK field it's included above
+         if (in_array('Foreign Key',$ref_chado_fields) and 
+             in_array($fk_field_name, $ref_chado_fields['Foreign Key'])) {
+           continue;
+         }
+         $ref_chado_fields['Additional Table Fields'][$fk_field_name] = $fk_field_name;
+      }
     }
   }
 
-//  dpm(array( 'tables' => $tables, 'default table' => $table, 'record name' => $record_name, 'priority' => $priority,
-//    'fields' => $chad_fields, 'default field' => $field, 'foreign field=>table' => $foreign_field2table,
-//    'table desc' => $table_description, 'foreign record options' => $fk_options, 'foreign table' => $foreign_table
-//    ), 'Variables');
 
   // Start of Form Proper--------------------------------------------------------------
 
@@ -1685,7 +1788,7 @@ function tripal_bulk_loader_edit_template_field_form(&$form_state = NULL) {
     '#options' => array(
       'table field' => t('Data Field: Fields which maps to a data file column'),
       'constant' => t('Constant: Field which remains Constant throughout the data file'),
-      'foreign key' => t('Foreign Key: Fields which map to a record in another table'),
+      'foreign key' => t('Record Referral: Fields which map to a record in another table'),
     ),
     '#required' => TRUE,
     '#default_value' => $field_type,
@@ -1732,6 +1835,37 @@ function tripal_bulk_loader_edit_template_field_form(&$form_state = NULL) {
     '#type' => 'textfield',
     '#title' => t('Human-readable Title for Field'),
     '#default_value' => ($form_state['values']['field_title']) ? $form_state['values']['field_title'] : $template_field['title'],
+  );
+  
+   // Chado Field
+  $form['edit_fields']['chado'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Chado Field/Column Details'),
+    '#description' => t('Specify the Table/Field in chado that this field maps to.'),
+  );
+
+  $form['edit_fields']['chado']['chado_table'] = array(
+    '#type' => 'select',
+    '#title' => t('Chado Table'),
+    '#options' => $tables,
+    '#default_value' => $table,
+    '#ahah' => array(
+      'path' => 'admin/tripal/tripal_bulk_loader_template/edit_field_ahah',
+      'wrapper' => 'tripal_bulk_loader_template-edit_field',
+      'effect' => 'fade'
+      ),
+  );
+
+  $form['edit_fields']['chado']['chado_field'] = array(
+    '#type' => 'select',
+    '#title' => t('Chado Field/Column'),
+    '#options' => $chado_fields,
+    '#default_value' => ($form_state['values']['chado_field']) ? $form_state['values']['chado_field'] : $template_field['field'],
+    '#ahah' => array(
+      'path' => 'admin/tripal/tripal_bulk_loader_template/edit_field_ahah',
+      'wrapper' => 'tripal_bulk_loader_template-edit_field',
+      'effect' => 'fade'
+    ),
   );
 
   // data file column
@@ -1803,52 +1937,48 @@ function tripal_bulk_loader_edit_template_field_form(&$form_state = NULL) {
     '#default_value' => ($form_state['values']['constant_validate']) ? $form_state['values']['constant_validate'] : $template_field['exposed_validate'],
   );
 
-  // Foreign Key
+  // Foreign Key / Referrer
   $form['edit_fields']['foreign_key'] = array(
     '#type' => 'fieldset',
-    '#title' => 'Foreign Key',
+    '#title' => 'Record Referral',
     '#collapsible' => TRUE,
     '#collapsed' => ($field_type == 'foreign key')? FALSE : TRUE,
   );
-
+  
+  $form['edit_fields']['foreign_key']['show_all_records'] = array(
+    '#type' => 'checkbox',
+    '#title' => 'Refer to any record',
+    '#description' => t('By default, the bulk loader will only allow referral to records in a foreign key relationship.  To allow referral to any previous record, check this box'),
+    '#default_value' => $show_all,
+    '#ahah' => array(
+      'path' => 'admin/tripal/tripal_bulk_loader_template/edit_field_ahah',
+      'wrapper' => 'tripal_bulk_loader_template-add_field',
+      'effect' => 'fade'
+    ),    
+  );
+  
   $form['edit_fields']['foreign_key']['foreign_record'] = array(
     '#type' => 'select',
     '#title' => 'Record to refer to',
-    '#descripion' => 'Select the record that this foreign key shouold refer to. The record needs to already exist and be of the correct table.',
+    '#descripion' => 'Select the record that this value should refer to. The record needs to already exist.',
     '#options' => $fk_options,
+    '#ahah' => array(
+      'path' => 'admin/tripal/tripal_bulk_loader_template/edit_field_ahah',
+      'wrapper' => 'tripal_bulk_loader_template-add_field',
+      'effect' => 'fade'
+    ),  
     '#default_value' => ($form_state['values']['foreign_record']) ? $form_state['values']['foreign_record'] : $template_field['foreign key'],
   );
-
-  // Chado Field
-  $form['edit_fields']['chado'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Chado Field/Column Details'),
-    '#description' => t('Specify the Table/Field in chado that this field maps to.'),
-  );
-
-  $form['edit_fields']['chado']['chado_table'] = array(
+  
+  $form['edit_fields']['foreign_key']['foreign_field'] = array(
     '#type' => 'select',
-    '#title' => t('Chado Table'),
-    '#options' => $tables,
-    '#default_value' => $table,
-    '#ahah' => array(
-      'path' => 'admin/tripal/tripal_bulk_loader_template/edit_field_ahah',
-      'wrapper' => 'tripal_bulk_loader_template-edit_field',
-      'effect' => 'fade'
-      ),
+    '#title' => 'Field to refer to',
+    '#descripion' => 'Select the record that this value should refer to. The record needs to already exist.',
+    '#options' => $ref_chado_fields,
+    '#default_value' => ($form_state['values']['foreign_field']) ? $form_state['values']['foreign_field'] : $template_field['foreign field'],
   );
 
-  $form['edit_fields']['chado']['chado_field'] = array(
-    '#type' => 'select',
-    '#title' => t('Chado Field/Column'),
-    '#options' => $chado_fields,
-    '#default_value' => ($form_state['values']['chado_field']) ? $form_state['values']['chado_field'] : $template_field['field'],
-    '#ahah' => array(
-      'path' => 'admin/tripal/tripal_bulk_loader_template/edit_field_ahah',
-      'wrapper' => 'tripal_bulk_loader_template-edit_field',
-      'effect' => 'fade'
-    ),
-  );
+ 
 
   $form['edit_fields']['additional'] = array(
     '#type' => 'fieldset',
@@ -1857,7 +1987,7 @@ function tripal_bulk_loader_edit_template_field_form(&$form_state = NULL) {
 
   $form['edit_fields']['additional']['required'] = array(
     '#type' => 'checkbox',
-    '#title' => 'Make this file required',
+    '#title' => 'Make this field required',
     '#default_value' => $template_field['required'],
   );
 
@@ -2083,7 +2213,10 @@ function tripal_bulk_loader_edit_template_field_form_submit($form, &$form_state)
           $field['type'] = 'foreign key';
           $field['title'] = $form_state['values']['field_title'];
           $field['field'] = $form_state['values']['chado_field'];
+          $field['show_all_records'] = $form_state['values']['show_all_records'];
           $field['foreign key'] = $form_state['values']['foreign_record'];
+          $field['foreign field'] = $form_state['values']['foreign_field'];
+
           $field['required'] = $form_state['values']['required'];
       }
 
