@@ -178,6 +178,8 @@ function tripal_bulk_loader_modify_template_base_form($form_state = NULL, $mode)
           'title' => array(
             '#type' => 'markup',
             '#value' => filter_xss($priority . ". " . $table_array['record_id']),
+            '#prefix' => "<a name=\"record_$priority\"></a>",
+            '#suffix' => "<p><a href=\"#fields_$priority\"> View Fields </a></p>",
           ),
           'chado_table' => array(
             '#type' => 'markup',
@@ -243,8 +245,10 @@ function tripal_bulk_loader_modify_template_base_form($form_state = NULL, $mode)
 
           $form['fields']['fields-data'][$i] = array(
             'record_id' => array(
-              '#type' => 'item',
-              '#value' => $table_array['record_id'],
+              '#type' => 'item',              
+              '#value' =>  $table_array['record_id'],
+              '#prefix' => "<a name=\"fields_$priority\"></a>",
+              '#suffix' => "<p><a href=\"#record_$priority\"> View Record </a></p>",
             ),
             'priority_hidden' => array(
               '#type' => 'hidden',
@@ -566,22 +570,27 @@ function tripal_bulk_loader_import_export_template_form($form_state = NULL, $mod
       '#default_value' => $form_state['storage']['template_id'],
       '#weight'        => 0,
       '#required'      => TRUE,
-      '#weight' => 1,
     );
   }
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => 'Submit',
+  );
 
   $form['template_array'] = array(
     '#type' => 'textarea',
     '#title' => 'Template Array',
     '#default_value' => $form_state['storage']['template_array'],
-    '#weight' => 2,
+    '#description' => t('Use this serialized array for import.'),
+    '#rows' => 15,
+  );
+  $form['template_array_no_serial'] = array(
+    '#type' => 'textarea',
+    '#title' => 'Template Array (Unsearialized)',
+    '#default_value' => $form_state['storage']['template_array_no_serial'],
+    '#rows' => 25,
   );
 
-  $form['submit'] = array(
-    '#type' => 'submit',
-    '#value' => 'Submit',
-    '#weight' => 10,
-  );
 
   return $form;
 }
@@ -599,6 +608,7 @@ function tripal_bulk_loader_import_export_template_form_submit($form, &$form_sta
     case 'export':
       $record = db_fetch_object(db_query("SELECT * FROM {tripal_bulk_loader_template} WHERE template_id=%d", $form_state['values']['template_id']));
       $form_state['storage']['template_array'] = $record->template_array;
+      $form_state['storage']['template_array_no_serial'] = var_export(unserialize($record->template_array), TRUE);
       $form_state['storage']['template_id'] = $form_state['values']['template_id'];
     break;
     case 'import':

@@ -65,6 +65,9 @@ function tripal_core_init() {
   
   // make sure the current version of chado is set
   tripal_core_set_chado_version();
+  
+  // reset the persistant connection
+  tripal_db_release_persistent_chado();
 }
 
 /**
