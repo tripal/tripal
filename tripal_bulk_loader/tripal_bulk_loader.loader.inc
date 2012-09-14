@@ -791,7 +791,7 @@ function tripal_bulk_loader_add_foreignkey_to_values($table_array, $values, $dat
       // if the field in the Referral records is in a FK relationship with
       // this field then we can simply keep the value we have
       $tbl_description = tripal_core_get_chado_table_schema($table_array['table']);
-      if ($foreign_field = $tbl_description['foreign keys'][$foreign_table]['columns'][$field]){
+      if ($foreign_field == $tbl_description['foreign keys'][$foreign_table]['columns'][$field]){
          $values[$field] = $foreign_values;      
       } 
       // if the field in the Referral records is not in an FK relationship
@@ -807,7 +807,7 @@ function tripal_bulk_loader_add_foreignkey_to_values($table_array, $values, $dat
             $values  = array($fk_description['primary key'][0] => $foreign_values);
             $columns = array($foreign_field);
             $options = array('statement_name' => 'pk_' . $foreign_table);
-            $record  = tripal_core_chado_select($foreign_table, $values, $columns, $options);
+            $record  = tripal_core_chado_select($foreign_table, $columns, $values, $options);
             $values[$field] = $record[0]->$foreign_field;
           }
           // if we don't have a value then there's nothing we can do so
@@ -822,7 +822,7 @@ function tripal_bulk_loader_add_foreignkey_to_values($table_array, $values, $dat
            $values  = $foreign_values;
            $columns = array($foreign_field);
            $options = array('statement_name' => 'blk_' . $nid . $priority . $foreign_table);        
-           $record  = tripal_core_chado_select($foreign_table, $values, $columns, $options);
+           $record  = tripal_core_chado_select($foreign_table, $columns, $values, $options);
            $values[$field] = $record[0]->$foreign_field;
         }         
       }
