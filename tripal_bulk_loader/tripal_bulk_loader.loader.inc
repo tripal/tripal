@@ -293,12 +293,14 @@ function tripal_bulk_loader_load_data($nid, $job_id) {
 
     // Set defaults
     if (preg_match('/(t|true|1)/', $node->file_has_header)) {
-      fgets($file_handle, 4096);
+      // SPF: Some of our templates had lines longer than 4096 so had to replace this
+      //fgets($file_handle, 4096);
+      fgets($file_handle);
     }
     $num_records = 0;
     $num_lines = 0;
     $num_errors = 0;
-    $interval = intval($total_lines * 0.01);
+    $interval = intval($total_lines * 0.0001);
     if ($interval == 0) {
       $interval = 1;
     }
@@ -350,7 +352,9 @@ function tripal_bulk_loader_load_data($nid, $job_id) {
       unset($priority);                 unset($sql);
       unset($result);
 
-      $raw_line = fgets($file_handle, 4096);
+      // SPF: had to remove the length on fgets as some of our templates had lines that were larger
+      // $raw_line = fgets($file_handle, 4096);
+      $raw_line = fgets($file_handle);
       $raw_line = trim($raw_line);
       if (empty($raw_line)) {
         continue;
