@@ -1089,7 +1089,7 @@ function tripal_bulk_loader_add_template_field_form(&$form_state = NULL) {
       $fk_description = tripal_core_get_chado_table_schema($fk_table);
       foreach ($fk_description['fields'] as $fk_field_name => $fk_farray){
         // don't include the FK field it's included above
-        if (in_arrray('Foreign Key', $ref_chado_fields)) {
+        if (in_array('Foreign Key', $ref_chado_fields)) {
           if (in_array($fk_field_name, $ref_chado_fields['Foreign Key'])) {
             continue;
           }
