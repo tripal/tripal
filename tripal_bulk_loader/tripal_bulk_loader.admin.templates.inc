@@ -1025,7 +1025,6 @@ function tripal_bulk_loader_add_template_field_form(&$form_state = NULL) {
     $chado_fields[$field_name] = $field_name;
   }  
 
-  $ref_chado_fields = array();
   $fk_options = array();
   $fk_options['NULL'] = 'None';
   if ($field_type == 'foreign key' and !$show_all) {
@@ -1067,12 +1066,16 @@ function tripal_bulk_loader_add_template_field_form(&$form_state = NULL) {
     }
   }
     
-  // build the list of referrer table fields
+  // build the list of referrer table fields. This list is used
+  // for the referring table field drop down. It has two groups
+  // one for foreign keys and another for additional fields.
+  $ref_chado_fields = array();  
   if ($field_type == 'foreign key') {
     $fk_rec = $form_state['values']['foreign_record']; 
     if ($fk_rec and $fk_rec != 'None' and $fk_rec != 'NULL') {
     
-      // first add in the primary keys
+      // first add in the foreign key field in the referring table
+      // that corresponds to this field (if one exists).
       $fk_priority = $form_state['storage']['record2priority'][$fk_rec];
       $fk_table = $form_state['storage']['template_array'][$fk_priority]['table'];
       foreach ($table_description['foreign keys'] as $key_table => $key_array) {
@@ -1082,13 +1085,16 @@ function tripal_bulk_loader_add_template_field_form(&$form_state = NULL) {
           }
         }
       }      
+      // now add in the remaining fields of the referring record's table.
       $fk_description = tripal_core_get_chado_table_schema($fk_table);
       foreach ($fk_description['fields'] as $fk_field_name => $fk_farray){
-         // don't include the FK field it's included above
-         if (in_array($fk_field_name,$ref_chado_fields['Foreign Key'])) {
-           continue;
-         }
-         $ref_chado_fields['Additional Table Fields'][$fk_field_name] = $fk_field_name;
+        // don't include the FK field it's included above
+        if (in_arrray('Foreign Key', $ref_chado_fields)) {
+          if (in_array($fk_field_name, $ref_chado_fields['Foreign Key'])) {
+            continue;
+          }
+        }
+        $ref_chado_fields['Additional Table Fields'][$fk_field_name] = $fk_field_name;
       }
     }
   }
