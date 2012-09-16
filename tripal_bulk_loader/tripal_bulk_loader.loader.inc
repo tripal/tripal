@@ -289,13 +289,16 @@ function tripal_bulk_loader_load_data($nid, $job_id) {
     print "\tPreparing to load the current constant set...\n";
     // Open File
     print "\t\tOpen File...\n";
-    $file_handle = fopen($node->file, 'r');
+   // $file_handle = fopen($node->file, 'r');    
+    $file = new SplFileObject($node->file);  // 996kb
 
     // Set defaults
     if (preg_match('/(t|true|1)/', $node->file_has_header)) {
       // SPF: Some of our templates had lines longer than 4096 so had to replace this
       //fgets($file_handle, 4096);
-      fgets($file_handle);
+      //fgets($file_handle);
+      $file->next();      
+      print $file->current() . "\n";
     }
     $num_records = 0;
     $num_lines = 0;
@@ -343,8 +346,8 @@ function tripal_bulk_loader_load_data($nid, $job_id) {
 
     print "\tLoading the current constant set...\n";
     tripal_bulk_loader_progress_bar(0, $total_lines);
-    while (!feof($file_handle)) {
-
+    while (!$file->eof()) {
+    
       // Clear variables
       // Was added to fix memory leak
       unset($line);                     unset($raw_line);
@@ -354,7 +357,9 @@ function tripal_bulk_loader_load_data($nid, $job_id) {
 
       // SPF: had to remove the length on fgets as some of our templates had lines that were larger
       // $raw_line = fgets($file_handle, 4096);
-      $raw_line = fgets($file_handle);
+      $file->next();
+      $raw_line = $file->current();    
+      //$raw_line = fgets($file_handle);
       $raw_line = trim($raw_line);
       if (empty($raw_line)) {
         continue;
