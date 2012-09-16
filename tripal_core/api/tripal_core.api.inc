@@ -60,7 +60,7 @@ require_once "tripal_core.schema_v1.11.api.inc";
  * @}
  * @ingroup tripal_api
 
-/**
+ /**
  * Provides a generic routine for inserting into any Chado table
  *
  * Use this function to insert a record into any Chado table.  The first
@@ -118,218 +118,218 @@ require_once "tripal_core.schema_v1.11.api.inc";
  */
 function tripal_core_chado_insert($table, $values, $options = array()) {
 
-  // set defaults for options. If we don't set defaults then
-  // we get memory leaks when we try to access the elements
-  if (!is_array($options)) {
-    $options = array();
-  }
-  if (!array_key_exists('is_prepared', $options)) {
-    $options['is_prepared'] = FALSE;
-  }
-  if (!array_key_exists('statement_name',$options)) {
-    $options['statement_name'] = FALSE;
-  }
-  if (!array_key_exists('skip_validation',$options)) {
-    $options['skip_validation'] = FALSE;
-  }
+	// set defaults for options. If we don't set defaults then
+	// we get memory leaks when we try to access the elements
+	if (!is_array($options)) {
+		$options = array();
+	}
+	if (!array_key_exists('is_prepared', $options)) {
+		$options['is_prepared'] = FALSE;
+	}
+	if (!array_key_exists('statement_name',$options)) {
+		$options['statement_name'] = FALSE;
+	}
+	if (!array_key_exists('skip_validation',$options)) {
+		$options['skip_validation'] = FALSE;
+	}
 
-  $insert_values = array();
+	$insert_values = array();
 
-  // Determine plan of action
-  if ($options['statement_name']) {
-    // we have a prepared statment (or want to create one) so set $prepared = TRUE
-    $prepared = TRUE;
+	// Determine plan of action
+	if ($options['statement_name']) {
+		// we have a prepared statment (or want to create one) so set $prepared = TRUE
+		$prepared = TRUE;
 
-    // we need to get a persistent connection.  If one exists this function
-    // will not recreate it, but if not it will create one and store it in
-    // a Drupal variable for reuse later.
-    $connection = tripal_db_persistent_chado();
-  }
-  else {
-     //print "NO STATEMENT (insert): $table\n";
-     //debug_print_backtrace();
-  }
+		// we need to get a persistent connection.  If one exists this function
+		// will not recreate it, but if not it will create one and store it in
+		// a Drupal variable for reuse later.
+		$connection = tripal_db_persistent_chado();
+	}
+	else {
+		//print "NO STATEMENT (insert): $table\n";
+		//debug_print_backtrace();
+	}
 
-  if (array_key_exists('skip_validation', $options)) {
-    $validate = !$options['skip_validation'];
-  }
-  else {
-    $validate = TRUE;
-  }
+	if (array_key_exists('skip_validation', $options)) {
+		$validate = !$options['skip_validation'];
+	}
+	else {
+		$validate = TRUE;
+	}
 
-  // get the table description
-  $table_desc = tripal_core_get_chado_table_schema($table);
-  if (empty($table_desc)) {
-    watchdog('tripal_core', 'tripal_core_chado_insert: There is no table description for !table_name', array('!table_name' => $table), WATCHDOG_WARNING);
-  }
+	// get the table description
+	$table_desc = tripal_core_get_chado_table_schema($table);
+	if (empty($table_desc)) {
+		watchdog('tripal_core', 'tripal_core_chado_insert: There is no table description for !table_name', array('!table_name' => $table), WATCHDOG_WARNING);
+	}
 
-  // iterate through the values array and create a new 'insert_values' array
-  // that has all the values needed for insert with all foreign relationsihps
-  // resolved.
-  foreach ($values as $field => $value) {
-    if (is_array($value)) {
-      $foreign_options = array();
-      if ($options['statement_name']) {
-        // add the fk relationship info to the prepared statement name so that
-        // we can prepare the selects run by the recrusive tripal_core_chado_get_foreign_key
-        // function.
-        $fk_sname = "fk_" . $table . "_" . $field;
-        foreach ($value as $k => $v){
-          $fk_sname .= substr($k, 0, 2);
-        }
-        $foreign_options['statement_name'] = $fk_sname;
-      }
-      // select the value from the foreign key relationship for this value
-      $results = tripal_core_chado_get_foreign_key($table_desc, $field, $value, $foreign_options);
+	// iterate through the values array and create a new 'insert_values' array
+	// that has all the values needed for insert with all foreign relationsihps
+	// resolved.
+	foreach ($values as $field => $value) {
+		if (is_array($value)) {
+			$foreign_options = array();
+			if ($options['statement_name']) {
+				// add the fk relationship info to the prepared statement name so that
+				// we can prepare the selects run by the recrusive tripal_core_chado_get_foreign_key
+				// function.
+				$fk_sname = "fk_" . $table . "_" . $field;
+				foreach ($value as $k => $v){
+					$fk_sname .= substr($k, 0, 2);
+				}
+				$foreign_options['statement_name'] = $fk_sname;
+			}
+			// select the value from the foreign key relationship for this value
+			$results = tripal_core_chado_get_foreign_key($table_desc, $field, $value, $foreign_options);
 
-      if (sizeof($results) > 1) {
-        watchdog('tripal_core', 'tripal_core_chado_insert: Too many records match the criteria supplied for !foreign_key foreign key constraint (!criteria)', array('!foreign_key' => $field, '!criteria' => print_r($value, TRUE)), WATCHDOG_ERROR);
-      }
-      elseif (sizeof($results) < 1) {
-        //watchdog('tripal_core', 'tripal_core_chado_insert: no record matches criteria supplied for !foreign_key foreign key constraint (!criteria)', array('!foreign_key' => $field, '!criteria' => print_r($value, TRUE)), WATCHDOG_ERROR);
-      }
-      else {
-        $insert_values[$field] = $results[0];
-      }
-    }
-    else {
-      $insert_values[$field] = $value;
-    }
-  }
+			if (sizeof($results) > 1) {
+				watchdog('tripal_core', 'tripal_core_chado_insert: Too many records match the criteria supplied for !foreign_key foreign key constraint (!criteria)', array('!foreign_key' => $field, '!criteria' => print_r($value, TRUE)), WATCHDOG_ERROR);
+			}
+			elseif (sizeof($results) < 1) {
+				//watchdog('tripal_core', 'tripal_core_chado_insert: no record matches criteria supplied for !foreign_key foreign key constraint (!criteria)', array('!foreign_key' => $field, '!criteria' => print_r($value, TRUE)), WATCHDOG_ERROR);
+			}
+			else {
+				$insert_values[$field] = $results[0];
+			}
+		}
+		else {
+			$insert_values[$field] = $value;
+		}
+	}
 
-  if ($validate) {
+	if ($validate) {
 
-    // check for violation of any unique constraints
-    $ukeys = $table_desc['unique keys'];
-    $ukselect_cols = array();
-    $ukselect_vals = array();
-    if ($ukeys) {
-      foreach ($ukeys as $name => $fields) {
-        foreach ($fields as $index => $field) {
-          // build the arrays for performing a select that will check the contraint
-          $ukselect_cols[] = $field;
-          $ukselect_vals[$field] = $insert_values[$field];
-        }
-        // now check the constraint
-        $coptions = array();
-        if ($options['statement_name']) {
-          $coptions = array('statement_name' => 'uqsel_' . $table . '_' . $name);
-        }
-        if (tripal_core_chado_select($table, $ukselect_cols, $ukselect_vals, $coptions)) {
-          watchdog('tripal_core', "tripal_core_chado_insert: Cannot insert duplicate record into $table table: " . print_r($values, 1), array(), 'WATCHDOG_ERROR');
-          return FALSE;
-        }
-      }
-    }
+		// check for violation of any unique constraints
+		$ukeys = $table_desc['unique keys'];
+		$ukselect_cols = array();
+		$ukselect_vals = array();
+		if ($ukeys) {
+			foreach ($ukeys as $name => $fields) {
+				foreach ($fields as $index => $field) {
+					// build the arrays for performing a select that will check the contraint
+					$ukselect_cols[] = $field;
+					$ukselect_vals[$field] = $insert_values[$field];
+				}
+				// now check the constraint
+				$coptions = array();
+				if ($options['statement_name']) {
+					$coptions = array('statement_name' => 'uqsel_' . $table . '_' . $name);
+				}
+				if (tripal_core_chado_select($table, $ukselect_cols, $ukselect_vals, $coptions)) {
+					watchdog('tripal_core', "tripal_core_chado_insert: Cannot insert duplicate record into $table table: " . print_r($values, 1), array(), 'WATCHDOG_ERROR');
+					return FALSE;
+				}
+			}
+		}
 
-    // if trying to insert a field that is the primary key, make sure it also is unique
-    $pkey = $table_desc['primary key'][0];
-    if ($insert_values[$pkey]) {
-      $coptions = array('statement_name' => 'pqsel_' . $table . '_' . $pkey);
-      if (tripal_core_chado_select($table, array($pkey), array($pkey => $insert_values[$pkey]), $coptions)) {
-        watchdog('tripal_core', "tripal_core_chado_insert: Cannot insert duplicate primary key into $table table: " . print_r($values, 1), array(), 'WATCHDOG_ERROR');
-        return FALSE;
-      }
-    }
+		// if trying to insert a field that is the primary key, make sure it also is unique
+		$pkey = $table_desc['primary key'][0];
+		if ($insert_values[$pkey]) {
+			$coptions = array('statement_name' => 'pqsel_' . $table . '_' . $pkey);
+			if (tripal_core_chado_select($table, array($pkey), array($pkey => $insert_values[$pkey]), $coptions)) {
+				watchdog('tripal_core', "tripal_core_chado_insert: Cannot insert duplicate primary key into $table table: " . print_r($values, 1), array(), 'WATCHDOG_ERROR');
+				return FALSE;
+			}
+		}
 
-    // make sure required fields have a value
-    if (!is_array($table_desc['fields'])) {
-      $table_desc['fields'] = array();
-      watchdog('tripal_core', "tripal_core_chado_insert: %table not defined in tripal schema api", array('%table' => $table), 'WATCHDOG WARNING');
-    }
-    foreach ($table_desc['fields'] as $field => $def) {
-      // a field is considered missing if it cannot be NULL and there is no default
-      // value for it or it is of type 'serial'
-      if ($def['not NULL'] == 1 and !array_key_exists($field, $insert_values) and !isset($def['default']) and strcmp($def['type'], serial) != 0) {
-        watchdog('tripal_core', "tripal_core_chado_insert: Field $table.$field cannot be NULL: " . print_r($values, 1), array(), 'WATCHDOG_ERROR');
-        return FALSE;
-      }
-    }
-  } //end of validation
+		// make sure required fields have a value
+		if (!is_array($table_desc['fields'])) {
+			$table_desc['fields'] = array();
+			watchdog('tripal_core', "tripal_core_chado_insert: %table not defined in tripal schema api", array('%table' => $table), 'WATCHDOG WARNING');
+		}
+		foreach ($table_desc['fields'] as $field => $def) {
+			// a field is considered missing if it cannot be NULL and there is no default
+			// value for it or it is of type 'serial'
+			if ($def['not NULL'] == 1 and !array_key_exists($field, $insert_values) and !isset($def['default']) and strcmp($def['type'], serial) != 0) {
+				watchdog('tripal_core', "tripal_core_chado_insert: Field $table.$field cannot be NULL: " . print_r($values, 1), array(), 'WATCHDOG_ERROR');
+				return FALSE;
+			}
+		}
+	} //end of validation
 
-  // Now build the insert SQL statement
-  $ifields = array();       // contains the names of the fields
-  $ivalues = array();       // contains the values of the fields
-  $itypes = array();        // contains %d/%s placeholders for the sql query
-  $iplaceholders = array(); // contains $1/$2 placeholders for the prepare query
-  $idatatypes = array();    // contains the data type of the fields (int, text, etc.)
-  $i = 1;
-  foreach ($insert_values as $field => $value) {
-    $ifields[] = $field;
-    $ivalues[] = $value;
-    $iplaceholders[] = '$' . $i;
-    $i++;
-    if (strcmp($value, '__NULL__')==0) {
-      $itypes[] = "NULL";
-      $idatatypes[] = "NULL";
-    }
-    elseif (strcasecmp($table_desc['fields'][$field]['type'], 'serial')==0 OR
-            strcasecmp($table_desc['fields'][$field]['type'], 'int')==0 OR
-            strcasecmp($table_desc['fields'][$field]['type'], 'integer')==0) {
-      $itypes[] = "%d";
-      $idatatypes[] = 'int';
-    }
-    elseif (strcasecmp($table_desc['fields'][$field]['type'], 'boolean')==0) {
-      $itypes[] = "%s";
-      $idatatypes[] = 'bool';
-    }
-    elseif (strcasecmp($table_desc['fields'][$field]['type'], 'float')==0) {
-      $itypes[] = "%s";
-      $idatatypes[] = 'numeric';
-    }
-    else {
-      $itypes[] = "'%s'";
-      $idatatypes[] = 'text';
-    }
-  }
+	// Now build the insert SQL statement
+	$ifields = array();       // contains the names of the fields
+	$ivalues = array();       // contains the values of the fields
+	$itypes = array();        // contains %d/%s placeholders for the sql query
+	$iplaceholders = array(); // contains $1/$2 placeholders for the prepare query
+	$idatatypes = array();    // contains the data type of the fields (int, text, etc.)
+	$i = 1;
+	foreach ($insert_values as $field => $value) {
+		$ifields[] = $field;
+		$ivalues[] = $value;
+		$iplaceholders[] = '$' . $i;
+		$i++;
+		if (strcmp($value, '__NULL__')==0) {
+			$itypes[] = "NULL";
+			$idatatypes[] = "NULL";
+		}
+		elseif (strcasecmp($table_desc['fields'][$field]['type'], 'serial')==0 OR
+		strcasecmp($table_desc['fields'][$field]['type'], 'int')==0 OR
+		strcasecmp($table_desc['fields'][$field]['type'], 'integer')==0) {
+			$itypes[] = "%d";
+			$idatatypes[] = 'int';
+		}
+		elseif (strcasecmp($table_desc['fields'][$field]['type'], 'boolean')==0) {
+			$itypes[] = "%s";
+			$idatatypes[] = 'bool';
+		}
+		elseif (strcasecmp($table_desc['fields'][$field]['type'], 'float')==0) {
+			$itypes[] = "%s";
+			$idatatypes[] = 'numeric';
+		}
+		else {
+			$itypes[] = "'%s'";
+			$idatatypes[] = 'text';
+		}
+	}
 
-  // create the SQL
-  $sql = "INSERT INTO {$table} (" . implode(", ", $ifields) . ") VALUES (" . implode(", ", $itypes) . ")";
+	// create the SQL
+	$sql = "INSERT INTO {$table} (" . implode(", ", $ifields) . ") VALUES (" . implode(", ", $itypes) . ")";
 
-  // if this is a prepared statement then execute it
-  if ($prepared) {
-    // if this is the first time we've run this query
-    // then we need to do the prepare, otherwise just execute
-    if ($options['is_prepared'] != TRUE) {
-      // prepare the statement
-      $psql = "PREPARE " . $options['statement_name'] . " (" . implode(', ', $idatatypes) . ") AS INSERT INTO {$table} (" . implode(", ", $ifields) . ") VALUES (" . implode(", ", $iplaceholders) . ")";
-      $status = tripal_core_chado_prepare($options['statement_name'], $psql, $idatatypes);
+	// if this is a prepared statement then execute it
+	if ($prepared) {
+		// if this is the first time we've run this query
+		// then we need to do the prepare, otherwise just execute
+		if ($options['is_prepared'] != TRUE) {
+			// prepare the statement
+			$psql = "PREPARE " . $options['statement_name'] . " (" . implode(', ', $idatatypes) . ") AS INSERT INTO {$table} (" . implode(", ", $ifields) . ") VALUES (" . implode(", ", $iplaceholders) . ")";
+			$status = tripal_core_chado_prepare($options['statement_name'], $psql, $idatatypes);
 
-      if (!$status) {
-        watchdog('tripal_core', "tripal_core_chado_insert: not able to prepare '%name' statement for: %sql", array('%name' => $options['statement_name'], '%sql' => $sql), 'WATCHDOG ERROR');
-        return FALSE;
-      }
-    }
+			if (!$status) {
+				watchdog('tripal_core', "tripal_core_chado_insert: not able to prepare '%name' statement for: %sql", array('%name' => $options['statement_name'], '%sql' => $sql), 'WATCHDOG ERROR');
+				return FALSE;
+			}
+		}
 
-    $sql = "EXECUTE " . $options['statement_name'] . "(" . implode(", ", $itypes) . ")";
-    $result = tripal_core_chado_execute_prepared($options['statement_name'], $sql, $ivalues);
-  }
-  // if it's not a prepared statement then insert normally
-  else {
-    $previous_db = tripal_db_set_active('chado');  // use chado database
-    $result = db_query($sql, $ivalues);
-    tripal_db_set_active($previous_db);  // now use drupal database
-  }
+		$sql = "EXECUTE " . $options['statement_name'] . "(" . implode(", ", $itypes) . ")";
+		$result = tripal_core_chado_execute_prepared($options['statement_name'], $sql, $ivalues);
+	}
+	// if it's not a prepared statement then insert normally
+	else {
+		$previous_db = tripal_db_set_active('chado');  // use chado database
+		$result = db_query($sql, $ivalues);
+		tripal_db_set_active($previous_db);  // now use drupal database
+	}
 
-  // if we have a result then add primary keys to return array
-  if ($result) {
-    $primary_key = array();
-    if (!is_array($table_desc['primary key'])) {
-      $table_desc['primary key'] = array();
-      watchdog('tripal_core', "tripal_core_chado_insert: %table not defined in tripal schema api", array('%table' => $table), 'WATCHDOG WARNING');
-    }
-    foreach ($table_desc['primary key'] as $field) {
-      $value = db_last_insert_id($table, $field);
-      $values[$field] = $value;
-    }
-    return $values;
-  }
-  else {
-    watchdog('tripal_core', "tripal_core_chado_insert: Cannot insert record into $table table: " . print_r($values, 1), array(), 'WATCHDOG_ERROR');
-    return FALSE;
-  }
+	// if we have a result then add primary keys to return array
+	if ($result) {
+		$primary_key = array();
+		if (!is_array($table_desc['primary key'])) {
+			$table_desc['primary key'] = array();
+			watchdog('tripal_core', "tripal_core_chado_insert: %table not defined in tripal schema api", array('%table' => $table), 'WATCHDOG WARNING');
+		}
+		foreach ($table_desc['primary key'] as $field) {
+			$value = db_last_insert_id($table, $field);
+			$values[$field] = $value;
+		}
+		return $values;
+	}
+	else {
+		watchdog('tripal_core', "tripal_core_chado_insert: Cannot insert record into $table table: " . print_r($values, 1), array(), 'WATCHDOG_ERROR');
+		return FALSE;
+	}
 
-  return FALSE;
+	return FALSE;
 
 }
 /**
@@ -362,30 +362,30 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
  *
  * Example usage:
  * @code
-   $umatch = array(
-     'organism_id' => array(
-         'genus' => 'Citrus',
-         'species' => 'sinensis',
-      ),
-     'uniquename' => 'orange1.1g000034m.g7',
-     'type_id' => array (
-         'cv_id' => array (
-            'name' => 'sequence',
-         ),
-         'name' => 'gene',
-         'is_obsolete' => 0
-      ),
-   );
-   $uvalues = array(
-      'name' => 'orange1.1g000034m.g',
-      'type_id' => array (
-         'cv_id' => array (
-            'name' => 'sequence',
-         ),
-         'name' => 'mRNA',
-         'is_obsolete' => 0
-      ),
-   );
+ $umatch = array(
+ 'organism_id' => array(
+ 'genus' => 'Citrus',
+ 'species' => 'sinensis',
+ ),
+ 'uniquename' => 'orange1.1g000034m.g7',
+ 'type_id' => array (
+ 'cv_id' => array (
+ 'name' => 'sequence',
+ ),
+ 'name' => 'gene',
+ 'is_obsolete' => 0
+ ),
+ );
+ $uvalues = array(
+ 'name' => 'orange1.1g000034m.g',
+ 'type_id' => array (
+ 'cv_id' => array (
+ 'name' => 'sequence',
+ ),
+ 'name' => 'mRNA',
+ 'is_obsolete' => 0
+ ),
+ );
  *   $result = tripal_core_chado_update('feature',$umatch,$uvalues);
  * @endcode
  * The above code species that a feature with a given uniquename, organism_id,
@@ -400,277 +400,277 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
  */
 function tripal_core_chado_update($table, $match, $values, $options = NULL) {
 
-  // set defaults for options. If we don't set defaults then
-  // we get memory leaks when we try to access the elements
-  if (!is_array($options)) {
-    $options = array();
-  }
-  if (!array_key_exists('is_prepared', $options)) {
-    $options['is_prepared'] = FALSE;
-  }
-  if (!array_key_exists('statement_name',$options)) {
-    $options['statement_name'] = FALSE;
-  }
+	// set defaults for options. If we don't set defaults then
+	// we get memory leaks when we try to access the elements
+	if (!is_array($options)) {
+		$options = array();
+	}
+	if (!array_key_exists('is_prepared', $options)) {
+		$options['is_prepared'] = FALSE;
+	}
+	if (!array_key_exists('statement_name',$options)) {
+		$options['statement_name'] = FALSE;
+	}
 
-  $update_values = array();   // contains the values to be updated
-  $update_matches = array();  // contains the values for the where clause
+	$update_values = array();   // contains the values to be updated
+	$update_matches = array();  // contains the values for the where clause
 
-  // Determine plan of action
-  if ($options['statement_name']) {
-    // we have a prepared statment (or want to create one) so set $prepared = TRUE
-    $prepared = TRUE;
+	// Determine plan of action
+	if ($options['statement_name']) {
+		// we have a prepared statment (or want to create one) so set $prepared = TRUE
+		$prepared = TRUE;
 
-    // we need to get a persistent connection.  If one exists this function
-    // will not recreate it, but if not it will create one and store it in
-    // a Drupal variable for reuse later.
-    $connection = tripal_db_persistent_chado();
-  }
-  else {
-     //print "NO STATEMENT (update): $table\n";
-     //debug_print_backtrace();
-  }
+		// we need to get a persistent connection.  If one exists this function
+		// will not recreate it, but if not it will create one and store it in
+		// a Drupal variable for reuse later.
+		$connection = tripal_db_persistent_chado();
+	}
+	else {
+		//print "NO STATEMENT (update): $table\n";
+		//debug_print_backtrace();
+	}
 
-  // get the table description
-  $table_desc = tripal_core_get_chado_table_schema($table);
+	// get the table description
+	$table_desc = tripal_core_get_chado_table_schema($table);
 
-  // get the values needed for matching in the SQL statement
-  foreach ($match as $field => $value) {
-    if (is_array($value)) {
-      $foreign_options = array();
-      if ($options['statement_name']) {
-        // add the fk relationship info to the prepared statement name so that
-        // we can prepare the selects run by the recrusive tripal_core_chado_get_foreign_key
-        // function.
-        $fk_sname = "fk_" . $table . "_" . $field;
-        foreach ($value as $k => $v){
-          $fk_sname .= substr($k, 0, 2);
-        }
-        $foreign_options['statement_name'] = $fk_sname;
-      }
-      $results = tripal_core_chado_get_foreign_key($table_desc, $field, $value, $foreign_options);
-      if (sizeof($results) > 1) {
-        watchdog('tripal_core', 'tripal_core_chado_update: When trying to find record to update, too many records match the criteria supplied for !foreign_key foreign key constraint (!criteria)', array('!foreign_key' => $field, '!criteria' => print_r($value, TRUE)), WATCHDOG_ERROR);
-      }
-      elseif (sizeof($results) < 1) {
-        //watchdog('tripal_core', 'tripal_core_chado_update: When trying to find record to update, no record matches criteria supplied for !foreign_key foreign key constraint (!criteria)', array('!foreign_key' => $field, '!criteria' => print_r($value, TRUE)), WATCHDOG_ERROR);
-      }
-      else {
-        $update_matches[$field] = $results[0];
-      }
-    }
-    else {
-      $update_matches[$field] = $value;
-    }
-  }
+	// get the values needed for matching in the SQL statement
+	foreach ($match as $field => $value) {
+		if (is_array($value)) {
+			$foreign_options = array();
+			if ($options['statement_name']) {
+				// add the fk relationship info to the prepared statement name so that
+				// we can prepare the selects run by the recrusive tripal_core_chado_get_foreign_key
+				// function.
+				$fk_sname = "fk_" . $table . "_" . $field;
+				foreach ($value as $k => $v){
+					$fk_sname .= substr($k, 0, 2);
+				}
+				$foreign_options['statement_name'] = $fk_sname;
+			}
+			$results = tripal_core_chado_get_foreign_key($table_desc, $field, $value, $foreign_options);
+			if (sizeof($results) > 1) {
+				watchdog('tripal_core', 'tripal_core_chado_update: When trying to find record to update, too many records match the criteria supplied for !foreign_key foreign key constraint (!criteria)', array('!foreign_key' => $field, '!criteria' => print_r($value, TRUE)), WATCHDOG_ERROR);
+			}
+			elseif (sizeof($results) < 1) {
+				//watchdog('tripal_core', 'tripal_core_chado_update: When trying to find record to update, no record matches criteria supplied for !foreign_key foreign key constraint (!criteria)', array('!foreign_key' => $field, '!criteria' => print_r($value, TRUE)), WATCHDOG_ERROR);
+			}
+			else {
+				$update_matches[$field] = $results[0];
+			}
+		}
+		else {
+			$update_matches[$field] = $value;
+		}
+	}
 
-  // get the values used for updating
-  foreach ($values as $field => $value) {
-    if (is_array($value)) {
-      $foreign_options = array();
-      // select the value from the foreign key relationship for this value
-      if ($options['statement_name']) {
-        // add the fk relationship info to the prepared statement name so that
-        // we can prepare the selects run by the recrusive tripal_core_chado_get_foreign_key
-        // function.
-        $fk_sname = "fk_" . $table . "_" . $field;
-        foreach ($value as $k => $v){
-          $fk_sname .= substr($k, 0, 2);
-        }
-        $foreign_options['statement_name'] = $fk_sname;
-      }
-      $results = tripal_core_chado_get_foreign_key($table_desc, $field, $value, $foreign_options);
-      if (sizeof($results) > 1) {
-        watchdog('tripal_core', 'tripal_core_chado_update: When trying to find update values, too many records match the criteria supplied for !foreign_key foreign key constraint (!criteria)', array('!foreign_key' => $field, '!criteria' => print_r($value, TRUE)), WATCHDOG_ERROR);
-      }
-      elseif (sizeof($results) < 1) {
-        //watchdog('tripal_core', 'tripal_core_chado_update: When trying to find update values, no record matches criteria supplied for !foreign_key foreign key constraint (!criteria)', array('!foreign_key' => $field, '!criteria' => print_r($value,TRUE)), WATCHDOG_ERROR);
-      }
-      else {
-        $update_values[$field] = $results[0];
-      }
-    }
-    else {
-      $update_values[$field] = $value;
-    }
-  }
+	// get the values used for updating
+	foreach ($values as $field => $value) {
+		if (is_array($value)) {
+			$foreign_options = array();
+			// select the value from the foreign key relationship for this value
+			if ($options['statement_name']) {
+				// add the fk relationship info to the prepared statement name so that
+				// we can prepare the selects run by the recrusive tripal_core_chado_get_foreign_key
+				// function.
+				$fk_sname = "fk_" . $table . "_" . $field;
+				foreach ($value as $k => $v){
+					$fk_sname .= substr($k, 0, 2);
+				}
+				$foreign_options['statement_name'] = $fk_sname;
+			}
+			$results = tripal_core_chado_get_foreign_key($table_desc, $field, $value, $foreign_options);
+			if (sizeof($results) > 1) {
+				watchdog('tripal_core', 'tripal_core_chado_update: When trying to find update values, too many records match the criteria supplied for !foreign_key foreign key constraint (!criteria)', array('!foreign_key' => $field, '!criteria' => print_r($value, TRUE)), WATCHDOG_ERROR);
+			}
+			elseif (sizeof($results) < 1) {
+				//watchdog('tripal_core', 'tripal_core_chado_update: When trying to find update values, no record matches criteria supplied for !foreign_key foreign key constraint (!criteria)', array('!foreign_key' => $field, '!criteria' => print_r($value,TRUE)), WATCHDOG_ERROR);
+			}
+			else {
+				$update_values[$field] = $results[0];
+			}
+		}
+		else {
+			$update_values[$field] = $value;
+		}
+	}
 
-  // now build the SQL statement
-  $sql  = "UPDATE {$table} SET ";
-  $psql = "UPDATE {$table} SET ";
-  $uargs = array();
-  $idatatypes = array();
-  $pvalues = array();
-  $ivalues = array();
-  $i = 1;
-  foreach ($update_values as $field => $value) {
+	// now build the SQL statement
+	$sql  = "UPDATE {$table} SET ";
+	$psql = "UPDATE {$table} SET ";
+	$uargs = array();
+	$idatatypes = array();
+	$pvalues = array();
+	$ivalues = array();
+	$i = 1;
+	foreach ($update_values as $field => $value) {
 
-    if (strcasecmp($table_desc['fields'][$field]['type'], 'serial')==0 OR
-        strcasecmp($table_desc['fields'][$field]['type'], 'int')==0 OR
-        strcasecmp($table_desc['fields'][$field]['type'], 'integer')==0) {
-      if (strcmp($value, '__NULL__') == 0) {
-        $sql .= " $field = %s, ";
-        $ivalues[] = 'NULL';
-        $pvalues[] = '%s';
-        $uargs[] = 'NULL';
-      }
-      else {
-        $sql .= " $field = %d, ";
-        $ivalues[] = $value;
-        $pvalues[] = '%d';
-        $uargs[] = $value;
-      }
-      $idatatypes[] = 'int';
+		if (strcasecmp($table_desc['fields'][$field]['type'], 'serial')==0 OR
+		strcasecmp($table_desc['fields'][$field]['type'], 'int')==0 OR
+		strcasecmp($table_desc['fields'][$field]['type'], 'integer')==0) {
+			if (strcmp($value, '__NULL__') == 0) {
+				$sql .= " $field = %s, ";
+				$ivalues[] = 'NULL';
+				$pvalues[] = '%s';
+				$uargs[] = 'NULL';
+			}
+			else {
+				$sql .= " $field = %d, ";
+				$ivalues[] = $value;
+				$pvalues[] = '%d';
+				$uargs[] = $value;
+			}
+			$idatatypes[] = 'int';
 
-    }
-    elseif (strcasecmp($table_desc['fields'][$field]['type'], 'boolean')==0) {
-      $sql .= " $field = %s, ";
-      $pvalues[] = '%s';
-      if (strcmp($value, '__NULL__')==0) {
-        $ivalues[] = 'NULL';
-        $uargs[] = 'NULL';
-      }
-      else {
-        $ivalues[] = $value;
-        $uargs[] = $value;
-      }
-      $idatatypes[] = 'bool';
-    }
-    elseif (strcasecmp($table_desc['fields'][$field]['type'], 'float')==0) {
-      $sql .= " $field = %s, ";
-      $pvalues[] = '%s';
-      if (strcmp($value, '__NULL__')==0) {
-        $ivalues[] = 'NULL';
-        $uargs[] = 'NULL';
-      }
-      else {
-        $ivalues[] = $value;
-        $uargs[] = $value;
-      }
-      $idatatypes[] = 'numeric';
-    }
-    else {
-      if (strcmp($value, '__NULL__') == 0) {
-        $sql .= " $field = %s, ";
-        $ivalues[] = 'NULL';
-        $uargs[] = 'NULL';
-        $pvalues[] = '%s';
-      }
-      else {
-        $sql .= " $field = '%s', ";
-        $ivalues[] = $value;
-        $uargs[] = $value;
-        $pvalues[] = "'%s'";
-      }
-      $idatatypes[] = 'text';
-    }
-    $psql .= "$field = \$" . $i . ", ";
-    $i++;
-  }
-  $sql = drupal_substr($sql, 0, -2);  // get rid of the trailing comma & space
-  $psql = drupal_substr($psql, 0, -2);  // get rid of the trailing comma & space
+		}
+		elseif (strcasecmp($table_desc['fields'][$field]['type'], 'boolean')==0) {
+			$sql .= " $field = %s, ";
+			$pvalues[] = '%s';
+			if (strcmp($value, '__NULL__')==0) {
+				$ivalues[] = 'NULL';
+				$uargs[] = 'NULL';
+			}
+			else {
+				$ivalues[] = $value;
+				$uargs[] = $value;
+			}
+			$idatatypes[] = 'bool';
+		}
+		elseif (strcasecmp($table_desc['fields'][$field]['type'], 'float')==0) {
+			$sql .= " $field = %s, ";
+			$pvalues[] = '%s';
+			if (strcmp($value, '__NULL__')==0) {
+				$ivalues[] = 'NULL';
+				$uargs[] = 'NULL';
+			}
+			else {
+				$ivalues[] = $value;
+				$uargs[] = $value;
+			}
+			$idatatypes[] = 'numeric';
+		}
+		else {
+			if (strcmp($value, '__NULL__') == 0) {
+				$sql .= " $field = %s, ";
+				$ivalues[] = 'NULL';
+				$uargs[] = 'NULL';
+				$pvalues[] = '%s';
+			}
+			else {
+				$sql .= " $field = '%s', ";
+				$ivalues[] = $value;
+				$uargs[] = $value;
+				$pvalues[] = "'%s'";
+			}
+			$idatatypes[] = 'text';
+		}
+		$psql .= "$field = \$" . $i . ", ";
+		$i++;
+	}
+	$sql = drupal_substr($sql, 0, -2);  // get rid of the trailing comma & space
+	$psql = drupal_substr($psql, 0, -2);  // get rid of the trailing comma & space
 
-  $sql .= " WHERE ";
-  $psql .= " WHERE ";
-  foreach ($update_matches as $field => $value) {
+	$sql .= " WHERE ";
+	$psql .= " WHERE ";
+	foreach ($update_matches as $field => $value) {
 
-    if (strcasecmp($table_desc['fields'][$field]['type'], 'serial')==0 OR
-        strcasecmp($table_desc['fields'][$field]['type'], 'int')==0 OR
-        strcasecmp($table_desc['fields'][$field]['type'], 'integer')==0) {
-      if (strcmp($value, '__NULL__')==0) {
-        $sql .= " $field = %s AND ";
-        $ivalues[] = 'NULL';
-        $uargs[] = 'NULL';
-        $pvalues[] = '%s';
-      }
-      else {
-        $sql .= " $field = %d AND ";
-        $ivalues[] = $value;
-        $uargs[] = $value;
-        $pvalues[] = '%s';
-      }
-      $idatatypes[] = 'int';
-    }
-    elseif (strcasecmp($table_desc['fields'][$field]['type'], 'boolean')==0) {
-      $sql .= " $field = %s AND ";
-      $pvalues[] = '%s';
-      if (strcmp($value, '__NULL__')==0) {
-        $ivalues[] = 'NULL';
-        $uargs[] = 'NULL';
-      }
-      else {
-        $ivalues[] = $value;
-        $uargs[] = $value;
-      }
-      $idatatypes[] = 'bool';
-    }
-    elseif (strcasecmp($table_desc['fields'][$field]['type'], 'float')==0) {
-      $sql .= " $field = %s AND ";
-      $pvalues[] = '%s';
-      if (strcmp($value, '__NULL__')==0) {
-        $ivalues[] = 'NULL';
-        $uargs[] = 'NULL';
-      }
-      else {
-        $ivalues[] = $value;
-        $uargs[] = $value;
-      }
-      $idatatypes[] = 'numeric';
-    }
-    else {
-      if (strcmp($value, '__NULL__')==0) {
-        $sql .= " $field = %s AND ";
-        $ivalues[] = 'NULL';
-        $uargs[] = 'NULL';
-        $pvalues[] = '%s';
-      }
-      else {
-        $sql .= " $field = '%s' AND ";
-        $ivalues[] = $value;
-        $uargs[] = $value;
-        $pvalues[] = "'%s'";
-      }
-      $idatatypes[] = 'text';
-    }
-    $psql .= "$field = \$" . $i . " AND ";
-    $i++;
-  }
-  $sql = drupal_substr($sql, 0, -4);  // get rid of the trailing 'AND'
-  $psql = drupal_substr($psql, 0, -4);  // get rid of the trailing 'AND'
+		if (strcasecmp($table_desc['fields'][$field]['type'], 'serial')==0 OR
+		strcasecmp($table_desc['fields'][$field]['type'], 'int')==0 OR
+		strcasecmp($table_desc['fields'][$field]['type'], 'integer')==0) {
+			if (strcmp($value, '__NULL__')==0) {
+				$sql .= " $field = %s AND ";
+				$ivalues[] = 'NULL';
+				$uargs[] = 'NULL';
+				$pvalues[] = '%s';
+			}
+			else {
+				$sql .= " $field = %d AND ";
+				$ivalues[] = $value;
+				$uargs[] = $value;
+				$pvalues[] = '%s';
+			}
+			$idatatypes[] = 'int';
+		}
+		elseif (strcasecmp($table_desc['fields'][$field]['type'], 'boolean')==0) {
+			$sql .= " $field = %s AND ";
+			$pvalues[] = '%s';
+			if (strcmp($value, '__NULL__')==0) {
+				$ivalues[] = 'NULL';
+				$uargs[] = 'NULL';
+			}
+			else {
+				$ivalues[] = $value;
+				$uargs[] = $value;
+			}
+			$idatatypes[] = 'bool';
+		}
+		elseif (strcasecmp($table_desc['fields'][$field]['type'], 'float')==0) {
+			$sql .= " $field = %s AND ";
+			$pvalues[] = '%s';
+			if (strcmp($value, '__NULL__')==0) {
+				$ivalues[] = 'NULL';
+				$uargs[] = 'NULL';
+			}
+			else {
+				$ivalues[] = $value;
+				$uargs[] = $value;
+			}
+			$idatatypes[] = 'numeric';
+		}
+		else {
+			if (strcmp($value, '__NULL__')==0) {
+				$sql .= " $field = %s AND ";
+				$ivalues[] = 'NULL';
+				$uargs[] = 'NULL';
+				$pvalues[] = '%s';
+			}
+			else {
+				$sql .= " $field = '%s' AND ";
+				$ivalues[] = $value;
+				$uargs[] = $value;
+				$pvalues[] = "'%s'";
+			}
+			$idatatypes[] = 'text';
+		}
+		$psql .= "$field = \$" . $i . " AND ";
+		$i++;
+	}
+	$sql = drupal_substr($sql, 0, -4);  // get rid of the trailing 'AND'
+	$psql = drupal_substr($psql, 0, -4);  // get rid of the trailing 'AND'
 
-  // finish constructing the prepared SQL statement
-  $psql =  "PREPARE " . $options['statement_name'] . " (" . implode(', ', $idatatypes) . ") AS " . $psql;
+	// finish constructing the prepared SQL statement
+	$psql =  "PREPARE " . $options['statement_name'] . " (" . implode(', ', $idatatypes) . ") AS " . $psql;
 
-  // finally perform the update.  If successful, return the updated record
-  if ($prepared) {
-    // if this is the first time we've run this query
-    // then we need to do the prepare, otherwise just execute
-    if ($options['is_prepared'] != TRUE and
-        !tripal_core_is_sql_prepared($options['statement_name'])) {
-      $status = chado_query($psql);
-      if (!$status) {
-        watchdog('tripal_core', "tripal_core_chado_update: not able to prepare '%name' statement for: %sql", array('%name' => $options['statement_name'], '%sql' => $sql), 'WATCHDOG ERROR');
-        return FALSE;
-      }
-    }
-    $sql = "EXECUTE " . $options['statement_name'] . "(" . implode(", ", $pvalues) . ")";
-    $resource = chado_query($sql, $ivalues);
-  }
-  // if it's not a prepared statement then insert normally
-  else {
-    $previous_db = tripal_db_set_active('chado');  // use chado database
-    $resource = db_query($sql, $uargs);
-    tripal_db_set_active($previous_db);  // now use drupal database
-  }
+	// finally perform the update.  If successful, return the updated record
+	if ($prepared) {
+		// if this is the first time we've run this query
+		// then we need to do the prepare, otherwise just execute
+		if ($options['is_prepared'] != TRUE and
+		!tripal_core_is_sql_prepared($options['statement_name'])) {
+			$status = chado_query($psql);
+			if (!$status) {
+				watchdog('tripal_core', "tripal_core_chado_update: not able to prepare '%name' statement for: %sql", array('%name' => $options['statement_name'], '%sql' => $sql), 'WATCHDOG ERROR');
+				return FALSE;
+			}
+		}
+		$sql = "EXECUTE " . $options['statement_name'] . "(" . implode(", ", $pvalues) . ")";
+		$resource = chado_query($sql, $ivalues);
+	}
+	// if it's not a prepared statement then insert normally
+	else {
+		$previous_db = tripal_db_set_active('chado');  // use chado database
+		$resource = db_query($sql, $uargs);
+		tripal_db_set_active($previous_db);  // now use drupal database
+	}
 
-  if ($resource) {
-    return TRUE;
-  }
-  else {
-    watchdog('tripal_core', "Cannot update record in $table table.  Match:" . print_r($match, 1) . ". Values: ". print_r($values, 1), array(), 'WATCHDOG_ERROR');
-    return FALSE;
-  }
+	if ($resource) {
+		return TRUE;
+	}
+	else {
+		watchdog('tripal_core', "Cannot update record in $table table.  Match:" . print_r($match, 1) . ". Values: ". print_r($values, 1), array(), 'WATCHDOG_ERROR');
+		return FALSE;
+	}
 
-  return FALSE;
+	return FALSE;
 }
 /**
  * Provides a generic function for deleting a record(s) from any chado table
@@ -690,30 +690,30 @@ function tripal_core_chado_update($table, $match, $values, $options = NULL) {
  *
  * Example usage:
  * @code
-   $umatch = array(
-     'organism_id' => array(
-         'genus' => 'Citrus',
-         'species' => 'sinensis',
-      ),
-     'uniquename' => 'orange1.1g000034m.g7',
-     'type_id' => array (
-         'cv_id' => array (
-            'name' => 'sequence',
-         ),
-         'name' => 'gene',
-         'is_obsolete' => 0
-      ),
-   );
-   $uvalues = array(
-      'name' => 'orange1.1g000034m.g',
-      'type_id' => array (
-         'cv_id' => array (
-            'name' => 'sequence',
-         ),
-         'name' => 'mRNA',
-         'is_obsolete' => 0
-      ),
-   );
+ $umatch = array(
+ 'organism_id' => array(
+ 'genus' => 'Citrus',
+ 'species' => 'sinensis',
+ ),
+ 'uniquename' => 'orange1.1g000034m.g7',
+ 'type_id' => array (
+ 'cv_id' => array (
+ 'name' => 'sequence',
+ ),
+ 'name' => 'gene',
+ 'is_obsolete' => 0
+ ),
+ );
+ $uvalues = array(
+ 'name' => 'orange1.1g000034m.g',
+ 'type_id' => array (
+ 'cv_id' => array (
+ 'name' => 'sequence',
+ ),
+ 'name' => 'mRNA',
+ 'is_obsolete' => 0
+ ),
+ );
  *   $result = tripal_core_chado_update('feature',$umatch,$uvalues);
  * @endcode
  * The above code species that a feature with a given uniquename, organism_id,
@@ -727,75 +727,75 @@ function tripal_core_chado_update($table, $match, $values, $options = NULL) {
  * @ingroup tripal_chado_api
  */
 function tripal_core_chado_delete($table, $match) {
-  $delete_matches = array();  // contains the values for the where clause
+	$delete_matches = array();  // contains the values for the where clause
 
-  // get the table description
-  $table_desc = tripal_core_get_chado_table_schema($table);
+	// get the table description
+	$table_desc = tripal_core_get_chado_table_schema($table);
 
-  // get the values needed for matching in the SQL statement
-  foreach ($match as $field => $value) {
-    if (is_array($value)) {
-      // if the user has specified an array of values to delete rather than
-      // FK relationships the keep those in our match
-      if (array_values($value) === $value) {
-        $delete_matches[$field] = $value;
-      }
-      else {
-        $results = tripal_core_chado_get_foreign_key($table_desc, $field, $value);
-        if (sizeof($results) > 1) {
-          watchdog('tripal_core', 'tripal_core_chado_delete: When trying to find record to delete, too many records match the criteria supplied for !foreign_key foreign key constraint (!criteria)', array('!foreign_key' => $field, '!criteria' => print_r($value, TRUE)), WATCHDOG_ERROR);
-        }
-        elseif (sizeof($results) < 1) {
-          //watchdog('tripal_core', 'tripal_core_chado_delete: When trying to find record to delete, no record matches criteria supplied for !foreign_key foreign key constraint (!criteria)', array('!foreign_key' => $field, '!criteria' => print_r($value,TRUE)), WATCHDOG_ERROR);
-        }
-        else {
-          $delete_matches[$field] = $results[0];
-        }
-      }
-    }
-    else {
-      $delete_matches[$field] = $value;
-    }
-  }
+	// get the values needed for matching in the SQL statement
+	foreach ($match as $field => $value) {
+		if (is_array($value)) {
+			// if the user has specified an array of values to delete rather than
+			// FK relationships the keep those in our match
+			if (array_values($value) === $value) {
+				$delete_matches[$field] = $value;
+			}
+			else {
+				$results = tripal_core_chado_get_foreign_key($table_desc, $field, $value);
+				if (sizeof($results) > 1) {
+					watchdog('tripal_core', 'tripal_core_chado_delete: When trying to find record to delete, too many records match the criteria supplied for !foreign_key foreign key constraint (!criteria)', array('!foreign_key' => $field, '!criteria' => print_r($value, TRUE)), WATCHDOG_ERROR);
+				}
+				elseif (sizeof($results) < 1) {
+					//watchdog('tripal_core', 'tripal_core_chado_delete: When trying to find record to delete, no record matches criteria supplied for !foreign_key foreign key constraint (!criteria)', array('!foreign_key' => $field, '!criteria' => print_r($value,TRUE)), WATCHDOG_ERROR);
+				}
+				else {
+					$delete_matches[$field] = $results[0];
+				}
+			}
+		}
+		else {
+			$delete_matches[$field] = $value;
+		}
+	}
 
-  // now build the SQL statement
-  $sql = "DELETE FROM {$table} WHERE ";
-  $dargs = array();
-  foreach ($delete_matches as $field => $value) {
-    if (count($value) > 1) {
-      $sql .= "$field IN (" . db_placeholders($value, 'varchar') . ") AND ";
-      foreach ($value as $v) {
-        $dargs[] = $v;
-      }
-    }
-    else {
-      if (strcmp($value, '__NULL__') == 0) {
-        $sql .= " $field = NULL AND ";
-      }
-      elseif (strcmp($fields[$field]['type'], 'serial') == 0 or
-              strcmp($fields[$field]['type'], 'int') == 0) {
-        $sql .= " $field = %d AND ";
-      }
-      else {
-        $sql .= " $field = '%s' AND ";
-      }
-      array_push($dargs, $value);
-    }
-  }
-  $sql = drupal_substr($sql, 0, -4);  // get rid of the trailing 'AND'
+	// now build the SQL statement
+	$sql = "DELETE FROM {$table} WHERE ";
+	$dargs = array();
+	foreach ($delete_matches as $field => $value) {
+		if (count($value) > 1) {
+			$sql .= "$field IN (" . db_placeholders($value, 'varchar') . ") AND ";
+			foreach ($value as $v) {
+				$dargs[] = $v;
+			}
+		}
+		else {
+			if (strcmp($value, '__NULL__') == 0) {
+				$sql .= " $field = NULL AND ";
+			}
+			elseif (strcmp($fields[$field]['type'], 'serial') == 0 or
+			strcmp($fields[$field]['type'], 'int') == 0) {
+				$sql .= " $field = %d AND ";
+			}
+			else {
+				$sql .= " $field = '%s' AND ";
+			}
+			array_push($dargs, $value);
+		}
+	}
+	$sql = drupal_substr($sql, 0, -4);  // get rid of the trailing 'AND'
 
-  // finally perform the delete.  If successful, return the updated record
-  $previous_db = tripal_db_set_active('chado');  // use chado database
-  $result = db_query($sql, $dargs);
-  tripal_db_set_active($previous_db);  // now use drupal database
-  if ($result) {
-    return TRUE;
-  }
-  else {
-    watchdog('tripal_core', "Cannot delete record in $table table.  Match:" . print_r($match, 1) . ". Values: ". print_r($values, 1), array(), 'WATCHDOG_ERROR');
-    return FALSE;
-  }
-  return FALSE;
+	// finally perform the delete.  If successful, return the updated record
+	$previous_db = tripal_db_set_active('chado');  // use chado database
+	$result = db_query($sql, $dargs);
+	tripal_db_set_active($previous_db);  // now use drupal database
+	if ($result) {
+		return TRUE;
+	}
+	else {
+		watchdog('tripal_core', "Cannot delete record in $table table.  Match:" . print_r($match, 1) . ". Values: ". print_r($values, 1), array(), 'WATCHDOG_ERROR');
+		return FALSE;
+	}
+	return FALSE;
 }
 
 
@@ -843,15 +843,15 @@ function tripal_core_chado_delete($table, $match) {
  *     However to avoid this check, which requires a database query you can
  *     set this value to true and the check will not be performed.
  *  - use_unique: TRUE or FALSE.  This will alter the values array provided
- *     to the function and remove fields not in 
- *     a unique constraint.  This is useful before an insert to check if 
+ *     to the function and remove fields not in
+ *     a unique constraint.  This is useful before an insert to check if
  *     another record exists with the same unique constraint (but possible differences
  *     in the other fields) and cause a duplicate insert error.  If a field
  *     in the unique constraint is missing from the values then the function
- *     will return false.  If the table has a primary key, the resulting 
+ *     will return false.  If the table has a primary key, the resulting
  *     record will only have the pkey field. If there is no primary key the
  *     resulting record will have the unique constraint fields.
- *     
+ *
  *
  * @return
  *  A database query result resource, FALSE if the query was not executed
@@ -894,321 +894,319 @@ function tripal_core_chado_delete($table, $match) {
  */
 function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
 
-  // set defaults for options. If we don't set defaults then
-  // we get memory leaks when we try to access the elements
-  if (!is_array($options)) {
-    $options = array();
-  }
-  if (!array_key_exists('case_insensitive_columns', $options)) {
-    $options['case_insensitive_columns'] = array();
-  }
-  if (!array_key_exists('regex_columns', $options)) {
-    $options['regex_columns'] = array();
-  }
-  if (!array_key_exists('order_by', $options)) {
-    $options['order_by'] = array();
-  }
-  if (!array_key_exists('is_prepared', $options)) {
-    $options['is_prepared'] = FALSE;
-  }
-  if (!array_key_exists('return_sql', $options)) {
-    $options['return_sql'] = FALSE;
-  }
-  if (!array_key_exists('has_record', $options)) {
-    $options['has_record'] = FALSE;
-  }
-  if (!array_key_exists('statement_name',$options)) {
-    $options['statement_name'] = FALSE;
-  }
-  if (!array_key_exists('use_unique',$options)) {
-    $options['use_unique'] = FALSE;
-  }
+	// set defaults for options. If we don't set defaults then
+	// we get memory leaks when we try to access the elements
+	if (!is_array($options)) {
+		$options = array();
+	}
+	if (!array_key_exists('case_insensitive_columns', $options)) {
+		$options['case_insensitive_columns'] = array();
+	}
+	if (!array_key_exists('regex_columns', $options)) {
+		$options['regex_columns'] = array();
+	}
+	if (!array_key_exists('order_by', $options)) {
+		$options['order_by'] = array();
+	}
+	if (!array_key_exists('is_prepared', $options)) {
+		$options['is_prepared'] = FALSE;
+	}
+	if (!array_key_exists('return_sql', $options)) {
+		$options['return_sql'] = FALSE;
+	}
+	if (!array_key_exists('has_record', $options)) {
+		$options['has_record'] = FALSE;
+	}
+	if (!array_key_exists('statement_name',$options)) {
+		$options['statement_name'] = FALSE;
+	}
+	if (!array_key_exists('use_unique',$options)) {
+		$options['use_unique'] = FALSE;
+	}
 
-  // if this is a prepared statement check to see if it has already been prepared
-  if ($options['statement_name']) {
-    $prepared = TRUE;
-    // we need to get a persistent connection.  If one exists this function
-    // will not recreate it, but if not it will create one and store it in
-    // a Drupal variable for reuse later.
-    $connection = tripal_db_persistent_chado();
-  }
-  else {
-     //print "NO STATEMENT (select): $table\n";
-     //debug_print_backtrace();
-  }
+	// if this is a prepared statement check to see if it has already been prepared
+	if ($options['statement_name']) {
+		$prepared = TRUE;
+		// we need to get a persistent connection.  If one exists this function
+		// will not recreate it, but if not it will create one and store it in
+		// a Drupal variable for reuse later.
+		$connection = tripal_db_persistent_chado();
+	}
+	else {
+		//print "NO STATEMENT (select): $table\n";
+		//debug_print_backtrace();
+	}
 
-  // check that our columns and values arguments are proper arrays
-  if (!is_array($columns)) {
-    watchdog('tripal_core', 'the $columns argument for tripal_core_chado_select must be an array.');
-    return FALSE;
-  }
-  if (!is_array($values)) {
-    watchdog('tripal_core', 'the $values argument for tripal_core_chado_select must be an array.');
-    return FALSE;
-  }
+	// check that our columns and values arguments are proper arrays
+	if (!is_array($columns)) {
+		watchdog('tripal_core', 'the $columns argument for tripal_core_chado_select must be an array.');
+		return FALSE;
+	}
+	if (!is_array($values)) {
+		watchdog('tripal_core', 'the $values argument for tripal_core_chado_select must be an array.');
+		return FALSE;
+	}
 
-  // get the table description
-  $table_desc = tripal_core_get_chado_table_schema($table);
-  $select = '';
-  $from = '';
-  $where = '';
-  $args = array();
-  
-  // if the 'use_unique' option is turned on then we want
-  // to remove all but unique keys 
-  if ($options['use_unique'] and array_key_exists('unique keys', $table_desc)) {
-    $ukeys = $table_desc['unique keys'];
-    $new_values = array();
-    $new_columns = array();
-    $uq_sname = "uq_" . $table . "_";
-    
-    // include the primary key in the results returned
-    $has_pkey = 0;
-    if (array_key_exists('primary key', $table_desc)){    
-      $has_pkey = 1;
-      $pkeys = $table_desc['primary key'];
-      foreach ($pkeys as $index => $key) {
-        array_push($new_columns, $key);
-      }
-    }
-    // iterate through the unique fields and reset the values and columns
-    // arrays to only include these fields
-    foreach ($ukeys as $cname => $fields) {
-      foreach ($fields as $field) {
-        if (array_key_exists($field, $values)) {
-          $new_values[$field] = $values[$field];
-          $uq_sname .= substr($field, 0, 2);
-          // if there is no primary key then use the unique contraint fields
-          if (!$has_pkey) {
-            array_push($new_columns,$field);
-          }
-        } 
-        elseif (array_key_exists('default',$table_desc['fields'][$field])) {
-          $new_values[$field] = $table_desc['fields'][$field]['default'];
-          $uq_sname .= substr($field, 0, 2);
-          if (!$has_pkey){
-            array_push($new_columns,$field);
-          }
-        }
-        else {
-          return FALSE;
-        }
-      }
-    }
-    // reset the values and columns
-    $values = $new_values;
-    $columns = $new_columns;
-    
-    // set the new statement name
-    $options['statement_name'] = $uq_sname;  
-  }
+	// get the table description
+	$table_desc = tripal_core_get_chado_table_schema($table);
+	$select = '';
+	$from = '';
+	$where = '';
+	$args = array();
+
+	// if the 'use_unique' option is turned on then we want
+	// to remove all but unique keys
+	if ($options['use_unique'] and array_key_exists('unique keys', $table_desc)) {
+		$ukeys = $table_desc['unique keys'];
+		$new_values = array();
+		$new_columns = array();
+		$uq_sname = "uq_" . $table . "_";
+
+		// include the primary key in the results returned
+		$has_pkey = 0;
+		if (array_key_exists('primary key', $table_desc)){
+			$has_pkey = 1;
+			$pkeys = $table_desc['primary key'];
+			foreach ($pkeys as $index => $key) {
+				array_push($new_columns, $key);
+			}
+		}
+		// iterate through the unique fields and reset the values and columns
+		// arrays to only include these fields
+		foreach ($ukeys as $cname => $fields) {
+			foreach ($fields as $field) {
+				if (array_key_exists($field, $values)) {
+					$new_values[$field] = $values[$field];
+					$uq_sname .= substr($field, 0, 2);
+					// if there is no primary key then use the unique contraint fields
+					if (!$has_pkey) {
+						array_push($new_columns,$field);
+					}
+				}
+				elseif (array_key_exists('default',$table_desc['fields'][$field])) {
+					$new_values[$field] = $table_desc['fields'][$field]['default'];
+					$uq_sname .= substr($field, 0, 2);
+					if (!$has_pkey){
+						array_push($new_columns,$field);
+					}
+				}
+				else {
+					return FALSE;
+				}
+			}
+		}
+		// reset the values and columns
+		$values = $new_values;
+		$columns = $new_columns;
+
+		// set the new statement name
+		$options['statement_name'] = $uq_sname;
+	}
 
 
-  foreach ($values as $field => $value) {
-    $select[] = $field;
-    if (is_array($value)) {
-      // if the user has specified multiple values for matching then this we
-      // want to catch that and save them in our $where array, otherwise
-      // we'll descend for a foreign key relationship
-      if (array_values($value) === $value) {
-        $where[$field] = $value;
-      }
-      else {
-        // select the value from the foreign key relationship for this value
-        $foreign_options = array(
+	foreach ($values as $field => $value) {
+		$select[] = $field;
+		if (is_array($value)) {
+			// if the user has specified multiple values for matching then this we
+			// want to catch that and save them in our $where array, otherwise
+			// we'll descend for a foreign key relationship
+			if (array_values($value) === $value) {
+				$where[$field] = $value;
+			}
+			else {
+				// select the value from the foreign key relationship for this value
+				$foreign_options = array(
           'regex_columns' => $options['regex_columns'],
           'case_insensitive_columns' => $options['case_insensitive_columns']
-        );
-        if ($options['statement_name']) {
-           // add the fk relationship info to the prepared statement name so that
-           // we can prepare the selects run by the recrusive tripal_core_chado_get_foreign_key
-           // function. we need the statement name to be unique so take the first two characters of each column
-           $fk_sname = "fk_" . $table . "_" . $field;
-           foreach ($value as $k => $v){
-             $fk_sname .= substr($k, 0, 2);
-           }
-           $foreign_options['statement_name'] = $fk_sname;
-        }
+				);
+				if ($options['statement_name']) {
+					// add the fk relationship info to the prepared statement name so that
+					// we can prepare the selects run by the recrusive tripal_core_chado_get_foreign_key
+					// function. we need the statement name to be unique so take the first two characters of each column
+					$fk_sname = "fk_" . $table . "_" . $field;
+					foreach ($value as $k => $v){
+						$fk_sname .= substr($k, 0, 2);
+					}
+					$foreign_options['statement_name'] = $fk_sname;
+				}
 
-        $results = tripal_core_chado_get_foreign_key($table_desc, $field, $value, $foreign_options);
-        if (!$results or count($results) ==0) {
+				$results = tripal_core_chado_get_foreign_key($table_desc, $field, $value, $foreign_options);
+				if (!$results or count($results) ==0) {
 
-          // foreign key records are required
-          // thus if none matched then return FALSE and alert the admin through watchdog
-          //watchdog('tripal_core',
-          // 'tripal_core_chado_select: no record in the table referenced by the foreign key (!field)   exists. tripal_core_chado_select table=!table, columns=!columns, values=!values',
-          // array('!table' => $table,
-          //   '!columns' => '<pre>' . print_r($columns, TRUE) . '</pre>',
-          //   '!values' => '<pre>' . print_r($values, TRUE) . '</pre>',
-          //   '!field' => $field,
-          // ),
-          // WATCHDOG_WARNING);
-          return array();
-        }
-        else {
-          $where[$field] = $results;
-        }
-      }
-    }
-    else {
-      //need to catch a 0 and make int if integer field
-      if ($table_desc['fields'][$field]['type'] == 'int') {
-        $where[$field][] = (int) $value;
-      }
-      else {
-        $where[$field][] = $value;
-      }
-    }
-  }
+					// foreign key records are required
+					// thus if none matched then return FALSE and alert the admin through watchdog
+					//watchdog('tripal_core',
+					// 'tripal_core_chado_select: no record in the table referenced by the foreign key (!field)   exists. tripal_core_chado_select table=!table, columns=!columns, values=!values',
+					// array('!table' => $table,
+					//   '!columns' => '<pre>' . print_r($columns, TRUE) . '</pre>',
+					//   '!values' => '<pre>' . print_r($values, TRUE) . '</pre>',
+					//   '!field' => $field,
+					// ),
+					// WATCHDOG_WARNING);
+					return array();
+				}
+				else {
+					$where[$field] = $results;
+				}
+			}
+		}
+		else {
+			//need to catch a 0 and make int if integer field
+			if ($table_desc['fields'][$field]['type'] == 'int') {
+				$where[$field][] = (int) $value;
+			}
+			else {
+				$where[$field][] = $value;
+			}
+		}
+	}
 
-  // now build the SQL and prepared SQL statements. We may not use
-  // the prepared statement if it wasn't requested in the options of if the
-  // argument in a where statement has multiple values.
-  if (empty($where)) {
-    // sometimes want to select everything
-    $sql  = "SELECT " . implode(', ', $columns) . " ";
-    $sql .= "FROM {$table} ";
-    // we don't prepare a statement if there is no where clause
-    $prepared = FALSE;
-  }
-  else {
-    $sql  = "SELECT " . implode(', ', $columns) . " ";
-    $sql .= "FROM {$table} ";
-    $sql .= "WHERE ";
-    $psql = $sql;  // prepared SQL statement;
-    $i = 1;
-    $pvalues = array();
-    $itypes = array();
-    foreach ($where as $field => $value) {
+	// now build the SQL and prepared SQL statements. We may not use
+	// the prepared statement if it wasn't requested in the options of if the
+	// argument in a where statement has multiple values.
+	if (empty($where)) {
+		// sometimes want to select everything
+		$sql  = "SELECT " . implode(', ', $columns) . " ";
+		$sql .= "FROM {$table} ";
+		// we don't prepare a statement if there is no where clause
+		$prepared = FALSE;
+	}
+	else {
+		$sql  = "SELECT " . implode(', ', $columns) . " ";
+		$sql .= "FROM {$table} ";
+		$sql .= "WHERE ";
+		$psql = $sql;  // prepared SQL statement;
+		$i = 1;
+		$pvalues = array();
+		$itypes = array();
+		foreach ($where as $field => $value) {
 
-      // if we have multiple values returned then we need an 'IN' statement
-      // in our where statement
-      if (count($value) > 1) {
-        $sql .= "$field IN (" . db_placeholders($value, 'varchar') . ") AND ";
-        foreach ($value as $v) {
-          $args[] = $v;
-          // we can't do a prepared statement with an 'IN' statement in a
-          // where clause because we can't guarantee we'll always have the
-          // same number of elements.
-          $prepared = FALSE;
-        }
-      }
-      // if we have a single value then we need an = in our where statement
-      else {
-        $operator = '=';
-        if (in_array($field, $options['regex_columns'])) {
-          $operator = '~*';
-        }
+			// if we have multiple values returned then we need an 'IN' statement
+			// in our where statement
+			if (count($value) > 1) {
+				$sql .= "$field IN (" . db_placeholders($value, 'varchar') . ") AND ";
+				foreach ($value as $v) {
+					$args[] = $v;
+					// we can't do a prepared statement with an 'IN' statement in a
+					// where clause because we can't guarantee we'll always have the
+					// same number of elements.
+					$prepared = FALSE;
+				}
+			}
+			// if we have a single value then we need an = in our where statement
+			else {
+				$operator = '=';
+				if (in_array($field, $options['regex_columns'])) {
+					$operator = '~*';
+				}
 
-        // get the types for the prepared statement. First check if the type
-        // is an integer
-        if (strcasecmp($table_desc['fields'][$field]['type'], 'serial')==0 OR
-            strcasecmp($table_desc['fields'][$field]['type'], 'int')==0 OR
-            strcasecmp($table_desc['fields'][$field]['type'], 'integer')==0) {
-          $sql .= "$field $operator %d AND ";
-          $psql .= "$field $operator \$" . $i . " AND ";
-          $args[] = $value[0];
-          // set the variables needed for the prepared statement
-          $idatatypes[] = 'int';
-          $itypes[] = '%d';
-          $pvalues[] = $value[0];
-        }
-        elseif (strcasecmp($table_desc['fields'][$field]['type'], 'boolean')==0) {
-          $sql .= "$field $operator %s AND ";
-          $psql .= "$field $operator \$" . $i . " AND ";
-          $args[] = $value[0];
-          // set the variables needed for the prepared statement
-          $idatatypes[] = 'bool';
-          $itypes[] = '%d';
-          $pvalues[] = $value[0];
-        }
-        elseif (strcasecmp($table_desc['fields'][$field]['type'], 'float')==0) {
-          $sql .= "$field $operator %s AND ";
-          $psql .= "$field $operator \$" . $i . " AND ";
-          $args[] = $value[0];
-          // set the variables needed for the prepared statement
-          $idatatypes[] = 'numeric';
-          $itypes[] = '%f';
-          $pvalues[] = $value[0];
-        }
-        // else the type is a text
-        else {
-          if (in_array($field, $options['case_insensitive_columns'])) {
-            $sql .= "lower($field) $operator lower('%s') AND ";
-            $psql .= "lower($field) $operator lower('\$" . $i . "') AND ";
-            $args[] = $value;
-          }
-          else {
-            $sql .= "$field $operator '%s' AND ";
-            $psql .= "$field $operator \$" . $i . " AND ";
-            $args[] = $value[0];
-          }
-          // set the variables needed for the prepared statement
-          $idatatypes[] = 'text';
-          $itypes[] = "'%s'";
-          $pvalues[] = $value[0];
-        }
-      }
-      $i++;
-    }
-    $sql = drupal_substr($sql, 0, -4);  // get rid of the trailing 'AND '
-    $psql = drupal_substr($psql, 0, -4);  // get rid of the trailing 'AND '
+				// get the types for the prepared statement. First check if the type
+				// is an integer
+				if (strcasecmp($table_desc['fields'][$field]['type'], 'serial')==0 OR
+				strcasecmp($table_desc['fields'][$field]['type'], 'int')==0 OR
+				strcasecmp($table_desc['fields'][$field]['type'], 'integer')==0) {
+					$sql .= "$field $operator %d AND ";
+					$psql .= "$field $operator \$" . $i . " AND ";
+					$args[] = $value[0];
+					// set the variables needed for the prepared statement
+					$idatatypes[] = 'int';
+					$itypes[] = '%d';
+					$pvalues[] = $value[0];
+				}
+				elseif (strcasecmp($table_desc['fields'][$field]['type'], 'boolean')==0) {
+					$sql .= "$field $operator %s AND ";
+					$psql .= "$field $operator \$" . $i . " AND ";
+					$args[] = $value[0];
+					// set the variables needed for the prepared statement
+					$idatatypes[] = 'bool';
+					$itypes[] = '%d';
+					$pvalues[] = $value[0];
+				}
+				elseif (strcasecmp($table_desc['fields'][$field]['type'], 'float')==0) {
+					$sql .= "$field $operator %s AND ";
+					$psql .= "$field $operator \$" . $i . " AND ";
+					$args[] = $value[0];
+					// set the variables needed for the prepared statement
+					$idatatypes[] = 'numeric';
+					$itypes[] = '%f';
+					$pvalues[] = $value[0];
+				}
+				// else the type is a text
+				else {
+					if (in_array($field, $options['case_insensitive_columns'])) {
+						$sql .= "lower($field) $operator lower('%s') AND ";
+						$psql .= "lower($field) $operator lower('\$" . $i . "') AND ";
+						$args[] = $value;
+					}
+					else {
+						$sql .= "$field $operator '%s' AND ";
+						$psql .= "$field $operator \$" . $i . " AND ";
+						$args[] = $value[0];
+					}
+					// set the variables needed for the prepared statement
+					$idatatypes[] = 'text';
+					$itypes[] = "'%s'";
+					$pvalues[] = $value[0];
+				}
+			}
+			$i++;
+		}
+		$sql = drupal_substr($sql, 0, -4);  // get rid of the trailing 'AND '
+		$psql = drupal_substr($psql, 0, -4);  // get rid of the trailing 'AND '
 
-    // finally add any ordering of the results to the SQL statement
-    if (count($options['order_by']) > 0) {
-      $sql .= " ORDER BY ";
-      $psql .= " ORDER BY ";
-      foreach ($options['order_by'] as $field => $dir) {
-        $sql .= "$field $dir, ";
-        $psql .= "$field $dir, ";
-      }
-      $sql = drupal_substr($sql, 0, -2);  // get rid of the trailing ', '
-      $psql = drupal_substr($psql, 0, -2);  // get rid of the trailing ', '
-    }
+		// finally add any ordering of the results to the SQL statement
+		if (count($options['order_by']) > 0) {
+			$sql .= " ORDER BY ";
+			$psql .= " ORDER BY ";
+			foreach ($options['order_by'] as $field => $dir) {
+				$sql .= "$field $dir, ";
+				$psql .= "$field $dir, ";
+			}
+			$sql = drupal_substr($sql, 0, -2);  // get rid of the trailing ', '
+			$psql = drupal_substr($psql, 0, -2);  // get rid of the trailing ', '
+		}
 
-    // finish constructing the prepared SQL statement
-    $psql =  "PREPARE " . $options['statement_name'] . " (" . implode(', ', $idatatypes) . ") AS " . $psql;
+		// finish constructing the prepared SQL statement
+		$psql =  "PREPARE " . $options['statement_name'] . " (" . implode(', ', $idatatypes) . ") AS " . $psql;
 
-  } // end if(empty($where)){ } else {
+	} // end if(empty($where)){ } else {
 
-  // if the caller has requested the SQL rather than the results...
-  // which happens in the case of wanting to use the Drupal pager, then do so
-  if ($options['return_sql'] == TRUE) {
-    return array('sql' => $sql, 'args' => $args);
-  }
+	// if the caller has requested the SQL rather than the results...
+	// which happens in the case of wanting to use the Drupal pager, then do so
+	if ($options['return_sql'] == TRUE) {
+		return array('sql' => $sql, 'args' => $args);
+	}
 
-  // prepare the statement
-  if ($prepared) {
-    // if this is the first time we've run this query
-    // then we need to do the prepare, otherwise just execute
-    if ($options['is_prepared'] != TRUE) {
+	// prepare the statement
+	if ($prepared) {
+		// if this is the first time we've run this query
+		// then we need to do the prepare, otherwise just execute
+		if ($options['is_prepared'] != TRUE) {
 
-      $status = tripal_core_chado_prepare($options['statement_name'], $psql, $idatatypes);
-      if (!$status) {
-        return FALSE;
-      }
-    }
-    $sql = "EXECUTE " . $options['statement_name'] . "(" . implode(", ", $itypes) . ")";
-    // WARNING: This call creates a memory leak:  if you remove the $ivalues it doesn't
-    // do this. Got to find out what's causing this.
-    $resource = tripal_core_chado_execute_prepared($options['statement_name'], $sql, $pvalues);
-  }
-  else {
-    $previous_db = tripal_db_set_active('chado');  // use chado database
-    $resource = db_query($sql, $args);
-    tripal_db_set_active($previous_db);  // now use drupal database
-  }
+			$status = tripal_core_chado_prepare($options['statement_name'], $psql, $idatatypes);
+			if (!$status) {
+				return FALSE;
+			}
+		}
+		$sql = "EXECUTE " . $options['statement_name'] . "(" . implode(", ", $itypes) . ")";
+		// WARNING: This call creates a memory leak:  if you remove the $ivalues it doesn't
+		// do this. Got to find out what's causing this.
+		$resource = tripal_core_chado_execute_prepared($options['statement_name'], $sql, $pvalues);
+	}
+	else {
+		$resource = chado_query($sql, $args);
+	}
 
-  // format results into an array
-  $results = array();
-  while ($r = db_fetch_object($resource)) {
-    $results[] = $r;
-  }
+	// format results into an array
+	$results = array();
+	while ($r = db_fetch_object($resource)) {
+		$results[] = $r;
+	}
 
-  if ($options['has_record']) {
-    return count($results);
-  }
-  return $results;
+	if ($options['has_record']) {
+		return count($results);
+	}
+	return $results;
 }
 
 /**
@@ -1261,71 +1259,71 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
  */
 function tripal_core_chado_get_foreign_key($table_desc, $field, $values, $options = NULL) {
 
-  // set defaults for options. If we don't set defaults then
-  // we get memory leaks when we try to access the elements
-  if (!is_array($options)) {
-    $options = array();
-  }
-  if (!array_key_exists('case_insensitive_columns', $options)) {
-    $options['case_insensitive_columns'] = array();
-  }
-  if (!array_key_exists('regex_columns', $options)) {
-    $options['regex_columns'] = array();
-  }
+	// set defaults for options. If we don't set defaults then
+	// we get memory leaks when we try to access the elements
+	if (!is_array($options)) {
+		$options = array();
+	}
+	if (!array_key_exists('case_insensitive_columns', $options)) {
+		$options['case_insensitive_columns'] = array();
+	}
+	if (!array_key_exists('regex_columns', $options)) {
+		$options['regex_columns'] = array();
+	}
 
 
-  // get the list of foreign keys for this table description and
-  // iterate through those until we find the one we're looking for
-  $fkeys = $table_desc['foreign keys'];
-  if ($fkeys) {
-    foreach ($fkeys as $name => $def) {
-      if (is_array($def['table'])) {
-        //foreign key was described 2X
-        $message = "The foreign key " . $name . " was defined twice. Please check modules "
-          ."to determine if hook_chado_schema_<version>_" . $table_desc['table'] . "() was "
-          ."implemented and defined this foreign key when it wasn't supposed to. Modules "
-          ."this hook was implemented in: " . implode(', ',
-          module_implements("chado_" . $table_desc['table'] . "_schema")) . ".";
-        watchdog('tripal_core', $message);
-        drupal_set_message(check_plain($message), 'error');
-        continue;
-      }
-      $table = $def['table'];
-      $columns = $def['columns'];
-      // iterate through the columns of the foreign key relationship
-      foreach ($columns as $left => $right) {
-        // does the left column in the relationship match our field?
-        if (strcmp($field, $left) == 0) {
-          // the column name of the foreign key matches the field we want
-          // so this is the right relationship.  Now we want to select
-          $select_cols = array($right);
-          $result = tripal_core_chado_select($table, $select_cols, $values, $options);
-          $fields = array();
-          if ($result and count($result) > 0) {
-            foreach ($result as $obj) {
-              $fields[] = $obj->$right;
-            }
-            return $fields;
-          }
-        }
-      }
-    }
-  }
-  else {
-    // TODO: what do we do if we get to this point and we have a fk
-    // relationship expected but we don't have any definition for one in the
-    // table schema??
-    $version = tripal_core_get_chado_version(TRUE);
-    $message = t("There is no foreign key relationship defined for " . $field . ".
+	// get the list of foreign keys for this table description and
+	// iterate through those until we find the one we're looking for
+	$fkeys = $table_desc['foreign keys'];
+	if ($fkeys) {
+		foreach ($fkeys as $name => $def) {
+			if (is_array($def['table'])) {
+				//foreign key was described 2X
+				$message = "The foreign key " . $name . " was defined twice. Please check modules "
+				."to determine if hook_chado_schema_<version>_" . $table_desc['table'] . "() was "
+				."implemented and defined this foreign key when it wasn't supposed to. Modules "
+				."this hook was implemented in: " . implode(', ',
+				module_implements("chado_" . $table_desc['table'] . "_schema")) . ".";
+				watchdog('tripal_core', $message);
+				drupal_set_message(check_plain($message), 'error');
+				continue;
+			}
+			$table = $def['table'];
+			$columns = $def['columns'];
+			// iterate through the columns of the foreign key relationship
+			foreach ($columns as $left => $right) {
+				// does the left column in the relationship match our field?
+				if (strcmp($field, $left) == 0) {
+					// the column name of the foreign key matches the field we want
+					// so this is the right relationship.  Now we want to select
+					$select_cols = array($right);
+					$result = tripal_core_chado_select($table, $select_cols, $values, $options);
+					$fields = array();
+					if ($result and count($result) > 0) {
+						foreach ($result as $obj) {
+							$fields[] = $obj->$right;
+						}
+						return $fields;
+					}
+				}
+			}
+		}
+	}
+	else {
+		// TODO: what do we do if we get to this point and we have a fk
+		// relationship expected but we don't have any definition for one in the
+		// table schema??
+		$version = tripal_core_get_chado_version(TRUE);
+		$message = t("There is no foreign key relationship defined for " . $field . ".
        To define a foreign key relationship, determine the table this foreign
        key referrs to (<foreign table>) and then implement
        hook_chado_chado_schema_v<version>_<foreign table>(). See
        tripal_feature_chado_v1_2_schema_feature for an example. Chado version: $version");
-    watchdog('tripal_core', $message);
-    drupal_set_message(check_plain($message), 'error');
-  }
+		watchdog('tripal_core', $message);
+		drupal_set_message(check_plain($message), 'error');
+	}
 
-  return array();
+	return array();
 }
 
 /**
@@ -1352,10 +1350,10 @@ function tripal_core_chado_get_foreign_key($table_desc, $field, $values, $option
  *
  * Example Usage:
  * @code
-      $values = array(
-        'name' => 'Medtr4g030710'
-      );
-      $features = tripal_core_generate_chado_var('feature', $values);
+ $values = array(
+ 'name' => 'Medtr4g030710'
+ );
+ $features = tripal_core_generate_chado_var('feature', $values);
  * @endcode
  * This will return an object if there is only one feature with the name Medtr4g030710 or it will
  * return an array of feature objects if more than one feature has that name.
@@ -1366,9 +1364,9 @@ function tripal_core_chado_get_foreign_key($table_desc, $field, $values, $option
  *      This hook allows you to add fields to be excluded on a per table basis. Simply implement
  *      this hook to return an array of fields to be excluded. For example:
  * @code
-          mymodule_exclude_field_from_feature_by_default() {
-            return array('residues' => TRUE);
-          }
+ mymodule_exclude_field_from_feature_by_default() {
+ return array('residues' => TRUE);
+ }
  * @endcode
  *      will ensure that feature.residues is ecluded from a feature object by default.
  *  - hook_exclude_type_by_default:
@@ -1377,200 +1375,200 @@ function tripal_core_chado_get_foreign_key($table_desc, $field, $values, $option
  *      Then all fields of that type where the criteria supplied returns TRUE will be excluded from
  *      any table. Tokens available in criteria are &gt;field_value&lt;  and &gt;field_name&lt; . For example:
  * @code
-          mymodule_exclude_type_by_default() {
-            return array('text' => 'length(&gt;field_value&lt; ) > 50');
-          }
+ mymodule_exclude_type_by_default() {
+ return array('text' => 'length(&gt;field_value&lt; ) > 50');
+ }
  * @endcode
  *      will exclude all text fields with a length > 50. Thus if $feature.residues is longer than 50 *      it will be excluded, otherwise it will be added.
  *
  * @ingroup tripal_chado_api
  */
 function tripal_core_generate_chado_var($table, $values, $base_options = array()) {
-  $all = new stdClass();
+	$all = new stdClass();
 
-  // get description for the current table----------------------------------------------------------
-  $table_desc = tripal_core_get_chado_table_schema($table);
-  $table_primary_key = $table_desc['primary key'][0];
-  $table_columns = array_keys($table_desc['fields']);
+	// get description for the current table----------------------------------------------------------
+	$table_desc = tripal_core_get_chado_table_schema($table);
+	$table_primary_key = $table_desc['primary key'][0];
+	$table_columns = array_keys($table_desc['fields']);
 
-  // Expandable fields without value needed for criteria--------------------------------------------
-  $all->expandable_fields = array();
-  if ($table_desc['referring_tables']) {
-    $all->expandable_tables = $table_desc['referring_tables'];
-  }
-  else {
-    $all->expandable_tables = array();
-  }
-  $all->expandable_nodes = array();
+	// Expandable fields without value needed for criteria--------------------------------------------
+	$all->expandable_fields = array();
+	if ($table_desc['referring_tables']) {
+		$all->expandable_tables = $table_desc['referring_tables'];
+	}
+	else {
+		$all->expandable_tables = array();
+	}
+	$all->expandable_nodes = array();
 
-  // Get fields to be removed by name.................................
-  $fields_to_remove = module_invoke_all('exclude_field_from_' . $table . '_by_default');
-  foreach ($fields_to_remove as $field_name => $criteria) {
-    //replace &gt;field_name&lt;  with the current field name &
-    $criteria = preg_replace('/&gt;field_name&lt; /', $field_name, $criteria);
-    // if field_value needed we can't deal with this field yet
-    if (preg_match('/&gt;field_value&lt; /', $criteria)) {
-      break;
-    }
+	// Get fields to be removed by name.................................
+	$fields_to_remove = module_invoke_all('exclude_field_from_' . $table . '_by_default');
+	foreach ($fields_to_remove as $field_name => $criteria) {
+		//replace &gt;field_name&lt;  with the current field name &
+		$criteria = preg_replace('/&gt;field_name&lt; /', $field_name, $criteria);
+		// if field_value needed we can't deal with this field yet
+		if (preg_match('/&gt;field_value&lt; /', $criteria)) {
+			break;
+		}
 
-    //if criteria then remove from query
-    // @coder-ignore: only module designers can populate $criteria -not security risk
-    $success = drupal_eval('<?php return ' . $criteria . '; ?>');
-//    watchdog('tripal_core',
-//      'Evaluating criteria (%criteria) for field %field in tripal_core_generate_chado_var for %table evaluated to %success',
-//      array('%table' => $table, '%criteria'=>$criteria, '%field' => $field_name, '%success'=>$success),
-//      WATCHDOG_NOTICE
-//    );
-    if ($success) {
-      unset($table_columns[array_search($field_name, $table_columns)]);
-      unset($fields_to_remove[$field_name]);
-      $all->expandable_fields[] = $table . '.' . $field_name;
-    }
-  }
+		//if criteria then remove from query
+		// @coder-ignore: only module designers can populate $criteria -not security risk
+		$success = drupal_eval('<?php return ' . $criteria . '; ?>');
+		//    watchdog('tripal_core',
+		//      'Evaluating criteria (%criteria) for field %field in tripal_core_generate_chado_var for %table evaluated to %success',
+		//      array('%table' => $table, '%criteria'=>$criteria, '%field' => $field_name, '%success'=>$success),
+		//      WATCHDOG_NOTICE
+		//    );
+		if ($success) {
+			unset($table_columns[array_search($field_name, $table_columns)]);
+			unset($fields_to_remove[$field_name]);
+			$all->expandable_fields[] = $table . '.' . $field_name;
+		}
+	}
 
-  //Get fields to be removed by type................................
-  $types_to_remove = module_invoke_all('exclude_type_by_default');
-  $field_types = array();
-  foreach ($table_desc['fields'] as $field_name => $field_array) {
-    $field_types[$field_array['type']][] = $field_name;
-  }
-  foreach ($types_to_remove as $field_type => $criteria) {
-    // if there are fields of that type to remove
-    if (is_array($field_types[$field_type])) {
-      //replace &gt;field_name&lt;  with the current field name &
-      $criteria = preg_replace('/&gt;field_name&lt; /', $field_name, $criteria);
-      foreach ($field_types[$field_type] as $field_name) {
-        // if field_value needed we can't deal with this field yet
-        if (preg_match('/&gt;field_value&lt; /', $criteria)) {
-          $fields_to_remove[$field_name] = $criteria;
-          continue;
-        }
-        // if field_value needed we can't deal with this field yet
-        if (preg_match('/&gt;field_value&lt; /', $criteria)) {
-          break;
-        }
-        //if criteria then remove from query
-        // @coder-ignore: only module designers can populate $criteria -not security risk
-        $success = drupal_eval('<?php return ' . $criteria . '; ?>');
-//        watchdog('tripal_core',
-//          'Evaluating criteria (%criteria) for field %field of $type in tripal_core_generate_chado_var for %table evaluated to %success',
-//          array('%table'=>$table, '%criteria'=>$criteria, '%field'=>$field_name, '%type'=>$field_type, '%success'=>$success),
-//          WATCHDOG_NOTICE
-//        );
-        if ($success) {
-          unset($table_columns[array_search($field_name, $table_columns)]);
-          $all->expandable_fields[] = $table . '.' . $field_name;
-        }
-      } //end of foreach field of that type
-    }
-  } //end of foreach type to be removed
+	//Get fields to be removed by type................................
+	$types_to_remove = module_invoke_all('exclude_type_by_default');
+	$field_types = array();
+	foreach ($table_desc['fields'] as $field_name => $field_array) {
+		$field_types[$field_array['type']][] = $field_name;
+	}
+	foreach ($types_to_remove as $field_type => $criteria) {
+		// if there are fields of that type to remove
+		if (is_array($field_types[$field_type])) {
+			//replace &gt;field_name&lt;  with the current field name &
+			$criteria = preg_replace('/&gt;field_name&lt; /', $field_name, $criteria);
+			foreach ($field_types[$field_type] as $field_name) {
+				// if field_value needed we can't deal with this field yet
+				if (preg_match('/&gt;field_value&lt; /', $criteria)) {
+					$fields_to_remove[$field_name] = $criteria;
+					continue;
+				}
+				// if field_value needed we can't deal with this field yet
+				if (preg_match('/&gt;field_value&lt; /', $criteria)) {
+					break;
+				}
+				//if criteria then remove from query
+				// @coder-ignore: only module designers can populate $criteria -not security risk
+				$success = drupal_eval('<?php return ' . $criteria . '; ?>');
+				//        watchdog('tripal_core',
+				//          'Evaluating criteria (%criteria) for field %field of $type in tripal_core_generate_chado_var for %table evaluated to %success',
+				//          array('%table'=>$table, '%criteria'=>$criteria, '%field'=>$field_name, '%type'=>$field_type, '%success'=>$success),
+				//          WATCHDOG_NOTICE
+				//        );
+				if ($success) {
+					unset($table_columns[array_search($field_name, $table_columns)]);
+					$all->expandable_fields[] = $table . '.' . $field_name;
+				}
+			} //end of foreach field of that type
+		}
+	} //end of foreach type to be removed
 
-  // get the values for the record in the current table---------------------------------------------
-  $results = tripal_core_chado_select($table, $table_columns, $values, $base_options);
-  if ($results) {
-    foreach ($results as $key => $object) {
-      // Add empty expandable_x arrays
-      $object->expandable_fields = $all->expandable_fields;
-      $object->expandable_tables = $all->expandable_tables;
-      $object->expandable_nodes = $all->expandable_nodes;
-      // add curent table
-      $object->tablename = $table;
+	// get the values for the record in the current table---------------------------------------------
+	$results = tripal_core_chado_select($table, $table_columns, $values, $base_options);
+	if ($results) {
+		foreach ($results as $key => $object) {
+			// Add empty expandable_x arrays
+			$object->expandable_fields = $all->expandable_fields;
+			$object->expandable_tables = $all->expandable_tables;
+			$object->expandable_nodes = $all->expandable_nodes;
+			// add curent table
+			$object->tablename = $table;
 
-      // check if the current table maps to a node type-----------------------------------------------
-      // if this table is connected to a node there will be a chado_tablename table in drupal
-      if (db_table_exists('chado_' . $table)) {
-        // that has a foreign key to this one ($table_desc['primary key'][0]
-        // and to the node table (nid)
-        $sql = "SELECT %s, nid FROM {chado_%s} WHERE %s=%d";
-        $mapping = db_fetch_object(db_query(
-          $sql,
-          $table_primary_key,
-          $table,
-          $table_primary_key,
-          $object->{$table_primary_key}
-        ));
-        if ($mapping->{$table_primary_key}) {
-          $object->nid = $mapping->nid;
-          $object->expandable_nodes[] = $table;
-        }
-      }
+			// check if the current table maps to a node type-----------------------------------------------
+			// if this table is connected to a node there will be a chado_tablename table in drupal
+			if (db_table_exists('chado_' . $table)) {
+				// that has a foreign key to this one ($table_desc['primary key'][0]
+				// and to the node table (nid)
+				$sql = "SELECT %s, nid FROM {chado_%s} WHERE %s=%d";
+				$mapping = db_fetch_object(db_query(
+				$sql,
+				$table_primary_key,
+				$table,
+				$table_primary_key,
+				$object->{$table_primary_key}
+				));
+				if ($mapping->{$table_primary_key}) {
+					$object->nid = $mapping->nid;
+					$object->expandable_nodes[] = $table;
+				}
+			}
 
-      // remove any fields where criteria need to be evalulated---------------------------------------
-      foreach ($fields_to_remove as $field_name => $criteria) {
-        if (!isset($object->{$field_name})) {
-          break;
-        }
-        $criteria = preg_replace('/&gt;field_value&lt; /', $object->{$field_name}, $criteria);
-        //if criteria then remove from query
-        // @coder-ignore: only module designers can populate $criteria -not security risk
-        $success = drupal_eval('<?php return ' . $criteria . '; ?>');
-//      watchdog('tripal_core',
-//        'Evaluating criteria (%criteria) for field %field in tripal_core_generate_chado_var for   %table evaluated to %success',
-//        array('%table' => $table, '%criteria'=>$criteria, '%field' => $field_name, '%success'=>$success),
-//        WATCHDOG_NOTICE
-//      );
-        if ($success) {
-          unset($object->{$field_name});
-          $object->expandable_fields[] = $table . '.' . $field_name;
-        }
-      }
+			// remove any fields where criteria need to be evalulated---------------------------------------
+			foreach ($fields_to_remove as $field_name => $criteria) {
+				if (!isset($object->{$field_name})) {
+					break;
+				}
+				$criteria = preg_replace('/&gt;field_value&lt; /', $object->{$field_name}, $criteria);
+				//if criteria then remove from query
+				// @coder-ignore: only module designers can populate $criteria -not security risk
+				$success = drupal_eval('<?php return ' . $criteria . '; ?>');
+				//      watchdog('tripal_core',
+				//        'Evaluating criteria (%criteria) for field %field in tripal_core_generate_chado_var for   %table evaluated to %success',
+				//        array('%table' => $table, '%criteria'=>$criteria, '%field' => $field_name, '%success'=>$success),
+				//        WATCHDOG_NOTICE
+				//      );
+				if ($success) {
+					unset($object->{$field_name});
+					$object->expandable_fields[] = $table . '.' . $field_name;
+				}
+			}
 
-      // recursively follow foreign key relationships nesting objects as we go------------------------
-      if ($table_desc['foreign keys']) {
-        foreach ($table_desc['foreign keys'] as $foreign_key_array) {
-          $foreign_table = $foreign_key_array['table'];
-          foreach ($foreign_key_array['columns'] as $foreign_key => $primary_key) {
-            // Note: Foreign key is the field in the current table whereas primary_key is the field in
-            // the table referenced by the foreign key
-            //Dont do anything if the foreign key is empty
-            if (empty($object->{$foreign_key})) {
-              break;
-            }
-            // get the record from the foreign table
-            $foreign_values = array($primary_key => $object->{$foreign_key});
-            $foreign_object = tripal_core_generate_chado_var($foreign_table, $foreign_values);
-            // add the foreign record to the current object in a nested manner
-            $object->{$foreign_key} = $foreign_object;
-            // Flatten expandable_x arrays so only in the bottom object
-            if (is_array($object->{$foreign_key}->expandable_fields)) {
-              $object->expandable_fields = array_merge(
-                $object->expandable_fields,
-                $object->{$foreign_key}->expandable_fields
-              );
-              unset($object->{$foreign_key}->expandable_fields);
-            }
-            if (is_array($object->{$foreign_key}->expandable_tables)) {
-              $object->expandable_tables = array_merge(
-                $object->expandable_tables,
-                $object->{$foreign_key}->expandable_tables
-              );
-              unset($object->{$foreign_key}->expandable_tables);
-            }
-            if (is_array($object->{$foreign_key}->expandable_nodes)) {
-              $object->expandable_nodes = array_merge(
-                $object->expandable_nodes,
-                $object->{$foreign_key}->expandable_nodes
-              );
-              unset($object->{$foreign_key}->expandable_nodes);
-            }
-          }
-        }
-        $results[$key] = $object;
-      }
-    }
-  }
+			// recursively follow foreign key relationships nesting objects as we go------------------------
+			if ($table_desc['foreign keys']) {
+				foreach ($table_desc['foreign keys'] as $foreign_key_array) {
+					$foreign_table = $foreign_key_array['table'];
+					foreach ($foreign_key_array['columns'] as $foreign_key => $primary_key) {
+						// Note: Foreign key is the field in the current table whereas primary_key is the field in
+						// the table referenced by the foreign key
+						//Dont do anything if the foreign key is empty
+						if (empty($object->{$foreign_key})) {
+							break;
+						}
+						// get the record from the foreign table
+						$foreign_values = array($primary_key => $object->{$foreign_key});
+						$foreign_object = tripal_core_generate_chado_var($foreign_table, $foreign_values);
+						// add the foreign record to the current object in a nested manner
+						$object->{$foreign_key} = $foreign_object;
+						// Flatten expandable_x arrays so only in the bottom object
+						if (is_array($object->{$foreign_key}->expandable_fields)) {
+							$object->expandable_fields = array_merge(
+							$object->expandable_fields,
+							$object->{$foreign_key}->expandable_fields
+							);
+							unset($object->{$foreign_key}->expandable_fields);
+						}
+						if (is_array($object->{$foreign_key}->expandable_tables)) {
+							$object->expandable_tables = array_merge(
+							$object->expandable_tables,
+							$object->{$foreign_key}->expandable_tables
+							);
+							unset($object->{$foreign_key}->expandable_tables);
+						}
+						if (is_array($object->{$foreign_key}->expandable_nodes)) {
+							$object->expandable_nodes = array_merge(
+							$object->expandable_nodes,
+							$object->{$foreign_key}->expandable_nodes
+							);
+							unset($object->{$foreign_key}->expandable_nodes);
+						}
+					}
+				}
+				$results[$key] = $object;
+			}
+		}
+	}
 
-  // check only one result returned
-  if (sizeof($results) == 1) {
-    // add results to object
-    return $results[0];
-  }
-  elseif (!empty($results)) {
-    return $results;
-  }
-  else {
-    // no results returned
-  }
+	// check only one result returned
+	if (sizeof($results) == 1) {
+		// add results to object
+		return $results[0];
+	}
+	elseif (!empty($results)) {
+		return $results;
+	}
+	else {
+		// no results returned
+	}
 }
 
 /**
@@ -1596,203 +1594,203 @@ function tripal_core_generate_chado_var($table, $values, $base_options = array()
  *
  * Example Usage:
  * @code
-      // Get a chado object to be expanded
-      $values = array(
-        'name' => 'Medtr4g030710'
-      );
-      $features = tripal_core_generate_chado_var('feature', $values);
-      // Expand the organism node
-      $feature = tripal_core_expand_chado_vars($feature, 'node', 'organism');
-      // Expand the feature.residues field
-      $feature = tripal_core_expand_chado_vars($feature, 'field', 'feature.residues');
-      // Expand the feature properties (featureprop table)
-      $feature = tripal_core_expand_chado_vars($feature, 'table', 'featureprop');
+ // Get a chado object to be expanded
+ $values = array(
+ 'name' => 'Medtr4g030710'
+ );
+ $features = tripal_core_generate_chado_var('feature', $values);
+ // Expand the organism node
+ $feature = tripal_core_expand_chado_vars($feature, 'node', 'organism');
+ // Expand the feature.residues field
+ $feature = tripal_core_expand_chado_vars($feature, 'field', 'feature.residues');
+ // Expand the feature properties (featureprop table)
+ $feature = tripal_core_expand_chado_vars($feature, 'table', 'featureprop');
  * @endcode
  *
  * @ingroup tripal_chado_api
  */
 function tripal_core_expand_chado_vars($object, $type, $to_expand, $table_options = array()) {
-  $base_table = $object->tablename;
+	$base_table = $object->tablename;
 
-  // check to see if they are expanding an array of objects
-  if (is_array($object)) {
-    foreach ($object as $index => $o) {
-      $object[$index] = tripal_core_expand_chado_vars($o, $type, $to_expand);
-    }
-    return $object;
-  }
-  switch ($type) {
-    case "field": //--------------------------------------------------------------------------------
-      if (preg_match('/(\w+)\.(\w+)/', $to_expand, $matches)) {
-        $tablename = $matches[1];
-        $fieldname = $matches[2];
-        $table_desc = tripal_core_get_chado_table_schema($tablename);
-        $values = array();
-        foreach ($table_desc['primary key'] as $key) {
-          $values[$key] = $object->{$key};
-        }
-        if ($base_table == $tablename) {
-          //get the field
-          $results = tripal_core_chado_select(
-            $tablename,
-            array($fieldname),
-            $values
-          );
-          $object->{$fieldname} = $results[0]->{$fieldname};
-          $object->expanded = $to_expand;
-        }
-        else {
-          //We need to recurse -the field is in a nested object
-          foreach ((array) $object as $field_name => $field_value) {
-            if (is_object($field_value)) {
-              $object->{$field_name} = tripal_core_expand_chado_vars(
-                $field_value,
+	// check to see if they are expanding an array of objects
+	if (is_array($object)) {
+		foreach ($object as $index => $o) {
+			$object[$index] = tripal_core_expand_chado_vars($o, $type, $to_expand);
+		}
+		return $object;
+	}
+	switch ($type) {
+		case "field": //--------------------------------------------------------------------------------
+			if (preg_match('/(\w+)\.(\w+)/', $to_expand, $matches)) {
+				$tablename = $matches[1];
+				$fieldname = $matches[2];
+				$table_desc = tripal_core_get_chado_table_schema($tablename);
+				$values = array();
+				foreach ($table_desc['primary key'] as $key) {
+					$values[$key] = $object->{$key};
+				}
+				if ($base_table == $tablename) {
+					//get the field
+					$results = tripal_core_chado_select(
+					$tablename,
+					array($fieldname),
+					$values
+					);
+					$object->{$fieldname} = $results[0]->{$fieldname};
+					$object->expanded = $to_expand;
+				}
+				else {
+					//We need to recurse -the field is in a nested object
+					foreach ((array) $object as $field_name => $field_value) {
+						if (is_object($field_value)) {
+							$object->{$field_name} = tripal_core_expand_chado_vars(
+							$field_value,
                 'field',
-                $to_expand
-              );
-            }
-          } //end of for each field in the current object
-        }
-      }
-      else {
-        watchdog(
+							$to_expand
+							);
+						}
+					} //end of for each field in the current object
+				}
+			}
+			else {
+				watchdog(
           'tripal_core',
           'tripal_core_expand_chado_vars: Field (%field) not in the right format. It should be <tablename>.<fieldname>',
-          WATCHDOG_ERROR
-        );
-      }
-    break;
-    case "table": //--------------------------------------------------------------------------------
-      $foreign_table = $to_expand;
-      $foreign_table_desc = tripal_core_get_chado_table_schema($foreign_table);
-      // If it's connected to the base table
-      if ($foreign_table_desc['foreign keys'][$base_table]) {
-        foreach ($foreign_table_desc['foreign keys'][$base_table]['columns'] as $left => $right) {
-          if (!$object->{$right}) {
-            break;
-          }
-          if (is_array($values)) {
-            $values = array_merge($values, array($left => $object->{$right}) );
-          }
-          else {
-            $values = array($left => $object->{$right});
-          }
-          $foreign_object = tripal_core_generate_chado_var(
-            $foreign_table,
-            array($left => $object->{$right}),
-            $table_options
-          );
-          if ($foreign_object) {
-            // in the case where the foreign key relationships exists more
-            // than once with the same table we want to alter the
-            // array structure
-            if (count($foreign_table_desc['foreign keys'][$base_table]['columns']) > 1) {
-              if (!is_object($object->{$foreign_table})) {
-                 $object->{$foreign_table} = new stdClass();
-              }
-              $object->{$foreign_table}->{$left} = $foreign_object;
-              $object->expanded = $to_expand;
-            }
-            else {
-              $object->{$foreign_table} = $foreign_object;
-              $object->expanded = $to_expand;
-            }
-          }
-        }
-      }
-      else {
-        //We need to recurse -the table has a relationship to one of the nested objects
-        foreach ((array) $object as $field_name => $field_value) {
-          // if we have a nested object ->expand the table in it
-          if (is_object($field_value)) {
-            $object->{$field_name} = tripal_core_expand_chado_vars(
-              $field_value,
+				WATCHDOG_ERROR
+				);
+			}
+			break;
+		case "table": //--------------------------------------------------------------------------------
+			$foreign_table = $to_expand;
+			$foreign_table_desc = tripal_core_get_chado_table_schema($foreign_table);
+			// If it's connected to the base table
+			if ($foreign_table_desc['foreign keys'][$base_table]) {
+				foreach ($foreign_table_desc['foreign keys'][$base_table]['columns'] as $left => $right) {
+					if (!$object->{$right}) {
+						break;
+					}
+					if (is_array($values)) {
+						$values = array_merge($values, array($left => $object->{$right}) );
+					}
+					else {
+						$values = array($left => $object->{$right});
+					}
+					$foreign_object = tripal_core_generate_chado_var(
+					$foreign_table,
+					array($left => $object->{$right}),
+					$table_options
+					);
+					if ($foreign_object) {
+						// in the case where the foreign key relationships exists more
+						// than once with the same table we want to alter the
+						// array structure
+						if (count($foreign_table_desc['foreign keys'][$base_table]['columns']) > 1) {
+							if (!is_object($object->{$foreign_table})) {
+								$object->{$foreign_table} = new stdClass();
+							}
+							$object->{$foreign_table}->{$left} = $foreign_object;
+							$object->expanded = $to_expand;
+						}
+						else {
+							$object->{$foreign_table} = $foreign_object;
+							$object->expanded = $to_expand;
+						}
+					}
+				}
+			}
+			else {
+				//We need to recurse -the table has a relationship to one of the nested objects
+				foreach ((array) $object as $field_name => $field_value) {
+					// if we have a nested object ->expand the table in it
+					if (is_object($field_value)) {
+						$object->{$field_name} = tripal_core_expand_chado_vars(
+						$field_value,
               'table',
-              $foreign_table
-            );
-          }
-        }
-      }
-    break;
-    case "node": //---------------------------------------------------------------------------------
-      //if the node to be expanded is for our base table, then just expand it
-      if ($object->tablename == $to_expand) {
-        $node = node_load($object->nid);
-        if ($node) {
-          $object->expanded = $to_expand;
-          $node->expandable_fields = $object->expandable_fields;
-          unset($object->expandable_fields);
-          $node->expandable_tables = $object->expandable_tables;
-          unset($object->expandable_tables);
-          $node->expandable_nodes = $object->expandable_nodes;
-          unset($object->expandable_nodes);
-          $node->{$base_table} = $object;
-          $object = $node;
-        }
-        else {
-          watchdog(
+						$foreign_table
+						);
+					}
+				}
+			}
+			break;
+		case "node": //---------------------------------------------------------------------------------
+			//if the node to be expanded is for our base table, then just expand it
+			if ($object->tablename == $to_expand) {
+				$node = node_load($object->nid);
+				if ($node) {
+					$object->expanded = $to_expand;
+					$node->expandable_fields = $object->expandable_fields;
+					unset($object->expandable_fields);
+					$node->expandable_tables = $object->expandable_tables;
+					unset($object->expandable_tables);
+					$node->expandable_nodes = $object->expandable_nodes;
+					unset($object->expandable_nodes);
+					$node->{$base_table} = $object;
+					$object = $node;
+				}
+				else {
+					watchdog(
             'tripal_core',
             'tripal_core_expand_chado_vars: No node matches the nid (%nid) supplied.',
-            array('%nid' => $object->nid),
-            WATCHDOG_ERROR
-          );
-        } //end of if node
-      }
-      else {
-        //We need to recurse -the node to expand is one of the nested objects
-        foreach ((array) $object as $field_name => $field_value) {
-          if (is_object($field_value)) {
-            $object->{$field_name} = tripal_core_expand_chado_vars(
-              $field_value,
+					array('%nid' => $object->nid),
+					WATCHDOG_ERROR
+					);
+				} //end of if node
+			}
+			else {
+				//We need to recurse -the node to expand is one of the nested objects
+				foreach ((array) $object as $field_name => $field_value) {
+					if (is_object($field_value)) {
+						$object->{$field_name} = tripal_core_expand_chado_vars(
+						$field_value,
               'node',
-              $to_expand
-            );
-          }
-        } //end of for each field in the current object
-      }
-    break;
-    default:
-      watchdog('tripal_core',
+						$to_expand
+						);
+					}
+				} //end of for each field in the current object
+			}
+			break;
+		default:
+			watchdog('tripal_core',
         'tripal_core_expand_chado_vars: Unrecognized type (%type). Should be one of "field", "table", "node".',
-        array('%type' => $type),
-        WATCHDOG_ERROR
-      );
-      return FALSE;
-  }
+			array('%type' => $type),
+			WATCHDOG_ERROR
+			);
+			return FALSE;
+	}
 
-  //move extended array downwards-------------------------------------------------------------------
-  if (!$object->expanded) {
-    //if there's no extended field then go hunting for it
-    foreach ( (array)$object as $field_name => $field_value) {
-      if (is_object($field_value)) {
-        if (isset($field_value->expanded)) {
-          $object->expanded = $field_value->expanded;
-          unset($field_value->expanded);
-        }
-      }
-    }
-  }
-  //try again becasue now we might have moved it down
-  if ($object->expanded) {
-    $expandable_name = 'expandable_' . $type . 's';
-    if ($object->{$expandable_name}) {
-      $key_to_remove = array_search($object->expanded, $object->{$expandable_name});
-      unset($object->{$expandable_name}[$key_to_remove]);
-      unset($object->expanded);
-    }
-    else {
-      // if there is an expandable array then we've reached the base object
-      // if we get here and don't have anything expanded then something went wrong
-//      watchdog(
-//        'tripal_core',
-//        'tripal_core_expand_chado_vars: Unable to expand the %type %to_expand',
-//        array('%type'=>$type, '%to_expand'=>$to_expand),
-//        WATCHDOG_ERROR
-//      );
-    } //end of it we've reached the base object
-  }
+	//move extended array downwards-------------------------------------------------------------------
+	if (!$object->expanded) {
+		//if there's no extended field then go hunting for it
+		foreach ( (array)$object as $field_name => $field_value) {
+			if (is_object($field_value)) {
+				if (isset($field_value->expanded)) {
+					$object->expanded = $field_value->expanded;
+					unset($field_value->expanded);
+				}
+			}
+		}
+	}
+	//try again becasue now we might have moved it down
+	if ($object->expanded) {
+		$expandable_name = 'expandable_' . $type . 's';
+		if ($object->{$expandable_name}) {
+			$key_to_remove = array_search($object->expanded, $object->{$expandable_name});
+			unset($object->{$expandable_name}[$key_to_remove]);
+			unset($object->expanded);
+		}
+		else {
+			// if there is an expandable array then we've reached the base object
+			// if we get here and don't have anything expanded then something went wrong
+			//      watchdog(
+			//        'tripal_core',
+			//        'tripal_core_expand_chado_vars: Unable to expand the %type %to_expand',
+			//        array('%type'=>$type, '%to_expand'=>$to_expand),
+			//        WATCHDOG_ERROR
+			//      );
+		} //end of it we've reached the base object
+	}
 
-  return $object;
+	return $object;
 }
 
 /**
@@ -1821,7 +1819,7 @@ function tripal_core_expand_chado_vars($object, $type, $to_expand, $table_option
  * @ingroup tripal_chado_api
  */
 function tripal_core_exclude_type_by_default() {
-  return array('text' => "strlen('&gt;field_value&lt; ') > 100");
+	return array('text' => "strlen('&gt;field_value&lt; ') > 100");
 }
 
 /**
@@ -1850,7 +1848,7 @@ function tripal_core_exclude_type_by_default() {
  * @ingroup tripal_chado_api
  */
 function tripal_core_exclude_field_from_feature_by_default() {
-  return array();
+	return array();
 }
 
 /**
@@ -1864,66 +1862,66 @@ function tripal_core_exclude_field_from_feature_by_default() {
  */
 function chado_query($sql) {
 
-//print memory_get_usage() . "\n";
-	
-  $args = func_get_args();
-  array_shift($args); // remove the $sql from the argument list
-  $sql = db_prefix_tables($sql);
-  if (isset($args[0]) and is_array($args[0])) { // 'All arguments in one array' syntax
-    $args = $args[0];
-  }
+	//print memory_get_usage() . "\n";
 
-  _db_query_callback($args, TRUE);
-  $sql = preg_replace_callback(DB_QUERY_REGEXP, '_db_query_callback', $sql);
+	$args = func_get_args();
+	array_shift($args); // remove the $sql from the argument list
+	$sql = db_prefix_tables($sql);
+	if (isset($args[0]) and is_array($args[0])) { // 'All arguments in one array' syntax
+		$args = $args[0];
+	}
 
-  // Execute the query on the chado database/schema
-  // Use the persistent chado connection if it already exists
-  $persistent_connection = unserialize(variable_get('tripal_persistent_chado', NULL));
-  if ($persistent_connection) {
+	_db_query_callback($args, TRUE);
+	$sql = preg_replace_callback(DB_QUERY_REGEXP, '_db_query_callback', $sql);
 
-    $query = $sql;
-    // Duplicate the _db_query code in order to ensure that the drupal
-    // $active_db variable is never touched
-    // thus changed $active_db to $persistent_connection
-    // START COPY FROM _db_query in database.pgsql.inc
-    if (variable_get('dev_query', 0)) {
-      list($usec, $sec) = explode(' ', microtime());
-      $timer = (float) $usec + (float) $sec;
-    }
+	// Execute the query on the chado database/schema
+	// Use the persistent chado connection if it already exists
+	$persistent_connection = unserialize(variable_get('tripal_persistent_chado', NULL));
+	if ($persistent_connection) {
 
-    $last_result = pg_query($persistent_connection, $query);
+		$query = $sql;
+		// Duplicate the _db_query code in order to ensure that the drupal
+		// $active_db variable is never touched
+		// thus changed $active_db to $persistent_connection
+		// START COPY FROM _db_query in database.pgsql.inc
+		if (variable_get('dev_query', 0)) {
+			list($usec, $sec) = explode(' ', microtime());
+			$timer = (float) $usec + (float) $sec;
+		}
 
-    if (variable_get('dev_query', 0)) {
-      $bt = debug_backtrace();
-      $query = $bt[2]['function'] . "\n" . $query;
-      list($usec, $sec) = explode(' ', microtime());
-      $stop = (float) $usec + (float) $sec;
-      $diff = $stop - $timer;
-      $queries[] = array($query, $diff);
-    }
+		$last_result = pg_query($persistent_connection, $query);
 
-    if ($debug) {
-      print '<p>query: ' . $query . '<br />error:' . pg_last_error($persistent_connection) . '</p>';
-    }
+		if (variable_get('dev_query', 0)) {
+			$bt = debug_backtrace();
+			$query = $bt[2]['function'] . "\n" . $query;
+			list($usec, $sec) = explode(' ', microtime());
+			$stop = (float) $usec + (float) $sec;
+			$diff = $stop - $timer;
+			$queries[] = array($query, $diff);
+		}
 
-    if ($last_result !== FALSE) {
-      return $last_result;
-    }
-    else {
-      // Indicate to drupal_error_handler that this is a database error.
-      ${DB_ERROR} = TRUE;
-      trigger_error(check_plain(pg_last_error($persistent_connection) . "\nquery: " . $query), E_USER_WARNING);
-      return FALSE;
-    }
-    // END COPY FROM _db_query in database.pgsql.inc
-  }
-  else {
-    $previous_db = tripal_db_set_active('chado');
-    $results = _db_query($sql);
-    tripal_db_set_active($previous_db);
-  }
+		if ($debug) {
+			print '<p>query: ' . $query . '<br />error:' . pg_last_error($persistent_connection) . '</p>';
+		}
 
-  return $results;
+		if ($last_result !== FALSE) {
+			return $last_result;
+		}
+		else {
+			// Indicate to drupal_error_handler that this is a database error.
+			${DB_ERROR} = TRUE;
+			trigger_error(check_plain(pg_last_error($persistent_connection) . "\nquery: " . $query), E_USER_WARNING);
+			return FALSE;
+		}
+		// END COPY FROM _db_query in database.pgsql.inc
+	}
+	else {
+		$previous_db = tripal_db_set_active('chado');
+		$results = _db_query($sql);
+		tripal_db_set_active($previous_db);
+	}
+
+	return $results;
 }
 
 /**
@@ -1935,7 +1933,7 @@ function chado_query($sql) {
  * $feature_id = chado_get_id_for_node ('feature', $node)
  */
 function chado_get_id_for_node($table, $node) {
-  return db_result(db_query("SELECT %s_id FROM {chado_%s} WHERE nid = %d", $table, $table, $node->nid));
+	return db_result(db_query("SELECT %s_id FROM {chado_%s} WHERE nid = %d", $table, $table, $node->nid));
 }
 
 /**
@@ -1947,7 +1945,7 @@ function chado_get_id_for_node($table, $node) {
  *  $nid = chado_get_node_id ('feature', $feature_id)
  */
 function chado_get_node_id($table, $id) {
-  return db_result(db_query("SELECT nid FROM {chado_%s} WHERE %s_id = %d", $table, $table, $id));
+	return db_result(db_query("SELECT nid FROM {chado_%s} WHERE %s_id = %d", $table, $table, $id));
 }
 
 /**
@@ -1972,25 +1970,25 @@ function chado_get_node_id($table, $id) {
  * @ingroup tripal_chado_api
  */
 function tripal_core_get_property($basetable, $record_id, $property, $cv_name) {
-  // get the foreign key for this property table
-  $table_desc = tripal_core_get_chado_table_schema($basetable . 'prop');
-  $fkcol = key($table_desc['foreign keys'][$basetable]['columns']);
+	// get the foreign key for this property table
+	$table_desc = tripal_core_get_chado_table_schema($basetable . 'prop');
+	$fkcol = key($table_desc['foreign keys'][$basetable]['columns']);
 
-  // construct the array of values to be selected
-  $values = array(
-    $fkcol => $record_id,
+	// construct the array of values to be selected
+	$values = array(
+	$fkcol => $record_id,
     'type_id' => array(
       'cv_id' => array(
         'name' => $cv_name,
-      ),
+	),
      'name' => $property,
      'is_obsolete' => 0
-    ),
-  );
-  $results = tripal_core_generate_chado_var($basetable . 'prop', $values);
-  $results = tripal_core_expand_chado_vars($results, 'field', $basetable . 'prop.value');
+	),
+	);
+	$results = tripal_core_generate_chado_var($basetable . 'prop', $values);
+	$results = tripal_core_expand_chado_vars($results, 'field', $basetable . 'prop.value');
 
-  return $results;
+	return $results;
 }
 
 /**
@@ -2021,61 +2019,61 @@ function tripal_core_get_property($basetable, $record_id, $property, $cv_name) {
  * @ingroup tripal_chado_api
  */
 function tripal_core_insert_property($basetable, $record_id, $property,
-  $cv_name, $value, $update_if_present = 0) {
+$cv_name, $value, $update_if_present = 0) {
 
-  // first see if the property already exists, if the user want's to update
-  // then we can do that, but otherwise we want to increment the rank and
-  // insert
-  $props = tripal_core_get_property($basetable, $record_id, $property, $cv_name);
-  if (!is_array($props)) {
-    $props = array($props);
-  }
-  $rank = 0;
-  if (count($props) > 0) {
-    if ($update_if_present) {
-      return tripal_core_update_property($basetable, $record_id, $property, $cv_name, $value);
-    }
-    else {
-      // iterate through the properties returned and check to see if the
-      // property with this value already exists if not, get the largest rank
-      // and insert the same property but with this new value
-      foreach ($props as $p) {
-        if ($p->rank > $rank) {
-          $rank = $p->rank;
-        }
-        if (strcmp($p->value, $value) == 0) {
-          return TRUE;
-        }
-      }
-      // now add 1 to the rank
-      $rank++;
-    }
-  }
-  else {
-    watchdog('tripal_core', "Cannot find property '!prop_name'.",
-        array('!prop_name' => $property), WATCHDOG_ERROR);
-  }
+	// first see if the property already exists, if the user want's to update
+	// then we can do that, but otherwise we want to increment the rank and
+	// insert
+	$props = tripal_core_get_property($basetable, $record_id, $property, $cv_name);
+	if (!is_array($props)) {
+		$props = array($props);
+	}
+	$rank = 0;
+	if (count($props) > 0) {
+		if ($update_if_present) {
+			return tripal_core_update_property($basetable, $record_id, $property, $cv_name, $value);
+		}
+		else {
+			// iterate through the properties returned and check to see if the
+			// property with this value already exists if not, get the largest rank
+			// and insert the same property but with this new value
+			foreach ($props as $p) {
+				if ($p->rank > $rank) {
+					$rank = $p->rank;
+				}
+				if (strcmp($p->value, $value) == 0) {
+					return TRUE;
+				}
+			}
+			// now add 1 to the rank
+			$rank++;
+		}
+	}
+	else {
+		watchdog('tripal_core', "Cannot find property '!prop_name'.",
+		array('!prop_name' => $property), WATCHDOG_ERROR);
+	}
 
 
-  // get the foreign key for this property table
-  $table_desc = tripal_core_get_chado_table_schema($basetable . 'prop');
-  $fkcol = key($table_desc['foreign keys'][$basetable]['columns']);
+	// get the foreign key for this property table
+	$table_desc = tripal_core_get_chado_table_schema($basetable . 'prop');
+	$fkcol = key($table_desc['foreign keys'][$basetable]['columns']);
 
-  // construct the array of values to be inserted
-  $values = array(
-    $fkcol => $record_id,
+	// construct the array of values to be inserted
+	$values = array(
+	$fkcol => $record_id,
     'type_id' => array(
       'cv_id' => array(
         'name' => $cv_name,
-      ),
+	),
       'name' => $property,
       'is_obsolete' => 0
-    ),
+	),
     'value' => $value,
     'rank' => $rank,
-  );
+	);
 
-  return tripal_core_chado_insert($basetable . 'prop', $values);
+	return tripal_core_chado_insert($basetable . 'prop', $values);
 }
 
 /**
@@ -2109,40 +2107,40 @@ function tripal_core_insert_property($basetable, $record_id, $property,
  * @ingroup tripal_chado_api
  */
 function tripal_core_update_property($basetable, $record_id, $property,
-  $cv_name, $value, $insert_if_missing = 0) {
+$cv_name, $value, $insert_if_missing = 0) {
 
-  // first see if the property is missing (we can't update a missing property
-  $prop = tripal_core_get_property($basetable, $record_id, $property, $cv_name);
-  if (count($prop)==0) {
-    if ($insert_if_missing) {
-      return tripal_core_insert_property($basetable, $record_id, $property, $cv_name, $value);
-    }
-    else {
-      return FALSE;
-    }
-  }
+	// first see if the property is missing (we can't update a missing property
+	$prop = tripal_core_get_property($basetable, $record_id, $property, $cv_name);
+	if (count($prop)==0) {
+		if ($insert_if_missing) {
+			return tripal_core_insert_property($basetable, $record_id, $property, $cv_name, $value);
+		}
+		else {
+			return FALSE;
+		}
+	}
 
-  // get the foreign key for this property table
-  $table_desc = tripal_core_get_chado_table_schema($basetable . 'prop');
-  $fkcol = key($table_desc['foreign keys'][$basetable]['columns']);
+	// get the foreign key for this property table
+	$table_desc = tripal_core_get_chado_table_schema($basetable . 'prop');
+	$fkcol = key($table_desc['foreign keys'][$basetable]['columns']);
 
-  // construct the array that will match the exact record to update
-  $match = array(
-    $fkcol => $record_id,
+	// construct the array that will match the exact record to update
+	$match = array(
+	$fkcol => $record_id,
     'type_id' => array(
       'cv_id' => array(
         'name' => $cv_name,
-      ),
+	),
       'name' => $property,
-    ),
-  );
+	),
+	);
 
-  // construct the array of values to be updated
-  $values = array(
+	// construct the array of values to be updated
+	$values = array(
     'value' => $value,
-  );
+	);
 
-  return tripal_core_chado_update($basetable . 'prop', $match, $values);
+	return tripal_core_chado_update($basetable . 'prop', $match, $values);
 }
 
 /**
@@ -2170,29 +2168,29 @@ function tripal_core_update_property($basetable, $record_id, $property,
  * @ingroup tripal_chado_api
  */
 function tripal_core_update_property_by_id($basetable, $record_id, $property,
-  $cv_name, $value) {
+$cv_name, $value) {
 
-  // get the primary key for this property table
-  $table_desc = tripal_core_get_chado_table_schema($basetable . 'prop');
-  $pkcol = $table_desc['primary key'][0];
+	// get the primary key for this property table
+	$table_desc = tripal_core_get_chado_table_schema($basetable . 'prop');
+	$pkcol = $table_desc['primary key'][0];
 
-  // construct the array that will match the exact record to update
-  $match = array(
-    $pkcol => $record_id,
-  );
+	// construct the array that will match the exact record to update
+	$match = array(
+	$pkcol => $record_id,
+	);
 
-  // construct the array of values to be updated
-  $values = array(
+	// construct the array of values to be updated
+	$values = array(
     'type_id' => array(
       'cv_id' => array(
         'name' => $cv_name,
-      ),
+	),
       'name' => $property,
-    ),
+	),
     'value' => $value,
-  );
+	);
 
-  return tripal_core_chado_update($basetable . 'prop', $match, $values);
+	return tripal_core_chado_update($basetable . 'prop', $match, $values);
 }
 
 /**
@@ -2217,22 +2215,22 @@ function tripal_core_update_property_by_id($basetable, $record_id, $property,
  */
 function tripal_core_delete_property($basetable, $record_id, $property, $cv_name) {
 
-  // get the foreign key for this property table
-  $table_desc = tripal_core_get_chado_table_schema($basetable . 'prop');
-  $fkcol = key($table_desc['foreign keys'][$basetable]['columns']);
+	// get the foreign key for this property table
+	$table_desc = tripal_core_get_chado_table_schema($basetable . 'prop');
+	$fkcol = key($table_desc['foreign keys'][$basetable]['columns']);
 
-  // construct the array that will match the exact record to update
-  $match = array(
-    $fkcol => $record_id,
+	// construct the array that will match the exact record to update
+	$match = array(
+	$fkcol => $record_id,
     'type_id' => array(
       'cv_id' => array(
         'name' => $cv_name,
-      ),
+	),
       'name' => $property,
-    ),
-  );
+	),
+	);
 
-  return tripal_core_chado_delete($basetable . 'prop', $match);
+	return tripal_core_chado_delete($basetable . 'prop', $match);
 }
 
 /**
@@ -2251,16 +2249,16 @@ function tripal_core_delete_property($basetable, $record_id, $property, $cv_name
  */
 function tripal_core_delete_property_by_id($basetable, $record_id) {
 
-  // get the foreign key for this property table
-  $table_desc = tripal_core_get_chado_table_schema($basetable . 'prop');
-  $pkcol = $table_desc['primary key'][0];
+	// get the foreign key for this property table
+	$table_desc = tripal_core_get_chado_table_schema($basetable . 'prop');
+	$pkcol = $table_desc['primary key'][0];
 
-  // construct the array that will match the exact record to update
-  $match = array(
-    $pkcol => $record_id,
-  );
+	// construct the array that will match the exact record to update
+	$match = array(
+	$pkcol => $record_id,
+	);
 
-  return tripal_core_chado_delete($basetable . 'prop', $match);
+	return tripal_core_chado_delete($basetable . 'prop', $match);
 }
 
 /**
@@ -2280,15 +2278,15 @@ function tripal_core_delete_property_by_id($basetable, $record_id) {
  */
 function tripal_create_moddir($module_name) {
 
-  // make the data directory for this module
-  $data_dir = file_directory_path() . "/tripal/$module_name";
-  if (!file_check_directory($data_dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS)) {
-    $message = "Cannot create directory $data_dir. This module may not ".
+	// make the data directory for this module
+	$data_dir = file_directory_path() . "/tripal/$module_name";
+	if (!file_check_directory($data_dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS)) {
+		$message = "Cannot create directory $data_dir. This module may not ".
                "behave correctly without this directory.  Please  create ".
                "the directory manually or fix the problem and reinstall.";
-    drupal_set_message(check_plain(t($message)), 'error');
-    watchdog('tripal_core', $message, array(), WATCHDOG_ERROR);
-  }
+		drupal_set_message(check_plain(t($message)), 'error');
+		watchdog('tripal_core', $message, array(), WATCHDOG_ERROR);
+	}
 }
 
 /**
@@ -2304,8 +2302,8 @@ function tripal_create_moddir($module_name) {
  * @ingroup tripal_files_api
  */
 function tripal_get_moddir($module_name) {
-  $data_dir = file_directory_path() . "/tripal/$module_name";
-  return $data_dir;
+	$data_dir = file_directory_path() . "/tripal/$module_name";
+	return $data_dir;
 }
 
 /**
@@ -2319,44 +2317,85 @@ function tripal_get_moddir($module_name) {
  * @ingroup tripal_chado_api
  */
 function tripal_db_set_active($dbname) {
-  global $db_url, $db_type;
-  $chado_exists = 0;
+	global $db_url, $db_type;
+	$chado_exists = 0;
 
-  // only postgres can support search paths.  So if this is MysQL then
-  // just run the normal tripal_db_set_active function.
-  if (strcmp($db_type, 'pgsql')==0) {
+	// only postgres can support search paths.  So if this is MysQL then
+	// just run the normal tripal_db_set_active function.
+	if (strcmp($db_type, 'pgsql')==0) {
 
-    // if the 'chado' database is in the $db_url variable then chado is
-    // not in the same Drupal database
-    if (is_array($db_url)) {
-      if (isset($db_url[$dbname])) {
-        return db_set_active($dbname);
-      }
-    }
+		// if the 'chado' database is in the $db_url variable then chado is
+		// not in the same Drupal database
+		if (is_array($db_url)) {
+			if (isset($db_url[$dbname])) {
+				return db_set_active($dbname);
+			}
+		}
 
-    // check to make sure the chado schema exists
-    $chado_exists = tripal_core_chado_schema_exists();
-
-    // here we make the assumption that the default database schema is
-    // 'public'.  This will most likely always be the case but if not,
-    // then this code will break
-    if ($chado_exists && strcmp($dbname, 'chado')==0) {
-      db_query("set search_path to %s", 'chado,public');
-      return 'public,chado';
-    }
-    elseif ($chado_exists) {
-      db_query("set search_path to %s", 'public,chado');
-      return 'chado,public';
-    }
-    else {
-      return db_set_active($dbname);
-    }
-  }
-  else {
-    return db_set_active($dbname);
-  }
+		// if this is the default database then set the search path and return
+		if (strcmp($dbname, 'default')==0) {
+//			tripal_db_set_default_search_path();
+			return db_set_active($dbname);
+		}
+		// if the user requests a database other than the default
+		// then we need to try and set the chado search path.  This
+		// only works if Chado is local to the Drpual database. If it
+		// fails then we assume the database is not local and we'll
+		// set it as normal.
+		else {
+//			if (tripal_db_set_chado_search_path($dbname)) {
+		     return $dbname; 
+//			}	
+//			else {
+//			  return db_set_active($dbname);
+//			} 
+		}
+	}
+	else {
+	  return db_set_active($dbname);	
+	}
 }
 
+/**
+ * Set the chado search_path for PostgreSQL
+ *
+ * Sets the database search_path for postgreSQL to the 
+ * chado schema.
+ *
+ * @ingroup tripal_chado_api
+ */
+function tripal_db_set_chado_search_path($dbname) {
+
+  // check to make sure the chado schema exists
+  $chado_exists = variable_get('chado_schema_exists', FALSE);
+  if(!$chado_exists){
+    $chado_exists = tripal_core_chado_schema_exists();
+  }
+	
+	// here we make the assumption that the default database schema is
+	// 'public'.  This will most likely always be the case but if not,
+	// then this code will break
+	if ($chado_exists) {
+		db_query('set search_path to %s', "$dbname,public");
+		return TRUE;
+	} 
+	else {
+	  return FALSE;
+	}
+}
+
+/**
+ * Set the default search_path for PostgreSQL
+ *
+ * Sets the database search_path for postgreSQL to the 
+ * default schema.
+ *
+ * @ingroup tripal_chado_api
+ */
+function tripal_db_set_default_search_path() {
+	// we make the assumption that the default schema is 'public'.
+  db_query('set search_path to %s', 'public');
+}
 /**
  * Indicates if the SQL statement is prepapred
  *
@@ -2368,32 +2407,32 @@ function tripal_db_set_active($dbname) {
  */
 function tripal_core_is_sql_prepared($statement_name) {
 
-  // to reduce the need for a database query we will check the
-  // session variable for this connection to see if the statement
-  // has been prepared. If it has then we won't do the database
-  // query to find out.  If it hasn't then we'll query the database
-  // to see if it is prepared.
-  $connection = variable_get('tripal_persistent_chado', NULL);
-  if (!isset($_SESSION[$connection])) {
-    $_SESSION[$connection] = array();
-  }
-  if(in_array($statement_name,$_SESSION[$connection])){
-     //print "Is Prepared and in Session var: $statement_name\n";
-     return TRUE;
-  }
+	// to reduce the need for a database query we will check the
+	// session variable for this connection to see if the statement
+	// has been prepared. If it has then we won't do the database
+	// query to find out.  If it hasn't then we'll query the database
+	// to see if it is prepared.
+	$connection = variable_get('tripal_persistent_chado', NULL);
+	if (!isset($_SESSION[$connection])) {
+		$_SESSION[$connection] = array();
+	}
+	if(in_array($statement_name,$_SESSION[$connection])){
+		//print "Is Prepared and in Session var: $statement_name\n";
+		return TRUE;
+	}
 
-  // @coder-ignore: acting on postgres tables rather then drupal schema therefore, table prefixing does not apply
-  $sql = "SELECT name FROM pg_prepared_statements WHERE name = '%s'";
-  // do not use 'chado_query' here or it causes memory-leaks
-  $result = db_fetch_object(db_query($sql, $statement_name));
+	// @coder-ignore: acting on postgres tables rather then drupal schema therefore, table prefixing does not apply
+	$sql = "SELECT name FROM pg_prepared_statements WHERE name = '%s'";
+	// do not use 'chado_query' here or it causes memory-leaks
+	$result = db_fetch_object(db_query($sql, $statement_name));
 
-  if ($result) {
-     $_SESSION[$connection][] = $statement_name;
-     //print "Is Prepared but in DB: $statement_name\n";
-     return TRUE;
-  }
-  //print "Is Not prepared: $statement_name\n";
-  return FALSE;
+	if ($result) {
+		$_SESSION[$connection][] = $statement_name;
+		//print "Is Prepared but in DB: $statement_name\n";
+		return TRUE;
+	}
+	//print "Is Not prepared: $statement_name\n";
+	return FALSE;
 }
 
 /**
@@ -2410,36 +2449,36 @@ function tripal_core_is_sql_prepared($statement_name) {
  *   be the type of value needed (ie: text, int, etc.)
  */
 function tripal_core_chado_prepare($statement_name, $psql, $args) {
-  $connection = variable_get('tripal_persistent_chado', NULL);
+	$connection = variable_get('tripal_persistent_chado', NULL);
 
-  // Check to see if this statement was already prepared
-  if (tripal_core_is_sql_prepared($statement_name)) {
-    //if it was check that the arguments are the same
-    $prepared_args = $_SESSION['prepared_args'][$connection][$statement_name];
-    $prepared_sql = $_SESSION['prepared_sql'][$connection][$statement_name];
-    if ($prepared_args == $args) {
-      // This statement is already prepared
-      return TRUE;
-    }
-    else {
-      // Although a statement with this name is already prepared it is not the same!
-      watchdog('tripal_core', "chado_prepare: '%name' statement already prepared with different arguments! You want to prepare %sql with %values and the existing statement is %esql with %existing", array('%name' => $statement_name, '%sql' => $psql, '%values' => print_r($args,TRUE), '%esql' => $prepared_sql, '%existing' => print_r($prepared_args,TRUE)), WATCHDOG_ERROR);
-      return FALSE;
-    }
-  }
+	// Check to see if this statement was already prepared
+	if (tripal_core_is_sql_prepared($statement_name)) {
+		//if it was check that the arguments are the same
+		$prepared_args = $_SESSION['prepared_args'][$connection][$statement_name];
+		$prepared_sql = $_SESSION['prepared_sql'][$connection][$statement_name];
+		if ($prepared_args == $args) {
+			// This statement is already prepared
+			return TRUE;
+		}
+		else {
+			// Although a statement with this name is already prepared it is not the same!
+			watchdog('tripal_core', "chado_prepare: '%name' statement already prepared with different arguments! You want to prepare %sql with %values and the existing statement is %esql with %existing", array('%name' => $statement_name, '%sql' => $psql, '%values' => print_r($args,TRUE), '%esql' => $prepared_sql, '%existing' => print_r($prepared_args,TRUE)), WATCHDOG_ERROR);
+			return FALSE;
+		}
+	}
 
-  $status = chado_query($psql);
-  if (!$status) {
-    watchdog('tripal_core', "chado_prepare: not able to prepare '%name' statement for: %sql", array('%name' => $statement_name, '%sql' => $psql), WATCHDOG_ERROR);
-    return FALSE;
-  }
-  else {
-    watchdog('tripal_core', "tripal_core_chado_select: prepared '%name' statement as %sql", array('%name' => $statement_name, '%sql' => $psql), WATCHDOG_NOTICE);
-    $_SESSION[$connection][] = $statement_name;
-    $_SESSION['prepared_args'][$connection][$statement_name] = $args;
-    $_SESSION['prepared_sql'][$connection][$statement_name] = $psql;
-    return TRUE;
-  }
+	$status = chado_query($psql);
+	if (!$status) {
+		watchdog('tripal_core', "chado_prepare: not able to prepare '%name' statement for: %sql", array('%name' => $statement_name, '%sql' => $psql), WATCHDOG_ERROR);
+		return FALSE;
+	}
+	else {
+		watchdog('tripal_core', "tripal_core_chado_select: prepared '%name' statement as %sql", array('%name' => $statement_name, '%sql' => $psql), WATCHDOG_NOTICE);
+		$_SESSION[$connection][] = $statement_name;
+		$_SESSION['prepared_args'][$connection][$statement_name] = $args;
+		$_SESSION['prepared_sql'][$connection][$statement_name] = $psql;
+		return TRUE;
+	}
 }
 
 /**
@@ -2454,64 +2493,64 @@ function tripal_core_chado_prepare($statement_name, $psql, $args) {
  *   An array of values in the execute sql statement
  */
 function tripal_core_chado_execute_prepared($statement_name, $sql, $values) {
-  $connection = variable_get('tripal_persistent_chado', NULL);
+	$connection = variable_get('tripal_persistent_chado', NULL);
 
-  if (!tripal_core_is_sql_prepared($statement_name)) {
-     watchdog('tripal_core', "tripal_core_chado_execute_prepared: Cannot execute an unprepared statement: '%name'", array('%name' => $statement_name), WATCHDOG_ERROR);
-  }
-  
-  // Before Executing, Ensure that all the values are supplied
-  $required_values = $_SESSION['prepared_args'][$connection][$statement_name];
-  if (!$required_values){
-     watchdog('tripal_core', "tripal_core_chado_execute_prepared: missing prepare arguments for this statement: '%name'", array('%name' => $statement_name), WATCHDOG_ERROR);
-  }
-  
-  if (sizeof($required_values) == sizeof($values)) {
+	if (!tripal_core_is_sql_prepared($statement_name)) {
+		watchdog('tripal_core', "tripal_core_chado_execute_prepared: Cannot execute an unprepared statement: '%name'", array('%name' => $statement_name), WATCHDOG_ERROR);
+	}
 
-    $error = FALSE;
-    foreach ($values as $k => $v) {
-      if (isset($required_values[$k])) {
-        switch ($required_values[$k]) {
-          case 'text':
-            $check = is_string($v);
-            if (!$check) {
-              watchdog('tripal_core', "chado_execute_prepared: wrong argument type supplied for '%name' statement. Expected %required but recieved %value", array('%name' => $statement_name, '%required' => $required_values[$k], '%value' => print_r($v,TRUE)), WATCHDOG_ERROR);
-              return FALSE;
-            }
-            break;
-          case 'int':
-            $check = is_numeric($v);
-            if (!$check) {
-              watchdog('tripal_core', "chado_execute_prepared: wrong argument type supplied for '%name' statement. Expected %required but recieved %value", array('%name' => $statement_name, '%required' => $required_values[$k], '%value' => print_r($v,TRUE)), WATCHDOG_ERROR);
-              return FALSE;
-            }
-            break;
-          case 'numeric':
-            $check = is_numeric($v);
-            if (!$check) {
-              watchdog('tripal_core', "chado_execute_prepared: wrong argument type supplied for '%name' statement. Expected %required but recieved %value", array('%name' => $statement_name, '%required' => $required_values[$k], '%value' => print_r($v,TRUE)), WATCHDOG_ERROR);
-              return FALSE;
-            }
-            break;                     
-          default:
-            watchdog('tripal_core', "chado_execute_prepared: unsupported argument type (supplied for '%name' statement %type", array('%name' => $statement_name, '%type' => $required_values[$k]), WATCHDOG_WARNING);
-            break;
-        }
-      }
-      else {
-        watchdog('tripal_core', "chado_execute_prepared: wrong number of arguments supplied for '%name' statement. Expected %required but recieved %values", array('%name' => $statement_name, '%required' => print_r($required_values,TRUE), '%values' => print_r($values,TRUE)), WATCHDOG_ERROR);
-        return FALSE;
-      }
-    }
+	// Before Executing, Ensure that all the values are supplied
+	$required_values = $_SESSION['prepared_args'][$connection][$statement_name];
+	if (!$required_values){
+		watchdog('tripal_core', "tripal_core_chado_execute_prepared: missing prepare arguments for this statement: '%name'", array('%name' => $statement_name), WATCHDOG_ERROR);
+	}
 
-    // Since all values are supplied, execute
-    $resource = chado_query($sql, $values);
-    return $resource;
-  }
-  else {
-    watchdog('tripal_core', "chado_execute_prepared: wrong number of arguments supplied for '%name' statement. Expected %required but recieved %values", array('%name' => $statement_name, '%required' => print_r($required_values,TRUE), '%values' => print_r($values,TRUE)), WATCHDOG_ERROR);
-    return FALSE;
-  }
+	if (sizeof($required_values) == sizeof($values)) {
+
+		$error = FALSE;
+		foreach ($values as $k => $v) {
+			if (isset($required_values[$k])) {
+				switch ($required_values[$k]) {
+					case 'text':
+						$check = is_string($v);
+						if (!$check) {
+							watchdog('tripal_core', "chado_execute_prepared: wrong argument type supplied for '%name' statement. Expected %required but recieved %value", array('%name' => $statement_name, '%required' => $required_values[$k], '%value' => print_r($v,TRUE)), WATCHDOG_ERROR);
+							return FALSE;
+						}
+						break;
+					case 'int':
+						$check = is_numeric($v);
+						if (!$check) {
+							watchdog('tripal_core', "chado_execute_prepared: wrong argument type supplied for '%name' statement. Expected %required but recieved %value", array('%name' => $statement_name, '%required' => $required_values[$k], '%value' => print_r($v,TRUE)), WATCHDOG_ERROR);
+							return FALSE;
+						}
+						break;
+					case 'numeric':
+						$check = is_numeric($v);
+						if (!$check) {
+							watchdog('tripal_core', "chado_execute_prepared: wrong argument type supplied for '%name' statement. Expected %required but recieved %value", array('%name' => $statement_name, '%required' => $required_values[$k], '%value' => print_r($v,TRUE)), WATCHDOG_ERROR);
+							return FALSE;
+						}
+						break;
+					default:
+						watchdog('tripal_core', "chado_execute_prepared: unsupported argument type (supplied for '%name' statement %type", array('%name' => $statement_name, '%type' => $required_values[$k]), WATCHDOG_WARNING);
+						break;
+				}
+			}
+			else {
+				watchdog('tripal_core', "chado_execute_prepared: wrong number of arguments supplied for '%name' statement. Expected %required but recieved %values", array('%name' => $statement_name, '%required' => print_r($required_values,TRUE), '%values' => print_r($values,TRUE)), WATCHDOG_ERROR);
+				return FALSE;
+			}
+		}
+
+		// Since all values are supplied, execute
+		$resource = chado_query($sql, $values);
+		return $resource;
+	}
+	else {
+		watchdog('tripal_core', "chado_execute_prepared: wrong number of arguments supplied for '%name' statement. Expected %required but recieved %values", array('%name' => $statement_name, '%required' => print_r($required_values,TRUE), '%values' => print_r($values,TRUE)), WATCHDOG_ERROR);
+		return FALSE;
+	}
 }
 
 /**
@@ -2524,60 +2563,59 @@ function tripal_core_chado_execute_prepared($statement_name, $sql, $values) {
  *   A postgresql connection object which can be used by pg_prepare, pg_execute, etc.
  */
 function tripal_db_persistent_chado() {
-  global $db_url;
+	global $db_url;
 
-  // get connection if it already exists
-  // Otherwise we need to set it
-  $connection = unserialize(variable_get('tripal_persistent_chado', NULL));
-
-  if ($connection) {
-    return $connection;
-  }
-  else {
-    if (is_array($db_url) && isset($db_url['chado'])) {
-      $connection = db_connect($db_url['chado']);
-      variable_set('tripal_persistent_chado', $connection);
-    }
-    else {
-      $connection = db_connect($db_url);
-      variable_set('tripal_persistent_chado', serialize($connection));
-    }
-    return $connection;
-  }
-  return FALSE;
+	// get connection if it already exists
+	// Otherwise we need to set it
+	$sconn = variable_get('tripal_persistent_chado', NULL);
+	if ($sconn) {
+		return unserialize($sconn);
+	}
+	else {
+		if (is_array($db_url) && isset($db_url['chado'])) {
+			$connection = db_connect($db_url['chado']);
+			variable_set('tripal_persistent_chado', $connection);
+		}
+		else {
+			$connection = db_connect($db_url);
+			variable_set('tripal_persistent_chado', serialize($connection));
+		}
+		return $connection;
+	}
+	return FALSE;
 }
 
 /**
  * Release a persistent chado connection
  */
 function tripal_db_release_persistent_chado() {
-  variable_del('tripal_persistent_chado');
+	variable_del('tripal_persistent_chado');
 }
 
 /**
  * Start a transaction block. Ensures the use of a persistent chado connection
  */
 function tripal_db_start_transaction() {
-  $connection = tripal_db_persistent_chado();
-  chado_query("BEGIN");
+	$connection = tripal_db_persistent_chado();
+	chado_query("BEGIN");
 }
 
 /**
  * Set a savepoint to roll the current transaction back to if an error is encountered
  */
 function tripal_db_set_savepoint_transaction($savepoint, $release = FALSE) {
-  // Postgresql requires a savepoint of the same name to be unset before re-use
-  if ($release) {
-    chado_query("RELEASE SAVEPOINT %s", $savepoint);
-  }
-  chado_query("SAVEPOINT %s", $savepoint);
+	// Postgresql requires a savepoint of the same name to be unset before re-use
+	if ($release) {
+		chado_query("RELEASE SAVEPOINT %s", $savepoint);
+	}
+	chado_query("SAVEPOINT %s", $savepoint);
 }
 
 /**
  * Commit changes made during the current transaction
  */
 function tripal_db_commit_transaction() {
-  chado_query("COMMIT");
+	chado_query("COMMIT");
 }
 
 /**
@@ -2591,16 +2629,16 @@ function tripal_db_commit_transaction() {
  */
 function tripal_db_rollback_transaction($savepoint = NULL, $commit = TRUE) {
 
-  if ($savepoint) {
-    chado_query("ROLLBACK TO SAVEPOINT %s", $savepoint);
-  }
-  else {
-    chado_query("ROLLBACK");
-  }
+	if ($savepoint) {
+		chado_query("ROLLBACK TO SAVEPOINT %s", $savepoint);
+	}
+	else {
+		chado_query("ROLLBACK");
+	}
 
-  if ($commit) {
-    tripal_db_commit_transaction();
-  }
+	if ($commit) {
+		tripal_db_commit_transaction();
+	}
 
 }
 
@@ -2628,38 +2666,38 @@ function tripal_db_rollback_transaction($savepoint = NULL, $commit = TRUE) {
  * @ingroup tripal_chado_api
  */
 function tripal_get_max_chado_rank($tablename, $where_options) {
-  $where= array();
+	$where= array();
 
-  //generate the where clause from supplied options
-  // the key is the column name
-  foreach ($where_options as $key => $val_array) {
-    if (preg_match('/INT/', $val_array['type'])) {
-      $where[] = $key . "=" . $val_array['value'];
-    }
-    else {
-      if ($val_array['exact']) {
-        $operator='=';
-      }
-      else {
-        $operator='~';
-      }
-      $where[] = $key . $operator . "'" . $val_array['value'] . "'";
-    }
-  }
-  $previous_db = tripal_db_set_active('chado');
-  $result = db_fetch_object(db_query(
+	//generate the where clause from supplied options
+	// the key is the column name
+	foreach ($where_options as $key => $val_array) {
+		if (preg_match('/INT/', $val_array['type'])) {
+			$where[] = $key . "=" . $val_array['value'];
+		}
+		else {
+			if ($val_array['exact']) {
+				$operator='=';
+			}
+			else {
+				$operator='~';
+			}
+			$where[] = $key . $operator . "'" . $val_array['value'] . "'";
+		}
+	}
+	$previous_db = tripal_db_set_active('chado');
+	$result = db_fetch_object(db_query(
     "SELECT max(rank) as max_rank, count(rank) as count FROM %s WHERE %s",
-    $tablename,
-    implode(' AND ', $where)
-  ));
-  tripal_db_set_active($previous_db);
-  //drupal_set_message("Max Rank Query=SELECT max(rank) as max_rank, count(rank) as count FROM ".$tablename." WHERE ".implode(' AND ',$where));
-  if ($result->count > 0) {
-    return $result->max_rank;
-  }
-  else {
-    return -1;
-  }
+	$tablename,
+	implode(' AND ', $where)
+	));
+	tripal_db_set_active($previous_db);
+	//drupal_set_message("Max Rank Query=SELECT max(rank) as max_rank, count(rank) as count FROM ".$tablename." WHERE ".implode(' AND ',$where));
+	if ($result->count > 0) {
+		return $result->max_rank;
+	}
+	else {
+		return -1;
+	}
 }
 
 /**
@@ -2676,14 +2714,14 @@ function tripal_get_max_chado_rank($tablename, $where_options) {
  */
 function tripal_get_chado_custom_schema($table) {
 
-  $sql = "SELECT schema FROM {tripal_custom_tables} WHERE table_name = '%s'";
-  $custom = db_fetch_object(db_query($sql, $table));
-  if (!$custom) {
-    return FALSE;
-  }
-  else {
-    return unserialize($custom->schema);
-  }
+	$sql = "SELECT schema FROM {tripal_custom_tables} WHERE table_name = '%s'";
+	$custom = db_fetch_object(db_query($sql, $table));
+	if (!$custom) {
+		return FALSE;
+	}
+	else {
+		return unserialize($custom->schema);
+	}
 }
 
 /**
@@ -2694,15 +2732,21 @@ function tripal_get_chado_custom_schema($table) {
  */
 function tripal_core_chado_schema_exists() {
 
-  // This is postgresql-specific code to check the existence of the chado schema
-  // @coder-ignore: acting on pg_catalog schema rather then drupal schema therefore, table prefixing does not apply
-  $sql = "SELECT nspname FROM pg_catalog.pg_namespace WHERE nspname = 'chado'";
-  if (db_fetch_object(db_query($sql))) {
-    return TRUE;
-  }
-  else {
-    return FALSE;
-  }
+	$exists = variable_get('chado_schema_exists', FALSE);
+
+	if(!$exists) {
+		// This is postgresql-specific code to check the existence of the chado schema
+		// @coder-ignore: acting on pg_catalog schema rather then drupal schema therefore, table prefixing does not apply
+		$sql = "SELECT nspname FROM pg_catalog.pg_namespace WHERE nspname = 'chado'";
+		if (db_fetch_object(db_query($sql))) {
+			variable_set('chado_schema_exists', TRUE);
+			return TRUE;
+		}
+		else {
+			return FALSE;
+		}
+	}
+	return TRUE;
 }
 
 /**
@@ -2722,35 +2766,35 @@ function tripal_core_chado_schema_exists() {
  */
 function tripal_core_get_chado_tables($include_custom = NULL) {
 
-  if (is_array($db_url) AND array_key_exists('chado', $db_url)) {
-    $previous_db = tripal_db_set_active('chado');
-    // @coder-ignore: acting on pg_catalog schema rather then drupal schema therefore, table prefixing does not apply
-    $sql = 'SELECT tablename FROM pg_tables';
-    $resource = db_query($sql);
-    tripal_db_set_active($previous_db);
-  }
-  else {
-    // @coder-ignore: acting on pg_catalog schema rather then drupal schema therefore, table prefixing does not apply
-    $sql = "SELECT tablename FROM pg_tables WHERE schemaname='chado'";
-    $resource = db_query($sql);
-  }
+	if (is_array($db_url) AND array_key_exists('chado', $db_url)) {
+		$previous_db = tripal_db_set_active('chado');
+		// @coder-ignore: acting on pg_catalog schema rather then drupal schema therefore, table prefixing does not apply
+		$sql = 'SELECT tablename FROM pg_tables';
+		$resource = db_query($sql);
+		tripal_db_set_active($previous_db);
+	}
+	else {
+		// @coder-ignore: acting on pg_catalog schema rather then drupal schema therefore, table prefixing does not apply
+		$sql = "SELECT tablename FROM pg_tables WHERE schemaname='chado'";
+		$resource = db_query($sql);
+	}
 
-  $tables = array();
-  while ($r = db_fetch_object($resource)) {
-    $tables[$r->tablename] = $r->tablename;
-  }
+	$tables = array();
+	while ($r = db_fetch_object($resource)) {
+		$tables[$r->tablename] = $r->tablename;
+	}
 
-  // now add in the custom tables too
-  if ($include_custom) {
-    $sql = "SELECT table_name FROM {tripal_custom_tables}";
-    $resource = db_query($sql);
-  }
-  while ($r = db_fetch_object($resource)) {
-    $tables[$r->table_name] = $r->table_name;
-  }
+	// now add in the custom tables too
+	if ($include_custom) {
+		$sql = "SELECT table_name FROM {tripal_custom_tables}";
+		$resource = db_query($sql);
+	}
+	while ($r = db_fetch_object($resource)) {
+		$tables[$r->table_name] = $r->table_name;
+	}
 
-  asort($tables);
-  return $tables;
+	asort($tables);
+	return $tables;
 }
 /**
  * Sets a Drupal variable with the current version of Chado.  This variable
@@ -2763,42 +2807,42 @@ function tripal_core_get_chado_tables($include_custom = NULL) {
  */
 function tripal_core_set_chado_version() {
 
-  // check that Chado is installed if not return 'uninstalled as the version'
-  $chado_exists = tripal_core_chado_schema_exists();
-  if (!$chado_exists) {
-     return 'not installed';
-  }
+	// check that Chado is installed if not return 'uninstalled as the version'
+	$chado_exists = tripal_core_chado_schema_exists();
+	if (!$chado_exists) {
+		return 'not installed';
+	}
 
-  // if the table doesn't exist then we don't know what version but we know
-  // it must be 1.11 or older.
-  $previous_db = tripal_db_set_active('chado');
-  $prop_exists = db_table_exists('chadoprop');
-  tripal_db_set_active($previous_db);
-  if (!$prop_exists) {
-     return "1.11 or older";
-  }
+	// if the table doesn't exist then we don't know what version but we know
+	// it must be 1.11 or older.
+	$previous_db = tripal_db_set_active('chado');
+	$prop_exists = db_table_exists('chadoprop');
+	tripal_db_set_active($previous_db);
+	if (!$prop_exists) {
+		return "1.11 or older";
+	}
 
-  // we can't use the Tripal API to query this table
-  // because the Tripal API depends on this fucntion to
-  // tell it the version. So, we need a typical SQL statement
-  $sql = "SELECT value "
-        ."FROM chadoprop CP "
-        ."  INNER JOIN cvterm CVT on CVT.cvterm_id = CP.type_id "
-        ."  INNER JOIN cv CV on CVT.cv_id = CV.cv_id "
-        ."WHERE CV.name = 'chado_properties' and CVT.name = 'version'";
-  $previous_db = tripal_db_set_active('chado');
-  $v = db_fetch_object(db_query($sql));
-  $previous_db = tripal_db_set_active('chado');
+	// we can't use the Tripal API to query this table
+	// because the Tripal API depends on this fucntion to
+	// tell it the version. So, we need a typical SQL statement
+	$sql = "SELECT value "
+	."FROM chadoprop CP "
+	."  INNER JOIN cvterm CVT on CVT.cvterm_id = CP.type_id "
+	."  INNER JOIN cv CV on CVT.cv_id = CV.cv_id "
+	."WHERE CV.name = 'chado_properties' and CVT.name = 'version'";
+	$previous_db = tripal_db_set_active('chado');
+	$v = db_fetch_object(db_query($sql));
+	$previous_db = tripal_db_set_active('chado');
 
-  // if we don't have a version in the chadoprop table then it must be
-  // v1.11 or older
-  if (!$v->value) {
-     variable_set('chado_version', "1.11 or older");
-     return "1.11 or older";
-  }
+	// if we don't have a version in the chadoprop table then it must be
+	// v1.11 or older
+	if (!$v->value) {
+		variable_set('chado_version', "1.11 or older");
+		return "1.11 or older";
+	}
 
-  variable_set('chado_version', $v->value);
-  return $v->value;
+	variable_set('chado_version', $v->value);
+	return $v->value;
 }
 /**
  * Returns the version number of the currently installed Chado instance.
@@ -2821,39 +2865,39 @@ function tripal_core_set_chado_version() {
  * @ingroup tripal_core_api
  */
 function tripal_core_get_chado_version($exact = FALSE, $warn_if_unsupported = FALSE) {
-   // first get the chado version that is installed
-   $exact_version = variable_get('chado_version', '');
-   if (!$exact_version) {
-     $exact_version = tripal_core_set_chado_version();
-   }
+	// first get the chado version that is installed
+	$exact_version = variable_get('chado_version', '');
+	if (!$exact_version) {
+		$exact_version = tripal_core_set_chado_version();
+	}
 
-   // Tripal only supports v1.11 or newer.. really this is the same as v1.1
-   // but at the time the v1.11 schema API was written we didn't know that so
-   // we'll return the version 1.11 so the schema API will work.
-   if (strcmp($exact_version, '1.11 or older') == 0) {
-     $exact_version = "1.11";
-     if($warn_if_unsupported){
-       drupal_set_message(t("WARNING: Tripal does not fully support Chado version less than v1.1.  If you are certain this is v1.1
+	// Tripal only supports v1.11 or newer.. really this is the same as v1.1
+	// but at the time the v1.11 schema API was written we didn't know that so
+	// we'll return the version 1.11 so the schema API will work.
+	if (strcmp($exact_version, '1.11 or older') == 0) {
+		$exact_version = "1.11";
+		if($warn_if_unsupported){
+			drupal_set_message(t("WARNING: Tripal does not fully support Chado version less than v1.1.  If you are certain this is v1.1
          of if Chado was installed using an earlier version of Tripal then all is well. If not please upgrade to v1.1 or later"),
          'warning');
-     }
-   }
+		}
+	}
 
-   // if not returing an exact version, return the version to the nearest 10th.
-   // return 1.2 for all versions of 1.2x
-   $effective_version = $exact_version;
-   if (preg_match('/^1\.2\d+$/', $effective_version)){
-      $effective_version = "1.2";
-   }
-   if ($warn_if_unsupported and ($effective_version != 1.11 and $effective_version != 1.2)) {
-     drupal_set_message(t("WARNING: The currently installed version of Chado, v$exact_version, is not fully compatible with Tripal."),'warning');
-   }
-   // if the callee has requested the exact version then return it
-   if ($exact) {
-      return $exact_version;
-   }
+	// if not returing an exact version, return the version to the nearest 10th.
+	// return 1.2 for all versions of 1.2x
+	$effective_version = $exact_version;
+	if (preg_match('/^1\.2\d+$/', $effective_version)){
+		$effective_version = "1.2";
+	}
+	if ($warn_if_unsupported and ($effective_version != 1.11 and $effective_version != 1.2)) {
+		drupal_set_message(t("WARNING: The currently installed version of Chado, v$exact_version, is not fully compatible with Tripal."),'warning');
+	}
+	// if the callee has requested the exact version then return it
+	if ($exact) {
+		return $exact_version;
+	}
 
-   return $effective_version;
+	return $effective_version;
 }
 /**
  * Retrieves the chado tables Schema API array.
@@ -2869,19 +2913,19 @@ function tripal_core_get_chado_version($exact = FALSE, $warn_if_unsupported = FA
  */
 function tripal_core_get_chado_table_schema($table) {
 
-   // first get the chado version that is installed
-   $v = tripal_core_get_chado_version();
+	// first get the chado version that is installed
+	$v = tripal_core_get_chado_version();
 
-   // get the table array from the proper chado schema
-   $v = preg_replace("/\./", "_", $v); // reformat version for hook name
-   $table_arr = module_invoke_all("chado_schema_v" . $v . "_" . $table);
-   
-   // if the table_arr is empty then maybe this is a custom table
-   if(!is_array($table_arr) or count($table_arr) == 0){
-     $table_arr = tripal_get_chado_custom_schema($table);
-   }
+	// get the table array from the proper chado schema
+	$v = preg_replace("/\./", "_", $v); // reformat version for hook name
+	$table_arr = module_invoke_all("chado_schema_v" . $v . "_" . $table);
+	 
+	// if the table_arr is empty then maybe this is a custom table
+	if(!is_array($table_arr) or count($table_arr) == 0){
+		$table_arr = tripal_get_chado_custom_schema($table);
+	}
 
-   return $table_arr;
+	return $table_arr;
 }
 /**
  * This function will delete Drupal nodes for any sync'ed table (e.g.
@@ -2897,90 +2941,90 @@ function tripal_core_get_chado_table_schema($table) {
  * @ingroup tripal_core_api
  */
 function tripal_core_clean_orphaned_nodes($table, $job_id) {
-  $count = 0;
-  
-  // build the SQL statments needed to check if nodes point to valid analyses
-  $dsql = "SELECT * FROM {node} WHERE type = 'chado_%s' order by nid";
-  $nsql = "SELECT * FROM {node} WHERE nid = %d";
-  $csql = "SELECT * FROM {chado_%s} where nid = %d ";
-  $clsql= "SELECT * FROM {chado_%s}";
-  $lsql = "SELECT * FROM %s where %s_id = %d ";
+	$count = 0;
 
-  // load into nodes array
-  print "Getting nodes\n";
-  $nodes = array();
-  $res = db_query($dsql, $table);
-  while ($node = db_fetch_object($res)) {
-    $nodes[$count] = $node;
-    $count++;
-  }
+	// build the SQL statments needed to check if nodes point to valid analyses
+	$dsql = "SELECT * FROM {node} WHERE type = 'chado_%s' order by nid";
+	$nsql = "SELECT * FROM {node} WHERE nid = %d";
+	$csql = "SELECT * FROM {chado_%s} where nid = %d ";
+	$clsql= "SELECT * FROM {chado_%s}";
+	$lsql = "SELECT * FROM %s where %s_id = %d ";
 
-  // load the chado_$table into an array
-  print "Getting chado_$table\n";
-  $cnodes = array();
-  $res = db_query($clsql, $table);
-  while ($node = db_fetch_object($res)) {
-    $cnodes[$count] = $node;
-    $count++;
-  }
-  $interval = intval($count * 0.01);
-  if ($interval < 1) {
-    $interval = 1;
-  }
-  
-  // iterate through all of the chado_$table entries and remove those
-  // that don't have a node or don't have a $table record in chado.libary
-  foreach ($cnodes as $nid) {
-  
-    // update the job status every 1% analyses
-    if ($job_id and $i % $interval == 0) {
-      tripal_job_set_progress($job_id, intval(($i / $count) * 100));
-    }
-    
-    // see if the node exits, if not remove the entry from the chado_$table table
-    $node = db_fetch_object(db_query($nsql, $nid->nid));
-    if (!$node) {
-      db_query("DELETE FROM {chado_%s} WHERE nid = %d", $table, $nid->nid);
-      $message = "chado_$table missing node.... DELETING: $nid->nid";
-      watchdog('tripal_core', $message, array(), WATCHDOG_WARNING);
-    }
-    
-    // see if the record in chado exist, if not remove the entry from the chado_$table
-    $table_id = $table . "_id";
-    $record = db_fetch_object(chado_query($lsql, $table, $table, $nid->$table_id));
-    if (!$record) {
-      chado_query("DELETE FROM {chado_%s} WHERE %s_id = '%d'", $table, $table, $nid->$table_id);
-      $message = "chado_$table missing $table.... DELETING entry.";
-      watchdog('tripal_core', $message, array(), WATCHDOG_WARNING);
-    }
-    $i++;
-  }
-   
-  // iterate through all of the nodes and delete those that don't
-  // have a corresponding entry in chado_$table
-  foreach ($nodes as $node) {
+	// load into nodes array
+	print "Getting nodes\n";
+	$nodes = array();
+	$res = db_query($dsql, $table);
+	while ($node = db_fetch_object($res)) {
+		$nodes[$count] = $node;
+		$count++;
+	}
 
-    // update the job status every 1% libraries
-    if ($job_id and $i % $interval == 0) {
-      tripal_job_set_progress($job_id, intval(($i / $count) * 100));
-    }
+	// load the chado_$table into an array
+	print "Getting chado_$table\n";
+	$cnodes = array();
+	$res = db_query($clsql, $table);
+	while ($node = db_fetch_object($res)) {
+		$cnodes[$count] = $node;
+		$count++;
+	}
+	$interval = intval($count * 0.01);
+	if ($interval < 1) {
+		$interval = 1;
+	}
 
-    // check to see if the node has a corresponding entry
-    // in the chado_$table table. If not then delete the node.
-    $link = db_fetch_object(db_query($csql, $table, $node->nid));
-    if (!$link) {
-      if (node_access('delete', $node)) {
-        $message = "Node missing in chado_$table table.... DELETING node $node->nid";
-        watchdog("tripal_core", $message, array(), WATCHDOG_WARNING);
-        node_delete($node->nid);
-      } 
-      else {
-        $message = "Node missing in chado_$table table.... but cannot delete due to improper permissions (node $node->nid)";
-        watchdog("tripal_core", $message, array(), WATCHDOG_WARNING);
-      }
-    }    
-    $i++;
-  }
+	// iterate through all of the chado_$table entries and remove those
+	// that don't have a node or don't have a $table record in chado.libary
+	foreach ($cnodes as $nid) {
 
-  return '';
+		// update the job status every 1% analyses
+		if ($job_id and $i % $interval == 0) {
+			tripal_job_set_progress($job_id, intval(($i / $count) * 100));
+		}
+
+		// see if the node exits, if not remove the entry from the chado_$table table
+		$node = db_fetch_object(db_query($nsql, $nid->nid));
+		if (!$node) {
+			db_query("DELETE FROM {chado_%s} WHERE nid = %d", $table, $nid->nid);
+			$message = "chado_$table missing node.... DELETING: $nid->nid";
+			watchdog('tripal_core', $message, array(), WATCHDOG_WARNING);
+		}
+
+		// see if the record in chado exist, if not remove the entry from the chado_$table
+		$table_id = $table . "_id";
+		$record = db_fetch_object(chado_query($lsql, $table, $table, $nid->$table_id));
+		if (!$record) {
+			chado_query("DELETE FROM {chado_%s} WHERE %s_id = '%d'", $table, $table, $nid->$table_id);
+			$message = "chado_$table missing $table.... DELETING entry.";
+			watchdog('tripal_core', $message, array(), WATCHDOG_WARNING);
+		}
+		$i++;
+	}
+	 
+	// iterate through all of the nodes and delete those that don't
+	// have a corresponding entry in chado_$table
+	foreach ($nodes as $node) {
+
+		// update the job status every 1% libraries
+		if ($job_id and $i % $interval == 0) {
+			tripal_job_set_progress($job_id, intval(($i / $count) * 100));
+		}
+
+		// check to see if the node has a corresponding entry
+		// in the chado_$table table. If not then delete the node.
+		$link = db_fetch_object(db_query($csql, $table, $node->nid));
+		if (!$link) {
+			if (node_access('delete', $node)) {
+				$message = "Node missing in chado_$table table.... DELETING node $node->nid";
+				watchdog("tripal_core", $message, array(), WATCHDOG_WARNING);
+				node_delete($node->nid);
+			}
+			else {
+				$message = "Node missing in chado_$table table.... but cannot delete due to improper permissions (node $node->nid)";
+				watchdog("tripal_core", $message, array(), WATCHDOG_WARNING);
+			}
+		}
+		$i++;
+	}
+
+	return '';
 }

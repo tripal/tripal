@@ -28,10 +28,12 @@ function tripal_core_init() {
   // variable is always set.  In the case where a view needs to query the
   // chado schema when it is local to the Drupal database.  Otherwise the
   // search_path isn't set.  When tripal_db_set_active is called it
-  // automatically sets the serach path if chado is local to the
+  // automatically sets the search path if chado is local to the
   // Drupal database
-  $previous = tripal_db_set_active('chado');
-  tripal_db_set_active($previous);
+//  $previous = tripal_db_set_active('chado');
+//  tripal_db_set_active($previous);
+  tripal_db_set_chado_search_path('chado');
+
 
   // create the 'tripal' controlled volcabulary in chado but only if it doesn't already exist, and
   // only if the chado database is present.
@@ -64,7 +66,7 @@ function tripal_core_init() {
   db_query("SET DATESTYLE TO '%s'", 'MDY');
   
   // make sure the current version of chado is set
-  tripal_core_set_chado_version();
+  tripal_core_set_chado_version();  
   
 }
 

@@ -39,7 +39,7 @@ $user = user_load(array('name' => $username));
 
 
 fwrite($stdout, "Tripal Job Launcher\n");
-fwrite($stdout,"Running as user '$username'\n";
+fwrite($stdout, "Running as user ' . $username . '\n");
 fwrite($stdout, "-------------------\n");
 
 tripal_jobs_launch($do_parallel);
