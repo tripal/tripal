@@ -72,6 +72,23 @@ function tripal_core_drush_command() {
     ),
     'aliases' => array('trpjob-run')
   );
+  $items['tripal-rerun-job'] = array(
+    // used by drush help
+    'description' => dt('Rerun any job in the queue.'),
+    'examples' => array(
+      'Normal Job' => 'drush tripal-rerun-job admin 2',
+      'Parallel Job' => 'drush tripal-rerun-job admin  2 --parallel=1'
+    ),
+    'arguments' => array(
+      'user' => dt('The Drupal username under which the job should be run.  The permissions for this user will be used.'),
+      'job_id' => dt('The job ID to run.'),    
+    ),
+    // supply options
+    'options' => array(
+      'parallel' => dt('Normally jobs are executed one at a time. But if you are certain no conflicts will occur with other currently running jobs you may set this argument to a value of 1 to make the job run in parallel with other running jobs.'),
+    ),
+    'aliases' => array('trpjob-rerun')
+  );
   return $items;
 }
 
@@ -107,6 +124,17 @@ function drush_tripal_core_tripal_launch_jobs($username) {
   }
 }
 
+/**
+ * Executes jobs in the Tripal Jobs Queue
+ *
+ * NOTE: The following code is executed when drush 'trpjob-run' or 'drush tripal-launch-jobs' is called
+ */
+function drush_tripal_core_tripal_rerun_job($username, $job_id) {
+	
+  $new_job_id = tripal_jobs_rerun($job_id, FALSE);
+  drush_tripal_core_tripal_launch_jobs($username, $new_job_id);
+ 
+}
 /**
  * Prints details about the current running job
  *

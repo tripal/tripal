@@ -443,15 +443,24 @@ function tripal_core_preprocess_tripal_core_job_view(&$variables) {
  *
  * @ingroup tripal_jobs_api
  */
-function tripal_jobs_rerun($job_id) {
+function tripal_jobs_rerun($job_id, $goto_jobs_page = TRUE) {
   global $user;
 
   $sql = "SELECT * FROM {tripal_jobs} WHERE job_id = %d";
   $job = db_fetch_object(db_query($sql, $job_id));
   $args = explode("::", $job->arguments);
-  tripal_add_job($job->job_name, $job->modulename, $job->callback, $args, $user->uid,
+  $job_id = tripal_add_job(
+    $job->job_name, 
+    $job->modulename, 
+    $job->callback, 
+    $args, 
+    $user->uid,
     $job->priority);
-  drupal_goto("admin/tripal/tripal_jobs");
+    
+  if ($goto_jobs_page) {
+    drupal_goto("admin/tripal/tripal_jobs");
+  }
+  return $job_id;
 }
 
 /**
