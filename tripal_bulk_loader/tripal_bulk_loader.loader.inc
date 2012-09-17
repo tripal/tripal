@@ -166,6 +166,8 @@ function tripal_bulk_loader_load_data($nid, $job_id) {
       $tables[$record_array['table']] = $record_array['table'];
     }
 
+    // iterate through each of the fiels for the current record and
+    // set the default_data array
     foreach ($record_array['fields'] as $field_index => $field_array) {
 
       $default_data[$priority]['table'] = $record_array['table'];
@@ -226,12 +228,9 @@ function tripal_bulk_loader_load_data($nid, $job_id) {
       else {
         print 'WARNING: Unsupported type: ' . $field_array['type'] . ' for ' . $table . '.' . $field_array['field'] . "!\n";
       }
-
       $three = $default_data[$priority];
-      //watchdog('T_bulk_loader','A)'.$field_index.':<pre>Field Array =>'.print_r($field_array,TRUE)."Initial => \n".print_r($one, TRUE)."\nAfter Regex =>".print_r($two, TRUE)."Final =>\n".print_r($three,TRUE).'</pre>', array(), WATCHDOG_NOTICE);
 
     } // end of foreach field
-    //watchdog('T_bulk_loader','2)'.$record_array['record_id'].':<pre>'.print_r($default_data[$priority], TRUE).'</pre>', array(), WATCHDOG_NOTICE);
   } //end of foreach record
 
   ///////////////////////////////////////////////
@@ -278,16 +277,8 @@ function tripal_bulk_loader_load_data($nid, $job_id) {
       }
     }
 
-    //print "Default Data:".print_r($default_data,TRUE)."\n";
-    //watchdog('T_bulk_loader','Default Data:<pre>'.print_r($default_data, TRUE).'</pre>', array(), WATCHDOG_NOTICE);
-
-    //print "\nDefault Values Array: ".print_r($default_data, TRUE)."\n";
-    //print "\nField to Column Mapping: ".print_r($field2column, TRUE)."\n";
-
-    // Parse File adding records as we go ========================================================
-
-    print "\tPreparing to load the current constant set...\n";
     // Open File
+    print "\tPreparing to load the current constant set...\n";
     print "\t\tOpen File...\n";
     $file = new SplFileObject($node->file, 'r'); 
     if (!$file) { 
@@ -346,15 +337,11 @@ function tripal_bulk_loader_load_data($nid, $job_id) {
       }
     }
 
-print $header . "\n";
     print "\tLoading the current constant set...\n";
     tripal_bulk_loader_progress_bar(0, $total_lines);
     while (!$file->eof()) {
       $file->next();
       $raw_line = $file->current();  
-print "LINE: ".
-print($raw_line);
-"\n";
       $raw_line = trim($raw_line);
       if (empty($raw_line)) {
         continue;
@@ -489,13 +476,12 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
   $table = $table_data['table'];
   $values = $table_data['values_array'];
 
-  //watchdog('T_bulk_loader','Original:<pre>'.print_r($table_data, TRUE).'</pre>', array(), WATCHDOG_NOTICE);
-
-  if (array_key_exists('need_further_processing', $table_data) and 
-      $table_data['need_further_processing']) {   
+  // populate the values array with real value either from the input data file line 
+  // or from the foreign key / referral record
+  if (array_key_exists('need_further_processing', $table_data) and $table_data['need_further_processing']) {   
     if (array_key_exists($priority, $addt->field2column)) {
       $values = tripal_bulk_loader_add_spreadsheetdata_to_values($values, $addt->line, $addt->field2column[$priority]);
-    }
+    } 
     $values = tripal_bulk_loader_add_foreignkey_to_values($table_data, $values, $data, $addt->record2priority, $addt->nid, $priority);    
   }
 
@@ -787,7 +773,9 @@ function tripal_bulk_loader_add_spreadsheetdata_to_values($values, $line, $field
  *
  */
 function tripal_bulk_loader_add_foreignkey_to_values($table_array, $values, $data, $record2priority, $nid, $priority) {
-    
+
+  // iterate through each field in the $values arrray and
+  // substitute any values for FK / referring fields
   foreach ($values as $field => $value) {
     // if the field value is an array then it is an FK
     if (is_array($value)) {
@@ -821,10 +809,10 @@ function tripal_bulk_loader_add_foreignkey_to_values($table_array, $values, $dat
         if (!is_array($foreign_values)) {
           // if we have a value then use it to get the field we need
           if ($foreign_values) {
-            $values  = array($fk_description['primary key'][0] => $foreign_values);
+            $fvalues = array($fk_description['primary key'][0] => $foreign_values);
             $columns = array($foreign_field);
             $options = array('statement_name' => 'pk_' . $foreign_table);
-            $record  = tripal_core_chado_select($foreign_table, $columns, $values, $options);
+            $record  = tripal_core_chado_select($foreign_table, $columns, $fvalues, $options);
             if ($record) {
               $values[$field] = $record[0]->$foreign_field;
             } 
@@ -841,20 +829,20 @@ function tripal_bulk_loader_add_foreignkey_to_values($table_array, $values, $dat
         // if the current value is an array and our field is not in it, then
         // we need to select a value for our field.
         else {
-          $values  = $foreign_values;
+          $fvalues  = $foreign_values;
           $columns = array($foreign_field);
           $options = array('statement_name' => 'blk_' . $nid . $priority . $foreign_table);        
-          $record  = tripal_core_chado_select($foreign_table, $columns, $values, $options);
+          $record  = tripal_core_chado_select($foreign_table, $columns, $fvalues, $options);
           if ($record){
             $values[$field] = $record[0]->$foreign_field; 
           } 
           else {
             unset($values[$field]);
           }
-        }         
-      }
-    } 
-  }
+        } // end else from: if (!is_array($foreign_values) ...         
+      } // end else from: if ($tbl_description ...
+    } // end if(is_array($value)) ... 
+  } // end foreach ($values ...
 
   // return the updated field values
   return $values;
@@ -946,7 +934,6 @@ function tripal_bulk_loader_flatten_array($values) {
 function tripal_bulk_loader_progress_bar($current=0, $total=100, $size=50) {
   $new_bar = FALSE;
   $mem = memory_get_usage();       
-	
 	
   // First iteration
   if ($current == 0) {
