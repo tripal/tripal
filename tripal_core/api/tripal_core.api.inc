@@ -925,6 +925,7 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
 	}
 
 	// if this is a prepared statement check to see if it has already been prepared
+	$prepared = FALSE;
 	if ($options['statement_name']) {
 		$prepared = TRUE;
 		// we need to get a persistent connection.  If one exists this function
@@ -1019,7 +1020,7 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
           'regex_columns' => $options['regex_columns'],
           'case_insensitive_columns' => $options['case_insensitive_columns']
 				);
-				if ($options['statement_name']) {
+				if (array_key_exists('statement_name', $options) and $options['statement_name']) {
 					// add the fk relationship info to the prepared statement name so that
 					// we can prepare the selects run by the recrusive tripal_core_chado_get_foreign_key
 					// function. we need the statement name to be unique so take the first two characters of each column
@@ -1031,23 +1032,23 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
 				}
 
 				$results = tripal_core_chado_get_foreign_key($table_desc, $field, $value, $foreign_options);
-				if (!$results or count($results) ==0) {
+				if (!$results or count($results)==0) {
 
 					// foreign key records are required
 					// thus if none matched then return FALSE and alert the admin through watchdog
-					//watchdog('tripal_core',
-					// 'tripal_core_chado_select: no record in the table referenced by the foreign key (!field)   exists. tripal_core_chado_select table=!table, columns=!columns, values=!values',
-					// array('!table' => $table,
-					//   '!columns' => '<pre>' . print_r($columns, TRUE) . '</pre>',
-					//   '!values' => '<pre>' . print_r($values, TRUE) . '</pre>',
-					//   '!field' => $field,
-					// ),
-					// WATCHDOG_WARNING);
+					/*watchdog('tripal_core',
+					 'tripal_core_chado_select: no record in the table referenced by the foreign key (!field)   exists. tripal_core_chado_select table=!table, columns=!columns, values=!values',
+					 array('!table' => $table,
+					   '!columns' => '<pre>' . print_r($columns, TRUE) . '</pre>',
+					   '!values' => '<pre>' . print_r($values, TRUE) . '</pre>',
+					   '!field' => $field,
+					 ),
+					 WATCHDOG_WARNING);*/
 					return array();
 				}
 				else {
 					$where[$field] = $results;
-				}
+				} 
 			}
 		}
 		else {
@@ -1170,13 +1171,13 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
 		$psql =  "PREPARE " . $options['statement_name'] . " (" . implode(', ', $idatatypes) . ") AS " . $psql;
 
 	} // end if(empty($where)){ } else {
-
+	
 	// if the caller has requested the SQL rather than the results...
 	// which happens in the case of wanting to use the Drupal pager, then do so
 	if ($options['return_sql'] == TRUE) {
 		return array('sql' => $sql, 'args' => $args);
 	}
-
+	
 	// prepare the statement
 	if ($prepared) {
 		// if this is the first time we've run this query
@@ -1189,20 +1190,19 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
 			}
 		}
 		$sql = "EXECUTE " . $options['statement_name'] . "(" . implode(", ", $itypes) . ")";
-		// WARNING: This call creates a memory leak:  if you remove the $ivalues it doesn't
+		// WARNING: This call creates a memory leak:  if you remove the $pvalues it doesn't
 		// do this. Got to find out what's causing this.
-		$resource = tripal_core_chado_execute_prepared($options['statement_name'], $sql, $pvalues);
+		$resource = tripal_core_chado_execute_prepared($options['statement_name'], $sql, $pvalues);		
 	}
 	else {
 		$resource = chado_query($sql, $args);
 	}
-
+		
 	// format results into an array
 	$results = array();
 	while ($r = db_fetch_object($resource)) {
 		$results[] = $r;
 	}
-
 	if ($options['has_record']) {
 		return count($results);
 	}
@@ -1271,18 +1271,20 @@ function tripal_core_chado_get_foreign_key($table_desc, $field, $values, $option
 		$options['regex_columns'] = array();
 	}
 
-
 	// get the list of foreign keys for this table description and
 	// iterate through those until we find the one we're looking for
-	$fkeys = $table_desc['foreign keys'];
+	$fkeys = '';
+	if (array_key_exists('foreign keys', $table_desc)) {
+	  $fkeys = $table_desc['foreign keys'];
+	}
 	if ($fkeys) {
 		foreach ($fkeys as $name => $def) {
 			if (is_array($def['table'])) {
 				//foreign key was described 2X
 				$message = "The foreign key " . $name . " was defined twice. Please check modules "
-				."to determine if hook_chado_schema_<version>_" . $table_desc['table'] . "() was "
-				."implemented and defined this foreign key when it wasn't supposed to. Modules "
-				."this hook was implemented in: " . implode(', ',
+				  ."to determine if hook_chado_schema_<version>_" . $table_desc['table'] . "() was "
+				  ."implemented and defined this foreign key when it wasn't supposed to. Modules "
+				  ."this hook was implemented in: " . implode(', ',
 				module_implements("chado_" . $table_desc['table'] . "_schema")) . ".";
 				watchdog('tripal_core', $message);
 				drupal_set_message(check_plain($message), 'error');
@@ -1290,6 +1292,7 @@ function tripal_core_chado_get_foreign_key($table_desc, $field, $values, $option
 			}
 			$table = $def['table'];
 			$columns = $def['columns'];
+			
 			// iterate through the columns of the foreign key relationship
 			foreach ($columns as $left => $right) {
 				// does the left column in the relationship match our field?
@@ -1304,8 +1307,8 @@ function tripal_core_chado_get_foreign_key($table_desc, $field, $values, $option
 							$fields[] = $obj->$right;
 						}
 						return $fields;
-					}
-				}
+					} 
+				} 
 			}
 		}
 	}

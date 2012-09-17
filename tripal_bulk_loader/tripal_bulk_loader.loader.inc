@@ -309,6 +309,7 @@ function tripal_bulk_loader_load_data($nid, $job_id) {
     }
 
     // Start Transaction
+    $savepoint = '';
     switch (variable_get('tripal_bulk_loader_transactions', 'row')) {
       case "none":
         break;
@@ -347,18 +348,12 @@ function tripal_bulk_loader_load_data($nid, $job_id) {
     print "\tLoading the current constant set...\n";
     tripal_bulk_loader_progress_bar(0, $total_lines);
     while (!$file->eof()) {
-    
-      // Clear variables
-      // Was added to fix memory leak
-      unset($line);                     unset($raw_line);
-      unset($data);                     unset($data_keys);
-      unset($priority);                 unset($sql);
-      unset($result);
 
       // SPF: had to remove the length on fgets as some of our templates had lines that were larger
       // $raw_line = fgets($file_handle, 4096);
       $file->next();
-      $raw_line = $file->current();    
+      $raw_line = $file->current();  
+
       //$raw_line = fgets($file_handle);
       $raw_line = trim($raw_line);
       if (empty($raw_line)) {
@@ -369,9 +364,11 @@ function tripal_bulk_loader_load_data($nid, $job_id) {
 
       // update the job status every 1% of lines processed for the current group
       if ($node->job_id and $num_lines % $interval == 0) {
+      
         // percentage of lines processed for the current group
         $group_progress = round(($num_lines / $total_lines) * 100);
         tripal_bulk_loader_progress_bar($num_lines, $total_lines);
+
         // percentage of lines processed for all groups
         // <previous group index> * 100 + <current group progress>
         // --------------------------------------------------------
@@ -396,6 +393,7 @@ function tripal_bulk_loader_load_data($nid, $job_id) {
           'node' => $node,
           'nid' => $node->nid,
         );
+
         // execute all records that are not disabled
         if ($data[$priority]['disabled'] == 0) {
           $status = process_data_array_for_line($priority, $data, $default_data, $options);
@@ -405,6 +403,7 @@ function tripal_bulk_loader_load_data($nid, $job_id) {
           $status = TRUE;
         }
         tripal_bulk_loader_progress_file_track_job($job_id, $status);
+        $failed = FALSE;
         if (!$status ) {
           // Encountered an error
           if ($transactions) {
@@ -432,8 +431,7 @@ function tripal_bulk_loader_load_data($nid, $job_id) {
             tripal_db_set_savepoint_transaction($savepoint, TRUE);
           }
         }
-      }
-
+      } 
     } //end of foreach line of file
 
     // END Transaction
@@ -484,28 +482,22 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
   $values = $table_data['values_array'];
 
   //watchdog('T_bulk_loader','Original:<pre>'.print_r($table_data, TRUE).'</pre>', array(), WATCHDOG_NOTICE);
-
-  if ($table_data['need_further_processing']) {
-
-    $values = tripal_bulk_loader_add_spreadsheetdata_to_values($values, $addt->line, $addt->field2column[$priority]);
-    if (!$values) {
-      //watchdog('T_bulk_loader', 'Line ' . $addt->line_num . ' Data File Added:' . print_r($values, TRUE), array(), WATCHDOG_NOTICE);
+  
+  if (array_key_exists('need_further_processing', $table_data) and 
+      $table_data['need_further_processing']) {   
+    if (array_key_exists($priority, $addt->field2column)) {
+      $values = tripal_bulk_loader_add_spreadsheetdata_to_values($values, $addt->line, $addt->field2column[$priority]);
     }
-
-    $values = tripal_bulk_loader_add_foreignkey_to_values($table_data, $values, $data, $addt->record2priority, $addt->nid, $priority);
-
-    if (!$values) {
-      //watchdog('T_bulk_loader', 'Line ' . $addt->line_num . ' FK Added:<pre>' . print_r($values, TRUE) . print_r($data[$priority], TRUE) . '</pre>', array(), WATCHDOG_NOTICE);
-    }
-
+    $values = tripal_bulk_loader_add_foreignkey_to_values($table_data, $values, $data, $addt->record2priority, $addt->nid, $priority);    
   }
+  
   $values = tripal_bulk_loader_regex_tranform_values($values, $table_data, $addt->line);
   if (!$values) {
     //watchdog('T_bulk_loader', 'Line ' . $addt->line_num . ' Regex:<pre>' . print_r($values, TRUE) . print_r($table_data, TRUE) . '</pre>' . '</pre>', array(), WATCHDOG_NOTICE);
   }
-
+  
   // get the table description
-  $table_desc = tripal_core_get_chado_table_schema($table);
+  $table_desc = tripal_core_get_chado_table_schema($table);  
   
   // for an insert, check that all database required fields are present in the values array
   // we check for 'optional' in the mode for backwards compatibility. The 'optional' 
@@ -514,20 +506,20 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
       preg_match('/optional/', $table_data['mode'])) {
     // Check all database table required fields are set
     $fields = $table_desc['fields'];
-    foreach ($fields as $field => $def) {
+    foreach ($fields as $field => $def) { 	
       // a field is considered missing if it cannot be null and there is no default
       // value for it or it is not of type 'serial'
-      if ($def['not null'] == 1 and 
+      if (array_key_exists('not null', $def) and $def['not null'] == 1 and 
           !array_key_exists($field, $values) and 
-          !isset($def['default']) and 
-          strcmp($def['type'], serial) != 0) {
+          (!array_key_exists('default', $def) or !isset($def['default'])) and
+          strcmp($def['type'], 'serial') != 0) { 
         $msg = "\nLine " . $addt->line_num . ' ' . $table_data['record_id'] . ' (' . $table_data['mode'] . ') Missing Database Required Value: ' . $table . '.' . $field;
         watchdog('T_bulk_loader', $msg, array(), WATCHDOG_NOTICE);
         $data[$priority]['error'] = TRUE;
-      }
-    }
+      } 
+    } 
   } 
-
+  
   // Check that template required fields are present. if a required field is 
   // missing and this
   // is an optional record then just return. otherwise raise an error
@@ -557,12 +549,12 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
       }
     }
   }
-
+  
   // add updated values array into the data array
   $data[$priority]['values_array'] = $values;
   
   // if there was an error already -> don't insert
-  if ($data[$priority]['error']) {
+  if (array_key_exists('error', $data[$priority]) and $data[$priority]['error']) {
     return $no_errors;
   }
   
@@ -572,24 +564,29 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
   }
 
   // check if it is already inserted
-  if ($table_data['inserted']) {
+  if (array_key_exists('inserted',$table_data) and $table_data['inserted']) {
     //watchdog('T_bulk_loader','Already Inserted:'.print_r($values,TRUE),array(),WATCHDOG_NOTICE);
     return $no_errors;
   }
 
+  /* SPF: not sure what this is used for... commenting out.
   $header = '';
-  if (isset($values['feature_id'])) {
+  if (array_key_exists('feature_id', $values) and isset($values['feature_id'])) {
     $header = $values['feature_id']['uniquename'] . ' ' . $table_data['record_id'];
   }
   else {
+  	print_r($table_data);
+  	exit;
     $header = $values['uniquename'] . ' ' . $table_data['record_id'];
   }
-
+  */
+  
   // if "select if duplicate" is enabled then check to ensure unique constraint is not violoated.  
   // If it is violoated then simply return, the record already exists in the database.
   // We check for insert_unique for backwards compatibilty but that mode no longer exists
   if (preg_match('/insert_unique/', $table_data['mode']) or 
-      $table_data['select_if_duplicate'] == 1) {
+      (array_key_exists('select_if_duplicate', $table_data) and 
+       $table_data['select_if_duplicate'] == 1)) {
     $options = array('use_unique' => TRUE);
     $duplicate = tripal_core_chado_select($table, array_keys($table_desc['fields']), $values, $options); 
     // if this is a duplicate then substitute the values in the table_data array so
@@ -618,9 +615,9 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
       }
       // reset values in data array
       return $no_errors;
-    }
+    } 
   }
-
+  
   if (!preg_match('/select/', $table_data['mode'])) {
     // Use prepared statement?
     if (variable_get('tripal_bulk_loader_prepare', TRUE)) {
@@ -752,7 +749,6 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
  *   Supplemented values array
  */
 function tripal_bulk_loader_add_spreadsheetdata_to_values($values, $line, $field2column) {
-
   foreach ($values as $field => $value) {
     if (is_array($value)) {
       continue;
@@ -768,7 +764,7 @@ function tripal_bulk_loader_add_spreadsheetdata_to_values($values, $line, $field
     }
     else {
       unset($values[$field]);
-    }
+    }    
   }
 
   return $values;
@@ -852,20 +848,21 @@ function tripal_bulk_loader_add_foreignkey_to_values($table_array, $values, $dat
  */
 function tripal_bulk_loader_regex_tranform_values($values, $table_data, $line) {
 
-  if (empty($table_data['regex_transform']) OR !is_array($table_data['regex_transform'])) {
+  if (!array_key_exists('regex_transform', $table_data) or  
+      empty($table_data['regex_transform']) or 
+      !array_key_exists('regex_transform', $table_data) or
+      !is_array($table_data['regex_transform'])) {
     return $values;
   }
 
   //watchdog('T_bulk_loader','Regex Transformation:<pre>'.print_r($table_data['regex_transform'], TRUE).'</pre>', array(), WATCHDOG_NOTICE);
 
   foreach ($table_data['regex_transform'] as $field => $regex_array) {
-    if (!is_array($regex_array['replace'])) {
+    if (!array_key_exists('replace', $regex_array) or 
+        !array_key_exists('pattern', $regex_array) or
+        !is_array($regex_array['replace'])) {
       continue;
     }
-
-    //print 'Match:'.print_r($regex_array['pattern'],TRUE)."\n";
-    //print 'Replace:'.print_r($regex_array['replace'],TRUE)."\n";
-    //print 'Was:'.$values[$field]."\n";
 
     // Check for <#column:\d+#> notation
     // if present replace with that column in the current line
@@ -888,8 +885,6 @@ function tripal_bulk_loader_regex_tranform_values($values, $table_data, $line) {
     }
     //print 'Now:'.$values[$field]."\n";
   }
-
-
 
   return $values;
 }
@@ -927,26 +922,31 @@ function tripal_bulk_loader_flatten_array($values) {
  * Used to display loader progress to the user
  */
 function tripal_bulk_loader_progress_bar($current=0, $total=100, $size=50) {
-
+	$new_bar = FALSE;
+	$mem = memory_get_usage();       
+	
+	
   // First iteration
   if ($current == 0) {
     $new_bar = TRUE;
     fputs(STDOUT, "Progress:\n");
   }
-
-  //Percentage round off for a more clean, consistent look
-  $perc = sprintf("%.02f",round(($current/$total)*100, 2));
+  
+  // Percentage round off for a more clean, consistent look
+  $percent = sprintf("%.04f", round(($current/$total) * 100, 2));
   // percent indicator must be four characters, if shorter, add some spaces
-  for ($i = strlen($perc); $i <= 4; $i++) {
-    $perc = ' ' . $perc;
+  for ($i = strlen($percent); $i <= 4; $i++) {
+    $percent = ' ' . $percent;
   }
-
+ 
+  
   $total_size = $size + $i + 3 + 2;
+  $place = 0;
   // if it's not first go, remove the previous bar
   if (!$new_bar) {
     for ($place = $total_size; $place > 0; $place--) {
       // echo a backspace (hex:08) to remove the previous character
-      echo "\x08";
+      //echo "\x08";
     }
   }
 
@@ -967,7 +967,7 @@ function tripal_bulk_loader_progress_bar($current=0, $total=100, $size=50) {
   echo ']';
 
   // end a bar with a percent indicator
-  echo " $perc%";
+  echo " $percent%. ($current of $total) Memory: $mem\r";
 
   // if it's the end, add a new line
   if ($current == $total) {
