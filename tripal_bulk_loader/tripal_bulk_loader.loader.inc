@@ -289,8 +289,11 @@ function tripal_bulk_loader_load_data($nid, $job_id) {
     print "\tPreparing to load the current constant set...\n";
     // Open File
     print "\t\tOpen File...\n";
-   // $file_handle = fopen($node->file, 'r');    
-    $file = new SplFileObject($node->file);  // 996kb
+    $file = new SplFileObject($node->file, 'r'); 
+    if (!$file) { 
+      watchdog('T_bulk_loader','Could not open file %file', array($node->file), WATCHDOG_ERROR);
+      return;
+    }
 
     // Set defaults
     $header = '';
@@ -343,11 +346,15 @@ function tripal_bulk_loader_load_data($nid, $job_id) {
       }
     }
 
+print $header . "\n";
     print "\tLoading the current constant set...\n";
     tripal_bulk_loader_progress_bar(0, $total_lines);
     while (!$file->eof()) {
       $file->next();
       $raw_line = $file->current();  
+print "LINE: ".
+print($raw_line);
+"\n";
       $raw_line = trim($raw_line);
       if (empty($raw_line)) {
         continue;
