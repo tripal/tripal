@@ -208,7 +208,14 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
         foreach ($fields as $index => $field) {
           // build the arrays for performing a select that will check the contraint
           $ukselect_cols[] = $field;
-          $ukselect_vals[$field] = $insert_values[$field];
+          if (!array_key_exists($field, $insert_values)) {
+          	if (array_key_exists('default', $table_desc['fields'][$field])) {
+              $ukselect_vals[$field] = $table_desc['fields'][$field]['default'];
+          	}          	
+          }
+          else {
+            $ukselect_vals[$field] = $insert_values[$field];
+          }
         }
         // now check the constraint
         $coptions = array();
@@ -2517,37 +2524,44 @@ function tripal_core_chado_execute_prepared($statement_name, $sql, $values) {
           case 'text':
             $check = is_string($v);
             if (!$check) {
-              watchdog('tripal_core', "chado_execute_prepared: wrong argument type supplied for '%name' statement. Expected %required but recieved %value", array('%name' => $statement_name, '%required' => $required_values[$k], '%value' => print_r($v,TRUE)), WATCHDOG_ERROR);
+              watchdog('tripal_core', "chado_execute_prepared: wrong argument type supplied for '%name' statement. Expected %required but recieved '%value'", 
+                array('%name' => $statement_name, '%required' => $required_values[$k], '%value' => print_r($v,TRUE)), WATCHDOG_ERROR);
               return FALSE;
             }
             break;
           case 'int':
             $check = is_numeric($v);
             if (!$check) {
-              watchdog('tripal_core', "chado_execute_prepared: wrong argument type supplied for '%name' statement. Expected %required but recieved %value", array('%name' => $statement_name, '%required' => $required_values[$k], '%value' => print_r($v,TRUE)), WATCHDOG_ERROR);
+              watchdog('tripal_core', "chado_execute_prepared: wrong argument type supplied for '%name' statement. Expected %required but recieved '%value'", 
+                array('%name' => $statement_name, '%required' => $required_values[$k], '%value' => print_r($v,TRUE)), WATCHDOG_ERROR);
               return FALSE;
             }
             break;
           case 'bool':
             if($v != 'TRUE' and $v != 'FALSE'){
-              watchdog('tripal_core', "chado_execute_prepared: wrong argument type supplied for '%name' statement. Expected %required but recieved %value", array('%name' => $statement_name, '%required' => $required_values[$k], '%value' => print_r($v,TRUE)), WATCHDOG_ERROR);
+              watchdog('tripal_core', "chado_execute_prepared: wrong argument type supplied for '%name' statement. Expected %required but recieved '%value'", 
+                array('%name' => $statement_name, '%required' => $required_values[$k], '%value' => print_r($v,TRUE)), WATCHDOG_ERROR);
               return FALSE;
             }
             break;
           case 'numeric':
             $check = is_numeric($v);
             if (!$check) {
-              watchdog('tripal_core', "chado_execute_prepared: wrong argument type supplied for '%name' statement. Expected %required but recieved %value", array('%name' => $statement_name, '%required' => $required_values[$k], '%value' => print_r($v,TRUE)), WATCHDOG_ERROR);
+              watchdog('tripal_core', "chado_execute_prepared: wrong argument type supplied for '%name' statement. Expected %required but recieved '%value'", 
+                array('%name' => $statement_name, '%required' => $required_values[$k], '%value' => print_r($v,TRUE)), WATCHDOG_ERROR);
               return FALSE;
             }
             break;
           default:
-            watchdog('tripal_core', "chado_execute_prepared: unsupported argument type (supplied for '%name' statement %type)", array('%name' => $statement_name, '%type' => $required_values[$k]), WATCHDOG_WARNING);
+            watchdog('tripal_core', "chado_execute_prepared: unsupported argument type (supplied for '%name' statement %type)", 
+
+            array('%name' => $statement_name, '%type' => $required_values[$k]), WATCHDOG_WARNING);
             break;
         }
       }
       else {
-        watchdog('tripal_core', "chado_execute_prepared: wrong number of arguments supplied for '%name' statement. Expected %required but recieved %values", array('%name' => $statement_name, '%required' => print_r($required_values,TRUE), '%values' => print_r($values,TRUE)), WATCHDOG_ERROR);
+        watchdog('tripal_core', "chado_execute_prepared: wrong number of arguments supplied for '%name' statement. Expected %required but recieved %values", 
+          array('%name' => $statement_name, '%required' => print_r($required_values,TRUE), '%values' => print_r($values,TRUE)), WATCHDOG_ERROR);
         return FALSE;
       }
     }
@@ -2557,7 +2571,8 @@ function tripal_core_chado_execute_prepared($statement_name, $sql, $values) {
     return $resource;
   }
   else {
-    watchdog('tripal_core', "chado_execute_prepared: wrong number of arguments supplied for '%name' statement. Expected %required but recieved %values", array('%name' => $statement_name, '%required' => print_r($required_values,TRUE), '%values' => print_r($values,TRUE)), WATCHDOG_ERROR);
+    watchdog('tripal_core', "chado_execute_prepared: wrong number of arguments supplied for '%name' statement. Expected %required but recieved %values", 
+      array('%name' => $statement_name, '%required' => print_r($required_values,TRUE), '%values' => print_r($values,TRUE)), WATCHDOG_ERROR);
     return FALSE;
   }
 }
