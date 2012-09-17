@@ -2529,7 +2529,7 @@ function tripal_core_chado_execute_prepared($statement_name, $sql, $values) {
             }
             break;
           case 'bool':
-            if($v != 'TRUE' or $v != 'FALSE'){
+            if($v != 'TRUE' and $v != 'FALSE'){
               watchdog('tripal_core', "chado_execute_prepared: wrong argument type supplied for '%name' statement. Expected %required but recieved %value", array('%name' => $statement_name, '%required' => $required_values[$k], '%value' => print_r($v,TRUE)), WATCHDOG_ERROR);
               return FALSE;
             }
