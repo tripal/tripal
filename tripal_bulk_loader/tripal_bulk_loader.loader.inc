@@ -295,9 +295,6 @@ function tripal_bulk_loader_load_data($nid, $job_id) {
     // Set defaults
     $header = '';
     if (preg_match('/(t|true|1)/', $node->file_has_header)) {
-      // SPF: Some of our templates had lines longer than 4096 so had to replace this
-      //fgets($file_handle, 4096);
-      //fgets($file_handle);
       $file->next();      
       $header = $file->current();
     }
@@ -349,13 +346,8 @@ function tripal_bulk_loader_load_data($nid, $job_id) {
     print "\tLoading the current constant set...\n";
     tripal_bulk_loader_progress_bar(0, $total_lines);
     while (!$file->eof()) {
-
-      // SPF: had to remove the length on fgets as some of our templates had lines that were larger
-      // $raw_line = fgets($file_handle, 4096);
       $file->next();
       $raw_line = $file->current();  
-
-      //$raw_line = fgets($file_handle);
       $raw_line = trim($raw_line);
       if (empty($raw_line)) {
         continue;
@@ -383,6 +375,7 @@ function tripal_bulk_loader_load_data($nid, $job_id) {
 
       $data = $default_data;
 
+      // iterate through each record and process the line
       $data_keys = array_keys($data);
       foreach ($data_keys as $priority) {
         $options = array(
@@ -419,8 +412,6 @@ function tripal_bulk_loader_load_data($nid, $job_id) {
           break;
         } 
       } // end of foreach table in default data array
-print $file->key() . ": " . memory_get_usage() . "\n";
-continue;
 
       tripal_bulk_loader_progress_file_track_job($job_id, FALSE, TRUE);
 
@@ -482,6 +473,7 @@ continue;
         );
  */
 function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
+//$time_start = microtime(true);
 
   $table_data = $data[$priority];
   $addt = (object) $addt;
@@ -699,14 +691,25 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
   }
   else {
     // get the matches for this select
-    $matches = tripal_core_chado_select($table, array_keys($table_desc['fields']), $values);
-    
+    $matches = array();
+    if(is_array($values) and count($values) > 0){
+      $matches = tripal_core_chado_select($table, array_keys($table_desc['fields']), $values);
+    }
+/*$time_end = microtime(true);
+$time = $time_end - $time_start;
+printf("time: %04f seconds\n",$time);
+if($time > 0.05){
+  print "$table\n";
+  print_r(array_keys($table_desc['fields']));
+  print_r($values);
+  exit;
+} */   
     // if the record doesn't exists and it's not optional then generate an error
     if (count($matches) == 0){
       // No record on select
       if ($table_data['select_optional'] != 1) {        
         $msg = "\nLine " . $addt->line_num . ' ' . $table_data['record_id'] . ' (' . $table_data['mode'] . ') No Matching record in ' . $table . ' where values:' . print_r($values, TRUE);
-        watchdog('T_bulk_loader', $msg, array(), WATCHDOG_WARNING);
+        watchdog('T_bulk_loader', $msg, array(), WATCHDOG_ERROR);
         $data[$priority]['error'] = TRUE;
         $no_errors = FALSE;
       }
@@ -945,7 +948,7 @@ function tripal_bulk_loader_progress_bar($current=0, $total=100, $size=50) {
   }
   
   // Percentage round off for a more clean, consistent look
-  $percent = sprintf("%.04f", round(($current/$total) * 100, 2));
+  $percent = sprintf("%.02f", round(($current/$total) * 100, 2));
   // percent indicator must be four characters, if shorter, add some spaces
   for ($i = strlen($percent); $i <= 4; $i++) {
     $percent = ' ' . $percent;
