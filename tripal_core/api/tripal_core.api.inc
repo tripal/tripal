@@ -2528,6 +2528,12 @@ function tripal_core_chado_execute_prepared($statement_name, $sql, $values) {
               return FALSE;
             }
             break;
+          case 'bool':
+            if($v != 'TRUE' or $v != 'FALSE'){
+              watchdog('tripal_core', "chado_execute_prepared: wrong argument type supplied for '%name' statement. Expected %required but recieved %value", array('%name' => $statement_name, '%required' => $required_values[$k], '%value' => print_r($v,TRUE)), WATCHDOG_ERROR);
+              return FALSE;
+            }
+            break;
           case 'numeric':
             $check = is_numeric($v);
             if (!$check) {
@@ -2536,7 +2542,7 @@ function tripal_core_chado_execute_prepared($statement_name, $sql, $values) {
             }
             break;
           default:
-            watchdog('tripal_core', "chado_execute_prepared: unsupported argument type (supplied for '%name' statement %type", array('%name' => $statement_name, '%type' => $required_values[$k]), WATCHDOG_WARNING);
+            watchdog('tripal_core', "chado_execute_prepared: unsupported argument type (supplied for '%name' statement %type)", array('%name' => $statement_name, '%type' => $required_values[$k]), WATCHDOG_WARNING);
             break;
         }
       }
