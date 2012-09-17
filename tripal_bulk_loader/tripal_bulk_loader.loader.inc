@@ -293,12 +293,13 @@ function tripal_bulk_loader_load_data($nid, $job_id) {
     $file = new SplFileObject($node->file);  // 996kb
 
     // Set defaults
+    $header = '';
     if (preg_match('/(t|true|1)/', $node->file_has_header)) {
       // SPF: Some of our templates had lines longer than 4096 so had to replace this
       //fgets($file_handle, 4096);
       //fgets($file_handle);
       $file->next();      
-      print $file->current() . "\n";
+      $header = $file->current();
     }
     $num_records = 0;
     $num_lines = 0;
@@ -394,25 +395,32 @@ function tripal_bulk_loader_load_data($nid, $job_id) {
           'nid' => $node->nid,
         );
 
+
         // execute all records that are not disabled
-        if ($data[$priority]['disabled'] == 0) {
-          $status = process_data_array_for_line($priority, $data, $default_data, $options);
+        $no_errors = FALSE;
+        if (array_key_exists($priority, $data) and 
+            array_key_exists('disabled', $data[$priority]) and 
+            $data[$priority]['disabled'] == 0) {
+          $no_errors = process_data_array_for_line($priority, $data, $default_data, $options);
         } 
         else {
           // set status to true for skipped records
-          $status = TRUE;
+          $no_errors = TRUE;
         }
-        tripal_bulk_loader_progress_file_track_job($job_id, $status);
+
+        tripal_bulk_loader_progress_file_track_job($job_id, $no_errors);
         $failed = FALSE;
-        if (!$status ) {
+        if ( !$no_errors ) {
           // Encountered an error
           if ($transactions) {
             tripal_db_rollback_transaction($savepoint);
           }
           $failed = TRUE;
           break;
-        }
+        } 
       } // end of foreach table in default data array
+print $file->key() . ": " . memory_get_usage() . "\n";
+continue;
 
       tripal_bulk_loader_progress_file_track_job($job_id, FALSE, TRUE);
 
@@ -474,6 +482,7 @@ function tripal_bulk_loader_load_data($nid, $job_id) {
         );
  */
 function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
+
   $table_data = $data[$priority];
   $addt = (object) $addt;
   $no_errors = TRUE;
@@ -482,7 +491,7 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
   $values = $table_data['values_array'];
 
   //watchdog('T_bulk_loader','Original:<pre>'.print_r($table_data, TRUE).'</pre>', array(), WATCHDOG_NOTICE);
-  
+
   if (array_key_exists('need_further_processing', $table_data) and 
       $table_data['need_further_processing']) {   
     if (array_key_exists($priority, $addt->field2column)) {
@@ -490,15 +499,15 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
     }
     $values = tripal_bulk_loader_add_foreignkey_to_values($table_data, $values, $data, $addt->record2priority, $addt->nid, $priority);    
   }
-  
+
   $values = tripal_bulk_loader_regex_tranform_values($values, $table_data, $addt->line);
   if (!$values) {
     //watchdog('T_bulk_loader', 'Line ' . $addt->line_num . ' Regex:<pre>' . print_r($values, TRUE) . print_r($table_data, TRUE) . '</pre>' . '</pre>', array(), WATCHDOG_NOTICE);
   }
-  
+
   // get the table description
   $table_desc = tripal_core_get_chado_table_schema($table);  
-  
+
   // for an insert, check that all database required fields are present in the values array
   // we check for 'optional' in the mode for backwards compatibility. The 'optional' 
   // mode used to be a type of insert
@@ -519,7 +528,7 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
       } 
     } 
   } 
-  
+
   // Check that template required fields are present. if a required field is 
   // missing and this
   // is an optional record then just return. otherwise raise an error
@@ -569,18 +578,6 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
     return $no_errors;
   }
 
-  /* SPF: not sure what this is used for... commenting out.
-  $header = '';
-  if (array_key_exists('feature_id', $values) and isset($values['feature_id'])) {
-    $header = $values['feature_id']['uniquename'] . ' ' . $table_data['record_id'];
-  }
-  else {
-  	print_r($table_data);
-  	exit;
-    $header = $values['uniquename'] . ' ' . $table_data['record_id'];
-  }
-  */
-  
   // if "select if duplicate" is enabled then check to ensure unique constraint is not violoated.  
   // If it is violoated then simply return, the record already exists in the database.
   // We check for insert_unique for backwards compatibilty but that mode no longer exists
@@ -617,7 +614,7 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
       return $no_errors;
     } 
   }
-  
+
   if (!preg_match('/select/', $table_data['mode'])) {
     // Use prepared statement?
     if (variable_get('tripal_bulk_loader_prepare', TRUE)) {
@@ -629,7 +626,6 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
     else {
       $options = array();
     }
-
     // Skip tripal_core_chado_insert() built-in validation?
     if (variable_get('tripal_bulk_loader_skip_validation', FALSE)) {
       $options['skip_validation'] = TRUE;
@@ -643,6 +639,7 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
       $record = tripal_core_chado_insert($table, $values, $options);      
     }
 
+    // if the insert was not successful
     if (!$record) {
       $msg = "\nLine " . $addt->line_num . ' ' . $table_data['record_id'] . ' (' . 
         $table_data['mode'] . ') Unable to insert record into ' . $table . 
@@ -652,6 +649,7 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
       $data[$priority]['error'] = TRUE;
       $no_errors = FALSE;
     }
+    // if the insert was succesful
     else {    
 
       // if mode=insert_once then ensure we only insert it once
@@ -667,7 +665,7 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
           $addt->nid
         ));
         if ($insert_record) {
-          $insert_record->ids_inserted .= ',' . $values[ $table_desc['primary key'][0] ];
+          $insert_record->ids_inserted .= ',' . $values[$table_desc['primary key'][0] ];
           drupal_write_record('tripal_bulk_loader_inserted', $insert_record, 'tripal_bulk_loader_inserted_id');
           //print 'Update: '.print_r($insert_record,TRUE)."\n";
           return $no_errors;
@@ -796,7 +794,11 @@ function tripal_bulk_loader_add_foreignkey_to_values($table_array, $values, $dat
       // if the field in the Referral records is in a FK relationship with
       // this field then we can simply keep the value we have
       $tbl_description = tripal_core_get_chado_table_schema($table_array['table']);
-      if ($foreign_field == $tbl_description['foreign keys'][$foreign_table]['columns'][$field]){
+      if ($tbl_description and
+          array_key_exists('foreign keys', $tbl_description) and 
+          array_key_exists($foreign_table, $tbl_description['foreign keys']) and 
+          array_key_exists($field, $tbl_description['foreign keys'][$foreign_table]['columns']) and
+          $foreign_field == $tbl_description['foreign keys'][$foreign_table]['columns'][$field]){
          $values[$field] = $foreign_values;      
       } 
       // if the field in the Referral records is not in an FK relationship
@@ -813,7 +815,12 @@ function tripal_bulk_loader_add_foreignkey_to_values($table_array, $values, $dat
             $columns = array($foreign_field);
             $options = array('statement_name' => 'pk_' . $foreign_table);
             $record  = tripal_core_chado_select($foreign_table, $columns, $values, $options);
-            $values[$field] = $record[0]->$foreign_field;
+            if ($record) {
+              $values[$field] = $record[0]->$foreign_field;
+            } 
+            else {
+              unset($values[$field]);
+            }
           }
           // if we don't have a value then there's nothing we can do so
           // set this value to nothing as well
@@ -824,14 +831,19 @@ function tripal_bulk_loader_add_foreignkey_to_values($table_array, $values, $dat
         // if the current value is an array and our field is not in it, then
         // we need to select a value for our field.
         else {
-           $values  = $foreign_values;
-           $columns = array($foreign_field);
-           $options = array('statement_name' => 'blk_' . $nid . $priority . $foreign_table);        
-           $record  = tripal_core_chado_select($foreign_table, $columns, $values, $options);
-           $values[$field] = $record[0]->$foreign_field;
+          $values  = $foreign_values;
+          $columns = array($foreign_field);
+          $options = array('statement_name' => 'blk_' . $nid . $priority . $foreign_table);        
+          $record  = tripal_core_chado_select($foreign_table, $columns, $values, $options);
+          if ($record){
+            $values[$field] = $record[0]->$foreign_field; 
+          } 
+          else {
+            unset($values[$field]);
+          }
         }         
       }
-    }
+    } 
   }
 
   // return the updated field values
@@ -922,8 +934,8 @@ function tripal_bulk_loader_flatten_array($values) {
  * Used to display loader progress to the user
  */
 function tripal_bulk_loader_progress_bar($current=0, $total=100, $size=50) {
-	$new_bar = FALSE;
-	$mem = memory_get_usage();       
+  $new_bar = FALSE;
+  $mem = memory_get_usage();       
 	
 	
   // First iteration
