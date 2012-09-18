@@ -147,9 +147,32 @@ function tripal_core_create_custom_table(&$ret, $table, $schema, $skip_creation 
   }
   $success = drupal_write_record('tripal_custom_tables', $record);
   if (!$success) {
-    watchdog('tripal_core', "Error adding custom table.",
-      array('!table_name' => $table), WATCHDOG_ERROR);
+    watchdog('tripal_core', "Error adding custom table %table_name.",
+      array('%table_name' => $table), WATCHDOG_ERROR);
+    drupal_set_message(t("Could not add custom table %table_name. 
+      Please check the schema array.", array('%table_name' => $table)), 'error');      
     return FALSE;
+  }
+  
+  // now add any foreign key constraints
+  if(array_key_exists('foreign keys', $schema)){
+  	$fkeys = $schema['foreign keys'];
+  	foreach ($fkeys as $fktable => $fkdetails) {
+  		$relations = $fkdetails['columns'];
+  		foreach ($relations as $left => $right) {
+  			$sql = "ALTER TABLE $table ADD CONSTRAINT " . 
+  			  $table . "_" . $left . "_fkey FOREIGN KEY ($left) REFERENCES  $fktable ($right) " .
+  			  "ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED";
+  			if(!chado_query($sql)){
+  			  watchdog('tripal_core', "Error, could not add foreign key contraint to custom table.",
+            array('!table_name' => $table), WATCHDOG_ERROR);
+			    drupal_set_message(t("Could not add foreign key contraint to table %table_name. 
+			      Please check the schema array and the report log for errors.", 
+			      array('%table_name' => $table)), 'error');      
+          return FALSE;
+  			}
+  		}
+  	}
   }
 
   return $ret;

@@ -1869,6 +1869,10 @@ function tripal_core_exclude_field_from_feature_by_default() {
  *
  * @param $sql
  *   The sql statement to execute
+ * 
+ * @returns
+ *   A database query result resource or FALSE if the query was not 
+ *   executed correctly
  */
 function chado_query($sql) {
 
