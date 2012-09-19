@@ -2867,7 +2867,7 @@ function tripal_core_set_chado_version() {
   ."WHERE CV.name = 'chado_properties' and CVT.name = 'version'";
   $previous_db = tripal_db_set_active('chado');
   $v = db_fetch_object(db_query($sql));
-  $previous_db = tripal_db_set_active('chado');
+  tripal_db_set_active($previous_db);
 
   // if we don't have a version in the chadoprop table then it must be
   // v1.11 or older
