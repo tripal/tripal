@@ -493,27 +493,6 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
   // get the table description
   $table_desc = tripal_core_get_chado_table_schema($table);  
 
-  // for an insert, check that all database required fields are present in the values array
-  // we check for 'optional' in the mode for backwards compatibility. The 'optional' 
-  // mode used to be a type of insert
-  if (preg_match('/insert/', $table_data['mode']) or 
-      preg_match('/optional/', $table_data['mode'])) {
-    // Check all database table required fields are set
-    $fields = $table_desc['fields'];
-    foreach ($fields as $field => $def) { 	
-      // a field is considered missing if it cannot be null and there is no default
-      // value for it or it is not of type 'serial'
-      if (array_key_exists('not null', $def) and $def['not null'] == 1 and 
-          !array_key_exists($field, $values) and 
-          (!array_key_exists('default', $def) or !isset($def['default'])) and
-          strcmp($def['type'], 'serial') != 0) { 
-        $msg = "\nLine " . $addt->line_num . ' ' . $table_data['record_id'] . ' (' . $table_data['mode'] . ') Missing Database Required Value: ' . $table . '.' . $field;
-        watchdog('T_bulk_loader', $msg, array(), WATCHDOG_NOTICE);
-        $data[$priority]['error'] = TRUE;
-      } 
-    } 
-  } 
-
   // Check that template required fields are present. if a required field is 
   // missing and this
   // is an optional record then just return. otherwise raise an error
@@ -543,6 +522,28 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
       }
     }
   }
+
+  // for an insert, check that all database required fields are present in the values array
+  // we check for 'optional' in the mode for backwards compatibility. The 'optional' 
+  // mode used to be a type of insert
+  if (!$skip_optional and (preg_match('/insert/', $table_data['mode']) or 
+       preg_match('/optional/', $table_data['mode']))) {
+    // Check all database table required fields are set
+    $fields = $table_desc['fields'];
+    foreach ($fields as $field => $def) { 	
+      // a field is considered missing if it cannot be null and there is no default
+      // value for it or it is not of type 'serial'
+      if (array_key_exists('not null', $def) and $def['not null'] == 1 and   // field must have a value
+          !array_key_exists($field, $values) and                             // there is not a value for it
+          !array_key_exists('default', $def) and                             // there is no default for it
+          strcmp($def['type'], 'serial') != 0) {                             // it is not a 'serial' type column
+        $msg = "\nLine " . $addt->line_num . ' ' . $table_data['record_id'] . 
+               ' (' . $table_data['mode'] . ') Missing Database Required Value: ' . $table . '.' . $field;
+        watchdog('T_bulk_loader', $msg, array(), WATCHDOG_ERROR); 
+        $data[$priority]['error'] = TRUE;
+      } 
+    } 
+  } 
   
   // add updated values array into the data array
   $data[$priority]['values_array'] = $values;
@@ -688,15 +689,15 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
     if(is_array($values) and count($values) > 0){
       $matches = tripal_core_chado_select($table, array_keys($table_desc['fields']), $values);
     }
-/*$time_end = microtime(true);
-$time = $time_end - $time_start;
-printf("time: %04f seconds\n",$time);
-if($time > 0.05){
-  print "$table\n";
-  print_r(array_keys($table_desc['fields']));
-  print_r($values);
-  exit;
-} */   
+//$time_end = microtime(true);
+//$time = $time_end - $time_start;
+//printf("time: %04f seconds\n",$time);
+//if($time > 0.05){
+//  print "$table\n";
+//  print_r(array_keys($table_desc['fields']));
+//  print_r($values);
+//  exit;
+//}
     // if the record doesn't exists and it's not optional then generate an error
     if (count($matches) == 0){
       // No record on select

@@ -200,7 +200,10 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
   if ($validate) {
 
     // check for violation of any unique constraints
-    $ukeys = $table_desc['unique keys'];
+    $ukeys = array();
+    if(array_key_exists('unique keys', $table_desc)){
+      $ukeys = $table_desc['unique keys'];
+    }
     $ukselect_cols = array();
     $ukselect_vals = array();
     if ($ukeys) {
@@ -209,9 +212,9 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
           // build the arrays for performing a select that will check the contraint
           $ukselect_cols[] = $field;
           if (!array_key_exists($field, $insert_values)) {
-          	if (array_key_exists('default', $table_desc['fields'][$field])) {
+            if (array_key_exists('default', $table_desc['fields'][$field])) {
               $ukselect_vals[$field] = $table_desc['fields'][$field]['default'];
-          	}
+            }
           }
           else {
             $ukselect_vals[$field] = $insert_values[$field];
@@ -223,19 +226,22 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
           $coptions = array('statement_name' => 'uqsel_' . $table . '_' . $name);
         }
         if (tripal_core_chado_select($table, $ukselect_cols, $ukselect_vals, $coptions)) {
-          watchdog('tripal_core', "tripal_core_chado_insert: Cannot insert duplicate record into $table table: " . print_r($values, 1), array(), 'WATCHDOG_ERROR');
+          watchdog('tripal_core', "tripal_core_chado_insert: Cannot insert duplicate record into $table table: " . 
+            print_r($values, 1), array(), 'WATCHDOG_ERROR');
           return FALSE;
         }
       }
     }
 
     // if trying to insert a field that is the primary key, make sure it also is unique
-    $pkey = $table_desc['primary key'][0];
-    if ($insert_values[$pkey]) {
-      $coptions = array('statement_name' => 'pqsel_' . $table . '_' . $pkey);
-      if (tripal_core_chado_select($table, array($pkey), array($pkey => $insert_values[$pkey]), $coptions)) {
-        watchdog('tripal_core', "tripal_core_chado_insert: Cannot insert duplicate primary key into $table table: " . print_r($values, 1), array(), 'WATCHDOG_ERROR');
-        return FALSE;
+    if (array_key_exists('primary key', $table_desc)) {
+      $pkey = $table_desc['primary key'][0];
+      if (array_key_exists($pkey, $insert_values)) {
+        $coptions = array('statement_name' => 'pqsel_' . $table . '_' . $pkey);
+        if (tripal_core_chado_select($table, array($pkey), array($pkey => $insert_values[$pkey]), $coptions)) {
+          watchdog('tripal_core', "tripal_core_chado_insert: Cannot insert duplicate primary key into $table table: " . print_r($values, 1), array(), 'WATCHDOG_ERROR');
+          return FALSE;
+        }
       }
     }
 
@@ -247,8 +253,12 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
     foreach ($table_desc['fields'] as $field => $def) {
       // a field is considered missing if it cannot be NULL and there is no default
       // value for it or it is of type 'serial'
-      if ($def['not NULL'] == 1 and !array_key_exists($field, $insert_values) and !isset($def['default']) and strcmp($def['type'], serial) != 0) {
-        watchdog('tripal_core', "tripal_core_chado_insert: Field $table.$field cannot be NULL: " . print_r($values, 1), array(), 'WATCHDOG_ERROR');
+      if (array_key_exists('NOT NULL', $def) and 
+          !array_key_exists($field, $insert_values) and 
+          !array_key_exists('default', $def) and
+          strcmp($def['type'], serial) != 0) {
+        watchdog('tripal_core', "tripal_core_chado_insert: Field $table.$field cannot be NULL: " . 
+          print_r($values, 1), array(), 'WATCHDOG_ERROR');
         return FALSE;
       }
     }
