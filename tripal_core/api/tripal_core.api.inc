@@ -211,7 +211,7 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
           if (!array_key_exists($field, $insert_values)) {
           	if (array_key_exists('default', $table_desc['fields'][$field])) {
               $ukselect_vals[$field] = $table_desc['fields'][$field]['default'];
-          	}          	
+          	}
           }
           else {
             $ukselect_vals[$field] = $insert_values[$field];
@@ -1055,7 +1055,7 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
         }
         else {
           $where[$field] = $results;
-        } 
+        }
       }
     }
     else {
@@ -1178,13 +1178,13 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
     $psql =  "PREPARE " . $options['statement_name'] . " (" . implode(', ', $idatatypes) . ") AS " . $psql;
 
   } // end if(empty($where)){ } else {
-  
+
   // if the caller has requested the SQL rather than the results...
   // which happens in the case of wanting to use the Drupal pager, then do so
   if ($options['return_sql'] == TRUE) {
     return array('sql' => $sql, 'args' => $args);
   }
-  
+
   // prepare the statement
   if ($prepared) {
     // if this is the first time we've run this query
@@ -1199,12 +1199,12 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
     $sql = "EXECUTE " . $options['statement_name'] . "(" . implode(", ", $itypes) . ")";
     // WARNING: This call creates a memory leak:  if you remove the $pvalues it doesn't
     // do this. Got to find out what's causing this.
-    $resource = tripal_core_chado_execute_prepared($options['statement_name'], $sql, $pvalues);    
+    $resource = tripal_core_chado_execute_prepared($options['statement_name'], $sql, $pvalues);
   }
   else {
     $resource = chado_query($sql, $args);
   }
-    
+
   // format results into an array
   $results = array();
   while ($r = db_fetch_object($resource)) {
@@ -1299,7 +1299,7 @@ function tripal_core_chado_get_foreign_key($table_desc, $field, $values, $option
       }
       $table = $def['table'];
       $columns = $def['columns'];
-      
+
       // iterate through the columns of the foreign key relationship
       foreach ($columns as $left => $right) {
         // does the left column in the relationship match our field?
@@ -1314,8 +1314,8 @@ function tripal_core_chado_get_foreign_key($table_desc, $field, $values, $option
               $fields[] = $obj->$right;
             }
             return $fields;
-          } 
-        } 
+          }
+        }
       }
     }
   }
@@ -1869,9 +1869,9 @@ function tripal_core_exclude_field_from_feature_by_default() {
  *
  * @param $sql
  *   The sql statement to execute
- * 
+ *
  * @returns
- *   A database query result resource or FALSE if the query was not 
+ *   A database query result resource or FALSE if the query was not
  *   executed correctly
  */
 function chado_query($sql) {
@@ -2358,22 +2358,22 @@ function tripal_db_set_active($dbname) {
     // set it as normal.
     else {
 //      if (tripal_db_set_chado_search_path($dbname)) {
-         return $dbname; 
-//      }  
+         return $dbname;
+//      }
 //      else {
 //        return db_set_active($dbname);
-//      } 
+//      }
     }
   }
   else {
-    return db_set_active($dbname);  
+    return db_set_active($dbname);
   }
 }
 
 /**
  * Set the chado search_path for PostgreSQL
  *
- * Sets the database search_path for postgreSQL to the 
+ * Sets the database search_path for postgreSQL to the
  * chado schema.
  *
  * @ingroup tripal_chado_api
@@ -2385,14 +2385,14 @@ function tripal_db_set_chado_search_path($dbname) {
   if(!$chado_exists){
     $chado_exists = tripal_core_chado_schema_exists();
   }
-  
+
   // here we make the assumption that the default database schema is
   // 'public'.  This will most likely always be the case but if not,
   // then this code will break
   if ($chado_exists) {
     db_query('set search_path to %s', "$dbname,public");
     return TRUE;
-  } 
+  }
   else {
     return FALSE;
   }
@@ -2401,7 +2401,7 @@ function tripal_db_set_chado_search_path($dbname) {
 /**
  * Set the default search_path for PostgreSQL
  *
- * Sets the database search_path for postgreSQL to the 
+ * Sets the database search_path for postgreSQL to the
  * default schema.
  *
  * @ingroup tripal_chado_api
@@ -2528,7 +2528,7 @@ function tripal_core_chado_execute_prepared($statement_name, $sql, $values) {
           case 'text':
             $check = is_string($v);
             if (!$check) {
-              watchdog('tripal_core', "chado_execute_prepared: wrong argument type supplied for '%name' statement. Expected %required but recieved '%value'", 
+              watchdog('tripal_core', "chado_execute_prepared: wrong argument type supplied for '%name' statement. Expected %required but recieved '%value'",
                 array('%name' => $statement_name, '%required' => $required_values[$k], '%value' => print_r($v,TRUE)), WATCHDOG_ERROR);
               return FALSE;
             }
@@ -2536,14 +2536,14 @@ function tripal_core_chado_execute_prepared($statement_name, $sql, $values) {
           case 'int':
             $check = is_numeric($v);
             if (!$check) {
-              watchdog('tripal_core', "chado_execute_prepared: wrong argument type supplied for '%name' statement. Expected %required but recieved '%value'", 
+              watchdog('tripal_core', "chado_execute_prepared: wrong argument type supplied for '%name' statement. Expected %required but recieved '%value'",
                 array('%name' => $statement_name, '%required' => $required_values[$k], '%value' => print_r($v,TRUE)), WATCHDOG_ERROR);
               return FALSE;
             }
             break;
           case 'bool':
             if($v != 'TRUE' and $v != 'FALSE'){
-              watchdog('tripal_core', "chado_execute_prepared: wrong argument type supplied for '%name' statement. Expected %required but recieved '%value'", 
+              watchdog('tripal_core', "chado_execute_prepared: wrong argument type supplied for '%name' statement. Expected %required but recieved '%value'",
                 array('%name' => $statement_name, '%required' => $required_values[$k], '%value' => print_r($v,TRUE)), WATCHDOG_ERROR);
               return FALSE;
             }
@@ -2551,20 +2551,20 @@ function tripal_core_chado_execute_prepared($statement_name, $sql, $values) {
           case 'numeric':
             $check = is_numeric($v);
             if (!$check) {
-              watchdog('tripal_core', "chado_execute_prepared: wrong argument type supplied for '%name' statement. Expected %required but recieved '%value'", 
+              watchdog('tripal_core', "chado_execute_prepared: wrong argument type supplied for '%name' statement. Expected %required but recieved '%value'",
                 array('%name' => $statement_name, '%required' => $required_values[$k], '%value' => print_r($v,TRUE)), WATCHDOG_ERROR);
               return FALSE;
             }
             break;
           default:
-            watchdog('tripal_core', "chado_execute_prepared: unsupported argument type (supplied for '%name' statement %type)", 
+            watchdog('tripal_core', "chado_execute_prepared: unsupported argument type (supplied for '%name' statement %type)",
 
             array('%name' => $statement_name, '%type' => $required_values[$k]), WATCHDOG_WARNING);
             break;
         }
       }
       else {
-        watchdog('tripal_core', "chado_execute_prepared: wrong number of arguments supplied for '%name' statement. Expected %required but recieved %values", 
+        watchdog('tripal_core', "chado_execute_prepared: wrong number of arguments supplied for '%name' statement. Expected %required but recieved %values",
           array('%name' => $statement_name, '%required' => print_r($required_values,TRUE), '%values' => print_r($values,TRUE)), WATCHDOG_ERROR);
         return FALSE;
       }
@@ -2575,7 +2575,7 @@ function tripal_core_chado_execute_prepared($statement_name, $sql, $values) {
     return $resource;
   }
   else {
-    watchdog('tripal_core', "chado_execute_prepared: wrong number of arguments supplied for '%name' statement. Expected %required but recieved %values", 
+    watchdog('tripal_core', "chado_execute_prepared: wrong number of arguments supplied for '%name' statement. Expected %required but recieved %values",
       array('%name' => $statement_name, '%required' => print_r($required_values,TRUE), '%values' => print_r($values,TRUE)), WATCHDOG_ERROR);
     return FALSE;
   }
@@ -2834,11 +2834,18 @@ function tripal_core_get_chado_tables($include_custom = NULL) {
  * @ingroup tripal_core_api
  */
 function tripal_core_set_chado_version() {
+  global $db_url;
 
   // check that Chado is installed if not return 'uninstalled as the version'
   $chado_exists = tripal_core_chado_schema_exists();
   if (!$chado_exists) {
-    return 'not installed';
+    // if it's not in the drupal database check to see if it's specified in the $db_url
+    // in the settings.php
+    if (!array_key_exists('chado', $db_url)) {
+      // if it's not in the drupal database or specified in the $db_url then
+      // return uninstalled as the version
+      return 'not installed';
+    }
   }
 
   // if the table doesn't exist then we don't know what version but we know
@@ -2860,7 +2867,7 @@ function tripal_core_set_chado_version() {
   ."WHERE CV.name = 'chado_properties' and CVT.name = 'version'";
   $previous_db = tripal_db_set_active('chado');
   $v = db_fetch_object(db_query($sql));
-  $previous_db = tripal_db_set_active('chado');
+  tripal_db_set_active($previous_db);
 
   // if we don't have a version in the chadoprop table then it must be
   // v1.11 or older
@@ -2947,7 +2954,7 @@ function tripal_core_get_chado_table_schema($table) {
   // get the table array from the proper chado schema
   $v = preg_replace("/\./", "_", $v); // reformat version for hook name
   $table_arr = module_invoke_all("chado_schema_v" . $v . "_" . $table);
-   
+
   // if the table_arr is empty then maybe this is a custom table
   if(!is_array($table_arr) or count($table_arr) == 0){
     $table_arr = tripal_get_chado_custom_schema($table);
@@ -3027,7 +3034,7 @@ function tripal_core_clean_orphaned_nodes($table, $job_id) {
     }
     $i++;
   }
-   
+
   // iterate through all of the nodes and delete those that don't
   // have a corresponding entry in chado_$table
   foreach ($nodes as $node) {
