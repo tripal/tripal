@@ -2602,10 +2602,18 @@ function tripal_db_persistent_chado() {
   else {
     if (is_array($db_url) && isset($db_url['chado'])) {
       $connection = db_connect($db_url['chado']);
+      if (!$connection) {
+        watchdog('tripal_core', "Could not create persistant connection", array(), WATCHDOG_ERROR);
+        return FALSE;       
+      }
       variable_set('tripal_persistent_chado', serialize($connection));
     }
     else {
       $connection = db_connect($db_url);
+      if (!$connection) {
+        watchdog('tripal_core', "Could not create persistant connection", array(), WATCHDOG_ERROR);
+        return FALSE;      	
+      }
       variable_set('tripal_persistent_chado', serialize($connection));
     }
     return $connection;
