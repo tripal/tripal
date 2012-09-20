@@ -2121,7 +2121,7 @@ $cv_name, $value, $update_if_present = 0) {
  * @ingroup tripal_chado_api
  */
 function tripal_core_update_property($basetable, $record_id, $property,
-$cv_name, $value, $insert_if_missing = 0) {
+    $cv_name, $value, $insert_if_missing = 0) {
 
   // first see if the property is missing (we can't update a missing property
   $prop = tripal_core_get_property($basetable, $record_id, $property, $cv_name);
@@ -2426,7 +2426,7 @@ function tripal_core_is_sql_prepared($statement_name) {
   // has been prepared. If it has then we won't do the database
   // query to find out.  If it hasn't then we'll query the database
   // to see if it is prepared.
-  $connection = variable_get('tripal_persistent_chado', NULL);
+  $connection = unserialize(variable_get('tripal_persistent_chado', NULL));
   if (!isset($_SESSION[$connection])) {
     $_SESSION[$connection] = array();
   }
@@ -2463,7 +2463,7 @@ function tripal_core_is_sql_prepared($statement_name) {
  *   be the type of value needed (ie: text, int, etc.)
  */
 function tripal_core_chado_prepare($statement_name, $psql, $args) {
-  $connection = variable_get('tripal_persistent_chado', NULL);
+  $connection = unserialize(variable_get('tripal_persistent_chado', NULL));
 
   // Check to see if this statement was already prepared
   if (tripal_core_is_sql_prepared($statement_name)) {
@@ -2507,7 +2507,7 @@ function tripal_core_chado_prepare($statement_name, $psql, $args) {
  *   An array of values in the execute sql statement
  */
 function tripal_core_chado_execute_prepared($statement_name, $sql, $values) {
-  $connection = variable_get('tripal_persistent_chado', NULL);
+  $connection = unserialize(variable_get('tripal_persistent_chado', NULL));
 
   if (!tripal_core_is_sql_prepared($statement_name)) {
     watchdog('tripal_core', "tripal_core_chado_execute_prepared: Cannot execute an unprepared statement: '%name'", array('%name' => $statement_name), WATCHDOG_ERROR);
@@ -2602,7 +2602,7 @@ function tripal_db_persistent_chado() {
   else {
     if (is_array($db_url) && isset($db_url['chado'])) {
       $connection = db_connect($db_url['chado']);
-      variable_set('tripal_persistent_chado', $connection);
+      variable_set('tripal_persistent_chado', serialize($connection));
     }
     else {
       $connection = db_connect($db_url);
