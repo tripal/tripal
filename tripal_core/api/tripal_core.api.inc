@@ -326,7 +326,7 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
       watchdog('tripal_core', "tripal_core_chado_insert: %table not defined in tripal schema api", array('%table' => $table), 'WATCHDOG WARNING');
     }
     foreach ($table_desc['primary key'] as $field) {
-      $value = db_last_insert_id($table, $field);
+      $value =  db_result(chado_query("SELECT CURRVAL('" . $table . "_" . $field . "_seq')"));
       $values[$field] = $value;
     }
     return $values;
@@ -2604,7 +2604,7 @@ function tripal_db_persistent_chado() {
       $connection = db_connect($db_url['chado']);
       if (!$connection) {
         watchdog('tripal_core', "Could not create persistant connection", array(), WATCHDOG_ERROR);
-        return FALSE;       
+        return FALSE;
       }
       variable_set('tripal_persistent_chado', serialize($connection));
     }
@@ -2612,7 +2612,7 @@ function tripal_db_persistent_chado() {
       $connection = db_connect($db_url);
       if (!$connection) {
         watchdog('tripal_core', "Could not create persistant connection", array(), WATCHDOG_ERROR);
-        return FALSE;      	
+        return FALSE;
       }
       variable_set('tripal_persistent_chado', serialize($connection));
     }
