@@ -492,10 +492,11 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
 
   // get the table description
   $table_desc = tripal_core_get_chado_table_schema($table);  
-
+  
   // Check that template required fields are present. if a required field is 
   // missing and this
   // is an optional record then just return. otherwise raise an error
+  $skip_optional = 0;
   foreach ($table_data['required'] as $field => $required) {
     if ($required) {
       // check if the field has no value (or array is empty)
@@ -505,7 +506,7 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
         // check if the 'mode' is set to 'optional'
         if ($table_data['optional'] or preg_match('/optional/', $table_data['mode']) or 
             $table_data['select_optional'])  {
-            
+          $skip_optional = 1;
           // set the values array to be empty since we all required fields are
           // optional and we can't do a select/insert so we don't want to keep
           // the values if this record is used in a later FK relationship.
@@ -521,12 +522,12 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
       }
     }
   }
-
+  
   // for an insert, check that all database required fields are present in the values array
   // we check for 'optional' in the mode for backwards compatibility. The 'optional' 
   // mode used to be a type of insert
-  if (preg_match('/insert/', $table_data['mode']) or 
-      preg_match('/optional/', $table_data['mode'])) {
+  if (!$skip_optional and (preg_match('/insert/', $table_data['mode']) or 
+       preg_match('/optional/', $table_data['mode']))) {
     // Check all database table required fields are set
     $fields = $table_desc['fields'];
     foreach ($fields as $field => $def) { 	
@@ -556,13 +557,14 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
   if ($skip_optional) {
     return $no_errors;
   }
-
+  
   // check if it is already inserted
   if (array_key_exists('inserted',$table_data) and $table_data['inserted']) {
     //watchdog('T_bulk_loader','Already Inserted:'.print_r($values,TRUE),array(),WATCHDOG_NOTICE);
     return $no_errors;
   }
-
+         
+  
   // if "select if duplicate" is enabled then check to ensure unique constraint is not violoated.  
   // If it is violoated then simply return, the record already exists in the database.
   // We check for insert_unique for backwards compatibilty but that mode no longer exists
@@ -570,7 +572,7 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
       (array_key_exists('select_if_duplicate', $table_data) and 
        $table_data['select_if_duplicate'] == 1)) {
     $options = array('is_duplicate' => TRUE);
-    $duplicate = tripal_core_chado_select($table, array_keys($table_desc['fields']), $values, $options); 
+    $duplicate = tripal_core_chado_select($table, array_keys($table_desc['fields']), $values, $options);
     // if this is a duplicate then substitute the values in the table_data array so
     // that for future records that my depend on this one, they can get the values 
     // needed

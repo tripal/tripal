@@ -970,10 +970,14 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
   // to remove all but unique keys
   if ($options['is_duplicate'] and array_key_exists('unique keys', $table_desc)) {
     $ukeys = $table_desc['unique keys'];
-
+    $has_results = 0;
+      
     // iterate through the unique constraints and reset the values and columns
     // arrays to only include these fields
     foreach ($ukeys as $cname => $fields) {
+    	if ($has_results) {
+    	   continue;
+    	}
       $new_values = array();
       $new_columns = array();
       $new_options = array();
@@ -1014,10 +1018,13 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
       $results = tripal_core_chado_select($table, $new_columns, $new_values, $new_options);
       // if we have a duplicate record then return the results
 			if (count($results) > 0) {
-        return $results;
+        $has_results = 1;
       } 
+      unset($new_columns);
+      unset($new_values);
+      unset($new_options);
     }
-    return FALSE;
+    return $results;
   }
 
   foreach ($values as $field => $value) {
