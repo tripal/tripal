@@ -185,12 +185,12 @@ class tripal_views_handler_filter_select_string extends chado_views_handler_filt
 
     // filter the aggregates
     if ($this->options['agg']['aggregates_with']) {
-      $this::query_restrict_curr_table_records();
+      $this->query_restrict_curr_table_records();
     }
 
     // filter the base table
     if ($this->options['agg']['records_with']) {
-      $this::query_restrict_base_records();
+      $this->query_restrict_base_records();
     }
 
 

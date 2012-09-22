@@ -496,17 +496,16 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
   // Check that template required fields are present. if a required field is 
   // missing and this
   // is an optional record then just return. otherwise raise an error
-  $skip_optional = 0;
   foreach ($table_data['required'] as $field => $required) {
     if ($required) {
       // check if the field has no value (or array is empty)
-      if (!isset($values[$field]) or (is_array($values[$field]) and count($values[$field]) == 0)){
+      if (!isset($values[$field]) or 
+          (is_array($values[$field]) and count($values[$field]) == 0)){
         // check if the record is optional.  For backwards compatiblity we need to
         // check if the 'mode' is set to 'optional'
         if ($table_data['optional'] or preg_match('/optional/', $table_data['mode']) or 
             $table_data['select_optional'])  {
             
-          $skip_optional = 1;
           // set the values array to be empty since we all required fields are
           // optional and we can't do a select/insert so we don't want to keep
           // the values if this record is used in a later FK relationship.
@@ -526,8 +525,8 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
   // for an insert, check that all database required fields are present in the values array
   // we check for 'optional' in the mode for backwards compatibility. The 'optional' 
   // mode used to be a type of insert
-  if (!$skip_optional and (preg_match('/insert/', $table_data['mode']) or 
-       preg_match('/optional/', $table_data['mode']))) {
+  if (preg_match('/insert/', $table_data['mode']) or 
+      preg_match('/optional/', $table_data['mode'])) {
     // Check all database table required fields are set
     $fields = $table_desc['fields'];
     foreach ($fields as $field => $def) { 	
@@ -570,7 +569,7 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
   if (preg_match('/insert_unique/', $table_data['mode']) or 
       (array_key_exists('select_if_duplicate', $table_data) and 
        $table_data['select_if_duplicate'] == 1)) {
-    $options = array('use_unique' => TRUE);
+    $options = array('is_duplicate' => TRUE);
     $duplicate = tripal_core_chado_select($table, array_keys($table_desc['fields']), $values, $options); 
     // if this is a duplicate then substitute the values in the table_data array so
     // that for future records that my depend on this one, they can get the values 
