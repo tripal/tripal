@@ -33,7 +33,13 @@ function tripal_stock_views_data()  {
 
   if (module_exists('tripal_views')) {
     $tablename = 'stock';
-    if (!tripal_views_is_integrated($tablename, 9)) {
+    // get the setup with the lightest priority. That's the table 
+    // that currently integrated with views.
+    $priority = tripal_views_get_lightest_priority_setup($tablename);
+      
+    // check to see if the table is integrated. If it is then integrate it's
+    // corresponding 'chado_[table]' table.
+    if (!tripal_views_is_integrated($tablename, $priority)) {
       $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename, TRUE);
 
       // Add in node relationships if chado is in the same db as drupal
