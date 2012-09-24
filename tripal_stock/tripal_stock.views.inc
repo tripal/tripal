@@ -73,7 +73,8 @@ function tripal_stock_views_data()  {
       'stockprop_pub'
     );
     foreach ($tables as $tablename) {
-      if (!tripal_views_is_integrated($tablename, 9)) {
+    	$priority = tripal_views_get_lightest_priority_setup($tablename);     
+      if (!tripal_views_is_integrated($tablename, $priority)) {
         $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename, FALSE);
         tripal_views_integration_add_entry($table_integration_array);
       }
