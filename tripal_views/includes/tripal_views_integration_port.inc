@@ -83,7 +83,7 @@ function tripal_views_integration_import_form_submit($form, &$form_state) {
   //$defn_array = unserialize($form_state['values']['import']);
   // convert the array into a real PHP array
   $defn_array = array();
-  eval("\$t = " . $form_state['values']['import'] . ";");
+  eval("\$defn_array = " . $form_state['values']['import'] . ";");
 
   // Add optional parameters
   if ($form_state['values']['name']) {

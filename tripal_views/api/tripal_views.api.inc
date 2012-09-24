@@ -137,13 +137,13 @@ function tripal_views_integration_add_entry($defn_array) {
     'base_table' => $defn_array['base_table'],
   );
   if ($defn_array['type'] == 'mview') {
-      $mview = db_fetch_object(db_query("SELECT mview_id FROM {tripal_mviews} WHERE mv_table='%s'", $defn_array['table']));
-      $view_record['mview_id'] = $mview->mview_id;
-      if (!$mview->mview_id) {
-        return FALSE;
-      }
+    $mview = db_fetch_object(db_query("SELECT mview_id FROM {tripal_mviews} WHERE mv_table='%s'", $defn_array['table']));
+    $view_record['mview_id'] = $mview->mview_id;
+    if (!$mview->mview_id) {
+      return FALSE;
+    }
   }
-  if ($view_record['name'] && $view_record['comment']) {
+  if ($view_record['name']) { // && $view_record['comment']) {  # SPF: commented out 9/24/2012 .. It's not required on the form
     if ($defn_array['additional_content']) {
       $setup = db_fetch_object(db_query("SELECT * FROM {tripal_views} WHERE table_name='%s' AND priority=%d",$view_record['table_name'], $view_record['priority']));
       if (empty($setup->setup_id)) {
