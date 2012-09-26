@@ -40,9 +40,7 @@ function tripal_cv_views_data() {
       'cvterm'
     );
     foreach ($tables as $tablename) {
-    	// get the setup with the lightest priority. That's the table 
-      // that currently integrated with views.
-      $priority = tripal_views_get_table_lightest_priority($tablename);
+      $priority = 9;
       
       // check to see if the table is integrated. If it is then integrate it's
       // corresponding 'chado_[table]' table.
@@ -72,7 +70,7 @@ function tripal_cv_views_data() {
       'cvtermsynonym'
     );
     foreach ($tables as $tablename) {
-    	$priority = tripal_views_get_table_lightest_priority($tablename);     
+    	$priority = 9;     
       if (!tripal_views_is_integrated($tablename, $priority)) {
         $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename, FALSE, $priority);
         tripal_views_integration_add_entry($table_integration_array);

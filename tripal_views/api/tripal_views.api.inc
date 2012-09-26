@@ -16,7 +16,8 @@
  *   view or a chado table
  *
  * @return
- *   On success, the setup_id to use for integration of this table; otherwise FALSE
+ *   returns the lowest priority.  If the table has not been integrated, a priority of 10
+ *   is returned.
  */
 function tripal_views_get_table_lightest_priority($table_name) {
 
@@ -26,7 +27,8 @@ function tripal_views_get_table_lightest_priority($table_name) {
     return $setup->priority;
   }
   else {
-    return FALSE;
+  	// default priority is 10
+    return 10;
   }
 }
 
@@ -411,14 +413,17 @@ function tripal_views_integration_remove_entry_by_setup_id($setup_id) {
 }
 
 /**
- * Integrate all chado tables in the schema api
+ * Integrate all chado tables in the schema api.  This integration only occurs
+ * once and sets all Chado tables to a priority of 10
  */
 function tripal_views_integrate_all_chado_tables() {
 
   $tables = tripal_core_get_chado_tables(TRUE);
   foreach ($tables as $tablename) {
-    if (!tripal_views_is_integrated($tablename, 10)) {
-      $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename, TRUE, 10);
+  
+    $priority = 10;
+    if (!tripal_views_is_integrated($tablename, $priority)) {
+      $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename, TRUE, $priority);
       if ($table_integration_array) {
         tripal_views_integration_add_entry($table_integration_array);
       }
