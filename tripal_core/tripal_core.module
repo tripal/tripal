@@ -23,7 +23,8 @@ require_once "api/tripal_core.api.inc";
  * @ingroup tripal_core
  */
 function tripal_core_init() {
-
+  global $base_url;
+  
   // the two lines below are necessary to ensure that the search_path
   // variable is always set.  In the case where a view needs to query the
   // chado schema when it is local to the Drupal database.  Otherwise the
@@ -33,7 +34,9 @@ function tripal_core_init() {
 //  $previous = tripal_db_set_active('chado');
 //  tripal_db_set_active($previous);
   tripal_db_set_chado_search_path('chado');
-
+  
+  // add the base url as a javascript variable
+  drupal_add_js("drupal_base_url = '$base_url';", 'inline', 'header');
 
   // create the 'tripal' controlled volcabulary in chado but only if it doesn't already exist, and
   // only if the chado database is present.
