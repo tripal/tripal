@@ -34,9 +34,7 @@ function tripal_core_init() {
 //  $previous = tripal_db_set_active('chado');
 //  tripal_db_set_active($previous);
   tripal_db_set_chado_search_path('chado');
-  
-  // add the base url as a javascript variable
-  drupal_add_js("drupal_base_url = '$base_url';", 'inline', 'header');
+ 
 
   // create the 'tripal' controlled volcabulary in chado but only if it doesn't already exist, and
   // only if the chado database is present.
@@ -58,10 +56,10 @@ function tripal_core_init() {
   $theme_dir = drupal_get_path('theme', 'tripal');
   $clean_urls  = variable_get('clean_url', 0);
   drupal_add_js(
-    "var baseurl = '$base_url';
+    " var baseurl  = '$base_url';
       var themedir = '$theme_dir';
-      var isClean = $clean_urls;",
-    'inline');
+      var isClean  =  $clean_urls;",
+    'inline', 'header');
 
   // make sure the date time settings are the way Tripal will insert them
   // otherwise PostgreSQL version that may have a different datestyle setting
