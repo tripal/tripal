@@ -20,7 +20,7 @@
  */
 function tripal_views_get_table_lightest_priority($table_name) {
 
-  $sql = "SELECT setup_id FROM {tripal_views} WHERE table_name='%s' ORDER BY priority ASC";
+  $sql = "SELECT priority FROM {tripal_views} WHERE table_name='%s' ORDER BY priority ASC";
   $setup = db_fetch_object(db_query($sql, $table_name));
   if ($setup) {
     return $setup->priority;
