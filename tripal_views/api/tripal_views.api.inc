@@ -6,6 +6,31 @@
  */
 
 /**
+ * Retrieve the priority of the lightest priority for a given table
+ *
+ * NOTE: Uses lightest priority (drupal-style) where the range is from -10 to 10
+ * and -10 is of highest priority.
+ *
+ * @param $table_name
+ *   The name of the table to retrieve the setup ID for. This can be either a materialized
+ *   view or a chado table
+ *
+ * @return
+ *   On success, the setup_id to use for integration of this table; otherwise FALSE
+ */
+function tripal_views_get_table_lightest_priority($table_name) {
+
+  $sql = "SELECT setup_id FROM {tripal_views} WHERE table_name='%s' ORDER BY priority ASC";
+  $setup = db_fetch_object(db_query($sql, $table_name));
+  if ($setup) {
+    return $setup->priority;
+  }
+  else {
+    return FALSE;
+  }
+}
+
+/**
  * Retrieve the views integration setup with the lightest priority for a given table
  *
  * NOTE: Uses lightest priority (drupal-style) where the range is from -10 to 10
