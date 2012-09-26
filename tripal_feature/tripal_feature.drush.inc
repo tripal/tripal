@@ -79,7 +79,7 @@ function drush_tripal_feature_tripal_get_sequence() {
 
   // get the list of features
   $vars = array();
-  $sql  = "SELECT DISTINCT F.feature_id, F.name ".
+  $sql  = "SELECT DISTINCT F.feature_id, F.name, F.uniquename ".
           "FROM feature F ".
           "  INNER JOIN organism O on O.organism_id = F.organism_id ".
           "  INNER JOIN cvterm CVT on CVT.cvterm_id = F.type_id ";
