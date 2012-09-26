@@ -37,8 +37,14 @@ function tripal_db_views_data()  {
       'dbxref'
     );
     foreach ($tables as $tablename) {
-      if (!tripal_views_is_integrated($tablename, 9)) {
-        $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename, TRUE);
+    	// get the setup with the lightest priority. That's the table 
+      // that currently integrated with views.
+      $priority = tripal_views_get_lightest_priority_setup($tablename);
+      
+      // check to see if the table is integrated. If it is then integrate it's
+      // corresponding 'chado_[table]' table.
+      if (!tripal_views_is_integrated($tablename, $priority)) {
+        $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename, TRUE, $priority);
 
         // add specialty handlers
         if ($tablename == 'db') {
@@ -54,8 +60,9 @@ function tripal_db_views_data()  {
       'dbxrefprop'
     );
     foreach ($tables as $tablename) {
-      if (!tripal_views_is_integrated($tablename, 9)) {
-        $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename, FALSE);
+    	$priority = tripal_views_get_lightest_priority_setup($tablename);     
+      if (!tripal_views_is_integrated($tablename, $priority)) {
+        $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename, FALSE, $priority);
         tripal_views_integration_add_entry($table_integration_array);
       }
     }

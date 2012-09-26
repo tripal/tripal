@@ -35,7 +35,7 @@ function tripal_project_views_data()  {
       // check to see if the table is integrated. If it is then integrate it's
       // corresponding 'chado_[table]' table.
       if (!tripal_views_is_integrated($tablename, $priority)) {
-        $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename, TRUE);
+        $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename, TRUE, $priority);
 
         // Add in node relationships if chado is in the same db as drupal
         if (tripal_core_chado_schema_exists()) {
@@ -55,7 +55,7 @@ function tripal_project_views_data()  {
     foreach ($tables as $tablename) {
     	$priority = tripal_views_get_lightest_priority_setup($tablename);     
       if (!tripal_views_is_integrated($tablename, $priority)) {
-        $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename, FALSE);
+        $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename, FALSE, $priority);
         tripal_views_integration_add_entry($table_integration_array);
       }
     }
