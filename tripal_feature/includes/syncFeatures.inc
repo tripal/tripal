@@ -127,12 +127,14 @@ function tripal_feature_set_urls($job_id = NULL) {
   $nodes = db_query($sql);
   while ($node = db_fetch_object($nodes)) {
     // now get the feature details
-    $feature_arr = tripal_core_chado_select('feature',
-      array('feature_id', 'name', 'uniquename'),
-      array('feature_id' => $node->feature_id));
-    $feature = $feature_arr[0];
-
-    tripal_feature_set_feature_url($node, $feature);
+    $sql = "SELECT * 
+            FROM feature F
+              INNER JOIN organism O on O.organism_id = F.organism_id
+            WHERE F.feature_id = %d";     
+    $feature = db_fetch_object(chado_query($sql, $node->feature_id));
+    if ($feature) {
+      tripal_feature_set_feature_url($node, $feature);
+    }
   }
 }
 /**
@@ -150,10 +152,16 @@ function tripal_feature_set_feature_url($node, $feature) {
     case 'feature unique name':
       $url_alias = $feature->uniquename;
       break;
+    case 'genus_species_uqname':
+      $url_alias = strtolower($feature->genus) . "/" . strtolower($feature->genus) . "_" . strtolower($feature->species) . "/" . $feature->uniquename;
+      break;
+    case 'genus species name':
+      $url_alias = strtolower($feature->genus) . "/" . strtolower($feature->genus) . "_" . strtolower($feature->species) . "/" . $feature->name;
+    	break;
     default:
       $url_alias = "$aprefix$feature->feature_id";
   }
-  print "Setting $alias_type as URL alias for $feature->name: node/$node->nid => $url_alias\n";
+  print "Setting URL alias for $feature->name: node/$node->nid => $url_alias\n";
   // remove any previous alias
   db_query("DELETE FROM {url_alias} WHERE src = '%s'", "node/$node->nid");
   // add the new alias
