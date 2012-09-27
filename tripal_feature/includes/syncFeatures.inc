@@ -144,7 +144,9 @@ function tripal_feature_set_feature_url($node, $feature) {
 
   // determine which URL alias to use
   $alias_type = variable_get('chado_feature_url', 'internal ID');
-  $aprefix = variable_get('chado_feature_accession_prefix', 'ID');
+  $aprefix = variable_get('chado_feature_accession_prefix', 'ID');  
+  $genus = preg_replace('/\s/', '_', strtolower($feature->genus));
+  $species = preg_replace('/\s/', '_', strtolower($feature->species));    
   switch ($alias_type) {
     case 'feature name':
       $url_alias = $feature->name;
@@ -153,10 +155,10 @@ function tripal_feature_set_feature_url($node, $feature) {
       $url_alias = $feature->uniquename;
       break;
     case 'genus_species_uqname':
-      $url_alias = strtolower($feature->genus) . "/" . strtolower($feature->genus) . "_" . strtolower($feature->species) . "/" . $feature->uniquename;
+    	$url_alias = $genus . "/" . $genus . "_" . $species . "/" . $feature->uniquename;
       break;
     case 'genus species name':
-      $url_alias = strtolower($feature->genus) . "/" . strtolower($feature->genus) . "_" . strtolower($feature->species) . "/" . $feature->name;
+      $url_alias = $genus . "/" . $genus . "_" . $species . "/" . $feature->name;
     	break;
     default:
       $url_alias = "$aprefix$feature->feature_id";
