@@ -964,6 +964,7 @@ function chado_organism_load($node) {
   // find the organism and add in the details
   $organism_id = chado_get_id_for_node('organism', $node);
   $values = array('organism_id' => $organism_id);
+
   $organism = tripal_core_generate_chado_var('organism', $values);
 
   // add in the description field

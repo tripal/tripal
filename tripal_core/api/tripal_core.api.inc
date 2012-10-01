@@ -336,7 +336,7 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
       watchdog('tripal_core', "tripal_core_chado_insert: %table not defined in tripal schema api", array('%table' => $table), 'WATCHDOG WARNING');
     }
     foreach ($table_desc['primary key'] as $field) {
-      $value = db_last_insert_id($table, $field);
+      $value =  db_result(chado_query("SELECT CURRVAL('" . $table . "_" . $field . "_seq')"));
       $values[$field] = $value;
     }
     return $values;
@@ -2362,7 +2362,7 @@ function tripal_db_set_active($dbname) {
 
     // if this is the default database then set the search path and return
     if (strcmp($dbname, 'default')==0) {
-//      tripal_db_set_default_search_path();
+      tripal_db_set_default_search_path();
       return db_set_active($dbname);
     }
     // if the user requests a database other than the default
@@ -2371,12 +2371,12 @@ function tripal_db_set_active($dbname) {
     // fails then we assume the database is not local and we'll
     // set it as normal.
     else {
-//      if (tripal_db_set_chado_search_path($dbname)) {
+      if (tripal_db_set_chado_search_path($dbname)) {
          return $dbname;
-//      }
-//      else {
-//        return db_set_active($dbname);
-//      }
+      }
+      else {
+        return db_set_active($dbname);
+      }
     }
   }
   else {
@@ -2618,7 +2618,7 @@ function tripal_db_persistent_chado() {
       $connection = db_connect($db_url['chado']);
       if (!$connection) {
         watchdog('tripal_core', "Could not create persistant connection", array(), WATCHDOG_ERROR);
-        return FALSE;       
+        return FALSE;
       }
       variable_set('tripal_persistent_chado', serialize($connection));
     }
@@ -2626,7 +2626,7 @@ function tripal_db_persistent_chado() {
       $connection = db_connect($db_url);
       if (!$connection) {
         watchdog('tripal_core', "Could not create persistant connection", array(), WATCHDOG_ERROR);
-        return FALSE;      	
+        return FALSE;
       }
       variable_set('tripal_persistent_chado', serialize($connection));
     }
