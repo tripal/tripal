@@ -2362,7 +2362,7 @@ function tripal_db_set_active($dbname) {
 
     // if this is the default database then set the search path and return
     if (strcmp($dbname, 'default')==0) {
-//      tripal_db_set_default_search_path();
+      tripal_db_set_default_search_path();
       return db_set_active($dbname);
     }
     // if the user requests a database other than the default
@@ -2371,12 +2371,12 @@ function tripal_db_set_active($dbname) {
     // fails then we assume the database is not local and we'll
     // set it as normal.
     else {
-//      if (tripal_db_set_chado_search_path($dbname)) {
+      if (tripal_db_set_chado_search_path($dbname)) {
          return $dbname;
-//      }
-//      else {
-//        return db_set_active($dbname);
-//      }
+      }
+      else {
+        return db_set_active($dbname);
+      }
     }
   }
   else {
