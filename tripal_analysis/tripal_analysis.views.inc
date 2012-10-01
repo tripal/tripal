@@ -35,8 +35,14 @@ function tripal_analysis_views_data()  {
   if (module_exists('tripal_views')) {
     // Base Table: Analysis
     $tablename = 'analysis';
-    if (!tripal_views_is_integrated($tablename, 9)) {
-      $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename, TRUE);
+    // get the setup with the lightest priority. That's the table 
+    // that currently integrated with views.
+    $priority = tripal_views_get_table_lightest_priority($tablename);
+      
+    // check to see if the table is integrated. If it is then integrate it's
+    // corresponding 'chado_[table]' table.
+    if (!tripal_views_is_integrated($tablename, $priority)) {
+      $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename, TRUE, $priority);
 
       // Make table-specific modifications
       $table_integration_array['fields']['program']['handlers']['filter']['name'] = 'tripal_views_handler_filter_select_string';
@@ -60,8 +66,9 @@ function tripal_analysis_views_data()  {
       'analysisprop'
     );
     foreach ($tables as $tablename) {
-      if (!tripal_views_is_integrated($tablename, 9)) {
-        $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename, FALSE);
+    	$priority = tripal_views_get_table_lightest_priority($tablename);     
+      if (!tripal_views_is_integrated($tablename, $priority)) {
+        $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename, FALSE, $priority);
         tripal_views_integration_add_entry($table_integration_array);
       }
     }

@@ -44,7 +44,7 @@ class tripal_views_handler_filter_select_string extends chado_views_handler_filt
       '#default_value' => (isset($this->options['max_length'])) ? $this->options['max_length'] : 40,
 
     );
-    $form['max_length'] = array(
+    $form['note'] = array(
       '#type' => 'markup',
       '#value' => t('<strong><font color="red">Note:</font></strong> If another filter exists for the same table then '.
                     'the values shown in the drop box will only include those from rows that are not filtered.'),
@@ -185,12 +185,12 @@ class tripal_views_handler_filter_select_string extends chado_views_handler_filt
 
     // filter the aggregates
     if ($this->options['agg']['aggregates_with']) {
-      $this::query_restrict_curr_table_records();
+      $this->query_restrict_curr_table_records();
     }
 
     // filter the base table
     if ($this->options['agg']['records_with']) {
-      $this::query_restrict_base_records();
+      $this->query_restrict_base_records();
     }
 
 

@@ -28,9 +28,13 @@ function tripal_contact_views_data()  {
   if (module_exists('tripal_views')) {
 
     // Base Table: contact
-    $tablename = 'contact';
-    if (!tripal_views_is_integrated($tablename, 9)) {
-      $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename, TRUE);
+    $tablename = 'contact';    
+    $priority = 9;
+      
+    // check to see if the table is integrated. If it is then integrate it's
+    // corresponding 'chado_[table]' table.
+    if (!tripal_views_is_integrated($tablename, $priority)) {
+      $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename, TRUE, $priority);
       $status = tripal_views_integration_add_entry($table_integration_array);
         if (!$status) {
           drupal_set_message(t('Tripal Contact is unable to integrate %table', array('%table' => $tablename)), 'error');
@@ -42,8 +46,9 @@ function tripal_contact_views_data()  {
       'contact_relationship',
     );
     foreach ($tables as $tablename) {
-      if (!tripal_views_is_integrated($tablename, 9)) {
-        $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename, FALSE);
+    	$priority = 9;     
+      if (!tripal_views_is_integrated($tablename, $priority)) {
+        $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename, FALSE, $priority);
         $status = tripal_views_integration_add_entry($table_integration_array);
         if (!$status) {
           drupal_set_message(t('Tripal Contact is unable to integrate %table', array('%table' => $tablename)), 'error');

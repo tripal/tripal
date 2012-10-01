@@ -30,8 +30,12 @@ function tripal_genetic_views_data()  {
       'phenstatement'
     );
     foreach ($tables as $tablename) {
-      if (!tripal_views_is_integrated($tablename, 9)) {
-        $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename, TRUE);
+      $priority = 9;
+      
+      // check to see if the table is integrated. If it is then integrate it's
+      // corresponding 'chado_[table]' table.
+      if (!tripal_views_is_integrated($tablename, $priority)) {
+        $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename, TRUE, $priority);
         $status = tripal_views_integration_add_entry($table_integration_array);
         if (!$status) {
           drupal_set_message(t('Tripal Genetic is unable to integrate %table', array('%table' => $tablename)), 'error');
@@ -46,8 +50,9 @@ function tripal_genetic_views_data()  {
       'phenotype_comparison'
     );
     foreach ($tables as $tablename) {
-      if (!tripal_views_is_integrated($tablename, 9)) {
-        $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename, FALSE);
+    	$priority = 9;     
+      if (!tripal_views_is_integrated($tablename, $priority)) {
+        $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename, FALSE, $priority);
         $status = tripal_views_integration_add_entry($table_integration_array);
         if (!$status) {
           drupal_set_message(t('Tripal Genetic is unable to integrate %table', array('%table' => $tablename)), 'error');

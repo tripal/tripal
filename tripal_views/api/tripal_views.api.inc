@@ -6,6 +6,33 @@
  */
 
 /**
+ * Retrieve the priority of the lightest priority for a given table
+ *
+ * NOTE: Uses lightest priority (drupal-style) where the range is from -10 to 10
+ * and -10 is of highest priority.
+ *
+ * @param $table_name
+ *   The name of the table to retrieve the setup ID for. This can be either a materialized
+ *   view or a chado table
+ *
+ * @return
+ *   returns the lowest priority.  If the table has not been integrated, a priority of 10
+ *   is returned.
+ */
+function tripal_views_get_table_lightest_priority($table_name) {
+
+  $sql = "SELECT priority FROM {tripal_views} WHERE table_name='%s' ORDER BY priority ASC";
+  $setup = db_fetch_object(db_query($sql, $table_name));
+  if ($setup) {
+    return $setup->priority;
+  }
+  else {
+  	// default priority is 10
+    return 10;
+  }
+}
+
+/**
  * Retrieve the views integration setup with the lightest priority for a given table
  *
  * NOTE: Uses lightest priority (drupal-style) where the range is from -10 to 10
@@ -137,13 +164,13 @@ function tripal_views_integration_add_entry($defn_array) {
     'base_table' => $defn_array['base_table'],
   );
   if ($defn_array['type'] == 'mview') {
-      $mview = db_fetch_object(db_query("SELECT mview_id FROM {tripal_mviews} WHERE mv_table='%s'", $defn_array['table']));
-      $view_record['mview_id'] = $mview->mview_id;
-      if (!$mview->mview_id) {
-        return FALSE;
-      }
+    $mview = db_fetch_object(db_query("SELECT mview_id FROM {tripal_mviews} WHERE mv_table='%s'", $defn_array['table']));
+    $view_record['mview_id'] = $mview->mview_id;
+    if (!$mview->mview_id) {
+      return FALSE;
+    }
   }
-  if ($view_record['name'] && $view_record['comment']) {
+  if ($view_record['name']) { // && $view_record['comment']) {  # SPF: commented out 9/24/2012 .. It's not required on the form
     if ($defn_array['additional_content']) {
       $setup = db_fetch_object(db_query("SELECT * FROM {tripal_views} WHERE table_name='%s' AND priority=%d",$view_record['table_name'], $view_record['priority']));
       if (empty($setup->setup_id)) {
@@ -386,14 +413,17 @@ function tripal_views_integration_remove_entry_by_setup_id($setup_id) {
 }
 
 /**
- * Integrate all chado tables in the schema api
+ * Integrate all chado tables in the schema api.  This integration only occurs
+ * once and sets all Chado tables to a priority of 10
  */
 function tripal_views_integrate_all_chado_tables() {
 
   $tables = tripal_core_get_chado_tables(TRUE);
   foreach ($tables as $tablename) {
-    if (!tripal_views_is_integrated($tablename, 10)) {
-      $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename, TRUE, 10);
+  
+    $priority = 10;
+    if (!tripal_views_is_integrated($tablename, $priority)) {
+      $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename, TRUE, $priority);
       if ($table_integration_array) {
         tripal_views_integration_add_entry($table_integration_array);
       }

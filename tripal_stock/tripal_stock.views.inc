@@ -33,8 +33,12 @@ function tripal_stock_views_data()  {
 
   if (module_exists('tripal_views')) {
     $tablename = 'stock';
-    if (!tripal_views_is_integrated($tablename, 9)) {
-      $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename, TRUE);
+    $priority = 9;
+      
+    // check to see if the table is integrated. If it is then integrate it's
+    // corresponding 'chado_[table]' table.
+    if (!tripal_views_is_integrated($tablename, $priority)) {
+      $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename, TRUE, $priority);
 
       // Add in node relationships if chado is in the same db as drupal
       if (tripal_core_chado_schema_exists()) {
@@ -49,8 +53,9 @@ function tripal_stock_views_data()  {
     }
 
     $tablename = 'stockcollection';
-    if (!tripal_views_is_integrated($tablename, 9)) {
-      $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename, TRUE);
+    $priority = 9;     
+      if (!tripal_views_is_integrated($tablename, $priority)) {
+      $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename, TRUE, $priority);
       tripal_views_integration_add_entry($table_integration_array);
     }
 
@@ -67,8 +72,9 @@ function tripal_stock_views_data()  {
       'stockprop_pub'
     );
     foreach ($tables as $tablename) {
-      if (!tripal_views_is_integrated($tablename, 9)) {
-        $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename, FALSE);
+    	$priority = 9;     
+      if (!tripal_views_is_integrated($tablename, $priority)) {
+        $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename, FALSE, $priority);
         tripal_views_integration_add_entry($table_integration_array);
       }
     }

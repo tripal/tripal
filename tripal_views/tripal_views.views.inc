@@ -217,7 +217,7 @@ function tripal_views_views_pre_render(&$view) {
 
 function tripal_views_views_data() {
 
-  // Make sure all chado tables are integrated
+	// Make sure all chado tables are integrated
   tripal_views_integrate_all_chado_tables();
 
   // Define Global Fields

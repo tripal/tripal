@@ -824,13 +824,16 @@ function tripal_feature_get_formatted_sequence($feature_id, $feature_name,
   // if we are not getting the sequence from the parent sequence then
   // use what comes through from the feature record
   else {
-    $residues = $values->$field; 
+    $sql = "SELECT * FROM feature F WHERE feature_id = %d";
+    $values = db_fetch_object(chado_query($sql,$feature_id));
+    $residues = $values->residues;
     if ($output_format == 'fasta_html') {
        $residues = wordwrap($residues, $num_bases_per_line, "<br>", TRUE);  
     } 
     elseif ($output_format == 'fasta_txt') {
        $residues = wordwrap($residues, $num_bases_per_line, "\n", TRUE);  
     }
+    $residues = ">$feature_name\n$residues\n";
   }
   
   // format the residues for display

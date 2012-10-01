@@ -200,7 +200,10 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
   if ($validate) {
 
     // check for violation of any unique constraints
-    $ukeys = $table_desc['unique keys'];
+    $ukeys = array();
+    if(array_key_exists('unique keys', $table_desc)){
+      $ukeys = $table_desc['unique keys'];
+    }
     $ukselect_cols = array();
     $ukselect_vals = array();
     if ($ukeys) {
@@ -209,9 +212,9 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
           // build the arrays for performing a select that will check the contraint
           $ukselect_cols[] = $field;
           if (!array_key_exists($field, $insert_values)) {
-          	if (array_key_exists('default', $table_desc['fields'][$field])) {
+            if (array_key_exists('default', $table_desc['fields'][$field])) {
               $ukselect_vals[$field] = $table_desc['fields'][$field]['default'];
-          	}
+            }
           }
           else {
             $ukselect_vals[$field] = $insert_values[$field];
@@ -223,19 +226,22 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
           $coptions = array('statement_name' => 'uqsel_' . $table . '_' . $name);
         }
         if (tripal_core_chado_select($table, $ukselect_cols, $ukselect_vals, $coptions)) {
-          watchdog('tripal_core', "tripal_core_chado_insert: Cannot insert duplicate record into $table table: " . print_r($values, 1), array(), 'WATCHDOG_ERROR');
+          watchdog('tripal_core', "tripal_core_chado_insert: Cannot insert duplicate record into $table table: " . 
+            print_r($values, 1), array(), 'WATCHDOG_ERROR');
           return FALSE;
         }
       }
     }
 
     // if trying to insert a field that is the primary key, make sure it also is unique
-    $pkey = $table_desc['primary key'][0];
-    if ($insert_values[$pkey]) {
-      $coptions = array('statement_name' => 'pqsel_' . $table . '_' . $pkey);
-      if (tripal_core_chado_select($table, array($pkey), array($pkey => $insert_values[$pkey]), $coptions)) {
-        watchdog('tripal_core', "tripal_core_chado_insert: Cannot insert duplicate primary key into $table table: " . print_r($values, 1), array(), 'WATCHDOG_ERROR');
-        return FALSE;
+    if (array_key_exists('primary key', $table_desc)) {
+      $pkey = $table_desc['primary key'][0];
+      if (array_key_exists($pkey, $insert_values)) {
+        $coptions = array('statement_name' => 'pqsel_' . $table . '_' . $pkey);
+        if (tripal_core_chado_select($table, array($pkey), array($pkey => $insert_values[$pkey]), $coptions)) {
+          watchdog('tripal_core', "tripal_core_chado_insert: Cannot insert duplicate primary key into $table table: " . print_r($values, 1), array(), 'WATCHDOG_ERROR');
+          return FALSE;
+        }
       }
     }
 
@@ -247,8 +253,12 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
     foreach ($table_desc['fields'] as $field => $def) {
       // a field is considered missing if it cannot be NULL and there is no default
       // value for it or it is of type 'serial'
-      if ($def['not NULL'] == 1 and !array_key_exists($field, $insert_values) and !isset($def['default']) and strcmp($def['type'], serial) != 0) {
-        watchdog('tripal_core', "tripal_core_chado_insert: Field $table.$field cannot be NULL: " . print_r($values, 1), array(), 'WATCHDOG_ERROR');
+      if (array_key_exists('NOT NULL', $def) and 
+          !array_key_exists($field, $insert_values) and 
+          !array_key_exists('default', $def) and
+          strcmp($def['type'], serial) != 0) {
+        watchdog('tripal_core', "tripal_core_chado_insert: Field $table.$field cannot be NULL: " . 
+          print_r($values, 1), array(), 'WATCHDOG_ERROR');
         return FALSE;
       }
     }
@@ -849,15 +859,9 @@ function tripal_core_chado_delete($table, $match) {
  *     default if the statement is not prepared it will be automatically.
  *     However to avoid this check, which requires a database query you can
  *     set this value to true and the check will not be performed.
- *  - use_unique: TRUE or FALSE.  This will alter the values array provided
- *     to the function and remove fields not in
- *     a unique constraint.  This is useful before an insert to check if
- *     another record exists with the same unique constraint (but possible differences
- *     in the other fields) and cause a duplicate insert error.  If a field
- *     in the unique constraint is missing from the values then the function
- *     will return false.  If the table has a primary key, the resulting
- *     record will only have the pkey field. If there is no primary key the
- *     resulting record will have the unique constraint fields.
+ *  - is_duplicate: TRUE or FALSE.  Checks the values submited to see if
+ *     they violoate any of the unique constraints. If so, the record
+ *     is returned, if not, FALSE is returned.
  *
  *
  * @return
@@ -927,8 +931,8 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
   if (!array_key_exists('statement_name',$options)) {
     $options['statement_name'] = FALSE;
   }
-  if (!array_key_exists('use_unique',$options)) {
-    $options['use_unique'] = FALSE;
+  if (!array_key_exists('is_duplicate',$options)) {
+    $options['is_duplicate'] = FALSE;
   }
 
   // if this is a prepared statement check to see if it has already been prepared
@@ -964,53 +968,64 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
 
   // if the 'use_unique' option is turned on then we want
   // to remove all but unique keys
-  if ($options['use_unique'] and array_key_exists('unique keys', $table_desc)) {
+  if ($options['is_duplicate'] and array_key_exists('unique keys', $table_desc)) {
     $ukeys = $table_desc['unique keys'];
-    $new_values = array();
-    $new_columns = array();
-    $uq_sname = "uq_" . $table . "_";
-
-    // include the primary key in the results returned
-    $has_pkey = 0;
-    if (array_key_exists('primary key', $table_desc)){
-      $has_pkey = 1;
-      $pkeys = $table_desc['primary key'];
-      foreach ($pkeys as $index => $key) {
-        array_push($new_columns, $key);
-      }
-    }
-    // iterate through the unique fields and reset the values and columns
+    $has_results = 0;
+      
+    // iterate through the unique constraints and reset the values and columns
     // arrays to only include these fields
     foreach ($ukeys as $cname => $fields) {
+    	if ($has_results) {
+    	   continue;
+    	}
+      $new_values = array();
+      $new_columns = array();
+      $new_options = array();
+      $uq_sname = "uq_" . $table . "_";
+      $has_pkey = 0;
+      
+      
+      // include the primary key in the results returned
+	    if (array_key_exists('primary key', $table_desc)){
+	      $has_pkey = 1;
+	      $pkeys = $table_desc['primary key'];
+	      foreach ($pkeys as $index => $key) {
+	        array_push($new_columns, $key);
+	      }
+	    }
+	    
       foreach ($fields as $field) {
         if (array_key_exists($field, $values)) {
           $new_values[$field] = $values[$field];
           $uq_sname .= substr($field, 0, 2);
           // if there is no primary key then use the unique contraint fields
           if (!$has_pkey) {
-            array_push($new_columns,$field);
+            array_push($new_columns, $field);
           }
         }
-        elseif (array_key_exists('default',$table_desc['fields'][$field])) {
+        elseif (array_key_exists('default', $table_desc['fields'][$field])) {
           $new_values[$field] = $table_desc['fields'][$field]['default'];
           $uq_sname .= substr($field, 0, 2);
           if (!$has_pkey){
-            array_push($new_columns,$field);
+            array_push($new_columns, $field);
           }
         }
         else {
           return FALSE;
         }
       }
+      $new_options['statement_name'] = $uq_sname;
+      $results = tripal_core_chado_select($table, $new_columns, $new_values, $new_options);
+      // if we have a duplicate record then return the results
+			if (count($results) > 0) {
+        $has_results = 1;
+      } 
+      unset($new_columns);
+      unset($new_values);
+      unset($new_options);
     }
-    // reset the values and columns
-    $values = $new_values;
-    $columns = $new_columns;
-
-    // set the new statement name
-    $options['statement_name'] = $uq_sname;
+    return $results;
   }
-
 
   foreach ($values as $field => $value) {
     $select[] = $field;
@@ -1173,7 +1188,6 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
       $sql = drupal_substr($sql, 0, -2);  // get rid of the trailing ', '
       $psql = drupal_substr($psql, 0, -2);  // get rid of the trailing ', '
     }
-
     // finish constructing the prepared SQL statement
     $psql =  "PREPARE " . $options['statement_name'] . " (" . implode(', ', $idatatypes) . ") AS " . $psql;
 
@@ -1203,8 +1217,8 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
   }
   else {
     $resource = chado_query($sql, $args);
-  }
-
+  } 
+  
   // format results into an array
   $results = array();
   while ($r = db_fetch_object($resource)) {

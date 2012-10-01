@@ -552,18 +552,24 @@ function get_tripal_feature_admin_form_url_set(&$form) {
 
   );
 
+  $options = array(
+    'internal ID'          => 'Internal ID (Chado feature_id)',
+    'feature unique name'  => 'Feature unique name',
+    'feature name'         => 'Feature name',
+    'genus_species_uqname' => 'Genus + species + unique name (e.g. http://your.site.url/[genus]/[genus]_[species]/[unique_name]',
+    'genus_species_name'   => 'Genus + species + name (e.g. http://your.site.url/[genus]/[genus]_[species]/[name]',
+  );
+  
   $form['url']['chado_feature_url'] = array(
-    '#title'       => t('Unique Identifier'),
-    '#type'        => 'radios',
-    '#description' => t('Choose an identifier type '.
+    '#title'         => t('Unique Identifier'),
+    '#type'          => 'radios',
+    '#description'   => t('Choose an identifier type '.
                         'from the list above that is guaranteed to be unique in your synced '.
                         'dataset. If in doubt it is safest to coose the internal ID. '.
                         'The descrpitor need not be unique amont the total dataset. '.
                         'It only need be unique among the synced dataset.'),
-    '#required'    => FALSE,
-    '#options'     => array('internal ID' => 'internal ID (Chado feature_id)',
-                            'feature unique name' => 'feature unique name',
-                            'feature name' => 'feature name'),
+    '#required'      => FALSE,
+    '#options'       => $options,
     '#default_value' => variable_get('chado_feature_url', 'internal ID'),
   );
 

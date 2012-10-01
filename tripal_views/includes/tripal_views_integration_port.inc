@@ -13,13 +13,20 @@ function tripal_views_integration_export_form($form_state, $setup_id) {
   $form = array();
 
   $defn_array = tripal_views_integration_export_entry($setup_id);
+  
+  $t = var_export($defn_array, TRUE);
+  $t = preg_replace("/\n\s+array/","array", $t); // move array( to previous line
+  $t = preg_replace("/true/","TRUE", $t); // upper case true
+  $t = preg_replace("/false/","FALSE", $t); // upper case false
+  $t = preg_replace("/array\(/","array (", $t); // put a space between array and paren   
+        
   $form['export'] = array(
     '#type' => 'textarea',
     '#title' => 'Export',
     '#description' => t('Simply copy the provided export into the Import text area on '
       . 'another tripal views enabled website to port the integration between websites.'),
     '#rows' => 20,
-    '#value' => serialize($defn_array)
+    '#value' => $t,
   );
 
   return $form;
@@ -73,7 +80,10 @@ function tripal_views_integration_import_form() {
  */
 function tripal_views_integration_import_form_submit($form, &$form_state) {
 
-  $defn_array = unserialize($form_state['values']['import']);
+  //$defn_array = unserialize($form_state['values']['import']);
+  // convert the array into a real PHP array
+  $defn_array = array();
+  eval("\$defn_array = " . $form_state['values']['import'] . ";");
 
   // Add optional parameters
   if ($form_state['values']['name']) {

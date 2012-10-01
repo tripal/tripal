@@ -79,7 +79,7 @@ function drush_tripal_feature_tripal_get_sequence() {
 
   // get the list of features
   $vars = array();
-  $sql  = "SELECT DISTINCT F.feature_id, F.name ".
+  $sql  = "SELECT DISTINCT F.feature_id, F.name, F.uniquename, O.genus, O.species, CVT.name as feature_type ".
           "FROM feature F ".
           "  INNER JOIN organism O on O.organism_id = F.organism_id ".
           "  INNER JOIN cvterm CVT on CVT.cvterm_id = F.type_id ";
@@ -108,7 +108,7 @@ function drush_tripal_feature_tripal_get_sequence() {
   $q = chado_query($sql, $vars);
   while ($feature = db_fetch_object($q)) {
     $feature_id = $feature->feature_id;
-    $feature_name = $feature->name;
+    $feature_name = "$feature->uniquename $feature->name $feature->feature_type ($feature->genus $feature->species)";
       
     $sequence = tripal_feature_get_formatted_sequence($feature_id, $feature_name, 
       $num_bases_per_line, $derive_from_parent, $aggregate, $output_format,
