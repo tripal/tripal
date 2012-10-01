@@ -187,7 +187,7 @@ function tripal_views_integration_add_entry($defn_array) {
   }
   else {
     $status = FALSE;
-    drupal_set_message(t('Unable to integrate %table table due to a missing name or comment field.', array('%table' => $defn_array['table'])), 'error');
+    drupal_set_message(t('Unable to integrate "%table" table due to a missing name or comment field.', array('%table' => $defn_array['table'])), 'error');
   }
 
   if ($status) {

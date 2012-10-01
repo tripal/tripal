@@ -231,7 +231,6 @@ function tripal_views_views_data() {
     ),
   );
 
-
   $tvi_query = db_query('SELECT * FROM {tripal_views}');
 
   while ($tvi_row = db_fetch_object($tvi_query)) {
@@ -285,6 +284,7 @@ function tripal_views_views_data() {
         $base_fields[$field->column_name]['help'] = $field->description;
       }
     }
+    // if this is not a legacy materialized view
     else {
       $base_table = $tvi_row->table_name;
 

@@ -2816,24 +2816,24 @@ function tripal_core_chado_schema_exists() {
  */
 function tripal_core_get_chado_tables($include_custom = NULL) {
 
-  if (is_array($db_url) AND array_key_exists('chado', $db_url)) {
-    $previous_db = tripal_db_set_active('chado');
-    // @coder-ignore: acting on pg_catalog schema rather then drupal schema therefore, table prefixing does not apply
-    $sql = 'SELECT tablename FROM pg_tables';
-    $resource = db_query($sql);
-    tripal_db_set_active($previous_db);
-  }
-  else {
-    // @coder-ignore: acting on pg_catalog schema rather then drupal schema therefore, table prefixing does not apply
-    $sql = "SELECT tablename FROM pg_tables WHERE schemaname='chado'";
-    $resource = db_query($sql);
-  }
-
+	
+	// first get the chado version that is installed
+  $v = tripal_core_get_chado_version();
+  
   $tables = array();
-  while ($r = db_fetch_object($resource)) {
-    $tables[$r->tablename] = $r->tablename;
+  if ($v == '1.2') {
+    $tables_v1_2 = tripal_core_chado_get_v1_2_tables();
+    foreach ($tables_v1_2 as $table) {
+      $tables[$table] = $table;
+    }
   }
-
+  if ($v == '1.11' or $v == '1.11 or older') {
+    $tables_v1_11 = tripal_core_chado_get_v1_11_tables();
+    foreach ($tables_v1_11 as $table) {
+      $tables[$table] = $table;
+    }
+  }
+  
   // now add in the custom tables too
   if ($include_custom) {
     $sql = "SELECT table_name FROM {tripal_custom_tables}";
