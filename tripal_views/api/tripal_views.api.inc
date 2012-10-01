@@ -154,7 +154,7 @@ function tripal_views_is_lightest_priority_setup($setup_id, $table_name) {
  */
 function tripal_views_integration_add_entry($defn_array) {
   $no_errors = TRUE;
-dpm($defn_array);
+
   // First insert into tripal_views
   $view_record = array(
     'table_name' => $defn_array['table'],
