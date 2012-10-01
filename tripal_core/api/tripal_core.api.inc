@@ -2834,13 +2834,14 @@ function tripal_core_get_chado_tables($include_custom = NULL) {
     }
   }
   
-  // now add in the custom tables too
+  // now add in the custom tables too if requested
   if ($include_custom) {
     $sql = "SELECT table_name FROM {tripal_custom_tables}";
     $resource = db_query($sql);
-  }
-  while ($r = db_fetch_object($resource)) {
-    $tables[$r->table_name] = $r->table_name;
+    
+    while ($r = db_fetch_object($resource)) {
+      $tables[$r->table_name] = $r->table_name;
+    }
   }
 
   asort($tables);
