@@ -123,15 +123,15 @@ function tripal_featuremap_menu() {
   );
 
   // Synchronizing maps from Chado to Drupal
-  $items['chado_sync_maps'] = array(
+  $items['chado_sync_featuremaps'] = array(
     'title' => 'Sync Data',
-    'page callback' => 'tripal_featuremap_sync_maps',
+    'page callback' => 'tripal_featuremap_sync_featuremaps',
     'access arguments' => array('access administration pages'),
     'type' => MENU_CALLBACK
   );
   
   // Displaying maps
-  $items['maps'] = array(
+  $items['featuremaps'] = array(
     'menu_name' => ('primary-links'), //Enable the 'Map' primary link
     'title' => 'Feature Maps',
     'page callback' => 'tripal_featuremap_show_maps',
@@ -323,24 +323,7 @@ function tripal_featuremap_nodeapi(&$node, $op, $teaser, $page) {
 	      $node->content['tripal_featuremap_index_version'] = array(
 	        '#value' => theme('tripal_featuremap_search_result', $node),
 	      );
-	    }
-	    else {
-	      switch ($node->type) {
-	        case 'chado_organism':
-	          // Show map if the organism/feature is not at teaser view
-	          $node->content['tripal_organism_maps'] = array(
-	            '#value' => theme('tripal_organism_maps', $node),
-	          );
-	        break;
-	        case 'chado_feature':
-	          // Show map if the organism/feature is not at teaser view
-	          $node->content['tripal_feature_maps'] = array(
-	            '#value' => theme('tripal_feature_maps', $node),
-	          );
-	        break;
-	        }
-	      }
-	    break;
+	    }	    
   }
 }
 
@@ -359,20 +342,14 @@ function tripal_featuremap_theme() {
     'tripal_featuremap_search_result' => array(
        'arguments' => array('node'),
     ),
-
-    'tripal_organism_maps' => array(
-       'arguments' => array('node' => NULL),
-       'template' => 'tripal_organism_maps',
-    ),
-    'tripal_feature_maps' => array(
-       'arguments' => array('node' => NULL),
-       'template' => 'tripal_feature_maps',
-    ),
-
     'tripal_featuremap_base' => array(
        'arguments' => array('node' => NULL),
        'template' => 'tripal_featuremap_base',
-    ),   
+    ),
+  	'tripal_featuremap_properties' => array(
+  		'arguments' => array('node' => NULL),
+  		'template' => 'tripal_featuremap_properties',
+  	),
   );
 }
 
@@ -384,16 +361,6 @@ function tripal_featuremap_theme() {
  * @ingroup tripal_featuremap
  */
 function theme_tripal_featuremap_search_index($node) {
-
-  if ($node->type == 'chado_organism') {
-    $content = "";
-
-  }
-  elseif ($node->type == 'chado_feature') {
-    $content = "";
-
-  }
-  return $content;
 }
 
 
@@ -435,15 +402,15 @@ function get_tripal_featuremap_admin_form_taxonomy_set(&$form) {
   );
 
   // get the list of maps
-  $sql = "SELECT * FROM {featuremap} ORDER BY uniquename";
+  $sql = "SELECT * FROM {featuremap} ORDER BY name";
   $previous_db = tripal_db_set_active('chado');  // use chado database
   $lib_rset = db_query($sql);
   tripal_db_set_active($previous_db);  // now use drupal database
 
   // iterate through all of the maps
   $lib_boxes = array();
-  while ($map = db_fetch_object($lib_rset)) {
-    $lib_boxes[$map->map_id] = "$map->name";
+  while ($featuremap = db_fetch_object($lib_rset)) {
+    $lib_boxes[$featuremap->featuremap_id] = "$featuremap->name";
   }
 
   $form['taxonify']['description'] = array(
@@ -482,15 +449,15 @@ function get_tripal_featuremap_admin_form_reindex_set(&$form) {
   );
 
   // get the list of maps
-  $sql = "SELECT * FROM {featuremap} ORDER BY uniquename";
+  $sql = "SELECT * FROM {featuremap} ORDER BY name";
   $previous_db = tripal_db_set_active('chado');  // use chado database
   $lib_rset = db_query($sql);
   tripal_db_set_active($previous_db);  // now use drupal database
 
   // iterate through all of the maps
   $lib_boxes = array();
-  while ($map = db_fetch_object($lib_rset)) {
-    $lib_boxes[$map->map_id] = "$map->name";
+  while ($featuremap = db_fetch_object($lib_rset)) {
+    $lib_boxes[$featuremap->featuremap_id] = "$featuremap->name";
   }
   $form['reindex']['description'] = array(
      '#type' => 'item',
@@ -527,7 +494,7 @@ function get_tripal_featuremap_admin_form_sync_set(&$form) {
 
 
   // get the list of maps
-  $sql = "SELECT * FROM {featuremap} ORDER BY uniquename";
+  $sql = "SELECT * FROM {featuremap} ORDER BY name";
   $previous_db = tripal_db_set_active('chado');  // use chado database
   $lib_rset = db_query($sql);
   tripal_db_set_active($previous_db);  // now use drupal database
@@ -538,12 +505,12 @@ function get_tripal_featuremap_admin_form_sync_set(&$form) {
   // a message stating that all maps are currently synced.
   $lib_boxes = array();
   $added = 0;
-  while ($map = db_fetch_object($lib_rset)) {
+  while ($featuremap = db_fetch_object($lib_rset)) {
     // check to see if the map is already present as a node in drupal.
     // if so, then skip it.
-    $sql = "SELECT * FROM {chado_featuremap} WHERE map_id = %d";
-    if (!db_fetch_object(db_query($sql, $map->map_id))) {
-      $lib_boxes[$map->map_id] = "$map->name";
+    $sql = "SELECT * FROM {chado_featuremap} WHERE featuremap_id = %d";
+    if (!db_fetch_object(db_query($sql, $featuremap->featuremap_id))) {
+      $lib_boxes[$featuremap->featuremap_id] = "$featuremap->name";
       $added++;
     }
   }
@@ -560,7 +527,7 @@ function get_tripal_featuremap_admin_form_sync_set(&$form) {
     );
 
 
-    $form['sync']['maps'] = array(
+    $form['sync']['featuremaps'] = array(
       '#title'       => t('Available Maps'),
       '#type'        => t('checkboxes'),
       '#description' => t("Check the maps you want to sync.  Drupal content will be created for each of the maps listed above.  Select 'All Maps' to sync all of them."),
@@ -596,32 +563,32 @@ function tripal_featuremap_admin_validate($form, &$form_state) {
 
     // check to see if the user wants to sync chado and drupal.  If
     // so then we need to register a job to do so with tripal
-    $maps = $form_state['values']['maps'];
+    $featuremaps = $form_state['values']['featuremaps'];
     $do_all = FALSE;
     $to_sync = array();
 
-  foreach ($maps as $map_id) {
-    if (preg_match("/^all$/i", $map_id)) {
+  foreach ($featuremaps as $featuremap_id) {
+    if (preg_match("/^all$/i", $featuremap_id)) {
       $do_all = TRUE;
     }
-    if ($map_id and preg_match("/^\d+$/i", $map_id)) {
+    if ($featuremap_id and preg_match("/^\d+$/i", $featuremap_id)) {
       // get the map info
-      $sql = "SELECT * FROM {Map} WHERE map_id = %d";
+      $sql = "SELECT * FROM {featuremap} WHERE featuremap_id = %d";
       $previous_db = tripal_db_set_active('chado');  // use chado database
-      $map = db_fetch_object(db_query($sql, $map_id));
+      $featuremap = db_fetch_object(db_query($sql, $featuremap_id));
       tripal_db_set_active($previous_db);  // now use drupal database
-      $to_sync[$map_id] = $map->name;
+      $to_sync[$featuremap_id] = $featuremap->name;
     }
   }
 
   // submit the job to the tripal job manager
   if ($do_all) {
-    tripal_add_job('Sync all maps', 'tripal_featuremap', 'tripal_featuremap_sync_maps', $job_args, $user->uid);
+    tripal_add_job('Sync all maps', 'tripal_featuremap', 'tripal_featuremap_sync_featuremaps', $job_args, $user->uid);
   }
   else{
-    foreach ($to_sync as $map_id => $name) {
-      $job_args[0] = $map_id;
-      tripal_add_job("Sync map: $name", 'tripal_featuremap', 'tripal_featuremap_sync_maps', $job_args, $user->uid);
+    foreach ($to_sync as $featuremap_id => $name) {
+      $job_args[0] = $featuremap_id;
+      tripal_add_job("Sync map: $name", 'tripal_featuremap', 'tripal_featuremap_sync_featuremaps', $job_args, $user->uid);
       }
     }
   }
@@ -629,16 +596,16 @@ function tripal_featuremap_admin_validate($form, &$form_state) {
   // -------------------------------------
   // Submit the Reindex Job if selected
   if ($form_state['values']['op'] == t('Reindex Features')) {
-    $maps = $form_state['values']['re-maps'];
-    foreach ($maps as $map_id) {
-      if ($map_id and preg_match("/^\d+$/i", $map_id)) {
+    $featuremaps = $form_state['values']['re-maps'];
+    foreach ($featuremaps as $featuremap_id) {
+      if ($featuremap_id and preg_match("/^\d+$/i", $featuremap_id)) {
         // get the map info
-        $sql = "SELECT * FROM {Map} WHERE map_id = %d";
+        $sql = "SELECT * FROM {featuremap} WHERE featuremap_id = %d";
         $previous_db = tripal_db_set_active('chado');  // use chado database
-        $map = db_fetch_object(db_query($sql, $map_id));
+        $featuremap = db_fetch_object(db_query($sql, $featuremap_id));
         tripal_db_set_active($previous_db);  // now use drupal database
-        $job_args[0] = $map_id;
-        tripal_add_job("Reindex features for map: $map->name", 'tripal_featuremap',
+        $job_args[0] = $featuremap_id;
+        tripal_add_job("Reindex features for map: $featuremap->name", 'tripal_featuremap',
          'tripal_featuremap_reindex_features', $job_args, $user->uid);
       }
     }
@@ -647,16 +614,16 @@ function tripal_featuremap_admin_validate($form, &$form_state) {
   // -------------------------------------
   // Submit the Taxonomy Job if selected
   if ($form_state['values']['op'] == t('Set Feature Taxonomy')) {
-    $maps = $form_state['values']['tx-maps'];
-    foreach ($maps as $map_id) {
-      if ($map_id and preg_match("/^\d+$/i", $map_id)) {
+    $featuremaps = $form_state['values']['tx-maps'];
+    foreach ($featuremaps as $featuremap_id) {
+      if ($featuremap_id and preg_match("/^\d+$/i", $featuremap_id)) {
         // get the map info
-        $sql = "SELECT * FROM {Map} WHERE map_id = %d";
+        $sql = "SELECT * FROM {featuremap} WHERE featuremap_id = %d";
         $previous_db = tripal_db_set_active('chado');  // use chado database
-        $map = db_fetch_object(db_query($sql, $map_id));
+        $featuremap = db_fetch_object(db_query($sql, $featuremap_id));
         tripal_db_set_active($previous_db);  // now use drupal database
-        $job_args[0] = $map_id;
-        tripal_add_job("Set taxonomy for features in map: $map->name", 'tripal_featuremap',
+        $job_args[0] = $featuremap_id;
+        tripal_add_job("Set taxonomy for features in map: $featuremap->name", 'tripal_featuremap',
          'tripal_featuremap_taxonify_features', $job_args, $user->uid);
       }
     }
@@ -724,26 +691,26 @@ function chado_featuremap_validate($node) {
   $lib = 0;
   // check to make sure the unique name on the map is unique
   // before we try to insert into chado.
-  if ($node->map_id) {
+  if ($node->featuremap_id) {
     $sql = "SELECT * FROM ".
-           "{Map} WHERE ".
-           "uniquename = '%s' ".
-           "AND NOT map_id = %d";
+           "{featuremap} WHERE ".
+           "name = '%s' ".
+           "AND NOT featuremap_id = %d";
     $previous_db = tripal_db_set_active('chado');
-    $lib = db_fetch_object(db_query($sql, $node->uniquename,
-    $node->map_id));
+    $lib = db_fetch_object(db_query($sql, $node->name,
+    $node->featuremap_id));
     tripal_db_set_active($previous_db);
   }
   else {
     $sql = "SELECT * FROM ".
-           "{Map} ".
-           "WHERE uniquename = '%s'";
+           "{featuremap} ".
+           "WHERE name = '%s'";
     $previous_db = tripal_db_set_active('chado');
-    $lib = db_fetch_object(db_query($sql, $node->uniquename));
+    $lib = db_fetch_object(db_query($sql, $node->name));
     tripal_db_set_active($previous_db);
   }
   if ($lib) {
-    form_set_error('uniquename', t('The unique map name already exists. '.
+    form_set_error('name', t('The unique map name already exists. '.
                                   'Please choose another'));
   }
 }
@@ -757,46 +724,32 @@ function chado_featuremap_validate($node) {
  */
 function chado_featuremap_insert($node) {
 
-  if ($node->map_id) {
-    $map['map_id'] = $node->map_id;
+  if ($node->featuremap_id) {
+    $featuremap['featuremap_id'] = $node->featuremap_id;
   }
   else {
-    // get the map type id
-    $values = array(
-      'cv_id' => array(
-         'name' => 'tripal'
-      ),
-      'name' => $node->map_type
-    );
-    $type = tripal_core_chado_select('cvterm', array('cvterm_id'), $values);
-
     $values = array(
       'name' => $node->title,
-      'uniquename' => $node->uniquename,
-      'organism_id' => $node->organism_id,
-      'type_id' => $type[0]->cvterm_id
+    	'description' => $node->description,
     );
-    $map = tripal_core_chado_insert('map', $values);
+    $featuremap = tripal_core_chado_insert('featuremap', $values);
   }
 
-  if ($map) {
-     // add the description property
-    tripal_featuremap_insert_property($map['map_id'], 'map_description', $node->map_description);
-
+  if ($featuremap) {
     // make sure the entry for this feature doesn't already exist in the chado_featuremap table
     // if it doesn't exist then we want to add it.
-    $map_id = chado_get_id_for_node('map', $node) ;
-    if (!$map_id) {
+    $featuremap_id = chado_get_id_for_node('featuremap', $node) ;
+    if (!$featuremap_id) {
        // next add the item to the drupal table
-      $sql = "INSERT INTO {chado_featuremap} (nid, vid, map_id) ".
+      $sql = "INSERT INTO {chado_featuremap} (nid, vid, featuremap_id) ".
             "VALUES (%d, %d, %d)";
-      db_query($sql, $node->nid, $node->vid, $map['map_id']);
+      db_query($sql, $node->nid, $node->vid, $featuremap['featuremap_id']);
     }
   }
   else {
-    drupal_set_message(t('Unable to add map.', 'warning'));
+    drupal_set_message(t('Unable to add featuremap.', 'warning'));
     watchdog('tripal_featuremap',
-    'Insert feature: Unable to create map where values: %values',
+    'Insert feature: Unable to create featuremap where values: %values',
     array('%values' => print_r($values, TRUE)),
     WATCHDOG_WARNING
     );
@@ -812,30 +765,16 @@ function chado_featuremap_update($node) {
     // TODO -- decide what to do about revisions
   }
   else {
-    $map_id = chado_get_id_for_node('map', $node) ;
-
-    // get the map type id
-    $values = array(
-       'cv_id' => array(
-          'name' => 'tripal'
-        ),
-       'name' => $node->map_type
-    );
-    $type = tripal_core_chado_select('cvterm', array('cvterm_id'), $values);
+    $featuremap_id = chado_get_id_for_node('featuremap', $node) ;
 
     // update the map record
     $match = array(
-       'map_id' => $map_id,
+       'featuremap_id' => $featuremap_id,
     );
     $values = array(
        'name' => $node->title,
-       'uniquename' => $node->uniquename,
-       'organism_id' => $node->organism_id,
-       'type_id' => $type[0]->cvterm_id
     );
-    $status = tripal_core_chado_update('map', $match, $values);
-
-    tripal_featuremap_update_property($map_id, 'map_description', $node->map_description);
+    $status = tripal_core_chado_update('featuremap', $match, $values);
   }
 }
 
@@ -845,50 +784,8 @@ function chado_featuremap_update($node) {
  *
  * @ingroup tripal_featuremap
  */
-function tripal_featuremap_add_taxonomy($node, $map_id) {
+function tripal_featuremap_add_taxonomy($node, $featuremap_id) {
 
-    //include the file containing the required functions.  We only have to
-    // do this because Drupal 6 fails to do this globally for us and
-    // the drupal_execute function below won't work
-    module_load_include('inc', 'taxonomy', 'taxonomy.admin');
-
-   /*   // get the vocabulary id
-    $vocabularies = taxonomy_get_vocabularies();
-    $vid = NULL;
-    foreach($vocabularies as $vocab){
-    if($vocab->name == 'DNA Maps'){
-    $vid = $vocab->vid;
-    }
-    }
-
-    if(!$vid){  */
-   // add the vocabulary
-  $vocab_form['values']['name'] = 'DNA Maps';
-  $vocab_form['values']['description'] = 'Allows for associating/searching of map features by map name';
-  $vocab_form['values']['help'] = '';
-  $vocab_form['values']['module'] = 'taxonomy';
-  drupal_execute('taxonomy_form_vocabulary', $vocab_form);
-  return;
-   //   }
-
-   // make sure this term doesn't already exist.  If it doesn't then add it
-  if ($vid) {
-    $tree = taxonomy_get_tree($vid);
-    $found = 0;
-    foreach ($tree as $term) {
-      if ($term->name == $node->title) {
-        $found = 1;
-      }
-    }
-
-      // add the term to the vocabulary
-    if (!$found) {
-      $form_state = array();
-      $form_state['values']['name'] = $node->title;
-      $form_state['values']['description'] = $map_id;
-      drupal_execute('taxonomy_form_term', $form_state, $vid);
-    }
-  }
 }
 
 /**
@@ -900,32 +797,19 @@ function tripal_featuremap_add_taxonomy($node, $map_id) {
 function chado_featuremap_form($node) {
   $form = array();
 
-  $map = $node->map;
+  $featuremap = $node->featuremap;
 
   // get the default values
-  $uniquename = $node->uniquename;
-  if (!$uniquename) {
-    $uniquename = $map->uniquename;
-  }
-  $map_type = $node->map_type;
-  if (!$map_type) {
-    $map_type = $map->type_id->name;
-  }
-  $organism_id = $node->organism_id;
-  if (!$organism_id) {
-    $organism_id = $map->organism_id->organism_id;
-  }
-  $map_description = $node->map_description;
-  if (!$map_description) {
-    $libprop = tripal_featuremap_get_property($map->map_id, 'map_description');
-    $map_description = $libprop->value;
+  $name = $node->name;
+  if (!$name) {
+    $name = $featuremap->name;
   }
 
   // keep track of the map id if we have.  If we do have one then
   // this is an update as opposed to an insert.
-  $form['map_id'] = array(
+  $form['featuremap_id'] = array(
     '#type' => 'value',
-    '#value' => $map->map_id,
+    '#value' => $featuremap->featuremap_id,
   );
 
   $form['title']= array(
@@ -938,65 +822,21 @@ function chado_featuremap_form($node) {
     '#weight'        => 1
   );
 
-  $form['uniquename']= array(
+  $form['name']= array(
     '#type'          => 'textfield',
-    '#title'         => t('Unique Map Name'),
-    '#description'   => t('Please enter a unique name for this map'),
+    '#title'         => t('Map Name'),
+    '#description'   => t('Please enter a name for this map'),
     '#required'      => TRUE,
-    '#default_value' => $uniquename,
+    '#default_value' => $name,
     '#weight'        => 2
   );
 
-  // These map types should not be hard coded, but for now the are...
-  $map_types = array();
-  $map_types[''] = '';
-  $map_types['cdna_map'] = 'cDNA Map';
-  $map_types['bac_map'] = 'BAC Map';
-  $map_types['fosmid_map'] = 'FOSMID Map';
-  $map_types['cosmid_map'] = 'COSMID Map';
-  $map_types['yac_map'] = 'YAC Map';
-
-
-  $form['map_type'] = array(
-    '#title'       => t('Map Type'),
-    '#type'        => t('select'),
-    '#description' => t("Choose the map type."),
-    '#required'    => TRUE,
-    '#default_value' => $map_type,
-    '#options'     => $map_types,
-    '#weight'      => 3
-  );
-
-  // get the list of organisms
-  $sql = "SELECT * FROM {Organism}";
-  $previous_db = tripal_db_set_active('chado');  // use chado database
-  $org_rset = db_query($sql);
-  tripal_db_set_active($previous_db);  // now use drupal database
-
-  $organisms = array();
-  $organisms[''] = '';
-  while ($organism = db_fetch_object($org_rset)) {
-    $organisms[$organism->organism_id] =
-    "$organism->genus $organism->species ($organism->common_name)";
-  }
-
-  $form['organism_id'] = array(
-   '#title'       => t('Organism'),
-   '#type'        => t('select'),
-   '#description' => t("Choose the organism with which this map is ".
-                       "associated."),
-   '#required'    => TRUE,
-   '#default_value' => $organism_id,
-   '#options'     => $organisms,
-   '#weight'      => 4,
-  );
-
-  $form['map_description']= array(
+  $form['description']= array(
     '#type'          => 'textarea',
     '#title'         => t('Map Description'),
     '#description'   => t('A brief description of the map'),
     '#required'      => TRUE,
-    '#default_value' => $map_description,
+    '#default_value' => $description,
     '#weight'        => 5
   );
 
@@ -1007,44 +847,41 @@ function chado_featuremap_form($node) {
  *
  * @ingroup tripal_featuremap
  */
-function tripal_featuremap_sync_maps($map_id = NULL, $job_id = NULL) {
+function tripal_featuremap_sync_featuremaps($featuremap_id = NULL, $job_id = NULL) {
 
   global $user;
   $page_content = '';
 
-  // get the list of maps and create new nodes
-  if (!$map_id) {
-    $sql = "SELECT * FROM {Map} L";
+  // get the list of featuremaps and create new nodes
+  if (!$featuremap_id) {
+    $sql = "SELECT * FROM {featuremap} L";
     $previous_db = tripal_db_set_active('chado');  // use chado database
     $results = db_query($sql);
     tripal_db_set_active($previous_db);  // now use drupal database
   }
   else {
-    $sql = "SELECT * FROM {Map} L WHERE map_id = %d";
+    $sql = "SELECT * FROM {featuremap} L WHERE featuremap_id = %d";
     $previous_db = tripal_db_set_active('chado');  // use chado database
-    $results = db_query($sql, $map_id);
+    $results = db_query($sql, $featuremap_id);
     tripal_db_set_active($previous_db);  // now use drupal database
   }
 
   // We'll use the following SQL statement for checking if the map
   // already exists as a drupal node.
   $sql = "SELECT * FROM {chado_featuremap} ".
-        "WHERE map_id = %d";
+        "WHERE featuremap_id = %d";
 
-  while ($map = db_fetch_object($results)) {
+  while ($featuremap = db_fetch_object($results)) {
 
     // check if this map already exists in the drupal database. if it
     // does then skip this map and go to the next one.
-    if (!db_fetch_object(db_query($sql, $map->map_id))) {
+    if (!db_fetch_object(db_query($sql, $featuremap->featuremap_id))) {
 
     $new_node = new stdClass();
     $new_node->type = 'chado_featuremap';
     $new_node->uid = $user->uid;
-    $new_node->title = "$map->name";
-    $new_node->map_id = $map->map_id;
-    $new_node->organism_id = $map->organism_id;
-    $new_node->uniquename = $map->uniquename;
-    $new_node->type_id = $map->type_id;
+    $new_node->title = "$featuremap->name";
+    $new_node->featuremap_id = $featuremap->featuremap_id;
 
     node_validate($new_node);
     $errors = form_get_errors();
@@ -1052,18 +889,18 @@ function tripal_featuremap_sync_maps($map_id = NULL, $job_id = NULL) {
       $node = node_submit($new_node);
       node_save($node);
       if ($node->nid) {
-        print "Added " . $map->name . "\n";
+        print "Added " . $featuremap->name . "\n";
       }
       else {
-        print "ERROR: Unable to create " . $map->name . "\n";
+        print "ERROR: Unable to create " . $featuremap->name . "\n";
       }
     }
     else {
-      print "ERROR: Unable to create " . $map->name . "\n" . print_r($errors, TRUE) . "\n";
+      print "ERROR: Unable to create " . $featuremap->name . "\n" . print_r($errors, TRUE) . "\n";
     }
     }
     else {
-      print "Skipped " . $map->name . "\n";
+      print "Skipped " . $featuremap->name . "\n";
     }
     }
   return $page_content;
@@ -1077,13 +914,13 @@ function tripal_featuremap_sync_maps($map_id = NULL, $job_id = NULL) {
  */
 function chado_featuremap_load($node) {
   // get the feature details from chado
-  $map_id = chado_get_id_for_node('map', $node);
+  $featuremap_id = chado_get_id_for_node('featuremap', $node);
 
-  $values = array('map_id' => $map_id);
-  $map = tripal_core_generate_chado_var('map', $values);
+  $values = array('featuremap_id' => $featuremap_id);
+  $featuremap = tripal_core_generate_chado_var('featuremap', $values);
 
   $additions = new stdClass();
-  $additions->map = $map;
+  $additions->featuremap = $featuremap;
   return $additions;
 
 }
@@ -1103,177 +940,16 @@ function chado_featuremap_view($node, $teaser = FALSE, $page = FALSE) {
 }
 
 /**
- *
- * @ingroup tripal_featuremap
- */
-function tripal_featuremap_feature_set_taxonomy($map_id = NULL) {
-
-   //TO DO : return usable error if vocabs don't exist
-   // get the list of vocabularies and find our two vocabularies of interest
-  $vocabularies = taxonomy_get_vocabularies();
-  $vid = NULL;
-  foreach ($vocabularies as $vocab) {
-    if ($vocab->name == 'Map') {
-      $vid = $vocab->vid;
-    }
-  }
-  if (!$vid) {
-    return;
-  }
-
-  // We'll use the following SQL statement for getting the node info
-  if ($map_id) {
-    print "Finding features for map with ID: $map_id\n";
-    $sql = "SELECT LF.feature_id, L.map_id, L.name as libname ".
-           "FROM {map_feature} LF ".
-           "INNER JOIN Map L ON LF.map_id = L.map_id ".
-           "WHERE L.map_id = $map_id ".
-           "ORDER BY LF.feature_id";
-    $previous_db = tripal_db_set_active('chado');  // use chado database
-    $features = db_query($sql);
-    tripal_db_set_active($previous_db);  // now use drupal database
-  }
-  else {
-    print "Finding features for all maps\n";
-    $sql = "SELECT LF.feature_id, L.map_id, L.name as libname ".
-           "FROM {map_feature} LF ".
-           "INNER JOIN Map L ON LF.map_id = L.map_id ".
-           "ORDER BY LF.feature_id";
-    $previous_db = tripal_db_set_active('chado');  // use chado database
-    $features = db_query($sql);
-    tripal_db_set_active($previous_db);  // now use drupal database
-  }
-
-  $node_sql = "SELECT * FROM {chado_feature} CF ".
-             "  INNER JOIN {node} N ON CF.nid = N.nid ".
-             "WHERE feature_id = %d";
-
-  // iterate through the features and add the taxonomy
-  while ($feature = db_fetch_object($features)) {
-    $node = db_fetch_object(db_query($node_sql, $feature->feature_id));
-    $tags["$vid"] = $feature->libname;
-    $terms['tags'] = $tags;
-    taxonomy_node_save($node, $terms);
-    print "Updated $feature->feature_id as $feature->libname\n";
-  }
-}
-/**
- *
- * @ingroup tripal_featuremap
- */
-function tripal_featuremap_reindex_features($map_id = NULL, $job_id = NULL) {
-  $i = 0;
-
-  // if the caller provided a map_id then get all of the features
-  // associated with the map. Otherwise get all sequences assoicated
-  // with all maps.
-  if ($map_id) {
-    $sql = "SELECT LF.feature_id, L.map_id, L.name as libname ".
-           " FROM {map_feature} LF ".
-           "  INNER JOIN Map L ON LF.map_id = L.map_id ".
-           "WHERE L.map_id = $map_id ".
-           "ORDER BY LF.feature_id";
-    $previous_db = tripal_db_set_active('chado');  // use chado database
-    $results = db_query($sql);
-    tripal_db_set_active($previous_db);  // now use drupal database
-  }
-  else {
-    $sql = "SELECT LF.feature_id, L.map_id, L.name as libname ".
-           " FROM {map_feature} LF ".
-           "  INNER JOIN Map L ON LF.map_id = L.map_id ".
-           "ORDER BY LF.feature_id";
-    $previous_db = tripal_db_set_active('chado');  // use chado database
-    $results = db_query($sql);
-    tripal_db_set_active($previous_db);  // now use drupal database
-  }
-
-   // load into ids array
-  $count = 0;
-  $ids = array();
-  while ($id = db_fetch_object($results)) {
-    $ids[$count] = $id->feature_id;
-    $count++;
-  }
-
-  $interval = intval($count * 0.01);
-  foreach ($ids as $feature_id) {
-    // update the job status every 1% features
-    if ($job_id and $i % interval == 0) {
-      tripal_job_set_progress($job_id, intval(($i/$count)*100));
-    }
-    tripal_feature_sync_feature($feature_id);
-    $i++;
-  }
-}
-/**
- *
- * @ingroup tripal_featuremap
- */
-function tripal_featuremap_taxonify_features($map_id = NULL, $job_id = NULL) {
-  $i = 0;
-
-  // if the caller provided a map_id then get all of the features
-  // associated with the map. Otherwise get all sequences assoicated
-  // with all maps.
-  if ($map_id) {
-    $sql = "SELECT LF.feature_id, L.map_id, L.name as libname ".
-           " FROM {map_feature} LF ".
-           "  INNER JOIN Map L ON LF.map_id = L.map_id ".
-           "WHERE L.map_id = $map_id ".
-           "ORDER BY LF.feature_id";
-    $previous_db = tripal_db_set_active('chado');  // use chado database
-    $results = db_query($sql);
-    tripal_db_set_active($previous_db);  // now use drupal database
-  }
-  else {
-    $sql = "SELECT LF.feature_id, L.map_id, L.name as libname ".
-           " FROM {map_feature} LF ".
-           "  INNER JOIN Map L ON LF.map_id = L.map_id ".
-           "ORDER BY LF.feature_id";
-    $previous_db = tripal_db_set_active('chado');  // use chado database
-    $results = db_query($sql);
-    tripal_db_set_active($previous_db);  // now use drupal database
-  }
-
-  // load into ids array
-  $count = 0;
-  $ids = array();
-  while ($id = db_fetch_object($results)) {
-    $ids[$count] = $id->feature_id;
-    $count++;
-  }
-
-  // make sure our vocabularies are set before proceeding
-  tripal_feature_set_vocabulary();
-
-  // use this SQL for getting the nodes
-  $nsql =  "SELECT * FROM {chado_feature} CF ".
-          "  INNER JOIN {node} N ON N.nid = CF.nid ".
-          "WHERE feature_id = %d";
-
-   // iterate through the features and set the taxonomy
-  $interval = intval($count * 0.01);
-  foreach ($ids as $feature_id) {
-    // update the job status every 1% features
-    if ($job_id and $i % interval == 0) {
-      tripal_job_set_progress($job_id, intval(($i/$count)*100));
-    }
-      $node = db_fetch_object(db_query($nsql, $feature_id));
-      tripal_feature_set_taxonomy($node, $feature_id);
-      $i++;
-  }
-}
-/**
  * Delete data from drupal and chado databases when a node is deleted
  * @ingroup tripal_featuremap
  */
 function chado_featuremap_delete(&$node) {
 
-  $map_id = chado_get_id_for_node('map', $node);
+  $featuremap_id = chado_get_id_for_node('featuremap', $node);
   
   // if we don't have a map id for this node then this isn't a node of
   // type chado_featuremap or the entry in the chado_featuremap table was lost.
-  if (!$map_id){
+  if (!$featuremap_id){
     return;
   }
   
@@ -1294,79 +970,9 @@ function chado_featuremap_delete(&$node) {
 
   // Remove data from map and mapprop tables of chado database as well
   $previous_db = tripal_db_set_active('chado');
-  db_query("DELETE FROM {map} WHERE map_id = %d", $map_id);
-  db_query("DELETE FROM {mapprop} WHERE map_id = %d", $map_id);
+  db_query("DELETE FROM {featuremap} WHERE featuremap_id = %d", $featuremap_id);
+  db_query("DELETE FROM {featuremapprop} WHERE featuremap_id = %d", $featuremap_id);
   tripal_db_set_active($previous_db);
-}
-
-/**
- * Display block with maps
- * @param op    - parameter to define the phase being called for the block
- * @param delta - id of the block to return (ignored when op is list)
- * @param edit  - when op is save, contains the submitted form data
- *
- * @ingroup tripal_featuremap
- */
-function tripal_featuremap_block($op = 'list', $delta = '0', $edit = array()) {
-  switch ($op) {
-    case 'list':
-
-    $blocks['libreferences']['info'] = t('Tripal Map References');
-    $blocks['libreferences']['cache'] = BLOCK_NO_CACHE;
-
-    $blocks['libbase']['info'] = t('Tripal Map Details');
-    $blocks['libbase']['cache'] = BLOCK_NO_CACHE;
-
-    $blocks['libsynonyms']['info'] = t('Tripal Map Synonyms');
-    $blocks['libsynonyms']['cache'] = BLOCK_NO_CACHE;
-
-    $blocks['libproperties']['info'] = t('Tripal Map Properties');
-    $blocks['libproperties']['cache'] = BLOCK_NO_CACHE;
-
-    $blocks['featurelibs']['info'] = t('Tripal Feature Maps');
-    $blocks['featurelibs']['cache'] = BLOCK_NO_CACHE;
-
-    $blocks['orglibs']['info'] = t('Tripal Organism Maps');
-    $blocks['orglibs']['cache'] = BLOCK_NO_CACHE;
-
-    return $blocks;
-
-    case 'view':
-      if (user_access('access chado_featuremap content') and arg(0) == 'node' and is_numeric(arg(1))) {
-        $nid = arg(1);
-        $node = node_load($nid);
-
-        $block = array();
-        switch ($delta) {
-          case 'libreferences':
-            $block['subject'] = t('References');
-            $block['content'] = theme('tripal_featuremap_references', $node);
-            break;
-          case 'libbase':
-            $block['subject'] = t('Map Details');
-            $block['content'] = theme('tripal_featuremap_base', $node);
-            break;
-          case 'libsynonyms':
-            $block['subject'] = t('Synonyms');
-            $block['content'] = theme('tripal_featuremap_synonyms', $node);
-            break;
-          case 'libproperties':
-            $block['subject'] = t('Properties');
-            $block['content'] = theme('tripal_featuremap_properties', $node);
-            break;
-          case 'featurelibs':
-            $block['subject'] = t('Maps');
-            $block['content'] = theme('tripal_feature_maps', $node);
-            break;
-          case 'orglibs':
-            $block['subject'] = t('Maps');
-            $block['content'] = theme('tripal_organism_maps', $node);
-            break;
-            default :
-        }
-        return $block;
-        }
-  }
 }
 
 /**
@@ -1381,7 +987,7 @@ function tripal_featuremap_block($op = 'list', $delta = '0', $edit = array()) {
  */
 function tripal_featuremap_cleanup($dummy = NULL, $job_id = NULL) {
 
-  return tripal_core_clean_orphaned_nodes('map', $job_id);
+  return tripal_core_clean_orphaned_nodes('featuremap', $job_id);
   
 }
 
