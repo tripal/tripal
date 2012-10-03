@@ -282,7 +282,8 @@ function tripal_bulk_loader_load_data($nid, $job_id) {
     print "\t\tOpen File...\n";
     $file = new SplFileObject($node->file, 'r'); 
     if (!$file) { 
-      watchdog('T_bulk_loader','Could not open file %file', array($node->file), WATCHDOG_ERROR);
+      watchdog('T_bulk_loader','Could not open file %file', 
+        array($node->file), WATCHDOG_ERROR);
       return;
     }
 

@@ -294,67 +294,83 @@ function tripal_db_get_dbxref_by_accession($accession, $db_id=0) {
  *   then nothing is added.
  *
  * @return
- *   An object populated with fields from the newly added database.
+ *   An object populated with fields from the newly added database.  If the 
+ *   database already exists it returns the values in the current entry.
  *
  * @ingroup tripal_db_api
  */
-function tripal_db_add_db($dbname, $description='', $url='', $urlprefix='', $update=0) {
+function tripal_db_add_db($dbname, $description = '', $url = '', 
+  $urlprefix = '', $update = 0) {
 
-  $values = array(
+	// build the values array for inserting/updating
+  $ins_values = array(
     'name' => $dbname,
     'description' => $description,
     'url' => $url,
     'urlprefix' => $urlprefix
   );
-
-  $db_sql = "SELECT * FROM {db} WHERE name ='%s'";
-  $db = db_fetch_object(db_query($db_sql, $dbname));
-  if (!$db) {
-    if (!tripal_core_chado_insert('db', $values)) {
+	
+	// get the database record if it already exists
+	$sel_values = array('name' => $dbname);
+  $sel_options = array('statement_name' => 'sel_db_na');
+  $result = tripal_core_chado_select('db', array('*'), $sel_values, $sel_options);
+  
+  // if it does not exists then add it
+  if (count($result) == 0) {  	
+	  $ins_options = array('statement_name' => 'ins_db_nadeurur');	 
+	  $success = tripal_core_chado_insert('db', $ins_values, $ins_options); 
+    if (!$success) {
       watchdog('tripal_db', "Cannot create db '$dbname'.", NULL, WATCHDOG_WARNING);
       return 0;
     }
-    $db = tripal_core_chado_select('db', array('*'), $values);
+    $result = tripal_core_chado_select('db', array('*'), $sel_values, $sel_options);
   }
+  // if it exists and update is enabled the do the update
   elseif ($update) {
-    $match = array('db_id' => $db->db_id);
-    if (!tripal_core_chado_update('db', $match, $values)) {
+  	$upd_options = array('statement_name' => 'upd_db_nadeurur');
+  	$success = tripal_core_chado_update('db', $sel_values, $ins_values, $upd_options);
+    if (!$success) {
       watchdog('tripal_db', "Cannot update db '$dbname'.", NULL, WATCHDOG_WARNING);
       return 0;
     }
-    $db = tripal_core_chado_select('db', array('*'), $values);
+    $result = tripal_core_chado_select('db', array('*'), $sel_values, $sel_options);
   }
-  else {
-    return $db;
-  }
+  
+  // return the database object
+  return $result[0];
+
 }
 /**
  *
  * @ingroup tripal_db_api
  */
-function tripal_db_add_dbxref($db_id, $accession, $version='', $description='') {
+function tripal_db_add_dbxref($db_id, $accession, $version = '', $description = '') {
 
-  // check to see if the dbxref exists if not, add it
-  $dbxsql = "
-    SELECT DBX.dbxref_id, DBX.db_id, DBX.description, DBX.version, DBX.accession,
-       DB.name as db_name
-    FROM {dbxref} DBX
-       INNER JOIN db DB on DB.db_id = DBX.db_id
-    WHERE DBX.db_id = %d and DBX.accession = '%s'
-  ";
-  $dbxref = db_fetch_object(db_query($dbxsql, $db_id, $accession));
-  if (!$dbxref) {
-    $sql = "
-       INSERT INTO {dbxref} (db_id, accession, version, description)
-       VALUES (%d,'%s','%s','%s')
-    ";
-    if (!db_query($sql, $db_id, $accession, $version, $description)) {
+  $ins_values = array(
+    'db_id'       => $db_id,
+    'accession'   => $accession,
+    'version'     => $version,
+    'description' => $description
+  );
+    
+  // check to see if the dbxref exists
+  $sel_values = array(
+    'db_id'     => $db_id,
+    'accession' => $accession,
+  );
+  $sel_options = array('statement_name' => 'sel_dbxref_dbacve');
+  $result = tripal_core_chado_select('dbxref', array('*'), $sel_values, $sel_options);
+  
+  // if it doesn't already exist then add it
+  if (count($result) == 0) {
+    $ins_options = array('statement_name' => 'ins_dbxref_dbacvede');
+    $success = tripal_core_chado_insert('dbxref', $ins_values, $ins_options);
+    if (!$success) {
       watchdog('tripal_cv', "Failed to insert the dbxref record $accession", NULL, WATCHDOG_WARNING);
       return 0;
     }
-    drupal_set_message("Added Dbxref accession: $accession");
-    $dbxref = db_fetch_object(db_query($dbxsql, $db_id, $accession));
+    $result = tripal_core_chado_select('dbxref', array('*'), $sel_values, $sel_options);
   }
-  return $dbxref;
-
+  
+  return $result[0];
 }
