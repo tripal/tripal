@@ -1039,3 +1039,48 @@ function tripal_stock_nodeapi(&$node, $op, $teaser, $page) {
       break;
   }
 }
+
+/**
+ *
+ *
+ * @ingroup tripal_stock
+ */
+function tripal_stock_preprocess_tripal_organism_stocks(&$variables) {
+  $organism = $variables['node']->organism;
+
+  if (!$organism) {
+    return;
+  }
+  
+  // get the stocks for this organism
+  $sql  = "SELECT S.name, S.stock_id, S.uniquename, CVT.name as cvname ".
+          "FROM {stock} S ".
+          "  INNER JOIN {cvterm} CVT on S.type_id = CVT.cvterm_id ".
+          "WHERE organism_id = %s".
+          "ORDER BY stock_id ASC";
+
+  // the counting SQL
+  $csql  = "SELECT count(*) ".
+           "FROM {stock} S".
+           "  INNER JOIN {cvterm} CVT on S.type_id = CVT.cvterm_id ".
+           "WHERE organism_id = %s ".
+           "GROUP BY organism_id ";
+
+  $previous_db = tripal_db_set_active('chado');  // use chado database
+  $org_stocks = pager_query($sql, 10, 0, $csql, $organism->organism_id);
+  tripal_db_set_active($previous_db);  // now use drupal database
+  $pager = theme('pager');
+
+  // prepare the query that will lookup node ids
+  $sql = "SELECT nid FROM {chado_stock} ".
+         "WHERE stock_id = %d";
+  $i=0;
+  $stocks = array();
+  while ($stock = db_fetch_object($org_stocks)) {
+    $node = db_fetch_object(db_query($sql, $stock->stock_id));
+    $stock->nid = $node->nid;
+    $stocks[$i++] = $stock;
+  }
+  
+  $organism->stock_browser =  array('stocks' => $stocks, 'pager' => $pager, 'enabled' => TRUE );
+}
