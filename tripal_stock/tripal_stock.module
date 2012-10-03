@@ -315,25 +315,17 @@ function tripal_stock_node_info() {
  */
 function chado_stock_load($node) {
 
-  // Get stock_id from chado_stock linking table
-  $map = db_fetch_object(db_query(
-    "SELECT stock_id as stock_id FROM {chado_stock} WHERE vid=%d",
-    $node->vid
-  ));
-
-  // Get stock content and add to node
-  $stock = tripal_core_generate_chado_var('stock', array('stock_id' => $map->stock_id));
-  //
-  // move expandable fields downwards
-  $node->expandable_fields = $stock->expandable_fields;
-  unset($stock->expandable_fields);
-  $node->expandable_tables = $stock->expandable_tables;
-  unset($stock->expandable_tables);
-  $node->expandable_nodes = $stock->expandable_nodes;
-  unset($stock->expandable_nodes);
-  $node->stock = $stock;
-
-  return $node;
+  // get the stock details from chado
+  $stock_id = chado_get_id_for_node('stock', $node);
+  
+  // build the variable with all the stock details
+  $values = array('stock_id' => $stock_id);
+  $stock = tripal_core_generate_chado_var('feature', $values);
+  
+  // add this to the node
+  $additions = new stdClass();
+  $additions->stock = $stock;
+  return $additions;
 }
 
 
