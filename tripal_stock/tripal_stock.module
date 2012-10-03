@@ -269,6 +269,11 @@ function tripal_stock_theme() {
       'arguments' => array('node' => NULL),
       'template' => 'tripal_stock_synonyms',
     ),
+    
+    'tripal_organism_stocks' => array(
+       'arguments' => array('node' => NULL),
+       'template' => 'tripal_organism_stocks',
+    ),
   );
 }
 
@@ -864,6 +869,9 @@ function tripal_stock_block($op = 'list', $delta = 0, $edit=array()) {
 
       $blocks['synonyms']['info'] = t('Tripal Stock Synonyms');
       $blocks['synonyms']['cache'] = BLOCK_NO_CACHE;
+      
+      $blocks['orgstocks']['info'] = t('Tripal Organism Stocks');
+      $blocks['orgstocks']['cache'] = BLOCK_NO_CACHE;
 
       return $blocks;
 
@@ -898,10 +906,15 @@ function tripal_stock_block($op = 'list', $delta = 0, $edit=array()) {
           $block['subject'] = t('Synonyms');
           $block['content'] = theme('tripal_stock_synonyms', $node);
           break;
+          
+        case 'orgstocks':
+          $block['subject'] = t('Organism Stocks');
+          $block['content'] = theme('tripal_organism_stocks', $node);
+          break;
 
       }
-        return $block;
-      }
+      return $block;
+    }
   }
 }
 
@@ -992,4 +1005,37 @@ function tripal_stock_preprocess_tripal_stock_relationships(&$variables) {
   }
   $stock->all_relationships = $relationships;
 
+}
+/**
+ * Implementation of hook_nodeapi().
+ * Display stock information for associated organisms
+ * This function also provides contents for indexing
+ *
+ * @ingroup tripal_stock
+ */
+function tripal_stock_nodeapi(&$node, $op, $teaser, $page) {
+
+  switch ($op) {
+    // Note that this function only adds stock view to an organism/feature
+    // node.
+    case 'view':
+      // add the stock to the organism/feature search indexing
+      if ($node->build_mode == NODE_BUILD_SEARCH_INDEX) {
+
+      }
+      elseif ($node->build_mode == NODE_BUILD_SEARCH_RESULT) {
+
+      }
+      else {
+        switch ($node->type) {
+          case 'chado_organism':
+            // Show stock if the organism/feature is not at teaser view
+            $node->content['tripal_organism_stocks'] = array(
+              '#value' => theme('tripal_organism_stocks', $node),
+            );
+            break;          
+        }
+      }
+      break;
+  }
 }
