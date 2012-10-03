@@ -269,11 +269,16 @@ function tripal_stock_theme() {
       'arguments' => array('node' => NULL),
       'template' => 'tripal_stock_synonyms',
     ),
+    'tripal_stock_collections' => array(
+       'arguments' => array('node' => NULL),
+       'template' => 'tripal_stock_collections',
+    ),
     
     'tripal_organism_stocks' => array(
        'arguments' => array('node' => NULL),
        'template' => 'tripal_organism_stocks',
     ),
+    
   );
 }
 
