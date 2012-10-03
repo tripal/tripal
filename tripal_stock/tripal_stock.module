@@ -875,6 +875,9 @@ function tripal_stock_block($op = 'list', $delta = 0, $edit=array()) {
       $blocks['synonyms']['info'] = t('Tripal Stock Synonyms');
       $blocks['synonyms']['cache'] = BLOCK_NO_CACHE;
       
+      $blocks['collections']['info'] = t('Tripal Stock Collections');
+      $blocks['collections']['cache'] = BLOCK_NO_CACHE;
+      
       $blocks['orgstocks']['info'] = t('Tripal Organism Stocks');
       $blocks['orgstocks']['cache'] = BLOCK_NO_CACHE;
 
@@ -910,6 +913,11 @@ function tripal_stock_block($op = 'list', $delta = 0, $edit=array()) {
         case 'synonyms':
           $block['subject'] = t('Synonyms');
           $block['content'] = theme('tripal_stock_synonyms', $node);
+          break;
+          
+        case 'collections':
+          $block['subject'] = t('Stock Collections');
+          $block['content'] = theme('tripal_stock_collections', $node);
           break;
           
         case 'orgstocks':
