@@ -320,7 +320,7 @@ function chado_stock_load($node) {
   
   // build the variable with all the stock details
   $values = array('stock_id' => $stock_id);
-  $stock = tripal_core_generate_chado_var('feature', $values);
+  $stock = tripal_core_generate_chado_var('stock', $values);
   
   // add this to the node
   $additions = new stdClass();
