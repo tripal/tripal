@@ -1067,12 +1067,11 @@ function tripal_stock_preprocess_tripal_organism_stocks(&$variables) {
            "GROUP BY organism_id ";
 
   $previous_db = tripal_db_set_active('chado');  // use chado database
-  $org_stocks = pager_query($sql, 25, 1, $csql, $organism->organism_id);
+  $org_stocks = pager_query($sql, 25, 0, $csql, $organism->organism_id);
   tripal_db_set_active($previous_db);  // now use drupal database
   
   // get the pager and reformat so it shows the right block
   $pager = theme('pager');  
-  $pager = preg_replace('/\?page\=/',"?block=stock-browser&page=", $pager);
 
   // prepare the query that will lookup node ids
   $sql = "SELECT nid FROM {chado_stock} ".
