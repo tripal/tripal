@@ -1067,7 +1067,7 @@ function tripal_stock_preprocess_tripal_organism_stocks(&$variables) {
            "GROUP BY organism_id ";
 
   $previous_db = tripal_db_set_active('chado');  // use chado database
-  $org_stocks = pager_query($sql, 10, 0, $csql, $organism->organism_id);
+  $org_stocks = pager_query($sql, 25, 'stocks', $csql, $organism->organism_id);
   tripal_db_set_active($previous_db);  // now use drupal database
   $pager = theme('pager');
 
