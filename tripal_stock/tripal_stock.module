@@ -904,3 +904,92 @@ function tripal_stock_block($op = 'list', $delta = 0, $edit=array()) {
       }
   }
 }
+
+/**
+ *
+ *
+ * @ingroup tripal_stock
+ */
+function tripal_stock_preprocess_tripal_stock_relationships(&$variables) {
+  // we want to provide a new variable that contains the matched stocks.
+  $stock = $variables['node']->stock;
+   
+  // expand the stock object to include the stock relationships.
+  $stock = tripal_core_expand_chado_vars($stock,
+     'table', 'stock_relationship', array('order_by'=> array('rank' => 'ASC')));
+
+  // get the subject relationships
+  $srelationships = $stock->stock_relationship->subject_id;
+  if (!$srelationships) {
+     $srelationships = array();
+  } 
+  elseif (!is_array($srelationships)) { 
+     $srelationships = array($srelationships); 
+  }
+  
+  // get the object relationships
+  $orelationships = $stock->stock_relationship->object_id;
+  if (!$orelationships) {
+     $orelationships = array();
+  } 
+  elseif (!is_array($orelationships)) { 
+     $orelationships = array($orelationships); 
+  }
+  
+  // combine both object and subject relationshisp into a single array
+  $relationships = array();
+  $relationships['object'] = array();
+  $relationships['subject'] = array();
+  
+  // iterate through the object relationships
+// iterate through the object relationships
+  foreach ($orelationships as $relationship) {
+     $rel = new stdClass();      
+     $rel->record = $relationship;    
+     
+     // get the relationship and child types
+     $rel_type = t(preg_replace('/_/'," ",$relationship->type_id->name));
+     $child_type = $relationship->subject_id->type_id->name;
+     
+     // get the node id of the subject
+     $sql = "SELECT nid FROM chado_stock WHERE stock_id = %d";
+     $n = db_fetch_object(db_query($sql,$relationship->subject_id->stock_id));
+     if($n){
+        $rel->record->nid = $n->nid;
+     }
+
+     if (!array_key_exists($rel_type, $relationships['object'])) {
+       $relationships['object'][$rel_type] = array();   
+     }
+     if (!array_key_exists($child_type, $relationships['object'][$rel_type])) {
+       $relationships['object'][$rel_type][$child_type] = array();   
+     }
+     $relationships['object'][$rel_type][$child_type][] = $rel;     
+  }
+  
+  // now add in the subject relationships
+  foreach ($srelationships as $relationship) {
+     $rel = new stdClass(); 
+     
+     $rel->record = $relationship;
+     $rel_type = t(preg_replace('/_/'," ",$relationship->type_id->name));
+     $parent_type = $relationship->object_id->type_id->name;
+     
+     // get the node id of the subject
+     $sql = "SELECT nid FROM chado_stock WHERE stock_id = %d";
+     $n = db_fetch_object(db_query($sql,$relationship->object_id->stock_id));
+     if($n){
+        $rel->record->nid = $n->nid;
+     }
+     
+     if (!array_key_exists($rel_type, $relationships['subject'])) {
+       $relationships['subject'][$rel_type] = array();   
+     }
+     if (!array_key_exists($child_type, $relationships['subject'][$rel_type])) {
+       $relationships['subject'][$rel_type][$parent_type] = array();   
+     }
+     $relationships['subject'][$rel_type][$parent_type][] = $rel;
+  }
+  $stock->all_relationships = $relationships;
+
+}
