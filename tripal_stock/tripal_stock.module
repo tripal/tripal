@@ -1072,7 +1072,7 @@ function tripal_stock_preprocess_tripal_organism_stocks(&$variables) {
   
   // get the pager and reformat so it shows the right block
   $pager = theme('pager');  
-  $pager = preg_replace('/?page=/',"?block=stock-browser&page=", $pager);
+  $pager = preg_replace('/\?page\=/',"?block=stock-browser&page=", $pager);
 
   // prepare the query that will lookup node ids
   $sql = "SELECT nid FROM {chado_stock} ".
