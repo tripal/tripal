@@ -1629,6 +1629,10 @@ function tripal_core_generate_chado_var($table, $values, $base_options = array()
  *   option of 'order_by' may be used to sort results in the base table
  *   if more than one are returned.  The options must be compatible with
  *   the options accepted by the tripal_core_chado_select() function.
+ *   Additionally,  The option 'return_array' can be provided to force
+ *   the function to always return an array. Default behavior is to return
+ *   a single record if only one record exists or to return an array if
+ *   multiple records exist.
  * @return
  *   A chado object supplemented with the field/table/node requested to be expanded
  *
@@ -1652,7 +1656,12 @@ function tripal_core_generate_chado_var($table, $values, $base_options = array()
 function tripal_core_expand_chado_vars($object, $type, $to_expand, $table_options = array()) {
   $base_table = $object->tablename;
 
-  // check to see if they are expanding an array of objects
+  $return_array = 0;
+  if(array_key_exists('return_array', $table_options)){
+    $return_array = 1;
+  }
+  
+  // check to see if we are expanding an array of objects
   if (is_array($object)) {
     foreach ($object as $index => $o) {
       $object[$index] = tripal_core_expand_chado_vars($o, $type, $to_expand);
@@ -1795,7 +1804,12 @@ function tripal_core_expand_chado_vars($object, $type, $to_expand, $table_option
       array('%type' => $type),
       WATCHDOG_ERROR
       );
-      return FALSE;
+      if(!$return_array){
+        return FALSE;
+      }
+      else {
+      	return array();
+      }
   }
 
   //move extended array downwards-------------------------------------------------------------------
@@ -1830,7 +1844,12 @@ function tripal_core_expand_chado_vars($object, $type, $to_expand, $table_option
     } //end of it we've reached the base object
   }
 
-  return $object;
+  if(!$return_array){
+    return $object;
+  } 
+  else {
+  	return array($object);
+  }
 }
 
 /**
