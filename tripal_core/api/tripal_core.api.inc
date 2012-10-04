@@ -1630,8 +1630,8 @@ function tripal_core_generate_chado_var($table, $values, $base_options = array()
  *   if more than one are returned.  The options must be compatible with
  *   the options accepted by the tripal_core_chado_select() function.
  *   Additionally,  The option 'return_array' can be provided to force
- *   the function to always return an array. Default behavior is to return
- *   a single record if only one record exists or to return an array if
+ *   the function to expand tables as an array. Default behavior is to expand
+ *   a table as single record if only one record exists or to expand as an array if
  *   multiple records exist.
  * @return
  *   A chado object supplemented with the field/table/node requested to be expanded
