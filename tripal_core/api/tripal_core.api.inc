@@ -1368,6 +1368,10 @@ function tripal_core_chado_get_foreign_key($table_desc, $field, $values, $option
  *   option of 'order_by' may be used to sort results in the base table
  *   if more than one are returned.  The options must be compatible with
  *   the options accepted by the tripal_core_chado_select() function.
+ *   Additionally,  The option 'return_array' can be provided to force
+ *   the function to always return an array. Default behavior is to return
+ *   a single record if only one record exists or to return an array if
+ *   multiple records exist.
  * @return
  *   Either an object (if only one record was selected from the base table)
  *   or an array of objects (if more than one record was selected from the base table).
@@ -1409,6 +1413,11 @@ function tripal_core_chado_get_foreign_key($table_desc, $field, $values, $option
  */
 function tripal_core_generate_chado_var($table, $values, $base_options = array()) {
   $all = new stdClass();
+  
+  $return_array = 0;
+  if(array_key_exists('return_array', $base_options)){
+  	$return_array = 1;
+  }
 
   // get description for the current table----------------------------------------------------------
   $table_desc = tripal_core_get_chado_table_schema($table);
@@ -1583,15 +1592,22 @@ function tripal_core_generate_chado_var($table, $values, $base_options = array()
   }
 
   // check only one result returned
-  if (sizeof($results) == 1) {
-    // add results to object
-    return $results[0];
+  if(!$return_array){
+	  if (sizeof($results) == 1) {
+	    // add results to object
+	    return $results[0];
+	  }
+	  elseif (!empty($results)) {
+	    return $results;
+	  }
+	  else {
+	    // no results returned
+	  }
   }
-  elseif (!empty($results)) {
-    return $results;
-  }
+  // the caller has requested results are always returned as
+  // an array
   else {
-    // no results returned
+    return $results;
   }
 }
 
