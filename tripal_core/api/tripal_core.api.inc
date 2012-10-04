@@ -1724,11 +1724,8 @@ function tripal_core_expand_chado_vars($object, $type, $to_expand, $table_option
           else {
             $values = array($left => $object->{$right});
           }
-          $foreign_object = tripal_core_generate_chado_var(
-          $foreign_table,
-          array($left => $object->{$right}),
-          $table_options
-          );
+          $foreign_object = tripal_core_generate_chado_var($foreign_table,
+            array($left => $object->{$right}), $table_options);
           if ($foreign_object) {
             // in the case where the foreign key relationships exists more
             // than once with the same table we want to alter the
@@ -1804,12 +1801,7 @@ function tripal_core_expand_chado_vars($object, $type, $to_expand, $table_option
       array('%type' => $type),
       WATCHDOG_ERROR
       );
-      if(!$return_array){
-        return FALSE;
-      }
-      else {
-      	return array();
-      }
+      return FALSE;
   }
 
   //move extended array downwards-------------------------------------------------------------------
@@ -1844,12 +1836,7 @@ function tripal_core_expand_chado_vars($object, $type, $to_expand, $table_option
     } //end of it we've reached the base object
   }
 
-  if(!$return_array){
-    return $object;
-  } 
-  else {
-  	return array($object);
-  }
+  return $object;
 }
 
 /**
