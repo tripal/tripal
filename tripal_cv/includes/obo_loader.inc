@@ -181,7 +181,7 @@ function tripal_cv_load_obo_v1_2($file, $jobid = NULL, &$newcvs) {
  */
 function tripal_cv_obo_quiterror($message) {
 
-  watchdog("T_obo_loader",$message, array(), WATCHDOG_ERROR);;
+  watchdog("T_obo_loader", $message, array(), WATCHDOG_ERROR);;
   exit;
 
 }
@@ -628,7 +628,7 @@ function tripal_cv_obo_add_cvterm_dbxref($cvterm, $xref) {
 
   if (!$accession) {
     tripal_cv_obo_quiterror();
-    watchdog('tripal_cv', "Cannot add a dbxref without an accession: '$xref'", NULL, WATCHDOG_WARNING);
+    watchdog("T_obo_loader", "Cannot add a dbxref without an accession: '$xref'", NULL, WATCHDOG_WARNING);
     return FALSE;
   }
 
