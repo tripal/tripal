@@ -1655,12 +1655,7 @@ function tripal_core_generate_chado_var($table, $values, $base_options = array()
  */
 function tripal_core_expand_chado_vars($object, $type, $to_expand, $table_options = array()) {
   $base_table = $object->tablename;
-
-  $return_array = 0;
-  if(array_key_exists('return_array', $table_options)){
-    $return_array = 1;
-  }
-  
+ 
   // check to see if we are expanding an array of objects
   if (is_array($object)) {
     foreach ($object as $index => $o) {
