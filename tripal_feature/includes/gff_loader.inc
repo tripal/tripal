@@ -221,8 +221,7 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
     $dfile = $gff_file;
   }
   if (!file_exists($dfile)) {
-    watchdog('T_gff3_loader',"Cannot find the file: %dfile", 
-      array($dfile), WATCHDOG_ERROR);
+    watchdog('T_gff3_loader',"Cannot find the file: %dfile", array($dfile), WATCHDOG_ERROR);
     return 0;
   }
 
