@@ -320,8 +320,9 @@ function tripal_feature_fasta_load_form_validate($form, &$form_state) {
   if (!$re_name and $re_uname and strcmp($match_type, 'Name')==0) {
     form_set_error('re_name', t("You must provide a regular expression to identify the sequence name"));
   }
-
+  
   // check to see if the file is located local to Drupal
+  $fasta_file = trim($fasta_file);
   $dfile = $_SERVER['DOCUMENT_ROOT'] . base_path() . $fasta_file;
   if (!file_exists($dfile)) {
     // if not local to Drupal, the file must be someplace else, just use

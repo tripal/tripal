@@ -144,6 +144,7 @@ function tripal_feature_gff3_load_form_validate($form, &$form_state) {
   $remove   = $form_state['values']['remove'];
 
   // check to see if the file is located local to Drupal
+  $gff_file = trim($gff_file);
   $dfile = $_SERVER['DOCUMENT_ROOT'] . base_path() . $gff_file;
   if (!file_exists($dfile)) {
     // if not local to Drupal, the file must be someplace else, just use
