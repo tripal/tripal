@@ -285,7 +285,10 @@ function tripal_stock_theme() {
        'arguments' => array('node' => NULL),
        'template' => 'tripal_stock_genotypes',
     ),
-    
+    'tripal_stock_locations' => array(
+       'arguments' => array('node' => NULL),
+       'template' => 'tripal_stock_locations',
+    ),    
     'tripal_organism_stocks' => array(
        'arguments' => array('node' => NULL),
        'template' => 'tripal_organism_stocks',
@@ -888,6 +891,9 @@ function tripal_stock_block($op = 'list', $delta = 0, $edit=array()) {
       $blocks['genotypes']['info'] = t('Tripal Stock Genotypes');
       $blocks['genotypes']['cache'] = BLOCK_NO_CACHE;
       
+      $blocks['locations']['info'] = t('Tripal Stock Locations');
+      $blocks['locations']['cache'] = BLOCK_NO_CACHE;
+      
       $blocks['orgstocks']['info'] = t('Tripal Organism Stocks');
       $blocks['orgstocks']['cache'] = BLOCK_NO_CACHE;
       
@@ -940,6 +946,11 @@ function tripal_stock_block($op = 'list', $delta = 0, $edit=array()) {
         case 'genotypes':
           $block['subject'] = t('Stock Genotypes');
           $block['content'] = theme('tripal_stock_genotypes', $node);
+          break;
+          
+        case 'locations':
+          $block['subject'] = t('Stock Locations');
+          $block['content'] = theme('tripal_stock_locations', $node);
           break;
           
         case 'orgstocks':
