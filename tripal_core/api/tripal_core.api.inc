@@ -1607,7 +1607,12 @@ function tripal_core_generate_chado_var($table, $values, $base_options = array()
   // the caller has requested results are always returned as
   // an array
   else {
-    return $results;
+  	if(!$results) {
+  		return array();
+  	}
+  	else {
+      return $results;
+  	}
   }
 }
 
