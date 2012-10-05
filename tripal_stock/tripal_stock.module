@@ -961,28 +961,29 @@ function tripal_stock_block($op = 'list', $delta = 0, $edit=array()) {
 function tripal_stock_preprocess_tripal_stock_relationships(&$variables) {
   // we want to provide a new variable that contains the matched stocks.
   $stock = $variables['node']->stock;
+
+  /*
+  // first check the size of the relationships. If there are too many we don't want to
+  // expand the stock object, it will take too long
+  $values = array('object_id' => $stock->stock_id);
+  $columns = array('count(*) as cnt');
+  $options = array('statement_name' => 'cnt_stockrelationship_ob');
+  $num_objs_rels = tripal_core_chado_select('stock_relationship', $columns, $values, $options);
+  
+  if($num_objs_rels[0]->cnt 25){
+  	
+  }*/
    
   // expand the stock object to include the stock relationships.
-  $stock = tripal_core_expand_chado_vars($stock,
-     'table', 'stock_relationship', array('order_by'=> array('rank' => 'ASC')));
+  $options = array(
+    'order_by'=> array('rank' => 'ASC'),
+    'return_array' => 1
+  );
+  $stock = tripal_core_expand_chado_vars($stock,'table', 'stock_relationship', $options);
 
-  // get the subject relationships
+  // get the subject and object relationships
   $srelationships = $stock->stock_relationship->subject_id;
-  if (!$srelationships) {
-     $srelationships = array();
-  } 
-  elseif (!is_array($srelationships)) { 
-     $srelationships = array($srelationships); 
-  }
-  
-  // get the object relationships
   $orelationships = $stock->stock_relationship->object_id;
-  if (!$orelationships) {
-     $orelationships = array();
-  } 
-  elseif (!is_array($orelationships)) { 
-     $orelationships = array($orelationships); 
-  }
   
   // combine both object and subject relationshisp into a single array
   $relationships = array();
@@ -993,6 +994,7 @@ function tripal_stock_preprocess_tripal_stock_relationships(&$variables) {
   // in which case, we will return a number
   if(count($orelationships) > 25) {
      $relationships['object'] = count($relationships); 
+     $stock->stock_relationship->object_id = array();
   } 
   else {
 	  // iterate through the object relationships
@@ -1024,7 +1026,8 @@ function tripal_stock_preprocess_tripal_stock_relationships(&$variables) {
   // if we have more than 25 it may make the page too slow to load
   // in which case, we will return a number
   if(count($srelationships) > 25) {
-     $relationships['object'] = count($srelationships); 
+     $relationships['subject'] = count($srelationships);
+     $stock->stock_relationship->subject_id = array();
   }
   else {
 	  // now add in the subject relationships
