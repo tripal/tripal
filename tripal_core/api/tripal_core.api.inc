@@ -1746,16 +1746,22 @@ function tripal_core_expand_chado_vars($object, $type, $to_expand, $table_option
         }
       }
       else {
-        //We need to recurse -the table has a relationship to one of the nested objects
+        // We need to recurse -the table has a relationship to one of the nested objects
+        $did_expansion = 0;
         foreach ((array) $object as $field_name => $field_value) {
           // if we have a nested object ->expand the table in it
           if (is_object($field_value)) {
-            $object->{$field_name} = tripal_core_expand_chado_vars(
-            $field_value,
-              'table',
-            $foreign_table
-            );
+          	$did_expansion = 1;
+            $object->{$field_name} = tripal_core_expand_chado_vars($field_value, 'table', $foreign_table);
           }
+        }
+        // if we did not expand this table we should return a message that the foreign table
+        // could not be expanded
+        if (!$did_expansion) {
+          watchdog('tripal_core','tripal_core_expand_chado_vars: Could not expand table, %table. It is ',
+            'not in a foreign key relationship with the base object nor with any other expanded table. ' .
+            'Check the table definition to ensure that a proper foreign key relationship is present.',
+            array('%table' => $foreign_table), WATCHDOG_ERROR);   
         }
       }
       break;
@@ -1775,12 +1781,8 @@ function tripal_core_expand_chado_vars($object, $type, $to_expand, $table_option
           $object = $node;
         }
         else {
-          watchdog(
-            'tripal_core',
-            'tripal_core_expand_chado_vars: No node matches the nid (%nid) supplied.',
-          array('%nid' => $object->nid),
-          WATCHDOG_ERROR
-          );
+          watchdog('tripal_core','tripal_core_expand_chado_vars: No node matches the nid (%nid) supplied.',
+            array('%nid' => $object->nid),WATCHDOG_ERROR);
         } //end of if node
       }
       else {
