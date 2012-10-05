@@ -1740,8 +1740,7 @@ function tripal_core_expand_chado_vars($object, $type, $to_expand, $table_option
           if(array_key_exists('statement_name', $table_options)){
              $new_options['statement_name'] = "exp_" . $foreign_table . "_" . substr($left, 0, 2) . substr($right, 0, 2); 
           }
-          $foreign_object = tripal_core_generate_chado_var($foreign_table,
-            array($left => $object->{$right}), $new_options);
+          $foreign_object = tripal_core_generate_chado_var($foreign_table, array($left => $object->{$right}), $new_options);
           if ($foreign_object) {
             // in the case where the foreign key relationships exists more
             // than once with the same table we want to alter the
@@ -1757,6 +1756,9 @@ function tripal_core_expand_chado_vars($object, $type, $to_expand, $table_option
               $object->{$foreign_table} = $foreign_object;
               $object->expanded = $to_expand;
             }
+          }
+          else {
+            $object->{$foreign_table} = NULL;  
           }
         }
       }
@@ -1814,11 +1816,8 @@ function tripal_core_expand_chado_vars($object, $type, $to_expand, $table_option
       }
       break;
     default:
-      watchdog('tripal_core',
-        'tripal_core_expand_chado_vars: Unrecognized type (%type). Should be one of "field", "table", "node".',
-      array('%type' => $type),
-      WATCHDOG_ERROR
-      );
+      watchdog('tripal_core','tripal_core_expand_chado_vars: Unrecognized type (%type). Should be one of "field", "table", "node".',
+        array('%type' => $type), WATCHDOG_ERROR);
       return FALSE;
   }
 
