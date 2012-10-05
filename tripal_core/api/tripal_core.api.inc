@@ -1680,11 +1680,7 @@ function tripal_core_expand_chado_vars($object, $type, $to_expand, $table_option
         }
         if ($base_table == $tablename) {
           //get the field
-          $results = tripal_core_chado_select(
-          $tablename,
-          array($fieldname),
-          $values
-          );
+          $results = tripal_core_chado_select($tablename, array($fieldname), $values);
           $object->{$fieldname} = $results[0]->{$fieldname};
           $object->expanded = $to_expand;
         }
@@ -1724,8 +1720,13 @@ function tripal_core_expand_chado_vars($object, $type, $to_expand, $table_option
           else {
             $values = array($left => $object->{$right});
           }
+          // if a prepared statement is provide then generate a new name
+          $new_options = $table_options;
+          if(array_key_exists('statement_name', $table_options)){
+             $new_options['statement_name'] = "exp_" . $foreign_table . "_" . substr($left, 0, 2) . substr($right, 0, 2); 
+          }
           $foreign_object = tripal_core_generate_chado_var($foreign_table,
-            array($left => $object->{$right}), $table_options);
+            array($left => $object->{$right}), $new_options);
           if ($foreign_object) {
             // in the case where the foreign key relationships exists more
             // than once with the same table we want to alter the
