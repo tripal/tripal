@@ -1034,6 +1034,7 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
   	  watchdog('tripal_core', "tripal_core_chado_select: The field '%field' does not exist ".
   	    "for the table '%table'.  Cannot perform query.", 
   	    array('%field' => $field, '%table' => $table), WATCHDOG_ERROR);
+  	  return array();
   	}
   	
     $select[] = $field;
