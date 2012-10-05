@@ -1716,7 +1716,7 @@ function tripal_core_expand_chado_vars($object, $type, $to_expand, $table_option
       if ($foreign_table_desc['foreign keys'][$base_table]) {
         foreach ($foreign_table_desc['foreign keys'][$base_table]['columns'] as $left => $right) {
           if (!$object->{$right}) {
-            break;
+            continue;
           }
           if (is_array($values)) {
             $values = array_merge($values, array($left => $object->{$right}) );
