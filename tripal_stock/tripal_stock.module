@@ -989,54 +989,67 @@ function tripal_stock_preprocess_tripal_stock_relationships(&$variables) {
   $relationships['object'] = array();
   $relationships['subject'] = array();
   
-  // iterate through the object relationships
-// iterate through the object relationships
-  foreach ($orelationships as $relationship) {
-     $rel = new stdClass();      
-     $rel->record = $relationship;    
-     
-     // get the relationship and child types
-     $rel_type = t(preg_replace('/_/'," ",$relationship->type_id->name));
-     $child_type = $relationship->subject_id->type_id->name;
-     
-     // get the node id of the subject
-     $sql = "SELECT nid FROM chado_stock WHERE stock_id = %d";
-     $n = db_fetch_object(db_query($sql,$relationship->subject_id->stock_id));
-     if($n){
-        $rel->record->nid = $n->nid;
-     }
-
-     if (!array_key_exists($rel_type, $relationships['object'])) {
-       $relationships['object'][$rel_type] = array();   
-     }
-     if (!array_key_exists($child_type, $relationships['object'][$rel_type])) {
-       $relationships['object'][$rel_type][$child_type] = array();   
-     }
-     $relationships['object'][$rel_type][$child_type][] = $rel;     
+  // if we have more than 25 it may make the page too slow to load
+  // in which case, we will return a number
+  if(count($orelationships) > 25) {
+     $relationships['object'] = count($relationships); 
+  } 
+  else {
+	  // iterate through the object relationships
+	  foreach ($orelationships as $relationship) {
+	     $rel = new stdClass();      
+	     $rel->record = $relationship;    
+	     
+	     // get the relationship and child types
+	     $rel_type = t(preg_replace('/_/'," ",$relationship->type_id->name));
+	     $child_type = $relationship->subject_id->type_id->name;
+	     
+	     // get the node id of the subject
+	     $sql = "SELECT nid FROM chado_stock WHERE stock_id = %d";
+	     $n = db_fetch_object(db_query($sql,$relationship->subject_id->stock_id));
+	     if($n){
+	        $rel->record->nid = $n->nid;
+	     }
+	
+	     if (!array_key_exists($rel_type, $relationships['object'])) {
+	       $relationships['object'][$rel_type] = array();   
+	     }
+	     if (!array_key_exists($child_type, $relationships['object'][$rel_type])) {
+	       $relationships['object'][$rel_type][$child_type] = array();   
+	     }
+	     $relationships['object'][$rel_type][$child_type][] = $rel;     
+	  }
   }
-  
-  // now add in the subject relationships
-  foreach ($srelationships as $relationship) {
-     $rel = new stdClass(); 
-     
-     $rel->record = $relationship;
-     $rel_type = t(preg_replace('/_/'," ",$relationship->type_id->name));
-     $parent_type = $relationship->object_id->type_id->name;
-     
-     // get the node id of the subject
-     $sql = "SELECT nid FROM chado_stock WHERE stock_id = %d";
-     $n = db_fetch_object(db_query($sql,$relationship->object_id->stock_id));
-     if($n){
-        $rel->record->nid = $n->nid;
-     }
-     
-     if (!array_key_exists($rel_type, $relationships['subject'])) {
-       $relationships['subject'][$rel_type] = array();   
-     }
-     if (!array_key_exists($child_type, $relationships['subject'][$rel_type])) {
-       $relationships['subject'][$rel_type][$parent_type] = array();   
-     }
-     $relationships['subject'][$rel_type][$parent_type][] = $rel;
+
+  // if we have more than 25 it may make the page too slow to load
+  // in which case, we will return a number
+  if(count($srelationships) > 25) {
+     $relationships['object'] = count($srelationships); 
+  }
+  else {
+	  // now add in the subject relationships
+	  foreach ($srelationships as $relationship) {
+	     $rel = new stdClass(); 
+	     
+	     $rel->record = $relationship;
+	     $rel_type = t(preg_replace('/_/'," ",$relationship->type_id->name));
+	     $parent_type = $relationship->object_id->type_id->name;
+	     
+	     // get the node id of the subject
+	     $sql = "SELECT nid FROM chado_stock WHERE stock_id = %d";
+	     $n = db_fetch_object(db_query($sql,$relationship->object_id->stock_id));
+	     if($n){
+	        $rel->record->nid = $n->nid;
+	     }
+	     
+	     if (!array_key_exists($rel_type, $relationships['subject'])) {
+	       $relationships['subject'][$rel_type] = array();   
+	     }
+	     if (!array_key_exists($child_type, $relationships['subject'][$rel_type])) {
+	       $relationships['subject'][$rel_type][$parent_type] = array();   
+	     }
+	     $relationships['subject'][$rel_type][$parent_type][] = $rel;
+	  }
   }
   $stock->all_relationships = $relationships;
 
