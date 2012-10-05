@@ -155,7 +155,7 @@ function tripal_core_create_custom_table(&$ret, $table, $schema, $skip_creation 
   }
   
   // now add any foreign key constraints
-  if(array_key_exists('foreign keys', $schema)){
+  if(!$skip_creation and array_key_exists('foreign keys', $schema)){
   	$fkeys = $schema['foreign keys'];
   	foreach ($fkeys as $fktable => $fkdetails) {
   		$relations = $fkdetails['columns'];
