@@ -1555,7 +1555,7 @@ function tripal_core_generate_chado_var($table, $values, $base_options = array()
             // the table referenced by the foreign key
             //Dont do anything if the foreign key is empty
             if (empty($object->{$foreign_key})) {
-              break;
+              continue;
             }
             // get the record from the foreign table
             $foreign_values = array($primary_key => $object->{$foreign_key});
