@@ -1421,6 +1421,15 @@ function tripal_core_generate_chado_var($table, $values, $base_options = array()
 
   // get description for the current table----------------------------------------------------------
   $table_desc = tripal_core_get_chado_table_schema($table);
+  if (!$table_desc) {
+    watchdog('tripal_core', "tripal_core_generate_chado_var: The table '%table' has not been defined. ".
+             "and cannot be expanded. If this is a custom table, please add it using the Tripal ".
+             "custom table interface.", array('%table' => $table), WATCHDOG_ERROR);
+    if ($return_array) {
+    	return array();
+    }
+    return FALSE;
+  }
   $table_primary_key = $table_desc['primary key'][0];
   $table_columns = array_keys($table_desc['fields']);
 
@@ -1698,11 +1707,8 @@ function tripal_core_expand_chado_vars($object, $type, $to_expand, $table_option
         }
       }
       else {
-        watchdog(
-          'tripal_core',
-          'tripal_core_expand_chado_vars: Field (%field) not in the right format. It should be <tablename>.<fieldname>',
-        WATCHDOG_ERROR
-        );
+        watchdog('tripal_core', 'tripal_core_expand_chado_vars: Field (%field) not in the right format. ".
+          "It should be <tablename>.<fieldname>', WATCHDOG_ERROR);
       }
       break;
     case "table": //--------------------------------------------------------------------------------
