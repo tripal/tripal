@@ -1028,6 +1028,14 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
   }
 
   foreach ($values as $field => $value) {
+  	// make sure the field is in the table description. If not then return an error 
+  	// message
+  	if(!array_key_exists($field, $table_desc['fields'])){
+  	  watchdog('tripal_core', "tripal_core_chado_select: The field '%field' does not exist ".
+  	    "for the table '%table'.  Cannot perform query.", 
+  	    array('%field' => $field, '%table' => $table), WATCHDOG_ERROR);
+  	}
+  	
     $select[] = $field;
     if (is_array($value)) {
       // if the user has specified multiple values for matching then this we
@@ -1421,7 +1429,7 @@ function tripal_core_generate_chado_var($table, $values, $base_options = array()
 
   // get description for the current table----------------------------------------------------------
   $table_desc = tripal_core_get_chado_table_schema($table);
-  if (!$table_desc) {
+  if (!$table_desc or count($table_desc) == 0) {
     watchdog('tripal_core', "tripal_core_generate_chado_var: The table '%table' has not been defined. ".
              "and cannot be expanded. If this is a custom table, please add it using the Tripal ".
              "custom table interface.", array('%table' => $table), WATCHDOG_ERROR);
