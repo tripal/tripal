@@ -144,6 +144,12 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
     // will not recreate it, but if not it will create one and store it in
     // a Drupal variable for reuse later.
     $connection = tripal_db_persistent_chado();
+    
+    // if we cannot get a connection the abandon the prepared statement
+    if(!$connection){
+       $prepared = FALSE;
+       unset($options['statement_name']);
+    }
   }
   else {
     //print "NO STATEMENT (insert): $table\n";
@@ -441,6 +447,12 @@ function tripal_core_chado_update($table, $match, $values, $options = NULL) {
     // will not recreate it, but if not it will create one and store it in
     // a Drupal variable for reuse later.
     $connection = tripal_db_persistent_chado();
+    
+    // if we cannot get a connection the abandon the prepared statement
+    if(!$connection){
+       $prepared = FALSE;
+       unset($options['statement_name']);
+    }
   }
   else {
     //print "NO STATEMENT (update): $table\n";
@@ -1964,7 +1976,7 @@ function chado_query($sql) {
 
   // Execute the query on the chado database/schema
   // Use the persistent chado connection if it already exists
-  $persistent_connection = unserialize(variable_get('tripal_persistent_chado', NULL));
+  $persistent_connection = variable_get('tripal_persistent_chado', NULL);
   if ($persistent_connection) {
 
     $query = $sql;
@@ -2500,7 +2512,7 @@ function tripal_core_is_sql_prepared($statement_name) {
   // has been prepared. If it has then we won't do the database
   // query to find out.  If it hasn't then we'll query the database
   // to see if it is prepared.
-  $connection = unserialize(variable_get('tripal_persistent_chado', NULL));
+  $connection = variable_get('tripal_persistent_chado', NULL);
   if (!isset($_SESSION[$connection])) {
     $_SESSION[$connection] = array();
   }
@@ -2537,11 +2549,16 @@ function tripal_core_is_sql_prepared($statement_name) {
  *   be the type of value needed (ie: text, int, etc.)
  */
 function tripal_core_chado_prepare($statement_name, $psql, $args) {
-  $connection = unserialize(variable_get('tripal_persistent_chado', NULL));
-
+  $connection = variable_get('tripal_persistent_chado', NULL);
+  
+  if(!$connection){
+    watchdog('tripal_core', "chado_prepare: not able to prepare '%name' statement as no persistent connection is available", array('%name' => $statement_name, '%sql' => $psql), WATCHDOG_ERROR);
+    return FALSE;
+  }
+    
   // Check to see if this statement was already prepared
   if (tripal_core_is_sql_prepared($statement_name)) {
-    //if it was check that the arguments are the same
+    // check that the arguments are the same
     $prepared_args = $_SESSION['prepared_args'][$connection][$statement_name];
     $prepared_sql = $_SESSION['prepared_sql'][$connection][$statement_name];
     if ($prepared_args == $args) {
@@ -2562,9 +2579,9 @@ function tripal_core_chado_prepare($statement_name, $psql, $args) {
   }
   else {
     //watchdog('tripal_core', "tripal_core_chado_select: prepared '%name' statement as %sql", array('%name' => $statement_name, '%sql' => $psql), WATCHDOG_NOTICE);
-    //  $_SESSION[$connection][] = $statement_name;
-    //  $_SESSION['prepared_args'][$connection][$statement_name] = $args;
-    //  $_SESSION['prepared_sql'][$connection][$statement_name] = $psql;
+    $_SESSION[$connection][] = $statement_name;
+    $_SESSION['prepared_args'][$connection][$statement_name] = $args;
+    $_SESSION['prepared_sql'][$connection][$statement_name] = $psql;
     return TRUE;
   }
 }
@@ -2581,10 +2598,11 @@ function tripal_core_chado_prepare($statement_name, $psql, $args) {
  *   An array of values in the execute sql statement
  */
 function tripal_core_chado_execute_prepared($statement_name, $sql, $values) {
-  $connection = unserialize(variable_get('tripal_persistent_chado', NULL));
-
+  $connection = variable_get('tripal_persistent_chado', NULL);
+  
   if (!tripal_core_is_sql_prepared($statement_name)) {
     watchdog('tripal_core', "tripal_core_chado_execute_prepared: Cannot execute an unprepared statement: '%name'", array('%name' => $statement_name), WATCHDOG_ERROR);
+    return FALSE;
   }
 
   // Before Executing, Ensure that all the values are supplied
@@ -2670,9 +2688,9 @@ function tripal_db_persistent_chado() {
 
   // get connection if it already exists
   // Otherwise we need to set it
-  $sconn = variable_get('tripal_persistent_chado', NULL);
+  $sconn = variable_get('tripal_persistent_chado', NULL);  
   if ($sconn) {
-    return unserialize($sconn);
+    return $sconn;
   }
   else {
     if (is_array($db_url) && isset($db_url['chado'])) {
@@ -2681,15 +2699,16 @@ function tripal_db_persistent_chado() {
         watchdog('tripal_core', "Could not create persistant connection", array(), WATCHDOG_ERROR);
         return FALSE;
       }
-      variable_set('tripal_persistent_chado', serialize($connection));
+      variable_set('tripal_persistent_chado', $connection);
     }
     else {
-      $connection = db_connect($db_url);
+      $connection = db_connect($db_url);      
       if (!$connection) {
+      	variable_set('tripal_persistent_chado', NULL);
         watchdog('tripal_core', "Could not create persistant connection", array(), WATCHDOG_ERROR);
         return FALSE;
       }
-      variable_set('tripal_persistent_chado', serialize($connection));
+      variable_set('tripal_persistent_chado', $connection);
     }
     return $connection;
   }

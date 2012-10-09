@@ -208,6 +208,14 @@ function tripal_feature_gff3_load_form_submit($form, &$form_state) {
  */
 function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id, 
   $add_only =0, $update = 0, $refresh = 0, $remove = 0, $job = NULL) {  
+  	
+  // try to get a persistent connection so our loads go faster
+  $connection = tripal_db_persistent_chado();
+    
+  // if we cannot get a connection the abandon the prepared statement
+  if(!$connection){
+     print "A persistant connection was not obtained. Loading will be slow\n";
+  }
 
   // this array is used to cache all of the features in the GFF file and
   // used to lookup parent and target relationships
