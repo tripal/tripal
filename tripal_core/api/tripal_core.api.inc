@@ -2903,7 +2903,7 @@ function tripal_core_set_chado_version() {
   if (!$chado_exists) {
     // if it's not in the drupal database check to see if it's specified in the $db_url
     // in the settings.php
-    if (!array_key_exists('chado', $db_url)) {
+    if (!is_array($db_url) or !array_key_exists('chado', $db_url)) {
       // if it's not in the drupal database or specified in the $db_url then
       // return uninstalled as the version
       return 'not installed';

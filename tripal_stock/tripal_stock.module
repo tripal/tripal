@@ -292,8 +292,7 @@ function tripal_stock_theme() {
     'tripal_organism_stocks' => array(
        'arguments' => array('node' => NULL),
        'template' => 'tripal_organism_stocks',
-    ),
-    
+    ),    
   );
 }
 
