@@ -867,6 +867,10 @@ function tripal_core_chado_delete($table, $match) {
  * @return
  *  A database query result resource, FALSE if the query was not executed
  *  correctly, or the number of records in the dataset if $has_record is set.
+ *  If the option 'is_duplicate' is provided and the record is a duplicate it
+ *  will return the duplicated record.  If the 'has_record' option is provided
+ *  a value of TRUE will be returned if a record exists and FALSE will bee
+ *  returned if there are not records.
  *
  * Example usage:
  * @code
@@ -943,12 +947,18 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
     // will not recreate it, but if not it will create one and store it in
     // a Drupal variable for reuse later.
     $connection = tripal_db_persistent_chado();
+    
+    // if we cannot get a connection the abandon the prepared statement
+    if(!$connection){
+       $prepared = FALSE;
+       unset($options['statement_name']);
+    }
   }
   else {
     //print "NO STATEMENT (select): $table\n";
     //debug_print_backtrace();
   }
-
+  
   // check that our columns and values arguments are proper arrays
   if (!is_array($columns)) {
     watchdog('tripal_core', 'the $columns argument for tripal_core_chado_select must be an array.');
@@ -994,6 +1004,7 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
 	      }
 	    }
 	    
+	    // recreate the $values and $columns arrays 
       foreach ($fields as $field) {
         if (array_key_exists($field, $values)) {
           $new_values[$field] = $values[$field];
@@ -1003,6 +1014,8 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
             array_push($new_columns, $field);
           }
         }
+        // if the field doesn't exist in the values array then 
+        // substitute any default values
         elseif (array_key_exists('default', $table_desc['fields'][$field])) {
           $new_values[$field] = $table_desc['fields'][$field]['default'];
           $uq_sname .= substr($field, 0, 2);
@@ -1010,6 +1023,9 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
             array_push($new_columns, $field);
           }
         }
+        // if the array key doesn't exist in the values given by the caller
+        // and there is no default value then we cannot check if the record
+        // is a duplicate so return FALSE
         else {
           return FALSE;
         }
@@ -1024,7 +1040,12 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
       unset($new_values);
       unset($new_options);
     }
-    return $results;
+    if($options['has_record'] and $has_results){
+    	return TRUE;
+    } 
+    else {
+      return $results;
+    }
   }
 
   foreach ($values as $field => $value) {
@@ -2540,10 +2561,10 @@ function tripal_core_chado_prepare($statement_name, $psql, $args) {
     return FALSE;
   }
   else {
-    watchdog('tripal_core', "tripal_core_chado_select: prepared '%name' statement as %sql", array('%name' => $statement_name, '%sql' => $psql), WATCHDOG_NOTICE);
-    $_SESSION[$connection][] = $statement_name;
-    $_SESSION['prepared_args'][$connection][$statement_name] = $args;
-    $_SESSION['prepared_sql'][$connection][$statement_name] = $psql;
+    //watchdog('tripal_core', "tripal_core_chado_select: prepared '%name' statement as %sql", array('%name' => $statement_name, '%sql' => $psql), WATCHDOG_NOTICE);
+    //  $_SESSION[$connection][] = $statement_name;
+    //  $_SESSION['prepared_args'][$connection][$statement_name] = $args;
+    //  $_SESSION['prepared_sql'][$connection][$statement_name] = $psql;
     return TRUE;
   }
 }
@@ -2570,6 +2591,7 @@ function tripal_core_chado_execute_prepared($statement_name, $sql, $values) {
   $required_values = $_SESSION['prepared_args'][$connection][$statement_name];
   if (!$required_values){
     watchdog('tripal_core', "tripal_core_chado_execute_prepared: missing prepare arguments for this statement: '%name'", array('%name' => $statement_name), WATCHDOG_ERROR);
+    return FALSE;
   }
 
   if (sizeof($required_values) == sizeof($values)) {

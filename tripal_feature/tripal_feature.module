@@ -444,36 +444,45 @@ function chado_feature_insert($node) {
     'md5checksum' => md5($residues)
   );
 
-  $istatus = tripal_core_chado_insert('feature', $values);
-  if (!$istatus) {
-    drupal_set_message(t('Unable to add feature.'), 'warning');
-    watchdog('tripal_feature',
-    'Insert feature: Unable to create feature where values: %values',
-    array('%values' => print_r($values, TRUE)),
-    WATCHDOG_WARNING
-  );
+  
+  // check to see if we are inserting a duplicate record. 
+  $options = array('is_duplicate' => TRUE, 'has_record' => TRUE);
+  $exists = tripal_core_chado_select('feature', array('*'), $values, $options);
+  
+  // if the record is not a duplicate then add it
+  if(!$exists){
+	  $istatus = tripal_core_chado_insert('feature', $values);
+	  if (!$istatus) {
+	    drupal_set_message(t('Unable to add feature.'), 'warning');
+	    watchdog('tripal_feature', 'Insert feature: Unable to create feature where values: %values',
+	      array('%values' => print_r($values, TRUE)), WATCHDOG_WARNING);
+	  }
   }
+  
+  // now get the newly added record
   $values = array(
     'organism_id' => $node->organism_id,
     'uniquename' => $node->uniquename,
     'type_id' => $type[0]->cvterm_id,
   );
   $feature = tripal_core_chado_select('feature', array('feature_id'), $values);
+  
   // add the genbank accession and synonyms
   chado_feature_add_synonyms($node->synonyms, $feature[0]->feature_id);
 
   // make sure the entry for this feature doesn't already exist in the chado_feature table
   // if it doesn't exist then we want to add it.
   $node_check_sql = "SELECT * FROM {chado_feature} " .
-                   "WHERE feature_id = '%s'";
+                    "WHERE feature_id = '%s'";
   $node_check = db_fetch_object(db_query($node_check_sql, $feature[0]->feature_id));
   if (!$node_check) {
     // next add the item to the drupal table
     $sql = "INSERT INTO {chado_feature} (nid, vid, feature_id, sync_date) ".
            "VALUES (%d, %d, %d, " . time() . ")";
-    db_query($sql, $node->nid, $node->vid, $feature[0]->feature_id);
+      db_query($sql, $node->nid, $node->vid, $feature[0]->feature_id);
   }
-  }
+}
+  
 /**
  *
  *
