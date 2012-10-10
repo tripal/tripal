@@ -977,7 +977,7 @@ function tripal_stock_preprocess_tripal_stock_relationships(&$variables) {
   // number of relationships are present this significantly slows the
   // query, therefore we will manually perform the query
   $sql = "
-    SELECT S.name, S.stock_id, CS.nid, CVT.name as rel_type, CVTs.name as obj_type
+    SELECT S.name, S.uniquename, S.stock_id, CS.nid, CVT.name as rel_type, CVTs.name as obj_type
     FROM stock_relationship SR
       INNER JOIN stock S on SR.object_id = S.stock_id
       INNER JOIN cvterm CVT on SR.type_id = CVT.cvterm_id
@@ -987,7 +987,7 @@ function tripal_stock_preprocess_tripal_stock_relationships(&$variables) {
   ";
   $as_subject = chado_query($sql, $stock->stock_id);
   $sql = "
-    SELECT S.name, S.stock_id, CS.nid, CVT.name as rel_type, CVTs.name as sub_type
+    SELECT S.name, S.uniquename,  S.stock_id, CS.nid, CVT.name as rel_type, CVTs.name as sub_type
     FROM stock_relationship SR
       INNER JOIN stock S on SR.subject_id = S.stock_id
       INNER JOIN cvterm CVT on SR.type_id = CVT.cvterm_id
@@ -1012,7 +1012,7 @@ function tripal_stock_preprocess_tripal_stock_relationships(&$variables) {
      if (!array_key_exists($rel_type, $relationships['object'])) {
        $relationships['object'][$rel_type] = array();   
      }
-     if (!array_key_exists($child_type, $relationships['object'][$rel_type])) {
+     if (!array_key_exists($child_type, $relationships['object'][$rel_type][$sub_type])) {
        $relationships['object'][$rel_type][$sub_type] = array();   
      }
      $relationships['object'][$rel_type][$sub_type][] = $relationship;     
@@ -1028,7 +1028,7 @@ function tripal_stock_preprocess_tripal_stock_relationships(&$variables) {
      if (!array_key_exists($rel_type, $relationships['subject'])) {
        $relationships['subject'][$rel_type] = array();   
      }
-     if (!array_key_exists($child_type, $relationships['subject'][$rel_type])) {
+     if (!array_key_exists($child_type, $relationships['subject'][$rel_type][$obj_type])) {
        $relationships['subject'][$rel_type][$obj_type] = array();   
      }
      $relationships['subject'][$rel_type][$obj_type][] = $relationship;     
