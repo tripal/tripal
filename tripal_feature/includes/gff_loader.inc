@@ -276,7 +276,7 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
   $sql = "SELECT * FROM organism WHERE organism_id = %d";
   $organism = db_fetch_object(db_query($sql, $organism_id));
 
-  $interval = intval($filesize * 0.0001);
+  $interval = intval($filesize * 0.001);
   if ($interval == 0) {
     $interval = 1;
   }
@@ -286,9 +286,9 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
   $intv_read = 0;
 
   // iterate through each line of the GFF file
-  print "Parsing Line $line_num (0.00%). memory: " . memory_get_usage() . "\r";
+  print "Parsing Line $line_num (0.00%). memory: " . number_format(memory_get_usage()) . " bytes\r";
   while ($line = fgets($fh)) {
-  
+
     $line_num++;
     $num_read += drupal_strlen($line);   
     $intv_read += $num_read; 
@@ -297,10 +297,10 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
     if ($job and $intv_read >= $interval) {
       $intv_read = 0;
       $percent = sprintf("%.2f", ($num_read / $filesize) * 100);
-      print "Parsing Line $line_num (" . $percent . "%). memory: " . memory_get_usage() . ".\r";
+      print "Parsing Line $line_num (" . $percent . "%). memory: " . number_format(memory_get_usage()) . " bytes.\r";
       tripal_job_set_progress($job, intval(($num_read / $filesize) * 100));
     }
-    
+      
     // check to see if we have FASTA section, if so then set the variable
     // to start parsing
     if (preg_match('/^##FASTA/i', $line)) {
@@ -499,7 +499,7 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
         return '';
       }  
     }
-
+    
     // if the option is to remove or refresh then we want to remove
     // the feature from the database.
     if ($remove or $refresh) {
@@ -551,7 +551,7 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
             $landmark, $fmin, $fmax, $strand, $phase, $attr_fmin_partial,
             $attr_fmax_partial, $attr_residue_info, $attr_locgroup);
         }
-               
+          continue;     
         // add any aliases for this feature
         if (array_key_exists('Alias', $tags)) {
           tripal_feature_load_gff3_alias($feature, $tags['Alias']);
@@ -746,7 +746,7 @@ function tripal_feature_load_gff3_derives_from($feature, $subject, $organism) {
     ),      
   );
   $options = array('statement_name' => 'sel_feature_orunty');
-  $sfeature = tripal_core_chado_select('feature', array('*'), $match, $options);
+  $sfeature = tripal_core_chado_select('feature', array('feature_id'), $match, $options);
   if (count($sfeature)==0) {
     watchdog('T_gff3_loader',"Could not add 'Derives_from' relationship ".
       "for %uniquename and %subject.  Subject feature, '%subject', ".
@@ -831,7 +831,7 @@ function tripal_feature_load_gff3_parents($feature, $cvterm, $parents, $organism
         'type_id' => $parentcvterm->cvterm_id,
     );
     $options = array('statement_name' => 'sel_feature_orunty');
-    $result = tripal_core_chado_select('feature', array('*'), $values, $options);
+    $result = tripal_core_chado_select('feature', array('feature_id'), $values, $options);
     $parent_feature = $result[0];
 
     // if the parent exists then add the relationship otherwise print error and skip
@@ -1194,7 +1194,8 @@ function tripal_feature_load_gff3_feature($organism, $analysis_id, $cvterm, $uni
      'type_id' => $cvterm->cvterm_id
   );
   $options = array('statement_name' => 'sel_feature_orunty');
-  $result = tripal_core_chado_select('feature', array('*'), $fselect, $options); 
+  $columns = array('feature_id', 'name', 'uniquename', 'seqlen', 'organism_id', 'type_id');
+  $result = tripal_core_chado_select('feature', $columns, $fselect, $options); 
   $feature = $result[0];
 
   if (strcmp($is_obsolete, 'f')==0 or $is_obsolete == 0) {
@@ -1216,8 +1217,8 @@ function tripal_feature_load_gff3_feature($organism, $analysis_id, $cvterm, $uni
        'organism_id' => $organism->organism_id,
        'name' => $name,
        'uniquename' => $uniquename,
-       'residues' => $residues,
-       'seqlen' => drupal_strlen($residues),
+//       'residues' => $residues,
+//       'seqlen' => drupal_strlen($residues),
        'md5checksum' => md5($residues),
        'type_id' => $cvterm->cvterm_id,
        'is_analysis' => $is_analysis,
@@ -1233,8 +1234,8 @@ function tripal_feature_load_gff3_feature($organism, $analysis_id, $cvterm, $uni
   elseif (!$add_only) {
     $values = array(
       'name' => $name,
-      'residues' => $residues,
-      'seqlen' => drupal_strlen($residues),
+//      'residues' => $residues,
+//      'seqlen' => drupal_strlen($residues),
       'md5checksum' => md5($residues),
       'is_analysis' => $is_analysis,
       'is_obsolete' => $is_obsolete,
@@ -1259,7 +1260,8 @@ function tripal_feature_load_gff3_feature($organism, $analysis_id, $cvterm, $uni
 
   // get the newly added feature
   $options = array('statement_name' => 'sel_feature_orunty');
-  $result = tripal_core_chado_select('feature', array('*'), $fselect, $options);  
+  $columns = array('feature_id', 'name', 'uniquename', 'seqlen', 'organism_id', 'type_id');
+  $result = tripal_core_chado_select('feature', $columns, $fselect, $options);  
   $feature = $result[0];
 
   // add the analysisfeature entry to the analysisfeature table if it doesn't already exist
@@ -1314,8 +1316,9 @@ function tripal_feature_load_gff3_featureloc($feature, $organism, $landmark, $fm
     'organism_id' => $organism->organism_id,
     'uniquename' => $landmark,
   );
-  $options = array('statement_name' => 'sel_feature_organism_id_uniquename');
-  $r = tripal_core_chado_select('feature', array('*'), $select, $options);
+  $options = array('statement_name' => 'sel_feature_orun');  
+  $r = tripal_core_chado_select('feature', array('feature_id'), $select, $options);
+  
   if (count($r)==0) {
     // so we couldn't find it using the uniquename. Let's try the 'name'.
     // if we return only a singe result then we can proceed. Otherwise give an
@@ -1325,7 +1328,7 @@ function tripal_feature_load_gff3_featureloc($feature, $organism, $landmark, $fm
       'name' => $landmark,
     );
     $options = array('statement_name' => 'sel_feature_organism_id_name');
-    $r = tripal_core_chado_select('feature', array('*'), $select, $options);
+    $r = tripal_core_chado_select('feature', array('feature_id'), $select, $options);
     if (count($r) == 0){
        watchdog("T_gff3_loader", "Cannot find landmark feature: '$landmark'.  Cannot add the feature location record", array(), WATCHDOG_WARNING);
        return 0;
@@ -1334,8 +1337,7 @@ function tripal_feature_load_gff3_featureloc($feature, $organism, $landmark, $fm
        watchdog("T_gff3_loader", "multiple landmarks exist with the name: '$landmark'.  Cannot resolve which one to use. Cannot add the feature location record", 
          array(), WATCHDOG_WARNING);
        return 0;    
-    }
-    
+    }    
   }
   $srcfeature = $r[0];
 
@@ -1360,14 +1362,8 @@ function tripal_feature_load_gff3_featureloc($feature, $organism, $landmark, $fm
   foreach ($locrecs as $featureloc) {
     $select = array('feature_id' => $featureloc->srcfeature_id);
     $options = array('statement_name' => 'sel_feature_feature_id');
-    $locsfeature = tripal_core_chado_select('feature', array('*'), $select, $options);
-
-    // check to make sure we don't already have this featureloc record
-    // if we do we don't want to readd it
-//    print "Src Name:'" . $locsfeature[0]->name . "' == '$landmark'\n";
-//    print "Fmin:    '$featureloc->fmin' == '$fmin'\n";
-//    print "Fmax:    '$featureloc->fmax' == '$fmax'\n";
-//    print "Strand:  '$featureloc->strand' == '$strand'\n";        
+    $columns = array('feature_id', 'name');
+    $locsfeature = tripal_core_chado_select('feature', $columns, $select, $options);   
     
     // the source feature name and at least the fmin and fmax must be the same
     // for an update of the featureloc, otherwise we'll insert a new record.

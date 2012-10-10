@@ -2683,7 +2683,7 @@ function tripal_db_persistent_chado() {
 
   // get connection if it already exists
   // Otherwise we need to set it
-  $sconn = variable_get('tripal_persistent_chado', NULL);  
+  $sconn = variable_get('tripal_persistent_chado', NULL); 
   if ($sconn) {
     return $sconn;
   }
