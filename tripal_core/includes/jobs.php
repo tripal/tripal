@@ -201,7 +201,7 @@ function tripal_jobs_report() {
     'Job ID', 
     'User', 
     'Job Name', 
-    array('data' => 'Dates', 'nowrap' => 'nowrap'), 
+    array('data' => 'Dates', 'style'=> "white-space: nowrap"), 
     'Priority', 
     'Progress', 
     'Status', 
