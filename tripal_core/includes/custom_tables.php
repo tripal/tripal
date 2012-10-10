@@ -175,7 +175,7 @@ function tripal_core_create_custom_table(&$ret, $table, $schema, $skip_creation 
   	}
   }
 
-  return $ret;
+  return TRUE;
 }
 
 /**

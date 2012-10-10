@@ -202,7 +202,7 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
       $insert_values[$field] = $value;
     }
   }
-
+  
   if ($validate) {
 
     // check for violation of any unique constraints
@@ -238,7 +238,7 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
         }
       }
     }
-
+    
     // if trying to insert a field that is the primary key, make sure it also is unique
     if (array_key_exists('primary key', $table_desc)) {
       $pkey = $table_desc['primary key'][0];
@@ -251,10 +251,12 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
       }
     }
 
-    // make sure required fields have a value
+    // make sure required fields have a value     
     if (!is_array($table_desc['fields'])) {
       $table_desc['fields'] = array();
-      watchdog('tripal_core', "tripal_core_chado_insert: %table not defined in tripal schema api", array('%table' => $table), 'WATCHDOG WARNING');
+      watchdog('tripal_core', "tripal_core_chado_insert: %table missing fields: \n %schema", 
+        array('%table' => $table, '%schema' => print_r($table_desc, 1)), WATCHDOG_WARNING);
+      
     }
     foreach ($table_desc['fields'] as $field => $def) {
       // a field is considered missing if it cannot be NULL and there is no default
@@ -305,7 +307,7 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
       $idatatypes[] = 'text';
     }
   }
-
+  
   // create the SQL
   $sql = "INSERT INTO {$table} (" . implode(", ", $ifields) . ") VALUES (" . implode(", ", $itypes) . ")";
 
@@ -336,14 +338,11 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
 
   // if we have a result then add primary keys to return array
   if ($result) {
-    $primary_key = array();
-    if (!is_array($table_desc['primary key'])) {
-      $table_desc['primary key'] = array();
-      watchdog('tripal_core', "tripal_core_chado_insert: %table not defined in tripal schema api", array('%table' => $table), 'WATCHDOG WARNING');
-    }
-    foreach ($table_desc['primary key'] as $field) {
-      $value =  db_result(chado_query("SELECT CURRVAL('" . $table . "_" . $field . "_seq')"));
-      $values[$field] = $value;
+    if (array_key_exists('primary key', $table_desc) and is_array($table_desc['primary key'])) {
+      foreach ($table_desc['primary key'] as $field) {
+        $value =  db_result(chado_query("SELECT CURRVAL('" . $table . "_" . $field . "_seq')"));
+        $values[$field] = $value;
+      }
     }
     return $values;
   }
@@ -1976,7 +1975,7 @@ function chado_query($sql) {
 
   // Execute the query on the chado database/schema
   // Use the persistent chado connection if it already exists
-  $persistent_connection = variable_get('tripal_persistent_chado', NULL);
+  $persistent_connection = variable_get('tripal_persistent_chado', NULL);  
   if ($persistent_connection) {
 
     $query = $sql;
@@ -2000,10 +1999,6 @@ function chado_query($sql) {
       $queries[] = array($query, $diff);
     }
 
-    if ($debug) {
-      print '<p>query: ' . $query . '<br />error:' . pg_last_error($persistent_connection) . '</p>';
-    }
-
     if ($last_result !== FALSE) {
       return $last_result;
     }
@@ -2015,7 +2010,7 @@ function chado_query($sql) {
     }
     // END COPY FROM _db_query in database.pgsql.inc
   }
-  else {
+  else {  	
     $previous_db = tripal_db_set_active('chado');
     $results = _db_query($sql);
     tripal_db_set_active($previous_db);
@@ -2727,7 +2722,11 @@ function tripal_db_release_persistent_chado() {
  */
 function tripal_db_start_transaction() {
   $connection = tripal_db_persistent_chado();
-  chado_query("BEGIN");
+  if ($connection) {
+    chado_query("BEGIN");  
+    return $connection;
+  } 
+  return FALSE;
 }
 
 /**

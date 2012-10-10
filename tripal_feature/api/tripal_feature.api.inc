@@ -844,3 +844,90 @@ function tripal_feature_get_formatted_sequence($feature_id, $feature_name,
   }
   return $residues;
 }
+
+/**
+ * This function simply defines all tables needed for the module to work
+ * correctly.  By putting the table definitions in a separate function we
+ * can easily provide the entire list for hook_install or individual
+ * tables for an update.
+ *
+ * @ingroup tripal_feature
+ */
+function tripal_feature_get_schemas($table = NULL) {
+  $schema = array();
+
+
+  if (!$table or strcmp($table, 'chado_feature')==0) {
+    $schema['chado_feature'] = array(
+      'fields' => array(
+        'vid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+        'nid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+        'feature_id' => array('type' => 'int', 'not null' => TRUE, 'default' => 0),
+        'sync_date' => array('type' => 'int', 'not null' => FALSE, 'description' => 'UNIX integer sync date/time'),
+      ),
+      'indexes' => array(
+        'feature_id' => array('feature_id')
+      ),
+      'unique keys' => array(
+        'nid_vid' => array('nid', 'vid'),
+        'vid' => array('vid')
+      ),
+      'primary key' => array('nid'),
+    );
+  }
+  if (!$table or strcmp($table, 'tripal_feature_relagg')==0) {
+    $schema['tripal_feature_relagg'] = array(
+      'fields' => array(
+        'type_id' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+        'rel_type_id' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+      ),
+      'indexes' => array(
+        'type_id' => array('type_id')
+      ),
+    );
+  }
+  return $schema;
+};
+/**
+ * This function defines the custom tables that will be created 
+ * in the chado schema.
+ *
+ * @ingroup tripal_feature
+ */
+function tripal_feature_get_custom_tables($table = NULL) {
+
+ if (!$table or strcmp($table, 'tripal_gff_temp')==0) {
+    $schema['tripal_gff_temp'] = array(
+      'table' => 'tripal_gff_temp',
+      'fields' => array(
+        'feature_id' => array(
+          'type' => 'int',
+          'not null' => TRUE,
+        ),
+        'organism_id' => array(
+          'type' => 'int',
+          'not null' => TRUE,
+        ),
+        'uniquename' => array(
+          'type' => 'text',
+          'not null' => TRUE,
+        ),
+        'type_name' => array(
+          'type' => 'varchar',
+          'length' => '1024',
+          'not null' => TRUE,
+        ),
+      ),
+      'indexes' => array(
+        'tripal_gff_temp_idx0' => array('feature_id'),
+        'tripal_gff_temp_idx0' => array('orgnaism_id'),
+        'tripal_gff_temp_idx1' => array('uniquename'),
+      ),
+      'unique keys' => array(
+        'tripal_gff_temp_uq0' => array('feature_id'),
+        'tripal_gff_temp_uq1' => array('uniquename', 'organism_id', 'type_name'),
+      ),
+    );
+  }
+  return $schema;
+}
