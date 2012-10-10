@@ -1012,7 +1012,7 @@ function tripal_stock_preprocess_tripal_stock_relationships(&$variables) {
      if (!array_key_exists($rel_type, $relationships['object'])) {
        $relationships['object'][$rel_type] = array();   
      }
-     if (!array_key_exists($child_type, $relationships['object'][$rel_type][$sub_type])) {
+     if (!array_key_exists($sub_type, $relationships['object'][$rel_type])) {
        $relationships['object'][$rel_type][$sub_type] = array();   
      }
      $relationships['object'][$rel_type][$sub_type][] = $relationship;     
@@ -1028,7 +1028,7 @@ function tripal_stock_preprocess_tripal_stock_relationships(&$variables) {
      if (!array_key_exists($rel_type, $relationships['subject'])) {
        $relationships['subject'][$rel_type] = array();   
      }
-     if (!array_key_exists($child_type, $relationships['subject'][$rel_type][$obj_type])) {
+     if (!array_key_exists($obj_type, $relationships['subject'][$rel_type])) {
        $relationships['subject'][$rel_type][$obj_type] = array();   
      }
      $relationships['subject'][$rel_type][$obj_type][] = $relationship;     
