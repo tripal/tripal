@@ -230,6 +230,11 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
   if (!$connection) {
      print "A persistant connection was not obtained. Loading will be slow\n";
   }
+  else {
+  	 print "\nNOTE: Loading of this GFF file is performed using a database transaction. If the load " .
+  	       "fails or is terminated prematurely then the entire set of insertions/updates is rolled back " .
+  	       "and will not be found in the database\n\n";
+  }
 
   // check to see if the file is located local to Drupal
   $dfile = $_SERVER['DOCUMENT_ROOT'] . base_path() . $gff_file;
