@@ -142,7 +142,7 @@ function tripal_jobs_report_form($form, &$form_state = NULL) {
   $default_status = $form_state['values']['job_status'];
   
   if (!$default_status) {
-    $default_status = variable_get('tripal_job_status_filter', NULL);
+    $default_status = $_SESSION['tripal_job_status_filter'];
   }    
   
   $form['job_status'] = array(
@@ -170,7 +170,7 @@ function tripal_jobs_report_form($form, &$form_state = NULL) {
  */
 function tripal_jobs_report_form_submit($form, &$form_state = NULL) {
   $job_status = $form_state['values']['job_status'];
-  variable_set('tripal_job_status_filter', $job_status);    
+  $_SESSION['tripal_job_status_filter'] = $job_status;    
 }
 /**
  * Returns the Tripal Job Report
@@ -182,7 +182,7 @@ function tripal_jobs_report_form_submit($form, &$form_state = NULL) {
  */
 function tripal_jobs_report() {
 
-	$jobs_status_filter = variable_get('tripal_job_status_filter', NULL);
+	$jobs_status_filter = $_SESSION['tripal_job_status_filter'];
   
   $sql = "
     SELECT 
