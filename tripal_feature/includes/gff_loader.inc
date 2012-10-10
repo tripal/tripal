@@ -627,60 +627,85 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
       }
     }
   }
-return;  
+
+  print "\nSetting ranks of children...\n";
+  
+  // get features in a parent relationship
+  $sql = "SELECT DISTINCT F.feature_id, F.organism_id, F.type_id, F.uniquename, FL.strand 
+          FROM tripal_gff_temp TGT 
+            INNER JOIN feature F on TGT.feature_id = F.feature_id
+            INNER JOIN feature_relationship FR  ON FR.object_id = TGT.feature_id
+            INNER JOIN cvterm CVT on CVT.cvterm_id = FR.type_id  
+            INNER JOIN featureloc FL on FL.feature_id = F.feature_id    
+          WHERE CVT.name = 'part_of'";
+  $parents = chado_query($sql);
+  
+  // build and prepare the SQL for selecting the children relationship
+  $sql = "SELECT FR.feature_relationship_id, FL.fmin, FR.rank
+          FROM feature_relationship FR              
+            INNER JOIN featureloc FL on FL.feature_id = FR.subject_id";
+  if (!$connection) {
+    $sql .= "WHERE FR.object_id = %d ".
+            "ORDER BY FL.fmin ASC ";
+  }
+  else {
+    $sql = "PREPARE sel_gffchildren (int) AS " . $sql . " WHERE FR.object_id = \$1 ORDER BY FL.fmin ASC";            
+  }
+  if (!tripal_core_is_sql_prepared('sel_gffchildren')) {
+    $success = chado_query($sql);
+    if (!$success) {
+      watchdog("T_gff3_loader", "Cannot prepare statement 'sel_gffchildren' and cannot set children ranks.", 
+         array(), WATCHDOG_WARNING);
+      return 0;	
+    }
+  }
+  
   // now set the rank of any parent/child relationships.  The order is based
   // on the fmin.  The start rank is 1.  This allows features with other
   // relationships to be '0' (the default), and doesn't interfer with the
-  // ordering defined here.
-  foreach ($gff_features as $parent => $details) {
-    // only iterate through parents that have children
-    if (array_key_exists('children',$details)) {
-      // get the parent
-      $values = array(
-        'organism_id' => $organism->organism_id,
-        'uniquename' => $parent,
-        'type_id' => array(
-           'cv_id' => array(
-              'name' => 'sequence'
-            ),
-           'name' => $details['type'],
-        ),
-      );
+  // ordering defined here.        
+  while ($parent = db_fetch_object($parents)) {
+  	
+  	// get the children
+  	if ($connection) {  		
+  		$result = chado_query('EXECUTE sel_gffchildren (%d)', $parent->feature_id);
+  	}
+  	else {
+  		$result = chado_query($sql, $parent->feature_id);
+  	}
+  	
+  	// build an array of the children
+  	$children = array();
+    while ($child = db_fetch_object($result)) {
+       $children[] = $child;  
+    }
+  	
+    // sort the children come in order of their fmin position
+    // but if the parent is on the reverse strand we need to 
+    // reverse the order of the children.
+    if ($parent->strand == -1) {
+      arsort($children);
+    }    
 
-      $options = array('statement_name' => 'sel_feature_orunty');
-      $result = tripal_core_chado_select('feature', array('*'), $values, $options);
-      $pfeature = $result[0];
-
-      // sort the children by order of their fmin positions (values of assoc. array)
-      // if the parent is on the reverse strand then sort in reverse
-      if ($details['strand'] == -1) {
-        arsort($details['children']);
-      }
-      else {
-        asort($details['children']);
-      }
-
-      // now iterate through the children and set their rank
-      $rank = 1;
-      foreach ($details['children'] as $kfeature_id => $kfmin) {
-        $match = array(
-           'object_id' => $pfeature->feature_id,
-           'subject_id' => $kfeature_id,
-           'type_id' => array(
-              'cv_id' => array(
-                 'name' => 'relationship'
-              ),
-              'name' => 'part_of',
-            ),
-        );
-        $values = array(
-           'rank' => $rank,
-        );
-
-        $options = array('statement_name' => 'upd_featurerelationship_all');
-        tripal_core_chado_update('feature_relationship', $match, $values, $options);
-        $rank++;
-      }
+    // first set the ranks to a negative number so that we don't
+    // get a duplicate error message when we try to change any of them    
+    $rank = -1;
+    foreach ($children as $child) {
+      $match = array('feature_relationship_id' => $child->feature_relationship_id);
+      $options = array('statement_name' => 'upd_featurerelationship_rank');      
+      $values = array('rank' => $rank);      
+      tripal_core_chado_update('feature_relationship', $match, $values, $options);
+      $rank--;
+    }
+    // now set the rank correctly
+    $rank = 0;
+    foreach ($children as $child) {
+      $match = array('feature_relationship_id' => $child->feature_relationship_id);
+      $options = array('statement_name' => 'upd_featurerelationship_rank');    	
+      $values = array('rank' => $rank); 
+      //print "Was: " . $child->rank . " now $rank ($parent->strand)\n"     ;
+      tripal_core_chado_update('feature_relationship', $match, $values, $options);
+      $rank++;
     }
   }
 
@@ -705,7 +730,7 @@ function tripal_feature_load_gff3_derives_from($feature, $subject, $organism) {
   $options = array('statement_name' => 'sel_tripalgfftemp_orun');
   $result = tripal_core_chado_select('tripal_gff_temp', array('type_name'), $values, $options);   
   if (count($result) == 0) {
-    watchdog("T_gff3_loader", "Cannot find subject type: %subject", array('%subject' => $subject), WATCHDOG_WARNING);
+    watchdog("T_gff3_loader", "Cannot find subject type for feature in 'derives_from' relationship: %subject", array('%subject' => $subject), WATCHDOG_WARNING);
      return ''; 
   }
   $subject_type = $result[0]->type_name;
