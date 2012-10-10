@@ -197,7 +197,15 @@ function tripal_jobs_report() {
   $sql .= "ORDER BY job_id DESC";
   
   $jobs = pager_query($sql, 25, 0, "SELECT count(*) FROM ($sql) as t1", $jobs_status_filter);
-  $header = array('Job ID', 'User', 'Job Name', 'Dates', 'Priority', 'Progress', 'Status', 'Action');
+  $header = array(
+    'Job ID', 
+    'User', 
+    'Job Name', 
+    array('data' => 'Dates', 'nowrap' => 'nowrap'), 
+    'Priority', 
+    'Progress', 
+    'Status', 
+    'Action');
   $rows = array();  
   
   // iterate through the jobs
