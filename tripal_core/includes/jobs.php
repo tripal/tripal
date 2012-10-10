@@ -131,7 +131,47 @@ function tripal_get_module_active_jobs($modulename) {
            "WHERE TJ.end_time IS NULL and TJ.modulename = '%s' ";
   return db_fetch_object(db_query($sql, $modulename));
 }
-
+/**
+ *
+ * @ingroup tripal_core
+ */
+function tripal_jobs_report_form($form, &$form_state = NULL) {
+  $form = array();
+	
+  // set the default values
+  $default_status = $form_state['values']['job_status'];
+  
+  if (!$default_status) {
+    $default_status = variable_get('tripal_job_status_filter', NULL);
+  }    
+  
+  $form['job_status'] = array(
+    '#type'          => 'select',
+    '#title'         => t('Filter by Job Status'),
+    '#default_value' => $default_status,
+    '#options' => array(
+	    0           => 'All Jobs',
+	    'Running'   => 'Running',
+	    'Completed' => 'Completed',    
+	    'Cancelled' => 'Cancelled', 
+	    'Error'     => 'Error',  
+	  ),
+  );
+  
+  $form['submit'] = array(
+    '#type'         => 'submit',
+    '#value'        => t('Filter'),
+  );
+  return $form;  
+}
+/**
+ *
+ * @ingroup tripal_core
+ */
+function tripal_jobs_report_form_submit($form, &$form_state = NULL) {
+  $job_status = $form_state['values']['job_status'];
+  variable_set('tripal_job_status_filter', $job_status);    
+}
 /**
  * Returns the Tripal Job Report
  *
@@ -142,36 +182,26 @@ function tripal_get_module_active_jobs($modulename) {
  */
 function tripal_jobs_report() {
 
-  //$jobs = db_query("SELECT * FROM {tripal_jobs} ORDER BY job_id DESC");
-  $jobs = pager_query(
-    "SELECT TJ.job_id,TJ.uid,TJ.job_name,TJ.modulename,TJ.progress,
-            TJ.status as job_status, TJ,submit_date,TJ.start_time,
-            TJ.end_time,TJ.priority,U.name as username
-     FROM {tripal_jobs} TJ
-       INNER JOIN {users} U on TJ.uid = U.uid
-     ORDER BY job_id DESC", 10, 0, "SELECT count(*) FROM {tripal_jobs}");
-  // create a table with each row containig stats for
-  // an individual job in the results set.
-  $output .= "Waiting jobs are executed first by priority level (the lower the ".
-            "number the higher the priority) and second by the order they ".
-            "were entered";
-  $output .= "<table class=\"tripal-table tripal-table-horz\">".
-            "  <tr>".
-            "    <th>Job ID</th>".
-            "    <th>User</th>".
-            "    <th>Job Name</th>".
-            "    <th nowrap>Dates</th>".
-         "    <th>Priority</th>".
-         "    <th>Progress</th>".
-            "    <th>Status</th>".
-            "    <th>Actions</th>".
-            "  </tr>";
-  $i = 0;
+	$jobs_status_filter = variable_get('tripal_job_status_filter', NULL);
+  
+  $sql = "
+    SELECT 
+      TJ.job_id,TJ.uid,TJ.job_name,TJ.modulename,TJ.progress,
+      TJ.status as job_status, TJ,submit_date,TJ.start_time,
+      TJ.end_time,TJ.priority,U.name as username
+    FROM {tripal_jobs} TJ
+      INNER JOIN {users} U on TJ.uid = U.uid ";
+  if ($jobs_status_filter) {
+    $sql .= "WHERE TJ.status = '%s' ";
+  }
+  $sql .= "ORDER BY job_id DESC";
+  
+  $jobs = pager_query($sql, 25, 0, "SELECT count(*) FROM ($sql) as t1", $jobs_status_filter);
+  $header = array('Job ID', 'User', 'Job Name', 'Dates', 'Priority', 'Progress', 'Status', 'Action');
+  $rows = array();  
+  
+  // iterate through the jobs
   while ($job = db_fetch_object($jobs)) {
-    $class = 'tripal-table-odd-row';
-    if ($i % 2 == 0 ) {
-      $class = 'tripal-table-even-row';
-    }
     $submit = tripal_jobs_get_submit_date($job);
     $start = tripal_jobs_get_start_time($job);
     $end = tripal_jobs_get_end_time($job);
@@ -181,21 +211,24 @@ function tripal_jobs_report() {
     }
     $rerun_link = "<a href=\"" . url("admin/tripal/tripal_jobs/rerun/" . $job->job_id) . "\">Re-run</a><br />";
     $view_link ="<a href=\"" . url("admin/tripal/tripal_jobs/view/" . $job->job_id) . "\">View</a>";
-    $output .= "  <tr class=\"$class\">";
-    $output .= "    <td>$job->job_id</td>".
-               "    <td>$job->username</td>".
-               "    <td>$job->job_name</td>".
-               "    <td nowrap>Submit Date: $submit".
-               "    <br />Start Time: $start".
-               "    <br />End Time: $end</td>".
-               "    <td>$job->priority</td>".
-           "    <td>$job->progress%</td>".
-               "    <td>$job->job_status</td>".
-               "    <td>$cancel_link $rerun_link $view_link</td>".
-               "  </tr>";
-    $i++;
+    $rows[] = array(
+      $job->job_id,
+      $job->username,
+      $job->job_name,
+      "Submit Date: $submit<br>Start Time: $start<br>End Time: $end",
+      $job->priority,
+      $job->progress . '%',
+      $job->job_status,
+      "$cancel_link $rerun_link $view_link",
+    );
   }
-  $output .= "</table>";
+  
+  // create the report page
+  $output .= "Waiting jobs are executed first by priority level (the lower the ".
+             "number the higher the priority) and second by the order they ".
+             "were entered";
+  $output .= drupal_get_form('tripal_jobs_report_form');
+  $output .= theme('table', $header, $rows);
   $output .= theme_pager();
   return $output;
 }

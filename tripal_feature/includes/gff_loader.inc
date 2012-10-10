@@ -125,7 +125,6 @@ function tripal_feature_gff3_load_form() {
     '#weight' => 10,
   );
 
-
   return $form;
 }
 
