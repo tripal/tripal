@@ -365,7 +365,7 @@ function tripal_core_install_sql($sql_file) {
       return FALSE;
     }
     if ($type and sizeof($stack) == 0) {
-      print "Adding $type: line $i\n";
+      //print "Adding $type: line $i\n";
       // rewrite the set serach_path to make 'public' be 'chado'
       if (strcmp($type, 'set')==0) {
         $query = preg_replace("/public/m", "chado", $query);
