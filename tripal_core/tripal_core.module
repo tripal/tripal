@@ -25,36 +25,25 @@ require_once "api/tripal_core.api.inc";
 function tripal_core_init() {
   global $base_url;
   
-  // the two lines below are necessary to ensure that the search_path
-  // variable is always set.  In the case where a view needs to query the
-  // chado schema when it is local to the Drupal database.  Otherwise the
-  // search_path isn't set.  When tripal_db_set_active is called it
-  // automatically sets the search path if chado is local to the
-  // Drupal database
-//  $previous = tripal_db_set_active('chado');
-//  tripal_db_set_active($previous);
-//  tripal_db_set_chado_search_path('chado');
- 
-
   // create the 'tripal' controlled volcabulary in chado but only if it doesn't already exist, and
   // only if the chado database is present.
   if (tripal_core_is_chado_installed()) {
-    $previous_db = tripal_db_set_active('chado');  // use chado database
-    if (!db_fetch_object(db_query("SELECT * FROM {cv} WHERE name = 'tripal'"))) {
-      $results = db_query("INSERT INTO {cv} (name,definition) ".
-                         "VALUES ('tripal', 'Terms used by Tripal for modules to manage data such as that stored in property tables like featureprop, analysisprop, etc')");
+    if (!db_fetch_object(chado_query("SELECT * FROM {cv} WHERE name = 'tripal'"))) {
+      $results = chado_query(
+        "INSERT INTO {cv} (name,definition) ".
+        "VALUES ('tripal', 'Terms used by Tripal for modules to manage data such as that stored in property tables like featureprop, analysisprop, etc')");
     }
-    if (!db_fetch_object(db_query("SELECT * FROM {db} WHERE name = 'tripal'"))) {
-      $results = db_query("INSERT INTO {db} (name,description) ".
-                          "VALUES ('tripal', 'Used as a database placeholder for tripal defined objects such as tripal cvterms')");
+    if (!db_fetch_object(chado_query("SELECT * FROM {db} WHERE name = 'tripal'"))) {
+      $results = chado_query(
+        "INSERT INTO {db} (name,description) ".
+        "VALUES ('tripal', 'Used as a database placeholder for tripal defined objects such as tripal cvterms')");
     }
-    tripal_db_set_active($previous_db);  // now use drupal database
   }
 
   // add some variables for all javasript to use for building URLs
   global $base_url;
   $theme_dir = drupal_get_path('theme', 'tripal');
-  $clean_urls  = variable_get('clean_url', 0);
+  $clean_urls = variable_get('clean_url', 0);
   drupal_add_js(
     " var baseurl  = '$base_url';
       var themedir = '$theme_dir';
@@ -233,30 +222,6 @@ function tripal_core_menu() {
 function tripal_core_perm() {
   return array();
 }
-
-/**
- * Check whether chado is installed (either in the same or a different database)
- *
- * @return
- *   TRUE/FALSE depending upon whether chado is installed.
- *
- * @ingroup tripal_chado_api
- */
-function tripal_core_is_chado_installed() {
-  global $db_url, $db_type;
-
-  // first check if chado is in the db_url of the
-  // settings.php file
-  if (is_array($db_url)) {
-    if (isset($db_url['chado'])) {
-      return TRUE;
-    }
-  }
-
-  // check to make sure the chado schema exists
-  return tripal_core_chado_schema_exists();
-}
-
 
 /**
  * Implements hook_theme().

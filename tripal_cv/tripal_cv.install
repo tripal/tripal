@@ -15,15 +15,6 @@ function tripal_cv_install() {
   // create the module's data directory
   tripal_create_moddir('tripal_cv');
 
-  // Add the materialized view needed to keep track of the
-  //
-  $previous_db = tripal_db_set_active('chado');
-  if (db_table_exists('cv_root_mview')) {
-    $sql = "DROP TABLE cv_root_mview";
-    db_query($sql);
-  }
-  tripal_db_set_active($previous_db);
-
   // Create the MView
   tripal_add_mview(
     // view name
@@ -156,8 +147,7 @@ function tripal_cv_requirements($phase) {
   $requirements = array();
   if ($phase == 'install') {
     // make sure chado is installed
-    $version = tripal_core_set_chado_version();
-    if ($version == 'not installed') {
+    if (!tripal_core_is_chado_installed()) {
       $requirements ['tripal_cv'] = array(
             'title' => "tripal_cv",
             'value' => "ERROR: Chado most be installed before this module can be enabled",

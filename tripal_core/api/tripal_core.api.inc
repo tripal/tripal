@@ -3165,3 +3165,26 @@ function tripal_core_clean_orphaned_nodes($table, $job_id) {
 
   return '';
 }
+
+/**
+ * Check whether chado is installed (either in the same or a different database)
+ *
+ * @return
+ *   TRUE/FALSE depending upon whether chado is installed.
+ *
+ * @ingroup tripal_chado_api
+ */
+function tripal_core_is_chado_installed() {
+  global $db_url, $db_type;
+
+  // first check if chado is in the db_url of the
+  // settings.php file
+  if (is_array($db_url)) {
+    if (isset($db_url['chado'])) {
+      return TRUE;
+    }
+  }
+
+  // check to make sure the chado schema exists
+  return tripal_core_chado_schema_exists();
+}

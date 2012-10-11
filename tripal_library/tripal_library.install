@@ -145,8 +145,7 @@ function tripal_library_requirements($phase) {
   $requirements = array();
   if ($phase == 'install') {
     // make sure chado is installed
-    $version = tripal_core_set_chado_version();
-    if ($version == 'not installed') {
+    if (!tripal_core_is_chado_installed()) {
       $requirements ['tripal_library'] = array(
             'title' => "tripal_library",
             'value' => "ERROR: Chado most be installed before this module can be enabled",
