@@ -560,10 +560,10 @@ function tripal_feature_load_fasta($dfile, $organism_id, $type,
         $intv_read = 0;
         $percent = sprintf("%.2f", ($num_read / $filesize) * 100);
         if ($name) {
-          print "Parsing Line $i (" . $percent . "%). memory: " . number_format(memory_get_usage()) . " bytes. Parsing: $name\r";
+          print "Parsing Line $i (" . $percent . "%). Memory: " . number_format(memory_get_usage()) . " bytes. Parsing: $name\r";
         }
         else {
-          print "Parsing Line $i (" . $percent . "%). memory: " . number_format(memory_get_usage()) . " bytes. Parsing: $uname\r";	
+          print "Parsing Line $i (" . $percent . "%). Memory: " . number_format(memory_get_usage()) . " bytes. Parsing: $uname\r";	
         }
         tripal_job_set_progress($job, intval(($num_read / $filesize) * 100));
       }

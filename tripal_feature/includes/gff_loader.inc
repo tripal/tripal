@@ -286,7 +286,7 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
   $intv_read = 0;
 
   // iterate through each line of the GFF file
-  print "Parsing Line $line_num (0.00%). memory: " . number_format(memory_get_usage()) . " bytes\r";
+  print "Parsing Line $line_num (0.00%). Memory: " . number_format(memory_get_usage()) . " bytes\r";
   while ($line = fgets($fh)) {
 
     $line_num++;
@@ -297,7 +297,7 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
     if ($job and $intv_read >= $interval) {
       $intv_read = 0;
       $percent = sprintf("%.2f", ($num_read / $filesize) * 100);
-      print "Parsing Line $line_num (" . $percent . "%). memory: " . number_format(memory_get_usage()) . " bytes.\r";
+      print "Parsing Line $line_num (" . $percent . "%). Memory: " . number_format(memory_get_usage()) . " bytes.\r";
       tripal_job_set_progress($job, intval(($num_read / $filesize) * 100));
     }
       
