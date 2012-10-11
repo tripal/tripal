@@ -8,6 +8,7 @@
  * Implementation of hook_install().
  */
 function tripal_analysis_install() {
+	tripal_db_set_default_search_path();
 
   // create the module's data directory
   tripal_create_moddir('tripal_analysis');
