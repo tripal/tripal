@@ -2411,7 +2411,7 @@ function tripal_get_moddir($module_name) {
  *
  * @ingroup tripal_chado_api
  */
-function tripal_db_set_active($dbname = 'default') {
+function tripal_db_set_active($dbname) {
   global $db_url, $db_type;
   $chado_exists = 0;
 
@@ -2433,8 +2433,8 @@ function tripal_db_set_active($dbname = 'default') {
       return db_set_active($dbname);
     }
     // if the user requests a database other than the default
-    // then we need to try and set the search path.  This
-    // only works if the schema is local to the Drpual database. If it
+    // then we need to try and set the chado search path.  This
+    // only works if Chado is local to the Drpual database. If it
     // fails then we assume the database is not local and we'll
     // set it as normal.
     else {
@@ -3164,27 +3164,4 @@ function tripal_core_clean_orphaned_nodes($table, $job_id) {
   }
 
   return '';
-}
-
-/**
- * Check whether chado is installed (either in the same or a different database)
- *
- * @return
- *   TRUE/FALSE depending upon whether chado is installed.
- *
- * @ingroup tripal_chado_api
- */
-function tripal_core_is_chado_installed() {
-  global $db_url, $db_type;
-
-  // first check if chado is in the db_url of the
-  // settings.php file
-  if (is_array($db_url)) {
-    if (isset($db_url['chado'])) {
-      return TRUE;
-    }
-  }
-
-  // check to make sure the chado schema exists
-  return tripal_core_chado_schema_exists();
 }

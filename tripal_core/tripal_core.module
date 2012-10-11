@@ -25,9 +25,18 @@ require_once "api/tripal_core.api.inc";
 function tripal_core_init() {
   global $base_url;
   
+  // make sure we are in the public schema. If there is an errant
+  // module that doesn't properly set the search path back, then
+  // we'll have issues
+  tripal_db_set_default_search_path();
+  
   // create the 'tripal' controlled volcabulary in chado but only if it doesn't already exist, and
   // only if the chado database is present.
   if (tripal_core_is_chado_installed()) {
+  	
+  	// make sure the current version of chado is set
+    tripal_core_set_chado_version();  
+  
     if (!db_fetch_object(chado_query("SELECT * FROM {cv} WHERE name = 'tripal'"))) {
       $results = chado_query(
         "INSERT INTO {cv} (name,definition) ".
@@ -54,14 +63,6 @@ function tripal_core_init() {
   // otherwise PostgreSQL version that may have a different datestyle setting
   // will fail when inserting or updating a date column in a table.
   db_query("SET DATESTYLE TO '%s'", 'MDY');
-  
-  // make sure the current version of chado is set
-  tripal_core_set_chado_version();  
-  
-  // make sure we are in the public schema. If there is an errant
-  // module that doesn't properly set the search path back, then
-  // we'll have issues
-  tripal_db_set_default_search_path();
     
 }
 
