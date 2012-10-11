@@ -2697,7 +2697,12 @@ function tripal_db_persistent_chado() {
       variable_set('tripal_persistent_chado', $connection);
     }
     else {
-      $connection = db_connect($db_url);      
+    	if (is_array($db_url)) {
+    		$connection = db_connect($db_url['default']);
+    	}
+      else {
+        $connection = db_connect($db_url);
+    	}      
       if (!$connection) {
       	variable_set('tripal_persistent_chado', NULL);
         watchdog('tripal_core', "Could not create persistant connection", array(), WATCHDOG_ERROR);
