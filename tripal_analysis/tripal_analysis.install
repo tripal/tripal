@@ -20,7 +20,7 @@ function tripal_analysis_install() {
   // table is used to store Blast xml and Interpro html/goterms
   $previous_db = tripal_db_set_active('chado');
   if (!db_table_exists('analysisfeatureprop')) {
-    $sql = "CREATE TABLE {analysisfeatureprop} (".
+    $sql = "CREATE TABLE analysisfeatureprop (".
             "  analysisfeatureprop_id SERIAL PRIMARY KEY, ".
             "  analysisfeature_id INTEGER NOT NULL REFERENCES analysisfeature(analysisfeature_id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED, ".
             "  type_id INTEGER NOT NULL REFERENCES cvterm(cvterm_id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED, ".
@@ -123,13 +123,23 @@ function tripal_analysis_schema() {
 function tripal_analysis_requirements($phase) {
   $requirements = array();
   if ($phase == 'install') {
+  	// make sure the core module is installed
     if (!function_exists('tripal_create_moddir')) {
       $requirements ['tripal_analysis'] = array(
             'title' => "tripal_analysis",
             'value' => "error. Some required modules are just being installed. Please try again.",
             'severity' => REQUIREMENT_ERROR,
       );
-      }
+    }
+    // make sure chado is installed
+    $version = tripal_core_set_chado_version();
+    if ($version == 'not installed') {
+      $requirements ['tripal_analysis'] = array(
+            'title' => "tripal_analysis",
+            'value' => "ERROR: Chado most be installed before this module can be enabled",
+            'severity' => REQUIREMENT_ERROR,
+      );
+    }
   }
   return $requirements;
 }
