@@ -152,6 +152,7 @@ function tripal_jobs_report_form($form, &$form_state = NULL) {
     '#options' => array(
 	    0           => 'All Jobs',
 	    'Running'   => 'Running',
+	    'Waiting'   => 'Waiting',
 	    'Completed' => 'Completed',    
 	    'Cancelled' => 'Cancelled', 
 	    'Error'     => 'Error',  
