@@ -442,9 +442,9 @@ function tripal_feature_load_fasta($dfile, $organism_id, $type,
      print "A persistant connection was not obtained. Loading will be slow\n";
   }
   else {
-     print "\nNOTE: Loading of this FASTA file is performed using a database transaction. If the load " .
-           "fails or is terminated prematurely then the entire set of insertions/updates is rolled back " .
-           "and will not be found in the database\n\n";
+     print "\nNOTE: Loading of this FASTA file is performed using a database transaction. \n" .
+           "If the load fails or is terminated prematurely then the entire set of \n" .
+           "insertions/updates is rolled back and will not be found in the database\n\n";
   }
 
   // first get the type for this sequence
