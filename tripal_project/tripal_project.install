@@ -64,3 +64,22 @@ function tripal_project_schema() {
   return $schema;
 }
 
+/**
+ * Implementation of hook_requirements(). 
+ *
+ */
+function tripal_project_requirements($phase) {
+  $requirements = array();
+  if ($phase == 'install') {
+    // make sure chado is installed
+    $version = tripal_core_set_chado_version();
+    if ($version == 'not installed') {
+      $requirements ['tripal_project'] = array(
+            'title' => "tripal_project",
+            'value' => "ERROR: Chado most be installed before this module can be enabled",
+            'severity' => REQUIREMENT_ERROR,
+      );
+    }
+  }
+  return $requirements;
+}

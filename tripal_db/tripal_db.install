@@ -27,19 +27,18 @@ function tripal_db_uninstall() {
 }
 
 /**
- * Implementation of hook_requirements(). Make sure 'Tripal Core' is enabled
- * before installation
- *
- * @ingroup tripal_db
+ * Implementation of hook_requirements(). 
  */
 function tripal_db_requirements($phase) {
   $requirements = array();
   if ($phase == 'install') {
-    if (!function_exists('tripal_create_moddir')) {
+    // make sure chado is installed
+    $version = tripal_core_set_chado_version();
+    if ($version == 'not installed') {
       $requirements ['tripal_db'] = array(
-        'title' => "tripal_db",
-        'value' => "Required modules must be installed first before Tripal DB module can be installed. Please try again.",
-        'severity' => REQUIREMENT_ERROR,
+            'title' => "tripal_db",
+            'value' => "ERROR: Chado most be installed before this module can be enabled",
+            'severity' => REQUIREMENT_ERROR,
       );
     }
   }

@@ -138,22 +138,20 @@ function tripal_library_get_schemas() {
   );
   return $schema;
 }
-
 /**
- * Implementation of hook_requirements(). Make sure 'Tripal Core' is enabled
- * before installation
- *
- * @ingroup tripal_library
+ * Implementation of hook_requirements(). 
  */
 function tripal_library_requirements($phase) {
   $requirements = array();
   if ($phase == 'install') {
-    if (!function_exists('tripal_create_moddir')) {
+    // make sure chado is installed
+    $version = tripal_core_set_chado_version();
+    if ($version == 'not installed') {
       $requirements ['tripal_library'] = array(
-        'title' => "tripal_library",
-        'value' => "error. Some required modules are just being installed. Please try again.",
-        'severity' => REQUIREMENT_ERROR,
-        );
+            'title' => "tripal_library",
+            'value' => "ERROR: Chado most be installed before this module can be enabled",
+            'severity' => REQUIREMENT_ERROR,
+      );
     }
   }
   return $requirements;

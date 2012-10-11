@@ -90,20 +90,19 @@ function tripal_featuremap_get_schemas() {
 }
 
 /**
- * Implementation of hook_requirements(). Make sure 'Tripal Core' is enabled
- * before installation
- *
- * @ingroup tripal_featuremap
+ * Implementation of hook_requirements(). 
  */
 function tripal_featuremap_requirements($phase) {
   $requirements = array();
   if ($phase == 'install') {
-    if (!function_exists('tripal_create_moddir')) {
+    // make sure chado is installed
+    $version = tripal_core_set_chado_version();
+    if ($version == 'not installed') {
       $requirements ['tripal_featuremap'] = array(
-        'title' => "tripal_featuremap",
-        'value' => "error. Some required modules are just being installed. Please try again.",
-        'severity' => REQUIREMENT_ERROR,
-        );
+            'title' => "tripal_featuremap",
+            'value' => "ERROR: Chado most be installed before this module can be enabled",
+            'severity' => REQUIREMENT_ERROR,
+      );
     }
   }
   return $requirements;

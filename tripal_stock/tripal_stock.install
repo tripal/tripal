@@ -67,3 +67,22 @@ function tripal_stock_schema() {
 
   return $schema;
 }
+/**
+ * Implementation of hook_requirements(). 
+ *
+ */
+function tripal_stock_requirements($phase) {
+  $requirements = array();
+  if ($phase == 'install') {
+    // make sure chado is installed
+    $version = tripal_core_set_chado_version();
+    if ($version == 'not installed') {
+      $requirements ['tripal_stock'] = array(
+            'title' => "tripal_stock",
+            'value' => "ERROR: Chado most be installed before this module can be enabled",
+            'severity' => REQUIREMENT_ERROR,
+      );
+    }
+  }
+  return $requirements;
+}

@@ -133,27 +133,6 @@ function tripal_feature_uninstall() {
 }
 
 /**
- * Implementation of hook_requirements(). Make sure 'Tripal Core' is enabled
- * before installation
- *
- * @ingroup tripal_feature
- */
-function tripal_feature_requirements($phase) {
-  $requirements = array();
-  if ($phase == 'install') {
-    // make sure the core module is installed...
-    if (!function_exists('tripal_create_moddir')) {
-      $requirements ['tripal_feature'] = array(
-        'title' => "tripal_feature",
-        'value' => "error. Some required modules are just being installed. Please try again.",
-        'severity' => REQUIREMENT_ERROR,
-      );
-    }
-  }
-  return $requirements;
-}
-
-/**
  * This function simply defines all tables needed for the module to work
  * correctly.  By putting the table definitions in a separate function we
  * can easily provide the entire list for hook_install or individual
@@ -196,3 +175,22 @@ function tripal_feature_get_schemas($table = NULL) {
   }
   return $schema;
 };
+
+/**
+ * Implementation of hook_requirements(). 
+ */
+function tripal_feature_requirements($phase) {
+  $requirements = array();
+  if ($phase == 'install') {
+    // make sure chado is installed
+    $version = tripal_core_set_chado_version();
+    if ($version == 'not installed') {
+      $requirements ['tripal_feature'] = array(
+            'title' => "tripal_feature",
+            'value' => "ERROR: Chado most be installed before this module can be enabled",
+            'severity' => REQUIREMENT_ERROR,
+      );
+    }
+  }
+  return $requirements;
+}

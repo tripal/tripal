@@ -109,19 +109,19 @@ function tripal_organism_get_schemas() {
 }
 
 /**
- * Implementation of hook_requirements(). Make sure 'Tripal Core' is enabled
- * before installation
+ * Implementation of hook_requirements(). 
  *
- * @ingroup tripal_organism
  */
 function tripal_organism_requirements($phase) {
   $requirements = array();
   if ($phase == 'install') {
-    if (!function_exists('tripal_create_moddir')) {
+    // make sure chado is installed
+    $version = tripal_core_set_chado_version();
+    if ($version == 'not installed') {
       $requirements ['tripal_organism'] = array(
-        'title' => "tripal_organism",
-        'value' => "error. Some required modules are just being installed. Please try again.",
-        'severity' => REQUIREMENT_ERROR,
+            'title' => "tripal_organism",
+            'value' => "ERROR: Chado most be installed before this module can be enabled",
+            'severity' => REQUIREMENT_ERROR,
       );
     }
   }

@@ -148,3 +148,22 @@ function tripal_cv_add_obo_defaults() {
   }
 
 }
+
+/**
+ * Implementation of hook_requirements(). 
+ */
+function tripal_cv_requirements($phase) {
+  $requirements = array();
+  if ($phase == 'install') {
+    // make sure chado is installed
+    $version = tripal_core_set_chado_version();
+    if ($version == 'not installed') {
+      $requirements ['tripal_cv'] = array(
+            'title' => "tripal_cv",
+            'value' => "ERROR: Chado most be installed before this module can be enabled",
+            'severity' => REQUIREMENT_ERROR,
+      );
+    }
+  }
+  return $requirements;
+}
