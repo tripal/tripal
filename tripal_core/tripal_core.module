@@ -57,6 +57,11 @@ function tripal_core_init() {
   
   // make sure the current version of chado is set
   tripal_core_set_chado_version();  
+  
+  // make sure we are in the public schema. If there is an errant
+  // module that doesn't properly set the search path back, then
+  // we'll have issues
+  tripal_db_set_default_search_path();
     
 }
 

@@ -2433,8 +2433,8 @@ function tripal_db_set_active($dbname = 'default') {
       return db_set_active($dbname);
     }
     // if the user requests a database other than the default
-    // then we need to try and set the chado search path.  This
-    // only works if Chado is local to the Drpual database. If it
+    // then we need to try and set the search path.  This
+    // only works if the schema is local to the Drpual database. If it
     // fails then we assume the database is not local and we'll
     // set it as normal.
     else {
