@@ -33,7 +33,7 @@ function tripal_core_init() {
   // Drupal database
 //  $previous = tripal_db_set_active('chado');
 //  tripal_db_set_active($previous);
-  tripal_db_set_chado_search_path('chado');
+//  tripal_db_set_chado_search_path('chado');
  
 
   // create the 'tripal' controlled volcabulary in chado but only if it doesn't already exist, and
@@ -46,7 +46,7 @@ function tripal_core_init() {
     }
     if (!db_fetch_object(db_query("SELECT * FROM {db} WHERE name = 'tripal'"))) {
       $results = db_query("INSERT INTO {db} (name,description) ".
-                        "VALUES ('tripal', 'Used as a database placeholder for tripal defined objects such as tripal cvterms')");
+                          "VALUES ('tripal', 'Used as a database placeholder for tripal defined objects such as tripal cvterms')");
     }
     tripal_db_set_active($previous_db);  // now use drupal database
   }
