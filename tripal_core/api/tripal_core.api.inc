@@ -2411,7 +2411,7 @@ function tripal_get_moddir($module_name) {
  *
  * @ingroup tripal_chado_api
  */
-function tripal_db_set_active($dbname) {
+function tripal_db_set_active($dbname = 'default') {
   global $db_url, $db_type;
   $chado_exists = 0;
 
