@@ -276,7 +276,7 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
   $sql = "SELECT * FROM organism WHERE organism_id = %d";
   $organism = db_fetch_object(db_query($sql, $organism_id));
 
-  $interval = intval($filesize * 0.001);
+  $interval = intval($filesize * 0.01);
   if ($interval == 0) {
     $interval = 1;
   }
@@ -1188,6 +1188,7 @@ function tripal_feature_load_gff3_feature($organism, $analysis_id, $cvterm, $uni
   $residues, $is_analysis = 'f', $is_obsolete = 'f', $add_only, $score) {
 
   // check to see if the feature already exists
+  $feature = NULL;
   $fselect = array(
      'organism_id' => $organism->organism_id,
      'uniquename' => $uniquename,
@@ -1195,8 +1196,10 @@ function tripal_feature_load_gff3_feature($organism, $analysis_id, $cvterm, $uni
   );
   $options = array('statement_name' => 'sel_feature_orunty');
   $columns = array('feature_id', 'name', 'uniquename', 'seqlen', 'organism_id', 'type_id');
-  $result = tripal_core_chado_select('feature', $columns, $fselect, $options); 
-  $feature = $result[0];
+  $result = tripal_core_chado_select('feature', $columns, $fselect, $options);
+  if (count($result) > 0) {
+    $feature = $result[0];
+  }
 
   if (strcmp($is_obsolete, 'f')==0 or $is_obsolete == 0) {
     $is_obsolete = 'FALSE';
