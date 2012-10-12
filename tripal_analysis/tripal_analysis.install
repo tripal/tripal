@@ -21,10 +21,12 @@ function tripal_analysis_install() {
   if (!db_table_exists('analysisfeatureprop')) {
     $sql = "CREATE TABLE analysisfeatureprop (".
             "  analysisfeatureprop_id SERIAL PRIMARY KEY, ".
-            "  analysisfeature_id INTEGER NOT NULL REFERENCES analysisfeature(analysisfeature_id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED, ".
-            "  type_id INTEGER NOT NULL REFERENCES cvterm(cvterm_id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED, ".
-            "  value TEXT, ".
-            "  rank INTEGER NOT NULL, ".
+            "  analysisfeature_id     INTEGER NOT NULL REFERENCES analysisfeature(analysisfeature_id) " .
+            "    ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED, ".
+            "  type_id                INTEGER NOT NULL REFERENCES cvterm(cvterm_id) ".
+            "    ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED, ".
+            "  value                  TEXT, ".
+            "  rank                   INTEGER NOT NULL, ".
             "  CONSTRAINT analysisfeature_id_type_id_rank UNIQUE(analysisfeature_id, type_id, rank)".
             ")";
     chado_query($sql);

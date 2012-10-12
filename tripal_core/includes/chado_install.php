@@ -168,56 +168,30 @@ function tripal_core_reset_chado_schema() {
   // drop current chado and chado-related schema
   if (tripal_core_schema_exists('chado')) {
     print "Dropping existing 'chado' schema\n";
-    chado_query("drop schema chado cascade");
+    db_query("drop schema chado cascade");
   }
   if (tripal_core_schema_exists('genetic_code')) {
     print "Dropping existing 'genetic_code' schema\n";
-    chado_query("drop schema genetic_code cascade");
+    db_query("drop schema genetic_code cascade");
   }
   if (tripal_core_schema_exists('so')) {
     print "Dropping existing 'so' schema\n";
-    chado_query("drop schema so cascade");
+    db_query("drop schema so cascade");
   }
   if (tripal_core_schema_exists('frange')) {
     print "Dropping existing 'frange' schema\n";
-    chado_query("drop schema frange cascade");
+    db_query("drop schema frange cascade");
   }
 
   // create the new chado schema
   print "Creating 'chado' schema\n";
-  chado_query("create schema chado");
+  db_query("create schema chado");
   if (tripal_core_schema_exists('chado')) {
-    chado_query("create language plpgsql");
+    db_query("create language plpgsql");
     return TRUE;
   }
 
   return FALSE;
-}
-
-/**
- * Check that a given schema exists
- *
- * @param $schema
- *   The name of the schema to check the existence of
- *
- * @return
- *   TRUE/FALSE depending upon whether or not the schema exists
- *
- * @ingroup tripal_core
- */
-function tripal_core_schema_exists($schema) {
-
-  // check that the chado schema now exists
-  $sql = "SELECT nspname
-         FROM pg_namespace
-         WHERE has_schema_privilege(nspname, 'USAGE') and nspname = '%s'
-         ORDER BY nspname";
-  $name = db_fetch_object(db_query($sql, $schema));
-  if (strcmp($name->nspname, $schema) != 0) {
-    return FALSE;
-  }
-
-  return TRUE;
 }
 
 /**
@@ -230,7 +204,7 @@ function tripal_core_schema_exists($schema) {
  */
 function tripal_core_install_sql($sql_file) {
 
-  chado_query("set search_path to chado,public");
+  db_query("set search_path to chado,public");
   print "Loading $sql_file...\n";
   $lines = file($sql_file, FILE_SKIP_EMPTY_LINES);
 
@@ -370,11 +344,11 @@ function tripal_core_install_sql($sql_file) {
       if (strcmp($type, 'set')==0) {
         $query = preg_replace("/public/m", "chado", $query);
       }
-      $result = chado_query($query);
+      $result = db_query($query);
       if (!$result) {
         $error  = pg_last_error();
         print "FAILED!!\nError Message:\nSQL $i, $in_string: $query\n$error\n";
-        chado_query("set search_path to public,chado");
+        db_query("set search_path to public,chado");
         $success = 0;
       }
       $query = '';
@@ -392,6 +366,6 @@ function tripal_core_install_sql($sql_file) {
 function tripal_core_chado_install_done() {
 
   // return the search path to normal
-  chado_query("set search_path to public,chado");
+  db_query("set search_path to public,chado");
 
 }

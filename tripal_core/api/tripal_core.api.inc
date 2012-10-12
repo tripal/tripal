@@ -2882,6 +2882,31 @@ function tripal_core_chado_schema_exists() {
   }
   return TRUE;
 }
+/**
+ * Check that any given schema exists
+ *
+ * @param $schema
+ *   The name of the schema to check the existence of
+ *
+ * @return
+ *   TRUE/FALSE depending upon whether or not the schema exists
+ *
+ * @ingroup tripal_chado_api
+ */
+function tripal_core_schema_exists($schema) {
+
+  // check that the chado schema now exists
+  $sql = "SELECT nspname
+         FROM pg_namespace
+         WHERE has_schema_privilege(nspname, 'USAGE') and nspname = '%s'
+         ORDER BY nspname";
+  $name = db_fetch_object(db_query($sql, $schema));
+  if (strcmp($name->nspname, $schema) != 0) {
+    return FALSE;
+  }
+
+  return TRUE;
+}
 
 /**
  * Retrieves the list tables in the Chado schema.  By default it only retursn
@@ -3193,3 +3218,4 @@ function tripal_core_is_chado_installed() {
   // check to make sure the chado schema exists
   return tripal_core_chado_schema_exists();
 }
+
