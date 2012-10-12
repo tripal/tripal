@@ -31,9 +31,7 @@ function tripal_feature_gff3_load_form() {
   );
   // get the list of organisms
   $sql = "SELECT * FROM {organism} ORDER BY genus, species";
-  $previous_db = tripal_db_set_active('chado');  // use chado database
-  $org_rset = db_query($sql);
-  tripal_db_set_active($previous_db);  // now use drupal database
+  $org_rset = chado_query($sql);
   $organisms = array();
   $organisms[''] = '';
   while ($organism = db_fetch_object($org_rset)) {
@@ -103,9 +101,7 @@ function tripal_feature_gff3_load_form() {
 
   // get the list of analyses
   $sql = "SELECT * FROM {analysis} ORDER BY name";
-  $previous_db = tripal_db_set_active('chado');  // use chado database
-  $org_rset = db_query($sql);
-  tripal_db_set_active($previous_db);  // now use drupal database
+  $org_rset = chado_query($sql);
   $analyses = array();
   $analyses[''] = '';
   while ($analysis = db_fetch_object($org_rset)) {
@@ -264,7 +260,7 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
   // default is the 'sequence' ontology
   // @coder-ignore: non-drupal schema thus table prefixing does not apply
   $sql = "SELECT * FROM cv WHERE name = '%s'";
-  $cv = db_fetch_object(db_query($sql, 'sequence'));
+  $cv = db_fetch_object(chado_query($sql, 'sequence'));
   if (!$cv) {   
     watchdog('T_gff3_loader',"Cannot find the 'sequence' ontology", 
       array(), WATCHDOG_ERROR);
@@ -274,7 +270,7 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
   // get the organism for which this GFF3 file belongs
   // @coder-ignore: non-drupal schema thus table prefixing does not apply
   $sql = "SELECT * FROM organism WHERE organism_id = %d";
-  $organism = db_fetch_object(db_query($sql, $organism_id));
+  $organism = db_fetch_object(chado_query($sql, $organism_id));
 
   $interval = intval($filesize * 0.01);
   if ($interval == 0) {
