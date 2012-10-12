@@ -50,6 +50,16 @@ function tripal_feature_gff3_load_form() {
     '#weight' => 6,
     '#collapsed' => TRUE
   );
+  $form['import_options']['use_transaction']= array(
+    '#type' => 'checkbox',
+    '#title' => t('Use a transaction'),
+    '#required' => FALSE,
+    '#description' => t('Use a database transaction when loading the GFF file.  If an error occurs 
+      the entire datset loaded prior to the failure will be rolled back and will not be available
+      in the database.  If this option is unchecked and failure occurs all records up to the point
+      of failure will be present in the database.'),
+    '#weight' => 2
+  );
   $form['import_options']['add_only']= array(
     '#type' => 'checkbox',
     '#title' => t('Import only new features'),
@@ -137,6 +147,8 @@ function tripal_feature_gff3_load_form_validate($form, &$form_state) {
   $update   = $form_state['values']['update'];
   $refresh  = $form_state['values']['refresh'];
   $remove   = $form_state['values']['remove'];
+  $use_transaction   = $form_state['values']['use_transaction'];
+  
 
   // check to see if the file is located local to Drupal
   $gff_file = trim($gff_file);
@@ -174,8 +186,9 @@ function tripal_feature_gff3_load_form_submit($form, &$form_state) {
   $refresh  = $form_state['values']['refresh'];
   $remove   = $form_state['values']['remove'];
   $analysis_id = $form_state['values']['analysis_id'];
+  $use_transaction   = $form_state['values']['use_transaction'];
 
-  $args = array($gff_file, $organism_id, $analysis_id, $add_only, $update, $refresh, $remove);
+  $args = array($gff_file, $organism_id, $analysis_id, $add_only, $update, $refresh, $remove, $use_transaction);
   $type = '';
   if ($add_only) {
     $type = 'import only new features';
@@ -202,7 +215,8 @@ function tripal_feature_gff3_load_form_submit($form, &$form_state) {
  * @ingroup gff3_loader
  */
 function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id, 
-  $add_only =0, $update = 0, $refresh = 0, $remove = 0, $job = NULL) {  
+  $add_only =0, $update = 0, $refresh = 0, $remove = 0, $use_transaction = 0, 
+  $job = NULL) {  
 
   // make sure our temporary table exists
   $ret = array(); 
@@ -219,16 +233,18 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
   chado_query($sql);
   	
   // begin the transaction
-  $connection = tripal_db_start_transaction();
-    
-  // if we cannot get a connection then let the user know the loading will be slow
-  if (!$connection) {
-     print "A persistant connection was not obtained. Loading will be slow\n";
-  }
-  else {
-  	 print "\nNOTE: Loading of this GFF file is performed using a database transaction. \n" .
-  	       "If the load fails or is terminated prematurely then the entire set of \n" .
-  	       "insertions/updates is rolled back and will not be found in the database\n\n";
+  if ($use_transaction) {
+    $connection = tripal_db_start_transaction();
+        
+	  // if we cannot get a connection then let the user know the loading will be slow
+	  if (!$connection) {
+	     print "A persistant connection was not obtained. Loading will be slow\n";
+	  }
+	  else {
+	  	 print "\nNOTE: Loading of this GFF file is performed using a database transaction. \n" .
+	  	       "If the load fails or is terminated prematurely then the entire set of \n" .
+	  	       "insertions/updates is rolled back and will not be found in the database\n\n";
+	  }
   }
 
   // check to see if the file is located local to Drupal
@@ -547,7 +563,7 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
             $landmark, $fmin, $fmax, $strand, $phase, $attr_fmin_partial,
             $attr_fmax_partial, $attr_residue_info, $attr_locgroup);
         }
-          continue;     
+
         // add any aliases for this feature
         if (array_key_exists('Alias', $tags)) {
           tripal_feature_load_gff3_alias($feature, $tags['Alias']);
@@ -705,7 +721,9 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
   }
 
   // commit the transaction
-  tripal_db_commit_transaction();
+  if ($use_transaction) {
+    tripal_db_commit_transaction();
+  }
   print "Done\n";
   
   return 1;
