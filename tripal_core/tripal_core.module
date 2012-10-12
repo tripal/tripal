@@ -23,12 +23,7 @@ require_once "api/tripal_core.api.inc";
  * @ingroup tripal_core
  */
 function tripal_core_init() {
-  global $base_url;
-  
-  // make sure we are in the public schema. If there is an errant
-  // module that doesn't properly set the search path back, then
-  // we'll have issues
-  tripal_db_set_default_search_path();
+  global $base_url;  
   
   // create the 'tripal' controlled volcabulary in chado but only if it doesn't already exist, and
   // only if the chado database is present.
@@ -62,7 +57,7 @@ function tripal_core_init() {
   // make sure the date time settings are the way Tripal will insert them
   // otherwise PostgreSQL version that may have a different datestyle setting
   // will fail when inserting or updating a date column in a table.
-  db_query("SET DATESTYLE TO '%s'", 'MDY');
+  db_query("SET DATESTYLE TO '%s'", 'MDY'); 
     
 }
 

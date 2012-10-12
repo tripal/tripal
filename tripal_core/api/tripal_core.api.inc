@@ -1563,13 +1563,8 @@ function tripal_core_generate_chado_var($table, $values, $base_options = array()
         // that has a foreign key to this one ($table_desc['primary key'][0]
         // and to the node table (nid)
         $sql = "SELECT %s, nid FROM {chado_%s} WHERE %s=%d";
-        $mapping = db_fetch_object(db_query(
-        $sql,
-        $table_primary_key,
-        $table,
-        $table_primary_key,
-        $object->{$table_primary_key}
-        ));
+        $mapping = db_fetch_object(db_query($sql, $table_primary_key, $table,
+          $table_primary_key, $object->{$table_primary_key}));
         if ($mapping->{$table_primary_key}) {
           $object->nid = $mapping->nid;
           $object->expandable_nodes[] = $table;
@@ -1961,8 +1956,6 @@ function tripal_core_exclude_field_from_feature_by_default() {
  */
 function chado_query($sql) {
 
-  //print memory_get_usage() . "\n";
-
   $args = func_get_args();
   array_shift($args); // remove the $sql from the argument list
   $sql = db_prefix_tables($sql);
@@ -1988,7 +1981,9 @@ function chado_query($sql) {
       $timer = (float) $usec + (float) $sec;
     }
 
+    $previous_db = tripal_db_set_active('chado');
     $last_result = pg_query($persistent_connection, $query);
+    tripal_db_set_active($previous_db);
 
     if (variable_get('dev_query', 0)) {
       $bt = debug_backtrace();
@@ -2411,8 +2406,8 @@ function tripal_get_moddir($module_name) {
  *
  * @ingroup tripal_chado_api
  */
-function tripal_db_set_active($dbname) {
-  global $db_url, $db_type;
+function tripal_db_set_active($dbname  = 'default') {
+  global $db_url, $db_type, $active_db;
   $chado_exists = 0;
 
   // only postgres can support search paths.  So if this is MysQL then
@@ -2420,7 +2415,8 @@ function tripal_db_set_active($dbname) {
   if (strcmp($db_type, 'pgsql')==0) {
 
     // if the 'chado' database is in the $db_url variable then chado is
-    // not in the same Drupal database
+    // not in the same Drupal database, so we don't need to set any
+    // search_path and can just change the database
     if (is_array($db_url)) {
       if (isset($db_url[$dbname])) {
         return db_set_active($dbname);
@@ -2435,17 +2431,20 @@ function tripal_db_set_active($dbname) {
     // if the user requests a database other than the default
     // then we need to try and set the chado search path.  This
     // only works if Chado is local to the Drpual database. If it
-    // fails then we assume the database is not local and we'll
-    // set it as normal.
+    // fails then do nothing.
     else {
       if (tripal_db_set_chado_search_path($dbname)) {
-         return $dbname;
+      	 // if the chado schema is local to Drupal then 
+      	 // just return the active database.
+         return 'default';
       }
       else {
-        return db_set_active($dbname);
+        watchdog('tripal_core',"Cannot set 'search_path' variable for Postgres to %dbname",
+          array('%dbname' => $dbname), WATCHDOG_ERROR);
       }
     }
   }
+  // a non postgres database
   else {
     return db_set_active($dbname);
   }
@@ -2819,11 +2818,8 @@ function tripal_get_max_chado_rank($tablename, $where_options) {
     }
   }
   $previous_db = tripal_db_set_active('chado');
-  $result = db_fetch_object(db_query(
-    "SELECT max(rank) as max_rank, count(rank) as count FROM %s WHERE %s",
-  $tablename,
-  implode(' AND ', $where)
-  ));
+  $result = db_fetch_object(db_query("SELECT max(rank) as max_rank, count(rank) as count FROM %s WHERE %s",
+    $tablename,  implode(' AND ', $where)));
   tripal_db_set_active($previous_db);
   //drupal_set_message("Max Rank Query=SELECT max(rank) as max_rank, count(rank) as count FROM ".$tablename." WHERE ".implode(' AND ',$where));
   if ($result->count > 0) {
@@ -2990,7 +2986,7 @@ function tripal_core_set_chado_version() {
   }
 
   // we can't use the Tripal API to query this table
-  // because the Tripal API depends on this fucntion to
+  // because the Tripal API depends on this function to
   // tell it the version. So, we need a typical SQL statement
   $sql = "SELECT value "
   ."FROM chadoprop CP "
