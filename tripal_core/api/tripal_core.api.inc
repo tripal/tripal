@@ -3222,4 +3222,3 @@ function tripal_core_is_chado_installed() {
   // check to make sure the chado schema exists
   return tripal_core_chado_schema_exists();
 }
-

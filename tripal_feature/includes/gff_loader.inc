@@ -163,7 +163,6 @@ function tripal_feature_gff3_load_form_validate($form, &$form_state) {
   }
 
   // @coder-ignore: there are no functions being called here
-  // @todo: break each line of this conditional into separate variables to make more readable
   if (($add_only AND ($update OR $refresh OR $remove)) OR
       ($update AND ($add_only OR $refresh OR $remove)) OR
       ($refresh AND ($update OR $add_only OR $remove)) OR
@@ -439,15 +438,15 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
       
       // replace the URL escape codes for each tag
       for ($i = 0; $i < count($tags[$tag_name]); $i++) {
-        $tags[$tag_name][$i] = urldecode($tags[$tag_name][$i]);          
+        $tags[$tag_name][$i] = urldecode($tags[$tag_name][$i]);                  
       }
       
       // get the name and ID tags
       if (strcmp($tag_name, 'ID') == 0) {
-        $attr_uniquename = $tag[1];
+        $attr_uniquename =  urldecode($tag[1]);
       }
       elseif (strcmp($tag_name, 'Name') == 0) {
-        $attr_name = $tag[1];
+        $attr_name =  urldecode($tag[1]);
       }
       // get the list of non-reserved attributes
       elseif (strcmp($tag_name, 'Alias') !=0        and strcmp($tag_name, 'Parent') !=0 and
@@ -905,18 +904,24 @@ function tripal_feature_load_gff3_dbxref($feature, $dbxrefs) {
     // first check for the fully qualified URI (e.g. DB:<dbname>. If that
     // can't be found then look for the name as is.  If it still can't be found
     // the create the database
+    $values = array('name' => "DB:$dbname");
     $options = array('statement_name' => 'sel_db_name');
-    $db = tripal_core_chado_select('db', array('db_id'), array('name' => "DB:$dbname"), $options);
+    $db = tripal_core_chado_select('db', array('db_id'), $values, $options);
     if (count($db) == 0) {
-      $db = tripal_core_chado_select('db', array('db_id'), array('name' => "$dbname"), $options);
+    	$values = array('name' => "$dbname");
+      $db = tripal_core_chado_select('db', array('db_id'), $values, $options);
     }
     if (count($db) == 0) {
+    	$values = array(
+    	  'name' => $dbname,
+        'description' => 'Added automatically by the GFF loader'
+    	);
       $options = array('statement_name' => 'ins_db_name');
-      $ret = tripal_core_chado_insert('db', array('name' => $dbname,
-        'description' => 'Added automatically by the GFF loader'), $options);
-      if ($ret) {
-        $options = array('statement_name' => 'sel_db_name');
-        $db = tripal_core_chado_select('db', array('db_id'), array('name' => "$dbname"), $options);
+      $success = tripal_core_chado_insert('db', $values, $options);
+      if ($success) {
+      	$values = array('name' => "$dbname");
+        $options = array('statement_name' => 'sel_db_name');        
+        $db = tripal_core_chado_select('db', array('db_id'), $values, $options);
       }
       else {
         watchdog("T_gff3_loader", "Cannot find or add the database $dbname", array(), WATCHDOG_WARNING);
@@ -926,41 +931,52 @@ function tripal_feature_load_gff3_dbxref($feature, $dbxrefs) {
     $db = $db[0];
 
     // now check to see if the accession exists
+    $values = array(
+      'accession' => $accession, 
+      'db_id' => $db->db_id
+    );
     $options = array('statement_name' => 'sel_dbxref_accession_dbid');
-    $dbxref = tripal_core_chado_select('dbxref', array('dbxref_id'), array(
-      'accession' => $accession, 'db_id' => $db->db_id), $options);
+    $dbxref = tripal_core_chado_select('dbxref', array('dbxref_id'), $values, $options);
 
     // if the accession doesn't exist then we want to add it
     if (sizeof($dbxref) == 0) {
+    	$values = array(
+    	  'db_id' => $db->db_id,
+        'accession' => $accession, 
+        'version' => ''
+      );
       $options = array('statement_name' => 'ins_dbxref_dbid_accession_version');
-      $ret = tripal_core_chado_insert('dbxref', array('db_id' => $db->db_id,
-        'accession' => $accession, 'version' => ''), $options);
+      $ret = tripal_core_chado_insert('dbxref', $values, $options);
+      $values = array(
+        'accession' => $accession, 
+        'db_id' => $db->db_id
+      );
       $options = array('statement_name' => 'sel_dbxref_accession_dbid');
-      $dbxref = tripal_core_chado_select('dbxref', array('dbxref_id'), array(
-        'accession' => $accession, 'db_id' => $db->db_id), $options);
+      $dbxref = tripal_core_chado_select('dbxref', array('dbxref_id'), $values, $options);
     }
     $dbxref = $dbxref[0];
 
     // check to see if this feature dbxref already exists
+    $values = array(
+      'dbxref_id' => $dbxref->dbxref_id, 
+      'feature_id' => $feature->feature_id
+    );
     $options = array('statement_name' => 'sel_featuredbxref_dbxrefid_featureid');
-    $fdbx = tripal_core_chado_select('feature_dbxref', array('feature_dbxref_id'),
-      array('dbxref_id' => $dbxref->dbxref_id, 'feature_id' => $feature->feature_id), $options);
+    $fdbx = tripal_core_chado_select('feature_dbxref', array('feature_dbxref_id'), $values, $options);
 
     // now associate this feature with the database reference if it doesn't
     // already exist
-    if (sizeof($fdbx)==0) {
-      $options = array('statement_name' => 'ins_featuredbxref_dbxrefid_featureid');
-      $ret = tripal_core_chado_insert('feature_dbxref', array(
+    if (sizeof($fdbx) == 0) {
+    	$values = array(
         'dbxref_id' => $dbxref->dbxref_id,
-        'feature_id' => $feature->feature_id), $options);
-      if ($ret) {
-      }
-      else {
+        'feature_id' => $feature->feature_id
+    	);
+      $options = array('statement_name' => 'ins_featuredbxref_dbxrefid_featureid');
+      $success = tripal_core_chado_insert('feature_dbxref', $values, $options);
+      if (!$success) {
         watchdog("T_gff3_loader", "Failed to insert Dbxref: $dbname:$accession", array(), WATCHDOG_WARNING);
         return 0;
       }
-    }
-    else {
     }
   }
   return 1;
@@ -984,18 +1000,19 @@ function tripal_feature_load_gff3_ontology($feature, $dbxrefs) {
     $options = array('statement_name' => 'sel_db_name');
     $db = tripal_core_chado_select('db', array('db_id'), array('name' => "DB:$dbname"), $options);
     if (sizeof($db) == 0) {
+    	// now look for the name without the 'DB:' prefix.
       $db = tripal_core_chado_select('db', array('db_id'), array('name' => "$dbname"), $options);
-    }
-    if (sizeof($db) == 0) {
-      watchdog("T_gff3_loader", "Database, $dbname is missing for reference: $dbname:$accession", array(), WATCHDOG_WARNING);
-      return 0;
+      if (sizeof($db) == 0) {
+        watchdog("T_gff3_loader", "Database, $dbname is missing for reference: $dbname:$accession", array(), WATCHDOG_WARNING);
+        return 0;
+      }
     }
     $db = $db[0];
 
     // now check to see if the accession exists
     $options = array('statement_name' => 'sel_dbxref_accession_dbid');
-    $dbxref = tripal_core_chado_select('dbxref', array('dbxref_id'), array(
-       'accession' => $accession, 'db_id' => $db->db_id), $options);
+    $dbxref = tripal_core_chado_select('dbxref', array('dbxref_id'), 
+      array('accession' => $accession, 'db_id' => $db->db_id), $options);
     if (sizeof($dbxref) == 0) {
       watchdog("T_gff3_loader", "Accession, $accession is missing for reference: $dbname:$accession", array(), WATCHDOG_WARNING);
       return 0;
@@ -1011,10 +1028,10 @@ function tripal_feature_load_gff3_ontology($feature, $dbxrefs) {
       $options = array('statement_name' => 'sel_cvtermdbxref_dbxrefid');
       $cvterm = tripal_core_chado_select('cvterm_dbxref', array('cvterm_id'), array(
         'dbxref_id' => $dbxref->dbxref_id), $options);
-    }
-    if (sizeof($cvterm) == 0) {
-      watchdog("T_gff3_loader", "CV Term is missing for reference: $dbname:$accession", array(), WATCHDOG_WARNING);
-      return 0;
+      if (sizeof($cvterm) == 0) {
+        watchdog("T_gff3_loader", "CV Term is missing for reference: $dbname:$accession", array(), WATCHDOG_WARNING);
+        return 0;
+      }
     }
     $cvterm = $cvterm[0];
 
@@ -1035,11 +1052,9 @@ function tripal_feature_load_gff3_ontology($feature, $dbxrefs) {
         ),
       );
       $options = array('statement_name' => 'ins_featurecvterm_cvtermid_featureid_pubid');
-      $ret = tripal_core_chado_insert('feature_cvterm', $values, $options);
+      $success = tripal_core_chado_insert('feature_cvterm', $values, $options);
 
-      if ($ret) {
-      }
-      else {
+      if (!$success) {
         watchdog("T_gff3_loader", "Failed to insert ontology term: $dbname:$accession", array(), WATCHDOG_WARNING);
         return 0;
       }
@@ -1474,22 +1489,21 @@ function tripal_feature_load_gff3_property($feature, $property, $value) {
   );
   $options = array('statement_name' => 'sel_cvterm_name_cvid');
   $result = tripal_core_chado_select('cvterm', array('*'), $select, $options);
-  $cvterm = $result[0];
-  if (!$cvterm) {
+  if (count($cvterm) == 0) {
     $term = array(
       'id' => "null:$property",
       'name' => $property,
       'namespace' => 'feature_property',
       'is_obsolete' => 0,
-    );
-    
+    );    
     $cvterm = (object) tripal_cv_add_cvterm($term, 'feature_property', 0, 0);
+    if(!$cvterm){
+      watchdog("T_gff3_loader", "Cannot add cvterm, $property", array(), WATCHDOG_WARNING);
+      return 0;	
+    }
   }
-
-  if (!$cvterm) {
-    watchdog("T_gff3_loader", "Cannot add cvterm, $property", array(), WATCHDOG_WARNING);
-    exit;
-  }
+  $cvterm = $result[0];
+  
 
   // check to see if the property already exists for this feature
   // if it does but the value is unique then increment the rank and add it.
