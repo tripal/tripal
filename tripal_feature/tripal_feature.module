@@ -2755,6 +2755,20 @@ function tripal_feature_job_describe_args($callback, $args) {
     $new_args['Features Names'] = $args[4];
 
   }
+  elseif ($callback == 'tripal_feature_load_gff3') {
+    
+    $new_args['GFF File'] = $args[0];
+    $organism = tripal_core_chado_select('organism', array('genus','species'), array('organism_id' => $args[1]));
+    $new_args['Organism'] = $organism[0]->genus . " " . $organism[0]->species;
+    $analysis = tripal_core_chado_select('analysis', array('name'), array('analysis_id' => $args[2]));
+    $new_args['Analysis'] = $analysis[0]->name;   
+    $new_args['Use a Transaction'] = ($args[7] == 1) ? "Yes" : "No";
+    $new_args['Import only new features'] = ($args[3] == 1) ? "Yes" : "No";
+    $new_args['Import all and update'] = ($args[4] == 1) ? "Yes" : "No";
+    $new_args['Import all and replace'] = ($args[5] == 1) ? "Yes" : "No";
+    $new_args['Delete features'] = ($args[6] == 1) ? "Yes" : "No";
+    
+  }
   if ($callback == 'tripal_feature_sync_features') {
     if ($args[0]) {
       $organism = tripal_core_chado_select('organism', array('genus', 'species'), array('organism_id' => $args[0]));

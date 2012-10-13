@@ -263,20 +263,7 @@ function tripal_core_job_describe_args($callback, $args) {
     $mview = db_fetch_object(db_query($sql, $args[0]));
     $new_args['View Name'] = $mview->name;
   }
-  elseif ($callback == 'tripal_feature_load_gff3') {
-  	
-  	$new_args['GFF File'] = $args[0];
-  	$organism = tripal_core_chado_select('organism', array('genus','species'), array('organism_id' => $args[1]));
-  	$new_args['Organism'] = $organism[0]->genus . " " . $organism[1]->species;
-    $analysis = tripal_core_chado_select('analysis', array('name'), array('analysis_id' => $args[6]));
-    $new_args['Analysis'] = $analysis[0]->name;  	
-    $new_args['Use a Transaction'] = $args[7];
-  	$new_args['Import only new features'] = $args[2];
-  	$new_args['Import all and update'] = $args[3];
-  	$new_args['Import all and replace'] = $args[4];
-  	$new_args['Delete features'] = $args[5];
-  	
-  }
+
   elseif ($callback == 'tripal_core_install_chado') {
      $new_args['Action'] = $args[0];
   }
