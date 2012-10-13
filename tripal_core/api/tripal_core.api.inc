@@ -117,7 +117,6 @@ require_once "tripal_core.schema_v1.11.api.inc";
  * @ingroup tripal_chado_api
  */
 function tripal_core_chado_insert($table, $values, $options = array()) {
-
   // set defaults for options. If we don't set defaults then
   // we get memory leaks when we try to access the elements
   if (!is_array($options)) {
@@ -173,6 +172,15 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
   // that has all the values needed for insert with all foreign relationsihps
   // resolved.
   foreach ($values as $field => $value) {
+    // make sure the field is in the table description. If not then return an error 
+    // message
+    if(!array_key_exists($field, $table_desc['fields'])){
+      watchdog('tripal_core', "tripal_core_chado_insert: The field '%field' does not exist ".
+        "for the table '%table'.  Cannot perform insert. Values: %array", 
+        array('%field' => $field, '%table' => $table, '%array' => print_r($values,1)), WATCHDOG_ERROR);
+      return FALSE;
+    }
+    
     if (is_array($value)) {
       $foreign_options = array();
       if ($options['statement_name']) {
@@ -1064,8 +1072,8 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
   	// message
   	if(!array_key_exists($field, $table_desc['fields'])){
   	  watchdog('tripal_core', "tripal_core_chado_select: The field '%field' does not exist ".
-  	    "for the table '%table'.  Cannot perform query.", 
-  	    array('%field' => $field, '%table' => $table), WATCHDOG_ERROR);
+  	    "for the table '%table'.  Cannot perform query. Values: %array", 
+  	    array('%field' => $field, '%table' => $table, '%array' => print_r($values,1)), WATCHDOG_ERROR);
   	  return array();
   	}
   	

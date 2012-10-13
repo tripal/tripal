@@ -215,7 +215,7 @@ function tripal_feature_gff3_load_form_submit($form, &$form_state) {
  * @ingroup gff3_loader
  */
 function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id, 
-  $add_only =0, $update = 0, $refresh = 0, $remove = 0, $use_transaction = 0, 
+  $add_only =0, $update = 0, $refresh = 0, $remove = 0, $use_transaction = 1, 
   $job = NULL) {  
 
   // make sure our temporary table exists
@@ -567,7 +567,7 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
         // add any aliases for this feature
         if (array_key_exists('Alias', $tags)) {
           tripal_feature_load_gff3_alias($feature, $tags['Alias']);
-        }
+        }      
         // add any dbxrefs for this feature
         if (array_key_exists('Dbxref', $tags)) {
           tripal_feature_load_gff3_dbxref($feature, $tags['Dbxref']);
@@ -579,7 +579,8 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
         // add parent relationships
         if (array_key_exists('Parent', $tags)) {
           tripal_feature_load_gff3_parents($feature, $cvterm, $tags['Parent'], $organism_id, $fmin);
-        }       
+        }     
+          
         // add target relationships
         if (array_key_exists('Target', $tags)) {
           preg_match('/^(.*)\s+\d+\s+\d+\s+(\+|\-)*$/', $tags['Target'][0], $matches);
@@ -1056,7 +1057,8 @@ function tripal_feature_load_gff3_alias($feature, $aliases) {
   // make sure we have a 'synonym_type' vocabulary
   $select = array('name' => 'synonym_type');
   $options = array('statement_name' => 'sel_cv_name');  
-  $results = tripal_core_chado_select('cv', array('*'), $selct, $options);
+  $results = tripal_core_chado_select('cv', array('*'), $select, $options);
+  
   if (count($results) == 0) {
     // insert the 'synonym_type' vocabulary
     $values = array(
@@ -1064,15 +1066,17 @@ function tripal_feature_load_gff3_alias($feature, $aliases) {
       'definition' => 'vocabulary for synonym types',
     );
     $options = array('statement_name' => 'ins_cv_name_definition');
-    $result = tripal_core_chado_insert('cv', $values, $options);
-    if (!result) {
+    $success = tripal_core_chado_insert('cv', $values, $options);
+    if (!$success) {
       watchdog("T_gff3_loader", "Failed to add the synonyms type vocabulary", array(), WATCHDOG_WARNING);
       return 0;
     }
     // now that we've added the cv we need to get the record
     $options = array('statement_name' => 'sel_cv_name');
     $results = tripal_core_chado_select('cv', array('*'), $select, $options);
-    $syncv = $results[0];
+    if (count($results) > 0) {
+      $syncv = $results[0];
+    }
   } 
   else {
     $syncv = $results[0];
@@ -1086,9 +1090,8 @@ function tripal_feature_load_gff3_alias($feature, $aliases) {
      ),
   );
   $options = array('statement_name' => 'sel_cvterm_name_cvid');
-  $result = tripal_core_chado_select('cvterm', array('*'), $select, $options);
-  $syntype = $result[0];
-  if (!$syntype) {
+  $result = tripal_core_chado_select('cvterm', array('*'), $select, $options);  
+  if (count($result) == 0) {
     $term = array(
       'name' => 'exact',
       'id' => "internal:exact",
@@ -1101,8 +1104,11 @@ function tripal_feature_load_gff3_alias($feature, $aliases) {
       watchdog("T_gff3_loader", "Cannot add synonym type: internal:$type", array(), WATCHDOG_WARNING);
       return 0;
     }
+  } 
+  else { 
+    $syntype = $result[0];
   }
-
+ 
   // iterate through all of the aliases and add each one
   foreach ($aliases as $alias) {
 
@@ -1113,33 +1119,34 @@ function tripal_feature_load_gff3_alias($feature, $aliases) {
        'type_id' => $syntype->cvterm_id,
     );
     $options = array('statement_name' => 'sel_synonym_name_typeid');
-    $result = tripal_core_chado_select('synonym', array('*'), $select, $options);
-    $synonym = $result[0];
-    if (!$synonym) {
+    $result = tripal_core_chado_select('synonym', array('*'), $select, $options);    
+    if (count($result) == 0) {
       $values = array(
          'name' => $alias,
          'type_id' => $syntype->cvterm_id,
          'synonym_sgml' => '',
       );
       $options = array('statement_name' => 'ins_synonym_name_typeid_synonymsgml');
-      $result = tripal_core_chado_insert('synonym', $values, $options);
-      if (!$result) {
+      $success = tripal_core_chado_insert('synonym', $values, $options);
+      if (!$success) {
         watchdog("T_gff3_loader", "Cannot add alias $alias to synonym table", array(), WATCHDOG_WARNING);
-      }
+        return 0;
+	    }
+	    $options = array('statement_name' => 'sel_synonym_name_typeid');
+	    $result = tripal_core_chado_select('synonym', array('*'), $select, $options);
+	    $synonym = $result[0];
     }
-    $options = array('statement_name' => 'sel_synonym_name_typeid');
-    $result = tripal_core_chado_select('synonym', array('*'), $select, $options);
-    $synonym = $result[0];
-
+    else {
+      $synonym = $result[0];	
+    }
 
     // check to see if we have a NULL publication in the pub table.  If not,
     // then add one.
     // @coder-ignore: non-drupal schema thus table prefixing does not apply
     $select = array('uniquename' => 'null');
     $options = array('statement_name' => 'sel_pub_uniquename');
-    $result = tripal_core_chado_select('pub', array('*'), $select, $options);
-    $pub = $result[0];
-    if (!$pub) {
+    $result = tripal_core_chado_select('pub', array('*'), $select, $options);    
+    if (count($result) == 0) {
       // prepare the statement
       if (!tripal_core_is_sql_prepared('ins_pub_uniquename_typeid')) {
         $psql = "PREPARE ins_pub_uniquename_typeid (text, text) AS
@@ -1161,30 +1168,34 @@ function tripal_feature_load_gff3_alias($feature, $aliases) {
         watchdog("T_gff3_loader", "Cannot add null publication needed for setup of alias", array(), WATCHDOG_WARNING);
         return 0;
       }
+      $options = array('statement_name' => 'sel_pub_uniquename');
+      $result = tripal_core_chado_select('pub', array('*'), $select, $options);
+      $pub = $result[0];
     }
-    $options = array('statement_name' => 'sel_pub_uniquename');
-    $result = tripal_core_chado_select('pub', array('*'), $select, $options);
-    $pub = $result[0];
+    else {
+      $pub = $result[0];	
+    }
 
     // check to see if the synonym exists in the feature_synonym table
     // if not, then add it.
-    $select = array(
+    $values = array(
        'synonym_id' => $synonym->synonym_id,
        'feature_id' => $feature->feature_id,
        'pub_id' => $pub->pub_id,
     );
-    $options = array('statement_name', 'sel_synonymfeature_synonymid_featureid_pubid');
-    $result = tripal_core_chado_select('feature_synonym', array('*'), $select, $options);
-    $fsyn = $result[0];
-    if (!$fsyn) {
-      $values = array(
-        'synonym_id' => $synonym->synonym_id,
-        'feature_id' => $feature->feature_id,
-        'pub_id' => $pub->pub_id,
-      );
-      $options = array('statement_name', 'ins_synonymfeature_synonymid_featureid_pubid');
-      $result = tripal_core_chado_insert('feature_synonym', $values, $options);
-      if (!$result) {
+    $columns = array('feature_synonym_id');
+    $options = array('statement_name' => 'sel_featuresynonym_syfepu');
+    $result = tripal_core_chado_select('feature_synonym', $columns, $values, $options);
+    if (count($result) == 0) {      
+	    $values = array(
+	       'synonym_id' => $synonym->synonym_id,
+	       'feature_id' => $feature->feature_id,
+	       'pub_id' => $pub->pub_id,
+	    );  
+      $ins_options = array('statement_name' => 'ins_featuresynonym_syfepu');
+      $success = tripal_core_chado_insert('feature_synonym', $values, $ins_options);   
+     
+      if (!$success) {
         watchdog("T_gff3_loader", "Cannot add alias $alias to feature synonym table", array(), WATCHDOG_WARNING);
         return 0;
       }
