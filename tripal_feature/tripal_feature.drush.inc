@@ -45,6 +45,16 @@ function tripal_feature_drush_command() {
     ),
     'aliases' => array('trp-get-seq'),
   );
+  $items['tripal-feature-sync'] = array(
+    'description' => dt('Syncs an individual feature.'),
+    'options'   => array(
+      'id'    => dt('The feature ID of the feature to sync'),
+    ),
+    'examples' => array(
+      'Standard example' => 'drush tripal-feature-sync --id=48273',
+    ),
+    'aliases' => array('trp-fsync'),
+  );
   return $items;
 }
 
@@ -115,4 +125,11 @@ function drush_tripal_feature_tripal_get_sequence() {
       $upstream, $downstream, $sub_features);
     print $sequence;
   }
+}
+/*
+ * 
+ */
+function drush_tripal_feature_sync() {
+  $feature_id = drush_get_option('id');  
+	tripal_feature_sync_feature($feature_id);
 }

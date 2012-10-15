@@ -339,9 +339,7 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
   }
   // if it's not a prepared statement then insert normally
   else {
-    $previous_db = tripal_db_set_active('chado');  // use chado database
-    $result = db_query($sql, $ivalues);
-    tripal_db_set_active($previous_db);  // now use drupal database
+    $result = chado_query($sql, $ivalues);
   }
 
   // if we have a result then add primary keys to return array
@@ -693,9 +691,7 @@ function tripal_core_chado_update($table, $match, $values, $options = NULL) {
   }
   // if it's not a prepared statement then insert normally
   else {
-    $previous_db = tripal_db_set_active('chado');  // use chado database
-    $resource = db_query($sql, $uargs);
-    tripal_db_set_active($previous_db);  // now use drupal database
+    $resource = chado_query($sql, $uargs);
   }
 
   if ($resource) {

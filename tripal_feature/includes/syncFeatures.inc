@@ -226,10 +226,7 @@ function tripal_feature_sync_features($max_sync = 0, $organism_id = NULL,
         "ORDER BY feature_id";
 
   // get the list of features
-  $previous_db = tripal_db_set_active('chado');  // use chado database
-  $results = db_query($sql);
-
-  tripal_db_set_active($previous_db);  // now use drupal database
+  $results = chado_query($sql);
 
   // load into ids array
   $count = 0;
@@ -312,18 +309,14 @@ function tripal_feature_sync_feature($feature_id) {
          "  INNER JOIN Cvterm CVT ON F.type_id = CVT.cvterm_id ".
          "  INNER JOIN Organism O ON F.organism_id = O.organism_ID ".
          "WHERE F.feature_id = %d";
-  $previous_db = tripal_db_set_active('chado');  // use chado database
-  $feature = db_fetch_object(db_query($fsql, $feature_id));
-  tripal_db_set_active($previous_db);  // now use drupal database
+  $feature = db_fetch_object(chado_query($fsql, $feature_id));
 
   // get the synonyms for this feature
   $synsql = "SELECT S.name ".
-           "FROM {feature_synonym} FS ".
-           "  INNER JOIN {synonym} S on FS.synonym_id = S.synonym_id ".
-           "WHERE FS.feature_id = %d";
-  $previous_db = tripal_db_set_active('chado');  // use chado database
-  $synonyms = db_query($synsql, $feature_id);
-  tripal_db_set_active($previous_db);  // now use drupal database
+            "FROM {feature_synonym} FS ".
+            "  INNER JOIN {synonym} S on FS.synonym_id = S.synonym_id ".
+            "WHERE FS.feature_id = %d";
+  $synonyms = chado_query($synsql, $feature_id);
 
   // now add these synonyms to the feature object as a single string
   $synstring = '';
@@ -337,9 +330,9 @@ function tripal_feature_sync_feature($feature_id) {
   // clean up that node.  (If a node is found we don't know if it belongs to our feature or
   // not since features can have the same name/title.)
   $tsql =  "SELECT * FROM {node} N ".
-          "WHERE title = '%s'";
+           "WHERE title = '%s'";
   $cnsql = "SELECT * FROM {chado_feature} ".
-          "WHERE nid = %d";
+           "WHERE nid = %d";
   $nodes = db_query($tsql, $feature->name);
   // cycle through all nodes that may have this title
   while ($node = db_fetch_object($nodes)) {
@@ -353,10 +346,10 @@ function tripal_feature_sync_feature($feature_id) {
   // check if this feature already exists in the chado_feature table.
   // if we have a chado feature, we want to check to see if we have a node
   $cfsql = "SELECT * FROM {chado_feature} ".
-          "WHERE feature_id = %d";
+           "WHERE feature_id = %d";
   // @coder-ignore: don't need to use db_rewrite_sql() since need all nodes regardless of access control
   $nsql =  "SELECT * FROM {node} ".
-          "WHERE nid = %d";
+           "WHERE nid = %d";
   $chado_feature = db_fetch_object(db_query($cfsql, $feature->feature_id));
   if ($chado_feature) {
     drupal_set_message(t("%feature_id: A chado_feature entry exists", array('%feature_id' => $feature_id)));
@@ -386,7 +379,7 @@ function tripal_feature_sync_feature($feature_id) {
   if ($create_node) {
     // get the organism for this feature
     $sql = "SELECT * FROM {organism} WHERE organism_id = %d";
-    $organism = db_fetch_object(db_query($sql, $feature->organism_id));
+    $organism = db_fetch_object(chado_query($sql, $feature->organism_id));
 
     drupal_set_message(t("%feature_id: Creating node $feature->name", array('%feature_id' => $feature_id)));
     $new_node = new stdClass();

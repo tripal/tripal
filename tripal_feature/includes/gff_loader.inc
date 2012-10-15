@@ -58,7 +58,7 @@ function tripal_feature_gff3_load_form() {
       the entire datset loaded prior to the failure will be rolled back and will not be available
       in the database.  If this option is unchecked and failure occurs all records up to the point
       of failure will be present in the database.'),
-    '#weight' => 2
+    '#weight' => 1
   );
   $form['import_options']['add_only']= array(
     '#type' => 'checkbox',
@@ -187,7 +187,8 @@ function tripal_feature_gff3_load_form_submit($form, &$form_state) {
   $analysis_id = $form_state['values']['analysis_id'];
   $use_transaction   = $form_state['values']['use_transaction'];
 
-  $args = array($gff_file, $organism_id, $analysis_id, $add_only, $update, $refresh, $remove, $use_transaction);
+  $args = array($gff_file, $organism_id, $analysis_id, $add_only, 
+    $update, $refresh, $remove, $use_transaction);
   $type = '';
   if ($add_only) {
     $type = 'import only new features';
@@ -244,6 +245,12 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
 	  	       "If the load fails or is terminated prematurely then the entire set of \n" .
 	  	       "insertions/updates is rolled back and will not be found in the database\n\n";
 	  }
+  }
+  else {
+  	$connection = tripal_db_persistent_chado();
+    if (!$connection) {
+       print "A persistant connection was not obtained. Loading will be slow\n";
+    }
   }
 
   // check to see if the file is located local to Drupal

@@ -572,9 +572,7 @@ function chado_feature_delete($node) {
   // Remove data from feature tables of chado database.  This will
   // cause a cascade delete and remove all data in referencing tables
   // for this feature
-  $previous_db = tripal_db_set_active('chado');
-  db_query("DELETE FROM {feature} WHERE feature_id = %d", $feature_id);
-  tripal_db_set_active($previous_db);
+  chado_query("DELETE FROM {feature} WHERE feature_id = %d", $feature_id);
 
   drupal_set_message(t("The feature and all associated data were removed from") .
   "chado");
@@ -593,18 +591,15 @@ function chado_feature_add_synonyms($synonyms, $feature_id) {
   $syn_array = array();
   $syn_array = explode(" ", $synonyms);
 
-  // use the chado database
-  $previous_db = tripal_db_set_active('chado');
 
   // remove any old synonyms
   $feature_syn_dsql = "DELETE FROM {feature_synonym} WHERE feature_id = %d";
-  if (!db_query($feature_syn_dsql, $feature_id)) {
+  if (!chado_query($feature_syn_dsql, $feature_id)) {
     $error .= "Could not remove synonyms from feature. ";
   }
 
   // return if we don't have any synonmys to add
   if (!$synonyms) {
-    tripal_db_set_active($previous_db);
     return;
   }
   // iterate through each synonym and add it to the database
@@ -618,7 +613,7 @@ function chado_feature_add_synonyms($synonyms, $feature_id) {
     // It is possible for the accession number to be present and not the feature
     $synonym_sql = "SELECT synonym_id FROM {synonym} ".
                    "WHERE name = '%s'";
-    $synonym = db_fetch_object(db_query($synonym_sql, $syn));
+    $synonym = db_fetch_object(chado_query($synonym_sql, $syn));
     if (!$synonym) {
       $synonym_isql = "INSERT INTO {synonym} (name,synonym_sgml,type_id) ".
                       "VALUES ('%s','%s', ".
@@ -626,25 +621,24 @@ function chado_feature_add_synonyms($synonyms, $feature_id) {
                       "    FROM {CVTerm} CVT ".
                       "    INNER JOIN CV ON CVT.cv_id = CV.cv_id ".
                       "    WHERE CV.name = 'feature_property' and CVT.name = 'synonym'))";
-      if (!db_query($synonym_isql, $syn, $syn)) {
+      if (!chado_query($synonym_isql, $syn, $syn)) {
         $error .= "Could not add synonym. ";
       }
       // now get the synonym we just added
       $synonym_sql = "SELECT synonym_id FROM {synonym} ".
                      "WHERE name = '%s'";
-      $synonym = db_fetch_object(db_query($synonym_sql, $syn));
+      $synonym = db_fetch_object(chado_query($synonym_sql, $syn));
     }
 
     // now add in our new sysnonym
     $feature_syn_isql = "INSERT INTO {feature_synonym} (synonym_id,feature_id,pub_id) ".
                         "VALUES (%d,%d,1)";
-    if (!db_query($feature_syn_isql, $synonym->synonym_id, $feature_id)) {
+    if (!chado_query($feature_syn_isql, $synonym->synonym_id, $feature_id)) {
       $error .= "Could not add synonyms to feature. ";
     }
   }
 
   // return to the drupal database
-  tripal_db_set_active($previous_db);
   return $error;
 
 }
@@ -656,7 +650,6 @@ function chado_feature_add_synonyms($synonyms, $feature_id) {
 function chado_feature_add_gbaccession($accession, $feature_id) {
 
   // use chado database
-  $previous_db = tripal_db_set_active('chado');
 
   // remove any old accession from genbank dbEST
   $fdbxref_dsql = "DELETE FROM {feature_dbxref} ".
@@ -665,48 +658,46 @@ function chado_feature_add_gbaccession($accession, $feature_id) {
                  "    INNER JOIN DB  ON DB.db_id = DBX.db_id ".
                  "    INNER JOIN feature_dbxref FDBX ON DBX.dbxref_id = FDBX.dbxref_id ".
                  "    WHERE DB.name = 'DB:Genbank' and FDBX.feature_id = %d)";
-  if (!db_query($fdbxref_dsql, $feature_id, $feature_id)) {
+  if (!chado_query($fdbxref_dsql, $feature_id, $feature_id)) {
     $error .= "Could not remove accession from feature. ";
   }
 
   // if we don't have an accession number to add then just return
   if (!$accession) {
-    tripal_db_set_active($previous_db);
     return;
   }
   // get the db_id
   $db_sql = "SELECT db_id FROM {DB} ".
             "WHERE name = 'DB:Genbank_est'";
-  $db = db_fetch_object(db_query($db_sql));
+  $db = db_fetch_object(chado_query($db_sql));
 
   // check to see if we have this accession number already in the database
   // if so then don't add it again. it messes up drupal if the insert fails.
   // It is possible for the accession number to be present and not the feature
   $dbxref_sql = "SELECT dbxref_id FROM {dbxref} ".
                 "WHERE db_id = %d and accession = '%s'";
-  $dbxref = db_fetch_object(db_query($dbxref_sql, $db->db_id, $accession));
+  $dbxref = db_fetch_object(chado_query($dbxref_sql, $db->db_id, $accession));
   if (!$dbxref) {
     // add the accession number
     $dbxref_isql = "INSERT INTO {dbxref} (db_id,accession) ".
                    "  VALUES (%d, '%s') ";
-    if (!db_query($dbxref_isql, $db->db_id, $accession)) {
+    if (!chado_query($dbxref_isql, $db->db_id, $accession)) {
       $error .= 'Could not add accession as a database reference ';
     }
     // get the dbxref_id for the just added accession number
     $dbxref_sql = "SELECT dbxref_id FROM {dbxref} ".
                   "WHERE db_id = %d and accession = '%s'";
-    $dbxref = db_fetch_object(db_query($dbxref_sql, $db->db_id, $accession));
+    $dbxref = db_fetch_object(chado_query($dbxref_sql, $db->db_id, $accession));
   }
 
 
   // associate the accession number with the feature
   $feature_dbxref_isql = "INSERT INTO {feature_dbxref} (feature_id,dbxref_id) ".
                          "  VALUES (%d, %d) ";
-  if (!db_query($feature_dbxref_isql, $feature_id, $dbxref->dbxref_id)) {
+  if (!chado_query($feature_dbxref_isql, $feature_id, $dbxref->dbxref_id)) {
     $error .= 'Could not add feature database reference. ';
   }
 
-  tripal_db_set_active($previous_db);
   return $error;
 }
 
@@ -821,9 +812,7 @@ function chado_feature_form($node, $param) {
   );
   // get the list of organisms
   $sql = "SELECT * FROM {Organism} ORDER BY genus, species";
-  $previous_db = tripal_db_set_active('chado');  // use chado database
-  $org_rset = db_query($sql);
-  tripal_db_set_active($previous_db);  // now use drupal database
+  $org_rset = chado_query($sql);
 
   //
   $organisms = array();
@@ -902,9 +891,7 @@ function chado_feature_validate($node) {
               INNER JOIN {cvterm} CVT ON F.type_id = CVT.cvterm_id
             WHERE uniquename = '%s'
              AND organism_id = %d AND CVT.name = '%s' AND NOT feature_id = %d";
-    $previous_db = tripal_db_set_active('chado');
-    $result = db_fetch_object(db_query($sql, $node->uniquename, $node->organism_id, $node->feature_type, $node->feature_id));
-    tripal_db_set_active($previous_db);
+    $result = db_fetch_object(chado_query($sql, $node->uniquename, $node->organism_id, $node->feature_type, $node->feature_id));
     if ($result) {
       form_set_error('uniquename', t("Feature update cannot proceed. The feature name '$node->uniquename' is not unique for this organism. Please provide a unique name for this feature."));
     }
@@ -918,9 +905,7 @@ function chado_feature_validate($node) {
               INNER JOIN {cvterm} CVT ON F.type_id = CVT.cvterm_id
             WHERE uniquename = '%s'
              AND organism_id = %d AND CVT.name = '%s'";
-    $previous_db = tripal_db_set_active('chado');
-    $result = db_fetch_object(db_query($sql, $node->uniquename, $node->organism_id, $node->feature_type));
-    tripal_db_set_active($previous_db);
+    $result = db_fetch_object(chado_query($sql, $node->uniquename, $node->organism_id, $node->feature_type));
     if ($result) {
       form_set_error('uniquename', t("Feature insert cannot proceed. The feature name '$node->uniquename' already exists for this organism. Please provide a unique name for this feature."));
     }
@@ -972,9 +957,7 @@ function chado_feature_load($node) {
 function tripal_feature_load_organism($organism_id) {
   // add organism details
   $sql = "SELECT * FROM {organism} WHERE organism_id = %d";
-  $previous_db = tripal_db_set_active('chado');  // use chado database
-  $organism = db_fetch_object(db_query($sql, $organism_id));
-  tripal_db_set_active($previous_db);  // now use drupal database
+  $organism = db_fetch_object(chado_query($sql, $organism_id));
   return $organism;
 }
 /**
@@ -990,9 +973,7 @@ function tripal_feature_load_synonyms($feature_id) {
         "    ON FS.synonym_id = S.Synonym_id ".
         "WHERE FS.feature_id = %d ".
         "ORDER BY S.name ";
-  $previous_db = tripal_db_set_active('chado');  // use chado database
-  $results = db_query($sql, $feature_id);
-  tripal_db_set_active($previous_db);  // now use drupal database
+  $results = chado_query($sql, $feature_id);
   $synonyms = array();
   $i=0;
   while ($synonym = db_fetch_object($results)) {
@@ -1017,9 +998,7 @@ function tripal_feature_load_properties($feature_id) {
            INNER JOIN {db} DB      ON DB.db_id = DBX.db_id
          WHERE FS.feature_id = %d
          ORDER BY FS.rank ASC";
-  $previous_db = tripal_db_set_active('chado');  // use chado database
-  $results = db_query($sql, $feature_id);
-  tripal_db_set_active($previous_db);  // now use drupal database
+  $results = chado_query($sql, $feature_id);
   $i=0;
   $properties = array();
   while ($property = db_fetch_object($results)) {
@@ -1042,9 +1021,7 @@ function tripal_feature_load_references($feature_id) {
         "  INNER JOIN {db} on DB.db_id = DBX.db_id ".
         "WHERE F.feature_id = %d ".
         "ORDER BY DB.name ";
-  $previous_db = tripal_db_set_active('chado');  // use chado database
-  $results = db_query($sql, $feature_id);
-  tripal_db_set_active($previous_db);  // now use drupal database
+  $results = chado_query($sql, $feature_id);
   $references = array();
   $i=0;
   while ($accession = db_fetch_object($results)) {
@@ -1081,9 +1058,7 @@ function tripal_feature_load_featurelocs($feature_id, $side = 'as_parent', $aggr
     $sql .= "WHERE FL.feature_id = %d ";
   }
 
-  $previous_db = tripal_db_set_active('chado');  // use chado database
-  $flresults = db_query($sql, $feature_id);
-  tripal_db_set_active($previous_db);  // now use drupal database
+  $flresults = chado_query($sql, $feature_id);
 
   // copy the results into an array
   $i=0;
@@ -1164,9 +1139,7 @@ function tripal_feature_load_relationships($feature_id, $side = 'as_subject') {
   $sql .= " ORDER BY FR.rank";
 
   // get the relationships
-  $previous_db = tripal_db_set_active('chado');  // use chado database
-  $results = db_query($sql, $feature_id);
-  tripal_db_set_active($previous_db);  // now use drupal database
+  $results = chado_query($sql, $feature_id);
 
 
   // iterate through the relationships, put these in an array and add
@@ -1195,9 +1168,7 @@ function tripal_feature_load_relationships($feature_id, $side = 'as_subject') {
 function tripal_feature_get_aggregate_types($feature_id) {
   // get the feature details
   $sql = 'SELECT type_id FROM {feature} WHERE feature_id = %d';
-  $previous_db = tripal_db_set_active('chado');  // use chado database
-  $feature = db_fetch_object(db_query($sql, $feature_id));
-  tripal_db_set_active($previous_db);  // now use drupal database
+  $feature = db_fetch_object(chado_query($sql, $feature_id));
 
   // check to see if this feature is of a type with an aggregate
   $sql = "SELECT * FROM {tripal_feature_relagg} WHERE type_id = %d";
@@ -1445,7 +1416,7 @@ function tripal_feature_get_matched_alignments($feature) {
           "  AND (CVT2.name = 'match' or CVT2.name like '%_match') ".
           "ORDER BY FL1.fmin";
 
-   $results = db_query($sql, $feature->feature_id, $feature->feature_id);
+   $results = chado_query($sql, $feature->feature_id, $feature->feature_id);
    
    // iterate through the results and add them to our featurelocs array
    $featurelocs = array();
@@ -1514,9 +1485,7 @@ function tripal_feature_load_organism_feature_counts($organism) {
     ORDER BY num_features desc
   ";
   $args[] = $organism->organism_id;
-  $previous_db = tripal_db_set_active('chado');  // use chado database
-  $org_features = db_query($sql, $args);
-  tripal_db_set_active($previous_db);  // now use drupal database
+  $org_features = chado_query($sql, $args);
 
   // iterate through the types
   $types = array();
@@ -2617,9 +2586,7 @@ function tripal_feature_set_taxonomy($node, $feature_id) {
         "  INNER JOIN Feature F on F.type_id = CVT.cvterm_id ".
         "  INNER JOIN Organism O ON F.organism_id = O.organism_id ".
         "WHERE F.feature_id = $feature_id";
-  $previous_db = tripal_db_set_active('chado');  // use chado database
-  $feature = db_fetch_object(db_query($sql));
-  tripal_db_set_active($previous_db);  // now use drupal database
+  $feature = db_fetch_object(chado_query($sql));
 
   // Set the feature type for this feature
   if ($do_ft && $ft_vid) {
@@ -2636,9 +2603,7 @@ function tripal_feature_set_taxonomy($node, $feature_id) {
            "FROM {Library} L ".
            "  INNER JOIN Library_feature LF ON LF.library_id = L.library_id ".
            "WHERE LF.feature_id = %d ";
-    $previous_db = tripal_db_set_active('chado');  // use chado database
-    $library = db_fetch_object(db_query($sql, $feature_id));
-    tripal_db_set_active($previous_db);  // now use drupal database
+    $library = db_fetch_object(chado_query($sql, $feature_id));
     $tags["$lb_vid"] = "$library->name";
   }
 
@@ -2654,15 +2619,13 @@ function tripal_feature_set_taxonomy($node, $feature_id) {
            "FROM {Analysis} A ".
            "  INNER JOIN Analysisfeature AF ON AF.analysis_id = A.analysis_id ".
            "WHERE AF.feature_id = $feature_id ";
-    $results = db_query($sql);
-    $previous_db = tripal_db_set_active('chado');  // use chado database
+    $results = chado_query($sql);
     $analysis_terms = array();
     while ($analysis=db_fetch_object($results)) {
       $tags2["$an_vid"] = "$analysis->name";
       $terms['tags'] = $tags2;
       taxonomy_node_save($node, $terms);
     }
-    tripal_db_set_active($previous_db);  // now use drupal database
   }
 
 }
