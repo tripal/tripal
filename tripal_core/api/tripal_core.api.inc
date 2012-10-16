@@ -1720,7 +1720,9 @@ function tripal_core_generate_chado_var($table, $values, $base_options = array()
  *   a table as single record if only one record exists or to expand as an array if
  *   multiple records exist.
  * @return
- *   A chado object supplemented with the field/table/node requested to be expanded
+ *   A chado object supplemented with the field/table/node requested to be expanded.
+ *   If the type is a table and it has already been expanded no changes is made to the
+ *   returned object
  *
  * Example Usage:
  * @code
@@ -1788,7 +1790,7 @@ function tripal_core_expand_chado_vars($object, $type, $to_expand, $table_option
       
       // don't expand the table it already is expanded
       if(array_key_exists($foreign_table, $object)){
-      	return;
+      	return $object;
       }
       $foreign_table_desc = tripal_core_get_chado_table_schema($foreign_table);
       // If it's connected to the base table

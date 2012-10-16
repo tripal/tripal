@@ -1970,6 +1970,7 @@ function tripal_feature_preprocess_tripal_feature_relationships(&$variables) {
   
   // get alignment as child. The $feature->featureloc element
   // is already populated from the alignment preprocess function
+  $feature = tripal_core_expand_chado_vars($feature, 'table', 'featureloc');
   $cfeaturelocs = $feature->featureloc->feature_id;
   if (!$cfeaturelocs) {
      $cfeaturelocs = array();
@@ -2085,9 +2086,9 @@ function tripal_feature_preprocess_tripal_feature_relationships(&$variables) {
 function tripal_feature_preprocess_tripal_feature_alignments(&$variables) {
   // we want to provide a new variable that contains the matched features.
   $feature = $variables['node']->feature;
-
+dpm($feature);
   $feature = tripal_core_expand_chado_vars($feature, 'table', 'featureloc');
-  $variables['node']->feature = $feature;
+   dpm($feature); 
   
   // get alignments as child
   $cfeaturelocs = $feature->featureloc->feature_id;
@@ -2109,7 +2110,7 @@ function tripal_feature_preprocess_tripal_feature_alignments(&$variables) {
   // get matched alignments (those with an itermediate 'match' or 'EST_match', etc
   $mfeaturelocs = tripal_feature_get_matched_alignments($feature);
   $feature->matched_featurelocs = tripal_feature_get_matched_alignments($feature);
-  
+    
   // combine all three alignments into a single array for printing together in
   // a single list
   $alignments = array();
