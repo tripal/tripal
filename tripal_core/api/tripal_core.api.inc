@@ -391,28 +391,28 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
  * Example usage:
  * @code
  $umatch = array(
- 'organism_id' => array(
- 'genus' => 'Citrus',
- 'species' => 'sinensis',
- ),
- 'uniquename' => 'orange1.1g000034m.g7',
- 'type_id' => array (
- 'cv_id' => array (
- 'name' => 'sequence',
- ),
- 'name' => 'gene',
- 'is_obsolete' => 0
- ),
+   'organism_id' => array(
+     'genus' => 'Citrus',
+     'species' => 'sinensis',
+   ),
+   'uniquename' => 'orange1.1g000034m.g7',
+   'type_id' => array (
+     'cv_id' => array (
+       'name' => 'sequence',
+     ),
+     'name' => 'gene',
+     'is_obsolete' => 0
+   ),
  );
  $uvalues = array(
- 'name' => 'orange1.1g000034m.g',
- 'type_id' => array (
- 'cv_id' => array (
- 'name' => 'sequence',
- ),
- 'name' => 'mRNA',
- 'is_obsolete' => 0
- ),
+   'name' => 'orange1.1g000034m.g',
+   'type_id' => array (
+     'cv_id' => array (
+       'name' => 'sequence',
+     ),
+     'name' => 'mRNA',
+     'is_obsolete' => 0
+   ),
  );
  *   $result = tripal_core_chado_update('feature',$umatch,$uvalues);
  * @endcode
@@ -1413,18 +1413,30 @@ function tripal_core_chado_get_foreign_key($table_desc, $field, $values, $option
  *   option of 'order_by' may be used to sort results in the base table
  *   if more than one are returned.  The options must be compatible with
  *   the options accepted by the tripal_core_chado_select() function.
- *   Additionally,  The option 'return_array' can be provided to force
- *   the function to always return an array. Default behavior is to return
- *   a single record if only one record exists or to return an array if
- *   multiple records exist.
+ *   Additionally,  These options are available for this function:
+ *   -return_array: 
+ *     can be provided to force the function to always return an array. Default 
+ *     behavior is to return a single record if only one record exists or to return 
+ *     an array if multiple records exist.
+ *  - include_fk: 
+ *     an array of FK relationships to fallow. By default, the 
+ *     tripal_core_chado_select function will follow all FK relationships but this
+ *     may generate more queries then is desired.  Provide an array specifying the
+ *     fields to include.  For example, if including the cvterm, cv and dbxref records
+ *     for a property the following array would work:
+ *        array('type_id' => array('cv_id' => 1, 'dbxref_id' => 1)).
+ *     Typicall, to expadn a property, this function would also include the db record 
+ *     through the db_id foreign key with the dbxref and db tables, but becuase 
+ *     it is not included in the array it will not be included in the results.
  * @return
  *   Either an object (if only one record was selected from the base table)
  *   or an array of objects (if more than one record was selected from the base table).
+ *   If the option 'return_array' is provided the function always returns an array.
  *
  * Example Usage:
  * @code
  $values = array(
- 'name' => 'Medtr4g030710'
+   'name' => 'Medtr4g030710'
  );
  $features = tripal_core_generate_chado_var('feature', $values);
  * @endcode
@@ -1438,7 +1450,7 @@ function tripal_core_chado_get_foreign_key($table_desc, $field, $values, $option
  *      this hook to return an array of fields to be excluded. For example:
  * @code
  mymodule_exclude_field_from_feature_by_default() {
- return array('residues' => TRUE);
+   return array('residues' => TRUE);
  }
  * @endcode
  *      will ensure that feature.residues is ecluded from a feature object by default.
@@ -1449,7 +1461,7 @@ function tripal_core_chado_get_foreign_key($table_desc, $field, $values, $option
  *      any table. Tokens available in criteria are &gt;field_value&lt;  and &gt;field_name&lt; . For example:
  * @code
  mymodule_exclude_type_by_default() {
- return array('text' => 'length(&gt;field_value&lt; ) > 50');
+   return array('text' => 'length(&gt;field_value&lt; ) > 50');
  }
  * @endcode
  *      will exclude all text fields with a length > 50. Thus if $feature.residues is longer than 50 *      it will be excluded, otherwise it will be added.
@@ -1462,6 +1474,10 @@ function tripal_core_generate_chado_var($table, $values, $base_options = array()
   $return_array = 0;
   if(array_key_exists('return_array', $base_options)){
   	$return_array = 1;
+  }
+  $include_fk = 0;
+  if(array_key_exists('include_fk', $base_options)){
+    $include_fk = $base_options['include_fk'];
   }
 
   // get description for the current table----------------------------------------------------------
@@ -1606,9 +1622,25 @@ function tripal_core_generate_chado_var($table, $values, $base_options = array()
             if (empty($object->{$foreign_key})) {
               continue;
             }
+            
+            if ($include_fk) {
+            	// don't recurse if the callee has supplied an $fk_include list and this 
+              // FK table is not in the list.
+            	if(is_array($include_fk) and !array_key_exists($foreign_key, $include_fk)){
+                continue;
+            	}
+            	// if we have the option but it is not an array then we don't recurse any furutehr
+            	if (!is_array($include_fk)) {
+            		continue;
+            	}	
+            } 
             // get the record from the foreign table
             $foreign_values = array($primary_key => $object->{$foreign_key});
-            $foreign_object = tripal_core_generate_chado_var($foreign_table, $foreign_values);
+            $options = array();
+            if(is_array($include_fk)){            	
+              $options['include_fk'] = $include_fk[$foreign_key];
+            }
+            $foreign_object = tripal_core_generate_chado_var($foreign_table, $foreign_values, $options);
             // add the foreign record to the current object in a nested manner
             $object->{$foreign_key} = $foreign_object;
             // Flatten expandable_x arrays so only in the bottom object
@@ -1692,17 +1724,17 @@ function tripal_core_generate_chado_var($table, $values, $base_options = array()
  *
  * Example Usage:
  * @code
- // Get a chado object to be expanded
- $values = array(
- 'name' => 'Medtr4g030710'
- );
- $features = tripal_core_generate_chado_var('feature', $values);
- // Expand the organism node
- $feature = tripal_core_expand_chado_vars($feature, 'node', 'organism');
- // Expand the feature.residues field
- $feature = tripal_core_expand_chado_vars($feature, 'field', 'feature.residues');
- // Expand the feature properties (featureprop table)
- $feature = tripal_core_expand_chado_vars($feature, 'table', 'featureprop');
+   // Get a chado object to be expanded
+   $values = array(
+     'name' => 'Medtr4g030710'
+   );
+   $features = tripal_core_generate_chado_var('feature', $values);
+   // Expand the organism node
+   $feature = tripal_core_expand_chado_vars($feature, 'node', 'organism');
+   // Expand the feature.residues field
+   $feature = tripal_core_expand_chado_vars($feature, 'field', 'feature.residues');
+   // Expand the feature properties (featureprop table)
+   $feature = tripal_core_expand_chado_vars($feature, 'table', 'featureprop');
  * @endcode
  *
  * @ingroup tripal_chado_api
@@ -1753,6 +1785,11 @@ function tripal_core_expand_chado_vars($object, $type, $to_expand, $table_option
       break;
     case "table": //--------------------------------------------------------------------------------
       $foreign_table = $to_expand;
+      
+      // don't expand the table it already is expanded
+      if(array_key_exists($foreign_table, $object)){
+      	return;
+      }
       $foreign_table_desc = tripal_core_get_chado_table_schema($foreign_table);
       // If it's connected to the base table
       if ($foreign_table_desc['foreign keys'][$base_table]) {
@@ -1788,8 +1825,14 @@ function tripal_core_expand_chado_vars($object, $type, $to_expand, $table_option
               $object->expanded = $to_expand;
             }
           }
+          // if the object returned is NULL then handle that
           else {
-            $object->{$foreign_table} = NULL;  
+          	if (count($foreign_table_desc['foreign keys'][$base_table]['columns']) > 1) {
+              $object->{$foreign_table}->{$left} = NULL;                 
+          	}
+          	else {
+          		$object->{$foreign_table} = NULL;
+          	}
           }
         }
       }

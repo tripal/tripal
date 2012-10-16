@@ -1957,28 +1957,19 @@ function tripal_feature_preprocess_tripal_feature_relationships(&$variables) {
   $feature = $variables['node']->feature;
    
   // expand the feature object to include the feature relationships.
-  $feature = tripal_core_expand_chado_vars($feature,
-     'table','feature_relationship', array('order_by'=>array('rank' => 'ASC')));
+  $options = array(
+    'return_array' => 1,
+    'order_by'     => array('rank' => 'ASC'),
+  );
+  $feature = tripal_core_expand_chado_vars($feature, 'table',
+    'feature_relationship', $options);
 
   // get the subject relationships
   $srelationships = $feature->feature_relationship->subject_id;
-  if (!$srelationships) {
-     $srelationships = array();
-  } 
-  elseif (!is_array($srelationships)) { 
-     $srelationships = array($srelationships); 
-  }
-  
-  // get the object relationships
   $orelationships = $feature->feature_relationship->object_id;
-  if (!$orelationships) {
-     $orelationships = array();
-  } 
-  elseif (!is_array($orelationships)) { 
-     $orelationships = array($orelationships); 
-  }
   
-  // get alignment as child
+  // get alignment as child. The $feature->featureloc element
+  // is already populated from the alignment preprocess function
   $cfeaturelocs = $feature->featureloc->feature_id;
   if (!$cfeaturelocs) {
      $cfeaturelocs = array();
@@ -1986,23 +1977,21 @@ function tripal_feature_preprocess_tripal_feature_relationships(&$variables) {
   elseif (!is_array($cfeaturelocs)) { 
      $cfeaturelocs = array($cfeaturelocs); 
   }
-
   
   // prepare the SQL statement to get the featureloc for the 
   // feature in the relationships. 
-  if(!tripal_core_is_sql_prepared('sel_featureloc_preprocess_relationships')){
-    $psql = "PREPARE sel_featureloc_preprocess_relationships (int, int) AS " .
-            "SELECT FL.featureloc_id, F.name as srcfeature_name, FL.srcfeature_id, ".
-            "  FL.feature_id, FL.fmin, FL.fmax, FL.strand, FL.phase ".
-            "FROM featureloc FL " .
-            "  INNER JOIN feature F ON F.feature_id = FL.srcfeature_id ".
-            "WHERE FL.feature_id = $1 and FL.srcfeature_id = $2";
-    $prepared = chado_query($psql);
-    if(!$prepared){
-      watchdog('tripal_feature', "tripal_feature_preprocess_tripal_feature_relationships: not able to prepare '%name' statement for: %sql", array('%name' => 'sel_featureloc_preprocess_relationships', '%sql' => $psql), 'WATCHDOG ERROR');
-      return FALSE;
-    }
-  }  
+  $connection = tripal_db_persistent_chado();
+  $psql = " 
+    PREPARE sel_featureloc_preprocess_relationships (int, int) AS 
+    SELECT 
+      FL.featureloc_id, F.name as srcfeature_name, FL.srcfeature_id,
+      FL.feature_id, FL.fmin, FL.fmax, FL.strand, FL.phase
+    FROM featureloc FL 
+      INNER JOIN feature F ON F.feature_id = FL.srcfeature_id
+    WHERE FL.feature_id = $1 and FL.srcfeature_id = $2
+  ";
+  tripal_core_chado_prepare('sel_featureloc_preprocess_relationships', $psql, array('int', 'int'));
+
   
   // combine both object and subject relationshisp into a single array
   $relationships = array();
@@ -2010,76 +1999,80 @@ function tripal_feature_preprocess_tripal_feature_relationships(&$variables) {
   $relationships['subject'] = array();
   
   // iterate through the object relationships
-  foreach ($orelationships as $relationship) {
-     $rel = new stdClass(); 
-     // get locations where the child feature and this feature overlap with the
-     // same landmark feature.
-     $rel->child_featurelocs = array();     
-     foreach ($cfeaturelocs as $featureloc) {
-        $res = chado_query("EXECUTE sel_featureloc_preprocess_relationships (%d, %d)", 
-          $relationship->subject_id->feature_id, 
-          $featureloc->srcfeature_id->feature_id);        
-        while ($loc = db_fetch_object($res)){
-           // add in the node id of the src feature if it exists and save this location
-           $loc->nid = $featureloc->srcfeature_id->nid;
-           $rel->child_featurelocs[] = $loc;
-        }
-     }
-     $rel->record = $relationship;    
-     
-     // get the relationship and child types
-     $rel_type = t(preg_replace('/_/'," ",$relationship->type_id->name));
-     $child_type = $relationship->subject_id->type_id->name;
-     
-     // get the node id of the subject
-     $sql = "SELECT nid FROM chado_feature WHERE feature_id = %d";
-     $n = db_fetch_object(db_query($sql,$relationship->subject_id->feature_id));
-     if($n){
-        $rel->record->nid = $n->nid;
-     }
-
-     if (!array_key_exists($rel_type, $relationships['object'])) {
-       $relationships['object'][$rel_type] = array();   
-     }
-     if (!array_key_exists($child_type, $relationships['object'][$rel_type])) {
-       $relationships['object'][$rel_type][$child_type] = array();   
-     }
-     $relationships['object'][$rel_type][$child_type][] = $rel;     
+  if ($orelationships) {
+	  foreach ($orelationships as $relationship) {
+	     $rel = new stdClass(); 
+	     // get locations where the child feature and this feature overlap with the
+	     // same landmark feature.
+	     $rel->child_featurelocs = array();     
+	     foreach ($cfeaturelocs as $featureloc) {
+	        $res = chado_query("EXECUTE sel_featureloc_preprocess_relationships (%d, %d)", 
+	          $relationship->subject_id->feature_id, 
+	          $featureloc->srcfeature_id->feature_id);        
+	        while ($loc = db_fetch_object($res)){
+	           // add in the node id of the src feature if it exists and save this location
+	           $loc->nid = $featureloc->srcfeature_id->nid;
+	           $rel->child_featurelocs[] = $loc;
+	        }
+	     }
+	     $rel->record = $relationship;    
+	     
+	     // get the relationship and child types
+	     $rel_type = t(preg_replace('/_/'," ",$relationship->type_id->name));
+	     $child_type = $relationship->subject_id->type_id->name;
+	     
+	     // get the node id of the subject
+	     $sql = "SELECT nid FROM chado_feature WHERE feature_id = %d";
+	     $n = db_fetch_object(db_query($sql,$relationship->subject_id->feature_id));
+	     if($n){
+	        $rel->record->nid = $n->nid;
+	     }
+	
+	     if (!array_key_exists($rel_type, $relationships['object'])) {
+	       $relationships['object'][$rel_type] = array();   
+	     }
+	     if (!array_key_exists($child_type, $relationships['object'][$rel_type])) {
+	       $relationships['object'][$rel_type][$child_type] = array();   
+	     }
+	     $relationships['object'][$rel_type][$child_type][] = $rel;     
+	  }
   }
   
   // now add in the subject relationships
-  foreach ($srelationships as $relationship) {
-     $rel = new stdClass(); 
-     // get locations where this feature overlaps with the parent
-     $rel->parent_featurelocs = array();     
-     foreach ($cfeaturelocs as $featureloc) {
-        $res = chado_query("EXECUTE sel_featureloc_preprocess_relationships (%d, %d)", 
-          $relationship->object_id->feature_id, 
-          $featureloc->srcfeature_id->feature_id);
-        while ($loc = db_fetch_object($res)){
-           // add in the node id of the src feature if it exists and save this location
-           $loc->nid = $featureloc->srcfeature_id->nid;
-           $rel->parent_featurelocs[] = $loc;
-        }
-     }
-     $rel->record = $relationship;
-     $rel_type = t(preg_replace('/_/'," ",$relationship->type_id->name));
-     $parent_type = $relationship->object_id->type_id->name;
-     
-     // get the node id of the subject
-     $sql = "SELECT nid FROM chado_feature WHERE feature_id = %d";
-     $n = db_fetch_object(db_query($sql,$relationship->object_id->feature_id));
-     if($n){
-        $rel->record->nid = $n->nid;
-     }
-     
-     if (!array_key_exists($rel_type, $relationships['subject'])) {
-       $relationships['subject'][$rel_type] = array();   
-     }
-     if (!array_key_exists($child_type, $relationships['subject'][$rel_type])) {
-       $relationships['subject'][$rel_type][$parent_type] = array();   
-     }
-     $relationships['subject'][$rel_type][$parent_type][] = $rel;
+  if ($srelationships) {
+	  foreach ($srelationships as $relationship) {
+	     $rel = new stdClass(); 
+	     // get locations where this feature overlaps with the parent
+	     $rel->parent_featurelocs = array();     
+	     foreach ($cfeaturelocs as $featureloc) {
+	        $res = chado_query("EXECUTE sel_featureloc_preprocess_relationships (%d, %d)", 
+	          $relationship->object_id->feature_id, 
+	          $featureloc->srcfeature_id->feature_id);
+	        while ($loc = db_fetch_object($res)){
+	           // add in the node id of the src feature if it exists and save this location
+	           $loc->nid = $featureloc->srcfeature_id->nid;
+	           $rel->parent_featurelocs[] = $loc;
+	        }
+	     }
+	     $rel->record = $relationship;
+	     $rel_type = t(preg_replace('/_/'," ",$relationship->type_id->name));
+	     $parent_type = $relationship->object_id->type_id->name;
+	     
+	     // get the node id of the subject
+	     $sql = "SELECT nid FROM chado_feature WHERE feature_id = %d";
+	     $n = db_fetch_object(db_query($sql,$relationship->object_id->feature_id));
+	     if($n){
+	        $rel->record->nid = $n->nid;
+	     }
+	     
+	     if (!array_key_exists($rel_type, $relationships['subject'])) {
+	       $relationships['subject'][$rel_type] = array();   
+	     }
+	     if (!array_key_exists($child_type, $relationships['subject'][$rel_type])) {
+	       $relationships['subject'][$rel_type][$parent_type] = array();   
+	     }
+	     $relationships['subject'][$rel_type][$parent_type][] = $rel;
+	  }
   }
   $feature->all_relationships = $relationships;
 
@@ -2092,6 +2085,9 @@ function tripal_feature_preprocess_tripal_feature_relationships(&$variables) {
 function tripal_feature_preprocess_tripal_feature_alignments(&$variables) {
   // we want to provide a new variable that contains the matched features.
   $feature = $variables['node']->feature;
+
+  $feature = tripal_core_expand_chado_vars($feature, 'table', 'featureloc');
+  $variables['node']->feature = $feature;
   
   // get alignments as child
   $cfeaturelocs = $feature->featureloc->feature_id;
