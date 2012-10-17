@@ -58,7 +58,11 @@ function tripal_core_init() {
   // otherwise PostgreSQL version that may have a different datestyle setting
   // will fail when inserting or updating a date column in a table.
   db_query("SET DATESTYLE TO '%s'", 'MDY'); 
-    
+
+  // in the event that an errant Tripal or extension function fails to
+  // set the postgres search_path back to noraml we do it here on 
+  // init of the core
+  tripal_db_set_default_search_path(); 
 }
 
 /**
