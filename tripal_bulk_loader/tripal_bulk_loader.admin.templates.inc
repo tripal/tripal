@@ -150,6 +150,9 @@ function tripal_bulk_loader_modify_template_base_form($form_state = NULL, $mode)
         elseif (strcmp($table_array['mode'],'insert_once')==0) {
           $mode_value .= 'insert once';
         } 
+         elseif (strcmp($table_array['mode'],'select_once')==0) {
+          $mode_value .= 'select once';
+        } 
         elseif ($table_array['mode']) {
           $mode_value .= $table_array['mode'];
         }
@@ -707,7 +710,7 @@ function tripal_bulk_loader_edit_template_record_form(&$form_state = NULL) {
   // get default for the select optional
   $select_optional = $form_state['storage']['template_array'][$form_state['storage']['original_priority']]['select_optional'];
   if(!isset($select_optional)){
-    $select_optional = 1;
+    $select_optional = 0;
   }
   
   // get default for the select if duplicate
@@ -797,6 +800,7 @@ function tripal_bulk_loader_edit_template_record_form(&$form_state = NULL) {
     '#title' => 'Action to take when Loading Record',
     '#options' => array(
       'select' => 'SELECT: Don\'t insert this record: it\'s used to define a foreign key in another record',
+      'select_once' => 'SELECT ONCE: Select the record only once for the entire file.',  
       'insert' => 'INSERT: Insert the record',
       'insert_once' => 'INSERT ONCE: Record will be inserted once for the entire file',
     ),
@@ -826,6 +830,8 @@ function tripal_bulk_loader_edit_template_record_form(&$form_state = NULL) {
      '#description' => t('If this is not the first time this record has been added then perform a select rather than an insert.'),
      '#default_value' => $select_if_duplicate
   );
+  
+  
 // TODO: finish coding up the update_if_duplicate functionality  
 /*  $form['edit_record']['update_if_duplicate'] = array(
      '#type' => 'checkbox',
@@ -837,7 +843,7 @@ function tripal_bulk_loader_edit_template_record_form(&$form_state = NULL) {
   $form['edit_record']['optional'] = array(
      '#type' => 'checkbox',
      '#title' => t('Optional'),
-     '#description' => t('The insert, update or select will only be performed if all required data are present'),
+     '#description' => t('The insert, update or select will only be performed only if all required data are present'),
      '#default_value' => $optional
   );  
   $form['edit_record']['disable'] = array(

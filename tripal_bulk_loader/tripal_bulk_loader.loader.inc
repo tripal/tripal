@@ -483,7 +483,7 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
     if (array_key_exists($priority, $addt->field2column)) {
       $values = tripal_bulk_loader_add_spreadsheetdata_to_values($values, $addt->line, $addt->field2column[$priority]);
     } 
-    $values = tripal_bulk_loader_add_foreignkey_to_values($table_data, $values, $data, $addt->record2priority, $addt->nid, $priority);    
+    $values = tripal_bulk_loader_add_foreignkey_to_values($table_data, $values, $data, $addt->record2priority, $addt->nid, $priority, $default_data);    
   }
 
   $values = tripal_bulk_loader_regex_tranform_values($values, $table_data, $addt->line);
@@ -560,8 +560,14 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
   }
   
   // check if it is already inserted
-  if (array_key_exists('inserted',$table_data) and $table_data['inserted']) {
-    //watchdog('T_bulk_loader','Already Inserted:'.print_r($values,TRUE),array(),WATCHDOG_NOTICE);
+  if (array_key_exists('inserted', $table_data) and $table_data['inserted']) {
+    return $no_errors;
+  }
+  
+  // check if it is already selected, if so, just get the value stored in
+  // the default_data array
+  if (array_key_exists('selected', $table_data) and $table_data['selected']) {
+  	$data[$priority]['values_array'] = $default_data[$priority]['values_array'];
     return $no_errors;
   }
          
@@ -575,8 +581,7 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
     $options = array('is_duplicate' => TRUE);
     $duplicate = tripal_core_chado_select($table, array_keys($table_desc['fields']), $values, $options);
     // if this is a duplicate then substitute the values in the table_data array so
-    // that for future records that my depend on this one, they can get the values 
-    // needed
+    // that for future records that my depend on this one, they can get the values needed
     if ($duplicate and is_array($duplicate) and count($duplicate) > 0) {
 
       // if all we have is one field then we will just use the value returned
@@ -685,22 +690,14 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
       }
     } //end of if insert was successful
   }
+  // perform a select
   else {
     // get the matches for this select
     $matches = array();
     if(is_array($values) and count($values) > 0){
       $matches = tripal_core_chado_select($table, array_keys($table_desc['fields']), $values);
     }
-//$time_end = microtime(true);
-//$time = $time_end - $time_start;
-//printf("time: %04f seconds\n",$time);
-//if($time > 0.05){
-//  print "$table\n";
-//  print_r(array_keys($table_desc['fields']));
-//  print_r($values);
-//  exit;
-//}
-    // if the record doesn't exists and it's not optional then generate an error
+    // if the record doesn't exist and it's not optional then generate an error
     if (count($matches) == 0){
       // No record on select
       if ($table_data['select_optional'] != 1) {        
@@ -729,6 +726,19 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
         $data[$priority]['values_array'] = NULL;
       }
     } 
+    // if mode=select_once then ensure we only select it once
+    if (preg_match('/select_once/', $table_data['mode'])) {
+      $default_data[$priority]['selected'] = TRUE;
+      
+      // save the pkey
+      if(array_key_exists('primary key',$table_desc)){
+      	$new_values = array();
+        foreach($matches[0] as $key => $value){ 
+          $new_values[$key] = $value;
+        } 
+        $default_data[$priority]['values_default'] = $new_values;   
+      } 
+    }
   }
   return $no_errors;
 }
@@ -775,7 +785,8 @@ function tripal_bulk_loader_add_spreadsheetdata_to_values($values, $line, $field
  * record is looked up and the values array is substituted in.
  *
  */
-function tripal_bulk_loader_add_foreignkey_to_values($table_array, $values, $data, $record2priority, $nid, $priority) {
+function tripal_bulk_loader_add_foreignkey_to_values($table_array, $values, $data, $record2priority, $nid, 
+  $priority, $default_data) {
 
   // iterate through each field in the $values arrray and
   // substitute any values for FK / referring fields
@@ -790,7 +801,16 @@ function tripal_bulk_loader_add_foreignkey_to_values($table_array, $values, $dat
       $foreign_field    = $value['foreign record']['field'];
       
       // get the values of the foreign record and substitute those for the values
-      $foreign_values   = $data[$foreign_priority]['values_array'];
+      $foreign_values   = $data[$foreign_priority]['values_array'];      
+      
+      // check to see if we have any default values in the $default_data array
+      // these were populated from select statements that only need to run once
+      // so we can reuse the values from those previous selects.
+      if (array_key_exists('values_default', $default_data[$foreign_priority]) and
+          array_key_exists($foreign_field, $default_data[$foreign_priority]['values_default'])) {
+         $values[$field] = $default_data[$foreign_priority]['values_default'][$foreign_field];
+         continue;
+      }
             
       // if the field in the Referral records is in a FK relationship with
       // this field then we can simply keep the value we have
@@ -800,7 +820,7 @@ function tripal_bulk_loader_add_foreignkey_to_values($table_array, $values, $dat
           array_key_exists($foreign_table, $tbl_description['foreign keys']) and 
           array_key_exists($field, $tbl_description['foreign keys'][$foreign_table]['columns']) and
           $foreign_field == $tbl_description['foreign keys'][$foreign_table]['columns'][$field]){
-         $values[$field] = $foreign_values;      
+         $values[$field] = $foreign_values; 
       } 
       // if the field in the Referral records is not in an FK relationship
       // with this field then we we have to get the requested value, we must
