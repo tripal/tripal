@@ -29,7 +29,7 @@
  *
  * @ingroup tripal_custom_tables_api
  */
-function tripal_core_edit_custom_table($table_id, $table_name, $schema, $skip_creation = 0) {
+function tripal_core_edit_custom_table($table_id, $table_name, $schema, $skip_creation = 1) {
 
   // Create a new record
   $record = new stdClass();
@@ -41,7 +41,7 @@ function tripal_core_edit_custom_table($table_id, $table_name, $schema, $skip_cr
   $sql = "SELECT * FROM {tripal_custom_tables} WHERE table_id = %d";
   $custom_table = db_fetch_object(db_query($sql, $table_id));
 
-  // drop the table from chado if it exists
+  // if skip creation is not set, then drop the table from chado if it exists
   if(!$skip_creation){
     if (db_table_exists($custom_table->table_name)) {
       chado_query("DROP TABLE %s", $custom_table->table_name);
@@ -88,29 +88,38 @@ function tripal_core_edit_custom_table($table_id, $table_name, $schema, $skip_cr
  * @param $schema
  *   A Drupal-style Schema API definition of the table
  * @param $skip_creation
- *   Set as TRUE to skip dropping and re-creation of the table.  This is
- *   useful if the table was already created through another means and you
- *   simply want to make Tripal aware of the table schema.
+ *   Set as TRUE to skip dropping and re-creation of the table if it already
+ *   exists.  This is useful if the table was already created through another 
+ *   means and you simply want to make Tripal aware of the table schema.  If the
+ *   table does not exist it will be created.
  *
  * @return
  *   A database query result resource for the new table, or FALSE if table was not constructed.
  *
  * @ingroup tripal_custom_tables_api
  */
-function tripal_core_create_custom_table(&$ret, $table, $schema, $skip_creation = 0) {
+function tripal_core_create_custom_table(&$ret, $table, $schema, $skip_creation = 1) {
   $ret = array();
     
-  // see if the table entry already exists
+  // see if the table entry already exists in the tripal_custom_tables table.
   $sql = "SELECT * FROM {tripal_custom_tables} WHERE table_name = '%s'";
   $centry = db_fetch_object(db_query($sql, $table));
   
-  // If the table exits in Chado but not in the tripal_custom_tables field
-  // then call an error.  if the table exits in the tripal_custom_tables but
-  // not in Chado then create the table and replace the entry.  
+  // check to see if the table already exists in the chado schema  
   $previous_db = tripal_db_set_active('chado');  // use chado database
   $exists = db_table_exists($table);
   tripal_db_set_active($previous_db);  // now use drupal database
 
+  // if the table exists but we have no record for it in the tripal_custom_tables
+  // table then raise an error.
+  if ($exists and !$centry) {
+    watchdog('tripal_core', "Could not add custom table '!table_name'. It ".
+            "already exists but is not known to Tripal as being a custom table.",
+      array('!table_name' => $table), WATCHDOG_WARNING);
+    return FALSE;
+  }
+  
+  // if the table does not exist then create it
   if (!$exists) {
     $previous_db = tripal_db_set_active('chado');  // use chado database
     db_create_table($ret, $table, $schema);
@@ -120,13 +129,10 @@ function tripal_core_create_custom_table(&$ret, $table, $schema, $skip_creation 
         array('!table_name' => $table), WATCHDOG_ERROR);
       return FALSE;
     }
-  }
-  if ($exists and !$centry and !$skip_creation) {
-    watchdog('tripal_core', "Could not add custom table '!table_name'. It ".
-            "already exists but is not known to Tripal as being a custom table.",
-      array('!table_name' => $table), WATCHDOG_WARNING);
-    return FALSE;
-  }
+  }  
+
+  // if the table exists in Chado and in our custom table and
+  // skip creation is turned off then drop and re-create the table
   if ($exists and $centry and !$skip_creation) {
     // drop the table we'll recreate it with the new schema
     $previous_db = tripal_db_set_active('chado');  // use chado database
@@ -315,13 +321,14 @@ function tripal_custom_tables_form(&$form_state = NULL, $table_id = NULL) {
     // form_state then let's use that, otherwise, we'll pull
     // the values from the database
     $default_schema = $form_state['values']['schema'];
-    $default_skip = $form_state['values']['skip_creation'];
+    $default_force_drop = $form_state['values']['force_drop'];
 
     if (!$default_table_name) {
       $default_table = $custom_table->table_name;
     }
     if (!$default_schema) {
       $default_schema = var_export(unserialize($custom_table->schema),1);
+      $default_schema = preg_replace('/=>\s+\n\s+array/','=> array', $default_schema);
     }
   }
 
@@ -341,20 +348,19 @@ function tripal_custom_tables_form(&$form_state = NULL, $table_id = NULL) {
     '#value'         => t('At times it is necessary to add a custom table to the Chado schema.  
        These are not offically sanctioned tables but may be necessary for local data requirements.  
        Avoid creating custom tables when possible as other GMOD tools may not recognize these tables
-       nor the data in them.  Linker tables are often a good candidate for
-       a custom table. For example a table to link stocks and libraries (e.g. library_stock).  If the
-       table already exists it will be dropped and re-added using the definition supplied below. All 
-       data in the table will be lost.  However, If you
-       are certain the schema definition you provide is correct for an existing table, select the checkbox
-       below to skip creation of the table.
+       nor the data in them.  Linker tables or property tables are often a good candidate for
+       a custom table. For example a table to link stocks and libraries (e.g. library_stock) would be
+       a good custom table. Try to model linker or propery tables after existing tables.  If the
+       table already exists it will not be modified.  To force dropping and recreation of the table
+       click the checkbox below.
     '),
   );
 
-  $form['skip_creation']= array(
+  $form['force_drop']= array(
     '#type'          => 'checkbox',
-    '#title'         => t('Skip Table Creation'),
-    '#description'   => t('If your table already exists, check this box to prevent it from being dropped and re-created.'),
-    '#default_value' => $default_skip,
+    '#title'         => t('Re-create table'),
+    '#description'   => t('Check this box if your table already exists and you would like to drop it and recreate it.'),
+    '#default_value' => $default_force_drop,
   );
   $form['schema']= array(
     '#type'          => 'textarea',
@@ -474,13 +480,19 @@ function tripal_custom_tables_form_submit($form, &$form_state) {
   $action = $form_state['values']['action'];
   $table_id = $form_state['values']['table_id'];
   $schema = $form_state['values']['schema'];
-  $skip_creation = $form_state['values']['skip_creation'];
+  $force_drop = $form_state['values']['force_drop'];
+  
+  $skip_creation = 1;
+  if ($force_drop) {
+     $skip_creation = 0;
+  }
 
   // conver the schema into a PHP array
   $schema_arr = array();
   eval("\$schema_arr = $schema;");
+  
 
-  if (strcmp($action, 'Edit') == 0) {
+  if (strcmp($action, 'Edit') == 0) {  	
     tripal_core_edit_custom_table($table_id, $schema_arr['table'], $schema_arr, $skip_creation);
   }
   elseif (strcmp($action, 'Add') == 0) {

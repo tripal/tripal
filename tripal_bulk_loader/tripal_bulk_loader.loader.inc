@@ -806,7 +806,8 @@ function tripal_bulk_loader_add_foreignkey_to_values($table_array, $values, $dat
       // check to see if we have any default values in the $default_data array
       // these were populated from select statements that only need to run once
       // so we can reuse the values from those previous selects.
-      if (array_key_exists('values_default', $default_data[$foreign_priority]) and
+      if (array_key_exists($foreign_priority, $default_data) and
+          array_key_exists('values_default', $default_data[$foreign_priority]) and
           array_key_exists($foreign_field, $default_data[$foreign_priority]['values_default'])) {
          $values[$field] = $default_data[$foreign_priority]['values_default'][$foreign_field];
          continue;
