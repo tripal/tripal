@@ -2664,8 +2664,8 @@ function tripal_core_chado_execute_prepared($statement_name, $sql, $values) {
           case 'text':
             $check = is_string($v);
             if (!$check) {
-              watchdog('tripal_core', "chado_execute_prepared: wrong argument type supplied for '%name' statement. Expected %required but recieved '%value'",
-                array('%name' => $statement_name, '%required' => $required_values[$k], '%value' => print_r($v,TRUE)), WATCHDOG_ERROR);
+              watchdog('tripal_core', "chado_execute_prepared: wrong argument type supplied for '%name' statement, field %k. Expected %required but recieved '%value'",
+                array('%name' => $statement_name, '%k' => $k, '%required' => $required_values[$k], '%value' => print_r($v,TRUE)), WATCHDOG_ERROR);
               return FALSE;
             }
             break;
