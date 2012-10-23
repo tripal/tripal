@@ -570,13 +570,21 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
   	$data[$priority]['values_array'] = $default_data[$priority]['values_array'];
     return $no_errors;
   }
-         
+
+  // make sure we have some value in the select_if_duplicate and update_if_duplicate options
+  if (!array_key_exists('select_if_duplicate', $table_data)) {
+  	$table_data['select_if_duplicate'] = 0;
+  } 
+  if (!array_key_exists('update_if_duplicate', $table_data)) {
+    $table_data['update_if_duplicate'] = 0;
+  } 
   
   // if "select if duplicate" is enabled then check to ensure unique constraint is not violoated.  
   // If it is violoated then simply return, the record already exists in the database.
-  // We check for insert_unique for backwards compatibilty but that mode no longer exists
+  // We check for "insert_unique" for backwards compatibilty but that mode no longer exists
+  $data[$priority]['is_duplicate'] = 0;
   if (preg_match('/insert_unique/', $table_data['mode']) or 
-     (array_key_exists('select_if_duplicate', $table_data) and $table_data['select_if_duplicate'] == 1)) {
+     $table_data['select_if_duplicate'] == 1 or $table_data['update_if_duplicate'] == 1) {
     $options = array('is_duplicate' => TRUE);
     $duplicate = tripal_core_chado_select($table, array_keys($table_desc['fields']), $values, $options);
     
@@ -584,6 +592,9 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
     // that for future records that my depend on this one, they can get the values needed
     if ($duplicate and is_array($duplicate) and count($duplicate) == 1) {
     	$dup_record = $duplicate[0];
+    	// save the duplicate record for later.  If this is an update_if_duplicate
+    	// then we'll need this record as the match
+    	$data[$priority]['is_duplicate'] = (array) $dup_record;
 
       // if all we have is one field then we will just use the value returned
       // rather than create an array of values. This way it will prevent 
@@ -604,8 +615,10 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
         } 
         $data[$priority]['values_array'] = $new_values;        
       }
-      // reset values in data array
-      return $no_errors;
+      // return if this is a select_if_duplicate
+      if ($table_data['select_if_duplicate'] == 1) {
+        return $no_errors;
+      }
     } 
   }
   else {
@@ -630,8 +643,11 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
     }
 
     if ($table_data['update_if_duplicate'] == 1) {
-      // TODO: handle updates
-      //$record = tripal_core_chado_update($table, $values, $options);
+      if (array_key_exists('statement_name', $options)) {
+        $options['statement_name'] = 'upd_' . $options['statement_name'];
+      }
+      $match = $data[$priority]['is_duplicate'];
+      $record = tripal_core_chado_update($table, $match, $values, $options);
     }
     else {
       $record = tripal_core_chado_insert($table, $values, $options);      
