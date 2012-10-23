@@ -576,20 +576,21 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
   // If it is violoated then simply return, the record already exists in the database.
   // We check for insert_unique for backwards compatibilty but that mode no longer exists
   if (preg_match('/insert_unique/', $table_data['mode']) or 
-      (array_key_exists('select_if_duplicate', $table_data) and 
-       $table_data['select_if_duplicate'] == 1)) {
+     (array_key_exists('select_if_duplicate', $table_data) and $table_data['select_if_duplicate'] == 1)) {
     $options = array('is_duplicate' => TRUE);
     $duplicate = tripal_core_chado_select($table, array_keys($table_desc['fields']), $values, $options);
+    
     // if this is a duplicate then substitute the values in the table_data array so
     // that for future records that my depend on this one, they can get the values needed
-    if ($duplicate and is_array($duplicate) and count($duplicate) > 0) {
+    if ($duplicate and is_array($duplicate) and count($duplicate) == 1) {
+    	$dup_record = $duplicate[0];
 
       // if all we have is one field then we will just use the value returned
       // rather than create an array of values. This way it will prevent 
       // the tripal_core_chado_(select|insert|update) from recursing on 
       // foreign keys and make the loader go faster.
-      if (count($duplicate[0]) == 1) {
-        foreach($duplicate[0] as $key => $value){ 
+      if (count((array) $dup_record) == 1) {
+        foreach($dup_record as $key => $value){ 
           $data[$priority]['values_array'] = $value;
         } 
       }
@@ -598,7 +599,7 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
       else {
         // convert object to array
         $new_values = array();
-        foreach($duplicate[0] as $key => $value){ 
+        foreach($dup_record as $key => $value){ 
           $new_values[$key] = $value;
         } 
         $data[$priority]['values_array'] = $new_values;        
@@ -606,6 +607,10 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
       // reset values in data array
       return $no_errors;
     } 
+  }
+  else {
+  	# TODO: what to do if there are more than one value returned when
+  	# checking for a duplicate?
   }
 
   if (!preg_match('/select/', $table_data['mode'])) {
