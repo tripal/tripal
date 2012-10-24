@@ -1,5 +1,8 @@
 <?php
-
+/**
+ * @file
+ * TODO: add documentation
+ */
 /**
  * Relationship handler that links a chado table to it's nodes by creating 2 joins.
  *

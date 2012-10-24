@@ -13,9 +13,10 @@ gff_loader.php:252:sql
 gff_loader.php:919:sql
 
 ; This is a multi-line conditional that needs to be re-written to be more readable
-gff_loader.php:164:style
-gff_loader.php:165:style
 gff_loader.php:166:style
+gff_loader.php:167:style
+gff_loader.php:168:style
+gff_loader.php:169:style
 
 ; Don't need to use db_rewrite_sql() since need all nodes regardless of access control
 syncFeatures.php:425:sql

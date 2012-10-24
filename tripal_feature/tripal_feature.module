@@ -450,13 +450,13 @@ function chado_feature_insert($node) {
   $exists = tripal_core_chado_select('feature', array('*'), $values, $options);
   
   // if the record is not a duplicate then add it
-  if(!$exists){
-	  $istatus = tripal_core_chado_insert('feature', $values);
-	  if (!$istatus) {
-	    drupal_set_message(t('Unable to add feature.'), 'warning');
-	    watchdog('tripal_feature', 'Insert feature: Unable to create feature where values: %values',
-	      array('%values' => print_r($values, TRUE)), WATCHDOG_WARNING);
-	  }
+  if (!$exists) {
+    $istatus = tripal_core_chado_insert('feature', $values);
+    if (!$istatus) {
+      drupal_set_message(t('Unable to add feature.'), 'warning');
+      watchdog('tripal_feature', 'Insert feature: Unable to create feature where values: %values',
+        array('%values' => print_r($values, TRUE)), WATCHDOG_WARNING);
+    }
   }
   
   // now get the newly added record
@@ -550,7 +550,7 @@ function chado_feature_delete($node) {
   
   // if we don't have a library id for this node then this isn't a node of
   // type chado_library or the entry in the chado_library table was lost.
-  if (!$feature_id){
+  if (!$feature_id) {
     return;
   }
 
@@ -941,8 +941,8 @@ function chado_feature_load($node) {
   $values = array('feature_id' => $feature_id);
   $feature = tripal_core_generate_chado_var('feature', $values);
   
-  if(strcmp($feature->name,$feature->uniquename)==0){
-     $node->title = $feature->name ." (" . $feature->type_id->name . ") " . $feature->organism_id->genus . " " . $feature->organism_id->species ;
+  if (strcmp($feature->name, $feature->uniquename)==0) {
+     $node->title = $feature->name . " (" . $feature->type_id->name . ") " . $feature->organism_id->genus . " " . $feature->organism_id->species ;
   }
 
   $additions = new stdClass();
@@ -1305,7 +1305,7 @@ function tripal_feature_load_featureloc_sequences($feature_id, $featurelocs) {
       $rparts = array();  // we will fill this up if we're on the reverse strand
 
       foreach ($parts as $start => $types) {
-        foreach ($types as $type_name => $type){ 
+        foreach ($types as $type_name => $type) { 
           if ($featureloc->strand >= 0) {
              // this is on the forward strand.  We need to convert the start on the src feature to the 
              // start on this feature's sequence
@@ -1333,7 +1333,8 @@ function tripal_feature_load_featureloc_sequences($feature_id, $featurelocs) {
       // if we're on the reverse strand we need to resort
       if ($featureloc->strand >= 0) {
         usort($parts, 'tripal_feature_sort_rel_parts_by_start');         
-      } else {
+      } 
+      else {
         usort($rparts, 'tripal_feature_sort_rel_parts_by_start');
         $parts = $rparts;
       }
@@ -1709,11 +1710,11 @@ function tripal_feature_sort_rel_objects($a, $b) {
  * @ingroup tripal_feature
  */
 function tripal_feature_sort_rel_parts_by_start($a, $b) {
-  foreach ($a as $type_name => $details){
+  foreach ($a as $type_name => $details) {
      $astart = $a[$type_name]['start'];
      break;
   }
-  foreach ($b as $type_name => $details){
+  foreach ($b as $type_name => $details) {
      $bstart = $b[$type_name]['start'];
      break;
   }
@@ -1744,7 +1745,7 @@ function tripal_feature_color_sequence($sequence, $parts, $defline) {
   $types = array();
   // first get the list of types so we can create a color legend
   foreach ($parts as $index => $t) {
-    foreach ($t as $type_name => $details){
+    foreach ($t as $type_name => $details) {
        $types[$type_name] = 1;
     }
   }
@@ -1780,7 +1781,7 @@ function tripal_feature_color_sequence($sequence, $parts, $defline) {
         $newseq .= "\n";
       }
       if (array_key_exists($pos, $ends)) {
-        foreach ($ends[$pos] as $end){
+        foreach ($ends[$pos] as $end) {
           $newseq .= "</span>";
         }
       }
@@ -1789,7 +1790,7 @@ function tripal_feature_color_sequence($sequence, $parts, $defline) {
 
     // we want to sort the parts by their end. We want the span tag to
     // to be added in the order the parts end. 
-    usort($types,'tripal_feature_sort_rel_parts_by_end');
+    usort($types, 'tripal_feature_sort_rel_parts_by_end');
     
     // now add the child span for all types that start at this position  
     foreach ($types as $type) {
@@ -1809,7 +1810,7 @@ function tripal_feature_color_sequence($sequence, $parts, $defline) {
       $newseq .= "\n";
     }
     if (array_key_exists($pos, $ends)) {
-      foreach ($ends[$pos] as $end){
+      foreach ($ends[$pos] as $end) {
         $newseq .= "</span>";
       }
     }
@@ -2001,79 +2002,79 @@ function tripal_feature_preprocess_tripal_feature_relationships(&$variables) {
   
   // iterate through the object relationships
   if ($orelationships) {
-	  foreach ($orelationships as $relationship) {
-	     $rel = new stdClass(); 
-	     // get locations where the child feature and this feature overlap with the
-	     // same landmark feature.
-	     $rel->child_featurelocs = array();     
-	     foreach ($cfeaturelocs as $featureloc) {
-	        $res = chado_query("EXECUTE sel_featureloc_preprocess_relationships (%d, %d)", 
-	          $relationship->subject_id->feature_id, 
-	          $featureloc->srcfeature_id->feature_id);        
-	        while ($loc = db_fetch_object($res)){
-	           // add in the node id of the src feature if it exists and save this location
-	           $loc->nid = $featureloc->srcfeature_id->nid;
-	           $rel->child_featurelocs[] = $loc;
-	        }
-	     }
-	     $rel->record = $relationship;    
-	     
-	     // get the relationship and child types
-	     $rel_type = t(preg_replace('/_/'," ",$relationship->type_id->name));
-	     $child_type = $relationship->subject_id->type_id->name;
-	     
-	     // get the node id of the subject
-	     $sql = "SELECT nid FROM chado_feature WHERE feature_id = %d";
-	     $n = db_fetch_object(db_query($sql,$relationship->subject_id->feature_id));
-	     if($n){
-	        $rel->record->nid = $n->nid;
-	     }
-	
-	     if (!array_key_exists($rel_type, $relationships['object'])) {
-	       $relationships['object'][$rel_type] = array();   
-	     }
-	     if (!array_key_exists($child_type, $relationships['object'][$rel_type])) {
-	       $relationships['object'][$rel_type][$child_type] = array();   
-	     }
-	     $relationships['object'][$rel_type][$child_type][] = $rel;     
-	  }
+    foreach ($orelationships as $relationship) {
+       $rel = new stdClass(); 
+       // get locations where the child feature and this feature overlap with the
+       // same landmark feature.
+       $rel->child_featurelocs = array();     
+       foreach ($cfeaturelocs as $featureloc) {
+          $res = chado_query("EXECUTE sel_featureloc_preprocess_relationships (%d, %d)", 
+            $relationship->subject_id->feature_id, 
+            $featureloc->srcfeature_id->feature_id);        
+          while ($loc = db_fetch_object($res)) {
+             // add in the node id of the src feature if it exists and save this location
+             $loc->nid = $featureloc->srcfeature_id->nid;
+             $rel->child_featurelocs[] = $loc;
+          }
+       }
+       $rel->record = $relationship;    
+       
+       // get the relationship and child types
+       $rel_type = t(preg_replace('/_/', " ", $relationship->type_id->name));
+       $child_type = $relationship->subject_id->type_id->name;
+       
+       // get the node id of the subject
+       $sql = "SELECT nid FROM {chado_feature} WHERE feature_id = %d";
+       $n = db_fetch_object(db_query($sql, $relationship->subject_id->feature_id));
+       if ($n) {
+          $rel->record->nid = $n->nid;
+       }
+  
+       if (!array_key_exists($rel_type, $relationships['object'])) {
+         $relationships['object'][$rel_type] = array();   
+       }
+       if (!array_key_exists($child_type, $relationships['object'][$rel_type])) {
+         $relationships['object'][$rel_type][$child_type] = array();   
+       }
+       $relationships['object'][$rel_type][$child_type][] = $rel;     
+    }
   }
   
   // now add in the subject relationships
   if ($srelationships) {
-	  foreach ($srelationships as $relationship) {
-	     $rel = new stdClass(); 
-	     // get locations where this feature overlaps with the parent
-	     $rel->parent_featurelocs = array();     
-	     foreach ($cfeaturelocs as $featureloc) {
-	        $res = chado_query("EXECUTE sel_featureloc_preprocess_relationships (%d, %d)", 
-	          $relationship->object_id->feature_id, 
-	          $featureloc->srcfeature_id->feature_id);
-	        while ($loc = db_fetch_object($res)){
-	           // add in the node id of the src feature if it exists and save this location
-	           $loc->nid = $featureloc->srcfeature_id->nid;
-	           $rel->parent_featurelocs[] = $loc;
-	        }
-	     }
-	     $rel->record = $relationship;
-	     $rel_type = t(preg_replace('/_/'," ",$relationship->type_id->name));
-	     $parent_type = $relationship->object_id->type_id->name;
-	     
-	     // get the node id of the subject
-	     $sql = "SELECT nid FROM chado_feature WHERE feature_id = %d";
-	     $n = db_fetch_object(db_query($sql,$relationship->object_id->feature_id));
-	     if($n){
-	        $rel->record->nid = $n->nid;
-	     }
-	     
-	     if (!array_key_exists($rel_type, $relationships['subject'])) {
-	       $relationships['subject'][$rel_type] = array();   
-	     }
-	     if (!array_key_exists($child_type, $relationships['subject'][$rel_type])) {
-	       $relationships['subject'][$rel_type][$parent_type] = array();   
-	     }
-	     $relationships['subject'][$rel_type][$parent_type][] = $rel;
-	  }
+    foreach ($srelationships as $relationship) {
+       $rel = new stdClass(); 
+       // get locations where this feature overlaps with the parent
+       $rel->parent_featurelocs = array();     
+       foreach ($cfeaturelocs as $featureloc) {
+          $res = chado_query("EXECUTE sel_featureloc_preprocess_relationships (%d, %d)", 
+            $relationship->object_id->feature_id, 
+            $featureloc->srcfeature_id->feature_id);
+          while ($loc = db_fetch_object($res)) {
+             // add in the node id of the src feature if it exists and save this location
+             $loc->nid = $featureloc->srcfeature_id->nid;
+             $rel->parent_featurelocs[] = $loc;
+          }
+       }
+       $rel->record = $relationship;
+       $rel_type = t(preg_replace('/_/', " ", $relationship->type_id->name));
+       $parent_type = $relationship->object_id->type_id->name;
+       
+       // get the node id of the subject
+       $sql = "SELECT nid FROM {chado_feature} WHERE feature_id = %d";
+       $n = db_fetch_object(db_query($sql, $relationship->object_id->feature_id));
+       if ($n) {
+          $rel->record->nid = $n->nid;
+       }
+       
+       if (!array_key_exists($rel_type, $relationships['subject'])) {
+         $relationships['subject'][$rel_type] = array();   
+       }
+       if (!array_key_exists($child_type, $relationships['subject'][$rel_type])) {
+         $relationships['subject'][$rel_type][$parent_type] = array();   
+       }
+       $relationships['subject'][$rel_type][$parent_type][] = $rel;
+    }
   }
   $feature->all_relationships = $relationships;
 
@@ -2716,7 +2717,7 @@ function tripal_feature_job_describe_args($callback, $args) {
   elseif ($callback == 'tripal_feature_load_gff3') {
     
     $new_args['GFF File'] = $args[0];
-    $organism = tripal_core_chado_select('organism', array('genus','species'), array('organism_id' => $args[1]));
+    $organism = tripal_core_chado_select('organism', array('genus', 'species'), array('organism_id' => $args[1]));
     $new_args['Organism'] = $organism[0]->genus . " " . $organism[0]->species;
     $analysis = tripal_core_chado_select('analysis', array('name'), array('analysis_id' => $args[2]));
     $new_args['Analysis'] = $analysis[0]->name;   

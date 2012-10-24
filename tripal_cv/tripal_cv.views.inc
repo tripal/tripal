@@ -70,7 +70,7 @@ function tripal_cv_views_data() {
       'cvtermsynonym'
     );
     foreach ($tables as $tablename) {
-    	$priority = 9;     
+      $priority = 9;     
       if (!tripal_views_is_integrated($tablename, $priority)) {
         $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename, FALSE, $priority);
         tripal_views_integration_add_entry($table_integration_array);

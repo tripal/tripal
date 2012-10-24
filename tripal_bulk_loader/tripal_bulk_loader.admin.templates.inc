@@ -141,16 +141,16 @@ function tripal_bulk_loader_modify_template_base_form($form_state = NULL, $mode)
 
         // for backwards compatibility we want to convert insert_unique to be 'insert'
         // and optional to 'insert'
-        if (strcmp($table_array['mode'],'insert_unique')==0) {
+        if (strcmp($table_array['mode'], 'insert_unique')==0) {
           $mode_value .= 'insert or select if duplicate';
         } 
-        elseif (strcmp($table_array['mode'],'optional')==0) {
+        elseif (strcmp($table_array['mode'], 'optional')==0) {
           $mode_value .= 'optional insert';
         } 
-        elseif (strcmp($table_array['mode'],'insert_once')==0) {
+        elseif (strcmp($table_array['mode'], 'insert_once')==0) {
           $mode_value .= 'insert once';
         } 
-         elseif (strcmp($table_array['mode'],'select_once')==0) {
+         elseif (strcmp($table_array['mode'], 'select_once')==0) {
           $mode_value .= 'select once';
         } 
         elseif ($table_array['mode']) {
@@ -238,7 +238,7 @@ function tripal_bulk_loader_modify_template_base_form($form_state = NULL, $mode)
               $tbl_description = tripal_core_get_chado_table_schema($table_array['table']);
               foreach ($tbl_description['foreign keys'] as $key_table => $key_array) {
                 foreach ($key_array['columns'] as $left_field => $right_field) {
-                  if($key_table == $fk_table and $left_field == $field['field']){                  
+                  if ($key_table == $fk_table and $left_field == $field['field']) {                  
                     $fk_value = $field['foreign key'] . " ($right_field)";
                   }
                 }
@@ -609,10 +609,10 @@ function tripal_bulk_loader_import_export_template_form_submit($form, &$form_sta
       $record = db_fetch_object(db_query("SELECT * FROM {tripal_bulk_loader_template} WHERE template_id=%d", $form_state['values']['template_id']));
       //$form_state['storage']['template_array'] = $record->template_array;
       $t = var_export(unserialize($record->template_array), TRUE);
-      $t = preg_replace("/\n\s+array/","array", $t); // move array( to previous line
-      $t = preg_replace("/true/","TRUE", $t); // upper case true
-      $t = preg_replace("/false/","FALSE", $t); // upper case false
-      $t = preg_replace("/array\(/","array (", $t); // put a space between array and paren      
+      $t = preg_replace("/\n\s+array/", "array", $t); // move array( to previous line
+      $t = preg_replace("/true/", "TRUE", $t); // upper case true
+      $t = preg_replace("/false/", "FALSE", $t); // upper case false
+      $t = preg_replace("/array\(/", "array (", $t); // put a space between array and paren      
     
       $form_state['storage']['template_array'] = $t; 
       $form_state['storage']['template_id'] = $form_state['values']['template_id'];
@@ -703,31 +703,31 @@ function tripal_bulk_loader_edit_template_record_form(&$form_state = NULL) {
   
   // get the default mode
   $mode = $form_state['storage']['template_array'][$form_state['storage']['original_priority']]['mode'];
-  if(!$mode){
+  if (!$mode) {
      $mode = 'insert';
   }
   
   // get default for the select optional
   $select_optional = $form_state['storage']['template_array'][$form_state['storage']['original_priority']]['select_optional'];
-  if(!isset($select_optional)){
+  if (!isset($select_optional)) {
     $select_optional = 0;
   }
   
   // get default for the select if duplicate
   $select_if_duplicate = $form_state['storage']['template_array'][$form_state['storage']['original_priority']]['select_if_duplicate'];
-  if(!isset($select_if_duplicate)){
+  if (!isset($select_if_duplicate)) {
     $select_if_duplicate = 1;
   }
   
   // get default for the update if duplicate
   $update_if_duplicate = $form_state['storage']['template_array'][$form_state['storage']['original_priority']]['update_if_duplicate'];
-  if(!isset($update_if_duplicate)){
+  if (!isset($update_if_duplicate)) {
     $update_if_duplicate = 0;
   }
   
   // get default for the select if duplicate
   $optional = $form_state['storage']['template_array'][$form_state['storage']['original_priority']]['optional'];
-  if(!isset($optional)){
+  if (!isset($optional)) {
     $optional = 0;
   }
   
@@ -735,13 +735,13 @@ function tripal_bulk_loader_edit_template_record_form(&$form_state = NULL) {
   $disable = $form_state['storage']['template_array'][$form_state['storage']['original_priority']]['disable'];
 
   // this is just for backwards compatibility. the insert_unique mode type is no longer available
-  if(strcmp($mode,'insert_unique')==0){
+  if (strcmp($mode, 'insert_unique')==0) {
      $mode = 'insert';
      $select_if_duplicate = 1;
   }
   
   // this is just for backwards compatibility. the insert_unique mode type is no longer available
-  if(strcmp($mode,'optional')==0){
+  if (strcmp($mode, 'optional')==0) {
      $mode = 'insert';
      $optional = 1;
   }
@@ -1086,14 +1086,14 @@ function tripal_bulk_loader_add_template_field_form(&$form_state = NULL) {
       $fk_table = $form_state['storage']['template_array'][$fk_priority]['table'];
       foreach ($table_description['foreign keys'] as $key_table => $key_array) {
         foreach ($key_array['columns'] as $left_field => $right_field) {
-          if($key_table == $fk_table and $left_field == $field){                  
+          if ($key_table == $fk_table and $left_field == $field) {                  
             $ref_chado_fields['Foreign Key'][$right_field] = $right_field;
           }
         }
       }      
       // now add in the remaining fields of the referring record's table.
       $fk_description = tripal_core_get_chado_table_schema($fk_table);
-      foreach ($fk_description['fields'] as $fk_field_name => $fk_farray){
+      foreach ($fk_description['fields'] as $fk_field_name => $fk_farray) {
         // don't include the FK field it's included above
         if (in_array('Foreign Key', $ref_chado_fields)) {
           if (in_array($fk_field_name, $ref_chado_fields['Foreign Key'])) {
@@ -1484,7 +1484,7 @@ function tripal_bulk_loader_add_template_field_form_validate($form, $form_state)
     );
     $new_record = ($form_state['values']['field_group'] == 'NEW') ? TRUE : FALSE;
     if ((!$is_unique) AND $new_record) {
-      form_set_error('record_name', "New Record Name must be unique. '".$form_state['values']['record_name']."' is not unique.");
+      form_set_error('record_name', "New Record Name must be unique. '" . $form_state['values']['record_name'] . "' is not unique.");
     }
   }
 
@@ -1773,15 +1773,15 @@ function tripal_bulk_loader_edit_template_field_form(&$form_state = NULL) {
       $fk_table = $form_state['storage']['template_array'][$fk_priority]['table'];
       foreach ($table_description['foreign keys'] as $key_table => $key_array) {
         foreach ($key_array['columns'] as $left_field => $right_field) {
-          if($key_table == $fk_table and $left_field == $field){                  
+          if ($key_table == $fk_table and $left_field == $field) {                  
             $ref_chado_fields['Foreign Key'][$right_field] = $right_field;
           }
         }
       }      
       $fk_description = tripal_core_get_chado_table_schema($fk_table);
-      foreach ($fk_description['fields'] as $fk_field_name => $fk_farray){
+      foreach ($fk_description['fields'] as $fk_field_name => $fk_farray) {
          // don't include the FK field it's included above
-         if (in_array('Foreign Key',$ref_chado_fields) and 
+         if (in_array('Foreign Key', $ref_chado_fields) and 
              in_array($fk_field_name, $ref_chado_fields['Foreign Key'])) {
            continue;
          }
@@ -2171,7 +2171,7 @@ function tripal_bulk_loader_edit_template_field_form_validate($form, $form_state
     );
     $new_record = ($form_state['values']['field_group'] == 'NEW') ? TRUE : FALSE;
     if ((!$is_unique) AND $new_record) {
-      form_set_error('record_name', "New Record Name must be unique. '".$form_state['values']['record_name']."' is not unique.");
+      form_set_error('record_name', "New Record Name must be unique. '" . $form_state['values']['record_name'] . "' is not unique.");
     }
   }
 
@@ -2425,7 +2425,7 @@ function tripal_bulk_loader_is_record_name_unique($new_record_name, $template_id
 
   // get the template array if it's not supplied
   if (empty($template_array)) {
-    $template = db_fetch_object(db_query("SELECT * FROM {tripal_bulk_loader_template} WHERE template_id=%d",$template_id));
+    $template = db_fetch_object(db_query("SELECT * FROM {tripal_bulk_loader_template} WHERE template_id=%d", $template_id));
     $template_array = unserialize($template->template_array);
     if (!is_array($template_array)) {
       watchdog(

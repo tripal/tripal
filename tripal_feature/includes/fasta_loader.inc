@@ -478,7 +478,7 @@ function tripal_feature_load_fasta($dfile, $organism_id, $type,
   //$lines = file($dfile, FILE_SKIP_EMPTY_LINES);
   $fh = fopen($dfile, 'r');
   if (!$fh) {
-    watchdog('T_fasta_loader',"cannot open file: %dfile", array('%dfile' => $dfile), WATCHDOG_ERROR);
+    watchdog('T_fasta_loader', "cannot open file: %dfile", array('%dfile' => $dfile), WATCHDOG_ERROR);
     return 0;
   }
   $filesize = filesize($dfile);
@@ -563,7 +563,7 @@ function tripal_feature_load_fasta($dfile, $organism_id, $type,
           print "Parsing Line $i (" . $percent . "%). Memory: " . number_format(memory_get_usage()) . " bytes. Parsing: $name\r";
         }
         else {
-          print "Parsing Line $i (" . $percent . "%). Memory: " . number_format(memory_get_usage()) . " bytes. Parsing: $uname\r";	
+          print "Parsing Line $i (" . $percent . "%). Memory: " . number_format(memory_get_usage()) . " bytes. Parsing: $uname\r";  
         }
         tripal_job_set_progress($job, intval(($num_read / $filesize) * 100));
       }
@@ -590,19 +590,19 @@ function tripal_feature_fasta_loader_handle_feature($name, $uname, $db_id, $acce
 
   // check to see if this feature already exists if the match_type is 'Name'
   if (strcmp($match_type, 'Name')==0) {
-  	$values = array(
-  	  'organism_id' => $organism_id,
-  	  'name' => $name,
-  	  'type_id' => $cvterm->cvterm_id,  	
-  	);
-  	$options = array('statement_name' => 'sel_feature_ornaty');
-  	$results = tripal_core_chado_select('feature', array('feature_id'), $values, $options);
+    $values = array(
+      'organism_id' => $organism_id,
+      'name' => $name,
+      'type_id' => $cvterm->cvterm_id,    
+    );
+    $options = array('statement_name' => 'sel_feature_ornaty');
+    $results = tripal_core_chado_select('feature', array('feature_id'), $values, $options);
     if (count($results) > 1) {
       watchdog('T_fasta_loader', "Multiple features exist with the name '%name' of type 
                '%type' for the organism.  skipping", array('%name' => $name, '%type' => $type));
       return 0;
     } 
-    if(count($results) == 1){  
+    if (count($results) == 1) {  
       $reature = $results[0];
     } 
   }
@@ -620,7 +620,7 @@ function tripal_feature_fasta_loader_handle_feature($name, $uname, $db_id, $acce
                '%type' for the organism.  skipping", array('%name' => $name, '%type' => $type));
       return 0;
     } 
-    if(count($results) == 1){  
+    if (count($results) == 1) {  
       $reature = $results[0];
     } 
   }
@@ -672,13 +672,13 @@ function tripal_feature_fasta_loader_handle_feature($name, $uname, $db_id, $acce
     else {
       watchdog('T_fasta_loader', "Failed to retreive newly inserted feature '%name (%uname)'", 
         array('%name' => $name, '%uname' => $numane), WATCHDOG_ERROR);
-      return 0;	
+      return 0;  
     }   
   }
   
   // if we don't have a feature and the uesr wants to do an update then fail
   if (!$feature and (strcmp($method, 'Update only')==0 or drupal_strcmp($method, 'Insert and update')==0)) {
-    watchdog('T_fasta_loader',"Failed to find feature '%name' ('%name') while matching on " . 
+    watchdog('T_fasta_loader', "Failed to find feature '%name' ('%name') while matching on " . 
       drupal_strtolower($match_type), array('%name' => $name, '%uiname' => $uname), WATCHDOG_ERROR);
     return 0;
   }
@@ -689,19 +689,19 @@ function tripal_feature_fasta_loader_handle_feature($name, $uname, $db_id, $acce
       // if we're matching on the name but do not have a new unique name then we don't want to update the uniquename.  
       $values = array();
       if ($uname) {
-		    $values = array(
-		      'residues' => $residues,
-		      'seqlen' => drupal_strlen($residues),
-		      'md5checksum' => md5($residues),
-		      'is_analysis' => 'false',
-		      'is_obsolete' => 'false',
-		    );
-		    $match = array(
+        $values = array(
+          'residues' => $residues,
+          'seqlen' => drupal_strlen($residues),
+          'md5checksum' => md5($residues),
+          'is_analysis' => 'false',
+          'is_obsolete' => 'false',
+        );
+        $match = array(
           'organism_id' => $organism_id,
           'name' => $name,
-          'type_id' => $cvterm->cvterm_id,		    
-		    );
-		    $options = array('statement_name' => 'upd_feature_resemdisis_ornaty');		    
+          'type_id' => $cvterm->cvterm_id,        
+        );
+        $options = array('statement_name' => 'upd_feature_resemdisis_ornaty');        
       }
       // if we have a unique name then update it after matching by the name
       else {
@@ -722,7 +722,7 @@ function tripal_feature_fasta_loader_handle_feature($name, $uname, $db_id, $acce
       }
       $success = tripal_core_chado_update('feature', $match, $values, $options);
       if (!$success) {
-        watchdog('T_fasta_loader',"Failed to update feature '%name' ('%name')", 
+        watchdog('T_fasta_loader', "Failed to update feature '%name' ('%name')", 
           array('%name' => $name, '%uiname' => $uname), WATCHDOG_ERROR);
         return 0;
       }
@@ -764,7 +764,7 @@ function tripal_feature_fasta_loader_handle_feature($name, $uname, $db_id, $acce
       }
       $success = tripal_core_chado_update('feature', $match, $values, $options);
       if (!$success) {
-        watchdog('T_fasta_loader',"Failed to update feature '%name' ('%name')", 
+        watchdog('T_fasta_loader', "Failed to update feature '%name' ('%name')", 
           array('%name' => $name, '%uiname' => $uname), WATCHDOG_ERROR);
         return 0;
       }
@@ -773,50 +773,50 @@ function tripal_feature_fasta_loader_handle_feature($name, $uname, $db_id, $acce
   
   // add in the analysis link
   if ($analysis_id) {
-  	// if the association doens't alredy exist then add one
-  	$values = array(
-  	  'analysis_id' => $analysis_id,
-  	  'feature_id' => $feature->feature_id,
-  	);
-  	$sel_options = array('statement_name' => 'sel_analysisfeature_anfe');
-  	$results = tripal_core_chado_select('analysisfeature', array('analysisfeature_id'), $values, $sel_options);
+    // if the association doens't alredy exist then add one
+    $values = array(
+      'analysis_id' => $analysis_id,
+      'feature_id' => $feature->feature_id,
+    );
+    $sel_options = array('statement_name' => 'sel_analysisfeature_anfe');
+    $results = tripal_core_chado_select('analysisfeature', array('analysisfeature_id'), $values, $sel_options);
     if (count($results) == 0) {
-    	$ins_options = array('statement_name' => 'ins_analysisfeature_anfe');
-    	$success = tripal_core_chado_insert('analysisfeature', $values, $ins_options);    	
-    	if (!$success) {
-    	  watchdog('T_fasta_loader',"Failed to associate analysis and feature '%name' ('%name')", 
+      $ins_options = array('statement_name' => 'ins_analysisfeature_anfe');
+      $success = tripal_core_chado_insert('analysisfeature', $values, $ins_options);      
+      if (!$success) {
+        watchdog('T_fasta_loader', "Failed to associate analysis and feature '%name' ('%name')", 
           array('%name' => $name, '%uname' => $uname), WATCHDOG_ERROR);
-        return 0;	
-    	}
+        return 0;  
+      }
     }
   }
 
    // now add the database cross reference
   if ($db_id) {
-  	// check to see if this accession reference exists, if not add it
-  	$values = array(
-  	  'db_id' => $db_id,
-  	  'accession' => $accession
-  	);
-  	$sel_options = array('statement_name' => 'sel_dbxref_dbac');
-  	$results = tripal_core_chado_select('dbxref', array('dbxref_id'), $values, $sel_options);
-  	if (count($results) == 0) {   
-  	  $ins_options = array('statement_name' => 'sel_dbxref_dbac');
+    // check to see if this accession reference exists, if not add it
+    $values = array(
+      'db_id' => $db_id,
+      'accession' => $accession
+    );
+    $sel_options = array('statement_name' => 'sel_dbxref_dbac');
+    $results = tripal_core_chado_select('dbxref', array('dbxref_id'), $values, $sel_options);
+    if (count($results) == 0) {   
+      $ins_options = array('statement_name' => 'sel_dbxref_dbac');
       $success = tripal_core_chado_insert('dbxref', $values, $ins_options);
       if (!$success) {
-        watchdog('T_fasta_loader',"Failed to add database accession '%accession'", 
+        watchdog('T_fasta_loader', "Failed to add database accession '%accession'", 
           array('%accession' => $accession), WATCHDOG_ERROR);
         return 0;
       }
       $results = tripal_core_chado_select('dbxref', array('dbxref_id'), $values, $sel_options);
-      if(count($results) == 1) {
+      if (count($results) == 1) {
         $dbxref = $results[0];
-  	  }
-  	  else { 
-  	    watchdog('T_fasta_loader', "Failed to retreive newly inserted dbxref '%name (%uname)'", 
+      }
+      else { 
+        watchdog('T_fasta_loader', "Failed to retreive newly inserted dbxref '%name (%uname)'", 
           array('%name' => $name, '%uname' => $numane), WATCHDOG_ERROR);
         return 0;
-  	  }
+      }
     }
 
     // check to see if the feature dbxref record exists if not, then add it
@@ -830,7 +830,7 @@ function tripal_feature_fasta_loader_handle_feature($name, $uname, $db_id, $acce
       $ins_options = array('statement_name' => 'ins_featuredbxref_fedb');
       $success = tripal_core_chado_insert('feature_dbxref', $values, $ins_options);
       if (!$success) {
-        watchdog('T_fasta_loader',"Failed to add associate database accession '%accession' with feature", 
+        watchdog('T_fasta_loader', "Failed to add associate database accession '%accession' with feature", 
           array('%accession' => $accession), WATCHDOG_ERROR);
         return 0;
       }
@@ -865,7 +865,7 @@ function tripal_feature_fasta_loader_handle_feature($name, $uname, $db_id, $acce
       $ins_options = array('statement_name' => 'sel_featurerelationship_suojty');
       $success = tripal_core_chado_insert('feature_relationship', $values, $ins_options);
       if (!$success) {
-        watchdog('T_fasta_loader',"Failed to add associate database accession '%accession' with feature", 
+        watchdog('T_fasta_loader', "Failed to add associate database accession '%accession' with feature", 
           array('%accession' => $accession), WATCHDOG_ERROR);
         return 0;
       }

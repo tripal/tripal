@@ -302,23 +302,23 @@ function tripal_db_get_dbxref_by_accession($accession, $db_id=0) {
 function tripal_db_add_db($dbname, $description = '', $url = '', 
   $urlprefix = '', $update = 0) {
 
-	// build the values array for inserting/updating
+  // build the values array for inserting/updating
   $ins_values = array(
     'name' => $dbname,
     'description' => $description,
     'url' => $url,
     'urlprefix' => $urlprefix
   );
-	
-	// get the database record if it already exists
-	$sel_values = array('name' => $dbname);
+  
+  // get the database record if it already exists
+  $sel_values = array('name' => $dbname);
   $sel_options = array('statement_name' => 'sel_db_na');
   $result = tripal_core_chado_select('db', array('*'), $sel_values, $sel_options);
   
   // if it does not exists then add it
-  if (count($result) == 0) {  	
-	  $ins_options = array('statement_name' => 'ins_db_nadeurur');	 
-	  $success = tripal_core_chado_insert('db', $ins_values, $ins_options); 
+  if (count($result) == 0) {    
+    $ins_options = array('statement_name' => 'ins_db_nadeurur');   
+    $success = tripal_core_chado_insert('db', $ins_values, $ins_options); 
     if (!$success) {
       watchdog('tripal_db', "Cannot create db '$dbname'.", NULL, WATCHDOG_WARNING);
       return 0;
@@ -327,8 +327,8 @@ function tripal_db_add_db($dbname, $description = '', $url = '',
   }
   // if it exists and update is enabled the do the update
   elseif ($update) {
-  	$upd_options = array('statement_name' => 'upd_db_nadeurur');
-  	$success = tripal_core_chado_update('db', $sel_values, $ins_values, $upd_options);
+    $upd_options = array('statement_name' => 'upd_db_nadeurur');
+    $success = tripal_core_chado_update('db', $sel_values, $ins_values, $upd_options);
     if (!$success) {
       watchdog('tripal_db', "Cannot update db '$dbname'.", NULL, WATCHDOG_WARNING);
       return 0;

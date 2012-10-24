@@ -76,7 +76,7 @@ function drush_tripal_feature_tripal_get_sequence() {
   $aggregate = drush_get_option('agg');
   $child = drush_get_option('child');
   
-  $sub_features = explode(',',$child);
+  $sub_features = explode(',', $child);
     
   if (!$output_format) {
      $output_format = 'fasta_txt';
@@ -131,5 +131,5 @@ function drush_tripal_feature_tripal_get_sequence() {
  */
 function drush_tripal_feature_sync() {
   $feature_id = drush_get_option('id');  
-	tripal_feature_sync_feature($feature_id);
+  tripal_feature_sync_feature($feature_id);
 }

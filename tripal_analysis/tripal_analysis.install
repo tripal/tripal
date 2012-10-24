@@ -44,12 +44,12 @@ function tripal_analysis_install() {
     'name' => 'analysis_date', 
     'def' => 'The date that an analysis was performed.'
   );
-  tripal_cv_add_cvterm($term,'tripal', 0, 1, 'tripal');
+  tripal_cv_add_cvterm($term, 'tripal', 0, 1, 'tripal');
   $term = array(
     'name' => 'analysis_short_name', 
     'def' => 'A computer legible (no spaces or special characters) abbreviation for the analysis.'
   );     
-  tripal_cv_add_cvterm($term,'tripal', 0, 1 , 'tripal');
+  tripal_cv_add_cvterm($term, 'tripal', 0, 1 , 'tripal');
 }
 
 /**

@@ -314,16 +314,16 @@ function tripal_featuremap_nodeapi(&$node, $op, $teaser, $page) {
     // node.
     case 'view':
       // add the map to the organism/feature search indexing
-	    if ($node->build_mode == NODE_BUILD_SEARCH_INDEX) {
-	      $node->content['tripal_featuremap_index_version'] = array(
-	        '#value' => theme('tripal_featuremap_search_index', $node),
-	      );
-	    }
-	    elseif ($node->build_mode == NODE_BUILD_SEARCH_RESULT) {
-	      $node->content['tripal_featuremap_index_version'] = array(
-	        '#value' => theme('tripal_featuremap_search_result', $node),
-	      );
-	    }	    
+      if ($node->build_mode == NODE_BUILD_SEARCH_INDEX) {
+        $node->content['tripal_featuremap_index_version'] = array(
+          '#value' => theme('tripal_featuremap_search_index', $node),
+        );
+      }
+      elseif ($node->build_mode == NODE_BUILD_SEARCH_RESULT) {
+        $node->content['tripal_featuremap_index_version'] = array(
+          '#value' => theme('tripal_featuremap_search_result', $node),
+        );
+      }      
   }
 }
 
@@ -346,10 +346,10 @@ function tripal_featuremap_theme() {
        'arguments' => array('node' => NULL),
        'template' => 'tripal_featuremap_base',
     ),
-  	'tripal_featuremap_properties' => array(
-  		'arguments' => array('node' => NULL),
-  		'template' => 'tripal_featuremap_properties',
-  	),
+    'tripal_featuremap_properties' => array(
+      'arguments' => array('node' => NULL),
+      'template' => 'tripal_featuremap_properties',
+    ),
   );
 }
 
@@ -730,7 +730,7 @@ function chado_featuremap_insert($node) {
   else {
     $values = array(
       'name' => $node->title,
-    	'description' => $node->description,
+      'description' => $node->description,
     );
     $featuremap = tripal_core_chado_insert('featuremap', $values);
   }
@@ -949,7 +949,7 @@ function chado_featuremap_delete(&$node) {
   
   // if we don't have a map id for this node then this isn't a node of
   // type chado_featuremap or the entry in the chado_featuremap table was lost.
-  if (!$featuremap_id){
+  if (!$featuremap_id) {
     return;
   }
   

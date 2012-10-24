@@ -66,7 +66,7 @@ function tripal_analysis_views_data()  {
       'analysisprop'
     );
     foreach ($tables as $tablename) {
-    	$priority = tripal_views_get_table_lightest_priority($tablename);     
+      $priority = tripal_views_get_table_lightest_priority($tablename);     
       if (!tripal_views_is_integrated($tablename, $priority)) {
         $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename, FALSE, $priority);
         tripal_views_integration_add_entry($table_integration_array);

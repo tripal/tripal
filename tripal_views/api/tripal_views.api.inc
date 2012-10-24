@@ -27,7 +27,7 @@ function tripal_views_get_table_lightest_priority($table_name) {
     return $setup->priority;
   }
   else {
-  	// default priority is 10
+    // default priority is 10
     return 10;
   }
 }
@@ -172,7 +172,7 @@ function tripal_views_integration_add_entry($defn_array) {
   }
   if ($view_record['name']) { // && $view_record['comment']) {  # SPF: commented out 9/24/2012 .. It's not required on the form
     if ($defn_array['additional_content']) {
-      $setup = db_fetch_object(db_query("SELECT * FROM {tripal_views} WHERE table_name='%s' AND priority=%d",$view_record['table_name'], $view_record['priority']));
+      $setup = db_fetch_object(db_query("SELECT * FROM {tripal_views} WHERE table_name='%s' AND priority=%d", $view_record['table_name'], $view_record['priority']));
       if (empty($setup->setup_id)) {
         $status = drupal_write_record('tripal_views', $view_record);
       }
@@ -213,7 +213,7 @@ function tripal_views_integration_add_entry($defn_array) {
       );
       if ($view_record['setup_id'] && $field['name'] && $field['title'] && $field['description'] && $field['type']) {
         if ($defn_array['additional_content']) {
-          $is = db_fetch_object(db_query("SELECT true as present FROM {tripal_views_field} WHERE column_name='%s' AND setup_id=%d",$field_record['column_name'], $field_record['setup_id']));
+          $is = db_fetch_object(db_query("SELECT true as present FROM {tripal_views_field} WHERE column_name='%s' AND setup_id=%d", $field_record['column_name'], $field_record['setup_id']));
           if (!$is->present) {
             $status = drupal_write_record('tripal_views_field', $field_record);
           }

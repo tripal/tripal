@@ -15,10 +15,10 @@ function tripal_views_integration_export_form($form_state, $setup_id) {
   $defn_array = tripal_views_integration_export_entry($setup_id);
   
   $t = var_export($defn_array, TRUE);
-  $t = preg_replace("/\n\s+array/","array", $t); // move array( to previous line
-  $t = preg_replace("/true/","TRUE", $t); // upper case true
-  $t = preg_replace("/false/","FALSE", $t); // upper case false
-  $t = preg_replace("/array\(/","array (", $t); // put a space between array and paren   
+  $t = preg_replace("/\n\s+array/", "array", $t); // move array( to previous line
+  $t = preg_replace("/true/", "TRUE", $t); // upper case true
+  $t = preg_replace("/false/", "FALSE", $t); // upper case false
+  $t = preg_replace("/array\(/", "array (", $t); // put a space between array and paren   
         
   $form['export'] = array(
     '#type' => 'textarea',

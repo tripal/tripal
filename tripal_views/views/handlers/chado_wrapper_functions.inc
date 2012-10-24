@@ -2,7 +2,7 @@
 
 /**
  * @file
- * A collection of functions used for the chado wrapper views handlers
+ * TODO: add documentation
  */
 
 /**

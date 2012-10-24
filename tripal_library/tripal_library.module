@@ -1459,7 +1459,7 @@ function chado_library_delete(&$node) {
   
   // if we don't have a library id for this node then this isn't a node of
   // type chado_library or the entry in the chado_library table was lost.
-  if (!$library_id){
+  if (!$library_id) {
     return;
   }
   

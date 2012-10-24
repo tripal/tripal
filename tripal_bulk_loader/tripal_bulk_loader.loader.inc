@@ -282,7 +282,7 @@ function tripal_bulk_loader_load_data($nid, $job_id) {
     print "\t\tOpen File...\n";
     $file = new SplFileObject($node->file, 'r'); 
     if (!$file) { 
-      watchdog('T_bulk_loader','Could not open file %file', 
+      watchdog('T_bulk_loader', 'Could not open file %file', 
         array($node->file), WATCHDOG_ERROR);
       return;
     }
@@ -502,7 +502,7 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
     if ($required) {
       // check if the field has no value (or array is empty)
       if (!isset($values[$field]) or 
-          (is_array($values[$field]) and count($values[$field]) == 0)){
+          (is_array($values[$field]) and count($values[$field]) == 0)) {
         // check if the record is optional.  For backwards compatiblity we need to
         // check if the 'mode' is set to 'optional'
         if ($table_data['optional'] or preg_match('/optional/', $table_data['mode']) or 
@@ -531,7 +531,7 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
        preg_match('/optional/', $table_data['mode']))) {
     // Check all database table required fields are set
     $fields = $table_desc['fields'];
-    foreach ($fields as $field => $def) { 	
+    foreach ($fields as $field => $def) {   
       // a field is considered missing if it cannot be null and there is no default
       // value for it or it is not of type 'serial'
       if (array_key_exists('not null', $def) and $def['not null'] == 1 and   // field must have a value
@@ -567,13 +567,13 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
   // check if it is already selected, if so, just get the value stored in
   // the default_data array
   if (array_key_exists('selected', $table_data) and $table_data['selected']) {
-  	$data[$priority]['values_array'] = $default_data[$priority]['values_array'];
+    $data[$priority]['values_array'] = $default_data[$priority]['values_array'];
     return $no_errors;
   }
 
   // make sure we have some value in the select_if_duplicate and update_if_duplicate options
   if (!array_key_exists('select_if_duplicate', $table_data)) {
-  	$table_data['select_if_duplicate'] = 0;
+    $table_data['select_if_duplicate'] = 0;
   } 
   if (!array_key_exists('update_if_duplicate', $table_data)) {
     $table_data['update_if_duplicate'] = 0;
@@ -591,17 +591,17 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
     // if this is a duplicate then substitute the values in the table_data array so
     // that for future records that my depend on this one, they can get the values needed
     if ($duplicate and is_array($duplicate) and count($duplicate) == 1) {
-    	$dup_record = $duplicate[0];
-    	// save the duplicate record for later.  If this is an update_if_duplicate
-    	// then we'll need this record as the match
-    	$data[$priority]['is_duplicate'] = (array) $dup_record;
+      $dup_record = $duplicate[0];
+      // save the duplicate record for later.  If this is an update_if_duplicate
+      // then we'll need this record as the match
+      $data[$priority]['is_duplicate'] = (array) $dup_record;
 
       // if all we have is one field then we will just use the value returned
       // rather than create an array of values. This way it will prevent 
       // the tripal_core_chado_(select|insert|update) from recursing on 
       // foreign keys and make the loader go faster.
       if (count((array) $dup_record) == 1) {
-        foreach($dup_record as $key => $value){ 
+        foreach ($dup_record as $key => $value) { 
           $data[$priority]['values_array'] = $value;
         } 
       }
@@ -610,7 +610,7 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
       else {
         // convert object to array
         $new_values = array();
-        foreach($dup_record as $key => $value){ 
+        foreach ($dup_record as $key => $value) { 
           $new_values[$key] = $value;
         } 
         $data[$priority]['values_array'] = $new_values;        
@@ -622,8 +622,8 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
     } 
   }
   else {
-  	# TODO: what to do if there are more than one value returned when
-  	# checking for a duplicate?
+    # TODO: what to do if there are more than one value returned when
+    # checking for a duplicate?
   }
 
   if (!preg_match('/select/', $table_data['mode'])) {
@@ -699,12 +699,13 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
     
       // substitute the values array for the primary key if it exists
       // and is a single field
-      if(array_key_exists('primary key',$table_desc)){
-        if(count($table_desc['primary key']) == 1){
+      if (array_key_exists('primary key', $table_desc)) {
+        if (count($table_desc['primary key']) == 1) {
           $pkey_field = $table_desc['primary key'][0];
           $data[$priority]['values_array'] = $record[$pkey_field];
         }
-      } else {
+      } 
+      else {
         //add changes back to values array
         $data[$priority]['values_array'] = $record;
         $values = $record;
@@ -715,11 +716,11 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
   else {
     // get the matches for this select
     $matches = array();
-    if(is_array($values) and count($values) > 0){
+    if (is_array($values) and count($values) > 0) {
       $matches = tripal_core_chado_select($table, array_keys($table_desc['fields']), $values);
     }
     // if the record doesn't exist and it's not optional then generate an error
-    if (count($matches) == 0){
+    if (count($matches) == 0) {
       // No record on select
       if ($table_data['select_optional'] != 1) {        
         $msg = "\nLine " . $addt->line_num . ' ' . $table_data['record_id'] . ' (' . $table_data['mode'] . ') No Matching record in ' . $table . ' where values:' . print_r($values, TRUE);
@@ -752,9 +753,9 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
       $default_data[$priority]['selected'] = TRUE;
       
       // save the pkey
-      if(array_key_exists('primary key',$table_desc)){
-      	$new_values = array();
-        foreach($matches[0] as $key => $value){ 
+      if (array_key_exists('primary key', $table_desc)) {
+        $new_values = array();
+        foreach ($matches[0] as $key => $value) { 
           $new_values[$key] = $value;
         } 
         $default_data[$priority]['values_default'] = $new_values;   
@@ -841,7 +842,7 @@ function tripal_bulk_loader_add_foreignkey_to_values($table_array, $values, $dat
           array_key_exists('foreign keys', $tbl_description) and 
           array_key_exists($foreign_table, $tbl_description['foreign keys']) and 
           array_key_exists($field, $tbl_description['foreign keys'][$foreign_table]['columns']) and
-          $foreign_field == $tbl_description['foreign keys'][$foreign_table]['columns'][$field]){
+          $foreign_field == $tbl_description['foreign keys'][$foreign_table]['columns'][$field]) {
          $values[$field] = $foreign_values; 
       } 
       // if the field in the Referral records is not in an FK relationship
@@ -878,7 +879,7 @@ function tripal_bulk_loader_add_foreignkey_to_values($table_array, $values, $dat
           $columns = array($foreign_field);
           $options = array('statement_name' => 'blk_' . $nid . $priority . $foreign_table);        
           $record  = tripal_core_chado_select($foreign_table, $columns, $fvalues, $options);
-          if ($record){
+          if ($record) {
             $values[$field] = $record[0]->$foreign_field; 
           } 
           else {
@@ -979,7 +980,7 @@ function tripal_bulk_loader_flatten_array($values) {
 function tripal_bulk_loader_progress_bar($current=0, $total=100, $size=50) {
   $new_bar = FALSE;
   $mem = memory_get_usage();       
-	
+  
   // First iteration
   if ($current == 0) {
     $new_bar = TRUE;

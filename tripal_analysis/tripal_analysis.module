@@ -202,7 +202,7 @@ function chado_analysis_delete($node) {
   
   // if we don't have an organism id for this node then this isn't a node of
   // type chado_organism or the entry in the chado_organism table was lost.
-  if (!$analysis_id){
+  if (!$analysis_id) {
     return;
   }
 
@@ -880,7 +880,7 @@ function tripal_analysis_nodeapi(&$node,  $op, $teaser, $page) {
         return '';
       }
       // Abort if this node is not one of the types we should show.
-      if (strcmp($node->type,'chado_feature')==0) {
+      if (strcmp($node->type, 'chado_feature') == 0) {
         if ($node->build_mode == NODE_BUILD_SEARCH_INDEX) {
            // return results for searching
         } 

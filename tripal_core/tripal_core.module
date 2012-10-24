@@ -28,8 +28,8 @@ function tripal_core_init() {
   // create the 'tripal' controlled volcabulary in chado but only if it doesn't already exist, and
   // only if the chado database is present.
   if (tripal_core_is_chado_installed()) {
-  	
-  	// make sure the current version of chado is set
+  
+    // make sure the current version of chado is set
     tripal_core_set_chado_version();  
   
     if (!db_fetch_object(chado_query("SELECT * FROM {cv} WHERE name = 'tripal'"))) {

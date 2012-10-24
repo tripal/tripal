@@ -66,25 +66,25 @@ function tripal_featuremap_get_schemas() {
         'default' => 0
       ),
       'nid' => array(
-	      'type' => 'int',
-	      'unsigned' => TRUE,
-	      'not null' => TRUE,
-	      'default' => 0
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0
       ),
-	    'featuremap_id' => array(
-	      'type' => 'int',
-	      'not null' => TRUE,
-	      'default' => 0
-	      )
+      'featuremap_id' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0
+        )
       ),
-	    'indexes' => array(
-	      'featuremap_id' => array('featuremap_id')
-	    ),
-	    'unique keys' => array(
-	      'nid_vid' => array('nid', 'vid'),
-	      'vid' => array('vid')
-	    ),
-	    'primary key' => array('nid'),
+      'indexes' => array(
+        'featuremap_id' => array('featuremap_id')
+      ),
+      'unique keys' => array(
+        'nid_vid' => array('nid', 'vid'),
+        'vid' => array('vid')
+      ),
+      'primary key' => array('nid'),
   );
   return $schema;
 }

@@ -158,11 +158,11 @@ function tripal_cv_load_obo_v1_2($file, $jobid = NULL, &$newcvs) {
   // add any typedefs to the vocabulary first
   $typedefs = $obo['Typedef'];
   foreach ($typedefs as $typedef) {
-  	$t = array();
-  	$t['id']     = $typedef['id'][0];
-  	$t['name']   = $typedef['name'][0];
-  	$t['def']    = $typedef['def'][0];
-  	$t['subset'] = $typedef['subset'][0];
+    $t = array();
+    $t['id']     = $typedef['id'][0];
+    $t['name']   = $typedef['name'][0];
+    $t['def']    = $typedef['def'][0];
+    $t['subset'] = $typedef['subset'][0];
     tripal_cv_obo_process_term($t, $defaultcv->name, $obo, 1, $newcvs, $default_db);
   }
   
@@ -205,7 +205,7 @@ function tripal_cv_obo_process_terms($terms, $defaultcv, $obo, $jobid = NULL, &$
 
     // update the job status every 1% terms
     if ($jobid and $i % $interval == 0) {
-    	$complete = ($i / $count) * 100;
+      $complete = ($i / $count) * 100;
       tripal_job_set_progress($jobid, intval($complete)); 
       printf("%d of %d records. (%0.2f%%) memory: %d\r", $i, $count, $complete, memory_get_usage());                                                             
     }                                 
@@ -410,7 +410,7 @@ function tripal_cv_obo_add_relationship($cvterm, $defaultcv, $obo, $rel, $objnam
   $options = array('statement_name' => 'sel_cvtermrelationship_tysuob');
   $result = tripal_core_chado_select('cvterm_relationship', array('*'), $values, $options);
   if (count($result) == 0) {
-  	$options = array('statement_name' => 'ins_cvtermrelationship_tysuob');
+    $options = array('statement_name' => 'ins_cvtermrelationship_tysuob');
     $sql = "INSERT INTO {cvterm_relationship} ".
            "(type_id,subject_id,object_id) VALUES (%d,%d,%d)";
     $success = tripal_core_chado_insert('cvterm_relationship', $values, $options);
@@ -451,7 +451,7 @@ function tripal_cv_obo_add_synonyms($term, $cvterm) {
   // now add the synonyms
   if (isset($term['synonym'])) {
     foreach ($term['synonym'] as $synonym) {
-    	
+      
       // separate out the synonym definition and the synonym type
       $def = preg_replace('/^\s*"(.*)"\s*.*$/', '\1', $synonym);
       $type = drupal_strtolower(preg_replace('/^.*"\s+(.*?)\s+.*$/', '\1', $synonym));
@@ -489,13 +489,13 @@ function tripal_cv_obo_add_synonyms($term, $cvterm) {
       $options = array('statement_name' => 'sel_cvtermsynonym_cvsy');
       $results = tripal_core_chado_select('cvtermsynonym', array('*'), $values, $options);
       if (count($results) == 0) {
-      	$values = array(
+        $values = array(
           'cvterm_id' => $cvterm->cvterm_id, 
           'synonym' => $def,
-      	  'type_id' => $syntype->cvterm_id
+          'type_id' => $syntype->cvterm_id
         );
-      	$options = array('statement_name' => 'ins_cvtermsynonym_cvsy');
-      	$success = tripal_core_chado_insert('cvtermsynonym', $values, $options);
+        $options = array('statement_name' => 'ins_cvtermsynonym_cvsy');
+        $success = tripal_core_chado_insert('cvtermsynonym', $values, $options);
         if (!$success) {
           tripal_cv_obo_quiterror("Failed to insert the synonym for term: $name ($def)");
         }

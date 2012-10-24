@@ -362,7 +362,7 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL) {
   );
   if ($setup_obj->priority >= 9) {
     drupal_set_message('You are editing a default views integration. To ensure your changes
-    are used, change the priority to -10.','warning');
+    are used, change the priority to -10.', 'warning');
   }
 
   $form['views_type']['base_table'] = array(

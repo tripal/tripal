@@ -61,7 +61,7 @@ class views_handler_join_chado_aggregator extends views_join {
 
   }
 
-  function aggregate_join (&$query, $opt) {
+  function aggregate_join(&$query, $opt) {
     // Create the table SQL (used in join) -------
     // query creating one-to-one table using array_agg
 

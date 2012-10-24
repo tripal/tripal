@@ -155,11 +155,11 @@ function tripal_feature_set_feature_url($node, $feature) {
       $url_alias = $feature->uniquename;
       break;
     case 'genus_species_uqname':
-    	$url_alias = $genus . "/" . $genus . "_" . $species . "/" . $feature->uniquename;
+      $url_alias = $genus . "/" . $genus . "_" . $species . "/" . $feature->uniquename;
       break;
     case 'genus species name':
       $url_alias = $genus . "/" . $genus . "_" . $species . "/" . $feature->name;
-    	break;
+      break;
     default:
       $url_alias = "$aprefix$feature->feature_id";
   }
@@ -348,7 +348,7 @@ function tripal_feature_sync_feature($feature_id) {
   $cfsql = "SELECT * FROM {chado_feature} ".
            "WHERE feature_id = %d";
   // @coder-ignore: don't need to use db_rewrite_sql() since need all nodes regardless of access control
-  $nsql =  "SELECT * FROM {node} ".
+  $nsql =  "SELECT * FROM {node} N ".
            "WHERE nid = %d";
   $chado_feature = db_fetch_object(db_query($cfsql, $feature->feature_id));
   if ($chado_feature) {

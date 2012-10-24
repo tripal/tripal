@@ -101,7 +101,7 @@ function drush_tripal_core_tripal_launch_jobs($username) {
   $parallel = drush_get_option('parallel');
   $job_id = drush_get_option('job_id');
 
-  if($username){
+  if ($username) {
     global $user;
     $user = user_load(array('name' => $username));
   }
@@ -114,13 +114,13 @@ function drush_tripal_core_tripal_launch_jobs($username) {
     drush_print("Tripal Job Launcher (in parallel)");
     drush_print("Running as user '$username'");
     drush_print("-------------------");
-    tripal_jobs_launch($parallel,$job_id);
+    tripal_jobs_launch($parallel, $job_id);
   }
   else {
     drush_print("Tripal Job Launcher");
     drush_print("Running as user '$username'");
     drush_print("-------------------");
-    tripal_jobs_launch(0,$job_id);
+    tripal_jobs_launch(0, $job_id);
   }
 }
 
@@ -130,7 +130,7 @@ function drush_tripal_core_tripal_launch_jobs($username) {
  * NOTE: The following code is executed when drush 'trpjob-run' or 'drush tripal-launch-jobs' is called
  */
 function drush_tripal_core_tripal_rerun_job($username, $job_id) {
-	
+  
   $new_job_id = tripal_jobs_rerun($job_id, FALSE);
   drush_tripal_core_tripal_launch_jobs($username, $new_job_id);
  

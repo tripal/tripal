@@ -802,7 +802,7 @@ function chado_organism_delete($node) {
   
   // if we don't have an organism id for this node then this isn't a node of
   // type chado_organism or the entry in the chado_organism table was lost.
-  if (!$organism_id){
+  if (!$organism_id) {
     return;
   }
 
