@@ -92,7 +92,7 @@ function tripal_add_mview($name, $modulename, $mv_table, $mv_specs, $indexed,
     // create the table differently depending on if it the traditional method
     // or the Drupal Schema API method
     if ($mv_schema) {
-      if (!tripal_core_create_custom_table ($ret, $mv_table, $schema_arr)) {
+      if (!tripal_core_create_custom_table ($ret, $mv_table, $schema_arr, 0)) {
         drupal_set_message(t("Could not create the materialized view. Check Drupal error report logs."), 'error');
       }
       else {
@@ -208,7 +208,7 @@ function tripal_edit_mview($mview_id, $name, $modulename, $mv_table, $mv_specs,
     // re-create the table differently depending on if it the traditional method
     // or the Drupal Schema API method
     if ($mv_schema) {    	
-      if (!tripal_core_create_custom_table($ret, $mv_table, $schema_arr)) {
+      if (!tripal_core_create_custom_table($ret, $mv_table, $schema_arr, 0)) {
         drupal_set_message(t("Could not create the materialized view. Check Drupal error report logs."));
       }
       else {

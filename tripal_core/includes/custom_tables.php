@@ -132,8 +132,9 @@ function tripal_core_create_custom_table(&$ret, $table, $schema, $skip_creation 
   }  
 
   // if the table exists in Chado and in our custom table and
-  // skip creation is turned off then drop and re-create the table
-  if ($exists and $centry and !$skip_creation) {
+  // skip creation is turned off then drop and re-create the table 
+  if ($exists and is_object($centry) and !$skip_creation) {    
+    
     // drop the table we'll recreate it with the new schema
     $previous_db = tripal_db_set_active('chado');  // use chado database
     db_drop_table($ret, $table);
