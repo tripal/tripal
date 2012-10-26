@@ -14,7 +14,7 @@
  * This API consists of a set of functions, one for each table in Chado.  Each
  * function simply returns a Drupal style array that defines the table.
  *
- * Because Drupal 6 does not handle foreign key (FK) relationships, however FK 
+ * Because Drupal 6 does not handle foreign key (FK) relationships, however FK
  * relationships are needed to for Tripal Views.  Therefore, FK relationships
  * have been added to the schema defintitions below.
  *
@@ -25,14 +25,14 @@
  *   $table_desc = tripal_core_get_chado_table_schema($table)
  *
  * where the variable $table contains the name of the table you want to
- * retireve.  The tripal_core_get_chado_table_schema function determines the appropriate version of 
- * Chado and uses the Drupal hook infrastructure to call the appropriate 
+ * retireve.  The tripal_core_get_chado_table_schema function determines the appropriate version of
+ * Chado and uses the Drupal hook infrastructure to call the appropriate
  * hook function to retrieve the table schema.
  *
  * @}
  * @ingroup tripal_api
  */
- 
+
 /**
  * Implements hook_chado_schema_v1_11_acquisition()
  * Purpose: To describe the structure of 'acquisition' to tripal
@@ -10908,4 +10908,5 @@ function tripal_core_chado_get_v1_11_tables() {
     'tableinfo',
     'treatment'
   );
+  return $tables;
 }
