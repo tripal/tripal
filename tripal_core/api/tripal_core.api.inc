@@ -2500,6 +2500,16 @@ function tripal_db_set_active($dbname  = 'default') {
 }
 
 /**
+ * Gets the current search_path for PostgreSQL
+ *
+ * @ingroup tripal_chado_api
+ */
+function tripal_db_get_search_path() {
+  $path = db_fetch_object(db_query("show search_path"));
+  return $path->search_path;
+}
+
+/**
  * Set the chado search_path for PostgreSQL
  *
  * Sets the database search_path for postgreSQL to the
@@ -2537,7 +2547,7 @@ function tripal_db_set_chado_search_path($dbname) {
  */
 function tripal_db_set_default_search_path() {
   // we make the assumption that the default schema is 'public'.
-  db_query('set search_path to %s', 'public');
+  db_query('set search_path to %s', 'public,chado');
 }
 /**
  * Indicates if the SQL statement is prepapred

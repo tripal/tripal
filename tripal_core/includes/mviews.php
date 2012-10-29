@@ -324,7 +324,9 @@ function tripal_update_mview($mview_id) {
     tripal_db_set_active($previous_db);  // now use drupal database
     if ($results) {
       $sql = "SELECT count(*) as cnt FROM {%s}";
+      $previous_db = tripal_db_set_active('chado');  // use chado database
       $count = db_fetch_object(db_query($sql, $mview->mv_table));
+      tripal_db_set_active($previous_db);  // now use drupal database
       $record = new stdClass();
       $record->mview_id = $mview_id;
       $record->last_update = time();
