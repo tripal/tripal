@@ -310,8 +310,9 @@ function tripal_views_views_data() {
             $data[$base_table]['table']['join'][$left_table]['handler'] = $handler;
           }
         }
+        
 
-        // Add in any relationships for node fields
+        // Add in any handlers for node fields
         $sql = "SELECT * FROM {tripal_views_handlers} WHERE setup_id=%d";
         $query = db_query($sql, $setup_id);
         while ($handler = db_fetch_object($query)) {
@@ -328,7 +329,7 @@ function tripal_views_views_data() {
 
       // get the table description
       $table_desc = tripal_core_get_chado_table_schema($base_table);
-      
+            
       $fields = $table_desc['fields'];
       if (!is_array($fields)) {
         $fields = array();
@@ -419,7 +420,6 @@ function tripal_views_views_data() {
   // TEMPORARY: needed to join chado base tables to node linking tables
   // currently done using old-style data arrays
   //$data = tripal_views_TEMPORARY_chado_linking_data($data);
-
   return $data;
 }
 
@@ -526,6 +526,58 @@ function tripal_views_views_pre_view(&$view, &$display_id, &$args) {
   $form = drupal_get_form('tripal_views_data_export_download_form',$view,$display_id,$args);
   $view->attachment_after = $form;
 }*/
+
+/*
+ * 
+ 
+function tripal_views_views_query_alter(&$view, &$query){
+  // iterate through the tables and see if they are chado tables.
+  // if they are then prefix them with a "chado." prefix
+  dpm($query);
+  $tables = $query->tables;
+  foreach ($tables as $base => $subtables) {
+    $desc = tripal_core_get_chado_table_schema($base); 
+    if ($desc) {       
+      $query->tables["chado." . $base] = $subtables;
+      unset($query->tables[$base]);
+      $base = "chado." . $base;
+    }
+    foreach ($subtables as $subtable => $values) {
+      $desc = tripal_core_get_chado_table_schema($subtable);     
+      if ($desc) {
+        $query->tables[$base]["chado." . $subtable] = $values;
+        unset($query->tables[$base][$subtable]);
+      }  
+    }
+  }
+    
+  dpm($query);
+} */
+/**
+ * Implementation of hook_views_pre_execute().
+ */
+function tripal_views_views_pre_execute(&$view) {
+  // if the base table is a chado table then we want to set the 
+  // search path so it can find all of the tables.
+  // this will break views that use tables that have the same name
+  // as chado tables (e.g. contact).
+  $desc = tripal_core_get_chado_table_schema($view->base_table);
+  if ($desc) {
+    tripal_db_set_chado_search_path('chado');
+  }
+  dpm($view);
+}
+/**
+ * Implementation of hook_views_post_render().
+ */
+function tripal_views_views_post_render(&$view, &$output, &$cache) {
+  // if the base table and the query is completed we want to set
+  // the search path back to the default.
+  $desc = tripal_core_get_chado_table_schema($view->base_table);
+  if ($desc) {
+    tripal_db_set_default_search_path();
+  }
+}
 
 /**
  * the Download Views data export form
