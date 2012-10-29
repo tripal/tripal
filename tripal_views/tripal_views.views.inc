@@ -565,7 +565,6 @@ function tripal_views_views_pre_execute(&$view) {
   if ($desc) {
     tripal_db_set_chado_search_path('chado');
   }
-  dpm($view);
 }
 /**
  * Implementation of hook_views_post_render().
