@@ -2547,7 +2547,13 @@ function tripal_db_set_chado_search_path($dbname) {
  */
 function tripal_db_set_default_search_path() {
   // we make the assumption that the default schema is 'public'.
-  db_query('set search_path to %s', 'public,chado');
+  $chado_exists = variable_get('chado_schema_exists', FALSE); 
+  if ($chado_exists) {
+    db_query('set search_path to %s', 'public,chado');
+  }
+  else {
+    db_query('set search_path to %s', 'public');
+  }
 }
 /**
  * Indicates if the SQL statement is prepapred
