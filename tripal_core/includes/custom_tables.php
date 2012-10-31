@@ -112,12 +112,12 @@ function tripal_core_create_custom_table(&$ret, $table, $schema, $skip_creation 
 
   // if the table exists but we have no record for it in the tripal_custom_tables
   // table then raise an error.
-  if ($exists and !$centry) {
+/*  if ($exists and !$centry) {
     watchdog('tripal_core', "Could not add custom table '!table_name'. It ".
             "already exists but is not known to Tripal as being a custom table.",
       array('!table_name' => $table), WATCHDOG_WARNING);
     return FALSE;
-  }
+  } */
   
   // if the table does not exist then create it
   if (!$exists) {
