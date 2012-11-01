@@ -350,7 +350,13 @@ function tripal_core_install_sql($sql_file) {
         $query = preg_replace("/public/m", "chado", $query);
       }
       
+      if (!$chado_local) {
+        $previous = tripal_core_db_set_active('chado');
+      }
       $result = db_query($query);
+      if (!$chado_local) {
+        tripal_core_db_set_active($previous);
+      }
       if (!$result) {
         $error  = pg_last_error();
         print "FAILED!!\nError Message:\nSQL $i, $in_string: $query\n$error\n";        
