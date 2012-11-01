@@ -104,7 +104,7 @@ function tripal_core_install_chado($action) {
       else {
         print "Installation Problems!  Please check output above for errors.\n";
       }
-      db_query($vsql,'1.2'); # set the version
+      chado_query($vsql,'1.2'); # set the version
     }
     else {
       print "ERROR: cannot install chado.  Please check database permissions\n";
@@ -128,7 +128,7 @@ function tripal_core_install_chado($action) {
     else {
       print "Installation Problems!  Please check output above for errors.\n";
     }
-    db_query($vsql,'1.2'); # set the version
+    chado_query($vsql,'1.2'); # set the version
   }
   elseif($action == 'Install Chado v1.11'){
     $schema_file = drupal_get_path('module', 'tripal_core') . '/chado_schema/default_schema-1.11.sql';
@@ -203,8 +203,12 @@ function tripal_core_reset_chado_schema() {
  * @ingroup tripal_core
  */
 function tripal_core_install_sql($sql_file) {
+  
+  $chado_local = tripal_core_schema_exists('chado');
 
-  db_query("set search_path to chado,public");
+  if($chado_local) {
+    db_query("set search_path to chado");
+  }
   print "Loading $sql_file...\n";
   $lines = file($sql_file, FILE_SKIP_EMPTY_LINES);
 
@@ -340,15 +344,17 @@ function tripal_core_install_sql($sql_file) {
     }
     if ($type and sizeof($stack) == 0) {
       //print "Adding $type: line $i\n";
-      // rewrite the set serach_path to make 'public' be 'chado'
-      if (strcmp($type, 'set')==0) {
+      // rewrite the set search_path to make 'public' be 'chado', but only if the
+      // chado schema exists
+      if (strcmp($type, 'set')==0 and $chado_local){
         $query = preg_replace("/public/m", "chado", $query);
       }
+      
       $result = db_query($query);
       if (!$result) {
         $error  = pg_last_error();
-        print "FAILED!!\nError Message:\nSQL $i, $in_string: $query\n$error\n";
-        db_query("set search_path to public,chado");
+        print "FAILED!!\nError Message:\nSQL $i, $in_string: $query\n$error\n";        
+        tripal_core_chado_install_done();
         $success = 0;
       }
       $query = '';
@@ -366,6 +372,6 @@ function tripal_core_install_sql($sql_file) {
 function tripal_core_chado_install_done() {
 
   // return the search path to normal
-  db_query("set search_path to public,chado");
+  db_query("set search_path to public");
 
 }
