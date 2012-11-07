@@ -53,9 +53,11 @@ function tripal_add_mview($name, $modulename, $mv_table, $mv_specs, $indexed,
     if (!is_array($mv_schema)) {
       eval("\$schema_arr = $mv_schema;");
     }
-    // if the schema is provided as an array then use it 
+    // if the schema is provided as an array then create a string
+    // copy of it for storage in the mview 
     else {
       $schema_arr = $mv_schema;
+      $mv_schema = var_export($schema_arr, 1);
     }
     $mv_table = $schema_arr['table'];
   }
