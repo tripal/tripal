@@ -38,8 +38,9 @@
  *   A string containing a description of the materialized view
  * @param $mv_schema
  *   If using the newer Schema API array to define the materialized view then
- *   this variable should contain the array.
- *
+ *   this variable should contain the array or a string representation of the 
+ *   array.
+ * 
  * @ingroup tripal_mviews_api
  */
 function tripal_add_mview($name, $modulename, $mv_table, $mv_specs, $indexed,
@@ -48,8 +49,14 @@ function tripal_add_mview($name, $modulename, $mv_table, $mv_specs, $indexed,
   // get the table name from the schema array
   $schema_arr = array();
   if ($mv_schema) {
-    // get the schema from the mv_specs and use it to add the custom table
-    eval("\$schema_arr = $mv_schema;");
+    // if the schema is provided as a string then convert it to an array
+    if (!is_array($mv_schema)) {
+      eval("\$schema_arr = $mv_schema;");
+    }
+    // if the schema is provided as an array then use it 
+    else {
+      $schema_arr = $mv_schema;
+    }
     $mv_table = $schema_arr['table'];
   }
 
