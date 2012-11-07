@@ -143,7 +143,7 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
     // will not recreate it, but if not it will create one and store it in
     // a Drupal variable for reuse later.
     $connection = tripal_db_persistent_chado();
-    
+
     // if we cannot get a connection the abandon the prepared statement
     if (!$connection) {
        $prepared = FALSE;
@@ -172,15 +172,15 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
   // that has all the values needed for insert with all foreign relationsihps
   // resolved.
   foreach ($values as $field => $value) {
-    // make sure the field is in the table description. If not then return an error 
+    // make sure the field is in the table description. If not then return an error
     // message
     if (!array_key_exists($field, $table_desc['fields'])) {
       watchdog('tripal_core', "tripal_core_chado_insert: The field '%field' does not exist ".
-        "for the table '%table'.  Cannot perform insert. Values: %array", 
+        "for the table '%table'.  Cannot perform insert. Values: %array",
         array('%field' => $field, '%table' => $table, '%array' => print_r($values, 1)), WATCHDOG_ERROR);
       return FALSE;
     }
-    
+
     if (is_array($value)) {
       $foreign_options = array();
       if ($options['statement_name']) {
@@ -210,7 +210,7 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
       $insert_values[$field] = $value;
     }
   }
-  
+
   if ($validate) {
 
     // check for violation of any unique constraints
@@ -240,13 +240,13 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
           $coptions = array('statement_name' => 'uqsel_' . $table . '_' . $name);
         }
         if (tripal_core_chado_select($table, $ukselect_cols, $ukselect_vals, $coptions)) {
-          watchdog('tripal_core', "tripal_core_chado_insert: Cannot insert duplicate record into $table table: " . 
+          watchdog('tripal_core', "tripal_core_chado_insert: Cannot insert duplicate record into $table table: " .
             print_r($values, 1), array(), 'WATCHDOG_ERROR');
           return FALSE;
         }
       }
     }
-    
+
     // if trying to insert a field that is the primary key, make sure it also is unique
     if (array_key_exists('primary key', $table_desc)) {
       $pkey = $table_desc['primary key'][0];
@@ -259,21 +259,21 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
       }
     }
 
-    // make sure required fields have a value     
+    // make sure required fields have a value
     if (!is_array($table_desc['fields'])) {
       $table_desc['fields'] = array();
-      watchdog('tripal_core', "tripal_core_chado_insert: %table missing fields: \n %schema", 
+      watchdog('tripal_core', "tripal_core_chado_insert: %table missing fields: \n %schema",
         array('%table' => $table, '%schema' => print_r($table_desc, 1)), WATCHDOG_WARNING);
-      
+
     }
     foreach ($table_desc['fields'] as $field => $def) {
       // a field is considered missing if it cannot be NULL and there is no default
       // value for it or it is of type 'serial'
-      if (array_key_exists('NOT NULL', $def) and 
-          !array_key_exists($field, $insert_values) and 
+      if (array_key_exists('NOT NULL', $def) and
+          !array_key_exists($field, $insert_values) and
           !array_key_exists('default', $def) and
           strcmp($def['type'], serial) != 0) {
-        watchdog('tripal_core', "tripal_core_chado_insert: Field $table.$field cannot be NULL: " . 
+        watchdog('tripal_core', "tripal_core_chado_insert: Field $table.$field cannot be NULL: " .
           print_r($values, 1), array(), 'WATCHDOG_ERROR');
         return FALSE;
       }
@@ -315,7 +315,7 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
       $idatatypes[] = 'text';
     }
   }
-  
+
   // create the SQL
   $sql = "INSERT INTO {$table} (" . implode(", ", $ifields) . ") VALUES (" . implode(", ", $itypes) . ")";
 
@@ -452,7 +452,7 @@ function tripal_core_chado_update($table, $match, $values, $options = NULL) {
     // will not recreate it, but if not it will create one and store it in
     // a Drupal variable for reuse later.
     $connection = tripal_db_persistent_chado();
-    
+
     // if we cannot get a connection the abandon the prepared statement
     if (!$connection ) {
        $prepared = FALSE;
@@ -962,7 +962,7 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
     // will not recreate it, but if not it will create one and store it in
     // a Drupal variable for reuse later.
     $connection = tripal_db_persistent_chado();
-    
+
     // if we cannot get a connection the abandon the prepared statement
     if (!$connection) {
       $prepared = FALSE;
@@ -973,7 +973,7 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
     //print "NO STATEMENT (select): $table\n";
     //debug_print_backtrace();
   }
-  
+
   // check that our columns and values arguments are proper arrays
   if (!is_array($columns)) {
     watchdog('tripal_core', 'the $columns argument for tripal_core_chado_select must be an array.');
@@ -996,7 +996,7 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
   if ($options['is_duplicate'] and array_key_exists('unique keys', $table_desc)) {
     $ukeys = $table_desc['unique keys'];
     $has_results = 0;
-      
+
     // iterate through the unique constraints and reset the values and columns
     // arrays to only include these fields
     foreach ($ukeys as $cname => $fields) {
@@ -1008,8 +1008,8 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
       $new_options = array();
       $uq_sname = "uq_" . $table . "_";
       $has_pkey = 0;
-      
-      
+
+
       // include the primary key in the results returned
       if (array_key_exists('primary key', $table_desc)) {
         $has_pkey = 1;
@@ -1018,8 +1018,8 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
           array_push($new_columns, $key);
         }
       }
-      
-      // recreate the $values and $columns arrays 
+
+      // recreate the $values and $columns arrays
       foreach ($fields as $field) {
         if (array_key_exists($field, $values)) {
           $new_values[$field] = $values[$field];
@@ -1029,7 +1029,7 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
             array_push($new_columns, $field);
           }
         }
-        // if the field doesn't exist in the values array then 
+        // if the field doesn't exist in the values array then
         // substitute any default values
         elseif (array_key_exists('default', $table_desc['fields'][$field])) {
           $new_values[$field] = $table_desc['fields'][$field]['default'];
@@ -1038,41 +1038,54 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
             array_push($new_columns, $field);
           }
         }
+        // if there is no value (default or otherwise) check if this field is
+        // allowed to be null
+        elseif (!$table_desc['fields'][$field]['not null']) {
+        	$new_values[$field] = NULL;
+          $uq_sname .= "n".substr($field, 0, 2);
+          if (!$has_pkey) {
+            array_push($new_columns, $field);
+          }
+        }
         // if the array key doesn't exist in the values given by the caller
         // and there is no default value then we cannot check if the record
         // is a duplicate so return FALSE
         else {
+        	watchdog('tripal_core', "tripal_core_chado_select: There is no value for %field"
+        		." thus we cannot check if this record is unique",
+        		array('%field' => $field), WATCHDOG_ERROR);
           return FALSE;
         }
       }
       $new_options['statement_name'] = $uq_sname;
+
       $results = tripal_core_chado_select($table, $new_columns, $new_values, $new_options);
       // if we have a duplicate record then return the results
       if (count($results) > 0) {
         $has_results = 1;
-      } 
+      }
       unset($new_columns);
       unset($new_values);
       unset($new_options);
     }
     if ($options['has_record'] and $has_results) {
       return TRUE;
-    } 
+    }
     else {
       return $results;
     }
   }
 
   foreach ($values as $field => $value) {
-    // make sure the field is in the table description. If not then return an error 
+    // make sure the field is in the table description. If not then return an error
     // message
     if (!array_key_exists($field, $table_desc['fields'])) {
       watchdog('tripal_core', "tripal_core_chado_select: The field '%field' does not exist ".
-        "for the table '%table'.  Cannot perform query. Values: %array", 
+        "for the table '%table'.  Cannot perform query. Values: %array",
         array('%field' => $field, '%table' => $table, '%array' => print_r($values, 1)), WATCHDOG_ERROR);
       return array();
     }
-    
+
     $select[] = $field;
     if (is_array($value)) {
       // if the user has specified multiple values for matching then this we
@@ -1119,8 +1132,12 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
       }
     }
     else {
-      //need to catch a 0 and make int if integer field
-      if ($table_desc['fields'][$field]['type'] == 'int') {
+      // need to catch a 0 and make int if integer field
+      // but we don't want to catch a NULL
+      if ($value === NULL) {
+      	$where[$field] = NULL;
+      }
+      elseif ($table_desc['fields'][$field]['type'] == 'int') {
         $where[$field][] = (int) $value;
       }
       else {
@@ -1160,6 +1177,13 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
           // same number of elements.
           $prepared = FALSE;
         }
+      }
+      // if we have a null value then we need an IS NULL in our where statement
+      elseif ($value === NULL) {
+				$sql .= "$field IS NULL AND ";
+				$psql .= "$field IS NULL AND ";
+				// Need to remove one from the argument count b/c nulls don't add an argument
+				$i--;
       }
       // if we have a single value then we need an = in our where statement
       else {
@@ -1249,7 +1273,6 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
     // if this is the first time we've run this query
     // then we need to do the prepare, otherwise just execute
     if ($options['is_prepared'] != TRUE) {
-
       $status = tripal_core_chado_prepare($options['statement_name'], $psql, $idatatypes);
       if (!$status) {
         return FALSE;
@@ -1262,8 +1285,8 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
   }
   else {
     $resource = chado_query($sql, $args);
-  } 
-  
+  }
+
   // format results into an array
   $results = array();
   while ($r = db_fetch_object($resource)) {
@@ -1414,19 +1437,19 @@ function tripal_core_chado_get_foreign_key($table_desc, $field, $values, $option
  *   if more than one are returned.  The options must be compatible with
  *   the options accepted by the tripal_core_chado_select() function.
  *   Additionally,  These options are available for this function:
- *   -return_array: 
- *     can be provided to force the function to always return an array. Default 
- *     behavior is to return a single record if only one record exists or to return 
+ *   -return_array:
+ *     can be provided to force the function to always return an array. Default
+ *     behavior is to return a single record if only one record exists or to return
  *     an array if multiple records exist.
- *  - include_fk: 
- *     an array of FK relationships to fallow. By default, the 
+ *  - include_fk:
+ *     an array of FK relationships to fallow. By default, the
  *     tripal_core_chado_select function will follow all FK relationships but this
  *     may generate more queries then is desired.  Provide an array specifying the
  *     fields to include.  For example, if including the cvterm, cv and dbxref records
  *     for a property the following array would work:
  *        array('type_id' => array('cv_id' => 1, 'dbxref_id' => 1)).
- *     Typicall, to expadn a property, this function would also include the db record 
- *     through the db_id foreign key with the dbxref and db tables, but becuase 
+ *     Typicall, to expadn a property, this function would also include the db record
+ *     through the db_id foreign key with the dbxref and db tables, but becuase
  *     it is not included in the array it will not be included in the results.
  * @return
  *   Either an object (if only one record was selected from the base table)
@@ -1470,7 +1493,7 @@ function tripal_core_chado_get_foreign_key($table_desc, $field, $values, $option
  */
 function tripal_core_generate_chado_var($table, $values, $base_options = array()) {
   $all = new stdClass();
-  
+
   $return_array = 0;
   if (array_key_exists('return_array', $base_options)) {
     $return_array = 1;
@@ -1622,9 +1645,9 @@ function tripal_core_generate_chado_var($table, $values, $base_options = array()
             if (empty($object->{$foreign_key})) {
               continue;
             }
-            
+
             if ($include_fk) {
-              // don't recurse if the callee has supplied an $fk_include list and this 
+              // don't recurse if the callee has supplied an $fk_include list and this
               // FK table is not in the list.
               if (is_array($include_fk) and !array_key_exists($foreign_key, $include_fk)) {
                 continue;
@@ -1632,12 +1655,12 @@ function tripal_core_generate_chado_var($table, $values, $base_options = array()
               // if we have the option but it is not an array then we don't recurse any furutehr
               if (!is_array($include_fk)) {
                 continue;
-              }  
-            } 
+              }
+            }
             // get the record from the foreign table
             $foreign_values = array($primary_key => $object->{$foreign_key});
             $options = array();
-            if (is_array($include_fk)) {              
+            if (is_array($include_fk)) {
               $options['include_fk'] = $include_fk[$foreign_key];
             }
             $foreign_object = tripal_core_generate_chado_var($foreign_table, $foreign_values, $options);
@@ -1743,7 +1766,7 @@ function tripal_core_generate_chado_var($table, $values, $base_options = array()
  */
 function tripal_core_expand_chado_vars($object, $type, $to_expand, $table_options = array()) {
   $base_table = $object->tablename;
- 
+
   // check to see if we are expanding an array of objects
   if (is_array($object)) {
     foreach ($object as $index => $o) {
@@ -1787,7 +1810,7 @@ function tripal_core_expand_chado_vars($object, $type, $to_expand, $table_option
       break;
     case "table": //--------------------------------------------------------------------------------
       $foreign_table = $to_expand;
-      
+
       // don't expand the table it already is expanded
       if (array_key_exists($foreign_table, $object)) {
         return $object;
@@ -1808,7 +1831,7 @@ function tripal_core_expand_chado_vars($object, $type, $to_expand, $table_option
           // if a prepared statement is provide then generate a new name
           $new_options = $table_options;
           if (array_key_exists('statement_name', $table_options)) {
-             $new_options['statement_name'] = "exp_" . $foreign_table . "_" . substr($left, 0, 2) . substr($right, 0, 2); 
+             $new_options['statement_name'] = "exp_" . $foreign_table . "_" . substr($left, 0, 2) . substr($right, 0, 2);
           }
           $foreign_object = tripal_core_generate_chado_var($foreign_table, array($left => $object->{$right}), $new_options);
           if ($foreign_object) {
@@ -1830,7 +1853,7 @@ function tripal_core_expand_chado_vars($object, $type, $to_expand, $table_option
           // if the object returned is NULL then handle that
           else {
             if (count($foreign_table_desc['foreign keys'][$base_table]['columns']) > 1) {
-              $object->{$foreign_table}->{$left} = NULL;                 
+              $object->{$foreign_table}->{$left} = NULL;
             }
             else {
               $object->{$foreign_table} = NULL;
@@ -1854,7 +1877,7 @@ function tripal_core_expand_chado_vars($object, $type, $to_expand, $table_option
           watchdog('tripal_core', 'tripal_core_expand_chado_vars: Could not expand table, %table. It is ',
             'not in a foreign key relationship with the base object nor with any other expanded table. ' .
             'Check the table definition to ensure that a proper foreign key relationship is present.',
-            array('%table' => $foreign_table), WATCHDOG_ERROR);   
+            array('%table' => $foreign_table), WATCHDOG_ERROR);
         }
       }
       break;
@@ -2017,7 +2040,7 @@ function chado_query($sql) {
 
   // Execute the query on the chado database/schema
   // Use the persistent chado connection if it already exists
-  $persistent_connection = variable_get('tripal_persistent_chado', NULL);  
+  $persistent_connection = variable_get('tripal_persistent_chado', NULL);
   if ($persistent_connection) {
 
     $query = $sql;
@@ -2054,7 +2077,7 @@ function chado_query($sql) {
     }
     // END COPY FROM _db_query in database.pgsql.inc
   }
-  else {    
+  else {
     $previous_db = tripal_db_set_active('chado');
     $results = _db_query($sql);
     tripal_db_set_active($previous_db);
@@ -2483,7 +2506,7 @@ function tripal_db_set_active($dbname  = 'default') {
     // fails then do nothing.
     else {
       if (tripal_db_set_chado_search_path($dbname)) {
-         // if the chado schema is local to Drupal then 
+         // if the chado schema is local to Drupal then
          // just return the active database.
          return 'default';
       }
@@ -2547,7 +2570,7 @@ function tripal_db_set_chado_search_path($dbname) {
  */
 function tripal_db_set_default_search_path() {
   // we make the assumption that the default schema is 'public'.
-  $chado_exists = variable_get('chado_schema_exists', FALSE); 
+  $chado_exists = variable_get('chado_schema_exists', FALSE);
   if ($chado_exists) {
     db_query('set search_path to %s', 'public,chado');
   }
@@ -2609,12 +2632,12 @@ function tripal_core_is_sql_prepared($statement_name) {
  */
 function tripal_core_chado_prepare($statement_name, $psql, $args) {
   $connection = variable_get('tripal_persistent_chado', NULL);
-  
+
   if (!$connection) {
     watchdog('tripal_core', "chado_prepare: not able to prepare '%name' statement as no persistent connection is available", array('%name' => $statement_name, '%sql' => $psql), WATCHDOG_ERROR);
     return FALSE;
   }
-    
+
   // Check to see if this statement was already prepared
   if (tripal_core_is_sql_prepared($statement_name)) {
     // check that the arguments are the same
@@ -2626,8 +2649,8 @@ function tripal_core_chado_prepare($statement_name, $psql, $args) {
     }
     else {
       // Although a statement with this name is already prepared it is not the same!
-      watchdog('tripal_core', "chado_prepare: '%name' statement already prepared with different arguments! You want to prepare %sql with %values and the existing statement is %esql with %existing", 
-        array('%name' => $statement_name, '%sql' => $psql, '%values' => print_r($args, TRUE), '%esql' => $prepared_sql, 
+      watchdog('tripal_core', "chado_prepare: '%name' statement already prepared with different arguments! You want to prepare %sql with %values and the existing statement is %esql with %existing",
+        array('%name' => $statement_name, '%sql' => $psql, '%values' => print_r($args, TRUE), '%esql' => $prepared_sql,
           '%existing' => print_r($prepared_args, TRUE)), WATCHDOG_ERROR);
       return FALSE;
     }
@@ -2660,7 +2683,7 @@ function tripal_core_chado_prepare($statement_name, $psql, $args) {
  */
 function tripal_core_chado_execute_prepared($statement_name, $sql, $values) {
   $connection = variable_get('tripal_persistent_chado', NULL);
-  
+
   if (!tripal_core_is_sql_prepared($statement_name)) {
     watchdog('tripal_core', "tripal_core_chado_execute_prepared: Cannot execute an unprepared statement: '%name'", array('%name' => $statement_name), WATCHDOG_ERROR);
     return FALSE;
@@ -2729,8 +2752,8 @@ function tripal_core_chado_execute_prepared($statement_name, $sql, $values) {
     return $resource;
   }
   else {
-    watchdog('tripal_core', "chado_execute_prepared: wrong number of arguments supplied for '%name' statement. Expected %required but recieved %values",
-      array('%name' => $statement_name, '%required' => print_r($required_values, TRUE), '%values' => print_r($values, TRUE)), WATCHDOG_ERROR);
+    watchdog('tripal_core', "chado_execute_prepared: wrong number of arguments supplied for '%name' statement. Expected %required but recieved %values. Statement: %statement.",
+      array('%name' => $statement_name, '%required' => print_r($required_values, TRUE), '%values' => print_r($values, TRUE), '%statement' => $_SESSION['prepared_sql'][$connection][$statement_name]), WATCHDOG_ERROR);
     return FALSE;
   }
 }
@@ -2749,7 +2772,7 @@ function tripal_db_persistent_chado() {
 
   // get connection if it already exists
   // Otherwise we need to set it
-  $sconn = variable_get('tripal_persistent_chado', NULL); 
+  $sconn = variable_get('tripal_persistent_chado', NULL);
   if ($sconn) {
     return $sconn;
   }
@@ -2768,7 +2791,7 @@ function tripal_db_persistent_chado() {
       }
       else {
         $connection = db_connect($db_url);
-      }      
+      }
       if (!$connection) {
         variable_set('tripal_persistent_chado', NULL);
         watchdog('tripal_core', "Could not create persistant connection", array(), WATCHDOG_ERROR);
@@ -2794,9 +2817,9 @@ function tripal_db_release_persistent_chado() {
 function tripal_db_start_transaction() {
   $connection = tripal_db_persistent_chado();
   if ($connection) {
-    chado_query("BEGIN");  
+    chado_query("BEGIN");
     return $connection;
-  } 
+  }
   return FALSE;
 }
 
@@ -2988,10 +3011,10 @@ function tripal_core_schema_exists($schema) {
  */
 function tripal_core_get_chado_tables($include_custom = NULL) {
 
-  
+
   // first get the chado version that is installed
   $v = tripal_core_get_chado_version();
-  
+
   $tables = array();
   if ($v == '1.2') {
     $tables_v1_2 = tripal_core_chado_get_v1_2_tables();
@@ -3005,12 +3028,12 @@ function tripal_core_get_chado_tables($include_custom = NULL) {
       $tables[$table] = $table;
     }
   }
-  
+
   // now add in the custom tables too if requested
   if ($include_custom) {
     $sql = "SELECT table_name FROM {tripal_custom_tables}";
     $resource = db_query($sql);
-    
+
     while ($r = db_fetch_object($resource)) {
       $tables[$r->table_name] = $r->table_name;
     }
