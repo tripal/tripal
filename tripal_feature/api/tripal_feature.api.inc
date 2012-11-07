@@ -878,7 +878,7 @@ function tripal_feature_get_custom_tables($table = NULL) {
       ),
       'indexes' => array(
         'tripal_gff_temp_idx0' => array('feature_id'),
-        'tripal_gff_temp_idx0' => array('orgnaism_id'),
+        'tripal_gff_temp_idx0' => array('organism_id'),
         'tripal_gff_temp_idx1' => array('uniquename'),
       ),
       'unique keys' => array(
