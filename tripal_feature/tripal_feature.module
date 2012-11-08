@@ -290,6 +290,16 @@ function tripal_feature_menu() {
      'type' => MENU_CALLBACK,
   );
 
+  // the menu link for addressing any feature (by name, uniquename, synonym)
+  $items['feature/%'] = array(
+    'title' => 'Matched Features',
+    'description' => 'Shows all features that match the provided ID.  If multiple features match even by name, uniquename or synonym then a page is presented to allow the user to select which one they intended.',
+    'page callback' => 'tripal_feature_match_features_page',
+    'page arguments' => array(1),
+    'access arguments' => array('access chado_feature content'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+  
   return $items;
 }
 
@@ -2750,4 +2760,71 @@ function tripal_feature_coder_ignore() {
     'path' => drupal_get_path('module', 'tripal_feature'),
     'line prefix' => drupal_get_path('module', 'tripal_feature'),
   );
+}
+
+/*
+ * Uses the value provided in the $id argument to find all features that match
+ * that ID by name, featurename or synonym.  If it matches uniquenly to a single
+ * feature it will redirect to that feature page, otherwise, a list of matching
+ * features is shown.
+ */
+function tripal_feature_match_features_page($id) {
+
+  $sql = "
+    SELECT 
+      F.name, F.uniquename, F.feature_id, 
+      O.genus, O.species, O.organism_id, 
+      CVT.cvterm_id, CVT.name as type_name, 
+      CF.nid, 
+      array_agg(S.name) as synonyms 
+    FROM feature F 
+      INNER JOIN organism O on F.organism_id = O.organism_id 
+      INNER JOIN cvterm CVT on CVT.cvterm_id = F.type_id 
+      LEFT JOIN feature_synonym FS on FS.feature_id = F.feature_id 
+      LEFT JOIN synonym S on S.synonym_id = FS.synonym_id 
+      INNER JOIN chado_feature CF on CF.feature_id = F.feature_id 
+    WHERE 
+      F.uniquename = '%s' or 
+      F.name = '%s' or 
+      FS.name = '%s' 
+    GROUP BY F.name, F.uniquename, F.feature_id, O.genus, O.species, 
+      O.organism_id, CVT.cvterm_id, CVT.name, CF.nid
+  ";
+  $results = chado_query($sql, $id, $id, $id);
+  
+  $num_matches = 0;
+  
+  // iterate through the matches and build the table for showing matches
+  $header = array('Uniquename', 'Name', 'Type', 'Species', 'Synonyms');
+  $rows = array();
+  $curr_match;
+  while ($match = db_fetch_object($results)) {
+    $curr_match = $match;
+    $synonyms = $match->synonyms;
+    $synonyms = preg_replace('/[\"\{\}]/', '', $synonyms);
+    $rows[] = array(
+       $match->uniquename,
+       "<a href=\"" . url("node/". $match->nid) ."\">" . $match->name . "</a>",
+       $match->type_name,
+       '<i>' . $match->genus . ' ' . $match->species . '</i>',
+       $synonyms,
+    ); 
+    $num_matches++;   
+  }
+  
+  // if we have more than one match then generate the table, otherwise, redirect
+  // to the matched feature
+  if ($num_matches == 1) {
+    drupal_goto(url("node/". $curr_match->nid));
+  }
+  if ($num_matches == 0) {
+    return "<p>No features matched the given name '$id'</p>";
+  }
+  
+  $table_attrs = array(
+    'class' => 'tripal-table tripal-table-horz'
+  );
+  $output = "<p>The following features match the name '$id'.</p>";
+  $output .= theme_table($header, $rows, $table_attrs, $caption);
+  return $output;
 }
