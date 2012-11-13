@@ -339,7 +339,7 @@ function tripal_cv_add_cv($name, $definition) {
  */
 function tripal_cv_add_cvterm($term, $defaultcv = '_global', $is_relationship = 0, 
   $update = 1, $dbname = 'internal') {
-    
+   
   $connection = tripal_db_persistent_chado();
     
   // get the term properties
@@ -439,7 +439,7 @@ function tripal_cv_add_cvterm($term, $defaultcv = '_global', $is_relationship = 
   if (count($result) == 1) {
     $cvterm = $result[0];
     
-    // get the dbxref
+    // get the dbxref record
     $values = array('dbxref_id' => $cvterm->dbxref_id);
     $options = array('statement_name' => 'sel_dbxref_id');
     $result = tripal_core_chado_select('dbxref', array('*'), $values, $options);
@@ -456,17 +456,17 @@ function tripal_cv_add_cvterm($term, $defaultcv = '_global', $is_relationship = 
     // wouldn't have made it this far. So, let's swap the database for
     // this term
     if ($db_check->name != $db->name) {
-      
-      // look to see if the correct dbxref record already exists for 
-      // this database
+
+      // look to see if the correct dbxref record already exists for this database
       $values = array(
         'db_id' => $db->db_id,
         'accession' => $accession,       
       );
-      $options = array('staement_name' => 'sel_dbxref_idac');
+      $options = array('statement_name' => 'sel_dbxref_idac');
       $result = tripal_core_chado_select('dbxref', array('*'), $values, $options);
-      
-      // if we already have a good dbxref then we want to update our cvterm to use this dbxref
+
+      // if we already have a good dbxref then we want to update our cvterm 
+      // to use this dbxref
       if (count($result) > 0) {
         $dbxref = $result[0];
         $match = array('cvterm_id' => $cvterm->cvterm_id);
@@ -474,14 +474,14 @@ function tripal_cv_add_cvterm($term, $defaultcv = '_global', $is_relationship = 
         $options = array('statement_name' => 'upd_cvterm_db');
         $success = tripal_core_chado_update('cvterm', $match, $values, $options); 
         if (!$success) {
-          watchdog('tripal_cv', "Failed to correct the dbxref id for the $cvterm, " .
-            "$name (id: $accession), for database $dbname", NULL, WATCHDOG_WARNING);
+          watchdog('tripal_cv', "Failed to correct the dbxref id for the cvterm " .
+            "'$name' (id: $accession), for database $dbname", NULL, WATCHDOG_WARNING);
           return 0;
         }
       }
       // if we don't have the record then we want to delete our cvterm and let the code
       // below recreate it with the correct info 
-      else {
+      else {          
         $match = array('cvterm_id' => $cvterm->cvterm_id);
         tripal_core_chado_delete('cvterm', $match);
       }      

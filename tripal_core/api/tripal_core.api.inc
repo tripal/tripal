@@ -698,7 +698,7 @@ function tripal_core_chado_update($table, $match, $values, $options = NULL) {
     return TRUE;
   }
   else {
-    watchdog('tripal_core', "Cannot update record in $table table.  Match:" . print_r($match, 1) . ". Values: ". print_r($values, 1), array(), 'WATCHDOG_ERROR');
+    watchdog('tripal_core', "Cannot update record in $table table.  \nMatch:" . print_r($match, 1) . "\nValues: ". print_r($values, 1), array(), 'WATCHDOG_ERROR');
     return FALSE;
   }
 
@@ -875,7 +875,7 @@ function tripal_core_chado_delete($table, $match) {
  *     However to avoid this check, which requires a database query you can
  *     set this value to true and the check will not be performed.
  *  - is_duplicate: TRUE or FALSE.  Checks the values submited to see if
- *     they violoate any of the unique constraints. If so, the record
+ *     they violate any of the unique constraints. If so, the record
  *     is returned, if not, FALSE is returned.
  *
  *

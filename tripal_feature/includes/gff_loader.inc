@@ -381,8 +381,8 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
     }
 
     // get the type record
-    if (!tripal_core_is_sql_prepared('sel_cvterm_cvid_cvtname_synonym')) {
-      $psql = "PREPARE sel_cvterm_cvid_cvtname_synonym (int, text, text) AS
+    if (!tripal_core_is_sql_prepared('sel_cvterm_idnasy')) {
+      $psql = "PREPARE sel_cvterm_idnasy (int, text, text) AS
                SELECT CVT.cvterm_id, CVT.cv_id, CVT.name, CVT.definition,
                   CVT.dbxref_id, CVT.is_obsolete, CVT.is_relationshiptype
                FROM {cvterm} CVT
@@ -391,14 +391,14 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
                WHERE CV.cv_id = $1 and (CVT.name = $2 or CVTS.synonym = $3)";
        $status = chado_query($psql);
        if (!$status) {
-         watchdog('T_gff3_loader', 'cannot prepare statement \'sel_cvterm_cvid_cvtname_synonym\' for ontology term %line_num', 
+         watchdog('T_gff3_loader', 'cannot prepare statement \'sel_cvterm_idnasy\' for ontology term %line_num', 
            array('%line_num' => $line_num), WATCHDOG_ERROR);
          return '';
       }
       
     } 
   
-    $result = chado_query("EXECUTE sel_cvterm_cvid_cvtname_synonym (%d, '%s', '%s')", $cv->cv_id, $type, $type);
+    $result = chado_query("EXECUTE sel_cvterm_idnasy (%d, '%s', '%s')", $cv->cv_id, $type, $type);
    
     $cvterm = db_fetch_object($result);
     if (!$cvterm) {
