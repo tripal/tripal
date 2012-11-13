@@ -199,7 +199,7 @@ function tripal_cv_obo_process_terms($terms, $defaultcv, $obo, $jobid = NULL, &$
   }
   
   // calculate the interval for updates
-  $interval = intval($count * 0.01);
+  $interval = intval($count * 0.0001);
   if ($interval < 1) {
     $interval = 1;
   }
@@ -259,8 +259,8 @@ function tripal_cv_obo_process_term($term, $defaultcv, $obo, $is_relationship = 
   if (!$cvterm) {
     tripal_cv_obo_quiterror("Cannot add the term " . $term['id']);
   }
-  if ($term['namespace']) {
-    $newcvs[$term['namespace']] = $cvterm->cv_id;
+  if (isset($term['namespace'])) {
+    $newcvs[$term['namespace'][0]] = $cvterm->cv_id;
   }
   
   // now handle other properites
