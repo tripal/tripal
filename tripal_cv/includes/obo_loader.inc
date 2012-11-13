@@ -727,7 +727,7 @@ function tripal_cv_obo_add_cvterm_prop($cvterm, $property, $value, $rank) {
       'definition' => '',
       'is_obsolete' => 0,
     );
-    $cvproptype = tripal_cv_add_cvterm($term, $cv, 0, 0);
+    $cvproptype = tripal_cv_add_cvterm($term, $cv->name, 0, 0);
     if (!$cvproptype) {
       tripal_cv_obo_quiterror("Cannot add cvterm property: internal:$property");
     }
