@@ -722,10 +722,10 @@ function tripal_cv_obo_add_cvterm_prop($cvterm, $property, $value, $rank) {
   $cvproptype = db_fetch_object(db_query($sql, $property, 'cvterm_property_type'));
   if (!$cvproptype) {
     $term = array(
-      'name' => array($property),
-      'id' => array("internal:$property"),
-      'definition' => array(''),
-      'is_obsolete' => array(0),
+      'name' => $property,
+      'id' => "internal:$property",
+      'definition' => '',
+      'is_obsolete' => 0,
     );
     $cvproptype = tripal_cv_add_cvterm($term, $cv, 0, 0);
     if (!$cvproptype) {
