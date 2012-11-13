@@ -505,12 +505,12 @@ function tripal_cv_obo_add_synonyms($term, $cvterm) {
       if (!$results) {
         // build a 'term' object so we can add the missing term
         $term = array(
-           'name' => array($scope),
-           'id' => array("internal:$scope"),
-           'definition' => array(''),
-           'is_obsolete' => array(0),
+           'name' => $scope,
+           'id' => "internal:$scope",
+           'definition' => '',
+           'is_obsolete' => 0,
         );
-        $syntype = tripal_cv_add_cvterm($term, $syncv, 0, 1);
+        $syntype = tripal_cv_add_cvterm($term, $syncv->name, 0, 1);
         if (!$syntype) {
           tripal_cv_obo_quiterror("Cannot add synonym type: internal:$scope");
         }
@@ -769,7 +769,6 @@ function tripal_cv_obo_add_dbxref($db_id, $accession, $version='', $description=
     if (!db_query($sql, $db_id, $accession, $version, $description)) {
       tripal_cv_obo_quiterror("Failed to insert the dbxref record $accession");
     }
-    print "Added Dbxref accession: $accession\n";
     $dbxref = db_fetch_object(db_query($dbxsql, $db_id, $accession));
   }
   return $dbxref;
