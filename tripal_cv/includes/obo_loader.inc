@@ -212,7 +212,7 @@ function tripal_cv_obo_process_terms($terms, $defaultcv, $obo, $jobid = NULL, &$
     if ($jobid and $i % $interval == 0) {
       $complete = ($i / $count) * 100;
       tripal_job_set_progress($jobid, intval($complete)); 
-      printf("%d of %d records. (%0.2f%%) memory: %d\r", $i, $count, $complete, memory_get_usage());                                                             
+      printf("%d of %d records. (%0.2f%%) memory: %s bytes\r", $i, $count, $complete, number_format(memory_get_usage()));                                                             
     }                                 
     
     // add/update this term
