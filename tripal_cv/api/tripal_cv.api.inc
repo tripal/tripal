@@ -260,6 +260,7 @@ function tripal_cv_get_cvterm_options($cv_id = 0) {
  */
 function tripal_cv_add_cv($name, $definition) {
   
+  // insert/update values
   $ins_values = array(
     'name'       => $name,
     'definition' => $definition
@@ -344,11 +345,25 @@ function tripal_cv_add_cvterm($term, $defaultcv = '_global', $is_relationship = 
     
   // get the term properties
   $id = $term['id'];
-  $name = $term['name'];
-  $cvname = $term['namespace'];
-  $definition = preg_replace('/^\"(.*)\"/', '\1', $term['def']);
-  $is_obsolete = 0;
-  
+  if (isset($term['name'])) {
+    $name = $term['name'];  
+  }
+  else {
+    $name = $id;  
+  }  
+  if (isset($term['namespace'])) {
+    $cvname = $term['namespace'];
+  } 
+  else {
+    $cvname = $defaultcv;
+  }
+  if (isset($term['def'])) {
+    $definition = preg_replace('/^\"(.*)\"/', '\1', $term['def']);
+  }
+  else {
+    $definition = '';
+  }
+  $is_obsolete = 0;  
   if (isset($term['is_obsolete']) and strcmp($term['is_obsolete'], 'true') == 0) {
     $is_obsolete = 1;
   }  
@@ -359,12 +374,7 @@ function tripal_cv_add_cvterm($term, $defaultcv = '_global', $is_relationship = 
   if (!$id) {
     $id = $name;
   }
-  if (!$name) {
-    $name = $id;
-  }
-  if (!$cvname) {
-    $cvname = $defaultcv;
-  }
+
   
   // get the accession and the database from the cvterm id
   if ($dbname) {
@@ -483,7 +493,8 @@ function tripal_cv_add_cvterm($term, $defaultcv = '_global', $is_relationship = 
       // below recreate it with the correct info 
       else {          
         $match = array('cvterm_id' => $cvterm->cvterm_id);
-        tripal_core_chado_delete('cvterm', $match);
+        $options = array('statement_name' => 'del_cvterm_cv');
+        tripal_core_chado_delete('cvterm', $match, $options);
       }      
     }
     
@@ -512,7 +523,10 @@ function tripal_cv_add_cvterm($term, $defaultcv = '_global', $is_relationship = 
       
       // if the cvterm_dbxref record does not exists then add it 
       if (count($result)==0) {
-        $options = array('statement_name' => 'ins_cvtermdbxref_cvdbis');
+        $options = array(
+          'statement_name' => 'ins_cvtermdbxref_cvdbis',
+          'return_record' => FALSE,
+        );
         $success = tripal_core_chado_insert('cvterm_dbxref', $values, $options);
         if (!$success) {
           watchdog('tripal_cv', "Failed to find or insert the cvterm_dbxref record for a " . 
@@ -592,7 +606,7 @@ function tripal_cv_add_cvterm($term, $defaultcv = '_global', $is_relationship = 
     $success = tripal_core_chado_update('cvterm', $match, $upd_values, $upd_options);    
     if (!$success) {
       watchdog('tripal_cv', "Failed to update the term: $name", NULL, WATCHDOG_WARNING);
-      return FALSE;
+      return 0;
     }
     $cvterm = db_fetch_object(chado_query($cvtermsql, $accession, $dbname));
   } 
