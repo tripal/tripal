@@ -62,7 +62,7 @@ function tripal_bulk_loader_menu() {
     'type' => MENU_NORMAL_ITEM,
   );
   $items['admin/tripal/tripal_bulk_loader_template/jobs'] = array(
-    'title' => 'Jobs',
+    'title' => 'Bulk Loader Jobs',
     'description' => 'Listing of Bulk Loading Jobs',
     'page callback' => 'tripal_bulk_loader_admin_jobs',
     'access arguments' => array('administer site configuration'),
