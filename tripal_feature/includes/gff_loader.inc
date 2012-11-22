@@ -1508,8 +1508,10 @@ function tripal_feature_load_gff3_property($feature, $property, $value) {
       watchdog("T_gff3_loader", "Cannot add cvterm, $property", array(), WATCHDOG_WARNING);
       return 0;  
     }
+  } 
+  else {
+    $cvterm = $result[0];
   }
-  $cvterm = $result[0];
   
 
   // check to see if the property already exists for this feature
