@@ -603,7 +603,7 @@ function tripal_feature_fasta_loader_handle_feature($name, $uname, $db_id, $acce
       return 0;
     } 
     if (count($results) == 1) {  
-      $reature = $results[0];
+      $feature = $results[0];
     } 
   }
   // check to see if this feature already exists if the match_type is 'Unique Name'
@@ -613,6 +613,7 @@ function tripal_feature_fasta_loader_handle_feature($name, $uname, $db_id, $acce
       'uniquename' => $uname,
       'type_id' => $cvterm->cvterm_id,    
     );
+
     $options = array('statement_name' => 'sel_feature_oruqty');
     $results = tripal_core_chado_select('feature', array('feature_id'), $values, $options);
     if (count($results) > 1) {
@@ -621,7 +622,7 @@ function tripal_feature_fasta_loader_handle_feature($name, $uname, $db_id, $acce
       return 0;
     } 
     if (count($results) == 1) {  
-      $reature = $results[0];
+      $feature = $results[0];
     } 
   }
 
