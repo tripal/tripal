@@ -678,7 +678,7 @@ function tripal_feature_fasta_loader_handle_feature($name, $uname, $db_id, $acce
   
   // if we don't have a feature and the uesr wants to do an update then fail
   if (!$feature and (strcmp($method, 'Update only')==0 or drupal_strcmp($method, 'Insert and update')==0)) {
-    watchdog('T_fasta_loader', "Failed to find feature '%name' ('%name') while matching on " . 
+    watchdog('T_fasta_loader', "Failed to find feature '%name' ('%uiname') while matching on " . 
       drupal_strtolower($match_type), array('%name' => $name, '%uiname' => $uname), WATCHDOG_ERROR);
     return 0;
   }

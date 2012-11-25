@@ -353,7 +353,7 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
   if ($options['return_record'] == TRUE and $result) {
     if (array_key_exists('primary key', $table_desc) and is_array($table_desc['primary key'])) {
       foreach ($table_desc['primary key'] as $field) {
-        $psql = "PREPARE currval_$table AS SELECT CURRVAL('" . $table . "_" . $field . "_seq')";
+        $psql = "PREPARE currval_" . $table . "_" . $field . " AS SELECT CURRVAL('" . $table . "_" . $field . "_seq')";
         $is_prepared = tripal_core_chado_prepare("currval_$table", $psql, array());
         if ($is_prepared) {
            $value = db_fetch_object(chado_query("EXECUTE currval_$table"));
