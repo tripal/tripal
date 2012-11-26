@@ -361,8 +361,8 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
         else {
           $sql = "SELECT CURRVAL('" . $table . "_" . $field . "_seq')";
           $value =  db_result(chado_query($sql));
-        } 
-        $values[$field] = $value;       
+        }
+        $values[$field] = $value;
       }
     }
     return $values;
@@ -818,7 +818,7 @@ function tripal_core_chado_delete($table, $match, $options = NULL) {
     //print "NO STATEMENT (update): $table\n";
     //debug_print_backtrace();
   }
-  
+
   $delete_matches = array();  // contains the values for the where clause
 
   // get the table description
@@ -862,7 +862,7 @@ function tripal_core_chado_delete($table, $match, $options = NULL) {
   $void_prepared = 0;
   $i = 1;
   foreach ($delete_matches as $field => $value) {
-    
+
     // if we have an array values then this is an "IN" clasue.
     // we cannot use prepared statements with these
     if (count($value) > 1) {
@@ -882,14 +882,14 @@ function tripal_core_chado_delete($table, $match, $options = NULL) {
         $ivalues[] = 'NULL';
         $pvalues[] = '%s';
         $uargs[] = 'NULL';
-      } 
+      }
       else {
         $sql .= " $field = %d AND ";
         $ivalues[] = $value;
         $pvalues[] = '%d';
         $uargs[] = $value;
       }
-      $idatatypes[] = 'int';        
+      $idatatypes[] = 'int';
     }
     elseif (strcasecmp($table_desc['fields'][$field]['type'], 'boolean')==0) {
       $sql .= " $field = %s AND ";
@@ -931,8 +931,8 @@ function tripal_core_chado_delete($table, $match, $options = NULL) {
         $pvalues[] = "'%s'";
       }
       $idatatypes[] = 'text';
-    }    
-    array_push($dargs, $value);  
+    }
+    array_push($dargs, $value);
     $psql .= "$field = \$" . $i . " AND ";
     $i++;
   }
@@ -941,7 +941,7 @@ function tripal_core_chado_delete($table, $match, $options = NULL) {
 
   // finish constructing the prepared SQL statement
   $psql =  "PREPARE " . $options['statement_name'] . " (" . implode(', ', $idatatypes) . ") AS " . $psql;
-  
+
   // finally perform the update.  If successful, return the updated record
   if ($prepared and !$void_prepared) {
     // if this is the first time we've run this query
@@ -961,8 +961,8 @@ function tripal_core_chado_delete($table, $match, $options = NULL) {
   else {
     $resource = chado_query($sql, $uargs);
   }
-  
-  // finally perform the delete.  If successful, return the updated record  
+
+  // finally perform the delete.  If successful, return the updated record
   $result = chado_query($sql, $dargs);
   if ($result) {
     return TRUE;
@@ -2750,7 +2750,8 @@ function tripal_core_is_sql_prepared($statement_name) {
   // @coder-ignore: acting on postgres tables rather then drupal schema therefore, table prefixing does not apply
   $sql = "SELECT name FROM pg_prepared_statements WHERE name = '%s'";
   // do not use 'chado_query' here or it causes memory-leaks
-  $result = db_fetch_object(db_query($sql, $statement_name));
+  //$result = db_fetch_object(db_query($sql, $statement_name));
+  $result = db_fetch_object(chado_query($sql, $statement_name));
 
   if ($result) {
     $_SESSION[$connection][] = $statement_name;
