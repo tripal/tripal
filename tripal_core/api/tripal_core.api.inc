@@ -353,10 +353,10 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
   if ($options['return_record'] == TRUE and $result) {
     if (array_key_exists('primary key', $table_desc) and is_array($table_desc['primary key'])) {
       foreach ($table_desc['primary key'] as $field) {
-        $psql = "PREPARE currval_$table AS SELECT CURRVAL('" . $table . "_" . $field . "_seq')";
-        $is_prepared = tripal_core_chado_prepare("currval_$table", $psql, array());
+        $psql = "PREPARE currval_" . $table . "_" . $field . " AS SELECT CURRVAL('" . $table . "_" . $field . "_seq')";
+        $is_prepared = tripal_core_chado_prepare("currval_" . $table . "_" . $field, $psql, array());
         if ($is_prepared) {
-           $value = db_fetch_object(chado_query("EXECUTE currval_$table"));
+           $value = db_result(chado_query("EXECUTE currval_". $table . "_" . $field));
         }
         else {
           $sql = "SELECT CURRVAL('" . $table . "_" . $field . "_seq')";
@@ -2794,9 +2794,9 @@ function tripal_core_chado_prepare($statement_name, $psql, $args) {
     }
     else {
       // Although a statement with this name is already prepared it is not the same!
-      watchdog('tripal_core', "chado_prepare: '%name' statement already prepared with different arguments! You want to prepare %sql with %values and the existing statement is %esql with %existing",
-        array('%name' => $statement_name, '%sql' => $psql, '%values' => print_r($args, TRUE), '%esql' => $prepared_sql,
-          '%existing' => print_r($prepared_args, TRUE)), WATCHDOG_ERROR);
+      watchdog('tripal_core', "chado_prepare: statement, '%name', is already prepared with different arguments! The current statement: \n%sql. The current arguments: \n%args. The already prepared statement: \n%esql\nThe current arguments: \n%existing. ",
+        array('%name' => $statement_name, '%sql' => $psql, '%esql' => $prepared_sql,
+          '%existing' => print_r($prepared_args, TRUE), '%args' => print_r($args, TRUE)), WATCHDOG_ERROR);
       return FALSE;
     }
   }

@@ -346,6 +346,9 @@ function tripal_feature_block($op = 'list', $delta = 0, $edit=array()) {
       $blocks['properties']['info'] = t('Tripal Feature Properties');
       $blocks['properties']['cache'] = BLOCK_NO_CACHE;;
 
+      $blocks['terms']['info'] = t('Tripal Annotated Terms');
+      $blocks['terms']['cache'] = BLOCK_NO_CACHE;;
+
       $blocks['alignments']['info'] = t('Tripal Feature Alignments');
       $blocks['alignments']['cache'] = BLOCK_NO_CACHE;
 
@@ -382,7 +385,11 @@ function tripal_feature_block($op = 'list', $delta = 0, $edit=array()) {
         case 'properties':
           $block['subject'] = t('Properties');
           $block['content'] = theme('tripal_feature_properties', $node);
-          break;;
+          break;
+        case 'terms':
+          $block['subject'] = t('Annotated Terms');
+          $block['content'] = theme('tripal_feature_terms', $node);
+          break;
         case 'sequence':
           $block['subject'] = t('Sequence');
           $block['content'] = theme('tripal_feature_sequence', $node);
@@ -1943,6 +1950,10 @@ function tripal_feature_theme() {
     'tripal_feature_properties' => array(
        'arguments' => array('node' => NULL),
        'template' => 'tripal_feature_properties',
+    ),
+    'tripal_feature_terms' => array(
+       'arguments' => array('node' => NULL),
+       'template' => 'tripal_feature_terms',
     ),
     'tripal_feature_alignments' => array(
        'arguments' => array('node' => NULL),
