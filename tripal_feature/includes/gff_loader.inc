@@ -589,27 +589,47 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
           
         // add target relationships
         if (array_key_exists('Target', $tags)) {
-          preg_match('/^(.*)\s+\d+\s+\d+\s+(\+|\-)*$/', $tags['Target'][0], $matches);
-          $target_feature = $matches[1]; 
-          $start = $matches[2]; 
-          $end = $matches[3]; 
-          if ($matches[4]) {
-             $target_strand = $matches[4]; 
-          }
-          else {
-             $target_strand = '.';
-          }
-          $target_fmin = $start - 1;
-          $target_fmax = $end;
-          if ($end < $start) {
-            $target_fmin = $end - 1;
-            $target_fmax = $start;
-          }
+          // format is: "target_id start end [strand]", where strand is optional and may be "+" or "-"
+          $matched = preg_match('/^(.*?)\s+(\d+)\s+(\d+)(\s+[\+|\-])*$/', $tags['Target'][0], $matches);
           
-          #print "Target: $target_feature, $target_fmin-$target_fmax $target_dir\n";
-          tripal_feature_load_gff3_featureloc($feature, $organism,
-            $target_feature, $target_fmin, $target_fmax, $target_strand, $phase, $attr_fmin_partial,
-            $attr_fmax_partial, $attr_residue_info, $attr_locgroup);
+          // if we have matches and the Target is in the correct format then load the alignment 
+          if ($matched) {
+            $target_feature = $matches[1]; 
+            $start = $matches[2]; 
+            $end = $matches[3]; 
+            // if we have an optional strand, convert it to a numeric value. 
+            if ($matches[4]) {
+              if (preg_match('/^+$/', trim($matches[4]))) {
+                $target_strand = 1;
+              }
+              elseif (preg_match('/^-$/', trim($matches[4]))) {
+                $target_strand = -1;
+              }
+              else {
+                $target_strand = 0;
+              }
+            }
+            else {
+               $target_strand = 0;
+            }
+            
+            $target_fmin = $start - 1;
+            $target_fmax = $end;
+            if ($end < $start) {
+              $target_fmin = $end - 1;
+              $target_fmax = $start;
+            }
+            
+            #print "Target: $target_feature, $target_fmin-$target_fmax $target_dir\n";
+            tripal_feature_load_gff3_featureloc($feature, $organism,
+              $target_feature, $target_fmin, $target_fmax, $target_strand, $phase, $attr_fmin_partial,
+              $attr_fmax_partial, $attr_residue_info, $attr_locgroup);
+          }
+          // the target attribute is not correctly formatted
+          else {
+            watchdog('T_gff3_loader', "Could not add 'Target' alignment as it is improperly formatted:  '%target'",
+              array('%target' => $tags['Target'][0]), WATCHDOG_ERROR);            
+          }
         }
         
         
