@@ -1402,7 +1402,12 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
       $psql = drupal_substr($psql, 0, -2);  // get rid of the trailing ', '
     }
     // finish constructing the prepared SQL statement
-    $psql =  "PREPARE " . $options['statement_name'] . " (" . implode(', ', $idatatypes) . ") AS " . $psql;
+    if (count($idatatypes) > 0) {
+      $psql =  "PREPARE " . $options['statement_name'] . " (" . implode(', ', $idatatypes) . ") AS " . $psql;
+    } 
+    else {
+      $psql =  "PREPARE " . $options['statement_name'] . " () AS " . $psql;
+    }
 
   } // end if(empty($where)){ } else {
 
