@@ -295,7 +295,8 @@ function tripal_bulk_loader_form($node, $form_state) {
     '#title'         => t('Data File'),
     '#description'   => t('Please specify the data file to be loaded. This must be a tab-delimited text file with UNIX line endings.'),
     '#weight'        => -8,
-    '#default_value' => $node->file
+    '#default_value' => $node->file,
+    '#maxlength'     => 1024,
   );
 
   $form['loader']['has_header'] = array(
