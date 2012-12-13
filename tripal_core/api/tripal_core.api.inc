@@ -2742,10 +2742,10 @@ function tripal_core_is_sql_prepared($statement_name) {
   // query to find out.  If it hasn't then we'll query the database
   // to see if it is prepared.
   $connection = variable_get('tripal_persistent_chado', NULL);
-  if (!isset($_SESSION[$connection])) {
-    $_SESSION[$connection] = array();
+  if (!isset($_SESSION[settype($connection,'integer')])) {
+    $_SESSION[settype($connection,'integer')] = array();
   }
-  if (in_array($statement_name, $_SESSION[$connection])) {
+  if (in_array($statement_name, $_SESSION[settype($connection,'integer')])) {
     //print "Is Prepared and in Session var: $statement_name\n";
     return TRUE;
   }
@@ -2756,7 +2756,7 @@ function tripal_core_is_sql_prepared($statement_name) {
   $result = db_fetch_object(db_query($sql, $statement_name));
 
   if ($result) {
-    $_SESSION[$connection][] = $statement_name;
+    $_SESSION[settype($connection,'integer')][] = $statement_name;
     //print "Is Prepared but in DB: $statement_name\n";
     return TRUE;
   }
@@ -2788,8 +2788,8 @@ function tripal_core_chado_prepare($statement_name, $psql, $args) {
   // Check to see if this statement was already prepared
   if (tripal_core_is_sql_prepared($statement_name)) {
     // check that the arguments are the same
-    $prepared_args = $_SESSION['prepared_args'][$connection][$statement_name];
-    $prepared_sql = $_SESSION['prepared_sql'][$connection][$statement_name];
+    $prepared_args = $_SESSION['prepared_args'][settype($connection,'integer')][$statement_name];
+    $prepared_sql = $_SESSION['prepared_sql'][settype($connection,'integer')][$statement_name];
     if ($prepared_args == $args) {
       // This statement is already prepared
       return TRUE;
@@ -2810,9 +2810,9 @@ function tripal_core_chado_prepare($statement_name, $psql, $args) {
   }
   else {
     //watchdog('tripal_core', "tripal_core_chado_select: prepared '%name' statement as %sql", array('%name' => $statement_name, '%sql' => $psql), WATCHDOG_NOTICE);
-    $_SESSION[$connection][] = $statement_name;
-    $_SESSION['prepared_args'][$connection][$statement_name] = $args;
-    $_SESSION['prepared_sql'][$connection][$statement_name] = $psql;
+    $_SESSION[settype($connection,'integer')][] = $statement_name;
+    $_SESSION['prepared_args'][settype($connection,'integer')][$statement_name] = $args;
+    $_SESSION['prepared_sql'][settype($connection,'integer')][$statement_name] = $psql;
     return TRUE;
   }
 }
@@ -2837,7 +2837,7 @@ function tripal_core_chado_execute_prepared($statement_name, $sql, $values) {
   }
 
   // Before Executing, Ensure that all the values are supplied
-  $required_values = $_SESSION['prepared_args'][$connection][$statement_name];
+  $required_values = $_SESSION['prepared_args'][settype($connection,'integer')][$statement_name];
   if (!$required_values) {
     watchdog('tripal_core', "tripal_core_chado_execute_prepared: missing prepare arguments for this statement: '%name'", array('%name' => $statement_name), WATCHDOG_ERROR);
     return FALSE;
@@ -2900,7 +2900,7 @@ function tripal_core_chado_execute_prepared($statement_name, $sql, $values) {
   }
   else {
     watchdog('tripal_core', "chado_execute_prepared: wrong number of arguments supplied for '%name' statement. Expected %required but recieved %values. Statement: %statement.",
-      array('%name' => $statement_name, '%required' => print_r($required_values, TRUE), '%values' => print_r($values, TRUE), '%statement' => $_SESSION['prepared_sql'][$connection][$statement_name]), WATCHDOG_ERROR);
+      array('%name' => $statement_name, '%required' => print_r($required_values, TRUE), '%values' => print_r($values, TRUE), '%statement' => $_SESSION['prepared_sql'][settype($connection,'integer')][$statement_name]), WATCHDOG_ERROR);
     return FALSE;
   }
 }
