@@ -2375,17 +2375,21 @@ $cv_name, $value, $update_if_present = 0) {
 
   // construct the array of values to be inserted
   $values = array(
-  $fkcol => $record_id,
+    $fkcol => $record_id,
     'type_id' => array(
       'cv_id' => array(
         'name' => $cv_name,
-  ),
+      ),
       'name' => $property,
       'is_obsolete' => 0
-  ),
-    'value' => $value,
-    'rank' => $rank,
+     ),
+    'value' => $value,   
   );
+  
+  // some chado prop tables (e.g. analysisprop) was missing the rank field, so we need to check for it
+  if (array_key_exists('rank', $table_desc['fields'])) {
+    $values['rank'] = $rank;
+  }
 
   return tripal_core_chado_insert($basetable . 'prop', $values);
 }
@@ -2444,9 +2448,9 @@ function tripal_core_update_property($basetable, $record_id, $property,
     'type_id' => array(
       'cv_id' => array(
         'name' => $cv_name,
-  ),
+       ),
       'name' => $property,
-  ),
+    ),
   );
 
   // construct the array of values to be updated
