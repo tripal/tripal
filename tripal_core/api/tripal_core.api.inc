@@ -2,6 +2,7 @@
 
 require_once "tripal_core.schema_v1.2.api.inc";
 require_once "tripal_core.schema_v1.11.api.inc";
+require_once "tripal_core.ahah.inc";
 
 /**
  * @file
