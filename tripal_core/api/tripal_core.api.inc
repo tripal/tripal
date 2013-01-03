@@ -1944,11 +1944,7 @@ function tripal_core_expand_chado_vars($object, $type, $to_expand, $table_option
           //We need to recurse -the field is in a nested object
           foreach ((array) $object as $field_name => $field_value) {
             if (is_object($field_value)) {
-              $object->{$field_name} = tripal_core_expand_chado_vars(
-              $field_value,
-                'field',
-              $to_expand
-              );
+              $object->{$field_name} = tripal_core_expand_chado_vars($field_value, 'field', $to_expand);
             }
           } //end of for each field in the current object
         }
