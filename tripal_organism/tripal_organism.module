@@ -638,6 +638,10 @@ function tripal_organism_theme() {
        'arguments' => array('node' => NULL),
        'template' => 'tripal_organism_image',
     ),
+    'tripal_organism_teaser' => array(
+       'arguments' => array('node' => NULL),
+       'template' => 'tripal_organism_teaser',
+    ),
   );
 }
 /**

@@ -603,7 +603,7 @@ function tripal_feature_fasta_loader_handle_feature($name, $uname, $db_id, $acce
       return 0;
     } 
     if (count($results) == 1) {  
-      $reature = $results[0];
+      $feature = $results[0];
     } 
   }
   // check to see if this feature already exists if the match_type is 'Unique Name'
@@ -613,6 +613,7 @@ function tripal_feature_fasta_loader_handle_feature($name, $uname, $db_id, $acce
       'uniquename' => $uname,
       'type_id' => $cvterm->cvterm_id,    
     );
+
     $options = array('statement_name' => 'sel_feature_oruqty');
     $results = tripal_core_chado_select('feature', array('feature_id'), $values, $options);
     if (count($results) > 1) {
@@ -621,7 +622,7 @@ function tripal_feature_fasta_loader_handle_feature($name, $uname, $db_id, $acce
       return 0;
     } 
     if (count($results) == 1) {  
-      $reature = $results[0];
+      $feature = $results[0];
     } 
   }
 
@@ -678,7 +679,7 @@ function tripal_feature_fasta_loader_handle_feature($name, $uname, $db_id, $acce
   
   // if we don't have a feature and the uesr wants to do an update then fail
   if (!$feature and (strcmp($method, 'Update only')==0 or drupal_strcmp($method, 'Insert and update')==0)) {
-    watchdog('T_fasta_loader', "Failed to find feature '%name' ('%name') while matching on " . 
+    watchdog('T_fasta_loader', "Failed to find feature '%name' ('%uiname') while matching on " . 
       drupal_strtolower($match_type), array('%name' => $name, '%uiname' => $uname), WATCHDOG_ERROR);
     return 0;
   }
@@ -791,7 +792,7 @@ function tripal_feature_fasta_loader_handle_feature($name, $uname, $db_id, $acce
     }
   }
 
-   // now add the database cross reference
+  // now add the database cross reference
   if ($db_id) {
     // check to see if this accession reference exists, if not add it
     $values = array(
@@ -800,10 +801,11 @@ function tripal_feature_fasta_loader_handle_feature($name, $uname, $db_id, $acce
     );
     $sel_options = array('statement_name' => 'sel_dbxref_dbac');
     $results = tripal_core_chado_select('dbxref', array('dbxref_id'), $values, $sel_options);
+    // if the accession doesn't exist then add it
     if (count($results) == 0) {   
-      $ins_options = array('statement_name' => 'sel_dbxref_dbac');
-      $success = tripal_core_chado_insert('dbxref', $values, $ins_options);
-      if (!$success) {
+      $ins_options = array('statement_name' => 'ins_dbxref_dbac');
+      $results = tripal_core_chado_insert('dbxref', $values, $ins_options);
+      if (!$results) {
         watchdog('T_fasta_loader', "Failed to add database accession '%accession'", 
           array('%accession' => $accession), WATCHDOG_ERROR);
         return 0;

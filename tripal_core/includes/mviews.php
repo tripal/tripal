@@ -326,12 +326,17 @@ function tripal_mviews_action($op, $mview_id, $redirect = FALSE) {
 function tripal_update_mview($mview_id) {
   $sql = "SELECT * FROM {tripal_mviews} WHERE mview_id = %d ";
   $mview = db_fetch_object(db_query($sql, $mview_id));
-  if ($mview) {
+  if ($mview) {    
+    // execute the query inside a transaction so that it doesn't destroy existing data
+    // that may leave parts of the site unfunctional
+    tripal_db_start_transaction();
     $previous_db = tripal_db_set_active('chado');  // use chado database
     $results = db_query("DELETE FROM {%s}", $mview->mv_table);
-    $results = db_query("INSERT INTO {%s} ($mview->query)", $mview->mv_table);
+    $results = db_query("INSERT INTO {%s} ($mview->query)", $mview->mv_table);    
     tripal_db_set_active($previous_db);  // now use drupal database
     if ($results) {
+      // commit the transaction
+      tripal_db_commit_transaction();
       $sql = "SELECT count(*) as cnt FROM {%s}";
       $previous_db = tripal_db_set_active('chado');  // use chado database
       $count = db_fetch_object(db_query($sql, $mview->mv_table));
@@ -344,6 +349,8 @@ function tripal_update_mview($mview_id) {
       return TRUE;
     }
     else {
+      // rollback the transaction
+      tripal_db_rollback_transaction()
       // print and save the error message
       $record = new stdClass();
       $record->mview_id = $mview_id;
