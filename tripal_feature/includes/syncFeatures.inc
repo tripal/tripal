@@ -71,7 +71,7 @@ function tripal_feature_sync_form() {
   $form['organism_id'] = array(
     '#title'       => t('Organism'),
     '#type'        => t('select'),
-    '#description' => t("Choose the organism for which features will be deleted."),
+    '#description' => t("Choose the organism for which features set above will be synced."),
     '#options'     => $organisms,
   );
 
