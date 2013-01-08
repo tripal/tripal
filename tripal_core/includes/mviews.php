@@ -350,7 +350,7 @@ function tripal_update_mview($mview_id) {
     }
     else {
       // rollback the transaction
-      tripal_db_rollback_transaction()
+      tripal_db_rollback_transaction();
       // print and save the error message
       $record = new stdClass();
       $record->mview_id = $mview_id;
