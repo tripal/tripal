@@ -1258,8 +1258,10 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
       $psql = drupal_substr($psql, 0, -2);  // get rid of the trailing ', '
     }
     // finish constructing the prepared SQL statement
-    $psql =  "PREPARE " . $options['statement_name'] . " (" . implode(', ', $idatatypes) . ") AS " . $psql;
-
+    if ($options['statement_name']) {
+    	$psql =  "PREPARE " . $options['statement_name'] . " (" . implode(', ', $idatatypes) . ") AS " . $psql;
+    }
+    
   } // end if(empty($where)){ } else {
 
   // if the caller has requested the SQL rather than the results...

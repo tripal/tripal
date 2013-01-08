@@ -1118,3 +1118,14 @@ function tripal_stock_preprocess_tripal_organism_stocks(&$variables) {
   
   $organism->stock_browser =  array('stocks' => $stocks, 'pager' => $pager, 'enabled' => TRUE );
 }
+
+/**
+ *
+ *
+ * @ingroup tripal_stock
+ */
+function tripal_stock_preprocess_tripal_stock_base(&$variables) {
+	$stock = $variables['node']->stock;
+	$num_seq = db_result(chado_query("SELECT count(*) FROM feature_stock WHERE stock_id = %d", $stock->stock_id));
+	$stock->num_seq = $num_seq;
+}
