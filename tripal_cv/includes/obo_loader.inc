@@ -156,14 +156,10 @@ function tripal_cv_load_obo_v1_2($file, $jobid = NULL, &$newcvs) {
   $newcvs[$header['default-namespace'][0]] = $defaultcv->cv_id;
 
   // add any typedefs to the vocabulary first
+  
   $typedefs = $obo['Typedef'];
   foreach ($typedefs as $typedef) {
-    $t = array();
-    $t['id']     = $typedef['id'][0];
-    $t['name']   = $typedef['name'][0];
-    $t['def']    = $typedef['def'][0];
-    $t['subset'] = $typedef['subset'][0];
-    tripal_cv_obo_process_term($t, $defaultcv->name, $obo, 1, $newcvs, $default_db);
+    tripal_cv_obo_process_term($typedef, $defaultcv->name, $obo, 1, $newcvs, $default_db);
   }
   
   // next add terms to the vocabulary
@@ -193,9 +189,18 @@ function tripal_cv_obo_quiterror($message) {
 function tripal_cv_obo_process_terms($terms, $defaultcv, $obo, $jobid = NULL, &$newcvs, $default_db) {
 
   $i = 0;
-  $count = sizeof($terms);
-  $interval = intval($count * 0.01);
-  if ($interval > 1) {
+  $count = count($terms);
+  
+  // if the number of terms is zero then simply return.
+  // this can happen when an OBO file simply has typedef
+  // entries and no actual terms.
+  if($count == 0) {
+    return 1;
+  }
+  
+  // calculate the interval for updates
+  $interval = intval($count * 0.0001);
+  if ($interval < 1) {
     $interval = 1;
   }
 
@@ -207,18 +212,11 @@ function tripal_cv_obo_process_terms($terms, $defaultcv, $obo, $jobid = NULL, &$
     if ($jobid and $i % $interval == 0) {
       $complete = ($i / $count) * 100;
       tripal_job_set_progress($jobid, intval($complete)); 
-      printf("%d of %d records. (%0.2f%%) memory: %d\r", $i, $count, $complete, memory_get_usage());                                                             
+      printf("%d of %d records. (%0.2f%%) memory: %s bytes\r", $i, $count, $complete, number_format(memory_get_usage()));                                                             
     }                                 
     
     // add/update this term
-    $t = array();
-    $t['id']          = $term['id'][0];
-    $t['name']        = $term['name'][0];
-    $t['def']         = $term['def'][0];
-    $t['subset']      = $term['subset'][0];
-    $t['namespace']   = $term['namespace'][0];
-    $t['is_obsolete'] = $term['is_obsolete'][0];    
-    if (!tripal_cv_obo_process_term($t, $defaultcv, $obo, 0, $newcvs, $default_db)) {
+    if (!tripal_cv_obo_process_term($term, $defaultcv, $obo, 0, $newcvs, $default_db)) {
       tripal_cv_obo_quiterror("Failed to process terms from the ontology");
     }
 
@@ -240,16 +238,33 @@ function tripal_cv_obo_process_terms($terms, $defaultcv, $obo, $jobid = NULL, &$
  * @ingroup tripal_obo_loader
  */
 function tripal_cv_obo_process_term($term, $defaultcv, $obo, $is_relationship = 0, &$newcvs, $default_db) {
-
+  // construct the term array for sending to the tripal_cv_add_cvterm function
+  // for adding a new cvterm
+  $t = array(); 
+  $t['id']            = $term['id'][0];
+  $t['name']          = $term['name'][0];
+  $t['def']           = $term['def'][0];
+  if (isset($term['subset'])) {
+    $t['subset']      = $term['subset'][0];  
+  }  
+  if (isset($term['namespace'])) {
+    $t['namespace']   = $term['namespace'][0];
+  }
+  if (isset($term['is_obsolete'])) {
+    $t['is_obsolete'] = $term['is_obsolete'][0];
+  } 
+  
   // add the cvterm
-  $cvterm = tripal_cv_add_cvterm($term, $defaultcv, $is_relationship, 1, $default_db);
+  $cvterm = tripal_cv_add_cvterm($t, $defaultcv, $is_relationship, 1, $default_db);
   if (!$cvterm) {
     tripal_cv_obo_quiterror("Cannot add the term " . $term['id']);
   }
-  if ($term['namespace']) {
-    $newcvs[$term['namespace']] = $cvterm->cv_id;
+  
+  
+  if (isset($term['namespace'])) {
+    $newcvs[$term['namespace'][0]] = $cvterm->cv_id;
   }
-
+  
   // now handle other properites
   if (isset($term['is_anonymous'])) {
     //print "WARNING: unhandled tag: is_anonymous\n";
@@ -261,11 +276,12 @@ function tripal_cv_obo_process_term($term, $defaultcv, $obo, $is_relationship = 
       }
     }
   }
+  
   if (isset($term['subset'])) {
     //print "WARNING: unhandled tag: subset\n";
   }
   // add synonyms for this cvterm
-  if (isset($term['synonym'])) {
+  if (isset($term['synonym'])) {    
     if (!tripal_cv_obo_add_synonyms($term, $cvterm)) {
       tripal_cv_obo_quiterror("Cannot add synonyms");
     }
@@ -297,6 +313,7 @@ function tripal_cv_obo_process_term($term, $defaultcv, $obo, $is_relationship = 
       tripal_cv_obo_quiterror("Cannot add/update synonyms");
     }
   }
+  
   // add the comment to the cvtermprop table
   if (isset($term['comment'])) {
     $comments = $term['comment'];
@@ -308,6 +325,7 @@ function tripal_cv_obo_process_term($term, $defaultcv, $obo, $is_relationship = 
       $j++;
     }
   }
+  
   // add any other external dbxrefs
   if (isset($term['xref'])) {
     foreach ($term['xref'] as $xref) {
@@ -316,6 +334,7 @@ function tripal_cv_obo_process_term($term, $defaultcv, $obo, $is_relationship = 
       }
     }
   }
+  
   if (isset($term['xref_analog'])) {
     foreach ($term['xref_analog'] as $xref) {
       if (!tripal_cv_obo_add_cvterm_dbxref($cvterm, $xref)) {
@@ -334,11 +353,12 @@ function tripal_cv_obo_process_term($term, $defaultcv, $obo, $is_relationship = 
   // add is_a relationships for this cvterm
   if (isset($term['is_a'])) {
     foreach ($term['is_a'] as $is_a) {
-      if (!tripal_cv_obo_add_relationship($cvterm, $defaultcv, $obo, 'is_a', $is_a, $is_relationship)) {
+      if (!tripal_cv_obo_add_relationship($cvterm, $defaultcv, $obo, 'is_a', $is_a, $is_relationship, $default_db)) {
         tripal_cv_obo_quiterror("Cannot add relationship is_a: $is_a");
       }
     }
   }
+  
   if (isset($term['intersection_of'])) {
     //print "WARNING: unhandled tag: intersection_of\n";
   }
@@ -352,7 +372,7 @@ function tripal_cv_obo_process_term($term, $defaultcv, $obo, $is_relationship = 
     foreach ($term['relationship'] as $value) {
       $rel = preg_replace('/^(.+?)\s.+?$/', '\1', $value);
       $object = preg_replace('/^.+?\s(.+?)$/', '\1', $value);
-      if (!tripal_cv_obo_add_relationship($cvterm, $defaultcv, $obo, $rel, $object, $is_relationship)) {
+      if (!tripal_cv_obo_add_relationship($cvterm, $defaultcv, $obo, $rel, $object, $is_relationship, $default_db)) {
         tripal_cv_obo_quiterror("Cannot add relationship $rel: $object");
       }
     }
@@ -377,28 +397,55 @@ function tripal_cv_obo_process_term($term, $defaultcv, $obo, $is_relationship = 
  *
  * @ingroup tripal_obo_loader
  */
-function tripal_cv_obo_add_relationship($cvterm, $defaultcv, $obo, $rel, $objname, $object_is_relationship = 0) {
+function tripal_cv_obo_add_relationship($cvterm, $defaultcv, $obo, $rel, 
+  $objname, $object_is_relationship = 0, $default_db = 'OBO_REL') {
 
   // make sure the relationship cvterm exists
   $term = array(
-    'name' => array($rel),
-    'id' => array($rel),
-    'definition' => array(''),
-    'is_obsolete' => array(0),
+    'name' => $rel,
+    'id' => "$default_db:$rel",
+    'definition' => '',
+    'is_obsolete' => 0,
   );
-  $relcvterm = tripal_cv_add_cvterm($term, $defaultcv, 1, 0);
+  $relcvterm = tripal_cv_add_cvterm($term, $defaultcv, 1, 0, $default_db);
+  
   if (!$relcvterm) {
-    tripal_cv_obo_quiterror("Cannot find or insert the relationship term: $rel\n");
+    // if the relationship term couldn't be found in the default_db provided 
+    // then do on more check to find it in the relationship ontology
+    $term = array(
+      'name' => $rel,
+      'id' => "OBO_REL:$rel",
+      'definition' => '',
+      'is_obsolete' => 0,
+    ); 
+    $relcvterm = tripal_cv_add_cvterm($term, $defaultcv, 1, 0, 'OBO_REL');
+    if (!$relcvterm) {
+      tripal_cv_obo_quiterror("Cannot find the relationship term in the current ontology or in the relationship ontology: $rel\n");
+    }
   }
 
   // get the object term
-  $objterm = tripal_cv_obo_get_term($obo, $objname);
-  if (!$objterm) {
+  $oterm = tripal_cv_obo_get_term($obo, $objname);
+  if (!$oterm) {
     tripal_cv_obo_quiterror("Could not find object term $objname\n");
   }
-  $objcvterm = tripal_cv_add_cvterm($objterm, $defaultcv, $object_is_relationship, 1);
+  
+  $objterm = array(); 
+  $objterm['id']            = $oterm['id'][0];
+  $objterm['name']          = $oterm['name'][0];
+  $objterm['def']           = $oterm['def'][0];
+  if (isset($oterm['subset'])) {
+    $objterm['subset']      = $oterm['subset'][0];  
+  }  
+  if (isset($oterm['namespace'])) {
+    $objterm['namespace']   = $oterm['namespace'][0];
+  }
+  if (isset($oterm['is_obsolete'])) {
+    $objterm['is_obsolete'] = $oterm['is_obsolete'][0];
+  }
+  $objcvterm = tripal_cv_add_cvterm($objterm, $defaultcv, $object_is_relationship, 1, $default_db);  
   if (!$objcvterm) {
-    tripal_cv_obo_quiterror("Cannot add/find cvterm");
+    tripal_cv_obo_quiterror("Cannot add cvterm " . $oterm['name'][0]);
   }
 
   // check to see if the cvterm_relationship already exists, if not add it
@@ -410,9 +457,10 @@ function tripal_cv_obo_add_relationship($cvterm, $defaultcv, $obo, $rel, $objnam
   $options = array('statement_name' => 'sel_cvtermrelationship_tysuob');
   $result = tripal_core_chado_select('cvterm_relationship', array('*'), $values, $options);
   if (count($result) == 0) {
-    $options = array('statement_name' => 'ins_cvtermrelationship_tysuob');
-    $sql = "INSERT INTO {cvterm_relationship} ".
-           "(type_id,subject_id,object_id) VALUES (%d,%d,%d)";
+    $options = array(
+      'statement_name' => 'ins_cvtermrelationship_tysuob',
+      'return_record' => FALSE
+    );
     $success = tripal_core_chado_insert('cvterm_relationship', $values, $options);
     if (!$success) {
       tripal_cv_obo_quiterror("Cannot add term relationship: '$cvterm->name' $rel '$objcvterm->name'");
@@ -427,12 +475,21 @@ function tripal_cv_obo_add_relationship($cvterm, $defaultcv, $obo, $rel, $objnam
  * @ingroup tripal_obo_loader
  */
 function tripal_cv_obo_get_term($obo, $id) {
+  /*
   foreach ($obo as $type) {
     foreach ($type as $term) {
       $accession = $term['id'][0];
       if (strcmp($accession, $id)==0) {
         return $term;
       }
+    }
+  } */
+  // iterate through each of the types in the
+  // obo file (parsed into memory) and look
+  // for this term.  If found, return it.
+  foreach ($obo as $type) {
+    if (array_key_exists($id, $type)) {
+      return $type[$id];
     }
   }
 
@@ -446,7 +503,7 @@ function tripal_cv_obo_get_term($obo, $id) {
 function tripal_cv_obo_add_synonyms($term, $cvterm) {
 
   // make sure we have a 'synonym_type' vocabulary
-  $syncv = tripal_cv_add_cv('synonym_type');
+  $syncv = tripal_cv_add_cv('synonym_type', 'A vocabulary added by the Tripal CV module OBO loader for storing synonym types.');
 
   // now add the synonyms
   if (isset($term['synonym'])) {
@@ -454,31 +511,38 @@ function tripal_cv_obo_add_synonyms($term, $cvterm) {
       
       // separate out the synonym definition and the synonym type
       $def = preg_replace('/^\s*"(.*)"\s*.*$/', '\1', $synonym);
-      $type = drupal_strtolower(preg_replace('/^.*"\s+(.*?)\s+.*$/', '\1', $synonym));
+      // the scope will be 'EXACT', etc...
+      $scope = drupal_strtolower(preg_replace('/^.*"\s+(.*?)\s+.*$/', '\1', $synonym));
+      if (!$scope) {  // if no scope then default to 'exact'
+        $scope = 'exact'; 
+      } 
 
       // make sure the synonym type exists in the 'synonym_type' vocabulary
       $values = array(
-        'name' => $type,
+        'name' => $scope,
         'cv_id' => array(
           'name' => 'synonym_type',
         ),
       );
-      $options = array('statement_name' => 'sel_cvterm_nacv');
+      $options = array('statement_name' => 'sel_cvterm_nacv', 'is_updlicate' => 1);
       $results = tripal_core_chado_select('cvterm', array('*'), $values, $options);
 
       // if it doesn't exist then add it
-      if (count($results) == 0) {
+      if (!$results) {
         // build a 'term' object so we can add the missing term
         $term = array(
-           'name' => array($type),
-           'id' => array("internal:$type"),
-           'definition' => array(''),
-           'is_obsolete' => array(0),
+           'name' => $scope,
+           'id' => "internal:$scope",
+           'definition' => '',
+           'is_obsolete' => 0,
         );
-        $syntype = tripal_cv_add_cvterm($term, $syncv, 0, 1);
+        $syntype = tripal_cv_add_cvterm($term, $syncv->name, 0, 1);
         if (!$syntype) {
-          tripal_cv_obo_quiterror("Cannot add synonym type: internal:$type");
+          tripal_cv_obo_quiterror("Cannot add synonym type: internal:$scope");
         }
+      }
+      else {
+        $syntype = $results[0];
       }
 
       // make sure the synonym doesn't already exists
@@ -494,7 +558,10 @@ function tripal_cv_obo_add_synonyms($term, $cvterm) {
           'synonym' => $def,
           'type_id' => $syntype->cvterm_id
         );
-        $options = array('statement_name' => 'ins_cvtermsynonym_cvsy');
+        $options = array(
+          'statement_name' => 'ins_cvtermsynonym_cvsy',
+          'return_record' => FALSE
+        );
         $success = tripal_core_chado_insert('cvtermsynonym', $values, $options);
         if (!$success) {
           tripal_cv_obo_quiterror("Failed to insert the synonym for term: $name ($def)");
@@ -553,7 +620,7 @@ function tripal_cv_obo_parse($obo_file, &$obo, &$header) {
 
     if (preg_match('/^\s*\[/', $line)) {  // at the first stanza we're out of header
       $in_header = 0;
-      // load the stanza we just finished reading
+      // store the stanza we just finished reading
       if (sizeof($stanza) > 0) {
         if (!isset($obo[$type])) {
           $obo[$type] = array();
@@ -578,7 +645,7 @@ function tripal_cv_obo_parse($obo_file, &$obo, &$header) {
     $tag = $pair[0];
     $value = ltrim(rtrim($pair[1]));// remove surrounding spaces
     
-    // look for the default DB
+    // if this is the ID then look for the default DB
     $matches = array();
     if ($tag == 'id' and preg_match('/^(.+?):.*$/', $value, $matches)) {
        $default_db = $matches[1];
@@ -651,12 +718,21 @@ function tripal_cv_obo_add_cvterm_dbxref($cvterm, $xref) {
   }
 
   // finally add the cvterm_dbxref but first check to make sure it exists
-  $sql = "SELECT * from {cvterm_dbxref} WHERE cvterm_id = %d and dbxref_id = %d";
-  if (!db_fetch_object(db_query($sql, $cvterm->cvterm_id, $dbxref->dbxref_id))) {
-    $sql = "INSERT INTO {cvterm_dbxref} (cvterm_id,dbxref_id)".
-           "VALUES (%d,%d)";
-    if (!db_query($sql, $cvterm->cvterm_id, $dbxref->dbxref_id)) {
+  $values = array(
+    'cvterm_id' => $cvterm->cvterm_id,
+    'dbxref_id' => $dbxref->dbxref_id,
+  );
+  $options = array('statement_name' => 'sel_cvtermdbxref_cvdb');
+  $result = tripal_core_chado_select('cvterm_dbxref', array('*'), $values, $options);
+  if (count($result) == 0) {    
+    $ins_options = array(
+      'statement_name' => 'ins_cvtermdbxref_cvdb',
+      'return_record' => FALSE
+    );
+    $result = tripal_core_chado_insert('cvterm_dbxref', $values, $ins_options);
+    if (!$result){
       tripal_cv_obo_quiterror("Cannot add cvterm_dbxref: $xref");
+      return FALSE;
     }
   }
 
@@ -676,41 +752,57 @@ function tripal_cv_obo_add_cvterm_prop($cvterm, $property, $value, $rank) {
   }
 
   // get the property type cvterm.  If it doesn't exist then we want to add it
-  $sql = "
-      SELECT *
-      FROM {cvterm} CVT INNER JOIN {cv} CV on CVT.cv_id = CV.cv_id
-      WHERE CVT.name = '%s' and CV.name = '%s'
-  ";
-  $cvproptype = db_fetch_object(db_query($sql, $property, 'cvterm_property_type'));
-  if (!$cvproptype) {
+  $values = array(
+    'name' => $property,
+    'cv_id' => $cv->cv_id,
+  );
+  $options = array('statement_name' => 'sel_cvterm_nacv_na');
+  $results = tripal_core_chado_select('cvterm', array('*'), $values, $options);
+  if (count($results) == 0) {    
     $term = array(
-      'name' => array($property),
-      'id' => array("internal:$property"),
-      'definition' => array(''),
-      'is_obsolete' => array(0),
+      'name' => $property,
+      'id' => "internal:$property",
+      'definition' => '',
+      'is_obsolete' => 0,
     );
-    $cvproptype = tripal_cv_add_cvterm($term, $cv, 0, 0);
+    $cvproptype = tripal_cv_add_cvterm($term, $cv->name, 0, 0);
     if (!$cvproptype) {
       tripal_cv_obo_quiterror("Cannot add cvterm property: internal:$property");
+      return FALSE;
     }
   }
-
+  else {
+    $cvproptype = $results[0];
+  }
 
   // remove any properties that currently exist for this term.  We'll reset them
   if ($rank == 0) {
-    $sql = "DELETE FROM {cvtermprop} WHERE cvterm_id = %d";
-    db_query($sql, $cvterm->cvterm_id);
+    $values = array('cvterm_id' => $cvterm->cvterm_id);
+    $options = array('statement_name' => 'del_cvtermprop_cv');
+    $success = tripal_core_chado_delete('cvtermprop', $values, $options);
+    if (!$success) {
+       tripal_cv_obo_quiterror("Could not remove existing properties to update property $property for term\n");
+       return FALSE;
+    }    
   }
 
   // now add the property
-  $sql = "INSERT INTO {cvtermprop} (cvterm_id,type_id,value,rank) ".
-        "VALUES (%d, %d, '%s',%d)";
-  if (!db_query($sql, $cvterm->cvterm_id, $cvproptype->cvterm_id, $value, $rank)) {
+  $values = array(
+    'cvterm_id' => $cvterm->cvterm_id,
+    'type_id' => $cvproptype->cvterm_id,
+    'value' => $value,
+    'rank' => $rank,
+  );
+  $options = array(
+    'statement_name' => 'ins_cvtermprop_cvtyvara',
+    'return_record' => FALSE,
+  );
+  $result = tripal_core_chado_insert('cvtermprop', $values, $options);
+  if (!$result) {
     tripal_cv_obo_quiterror("Could not add property $property for term\n");
+    return FALSE;
   }
-
   return TRUE;
-
 }
 
 
@@ -721,20 +813,30 @@ function tripal_cv_obo_add_cvterm_prop($cvterm, $property, $value, $rank) {
 function tripal_cv_obo_add_dbxref($db_id, $accession, $version='', $description='') {
 
   // check to see if the dbxref exists if not, add it
-  $dbxsql = "SELECT dbxref_id FROM {dbxref} WHERE db_id = %d and accession = '%s'";
-  $dbxref = db_fetch_object(db_query($dbxsql, $db_id, $accession));
-  if (!$dbxref) {
-    $sql = "
-       INSERT INTO {dbxref} (db_id, accession, version, description)
-       VALUES (%d,'%s','%s','%s')
-    ";
-    if (!db_query($sql, $db_id, $accession, $version, $description)) {
+  $values = array(
+    'db_id' => $db_id,
+    'accession' => $accession,
+  );
+  $options = array('statement_name' => 'sel_dbxref_idac');
+  $result = tripal_core_chado_select('dbxref', array('dbxref_id'), $values, $options);
+  if (count($result) == 0){
+    $ins_values = array(
+      'db_id'       => $db_id,
+      'accession'   => $accession,
+      'version'     => $version,
+      'description' => $description,
+    );
+    $ins_options = array(
+      'statement_name' => 'ins_dbxref_idacvede',
+      'return_record' => FALSE
+    );
+    $result = tripal_core_chado_insert('dbxref', $ins_values, $ins_options);
+    if (!$result) {
       tripal_cv_obo_quiterror("Failed to insert the dbxref record $accession");
-    }
-    print "Added Dbxref accession: $accession\n";
-    $dbxref = db_fetch_object(db_query($dbxsql, $db_id, $accession));
+      return FALSE;
+    } 
+    $result = tripal_core_chado_select('dbxref', array('dbxref_id'), $values, $options);    
   }
-  return $dbxref;
-
+  return $result[0];
 }
 

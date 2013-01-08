@@ -89,7 +89,7 @@ function tripal_cv_menu() {
   );
 
   $items['admin/tripal/tripal_cv/obo_loader'] = array(
-    'title' => 'Add/Update Ontology With OBO File',
+    'title' => 'Load Ontology With OBO File',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_cv_obo_form'),
     'access arguments' => array('access administration pages'),

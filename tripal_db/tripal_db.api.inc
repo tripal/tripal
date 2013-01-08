@@ -358,11 +358,11 @@ function tripal_db_add_dbxref($db_id, $accession, $version = '', $description = 
     'db_id'     => $db_id,
     'accession' => $accession,
   );
-  $sel_options = array('statement_name' => 'sel_dbxref_dbacve');
+  $sel_options = array('statement_name' => 'sel_dbxref_dbacve', 'is_duplicate' => 1);
   $result = tripal_core_chado_select('dbxref', array('*'), $sel_values, $sel_options);
   
   // if it doesn't already exist then add it
-  if (count($result) == 0) {
+  if (!$result) {
     $ins_options = array('statement_name' => 'ins_dbxref_dbacvede');
     $success = tripal_core_chado_insert('dbxref', $ins_values, $ins_options);
     if (!$success) {
