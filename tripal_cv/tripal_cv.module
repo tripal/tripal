@@ -256,11 +256,11 @@ function tripal_cv_module_description_page() {
 
   $text = '<h3>Tripal Controlled Vocabulary Administrative Tools Quick Links</h3>';
     $text .= '<ul>';
-      $text .= '<li>' . l('Add CV', 'admin/tripal/tripal_cv/add_cv') . '</li>';
-      $text .= '<li>' . l('Update/Delete CV', 'admin/tripal/tripal_cv/edit_cv') . '</li>';
-      $text .= '<li>' . l('Add/Update Ontology', 'admin/tripal/tripal_cv/obo_loader') . '</li>';
-      $text .= '<li>' . l('Add CV term', 'admin/tripal/tripal_cv/add_cvterm') . '</li>';
-      $text .= '<li>' . l('Term Listing', 'admin/tripal/tripal_cv/list_cvterms') . '</li>';
+      $text .= '<li>' . l('Add a new vocabulary', 'admin/tripal/tripal_cv/add_cv') . '</li>';
+      $text .= '<li>' . l('Update or Delete a vocabulary', 'admin/tripal/tripal_cv/edit_cv') . '</li>';
+      $text .= '<li>' . l('Load ontology with OBO file', 'admin/tripal/tripal_cv/obo_loader') . '</li>';
+      $text .= '<li>' . l('Add vocabulary term', 'admin/tripal/tripal_cv/add_cvterm') . '</li>';
+      $text .= '<li>' . l('Term listing', 'admin/tripal/tripal_cv/list_cvterms') . '</li>';
       $text .= '<li>' . l('Update cvtermpath', 'admin/tripal/tripal_cv/cvtermpath') . '</li>';
     $text .= '</ul>';
 
@@ -286,7 +286,7 @@ function tripal_cv_module_description_page() {
                those roles.  For a simple setup, allow anonymous users access to view organism content and
                allow the site administrator all other permissions.</p></li>';
       $text .= '<li><b>Loading of Ontologies/Controlled Vocabularies</b>: You can access this loader at '.
-        l('Admin->Tripal Management->Tripal CV->Add/Update Ontology With OBO File', 'admin/tripal/tripal_cv/obo_loader')
+        l('Admin->Tripal Management->Tripal CV->Load Ontology With OBO File', 'admin/tripal/tripal_cv/obo_loader')
         .'. This loader allows you to choose from a list of common ontologies or
         enter the URL or location to an OBO file. Even the list of common
         ontologies is using a URL ensuring you get the most up to date ontology.</p>';
