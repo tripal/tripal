@@ -44,6 +44,7 @@ function tripal_cv_menu() {
     'title' => 'Controlled Vocabularies',
     'description' => 'Basic Description of Tripal CV Module Functionality',
     'page callback' => 'tripal_cv_module_description_page',
+    'page arguments' => array(''),
     'access arguments' => array('administer site configuration'),
     'type' => MENU_NORMAL_ITEM,
   );
@@ -69,7 +70,7 @@ function tripal_cv_menu() {
     'title' => 'Add a Controlled Vocabulary',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_cv_add_form'),
-    'access arguments' => array('access administration pages'),
+    'access arguments' => array('administer site configuration'),
     'type' => MENU_NORMAL_ITEM,
   );
 
@@ -92,14 +93,14 @@ function tripal_cv_menu() {
     'title' => 'Load Ontology With OBO File',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_cv_obo_form'),
-    'access arguments' => array('access administration pages'),
+    'access arguments' => array('administer site configuration'),
     'type' => MENU_NORMAL_ITEM,
   );
 
   $items['admin/tripal/tripal_cv/edit/js'] = array(
     'title' => 'Edit Controlled Vocabularies',
     'page callback' => 'tripal_ajax_cv_edit',
-    'access arguments' => array('access administration pages'),
+    'access arguments' => array('administer site configuration'),
     'type' => MENU_CALLBACK,
   );
 
