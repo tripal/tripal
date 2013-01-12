@@ -32,9 +32,7 @@ function tripal_feature_fasta_load_form( ) {
 
   // get the list of organisms
   $sql = "SELECT * FROM {organism} ORDER BY genus, species";
-  $previous_db = tripal_db_set_active('chado');  // use chado database
-  $org_rset = db_query($sql);
-  tripal_db_set_active($previous_db);  // now use drupal database
+  $org_rset = chado_query($sql);
   $organisms = array();
   $organisms[''] = '';
   while ($organism = db_fetch_object($org_rset)) {
@@ -61,9 +59,7 @@ function tripal_feature_fasta_load_form( ) {
          FROM {library} L
             INNER JOIN {cvterm} CVT ON L.type_id = CVT.cvterm_id
          ORDER BY name";
-  $previous_db = tripal_db_set_active('chado');  // use chado database
-  $lib_rset = db_query($sql);
-  tripal_db_set_active($previous_db);  // now use drupal database
+  $lib_rset = chado_query($sql);
   $libraries = array();
   $libraries[''] = '';
   while ($library = db_fetch_object($lib_rset)) {
@@ -133,9 +129,7 @@ function tripal_feature_fasta_load_form( ) {
 
   // get the list of organisms
   $sql = "SELECT * FROM {analysis} ORDER BY name";
-  $previous_db = tripal_db_set_active('chado');  // use chado database
-  $org_rset = db_query($sql);
-  tripal_db_set_active($previous_db);  // now use drupal database
+  $org_rset = chado_query($sql);
   $analyses = array();
   $analyses[''] = '';
   while ($analysis = db_fetch_object($org_rset)) {
@@ -205,9 +199,7 @@ function tripal_feature_fasta_load_form( ) {
 
   // get the list of databases
   $sql = "SELECT * FROM {db} ORDER BY name";
-  $previous_db = tripal_db_set_active('chado');  // use chado database
-  $db_rset = db_query($sql);
-  tripal_db_set_active($previous_db);  // now use drupal database
+  $db_rset = chado_query($sql);
   $dbs = array();
   $dbs[''] = '';
   while ($db = db_fetch_object($db_rset)) {
@@ -359,12 +351,12 @@ function tripal_feature_fasta_load_form_validate($form, &$form_state) {
                   INNER JOIN {cv} CV on CVT.cv_id = CV.cv_id
                   LEFT JOIN {cvtermsynonym} CVTS on CVTS.cvterm_id = CVT.cvterm_id
                WHERE cv.name = '%s' and (CVT.name = '%s' or CVTS.synonym = '%s')";
-  $cvterm = db_fetch_object(db_query($cvtermsql, 'sequence', $type, $type));
+  $cvterm = db_fetch_object(chado_query($cvtermsql, 'sequence', $type, $type));
   if (!$cvterm) {
     form_set_error('type', t("The Sequence Ontology (SO) term selected for the sequence type is not available in the database. Please check spelling or select another."));
   }
   if ($rel_type) {
-    $cvterm = db_fetch_object(db_query($cvtermsql, 'sequence', $parent_type, $parent_type));
+    $cvterm = db_fetch_object(chado_query($cvtermsql, 'sequence', $parent_type, $parent_type));
     if (!$cvterm) {
       form_set_error('parent_type', t("The Sequence Ontology (SO) term selected for the parent relationship is not available in the database. Please check spelling or select another."));
     }
@@ -459,14 +451,14 @@ function tripal_feature_load_fasta($dfile, $organism_id, $type,
     return 0;
   }
   if ($parent_type) {
-    $parentcvterm = db_fetch_object(db_query($cvtermsql, 'sequence', $parent_type, $parent_type));
+    $parentcvterm = db_fetch_object(chado_query($cvtermsql, 'sequence', $parent_type, $parent_type));
     if (!$parentcvterm) {
       watchdog("T_fasta_loader", "Cannot find the paretne term type: '%type'", array('%type' => $parentcvterm), WATCHDOG_ERROR);
       return 0;
     }
   }
   if ($rel_type) {
-    $relcvterm = db_fetch_object(db_query($cvtermsql, 'relationship', $rel_type, $rel_type));
+    $relcvterm = db_fetch_object(chado_query($cvtermsql, 'relationship', $rel_type, $rel_type));
     if (!$relcvterm) {
       watchdog("T_fasta_loader", "Cannot find the relationship term type: '%type'", array('%type' => $relcvterm), WATCHDOG_ERROR);
       return 0;
