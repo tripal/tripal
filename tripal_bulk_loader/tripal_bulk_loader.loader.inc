@@ -477,7 +477,6 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
   $table = $table_data['table'];
   $values = $table_data['values_array'];
 
-  print "DEBUG: Processing $table\n";
   // populate the values array with real value either from the input data file line
   // or from the foreign key / referral record
   if (array_key_exists('need_further_processing', $table_data) and $table_data['need_further_processing']) {
@@ -552,16 +551,19 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
 
   // if there was an error already -> don't insert
   if (array_key_exists('error', $data[$priority]) and $data[$priority]['error']) {
+    watchdog('T_bulk_loader','Skipping processing of %table due to previous errors',array('%table'=>$table),WATCHDOG_NOTICE);
     return $no_errors;
   }
 
   // skip optional fields
   if ($skip_optional) {
+    watchdog('T_bulk_loader','Skipping an optional record (%record)',array('%record'=>$table_data['record_id']),WATCHDOG_NOTICE);
     return $no_errors;
   }
 
   // check if it is already inserted
   if (array_key_exists('inserted', $table_data) and $table_data['inserted']) {
+    watchdog('T_bulk_loader','Skipping %record since it is already inserted',array('%record'=>$table_data['record_id']),WATCHDOG_NOTICE);
     return $no_errors;
   }
 
@@ -569,6 +571,7 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
   // the default_data array
   if (array_key_exists('selected', $table_data) and $table_data['selected']) {
     $data[$priority]['values_array'] = $default_data[$priority]['values_array'];
+    watchdog('T_bulk_loader','%record was already selected thus we are just returning the values previously selected.',array('%record'=>$table_data['record_id']),WATCHDOG_NOTICE);
     return $no_errors;
   }
 
@@ -618,6 +621,7 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
       }
       // return if this is a select_if_duplicate
       if ($table_data['select_if_duplicate'] == 1) {
+        watchdog('T_bulk_loader','Simply returning values for %record since it was already inserted',array('%record'=>$table_data['record_id']),WATCHDOG_NOTICE);
         return $no_errors;
       }
     }
@@ -683,7 +687,7 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
           $insert_record->ids_inserted .= ',' . $values[$table_desc['primary key'][0] ];
           drupal_write_record('tripal_bulk_loader_inserted', $insert_record, 'tripal_bulk_loader_inserted_id');
           //print 'Update: '.print_r($insert_record,TRUE)."\n";
-          return $no_errors;
+          //return $no_errors;
         }
         else {
           $insert_record = array(
@@ -694,7 +698,7 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
           );
           //print 'New: '.print_r($insert_record,TRUE)."\n";
           $success = drupal_write_record('tripal_bulk_loader_inserted', $insert_record);
-          return $no_errors;
+          //return $no_errors;
         }//end of if insert record
       }// end of if keeping track of records inserted
 
@@ -763,8 +767,6 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
       }
     }
   }
-
-  print "DEBUG: Done\n";
 
   return $no_errors;
 }
