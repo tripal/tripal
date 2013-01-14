@@ -684,7 +684,7 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
           $addt->nid
         ));
         if ($insert_record) {
-          $insert_record->ids_inserted .= ',' . $values[$table_desc['primary key'][0] ];
+          $insert_record->ids_inserted .= ',' . $record[$table_desc['primary key'][0] ];
           drupal_write_record('tripal_bulk_loader_inserted', $insert_record, 'tripal_bulk_loader_inserted_id');
           //print 'Update: '.print_r($insert_record,TRUE)."\n";
           //return $no_errors;
