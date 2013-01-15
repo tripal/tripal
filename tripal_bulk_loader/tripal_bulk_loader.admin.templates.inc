@@ -207,17 +207,17 @@ function tripal_bulk_loader_modify_template_base_form($form_state = NULL, $mode)
           ),
           'submit-edit_record' => array(
             '#type' => 'submit',
-            '#name' => (string)$priority,
+            '#name' => ($priority !== 0) ? (string)$priority : 'zero',
             '#value' => 'Edit Record',
           ),
           'submit-add_field' => array(
             '#type' => 'submit',
-            '#name' => (string)$priority,
+            '#name' => ($priority !== 0) ? (string)$priority : 'zero',
             '#value' => 'Add Field',
           ),
           'submit-duplicate_record' => array(
             '#type' => 'submit',
-            '#name' => (string)$priority,
+            '#name' => ($priority !== 0) ? (string)$priority : 'zero',
             '#value' => 'Duplicate Record'
           ),
         );
@@ -353,6 +353,12 @@ function tripal_bulk_loader_modify_template_base_form_submit($form, &$form_state
   }
 
   $op = $form_state['values'][ $form_state['clicked_button']['#name'] ];
+
+  // part of fix for 1st button set not working on records list (edit record, duplicate record, add field)
+  if ($form_state['clicked_button']['#name'] === 'zero') {
+    $form_state['clicked_button']['#name'] = '0';
+  }
+
   switch ($op) {
     // Initialize after template is chosen ----------------------------------------
     case 'Edit Template':
