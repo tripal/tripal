@@ -1734,6 +1734,12 @@ function tripal_bulk_loader_edit_template_field_form(&$form_state = NULL) {
     $form_state['storage']['original_field']['priority'] = $priority;
     $form_state['storage']['original_field']['field_index'] = $field_index;
   }
+  // get field from the form_state
+  elseif (!empty($form_state['storage']['original_field']['priority']) && !empty($form_state['storage']['original_field']['field_index'])) {
+    $priority = $form_state['storage']['original_field']['priority'];
+    $field_index = $form_state['storage']['original_field']['field_index'];
+    $template_field = $form_state['storage']['template_array'][$priority]['fields'][$field_index];
+  }
 
   $field_type = ($form_state['values']['field_type'])? $form_state['values']['field_type'] : $template_field['type'];
 
@@ -2120,8 +2126,13 @@ function tripal_bulk_loader_edit_template_field_form(&$form_state = NULL) {
   $form['edit_fields']['additional']['regex_transform']['regex-data'] = array(
     '#tree' => TRUE,
   );
+
   if (!is_array($template_field['regex']['pattern'])) {
     $template_field['regex']['pattern'] = array();
+  }
+  $key_options = array();
+  foreach ($template_field['regex']['pattern'] as $k => $v) {
+    $key_options[$k] = $k;
   }
   foreach ($template_field['regex']['pattern'] as $index => $pattern) {
     $data_element = array(
@@ -2139,7 +2150,7 @@ function tripal_bulk_loader_edit_template_field_form(&$form_state = NULL) {
       ),
       'new_index' => array(
         '#type' => 'select',
-        '#options' => range(0, sizeof($template_field['regex']['pattern'])-1),
+        '#options' => $key_options,
         '#default_value' => $index,
       ),
       'id' => array(
@@ -2270,7 +2281,6 @@ function tripal_bulk_loader_edit_template_field_form_validate($form, $form_state
 function tripal_bulk_loader_edit_template_field_form_submit($form, &$form_state) {
 
   $op = $form_state['values'][ $form_state['clicked_button']['#name'] ];
-  //dpm($op, 'Operation Submitted');
 
   //Clear Test
   $form_state['storage']['test_regex_result'] = NULL;
@@ -2389,22 +2399,6 @@ function tripal_bulk_loader_edit_template_field_form_submit($form, &$form_state)
       $field_index = $form_state['storage']['original_field']['field_index'];
       $form_state['storage']['template_array'][$priority]['fields'][$field_index] = $form_state['storage']['original_field'];
 
-      // Save Template
-      $form_state['storage']['template']->template_array = serialize($form_state['storage']['template_array']);
-      $success = drupal_write_record('tripal_bulk_loader_template', $form_state['storage']['template'], array('template_id'));
-
-      if ($success) {
-        drupal_set_message(t('Successfully Added Transformation Rule'));
-        drupal_set_message(t('Template Saved.'));
-      }
-      else {
-        drupal_set_message(t('Unable to Save Template!'), 'error');
-        watchdog('T_bulk_loader',
-          'Unable to save bulk loader template: %template',
-          array('%template' => print_r($form_state['storage']['template'], TRUE)),
-          WATCHDOG_ERROR
-        );
-      }
     }
     elseif ($op == 'Save Transformation Rule Order') {
 
@@ -2417,8 +2411,8 @@ function tripal_bulk_loader_edit_template_field_form_submit($form, &$form_state)
       }
 
       // sort new regex arrays
-      asort($new_regex['pattern']);
-      asort($new_regex['replace']);
+      ksort($new_regex['pattern']);
+      ksort($new_regex['replace']);
 
       // Add back to original field
       $form_state['storage']['original_field']['regex'] = $new_regex;
@@ -2426,6 +2420,7 @@ function tripal_bulk_loader_edit_template_field_form_submit($form, &$form_state)
       $field_index = $form_state['storage']['original_field']['field_index'];
       $form_state['storage']['template_array'][$priority]['fields'][$field_index] = $form_state['storage']['original_field'];
 
+      /**
       // Save Template
       $form_state['storage']['template']->template_array = serialize($form_state['storage']['template_array']);
       $success = drupal_write_record('tripal_bulk_loader_template', $form_state['storage']['template'], array('template_id'));
@@ -2442,6 +2437,7 @@ function tripal_bulk_loader_edit_template_field_form_submit($form, &$form_state)
           WATCHDOG_ERROR
         );
       }
+      */
     }
     elseif ($op == 'Delete Transformation') {
 
@@ -2454,6 +2450,7 @@ function tripal_bulk_loader_edit_template_field_form_submit($form, &$form_state)
       $field_index = $form_state['storage']['original_field']['field_index'];
       $form_state['storage']['template_array'][$priority]['fields'][$field_index] = $form_state['storage']['original_field'];
 
+      /**
       // Save Template
       $form_state['storage']['template']->template_array = serialize($form_state['storage']['template_array']);
       $success = drupal_write_record('tripal_bulk_loader_template', $form_state['storage']['template'], array('template_id'));
@@ -2470,6 +2467,7 @@ function tripal_bulk_loader_edit_template_field_form_submit($form, &$form_state)
           WATCHDOG_ERROR
         );
       }
+      */
 
     }
     elseif ($op == 'Test Transformation Rules') {
