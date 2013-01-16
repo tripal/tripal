@@ -1366,6 +1366,7 @@ function tripal_bulk_loader_add_template_field_form(&$form_state = NULL) {
   $form['add_fields']['additional']['required'] = array(
     '#type' => 'checkbox',
     '#title' => 'Make this field required',
+    '#default_value' => (!empty($form_state['values']['required'])) ? $form_state['values']['required'] : $template_field['required'],
   );
 
   $form['add_fields']['additional']['regex_transform'] = array(
@@ -1649,8 +1650,8 @@ function tripal_bulk_loader_add_template_field_form_submit($form, &$form_state) 
       }
 
       // sort new regex arrays
-      asort($new_regex['pattern']);
-      asort($new_regex['replace']);
+      ksort($new_regex['pattern']);
+      ksort($new_regex['replace']);
 
       $form_state['storage']['regex'] = $new_regex;
     }
@@ -2101,7 +2102,7 @@ function tripal_bulk_loader_edit_template_field_form(&$form_state = NULL) {
   $form['edit_fields']['additional']['required'] = array(
     '#type' => 'checkbox',
     '#title' => 'Make this field required',
-    '#default_value' => $template_field['required'],
+    '#default_value' => (!empty($form_state['values']['required'])) ? $form_state['values']['required'] : $template_field['required'],
   );
 
   $form['edit_fields']['additional']['regex_transform'] = array(
