@@ -1111,6 +1111,38 @@ function tripal_bulk_loader_add_template_field_form(&$form_state = NULL) {
     }
   }
 
+  // Ensure other field type fields are reset/cleared except for those of the current type
+  // ie: if the type is changed from spreadsheet column to constant, the spreadsheet column
+  // fields should be cleared since they don't apply to a constant
+  switch ($field_type) {
+    case 'table field':
+      // clear constant
+      $form_state['values']['constant_value'] = NULL;
+      // clear foreign key
+      // clears by default :)
+      break;
+    case 'constant':
+      // clear spreadsheet column
+      $form_state['values']['column_number'] = NULL;
+      $form_state['values']['column_exposed'] = NULL;
+      $template_field['exposed'] = NULL;
+      $form_state['values']['column_exposed_desc'] = NULL;
+      $template_field['exposed_description'] = NULL;
+      // clear foreign key
+      // clears by default :)
+      break;
+    case 'foreign key':
+      // clear constant
+      $form_state['values']['constant_value'] = NULL;
+      // clear spreadsheet column
+      $form_state['values']['column_number'] = NULL;
+      $form_state['values']['column_exposed'] = NULL;
+      $template_field['exposed'] = NULL;
+      $form_state['values']['column_exposed_desc'] = NULL;
+      $template_field['exposed_description'] = NULL;
+      break;
+  }
+
   // Start of Form Proper-------------------------------------------------------------
 
   $form['template_name'] = array(
@@ -1796,6 +1828,47 @@ function tripal_bulk_loader_edit_template_field_form(&$form_state = NULL) {
     }
   }
 
+  // Ensure other field type fields are reset/cleared except for those of the current type
+  // ie: if the type is changed from spreadsheet column to constant, the spreadsheet column
+  // fields should be cleared since they don't apply to a constant
+  switch ($field_type) {
+    case 'table field':
+      // clear constant
+      $form_state['values']['constant_value'] = NULL;
+      $template_field['constant value'] = NULL;
+      $form_state['values']['constant_exposed'] = NULL;
+      $template_field['exposed'] = NULL;
+      $form_state['values']['constant_validate'] = NULL;
+      $template_field['exposed_validate'] = NULL;
+      // clear foreign key
+      // clears by default :)
+      break;
+    case 'constant':
+      // clear spreadsheet column
+      $form_state['values']['column_number'] = NULL;
+      $form_state['values']['column_exposed'] = NULL;
+      $template_field['exposed'] = NULL;
+      $form_state['values']['column_exposed_desc'] = NULL;
+      $template_field['exposed_description'] = NULL;
+      // clear foreign key
+      // clears by default :)
+      break;
+    case 'foreign key':
+      // clear constant
+      $form_state['values']['constant_value'] = NULL;
+      $template_field['constant value'] = NULL;
+      $form_state['values']['constant_exposed'] = NULL;
+      $template_field['exposed'] = NULL;
+      $form_state['values']['constant_validate'] = NULL;
+      $template_field['exposed_validate'] = NULL;
+      // clear spreadsheet column
+      $form_state['values']['column_number'] = NULL;
+      $form_state['values']['column_exposed'] = NULL;
+      $template_field['exposed'] = NULL;
+      $form_state['values']['column_exposed_desc'] = NULL;
+      $template_field['exposed_description'] = NULL;
+      break;
+  }
 
   // Start of Form Proper--------------------------------------------------------------
 
@@ -2047,6 +2120,9 @@ function tripal_bulk_loader_edit_template_field_form(&$form_state = NULL) {
   $form['edit_fields']['additional']['regex_transform']['regex-data'] = array(
     '#tree' => TRUE,
   );
+  if (!is_array($template_field['regex']['pattern'])) {
+    $template_field['regex']['pattern'] = array();
+  }
   foreach ($template_field['regex']['pattern'] as $index => $pattern) {
     $data_element = array(
       'pattern' => array(
