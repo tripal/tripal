@@ -888,6 +888,7 @@ function tripal_bulk_loader_edit_template_record_form_submit($form, &$form_state
     if ($form_state['values']['op'] ==  'Edit Record') {
 
       $template = $form_state['storage']['template_array'];
+      $original_record_name = $template[ $form_state['storage']['original_priority'] ]['record_id'];
 
       // Edit Record
       $record = $template[ $form_state['storage']['original_priority'] ];
@@ -907,6 +908,19 @@ function tripal_bulk_loader_edit_template_record_form_submit($form, &$form_state
       }
       else {
         $template[ $form_state['storage']['original_priority'] ] = $record;
+      }
+
+      // Go through all records and update this record name where it was used for a foreign key
+      // Foreach field in each record that is of type: foreign key
+      foreach ($template as $priority => $record) {
+        foreach ($record['fields'] as $field_index => $field) {
+          if ($field['type'] === 'foreign key') {
+            // Check if this points to the old record name and if so, update it
+            if ($field['foreign key'] === $original_record_name) {
+              $template[$priority]['fields'][$field_index]['foreign key'] = $form_state['values']['record_name'];
+            }
+          }
+        }
       }
 
       // Save Template
