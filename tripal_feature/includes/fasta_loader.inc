@@ -568,7 +568,7 @@ function tripal_feature_load_fasta($dfile, $organism_id, $type,
   
   // commit the transaction
   tripal_db_commit_transaction();
-  print "Done\n";
+  print "\nDone\n";
 }
 
 /**
