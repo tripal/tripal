@@ -495,7 +495,7 @@ function tripal_feature_load_fasta($dfile, $organism_id, $type,
     // accession and relationship subject from the definition line
     if (preg_match('/^>/', $line)) {
       // if we have a feature name then we are starting a new sequence
-      // so let's handle the previous one before moving on
+      // so lets handle the previous one before moving on
       if ($name or $uname) {
         tripal_feature_fasta_loader_handle_feature($name, $uname, $db_id,
           $accession, $subject, $rel_type, $parent_type, $analysis_id, $organism_id, $cvterm,
@@ -678,11 +678,13 @@ function tripal_feature_fasta_loader_handle_feature($name, $uname, $db_id, $acce
 
   // if we do have a feature and this is an update then proceed with the update
   if ($feature and !$inserted and (strcmp($method, 'Update only')==0 or strcmp($method, 'Insert and update')==0)) {
+    // if the user wants to match on the Name field
     if (strcmp($match_type, 'Name')==0) {
       // if we're matching on the name but do not have a new unique name then we don't want to update the uniquename.  
       $values = array();
       if ($uname) {
         $values = array(
+          'uniquename' => $uname,
           'residues' => $residues,
           'seqlen' => drupal_strlen($residues),
           'md5checksum' => md5($residues),
@@ -690,16 +692,15 @@ function tripal_feature_fasta_loader_handle_feature($name, $uname, $db_id, $acce
           'is_obsolete' => 'false',
         );
         $match = array(
+          'name' => $name,        
           'organism_id' => $organism_id,
-          'name' => $name,
           'type_id' => $cvterm->cvterm_id,        
         );
-        $options = array('statement_name' => 'upd_feature_resemdisis_ornaty');        
+        $options = array('statement_name' => 'upd_feature_resemdisis_naorty_un');        
       }
       // if we have a unique name then update it after matching by the name
       else {
-        $values = array(
-          'uniquename' => $uname,        
+        $values = array(                 
           'residues' => $residues,
           'seqlen' => drupal_strlen($residues),
           'md5checksum' => md5($residues),
@@ -720,11 +721,12 @@ function tripal_feature_fasta_loader_handle_feature($name, $uname, $db_id, $acce
         return 0;
       }
     }
-    else {
+    if (strcmp($match_type, 'Unique name')==0) {
       // if we're matching on the uniquename but do not have a new name then we don't want to update the name.  
       $values = array();
       if ($name) {
         $values = array(
+          'name' => $name,
           'residues' => $residues,
           'seqlen' => drupal_strlen($residues),
           'md5checksum' => md5($residues),
@@ -732,16 +734,15 @@ function tripal_feature_fasta_loader_handle_feature($name, $uname, $db_id, $acce
           'is_obsolete' => 'false',
         );
         $match = array(
-          'organism_id' => $organism_id,
           'uniquename' => $uname,
+          'organism_id' => $organism_id,          
           'type_id' => $cvterm->cvterm_id,        
         );
-        $options = array('statement_name' => 'upd_feature_resemdisis_orunty');       
+        $options = array('statement_name' => 'upd_feature_resemdisis_unorty_na');       
       }
       // if we have a unique name then update it after matching by the name
       else {
-        $values = array(
-          'name' => $name,        
+        $values = array(                  
           'residues' => $residues,
           'seqlen' => drupal_strlen($residues),
           'md5checksum' => md5($residues),
