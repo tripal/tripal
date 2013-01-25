@@ -190,7 +190,7 @@ function tripal_feature_analysis_insert_property($analysis_id = NULL, $feature_i
 
   // check that the incoming arguments are correct
   if (($analysis_id and !$feature_id) or
-    (!$analysis_id and $feature_id)) {
+      (!$analysis_id and $feature_id)) {
     watchdog('tripal_feature',
       'tripal_feature_analysis_insert_property: Both an analysis ID and feature ID should be specified',
       array(), WATCHDOG_WARNING);

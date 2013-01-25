@@ -1677,7 +1677,7 @@ function tripal_core_generate_chado_var($table, $values, $base_options = array()
   $fields_to_remove = module_invoke_all('exclude_field_from_' . $table . '_by_default');
   foreach ($fields_to_remove as $field_name => $criteria) {
     //replace &gt;field_name&lt;  with the current field name &
-    $criteria = preg_replace('/&gt;field_name&lt; /', $field_name, $criteria);
+    $criteria = preg_replace('/&gt;field_name&lt; /', addslashes($field_name), $criteria);
     // if field_value needed we can't deal with this field yet
     if (preg_match('/&gt;field_value&lt; /', $criteria)) {
       break;
@@ -1708,7 +1708,7 @@ function tripal_core_generate_chado_var($table, $values, $base_options = array()
     // if there are fields of that type to remove
     if (is_array($field_types[$field_type])) {
       //replace &gt;field_name&lt;  with the current field name &
-      $criteria = preg_replace('/&gt;field_name&lt; /', $field_name, $criteria);
+      $criteria = preg_replace('/&gt;field_name&lt; /', addslashes($field_name), $criteria);
       foreach ($field_types[$field_type] as $field_name) {
         // if field_value needed we can't deal with this field yet
         if (preg_match('/&gt;field_value&lt; /', $criteria)) {
@@ -1765,7 +1765,7 @@ function tripal_core_generate_chado_var($table, $values, $base_options = array()
         if (!isset($object->{$field_name})) {
           break;
         }
-        $criteria = preg_replace('/&gt;field_value&lt; /', $object->{$field_name}, $criteria);
+        $criteria = preg_replace('/&gt;field_value&lt; /', addslashes($object->{$field_name}), $criteria);
         //if criteria then remove from query
         // @coder-ignore: only module designers can populate $criteria -not security risk
         $success = drupal_eval('<?php return ' . $criteria . '; ?>');
@@ -2127,7 +2127,7 @@ function tripal_core_expand_chado_vars($object, $type, $to_expand, $table_option
  * @ingroup tripal_chado_api
  */
 function tripal_core_exclude_type_by_default() {
-  return array('text' => "strlen('&gt;field_value&lt; ') > 100");
+  return array('text' => 'strlen("&gt;field_value&lt; ") > 100');
 }
 
 /**
