@@ -1025,7 +1025,8 @@ function tripal_core_chado_delete($table, $match, $options = NULL) {
  *
  * @return
  *  A database query result resource, FALSE if the query was not executed
- *  correctly, or the number of records in the dataset if $has_record is set.
+ *  correctly, an empty array if no records were matched, or the number of records 
+ *  in the dataset if $has_record is set.
  *  If the option 'is_duplicate' is provided and the record is a duplicate it
  *  will return the duplicated record.  If the 'has_record' option is provided
  *  a value of TRUE will be returned if a record exists and FALSE will bee
@@ -2288,10 +2289,10 @@ function tripal_core_get_property($basetable, $record_id, $property, $cv_name) {
     'type_id' => array(
       'cv_id' => array(
         'name' => $cv_name,
-  ),
-     'name' => $property,
-     'is_obsolete' => 0
-  ),
+      ),
+      'name' => $property,
+      'is_obsolete' => 0
+    ),
   );
   $results = tripal_core_generate_chado_var($basetable . 'prop', $values);
   $results = tripal_core_expand_chado_vars($results, 'field', $basetable . 'prop.value');
