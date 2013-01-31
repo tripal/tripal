@@ -128,14 +128,13 @@ function chado_analysis_insert($node) {
   // If this analysis already exists then don't recreate it in chado
   $analysis_id = $node->analysis_id;
   if ($analysis_id) {
-    $sql = "SELECT analysis_id ".
-           "FROM {Analysis} ".
-           "WHERE analysis_id = %d ";
-    $previous_db = tripal_db_set_active('chado');
-    $analysis = db_fetch_object(db_query($sql, $node->analysis_id));
-    tripal_db_set_active($previous_db);
+    $values = array('analysis_id' => $node->analysis_id);
+    $result = tripal_core_chado_select('analysis', array('analysis_id'), $values);
+    if($result and count($result) > 0) {
+      $analysis = $result[0];
+    }
   }
-
+  
   // If the analysis doesn't exist then let's create it in chado.
   if (!$analysis) {
       // insert and then get the newly inserted analysis record
@@ -355,10 +354,10 @@ function chado_analysis_form($node) {
   $form['analysisname']= array(
       '#type' => 'textfield',
       '#title' => t('Analysis Name'),
-      '#required' => FALSE,
+      '#required' => TRUE,
       '#default_value' => $analysisname,
-      '#description' => t("This should be a handy short identifier that
-         describes the analysis succintly as possible which helps the user find analyses."),
+      '#description' => t("This should be a brief name that
+         describes the analysis succintly. This name will helps the user find analyses."),
   );
   $form['program']= array(
       '#type' => 'textfield',
@@ -639,48 +638,86 @@ function chado_analysis_validate($node, &$form) {
  * @ingroup tripal_analysis
  */
 function tripal_analysis_validate($node, &$form) {
-
-    // Only nodes being updated will have an nid already
-    if ($node->nid) {
-        //---------------------------------------------------
-        // CASE A: We are validating a form for updating an existing node
-        //---------------------------------------------------
-
-        // TO DO: check that the new fields don't yield a non-unique primary key in chado
+  
+ 
+  // Only nodes being updated will have an nid already
+  if (!is_null($node->nid)) {    
+    // CASE A: We are validating a form for updating an existing node
+    
+    // get the existing node    
+    $values = array('analysis_id' => $node->analysis_id);      
+    $result = tripal_core_chado_select('analysis', array('*'), $values);
+    $analysis = $result[0];
+      
+    // if the name has changed make sure it doesn't conflict with an existing name
+    if($analysis->name != $node->analysisname) {
+      $values = array('name' => $node->analysisname);
+      $result = tripal_core_chado_select('analysis', array('analysis_id'), $values);
+      if($result and count($result) > 0) {
+        form_set_error('analysisname', 'Cannot update the analysis with this analysis name. An analysis with this name already exists.');
+        return;
+      }  
     }
-    else{
-        // To differentiate if we are syncing or creating a new analysis altogther, see if an
-        // analysis_id already exists
-
-        if ($node->analysis_id) {
-
-            //---------------------------------------------------
-            // CASE B: Synchronizing a node from chado to drupal
-            //---------------------------------------------------
-
+    
+    // if the unique constraint has changed check to make sure it doesn't conflict with an
+    // existing record
+    if($analysis->program != $node->program or $analysis->programversion != $node->programversion or 
+       $analysis->sourcename != $node->sourcename) {
+      $values = array(
+        'program' => $node->program,
+        'programversion' => $node->programversion,
+        'sourcename' => $node->sourcename,
+      );
+      $result = tripal_core_chado_select('analysis', array('analysis_id'), $values);
+      if ($result and count($result) > 0) {
+        if ($analysis->program != $node->program) {
+          $field = 'program';  
         }
-        else{
-
-            //---------------------------------------------------
-            // CASE C: We are validating a form for inserting a new node
-            //---------------------------------------------------
-            // The primary key for the chado analysis table is
-            // program, programversion, sourcename
-
-
-            $values = array(
-               'program' => $node->program,
-               'programversion' => $node->programversion,
-               'sourcename' => $node->sourcename,
-            );
-            $analysis = tripal_core_chado_select('analysis', array('analysis_id'), $values);
-            if (sizeof($analysis) > 0) {
-              form_set_error('program', 'Cannot add the analysis with this program,
-                  program version and source name. An analysis with these values already exists.');
-              return;
-            }
+        if ($analysis->programversion != $node->programversion) {
+          $field = 'programversion';  
         }
+        if ($analysis->sourcename != $node->sourcename) {
+          $field = 'sourcename';  
+        }
+        form_set_error($field, 'Cannot update the analysis with this program,
+          program version and source name. An analysis with these values already exists.');
+        return;
+      }  
     }
+  }
+  else{
+    // To differentiate if we are syncing or creating a new analysis altogther, see if an
+    // analysis_id already exists
+    if ($node->analysis_id and $node->analysis_id != 0) {
+      // CASE B: Synchronizing a node from chado to drupal
+      // we don't need to do anything.
+    }
+    else {
+      // CASE C: We are validating a form for inserting a new node
+      // The unique constraint for the chado analysis table is: program, programversion, sourcename
+      $values = array(
+        'program' => $node->program,
+        'programversion' => $node->programversion,
+        'sourcename' => $node->sourcename,
+      );
+      $analysis = tripal_core_chado_select('analysis', array('analysis_id'), $values);
+      if ($analysis and count($analysis) > 0) {
+        form_set_error('program', 'Cannot add the analysis with this program,
+          program version and source name. An analysis with these values already exists.');
+        return;
+      }
+      
+      // make sure we have a unique analysis name. This is not a requirement 
+      // for the analysis table but we use the analysis name for the Drupal node
+      // title, so it should be unique      
+      $values = array('name' => $node->analysisname);
+      $result = tripal_core_chado_select('analysis', array('analysis_id'), $values);
+      if($result and count($result) > 0) {
+        form_set_error('analysisname', 'Cannot add the analysis with this analysis name. An analysis with this name already exists.');
+        return;
+      }
+    }
+  }
 }
 
 /**
