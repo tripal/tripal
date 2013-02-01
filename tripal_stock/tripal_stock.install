@@ -10,6 +10,10 @@
  * Implementation of hook_install().
  */
 function tripal_stock_install() {
+  // create the module's data directory
+  tripal_create_moddir('tripal_stock');
+  
+  // create the stock tables
   drupal_install_schema('tripal_stock');
 }
 

@@ -21,16 +21,13 @@
  * @}
  * @ingroup tripal_modules
  */
-require("tripal_stock-administration.inc");
-
-require("tripal_stock.api.inc");
-require("other_module_api_functions.inc");
-
-require("tripal_stock-secondary_tables.inc");
-require("tripal_stock-properties.inc");
-require("tripal_stock-relationships.inc");
-require("tripal_stock-db_references.inc");
-
+require_once("includes/tripal_stock-administration.inc");
+require_once("includes/other_module_api_functions.inc");
+require_once("includes/tripal_stock-secondary_tables.inc");
+require_once("includes/tripal_stock-properties.inc");
+require_once("includes/tripal_stock-relationships.inc");
+require_once("includes/tripal_stock-db_references.inc");
+require_once("api/tripal_stock.api.inc");
 /**
  * Implements hook_menu(): Adds menu items for the tripal_stock
  *
