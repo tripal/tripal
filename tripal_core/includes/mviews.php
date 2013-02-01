@@ -375,78 +375,56 @@ function tripal_mview_report($mview_id) {
   // get this mview details
   $sql = "SELECT * FROM {tripal_mviews} WHERE mview_id = %d";
   $mview = db_fetch_object(db_query($sql, $mview_id));
+  
+  $rows = array();
 
   // create a table with each row containig stats for
   // an individual job in the results set.
   $return_url = url("admin/tripal/mviews/");
   $output .= "<p><a href=\"$return_url\">Return to table of materialized views.</a></p>";
-  $output .= "<br />";
   $output .= "<p>Details for <b>$mview->name</b>:</p>";
-  $output .= "<br />";
-  $output .= "<table class=\"border-table\">";
-  if ($mview->name) {
-    $output .= "  <tr>".
-    "    <th>View Name</th>".
-    "    <td>$mview->name</td>".
-    "  </tr>";
-  }
-  if ($mview->modulename) {
-    $output .= "  <tr>".
-    "    <th>Module Name</th>".
-    "    <td>$mview->modulename</td>".
-    "  </tr>";
-  }
-  if ($mview->mv_table) {
-    $output .= "  <tr>".
-    "    <th>Table Name</th>".
-    "    <td>$mview->mv_table</td>".
-    "  </tr>";
-  }
-  if ($mview->mv_specs) {
-    $output .= "  <tr>".
-    "    <th>Table Field Definitions</th>".
-    "    <td>$mview->mv_specs</td>".
-    "  </tr>";
-  }
-  if ($mview->query) {
-    $output .= "  <tr>".
-    "    <th>Query</th>".
-    "    <td><pre>$mview->query</pre></td>".
-    "  </tr>";
-  }
-  if ($mview->indexed) {
-    $output .= "  <tr>".
-    "    <th>Indexed Fields</th>".
-    "    <td>$mview->indexed</td>".
-    "  </tr>";
-  }
-  if ($mview->special_index) {
-    $output .= "  <tr>".
-    "    <th>Special Indexed Fields</th>".
-    "    <td>$mview->speical_index</td>".
-    "  </tr>";
-  }
-  if ($mview->last_update > 0) {
-    $update = format_date($mview->last_update);
-  }
-  else {
-    $update = 'Not yet populated';
-  }
-  $output .= "  <tr>".
-    "    <th>Last Update</th>".
-    "    <td>$update</td>".
-    "  </tr>";
-
+  
   // build the URLs using the url function so we can handle installations where
   // clean URLs are or are not used
   $update_url = url("admin/tripal/mviews/action/update/$mview->mview_id");
   $delete_url = url("admin/tripal/mviews/action/delete/$mview->mview_id");
   $edit_url = url("admin/tripal/mviews/edit/$mview->mview_id");
-  $output .= "<tr><th>Actions</th>".
-            "<td> <a href='$update_url'>Populate</a>, ".
-            "     <a href='$edit_url'>Edit</a>, ".
-            "     <a href='$delete_url'>Delete</a></td></tr>";
-  $output .= "</table>";
+  $rows[] = array('Actions', "<a href='$update_url'>Populate</a>, <a href='$edit_url'>Edit</a>,  <a href='$delete_url'>Delete</a>");
+  
+  if ($mview->last_update > 0) {    
+    $update = format_date($mview->last_update);
+  }
+  else {
+    $update = 'Not yet populated';
+  }
+  $rows[] = array('Last Update', $update);  
+  if ($mview->name) {
+    $rows[] = array('View Name', $mview->name);
+  }
+  if ($mview->modulename) {
+    $rows[] = array('Module Name', $mview->modulename);    
+  }
+  if ($mview->mv_table) {
+    $rows[] = array('Table Name', $mview->mv_table);
+  }
+  if ($mview->mv_specs) {
+    $rows[] = array('Table Field Definitions', $mview->mv_specs);
+  }
+  if ($mview->query) {
+    $rows[] = array('Query', "<pre>" . $mview->query . "</pre>");
+  }
+  if ($mview->indexed) {
+    $rows[] = array('Indexed Fields', $mview->indexed);
+  }
+  if ($mview->special_index) {
+    $rows[] = array('Special Indexed Fields', $mview->special_index);
+  }
+  if ($mview->mv_schema) {
+    $rows[] = array('Drupal Schema API Definition', "<pre>" . $mview->mv_schema . "</pre>");
+  }
+  
+  $table = theme_table(array(), $rows);
+  $output .= $table;
 
   return $output;
 }
@@ -514,6 +492,11 @@ function tripal_mviews_form(&$form_state = NULL, $mview_id = NULL) {
     $action = 'Edit';
   }
 
+  // set defaults for collapsed fieldsets
+  $schema_collapsed = 0;
+  $traditional_collapsed = 1;  
+  
+  
   // get this requested view
   if (strcmp($action, 'Edit')==0) {
     $sql = "SELECT * FROM {tripal_mviews} WHERE mview_id = %d ";
@@ -565,8 +548,6 @@ function tripal_mviews_form(&$form_state = NULL, $mview_id = NULL) {
       $default_mv_table = '';
     }
     // set which fieldset is collapsed
-    $schema_collapsed = 0;
-    $traditional_collapsed = 1;
     if (!$default_schema) {
       $schema_collapsed = 1;
       $traditional_collapsed = 0;
@@ -623,10 +604,11 @@ function tripal_mviews_form(&$form_state = NULL, $mview_id = NULL) {
   // add a fieldset for the Original Table Description fields
   $form['traditional'] = array(
     '#type' => 'fieldset',
-    '#title' => 'Traditional MViews Setup',
-    '#description' => t('Traidtionally with Tripal MViews were created by specifying PostgreSQL style '.
+    '#title' => 'Legacy MViews Setup',
+    '#description' => t('Traditionally MViews were created by specifying PostgreSQL style '.
                        'column types.  This method can be used but is deprecated in favor of the '.
-                       'newer Drupal schema API method provided above.'),
+                       'newer Drupal schema API method provided above. In rare cases where the Drupal Schema API ' .
+                       'does not support a desired data type the Legacy Mviews should be used'),
     '#collapsible' => 1,
     '#collapsed' => $traditional_collapsed,
   );
