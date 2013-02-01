@@ -92,17 +92,17 @@ function tripal_core_install_chado($action) {
     if (tripal_core_reset_chado_schema()) {
       $success = tripal_core_install_sql($schema_file);
       if ($success) {
-        print "Installation Complete!\n";
+        print "Install of Chado v1.2 (Step 1 of 2) Successful!\n";
       }
       else {
-        print "Installation Problems!  Please check output above for errors.\n";
+        print "Installation (Step 1 of 2) Problems!  Please check output above for errors.\n";
       }
       $success = tripal_core_install_sql($init_file);
       if ($success) {
-        print "Installation Complete!\n";
+        print "Install of Chado v1.2 (Step 2 of 2) Successful.\nInstallation Complete\n";
       }
       else {
-        print "Installation Problems!  Please check output above for errors.\n";
+        print "Installation (Step 2 of 2) Problems!  Please check output above for errors.\n";
       }
       chado_query($vsql,'1.2'); # set the version
     }
@@ -116,17 +116,17 @@ function tripal_core_install_chado($action) {
     $init_file = drupal_get_path('module', 'tripal_core') . '/chado_schema/upgrade-1.11-1.2.sql';
     $success = tripal_core_install_sql($schema_file);
     if ($success) {
-      print "Installation Complete!\n";
+      print "Upgrade from v1.11 to v1.2 (Step 1 of 2) Successful!\n";
     }
     else {
-      print "Installation Problems!  Please check output above for errors.\n";
+      print "Upgrade (Step 1 of 2) problems!  Please check output above for errors.\n";
     }
     $success = tripal_core_install_sql($init_file);
     if ($success) {
-      print "Installation Complete!\n";
+      print "Upgrade from v1.11 to v1.2 (Step 2 of 2) Successful.\nUpgrade Complete!\n";
     }
     else {
-      print "Installation Problems!  Please check output above for errors.\n";
+      print "Upgrade (Step 2 of 2) problems!  Please check output above for errors.\n";
     }
     chado_query($vsql,'1.2'); # set the version
   }
@@ -136,17 +136,17 @@ function tripal_core_install_chado($action) {
     if (tripal_core_reset_chado_schema()) {
       $success = tripal_core_install_sql($schema_file);
       if ($success) {
-        print "Installation Complete!\n";
+        print "Install of Chado v1.11 (Step 1 of 2) Successful!\n";
       }
       else {
-        print "Installation Problems!  Please check output above for errors.\n";
+        print "Installation (Step 1 of 2) Problems!  Please check output above for errors.\n";
       }
       $success = tripal_core_install_sql($init_file);
       if ($success) {
-        print "Installation Complete!\n";
+        print "Install of Chado v1.11 (Step 2 of 2) Successful.\nInstallation Complete!\n";
       }
       else {
-        print "Installation Problems!  Please check output above for errors.\n";
+        print "Installation (Step 2 of 2) Problems!  Please check output above for errors.\n";
       }
     }
     else {
@@ -187,7 +187,13 @@ function tripal_core_reset_chado_schema() {
   print "Creating 'chado' schema\n";
   db_query("create schema chado");
   if (tripal_core_schema_exists('chado')) {
-    db_query("create language plpgsql");
+    // before creating the plpgsql language let's check to make sure
+    // it doesn't already exists
+    $sql = "SELECT COUNT(*) FROM pg_language WHERE lanname = 'plpgsql'";
+    $count = db_fetch_object(db_query($sql));
+    if (!$count or $count->count == 0) {
+      db_query("create language plpgsql");
+    }
     return TRUE;
   }
 

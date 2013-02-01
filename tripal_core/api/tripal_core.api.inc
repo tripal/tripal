@@ -3289,7 +3289,7 @@ function tripal_core_get_chado_version($exact = FALSE, $warn_if_unsupported = FA
   if (preg_match('/^1\.2\d+$/', $effective_version)) {
     $effective_version = "1.2";
   }
-  if ($warn_if_unsupported and ($effective_version != 1.11 and $effective_version != 1.2)) {
+  if ($warn_if_unsupported and ($effective_version != 1.11 and $effective_version != 1.2 and $effective_version != 'not installed')) {
     drupal_set_message(t("WARNING: The currently installed version of Chado, v$exact_version, is not fully compatible with Tripal."), 'warning');
   }
   // if the callee has requested the exact version then return it
