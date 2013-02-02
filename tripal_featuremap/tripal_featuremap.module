@@ -403,7 +403,7 @@ function get_tripal_featuremap_admin_form_taxonomy_set(&$form) {
 
   // get the list of maps
   $sql = "SELECT * FROM {featuremap} ORDER BY name";
-  $lib_rset = cahdo_query($sql);
+  $lib_rset = chado_query($sql);
 
   // iterate through all of the maps
   $lib_boxes = array();

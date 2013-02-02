@@ -121,7 +121,7 @@ function tripal_feature_add_ONE_dbreference_form_submit($form, &$form_state) {
 
   // create dbxref
   $isql =  "INSERT INTO {dbxref} (db_id, accession, description) VALUES (%d, '%s', '%s')";
-  cahdo_query($isql, $db_id, $accession, $description);
+  chado_query($isql, $db_id, $accession, $description);
 
   //create feature_dbxref
   $dbxref = tripal_db_get_dbxref( array('db_id' => array('type' => 'INT', 'value' => $form_state['values']['db_id']),
