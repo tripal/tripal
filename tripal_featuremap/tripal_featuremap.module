@@ -403,9 +403,7 @@ function get_tripal_featuremap_admin_form_taxonomy_set(&$form) {
 
   // get the list of maps
   $sql = "SELECT * FROM {featuremap} ORDER BY name";
-  $previous_db = tripal_db_set_active('chado');  // use chado database
-  $lib_rset = db_query($sql);
-  tripal_db_set_active($previous_db);  // now use drupal database
+  $lib_rset = cahdo_query($sql);
 
   // iterate through all of the maps
   $lib_boxes = array();
@@ -450,9 +448,7 @@ function get_tripal_featuremap_admin_form_reindex_set(&$form) {
 
   // get the list of maps
   $sql = "SELECT * FROM {featuremap} ORDER BY name";
-  $previous_db = tripal_db_set_active('chado');  // use chado database
-  $lib_rset = db_query($sql);
-  tripal_db_set_active($previous_db);  // now use drupal database
+  $lib_rset = chado_query($sql);
 
   // iterate through all of the maps
   $lib_boxes = array();
@@ -495,9 +491,7 @@ function get_tripal_featuremap_admin_form_sync_set(&$form) {
 
   // get the list of maps
   $sql = "SELECT * FROM {featuremap} ORDER BY name";
-  $previous_db = tripal_db_set_active('chado');  // use chado database
-  $lib_rset = db_query($sql);
-  tripal_db_set_active($previous_db);  // now use drupal database
+  $lib_rset = chado_query($sql);
 
   // if we've added any maps to the list that can be synced
   // then we want to build the form components to allow the user
@@ -574,9 +568,7 @@ function tripal_featuremap_admin_validate($form, &$form_state) {
     if ($featuremap_id and preg_match("/^\d+$/i", $featuremap_id)) {
       // get the map info
       $sql = "SELECT * FROM {featuremap} WHERE featuremap_id = %d";
-      $previous_db = tripal_db_set_active('chado');  // use chado database
-      $featuremap = db_fetch_object(db_query($sql, $featuremap_id));
-      tripal_db_set_active($previous_db);  // now use drupal database
+      $featuremap = db_fetch_object(chado_query($sql, $featuremap_id));
       $to_sync[$featuremap_id] = $featuremap->name;
     }
   }
@@ -601,9 +593,7 @@ function tripal_featuremap_admin_validate($form, &$form_state) {
       if ($featuremap_id and preg_match("/^\d+$/i", $featuremap_id)) {
         // get the map info
         $sql = "SELECT * FROM {featuremap} WHERE featuremap_id = %d";
-        $previous_db = tripal_db_set_active('chado');  // use chado database
-        $featuremap = db_fetch_object(db_query($sql, $featuremap_id));
-        tripal_db_set_active($previous_db);  // now use drupal database
+        $featuremap = db_fetch_object(chado_query($sql, $featuremap_id));
         $job_args[0] = $featuremap_id;
         tripal_add_job("Reindex features for map: $featuremap->name", 'tripal_featuremap',
          'tripal_featuremap_reindex_features', $job_args, $user->uid);
@@ -619,9 +609,7 @@ function tripal_featuremap_admin_validate($form, &$form_state) {
       if ($featuremap_id and preg_match("/^\d+$/i", $featuremap_id)) {
         // get the map info
         $sql = "SELECT * FROM {featuremap} WHERE featuremap_id = %d";
-        $previous_db = tripal_db_set_active('chado');  // use chado database
-        $featuremap = db_fetch_object(db_query($sql, $featuremap_id));
-        tripal_db_set_active($previous_db);  // now use drupal database
+        $featuremap = db_fetch_object(chado_query($sql, $featuremap_id));
         $job_args[0] = $featuremap_id;
         tripal_add_job("Set taxonomy for features in map: $featuremap->name", 'tripal_featuremap',
          'tripal_featuremap_taxonify_features', $job_args, $user->uid);
@@ -696,18 +684,13 @@ function chado_featuremap_validate($node) {
            "{featuremap} WHERE ".
            "name = '%s' ".
            "AND NOT featuremap_id = %d";
-    $previous_db = tripal_db_set_active('chado');
-    $lib = db_fetch_object(db_query($sql, $node->name,
-    $node->featuremap_id));
-    tripal_db_set_active($previous_db);
+    $lib = db_fetch_object(chado_query($sql, $node->name, $node->featuremap_id));
   }
   else {
     $sql = "SELECT * FROM ".
            "{featuremap} ".
            "WHERE name = '%s'";
-    $previous_db = tripal_db_set_active('chado');
-    $lib = db_fetch_object(db_query($sql, $node->name));
-    tripal_db_set_active($previous_db);
+    $lib = db_fetch_object(chado_query($sql, $node->name));
   }
   if ($lib) {
     form_set_error('name', t('The unique map name already exists. '.
@@ -855,15 +838,11 @@ function tripal_featuremap_sync_featuremaps($featuremap_id = NULL, $job_id = NUL
   // get the list of featuremaps and create new nodes
   if (!$featuremap_id) {
     $sql = "SELECT * FROM {featuremap} L";
-    $previous_db = tripal_db_set_active('chado');  // use chado database
-    $results = db_query($sql);
-    tripal_db_set_active($previous_db);  // now use drupal database
+    $results = chado_query($sql);
   }
   else {
     $sql = "SELECT * FROM {featuremap} L WHERE featuremap_id = %d";
-    $previous_db = tripal_db_set_active('chado');  // use chado database
-    $results = db_query($sql, $featuremap_id);
-    tripal_db_set_active($previous_db);  // now use drupal database
+    $results = chado_query($sql, $featuremap_id);
   }
 
   // We'll use the following SQL statement for checking if the map
@@ -969,10 +948,8 @@ function chado_featuremap_delete(&$node) {
   db_query($sql_del, $node->nid, $node->vid);
 
   // Remove data from map and mapprop tables of chado database as well
-  $previous_db = tripal_db_set_active('chado');
-  db_query("DELETE FROM {featuremap} WHERE featuremap_id = %d", $featuremap_id);
-  db_query("DELETE FROM {featuremapprop} WHERE featuremap_id = %d", $featuremap_id);
-  tripal_db_set_active($previous_db);
+  chado_query("DELETE FROM {featuremap} WHERE featuremap_id = %d", $featuremap_id);
+  chado_query("DELETE FROM {featuremapprop} WHERE featuremap_id = %d", $featuremap_id);
 }
 
 /**

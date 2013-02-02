@@ -91,18 +91,14 @@ function tripal_feature_add_ONE_dbreference_form_validate($form, &$form_state) {
   $nid = $form_state['values']['nid'];
 
   // Check database is valid db_id in chado
-  $previous_db = tripal_db_set_active('chado');
-  $tmp_obj = db_fetch_object(db_query("SELECT count(*) as count FROM {db} WHERE db_id=%d", $db_id));
-  tripal_db_set_active($previous_db);
+  $tmp_obj = db_fetch_object(chado_query("SELECT count(*) as count FROM {db} WHERE db_id=%d", $db_id));
   if ($tmp_obj->count != 1) {
     form_set_error('database', 'The database you selected is not valid. Please choose another one.');
   }
 
   // Check Accession is unique for database
-  $previous_db = tripal_db_set_active('chado');
   $sql = "SELECT count(*) as count FROM {dbxref} WHERE accession='%s' and db_id = %d";
-  $tmp_obj = db_fetch_object(db_query($sql, $accession, $db_id));
-  tripal_db_set_active($previous_db);
+  $tmp_obj = db_fetch_object(chado_query($sql, $accession, $db_id));
 
   if ($tmp_obj->count > 0) {
     form_set_error('accession', 'This accession has already been assigned to another feature in the selected database.');
@@ -124,20 +120,16 @@ function tripal_feature_add_ONE_dbreference_form_submit($form, &$form_state) {
   $nid = $form_state['values']['nid'];
 
   // create dbxref
-  $previous_db = tripal_db_set_active('chado');
   $isql =  "INSERT INTO {dbxref} (db_id, accession, description) VALUES (%d, '%s', '%s')";
-  db_query($isql, $db_id, $accession, $description);
-  tripal_db_set_active($previous_db);
+  cahdo_query($isql, $db_id, $accession, $description);
 
   //create feature_dbxref
   $dbxref = tripal_db_get_dbxref( array('db_id' => array('type' => 'INT', 'value' => $form_state['values']['db_id']),
                      'accession' => array('type' => 'STRING', 'exact' => TRUE, 'value' => $form_state['values']['accession']) ) );
 
   if (!empty($dbxref->dbxref_id)) {
-    $previous_db = tripal_db_set_active('chado');
       $isql = "INSERT INTO {feature_dbxref} (feature_id, dbxref_id) VALUES (%d, %d)";
-      db_query($isql, $feature_id, $dbxref->dbxref_id);
-    tripal_db_set_active($previous_db);
+      chado_query($isql, $feature_id, $dbxref->dbxref_id);
       drupal_set_message(t('Successfully Added Database Reference'));
       drupal_goto('node/' . $nid);
   }
@@ -287,10 +279,8 @@ function tripal_feature_edit_ALL_db_references_form_submit($form, &$form_state) 
  */
 function tripal_feature_update_db_reference($dbxref_id, $db_id, $accession) {
 
-  $previous_db = tripal_db_set_active('chado');
   $sql =  "UPDATE {dbxref} SET db_id=%d, accession='%s' WHERE dbxref_id=%d";
-  db_query($sql, $db_id, $accession, $dbxref_id);
-  tripal_db_set_active($previous_db);
+  chado_query($sql, $db_id, $accession, $dbxref_id);
 
 }
 
@@ -301,18 +291,15 @@ function tripal_feature_update_db_reference($dbxref_id, $db_id, $accession) {
  */
 function tripal_feature_delete_db_reference($dbxref_id) {
 
-  $previous_db = tripal_db_set_active('chado');
-  db_query(
+  chado_query(
     "DELETE FROM {dbxref} WHERE dbxref_id=%d",
     $dbxref_id
   );
 
-  db_query(
+  chado_query(
     "DELETE FROM {feature_dbxref} WHERE dbxref_id=%d",
     $dbxref_id
   );
-  tripal_db_set_active($previous_db);
-
 }
 
 /**

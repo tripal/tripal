@@ -16,11 +16,9 @@
  */
 function tripal_organism_get_organism_options() {
 
-  $previous_db = tripal_db_set_active('chado');
-  $result = db_query(
+  $result = chado_query(
     "SELECT organism_id, common_name FROM {organism}"
   );
-  tripal_db_set_active($previous_db);
 
   $options = array();
   while ( $r = db_fetch_object($result) ) {
@@ -148,9 +146,7 @@ function tripal_organism_get_synced() {
 
   // iterate through the organisms and build an array of those that are synced
   while ($org = db_fetch_object($orgs)) {
-    $previous_db = tripal_db_set_active('chado');  // use chado database
-    $info = db_fetch_object(db_query($csql, $org->organism_id));
-    tripal_db_set_active($previous_db);  // now use drupal database
+    $info = db_fetch_object(chado_query($csql, $org->organism_id));
     $org_list[] = $info;
   }
   return $org_list;

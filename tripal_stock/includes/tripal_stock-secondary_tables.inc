@@ -223,12 +223,10 @@ function tripal_stock_is_obsolete_form($node, $stock_id) {
  */
 function tripal_stock_is_obsolete_form_submit($form, &$form_state) {
 
-  $previous_db = tripal_db_set_active('chado');
-  db_query(
+  chado_query(
     "UPDATE {stock} SET is_obsolete='t' WHERE stock_id=%d",
     $form_state['values']['make_obsolete_stock_id']
   );
-  tripal_db_set_active($previous_db);
 
 }
 

@@ -99,9 +99,7 @@ function tripal_stock_add_ONE_property_form_validate($form, &$form_state) {
     }
     else {
       // Check that type is in chado
-      $previous_db = tripal_db_set_active('chado');
-      $num_rows = db_fetch_object(db_query("SELECT count(*) as count FROM {cvterm} WHERE cvterm_id=%d", $form_state['values']['prop_type_id']));
-      tripal_db_set_active($previous_db);
+      $num_rows = db_fetch_object(chado_query("SELECT count(*) as count FROM {cvterm} WHERE cvterm_id=%d", $form_state['values']['prop_type_id']));
       if ( $num_rows->count != 1) {
         form_set_error('prop_type_id', "The type you selected is not valid. Please choose another one. (CODE:$num_rows)");
       } // end of if more or less than 1 row
@@ -137,15 +135,13 @@ function tripal_stock_add_ONE_property_form_submit($form, &$form_state) {
     }
     else { $rank = $max_rank+1; }
 
-    $previous_db = tripal_db_set_active('chado');
-    db_query(
+    chado_query(
       "INSERT INTO {stockprop} (stock_id, type_id, value, rank) VALUES (%d, %d, '%s', %d)",
       $form_state['values']['prop_stock_id'],
       $form_state['values']['prop_type_id'],
       $form_state['values']['prop_value'],
       $rank
     );
-    tripal_db_set_active($previous_db);
 
     drupal_set_message(t("Successfully Added Property"));
 
@@ -291,21 +287,17 @@ function tripal_stock_edit_ALL_properties_form_submit($form, &$form_state) {
  */
 function tripal_stock_update_property($stockprop_id, $cvterm_id, $value, $preferred, $nid) {
 
-  $previous_db = tripal_db_set_active('chado');
-  $old_obj = db_fetch_object(db_query("SELECT * FROM {stockprop} WHERE stockprop_id=%d", $stockprop_id));
-  tripal_db_set_active($previous_db);
+  $old_obj = db_fetch_object(chado_query("SELECT * FROM {stockprop} WHERE stockprop_id=%d", $stockprop_id));
 
   // if they changed the type need to check rank
   //   (if there is another property of the same type then rank needs to be increased to prevent collisions)
   if ($cvterm_id == $old_obj->type_id) {
-    $previous_db = tripal_db_set_active('chado');
-    db_query(
+    chado_query(
       "UPDATE {stockprop} SET type_id=%d, value='%s' WHERE stockprop_id=%d",
       $cvterm_id,
       $value,
       $stockprop_id
     );
-    tripal_db_set_active($previous_db);
   }
   else {
       //determine the rank for this property
@@ -313,18 +305,16 @@ function tripal_stock_update_property($stockprop_id, $cvterm_id, $value, $prefer
                                   array('stock_id' => array('type' => 'INT', 'value' => $old_obj->stock_id),
                                         'type_id' => array('type' => 'INT', 'value' => $cvterm_id ) ));
     if ($max_rank == -1) {
-    $rank = 0;
+      $rank = 0;
     }
     else { $rank = $max_rank+1; }
-    $previous_db = tripal_db_set_active('chado');
-    db_query(
-      "UPDATE {stockprop} SET type_id=%d, value='%s', rank=%d WHERE stockprop_id=%d",
-      $cvterm_id,
-      $value,
-      $rank,
-      $stockprop_id
-    );
-    tripal_db_set_active($previous_db);
+      chado_query(
+        "UPDATE {stockprop} SET type_id=%d, value='%s', rank=%d WHERE stockprop_id=%d",
+        $cvterm_id,
+        $value,
+        $rank,
+        $stockprop_id
+     );
   }
 
   // Set Preferred Synonym
@@ -350,12 +340,10 @@ function tripal_stock_update_property($stockprop_id, $cvterm_id, $value, $prefer
  */
 function tripal_stock_delete_property($stockprop_id) {
 
-  $previous_db = tripal_db_set_active('chado');
-  db_query(
+  chado_query(
     "DELETE FROM {stockprop} WHERE stockprop_id=%d",
     $stockprop_id
   );
-  tripal_db_set_active($previous_db);
 
 }
 

@@ -43,13 +43,11 @@ function get_max_chado_rank($tablename, $where_options) {
     }
   }
 
-  $previous_db = tripal_db_set_active('chado');
-  $result = db_fetch_object(db_query(
+  $result = db_fetch_object(chado_query(
     "SELECT max(rank) as max_rank, count(rank) as count FROM %s WHERE %s",
     $tablename,
     implode(' AND ', $where)
   ));
-  tripal_db_set_active($previous_db);
   //drupal_set_message("Max Rank Query=SELECT max(rank) as max_rank, count(rank) as count FROM ".$tablename." WHERE ".implode(' AND ',$where));
   if ($result->count > 0) {
     return $result->max_rank;

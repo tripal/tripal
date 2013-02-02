@@ -154,9 +154,7 @@ function tripal_stock_add_ONE_relationship_form_validate($form, &$form_state) {
       form_set_error('type_id', 'Please select a type of relationship.');
     }
     else {
-      $previous_db = tripal_db_set_active('chado');
-      $tmp_obj = db_fetch_object(db_query("SELECT count(*) as count FROM {cvterm} WHERE cvterm_id=%d", $form_state['values']['type_id']));
-      tripal_db_set_active($previous_db);
+      $tmp_obj = db_fetch_object(chado_query("SELECT count(*) as count FROM {cvterm} WHERE cvterm_id=%d", $form_state['values']['type_id']));
 
       if ($tmp_obj->count != 1) {
         form_set_error('type_id', 'The type you selected is not valid. Please choose another one.');
@@ -180,15 +178,13 @@ function tripal_stock_add_ONE_relationship_form_validate($form, &$form_state) {
 function tripal_stock_add_ONE_relationship_form_submit($form, &$form_state) {
 
   if ($form_state['values']['subject_id'] > 0) {
-    $previous_db = tripal_db_set_active('chado');
-    db_query(
+    chado_query(
       "INSERT INTO {stock_relationship} (subject_id, type_id, object_id, value) VALUES (%d, %d, %d, '%s')",
       $form_state['values']['subject_id'],
       $form_state['values']['type_id'],
       $form_state['values']['object_id'],
       $form_state['values']['r_description']
     );
-    tripal_db_set_active($previous_db);
 
     drupal_set_message(t('Successfully Added Relationship.'));
   } //end of insert relationship
@@ -385,9 +381,7 @@ function tripal_stock_edit_ALL_relationships_form_validate($form, &$form_state) 
         form_set_error('type_id', 'Please select a type of relationship.');
       }
       else {
-        $previous_db = tripal_db_set_active('chado');
-        $tmp_obj = db_fetch_object(db_query("SELECT count(*) as count FROM {cvterm} WHERE cvterm_id=%d", $form_state['values']["type_id-$i"]));
-        tripal_db_set_active($previous_db);
+        $tmp_obj = db_fetch_object(chado_query("SELECT count(*) as count FROM {cvterm} WHERE cvterm_id=%d", $form_state['values']["type_id-$i"]));
 
         if ($tmp_obj->count != 1) {
           form_set_error("type_id-$i", 'The type you selected is not valid. Please choose another one.');
@@ -452,15 +446,13 @@ function tripal_stock_edit_ALL_relationships_form_submit($form, &$form_state) {
  */
 function tripal_stock_update_relationship($stock_relationship_id, $subject_id, $cvterm_id, $object_id) {
 
-  $previous_db = tripal_db_set_active('chado');
-  db_query(
+  chado_query(
     "UPDATE {stock_relationship} SET subject_id=%d, type_id=%d, object_id=%d WHERE stock_relationship_id=%d",
     $subject_id,
     $cvterm_id,
     $object_id,
     $stock_relationship_id
   );
-  tripal_db_set_active($previous_db);
 
 }
 
@@ -471,12 +463,10 @@ function tripal_stock_update_relationship($stock_relationship_id, $subject_id, $
  */
 function tripal_stock_delete_relationship($stock_relationship_id) {
 
-  $previous_db = tripal_db_set_active('chado');
-  db_query(
+  chado_query(
     "DELETE FROM {stock_relationship} WHERE stock_relationship_id=%d",
     $stock_relationship_id
   );
-  tripal_db_set_active($previous_db);
 
 }
 

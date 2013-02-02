@@ -164,9 +164,7 @@ function tripal_feature_add_ONE_relationship_form_validate($form, &$form_state) 
       form_set_error('type_id', 'Please select a type of relationship.');
     }
     else {
-      $previous_db = tripal_db_set_active('chado');
-      $tmp_obj = db_fetch_object(db_query("SELECT count(*) as count FROM {cvterm} WHERE cvterm_id=%d", $form_state['values']['type_id']));
-      tripal_db_set_active($previous_db);
+      $tmp_obj = db_fetch_object(chado_query("SELECT count(*) as count FROM {cvterm} WHERE cvterm_id=%d", $form_state['values']['type_id']));
 
       if ($tmp_obj->count != 1) {
         form_set_error('type_id', 'The type you selected is not valid. Please choose another one.');
@@ -399,9 +397,7 @@ function tripal_feature_edit_ALL_relationships_form_validate($form, &$form_state
         form_set_error('type_id', 'Please select a type of relationship.');
       }
       else {
-        $previous_db = tripal_db_set_active('chado');
-        $tmp_obj = db_fetch_object(db_query("SELECT count(*) as count FROM {cvterm} WHERE cvterm_id=%d" , $form_state['values']["type_id-$i"]));
-        tripal_db_set_active($previous_db);
+        $tmp_obj = db_fetch_object(chado_query("SELECT count(*) as count FROM {cvterm} WHERE cvterm_id=%d" , $form_state['values']["type_id-$i"]));
 
         if ($tmp_obj->count != 1) {
           form_set_error("type_id-$i", 'The type you selected is not valid. Please choose another one.');

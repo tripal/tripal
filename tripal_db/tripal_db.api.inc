@@ -85,11 +85,9 @@ function tripal_db_get_db($select_values) {
  */
 function tripal_db_get_db_by_db_id($db_id) {
 
-  $previous_db = tripal_db_set_active('chado');
-  $r = db_fetch_object(db_query(
+  $r = db_fetch_object(chado_query(
     "SELECT * FROM {db} WHERE db_id=%d", $db_id
   ));
-  tripal_db_set_active($previous_db);
 
   return $r;
 }
@@ -106,11 +104,9 @@ function tripal_db_get_db_by_db_id($db_id) {
  */
 function tripal_db_get_db_by_name($name) {
 
-  $previous_db = tripal_db_set_active('chado');
-  $r = db_fetch_object(db_query(
+  $r = db_fetch_object(chado_query(
     "SELECT * FROM {db} WHERE name='%s'", $name
   ));
-  tripal_db_set_active($previous_db);
 
   return $r;
 }
@@ -139,11 +135,9 @@ function tripal_db_get_db_by_name($name) {
  */
 function tripal_db_get_db_options() {
 
-  $previous_db = tripal_db_set_active('chado');
-  $result = db_query(
+  $result = chado_query(
     "SELECT db_id, name FROM {db}"
   );
-  tripal_db_set_active($previous_db);
 
   $options = array();
   while ( $r = db_fetch_object($result) ) {
@@ -256,20 +250,16 @@ function tripal_db_get_dbxref($select_values) {
 function tripal_db_get_dbxref_by_accession($accession, $db_id=0) {
 
   if (!empty($db_id)) {
-    $previous_db = tripal_db_set_active('chado');
-    $r = db_fetch_object(db_query(
+    $r = db_fetch_object(chado_query(
       "SELECT * FROM {dbxref} WHERE accession='%s' AND db_id=%d",
       $accession, $db_id
     ));
-    tripal_db_set_active($previous_db);
   }
   else {
-    $previous_db = tripal_db_set_active('chado');
-    $r = db_fetch_object(db_query(
+    $r = db_fetch_object(chado_query(
       "SELECT * FROM {dbxref} WHERE accession='%s'",
       $accession
     ));
-    tripal_db_set_active($previous_db);
   }
 
   return $r;

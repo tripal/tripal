@@ -509,9 +509,7 @@ function chado_stock_validate($node, &$form) {
 
   // Validate Uniquename only if add
   if (empty($node->stock_id)) {
-    $previous_db = tripal_db_set_active('chado');
-    $chado_row = db_fetch_object(db_query("SELECT * FROM {stock} WHERE uniquename='" . $node->uniquename . "'"));
-    tripal_db_set_active($previous_db);
+    $chado_row = db_fetch_object(chado_query("SELECT * FROM {stock} WHERE uniquename='" . $node->uniquename . "'"));
     if (!empty($chado_row->stock_id)) {
       $drupal_row = db_fetch_object(db_query("SELECT * FROM {chado_stock} WHERE stock_id=" . $chado_row->stock_id));
       if (!empty($drupal_row->nid)) {
@@ -530,9 +528,7 @@ function chado_stock_validate($node, &$form) {
     form_set_error('type_id', 'Please select a type of stock.');
   }
   else {
-    $previous_db = tripal_db_set_active('chado');
-    $num_rows = db_fetch_object(db_query($int_in_chado_sql, 'cvterm', 'cvterm_id', $node->type_id));
-    tripal_db_set_active($previous_db);
+    $num_rows = db_fetch_object(chado_query($int_in_chado_sql, 'cvterm', 'cvterm_id', $node->type_id));
     if ( $num_rows->count != 1) {
       form_set_error('type_id', "The type you selected is not valid. Please choose another one. (CODE:$num_rows)"); }
   }
@@ -542,9 +538,7 @@ function chado_stock_validate($node, &$form) {
     form_set_error('organism_id', 'Please select a source organism for this stock');
   }
   else {
-    $previous_db = tripal_db_set_active('chado');
-    $num_rows = db_fetch_object(db_query($int_in_chado_sql, 'organism', 'organism_id', $node->organism_id));
-    tripal_db_set_active($previous_db);
+    $num_rows = db_fetch_object(chado_query($int_in_chado_sql, 'organism', 'organism_id', $node->organism_id));
     if ( $num_rows->count != 1 ) {
       form_set_error('organism_id', "The organism you selected is not valid. Please choose another one. (CODE:$num_rows)"); }
   }
@@ -565,9 +559,7 @@ function chado_stock_validate($node, &$form) {
 
   // Check database is valid db_id in chado ( $form['values']['database_reference']['database'] )
   if ( $node->database > 0) {
-    $previous_db = tripal_db_set_active('chado');
-    $num_rows = db_fetch_object(db_query($int_in_chado_sql, 'db', 'db_id', $node->database));
-    tripal_db_set_active($previous_db);
+    $num_rows = db_fetch_object(chado_query($int_in_chado_sql, 'db', 'db_id', $node->database));
     if ($num_rows->count != 1) {
       form_set_error('database', 'The database you selected is not valid. Please choose another one.'); }
   }
@@ -828,12 +820,10 @@ function chado_stock_update($node) {
 function chado_stock_delete($node) {
 
   // Set stock in chado: is_obsolete = TRUE
-  $previous_db = tripal_db_set_active('chado');
-  db_query(
+  chado_query(
     "DELETE FROM {stock} WHERE stock_id=%d",
     $node->stock->stock_id
   );
-  tripal_db_set_active($previous_db);
 
   //remove drupal node and all revisions
   db_query(

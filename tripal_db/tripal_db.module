@@ -155,11 +155,9 @@ function tripal_db_admin_page() {
  */
 function tripal_db_select_form() {
 
-  $previous_db = tripal_db_set_active('chado');  // use chado database
   // get a list of db from chado for user to choose
   $sql = "SELECT * FROM {db} WHERE NOT name = 'tripal' ORDER BY name ";
-  $results = db_query($sql);
-  tripal_db_set_active($previous_db); // use drupal database
+  $results = chado_query($sql);
 
   $dbs = array();
   $dbs[] = '';
@@ -201,9 +199,7 @@ function tripal_db_form(&$form_state = NULL, $dbid = NULL) {
   // get this requested database
   if ($dbid) {
     $sql = "SELECT * FROM {db} WHERE db_id = %d ";
-    $previous_db = tripal_db_set_active('chado');
-    $db = db_fetch_object(db_query($sql, $dbid));
-    tripal_db_set_active($previous_db);
+    $db = db_fetch_object(chado_query($sql, $dbid));
 
 
     // set the default values.  If there is a value set in the
@@ -318,9 +314,7 @@ function tripal_db_form_submit($form, &$form_state) {
           urlprefix = '%s'
         WHERE db_id = %d
       ";
-      $previous_db = tripal_db_set_active('chado');
-      $db = db_query($sql, $name, $desc, $url, $urlp, $dbid);
-      tripal_db_set_active($previous_db);
+      $db = chado_query($sql, $name, $desc, $url, $urlp, $dbid);
       if ($db) {
         drupal_set_message(t("External database updated"));
       }
@@ -333,9 +327,7 @@ function tripal_db_form_submit($form, &$form_state) {
         DELETE FROM {db}
         WHERE db_id = %d
         ";
-      $previous_db = tripal_db_set_active('chado');
-      $db = db_query($sql, $dbid);
-      tripal_db_set_active($previous_db);
+      $db = chado_query($sql, $dbid);
       if ($db) {
         drupal_set_message(t("External database deleted"));
       }
@@ -351,9 +343,7 @@ function tripal_db_form_submit($form, &$form_state) {
           VALUES
           ('%s','%s','%s','%s')
           ";
-    $previous_db = tripal_db_set_active('chado');
-    $db = db_query($sql, $name, $desc, $url, $urlp);
-    tripal_db_set_active($previous_db);
+    $db = chado_query($sql, $name, $desc, $url, $urlp);
     if ($db) {
       drupal_set_message(t("External database added"));
     }

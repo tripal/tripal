@@ -44,9 +44,7 @@ class tripal_views_handler_filter_select_cvterm extends views_handler_filter_str
             .' LEFT JOIN cvterm cvterm ON cvterm.cvterm_id=' . $this->view->base_table . '.type_id '
             .'LEFT JOIN cv cv ON cv.cv_id=cvterm.cv_id';
         }
-        $previous_db = tripal_db_set_active('chado');
-        $resource = db_query($sql);
-        tripal_db_set_active($previous_db);
+        $resource = chado_query($sql);
         $cvterms = array();
         while ( $r = db_fetch_object($resource) ) {
           $results = tripal_core_chado_select('cvterm', array('cvterm_id', 'name'), array('cv_id' => $r->cv_id));
@@ -63,9 +61,7 @@ class tripal_views_handler_filter_select_cvterm extends views_handler_filter_str
     else {
       // @coder-ignore: non-drupal schema therefore table prefixing does not apply
       $sql = "SELECT cvterm_id, name FROM cvterm WHERE cvterm_id IN (SELECT distinct(%s) FROM %s)";
-      $previous_db = tripal_db_set_active('chado');
-      $resource = db_query($sql, $this->field, $this->table);
-      tripal_db_set_active($previous_db);
+      $resource = chado_query($sql, $this->field, $this->table);
       $cvterms = array();
       while ( $r = db_fetch_object($resource) ) {
         $cvterms[$r->cvterm_id] = $r->name;

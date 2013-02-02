@@ -111,9 +111,7 @@ function tripal_cv_get_cv($select_values) {
  */
 function tripal_cv_get_cv_by_name($name) {
 
-  $previous_db = tripal_db_set_active('chado');
   $r = tripal_core_chado_select('cv', array('*'), array('name' => $name));
-  tripal_db_set_active($previous_db);
 
   return $r[0];
 }
@@ -134,9 +132,7 @@ function tripal_cv_get_cv_by_name($name) {
  */
 function tripal_cv_get_cv_by_id($cv_id) {
 
-  $previous_db = tripal_db_set_active('chado');
   $r = tripal_core_chado_select('cv', array('*'), array('cv_id' => $cv_id));
-  tripal_db_set_active($previous_db);
 
   return $r;
 }

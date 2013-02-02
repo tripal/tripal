@@ -52,9 +52,7 @@ function tripal_analysis_set_feature_permission($analysis_id, $nid) {
 
   // Get features associated with the analysis
   $sql = "SELECT feature_id FROM {analysisfeature} WHERE analysis_id = %d";
-  $previous_db = db_set_active('chado');
-  $features = db_query($sql, $analysis_id);
-  db_set_active($previous_db);
+  $features = chado_query($sql, $analysis_id);
 
   // Convert feature_id into node_id
   $feature_nids = array();

@@ -614,14 +614,12 @@ function tripal_feature_aggregator_select_form() {
   $results = db_query($sql);
 
   $sql = "SELECT * FROM {cvterm} WHERE cvterm_id = %d";
-  $previous_db = tripal_db_set_active('chado');
   $types = array();
   $types[] = '';
   while ($base = db_fetch_object($results)) {
-    $term = db_fetch_object(db_query($sql, $base->type_id));
+    $term = db_fetch_object(chado_query($sql, $base->type_id));
     $types[$base->type_id] = $term->name;
   }
-  tripal_db_set_active($previous_db);
 
   $form['type_id'] = array(
     '#title' => t('Aggregator Base Type'),
@@ -654,9 +652,7 @@ function tripal_feature_aggregator_form(&$form_state = NULL, $type_id = NULL) {
     // get the default list of terms
     $results = db_query($sql, $type_id);
     while ($type = db_fetch_object($results)) {
-      $previous_db = tripal_db_set_active('chado');
-      $term = db_fetch_object(db_query($tsql, $type->rel_type_id));
-      tripal_db_set_active($previous_db);
+      $term = db_fetch_object(chado_query($tsql, $type->rel_type_id));
       $default_others .= $term->name . " ";
     }
     $default_base = $base->name;
@@ -739,9 +735,7 @@ function tripal_feature_aggregator_form_validate($form, &$form_state) {
 
   // make sure the base type exists
   if ($base) {
-    $previous_db = tripal_db_set_active('chado');
-    $term = db_fetch_object(db_query($tsql, $base));
-    tripal_db_set_active($previous_db);
+    $term = db_fetch_object(chado_query($tsql, $base));
     if (!$term) {
       form_set_error('base', t('The specified base type is not a valid SO term'));
     }
@@ -756,9 +750,7 @@ function tripal_feature_aggregator_form_validate($form, &$form_state) {
 
   // iterate through each type to be aggregated and make sure they are valid
   foreach ($types as $type) {
-    $previous_db = tripal_db_set_active('chado');
-    $term = db_fetch_object(db_query($tsql, $type));
-    tripal_db_set_active($previous_db);
+    $term = db_fetch_object(chado_query($tsql, $type));
     if (!$term) {
       form_set_error('others', t('The specified type %type is not a valid SO term', array('%type' => $type)));
     }
@@ -796,9 +788,7 @@ function tripal_feature_aggregator_form_submit($form, &$form_state) {
   // if this is an insert then we have a base type name.  We
   // need to get the corresponding term id
   if ($base) {
-    $previous_db = tripal_db_set_active('chado');
-    $term = db_fetch_object(db_query($tsql, $base));
-    tripal_db_set_active($previous_db);
+    $term = db_fetch_object(chado_query($tsql, $base));
     $type_id = $term->cvterm_id;
   }
 
@@ -826,9 +816,7 @@ function tripal_feature_aggregator_form_submit($form, &$form_state) {
 
     // iterate through each type to be aggregated and add an entry in the table
     foreach ($types as $type) {
-      $previous_db = tripal_db_set_active('chado');
-      $term = db_fetch_object(db_query($tsql, $type));
-      tripal_db_set_active($previous_db);
+      $term = db_fetch_object(chado_query($tsql, $type));
       $result = db_query($isql, $type_id, $term->cvterm_id);
     }
     drupal_set_message(t("Aggregator added"));

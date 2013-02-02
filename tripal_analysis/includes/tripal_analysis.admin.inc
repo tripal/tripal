@@ -227,10 +227,8 @@ function get_tripal_analysis_admin_form_taxonomy_set(&$form) {
   );
 
   // get the list of analyses
-  $sql = "SELECT * FROM {Analysis} ORDER BY name";
-  $previous_db = tripal_db_set_active('chado');  // use chado database
-  $lib_rset = db_query($sql);
-  tripal_db_set_active($previous_db);  // now use drupal database
+  $sql = "SELECT * FROM {analysis} ORDER BY name";
+  $lib_rset = chado_query($sql);
 
   // iterate through all of the libraries
   $lib_boxes = array();
@@ -282,10 +280,8 @@ function get_tripal_analysis_admin_form_reindex_set(&$form) {
   );
 
   // get the list of libraries
-  $sql = "SELECT * FROM {Analysis} ORDER BY name";
-  $previous_db = tripal_db_set_active('chado');  // use chado database
-  $lib_rset = db_query($sql);
-  tripal_db_set_active($previous_db);  // now use drupal database
+  $sql = "SELECT * FROM {analysis} ORDER BY name";
+  $lib_rset = chado_query($sql);
 
   // iterate through all of the libraries
   $lib_boxes = array();
@@ -377,9 +373,7 @@ function get_tripal_analysis_admin_form_sync_set(&$form) {
 
     // get the list of analyses
     $sql = "SELECT * FROM {analysis} ORDER BY name";
-    $previous_db = tripal_db_set_active('chado');  // use chado database
-    $ana_rset = db_query($sql);
-    tripal_db_set_active($previous_db);  // now use drupal database
+    $ana_rset = chado_query($sql);
 
     // if we've added any analyses to the list that can be synced
     // then we want to build the form components to allow the user
@@ -463,9 +457,7 @@ function tripal_analysis_admin_validate($form, &$form_state) {
       if ($analysis_id and preg_match("/^\d+$/i", $analysis_id)) {
         // get the list of analyses
         $sql = "SELECT * FROM {analysis} WHERE analysis_id = %d";
-        $previous_db = tripal_db_set_active('chado');  // use chado database
-        $analysis = db_fetch_object(db_query($sql, $analysis_id));
-        tripal_db_set_active($previous_db);  // now use drupal database
+        $analysis = db_fetch_object(chado_query($sql, $analysis_id));
         $to_sync[$analysis_id] = $analysis->name;
       }
     }
@@ -491,9 +483,7 @@ function tripal_analysis_admin_validate($form, &$form_state) {
       if ($analysis_id and preg_match("/^\d+$/i", $analysis_id)) {
         // get the analysis info
         $sql = "SELECT * FROM {analysis} WHERE analysis_id = %d";
-        $previous_db = tripal_db_set_active('chado');  // use chado database
-        $analysis = db_fetch_object(db_query($sql, $analysis_id));
-        tripal_db_set_active($previous_db);  // now use drupal database
+        $analysis = db_fetch_object(chado_query($sql, $analysis_id));
         $job_args[0] = $analysis_id;
         tripal_add_job("Reindex features for analysis: $analysis->name", 'tripal_analysis',
              'tripal_analysis_reindex_features', $job_args, $user->uid);
@@ -511,9 +501,7 @@ function tripal_analysis_admin_validate($form, &$form_state) {
       if ($analysis_id and preg_match("/^\d+$/i", $analysis_id)) {
         // get the analysis info
         $sql = "SELECT * FROM {analysis} WHERE analysis_id = %d";
-        $previous_db = tripal_db_set_active('chado');  // use chado database
-        $analysis = db_fetch_object(db_query($sql, $analysis_id));
-        tripal_db_set_active($previous_db);  // now use drupal database
+        $analysis = db_fetch_object(chado_query($sql, $analysis_id));
         $job_args[0] = $analysis_id;
         tripal_add_job("Set taxonomy for features in analysis: $analysis->name", 'tripal_analysis',
              'tripal_analysis_taxonify_features', $job_args, $user->uid);

@@ -63,9 +63,7 @@ function tripal_project_sync_all_projects() {
 
   // retrieve all projects in chado
   $chado_projects = array();
-  $previous_db = tripal_db_set_active('chado');
-  $resource = db_query('SELECT project_id FROM {project}');
-  tripal_db_set_active($previous_db);
+  $resource = chado_query('SELECT project_id FROM {project}');
   while ($r = db_fetch_object($resource)) {
     // if not already in drupal add to list to be sync'd
     if (!isset($drupal_projects[$r->project_id])) {

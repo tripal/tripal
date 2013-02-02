@@ -266,7 +266,6 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
     return 0;
   }
 
-  //$previous_db = tripal_db_set_active('chado');
   print "Opening $gff_file\n";
 
   //$lines = file($dfile,FILE_SKIP_EMPTY_LINES);

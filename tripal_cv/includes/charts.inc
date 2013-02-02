@@ -75,9 +75,7 @@
  *    $type        = preg_replace("/^tripal_analysis_go_cv_chart_(\d+)-(\d+)_(bp|cc|mf)$/","$3",$chart_id);
  *
  *    $sql = "SELECT * FROM {Analysis} WHERE analysis_id = %d";
- *    $previous_db = tripal_db_set_active('chado');  // use chado database
- *    $analysis = db_fetch_object(db_query($sql,$analysis_id));
- *    tripal_db_set_active($previous_db);  // now use drupal database
+ *    $analysis = db_fetch_object(chado_query($sql,$analysis_id));
  *
  *    if (strcmp($type,'mf')==0) {
  *       $class = 'molecular_function';
@@ -214,9 +212,7 @@ function tripal_cv_count_chart($cnt_table, $fk_column,
   ";
 
   $features = array();
-  $previous_db = tripal_db_set_active('chado');  // use chado database
-  $results = db_query($sql);
-  tripal_db_set_active($previous_db);  // now use drupal database
+  $results = chado_query($sql);
   $data = array();
   $axis = array();
   $legend = array();

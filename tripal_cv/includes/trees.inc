@@ -193,9 +193,7 @@ function tripal_cv_init_tree($cv_id, $cnt_table = NULL, $fk_column = NULL,
     FROM {cv_root_mview} CRM
     WHERE cv_id = %d
   ";
-  $previous_db = tripal_db_set_active('chado');
-  $results = db_query($sql, $cv_id);
-  tripal_db_set_active($previous_db);
+  $results = chado_query($sql, $cv_id);
 
   // prepare the SQL statement that will allow us to pull out count
   // information for each term in the tree.
@@ -216,9 +214,7 @@ function tripal_cv_init_tree($cv_id, $cnt_table = NULL, $fk_column = NULL,
     $name = $term->name;
     $count = 0;
     if ($cnt_table) {
-      $previous_db = tripal_db_set_active('chado');
-      $cnt_results = db_query($cnt_sql, $term->cvterm_id);
-      tripal_db_set_active($previous_db);
+      $cnt_results = chado_query($cnt_sql, $term->cvterm_id);
       while ($cnt = db_fetch_object($cnt_results)) {
         $count += $cnt->cnt;
       }
@@ -264,10 +260,7 @@ function tripal_cv_get_term_children($cvterm_id, $cnt_table = NULL,
     WHERE CVTR.object_id = %d
     ORDER BY CVT1.name
   ";
-  $previous_db = tripal_db_set_active('chado');
-  $results = db_query($sql, $cvterm_id);
-  tripal_db_set_active($previous_db);
-
+  $results = chado_query($sql, $cvterm_id);
 
   // prepare the SQL statement that will allow us to pull out count
   // information for each term in the tree.
@@ -290,9 +283,7 @@ function tripal_cv_get_term_children($cvterm_id, $cnt_table = NULL,
     $name = $term->subject_name;
     $count = 0;
     if ($cnt_table) {
-      $previous_db = tripal_db_set_active('chado');
-      $cnt_results = db_query($cnt_sql, $term->subject_id);
-      tripal_db_set_active($previous_db);
+      $cnt_results = chado_query($cnt_sql, $term->subject_id);
       while ($cnt = db_fetch_object($cnt_results)) {
         $count += $cnt->num_items;
       }
@@ -300,9 +291,7 @@ function tripal_cv_get_term_children($cvterm_id, $cnt_table = NULL,
         $name .= " (" . number_format($count) . " $label)";
 
         // check if we have any children if so then set the value
-        $previous_db = tripal_db_set_active('chado');
-        $children = db_fetch_object(db_query($sql, $term->subject_id));
-        tripal_db_set_active($previous_db);
+        $children = db_fetch_object(chado_query($sql, $term->subject_id));
         $state = 'leaf';
         if ($children) {
           $state = 'closed';
@@ -319,9 +308,7 @@ function tripal_cv_get_term_children($cvterm_id, $cnt_table = NULL,
     }
     else {
       // check if we have any children if so then set the value
-      $previous_db = tripal_db_set_active('chado');
-      $children = db_fetch_object(db_query($sql, $term->subject_id));
-      tripal_db_set_active($previous_db);
+      $children = db_fetch_object(chado_query($sql, $term->subject_id));
       $state = 'leaf';
       if ($children) {
         $state = 'closed';
@@ -395,9 +382,7 @@ function tripal_cv_cvterm_info($cvterm_id) {
       INNER JOIN DB on DBX.db_id = DB.db_id
     WHERE CVT.cvterm_id = %d
   ";
-  $previous_db = tripal_db_set_active('chado');
-  $cvterm = db_fetch_object(db_query($sql, $cvterm_id));
-  tripal_db_set_active($previous_db);
+  $cvterm = db_fetch_object(chado_query($sql, $cvterm_id));
 
   $sql = "
     SELECT CVTS.synonym, CVT.name as cvname
@@ -406,9 +391,7 @@ function tripal_cv_cvterm_info($cvterm_id) {
     WHERE CVTS.cvterm_id = %d
 
   ";
-  $previous_db = tripal_db_set_active('chado');
-  $results = db_query($sql, $cvterm_id);
-  tripal_db_set_active($previous_db);
+  $results = chado_query($sql, $cvterm_id);
   while ($synonym = db_fetch_object($results)) {
     $synonym_rows .= "<b>$synonym->cvname:</b>  $synonym->synonym<br />";
   }
@@ -458,9 +441,7 @@ function tripal_cv_list_form($form_state) {
        INNER JOIN cvterm CVT on CVTR.object_id = CVT.cvterm_id
        INNER JOIN CV on CV.cv_id = CVT.cv_id
   ";
-  $previous_db = tripal_db_set_active('chado');  // use chado database
-  $results = db_query($sql);
-  tripal_db_set_active($previous_db);
+  $results = chado_query($sql);
 
   $blastdbs = array();
   $cvs[''] = '';

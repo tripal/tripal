@@ -46,14 +46,12 @@ class views_handler_field_chado_count extends views_handler_field {
 
       //Select count from database
       $sql = 'SELECT count(*) as count FROM %s WHERE %s=%d';
-      $previous_db = tripal_db_set_active('chado');
-      $result = db_fetch_object(db_query(
+      $result = db_fetch_object(chado_query(
         $sql,
         $this->aliases['current_table'],
         $this->aliases['foreign_key'],
         $primary_id
       ));
-      tripal_db_set_active($previous_db);
 
       //Add to view results
       $this->view->result[$key]->{$this->field} = $result->count;

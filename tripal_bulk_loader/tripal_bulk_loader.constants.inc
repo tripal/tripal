@@ -274,14 +274,12 @@ function tripal_bulk_loader_set_constants_form_validate($form, $form_state) {
       foreach ($indexes as $record_id => $array) {
         foreach ($array as $field_id) {
           if ($template[$record_id]['fields'][$field_id]['exposed_validate']) {
-            $previous_db = tripal_db_set_active('chado');
-            $result = db_fetch_object(db_query(
+            $result = db_fetch_object(chado_query(
               "SELECT 1 as valid FROM %s WHERE %s='%s'",
               $template[$record_id]['table'],
               $template[$record_id]['fields'][$field_id]['field'],
               $form_state['values'][$record_id . '-' . $field_id]
             ));
-            tripal_db_set_active($previous_db);
 
             if (!$result->valid) {
               $msg = 'A ' . $form['exposed_fields']['new'][$record_id . '-' . $field_id]['#title'] . ' of "' . $form['exposed_fields']['new'][$record_id . '-' . $field_id]['#value'] . '" must already exist!';

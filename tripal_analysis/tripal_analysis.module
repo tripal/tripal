@@ -220,9 +220,7 @@ function chado_analysis_delete($node) {
   db_query($sql_del, $node->nid, $node->vid);
 
   //Remove from analysis and analysisprop tables of chado database as well
-  $previous_db = tripal_db_set_active('chado');
-  db_query("DELETE FROM {analysis} WHERE analysis_id = %d", $analysis_id);
-  tripal_db_set_active($previous_db);
+  chado_query("DELETE FROM {analysis} WHERE analysis_id = %d", $analysis_id);
 }
 
 /**
@@ -263,11 +261,9 @@ function chado_analysis_update($node) {
            "    timeexecuted = '%s' ".
            "WHERE analysis_id = %d ";
 
-  $previous_db = tripal_db_set_active('chado');  // use chado database
-  db_query($sql, $node->analysisname, $node->description, $node->program,
-  $node->programversion, $node->algorithm, $node->sourcename,
-  $node->sourceversion, $node->sourceuri, $timestamp, $analysis_id);
-    tripal_db_set_active($previous_db);  // switch back to drupal database
+  chado_query($sql, $node->analysisname, $node->description, $node->program,
+    $node->programversion, $node->algorithm, $node->sourcename,
+    $node->sourceversion, $node->sourceuri, $timestamp, $analysis_id);
 
   // Create a title for the analysis node using the unique keys so when the
   // node is saved, it will have a title
@@ -498,9 +494,7 @@ function tripal_analysis_sync_analyses($analysis_id = NULL, $job_id = NULL) {
         "  programversion, algorithm, sourcename, sourceversion, sourceuri, ".
           "  timeexecuted ".
           "FROM {Analysis} ";
-    $previous_db = tripal_db_set_active('chado');  // use chado database
-    $results = db_query($sql);
-    tripal_db_set_active($previous_db);  // now use drupal database
+    $results = chado_query($sql);
   }
   else {
     $sql = "SELECT Analysis_id, name, description, program, ".
@@ -508,9 +502,7 @@ function tripal_analysis_sync_analyses($analysis_id = NULL, $job_id = NULL) {
           "  timeexecuted ".
           "FROM {Analysis} ".
           "WHERE analysis_id = %d";
-    $previous_db = tripal_db_set_active('chado');  // use chado database
-    $results = db_query($sql, $analysis_id);
-    tripal_db_set_active($previous_db);  // now use drupal database
+    $results = chado_query($sql, $analysis_id);
   }
 
 
@@ -538,9 +530,7 @@ function tripal_analysis_sync_analyses($analysis_id = NULL, $job_id = NULL) {
                     AND type_id =
                         (SELECT cvterm_id from {cvterm} where name = '%s')
             ";
-      $previous_db = tripal_db_set_active('chado');
-      $analysis_type = db_fetch_object(db_query($sql, $analysis->analysis_id, "analysis_type"));
-      tripal_db_set_active($previous_db);
+      $analysis_type = db_fetch_object(chado_query($sql, $analysis->analysis_id, "analysis_type"));
 
       // Get the type of analysis using cvterm_id
             // Current possibilities: kegg, unigene, interpro, blast
@@ -861,7 +851,6 @@ function get_chado_analyses() {
   if ($no_orgs != 0) {
     $sql = "SELECT analysis_id, CA.nid, type FROM {chado_analysis} CA INNER JOIN node ON CA.nid = node.nid";
     $result = db_query($sql);
-    $previous_db = tripal_db_set_active('chado');
     $sql = "SELECT Analysis_id, name, description, program,
                    programversion, algorithm, sourcename, sourceversion,
                    sourceuri, timeexecuted
@@ -869,7 +858,7 @@ function get_chado_analyses() {
     $analyses = array();
     $count = 0;
     while ($data = db_fetch_object($result)) {
-      $analysis = db_fetch_object(db_query($sql, $data->analysis_id));
+      $analysis = db_fetch_object(chado_query($sql, $data->analysis_id));
       $analysis->node_id = $data->nid;
       $analysis->node_type = $data->type;
       // Use node_type as the key so we can sort by node type
@@ -879,7 +868,6 @@ function get_chado_analyses() {
       $analyses ["$sortedBy$count"] = $analysis;
       $count ++;
     }
-    tripal_db_set_active($previous_db);
 
     //Sort analyses by time, descending order
     krsort($analyses, SORT_STRING);

@@ -313,12 +313,10 @@ function tripal_stock_sync_stock_set($organism_id, $job_id) {
   else {
 
   // Get list of stocks to sync
-  $previous_db = tripal_db_set_active('chado');
-  $result = db_query(
+  $result = chado_query(
      "SELECT stock_id, uniquename, type_id, organism_id FROM {stock} WHERE organism_id=%d",
       $organism_id
   );
-  tripal_db_set_active($previous_db);
 
   $stocks_created_count = 0; //keeps track of total number of stocks successfully created
   $stocks_attempted = 0;

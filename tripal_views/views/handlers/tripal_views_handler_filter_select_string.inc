@@ -94,9 +94,7 @@ class tripal_views_handler_filter_select_string extends chado_views_handler_filt
 
       // get the values from the table
       $sql = "SELECT $this->real_field FROM $this->table $where ORDER BY $this->field ASC";
-      $previous_db = tripal_db_set_active('chado');  // use chado database
-      $results = db_query($sql);
-      tripal_db_set_active($previous_db);  // now use drupal database
+      $results = chado_query($sql);
 
       // Build the select box options
       $max_length = $this->options['max_length'];

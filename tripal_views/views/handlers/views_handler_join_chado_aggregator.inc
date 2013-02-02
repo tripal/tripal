@@ -202,9 +202,7 @@ class views_handler_join_chado_aggregator extends views_join {
               WHERE typname='nd_genotype_experiment'
                 AND attrelid=typrelid
                 AND attname NOT IN ('cmin','cmax','ctid','oid','tableoid','xmin','xmax')";
-      $previous_db = tripal_db_set_active('chado');
-      $resource = db_query($sql);
-      tripal_db_set_active($previous_db);
+      $resource = chado_query($sql);
       while ($r = db_fetch_object($resource)) {
         $table = $opt['table'];
         $alias = ''; //no alias needed if table is current table (only option if no schema api definition)

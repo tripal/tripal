@@ -7,9 +7,7 @@
 function tripal_feature_delete_form() {
   // get the list of organisms
   $sql = "SELECT * FROM {organism} ORDER BY genus, species";
-  $previous_db = tripal_db_set_active('chado');  // use chado database
-  $org_rset = db_query($sql);
-  tripal_db_set_active($previous_db);  // now use drupal database
+  $org_rset = chado_query($sql);
   $organisms = array();
   $organisms[''] = '';
   while ($organism = db_fetch_object($org_rset)) {
@@ -49,9 +47,7 @@ function tripal_feature_delete_form() {
 
   // get the list of analyses
   $sql = "SELECT * FROM {analysis} ORDER BY name";
-  $previous_db = tripal_db_set_active('chado');  // use chado database
-  $org_rset = db_query($sql);
-  tripal_db_set_active($previous_db);  // now use drupal database
+  $org_rset = chado_query($sql);
   $analyses = array();
   $analyses[''] = '';
   while ($analysis = db_fetch_object($org_rset)) {

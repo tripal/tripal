@@ -30,20 +30,13 @@ function tripal_library_install() {
   tripal_cv_add_cvterm(array('name' => 'yac_library', 'def' => 'YAC Library'), 'tripal', 0, 1, 'tripal');
 
   // Add the materialized view needed to count the features for the library
-  // Drop the MView table if it exists
-  $previous_db = tripal_db_set_active('chado');
-  if (db_table_exists('library_feature_count')) {
-    $sql = "DROP TABLE library_feature_count";
-    db_query($sql);
-  }
-  tripal_db_set_active($previous_db);
   // Create the MView
   tripal_add_mview('library_feature_count', 'tripal_library',
     'library_feature_count',
     'library_id integer, name character varying(255), '.
-  '  num_features integer, feature_type character varying(255)',
-   'library_id',
-   'SELECT '.
+    '  num_features integer, feature_type character varying(255)',
+    'library_id',
+    'SELECT '.
     '   L.library_id, '.
     '   L.name, '.
     '    count(F.feature_id) as num_features, '.
@@ -53,7 +46,7 @@ function tripal_library_install() {
     '    INNER JOIN Feature F           ON LF.feature_id = F.feature_id '.
     '    INNER JOIN Cvterm CVT          ON F.type_id = CVT.cvterm_id '.
     'GROUP BY L.library_id, L.name, CVT.name',
-   ''
+    ''
   );
 
 }
