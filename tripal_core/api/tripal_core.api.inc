@@ -1387,27 +1387,28 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
         }
       }
       $i++;
-    }
+    } // end foreach item in where clause
     $sql = drupal_substr($sql, 0, -4);  // get rid of the trailing 'AND '
-    $psql = drupal_substr($psql, 0, -4);  // get rid of the trailing 'AND '
-
-    // finally add any ordering of the results to the SQL statement
-    if (count($options['order_by']) > 0) {
-      $sql .= " ORDER BY ";
-      $psql .= " ORDER BY ";
-      foreach ($options['order_by'] as $field => $dir) {
-        $sql .= "$field $dir, ";
-        $psql .= "$field $dir, ";
-      }
-      $sql = drupal_substr($sql, 0, -2);  // get rid of the trailing ', '
-      $psql = drupal_substr($psql, 0, -2);  // get rid of the trailing ', '
-    }
-    // finish constructing the prepared SQL statement
-    if ($options['statement_name']) {
-    	$psql =  "PREPARE " . $options['statement_name'] . " (" . implode(', ', $idatatypes) . ") AS " . $psql;
-    }
+    $psql = drupal_substr($psql, 0, -4);  // get rid of the trailing 'AND '    
     
   } // end if(empty($where)){ } else {
+      
+  // finally add any ordering of the results to the SQL statement
+  if (count($options['order_by']) > 0) {
+    $sql .= " ORDER BY ";
+    $psql .= " ORDER BY ";
+    foreach ($options['order_by'] as $field => $dir) {
+      $sql .= "$field $dir, ";
+      $psql .= "$field $dir, ";
+    }
+    $sql = drupal_substr($sql, 0, -2);  // get rid of the trailing ', '
+    $psql = drupal_substr($psql, 0, -2);  // get rid of the trailing ', '
+  }  
+
+  // finish constructing the prepared SQL statement
+  if ($options['statement_name']) {
+    $psql =  "PREPARE " . $options['statement_name'] . " (" . implode(', ', $idatatypes) . ") AS " . $psql;
+  }
 
   // if the caller has requested the SQL rather than the results...
   // which happens in the case of wanting to use the Drupal pager, then do so

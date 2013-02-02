@@ -5,6 +5,7 @@ require_once "includes/mviews.php";
 require_once "includes/custom_tables.php";
 require_once "includes/chado_install.php";
 require_once "api/tripal_core.api.inc";
+require_once "api/tripal_core.ahah.inc";
 
 /**
  * @defgroup tripal_modules Tripal Modules
@@ -24,6 +25,8 @@ require_once "api/tripal_core.api.inc";
  */
 function tripal_core_init() {
   global $base_url;  
+  
+  drupal_add_js(drupal_get_path('theme', 'tripal') . '/js/tripal.ahah.js');
   
   // create the 'tripal' controlled volcabulary in chado but only if it doesn't already exist, and
   // only if the chado database is present.

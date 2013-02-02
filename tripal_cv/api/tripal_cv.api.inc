@@ -363,8 +363,8 @@ function tripal_cv_add_cvterm($term, $defaultcv = '_global', $is_relationship = 
   else {
     $definition = '';
   }
-  $is_obsolete = 0;  
-  if (isset($term['is_obsolete']) and strcmp($term['is_obsolete'], 'true') == 0) {
+  $is_obsolete = $term['is_obsolete'] ? $term['is_obsolete'] : 0;
+  if (strcmp($is_obsolete, 'true') == 0) {
     $is_obsolete = 1;
   }  
   if (!$name and !$id) {

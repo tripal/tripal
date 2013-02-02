@@ -7,6 +7,14 @@
  * Provides support for dynamic forms through AHAH
  */
 
+function tripal_core_ahah_init_form() {
+  // If form elements have autocomplete elements returned in
+  // an ahah call they won't work because the following JS file
+  // doesn't get included. If we include it first before any 
+  // ahah calls it will be there when we need it.
+  drupal_add_js('misc/autocomplete.js');
+}
+
 /*
  * This function simply gets the posted form ID, builds the form
  * and retrieves the specified element
