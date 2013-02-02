@@ -40,6 +40,13 @@ function tripal_core_edit_custom_table($table_id, $table_name, $schema, $skip_cr
   // get the current custom table record
   $sql = "SELECT * FROM {tripal_custom_tables} WHERE table_id = %d";
   $custom_table = db_fetch_object(db_query($sql, $table_id));
+  
+  // if the user changed the table name, we want to drop the old one and force
+  // creation of the new one.
+  if ($custom_table->table_name != $table_name) {
+    chado_query("DROP TABLE %s", $custom_table->table_name);  
+    $skip_creation = 0; // we want to create the table
+  }
 
   // if skip creation is not set, then drop the table from chado if it exists
   if(!$skip_creation){
@@ -100,7 +107,7 @@ function tripal_core_edit_custom_table($table_id, $table_name, $schema, $skip_cr
  */
 function tripal_core_create_custom_table(&$ret, $table, $schema, $skip_creation = 1) {
   $ret = array();
-    
+      
   // see if the table entry already exists in the tripal_custom_tables table.
   $sql = "SELECT * FROM {tripal_custom_tables} WHERE table_name = '%s'";
   $centry = db_fetch_object(db_query($sql, $table));
@@ -110,14 +117,6 @@ function tripal_core_create_custom_table(&$ret, $table, $schema, $skip_creation 
   $exists = db_table_exists($table);
   tripal_db_set_active($previous_db);  // now use drupal database
 
-  // if the table exists but we have no record for it in the tripal_custom_tables
-  // table then raise an error.
-/*  if ($exists and !$centry) {
-    watchdog('tripal_core', "Could not add custom table '!table_name'. It ".
-            "already exists but is not known to Tripal as being a custom table.",
-      array('!table_name' => $table), WATCHDOG_WARNING);
-    return FALSE;
-  } */
   
   // if the table does not exist then create it
   if (!$exists) {
@@ -445,6 +444,7 @@ function tripal_custom_tables_form_validate($form, &$form_state) {
   $action = $form_state['values']['action'];
   $table_id = $form_state['values']['table_id'];
   $schema = $form_state['values']['schema'];
+  $force_drop = $form_state['values']['force_drop'];
 
   if (!$schema) {
     form_set_error($form_state['values']['schema'],
@@ -454,18 +454,49 @@ function tripal_custom_tables_form_validate($form, &$form_state) {
   // make sure the array is valid
   $schema_array = array();
   if ($schema) {
-    $success = eval("\$schema_array = $schema;");
-    if ($success === FALSE) {
-      $error = error_get_last();
+    $success = preg_match('/^\s*array/', $schema);
+    if (!$success) {
       form_set_error($form_state['values']['schema'],
-        t("The schema array is improperly formatted. Parse Error : " . $error["message"]));
+        t("The schema array should begin with the word 'array'."));
     }
-    if (is_array($schema_array) and !array_key_exists('table', $schema_array)) {
-      form_set_error($form_state['values']['schema'],
-        t("The schema array must have key named 'table'"));
+    else {
+      $success = eval("\$schema_array = $schema;");    
+      if ($success === FALSE) {
+        $error = error_get_last();
+        form_set_error($form_state['values']['schema'],
+          t("The schema array is improperly formatted. Parse Error : " . $error["message"]));
+      }
+      if (is_array($schema_array) and !array_key_exists('table', $schema_array)) {
+        form_set_error($form_state['values']['schema'],
+          t("The schema array must have key named 'table'"));
+      }
+      // check to see if the table name matches an existing table
+      // if this is an add
+      if ($action == 'Add') {
+        $previous_db = tripal_db_set_active('chado');
+        $exists = db_table_exists($schema_array['table']);
+        tripal_db_set_active($previous_db);        
+        if ($exists) {
+          form_set_error($form_state['values']['schema'],
+            t("The table name already exists, please choose a different name."));  
+        }
+      } 
+      if ($action == 'Edit') {
+        // see if the table name has changed. If so, then check to make sure
+        // it doesn't already exists. We don't want to drop a table we didn't mean to
+        $sql = "SELECT * FROM {tripal_custom_tables} WHERE table_id = %d";
+        $ct = db_fetch_object(db_query($sql, $table_id));
+        if ($ct->table_name != $schema_array['table']) {
+          $previous_db = tripal_db_set_active('chado');
+          $exists = db_table_exists($schema_array['table']);
+          tripal_db_set_active($previous_db);        
+          if ($exists) {
+            form_set_error($form_state['values']['schema'],
+              t("The table name already exists, please choose a different name."));  
+          }
+        }
+      }     
     }
-
-    // TODO: add in more validation checks of the array to help the user
   }
 }
 
