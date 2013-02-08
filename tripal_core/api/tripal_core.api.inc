@@ -457,6 +457,9 @@ function tripal_core_chado_update($table, $match, $values, $options = NULL) {
   if (!array_key_exists('statement_name', $options)) {
     $options['statement_name'] = FALSE;
   }
+  if (!array_key_exists('return_record', $options)) {
+    $options['return_record'] = TRUE;
+  }
 
   $update_values = array();   // contains the values to be updated
   $update_matches = array();  // contains the values for the where clause
@@ -705,14 +708,32 @@ function tripal_core_chado_update($table, $match, $values, $options = NULL) {
       }
     }
     $sql = "EXECUTE " . $options['statement_name'] . "(" . implode(", ", $pvalues) . ")";
-    $resource = chado_query($sql, $ivalues);
+    $result = chado_query($sql, $ivalues);
   }
   // if it's not a prepared statement then insert normally
   else {
-    $resource = chado_query($sql, $uargs);
+    $result = chado_query($sql, $uargs);
   }
 
-  if ($resource) {
+    // if we have a result then add primary keys to return array
+  if ($options['return_record'] == TRUE and $result) {
+    if (array_key_exists('primary key', $table_desc) and is_array($table_desc['primary key'])) {
+      foreach ($table_desc['primary key'] as $field) {
+        $psql = "PREPARE currval_" . $table . "_" . $field . " AS SELECT CURRVAL('" . $table . "_" . $field . "_seq')";
+        $is_prepared = tripal_core_chado_prepare("currval_" . $table . "_" . $field, $psql, array());
+        if ($is_prepared) {
+           $value = db_result(chado_query("EXECUTE currval_". $table . "_" . $field));
+        }
+        else {
+          $sql = "SELECT CURRVAL('" . $table . "_" . $field . "_seq')";
+          $value =  db_result(chado_query($sql));
+        }
+        $values[$field] = $value;
+      }
+    }
+    return $values;
+  }
+  elseif ($options['return_record'] == FALSE and $result) {
     return TRUE;
   }
   else {
@@ -1025,7 +1046,7 @@ function tripal_core_chado_delete($table, $match, $options = NULL) {
  *
  * @return
  *  A database query result resource, FALSE if the query was not executed
- *  correctly, an empty array if no records were matched, or the number of records 
+ *  correctly, an empty array if no records were matched, or the number of records
  *  in the dataset if $has_record is set.
  *  If the option 'is_duplicate' is provided and the record is a duplicate it
  *  will return the duplicated record.  If the 'has_record' option is provided
@@ -1389,10 +1410,10 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
       $i++;
     } // end foreach item in where clause
     $sql = drupal_substr($sql, 0, -4);  // get rid of the trailing 'AND '
-    $psql = drupal_substr($psql, 0, -4);  // get rid of the trailing 'AND '    
-    
+    $psql = drupal_substr($psql, 0, -4);  // get rid of the trailing 'AND '
+
   } // end if(empty($where)){ } else {
-      
+
   // finally add any ordering of the results to the SQL statement
   if (count($options['order_by']) > 0) {
     $sql .= " ORDER BY ";
@@ -1403,7 +1424,7 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
     }
     $sql = drupal_substr($sql, 0, -2);  // get rid of the trailing ', '
     $psql = drupal_substr($psql, 0, -2);  // get rid of the trailing ', '
-  }  
+  }
 
   // finish constructing the prepared SQL statement
   if ($options['statement_name']) {
