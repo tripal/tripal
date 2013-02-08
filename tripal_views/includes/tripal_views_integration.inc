@@ -76,13 +76,12 @@ function tripal_views_integration_setup_list() {
   $output .= '<h3>' . l(t('Add a new entry'), "admin/tripal/views/integration/new") . " | " .
     l(t("Create Materialized View"), 'admin/build/views/add') . '</h3>';
 
-  $output .= '<p>The following tables list the views integration setups available. If '
-    .'there is more then one setup for a given table, then the setup with the lightest '
-    .'priority will be used. For example, if you have created a custom setup for the '
-    .'feature chado table and your setup has a priority of -5 then your setup will be '
-    .'used instead of the default feature integration because -5 is lighter then 10.'
-    .'Priorities use the Drupal -10 to +10 scale where a record with -10 has a '
-    .'greater priority then one with 0 and both have a greater priority then one with +10.</p>';
+  $output .= '<p>' . t('The following tables are available for integration with Drupal Views. If '
+    . 'a table is integrated more than once, then the setup with the lightest '
+    . 'priority will be used. For example, if you have created a custom setup with a priority of -5 then '
+    . 'that will be used instead of the default setup with priority 10. '
+    . 'Priorities range from -10 to +10  where a setup with -10 has '
+    . 'greater precedent than any other and +10 has the least.') . '</p>';
 
 
   // Start with materialized views

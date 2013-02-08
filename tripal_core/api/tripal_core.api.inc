@@ -2197,6 +2197,8 @@ function tripal_core_exclude_field_from_feature_by_default() {
  */
 function chado_query($sql) {
 
+  $is_local = tripal_core_is_chado_local();
+  
   $args = func_get_args();
   array_shift($args); // remove the $sql from the argument list
   $sql = db_prefix_tables($sql);
@@ -2204,8 +2206,17 @@ function chado_query($sql) {
     $args = $args[0];
   }
 
+  // run the Drupal command to clean up the SQL
   _db_query_callback($args, TRUE);
   $sql = preg_replace_callback(DB_QUERY_REGEXP, '_db_query_callback', $sql);
+
+  // add the chado schema to the table names if Chado is local to the Drupal database
+  if ($is_local) {
+    $sql = preg_replace('/\n/', '', $sql);  // remove carriage returns
+    $sql = preg_replace('/FROM\s+(.*?)\s/i', 'FROM chado.\1 ', $sql);
+    $sql = preg_replace('/INNER\s+JOIN\s+(.*?)\s/i', 'INNER JOIN chado.\1 ', $sql);
+  }
+  print "$sql\n";
 
   // Execute the query on the chado database/schema
   // Use the persistent chado connection if it already exists
@@ -2214,17 +2225,22 @@ function chado_query($sql) {
 
     $query = $sql;
     // Duplicate the _db_query code in order to ensure that the drupal
-    // $active_db variable is never touched
+    // $active_db variable is not used in the pg_query command
     // thus changed $active_db to $persistent_connection
     // START COPY FROM _db_query in database.pgsql.inc
     if (variable_get('dev_query', 0)) {
       list($usec, $sec) = explode(' ', microtime());
       $timer = (float) $usec + (float) $sec;
     }
-
-    $previous_db = tripal_db_set_active('chado');
-    $last_result = pg_query($persistent_connection, $query);
-    tripal_db_set_active($previous_db);
+    // if we're local we can just run the query 
+    if ($is_local) { 
+      $last_result = pg_query($persistent_connection, $query);
+    }
+    else {
+      $previous_db = tripal_db_set_active('chado');
+      $last_result = pg_query($persistent_connection, $query);
+      tripal_db_set_active($previous_db);
+    }
 
     if (variable_get('dev_query', 0)) {
       $bt = debug_backtrace();
@@ -2251,21 +2267,15 @@ function chado_query($sql) {
     // the chado schema.  Previously use had to make changes to the 
     // search_path but that caused a lot of database calls and wasted 
     // resources during long jobs.  
-    if (tripal_core_is_chado_local()) { 
-      $sql = preg_replace('/\n/', '', $sql);  // remove carriage returns
-      $sql = preg_replace('/FROM\s+(.*?)\s/i', 'FROM chado.\1 ', $sql);
-      $sql = preg_replace('/INNER\s+JOIN\s+(.*?)\s/i', 'INNER JOIN chado.\1 ', $sql);
+    if ($is_local) { 
       $results = _db_query($sql);
     }
-    // if Chado is not local to the Drupal schema then use the old style
     else {
       $previous_db = tripal_db_set_active('chado') ;
       $results = _db_query($sql);
       tripal_db_set_active($previous_db);
-    }
-    
+    }    
   }
-
   return $results;
 }
 
