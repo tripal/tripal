@@ -928,16 +928,6 @@ function chado_feature_validate($node) {
     }
   }
 
-  // we want to remove all characters except IUPAC nucleotide characters from the
-  // the residues. however, residues are not required so if blank then we'll skip
-  // this step
-  if ($node->residues) {
-    $residues = preg_replace("/[^\w]/", '', $node->residues);
-    if (!preg_match("/^[ACTGURYMKSWBDHVN]+$/i", $residues)) {
-      form_set_error('residues', t("The residues in feature $node->name contains more than the nucleotide IUPAC characters. Only the following characters are allowed: A,C,T,G,U,R,Y,M,K,S,W,B,D,H,V,N: '" . $residues . "'"));
-    }
-  }
-
   // we don't allow a genbank accession number for a contig
   if ($node->feature_type == 'contig' and $node->gbaccession) {
     form_set_error('gbaccession', t("Contigs cannot have a genbank accession number.  Please change the feature type or remove the accession number"));

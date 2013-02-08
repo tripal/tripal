@@ -812,6 +812,9 @@ function tripal_feature_fasta_loader_handle_feature($name, $uname, $db_id, $acce
           array('%name' => $name, '%uname' => $numane), WATCHDOG_ERROR);
         return 0;
       }
+    } 
+    else {
+      $dbxref = $results[0];
     }
 
     // check to see if the feature dbxref record exists if not, then add it
@@ -851,13 +854,13 @@ function tripal_feature_fasta_loader_handle_feature($name, $uname, $db_id, $acce
    // check to see if the relationship already exists if not then add it
     $values = array(
       'subject_id' => $feature->feature_id,
-      'ojbect_id' => $parent_feature->feature_id,
+      'object_id' => $parent_feature->feature_id,
       'type_id' => $relcvterm->cvterm_id,    
     );
     $sel_options = array('statement_name' => 'sel_featurerelationship_suojty');
-    $results = tripal_core_chado_select('feature_relationship', array('feature_relationships_id'), $values, $sel_options);
+    $results = tripal_core_chado_select('feature_relationship', array('feature_relationship_id'), $values, $sel_options);
     if (count($results) == 0) {    
-      $ins_options = array('statement_name' => 'sel_featurerelationship_suojty');
+      $ins_options = array('statement_name' => 'ins_featurerelationship_suojty');
       $success = tripal_core_chado_insert('feature_relationship', $values, $ins_options);
       if (!$success) {
         watchdog('T_fasta_loader', "Failed to add associate database accession '%accession' with feature", 

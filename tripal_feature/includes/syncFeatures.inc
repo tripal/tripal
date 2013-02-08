@@ -71,7 +71,7 @@ function tripal_feature_sync_form() {
   $form['organism_id'] = array(
     '#title'       => t('Organism'),
     '#type'        => t('select'),
-    '#description' => t("Choose the organism for which features set above will be synced."),
+    '#description' => t("Choose the organism for which features set above will be synced. Only organisms which also have been synced will appear in this list."),
     '#options'     => $organisms,
   );
 
@@ -284,11 +284,7 @@ function tripal_feature_sync_features($max_sync = 0, $organism_id = NULL,
  * @ingroup tripal_feature
  */
 function tripal_feature_sync_feature($feature_id) {
-  //   print "\tSyncing feature $feature_id\n";
-
-  $mem = memory_get_usage(TRUE);
-  $mb = $mem/1048576;
-  //   print "$mb mb\n";
+  //print "\tSyncing feature $feature_id\n";
 
   global $user;
   $create_node = 1;   // set to 0 if the node exists and we just sync and not create
@@ -397,16 +393,16 @@ function tripal_feature_sync_feature($feature_id) {
     // validate the node and if okay then submit
     node_validate($new_node);
     if ($errors = form_get_errors()) {
-      foreach ($errors as $key => $msg) {
-        drupal_set_message(t("%msg", array('%msg' => $msg)));
+      print "Error encountered validating new node. Cannot sync\n";
+      foreach ($errors as $key => $msg) {        
+        watchdog('trp-fsync', "%msg", array('%msg' => $msg), 'error');
       }
-      return $errors;
+      exit;
     }
     else {
       $node = node_submit($new_node);
       node_save($node);
     }
-
   }
   else {
     $node = $chado_feature;
