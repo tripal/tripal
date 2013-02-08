@@ -162,17 +162,6 @@ function tripal_feature_get_schemas($table = NULL) {
       'primary key' => array('nid'),
     );
   }
-  if (!$table or strcmp($table, 'tripal_feature_relagg')==0) {
-    $schema['tripal_feature_relagg'] = array(
-      'fields' => array(
-        'type_id' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
-        'rel_type_id' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
-      ),
-      'indexes' => array(
-        'type_id' => array('type_id')
-      ),
-    );
-  }
   return $schema;
 };
 

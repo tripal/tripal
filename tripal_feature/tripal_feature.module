@@ -265,30 +265,7 @@ function tripal_feature_menu() {
     'access arguments' => array('edit chado_feature content'),
     'type' => MENU_LOCAL_TASK,
     'weight' => 10,
-  );
-
-  // managing relationship aggregates
-  $items['admin/tripal/tripal_feature/aggregate'] = array(
-     'title' => 'Feature Relationship Aggegators',
-     'description' => 'Features have relationships with other features and it may be desirable to aggregate the content from one ore more child or parent feature.',
-     'page callback' => 'tripal_feature_aggregator_page',
-     'access arguments' => array('manage chado_feature aggregator'),
-     'type' => MENU_NORMAL_ITEM,
-  );
-
-  $items['admin/tripal/tripal_feature/aggregate/new'] = array(
-     'title' => 'Add an Aggregator',
-     'page callback' => 'drupal_get_form',
-     'page arguments' => array('tripal_feature_aggregator_form'),
-     'access arguments' => array('manage chado_feature aggregator'),
-     'type' => MENU_NORMAL_ITEM,
-  );
-  $items['admin/tripal/tripal_feature/aggregate/edit/js'] = array(
-     'title' => 'Edit an Aggegator',
-     'page callback' => 'tripal_feature_aggregator_ajax_edit',
-     'access arguments' => array('manage chado_feature aggregator'),
-     'type' => MENU_CALLBACK,
-  );
+  ); 
 
   // the menu link for addressing any feature (by name, uniquename, synonym)
   $items['feature/%'] = array(
@@ -1165,26 +1142,6 @@ function tripal_feature_load_relationships($feature_id, $side = 'as_subject') {
     $relationships[$i++] = $rel;
   }
   return $relationships;
-}
-/**
- *
- *
- * @ingroup tripal_feature
- */
-function tripal_feature_get_aggregate_types($feature_id) {
-  // get the feature details
-  $sql = 'SELECT type_id FROM {feature} WHERE feature_id = %d';
-  $feature = db_fetch_object(chado_query($sql, $feature_id));
-
-  // check to see if this feature is of a type with an aggregate
-  $sql = "SELECT * FROM {tripal_feature_relagg} WHERE type_id = %d";
-  $types = array();
-  $results = db_query($sql, $feature->type_id);
-  while ($agg = db_fetch_object($results)) {
-    $types[] = $agg->rel_type_id;
-  }
-
-  return $types;
 }
 /**
  *
