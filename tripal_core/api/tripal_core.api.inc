@@ -2247,9 +2247,23 @@ function chado_query($sql) {
     // END COPY FROM _db_query in database.pgsql.inc
   }
   else {
-    $previous_db = tripal_db_set_active('chado');
-    $results = _db_query($sql);
-    tripal_db_set_active($previous_db);
+    // before running the query we want to prefix the table names with
+    // the chado schema.  Previously use had to make changes to the 
+    // search_path but that caused a lot of database calls and wasted 
+    // resources during long jobs.  
+    if (tripal_core_is_chado_local()) { 
+      $sql = preg_replace('/\n/', '', $sql);  // remove carriage returns
+      $sql = preg_replace('/FROM\s+(.*?)\s/i', 'FROM chado.\1 ', $sql);
+      $sql = preg_replace('/INNER\s+JOIN\s+(.*?)\s/i', 'INNER JOIN chado.\1 ', $sql);
+      $results = _db_query($sql);
+    }
+    // if Chado is not local to the Drupal schema then use the old style
+    else {
+      $previous_db = tripal_db_set_active('chado') ;
+      $results = _db_query($sql);
+      tripal_db_set_active($previous_db);
+    }
+    
   }
 
   return $results;
@@ -3472,4 +3486,27 @@ function tripal_core_is_chado_installed() {
 
   // check to make sure the chado schema exists
   return tripal_core_chado_schema_exists();
+}
+
+/**
+ * Check whether chado is installed local to the Drupal database 
+ * in its own Chado schema.
+ *
+ * @return
+ *   TRUE/FALSE depending upon whether chado is local.
+ *
+ * @ingroup tripal_chado_api
+ */
+function tripal_core_is_chado_local() {
+  global $db_url, $db_type;
+  
+  if (tripal_core_is_chado_installed) {
+    if (is_array($db_url)) {
+      if (isset($db_url['chado'])) {
+        return FALSE;
+      }
+    }
+    return TRUE;
+  }
+  return FALSE;
 }
