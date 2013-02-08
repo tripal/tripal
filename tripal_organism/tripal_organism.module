@@ -757,7 +757,8 @@ function chado_organism_insert($node) {
  */
 function chado_organism_update($node) {
   if ($node->revision) {
-    // TODO -- decide what to do about revisions
+    // there is no way to handle revisions in Chado but leave
+    // this here just to make not we've addressed it.
   }
   $match = array(
     'organism_id' => chado_get_id_for_node('organism', $node),

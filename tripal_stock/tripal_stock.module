@@ -705,103 +705,105 @@ function chado_stock_insert($node) {
 function chado_stock_update($node) {
 
   if ($node->revision) {
-    chado_stock_insert($node);
+    // there is no way to handle revisions in Chado but leave
+    // this here just to make not we've addressed it.
   }
-  else {
+//  if ($node->revision) {
+//    chado_stock_insert($node);
+//  }
+//  else {
 
-    //update dbxref
-    if ($node->database) {
-      if ($node->accession) {
-        $dbxref_mode = '';
-        $stock = tripal_core_chado_select(
-          'stock',
-          array('dbxref_id', 'type_id'),
-          array('stock_id' => $node->stock_id)
+  //update dbxref
+  if ($node->database) {
+    if ($node->accession) {
+      $dbxref_mode = '';
+      $stock = tripal_core_chado_select(
+        'stock',
+        array('dbxref_id', 'type_id'),
+        array('stock_id' => $node->stock_id)
+      );
+
+      if ($stock[0]->dbxref_id) {
+        $values = array(
+          'db_id' => $node->database,
+          'accession' => $node->accession,
+          'description' => $node->db_description
         );
-
-        if ($stock[0]->dbxref_id) {
+        $dbxref_status = tripal_core_chado_update(
+          'dbxref',
+          array('dbxref_id' => $stock[0]->dbxref_id),
+          $values
+        );
+        $dbxref_mode = 'Update';
+      }
+      else {
+        if ($stock[0]->type_id) {
+          //create the dbxref
+          //used the type_id as a control to check we have a stock but not a dbxref
           $values = array(
             'db_id' => $node->database,
             'accession' => $node->accession,
-            'description' => $node->db_description
+            'description' => $node->db_description,
+            'version' => '1',
           );
-          $dbxref_status = tripal_core_chado_update(
+          $dbxref_status = tripal_core_chado_insert(
             'dbxref',
-            array('dbxref_id' => $stock[0]->dbxref_id),
             $values
           );
-          $dbxref_mode = 'Update';
+          $dbxref_mode = 'Create';
         }
         else {
-          if ($stock[0]->type_id) {
-            //create the dbxref
-            //used the type_id as a control to check we have a stock but not a dbxref
-            $values = array(
-              'db_id' => $node->database,
-              'accession' => $node->accession,
-              'description' => $node->db_description,
-              'version' => '1',
-            );
-            $dbxref_status = tripal_core_chado_insert(
-              'dbxref',
-              $values
-            );
-            $dbxref_mode = 'Create';
-          }
-          else {
-            drupal_set_message(t('Unable to find stock to Update'), 'error');
-            watchdog(
-              'tripal_stock',
-              'Stock Update: Unable to find stock to update using values: %values',
-              array('%values', print_r($values, TRUE)),
-              WATCHDOG_ERROR
-            );
-            return FALSE;
-          }
+          drupal_set_message(t('Unable to find stock to Update'), 'error');
+          watchdog(
+            'tripal_stock',
+            'Stock Update: Unable to find stock to update using values: %values',
+            array('%values', print_r($values, TRUE)),
+            WATCHDOG_ERROR
+          );
+          return FALSE;
         }
       }
     }
-
-    if (!$dbxref_status) {
-      watchdog(
-        'tripal_stock',
-        'Stock Update: Unable to %mode main stock dbxref with values: %values',
-        array('%values' => print_r($values, TRUE), '%mode' => $dbxref_mode),
-        WATCHDOG_WARNING
-      );
-    }
-
-    //can't change stock id which is all thats stored in drupal thus only update chado
-    $update_values = array(
-      'organism_id' => $node->organism_id,
-      'name' => $node->title,
-      'uniquename' => $node->uniquename,
-      'description' => $node->stock_description,
-      'type_id' => $node->type_id,
-    );
-    if ($dbxref_status) {
-      $update_values['dbxref_id'] = array(
-        'db_id' => $node->database,
-        'accession' => $node->accession
-      );
-    }
-    $status = tripal_core_chado_update(
-      'stock',
-      array('stock_id' => $node->stock_id),
-      $update_values
-    );
-
-    if (!$status) {
-      drupal_set_message(t('Unable to update stock'), 'error');
-      watchdog(
-        'tripal_stock',
-        'Stock Update: Unable to update stock using match values: %mvalues and update values: %uvalues',
-        array('%mvalues' => print_r(array('stock_id' => $node->stock_id), TRUE), '%uvalues' => print_r($update_values, TRUE)),
-        WATCHDOG_ERROR
-      );
-    }
   }
 
+  if (!$dbxref_status) {
+    watchdog(
+      'tripal_stock',
+      'Stock Update: Unable to %mode main stock dbxref with values: %values',
+      array('%values' => print_r($values, TRUE), '%mode' => $dbxref_mode),
+      WATCHDOG_WARNING
+    );
+  }
+
+  //can't change stock id which is all thats stored in drupal thus only update chado
+  $update_values = array(
+    'organism_id' => $node->organism_id,
+    'name' => $node->title,
+    'uniquename' => $node->uniquename,
+    'description' => $node->stock_description,
+    'type_id' => $node->type_id,
+  );
+  if ($dbxref_status) {
+    $update_values['dbxref_id'] = array(
+      'db_id' => $node->database,
+      'accession' => $node->accession
+    );
+  }
+  $status = tripal_core_chado_update(
+    'stock',
+    array('stock_id' => $node->stock_id),
+    $update_values
+  );
+
+  if (!$status) {
+    drupal_set_message(t('Unable to update stock'), 'error');
+    watchdog(
+      'tripal_stock',
+      'Stock Update: Unable to update stock using match values: %mvalues and update values: %uvalues',
+      array('%mvalues' => print_r(array('stock_id' => $node->stock_id), TRUE), '%uvalues' => print_r($update_values, TRUE)),
+      WATCHDOG_ERROR
+    );
+  }
 }
 
 /**
