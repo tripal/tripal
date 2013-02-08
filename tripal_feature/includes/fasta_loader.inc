@@ -50,7 +50,7 @@ function tripal_feature_fasta_load_form( ) {
     '#type' => 'textfield',
     '#title' => t('Sequence Type'),
     '#required' => TRUE,
-    '#description' => t('Please enter the Sequence Ontology term that describes the sequences in the FASTA file.'),
+    '#description' => t('Please enter the Sequence Ontology (SO) term name that describes the sequences in the FASTA file (e.g. gene, mRNA, protein, etc...)'),
   );
 
 
@@ -99,18 +99,17 @@ function tripal_feature_fasta_load_form( ) {
       t('Name'),
       t('Unique name'),
     ),
-    '#description' => t('Feature data is stored in Chado with both a human-readable
-      name and a unique name. If the features in your FASTA file are identified using
+    '#description' => t('Used for "updates only" or "insert and update" methods. Not required if method type is "insert".  
+      Feature data is stored in Chado with both a human-readable
+      name and a unique name. If the features in your FASTA file are uniquely identified using
       a human-readable name then select the "Name" button. If your features are
-      identified using the unique name then select the "Unique name" button.  If you
+      uniquely identified using the unique name then select the "Unique name" button.  If you
       loaded your features first using the GFF loader then the unique name of each
       features were indicated by the "ID=" attribute and the name by the "Name=" attribute.
       By default, the FASTA loader will use the first word (character string
       before the first space) as  the name for your feature. If
       this does not uniquely identify your feature consider specifying a regular expression in the advanced section below.
-      Additionally, you may import both a name and a unique name for each sequence using the advanced options.
-      When updating a sequence, the value selected here will be used to identify the sequence in the
-      database in combination with any regular expression provided below.'),
+      Additionally, you may import both a name and a unique name for each sequence using the advanced options.'),
     '#default_value' => 1,
   );
 
@@ -484,6 +483,11 @@ function tripal_feature_load_fasta($dfile, $organism_id, $type,
     $interval = 1;
   }
   $inv_read = 0;
+  
+  // we need to get the table schema to make sure we don't overrun the 
+  // size of fields with what our regular expressions retrieve
+  $feature_tbl = tripal_core_get_chado_table_schema('feature');
+  $dbxref_tbl = tripal_core_get_chado_table_schema('dbxref');
 
   //foreach ($lines as $line_num => $line) {  
   while ($line = fgets($fh)) {
@@ -496,7 +500,7 @@ function tripal_feature_load_fasta($dfile, $organism_id, $type,
     if (preg_match('/^>/', $line)) {
       // if we have a feature name then we are starting a new sequence
       // so lets handle the previous one before moving on
-      if ($name or $uname) {
+      if ($name or $uname) {       
         tripal_feature_fasta_loader_handle_feature($name, $uname, $db_id,
           $accession, $subject, $rel_type, $parent_type, $analysis_id, $organism_id, $cvterm,
           $source, $residues, $method, $re_name, $match_type, $parentcvterm, $relcvterm);
@@ -505,26 +509,42 @@ function tripal_feature_load_fasta($dfile, $organism_id, $type,
         $uname = '';
       }
 
-      $line = preg_replace("/^>/", '', $line);
+      $line = preg_replace("/^>/", '', $line); // remove the > symbol from the defline
+     
       // get the feature name
       if ($re_name) {
         if (!preg_match("/$re_name/", $line, $matches)) {
-          print "WARNING: Regular expression for the feature name finds nothing\n";
+          watchdog('trp-fasta', "ERROR: Regular expression for the feature name finds nothing. Line %line.", array('%line' => $i), 'error');
         }
-        $name = trim($matches[1]);
+        elseif (strlen($matches[1]) > $feature_tbl['fields']['name']['length']) {
+          watchdog('trp-fasta', "WARNING: Regular expression retrieves a value too long for the feature name. Line %line.", array('%line' => $i), 'error');  
+        }
+        else {
+          $name = trim($matches[1]);
+        }        
       }
       else {
         // if the match_type is name and no regular expression was provided
         // then use the first word as the name, otherwise we don't set the name
         if (strcmp($match_type, 'Name')==0) {
-          preg_match("/^\s*(.*?)[\s\|].*$/", $line, $matches);
-          $name = trim($matches[1]);
+          if(preg_match("/^\s*(.*?)[\s\|].*$/", $line, $matches)){
+            if (strlen($matches[1]) > $feature_tbl['fields']['name']['length']) {
+              watchdog('trp-fasta', "WARNING: Regular expression retrieves a feature name too long for the feature name. Line %line.", array('%line' => $i), 'error');  
+            }
+            else {
+              $name = trim($matches[1]);
+            }
+          }
+          else {
+            watchdog('trp-fasta', "ERROR: Cannot find a feature name. Line %line.", array('%line' => $i), 'error');  
+          }
         }
       }
+      
       // get the feature unique name
       if ($re_uname) {
         if (!preg_match("/$re_uname/", $line, $matches)) {
-          print "WARNING: Regular expression for the feature unique name finds nothing\n";
+          watchdog('trp-fasta', "ERROR: Regular expression for the feature unique name finds nothing. Line %line.", array('%line' => $i), 'error');
         }
         $uname = trim($matches[1]);
       }
@@ -532,13 +552,22 @@ function tripal_feature_load_fasta($dfile, $organism_id, $type,
         // if the match_type is name and no regular expression was provided
         // then use the first word as the name, otherwise, we don't set the unqiuename
         if (strcmp($match_type, 'Unique name')==0) {
-          preg_match("/^\s*(.*?)[\s\|].*$/", $line, $matches);
-          $uname = trim($matches[1]);
+          if(preg_match("/^\s*(.*?)[\s\|].*$/", $line, $matches)){
+            $uname = trim($matches[1]);
+          }
+          else {
+            watchdog('trp-fasta', "ERROR: Cannot find a feature unique name. Line %line.", array('%line' => $i), 'error');  
+          }
         }
       }
       // get the accession
       preg_match("/$re_accession/", $line, $matches);
-      $accession = trim($matches[1]);
+      if (strlen($matches[1]) > $dbxref_tbl['fields']['accession']['length']) {
+        watchdog('trp-fasta', "WARNING: Regular expression retrieves an accession too long for the feature name. Cannot add cross reference. Line %line.", array('%line' => $i), 'warning');  
+      }
+      else {
+        $accession = trim($matches[1]);
+      }
 
       // get the relationship subject
       preg_match("/$re_subject/", $line, $matches);
@@ -552,16 +581,17 @@ function tripal_feature_load_fasta($dfile, $organism_id, $type,
         $intv_read = 0;
         $percent = sprintf("%.2f", ($num_read / $filesize) * 100);
         if ($name) {
-          print "Parsing Line $i (" . $percent . "%). Memory: " . number_format(memory_get_usage()) . " bytes. Parsing: $name\r";
+          print "Parsing Line $i (" . $percent . "%). Memory: " . number_format(memory_get_usage()) . " bytes. Current feature: $name\r";
         }
         else {
-          print "Parsing Line $i (" . $percent . "%). Memory: " . number_format(memory_get_usage()) . " bytes. Parsing: $uname\r";  
+          print "Parsing Line $i (" . $percent . "%). Memory: " . number_format(memory_get_usage()) . " bytes. Current feature: $uname\r";  
         }
         tripal_job_set_progress($job, intval(($num_read / $filesize) * 100));
       }
     }
   }
-   // now load the last sequence in the file
+  
+  // now load the last sequence in the file
   tripal_feature_fasta_loader_handle_feature($name, $uname, $db_id,
     $accession, $subject, $rel_type, $parent_type, $analysis_id, $organism_id, $cvterm,
     $source, $residues, $method, $re_name, $match_type, $parentcvterm, $relcvterm);
@@ -596,7 +626,7 @@ function tripal_feature_fasta_loader_handle_feature($name, $uname, $db_id, $acce
     } 
     if (count($results) == 1) {  
       $feature = $results[0];
-    } 
+    }     
   }
   // check to see if this feature already exists if the match_type is 'Unique Name'
   if (strcmp($match_type, 'Unique name')==0) {
@@ -615,14 +645,20 @@ function tripal_feature_fasta_loader_handle_feature($name, $uname, $db_id, $acce
     } 
     if (count($results) == 1) {  
       $feature = $results[0];
+    }     
+    
+    // if the feature exists but this is an "insert only" method then skip this feature 
+    if ($feature and (strcmp($method, 'Insert only')==0)) {
+      watchdog('T_fasta_loader', "Feature already exists '%name' ('%uname') while matching on %type. Skipping insert.", 
+        array('%name' => $name, '%uname' => $uname, '%type' => drupal_strtolower($match_type)), WATCHDOG_WARNING);
+      return 0;
     } 
   }
 
   // if we don't have a feature and we're doing an insert then do the insert
   $inserted = 0;
   if (!$feature and (strcmp($method, 'Insert only')==0 or strcmp($method, 'Insert and update')==0)) {
-    // if we have a unique name but not a name then set them to be the same
-    // and vice versa
+    // if we have a unique name but not a name then set them to be the same and vice versa
     if (!$uname) {
       $uname = $name;
     }
@@ -666,23 +702,40 @@ function tripal_feature_fasta_loader_handle_feature($name, $uname, $db_id, $acce
       watchdog('T_fasta_loader', "Failed to retreive newly inserted feature '%name (%uname)'", 
         array('%name' => $name, '%uname' => $numane), WATCHDOG_ERROR);
       return 0;  
-    }   
+    }     
   }
   
-  // if we don't have a feature and the uesr wants to do an update then fail
+  // if we don't have a feature and the user wants to do an update then fail
   if (!$feature and (strcmp($method, 'Update only')==0 or drupal_strcmp($method, 'Insert and update')==0)) {
-    watchdog('T_fasta_loader', "Failed to find feature '%name' ('%uiname') while matching on " . 
-      drupal_strtolower($match_type), array('%name' => $name, '%uiname' => $uname), WATCHDOG_ERROR);
+    watchdog('T_fasta_loader', "Failed to find feature '%name' ('%uname') while matching on " . 
+      drupal_strtolower($match_type), array('%name' => $name, '%uname' => $uname), WATCHDOG_ERROR);
     return 0;
   }
-
+  
   // if we do have a feature and this is an update then proceed with the update
   if ($feature and !$inserted and (strcmp($method, 'Update only')==0 or strcmp($method, 'Insert and update')==0)) {
     // if the user wants to match on the Name field
     if (strcmp($match_type, 'Name')==0) {
-      // if we're matching on the name but do not have a new unique name then we don't want to update the uniquename.  
+      // if we're matching on the name but do not have a unique name then we don't want to update the uniquename.  
       $values = array();
       if ($uname) {
+        // first check to make sure that by changing the unique name of this feature that we won't conflict with
+        // another existing feature of the same name
+        $values = array(
+          'organism_id' => $organism_id,
+          'uniquename' => $uname,
+          'type_id' => $cvterm->cvterm_id,    
+        );    
+        $options = array('statement_name' => 'sel_feature_oruqty');
+        $results = tripal_core_chado_select('feature', array('feature_id'), $values, $options);
+        if (count($results) > 0) {
+          watchdog('T_fasta_loader', "Cannot update the feature '%name' with a uniquename of '%uname' and type of '%type' as it 
+            conflicts with an existing feature with the same uniquename and type.", 
+            array('%name' => $name, '%uname' => $uname, '%type' => $type));
+          return 0;
+        } 
+        
+        // the changes to the uniquename don't conflict so proceed with the update
         $values = array(
           'uniquename' => $uname,
           'residues' => $residues,
@@ -698,7 +751,7 @@ function tripal_feature_fasta_loader_handle_feature($name, $uname, $db_id, $acce
         );
         $options = array('statement_name' => 'upd_feature_resemdisis_naorty_un');        
       }
-      // if we have a unique name then update it after matching by the name
+      // if we do not have a new unique name then don't change the existing uniquename field
       else {
         $values = array(                 
           'residues' => $residues,
@@ -714,6 +767,8 @@ function tripal_feature_fasta_loader_handle_feature($name, $uname, $db_id, $acce
         );
         $options = array('statement_name' => 'upd_feature_unresemdisis_naorty'); 
       }
+      
+      // perform the update
       $success = tripal_core_chado_update('feature', $match, $values, $options);
       if (!$success) {
         watchdog('T_fasta_loader', "Failed to update feature '%name' ('%name')", 
@@ -812,6 +867,9 @@ function tripal_feature_fasta_loader_handle_feature($name, $uname, $db_id, $acce
           array('%name' => $name, '%uname' => $numane), WATCHDOG_ERROR);
         return 0;
       }
+    } 
+    else {
+      $dbxref = $results[0];
     }
 
     // check to see if the feature dbxref record exists if not, then add it
@@ -851,13 +909,13 @@ function tripal_feature_fasta_loader_handle_feature($name, $uname, $db_id, $acce
    // check to see if the relationship already exists if not then add it
     $values = array(
       'subject_id' => $feature->feature_id,
-      'ojbect_id' => $parent_feature->feature_id,
+      'object_id' => $parent_feature->feature_id,
       'type_id' => $relcvterm->cvterm_id,    
     );
     $sel_options = array('statement_name' => 'sel_featurerelationship_suojty');
-    $results = tripal_core_chado_select('feature_relationship', array('feature_relationships_id'), $values, $sel_options);
+    $results = tripal_core_chado_select('feature_relationship', array('feature_relationship_id'), $values, $sel_options);
     if (count($results) == 0) {    
-      $ins_options = array('statement_name' => 'sel_featurerelationship_suojty');
+      $ins_options = array('statement_name' => 'ins_featurerelationship_suojty');
       $success = tripal_core_chado_insert('feature_relationship', $values, $ins_options);
       if (!$success) {
         watchdog('T_fasta_loader', "Failed to add associate database accession '%accession' with feature", 

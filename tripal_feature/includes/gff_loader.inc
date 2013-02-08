@@ -224,7 +224,7 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
     $schema = tripal_feature_get_custom_tables('tripal_gff_temp');  
     $success = tripal_core_create_custom_table($ret, 'tripal_gff_temp', $schema['tripal_gff_temp']);
     if (!$success) {
-      watchdog('T_gff3_loader', "Cannot creat temporary loading table", array(), WATCHDOG_ERROR); 
+      watchdog('T_gff3_loader', "Cannot create temporary loading table", array(), WATCHDOG_ERROR); 
       return;
     } 
   }
@@ -554,11 +554,17 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
           'type_name' => $type,
           'uniquename' => $feature->uniquename
         );
-        $options = array('statement_name' => 'ins_tripalgfftemp');
-        $result = tripal_core_chado_insert('tripal_gff_temp', $values, $options);
-        if (!$result) {
-          watchdog('T_gff3_loader', "Cound not save record in temporary table, Cannot continue.", array(), WATCHDOG_ERROR);
-          return;
+        // make sure this record doesn't already exist in oru temp table
+        $options = array('statement_name' => 'sel_tripalgfftemp_all');
+        $results = tripal_core_chado_select('tripal_gff_temp', array('*'), $values, $options);
+
+        if (count($results) == 0) {
+          $options = array('statement_name' => 'ins_tripalgfftemp');
+          $result = tripal_core_chado_insert('tripal_gff_temp', $values, $options);
+          if (!$result) {
+            watchdog('T_gff3_loader', "Cound not save record in temporary table, Cannot continue.", array(), WATCHDOG_ERROR);
+            return;
+          }
         }
 
         // add/update the featureloc if the landmark and the ID are not the same
@@ -589,7 +595,7 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
         // add target relationships
         if (array_key_exists('Target', $tags)) {
           // format is: "target_id start end [strand]", where strand is optional and may be "+" or "-"
-          $matched = preg_match('/^(.*?)\s+(\d+)\s+(\d+)(\s+[\+|\-])*$/', $tags['Target'][0], $matches);
+          $matched = preg_match('/^(.*?)\s+(\d+)\s+(\d+)(\s+[\+|\-])*$/', trim($tags['Target'][0]), $matches);
           
           // if we have matches and the Target is in the correct format then load the alignment 
           if ($matched) {
@@ -667,18 +673,19 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
 
   print "\nSetting ranks of children...\n";
   
-  // get features in a parent relationship
-  $sql = "SELECT DISTINCT F.feature_id, F.organism_id, F.type_id, F.uniquename, FL.strand 
+  // get features in a relationship that are also children of an alignment
+  $sql = "SELECT DISTINCT F.feature_id, F.organism_id, F.type_id, 
+            F.uniquename, FL.strand 
           FROM tripal_gff_temp TGT 
-            INNER JOIN feature F on TGT.feature_id = F.feature_id
+            INNER JOIN feature F                ON TGT.feature_id = F.feature_id
             INNER JOIN feature_relationship FR  ON FR.object_id = TGT.feature_id
-            INNER JOIN cvterm CVT on CVT.cvterm_id = FR.type_id  
-            INNER JOIN featureloc FL on FL.feature_id = F.feature_id    
+            INNER JOIN cvterm CVT               ON CVT.cvterm_id = FR.type_id  
+            INNER JOIN featureloc FL            ON FL.feature_id = F.feature_id    
           WHERE CVT.name = 'part_of'";
   $parents = chado_query($sql);
   
   // build and prepare the SQL for selecting the children relationship
-  $sql = "SELECT FR.feature_relationship_id, FL.fmin, FR.rank
+  $sql = "SELECT DISTINCT FR.feature_relationship_id, FL.fmin, FR.rank
           FROM feature_relationship FR              
             INNER JOIN featureloc FL on FL.feature_id = FR.subject_id";
   if (!$connection) {
@@ -717,7 +724,7 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
        $children[] = $child;  
     }
     
-    // sort the children come in order of their fmin position
+    // the children list comes sorted in ascending fmin
     // but if the parent is on the reverse strand we need to 
     // reverse the order of the children.
     if ($parent->strand == -1) {
@@ -734,7 +741,7 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
       tripal_core_chado_update('feature_relationship', $match, $values, $options);
       $rank--;
     }
-    // now set the rank correctly
+    // now set the rank correctly. The rank should start at 0.
     $rank = 0;
     foreach ($children as $child) {
       $match = array('feature_relationship_id' => $child->feature_relationship_id);
@@ -1029,7 +1036,7 @@ function tripal_feature_load_gff3_ontology($feature, $dbxrefs) {
       // now look for the name without the 'DB:' prefix.
       $db = tripal_core_chado_select('db', array('db_id'), array('name' => "$dbname"), $options);
       if (sizeof($db) == 0) {
-        watchdog("T_gff3_loader", "Database, $dbname is missing for reference: $dbname:$accession", array(), WATCHDOG_WARNING);
+        watchdog("T_gff3_loader", "Database, $dbname, is not present. Cannot associate term: $dbname:$accession", array(), WATCHDOG_WARNING);
         return 0;
       }
     }
@@ -1389,7 +1396,7 @@ function tripal_feature_load_gff3_featureloc($feature, $organism, $landmark, $fm
   $r = tripal_core_chado_select('feature', array('feature_id'), $select, $options);
   
   if (count($r)==0) {
-    // so we couldn't find it using the uniquename. Let's try the 'name'.
+    // so we couldn't find the landmark using the uniquename. Let's try the 'name'.
     // if we return only a singe result then we can proceed. Otherwise give an
     // error message
     $select = array(
@@ -1399,7 +1406,7 @@ function tripal_feature_load_gff3_featureloc($feature, $organism, $landmark, $fm
     $options = array('statement_name' => 'sel_feature_organism_id_name');
     $r = tripal_core_chado_select('feature', array('feature_id'), $select, $options);
     if (count($r) == 0) {
-       watchdog("T_gff3_loader", "Cannot find landmark feature: '$landmark'.  Cannot add the feature location record", array(), WATCHDOG_WARNING);
+       watchdog("T_gff3_loader", "Cannot find landmark feature: '$landmark'.", array(), WATCHDOG_WARNING);
        return 0;
     } 
     elseif (count($r) > 1) {

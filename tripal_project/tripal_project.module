@@ -249,7 +249,10 @@ function chado_project_delete($node) {
  *
  */
 function chado_project_update($node) {
-
+  if ($node->revision) {
+    // there is no way to handle revisions in Chado but leave
+    // this here just to make not we've addressed it.
+  }
   // Find the project to update
   $match= array(
     'project_id' => $node->project_id,

@@ -28,7 +28,7 @@ function tripal_core_install() {
 }
 
 /**
- *  Update for Drupal 6.x, Tripal 0.4
+ *  Update for Drupal 6.x, Tripal 1.0
  *  This update
  *   - adjusts the materialized view by adding status, comment and mv_schema columns
  *   - changes the specs of mv_table, mv_specs and indexed
@@ -37,7 +37,7 @@ function tripal_core_install() {
  * @ingroup tripal_feature
  */
 function tripal_core_update_6000() {
-  // add additional columsn to the tripal_mviews table
+  // add additional columns to the tripal_mviews table
   db_add_field($ret, 'tripal_mviews', 'status', array('type' => 'text', 'size' => 'normal', 'not NULL' => FALSE));
   db_add_field($ret, 'tripal_mviews', 'comment', array('type' => 'text', 'size' => 'normal', 'not NULL' => FALSE));
   db_add_field($ret, 'tripal_mviews', 'mv_schema', array('type' => 'text', 'size' => 'normal', 'not NULL' => FALSE));

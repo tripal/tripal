@@ -507,54 +507,54 @@ function chado_feature_insert($node) {
  */
 function chado_feature_update($node) {
   if ($node->revision) {
-    // TODO -- decide what to do about revisions
+    // there is no way to handle revisions in Chado but leave
+    // this here just to make not we've addressed it.
+  }
+
+  $residues = preg_replace("/[\n\r\s]/", "", $node->residues);
+  $obsolete = 'FALSE';
+  if ($node->is_obsolete) {
+    $obsolete = 'TRUE';
+  }
+
+  // get the feature type id
+  $values = array(
+    'cv_id' => array(
+      'name' => 'sequence'
+      ),
+    'name' => $node->feature_type
+  );
+  $type = tripal_core_chado_select('cvterm', array('cvterm_id'), $values);
+
+  $feature_id = chado_get_id_for_node('feature', $node) ;
+
+  if (sizeof($type) > 0) {
+    $match = array(
+      'feature_id' => $feature_id,
+    );
+    $values = array(
+      'organism_id' => $node->organism_id,
+      'name' => $node->fname,
+      'uniquename' => $node->uniquename,
+      'residues' => $residues,
+      'seqlen' => drupal_strlen($residues),
+      'is_obsolete' => $obsolete,
+      'type_id' => $type[0]->cvterm_id,
+      'md5checksum' => md5($residues)
+    );
+      $status = tripal_core_chado_update('feature', $match, $values);
+
+      // add the genbank synonyms
+      chado_feature_add_synonyms($node->synonyms, $feature_id);
   }
   else {
-    $residues = preg_replace("/[\n\r\s]/", "", $node->residues);
-    $obsolete = 'FALSE';
-    if ($node->is_obsolete) {
-      $obsolete = 'TRUE';
-    }
-
-    // get the feature type id
-    $values = array(
-      'cv_id' => array(
-        'name' => 'sequence'
-        ),
-      'name' => $node->feature_type
+    drupal_set_message(t('Unable to update feature.'), 'warning');
+    watchdog('tripal_feature',
+    'Update feature: Unable to update feature where values: %values',
+    array('%values' => print_r($values, TRUE)),
+    WATCHDOG_WARNING
     );
-    $type = tripal_core_chado_select('cvterm', array('cvterm_id'), $values);
-
-    $feature_id = chado_get_id_for_node('feature', $node) ;
-
-    if (sizeof($type) > 0) {
-      $match = array(
-        'feature_id' => $feature_id,
-      );
-      $values = array(
-        'organism_id' => $node->organism_id,
-        'name' => $node->fname,
-        'uniquename' => $node->uniquename,
-        'residues' => $residues,
-        'seqlen' => drupal_strlen($residues),
-        'is_obsolete' => $obsolete,
-        'type_id' => $type[0]->cvterm_id,
-        'md5checksum' => md5($residues)
-      );
-        $status = tripal_core_chado_update('feature', $match, $values);
-
-        // add the genbank synonyms
-        chado_feature_add_synonyms($node->synonyms, $feature_id);
-    }
-    else {
-      drupal_set_message(t('Unable to update feature.'), 'warning');
-      watchdog('tripal_feature',
-      'Update feature: Unable to update feature where values: %values',
-      array('%values' => print_r($values, TRUE)),
-      WATCHDOG_WARNING
-      );
-    }
-  }
+  }  
 }
 /**
  *
@@ -925,16 +925,6 @@ function chado_feature_validate($node) {
     $result = db_fetch_object(chado_query($sql, $node->uniquename, $node->organism_id, $node->feature_type));
     if ($result) {
       form_set_error('uniquename', t("Feature insert cannot proceed. The feature name '$node->uniquename' already exists for this organism. Please provide a unique name for this feature."));
-    }
-  }
-
-  // we want to remove all characters except IUPAC nucleotide characters from the
-  // the residues. however, residues are not required so if blank then we'll skip
-  // this step
-  if ($node->residues) {
-    $residues = preg_replace("/[^\w]/", '', $node->residues);
-    if (!preg_match("/^[ACTGURYMKSWBDHVN]+$/i", $residues)) {
-      form_set_error('residues', t("The residues in feature $node->name contains more than the nucleotide IUPAC characters. Only the following characters are allowed: A,C,T,G,U,R,Y,M,K,S,W,B,D,H,V,N: '" . $residues . "'"));
     }
   }
 

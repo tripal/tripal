@@ -166,43 +166,52 @@ function tripal_edit_mview($mview_id, $name, $modulename, $mv_table, $mv_specs,
     $mv_table = $schema_arr['table'];
   }
 
-  // Create a new record
   $record = new stdClass();
   $record->mview_id = $mview_id;
   $record->name = $name;
   $record->modulename = $modulename;
-  $record->mv_schema = $mv_schema;
-  $record->mv_table = $mv_table;
-  $record->mv_specs = $mv_specs;
-  $record->indexed = $indexed;
   $record->query = $query;
-  $record->special_index = $special_index;
   $record->last_update = 0;
   $record->status = '';
   $record->comment = $comment;
 
-  // drop the table from chado if it exists
+  // get the view before we update and check to see if the table structure has
+  // changed. IF so, then we want to drop and recreate the table. If not, then
+  // just save the updated SQL.
+  $create_table = 1;  
   $sql = "SELECT * FROM {tripal_mviews} WHERE mview_id = %d";
-  $mview = db_fetch_object(db_query($sql, $mview_id));
-  $previous_db = tripal_db_set_active('chado');  // use chado database
-  if (db_table_exists($mview->mv_table)) {
-    $sql = "DROP TABLE %s";
-    db_query($sql, $mview->mv_table);
+  $mview = db_fetch_object(db_query($sql, $mview_id));  
+  if($mview->mv_schema == $mv_schema and $mview->mv_table == $mv_table and 
+     $mview->mv_specs == $mv_specs and $mview->indexed == $indexed and 
+     $mview->special_index == $special_index) {
+    // nothing has changed so simpy update the SQL and other fields 
+    $create_table = 0;
   }
-  tripal_db_set_active($previous_db);  // now use drupal database
+  else {
+    // add in the table structure fields
+    $record->mv_schema = $mv_schema;
+    $record->mv_table = $mv_table;
+    $record->mv_specs = $mv_specs;
+    $record->indexed = $indexed;
+    $record->query = $query;
+    $record->special_index = $special_index;
+  }
+  
+  // if we are going to create the table then we must first drop it if it exists
+  if ($create_table) {
+    $previous_db = tripal_db_set_active('chado');  // use chado database
+    if (db_table_exists($mview->mv_table)) {
+      $sql = "DROP TABLE %s";
+      db_query($sql, $mview->mv_table);
+      drupal_set_message(t("View '%name' dropped", array('%name' => $name)));
+    }
+    tripal_db_set_active($previous_db);  // now use drupal database
+  }
 
   // update the record to the tripal_mviews table and if successful
   // create the new materialized view in the chado schema
   if (drupal_write_record('tripal_mviews', $record, 'mview_id')) {
-    // drop the table from chado if it exists
-    $previous_db = tripal_db_set_active('chado');  // use chado database
-    if (db_table_exists($mv_table)) {
-      $sql = "DROP TABLE %s";
-      db_query($sql, $mv_table);
-    }
-    tripal_db_set_active($previous_db);  // now use drupal database
-
-    // now construct the indexes
+    // construct the indexes SQL if needed
     $index = '';
     if ($indexed) {
       // add to the array of values
@@ -216,7 +225,7 @@ function tripal_edit_mview($mview_id, $name, $modulename, $mv_table, $mv_specs,
 
     // re-create the table differently depending on if it the traditional method
     // or the Drupal Schema API method
-    if ($mv_schema) {    	
+    if ($create_table and $mv_schema) {    	
       if (!tripal_core_create_custom_table($ret, $mv_table, $schema_arr, 0)) {
         drupal_set_message(t("Could not create the materialized view. Check Drupal error report logs."));
       }
@@ -224,18 +233,29 @@ function tripal_edit_mview($mview_id, $name, $modulename, $mv_table, $mv_specs,
         drupal_set_message(t("View '%name' created", array('%name' => $name)));
       }
     }
-    else {
+    if ($create_table and !$mv_schema) {
       $sql = "CREATE TABLE {$mv_table} ($mv_specs); $index";
-      $previous_db = tripal_db_set_active('chado');  // use chado database
-      $results = db_query($sql);
-      tripal_db_set_active($previous_db);  // now use drupal database
+      $results = chado_query($sql);
       if ($results) {
-        drupal_set_message(t("View '%name' edited and saved.  All results cleared. Please re-populate the view.", array('%name' => $name)));
+        drupal_set_message(t("View '%name' created.  All records cleared. Please re-populate the view.", 
+          array('%name' => $name)));
       }
       else {
-        drupal_set_message(t("Failed to create the materialized view table: '%mv_table'", array('%mv_table' => $mv_table)), 'error');
+        drupal_set_message(t("Failed to create the materialized view table: '%mv_table'", 
+          array('%mv_table' => $mv_table)), 'error');
       }
     }
+    if (!$create_table) {
+      $message = "View '%name' updated.  All records remain. ";
+      if ($query != $mview->query) {
+        $message .= "Please repopulate the view to use updated query.";
+      }
+      drupal_set_message(t($message, array('%name' => $name)));  
+    }
+  }
+  else {
+    drupal_set_message(t("Failed to update the materialized view: '%mv_table'", 
+      array('%mv_table' => $mv_table)), 'error');  
   }
 }
 
@@ -465,8 +485,20 @@ function tripal_mviews_report() {
         'colspan' => 6),
     )
   );
-
-  $page = theme('table', $header, $rows);
+  $page = '</p>' . t("Materialized Views (MViews) are custom tables populated with a defined SQL statement.  
+    Because Chado is highly normalized and highly constrained it serves as a wonderful 
+    data storage platform, but unfortunately some queries may be slow.  MViews alleviate slowness by aggregating data
+    into tables that are more easy to query.  Use MViews to create tables for custom search pages or custom Tripal
+    module development.") . '</p>';
+  $page .= '<p><b>' . t("MViews behaves in the following way:") . '</b><ul>'.
+           '<li>' . t("The SQL statement defined for an MVIEW will be used to populate the table") . '</li>' .
+           '<li>' . t("Altering the table structure of an MView will cause the MView table to be dropped and recreated.  All records in the MView will be lost.") . '</li>' .
+           '<li>' . t("Altering the query of an existing view will not change the MView table. No records will be lost. ") . '</li>' .
+           '<li>' . t("Repopulating an MView that is already populated will result in replacement of all records.") . '</li>' .
+           '<li>' . t("A database transaction will be used when populating MViews. Therefore replacement of records does not occur until the query completes.  Any search forms or pages dependent on the MView will continue to function.") . '</li>' .
+           '</ul></p>';
+  $page .= '<b>' . t("Existing MViews") . '</b>';
+  $page .= theme('table', $header, $rows);
   return $page;
 }
 
@@ -511,7 +543,8 @@ function tripal_mviews_form(&$form_state = NULL, $mview_id = NULL) {
     $default_indexed = $form_state['values']['indexed'];
     $default_mvquery = $form_state['values']['mvquery'];
     $default_special_index = $form_state['values']['special_index'];
-    $default_comment = $form_state['values']['cpmment'];
+    $default_comment = $form_state['values']['comment'];
+    $default_modulename = $form_state['values']['modulename'];
 
     if (!$default_name) {
       $default_name = $mview->name;
@@ -537,6 +570,10 @@ function tripal_mviews_form(&$form_state = NULL, $mview_id = NULL) {
     if (!$default_schema) {
       $default_schema = $mview->mv_schema;
     }
+    if (!$default_modulename) {      
+      $default_modulename = $mview->modulename ? $mview->modulename : 'tripal_core';
+    }
+    
 
     // the mv_table column of the tripal_mviews table always has the table
     // name even if it is a custom table. However, for the sake of the form,
@@ -563,6 +600,11 @@ function tripal_mviews_form(&$form_state = NULL, $mview_id = NULL) {
   $form['mview_id'] = array(
     '#type' => 'value',
     '#value' => $mview_id
+  );
+  
+  $form['modulename'] = array(
+    '#type' => 'value',
+    '#value' => $default_modulename,
   );
 
   $form['name']= array(
@@ -743,13 +785,14 @@ function tripal_mviews_form_submit($form, &$form_state) {
   $special_index = $form_state['values']['special_index'];
   $comment = $form_state['values']['comment'];
   $schema = $form_state['values']['schema'];
+  $modulename = $form_state['values']['modulename'];
 
   if (strcmp($action, 'Edit') == 0) {
-    tripal_edit_mview($mview_id, $name, 'tripal_core', $mv_table, $mv_specs,
+    tripal_edit_mview($mview_id, $name, $modulename, $mv_table, $mv_specs,
       $indexed, $query, $special_index, $comment, $schema);
   }
   elseif (strcmp($action, 'Add') == 0) {
-    tripal_add_mview($name, 'tripal_core', $mv_table, $mv_specs,
+    tripal_add_mview($name, $modulename, $mv_table, $mv_specs,
       $indexed, $query, $special_index, $comment, $schema);
   }
   else {
