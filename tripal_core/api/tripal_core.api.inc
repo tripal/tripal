@@ -2198,7 +2198,7 @@ function tripal_core_exclude_field_from_feature_by_default() {
 function chado_query($sql) {
 
   $is_local = tripal_core_is_chado_local();
-  
+
   $args = func_get_args();
   array_shift($args); // remove the $sql from the argument list
   $sql = db_prefix_tables($sql);
@@ -2213,10 +2213,10 @@ function chado_query($sql) {
   // add the chado schema to the table names if Chado is local to the Drupal database
   if ($is_local) {
     $sql = preg_replace('/\n/', '', $sql);  // remove carriage returns
-    $sql = preg_replace('/FROM\s+(.*?)\s/i', 'FROM chado.\1 ', $sql);
-    $sql = preg_replace('/INNER\s+JOIN\s+(.*?)\s/i', 'INNER JOIN chado.\1 ', $sql);
+    $sql = preg_replace('/FROM\s+([^\.]*?)\s/i', 'FROM chado.\1 ', $sql);
+    $sql = preg_replace('/INNER\s+JOIN\s+([^\.]*?)\s/i', 'INNER JOIN chado.\1 ', $sql);
   }
-  print "$sql\n";
+  //print "$sql\n";
 
   // Execute the query on the chado database/schema
   // Use the persistent chado connection if it already exists
@@ -2232,8 +2232,8 @@ function chado_query($sql) {
       list($usec, $sec) = explode(' ', microtime());
       $timer = (float) $usec + (float) $sec;
     }
-    // if we're local we can just run the query 
-    if ($is_local) { 
+    // if we're local we can just run the query
+    if ($is_local) {
       $last_result = pg_query($persistent_connection, $query);
     }
     else {
@@ -2264,17 +2264,17 @@ function chado_query($sql) {
   }
   else {
     // before running the query we want to prefix the table names with
-    // the chado schema.  Previously use had to make changes to the 
-    // search_path but that caused a lot of database calls and wasted 
-    // resources during long jobs.  
-    if ($is_local) { 
+    // the chado schema.  Previously use had to make changes to the
+    // search_path but that caused a lot of database calls and wasted
+    // resources during long jobs.
+    if ($is_local) {
       $results = _db_query($sql);
     }
     else {
       $previous_db = tripal_db_set_active('chado') ;
       $results = _db_query($sql);
       tripal_db_set_active($previous_db);
-    }    
+    }
   }
   return $results;
 }
@@ -2952,6 +2952,34 @@ function tripal_core_chado_execute_prepared($statement_name, $sql, $values) {
 }
 
 /**
+ * Clears prepared statements to avoid conflicts
+ *
+ * If no statement_name_regex is supplied then it clears ALL prepared statements;
+ * Otherwise, it clears prepared statement names that match the regex provided
+ */
+function tripal_core_chado_clear_prepared ($statement_name_regex = NULL) {
+
+  $connection = variable_get('tripal_persistent_chado', NULL);
+
+  if ($statement_name_regex) {
+    $resource = chado_query("SELECT * FROM pg_catalog.pg_prepared_statements WHERE name~'%s'",$statement_name_regex);
+    while ($r = db_fetch_object($resource)) {
+      $k = array_search($r->name,$_SESSION[$connection]);
+      unset($_SESSION[$connection][$k]);
+      unset($_SESSION['prepared_sql'][$connection][$r->name]);
+      unset($_SESSION['prepared_args'][$connection][$r->name]);
+      chado_query('DEALLOCATE PREPARE %s',$r->name);
+    }
+  }
+  else {
+    unset($_SESSION['prepared_args'][$connection]);
+    unset($_SESSION['prepared_sql'][$connection]);
+    unset($_SESSION[$connection]);
+    chado_query('DEALLOCATE PREPARE ALL');
+  }
+}
+
+/**
  * Instantiate or Return a persistent chado connection
  *
  * NOTE: cannot use $active_db since a new connection is created each time
@@ -3499,7 +3527,7 @@ function tripal_core_is_chado_installed() {
 }
 
 /**
- * Check whether chado is installed local to the Drupal database 
+ * Check whether chado is installed local to the Drupal database
  * in its own Chado schema.
  *
  * @return
@@ -3509,7 +3537,7 @@ function tripal_core_is_chado_installed() {
  */
 function tripal_core_is_chado_local() {
   global $db_url, $db_type;
-  
+
   if (tripal_core_is_chado_installed) {
     if (is_array($db_url)) {
       if (isset($db_url['chado'])) {

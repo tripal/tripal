@@ -138,6 +138,9 @@ function tripal_bulk_loader_load_data($nid, $job_id) {
   $total_lines = trim(`wc --lines < $node->file`);
   print "File: " . $node->file . " (" . $total_lines . " lines)\n";
 
+  print "\nClearing all prepared statements from previous runs of this loader...\n";
+  tripal_core_chado_clear_prepared('_'.$node->nid.'_');
+
   // Prep Work ==================================================================================
   print "\nPreparing to load...\n";
   $loaded_without_errors = TRUE;
