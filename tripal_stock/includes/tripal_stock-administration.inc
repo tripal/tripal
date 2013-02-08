@@ -156,20 +156,17 @@ function tripal_stock_admin() {
     $active_jobs = TRUE;
   }
   if ($active_jobs) {
-
-  $form['notice'] = array(
+    $form['notice'] = array(
        '#type' => 'fieldset',
        '#title' => t('Stock Management Temporarily Unavailable')
     );
-
-  $form['notice']['message'] = array(
+    $form['notice']['message'] = array(
        '#value' => t("Currently, stock management jobs are waiting or ".
           "are running. Managemment features have been hidden until these ".
           "jobs complete.  Please check back later once these jobs have ".
           "finished.  You can view the status of pending jobs in the Tripal ".
           "jobs page."),
     );
-
   }
   else {
 
@@ -245,6 +242,7 @@ function tripal_stock_admin() {
       '#type' => 'submit',
       '#value' => t('Sync Stocks')
     );
+    get_tripal_stock_admin_form_cleanup_set($form);
   }
 
   return system_settings_form($form);
@@ -286,6 +284,12 @@ function tripal_stock_admin_validate($form, &$form_state) {
     variable_set('chado_stock_types_cv', $form_state['values']['stock_types_cv']);
     variable_set('chado_stock_prop_types_cv', $form_state['values']['stock_prop_types_cv']);
     variable_set('chado_stock_relationship_cv', $form_state['values']['stock_relationship_cv']);
+  }
+  
+  // Submit the Cleanup Job if selected
+  if ($form_state['values']['op'] == t('Clean up orphaned stocks')) {
+    tripal_add_job('Cleanup orphaned stocks', 'tripal_stock',
+       'tripal_stock_cleanup', $job_args, $user->uid);
   }
 }
 
@@ -365,31 +369,72 @@ function tripal_stock_sync_stock_set($organism_id, $job_id) {
              $node->vid
            );
            */
+          }
         }
+        else {
+          print "Not completed due to errors:\nCreate Stock Form Errors: ";
+          print_r(form_get_errors());
+        }
+        print "Nid=" . $node->nid . "\n";
       }
       else {
-        print "Not completed due to errors:\nCreate Stock Form Errors: ";
-        print_r(form_get_errors());
-      }
-        print "Nid=" . $node->nid . "\n";
-    }
-    else {
-      print "Skipped $r->uniquename because it's already in drupal.\n";
-    } //end of if not already in drupal
-  } //end of while still stocks to be sync'd
+        print "Skipped $r->uniquename because it's already in drupal.\n";
+      } //end of if not already in drupal
+    } //end of while still stocks to be sync'd
   } //end of if organism_id not supplied
 
   if ($stocks_attempted == 0) {
-  print "No stocks retrieved for organism (" . $organism_id . ")\n";
-  return 1;
-  }
-  else {
-  if ($stocks_created_count > 0) {
-    print "$stocks_created_count Stocks Successfully Created\n";
+    print "No stocks retrieved for organism (" . $organism_id . ")\n";
     return 1;
   }
   else {
-    return 0;
+    if ($stocks_created_count > 0) {
+      print "$stocks_created_count Stocks Successfully Created\n";
+      return 1;
+    }
+    else {
+      return 0;
+    }
   }
-  }
+}
+
+/**
+ *
+ *
+ * @ingroup tripal_stock
+ */
+function get_tripal_stock_admin_form_cleanup_set(&$form) {
+  $form['cleanup'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Clean Up')
+  );
+  $form['cleanup']['description'] = array(
+     '#type' => 'item',
+     '#value' => t("With Drupal and Chado residing in different databases ".
+        "it is possible that nodes in Drupal and stocks in Chado become ".
+        "\"orphaned\".  This can occur if an stock node in Drupal is ".
+        "deleted but the corresponding chado stock is not and/or vice ".
+        "versa. Click the button below to resolve these discrepancies."),
+     '#weight' => 1,
+  );
+  $form['cleanup']['button'] = array(
+    '#type' => 'submit',
+    '#value' => t('Clean up orphaned stocks'),
+    '#weight' => 2,
+  );
+}
+/**
+ * Remove orphaned drupal nodes
+ *
+ * @param $dummy
+ *   Not Used -kept for backwards compatibility
+ * @param $job_id
+ *   The id of the tripal job executing this function
+ *
+ * @ingroup tripal_stock
+ */
+function tripal_stock_cleanup($dummy = NULL, $job_id = NULL) {
+
+  return tripal_core_clean_orphaned_nodes('stock', $job_id);
+  
 }

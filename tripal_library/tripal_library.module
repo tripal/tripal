@@ -281,7 +281,6 @@ function tripal_library_admin() {
   // add the field set for syncing libraries
   if (!$active_jobs) {
     get_tripal_library_admin_form_sync_set($form);
-    get_tripal_library_admin_form_cleanup_set($form);
     get_tripal_library_admin_form_reindex_set($form);
     get_tripal_library_admin_form_taxonomy_set($form);
     get_tripal_library_admin_form_cleanup_set($form);
