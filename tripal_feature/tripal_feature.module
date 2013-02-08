@@ -443,6 +443,8 @@ function chado_feature_insert($node) {
   if ($node->is_obsolete) {
     $obsolete = 'TRUE';
   }
+  
+  // check to see if we are inserting a duplicate record.
   $values = array(
     'cv_id' => array(
       'name' => 'sequence'
@@ -459,10 +461,7 @@ function chado_feature_insert($node) {
     'is_obsolete' => $obsolete,
     'type_id' => $type[0]->cvterm_id,
     'md5checksum' => md5($residues)
-  );
-
-  
-  // check to see if we are inserting a duplicate record. 
+  );    
   $options = array('is_duplicate' => TRUE, 'has_record' => TRUE);
   $exists = tripal_core_chado_select('feature', array('*'), $values, $options);
   

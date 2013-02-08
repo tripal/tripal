@@ -561,7 +561,7 @@ function tripal_analysis_sync_analyses($analysis_id = NULL, $job_id = NULL) {
         $new_node->type = 'chado_analysis';
       }
 
-            print "analysis type is $new_node->type\n";
+      print "analysis type is $new_node->type\n";
 
       $new_node->uid = $user->uid;
       $new_node->analysis_id = $analysis->analysis_id;

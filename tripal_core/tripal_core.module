@@ -66,6 +66,9 @@ function tripal_core_init() {
   // set the postgres search_path back to noraml we do it here on 
   // init of the core
   tripal_db_set_default_search_path(); 
+  
+  // create a persistent connection
+  $connection = tripal_db_persistent_chado();
 }
 
 /**
