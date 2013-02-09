@@ -2238,9 +2238,9 @@ function chado_query($sql) {
     // we use the FROM keyword to look for tables, but FROM is also used in the 
     // 'substring' function of postgres. But since table names can't start with 
     // a number we exclude words numeric values. We also exclude tables that
-    // already have a schema prefix.
-    $sql = preg_replace('/FROM\s+([^0123456789][^\.]*?)\s/i', 'FROM chado.\1 ', $sql);
-    $sql = preg_replace('/INNER\s+JOIN\s+([^0123456789][^\.]*?)\s/i', 'INNER JOIN chado.\1 ', $sql);
+    // already have a schema prefix. 
+    $sql = preg_replace('/FROM\s+([^0123456789\(][^\.]*?)\s/i', 'FROM chado.\1 ', $sql);
+    $sql = preg_replace('/INNER\s+JOIN\s+([^\.]*?)\s/i', 'INNER JOIN chado.\1 ', $sql);
   }
   //print "$sql\n";
 
