@@ -2233,13 +2233,16 @@ function chado_query($sql) {
 
   // add the chado schema to the table names if Chado is local to the Drupal database
   if ($is_local) {
+    // TODO: this regular expression really needs to be removed as there are too many
+    // cases where it could break. Instead we need to surround tables with brackets
+    // like Drupal tables are and then find those and prefix those with chado.
     $sql = preg_replace('/\n/', '', $sql);  // remove carriage returns
     // in the statement below we want to add 'chado.' to the beginning of each table
     // we use the FROM keyword to look for tables, but FROM is also used in the 
     // 'substring' function of postgres. But since table names can't start with 
     // a number we exclude words numeric values. We also exclude tables that
     // already have a schema prefix. 
-    $sql = preg_replace('/FROM\s+([^0123456789\(][^\.]*?)\s/i', 'FROM chado.\1 ', $sql);
+    $sql = preg_replace('/FROM\s+([^0123456789\(][^\.]*?)(\s|$)/i', 'FROM chado.\1 ', $sql);
     $sql = preg_replace('/INNER\s+JOIN\s+([^\.]*?)\s/i', 'INNER JOIN chado.\1 ', $sql);
   }
   //print "$sql\n";
