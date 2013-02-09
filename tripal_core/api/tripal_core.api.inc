@@ -403,8 +403,12 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
  *     default if the statement is not prepared it will be automatically.
  *     However to avoid this check, which requires a database query you can
  *     set this value to true and the check will not be performed.
+ *  - return_record: by default, the function will return the TRUE if the record
+ *     was succesfully updated.  However, set this option to TRUE to return the
+ *     record that was updated.  The returned record will have the fields provided
+ *     but the primary key (if available for the table) will be added to the record.
  * @return
- *  On success this function returns TRUE. On failure, it returns FALSE.
+ *  On success this function returns TRUE. On failure, it returns FALSE.  
  *
  * Example usage:
  * @code
@@ -458,7 +462,7 @@ function tripal_core_chado_update($table, $match, $values, $options = NULL) {
     $options['statement_name'] = FALSE;
   }
   if (!array_key_exists('return_record', $options)) {
-    $options['return_record'] = TRUE;
+    $options['return_record'] = FALSE;
   }
 
   $update_values = array();   // contains the values to be updated
@@ -484,9 +488,31 @@ function tripal_core_chado_update($table, $match, $values, $options = NULL) {
     //print "NO STATEMENT (update): $table\n";
     //debug_print_backtrace();
   }
-
+  
   // get the table description
   $table_desc = tripal_core_get_chado_table_schema($table);
+  
+  // if the user wants us to return the record then we need to get the 
+  // unique primary key if one exists.  That way we can add it to the 
+  // values that get returned at the end of the function
+  $pkeys = array();
+  if ($options['return_record'] == TRUE) {
+    if (array_key_exists('primary key', $table_desc) and is_array($table_desc['primary key'])) {
+      $columns = array();
+      $stmt_suffix = '';
+      foreach ($table_desc['primary key'] as $field) {
+        $columns[] = $field;
+        $stmt_suffix .= substr($field, 0, 2);
+      }
+      $options2 = array('statement_name' => 'sel_' . $table . '_' . $stmt_suffix);
+      $results = tripal_core_chado_select($table, $columns, $match, $options2);
+      if (count($results) > 0) {
+        foreach ($results as $index => $pkey) {
+          $pkeys[] = $pkey;
+        }
+      }
+    }
+  }
 
   // get the values needed for matching in the SQL statement
   foreach ($match as $field => $value) {
@@ -714,21 +740,16 @@ function tripal_core_chado_update($table, $match, $values, $options = NULL) {
   else {
     $result = chado_query($sql, $uargs);
   }
-
-    // if we have a result then add primary keys to return array
+  // if we have a result then add primary keys to return array
   if ($options['return_record'] == TRUE and $result) {
-    if (array_key_exists('primary key', $table_desc) and is_array($table_desc['primary key'])) {
-      foreach ($table_desc['primary key'] as $field) {
-        $psql = "PREPARE currval_" . $table . "_" . $field . " AS SELECT CURRVAL('" . $table . "_" . $field . "_seq')";
-        $is_prepared = tripal_core_chado_prepare("currval_" . $table . "_" . $field, $psql, array());
-        if ($is_prepared) {
-           $value = db_result(chado_query("EXECUTE currval_". $table . "_" . $field));
+    // only if we have a single result do we want to add the primary keys to the values
+    // array.  If the update matched many records we can't add the pkeys
+
+    if (count($pkeys) == 1) {      
+      foreach ($pkeys as $index => $pkey) {
+        foreach ($pkey as $field => $fvalue) {
+          $values[$field] = $fvalue;
         }
-        else {
-          $sql = "SELECT CURRVAL('" . $table . "_" . $field . "_seq')";
-          $value =  db_result(chado_query($sql));
-        }
-        $values[$field] = $value;
       }
     }
     return $values;
@@ -2213,8 +2234,13 @@ function chado_query($sql) {
   // add the chado schema to the table names if Chado is local to the Drupal database
   if ($is_local) {
     $sql = preg_replace('/\n/', '', $sql);  // remove carriage returns
-    $sql = preg_replace('/FROM\s+([^\.]*?)\s/i', 'FROM chado.\1 ', $sql);
-    $sql = preg_replace('/INNER\s+JOIN\s+([^\.]*?)\s/i', 'INNER JOIN chado.\1 ', $sql);
+    // in the statement below we want to add 'chado.' to the beginning of each table
+    // we use the FROM keyword to look for tables, but FROM is also used in the 
+    // 'substring' function of postgres. But since table names can't start with 
+    // a number we exclude words numeric values. We also exclude tables that
+    // already have a schema prefix.
+    $sql = preg_replace('/FROM\s+([^0123456789][^\.]*?)\s/i', 'FROM chado.\1 ', $sql);
+    $sql = preg_replace('/INNER\s+JOIN\s+([^0123456789][^\.]*?)\s/i', 'INNER JOIN chado.\1 ', $sql);
   }
   //print "$sql\n";
 

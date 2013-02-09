@@ -518,10 +518,11 @@ function chado_feature_update($node) {
       'type_id' => $type[0]->cvterm_id,
       'md5checksum' => md5($residues)
     );
-      $status = tripal_core_chado_update('feature', $match, $values);
+    $options = array('return_record' => TRUE);
+    $status = tripal_core_chado_update('feature', $match, $values, $options);
 
-      // add the genbank synonyms
-      chado_feature_add_synonyms($node->synonyms, $feature_id);
+    // add the genbank synonyms
+    chado_feature_add_synonyms($node->synonyms, $feature_id);
   }
   else {
     drupal_set_message(t('Unable to update feature.'), 'warning');
