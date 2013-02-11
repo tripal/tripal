@@ -687,6 +687,7 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
 					$record = tripal_core_chado_insert($table, $values, $options);
 				}
 				else {
+				  $options['return_record'] = TRUE;
   		    $record = tripal_core_chado_update($table, $match, $values, $options);
   		  }
   	  }
