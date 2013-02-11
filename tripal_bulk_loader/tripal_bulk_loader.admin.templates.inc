@@ -2292,7 +2292,8 @@ function tripal_bulk_loader_edit_template_field_form_validate($form, $form_state
       $form_state['values']['template_id'],
       $form_state['storage']['template_array']
     );
-    if (!$is_unique) {
+    $new_record = ($form_state['values']['field_group'] == 'NEW') ? TRUE : FALSE;
+    if ((!$is_unique) AND $new_record) {
       form_set_error('record_name', "New Record Name must be unique. '" . $form_state['values']['record_name'] . "' is not unique.");
     }
   }
