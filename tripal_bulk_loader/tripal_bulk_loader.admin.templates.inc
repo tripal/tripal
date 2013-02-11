@@ -872,6 +872,21 @@ function tripal_bulk_loader_edit_template_record_form(&$form_state = NULL) {
   return $form;
 }
 
+function tripal_bulk_loader_edit_template_record_form_validate($form, $form_state) {
+
+  // Don't worry about validation when Cancel button is clicked
+  if ($form_state['clicked_button']['#value'] == 'Edit Record') {
+    $is_unique = tripal_bulk_loader_is_record_name_unique(
+      $form_state['values']['record_name'],
+      $form_state['values']['template_id'],
+      $form_state['storage']['template_array']
+    );
+    if (!$is_unique) {
+      form_set_error('record_name', "New Record Name must be unique. '" . $form_state['values']['record_name'] . "' is not unique.");
+    }
+  }
+
+}
 
 /**
  * Edit Record Form Submit
@@ -2277,8 +2292,7 @@ function tripal_bulk_loader_edit_template_field_form_validate($form, $form_state
       $form_state['values']['template_id'],
       $form_state['storage']['template_array']
     );
-    $new_record = ($form_state['values']['field_group'] == 'NEW') ? TRUE : FALSE;
-    if ((!$is_unique) AND $new_record) {
+    if (!$is_unique) {
       form_set_error('record_name', "New Record Name must be unique. '" . $form_state['values']['record_name'] . "' is not unique.");
     }
   }
