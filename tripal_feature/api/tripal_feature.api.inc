@@ -650,7 +650,7 @@ function tripal_feature_get_formatted_sequence($feature_id, $feature_name,
                 INNER JOIN cvterm OCVT on OF.type_id = OCVT.cvterm_id
               WHERE SF.feature_id = $3) as tbl1
     ';              
-    $status = chado_query($psql);
+    $status = tripal_core_chado_prepare('sequence_by_parent', $psql, array('int', 'int', 'int'));
     if (!$status) {
       watchdog('tripal_views_handler_field_sequence', 
         "init: not able to prepare SQL statement '%name'", 
@@ -669,7 +669,7 @@ function tripal_feature_get_formatted_sequence($feature_id, $feature_name,
               INNER JOIN feature PF on PF.feature_id = FL.srcfeature_id
             WHERE FR.object_id = $1 and PF.feature_id = $2
             ORDER BY FL.fmin ASC';            
-    $status = chado_query($psql);
+    $status = tripal_core_chado_prepare('sub_features', $psql, array('int', 'int'));
     if (!$status) {
       watchdog('tripal_views_handler_field_sequence', 
         "init: not able to prepare SQL statement '%name'", 
@@ -683,7 +683,7 @@ function tripal_feature_get_formatted_sequence($feature_id, $feature_name,
               INNER JOIN featureloc FL on FL.feature_id = FR.subject_id
               INNER JOIN feature PF on PF.feature_id = FL.srcfeature_id
             WHERE FR.object_id = $1 and PF.feature_id = $2';            
-    $status = chado_query($psql);
+    $status = tripal_core_chado_prepare('count_sub_features', $psql, array('int', 'int'));
     if (!$status) {
       watchdog('tripal_views_handler_field_sequence', 
         "init: not able to prepare SQL statement '%name'", 

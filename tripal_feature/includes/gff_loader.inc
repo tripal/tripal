@@ -231,10 +231,16 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
   // empty the temp table
   $sql = "DELETE FROM tripal_gff_temp";
   chado_query($sql);
-    
+
+  // get a persistent connection
+  $connection = tripal_db_persistent_chado();
+  if (!$connection) {
+     print "A persistant connection was not obtained. Loading will be slow\n";
+  }
+  
   // begin the transaction
   if ($use_transaction) {
-    $connection = tripal_db_start_transaction();
+    tripal_db_start_transaction();
         
     // if we cannot get a connection then let the user know the loading will be slow
     if (!$connection) {
@@ -244,12 +250,6 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
        print "\nNOTE: Loading of this GFF file is performed using a database transaction. \n" .
              "If the load fails or is terminated prematurely then the entire set of \n" .
              "insertions/updates is rolled back and will not be found in the database\n\n";
-    }
-  }
-  else {
-    $connection = tripal_db_persistent_chado();
-    if (!$connection) {
-       print "A persistant connection was not obtained. Loading will be slow\n";
     }
   }
 
@@ -301,6 +301,25 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
   $line_num = 0;
   $num_read = 0;
   $intv_read = 0;
+  
+  // prepare the statement used to get the cvterm for each feature.
+  if (!tripal_core_is_sql_prepared('sel_cvterm_idnasy')) {
+    $psql = "PREPARE sel_cvterm_idnasy (int, text, text) AS
+             SELECT CVT.cvterm_id, CVT.cv_id, CVT.name, CVT.definition,
+                CVT.dbxref_id, CVT.is_obsolete, CVT.is_relationshiptype
+             FROM {cvterm} CVT
+                INNER JOIN {cv} CV on CVT.cv_id = CV.cv_id
+                LEFT JOIN {cvtermsynonym} CVTS on CVTS.cvterm_id = CVT.cvterm_id
+             WHERE CV.cv_id = $1 and 
+               (lower(CVT.name) = lower($2) or lower(CVTS.synonym) = lower($3))";
+     $status = tripal_core_chado_prepare('sel_cvterm_idnasy', $psql, array('int','text','text'));
+     if (!$status) {
+       watchdog('T_gff3_loader', 'cannot prepare statement \'sel_cvterm_idnasy\'.', 
+         array(), WATCHDOG_ERROR);
+       return '';
+       
+     }  
+  } 
 
   // iterate through each line of the GFF file
   print "Parsing Line $line_num (0.00%). Memory: " . number_format(memory_get_usage()) . " bytes\r";
@@ -321,8 +340,8 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
     // check to see if we have FASTA section, if so then set the variable
     // to start parsing
     if (preg_match('/^##FASTA/i', $line)) {
-      $in_fasta = 1;
-      break;
+      tripal_feature_load_gff_fasta($fh, $interval, $num_read, $intv_read, $line_num);
+      continue;
     }
     
     // skip comments
@@ -333,9 +352,7 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
     // skip empty lines
     if (preg_match('/^\s*$/', $line)) {
       continue;
-    }
-    
-    // TODO: handle FASTA section
+    }    
 
     // get the columns
     $cols = explode("\t", $line);
@@ -378,35 +395,16 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
     if (strcmp($phase, '.') == 0) {
       $phase = '';
     }
-
-    // get the type record
-    if (!tripal_core_is_sql_prepared('sel_cvterm_idnasy')) {
-      $psql = "PREPARE sel_cvterm_idnasy (int, text, text) AS
-               SELECT CVT.cvterm_id, CVT.cv_id, CVT.name, CVT.definition,
-                  CVT.dbxref_id, CVT.is_obsolete, CVT.is_relationshiptype
-               FROM {cvterm} CVT
-                  INNER JOIN {cv} CV on CVT.cv_id = CV.cv_id
-                  LEFT JOIN {cvtermsynonym} CVTS on CVTS.cvterm_id = CVT.cvterm_id
-               WHERE CV.cv_id = $1 and (CVT.name = $2 or CVTS.synonym = $3)";
-       $status = chado_query($psql);
-       if (!$status) {
-         watchdog('T_gff3_loader', 'cannot prepare statement \'sel_cvterm_idnasy\' for ontology term %line_num', 
-           array('%line_num' => $line_num), WATCHDOG_ERROR);
-         return '';
-      }
-      
-    } 
   
     $result = chado_query("EXECUTE sel_cvterm_idnasy (%d, '%s', '%s')", $cv->cv_id, $type, $type);
-   
+
     $cvterm = db_fetch_object($result);
     if (!$cvterm) {
-      watchdog('T_gff3_loader', 'cannot find ontology term \'%type\' on line %line_num', 
+      watchdog('T_gff3_loader', 'cannot find feature term \'%type\' on line %line_num of the GFF file', 
         array('%type' => $type, '%line_num' => $line_num), WATCHDOG_ERROR);
       return '';
     }
- 
-
+     
     // break apart each of the attributes
     $tags = array();
     $attr_name = '';
@@ -419,6 +417,7 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
     $attr_is_analysis = 'f';
     $attr_others = '';
     $residues = '';
+    
     foreach ($attrs as $attr) {
       $attr = rtrim($attr);
       $attr = ltrim($attr);
@@ -501,8 +500,9 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
          'uniquename'  => $landmark,
       );
       $columns = array('count(*) as num_landmarks');
-      $options = array('statement_name' => 'sel_feature_organismid_uniquename');
+      $options = array('statement_name' => 'sel_feature_numland');      
       $count = tripal_core_chado_select('feature', $columns, $select, $options);
+     
       if (!$count or $count[0]->num_landmarks == 0) {
         watchdog('T_gff3_loader', "The landmark '%landmark' cannot be found for this organism. ".
               "Please add the landmark and then retry the import of this GFF3 ".
@@ -574,7 +574,6 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
             $landmark, $fmin, $fmax, $strand, $phase, $attr_fmin_partial,
             $attr_fmax_partial, $attr_residue_info, $attr_locgroup);
         }
-
         // add any aliases for this feature
         if (array_key_exists('Alias', $tags)) {
           tripal_feature_load_gff3_alias($feature, $tags['Alias']);
@@ -636,8 +635,6 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
               array('%target' => $tags['Target'][0]), WATCHDOG_ERROR);            
           }
         }
-        
-        
         // add gap information.  This goes in simply as a property
         if (array_key_exists('Gap', $tags)) {
           foreach ($tags['Gap'] as $value) {
@@ -650,6 +647,7 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
               tripal_feature_load_gff3_property($feature, 'Note', $value);
           }
         }
+
         // add the Derives_from relationship (e.g. polycistronic genes).
         if (array_key_exists('Derives_from', $tags)) {
           tripal_feature_load_gff3_derives_from($feature, $tags['Derives_from'][0], $organism);
@@ -667,6 +665,7 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
             }
           }
         }
+        
       }
     }
   }
@@ -696,7 +695,7 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
     $sql = "PREPARE sel_gffchildren (int) AS " . $sql . " WHERE FR.object_id = \$1 ORDER BY FL.fmin ASC";            
   }
   if (!tripal_core_is_sql_prepared('sel_gffchildren')) {
-    $success = chado_query($sql);
+    $success = tripal_core_chado_prepare('sel_gffchildren', $sql, array('int'));
     if (!$success) {
       watchdog("T_gff3_loader", "Cannot prepare statement 'sel_gffchildren' and cannot set children ranks.", 
          array(), WATCHDOG_WARNING);
@@ -846,7 +845,7 @@ function tripal_feature_load_gff3_parents($feature, $cvterm, $parents, $organism
                INNER JOIN cv CV on CVT.cv_id = CV.cv_id
                LEFT JOIN cvtermsynonym CVTS on CVTS.cvterm_id = CVT.cvterm_id
              WHERE cv.name = $1 and (CVT.name = $2 or CVTS.synonym = $3)";
-    $status = chado_query($psql);
+    $status = tripal_core_chado_prepare('sel_cvterm_cvname_cvtname_synonym', $psql, array('text', 'text' ,'text'));
     if (!$status) {
        watchdog("T_gff3_loader", "Cannot prepare statement 'sel_cvterm_cvname_cvtname_synonym' for ontology term", 
          array(), WATCHDOG_WARNING);
@@ -1204,7 +1203,7 @@ function tripal_feature_load_gff3_alias($feature, $aliases) {
                     INNER JOIN dbxref DBX on DBX.dbxref_id = CVT.dbxref_id
                     INNER JOIN db DB on DB.db_id = DBX.db_id
                   WHERE CVT.name = $1 and DB.name = $2)";
-        $status = chado_query($psql);
+        $status = tripal_core_chado_prepare('ins_pub_uniquename_typeid', $psql, args('text', 'text'));
         if (!$status) {
           watchdog("T_gff3_loader", "Cannot prepare statement 'ins_pub_uniquename_typeid", array(), WATCHDOG_WARNING);
           return 0;
@@ -1393,9 +1392,9 @@ function tripal_feature_load_gff3_featureloc($feature, $organism, $landmark, $fm
     'uniquename' => $landmark,
   );
   $options = array('statement_name' => 'sel_feature_orun');  
-  $r = tripal_core_chado_select('feature', array('feature_id'), $select, $options);
+  $results = tripal_core_chado_select('feature', array('feature_id'), $select, $options);
   
-  if (count($r)==0) {
+  if (count($results)==0) {
     // so we couldn't find the landmark using the uniquename. Let's try the 'name'.
     // if we return only a singe result then we can proceed. Otherwise give an
     // error message
@@ -1403,19 +1402,19 @@ function tripal_feature_load_gff3_featureloc($feature, $organism, $landmark, $fm
       'organism_id' => $organism->organism_id,
       'name' => $landmark,
     );
-    $options = array('statement_name' => 'sel_feature_organism_id_name');
-    $r = tripal_core_chado_select('feature', array('feature_id'), $select, $options);
-    if (count($r) == 0) {
+    $options = array('statement_name' => 'sel_feature_orna');
+    $results = tripal_core_chado_select('feature', array('feature_id'), $select, $options);
+    if (count($results) == 0) {
        watchdog("T_gff3_loader", "Cannot find landmark feature: '$landmark'.", array(), WATCHDOG_WARNING);
        return 0;
     } 
-    elseif (count($r) > 1) {
+    elseif (count($results) > 1) {
        watchdog("T_gff3_loader", "multiple landmarks exist with the name: '$landmark'.  Cannot resolve which one to use. Cannot add the feature location record", 
          array(), WATCHDOG_WARNING);
        return 0;    
     }    
   }
-  $srcfeature = $r[0];
+  $srcfeature = $results[0];
 
   // TODO: create an attribute that recognizes the residue_info,locgroup, 
   //  is_fmin_partial and is_fmax_partial, right now these are
@@ -1495,8 +1494,7 @@ function tripal_feature_load_gff3_featureloc($feature, $organism, $landmark, $fm
     if ($phase) {
       $values['phase'] = $phase;
       $options = array('statement_name' => 'ins_featureloc_allphase');
-    }
-    
+    }    
     $success = tripal_core_chado_insert('featureloc', $values, $options);
     if (!$success) {
       watchdog("T_gff3_loader", "Failed to insert featureloc", array(), WATCHDOG_WARNING);
@@ -1522,7 +1520,9 @@ function tripal_feature_load_gff3_property($feature, $property, $value) {
   );
   $options = array('statement_name' => 'sel_cvterm_name_cvid');
   $result = tripal_core_chado_select('cvterm', array('*'), $select, $options);
-  if (count($cvterm) == 0) {
+
+  // if we don't have a property like this already, then add it otherwise, just return
+  if (count($result) == 0) {
     $term = array(
       'id' => "null:$property",
       'name' => $property,
@@ -1579,3 +1579,84 @@ function tripal_feature_load_gff3_property($feature, $property, $value) {
   }
 }
 
+/*
+ * 
+ */
+function tripal_feature_load_gff_fasta($fh, $interval, &$num_read, &$intv_read, &$line_num) {
+  print "Loading FASTA sequences\n";
+  $residues = '';
+  $sql = " 
+    PREPARE sel_gfftemp_un (text) AS
+    SELECT feature_id FROM tripal_gff_temp
+    WHERE uniquename = $1
+  ";
+  $status = tripal_core_chado_prepare('sel_gfftemp_un', $sql, array('text'));
+  if (!$status) {
+   watchdog('T_gff3_loader', 'Cannot prepare statement \'sel_gfftemp_un\'.', 
+     array(), WATCHDOG_ERROR);
+   return '';  
+  }
+  $id = NULL;
+  
+  // iterate through the remainig lines of the file
+  while ($line = fgets($fh)) {
+    
+    $line_num++;
+    $num_read += drupal_strlen($line);   
+    $intv_read += $num_read; 
+    $line = trim($line);      
+
+    // update the job status every 1% features
+    if ($job and $intv_read >= $interval) {
+      $intv_read = 0;
+      $percent = sprintf("%.2f", ($num_read / $filesize) * 100);
+      print "Parsing Line $line_num (" . $percent . "%). Memory: " . number_format(memory_get_usage()) . " bytes.\r";
+      tripal_job_set_progress($job, intval(($num_read / $filesize) * 100));
+    }
+    
+    // if we encounter a definition line then get the name, uniquename,
+    // accession and relationship subject from the definition line
+    if (preg_match('/^>/', $line)) {   
+      // if we are beginning a new sequence then save the last one we 
+      // just finished.     
+             
+      if ($id) {
+        $sql = "EXECUTE sel_gfftemp_un('%s')";
+        $result = tripal_core_chado_execute_prepared('sel_gfftemp_un', $sql, array($id));
+        if (!$result) {
+          watchdog('T_gff3_loader', 'Cannot find feature to assign FASTA sequence: %uname', 
+             array('%uname' => $id), WATCHDOG_WARNING); 
+        }
+        // if we have a feature then add the residues
+        else {    
+          $feature = db_fetch_object($result);    
+          $values = array('residues' => $residues);
+          $match = array('feature_id' => $feature->feature_id);
+          $options = array('statement_name' => 'upd_feature_re');
+          tripal_core_chado_update('feature', $match, $values, $options);
+        }
+      }
+      // get the feature ID for this ID from the tripal_gff_temp table
+      $id = preg_replace('/^>(.*)$/', '\1', $line);      
+      $residues = '';
+    }
+    else {
+      $residues .= trim($line);
+    }
+  } 
+  // add in the last sequence
+  $sql = "EXECUTE sel_gfftemp_un('%s')";
+  $result = tripal_core_chado_execute_prepared('sel_gfftemp_un', $sql, array($id));
+  if (!$result) {
+    watchdog('T_gff3_loader', 'Cannot find feature to assign FASTA sequence: %uname', 
+       array('%uname' => $id), WATCHDOG_WARNING); 
+  }
+  // if we have a feature then add the residues
+  else {        
+    $feature = db_fetch_object($result);    
+    $values = array('residues' => $residues);
+    $match = array('feature_id' => $feature->feature_id);
+    $options = array('statement_name' => 'upd_feature_re');
+    tripal_core_chado_update('feature', $match, $values, $options);
+  } 
+}
