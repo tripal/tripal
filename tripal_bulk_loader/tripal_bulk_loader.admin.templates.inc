@@ -837,8 +837,6 @@ function tripal_bulk_loader_edit_template_record_form(&$form_state = NULL) {
      '#default_value' => $select_if_duplicate
   );
 
-
-// TODO: finish coding up the update_if_duplicate functionality
   $form['edit_record']['update_if_duplicate'] = array(
      '#type' => 'checkbox',
      '#title' => t('UPDATE if duplicate (no insert)'),
@@ -879,7 +877,8 @@ function tripal_bulk_loader_edit_template_record_form_validate($form, $form_stat
     $is_unique = tripal_bulk_loader_is_record_name_unique(
       $form_state['values']['record_name'],
       $form_state['values']['template_id'],
-      $form_state['storage']['template_array']
+      $form_state['storage']['template_array'],
+      $form_state['values']['field_group']
     );
     if (!$is_unique) {
       form_set_error('record_name', "New Record Name must be unique. '" . $form_state['values']['record_name'] . "' is not unique.");
@@ -2527,11 +2526,13 @@ function tripal_bulk_loader_edit_template_field_form_submit($form, &$form_state)
  *   The template_id of the template to add the record to
  * @param $template_array
  *   The array describing the template. Optional -will be loaded using template_id if not provided
+ * @param $current_priority
+ *   The priority of the already existing record -checks that the name only occurs on this particular record
  *
  * @return
  *   TRUE if the record name is not empty and not already in the template_array; FALSE otherwise
  */
-function tripal_bulk_loader_is_record_name_unique($new_record_name, $template_id, $template_array = NULL) {
+function tripal_bulk_loader_is_record_name_unique($new_record_name, $template_id, $template_array = NULL, $current_priority = NULL) {
 
   // get the template array if it's not supplied
   if (empty($template_array)) {
@@ -2554,9 +2555,11 @@ function tripal_bulk_loader_is_record_name_unique($new_record_name, $template_id
   }
 
   // Check the new record name is unique
-  foreach ($template_array as $t) {
+  foreach ($template_array as $priority => $t) {
     if (strcmp($t['record_id'], $new_record_name) == 0) {
-      return FALSE;
+    	if (($priority != $current_priority) AND ($current_priority !== NULL)) {
+	      return FALSE;
+	    }
     }
   }
   return TRUE;
