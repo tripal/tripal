@@ -326,8 +326,9 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
   while ($line = fgets($fh)) {
 
     $line_num++;
-    $num_read += drupal_strlen($line);   
-    $intv_read += $num_read; 
+    $size = drupal_strlen($line);
+    $num_read += $size;
+    $intv_read += $size; 
 
     // update the job status every 1% features
     if ($job and $intv_read >= $interval) {

@@ -24,7 +24,7 @@ require_once "api/tripal_core.ahah.inc";
  * @ingroup tripal_core
  */
 function tripal_core_init() {
-  global $base_url;  
+  global $base_url;     
   
   // we need to declare here the persistent_chado global variable
   global $persistent_chado;
@@ -32,7 +32,7 @@ function tripal_core_init() {
   $persistent_chado = NULL;
   $prepared_statements = array();
   
-  
+  // add javascript files 
   drupal_add_js(drupal_get_path('theme', 'tripal') . '/js/tripal.ahah.js');
   
   // create the 'tripal' controlled volcabulary in chado but only if it doesn't already exist, and

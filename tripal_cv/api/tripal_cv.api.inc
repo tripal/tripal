@@ -336,32 +336,39 @@ function tripal_cv_add_cv($name, $definition) {
  */
 function tripal_cv_add_cvterm($term, $defaultcv = '_global', $is_relationship = 0, 
   $update = 1, $dbname = 'internal') {
-   
-  $connection = tripal_db_persistent_chado();
-    
+      
   // get the term properties
   $id = $term['id'];
-  if (isset($term['name'])) {
+  $name = '';
+  $cvname = '';
+  $definition = '';
+  $is_obsolete = 0;
+  $accession = '';
+  
+  if (array_key_exists('name', $term)) {
     $name = $term['name'];  
   }
   else {
     $name = $id;  
-  }  
-  if (isset($term['namespace'])) {
+  }
+
+  if (array_key_exists('namespace', $term)) {
     $cvname = $term['namespace'];
   } 
   else {
     $cvname = $defaultcv;
   }
-  if (isset($term['def'])) {
+  if (array_key_exists('def', $term)) {
     $definition = preg_replace('/^\"(.*)\"/', '\1', $term['def']);
   }
   else {
     $definition = '';
   }
-  $is_obsolete = $term['is_obsolete'] ? $term['is_obsolete'] : 0;
-  if (strcmp($is_obsolete, 'true') == 0) {
-    $is_obsolete = 1;
+  if (array_key_exists('is_obsolete', $term)) {
+    $is_obsolete = $term['is_obsolete'];
+    if (strcmp($is_obsolete, 'true') == 0) {
+      $is_obsolete = 1;
+    }
   }  
   if (!$name and !$id) {
     watchdog('tripal_cv', "Cannot find cvterm without 'id' or 'name'", NULL, WATCHDOG_WARNING);
@@ -370,7 +377,6 @@ function tripal_cv_add_cvterm($term, $defaultcv = '_global', $is_relationship = 
   if (!$id) {
     $id = $name;
   }
-
   
   // get the accession and the database from the cvterm id
   if ($dbname) {
@@ -431,11 +437,11 @@ function tripal_cv_add_cvterm($term, $defaultcv = '_global', $is_relationship = 
   // the cvterm table has two unique dependencies. We need to check both.
   // first check the (name, cv_id, is_obsolete) constraint
   $values = array(
-     'name' => $name,
-     'is_obsolete' => $is_obsolete,
-     'cv_id' => array(
-       'name' => $cvname,
-     ),
+    'name' => $name,
+    'is_obsolete' => $is_obsolete,
+    'cv_id' => array(
+      'name' => $cvname,
+    ),
   );
   $options = array('statement_name' => 'sel_cvterm_c1');
   $result = tripal_core_chado_select('cvterm', array('*'), $values, $options);
@@ -614,3 +620,41 @@ function tripal_cv_add_cvterm($term, $defaultcv = '_global', $is_relationship = 
 }
 
 
+/**
+ * This function defines the custom tables that will be created 
+ * in the chado schema.
+ *
+ * @ingroup tripal_cv
+ */
+function tripal_cv_get_custom_tables($table = NULL) {
+
+ if (!$table or strcmp($table, 'tripal_obo_temp')==0) {
+    $schema['tripal_obo_temp'] = array(
+      'table' => 'tripal_obo_temp',
+      'fields' => array(
+        'id' => array(
+          'type' => 'varchar',
+          'length' => '255',
+          'not null' => TRUE,
+        ),
+        'stanza' => array(
+          'type' => 'text',
+          'not null' => TRUE,
+        ),
+        'type' => array(
+          'type' => 'varchar',
+          'length' => '50',
+          'not null' => TRUE,
+        ),
+      ),
+      'indexes' => array(
+        'tripal_obo_temp_idx0' => array('id'),
+        'tripal_obo_temp_idx0' => array('type'),
+      ),
+      'unique keys' => array(
+        'tripal_obo_temp_uq0' => array('id'),
+      ),
+    );
+  }
+  return $schema;
+}
