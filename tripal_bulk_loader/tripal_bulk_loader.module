@@ -5,6 +5,9 @@ include('tripal_bulk_loader.constants.inc');
 include('tripal_bulk_loader.admin.inc');
 include('tripal_bulk_loader.admin.templates.inc');
 
+// API
+include('api/tripal_bulk_loader.api.templates.inc');
+
 /**
  * Implements hook_init
  * Used to add stylesheets and javascript files to the header
