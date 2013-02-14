@@ -318,7 +318,7 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
   
   // begin the transaction
   if ($use_transaction) {
-    //tripal_db_start_transaction();
+    tripal_db_start_transaction();
         
     // if we cannot get a connection then let the user know the loading will be slow
     if (!$connection) {

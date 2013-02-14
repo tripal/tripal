@@ -183,6 +183,10 @@ function tripal_jobs_report_form_submit($form, &$form_state = NULL) {
  */
 function tripal_jobs_report() {
 
+  // run the following function which will 
+  // change the status of jobs that have errored out
+  tripal_jobs_check_running();
+  
 	$jobs_status_filter = $_SESSION['tripal_job_status_filter'];
   
   $sql = "
@@ -328,6 +332,7 @@ function tripal_jobs_launch($do_parallel = 0, $job_id = NULL) {
   // if they are, don't continue, we don't want to have
   // more than one job script running at a time
   if (!$do_parallel and tripal_jobs_check_running()) {
+    print "Jobs are still running. Use the --parallel=1 option with the Drush command to run jobs in parallel.";
     return;
   }
 
@@ -394,7 +399,6 @@ function tripal_jobs_check_running() {
     if ($job->pid && $status) {
       // the job is still running so let it go
       // we return 1 to indicate that a job is running
-      print "Job is still running (pid $job->pid)\n";
       return TRUE;
     }
     else {
