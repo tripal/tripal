@@ -2638,8 +2638,7 @@ function tripal_feature_job_describe_args($callback, $args) {
     $new_args['Sequence Type'] = $args[2];
     $new_args['Name Match Type'] = $args[14];
     $new_args['Name RE'] = $args[4];
-    $new_args['Unique Name RE'] = $args[5];
-
+    $new_args['Unique Name RE'] = $args[5];   
 
     // add in the relationship arguments
     $new_args['Relationship Type'] = $args[8];
@@ -2694,6 +2693,11 @@ function tripal_feature_job_describe_args($callback, $args) {
     $new_args['Import all and update'] = ($args[4] == 1) ? "Yes" : "No";
     $new_args['Import all and replace'] = ($args[5] == 1) ? "Yes" : "No";
     $new_args['Delete features'] = ($args[6] == 1) ? "Yes" : "No";
+    $target_organism = tripal_core_chado_select('organism', array('genus', 'species'), array('organism_id' => $args[8]));
+    $new_args['Target organism'] = $target_organism[0]->genus . " " . $target_organism[0]->species;
+    $new_args['Target type'] = $args[9];
+    $new_args['Create target'] = ($args[10] == 1) ? "Yes" : "No";
+    
     
   }
   if ($callback == 'tripal_feature_sync_features') {
