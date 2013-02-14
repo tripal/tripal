@@ -210,6 +210,11 @@ function tripal_bulk_loader_modify_template_base_form($form_state = NULL, $mode)
             '#name' => ($priority !== 0) ? (string)$priority : 'zero',
             '#value' => 'Edit Record',
           ),
+          'submit-delete_record' => array(
+            '#type' => 'submit',
+            '#name' => ($priority !== 0) ? (string)$priority : 'zero',
+            '#value' => 'Delete Record',
+          ),
           'submit-add_field' => array(
             '#type' => 'submit',
             '#name' => ($priority !== 0) ? (string)$priority : 'zero',
@@ -425,6 +430,14 @@ function tripal_bulk_loader_modify_template_base_form_submit($form, &$form_state
       drupal_goto('admin/tripal/tripal_bulk_loader_template/edit_record', $query);
     break;
 
+    case 'Delete Record':
+    	$form_state['storage']['record2priority'] = array();
+      $new_template = tripal_bulk_loader_delete_record($form_state['clicked_button']['#name'], $form_state['storage']['template']);
+      if (!empty($new_template)) {
+      	$form_state['storage']['template'] = $new_template;
+      }
+    break;
+
     case 'Add Field':
       $query = array(
         'template_id' => $form_state['storage']['template_id'],
@@ -455,14 +468,14 @@ function tripal_bulk_loader_modify_template_base_form_submit($form, &$form_state
     break;
 
     case 'Delete Field':
+    	// Delete Field
       $field_data = $form_state['values']['fields-data'][$form_state['clicked_button']['#name']];
       $priority = $field_data['priority_hidden'];
       $field_key = $field_data['field_index'];
-      unset($form_state['storage']['template'][$priority]['fields'][$field_key]);
-      if (!$form_state['storage']['template'][$priority]['fields']) {
-        unset($form_state['storage']['record2priority'][$form_state['storage']['template'][$priority]['record_id']]);
-        unset($form_state['storage']['template'][$priority]);
-      }
+      $new_template = tripal_bulk_loader_delete_field($priority, $field_key, $form_state['storage']['template']);
+			if (!empty($new_template)) {
+				$form_state['storage']['template'] = $new_template;
+			}
       drupal_set_message(t('Deleted Field from Template.'));
     break;
   } //end of switch
@@ -2509,60 +2522,6 @@ function tripal_bulk_loader_edit_template_field_form_submit($form, &$form_state)
     }
   }
 
-}
-
-/**
- * @section
- * Helper Functions
- */
-
-/**
- * Meant to be called from a form_validate function to ensure a newly added bulk loader record
- * name is unique and not empty.
- *
- * @param $new_record_name
- *   The record name to check for uniqueness
- * @param $template_id
- *   The template_id of the template to add the record to
- * @param $template_array
- *   The array describing the template. Optional -will be loaded using template_id if not provided
- * @param $current_priority
- *   The priority of the already existing record -checks that the name only occurs on this particular record
- *
- * @return
- *   TRUE if the record name is not empty and not already in the template_array; FALSE otherwise
- */
-function tripal_bulk_loader_is_record_name_unique($new_record_name, $template_id, $template_array = NULL, $current_priority = NULL) {
-
-  // get the template array if it's not supplied
-  if (empty($template_array)) {
-    $template = db_fetch_object(db_query("SELECT * FROM {tripal_bulk_loader_template} WHERE template_id=%d", $template_id));
-    $template_array = unserialize($template->template_array);
-    if (!is_array($template_array)) {
-      watchdog(
-        'tripal_bulk_loader',
-        'Unable to retrieve template array from database where template_id=%template_id',
-        array('%template_id' => $template_id),
-        WATCHDOG_WARNING
-      );
-      return FALSE;
-    }
-  }
-
-  // Check that the new record name is not empty
-  if (empty($new_record_name)) {
-    return FALSE;
-  }
-
-  // Check the new record name is unique
-  foreach ($template_array as $priority => $t) {
-    if (strcmp($t['record_id'], $new_record_name) == 0) {
-    	if (($priority != $current_priority) AND ($current_priority !== NULL)) {
-	      return FALSE;
-	    }
-    }
-  }
-  return TRUE;
 }
 
 /**
