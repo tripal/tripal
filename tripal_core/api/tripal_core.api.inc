@@ -336,7 +336,7 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
       $status = tripal_core_chado_prepare($options['statement_name'], $psql, $idatatypes);
 
       if (!$status) {
-        watchdog('tripal_core', "tripal_core_chado_insert: not able to prepare '%name' statement for: %sql", array('%name' => $options['statement_name'], '%sql' => $sql), 'WATCHDOG ERROR');
+        watchdog('tripal_core', "tripal_core_chado_insert: not able to prepare '%name' statement for: %sql", array('%name' => $options['statement_name'], '%sql' => $sql), WATCHDOG_ERROR);
         return FALSE;
       }
     }
@@ -352,17 +352,29 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
   // if we have a result then add primary keys to return array
   if ($options['return_record'] == TRUE and $result) {
     if (array_key_exists('primary key', $table_desc) and is_array($table_desc['primary key'])) {
-      foreach ($table_desc['primary key'] as $field) {
+      foreach ($table_desc['primary key'] as $field) {        
+        $sql = '';
         $psql = "PREPARE currval_" . $table . "_" . $field . " AS SELECT CURRVAL('" . $table . "_" . $field . "_seq')";
         $is_prepared = tripal_core_chado_prepare("currval_" . $table . "_" . $field, $psql, array());
+        $value = '';
         if ($is_prepared) {
            $value = db_result(chado_query("EXECUTE currval_". $table . "_" . $field));
+           if (!$value) {
+            watchdog('tripal_core', "tripal_core_chado_insert: not able to retrieve primary key after insert: %sql", 
+              array('%sql' => $psql), WATCHDOG_ERROR);
+            return FALSE;  
+          }         
         }
         else {
           $sql = "SELECT CURRVAL('" . $table . "_" . $field . "_seq')";
           $value =  db_result(chado_query($sql));
+          if (!$value) {
+            watchdog('tripal_core', "tripal_core_chado_insert: not able to retrieve primary key after insert: %sql", 
+              array('%sql' => $sql), WATCHDOG_ERROR);
+            return FALSE;  
+          }
         }
-        $values[$field] = $value;
+        $values[$field] = $value;        
       }
     }
     return $values;
@@ -725,11 +737,11 @@ function tripal_core_chado_update($table, $match, $values, $options = NULL) {
   if ($prepared) {
     // if this is the first time we've run this query
     // then we need to do the prepare, otherwise just execute
-    if ($options['is_prepared'] != TRUE and
-    !tripal_core_is_sql_prepared($options['statement_name'])) {
+    if ($options['is_prepared'] != TRUE and !tripal_core_is_sql_prepared($options['statement_name'])) {
       $status = chado_query($psql);
       if (!$status) {
-        watchdog('tripal_core', "tripal_core_chado_update: not able to prepare '%name' statement for: %sql", array('%name' => $options['statement_name'], '%sql' => $sql), 'WATCHDOG ERROR');
+        watchdog('tripal_core', "tripal_core_chado_update: not able to prepare '%name' statement for: %sql", 
+          array('%name' => $options['statement_name'], '%sql' => $sql), WATCHDOG_ERROR);
         return FALSE;
       }
     }
@@ -992,7 +1004,7 @@ function tripal_core_chado_delete($table, $match, $options = NULL) {
     !tripal_core_is_sql_prepared($options['statement_name'])) {
       $status = chado_query($psql);
       if (!$status) {
-        watchdog('tripal_core', "tripal_core_chado_delete: not able to prepare '%name' statement for: %sql", array('%name' => $options['statement_name'], '%sql' => $sql), 'WATCHDOG ERROR');
+        watchdog('tripal_core', "tripal_core_chado_delete: not able to prepare '%name' statement for: %sql", array('%name' => $options['statement_name'], '%sql' => $sql), WATCHDOG_ERROR);
         return FALSE;
       }
     }

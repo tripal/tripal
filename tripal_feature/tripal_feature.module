@@ -2697,8 +2697,9 @@ function tripal_feature_job_describe_args($callback, $args) {
     $new_args['Target organism'] = $target_organism[0]->genus . " " . $target_organism[0]->species;
     $new_args['Target type'] = $args[9];
     $new_args['Create target'] = ($args[10] == 1) ? "Yes" : "No";
-    
-    
+    $new_args['Starting line'] = $args[11];
+    $new_args['Landmark Type'] = $args[12];
+    $new_args['Alternate ID attribute'] = $args[13];
   }
   if ($callback == 'tripal_feature_sync_features') {
     if ($args[0]) {
