@@ -73,8 +73,7 @@ function tripal_views_description_page() {
 function tripal_views_integration_setup_list() {
   $output = '';
 
-  $output .= '<h3>' . l(t('Add a new entry'), "admin/tripal/views/integration/new") . " | " .
-    l(t("Create Materialized View"), 'admin/build/views/add') . '</h3>';
+  $output .=  l(t('Add a New Entry'), "admin/tripal/views/integration/new") ;
 
   $output .= '<p>' . t('The following tables are available for integration with Drupal Views. If '
     . 'a table is integrated more than once, then the setup with the lightest '
@@ -85,7 +84,7 @@ function tripal_views_integration_setup_list() {
 
 
   // Start with materialized views
-  $output .= '<br /><h3>Materialized Views</h3>';
+  $output .= '<br /><h3>Legacy Materialized Views</h3>';
   $header = array('', 'Drupal Views Type Name', 'Table Name', 'Is Legacy?', 'Priority', 'Comment');
   $rows = array();
 
@@ -112,11 +111,13 @@ function tripal_views_integration_setup_list() {
     $output .= theme('table', $header, $rows);
   }
   else {
-    $output .= '<p>There are currently no Materialized Views defined.</p>';
+    $output .= '<p>There are currently no Materialized Views defined. ';
+    $output .=  l(t('Add a New Entry'), "admin/tripal/views/integration/new") . '</p>';
+    
   }
 
   // Now list non-mview custom tables
-  $output .= '<br /><h3>Custom Tables</h3>';
+  $output .= '<br /><h3>Custom Tables & Non-Legacy Materialized Views</h3>';
   $header = array('', 'Drupal Views Type Name', 'Table Name', 'Priority', 'Comment');
   $rows = array();
 
@@ -213,9 +214,9 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL) {
   $data = array();
   $form['#cache'] = TRUE;
 
-  // ahah_helper requires us to register the form with it's module
-  ahah_helper_register($form, $form_state);
-
+  // initialize Tripal AHAH 
+  tripal_core_ahah_init_form();
+  
   // if a setup_id is provided then we want to get the form defaults
   $setup_obj = array();
   if (isset($setup_id)) {
@@ -225,8 +226,8 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL) {
     $setup_obj = db_fetch_object(db_query($sql, $setup_id));
     $mview_id = $setup_obj->mview_id;
     $table_name = $setup_obj->table_name;
-    $form_state['storage']['mview_id'] = $mview_id;
-    $form_state['storage']['table_name'] = $table_name;
+    $form_state['values']['mview_id'] = $mview_id;
+    $form_state['values']['table_name'] = $table_name;
 
     // get the default field name/description
     $sql = "SELECT * FROM {tripal_views_field} WHERE setup_id=%d";
@@ -290,7 +291,7 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL) {
     '#description' => t('Tables from Chado, custom tables and materialized view tables (non-legacy MViews) can be selected for integration.'),
     '#default_value' => (!$setup_obj->mview_id) ? $setup_obj->table_name : '',
     '#ahah' => array(
-       'path' => ahah_helper_path(array('view_setup_table')),
+       'path' => 'tripal/views/integration/ajax/view_setup_table',
        'wrapper' => 'table-rows-div',
        'effect' => 'fade',
        'event' => 'change',
@@ -313,7 +314,7 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL) {
     '#description' => 'Which materialized view to use.',
     '#default_value' => $setup_obj->mview_id,
     '#ahah' => array(
-       'path' => ahah_helper_path(array('view_setup_table')),
+       'path' => 'tripal/views/integration/ajax/view_setup_table',
        'wrapper' => 'table-rows-div',
        'effect' => 'fade',
        'event' => 'change',
@@ -394,9 +395,9 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL) {
   // add the fieldset for the table fields, but only if the $mview_id or $table_name
   // is set. The only times these values are set is if we're editing an existing
   // record or if the AHAH callback is being made.
-  if ($form_state['storage']['mview_id'] or $form_state['storage']['table_name']) {
-    $mview_id = $form_state['storage']['mview_id'];
-    $table_name = $form_state['storage']['table_name'];
+  if ($form_state['values']['mview_id'] or $form_state['values']['table_name']) {
+    $mview_id = $form_state['values']['mview_id'];
+    $table_name = $form_state['values']['table_name'];
     $form['view_setup_table'] = array(
       '#type' => 'fieldset',
       '#title' => 'Join Selection',
@@ -512,13 +513,13 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL) {
       // set the default values for the human-readable name and description
       $default_name = '';
       $default_descrip = '';
-      if (isset($setup_id) && !isset($form_state['storage']["fields_readable_name_$table_id-$i"])) {
+      if (isset($setup_id) && !isset($form_state['values']["fields_readable_name_$table_id-$i"])) {
         $default_name = $default_fields[$column_name]['name'];
         $default_descrip = $default_fields[$column_name]['description'];
       }
       else {
-        $default_name = $form_state['storage']["fields_readable_name_$table_id-$i"];
-        $default_descrip = $form_state['storage']["fields_description_$table_id-$i"];
+        $default_name = $form_state['values']["fields_readable_name_$table_id-$i"];
+        $default_descrip = $form_state['values']["fields_description_$table_id-$i"];
       }
       $form['view_setup_table']["$table_id-$i"]['column-2']["fields_readable_name_$table_id-$i"] = array(
         '#type' => 'textfield',
@@ -550,15 +551,15 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL) {
       // set the default values for the join table and columns
       $default_join_table = 0;
       $default_join_field = 0;
-      if (isset($setup_id) && !isset($form_state['storage']["fields_join_$table_id-$i"])) {
+      if (isset($setup_id) && !isset($form_state['values']["fields_join_$table_id-$i"])) {
         $default_join_table = $default_joins[$column_name]['left_table'];
         $default_join_field = $default_joins[$column_name]['left_field'];
-        $form_state['storage']["fields_join_$table_id-$i"] = $default_join_table;
-        $form_state['storage']["fields_join_column_$table_id-$i"] = $default_join_field;
+        $form_state['values']["fields_join_$table_id-$i"] = $default_join_table;
+        $form_state['values']["fields_join_column_$table_id-$i"] = $default_join_field;
       }
       else{
-        $default_join_table = $form_state['storage']["fields_join_$table_id-$i"];
-        $default_join_field = $form_state['storage']["fields_join_column_$table_id-$i"];
+        $default_join_table = $form_state['values']["fields_join_$table_id-$i"];
+        $default_join_field = $form_state['values']["fields_join_column_$table_id-$i"];
       }
 
       $form['view_setup_table']["$table_id-$i"]['column-3']["fields_join_$table_id-$i"] = array(
@@ -569,7 +570,7 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL) {
         '#required' => FALSE,
         '#default_value' => $default_join_table,
         '#ahah' => array(
-           'path' => ahah_helper_path(array("view_setup_table", "$table_id-$i", 'column-3', "fields_join_column_$table_id-$i")),
+           'path' => "tripal/views/integration/ajax/join_field/$table_id-$i/fields_join_column_$table_id-$i",
            'wrapper' => "fields-column-join-column-$table_id-$i",
            'effect' => 'fade',
            'event' => 'change',
@@ -598,12 +599,12 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL) {
       );
 
       $default_join_handler = 0;
-      if (isset($setup_id) && !isset($form_state['storage']["fields_join_handler_$table_id-$i"])) {
+      if (isset($setup_id) && !isset($form_state['values']["fields_join_handler_$table_id-$i"])) {
         $default_join_handler = $default_handlers[$column_name]['join']['handler_name'];
-        $form_state['storage']["fields_join_handler_$table_id-$i"] = $default_join_handler;
+        $form_state['values']["fields_join_handler_$table_id-$i"] = $default_join_handler;
       }
       else {
-        $default_join_handler = $form_state['storage']["fields_join_handler_$table_id-$i"];
+        $default_join_handler = $form_state['values']["fields_join_handler_$table_id-$i"];
       }
       $form['view_setup_table']["$table_id-$i"]['column-3']["fields_join_handler_$table_id-$i"] = array(
         '#type' => 'select',
@@ -624,12 +625,12 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL) {
 
       // create the handler fields
       $default_field_handler = 0;
-      if (isset($setup_id) && !isset($form_state['storage']["fields_field_handler_$table_id-$i"])) {
+      if (isset($setup_id) && !isset($form_state['values']["fields_field_handler_$table_id-$i"])) {
         $default_field_handler = $default_handlers[$column_name]['field']['handler_name'];
-        $form_state['storage']["fields_field_handler_$table_id-$i"] = $default_field_handler;
+        $form_state['values']["fields_field_handler_$table_id-$i"] = $default_field_handler;
       }
       else {
-        $default_field_handler = $form_state['storage']["fields_field_handler_$table_id-$i"];
+        $default_field_handler = $form_state['values']["fields_field_handler_$table_id-$i"];
         if (!$default_field_handler) {
           if ($column_type == 'integer' or $column_type == 'int' or $column_type == 'serial') {
             $default_field_handler = 'chado_views_handler_field_numeric';
@@ -659,12 +660,12 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL) {
       );
 
       $default_filter_handler = 0;
-      if (isset($setup_id) && !isset($form_state['storage']["fields_filter_handler_$table_id-$i"])) {
+      if (isset($setup_id) && !isset($form_state['values']["fields_filter_handler_$table_id-$i"])) {
         $default_filter_handler = $default_handlers[$column_name]['filter']['handler_name'];
-        $form_state['storage']["fields_filter_handler_$table_id-$i"]= $default_filter_handler;
+        $form_state['values']["fields_filter_handler_$table_id-$i"]= $default_filter_handler;
       }
       else {
-        $default_filter_handler = $form_state['storage']["fields_filter_handler_$table_id-$i"];
+        $default_filter_handler = $form_state['values']["fields_filter_handler_$table_id-$i"];
         if (!$default_filter_handler) {
           if ($column_type == 'integer' or $column_type == 'int' or $column_type == 'serial') {
             $default_filter_handler = 'chado_views_handler_filter_numeric';
@@ -693,12 +694,12 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL) {
       );
 
       $default_sort_handler = 0;
-      if (isset($setup_id) && !isset($form_state['storage']["fields_sort_handler_$table_id-$i"])) {
+      if (isset($setup_id) && !isset($form_state['values']["fields_sort_handler_$table_id-$i"])) {
         $default_sort_handler = $default_handlers[$column_name]['sort']['handler_name'];
-        $form_state['storage']["fields_sort_handler_$table_id-$i"] = $default_sort_handler;
+        $form_state['values']["fields_sort_handler_$table_id-$i"] = $default_sort_handler;
       }
       else {
-        $default_sort_handler = $form_state['storage']["fields_sort_handler_$table_id-$i"];
+        $default_sort_handler = $form_state['values']["fields_sort_handler_$table_id-$i"];
         if (!$default_sort_handler) {
           if ($column_type == 'integer' or $column_type == 'int' or $column_type == 'serial') {
             $default_sort_handler = 'chado_views_handler_sort';
@@ -727,12 +728,12 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL) {
       );
 
       $default_argument_handler = 0;
-      if (isset($setup_id) && !isset($form_state['storage']["fields_argument_handler_$table_id-$i"])) {
+      if (isset($setup_id) && !isset($form_state['values']["fields_argument_handler_$table_id-$i"])) {
         $default_argument_handler = $default_handlers[$column_name]['argument']['handler_name'];
-        $form_state['storage']["fields_argument_handler_$table_id-$i"]=$default_argument_handler ;
+        $form_state['values']["fields_argument_handler_$table_id-$i"]=$default_argument_handler ;
       }
       else {
-        $default_argument_handler = $form_state['storage']["fields_argument_handler_$table_id-$i"];
+        $default_argument_handler = $form_state['values']["fields_argument_handler_$table_id-$i"];
         if (!$default_argument_handler) {
           if ($column_type == 'integer' or $column_type == 'int' or $column_type == 'serial') {
             $default_argument_handler = 'views_handler_argument_numeric';
@@ -761,12 +762,12 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL) {
       );
 
       $default_relationship_handler = 0;
-      if (isset($setup_id) && !isset($form_state['storage']["fields_relationship_handler_$table_id-$i"])) {
+      if (isset($setup_id) && !isset($form_state['values']["fields_relationship_handler_$table_id-$i"])) {
         $default_relationship_handler = $default_handlers[$column_name]['relationship']['handler_name'];
-        $form_state['storage']["fields_relationship_handler_$table_id-$i"]=$default_relationship_handler;
+        $form_state['values']["fields_relationship_handler_$table_id-$i"]=$default_relationship_handler;
       }
       else {
-        $default_relationship_handler = $form_state['storage']["fields_relationship_handler_$table_id-$i"];
+        $default_relationship_handler = $form_state['values']["fields_relationship_handler_$table_id-$i"];
         if (!$default_relationship_handler) {
           if ($column_type == 'integer' or $column_type == 'int' or $column_type == 'serial') {
             $default_relationship_handler = 'views_handler_relationship';
@@ -1090,4 +1091,49 @@ function tripal_views_integration_discover_handlers() {
   $handlers[] = 'views_join';
 
   return $handlers;
+}
+
+/*
+*
+* */
+function tripal_views_integration_ajax_view_setup_table() {
+  // we only want the table row setup fields
+  $form = tripal_core_ahah_prepare_form();
+  $form = $form['view_setup_table'];
+  $data = drupal_render($form);  
+
+  // bind javascript events to the new objects that will be returned 
+  // so that AHAH enabled elements will work.
+  $settings = tripal_core_ahah_bind_events();
+
+  // return the updated JSON
+  drupal_json(
+    array(
+      'status'   => TRUE, 
+      'data'     => $data,
+      'settings' => $settings,
+    )  
+  );
+}
+/*
+ * 
+ */
+function tripal_views_integration_ajax_join_field($field, $join_field) {
+  // prepare and render the form
+  $form = tripal_core_ahah_prepare_form();
+  $form = $form['view_setup_table'][$field]['column-3'][$join_field]; 
+  $data = drupal_render($form);  
+
+  // bind javascript events to the new objects that will be returned 
+  // so that AHAH enabled elements will work.
+  $settings = tripal_core_ahah_bind_events();
+
+  // return the updated JSON
+  drupal_json(
+    array(
+      'status'   => TRUE, 
+      'data'     => $data,
+      'settings' => $settings,
+    )  
+  );
 }
