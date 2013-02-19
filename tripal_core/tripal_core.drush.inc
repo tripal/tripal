@@ -13,10 +13,24 @@
  */
 function tripal_core_drush_help($command) {
   switch ($command) {
-    case 'drush:tripal-current-job':
-      return dt('Returns details about the currently running tripal job including percent complete.');
+    // Tripal Materialized Views
     case 'drush:tripal-update-mview':
       return dt('Updates the specified materialized view.');
+
+    // Tripal Jobs
+    case 'drush:tripal-launch-jobs':
+      return dt('Launches any Tripal jobs waiting in the queue.');
+    case 'drush:tripal-current-job':
+      return dt('Returns details about the currently running tripal job including percent complete.');
+    case 'drush:tripal-rerun-job':
+      return dt('Rerun any tripal job in the queue.');
+
+    // Chado-specific
+    case 'drush:tripal-chado-version':
+      return dt('Returns the current version of chado associated with this drupal site.');
+    case 'drush:tripal-chadotable-desc':
+      return dt('Returns the table description as specified in the Tripal Schema API for the supplied table.');
+
   }
 }
 
@@ -28,16 +42,9 @@ function tripal_core_drush_help($command) {
  */
 function tripal_core_drush_command() {
   $items = array();
-  $items['tripal-current-job'] = array(
-    'description' => dt('Returns details about the currently running tripal job including percent complete.'),
-    'arguments'   => array(
-    ),
-    'examples' => array(
-      'Standard example' => 'drush tripal-current-job',
-    ),
-    'aliases' => array('trpjob-cur'),
-  );
-  $items['tripal-update-mview'] = array(
+
+  // Materialized Views
+  $items['tripal-mview-update'] = array(
     // used by drush help
     'description' => dt('Updates the specified materialized view.'),
     'arguments' => array(
@@ -53,14 +60,25 @@ function tripal_core_drush_command() {
       'mview_id',
       'table_name'
     ),
-    'aliases' => array('trpmv-up')
+    'aliases' => array('trpmv-up', 'tripal-update-mview')
   );
-  $items['tripal-launch-jobs'] = array(
+
+  // Jobs
+  $items['tripal-jobs-current'] = array(
+    'description' => dt('Returns details about the currently running tripal job including percent complete.'),
+    'arguments'   => array(
+    ),
+    'examples' => array(
+      'Standard example' => 'drush tripal-jobs-current',
+    ),
+    'aliases' => array('trpjob-cur','tripal-current-job'),
+  );
+  $items['tripal-jobs-launch'] = array(
     // used by drush help
     'description' => dt('Lauches any jobs waiting in the queue.'),
     'examples' => array(
-      'Normal Job' => 'drush tripal-launch-jobs admin',
-      'Parallel Job' => 'drush tripal-launch-jobs admin --parallel=1'
+      'Normal Job' => 'drush tripal-jobs-launch admin',
+      'Parallel Job' => 'drush tripal-jobs-launch admin --parallel=1'
     ),
     'arguments' => array(
       'user' => dt('The Drupal username under which the job should be run.  The permissions for this user will be used.'),
@@ -68,27 +86,85 @@ function tripal_core_drush_command() {
     // supply options
     'options' => array(
       'parallel' => dt('Normally jobs are executed one at a time. But if you are certain no conflicts will occur with other currently running jobs you may set this argument to a value of 1 to make the job run in parallel with other running jobs.'),
-      'job_id' => dt('Provide a job_id to run a specific job. Only jobs that have not been run already can be used'),      
+      'job_id' => dt('Provide a job_id to run a specific job. Only jobs that have not been run already can be used'),
     ),
-    'aliases' => array('trpjob-run')
+    'aliases' => array('trpjob-run','tripal-launch-jobs')
   );
-  $items['tripal-rerun-job'] = array(
+  $items['tripal-jobs-rerun'] = array(
     // used by drush help
     'description' => dt('Rerun any job in the queue.'),
     'examples' => array(
-      'Normal Job' => 'drush tripal-rerun-job admin 2',
-      'Parallel Job' => 'drush tripal-rerun-job admin  2 --parallel=1'
+      'Normal Job' => 'drush tripal-jobs-rerun admin 2',
+      'Parallel Job' => 'drush tripal-jobs-rerun admin  2 --parallel=1'
     ),
     'arguments' => array(
       'user' => dt('The Drupal username under which the job should be run.  The permissions for this user will be used.'),
-      'job_id' => dt('The job ID to run.'),    
+      'job_id' => dt('The job ID to run.'),
     ),
     // supply options
     'options' => array(
       'parallel' => dt('Normally jobs are executed one at a time. But if you are certain no conflicts will occur with other currently running jobs you may set this argument to a value of 1 to make the job run in parallel with other running jobs.'),
     ),
-    'aliases' => array('trpjob-rerun')
+    'aliases' => array('trpjob-rerun','tripal-rerun-job')
   );
+
+  // Chado-specific
+  $items['tripal-chado-version'] = array(
+    // used by drush help
+    'description' => dt('Returns the current version of chado associated with this drupal site.'),
+    'arguments' => array(
+    ),
+    'examples' => array(
+      'Standard Example' => 'drush tripal-chado-version',
+    ),
+    'aliases' => array('trpchado-ver')
+  );
+  $items['tripal-chadotable-desc'] = array(
+    // used by drush help
+    'description' => dt('Returns the table description as specified in the Tripal Schema API for the supplied table.'),
+    'arguments' => array(
+      'table_name' => dt('The name of the chado table.'),
+    ),
+    'examples' => array(
+      'By Table Name' => 'drush tripal-chadotable-desc --table_name=feature'
+    ),
+    // supply options
+    'options' => array(
+      'section' => dt('Only return the specified section of the schema table description. Possible sections include: description, fields, primary key, unique keys, foreign keys, indexes, referring_tables.'),
+    ),
+    'aliases' => array('trpschema-tbl')
+  );
+
+  // Tripal Node-Module Specific
+  $items['tripal-node-sync'] = array(
+    // used by drush help
+    'description' => dt('Sync\'s chado records with drupal creating nodes for the given chado-centric module.'),
+    'arguments' => array(
+      'module' => dt('The name of the chado-centric module to sync.'),
+    ),
+    'examples' => array(
+      'By Module' => 'drush tripal-node-sync feature'
+    ),
+    // supply options
+    'options' => array(
+    ),
+    'aliases' => array('trpnode-sync')
+  );
+  $items['tripal-node-clean'] = array(
+    // used by drush help
+    'description' => dt('Clean-up orphaned Drupal nodes and chado records.'),
+    'arguments' => array(
+      'module' => dt('The name of the chado-centric module to clean-up.'),
+    ),
+    'examples' => array(
+      'By Table Name' => 'drush tripal-node-clean feature'
+    ),
+    // supply options
+    'options' => array(
+    ),
+    'aliases' => array('trpnode-cln')
+  );
+
   return $items;
 }
 
@@ -106,10 +182,10 @@ function drush_tripal_core_tripal_launch_jobs($username) {
     $user = user_load(array('name' => $username));
   }
   else {
-    drush_print('ERROR: Please provide a username for running this job.'); 
+    drush_print('ERROR: Please provide a username for running this job.');
     return;
   }
-  
+
   if ($parallel) {
     drush_print("Tripal Job Launcher (in parallel)");
     drush_print("Running as user '$username'");
@@ -130,11 +206,12 @@ function drush_tripal_core_tripal_launch_jobs($username) {
  * NOTE: The following code is executed when drush 'trpjob-run' or 'drush tripal-launch-jobs' is called
  */
 function drush_tripal_core_tripal_rerun_job($username, $job_id) {
-  
+
   $new_job_id = tripal_jobs_rerun($job_id, FALSE);
   drush_tripal_core_tripal_launch_jobs($username, $new_job_id);
- 
+
 }
+
 /**
  * Prints details about the current running job
  *
@@ -200,4 +277,74 @@ function drush_tripal_core_tripal_update_mview() {
   else {
     drush_set_error('Update failed.');
   }
+}
+
+/**
+ * Returns the current version of chado
+ */
+function drush_tripal_core_tripal_chado_version() {
+  $version = tripal_core_get_chado_version();
+  drush_print('Current Chado Version: '.$version);
+}
+
+/**
+ * Returns the Tripal Schema API Description of the given table
+ *
+ * @param $table_name
+ *  The name of the table to return the description of
+ */
+function drush_tripal_core_tripal_chadotable_desc($table_name) {
+  $section = drush_get_option('section');
+
+  drush_print("Schema API Description for $table_name:");
+  $desc = tripal_core_get_chado_table_schema($table_name);
+
+  if (!empty($section)) {
+    drush_print("$section = ".print_r($desc[$section],TRUE));
+  }
+  else {
+    drush_print(print_r($desc,TRUE));
+  }
+}
+
+/**
+ * Sync's chado records with drupal creating nodes for the given chado-centric module.
+ *
+ * @param $module
+ *  The name of a module with nodes associated with it. For example, feature
+ */
+function drush_tripal_core_tripal_node_sync($module) {
+  switch($module) {
+    case 'analysis':
+      call_user_func('tripal_analysis_sync_analyses');
+      break;
+    case 'feature':
+      call_user_func('tripal_feature_sync_features');
+      break;
+    case 'featuremap':
+      call_user_func('tripal_featuremap_sync_featuremaps');
+      break;
+    case 'library':
+      call_user_func('tripal_library_sync_libraries');
+      break;
+    case 'organism':
+      call_user_func('tripal_organism_sync_organisms');
+      break;
+    case 'project':
+      call_user_func('tripal_project_sync_all_projects');
+      break;
+    case 'stock':
+      call_user_func('tripal_stock_sync_stocks');
+      break;
+  }
+}
+
+/**
+ * Clean-up orphaned Drupal nodes and chado records.
+ *
+ * @param $module
+ *  The name of a module with nodes associated with it. For example, feature
+ */
+function drush_tripal_core_tripal_node_clean($module) {
+  tripal_core_clean_orphaned_nodes($module, 0);
 }
