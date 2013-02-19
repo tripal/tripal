@@ -530,6 +530,7 @@ function tripal_analysis_views_default_views() {
     $fields['name']['alter']['path'] = 'node/[nid]';
     $default_handler->override_option('fields', $fields);
     // Only show records with published nodes
+    /**
     $filters = $view->get_items('filter', 'default');
     $filters['status'] = array(
       'operator' => '=',
@@ -546,6 +547,7 @@ function tripal_analysis_views_default_views() {
       'relationship' => 'none',
     );
     $default_handler->override_option('filters', $filters);
+    */
   }
   $views[$view->name] = $view;
 

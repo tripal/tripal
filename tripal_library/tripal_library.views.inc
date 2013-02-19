@@ -36,7 +36,7 @@ function tripal_library_views_data()  {
     );
     foreach ($tables as $tablename) {
       $priority = 9;
-      
+
       // check to see if the table is integrated. If it is then integrate it's
       // corresponding 'chado_[table]' table.
       if (!tripal_views_is_integrated($tablename, $priority)) {
@@ -64,7 +64,7 @@ function tripal_library_views_data()  {
       'libraryprop'
     );
     foreach ($tables as $tablename) {
-      $priority = 9;     
+      $priority = 9;
       if (!tripal_views_is_integrated($tablename, $priority)) {
         $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename, FALSE, $priority);
         tripal_views_integration_add_entry($table_integration_array);
@@ -484,6 +484,7 @@ function tripal_library_views_default_views() {
     $fields['name_1']['alter']['path'] = 'node/[nid]';
     $default_handler->override_option('fields', $fields);
     // Only show records with published nodes
+    /**
     $filters = $view->get_items('filter', 'default');
     $filters['status'] = array(
       'operator' => '=',
@@ -500,6 +501,7 @@ function tripal_library_views_default_views() {
       'relationship' => 'none',
     );
     $default_handler->override_option('filters', $filters);
+    */
   }
   $views[$view->name] = $view;
 
