@@ -173,7 +173,7 @@ function tripal_core_drush_command() {
  *
  * NOTE: The following code is executed when drush 'trpjob-run' or 'drush tripal-launch-jobs' is called
  */
-function drush_tripal_core_tripal_launch_jobs($username) {
+function drush_tripal_core_tripal_jobs_launch($username) {
   $parallel = drush_get_option('parallel');
   $job_id = drush_get_option('job_id');
 
@@ -205,7 +205,7 @@ function drush_tripal_core_tripal_launch_jobs($username) {
  *
  * NOTE: The following code is executed when drush 'trpjob-run' or 'drush tripal-launch-jobs' is called
  */
-function drush_tripal_core_tripal_rerun_job($username, $job_id) {
+function drush_tripal_core_tripal_jobs_rerun($username, $job_id) {
 
   $new_job_id = tripal_jobs_rerun($job_id, FALSE);
   drush_tripal_core_tripal_launch_jobs($username, $new_job_id);
@@ -217,7 +217,7 @@ function drush_tripal_core_tripal_rerun_job($username, $job_id) {
  *
  * NOTE: The following code is executed when 'drush trpjob-curr' or 'drush tripal-current-job' is called
  */
-function drush_tripal_core_tripal_current_job() {
+function drush_tripal_core_tripal_jobs_current() {
   $sql =  "SELECT * FROM {tripal_jobs} TJ ".
             "WHERE TJ.end_time IS NULL and NOT TJ.start_time IS NULL ";
   $jobs = db_query($sql);
