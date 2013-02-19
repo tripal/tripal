@@ -352,7 +352,7 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
   // if we have a result then add primary keys to return array
   if ($options['return_record'] == TRUE and $result) {
     if (array_key_exists('primary key', $table_desc) and is_array($table_desc['primary key'])) {
-      foreach ($table_desc['primary key'] as $field) {        
+      foreach ($table_desc['primary key'] as $field) {
         $sql = '';
         $psql = "PREPARE currval_" . $table . "_" . $field . " AS SELECT CURRVAL('" . $table . "_" . $field . "_seq')";
         $is_prepared = tripal_core_chado_prepare("currval_" . $table . "_" . $field, $psql, array());
@@ -360,21 +360,21 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
         if ($is_prepared) {
            $value = db_result(chado_query("EXECUTE currval_". $table . "_" . $field));
            if (!$value) {
-            watchdog('tripal_core', "tripal_core_chado_insert: not able to retrieve primary key after insert: %sql", 
+            watchdog('tripal_core', "tripal_core_chado_insert: not able to retrieve primary key after insert: %sql",
               array('%sql' => $psql), WATCHDOG_ERROR);
-            return FALSE;  
-          }         
+            return FALSE;
+          }
         }
         else {
           $sql = "SELECT CURRVAL('" . $table . "_" . $field . "_seq')";
           $value =  db_result(chado_query($sql));
           if (!$value) {
-            watchdog('tripal_core', "tripal_core_chado_insert: not able to retrieve primary key after insert: %sql", 
+            watchdog('tripal_core', "tripal_core_chado_insert: not able to retrieve primary key after insert: %sql",
               array('%sql' => $sql), WATCHDOG_ERROR);
-            return FALSE;  
+            return FALSE;
           }
         }
-        $values[$field] = $value;        
+        $values[$field] = $value;
       }
     }
     return $values;
@@ -420,7 +420,7 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
  *     record that was updated.  The returned record will have the fields provided
  *     but the primary key (if available for the table) will be added to the record.
  * @return
- *  On success this function returns TRUE. On failure, it returns FALSE.  
+ *  On success this function returns TRUE. On failure, it returns FALSE.
  *
  * Example usage:
  * @code
@@ -500,12 +500,12 @@ function tripal_core_chado_update($table, $match, $values, $options = NULL) {
     //print "NO STATEMENT (update): $table\n";
     //debug_print_backtrace();
   }
-  
+
   // get the table description
   $table_desc = tripal_core_get_chado_table_schema($table);
-  
-  // if the user wants us to return the record then we need to get the 
-  // unique primary key if one exists.  That way we can add it to the 
+
+  // if the user wants us to return the record then we need to get the
+  // unique primary key if one exists.  That way we can add it to the
   // values that get returned at the end of the function
   $pkeys = array();
   if ($options['return_record'] == TRUE) {
@@ -740,7 +740,7 @@ function tripal_core_chado_update($table, $match, $values, $options = NULL) {
     if ($options['is_prepared'] != TRUE and !tripal_core_is_sql_prepared($options['statement_name'])) {
       $status = chado_query($psql);
       if (!$status) {
-        watchdog('tripal_core', "tripal_core_chado_update: not able to prepare '%name' statement for: %sql", 
+        watchdog('tripal_core', "tripal_core_chado_update: not able to prepare '%name' statement for: %sql",
           array('%name' => $options['statement_name'], '%sql' => $sql), WATCHDOG_ERROR);
         return FALSE;
       }
@@ -757,7 +757,7 @@ function tripal_core_chado_update($table, $match, $values, $options = NULL) {
     // only if we have a single result do we want to add the primary keys to the values
     // array.  If the update matched many records we can't add the pkeys
 
-    if (count($pkeys) == 1) {      
+    if (count($pkeys) == 1) {
       foreach ($pkeys as $index => $pkey) {
         foreach ($pkey as $field => $fvalue) {
           $values[$field] = $fvalue;
@@ -2251,10 +2251,10 @@ function chado_query($sql) {
     // like Drupal tables are and then find those and prefix those with chado.
     $sql = preg_replace('/\n/', '', $sql);  // remove carriage returns
     // in the statement below we want to add 'chado.' to the beginning of each table
-    // we use the FROM keyword to look for tables, but FROM is also used in the 
-    // 'substring' function of postgres. But since table names can't start with 
+    // we use the FROM keyword to look for tables, but FROM is also used in the
+    // 'substring' function of postgres. But since table names can't start with
     // a number we exclude words numeric values. We also exclude tables that
-    // already have a schema prefix. 
+    // already have a schema prefix.
     $sql = preg_replace('/FROM\s+([^0123456789\(][^\.]*?)(\s|$)/i', 'FROM chado.\1 ', $sql);
     $sql = preg_replace('/INNER\s+JOIN\s+([^\.]*?)\s/i', 'INNER JOIN chado.\1 ', $sql);
   }
@@ -2824,17 +2824,17 @@ function tripal_db_set_default_search_path() {
 function tripal_core_is_sql_prepared($statement_name) {
   global $prepared_statements;
 
-  // check to see if the statement is prepared already  
+  // check to see if the statement is prepared already
   if (in_array($statement_name, $prepared_statements)) {
     return TRUE;
   }
- 
+
   // @coder-ignore: acting on postgres tables rather then drupal schema therefore, table prefixing does not apply
   $sql = "SELECT name FROM pg_prepared_statements WHERE name = '%s'";
   // do not use 'chado_query' here or it causes memory-leaks
   $result = db_fetch_object(db_query($sql, $statement_name));
 
-  if ($result) {    
+  if ($result) {
     return TRUE;
   }
   return FALSE;
@@ -2856,7 +2856,7 @@ function tripal_core_is_sql_prepared($statement_name) {
 function tripal_core_chado_prepare($statement_name, $psql, $args) {
   global $persistent_chado;
   global $prepared_statements;
-  
+
   if (!$persistent_chado) {
     watchdog('tripal_core', "chado_prepare: not able to prepare '%name' statement as no persistent connection is available", array('%name' => $statement_name, '%sql' => $psql), WATCHDOG_ERROR);
     return FALSE;
@@ -2873,7 +2873,7 @@ function tripal_core_chado_prepare($statement_name, $psql, $args) {
     }
     else {
       // Although a statement with this name is already prepared it is not the same!
-      watchdog('tripal_core', "chado_prepare: '%name' statement already prepared with different arguments! ". 
+      watchdog('tripal_core', "chado_prepare: '%name' statement already prepared with different arguments! ".
         "You want to prepare \n%sql\n with \n%values\n and the existing statement is \n%esql\n with \n%existing",
         array('%name' => $statement_name, '%sql' => $psql, '%values' => print_r($args, TRUE), '%esql' => $prepared_sql,
           '%existing' => print_r($prepared_args, TRUE)), WATCHDOG_ERROR);
@@ -2906,7 +2906,7 @@ function tripal_core_chado_prepare($statement_name, $psql, $args) {
  *   An array of values in the execute sql statement
  */
 function tripal_core_chado_execute_prepared($statement_name, $sql, $values) {
-  global $prepared_statements;   
+  global $prepared_statements;
 
   if (!tripal_core_is_sql_prepared($statement_name)) {
     watchdog('tripal_core', "tripal_core_chado_execute_prepared: Cannot execute an unprepared statement: '%name'", array('%name' => $statement_name), WATCHDOG_ERROR);
@@ -2978,7 +2978,7 @@ function tripal_core_chado_execute_prepared($statement_name, $sql, $values) {
   else {
     watchdog('tripal_core', "chado_execute_prepared: wrong number of arguments supplied for '%name' statement. ' .
       'Expected %required but recieved %values. Statement: %statement.",
-      array('%name' => $statement_name, '%required' => print_r($required_values, TRUE), 
+      array('%name' => $statement_name, '%required' => print_r($required_values, TRUE),
         '%values' => print_r($values, TRUE), '%statement' => $prepared_statements[$statement_name]['prepared_sql']), WATCHDOG_ERROR);
     return FALSE;
   }
@@ -2991,8 +2991,8 @@ function tripal_core_chado_execute_prepared($statement_name, $sql, $values) {
  * Otherwise, it clears prepared statement names that match the regex provided
  */
 function tripal_core_chado_clear_prepared ($statement_name_regex = NULL) {
-  global $prepared_statements;   
-  
+  global $prepared_statements;
+
   if ($statement_name_regex) {
     $resource = chado_query("SELECT * FROM pg_catalog.pg_prepared_statements WHERE name~'%s'",$statement_name_regex);
     while ($r = db_fetch_object($resource)) {
@@ -3009,7 +3009,7 @@ function tripal_core_chado_clear_prepared ($statement_name_regex = NULL) {
 
 /**
  * Instantiate or Return a persistent chado connection.  This should not be confused with
- * PHP persistent connections. Here we use the drupal db_connect function to 
+ * PHP persistent connections. Here we use the drupal db_connect function to
  *
  * NOTE: cannot use $active_db since a new connection is created each time
  * db_set_active() is called
@@ -3476,6 +3476,8 @@ function tripal_core_clean_orphaned_nodes($table, $job_id) {
 
   // iterate through all of the chado_$table entries and remove those
   // that don't have a node or don't have a $table record in chado.libary
+  print "Verifying all chado_$table Entries\n";
+  $deleted = 0;
   foreach ($cnodes as $nid) {
 
     // update the job status every 1% analyses
@@ -3486,6 +3488,7 @@ function tripal_core_clean_orphaned_nodes($table, $job_id) {
     // see if the node exits, if not remove the entry from the chado_$table table
     $node = db_fetch_object(db_query($nsql, $nid->nid));
     if (!$node) {
+      $deleted++;
       db_query("DELETE FROM {chado_%s} WHERE nid = %d", $table, $nid->nid);
       $message = "chado_$table missing node.... DELETING: $nid->nid";
       watchdog('tripal_core', $message, array(), WATCHDOG_WARNING);
@@ -3495,15 +3498,18 @@ function tripal_core_clean_orphaned_nodes($table, $job_id) {
     $table_id = $table . "_id";
     $record = db_fetch_object(chado_query($lsql, $table, $table, $nid->$table_id));
     if (!$record) {
-      chado_query("DELETE FROM {chado_%s} WHERE %s_id = '%d'", $table, $table, $nid->$table_id);
+      $deleted++;
+      db_query("DELETE FROM {chado_%s} WHERE %s_id = '%d'", $table, $table, $nid->$table_id);
       $message = "chado_$table missing $table.... DELETING entry.";
       watchdog('tripal_core', $message, array(), WATCHDOG_WARNING);
     }
     $i++;
   }
+  print "\t$deleted chado_$table entries missing either a node or chado entry.\n";
 
   // iterate through all of the nodes and delete those that don't
   // have a corresponding entry in chado_$table
+  $deleted = 0;
   foreach ($nodes as $node) {
 
     // update the job status every 1% libraries
@@ -3516,6 +3522,7 @@ function tripal_core_clean_orphaned_nodes($table, $job_id) {
     $link = db_fetch_object(db_query($csql, $table, $node->nid));
     if (!$link) {
       if (node_access('delete', $node)) {
+        $deleted++;
         $message = "Node missing in chado_$table table.... DELETING node $node->nid";
         watchdog("tripal_core", $message, array(), WATCHDOG_WARNING);
         node_delete($node->nid);
@@ -3527,6 +3534,7 @@ function tripal_core_clean_orphaned_nodes($table, $job_id) {
     }
     $i++;
   }
+  print "\t$deleted nodes did not have corresponding chado_$table entries.\n";
 
   return '';
 }
