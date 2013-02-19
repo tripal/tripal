@@ -113,7 +113,7 @@ function tripal_views_integration_setup_list() {
   else {
     $output .= '<p>There are currently no Materialized Views defined. ';
     $output .=  l(t('Add a New Entry'), "admin/tripal/views/integration/new") . '</p>';
-    
+
   }
 
   // Now list non-mview custom tables
@@ -214,9 +214,9 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL) {
   $data = array();
   $form['#cache'] = TRUE;
 
-  // initialize Tripal AHAH 
+  // initialize Tripal AHAH
   tripal_core_ahah_init_form();
-  
+
   // if a setup_id is provided then we want to get the form defaults
   $setup_obj = array();
   if (isset($setup_id)) {
@@ -364,6 +364,16 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL) {
     drupal_set_message('You are editing a default views integration. To ensure your changes
     are used, change the priority to -10.', 'warning');
   }
+
+  $form['views_type']['new_integration'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Create a New Tripal Views Integration Record'),
+    '#description' => t('If this checkbox is checked then a new tripal views integration '
+      .'will be created rather then overriding the current one with your changes. This '
+      .'especially important if you are editing one of the default views integrations '
+      .'(ie: if the original priority was either 10 or 9).'),
+    '#default_value' => ($setup_obj->priority >= 9) ? true : false,
+  );
 
   $form['views_type']['base_table'] = array(
     '#type' => 'checkbox',
@@ -851,10 +861,17 @@ function tripal_views_integration_form_validate($form, &$form_state) {
 //    form_set_error($form_state['values']['row_name'], 'The View type name must be a single word only.');
 //  }
   if ($mview_id and $table_name) {
-    form_set_error($form_state['values']['mview_id'], 'Please select either a materialized view or a Chado table but not both');
+    form_set_error('mview_id', 'Please select either a materialized view or a Chado table but not both');
   }
   if (!$mview_id and !$table_name) {
-    form_set_error($form_state['values']['mview_id'], 'Please select either a materialized view or a Chado table');
+    form_set_error('mview_id', 'Please select either a materialized view or a Chado table');
+  }
+
+  // Ensure that users don't override the default integrations
+  if ($form_state['values']['row_priority'] >= 9) {
+    form_set_error('row_priority', 'A priority of 10 or 9 is reserved for default tripal '
+      .'views integrations created by core modules. Please set the priority between '
+      .'0 and -10 to ensure your changes are used rather over the defaults.');
   }
   // TODO: do we need to require that a handler be set for each field and each type of handler?
 }
@@ -929,10 +946,19 @@ function tripal_views_integration_form_submit($form, &$form_state) {
     }
   }
   else {  // this is an update
-    $tripal_views_record['setup_id'] = $setup_id;
-    if (!drupal_write_record('tripal_views', $tripal_views_record, array('setup_id'))) {
-      drupal_set_message(t("Failed to update record."), 'error');
-      return;
+    // check to see if it was specified to create a new integration
+    if ($form_state['values']['new_integration']) {
+      if (!drupal_write_record('tripal_views', $tripal_views_record)) {
+        drupal_set_message(t("Failed to add record."), 'error');
+        return;
+      }
+    }
+    else {
+      $tripal_views_record['setup_id'] = $setup_id;
+      if (!drupal_write_record('tripal_views', $tripal_views_record, array('setup_id'))) {
+        drupal_set_message(t("Failed to update record."), 'error');
+        return;
+      }
     }
   }
 
@@ -1100,40 +1126,40 @@ function tripal_views_integration_ajax_view_setup_table() {
   // we only want the table row setup fields
   $form = tripal_core_ahah_prepare_form();
   $form = $form['view_setup_table'];
-  $data = drupal_render($form);  
+  $data = drupal_render($form);
 
-  // bind javascript events to the new objects that will be returned 
+  // bind javascript events to the new objects that will be returned
   // so that AHAH enabled elements will work.
   $settings = tripal_core_ahah_bind_events();
 
   // return the updated JSON
   drupal_json(
     array(
-      'status'   => TRUE, 
+      'status'   => TRUE,
       'data'     => $data,
       'settings' => $settings,
-    )  
+    )
   );
 }
 /*
- * 
+ *
  */
 function tripal_views_integration_ajax_join_field($field, $join_field) {
   // prepare and render the form
   $form = tripal_core_ahah_prepare_form();
-  $form = $form['view_setup_table'][$field]['column-3'][$join_field]; 
-  $data = drupal_render($form);  
+  $form = $form['view_setup_table'][$field]['column-3'][$join_field];
+  $data = drupal_render($form);
 
-  // bind javascript events to the new objects that will be returned 
+  // bind javascript events to the new objects that will be returned
   // so that AHAH enabled elements will work.
   $settings = tripal_core_ahah_bind_events();
 
   // return the updated JSON
   drupal_json(
     array(
-      'status'   => TRUE, 
+      'status'   => TRUE,
       'data'     => $data,
       'settings' => $settings,
-    )  
+    )
   );
 }
