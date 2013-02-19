@@ -285,12 +285,38 @@ function tripal_stock_admin_validate($form, &$form_state) {
     variable_set('chado_stock_prop_types_cv', $form_state['values']['stock_prop_types_cv']);
     variable_set('chado_stock_relationship_cv', $form_state['values']['stock_relationship_cv']);
   }
-  
+
   // Submit the Cleanup Job if selected
   if ($form_state['values']['op'] == t('Clean up orphaned stocks')) {
     tripal_add_job('Cleanup orphaned stocks', 'tripal_stock',
        'tripal_stock_cleanup', $job_args, $user->uid);
   }
+}
+
+/**
+ * Sync stocks associated with a given organism or sync all stocks
+ *
+ * Note: This is essentially an API function to make tripal stock sync act similar to other tripal modules
+ *
+ * @param $organism_id
+ *   The ID of the organism to sync all stocks for
+ * @param $job_id
+ *   The ID of the tripal job
+ */
+function tripal_stock_sync_stocks($organism_id, $job_id) {
+
+  if ($organism_id) {
+    return tripal_stock_sync_stock_set($organism_id, $job_id);
+  }
+  else {
+    //get a list of all organisms and sync all stocks for all organisms
+    $organisms = tripal_core_chado_select('organism', array('organism_id','genus','species','common_name'), array());
+    foreach ($organisms as $o) {
+      print "Syncing stocks associated with $o->genus $o->species ($o->common_name)\n";
+      tripal_stock_sync_stock_set($o->organism_id, $job_id);
+    }
+  }
+
 }
 
 /**
@@ -436,5 +462,5 @@ function get_tripal_stock_admin_form_cleanup_set(&$form) {
 function tripal_stock_cleanup($dummy = NULL, $job_id = NULL) {
 
   return tripal_core_clean_orphaned_nodes('stock', $job_id);
-  
+
 }
