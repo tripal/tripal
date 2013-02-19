@@ -137,14 +137,14 @@ function tripal_get_module_active_jobs($modulename) {
  */
 function tripal_jobs_report_form($form, &$form_state = NULL) {
   $form = array();
-	
+
   // set the default values
   $default_status = $form_state['values']['job_status'];
-  
+
   if (!$default_status) {
     $default_status = $_SESSION['tripal_job_status_filter'];
-  }    
-  
+  }
+
   $form['job_status'] = array(
     '#type'          => 'select',
     '#title'         => t('Filter by Job Status'),
@@ -153,17 +153,17 @@ function tripal_jobs_report_form($form, &$form_state = NULL) {
 	    0           => 'All Jobs',
 	    'Running'   => 'Running',
 	    'Waiting'   => 'Waiting',
-	    'Completed' => 'Completed',    
-	    'Cancelled' => 'Cancelled', 
-	    'Error'     => 'Error',  
+	    'Completed' => 'Completed',
+	    'Cancelled' => 'Cancelled',
+	    'Error'     => 'Error',
 	  ),
   );
-  
+
   $form['submit'] = array(
     '#type'         => 'submit',
     '#value'        => t('Filter'),
   );
-  return $form;  
+  return $form;
 }
 /**
  *
@@ -171,7 +171,7 @@ function tripal_jobs_report_form($form, &$form_state = NULL) {
  */
 function tripal_jobs_report_form_submit($form, &$form_state = NULL) {
   $job_status = $form_state['values']['job_status'];
-  $_SESSION['tripal_job_status_filter'] = $job_status;    
+  $_SESSION['tripal_job_status_filter'] = $job_status;
 }
 /**
  * Returns the Tripal Job Report
@@ -183,14 +183,14 @@ function tripal_jobs_report_form_submit($form, &$form_state = NULL) {
  */
 function tripal_jobs_report() {
 
-  // run the following function which will 
+  // run the following function which will
   // change the status of jobs that have errored out
   tripal_jobs_check_running();
-  
+
 	$jobs_status_filter = $_SESSION['tripal_job_status_filter'];
-  
+
   $sql = "
-    SELECT 
+    SELECT
       TJ.job_id,TJ.uid,TJ.job_name,TJ.modulename,TJ.progress,
       TJ.status as job_status, TJ,submit_date,TJ.start_time,
       TJ.end_time,TJ.priority,U.name as username
@@ -200,19 +200,19 @@ function tripal_jobs_report() {
     $sql .= "WHERE TJ.status = '%s' ";
   }
   $sql .= "ORDER BY job_id DESC";
-  
+
   $jobs = pager_query($sql, 25, 0, "SELECT count(*) FROM ($sql) as t1", $jobs_status_filter);
   $header = array(
-    'Job ID', 
-    'User', 
-    'Job Name', 
-    array('data' => 'Dates', 'style'=> "white-space: nowrap"), 
-    'Priority', 
-    'Progress', 
-    'Status', 
+    'Job ID',
+    'User',
+    'Job Name',
+    array('data' => 'Dates', 'style'=> "white-space: nowrap"),
+    'Priority',
+    'Progress',
+    'Status',
     'Action');
-  $rows = array();  
-  
+  $rows = array();
+
   // iterate through the jobs
   while ($job = db_fetch_object($jobs)) {
     $submit = tripal_jobs_get_submit_date($job);
@@ -235,7 +235,7 @@ function tripal_jobs_report() {
       "$cancel_link $rerun_link $view_link",
     );
   }
-  
+
   // create the report page
   $output .= "Waiting jobs are executed first by priority level (the lower the ".
              "number the higher the priority) and second by the order they ".
@@ -321,7 +321,7 @@ function tripal_jobs_get_submit_date($job) {
  *   To launch a specific job provide the job id.  This option should be
  *   used sparingly as the jobs queue managment system should launch jobs
  *   based on order and priority.  However there are times when a specific
- *   job needs to be launched and this argument will allow it.  Only jobs 
+ *   job needs to be launched and this argument will allow it.  Only jobs
  *   which have not been run previously will run.
  *
  * @ingroup tripal_jobs_api
@@ -343,7 +343,7 @@ function tripal_jobs_launch($do_parallel = 0, $job_id = NULL) {
             "WHERE TJ.start_time IS NULL and TJ.end_time IS NULL and TJ.job_id = %d ".
             "ORDER BY priority ASC,job_id ASC";
     $job_res = db_query($sql,$job_id);
-  } 
+  }
   else {
     $sql =  "SELECT * FROM {tripal_jobs} TJ ".
             "WHERE TJ.start_time IS NULL and TJ.end_time IS NULL ".
@@ -496,13 +496,13 @@ function tripal_jobs_rerun($job_id, $goto_jobs_page = TRUE) {
   $job = db_fetch_object(db_query($sql, $job_id));
   $args = explode("::", $job->arguments);
   $job_id = tripal_add_job(
-    $job->job_name, 
-    $job->modulename, 
-    $job->callback, 
-    $args, 
+    $job->job_name,
+    $job->modulename,
+    $job->callback,
+    $args,
     $user->uid,
     $job->priority);
-    
+
   if ($goto_jobs_page) {
     drupal_goto("admin/tripal/tripal_jobs");
   }
@@ -517,7 +517,7 @@ function tripal_jobs_rerun($job_id, $goto_jobs_page = TRUE) {
  *
  * @ingroup tripal_jobs_api
  */
-function tripal_jobs_cancel($job_id) {
+function tripal_jobs_cancel($job_id, $redirect = TRUE) {
   $sql = "SELECT * FROM {tripal_jobs} WHERE job_id = %d";
   $job = db_fetch_object(db_query($sql, $job_id));
 
@@ -534,5 +534,7 @@ function tripal_jobs_cancel($job_id) {
   else {
     drupal_set_message(t("Job %job_id cannot be cancelled. It is in progress or has finished.", array('%job_id' => $job_id)));
   }
-  drupal_goto("admin/tripal/tripal_jobs");
+  if ($redirect) {
+    drupal_goto("admin/tripal/tripal_jobs");
+  }
 }
