@@ -2260,6 +2260,11 @@ function chado_query($sql) {
   }
   //print "$sql\n";
 
+  // If the query is not a select then we still need to change the search_path
+  if (!preg_match('/^SELECT/',$sql)) {
+    $change_path = TRUE;
+  }
+
   // Execute the query on the chado database/schema
   // Use the persistent chado connection if it already exists
   if ($persistent_chado) {
@@ -2275,7 +2280,13 @@ function chado_query($sql) {
     }
     // if we're local we can just run the query
     if ($is_local) {
+      if ($change_path) {
+        $previous_db = tripal_db_set_active('chado');
+      }
       $last_result = pg_query($persistent_chado, $query);
+      if ($change_path) {
+        tripal_db_set_active($previous_db);
+      }
     }
     else {
       $previous_db = tripal_db_set_active('chado');
@@ -2309,7 +2320,13 @@ function chado_query($sql) {
     // search_path but that caused a lot of database calls and wasted
     // resources during long jobs.
     if ($is_local) {
+      if ($change_path) {
+        $previous_db = tripal_db_set_active('chado');
+      }
       $results = _db_query($sql);
+      if ($change_path) {
+        tripal_db_set_active($previous_db);
+      }
     }
     else {
       $previous_db = tripal_db_set_active('chado') ;
