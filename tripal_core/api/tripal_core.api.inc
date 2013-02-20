@@ -2261,7 +2261,7 @@ function chado_query($sql) {
   //print "$sql\n";
 
   // If the query is not a select then we still need to change the search_path
-  if (!preg_match('/^SELECT/',$sql)) {
+  if (!preg_match('/^SELECT/i',$sql)) {
     $change_path = TRUE;
   }
 
