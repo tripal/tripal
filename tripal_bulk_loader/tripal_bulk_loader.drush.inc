@@ -168,21 +168,21 @@ function drush_tripal_bulk_loader_tripal_loader_submit ($nid) {
 function drush_tripal_bulk_loader_tripal_loader_revert ($nid) {
 
   // Remove the records from the database that were already inserted
-  $resource = db_query('SELECT * FROM {tripal_bulk_loader_inserted} WHERE nid=%d ORDER BY tripal_bulk_loader_inserted_id DESC', $node->nid);
+  $resource = db_query('SELECT * FROM {tripal_bulk_loader_inserted} WHERE nid=%d ORDER BY tripal_bulk_loader_inserted_id DESC', $nid);
   while ($r = db_fetch_object($resource)) {
     $ids = preg_split('/,/', $r->ids_inserted);
     db_query('DELETE FROM %s WHERE %s IN (%s)', $r->table_inserted_into, $r->table_primary_key, $r->ids_inserted);
     $result = db_fetch_object(db_query('SELECT true as present FROM %s WHERE %s IN (%s)', $r->table_inserted_into, $r->table_primary_key, $r->ids_inserted));
     if (!$result->present) {
-      drupal_set_message(t('Successfully Removed data Inserted into the %tableto table.', array('%tableto' => $r->table_inserted_into)));
+      drush_print('Successfully Removed data Inserted into the '.$r->table_inserted_into.' table.');
       db_query('DELETE FROM {tripal_bulk_loader_inserted} WHERE tripal_bulk_loader_inserted_id=%d', $r->tripal_bulk_loader_inserted_id);
     }
     else {
-      drupal_set_message(t('Unable to remove data Inserted into the %tableto table!', array('%tableto' => $r->table_inserted_into)), 'error');
+      drush_print('Unable to remove data Inserted into the '.$r->table_inserted_into.' table!');
     }
   }
 
   // reset status
-  db_query("UPDATE {tripal_bulk_loader} SET job_status='%s' WHERE nid=%d", 'Reverted -Data Deleted', $node->nid);
+  db_query("UPDATE {tripal_bulk_loader} SET job_status='%s' WHERE nid=%d", 'Reverted -Data Deleted', $nid);
 
 }
