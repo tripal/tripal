@@ -2053,6 +2053,7 @@ function tripal_feature_preprocess_tripal_feature_relationships(&$variables) {
  * @ingroup tripal_feature
  */
 function tripal_feature_preprocess_tripal_feature_alignments(&$variables) {
+  
   // we want to provide a new variable that contains the matched features.
   $feature = $variables['node']->feature;
   $feature = tripal_core_expand_chado_vars($feature, 'table', 'featureloc');
@@ -2083,7 +2084,7 @@ function tripal_feature_preprocess_tripal_feature_alignments(&$variables) {
   $alignments = array();
   foreach ($pfeaturelocs as $featureloc) {
      // if type is a 'match' then ignore it. We will handle those below
-     if (preg_match('/(^match$|^.*?_match)$/', $featureloc->feature_id->type_id->name)) {
+     if (preg_match('/(^match$|^.*?_match|match_part)$/', $featureloc->feature_id->type_id->name)) {
         continue;
      }
      $alignment = new stdClass();
@@ -2099,7 +2100,7 @@ function tripal_feature_preprocess_tripal_feature_alignments(&$variables) {
   }
   foreach ($cfeaturelocs as $featureloc) {
      // if type is a 'match' then ignore it. We will handle those below
-     if (preg_match('/(^match$|^.*?_match)$/', $featureloc->feature_id->type_id->name)) {
+     if (preg_match('/(^match$|^.*?_match|match_part)$/', $featureloc->feature_id->type_id->name)) {
         continue;
      }
      $alignment = new stdClass();
