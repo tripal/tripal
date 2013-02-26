@@ -121,6 +121,18 @@ require_once "tripal_core.schema_v1.11.api.inc";
  * @ingroup tripal_chado_api
  */
 function tripal_core_chado_insert($table, $values, $options = array()) {
+  
+  if (!is_array($values)) {
+    watchdog('tripal_core', 'Cannot pass non array as values for inserting.', array(), 
+      WATCHDOG_ERROR);
+    return FALSE;  
+  }
+  if (count($values)==0) {
+    watchdog('tripal_core', 'Cannot pass an empty array as values for inserting.', array(), 
+      WATCHDOG_ERROR);
+    return FALSE;
+  }
+  
   // set defaults for options. If we don't set defaults then
   // we get memory leaks when we try to access the elements
   if (!is_array($options)) {
@@ -462,6 +474,28 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
  */
 function tripal_core_chado_update($table, $match, $values, $options = NULL) {
 
+  if (!is_array($values)) {
+    watchdog('tripal_core', 'Cannot pass non array as values for updating.', array(), 
+      WATCHDOG_ERROR);
+    return FALSE;  
+  }
+  if (count($values)==0) {
+    watchdog('tripal_core', 'Cannot pass an empty array as values for updating.', array(), 
+      WATCHDOG_ERROR);
+    return FALSE;
+  }
+  
+  if (!is_array($match)) {
+    watchdog('tripal_core', 'Cannot pass non array as values for matching.', array(), 
+      WATCHDOG_ERROR);
+    return FALSE;  
+  }
+  if (count($match)==0) {
+    watchdog('tripal_core', 'Cannot pass an empty array as values for matching.', array(), 
+      WATCHDOG_ERROR);
+    return FALSE;
+  }
+  
   // set defaults for options. If we don't set defaults then
   // we get memory leaks when we try to access the elements
   if (!is_array($options)) {
@@ -840,6 +874,18 @@ function tripal_core_chado_update($table, $match, $values, $options = NULL) {
  * @ingroup tripal_chado_api
  */
 function tripal_core_chado_delete($table, $match, $options = NULL) {
+  
+  if (!is_array($match)) {
+    watchdog('tripal_core', 'Cannot pass non array as values for matching.', array(), 
+      WATCHDOG_ERROR);
+    return FALSE;  
+  }
+  if (count($match)==0) {
+    watchdog('tripal_core', 'Cannot pass an empty array as values for matching.', array(), 
+      WATCHDOG_ERROR);
+    return FALSE;
+  }
+  
   // set defaults for options. If we don't set defaults then
   // we get memory leaks when we try to access the elements
   if (!is_array($options)) {
@@ -1123,6 +1169,28 @@ function tripal_core_chado_delete($table, $match, $options = NULL) {
  */
 function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
 
+  if (!is_array($values)) {
+    watchdog('tripal_core', 'Cannot pass non array as values for selecting.', array(), 
+      WATCHDOG_ERROR);
+    return FALSE;  
+  }
+  if (count($values)==0) {
+    watchdog('tripal_core', 'Cannot pass an empty array as values for selecting.', array(), 
+      WATCHDOG_ERROR);
+    return FALSE;
+  }
+  
+  if (!is_array($columns)) {
+    watchdog('tripal_core', 'Cannot pass non array as columns for selecting.', array(), 
+      WATCHDOG_ERROR);
+    return FALSE;  
+  }
+  if (count($columns)==0) {
+    watchdog('tripal_core', 'Cannot pass an empty array as columns for selecting.', array(), 
+      WATCHDOG_ERROR);
+    return FALSE;
+  }
+  
   // set defaults for options. If we don't set defaults then
   // we get memory leaks when we try to access the elements
   if (!is_array($options)) {
@@ -3396,8 +3464,8 @@ function tripal_core_get_chado_version($exact = FALSE, $warn_if_unsupported = FA
   if (strcmp($exact_version, '1.11 or older') == 0) {
     $exact_version = "1.11";
     if ($warn_if_unsupported) {
-      drupal_set_message(t("WARNING: Tripal does not fully support Chado version less than v1.1.  If you are certain this is v1.1
-         of if Chado was installed using an earlier version of Tripal then all is well. If not please upgrade to v1.1 or later"),
+      drupal_set_message(t("WARNING: Tripal does not fully support Chado version less than v1.11.  If you are certain this is v1.11
+         of if Chado was installed using an earlier version of Tripal then all is well. If not please upgrade to v1.11 or later"),
          'warning');
     }
   }
