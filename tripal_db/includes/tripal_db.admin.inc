@@ -31,7 +31,7 @@ function tripal_db_module_description_page() {
                permissions.  Best practice is to create <a href="' . url('admin/user/roles') . '">a new role</a> 
                for administrative tasks, (such as a webmaster role),
                and then <a href="' . url('admin/user/user') . '">assign users to the role</a>. Finally,
-               <a href="' . url('admin/user/permissions') . '">assign the permission</a> titled "administer tripal db cross-reference".
+               <a href="' . url('admin/user/permissions') . '">assign the permission</a> titled "administer db cross-reference".
                to the new role.</li>';
   $text .= '<li><b>Adding or Editing an External Databases</b>. Many resources such as NCBI nr or ExPASy SwissProt (to name a few) 
             come pre-loaded with Chado.  However, you can add new entries or edit existing entries. Also, when loading 

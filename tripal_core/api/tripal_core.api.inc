@@ -1414,7 +1414,7 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
   }
 
   // now build the SQL and prepared SQL statements. We may not use
-  // the prepared statement if it wasn't requested in the options of if the
+  // the prepared statement if it wasn't requested in the options or if the
   // argument in a where statement has multiple values.
   if (empty($where)) {
     // sometimes want to select everything
@@ -1717,8 +1717,10 @@ function tripal_core_chado_get_foreign_key($table_desc, $field, $values, $option
  *     may generate more queries then is desired.  Provide an array specifying the
  *     fields to include.  For example, if including the cvterm, cv and dbxref records
  *     for a property the following array would work:
+ *     
  *        array('type_id' => array('cv_id' => 1, 'dbxref_id' => 1)).
- *     Typicall, to expadn a property, this function would also include the db record
+ *        
+ *     Typically, to expand a property, this function would also include the db record
  *     through the db_id foreign key with the dbxref and db tables, but becuase
  *     it is not included in the array it will not be included in the results.
  * @return
@@ -2004,14 +2006,35 @@ function tripal_core_generate_chado_var($table, $values, $base_options = array()
  * @param $to_expand
  *   The name of the field/table/node to be expanded
  * @param $table_options
- *   An array containing options for the base table.  For example, an
- *   option of 'order_by' may be used to sort results in the base table
- *   if more than one are returned.  The options must be compatible with
- *   the options accepted by the tripal_core_chado_select() function.
- *   Additionally,  The option 'return_array' can be provided to force
- *   the function to expand tables as an array. Default behavior is to expand
- *   a table as single record if only one record exists or to expand as an array if
- *   multiple records exist.
+ *   - order_by:
+ *     An array containing options for the base table.  For example, an
+ *     option of 'order_by' may be used to sort results in the base table
+ *     if more than one are returned.  The options must be compatible with
+ *     the options accepted by the tripal_core_chado_select() function.
+ *   - return_array: 
+ *     Additionally,  The option 'return_array' can be provided to force
+ *     the function to expand tables as an array. Default behavior is to expand
+ *     a table as single record if only one record exists or to expand as an array if
+ *     multiple records exist.
+ *   - include_fk:
+ *     an array of FK relationships to follow. By default, the
+ *     tripal_core_chado_select function will follow all FK relationships but this
+ *     may generate more queries then is desired slowing down this function call when
+ *     there are lots of FK relationships to follow.  Provide an array specifying the
+ *     fields to include.  For example, if expanding a property table (e.g. featureprop)
+ *     and you want the CV and accession but do not want the DB the following
+ *     array would work:
+ *        $table_options =  array(
+ *          'include_fk' => array(
+ *            'type_id' => array(
+ *              'cv_id' => 1, 
+ *              'dbxref_id' => 1,
+ *            )
+ *          )
+ *        );
+ *        
+ *     The above array will expand the 'type_id' of the property table but only 
+ *     further expand the cv_id and the dbxref_id and will go no further.
  * @return
  *   A chado object supplemented with the field/table/node requested to be expanded.
  *   If the type is a table and it has already been expanded no changes is made to the
@@ -3465,7 +3488,7 @@ function tripal_core_get_chado_version($exact = FALSE, $warn_if_unsupported = FA
     $exact_version = "1.11";
     if ($warn_if_unsupported) {
       drupal_set_message(t("WARNING: Tripal does not fully support Chado version less than v1.11.  If you are certain this is v1.11
-         of if Chado was installed using an earlier version of Tripal then all is well. If not please upgrade to v1.11 or later"),
+         or if Chado was installed using an earlier version of Tripal then all is well. If not please upgrade to v1.11 or later"),
          'warning');
     }
   }

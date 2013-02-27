@@ -184,7 +184,12 @@ function tripal_stock_admin() {
           ." between stocks. Only cvs already loaded into chado can be selected here.")
     );
 
-    $cv_options = tripal_cv_get_cv_options();
+    // get the list of CVs for the next form element
+    $results = tripal_core_chado_select('cv', array('cv_id', 'name'), array());
+    $cv_options = array();
+    foreach ($results as $r) {
+      $cv_options[$r->cv_id] = $r->name;
+    }
 
     $form['set_cv']['stock_types_cv'] = array(
      '#type' => 'select',

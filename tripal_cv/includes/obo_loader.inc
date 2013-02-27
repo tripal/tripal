@@ -1,6 +1,172 @@
 <?php
 
 /**
+ * Purpose: Provides the form to load an already existing controlled
+ *  Vocabulary into chado
+ *
+  * @ingroup tripal_obo_loader
+ */
+function tripal_cv_obo_form(&$form_state = NULL) {
+
+  // get a list of db from chado for user to choose
+  $sql = "SELECT * FROM {tripal_cv_obo} ORDER BY name";
+  $results = db_query($sql);
+
+  $obos = array();
+  $obos[] = '';
+  while ($obo = db_fetch_object($results)) {
+//    $obos[$obo->obo_id] = "$obo->name  | $obo->path";
+    $obos[$obo->obo_id] = $obo->name;
+  }
+
+  $form['obo_existing'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Use a Saved Ontology OBO Reference')
+  );
+
+  $form['obo_new'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Use a New Ontology OBO Reference')
+  );
+
+  $form['obo_existing']['existing_instructions']= array(
+    '#value' => t('The Ontology OBO files listed in the drop down below have been automatically added upon
+                   installation of the Tripal CV module or were added from a previous upload.  Select
+                   an OBO, then click the submit button to load the vocabulary into the database.  If the
+                   vocabularies already exist then the ontology will be updated.'),
+    '#weight'        => -1
+  );
+
+  $form['obo_existing']['obo_id'] = array(
+    '#title' => t('Ontology OBO File Reference'),
+    '#type' => 'select',
+    '#options' => $obos,
+    '#weight'        => 0
+  );
+
+  $form['obo_new']['path_instructions']= array(
+    '#value' => t('Provide the name and path for the OBO file.  If the vocabulary OBO file
+                   is stored local to the server provide a file name. If the vocabulry is stored remotely,
+                   provide a URL.  Only provide a URL or a local file, not both.'),
+    '#weight'        => 0
+  );
+
+  $form['obo_new']['obo_name']= array(
+    '#type'          => 'textfield',
+    '#title'         => t('New Vocabulary Name'),
+    '#description'   => t('Please provide a name for this vocabulary.  After upload, this name will appear in the drop down
+                           list above for use again later.'),
+    '#weight'        => 1
+  );
+
+  $form['obo_new']['obo_url']= array(
+    '#type'          => 'textfield',
+    '#title'         => t('Remote URL'),
+    '#description'   => t('Please enter a URL for the online OBO file.  The file will be downloaded and parsed.
+                           (e.g. http://www.obofoundry.org/ro/ro.obo'),
+    '#default_value' => $default_desc,
+    '#weight'        => 2
+  );
+
+  $form['obo_new']['obo_file']= array(
+    '#type'          => 'textfield',
+    '#title'         => t('Local File'),
+    '#description'   => t('Please enter the full system path for an OBO definition file, or a path within the Drupal
+                           installation (e.g. /sites/default/files/xyz.obo).  The path must be accessible to the
+                           server on which this Drupal instance is running.'),
+    '#default_value' => $default_desc,
+    '#weight'        => 3
+  );
+
+  $form['submit'] = array(
+    '#type'         => 'submit',
+    '#value'        => t('Submit'),
+    '#weight'       => 5,
+    '#executes_submit_callback' => TRUE,
+  );
+
+  $form['#redirect'] = 'admin/tripal/tripal_cv/obo_loader';
+
+  return $form;
+}
+
+/**
+ * Purpose: The submit function for the load ontology form. It registers a
+ *   tripal job to run the obo_loader.php script
+ *
+   * @ingroup tripal_obo_loader
+ */
+function tripal_cv_obo_form_submit($form, &$form_state) {
+  global $user;
+
+  $obo_id =  $form_state['values']['obo_id'];
+  $obo_name =  $form_state['values']['obo_name'];
+  $obo_url =  $form_state['values']['obo_url'];
+  $obo_file  = $form_state['values']['obo_file'];
+
+  $sql = "SELECT * FROM {tripal_cv_obo} WHERE obo_id = %d";
+  $obo = db_fetch_object(db_query($sql, $obo_id));
+
+  if ($obo_id) {
+    $args = array($obo_id);
+    tripal_add_job("Load OBO $obo->name", 'tripal_cv',
+       "tripal_cv_load_obo_v1_2_id", $args, $user->uid);
+  }
+  else {
+    if ($obo_url) {
+      $args = array($obo_name, $obo_url);
+      tripal_add_job("Load OBO $obo_name", 'tripal_cv',
+        "tripal_cv_load_obo_v1_2_url", $args, $user->uid);
+    }
+    elseif ($obo_file) {
+      $args = array($obo_name, $obo_file);
+      tripal_add_job("Load OBO $obo_name", 'tripal_cv',
+        "tripal_cv_load_obo_v1_2_file", $args, $user->uid);
+    }
+  }
+}
+
+/**
+ * Form for re-doing the cvterm path
+ *
+ * @ingroup tripal_cv
+ */
+function tripal_cv_cvtermpath_form() {
+
+  // get a list of db from chado for user to choose
+  $sql = "SELECT * FROM {cv} WHERE NOT name = 'tripal' ORDER BY name ";
+  $results = chado_query($sql);
+
+  $cvs = array();
+  $cvs[] = '';
+  while ($cv = db_fetch_object($results)) {
+    $cvs[$cv->cv_id] = $cv->name;
+  }
+
+  $form['cvid'] = array(
+    '#title' => t('Controlled Vocabulary/Ontology Name'),
+    '#type' => 'select',
+    '#options' => $cvs,
+    '#description' => t('The Chado cvtermpath is a database table that provides lineage for ontology terms 
+      and is useful for quickly finding any ancestor parent of a term.  This table must be populated for each
+      ontology.  Select a controlled vocabulary for which you would like to upate the cvtermpath.'),
+  );
+
+  $form['description'] = array(
+    '#type' => 'item',
+    '#value' => t("Submit a job to update chado cvtermpath table."),
+    '#weight' => 1,
+  );
+
+  $form['button'] = array(
+    '#type' => 'submit',
+    '#value' => t('Update cvtermpath'),
+    '#weight' => 2,
+  );
+
+  return $form;
+}
+/**
  * @file
  * Tripal Ontology Loader
  *
@@ -48,15 +214,18 @@ function tripal_cv_load_obo_v1_2_id($obo_id, $jobid = NULL) {
  */
 function tripal_cv_load_obo_v1_2_file($obo_name, $file, $jobid = NULL, $is_new = TRUE) {
   $newcvs = array();
-
+  
+  // TODO: need better error detection
+  
   tripal_cv_load_obo_v1_2($file, $jobid, $newcvs);
   if ($is_new) {
     tripal_cv_load_obo_add_ref($obo_name, $file);
   }
+  print "Ontology Sucessfully loaded!\n";
 
   // update the cvtermpath table
   tripal_cv_load_update_cvtermpath($newcvs, $jobid);
-  print "Ontology Sucessfully loaded!\n";
+  
 
 }
 

@@ -30,7 +30,7 @@ function tripal_db_menu() {
     'description' => 'Basic Description of Tripal DB Module Functionality',
     'page callback' => 'tripal_db_module_description_page',
     'access callback' => 'user_access',
-    'access arguments' => array('administer tripal db cross-references'),
+    'access arguments' => array('administer db cross-references'),
     'type' => MENU_NORMAL_ITEM,
   );
 
@@ -40,7 +40,7 @@ function tripal_db_menu() {
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_db_form', 'Update'),
     'access callback' => 'user_access',
-    'access arguments' => array('administer tripal db cross-references'),
+    'access arguments' => array('administer db cross-references'),
     'type' => MENU_NORMAL_ITEM,
   );
 
@@ -49,7 +49,7 @@ function tripal_db_menu() {
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_db_form', 'Add'),
     'access callback' => 'user_access',
-    'access arguments' => array('administer tripal db cross-references'),
+    'access arguments' => array('administer db cross-references'),
     'type' => MENU_NORMAL_ITEM,
   );
   $items['admin/tripal/tripal_db/edit/js'] = array(
@@ -71,7 +71,7 @@ function tripal_db_menu() {
  */
 function tripal_db_perm() {
   return array(
-    'administer tripal db cross-references',
+    'administer db cross-references',
   );
 }
 

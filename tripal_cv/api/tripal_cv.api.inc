@@ -123,7 +123,7 @@ function tripal_cv_get_cv_by_name($name) {
  * @see tripal_core_chado_generate_vars()
  *
  * @param $cv_id
- *   The unique identifier for the cv retrieve
+ *   The unique identifier for the cv to retrieve
  *
  * @return
  *   An object describing the cv
@@ -136,10 +136,36 @@ function tripal_cv_get_cv_by_id($cv_id) {
 
   return $r;
 }
+/**
+ * Retrieve the cv id for the specified CV by name
+ *
+ * NOTE: This function is deprecated.
+ * @see tripal_core_chado_generate_vars()
+ *
+ * @param $cv_name
+ *   The unique name for the cv to retrieve
+ *
+ * @return
+ *   The numeric cv ID
+ *
+ * @ingroup tripal_cv_api
+ */
+function tripal_cv_get_cv_id($cv_name) {
+
+  $sql = "
+    SELECT cv_id FROM {cv} WHERE name = '%s'
+  ";
+  $cv = db_fetch_object(chado_query($sql, $cv_name));
+
+  return $cv->cv_id;
+}
 
 /**
- * Create an options array to be used in a form element which provides a list of all chado cvs
+ * Create an options array to be used in a form element which provides a 
+ * list of all chado cvs
  *
+ * NOTE: This function is deprecated as of Tripal v1.0
+ * 
  * @return
  *   An array(cv_id => name) for each cv in the chado cv table
  *
@@ -238,7 +264,34 @@ function tripal_cv_get_cvterm_options($cv_id = 0) {
 
 }
 
+/**
+ * Updates the cvtermpath table of Chado for the specified CV.
+ *
+ * @param $cv_id
+ *   The chado cv_id;
+ * @param $job_id
+ *   This function is intended to be used with the Tripal Jobs API.
+ *   When this function is called as a job the $job_id is automatically
+ *   passed to this function.
+ * @return
+ *   TRUE on success FALSE on failure
+ *
+ * @ingroup tripal_cv_api
+ */
+function tripal_cv_update_cvtermpath($cvid, $job_id = NULL) {
+  // TODO: need better error checking in this function
 
+  // first get the controlled vocabulary name:
+  $cv = db_fetch_object(chado_query("SELECT * FROM {cv} WHERE cv_id = %d", $cvid));
+  print "\nUpdating cvtermpath for $cv->name...\n";
+
+  // now fill the cvtermpath table
+  // @coder-ignore: using a function rather then tablename therefore table prefixing doesn't apply
+  $sql = "SELECT * FROM fill_cvtermpath('%s')";
+  $success = chado_query($sql, $cv->name); 
+
+  return TRUE;
+}
 
 /**
  * Adds a controlled vocabular to the CV table of Chado.

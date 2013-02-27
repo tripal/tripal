@@ -110,7 +110,7 @@ function tripal_core_menu() {
     'description' => 'Installs the Chado database tables, views, etc., inside the current Drupal database',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_core_chado_load_form'),
-    'access arguments' => array('access administration pages'),
+    'access arguments' => array('install chado'),
     'type' => MENU_NORMAL_ITEM,
   );
 
@@ -238,7 +238,7 @@ function tripal_core_menu() {
  * @ingroup tripal_core
  */
 function tripal_core_perm() {
-  return array();
+  return array('install chado');
 }
 
 /**
