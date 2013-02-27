@@ -1026,5 +1026,4 @@ function tripal_feature_get_feature_relationships($feature) {
     }
   }
   return $relationships;
-}
 } 
