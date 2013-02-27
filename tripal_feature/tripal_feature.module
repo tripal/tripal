@@ -111,7 +111,7 @@ function tripal_feature_perm() {
     'create chado_feature content',
     'delete chado_feature content',
     'edit chado_feature content',
-    'manage chado_feature aggregator',
+    'administer tripal features',
   );
 }
 
@@ -159,7 +159,7 @@ function tripal_feature_menu() {
     'title' => 'Features',
     'description' => 'Basic Description of Tripal Organism Module Functionality',
     'page callback' => 'tripal_feature_module_description_page',
-    'access arguments' => array('administer site configuration'),
+    'access arguments' => array('administer tripal features'),
     'type' => MENU_NORMAL_ITEM,
   );
   $items['admin/tripal/tripal_feature/configuration'] = array(
@@ -167,7 +167,7 @@ function tripal_feature_menu() {
     'description' => 'Settings for Chado Features',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_feature_admin'),
-    'access arguments' => array('administer site configuration'),
+    'access arguments' => array('administer tripal features'),
     'type' => MENU_NORMAL_ITEM,
   );
   $items['admin/tripal/tripal_feature/fasta_loader'] = array(
@@ -175,7 +175,7 @@ function tripal_feature_menu() {
     'description' => 'Load sequences from a multi-FASTA file into Chado',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_feature_fasta_load_form'),
-    'access arguments' => array('administer site configuration'),
+    'access arguments' => array('administer tripal features'),
     'type' => MENU_NORMAL_ITEM,
   );
   $items['admin/tripal/tripal_feature/gff3_load'] = array(
@@ -183,7 +183,7 @@ function tripal_feature_menu() {
     'description' => 'Import a GFF3 file into Chado',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_feature_gff3_load_form'),
-    'access arguments' => array('access administration pages'),
+    'access arguments' => array('administer tripal features'),
     'type' => MENU_NORMAL_ITEM,
   );
 
@@ -192,7 +192,7 @@ function tripal_feature_menu() {
     'description' => 'Delete multiple features from Chado',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_feature_delete_form'),
-    'access arguments' => array('access administration pages'),
+    'access arguments' => array('administer tripal features'),
     'type' => MENU_NORMAL_ITEM,
   );
 
@@ -201,7 +201,7 @@ function tripal_feature_menu() {
     'description' => 'Sync features from Chado with Drupal',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_feature_sync_form'),
-    'access arguments' => array('access administration pages'),
+    'access arguments' => array('administer tripal features'),
     'type' => MENU_NORMAL_ITEM,
   );
 

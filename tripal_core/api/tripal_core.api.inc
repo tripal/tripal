@@ -1712,17 +1712,25 @@ function tripal_core_chado_get_foreign_key($table_desc, $field, $values, $option
  *     behavior is to return a single record if only one record exists or to return
  *     an array if multiple records exist.
  *  - include_fk:
- *     an array of FK relationships to fallow. By default, the
+ *     an array of FK relationships to follow. By default, the
  *     tripal_core_chado_select function will follow all FK relationships but this
- *     may generate more queries then is desired.  Provide an array specifying the
- *     fields to include.  For example, if including the cvterm, cv and dbxref records
- *     for a property the following array would work:
+ *     may generate more queries then is desired slowing down this function call when
+ *     there are lots of FK relationships to follow.  Provide an array specifying the
+ *     fields to include.  For example, if expanding a property table (e.g. featureprop)
+ *     and you want the CV and accession but do not want the DB the following
+ *     array would work:
  *     
- *        array('type_id' => array('cv_id' => 1, 'dbxref_id' => 1)).
+ *        $table_options =  array(
+ *          'include_fk' => array(
+ *            'type_id' => array(
+ *              'cv_id' => 1, 
+ *              'dbxref_id' => 1,
+ *            )
+ *          )
+ *        );
  *        
- *     Typically, to expand a property, this function would also include the db record
- *     through the db_id foreign key with the dbxref and db tables, but becuase
- *     it is not included in the array it will not be included in the results.
+ *     The above array will expand the 'type_id' of the property table but only 
+ *     further expand the cv_id and the dbxref_id and will go no further.
  * @return
  *   Either an object (if only one record was selected from the base table)
  *   or an array of objects (if more than one record was selected from the base table).
