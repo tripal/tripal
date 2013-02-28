@@ -27,8 +27,8 @@
 
 <h3>Features of this Module:</h3>
 <ul>
-  <li><p><b>Add a map</b>: Maps can be manually created <?php  print l('here', 'node/add/chado-featuremap') ?><p></li>
-  <li><p><b>Edit or Delete Maps</b>: Maps can be manually edited or deleted by navigating to the map page and clicking the "Edit" button.<p></li>  
+  <li><p><b>Add a map</b>: Maps can be manually created <?php  print l('here', 'node/add/chado-featuremap') ?></p></li>
+  <li><p><b>Edit or Delete Maps</b>: Maps can be manually edited or deleted by navigating to the map page and clicking the "Edit" button.</p></li>  
   <li><p><b>Sync any Existing Maps</b>: Before Maps can be viewed on the website, they must first be <?php print l('created manually', 'node/add/chado-featuremap')  ?> 
             or if they already exist in the Chado database they must be synced. Near the top of the <?php print l('Map Configuration page', 'admin/tripal/tripal_featuremap/configuration') ?>
             there is
@@ -46,6 +46,6 @@
 
 <h3>Page Customizations</h3>
 <p>There are several ways to customize the look-and-feel for the way Chado data is presented through Tripal.
-  Below is a description of several methods.  These methods may be used in conjunction with one another to
-  provide fine-grained control.  See the <a href="http://www.gmod.org/wiki/Tripal_Developer's_Handbook">Developers Handbook</a> for further infromation to customize Map pages.
+   See the <a href="http://www.gmod.org/wiki/Tripal_Developer's_Handbook">Developers Handbook</a> for further infromation 
+   to customize Map pages.
 </p>
