@@ -1,6 +1,7 @@
 <?php
 
-require_once('tripal_natural_diversity.api.inc');
+require_once('api/tripal_natural_diversity.api.inc');
+require_once('includes/tripal_natural_diversity.schema.inc');
 
 /**
  *  @file

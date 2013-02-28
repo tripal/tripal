@@ -43,8 +43,9 @@ function tripal_stock_menu() {
   $items['admin/tripal/tripal_stock'] = array(
     'title' => 'Stocks',
     'description' => 'Basic Description of Tripal Stock Module Functionality',
-    'page callback' => 'tripal_stock_module_description_page',
-    'access arguments' => array('administer site configuration'),
+    'page callback' => 'theme',
+    'page arguments' => array('tripal_stock_admin'),
+    'access arguments' => array('administer tripal stocks'),
     'type' => MENU_NORMAL_ITEM
   );
 
@@ -53,7 +54,7 @@ function tripal_stock_menu() {
     'description' => 'Settings for Chado Stocks',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_stock_admin'),
-    'access arguments' => array('administer site configuration'),
+    'access arguments' => array('administer tripal stocks'),
     'type' => MENU_NORMAL_ITEM
   );
 
@@ -160,7 +161,8 @@ function tripal_stock_perm() {
     'access chado_stock content',
     'create chado_stock content',
     'edit chado_stock content',
-    'delete chado_stock content'
+    'delete chado_stock content',
+    'administer tripal stocks',
   );
 }
 
@@ -290,6 +292,11 @@ function tripal_stock_theme() {
        'arguments' => array('node' => NULL),
        'template' => 'tripal_organism_stocks',
     ),    
+    'tripal_stock_admin' => array(
+      'template' => 'tripal_stock_admin',  
+      'arguments' =>  array(NULL),  
+      'path' => drupal_get_path('module', 'tripal_stock') . '/theme', 
+    ),
   );
 }
 

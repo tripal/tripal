@@ -8,7 +8,36 @@
  * @ingroup tripal_analysis
  * @ingroup tripal_api
  */
+/**
+ * Register tripal_analysis sub-modules
+ *
+ * @param $modulename
+ *  The name of the module to be registered as a tripal analysis submodule
+ *
+ * @ingroup tripal_analysis
+ */
+function tripal_analysis_register_child($modulename) {
+  $sql = "SELECT * FROM {tripal_analysis} WHERE modulename = '%s'";
+  if(!db_result($sql, $modulename)) {
+    $sql = "INSERT INTO {tripal_analysis} (modulename) VALUES ('%s')";
+    db_query($sql, $modulename);
+  }
+}
 
+/**
+ * Un-register a tripal analysis sub-module
+ *
+ * @param $modulename
+ *  The name of the module to un-register
+ *
+ * @ingroup tripal_analysis
+ */
+function tripal_analysis_unregister_child($modulename) {
+  if (db_table_exists('tripal_analysis')) {
+      $sql = "DELETE FROM {tripal_analysis} WHERE modulename = '%s'";
+      db_query($sql, $modulename);
+  }
+}
 /**
  * Retrieve properties of a given type for a given analysis
  *
@@ -109,60 +138,4 @@ function tripal_analysis_get_node($analysis_id) {
            WHERE analysis_id = %d";
   $node = db_fetch_object(db_query($sql, $analysis_id));
   return $node;
-}
-
-/**
- * @section Chado Table Descriptions
- */
-
-/**
- * Implements hook_chado_schema_v1_11_table()
- * Purpose: To add descriptions and foreign keys to default table description
- * Note: This array will be merged with the array from all other implementations
- *
- * @return
- *    Array describing the analysis table
- *
- * @ingroup tripal_schema_api
- */
-function tripal_analysis_chado_schema_v1_11_analysis() {
-  $description = array();
-
-  // Default table description in tripal_core.schema.api.inc: tripal_core_chado_schema_v1_11_analysis()
-
-  $referring_tables = array(
-      'analysisfeature',
-      'analysisprop',
-      'phylotree',
-      'quantification'
-  );
-  $description['referring_tables'] = $referring_tables;
-
-  return $description;
-}
-
-/**
- * Implements hook_chado_schema_v1_2_table()
- * Purpose: To add descriptions and foreign keys to default table description
- * Note: This array will be merged with the array from all other implementations
- *
- * @return
- *    Array describing the analysis table
- *
- * @ingroup tripal_schema_api
- */
-function tripal_analysis_chado_schema_v1_2_analysis() {
-  $description = array();
-
-  // Default table description in tripal_core.schema.api.inc: tripal_core_chado_schema_v1_2_analysis()
-
-  $referring_tables = array(
-      'analysisfeature',
-      'analysisprop',
-      'phylotree',
-      'quantification'
-  );
-  $description['referring_tables'] = $referring_tables;
-
-  return $description;
 }

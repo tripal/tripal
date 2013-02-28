@@ -9,7 +9,9 @@
  * @see http://gmod.org/wiki/Chado_General_Module
  */
 
-require('tripal_genetic.api.inc');
+require('api/tripal_genetic.api.inc');
+require('includes/tripal_genetic.api.inc');
+
 
 /*************************************************************************
  * Implements hook_views_api()

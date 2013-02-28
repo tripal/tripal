@@ -14,36 +14,6 @@
 require('api/tripal_analysis.api.inc');
 require('includes/tripal_analysis_privacy.inc');
 
-/**
- * Register tripal_analysis sub-modules
- *
- * @param $modulename
- *  The name of the module to be registered as a tripal analysis submodule
- *
- * @ingroup tripal_analysis
- */
-function tripal_analysis_register_child($modulename) {
-  $sql = "SELECT * FROM {tripal_analysis} WHERE modulename = '%s'";
-  if(!db_result($sql, $modulename)) {
-    $sql = "INSERT INTO {tripal_analysis} (modulename) VALUES ('%s')";
-    db_query($sql, $modulename);
-  }
-}
-
-/**
- * Un-register a tripal analysis sub-module
- *
- * @param $modulename
- *  The name of the module to un-register
- *
- * @ingroup tripal_analysis
- */
-function tripal_analysis_unregister_child($modulename) {
-  if (db_table_exists('tripal_analysis')) {
-      $sql = "DELETE FROM {tripal_analysis} WHERE modulename = '%s'";
-      db_query($sql, $modulename);
-  }
-}
 
 /**
  * Add tripal javascript to page headers
@@ -65,15 +35,16 @@ function tripal_analysis_menu() {
   $items['chado_sync_analyses'] = array(
      'title' => 'Sync Data',
      'page callback' => 'tripal_analysis_sync_analyses',
-     'access arguments' => array('administer site configuration'),
+     'access arguments' => array('administer tripal analyses'),
      'type' => MENU_CALLBACK
   );
   // Tripal Analysis administrative settings
   $items['admin/tripal/tripal_analysis'] = array(
       'title' => 'Analyses',
       'description' => 'Basic Description of Tripal Analysis Module Functionality.',
-      'page callback' => 'tripal_analysis_module_description_page',
-      'access arguments' => array('administer site configuration'),
+      'page callback' => 'theme',
+      'page arguments' => array('tripal_analysis_admin'),
+      'access arguments' => array('administer tripal analyses'),
       'type' => MENU_NORMAL_ITEM,
       'file' => 'includes/tripal_analysis.admin.inc',
   );
@@ -83,7 +54,7 @@ function tripal_analysis_menu() {
       'description' => 'Settings for the displays of analysis results.',
       'page callback' => 'drupal_get_form',
       'page arguments' => array('tripal_analysis_admin'),
-      'access arguments' => array('administer site configuration'),
+      'access arguments' => array('administer tripal analyses'),
       'type' => MENU_NORMAL_ITEM,
       'file' => 'includes/tripal_analysis.admin.inc',
   );
@@ -483,134 +454,7 @@ function chado_analysis_view($node, $teaser = FALSE, $page = FALSE) {
   return $node;
 }
 
-/**
- * Synchronize analyses from chado to drupal
- *
- * @ingroup tripal_analysis
- */
-function tripal_analysis_sync_analyses($analysis_id = NULL, $job_id = NULL) {
-  global $user;
-  $page_content = '';
 
-  if (!$analysis_id) {
-    $sql = "SELECT Analysis_id, name, description, program, ".
-        "  programversion, algorithm, sourcename, sourceversion, sourceuri, ".
-          "  timeexecuted ".
-          "FROM {Analysis} ";
-    $results = chado_query($sql);
-  }
-  else {
-    $sql = "SELECT Analysis_id, name, description, program, ".
-         "  programversion, algorithm, sourcename, sourceversion, sourceuri, ".
-          "  timeexecuted ".
-          "FROM {Analysis} ".
-          "WHERE analysis_id = %d";
-    $results = chado_query($sql, $analysis_id);
-  }
-
-
-  // We'll use the following SQL statement for checking if the analysis
-  // already exists as a drupal node.
-  $sql = "SELECT * FROM {chado_analysis} ".
-          "WHERE analysis_id = %d";
-
-  while ($analysis = db_fetch_object($results)) {
-        print "syncing analysis ";
-        print $analysis->name;
-        print ", ";
-        print $analysis->analysis_id;
-        print "\n";
-
-    // check if this analysis already exists in the drupal database. if it
-    // does then skip this analysis and go to the next one.
-    if (!db_fetch_object(db_query($sql, $analysis->analysis_id))) {
-
-      $new_node = new stdClass();
-
-      // try to access analysis type for this analysis
-      $sql = "SELECT * FROM {analysisprop}
-                    WHERE analysis_id = %d
-                    AND type_id =
-                        (SELECT cvterm_id from {cvterm} where name = '%s')
-            ";
-      $analysis_type = db_fetch_object(chado_query($sql, $analysis->analysis_id, "analysis_type"));
-
-      // Get the type of analysis using cvterm_id
-            // Current possibilities: kegg, unigene, interpro, blast
-      if ($analysis_type) {
-
-        // This is a unigene analysis
-        if ($analysis_type->value == 'tripal_analysis_unigene') {
-          $new_node->type = 'chado_analysis_unigene';
-        // This is a blast analysis
-        }
-        elseif ($analysis_type->value == 'tripal_analysis_blast') {
-          $new_node->type = 'chado_analysis_blast';
-         // This is a interpro analysis
-        }
-        elseif ($analysis_type->value == 'tripal_analysis_interpro') {
-          $new_node->type = 'chado_analysis_interpro';
-         // This is a kegg analysis
-        }
-        elseif ($analysis_type->value == 'tripal_analysis_kegg' ) {
-          $new_node->type = 'chado_analysis_kegg';
-        }
-        else {
-          $new_node->type = 'chado_analysis';
-        }
-      // If it doesn't exist, this analysis is generic
-      }
-      else {
-        $new_node->type = 'chado_analysis';
-      }
-
-      print "analysis type is $new_node->type\n";
-
-      $new_node->uid = $user->uid;
-      $new_node->analysis_id = $analysis->analysis_id;
-      $new_node->analysisname = $analysis->name;
-      $new_node->description = $analysis->description;
-      $new_node->program = $analysis->program;
-      $new_node->programversion = $analysis->programversion;
-      $new_node->algorithm = $analysis->algorithm;
-      $new_node->sourcename = $analysis->sourcename;
-      $new_node->sourceversion = $analysis->sourceversion;
-      $new_node->sourceuri = $analysis->sourceuri;
-      $new_node->timeexecuted = $analysis->timeexecuted;
-
-      // If the analysis has a name, use it as the node title. If not,
-      // construct the title using program, programversion, and sourcename
-      if ($new_node->analysisname) {
-        $new_node->title = $new_node->analysisname;
-      }
-      else {
-        //Construct node title as "program (version)"
-        $new_node->title = "$analysis->program ($analysis->programversion)";
-      }
-
-      node_validate($new_node);
-
-            $errors = form_get_errors();
-
-            if ($errors) {
-                print_r($errors);
-            }
-            else{
-      // if(!form_get_errors()){
-        $node = node_submit($new_node);
-        node_save($node);
-
-        if ($node->nid) {
-          $page_content .= "Added $new_node->title<br />";
-        }
-      }
-    }
-    else {
-      $page_content .= "Skipped $new_node->title<br />";
-    }
-  }
-  return $page_content;
-}
 
 /**
  * Validates the user input before creating an analysis node
@@ -774,10 +618,11 @@ function chado_analysis_access($op, $node, $account) {
  */
 function tripal_analysis_perm() {
   return array(
-      'access chado_analysis content',
-      'create chado_analysis content',
-      'delete chado_analysis content',
-      'edit chado_analysis content',
+    'access chado_analysis content',
+    'create chado_analysis content',
+    'delete chado_analysis content',
+    'edit chado_analysis content',
+    'administer tripal analyses',
   );
 }
 
@@ -797,6 +642,11 @@ function tripal_analysis_theme() {
     'tripal_feature_analyses' => array(
       'template' => 'tripal_feature_analyses',  
       'arguments' =>  array('node' => NULL),  
+    ),
+    'tripal_analysis_admin' => array(
+      'template' => 'tripal_analysis_admin',  
+      'arguments' =>  array(NULL),  
+      'path' => drupal_get_path('module', 'tripal_analysis') . '/theme', 
     ),
   );
 }
@@ -838,62 +688,6 @@ function tripal_analysis_block($op = 'list', $delta = 0, $edit=array()) {
   }
 }
 
-/**
- * This function uses analysis_id's of all drupal analysis nodes as input and
- * pull the analysis information (name, description, program, programversion,
- * algorithm, sourcename, sourceversion, sourceuri, timeexecuted) from
- * chado database. The return type is an object array that stores $analysis
- * objects sorted by program
- *
- * @ingroup tripal_analysis
- */
-function get_chado_analyses() {
-
-  $sql_drupal = "SELECT COUNT (analysis_id) FROM {chado_analysis}";
-  $no_orgs = db_result(db_query($sql_drupal));
-  if ($no_orgs != 0) {
-    $sql = "SELECT analysis_id, CA.nid, type FROM {chado_analysis} CA INNER JOIN node ON CA.nid = node.nid";
-    $result = db_query($sql);
-    $sql = "SELECT Analysis_id, name, description, program,
-                   programversion, algorithm, sourcename, sourceversion,
-                   sourceuri, timeexecuted
-            FROM {Analysis} WHERE analysis_id=%d";
-    $analyses = array();
-    $count = 0;
-    while ($data = db_fetch_object($result)) {
-      $analysis = db_fetch_object(chado_query($sql, $data->analysis_id));
-      $analysis->node_id = $data->nid;
-      $analysis->node_type = $data->type;
-      // Use node_type as the key so we can sort by node type
-      // Since node_type is not unique by itself, we need to add
-      // $count to the key
-      $sortedBy = $analysis->timeexecuted;
-      $analyses ["$sortedBy$count"] = $analysis;
-      $count ++;
-    }
-
-    //Sort analyses by time, descending order
-    krsort($analyses, SORT_STRING);
-
-    return $analyses;
-  }
-}
-
-/**
- * Remove orphaned drupal nodes
- *
- * @param $dummy
- *   Not Used -kept for backwards compatibility
- * @param $job_id
- *   The id of the tripal job executing this function
- *
- * @ingroup tripal_analysis
- */
-function tripal_analyses_cleanup($dummy = NULL, $job_id = NULL) {
-
-  return tripal_core_clean_orphaned_nodes('analysis', $job_id);
-  
-}
 /*******************************************************************************
  * tripal_analysis_nodeapi()
  * HOOK: Implementation of hook_nodeapi()

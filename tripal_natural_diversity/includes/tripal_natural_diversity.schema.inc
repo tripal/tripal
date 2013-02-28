@@ -1,7 +1,12 @@
 <?php
 /**
  * @file
- * @todo Add file header description
+ * 
+ * This file contains hooks for specifying the natural diversity tables
+ * when Chado v1.11 is installed.  This is only useful for some specific
+ * sites that required the ND tables before they were released.  These
+ * files should not be needed for most sites as the ND tables are now part
+ * of Chado v1.2. However these hooks remain here for backwards compatibility. 
  */
 
 /**
@@ -51,36 +56,6 @@ function tripal_natural_diversity_chado_schema_v1_11_nd_experiment() {
         ),
       ),
     ),
-    'referring_tables' => array(
-      'nd_experiment_contact',
-      'nd_experiment_dbxref',
-      'nd_experiment_genotype',
-      'nd_experiment_phenotype',
-      'nd_experiment_project',
-      'nd_experiment_protocol',
-      'nd_experiment_pub',
-      'nd_experiment_stock',
-      'nd_experimentprop'
-    ),
-  );
-
-  return $description;
-}
-/**
- * Implements hook_chado_schema_v1_2_table()
- *
- * Purpose: To add descriptions and foreign keys to default table description
- * Note: This array will be merged with the array from all other implementations
- *
- * @return
- *    Array describing the nd_experiment table
- *
- * @ingroup tripal_schema_api
- */
-function tripal_natural_diversity_chado_schema_v1_2_nd_experiment() {
-  $description = array();
-
-  $description = array(
     'referring_tables' => array(
       'nd_experiment_contact',
       'nd_experiment_dbxref',
@@ -540,29 +515,6 @@ function tripal_natural_diversity_chado_schema_v1_11_nd_experiment_stock() {
   return $description;
 }
 /**
- * Implements hook_chado_schema_v1_2_table()
- *
- * Purpose: To add descriptions and foreign keys to default table description
- * Note: This array will be merged with the array from all other implementations
- *
- * @return
- *    Array describing the nd_experiment_stock table
- *
- * @ingroup tripal_schema_api
- */
-function tripal_natural_diversity_chado_schema_v1_2_nd_experiment_stock() {
-  $description = array();
-
-  $description = array(
-    'referring_tables' => array(
-      'nd_experiment_stock_dbxref',
-      'nd_experiment_stockprop',
-    ),
-  );
-
-  return $description;
-}
-/**
  * Implements hook_chado_schema_v1_11_table()
  *
  * Purpose: To add descriptions and foreign keys to default table description
@@ -787,29 +739,6 @@ function tripal_natural_diversity_chado_schema_v1_11_nd_geolocation() {
   return $description;
 }
 /**
- * Implements hook_chado_schema_v1_2_table()
- *
- * Purpose: To add descriptions and foreign keys to default table description
- * Note: This array will be merged with the array from all other implementations
- *
- * @return
- *    Array describing the nd_geolocation table
- *
- * @ingroup tripal_schema_api
- */
-function tripal_natural_diversity_chado_schema_v1_2_nd_geolocation() {
-  $description = array();
-
-  $description = array(
-    'referring_tables' => array(
-      'nd_experiment',
-      'nd_geolocationprop'
-    ),
-  );
-
-  return $description;
-}
-/**
  * Implements hook_chado_schema_v1_11_table()
  *
  * Purpose: To add descriptions and foreign keys to default table description
@@ -899,30 +828,6 @@ function tripal_natural_diversity_chado_schema_v1_11_nd_protocol() {
     'primary key' => array(
      '0' => 'nd_protocol_id',
     ),
-    'referring_tables' => array(
-      'nd_experiment_protocol',
-      'nd_protocol_reagent',
-      'nd_protocolprop'
-    ),
-  );
-
-  return $description;
-}
-/**
- * Implements hook_chado_schema_v1_2_table()
- *
- * Purpose: To add descriptions and foreign keys to default table description
- * Note: This array will be merged with the array from all other implementations
- *
- * @return
- *    Array describing the nd_protocol table
- *
- * @ingroup tripal_schema_api
- */
-function tripal_natural_diversity_chado_schema_v1_2_nd_protocol() {
-  $description = array();
-
-  $description = array(
     'referring_tables' => array(
       'nd_experiment_protocol',
       'nd_protocol_reagent',

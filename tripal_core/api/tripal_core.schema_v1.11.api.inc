@@ -9113,6 +9113,15 @@ function tripal_core_chado_schema_v1_11_quantificationprop() {
 function tripal_core_chado_schema_v1_11_stock() {
   $description =  array(
     'table' => 'stock',
+    'referring_tables' => array(
+        1 => 'stock_cvterm',
+        2 => 'stock_dbxref',
+        3 => 'stock_genotype',
+        4 => 'stock_pub',
+        5 => 'stock_relationship',
+        7 => 'stockcollection_stock',
+        8 => 'stockprop',
+     ),
     'fields' => array(
       'stock_id' => array(
         'type' => 'serial',

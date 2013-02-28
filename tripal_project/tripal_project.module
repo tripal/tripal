@@ -1,6 +1,6 @@
 <?php
 
-require('tripal_project.admin.inc');
+require('includes/tripal_project.admin.inc');
 
 /**
  *  @file
@@ -10,11 +10,6 @@ require('tripal_project.admin.inc');
  * For documentation regarding the Chado General module:
  * @see http://gmod.org/wiki/Chado_General_Module
  */
-
-//-----------------------------------------------------------------------------
-//  SECTION: Main Outline for Tripal Project Module
-//-----------------------------------------------------------------------------
-
 
 /**
  * Implements hook_views_api()
@@ -36,15 +31,17 @@ function tripal_project_views_api() {
 function tripal_project_menu() {
   $items[ 'admin/tripal/tripal_project' ]= array(
     'title' => 'Projects',
-    'page callback' => 'tripal_project_administration_description_page',
-    'access arguments' => array('administer site configuration'),
+    'page callback' => 'theme',
+    'page arguments' => array('tripal_project_admin'),   
+    'access arguments' => array('adminster tripal projects'),
     'type' => MENU_NORMAL_ITEM
   );
 
   $items[ 'admin/tripal/tripal_project/configuration' ]= array(
     'title' => 'Configuration',
-    'page callback' => 'tripal_project_configuration_page',
-    'access arguments' => array('administer site configuration'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_project_admin'),
+    'access arguments' => array('adminster tripal projects'),
     'type' => MENU_NORMAL_ITEM
   );
 
@@ -59,11 +56,12 @@ function tripal_project_menu() {
  *
  */
 function tripal_project_perm() {
-
   return array(
-    'access chado_projects',
-    'create chado_projects',
-    'edit own chado_projects'
+    'access chado_projects content',
+    'create chado_projects content',
+    'delete chado_projects content',
+    'edit chado_projects content',
+    'adminster tripal projects',
   );
 }
 
@@ -88,7 +86,6 @@ function tripal_project_perm() {
 function chado_project_access($op, $node, $account) {
 
   if ($op == 'create') {
-
     // Only users with permission to do so may create this node type.
     if (!user_access('create chado_projects', $account)) {
       return FALSE;
@@ -115,10 +112,6 @@ function chado_project_access($op, $node, $account) {
   return NULL;
 }
 
-//-----------------------------------------------------------------------------
-//  SECTION: Node Functionality
-//-----------------------------------------------------------------------------
-
 /**
  * Implementation of hook_node_info().
  *
@@ -140,7 +133,26 @@ function tripal_project_node_info() {
     )
   );
 }
-
+/**
+ *  We need to let drupal know about our theme functions and their arguments.
+ *  We create theme functions to allow users of the module to customize the
+ *  look and feel of the output generated in this module
+ *
+ * @ingroup tripal_project
+ */
+function tripal_project_theme() {
+  return array(
+    'tripal_project_base' => array(
+      'arguments' => array('node' => NULL),
+      'template' => 'tripal_project_base',
+    ),  
+    'tripal_project_admin' => array(
+      'template' => 'tripal_project_admin',  
+      'arguments' =>  array(NULL),  
+      'path' => drupal_get_path('module', 'tripal_project') . '/theme' 
+    ),
+  );
+}
 /**
  * Implementation of hook_form().
  *
@@ -173,6 +185,7 @@ function chado_project_form(&$node, $form_state) {
     '#type' => 'textfield',
     '#maxlength' => 255,
     '#title' => 'Short Description',
+    '#description' => t('Please provide a very short description (less than 255 characters) describing this project.'),
     '#default_value' => $node->project->description,
   );
 
@@ -294,38 +307,3 @@ function chado_project_load($node) {
   return $node;
 
 }
-
-
-//-----------------------------------------------------------------------------
-//  END OF SOFTWARE
-//-----------------------------------------------------------------------------
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

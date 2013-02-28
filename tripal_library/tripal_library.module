@@ -66,7 +66,7 @@ function tripal_library_perm() {
     'create chado_library content',
     'delete chado_library content',
     'edit chado_library content',
-    'administer tripal library',
+    'administer tripal libraries',
   );
 }
 /**
@@ -112,7 +112,7 @@ function tripal_library_menu() {
     'description' => 'Basic Description of Tripal Library Module Functionality',
     'page callback' => 'theme',
     'page arguments' => array('tripal_library_admin'),
-    'access arguments' => array('administer tripal library'),
+    'access arguments' => array('administer tripal libraries'),
     'type' => MENU_NORMAL_ITEM,
   );
 
@@ -121,7 +121,7 @@ function tripal_library_menu() {
     'description' => 'Manage integration of Chado libraries including associated features.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_library_admin'),
-    'access arguments' => array('administer tripal library'),
+    'access arguments' => array('administer tripal libraries'),
     'type' => MENU_NORMAL_ITEM,
   );
 
@@ -129,7 +129,7 @@ function tripal_library_menu() {
   $items['chado_sync_libraries'] = array(
     'title' => 'Sync Library Data',
     'page callback' => 'tripal_library_sync_libraries',
-    'access arguments' => array('administer tripal library'),
+    'access arguments' => array('administer tripal libraries'),
     'type' => MENU_CALLBACK
   );
   return $items;

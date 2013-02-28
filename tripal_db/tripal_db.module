@@ -28,7 +28,8 @@ function tripal_db_menu() {
   $items['admin/tripal/tripal_db'] = array(
     'title' => 'Databases',
     'description' => 'Basic Description of Tripal DB Module Functionality',
-    'page callback' => 'tripal_db_module_description_page',
+    'page callback' => 'theme',
+    'page arguments' => array('tripal_db_admin'),
     'access callback' => 'user_access',
     'access arguments' => array('administer db cross-references'),
     'type' => MENU_NORMAL_ITEM,
@@ -99,4 +100,21 @@ function tripal_db_form_alter(&$form, &$form_state, $form_id) {
       $form['#action'] = url("admin/tripal/tripal_db/add_db");
     }
   } 
+}
+
+/**
+ *  We need to let drupal know about our theme functions and their arguments.
+ *  We create theme functions to allow users of the module to customize the
+ *  look and feel of the output generated in this module
+ *
+ * @ingroup tripal_db
+ */
+function tripal_db_theme() {
+  return array(    
+    'tripal_db_admin' => array(
+      'template' => 'tripal_db_admin',  
+      'arguments' =>  array(NULL),  
+      'path' => drupal_get_path('module', 'tripal_db') . '/theme', 
+    ),
+  );
 }

@@ -1,65 +1,5 @@
 <?php
 /**
- * Purpose: Provide Guidance to new Tripal Admin
- *
- * @return HTML Formatted text
- *
- * @ingroup tripal_db
- */
-function tripal_db_module_description_page() {
-  $text = '';
-
-  $text = '<h3>Tripal External Database Administrative Tools Quick Links</h3>';
-  $text .= '<ul>';
-  $text .= '<li>' . l('Add an external database for cross-refernces.', 'admin/tripal/tripal_db/add_db') . '</li>';
-  $text .= '<li>' . l('Update or delete an external database.', 'admin/tripal/tripal_db/edit_db') . '</li>';
-  $text .= '</ul><br>';
-
-  $text .= '<h3>Module Description:</h3>';
-  $text .= '<p>The Tripal DB Module provides the ability to add database cross reference to the 
-    data in your Tripal Website.  Typically an external database (such as NCBI Genbank, Gene Ontology (GO),
-    stocks database) contains a collection of objects (genomic sequences, vocabulary terms, stocks) that are 
-    uniquely identified using an accession number (or identifier).  Data loaded into Tripal can be a
-    associated with these objects in remote databases, and links can appear on pages allowing site visitors
-    to view the associated objects on the remote database\'s website </p>';
-
-  $text .= '<h3>Setup Instructions:</h3>';
-  $text .= '<ol>';
-  $text .= '<li><b>Set Permissions</b>: This module supports the Drupal user permissions interface for
-               controlling administrative access for creating, editing and deleting database cross-reference resources. 
-               The default is that only the site administrator has these
-               permissions.  Best practice is to create <a href="' . url('admin/user/roles') . '">a new role</a> 
-               for administrative tasks, (such as a webmaster role),
-               and then <a href="' . url('admin/user/user') . '">assign users to the role</a>. Finally,
-               <a href="' . url('admin/user/permissions') . '">assign the permission</a> titled "administer db cross-reference".
-               to the new role.</li>';
-  $text .= '<li><b>Adding or Editing an External Databases</b>. Many resources such as NCBI nr or ExPASy SwissProt (to name a few) 
-            come pre-loaded with Chado.  However, you can add new entries or edit existing entries. Also, when loading 
-            ontologies (controlled vocabularies) using the Tripal CV module new databases are added automaticaly for 
-            each ontology.  To enable linking of accession on a page to the page for that accession on the external
-            database, simply add the URL and the URL prefix when adding or editing a database.</li>';
-  
-  $text .= '<li><b>Associate Data with Accessions</b>.  The Tripal loaders (e.g. GFF, OBO) can associate accessions from
-            remote data to genomic features and controlled vocabularies automatically.  Use the loaders to load genomic
-            features and controlled vocabularies respectively.  Additionally, the bulk loader can be used to create
-            loading templates for associating external database accessions.  
-            </li>';
-  $text .= '</ol>';
-
-
-  $text .= '<br><h3>Features of this Module:</h3>';
-  $text .= '<ul>';
-  $text .= '<li><b>Add an External Databases</b>:';
-  $text .= 'By entering the name and any additional details into the <a href="tripal_db/add_db">add database form</a> you register an external database with your website. This allows you to specify that a sequence feature or other data is also stored in an external database. This is escpecially useful if the external database may contain additional details not stored in yours. If the external database is online you can even provide a URL prefix which will automatically link any data in your website to theirs via a web link.</li>';
-
-  $text .= '<li><b>Update or Delete and External Databases</b>';
-  $text .= 'To edit the details of an external database record or to delete an already existing external database, go to the <a href="tripal_db/edit_db">Update/Delete DBs form</a>. This will allow you to change details or enter new details.</li>';
-
-  $text .= '</ul>';
-
-  return $text;
-}
-/**
  *
  *
  * @ingroup tripal_db
@@ -77,9 +17,6 @@ function tripal_db_admin_page() {
  * @ingroup tripal_db
  */
 function tripal_db_select_form() {
-
-
-
   return $form;
 }
 /**

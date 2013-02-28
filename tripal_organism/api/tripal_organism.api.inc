@@ -70,63 +70,8 @@ function tripal_organism_get_organism_by_organism_id($organism_id) {
  * in core.
  */
 
-/**
- * Implements hook_chado_schema_v1_11_table()
- *
- * Purpose: To add descriptions and foreign keys to default table description
- * Note: This array will be merged with the array from all other implementations
- *
- * @return
- *    Array describing the organism table
- *
- * @ingroup tripal_schema_api
- */
-function tripal_organism_chado_schema_v1_11_organism() {
-  $description = array();
 
-  $referring_tables = array(
-    'biomaterial',
-    'feature',
-    'library',
-    'organism_dbxref',
-    'organismprop',
-    'phylonode_organism',
-    'stock',
-    'wwwuser_organism'
-  );
-  $description['referring_tables'] = $referring_tables;
 
-  return $description;
-}
-
-/**
- * Implements hook_chado_schema_v1_2_table()
- *
- * Purpose: To add descriptions and foreign keys to default table description
- * Note: This array will be merged with the array from all other implementations
- *
- * @return
- *    Array describing the organism table
- *
- * @ingroup tripal_schema_api
- */
-function tripal_organism_chado_schema_v1_2_organism() {
-  $description = array();
-
-  $referring_tables = array(
-    'biomaterial',
-    'feature',
-    'library',
-    'organism_dbxref',
-    'organismprop',
-    'phylonode_organism',
-    'stock',
-    'wwwuser_organism'
-  );
-  $description['referring_tables'] = $referring_tables;
-
-  return $description;
-}
 
 /**
  *  Returns a list of organisms that are currently synced with Drupal
