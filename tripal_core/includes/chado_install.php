@@ -96,6 +96,7 @@ function tripal_core_install_chado($action) {
       }
       else {
         print "Installation (Step 1 of 2) Problems!  Please check output above for errors.\n";
+        exit;
       }
       $success = tripal_core_install_sql($init_file);
       if ($success) {
@@ -103,6 +104,7 @@ function tripal_core_install_chado($action) {
       }
       else {
         print "Installation (Step 2 of 2) Problems!  Please check output above for errors.\n";
+        exit;
       }
       chado_query($vsql,'1.2'); # set the version
     }
@@ -120,6 +122,7 @@ function tripal_core_install_chado($action) {
     }
     else {
       print "Upgrade (Step 1 of 2) problems!  Please check output above for errors.\n";
+      exit;
     }
     $success = tripal_core_install_sql($init_file);
     if ($success) {
@@ -127,6 +130,7 @@ function tripal_core_install_chado($action) {
     }
     else {
       print "Upgrade (Step 2 of 2) problems!  Please check output above for errors.\n";
+      exit;
     }
     chado_query($vsql,'1.2'); # set the version
   }
@@ -140,6 +144,7 @@ function tripal_core_install_chado($action) {
       }
       else {
         print "Installation (Step 1 of 2) Problems!  Please check output above for errors.\n";
+        exit;
       }
       $success = tripal_core_install_sql($init_file);
       if ($success) {
@@ -147,6 +152,7 @@ function tripal_core_install_chado($action) {
       }
       else {
         print "Installation (Step 2 of 2) Problems!  Please check output above for errors.\n";
+        exit;
       }
     }
     else {
@@ -365,9 +371,10 @@ function tripal_core_install_sql($sql_file) {
       }
       if (!$result) {
         $error  = pg_last_error();
-        print "FAILED!!\nError Message:\nSQL $i, $in_string: $query\n$error\n";        
+        print "FAILED. Line  $i, $in_string\n$error:\n$query\n\n";        
         tripal_core_chado_install_done();
         $success = 0;
+        return $success;
       }
       $query = '';
     }
@@ -385,5 +392,4 @@ function tripal_core_chado_install_done() {
 
   // return the search path to normal
   db_query("set search_path to public");
-
 }

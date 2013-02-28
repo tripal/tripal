@@ -422,7 +422,11 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
     // check to see if we have FASTA section, if so then set the variable
     // to start parsing
     if (preg_match('/^##FASTA/i', $line)) {
-      tripal_feature_load_gff_fasta($fh, $interval, $num_read, $intv_read, $line_num);
+      if($remove) {
+        // we're done because this is a delete operation so break out of the loop.
+        break;         
+      }
+      tripal_feature_load_gff3_fasta($fh, $interval, $num_read, $intv_read, $line_num);
       continue;
     }
     // if the ##sequence-region line is present then we want to add a new feature
@@ -604,17 +608,16 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
     // all types. If not we'll error out.  This test is only necessary if
     // if the landmark and the uniquename are different.  If they are the same
     // then this is the information for the landmark
-    if (strcmp($landmark, $attr_uniquename) != 0 ) {
+    if (!$remove and strcmp($landmark, $attr_uniquename) != 0 ) {
       $select = array(
          'organism_id' => $organism_id,
          'uniquename'  => $landmark,
       );
       $columns = array('count(*) as num_landmarks');
       $options = array('statement_name' => 'sel_feature_numland');      
-      $count = tripal_core_chado_select('feature', $columns, $select, $options);
-     
-      if (!$count or $count[0]->num_landmarks == 0) {
-        watchdog('T_gff3_loader', "The landmark '%landmark' cannot be found for this organism. ".
+      $count = tripal_core_chado_select('feature', $columns, $select, $options);   
+      if (!$count or count($count) == 0 or $count[0]->num_landmarks == 0) {
+        watchdog('T_gff3_loader', "The landmark '%landmark' cannot be found for this organism (" . $organism->genus . " " . $organism->species . ") " .
               "Please add the landmark and then retry the import of this GFF3 ".
               "file", array('%landmark' => $landmark), WATCHDOG_ERROR);
         return '';
@@ -699,127 +702,10 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
         // add parent relationships
         if (array_key_exists('Parent', $tags)) {
           tripal_feature_load_gff3_parents($feature, $cvterm, $tags['Parent'], $organism_id, $fmin);
-        }     
-          
+        }               
         // add target relationships
         if (array_key_exists('Target', $tags)) {
-          // format is: "target_id start end [strand]", where strand is optional and may be "+" or "-"
-          $matched = preg_match('/^(.*?)\s+(\d+)\s+(\d+)(\s+[\+|\-])*$/', trim($tags['Target'][0]), $matches);
-          
-          // the organism and type of the target may also be specified as an attribute. If so, then get that
-          // information
-          $gff_target_organism = array_key_exists('target_organism', $tags) ? $tags['target_organism'][0] : '';
-          $gff_target_type = array_key_exists('target_type', $tags) ? $tags['target_type'][0] : '';
-          
-          // if we have matches and the Target is in the correct format then load the alignment 
-          if ($matched) {
-            $target_feature = $matches[1]; 
-            $start = $matches[2]; 
-            $end = $matches[3]; 
-            // if we have an optional strand, convert it to a numeric value. 
-            if ($matches[4]) {
-              if (preg_match('/^\+$/', trim($matches[4]))) {
-                $target_strand = 1;
-              }
-              elseif (preg_match('/^\-$/', trim($matches[4]))) {
-                $target_strand = -1;
-              }
-              else {
-                $target_strand = 0;
-              }
-            }
-            else {
-               $target_strand = 0;
-            }
-            
-            $target_fmin = $start - 1;
-            $target_fmax = $end;
-            if ($end < $start) {
-              $target_fmin = $end - 1;
-              $target_fmax = $start;
-            }
-            
-            // default the target organism to be the value passed into the function, but if the GFF
-            // file species the target organism then use that instead.
-            $t_organism_id = $target_organism_id;
-            if ($gff_target_organism) {
-              // get the genus and species
-              $success = preg_match('/^(.*?):(.*?)$/', $gff_target_organism, $matches);
-              if ($success) {
-                $values = array(
-                  'genus' => $matches[1],
-                  'species' => $matches[2],
-                );
-                $options = array('statement_name' => 'sel_organism_gesp');
-                $torganism = tripal_core_chado_select('organism', array('organism_id'), $values, $options);
-                if (count($torganism) == 1) {
-                  $t_organism_id = $torganism[0]->organism_id;
-                }
-                else {
-                  watchdog('T_gff3_loader', "Cannot find organism for target %target.", 
-                    array('%target' => $gff_target_organism), WATCHDOG_WARNING);
-                  $t_organism_id = '';                                   
-                }
-              }
-              else {
-                watchdog('T_gff3_loader', "The target_organism attribute is improperly formatted: %target. 
-                  It should be target_organism=genus:species.", 
-                  array('%target' => $gff_target_organism), WATCHDOG_WARNING);
-                $t_organism_id = '';                
-              }
-            }  
-
-            // default the target type to be the value passed into the function, but if the GFF file
-            // species the target type then use that instead
-            $t_type_id = '';
-            if ($target_type) {
-              $values = array(
-                'name' => $target_type,
-                'cv_id' => array(
-                   'name' => 'sequence',
-                )
-              );
-              $options = array('statement_name' => 'sel_cvterm_nacv');
-              $type = tripal_core_chado_select('cvterm', array('cvterm_id'), $values, $options);
-              if (count($type) == 1) {
-                $t_type_id = $type[0]->cvterm_id;
-              }
-              else {
-                watchdog('T_gff3_loader', "The target type does not exist in the sequence ontology: %type. ", 
-                  array('%type' => $target_type), WATCHDOG_ERROR);
-                exit;  
-              }
-            }
-            if ($gff_target_type) {
-              $values = array(
-                'name' => $gff_target_type,
-                'cv_id' => array(
-                   'name' => 'sequence',
-                )
-              );
-              $options = array('statement_name' => 'sel_cvterm_nacv');
-              $type = tripal_core_chado_select('cvterm', array('cvterm_id'), $values, $options);
-              if (count($type) == 1) {
-                $t_type_id = $type[0]->cvterm_id;
-              }
-              else {
-                watchdog('T_gff3_loader', "The target_type attribute does not exist in the sequence ontology: %type. ", 
-                  array('%type' => $gff_target_type), WATCHDOG_WARNING);
-                $t_type_id = '';
-              }
-            }                       
-            
-            // we want to add a featureloc record that uses the target feature as the srcfeature (landmark)
-            // and the landmark as the feature.
-            tripal_feature_load_gff3_featureloc($feature, $organism, $target_feature, $target_fmin, 
-              $target_fmax, $target_strand, $phase, $attr_fmin_partial, $attr_fmax_partial, $attr_residue_info, 
-              $attr_locgroup, $t_type_id, $t_organism_id, $create_target, TRUE); 
-          }
-          // the target attribute is not correctly formatted
-          else {
-            watchdog('T_gff3_loader', "Could not add 'Target' alignment as it is improperly formatted:  '%target'",
-              array('%target' => $tags['Target'][0]), WATCHDOG_ERROR);            
-          }
+          tripal_feature_load_gff3_target($feature, $tags, $target_organism_id, $target_type, $create_target, $attr_locgroup);          
         }
         // add gap information.  This goes in simply as a property
         if (array_key_exists('Gap', $tags)) {
@@ -833,16 +719,13 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
               tripal_feature_load_gff3_property($feature, 'Note', $value);
           }
         }
-
         // add the Derives_from relationship (e.g. polycistronic genes).
         if (array_key_exists('Derives_from', $tags)) {
           tripal_feature_load_gff3_derives_from($feature, $tags['Derives_from'][0], $organism);
         }
-
         // add in the GFF3_source dbxref so that GBrowse can find the feature using the source column
         $source_ref = array('GFF_source:' . $source);
         tripal_feature_load_gff3_dbxref($feature, $source_ref);
-
         // add any additional attributes
         if ($attr_others) {
           foreach ($attr_others as $tag_name => $values) {
@@ -856,88 +739,90 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
     }
   }
 
-  print "\nSetting ranks of children...\n";
-  
-  // get features in a relationship that are also children of an alignment
-  $sql = "SELECT DISTINCT F.feature_id, F.organism_id, F.type_id, 
-            F.uniquename, FL.strand 
-          FROM tripal_gff_temp TGT 
-            INNER JOIN feature F                ON TGT.feature_id = F.feature_id
-            INNER JOIN feature_relationship FR  ON FR.object_id = TGT.feature_id
-            INNER JOIN cvterm CVT               ON CVT.cvterm_id = FR.type_id  
-            INNER JOIN featureloc FL            ON FL.feature_id = F.feature_id    
-          WHERE CVT.name = 'part_of'";
-  $parents = chado_query($sql);
-  
-  // build and prepare the SQL for selecting the children relationship
-  $sql = "SELECT DISTINCT FR.feature_relationship_id, FL.fmin, FR.rank
-          FROM feature_relationship FR              
-            INNER JOIN featureloc FL on FL.feature_id = FR.subject_id";
-  if (!$connection) {
-    $sql .= "WHERE FR.object_id = %d ".
-            "ORDER BY FL.fmin ASC ";
-  }
-  else {
-    $sql = "PREPARE sel_gffchildren (int) AS " . $sql . " WHERE FR.object_id = \$1 ORDER BY FL.fmin ASC";            
-  }
-  if (!tripal_core_is_sql_prepared('sel_gffchildren')) {
-    $success = tripal_core_chado_prepare('sel_gffchildren', $sql, array('int'));
-    if (!$success) {
-      watchdog("T_gff3_loader", "Cannot prepare statement 'sel_gffchildren' and cannot set children ranks.", 
-         array(), WATCHDOG_WARNING);
-      return 0;  
-    }
-  }
-  
-  // now set the rank of any parent/child relationships.  The order is based
-  // on the fmin.  The start rank is 1.  This allows features with other
-  // relationships to be '0' (the default), and doesn't interfer with the
-  // ordering defined here.        
-  while ($parent = db_fetch_object($parents)) {
+  if (!$remove) {
+    print "\nSetting ranks of children...\n";
     
-    // get the children
-    if ($connection) {      
-      $result = chado_query('EXECUTE sel_gffchildren (%d)', $parent->feature_id);
+    // get features in a relationship that are also children of an alignment
+    $sql = "SELECT DISTINCT F.feature_id, F.organism_id, F.type_id, 
+              F.uniquename, FL.strand 
+            FROM tripal_gff_temp TGT 
+              INNER JOIN feature F                ON TGT.feature_id = F.feature_id
+              INNER JOIN feature_relationship FR  ON FR.object_id = TGT.feature_id
+              INNER JOIN cvterm CVT               ON CVT.cvterm_id = FR.type_id  
+              INNER JOIN featureloc FL            ON FL.feature_id = F.feature_id    
+            WHERE CVT.name = 'part_of'";
+    $parents = chado_query($sql);
+    
+    // build and prepare the SQL for selecting the children relationship
+    $sql = "SELECT DISTINCT FR.feature_relationship_id, FL.fmin, FR.rank
+            FROM feature_relationship FR              
+              INNER JOIN featureloc FL on FL.feature_id = FR.subject_id";
+    if (!$connection) {
+      $sql .= "WHERE FR.object_id = %d ".
+              "ORDER BY FL.fmin ASC ";
     }
     else {
-      $result = chado_query($sql, $parent->feature_id);
+      $sql = "PREPARE sel_gffchildren (int) AS " . $sql . " WHERE FR.object_id = \$1 ORDER BY FL.fmin ASC";            
+    }
+    if (!tripal_core_is_sql_prepared('sel_gffchildren')) {
+      $success = tripal_core_chado_prepare('sel_gffchildren', $sql, array('int'));
+      if (!$success) {
+        watchdog("T_gff3_loader", "Cannot prepare statement 'sel_gffchildren' and cannot set children ranks.", 
+           array(), WATCHDOG_WARNING);
+        return 0;  
+      }
     }
     
-    // build an array of the children
-    $children = array();
-    while ($child = db_fetch_object($result)) {
-       $children[] = $child;  
-    }
-    
-    // the children list comes sorted in ascending fmin
-    // but if the parent is on the reverse strand we need to 
-    // reverse the order of the children.
-    if ($parent->strand == -1) {
-      arsort($children);
-    }    
-
-    // first set the ranks to a negative number so that we don't
-    // get a duplicate error message when we try to change any of them    
-    $rank = -1;
-    foreach ($children as $child) {
-      $match = array('feature_relationship_id' => $child->feature_relationship_id);
-      $options = array('statement_name' => 'upd_featurerelationship_rank');      
-      $values = array('rank' => $rank);      
-      tripal_core_chado_update('feature_relationship', $match, $values, $options);
-      $rank--;
-    }
-    // now set the rank correctly. The rank should start at 0.
-    $rank = 0;
-    foreach ($children as $child) {
-      $match = array('feature_relationship_id' => $child->feature_relationship_id);
-      $options = array('statement_name' => 'upd_featurerelationship_rank');      
-      $values = array('rank' => $rank); 
-      //print "Was: " . $child->rank . " now $rank ($parent->strand)\n"     ;
-      tripal_core_chado_update('feature_relationship', $match, $values, $options);
-      $rank++;
+    // now set the rank of any parent/child relationships.  The order is based
+    // on the fmin.  The start rank is 1.  This allows features with other
+    // relationships to be '0' (the default), and doesn't interfer with the
+    // ordering defined here.        
+    while ($parent = db_fetch_object($parents)) {
+      
+      // get the children
+      if ($connection) {      
+        $result = chado_query('EXECUTE sel_gffchildren (%d)', $parent->feature_id);
+      }
+      else {
+        $result = chado_query($sql, $parent->feature_id);
+      }
+      
+      // build an array of the children
+      $children = array();
+      while ($child = db_fetch_object($result)) {
+         $children[] = $child;  
+      }
+      
+      // the children list comes sorted in ascending fmin
+      // but if the parent is on the reverse strand we need to 
+      // reverse the order of the children.
+      if ($parent->strand == -1) {
+        arsort($children);
+      }    
+  
+      // first set the ranks to a negative number so that we don't
+      // get a duplicate error message when we try to change any of them    
+      $rank = -1;
+      foreach ($children as $child) {
+        $match = array('feature_relationship_id' => $child->feature_relationship_id);
+        $options = array('statement_name' => 'upd_featurerelationship_rank');      
+        $values = array('rank' => $rank);      
+        tripal_core_chado_update('feature_relationship', $match, $values, $options);
+        $rank--;
+      }
+      // now set the rank correctly. The rank should start at 0.
+      $rank = 0;
+      foreach ($children as $child) {
+        $match = array('feature_relationship_id' => $child->feature_relationship_id);
+        $options = array('statement_name' => 'upd_featurerelationship_rank');      
+        $values = array('rank' => $rank); 
+        //print "Was: " . $child->rank . " now $rank ($parent->strand)\n"     ;
+        tripal_core_chado_update('feature_relationship', $match, $values, $options);
+        $rank++;
+      }
     }
   }
-
+  
   // commit the transaction
   if ($use_transaction) {
     tripal_db_commit_transaction();
@@ -1830,7 +1715,7 @@ function tripal_feature_load_gff3_property($feature, $property, $value) {
 /*
  * 
  */
-function tripal_feature_load_gff_fasta($fh, $interval, &$num_read, &$intv_read, &$line_num) {
+function tripal_feature_load_gff3_fasta($fh, $interval, &$num_read, &$intv_read, &$line_num) {
   print "Loading FASTA sequences\n";
   $residues = '';
   $sql = " 
@@ -1909,4 +1794,127 @@ function tripal_feature_load_gff_fasta($fh, $interval, &$num_read, &$intv_read, 
     $options = array('statement_name' => 'upd_feature_re');
     tripal_core_chado_update('feature', $match, $values, $options);
   } 
+}
+
+/*
+ * 
+ */
+function tripal_feature_load_gff3_target($feature, $tags, $target_organism_id, $target_type, $create_target, $attr_locgroup) {
+  // format is: "target_id start end [strand]", where strand is optional and may be "+" or "-"
+  $matched = preg_match('/^(.*?)\s+(\d+)\s+(\d+)(\s+[\+|\-])*$/', trim($tags['Target'][0]), $matches);
+  
+  // the organism and type of the target may also be specified as an attribute. If so, then get that
+  // information
+  $gff_target_organism = array_key_exists('target_organism', $tags) ? $tags['target_organism'][0] : '';
+  $gff_target_type = array_key_exists('target_type', $tags) ? $tags['target_type'][0] : '';
+  
+  // if we have matches and the Target is in the correct format then load the alignment 
+  if ($matched) {
+    $target_feature = $matches[1]; 
+    $start = $matches[2]; 
+    $end = $matches[3]; 
+    // if we have an optional strand, convert it to a numeric value. 
+    if ($matches[4]) {
+      if (preg_match('/^\+$/', trim($matches[4]))) {
+        $target_strand = 1;
+      }
+      elseif (preg_match('/^\-$/', trim($matches[4]))) {
+        $target_strand = -1;
+      }
+      else {
+        $target_strand = 0;
+      }
+    }
+    else {
+       $target_strand = 0;
+    }
+    
+    $target_fmin = $start - 1;
+    $target_fmax = $end;
+    if ($end < $start) {
+      $target_fmin = $end - 1;
+      $target_fmax = $start;
+    }
+    
+    // default the target organism to be the value passed into the function, but if the GFF
+    // file species the target organism then use that instead.
+    $t_organism_id = $target_organism_id;
+    if ($gff_target_organism) {
+      // get the genus and species
+      $success = preg_match('/^(.*?):(.*?)$/', $gff_target_organism, $matches);
+      if ($success) {
+        $values = array(
+          'genus' => $matches[1],
+          'species' => $matches[2],
+        );
+        $options = array('statement_name' => 'sel_organism_gesp');
+        $torganism = tripal_core_chado_select('organism', array('organism_id'), $values, $options);
+        if (count($torganism) == 1) {
+          $t_organism_id = $torganism[0]->organism_id;
+        }
+        else {
+          watchdog('T_gff3_loader', "Cannot find organism for target %target.", 
+            array('%target' => $gff_target_organism), WATCHDOG_WARNING);
+          $t_organism_id = '';                                   
+        }
+      }
+      else {
+        watchdog('T_gff3_loader', "The target_organism attribute is improperly formatted: %target. 
+          It should be target_organism=genus:species.", 
+          array('%target' => $gff_target_organism), WATCHDOG_WARNING);
+        $t_organism_id = '';                
+      }
+    }  
+  
+    // default the target type to be the value passed into the function, but if the GFF file
+    // species the target type then use that instead
+    $t_type_id = '';
+    if ($target_type) {
+      $values = array(
+        'name' => $target_type,
+        'cv_id' => array(
+           'name' => 'sequence',
+        )
+      );
+      $options = array('statement_name' => 'sel_cvterm_nacv');
+      $type = tripal_core_chado_select('cvterm', array('cvterm_id'), $values, $options);
+      if (count($type) == 1) {
+        $t_type_id = $type[0]->cvterm_id;
+      }
+      else {
+        watchdog('T_gff3_loader', "The target type does not exist in the sequence ontology: %type. ", 
+          array('%type' => $target_type), WATCHDOG_ERROR);
+        exit;  
+      }
+    }
+    if ($gff_target_type) {
+      $values = array(
+        'name' => $gff_target_type,
+        'cv_id' => array(
+           'name' => 'sequence',
+        )
+      );
+      $options = array('statement_name' => 'sel_cvterm_nacv');
+      $type = tripal_core_chado_select('cvterm', array('cvterm_id'), $values, $options);
+      if (count($type) == 1) {
+        $t_type_id = $type[0]->cvterm_id;
+      }
+      else {
+        watchdog('T_gff3_loader', "The target_type attribute does not exist in the sequence ontology: %type. ", 
+          array('%type' => $gff_target_type), WATCHDOG_WARNING);
+        $t_type_id = '';
+      }
+    }                       
+    
+    // we want to add a featureloc record that uses the target feature as the srcfeature (landmark)
+    // and the landmark as the feature.
+    tripal_feature_load_gff3_featureloc($feature, $organism, $target_feature, $target_fmin, 
+      $target_fmax, $target_strand, $phase, $attr_fmin_partial, $attr_fmax_partial, $attr_residue_info, 
+      $attr_locgroup, $t_type_id, $t_organism_id, $create_target, TRUE); 
+  }
+  // the target attribute is not correctly formatted
+  else {
+    watchdog('T_gff3_loader', "Could not add 'Target' alignment as it is improperly formatted:  '%target'",
+      array('%target' => $tags['Target'][0]), WATCHDOG_ERROR);            
+  }
 }

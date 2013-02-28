@@ -65,6 +65,7 @@ function tripal_library_perm() {
     'create chado_library content',
     'delete chado_library content',
     'edit chado_library content',
+    'administer tripal library',
   );
 }
 /**
@@ -109,7 +110,7 @@ function tripal_library_menu() {
     'title' => 'Libraries',
     'description' => 'Basic Description of Tripal Library Module Functionality',
     'page callback' => 'tripal_library_module_description_page',
-    'access arguments' => array('access administration pages'),
+    'access arguments' => array('administer tripal library'),
     'type' => MENU_NORMAL_ITEM,
   );
 
@@ -118,7 +119,7 @@ function tripal_library_menu() {
     'description' => 'Manage integration of Chado libraries including associated features.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_library_admin'),
-    'access arguments' => array('access administration pages'),
+    'access arguments' => array('administer tripal library'),
     'type' => MENU_NORMAL_ITEM,
   );
 
@@ -126,18 +127,9 @@ function tripal_library_menu() {
   $items['chado_sync_libraries'] = array(
     'title' => 'Sync Data',
     'page callback' => 'tripal_library_sync_libraries',
-    'access arguments' => array('access administration pages'),
+    'access arguments' => array('administer tripal library'),
     'type' => MENU_CALLBACK
   );
-  // Displaying libraries
-  $items['libraries'] = array(
-    'menu_name' => ('primary-links'), //Enable the 'Library' primary link
-    'title' => 'DNA Libraries',
-    'page callback' => 'tripal_library_show_libraries',
-    'access arguments' => array('access chado_library content'),
-    'type' => MENU_NORMAL_ITEM
-  );
-
   return $items;
 }
 
@@ -750,26 +742,6 @@ function tripal_library_admin_validate($form, &$form_state) {
       tripal_add_job('Cleanup orphaned libraries', 'tripal_library',
          'tripal_library_cleanup', $job_args, $user->uid);
     }
-}
-/**
- *
- * @ingroup tripal_library
- */
-function tripal_library_show_libraries() {
-  // Show libraries stored in Drupal's {chado_library} table
-  $sql = "SELECT COUNT(library_id) FROM {chado_library}";
-  $no_libs = db_result(db_query($sql));
-  if ($no_libs != 0) {
-    $libraries = get_chado_libraries();
-    if ($no_libs != count($libraries)) {
-      drupal_set_message(t("Synchronization needed."));
-    }
-      return theme('tripal_library_library_table', $libraries);
-  }
-  else {
-    return t("No library exists. Please contact administrators to ".
-             "synchronize libraries.");
-  }
 }
 
 /**

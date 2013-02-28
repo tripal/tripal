@@ -16,6 +16,9 @@ function tripal_featuremap_install() {
   // create the tables that correlate drupal nodes with chado
   // features, maps, etc....
   drupal_install_schema('tripal_featuremap');
+  
+  // Add cvterms
+  tripal_featuremap_add_cvterms();
 
 }
 
@@ -105,4 +108,22 @@ function tripal_featuremap_requirements($phase) {
     }
   }
   return $requirements;
+}
+
+/*
+ * 
+ */
+function tripal_featuremap_add_cvterms() {
+  
+   // add cvterms for the map unit types
+   tripal_cv_add_cvterm(array('name' => 'cM','def' => 'Centimorgan units'), 
+     'tripal_featuremap', 0, 1, 'tripal');
+   tripal_cv_add_cvterm(array('name' => 'bp','def' => 'Base pairs units'), 
+     'tripal_featuremap', 0, 1, 'tripal');
+   tripal_cv_add_cvterm(array('name' => 'bin_unit','def' => 'The bin unit'), 
+     'tripal_featuremap', 0, 1, 'tripal');   
+   tripal_cv_add_cvterm(array('name' => 'marker_order','def' => 'Units simply to define marker order.'), 
+     'tripal_featuremap', 0, 1, 'tripal');
+   tripal_cv_add_cvterm(array('name' => 'undefined','def' => 'A catch-all for an undefined unit type'), 
+     'tripal_featuremap', 0, 1, 'tripal');
 }
