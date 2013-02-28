@@ -101,7 +101,7 @@ function tripal_organism_menu() {
    'title' => 'Organisms',
    'description' => 'Basic Description of Tripal Organism Module Functionality',
    'page callback' => 'tripal_organism_module_description_page',
-   'access arguments' => array('administer site configuration'),
+   'access arguments' => array('adminster tripal organism'),
    'type' => MENU_NORMAL_ITEM,
   );
 
@@ -110,7 +110,7 @@ function tripal_organism_menu() {
    'description' => 'Manage integration of Chado organisms including associated features',
    'page callback' => 'drupal_get_form',
    'page arguments' => array('tripal_organism_admin'),
-   'access arguments' => array('administer site configuration'),
+   'access arguments' => array('adminster tripal organism'),
    'type' => MENU_NORMAL_ITEM,
   );
 
@@ -160,6 +160,7 @@ function tripal_organism_perm() {
     'create chado_organism content',
     'delete chado_organism content',
     'edit chado_organism content',
+    'adminster tripal organism',
   );
 }
 
