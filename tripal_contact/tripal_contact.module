@@ -22,7 +22,7 @@
  * @ingroup tripal_modules
  */
 
-require('tripal_contact.api.inc');
+require('api/tripal_contact.api.inc');
 
 /*************************************************************************
  * Implements hook_views_api()

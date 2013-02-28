@@ -158,7 +158,8 @@ function tripal_feature_menu() {
   $items['admin/tripal/tripal_feature'] = array(
     'title' => 'Features',
     'description' => 'Basic Description of Tripal Organism Module Functionality',
-    'page callback' => 'tripal_feature_module_description_page',
+    'page callback' => 'theme',
+    'page arguments' => array('tripal_feature_admin'),
     'access arguments' => array('administer tripal features'),
     'type' => MENU_NORMAL_ITEM,
   );
@@ -1913,6 +1914,11 @@ function tripal_feature_theme() {
     'tripal_feature_edit_ALL_properties_form' => array(
       'arguments' => array('form' => NULL),
       'function' => 'theme_tripal_feature_edit_ALL_properties_form',
+    ),
+    'tripal_feature_admin' => array(
+      'template' => 'tripal_feature_admin',  
+      'arguments' =>  array(NULL),  
+      'path' => drupal_get_path('module', 'tripal_feature') . '/theme' 
     ),
   );
 }

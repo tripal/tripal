@@ -2939,6 +2939,11 @@ function tripal_db_set_default_search_path() {
  */
 function tripal_core_is_sql_prepared($statement_name) {
   global $prepared_statements;
+  
+  if (!is_array($prepared_statements)) {
+    watchdog('tripal_core', "tripal_core_is_sql_prepared: argument must be an array", array(), WATCHDOG_ERROR);
+      return FALSE; 
+  }
 
   // check to see if the statement is prepared already
   if (in_array($statement_name, $prepared_statements)) {

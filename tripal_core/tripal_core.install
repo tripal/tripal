@@ -34,7 +34,7 @@ function tripal_core_install() {
  *   - changes the specs of mv_table, mv_specs and indexed
  *   - creates the tripal_custom_tables table
  *
- * @ingroup tripal_feature
+ * @ingroup tripal_core
  */
 function tripal_core_update_6000() {
   // add additional columns to the tripal_mviews table
