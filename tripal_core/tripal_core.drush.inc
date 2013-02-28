@@ -208,7 +208,7 @@ function drush_tripal_core_tripal_jobs_launch($username) {
 function drush_tripal_core_tripal_jobs_rerun($username, $job_id) {
 
   $new_job_id = tripal_jobs_rerun($job_id, FALSE);
-  drush_tripal_core_tripal_launch_jobs($username, $new_job_id);
+  drush_tripal_core_tripal_jobs_launch($username, $new_job_id);
 
 }
 
