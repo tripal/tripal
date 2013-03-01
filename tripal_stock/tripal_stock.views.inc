@@ -625,8 +625,7 @@ function tripal_stock_views_default_views() {
     );
     $fields = $new_fields + $fields;
     // Change analysis.name to have a link to the node
-    $fields['name_2']['alter']['make_link'] = 1;
-    $fields['name_2']['alter']['path'] = 'node/[nid]';
+    $fields['name_2']['alter']['link_to_node'] = 1;
     $default_handler->override_option('fields', $fields);
     // Adds stock => Node relationship
     $default_handler->override_option('relationships', array(

@@ -401,8 +401,7 @@ function tripal_organism_views_default_views() {
       ),
     ));
     // Change analysis.name to have a link to the node
-    $fields['common_name']['alter']['make_link'] = 1;
-    $fields['common_name']['alter']['path'] = 'node/[nid]';
+    $fields['common_name']['alter']['link_to_node'] = 1;
     $default_handler->override_option('fields', $fields);
     // Only show records with published nodes
     /**

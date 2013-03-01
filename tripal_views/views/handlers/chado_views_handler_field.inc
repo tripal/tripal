@@ -33,6 +33,33 @@ class chado_views_handler_field extends views_handler_field {
   function options_form(&$form, &$form_state) {
     parent::options_form($form, $form_state);
 
+    // Add a link to node checkbox
+    // but only if this base table is linked to a node
+    if (tripal_core_is_tripal_node_type($this->table)) {
+      // If there is a Node: NID field then show a link to node checkbox
+      if (isset($this->view->display['default']->display_options['fields']['nid'])) {
+        $form['link_to_node'] = array(
+          '#type' => 'checkbox',
+          '#title' => t('Link to Node'),
+          '#description' => t('If a given row is associated with a drupal node then '
+            .'this field will appear as a link, linking the user to that node. Otherwise,'
+            .' no link will be displayed.'),
+          '#default_value' => $this->options['link_to_node'],
+        );
+      }
+      // Otherwise inform the user that they need to add a Node:Nid field
+      // to get this functionality
+      else {
+        $form['link_to_node'] = array(
+          '#type' => 'item',
+          '#value' => "This field has the ability to link to it's corresponding node. "
+            . "However, you first need to add the NID field associated with the node. "
+            . "Simple set the NID field to hidden when adding it to ensure it's not "
+            . "shown in the resulting view."
+        );
+      }
+    }
+
     $form['type'] = array(
       '#type' => 'radios',
       '#title' => t('Display type'),
@@ -85,7 +112,35 @@ class chado_views_handler_field extends views_handler_field {
    *   The values retrieved from the database.
    */
   function render($values) {
-    return chado_wrapper_render_items($this, $values);
+    if ($this->options['link_to_node']) {
+      $link_text = chado_wrapper_render_items($this, $values);
+      return $this->render_node_link($link_text, $values);
+    }
+    else {
+      return chado_wrapper_render_items($this, $values);
+    }
+  }
+
+  /**
+   * Will render the supplied text as a link to the node
+   *
+   * @param $link_text
+   *  The text to render as a link (ie; the text that would normally become underlined
+   *
+   * @return
+   *  A rendered link to the node based on the nid field
+   */
+  function render_node_link($link_text, $values) {
+
+    $node_field = $this->view->field['nid'];
+    $nid = $values->{$node_field->aliases['nid']};
+
+    if ($nid) {
+      return l($link_text, 'node/' . $nid);
+    }
+    else {
+      return $link_text;
+    }
   }
 
   function parent_render($val) {

@@ -121,18 +121,18 @@ require_once "tripal_core.schema_v1.11.api.inc";
  * @ingroup tripal_chado_api
  */
 function tripal_core_chado_insert($table, $values, $options = array()) {
-  
+
   if (!is_array($values)) {
-    watchdog('tripal_core', 'Cannot pass non array as values for inserting.', array(), 
-      WATCHDOG_ERROR);
-    return FALSE;  
-  }
-  if (count($values)==0) {
-    watchdog('tripal_core', 'Cannot pass an empty array as values for inserting.', array(), 
+    watchdog('tripal_core', 'Cannot pass non array as values for inserting.', array(),
       WATCHDOG_ERROR);
     return FALSE;
   }
-  
+  if (count($values)==0) {
+    watchdog('tripal_core', 'Cannot pass an empty array as values for inserting.', array(),
+      WATCHDOG_ERROR);
+    return FALSE;
+  }
+
   // set defaults for options. If we don't set defaults then
   // we get memory leaks when we try to access the elements
   if (!is_array($options)) {
@@ -475,27 +475,27 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
 function tripal_core_chado_update($table, $match, $values, $options = NULL) {
 
   if (!is_array($values)) {
-    watchdog('tripal_core', 'Cannot pass non array as values for updating.', array(), 
+    watchdog('tripal_core', 'Cannot pass non array as values for updating.', array(),
       WATCHDOG_ERROR);
-    return FALSE;  
+    return FALSE;
   }
   if (count($values)==0) {
-    watchdog('tripal_core', 'Cannot pass an empty array as values for updating.', array(), 
+    watchdog('tripal_core', 'Cannot pass an empty array as values for updating.', array(),
       WATCHDOG_ERROR);
     return FALSE;
   }
-  
+
   if (!is_array($match)) {
-    watchdog('tripal_core', 'Cannot pass non array as values for matching.', array(), 
+    watchdog('tripal_core', 'Cannot pass non array as values for matching.', array(),
       WATCHDOG_ERROR);
-    return FALSE;  
+    return FALSE;
   }
   if (count($match)==0) {
-    watchdog('tripal_core', 'Cannot pass an empty array as values for matching.', array(), 
+    watchdog('tripal_core', 'Cannot pass an empty array as values for matching.', array(),
       WATCHDOG_ERROR);
     return FALSE;
   }
-  
+
   // set defaults for options. If we don't set defaults then
   // we get memory leaks when we try to access the elements
   if (!is_array($options)) {
@@ -874,18 +874,18 @@ function tripal_core_chado_update($table, $match, $values, $options = NULL) {
  * @ingroup tripal_chado_api
  */
 function tripal_core_chado_delete($table, $match, $options = NULL) {
-  
+
   if (!is_array($match)) {
-    watchdog('tripal_core', 'Cannot pass non array as values for matching.', array(), 
-      WATCHDOG_ERROR);
-    return FALSE;  
-  }
-  if (count($match)==0) {
-    watchdog('tripal_core', 'Cannot pass an empty array as values for matching.', array(), 
+    watchdog('tripal_core', 'Cannot pass non array as values for matching.', array(),
       WATCHDOG_ERROR);
     return FALSE;
   }
-  
+  if (count($match)==0) {
+    watchdog('tripal_core', 'Cannot pass an empty array as values for matching.', array(),
+      WATCHDOG_ERROR);
+    return FALSE;
+  }
+
   // set defaults for options. If we don't set defaults then
   // we get memory leaks when we try to access the elements
   if (!is_array($options)) {
@@ -1170,27 +1170,27 @@ function tripal_core_chado_delete($table, $match, $options = NULL) {
 function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
 
   if (!is_array($values)) {
-    watchdog('tripal_core', 'Cannot pass non array as values for selecting.', array(), 
+    watchdog('tripal_core', 'Cannot pass non array as values for selecting.', array(),
       WATCHDOG_ERROR);
-    return FALSE;  
+    return FALSE;
   }
   if (count($values)==0) {
-    watchdog('tripal_core', 'Cannot pass an empty array as values for selecting.', array(), 
+    watchdog('tripal_core', 'Cannot pass an empty array as values for selecting.', array(),
       WATCHDOG_ERROR);
     return FALSE;
   }
-  
+
   if (!is_array($columns)) {
-    watchdog('tripal_core', 'Cannot pass non array as columns for selecting.', array(), 
+    watchdog('tripal_core', 'Cannot pass non array as columns for selecting.', array(),
       WATCHDOG_ERROR);
-    return FALSE;  
+    return FALSE;
   }
   if (count($columns)==0) {
-    watchdog('tripal_core', 'Cannot pass an empty array as columns for selecting.', array(), 
+    watchdog('tripal_core', 'Cannot pass an empty array as columns for selecting.', array(),
       WATCHDOG_ERROR);
     return FALSE;
   }
-  
+
   // set defaults for options. If we don't set defaults then
   // we get memory leaks when we try to access the elements
   if (!is_array($options)) {
@@ -1719,17 +1719,17 @@ function tripal_core_chado_get_foreign_key($table_desc, $field, $values, $option
  *     fields to include.  For example, if expanding a property table (e.g. featureprop)
  *     and you want the CV and accession but do not want the DB the following
  *     array would work:
- *     
+ *
  *        $table_options =  array(
  *          'include_fk' => array(
  *            'type_id' => array(
- *              'cv_id' => 1, 
+ *              'cv_id' => 1,
  *              'dbxref_id' => 1,
  *            )
  *          )
  *        );
- *        
- *     The above array will expand the 'type_id' of the property table but only 
+ *
+ *     The above array will expand the 'type_id' of the property table but only
  *     further expand the cv_id and the dbxref_id and will go no further.
  * @return
  *   Either an object (if only one record was selected from the base table)
@@ -2019,7 +2019,7 @@ function tripal_core_generate_chado_var($table, $values, $base_options = array()
  *     option of 'order_by' may be used to sort results in the base table
  *     if more than one are returned.  The options must be compatible with
  *     the options accepted by the tripal_core_chado_select() function.
- *   - return_array: 
+ *   - return_array:
  *     Additionally,  The option 'return_array' can be provided to force
  *     the function to expand tables as an array. Default behavior is to expand
  *     a table as single record if only one record exists or to expand as an array if
@@ -2035,13 +2035,13 @@ function tripal_core_generate_chado_var($table, $values, $base_options = array()
  *        $table_options =  array(
  *          'include_fk' => array(
  *            'type_id' => array(
- *              'cv_id' => 1, 
+ *              'cv_id' => 1,
  *              'dbxref_id' => 1,
  *            )
  *          )
  *        );
- *        
- *     The above array will expand the 'type_id' of the property table but only 
+ *
+ *     The above array will expand the 'type_id' of the property table but only
  *     further expand the cv_id and the dbxref_id and will go no further.
  * @return
  *   A chado object supplemented with the field/table/node requested to be expanded.
@@ -2939,10 +2939,10 @@ function tripal_db_set_default_search_path() {
  */
 function tripal_core_is_sql_prepared($statement_name) {
   global $prepared_statements;
-  
+
   if (!is_array($prepared_statements)) {
     watchdog('tripal_core', "tripal_core_is_sql_prepared: argument must be an array", array(), WATCHDOG_ERROR);
-      return FALSE; 
+      return FALSE;
   }
 
   // check to see if the statement is prepared already
@@ -3705,4 +3705,22 @@ function tripal_core_is_chado_local() {
     return TRUE;
   }
   return FALSE;
+}
+
+/**
+ * Determine whether a given chado table is directly linked to a node
+ *
+ * @param $chado_table
+ *   The name of a chado table to check (ie: feature)
+ * @return
+ *   TRUE if it is linked to a node and FALSE otherwise
+ */
+function tripal_core_is_tripal_node_type($chado_table) {
+  $linking_table = 'chado_' . $chado_table;
+  if (db_table_exists($linking_table)) {
+    return TRUE;
+  }
+  else {
+    return FALSE;
+  }
 }
