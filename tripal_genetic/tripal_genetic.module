@@ -10,7 +10,7 @@
  */
 
 require('api/tripal_genetic.api.inc');
-require('includes/tripal_genetic.api.inc');
+require('includes/tripal_genetic.schema.inc');
 
 
 /*************************************************************************
