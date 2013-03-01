@@ -6120,6 +6120,15 @@ function tripal_core_chado_schema_v1_11_genotype() {
 function tripal_core_chado_schema_v1_11_library() {
   $description =  array(
     'table' => 'library',
+    'referring_tables' => array(
+      0 => 'cell_line_library',
+      1 => 'library_cvterm',
+      2 => 'library_dbxref',
+      3 => 'library_feature',
+      4 => 'library_pub',
+      5 => 'library_synonym',
+      6 => 'libraryprop',
+    ),
     'fields' => array(
       'library_id' => array(
         'type' => 'serial',

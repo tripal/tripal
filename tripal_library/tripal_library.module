@@ -670,18 +670,18 @@ function chado_library_delete(&$node) {
             "WHERE nid = %d ".
             "AND vid = %d";
   db_query($sql_del, $node->nid, $node->vid);
-  $sql_del = "DELETE FROM {node} ".
-            "WHERE nid = %d ".
-            "AND vid = %d";
-  db_query($sql_del, $node->nid, $node->vid);
   $sql_del = "DELETE FROM {node_revisions} ".
             "WHERE nid = %d ".
             "AND vid = %d";
   db_query($sql_del, $node->nid, $node->vid);
+  $sql_del = "DELETE FROM {node} ".
+            "WHERE nid = %d ".
+            "AND vid = %d";
+  db_query($sql_del, $node->nid, $node->vid);  
 
   // Remove data from library and libraryprop tables of chado database as well
-  chado_query("DELETE FROM {library} WHERE library_id = %d", $library_id);
   chado_query("DELETE FROM {libraryprop} WHERE library_id = %d", $library_id);
+  chado_query("DELETE FROM {library} WHERE library_id = %d", $library_id);  
 }
 
 /**

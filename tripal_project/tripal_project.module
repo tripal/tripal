@@ -1,6 +1,7 @@
 <?php
 
 require('includes/tripal_project.admin.inc');
+require('api/tripal_project.api.inc');
 
 /**
  *  @file
@@ -145,7 +146,23 @@ function tripal_project_theme() {
     'tripal_project_base' => array(
       'arguments' => array('node' => NULL),
       'template' => 'tripal_project_base',
-    ),  
+    ), 
+    'tripal_project_contact' => array(
+       'arguments' => array('node' => NULL),
+       'template' => 'tripal_project_contact',
+    ),
+    'tripal_project_publications' => array(
+       'arguments' => array('node' => NULL),
+       'template' => 'tripal_project_publications',
+    ),
+    'tripal_project_relationships' => array(
+       'arguments' => array('node' => NULL),
+       'template' => 'tripal_project_relationships',
+    ),
+    'tripal_project_properties' => array(
+       'arguments' => array('node' => NULL),
+       'template' => 'tripal_project_properties',
+    ),
     'tripal_project_admin' => array(
       'template' => 'tripal_project_admin',  
       'arguments' =>  array(NULL),  
@@ -170,41 +187,80 @@ function tripal_project_theme() {
  *
  */
 function chado_project_form(&$node, $form_state) {
+  $form = array();
 
-  $type = node_get_types('type', $node);
+  $project = $node->project;
 
-  $form['title'] = array(
-    '#type' => 'textfield',
-    '#title' => check_plain($type->title_label),
-    '#required' => TRUE,
-    '#default_value' => $node->title,
-    '#weight' => -5
-  );
+  // get the project default values.  When this module was first created
+  // the project description was incorrectly stored in the $node->body field.
+  // It is better to store it in the Chado tables.  However, the 'description'
+  // field of the project table is only 255 characters.  So, we are going
+  // to follow the same as the project module and store the description in
+  // the projectprop table and leave the project.description field blank.
+  // however, for backwards compatibitily, we check to see if the description
+  // is in the $node->body field. If it is we'll use that.  When the node is
+  // edited the text will be moved out of the body and into the projectprop 
+  // table where it should belong.
+  if ($node->body) {
+    $project_description = $node->body;
+  }
+  else {
+    $project_description = $node->project_description;
+  }
+  if (!$project_description) {
+    $projectprop = tripal_project_get_property($project->project_id, 'project_description');
+    $project_description = $projectprop->value;
+  }
 
-  $form['description'] = array(
-    '#type' => 'textfield',
-    '#maxlength' => 255,
-    '#title' => 'Short Description',
-    '#description' => t('Please provide a very short description (less than 255 characters) describing this project.'),
-    '#default_value' => $node->project->description,
-  );
-
-  $form['body_filter']['body'] = array(
-    '#type' => 'textarea',
-    '#title' => check_plain($type->body_label),
-    '#default_value' => $node->body,
-  );
-  $form['body_filter']['filter'] = filter_form($node->format);
-
-  // whether or not the project exists in chado
+  // keep track of the project id if we have.  If we do have one then
+  // this is an update as opposed to an insert.
   $form['project_id'] = array(
     '#type' => 'value',
-    '#value' => ($node->project->project_id) ? $node->project->project_id : FALSE,
+    '#value' => $project->project_id,
+  );
+
+  $form['title']= array(
+    '#type'          => 'textfield',
+    '#title'         => t('Project Title'),
+    '#description'   => t('Please enter the title for this project. This appears at the top of the project page.'),
+    '#required'      => TRUE,
+    '#default_value' => $node->title,
+    '#weight'        => 1
+  );
+ 
+  $form['project_description']= array(
+    '#type'          => 'textarea',
+    '#title'         => t('Project Description'),
+    '#description'   => t('A brief description of the project'),
+    '#required'      => TRUE,
+    '#default_value' => $project_description,
+    '#weight'        => 5
   );
 
   return $form;
+ 
 }
-
+/**
+ *  validates submission of form when adding or updating a project node
+ *
+ * @ingroup tripal_project
+ */
+function chado_project_validate($node) {
+  $project = 0;
+  // check to make sure the name on the project is unique
+  // before we try to insert into chado.
+  if ($node->project_id) {
+    $sql = "SELECT * FROM {project} WHERE name = '%s' AND NOT project_id = %d";
+    $project = db_fetch_object(chado_query($sql, $node->title, $node->project_id));
+  }
+  else {
+    $sql = "SELECT * FROM {project} WHERE name = '%s'";
+    $project = db_fetch_object(chado_query($sql, $node->title));
+  }
+  if ($project) {
+    form_set_error('title', t('The unique project name already exists. Please choose another'));
+  }
+}
 /**
  * Implementation of hook_insert().
  *
@@ -214,20 +270,37 @@ function chado_project_form(&$node, $form_state) {
  */
 function chado_project_insert($node) {
 
-  $values =  array(
-     'name' => $node->title,
-     'description' => $node->description,
-  );
-
-  if (!$node->project_id) {
-     //inserts info into chado table.
-  $result = tripal_core_chado_insert('project', $values);
-  $node->project_id = $result['project_id'];
+  if ($node->project_id) {
+    $project['project_id'] = $node->project_id;
+  }
+  else {    
+    $values = array(
+      'name' => $node->title,
+      'description' => '',
+    );
+    $project = tripal_core_chado_insert('project', $values);
   }
 
-  //inserts the row of vid,nid,project_id into the chado_project table
-  db_query("INSERT INTO {chado_project} (vid, nid, project_id) VALUES (%d, %d, %d)", $node->vid, $node->nid, $node->project_id);
+  if ($project) {
+     // add the description property
+    tripal_project_insert_property($project['project_id'], 'project_description', 
+      $node->project_description);
 
+    // make sure the entry for this feature doesn't already exist in the chado_project table
+    // if it doesn't exist then we want to add it.
+    $project_id = chado_get_id_for_node('project', $node) ;
+    if (!$project_id) {
+       // next add the item to the drupal table
+      $sql = "INSERT INTO {chado_project} (nid, vid, project_id) ".
+             "VALUES (%d, %d, %d)";
+      db_query($sql, $node->nid, $node->vid, $project['project_id']);
+    }
+  }
+  else {
+    drupal_set_message(t('Unable to add project.', 'warning'));
+    watchdog('tripal_project', 'Insert feature: Unable to create project where values: %values',
+      array('%values' => print_r($values, TRUE)), WATCHDOG_WARNING);
+  }
 }
 
 /**
@@ -240,17 +313,34 @@ function chado_project_insert($node) {
  *
  */
 function chado_project_delete($node) {
-  // Notice that we're matching all revision, by using the node's nid.
 
-  // Find the project to delete
-  $values =  array(
-     'project_id' => $node->project->project_id,
-  );
-  tripal_core_chado_delete('project', $values);
+  $project_id = chado_get_id_for_node('project', $node);
+  
+  // if we don't have a project id for this node then this isn't a node of
+  // type chado_project or the entry in the chado_project table was lost.
+  if (!$project_id) {
+    return;
+  }
+  
+  // Remove data from {chado_project}, {node} and {node_revisions} tables of
+  // drupal database
+  $sql_del = "DELETE FROM {chado_project} ".
+             "WHERE nid = %d ".
+             "AND vid = %d";
+  db_query($sql_del, $node->nid, $node->vid);
+  $sql_del = "DELETE FROM {node_revisions} ".
+             "WHERE nid = %d ".
+             "AND vid = %d";
+  db_query($sql_del, $node->nid, $node->vid);
+  $sql_del = "DELETE FROM {node} ".
+             "WHERE nid = %d ".
+             "AND vid = %d";
+  db_query($sql_del, $node->nid, $node->vid);
 
-  //deleteing in drupal chado_project table
-  db_query('DELETE FROM {chado_project} WHERE nid = %d', $node->nid);
 
+  // Remove data from project and projectprop tables of chado database as well
+  chado_query("DELETE FROM {projectprop} WHERE project_id = %d", $project_id);
+  chado_query("DELETE FROM {project} WHERE project_id = %d", $project_id);  
 }
 
 /**
@@ -262,22 +352,23 @@ function chado_project_delete($node) {
  *
  */
 function chado_project_update($node) {
-  if ($node->revision) {
+ if ($node->revision) {
     // there is no way to handle revisions in Chado but leave
     // this here just to make not we've addressed it.
   }
-  // Find the project to update
-  $match= array(
-    'project_id' => $node->project_id,
-  );
 
-  // New values
-  $values =  array(
-    'name' => $node->title,
-    'description' => $node->description,
+  // update the project and the description
+  $project_id = chado_get_id_for_node('project', $node) ;
+  $match = array(
+     'project_id' => $project_id,
   );
-
-  $result = tripal_core_chado_update('project', $match, $values);
+  $values = array(
+     'name' => $node->title,
+     'description' => '',
+  );
+  $status = tripal_core_chado_update('project', $match, $values);
+  tripal_project_update_property($project_id, 'project_description', $node->project_description, 1);
+  
 
 }
 
@@ -293,17 +384,150 @@ function chado_project_update($node) {
  */
 function chado_project_load($node) {
 
-  //selecting the coresponding table information
-  $result = db_fetch_object(db_query('SELECT * FROM {chado_project} WHERE nid=%d AND vid=%d', $node->nid, $node->vid));
+  // get the feature details from chado
+  $project_id = chado_get_id_for_node('project', $node);
 
-  //assigning the project-Id to a variable
-  $values = array(
-    'project_id' => $result->project_id,
-  );
+  $values = array('project_id' => $project_id);
+  $project = tripal_core_generate_chado_var('project', $values);
 
-  //the current project set to the 'project' with the $values(project-Id)
-  $node->project = tripal_core_generate_chado_var('project', $values);
+  $additions = new stdClass();
+  $additions->project = $project;
+  return $additions;
 
-  return $node;
+}
+
+/**
+ * Display block with projects
+ * @param op    - parameter to define the phase being called for the block
+ * @param delta - id of the block to return (ignored when op is list)
+ * @param edit  - when op is save, contains the submitted form data
+ *
+ * @ingroup tripal_project
+ */
+function tripal_project_block($op = 'list', $delta = '0', $edit = array()) {
+  switch ($op) {
+    case 'list':
+
+    $blocks['projectbase']['info'] = t('Tripal Project Details');
+    $blocks['projectbase']['cache'] = BLOCK_NO_CACHE;
+
+    $blocks['projectprops']['info'] = t('Tripal Project Properties');
+    $blocks['projectprops']['cache'] = BLOCK_NO_CACHE;
+    
+    $blocks['projectpubs']['info'] = t('Tripal Project Publications');
+    $blocks['projectpubs']['cache'] = BLOCK_NO_CACHE;
+    
+    $blocks['projectcont']['info'] = t('Tripal Project Contact');
+    $blocks['projectcont']['cache'] = BLOCK_NO_CACHE;
+    
+    $blocks['projectrels']['info'] = t('Tripal Project Relationships');
+    $blocks['projectrels']['cache'] = BLOCK_NO_CACHE;
+
+    return $blocks;
+
+    case 'view':
+      if (user_access('access chado_project content') and arg(0) == 'node' and is_numeric(arg(1))) {
+        $nid = arg(1);
+        $node = node_load($nid);
+
+        $block = array();
+        switch ($delta) {
+          case 'projectbase':
+            $block['subject'] = t('Project Details');
+            $block['content'] = theme('tripal_project_base', $node);
+            break;
+          case 'projectprops':
+            $block['subject'] = t('Properties');
+            $block['content'] = theme('tripal_project_properties', $node);
+            break;
+          case 'projectpubs':
+            $block['subject'] = t('Publications');
+            $block['content'] = theme('tripal_project_publications', $node);
+            break;
+          case 'projectcont':
+            $block['subject'] = t('Contact');
+            $block['content'] = theme('tripal_project_contact', $node);
+            break;
+          case 'projectrels':
+            $block['subject'] = t('Relationships');
+            $block['content'] = theme('tripal_project_relationships', $node);
+            break;
+          default :
+        }
+        return $block;
+      }
+  }
+}
+/**
+ *
+ *
+ * @ingroup tripal_project
+ */
+function tripal_project_preprocess_tripal_project_relationships(&$variables) {
+  // we want to provide a new variable that contains the matched projects.
+  $project = $variables['node']->project;
+   
+  // normally we would use tripal_core_expand_chado_vars to expand our
+  // organism object and add in the relationships, however whan a large
+  // number of relationships are present this significantly slows the
+  // query, therefore we will manually perform the query
+  $sql = "
+    SELECT P.name, P.project_id, CP.nid, CVT.name as rel_type
+    FROM project_relationship PR
+      INNER JOIN project P       ON PR.object_project_id = P.project_id
+      INNER JOIN cvterm CVT      ON PR.type_id           = CVT.cvterm_id
+      LEFT JOIN chado_project CP ON P.project_id         = CP.project_id
+    WHERE PR.subject_project_id = %d      
+  ";
+  $as_subject = chado_query($sql, $project->project_id);
+  $sql = "
+    SELECT P.name, P.project_id, CP.nid, CVT.name as rel_type
+    FROM project_relationship PR
+      INNER JOIN project P       ON PR.subject_project_id = P.project_id
+      INNER JOIN cvterm CVT      ON PR.type_id            = CVT.cvterm_id
+      LEFT JOIN chado_project CP ON P.project_id          = CP.project_id
+    WHERE PR.object_project_id = %d      
+  ";
+  $as_object = chado_query($sql, $project->project_id);   
+  
+  // combine both object and subject relationshisp into a single array
+  $relationships = array();
+  $relationships['object'] = array();
+  $relationships['subject'] = array();
+  
+  // iterate through the object relationships
+  while ($relationship = db_fetch_object($as_object)) {
+     
+     // get the relationship and child types
+     $rel_type = t(preg_replace('/_/', " ", $relationship->rel_type));
+     $sub_type = t(preg_replace('/_/', " ", $relationship->sub_type));
+     
+     if (!array_key_exists($rel_type, $relationships['object'])) {
+       $relationships['object'][$rel_type] = array();   
+     }
+     if (!array_key_exists($sub_type, $relationships['object'][$rel_type])) {
+       $relationships['object'][$rel_type][$sub_type] = array();   
+     }
+     $relationships['object'][$rel_type][$sub_type][] = $relationship;     
+  }
+  
+  // now add in the subject relationships
+  while ($relationship = db_fetch_object($as_subject)) {
+     
+     // get the relationship and child types
+     $rel_type = t(preg_replace('/_/', " ", $relationship->rel_type));
+     $obj_type = t(preg_replace('/_/', " ", $relationship->obj_type));
+     
+     if (!array_key_exists($rel_type, $relationships['subject'])) {
+       $relationships['subject'][$rel_type] = array();   
+     }
+     if (!array_key_exists($obj_type, $relationships['subject'][$rel_type])) {
+       $relationships['subject'][$rel_type][$obj_type] = array();   
+     }
+     $relationships['subject'][$rel_type][$obj_type][] = $relationship;     
+  }
+  
+  
+  $project->all_relationships = $relationships;
 
 }
