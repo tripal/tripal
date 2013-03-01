@@ -11,56 +11,6 @@
  */
 
 /**
- * Implements hook_chado_schema_v1_11_table()
- * Purpose: To add descriptions and foreign keys to default table description
- * Note: This array will be merged with the array from all other implementations
- *
- * @return
- *    Array describing the library table
- *
- * @ingroup tripal_schema_api
- */
-function tripal_library_chado_schema_v1_11_library() {
-  $description = array();
-  $referring_tables = array(
-      'library_cvterm',
-      'library_feature',
-      'library_pub',
-      'library_synonym',
-      'libraryprop'
-  );
-  $description['referring_tables'] = $referring_tables;
-
-  return $description;
-}
-
-/**
- * Implements hook_chado_schema_v1_2_table()
- * Purpose: To add descriptions and foreign keys to default table description
- * Note: This array will be merged with the array from all other implementations
- *
- * @return
- *    Array describing the library table
- *
- * @ingroup tripal_schema_api
- */
-function tripal_library_chado_schema_v1_2_library() {
-  $description = array();
-  $referring_tables = array(
-      'library_cvterm',
-      'library_feature',
-      'library_pub',
-      'library_synonym',
-      'libraryprop'
-  );
-  $description['referring_tables'] = $referring_tables;
-
-  return $description;
-}
-
-
-
-/**
  * Retrieve properties of a given type for a given library
  *
  * @param $library_id

@@ -15,6 +15,7 @@
  */
 function tripal_project_install() {
   drupal_install_schema('tripal_project');
+  tripal_project_add_cvterms();
 }
 
 /**
@@ -28,39 +29,25 @@ function tripal_project_uninstall() {
  * Implementation of hook_schema().
  */
 function tripal_project_schema() {
-
-  //specification for 'tripal_project_instances'
   $schema['chado_project'] = array(
-
     'fields' => array(
-
-      //a int field that cannot be null and acts as a unique identifier for all nid's
       'nid' => array(
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
-        ),
-
-      //a int field that cannot be null and is vid
+      ),
       'vid' => array(
           'type' => 'int',
           'not null' => TRUE,
       ),
-
-      //a intfield, not null and project_id is the unique_id of the project in chado
-       'project_id' => array(
-          'type' => 'int',
-          'unsigned' => TRUE,
-          'not null' => TRUE,
+      'project_id' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
       ),
-
-
-    ),//end of shema
-
+    ),
     'primary key' => array('nid', 'vid', 'project_id'),
-
   );
-
   return $schema;
 }
 
@@ -81,4 +68,27 @@ function tripal_project_requirements($phase) {
     }
   }
   return $requirements;
+}
+/*
+ * 
+ */
+function tripal_project_add_cvterms() {
+  
+  // Insert cvterm 'library_description' into cvterm table of chado
+  // database. This CV term is used to keep track of the library
+  // description in the libraryprop table.
+  tripal_cv_add_cvterm(array('name' => 'project_description', 'def' => 'Description of a project'), 
+    'tripal', 0, 1, 'tripal'); 
+}
+/**
+ *  Update for Drupal 6.x, Tripal 1.0
+ *  This update
+ *   - adds the library types
+ *
+ * @ingroup tripal_library
+ */
+function tripal_project_update_6000() {
+  // add in the missing library typ cv terms
+  tripal_project_add_cvterms();
+  return $ret;
 }
