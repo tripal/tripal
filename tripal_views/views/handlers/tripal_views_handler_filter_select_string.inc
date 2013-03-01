@@ -101,6 +101,7 @@ class tripal_views_handler_filter_select_string extends chado_views_handler_filt
       if (!$max_length) {
         $max_length = 40;
       }
+      $options = array();
       if ($this->options['optional']) {
         //$options['<select '.$this->table.'>'] = '--None--';
         $options['All'] = '--Any--';
