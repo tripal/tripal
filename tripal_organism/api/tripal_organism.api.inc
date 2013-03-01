@@ -6,30 +6,6 @@
  */
 
 /**
- * Purpose: Create an options array to be used in a form element
- *   which provides a list of all chado organisms
- *
- * @return an array(organism_id => common_name)
- *   for each organism in the chado organism table
- *
- * @ingroup tripal_organism_api
- */
-function tripal_organism_get_organism_options() {
-
-  $result = chado_query(
-    "SELECT organism_id, common_name FROM {organism}"
-  );
-
-  $options = array();
-  while ( $r = db_fetch_object($result) ) {
-    $options[$r->organism_id] = $r->common_name;
-  }
-
-  return $options;
-
-}
-
-/**
  * Purpose: Return a given organism object using the nid
  *
  * @return organism object created by node load

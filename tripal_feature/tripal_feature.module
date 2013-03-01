@@ -805,17 +805,15 @@ function chado_feature_form($node, $param) {
    '#options'     => $ftypes,
    '#weight'      => 2
   );
+  
   // get the list of organisms
   $sql = "SELECT * FROM {Organism} ORDER BY genus, species";
   $org_rset = chado_query($sql);
-
-  //
   $organisms = array();
   $organisms[''] = '';
   while ($organism = db_fetch_object($org_rset)) {
     $organisms[$organism->organism_id] = "$organism->genus $organism->species ($organism->common_name)";
   }
-
   $form['organism_id'] = array(
     '#title'       => t('Organism'),
     '#type'        => t('select'),

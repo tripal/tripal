@@ -52,9 +52,10 @@ function tripal_stock_admin() {
     );
 
     // get the list of CVs for the next form element
-    $results = tripal_core_chado_select('cv', array('cv_id', 'name'), array());
+    $sql = "SELECT * FROM {cv} ORDER BY name";
+    $results = chado_query($sql);
     $cv_options = array();
-    foreach ($results as $r) {
+    while ($r = db_fetch_object($results)) {
       $cv_options[$r->cv_id] = $r->name;
     }
 
@@ -100,11 +101,19 @@ function tripal_stock_admin() {
          "time to complete. ")
     );
 
+    // get the list of organisms
+    $sql = "SELECT * FROM {Organism} ORDER BY genus, species";
+    $org_rset = chado_query($sql);
+    $organisms = array();
+    $organisms[''] = '';
+    while ($organism = db_fetch_object($org_rset)) {
+      $organisms[$organism->organism_id] = "$organism->genus $organism->species ($organism->common_name)";
+    }
     $form['sync']['organisms'] = array(
       '#type' => 'checkboxes',
       '#title' => t('Organisms for which Stocks should be sync\'d'),
       '#description' => t('Only sync\'d Organisms are listed. Leaving an organism unchecked does not delete already sync\'d Stocks.'),
-      '#options' => tripal_organism_get_organism_options(),
+      '#options' => $organisms,
       '#required'    => FALSE,
       '#prefix'      => '<div id="lib_boxes">',
       '#suffix'      => '</div>'

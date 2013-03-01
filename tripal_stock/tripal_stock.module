@@ -445,16 +445,20 @@ function chado_stock_form($node, $form_state) {
     '#required'    => TRUE,
   );
 
-  $stock_oganism_options = tripal_organism_get_organism_options();
-  $stock_oganism_options[0] = 'Select An Organism';
-  if ($node->nid == '') {
-  $organism_default = 0; }
-  else {  $organism_default = $node->stock->organism_id->organism_id; }
+ 
+  // get the list of organisms
+  $sql = "SELECT * FROM {Organism} ORDER BY genus, species";
+  $org_rset = chado_query($sql);
+  $organisms = array();
+  $organisms[''] = '';
+  while ($organism = db_fetch_object($org_rset)) {
+    $organisms[$organism->organism_id] = "$organism->genus $organism->species ($organism->common_name)";
+  }
   $form['details']['organism_id'] = array(
     '#type' => 'select',
     '#title' => t('Source Organism for stock'),
     '#default_value' => $organism_default,
-    '#options' => $stock_oganism_options,
+    '#options' => $organisms,
     '#required'    => TRUE
   );
 
@@ -1115,13 +1119,3 @@ function tripal_stock_preprocess_tripal_organism_stocks(&$variables) {
   $organism->stock_browser =  array('stocks' => $stocks, 'pager' => $pager, 'enabled' => TRUE );
 }
 
-/**
- *
- *
- * @ingroup tripal_stock
- */
-function tripal_stock_preprocess_tripal_stock_base(&$variables) {
-	$stock = $variables['node']->stock;
-	$num_seq = db_result(chado_query("SELECT count(*) FROM feature_stock WHERE stock_id = %d", $stock->stock_id));
-	$stock->num_seq = $num_seq;
-}
