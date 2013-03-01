@@ -31,7 +31,7 @@ function tripal_natural_diversity_views_data()  {
     );
     foreach ($tables as $tablename) {
       $priority = 9;
-      
+
       // check to see if the table is integrated. If it is then integrate it's
       // corresponding 'chado_[table]' table.
       if (!tripal_views_is_integrated($tablename, $priority)) {
@@ -71,7 +71,7 @@ function tripal_natural_diversity_views_data()  {
       'nd_reagentprop'
     );
     foreach ($tables as $tablename) {
-      $priority = 9;     
+      $priority = 9;
       if (!tripal_views_is_integrated($tablename, $priority)) {
         $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename, FALSE, $priority);
         tripal_views_integration_add_entry($table_integration_array);
@@ -941,40 +941,6 @@ function tripal_natural_diversity_views_default_views() {
       'id' => 'name',
       'table' => 'cvterm',
       'field' => 'name',
-      'relationship' => 'none',
-    ),
-    'residues' => array(
-      'label' => 'Sequence',
-      'alter' => array(
-        'alter_text' => 0,
-        'text' => '',
-        'make_link' => 0,
-        'path' => '',
-        'absolute' => 0,
-        'link_class' => '',
-        'alt' => '',
-        'rel' => '',
-        'prefix' => '',
-        'suffix' => '',
-        'target' => '',
-        'help' => '',
-        'trim' => 0,
-        'max_length' => '',
-        'word_boundary' => 1,
-        'ellipsis' => 1,
-        'html' => 0,
-        'strip_tags' => 0,
-      ),
-      'empty' => '',
-      'hide_empty' => 0,
-      'empty_zero' => 0,
-      'hide_alter_empty' => 1,
-      'type' => 'separator',
-      'separator' => ', ',
-      'exclude' => 0,
-      'id' => 'residues',
-      'table' => 'feature',
-      'field' => 'residues',
       'relationship' => 'none',
     ),
   ));
