@@ -155,6 +155,12 @@ function tripal_views_is_lightest_priority_setup($setup_id, $table_name) {
 function tripal_views_integration_add_entry($defn_array) {
   $no_errors = TRUE;
 
+  if (empty($defn_array['table'])) {
+    watchdog('tripal_views','Recieved integration with no tablename: %defn', array('%defn' => print_r($defn_array,TRUE)), WATCHDOG_WARNING);
+    $no_errors = FALSE;
+    return $no_errors;
+  }
+
   // First insert into tripal_views
   $view_record = array(
     'table_name' => $defn_array['table'],
@@ -420,7 +426,7 @@ function tripal_views_integrate_all_chado_tables() {
 
   $tables = tripal_core_get_chado_tables(TRUE);
   foreach ($tables as $tablename) {
-  
+
     $priority = 10;
     if (!tripal_views_is_integrated($tablename, $priority)) {
       $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename, TRUE, $priority);
@@ -569,6 +575,12 @@ function tripal_views_add_node_relationship_to_chado_table_integration($defn_arr
   $integrations[$defn_array['table']] = $defn_array;
   $primary_key = $defn_array['table'] . '_id';
   $chado_linking = 'chado_' . $defn_array['table'];
+
+  if (empty($defn_array['table'])) {
+    watchdog('tripal_views','Tried to add a node=>chado relationship for an empty table defn: %defn',
+      array('%defn' => print_r($defn_array,TRUE)),WATCHDOG_WARNING);
+    return FALSE;
+  }
 
   // Add table.primary_key => chado_table.primary key join to $defn_array
   $integrations[$defn_array['table']]['fields'][$primary_key]['joins'][$chado_linking] = array(
