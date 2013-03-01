@@ -34,8 +34,8 @@ class chado_views_handler_field extends views_handler_field {
     parent::options_form($form, $form_state);
 
     // Add a link to node checkbox
-    // but only if this base table is linked to a node
-    if (tripal_core_is_tripal_node_type($this->table)) {
+    // but only if this base table is linked to a node and this field is from the base_table
+    if (tripal_core_is_tripal_node_type($this->table) && $this->table == $this->view->base_table) {
       // If there is a Node: NID field then show a link to node checkbox
       if (isset($this->view->display['default']->display_options['fields']['nid'])) {
         $form['link_to_node'] = array(
