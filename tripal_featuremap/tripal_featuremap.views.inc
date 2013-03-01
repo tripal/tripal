@@ -42,6 +42,9 @@ function tripal_featuremap_views_data()  {
       if (!tripal_views_is_integrated($tablename, $priority)) {
         $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename, TRUE, $priority);
 
+        // Add custom handle to handle type_ids
+        $table_integration_array['fields']['unittype_id']['handlers']['filter']['name'] = 'tripal_views_handler_filter_select_cvterm';
+
         // Add in node relationships if chado is in the same db as drupal
         if (tripal_core_chado_schema_exists()) {
           $integrations = tripal_views_add_node_relationship_to_chado_table_integration($table_integration_array);
@@ -137,54 +140,26 @@ function tripal_featuremap_views_default_views() {
 
   // Main default view
   $view = new view;
-  $view->name = 'map_listing';
-  $view->description = 'A listing of all maps';
+  $view->name = 'featuremap_listing';
+  $view->description = 'A listing of all chado feature maps';
   $view->tag = 'chado default';
-  $view->base_table = 'map';
-  $view->core = 0;
+  $view->base_table = 'featuremap';
+  $view->core = 6;
   $view->api_version = '2';
   $view->disabled = FALSE; /* Edit this to true to make a default view disabled initially */
   $handler = $view->new_display('default', 'Defaults', 'default');
   $handler->override_option('fields', array(
-    'uniquename' => array(
-      'label' => 'Unique Name',
-      'alter' => array(
-        'alter_text' => 0,
-        'text' => '',
-        'make_link' => 0,
-        'path' => '',
-        'link_class' => '',
-        'alt' => '',
-        'prefix' => '',
-        'suffix' => '',
-        'target' => '',
-        'help' => '',
-        'trim' => 0,
-        'max_length' => '',
-        'word_boundary' => 1,
-        'ellipsis' => 1,
-        'html' => 0,
-        'strip_tags' => 0,
-      ),
-      'empty' => '',
-      'hide_empty' => 0,
-      'empty_zero' => 0,
-      'link_to_node' => 1,
-      'exclude' => 0,
-      'id' => 'uniquename',
-      'table' => 'map',
-      'field' => 'uniquename',
-      'relationship' => 'none',
-    ),
-    'name_1' => array(
+    'name' => array(
       'label' => 'Name',
       'alter' => array(
         'alter_text' => 0,
         'text' => '',
         'make_link' => 0,
         'path' => '',
+        'absolute' => 0,
         'link_class' => '',
         'alt' => '',
+        'rel' => '',
         'prefix' => '',
         'suffix' => '',
         'target' => '',
@@ -199,81 +174,26 @@ function tripal_featuremap_views_default_views() {
       'empty' => '',
       'hide_empty' => 0,
       'empty_zero' => 0,
-      'link_to_node' => 1,
-      'exclude' => 0,
-      'id' => 'name_1',
-      'table' => 'map',
-      'field' => 'name',
-      'relationship' => 'none',
-    ),
-    'common_name' => array(
-      'label' => 'Organism',
-      'alter' => array(
-        'alter_text' => 0,
-        'text' => '',
-        'make_link' => 0,
-        'path' => '',
-        'link_class' => '',
-        'alt' => '',
-        'prefix' => '',
-        'suffix' => '',
-        'target' => '',
-        'help' => '',
-        'trim' => 0,
-        'max_length' => '',
-        'word_boundary' => 1,
-        'ellipsis' => 1,
-        'html' => 0,
-        'strip_tags' => 0,
-      ),
-      'empty' => '',
-      'hide_empty' => 0,
-      'empty_zero' => 0,
-      'link_to_node' => 1,
-      'exclude' => 0,
-      'id' => 'common_name',
-      'table' => 'organism',
-      'field' => 'common_name',
-      'relationship' => 'none',
-    ),
-    'name' => array(
-      'label' => 'Type',
-      'alter' => array(
-        'alter_text' => 0,
-        'text' => '',
-        'make_link' => 0,
-        'path' => '',
-        'link_class' => '',
-        'alt' => '',
-        'prefix' => '',
-        'suffix' => '',
-        'target' => '',
-        'help' => '',
-        'trim' => 0,
-        'max_length' => '',
-        'word_boundary' => 1,
-        'ellipsis' => 1,
-        'html' => 0,
-        'strip_tags' => 0,
-      ),
-      'empty' => '',
-      'hide_empty' => 0,
-      'empty_zero' => 0,
+      'hide_alter_empty' => 1,
+      'type' => 'separator',
+      'separator' => ', ',
       'exclude' => 0,
       'id' => 'name',
-      'table' => 'cvterm',
+      'table' => 'featuremap',
       'field' => 'name',
       'relationship' => 'none',
     ),
-    'is_obsolete' => array(
-      'label' => 'Is Obsolete?',
+    'description' => array(
+      'label' => 'Description',
       'alter' => array(
         'alter_text' => 0,
         'text' => '',
         'make_link' => 0,
         'path' => '',
+        'absolute' => 0,
         'link_class' => '',
         'alt' => '',
+        'rel' => '',
         'prefix' => '',
         'suffix' => '',
         'target' => '',
@@ -288,64 +208,76 @@ function tripal_featuremap_views_default_views() {
       'empty' => '',
       'hide_empty' => 0,
       'empty_zero' => 0,
-      'type' => 'yes-no',
-      'not' => 0,
+      'hide_alter_empty' => 1,
+      'type' => 'separator',
+      'separator' => ', ',
       'exclude' => 0,
-      'id' => 'is_obsolete',
-      'table' => 'map',
-      'field' => 'is_obsolete',
+      'id' => 'description',
+      'table' => 'featuremap',
+      'field' => 'description',
+      'relationship' => 'none',
+    ),
+    'name_1' => array(
+      'label' => 'Map Units',
+      'alter' => array(
+        'alter_text' => 0,
+        'text' => '',
+        'make_link' => 0,
+        'path' => '',
+        'absolute' => 0,
+        'link_class' => '',
+        'alt' => '',
+        'rel' => '',
+        'prefix' => '',
+        'suffix' => '',
+        'target' => '',
+        'help' => '',
+        'trim' => 0,
+        'max_length' => '',
+        'word_boundary' => 1,
+        'ellipsis' => 1,
+        'html' => 0,
+        'strip_tags' => 0,
+      ),
+      'empty' => '',
+      'hide_empty' => 0,
+      'empty_zero' => 0,
+      'hide_alter_empty' => 1,
+      'type' => 'separator',
+      'separator' => ', ',
+      'exclude' => 0,
+      'id' => 'name_1',
+      'table' => 'cvterm',
+      'field' => 'name',
       'relationship' => 'none',
     ),
   ));
   $handler->override_option('sorts', array(
     'name' => array(
+      'order' => 'ASC',
       'id' => 'name',
-      'table' => 'map',
+      'table' => 'featuremap',
       'field' => 'name',
+      'relationship' => 'none',
     ),
   ));
   $handler->override_option('filters', array(
-    'common_name' => array(
+    'unittype_id' => array(
       'operator' => '=',
-      'value' => array(),
+      'value' => '',
       'group' => '0',
       'exposed' => TRUE,
       'expose' => array(
         'use_operator' => 0,
-        'operator' => 'common_name_op',
-        'identifier' => 'organism_common_name',
-        'label' => 'Organism',
+        'operator' => 'unittype_id_op',
+        'identifier' => 'unittype_id',
+        'label' => 'Map Units',
         'remember' => 0,
       ),
       'case' => 1,
-      'id' => 'common_name',
-      'table' => 'organism',
-      'field' => 'common_name',
-      'relationship' => 'none',
-      'values_form_type' => 'select',
-      'multiple' => 1,
-      'optional' => 0,
-      'agg' => array(
-        'records_with' => 1,
-        'aggregates_with' => 1,
-      ),
-    ),
-    'type_id' => array(
-      'operator' => '=',
-      'value' => array(),
-      'group' => '0',
-      'exposed' => TRUE,
-      'expose' => array(
-        'use_operator' => 0,
-        'operator' => 'type_id_op',
-        'identifier' => 'type_id',
-        'label' => 'Type',
-        'remember' => 0,
-      ),
-      'case' => 1,
-      'id' => 'type_id',
-      'table' => 'map',
-      'field' => 'type_id',
+      'id' => 'unittype_id',
+      'table' => 'featuremap',
+      'field' => 'unittype_id',
       'relationship' => 'none',
       'values_form_type' => 'select',
       'multiple' => 1,
@@ -353,24 +285,84 @@ function tripal_featuremap_views_default_views() {
       'show_all' => 0,
       'agg' => array(
         'records_with' => 1,
-        'aggregates_with' => 0,
+        'aggregates_with' => 1,
       ),
+    ),
+    'name_1' => array(
+      'operator' => 'contains',
+      'value' => '',
+      'group' => '0',
+      'exposed' => TRUE,
+      'expose' => array(
+        'use_operator' => 0,
+        'operator' => 'name_1_op',
+        'identifier' => 'name_1',
+        'label' => 'Name',
+        'remember' => 0,
+      ),
+      'case' => 0,
+      'id' => 'name_1',
+      'table' => 'featuremap',
+      'field' => 'name',
+      'relationship' => 'none',
+      'agg' => array(
+        'records_with' => 1,
+        'aggregates_with' => 1,
+      ),
+    ),
+    'description' => array(
+      'operator' => 'contains',
+      'value' => '',
+      'group' => '0',
+      'exposed' => TRUE,
+      'expose' => array(
+        'use_operator' => 0,
+        'operator' => 'description_op',
+        'identifier' => 'description',
+        'label' => 'Description',
+        'remember' => 0,
+      ),
+      'case' => 0,
+      'id' => 'description',
+      'table' => 'featuremap',
+      'field' => 'description',
+      'relationship' => 'none',
+      'agg' => array(
+        'records_with' => 1,
+        'aggregates_with' => 1,
+      ),
+    ),
+    'search_results' => array(
+      'operator' => '=',
+      'value' => '',
+      'group' => '0',
+      'exposed' => FALSE,
+      'expose' => array(
+        'operator' => FALSE,
+        'label' => '',
+      ),
+      'id' => 'search_results',
+      'table' => 'views',
+      'field' => 'search_results',
+      'relationship' => 'none',
+      'apply_button' => 'Show',
+      'no_results_text' => 'Click "Show" to see a list of all feature maps matching the entered criteria. If you leave a any of the criteria blank then the maps will be not be filtered based on that field. Furthermore, if you leave all criteria blank then all maps will be listed.',
     ),
   ));
   $handler->override_option('access', array(
     'type' => 'perm',
-    'perm' => 'access chado_map content',
+    'perm' => 'access chado_featuremap content',
   ));
   $handler->override_option('cache', array(
     'type' => 'none',
   ));
   $handler->override_option('title', 'Maps');
-  $handler->override_option('header', 'Click "Show" to see a list of all maps matching the entered criteria. If you leave a any of the criteria blank then the maps will be not be filtered based on that field. Furthermore, if you leave all criteria blank then all maps will be listed.');
-  $handler->override_option('header_format', '2');
-  $handler->override_option('header_empty', 0);
-  $handler->override_option('empty', 'No maps match the supplied criteria.');
+  $handler->override_option('header', 'Click "Show" to see a list of all feature maps matching the entered criteria. If you leave a any of the criteria blank then the maps will be not be filtered based on that field. Furthermore, if you leave all criteria blank then all maps will be listed.');
+  $handler->override_option('header_format', '1');
+  $handler->override_option('header_empty', 1);
+  $handler->override_option('empty', 'No feature maps match the current criteria.');
   $handler->override_option('empty_format', '1');
-  $handler->override_option('items_per_page', 50);
+  $handler->override_option('items_per_page', 25);
   $handler->override_option('use_pager', '1');
   $handler->override_option('style_plugin', 'table');
   $handler->override_option('style_options', array(
@@ -380,14 +372,16 @@ function tripal_featuremap_views_default_views() {
     'order' => 'asc',
     'summary' => '',
     'columns' => array(
-      'uniquename' => 'uniquename',
-      'name_1' => 'name_1',
-      'common_name' => 'common_name',
       'name' => 'name',
-      'is_obsolete' => 'is_obsolete',
+      'description' => 'description',
+      'name_1' => 'name_1',
     ),
     'info' => array(
-      'uniquename' => array(
+      'name' => array(
+        'sortable' => 1,
+        'separator' => '',
+      ),
+      'description' => array(
         'sortable' => 1,
         'separator' => '',
       ),
@@ -395,29 +389,16 @@ function tripal_featuremap_views_default_views() {
         'sortable' => 1,
         'separator' => '',
       ),
-      'common_name' => array(
-        'sortable' => 1,
-        'separator' => '',
-      ),
-      'name' => array(
-        'sortable' => 1,
-        'separator' => '',
-      ),
-      'is_obsolete' => array(
-        'sortable' => 1,
-        'separator' => '',
-      ),
     ),
-    'default' => 'uniquename',
+    'default' => '-1',
   ));
-  $default_handler = $handler;
   $handler = $view->new_display('page', 'Page', 'page_1');
-  $handler->override_option('path', 'chado/maps');
+  $handler->override_option('path', 'chado/featuremaps');
   $handler->override_option('menu', array(
     'type' => 'normal',
     'title' => 'Maps',
-    'description' => 'A map is a collection of features of a given type. For example, a cDNA or BAC clone map.',
-    'weight' => '10',
+    'description' => 'A listing of chado feature maps.',
+    'weight' => '0',
     'name' => 'navigation',
   ));
   $handler->override_option('tab_options', array(
@@ -427,80 +408,6 @@ function tripal_featuremap_views_default_views() {
     'weight' => 0,
     'name' => 'navigation',
   ));
-  // Add code specific to a local chado installation
-  // NOTE: Edit $handler above to $default_handler for the default display
-  if (tripal_core_chado_schema_exists()) {
-    // Add nid field
-    $fields = $view->get_items('field', 'default');
-    $new_fields = array(
-      'nid' => array(
-        'label' => 'Nid',
-        'alter' => array(
-          'alter_text' => 0,
-          'text' => '',
-          'make_link' => 0,
-          'path' => '',
-          'absolute' => 0,
-          'link_class' => '',
-          'alt' => '',
-          'rel' => '',
-          'prefix' => '',
-          'suffix' => '',
-          'target' => '',
-          'help' => '',
-          'trim' => 0,
-          'max_length' => '',
-          'word_boundary' => 1,
-          'ellipsis' => 1,
-          'html' => 0,
-          'strip_tags' => 0,
-        ),
-        'empty' => '',
-        'hide_empty' => 0,
-        'empty_zero' => 0,
-        'hide_alter_empty' => 1,
-        'link_to_node' => 0,
-        'exclude' => 1,
-        'id' => 'nid',
-        'table' => 'node',
-        'field' => 'nid',
-        'relationship' => 'none',
-      )
-    );
-    $fields = $new_fields + $fields;
-    // Adds map => Node relationship
-    $default_handler->override_option('relationships', array(
-      'nid' => array(
-        'label' => 'Map to Node',
-        'required' => 0,
-        'id' => 'nid',
-        'table' => 'chado_map',
-        'field' => 'nid',
-        'relationship' => 'none',
-      ),
-    ));
-    // Change analysis.name to have a link to the node
-    $fields['name_1']['alter']['make_link'] = 1;
-    $fields['name_1']['alter']['path'] = 'node/[nid]';
-    $default_handler->override_option('fields', $fields);
-    // Only show records with published nodes
-    $filters = $view->get_items('filter', 'default');
-    $filters['status'] = array(
-      'operator' => '=',
-      'value' => '1',
-      'group' => '0',
-      'exposed' => FALSE,
-      'expose' => array(
-        'operator' => FALSE,
-        'label' => '',
-      ),
-      'id' => 'status',
-      'table' => 'node',
-      'field' => 'status',
-      'relationship' => 'none',
-    );
-    $default_handler->override_option('filters', $filters);
-  }
   $views[$view->name] = $view;
 
   return $views;
