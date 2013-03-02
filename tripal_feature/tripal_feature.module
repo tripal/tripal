@@ -2307,7 +2307,7 @@ function tripal_feature_match_features_page($id) {
       INNER JOIN cvterm CVT on CVT.cvterm_id = F.type_id 
       LEFT JOIN feature_synonym FS on FS.feature_id = F.feature_id 
       LEFT JOIN synonym S on S.synonym_id = FS.synonym_id 
-      INNER JOIN chado_feature CF on CF.feature_id = F.feature_id 
+      INNER JOIN public.chado_feature CF on CF.feature_id = F.feature_id 
     WHERE 
       F.uniquename = '%s' or 
       F.name = '%s' or 
