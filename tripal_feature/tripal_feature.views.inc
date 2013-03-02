@@ -664,8 +664,7 @@ function tripal_feature_views_default_views() {
       ),
     ));
     // Change analysis.name to have a link to the node
-    $fields['name']['alter']['make_link'] = 1;
-    $fields['name']['alter']['path'] = 'node/[nid]';
+    $fields['name']['alter']['link_to_node'] = 1;
     $default_handler->override_option('fields', $fields);
     // Only show records with published nodes
     /**
