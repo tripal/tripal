@@ -819,9 +819,9 @@ function tripal_bulk_loader_edit_template_record_form(&$form_state = NULL) {
     '#title' => 'Action to take when Loading Record',
     '#options' => array(
       'select' => 'SELECT: Don\'t insert this record: it\'s used to define a foreign key in another record',
-      'select_once' => 'SELECT ONCE: Select the record only once for the entire file.',
+      'select_once' => 'SELECT ONCE: Select the record only once for each constant set.',
       'insert' => 'INSERT: Insert the record',
-      'insert_once' => 'INSERT ONCE: Record will be inserted once for the entire file',
+      'insert_once' => 'INSERT ONCE: Record will be inserted once for each constant set. If the record is the same across multiple constant sets, make sure to select "SELECT if duplicate" as well.',
     ),
     '#default_value' => $mode
   );
