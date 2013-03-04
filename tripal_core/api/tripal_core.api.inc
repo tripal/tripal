@@ -1172,12 +1172,7 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
   if (!is_array($values)) {
     watchdog('tripal_core', 'Cannot pass non array as values for selecting.', array(),
       WATCHDOG_ERROR);
-    return FALSE;
-  }
-  if (count($values)==0) {
-    watchdog('tripal_core', 'Cannot pass an empty array as values for selecting.', array(),
-      WATCHDOG_ERROR);
-    return FALSE;
+    //return FALSE;
   }
 
   if (!is_array($columns)) {
@@ -1426,7 +1421,11 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
   else {
     $sql  = "SELECT " . implode(', ', $columns) . " ";
     $sql .= "FROM {$table} ";
-    $sql .= "WHERE ";
+
+    // if $values is empty then we want all results so no where clause
+    if (empty($values)) {
+      $sql .= "WHERE ";
+    }
     $psql = $sql;  // prepared SQL statement;
     $i = 1;
     $pvalues = array();
