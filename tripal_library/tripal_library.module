@@ -235,6 +235,10 @@ function tripal_library_theme() {
        'arguments' => array('node' => NULL),
        'template' => 'tripal_library_properties',
     ),
+    'tripal_library_terms' => array(
+       'arguments' => array('node' => NULL),
+       'template' => 'tripal_library_terms',
+    ),
     'tripal_library_admin' => array(
       'template' => 'tripal_library_admin',  
       'arguments' =>  array(NULL),  
@@ -696,11 +700,14 @@ function tripal_library_block($op = 'list', $delta = '0', $edit = array()) {
   switch ($op) {
     case 'list':
 
-    $blocks['libreferences']['info'] = t('Tripal Library References');
+    $blocks['libreferences']['info'] = t('Tripal Library Cross References');
     $blocks['libreferences']['cache'] = BLOCK_NO_CACHE;
 
     $blocks['libbase']['info'] = t('Tripal Library Details');
     $blocks['libbase']['cache'] = BLOCK_NO_CACHE;
+    
+    $blocks['libterms']['info'] = t('Tripal Library Terms');
+    $blocks['libterms']['cache'] = BLOCK_NO_CACHE;
 
     $blocks['libsynonyms']['info'] = t('Tripal Library Synonyms');
     $blocks['libsynonyms']['cache'] = BLOCK_NO_CACHE;
@@ -724,7 +731,7 @@ function tripal_library_block($op = 'list', $delta = '0', $edit = array()) {
         $block = array();
         switch ($delta) {
           case 'libreferences':
-            $block['subject'] = t('References');
+            $block['subject'] = t('Cross References');
             $block['content'] = theme('tripal_library_references', $node);
             break;
           case 'libbase':
@@ -738,6 +745,10 @@ function tripal_library_block($op = 'list', $delta = '0', $edit = array()) {
           case 'libproperties':
             $block['subject'] = t('Properties');
             $block['content'] = theme('tripal_library_properties', $node);
+            break;
+          case 'libterms':
+            $block['subject'] = t('Library Terms');
+            $block['content'] = theme('tripal_library_terms', $node);
             break;
           case 'featurelibs':
             $block['subject'] = t('Libraries');

@@ -95,7 +95,7 @@ function get_tripal_project_admin_form_sync_set(&$form) {
       // if so, then skip it.
       $sql = "SELECT * FROM {chado_project} WHERE project_id = %d";
       if (!db_fetch_object(db_query($sql, $project->project_id))) {
-        $proj_boxes[$project->project_id] = "$project->genus $project->species ($project->common_name)";
+        $proj_boxes[$project->project_id] = $project->name;
         $added++;
       }
     }

@@ -977,7 +977,10 @@ function tripal_stock_preprocess_tripal_stock_relationships(&$variables) {
   // number of relationships are present this significantly slows the
   // query, therefore we will manually perform the query
   $sql = "
-    SELECT S.name, S.uniquename, S.stock_id, CS.nid, CVT.name as rel_type, CVTs.name as obj_type
+    SELECT 
+      S.name, S.uniquename, S.stock_id, CS.nid, 
+      CVT.name as rel_type, CVTs.name as obj_type,
+      SR.value
     FROM stock_relationship SR
       INNER JOIN stock S on SR.object_id = S.stock_id
       INNER JOIN cvterm CVT on SR.type_id = CVT.cvterm_id
@@ -987,7 +990,10 @@ function tripal_stock_preprocess_tripal_stock_relationships(&$variables) {
   ";
   $as_subject = chado_query($sql, $stock->stock_id);
   $sql = "
-    SELECT S.name, S.uniquename,  S.stock_id, CS.nid, CVT.name as rel_type, CVTs.name as sub_type
+    SELECT 
+      S.name, S.uniquename,  S.stock_id, CS.nid, 
+      CVT.name as rel_type, CVTs.name as sub_type,
+      SR.value
     FROM stock_relationship SR
       INNER JOIN stock S on SR.subject_id = S.stock_id
       INNER JOIN cvterm CVT on SR.type_id = CVT.cvterm_id
