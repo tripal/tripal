@@ -289,7 +289,7 @@ function tripal_featuremap_views_default_views() {
       ),
     ),
     'name_1' => array(
-      'operator' => 'contains',
+      'operator' => '~',
       'value' => '',
       'group' => '0',
       'exposed' => TRUE,
@@ -311,7 +311,7 @@ function tripal_featuremap_views_default_views() {
       ),
     ),
     'description' => array(
-      'operator' => 'contains',
+      'operator' => '~',
       'value' => '',
       'group' => '0',
       'exposed' => TRUE,

@@ -245,7 +245,7 @@ function tripal_natural_diversity_views_default_views() {
     ),
     'description' => array(
       'operator' => '=',
-      'value' => 'University of Saskatchewan',
+      'value' => array(),
       'group' => '0',
       'exposed' => TRUE,
       'expose' => array(
@@ -631,7 +631,7 @@ function tripal_natural_diversity_views_default_views() {
       ),
     ),
     'description' => array(
-      'operator' => 'contains',
+      'operator' => '~',
       'value' => '',
       'group' => '0',
       'exposed' => TRUE,
@@ -775,7 +775,7 @@ function tripal_natural_diversity_views_default_views() {
   ));
   $handler->override_option('filters', array(
     'name' => array(
-      'operator' => 'contains',
+      'operator' => '~',
       'value' => '',
       'group' => '0',
       'exposed' => TRUE,
@@ -988,7 +988,7 @@ function tripal_natural_diversity_views_default_views() {
       'no_results_text' => 'Click "Show" to see a list of all reagents matching the entered criteria. If you leave a any of the criteria blank then the reagents will be not be filtered based on that field. Furthermore, if you leave all criteria blank then all reagents will be listed.',
     ),
     'name' => array(
-      'operator' => 'contains',
+      'operator' => '~',
       'value' => '',
       'group' => '0',
       'exposed' => TRUE,

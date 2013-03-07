@@ -243,7 +243,7 @@ class views_handler_join_chado_aggregator extends views_join {
       .' ' . implode(' ', $joins);
 
     if (!empty($opt['filter'])) {
-      $sql .= ' WHERE ' . implode(', ', $opt['filter']);
+      $sql .= ' WHERE ' . implode(' AND ', $opt['filter']);
     }
 
     $sql .= ' GROUP BY ' . $opt['field'];

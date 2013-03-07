@@ -47,7 +47,17 @@ class tripal_views_handler_filter_no_results extends views_handler_filter {
   function query() {
     global $base_url;
 
-    if (empty($this->view->exposed_input)) {
+    // Check that all filter types don't return arrays
+    // If they do then just show results by default b/c there is no way to tell the
+    // different between before and after submitted
+    $all_arrays = TRUE;
+    foreach ($this->view->exposed_raw_input as $v) {
+      if (!is_array($v)) {
+        $all_arrays = FALSE;
+      }
+    }
+
+    if (empty($this->view->exposed_input) && !$all_arrays) {
       $this->view->executed = TRUE;
 
       $jquery_loaded = FALSE;
