@@ -44,8 +44,8 @@ function tripal_cv_menu() {
   $items['admin/tripal/tripal_cv'] = array(
     'title' => 'Vocabularies',
     'description' => 'Basic Description of Tripal CV Module Functionality',
-    'page callback' => 'tripal_cv_module_description_page',
-    'page arguments' => array(''),
+    'page callback' => 'theme',
+    'page arguments' => array('tripal_cv_admin'),
     'access arguments' => array('administer controlled vocabularies'),
     'type' => MENU_NORMAL_ITEM,
   );
@@ -235,4 +235,21 @@ function tripal_cv_form_alter(&$form, &$form_state, $form_id) {
       $form['#action'] = url("admin/tripal/tripal_cv/cvterm/add");
     }
   }
+}
+
+/**
+ *  We need to let drupal know about our theme functions and their arguments.
+ *  We create theme functions to allow users of the module to customize the
+ *  look and feel of the output generated in this module
+ *
+ * @ingroup tripal_db
+ */
+function tripal_cv_theme() {
+  return array(    
+    'tripal_cv_admin' => array(
+      'template' => 'tripal_cv_admin',  
+      'arguments' =>  array(NULL),  
+      'path' => drupal_get_path('module', 'tripal_cv') . '/theme', 
+    ),
+  );
 }

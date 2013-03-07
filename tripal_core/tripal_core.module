@@ -98,6 +98,13 @@ function tripal_core_menu() {
     'file' => 'system.admin.inc',
     'file path' => drupal_get_path('module', 'system'),
   );
+  $items['admin/tripal/customize'] = array(
+    'title' => 'Customize Tripal',
+    'position' => 'right',
+    'page callback' => 'theme',
+    'page arguments' => array('tripal_core_customize'),
+    'access arguments' => array('administer site configuration'),
+  );
   $items['tripal_toggle_box_menu/%/%/%'] = array(
     'title' => 'Toggle Box',
     'page callback' => 'tripal_toggle_box_menu',
@@ -250,8 +257,13 @@ function tripal_core_perm() {
 function tripal_core_theme() {
   return array(
     'tripal_core_job_view' => array(
-       'arguments' => array('job_id' => NULL),
-       'template' => 'tripal_core_job_view',
+      'arguments' => array('job_id' => NULL),
+      'template' => 'tripal_core_job_view',
+    ),
+    'tripal_core_customize' => array(
+      'arguments' => array('job_id' => NULL),
+      'template' => 'tripal_core_customize',
+      'path' => drupal_get_path('module', 'tripal_core') . '/theme'
     ),
   );
 }

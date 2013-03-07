@@ -51,10 +51,18 @@ function tripal_natural_diversity_theme() {
 /*
  *
  */
-function tripal_natural_diversity_nodeapi(&$node, $op, $teaser, $page){
+function tripal_natural_diversity_nodeapi(&$node, $op, $teaser, $page){  
   switch ($op) {
     case 'view':
       if ($node->type == 'chado_feature') {
+        // the tripal_genetic module provides a tripal_feature_genotype
+        // template.  The only difference between them is the addition of 
+        // project information by this module's template.  Therefore,
+        // if the tripal_genetic content is present get rid of as this
+        // module superceeds it.
+        if (array_key_exists('tripal_feature_genotypes', $node->content)) {
+          unset($node->content['tripal_feature_genotypes']);
+        }
         $node->content['tripal_feature_nd_genotypes'] = array(
            '#value' => theme('tripal_feature_nd_genotypes', $node),
         );

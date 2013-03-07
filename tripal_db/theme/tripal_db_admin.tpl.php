@@ -14,34 +14,21 @@
 
 <h3>Setup Instructions:</h3>
 <ol>
-<li><b>Set Permissions</b>: This module supports the Drupal user permissions interface for
-             controlling administrative access for creating, editing and deleting database cross-reference resources. 
-             The default is that only the site administrator has these
-             permissions.  Best practice is to create <a href="<?php print url('admin/user/roles') ?>">a new role</a> 
-             for administrative tasks, (such as a webmaster role),
-             and then <a href="<?php print url('admin/user/user') ?>">assign users to the role</a>. Finally,
-             <a href="<?php print url('admin/user/permissions') ?>">assign the permission</a> titled "administer db cross-reference".
-             to the new role.</li>
-<li><b>Adding or Editing an External Databases</b>. Many resources such as NCBI nr or ExPASy SwissProt (to name a few) 
+    <li><p><b>Set Permissions</b>: By default only the site administrator account has access to 
+   or administer databases. Navigate to the <?php print l('permissions page', 'admin/user/permissions')?> and set the
+   permissions under the 'tripal_db' section as appropriate for your site. For a simple setup, allow anonymous 
+   users access to view content and create a special role for creating, editing and other administrative tasks.</p></li>
+   
+<li><p><b>Adding or Editing an External Databases</b>. Many resources such as NCBI nr or ExPASy SwissProt (to name a few) 
           come pre-loaded with Chado.  However, you can add new entries or edit existing entries. Also, when loading 
           ontologies (controlled vocabularies) using the Tripal CV module new databases are added automaticaly for 
           each ontology.  To enable linking of accession on a page to the page for that accession on the external
-          database, simply add the URL and the URL prefix when adding or editing a database.</li>
+          database, simply add the URL and the URL prefix when adding or editing a database.</p></li>
 
-<li><b>Associate Data with Accessions</b>.  The Tripal loaders (e.g. GFF, OBO) can associate accessions from
+<li><p><b>Associate Data with Accessions</b>.  The Tripal loaders (e.g. GFF, OBO) can associate accessions from
           remote data to genomic features and controlled vocabularies automatically.  Use the loaders to load genomic
           features and controlled vocabularies respectively.  Additionally, the bulk loader can be used to create
           loading templates for associating external database accessions.  
-          </li>
+         </p></li>
 </ol>
 
-
-<br><h3>Features of this Module:</h3>
-<ul>
-<li><b>Add an External Databases</b>:
-By entering the name and any additional details into the <a href="tripal_db/add_db">add database form</a> you register an external database with your website. This allows you to specify that a sequence feature or other data is also stored in an external database. This is escpecially useful if the external database may contain additional details not stored in yours. If the external database is online you can even provide a URL prefix which will automatically link any data in your website to theirs via a web link.</li>
-
-<li><b>Update or Delete and External Databases</b>
-To edit the details of an external database record or to delete an already existing external database, go to the <a href="tripal_db/edit_db">Update/Delete DBs form</a>. This will allow you to change details or enter new details.</li>
-
-</ul>

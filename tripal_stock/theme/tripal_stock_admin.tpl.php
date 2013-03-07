@@ -9,6 +9,11 @@
 
   <h3>Setup Instructions:</h3>
   <ol>
+ <li><p><b>Set Permissions</b>: By default only the site administrator account has access to create, edit, delete
+   or administer analyses. Navigate to the <?php print l('permissions page', 'admin/user/permissions')?> and set the
+   permissions under the 'tripal_stock' section as appropriate for your site. For a simple setup, allow anonymous 
+   users access to view content and create a special role for creating, editing and other administrative tasks.</p></li>
+
   <li><b>Set Ontologies</b>: Since at the time of this modules developement there is no accepted ontology for
             describing stocks, their properties and relationships, this module allows you to select the controlled
             vocabularies (CVs) in your Chado Database you would like to govern these data. To Set the Controlled Vocabularies for Stocks:
@@ -53,63 +58,3 @@
   <p>The Stock Details Page also acts as a landing pad for updating/deleting stocks. To <b>update a stock</b>, go to the stocks details page and click on the Edit tab near the top of the page. This tab will only be visable if you have permission to edit chado stock content (See post installation steps above for information on setting user permissions). If you want to <b>delete a stock</b>, click the Edit tab and then near the bottom of the form, click the Delete button. This will delete the entire stock including it's properties, database references and any relationships including it.</p>
   <p>To <b>update/delete a given property of a stock</b>, click the "Edit Properties" Tab near the top of the stock details page. This form provides a listing of all existing properties for the given stock with form elements allowing you to change their value. After editing the properties you wanted to, simply click the "Update Properties" button to update all the properties for that stock. To delete a given property simply click the "Delete" Button beside the property you want to delete. You cannot undo this action! To <b>add a property to the given stock</b> simply fill out the "Add Property" form at the bottom of the "Edit Properties" Tab.</p>
   <p><b>Adding, updating and deleting Database References and Relationships</b> for a given stock is exactly the same as the method for properties. To edit Database References, click the "Edit DB References" tab and to add/edit/update stock relationships, click the "Edit Relationships" tab.</p></li>
-
-  <li><b><a href="../../stocks">Basic Listing of Stocks:</a></b>
-  <p>This module also provides a basic listing of all stocks currently sync'd with Drupal. To access this listing, there should be a Stocks Primary Menu item which links you to <a href="../../stocks">this page</a>. This page lists each stock on it's own row and provides a link to each stock by clicking on it's name. Currently there is no way to easily customize this listing.</p></li>
-
-  <li><b><a href="../build/views/">Flexible Listing of Stocks using Drupal Views:</a></b>
-  <p>In order to access a more flexible listing of stocks you must first install the <a href="http://drupal.org/project/views">Drupal Views2 module</a>. You should then be able to access the default views <a href="../build/views/">here</a>. Essentially, Views is a module which allows you to create custom SQL queries completely through the web interface without knowing SQL. Furthermore, it also does some formatting of the results allowing you to display them as HTML lists, tables or grids. You can also expose filters to the user to let them customize the results they see and even implement various sorting.</p>
-  <p>To use one of the Default Views simply click "Enable" and then "Edit" to change it to show exactly what you want. To view the current listing simply clikc "View Page" at the top of the Edit user interface. There are a number of good tutorials out there for Views2, any of which can be used to help you create your own custom listings of biological content. (Note: there aren't any tutorials specifically for tripal content but any tutorial for Views2 will show you how to use the views interface.</p></li>
-
-  <h3>Page Customizations</h3>
-  <p>There are several ways to customize the look-and-feel for the way Chado data is presented through Tripal.
-     Below is a description of several methods.  These methods may be used in conjunction with one another to
-     provide fine-grained control.
-     <ul>
-
-     <li><p><b>Integration with Drupal Panels</b>:  <a href="http://drupal.org/project/views">Drupal Panels</a>
-      allows for customization of a page layout if you don't want to do PHP/Javascript/CSS programming.  Tripal comes with pre-set layouts for stock pages.  However,
-      Panels become useful if you prefer a layout that is different from the pre-set layouts.  Chado content
-      is provided to Panels in the form of Drupal "blocks" which you can then place anywhere on a page using the
-      Panel's GUI.</p></li>
-
-     <li><p><b>Drupal's Content Construction Kit (CCK)</b>: the
-     <a href="http://drupal.org/project/cck">Content Construction Kit (CCK) </a> is a powerful way to add non-Chado content
-     to any page without need to edit template files or knowing PHP.  You must first download and install CCK.
-     With CCK, the site administartor can create a new field to appear on the page.  For example, currently,
-     the Chado publication module is not yet supported by Tripal.  Therefore, the site administrator can add a text
-     field to the stock pages.  This content is not stored in Chado, but will appear on the stock page.  A field
-     added by CCK will also appear in the form when editing a stock to allow users to manually enter the appropriate
-     text.  If the default pre-set layout and themeing for Tripal is used, it is better to create the CCK element,
-     indicate that it is not to be shown (using the CCK interface), then manually add the new content type
-     where desired by editing the templates (as described below).  If using Panels, the CCK field can be added to the
-     location desired using the Panels interface.</p></li>
-
-     <li><p><b>Drupal Node Templates</b>:  The Tripal packages comes with a "theme_tripal" directory that contains the
-     themeing for Chado content.    The stock module has a template file for stock "nodes" (Tripal stock pages).  This file
-     is named "node-chado_stock.tpl.php", and provides javascript, HTML and PHP code for display of the stock
-     pages.  You can edit this file to control which types of information (or which stock "blocks") are displayed for stocks. Be sure to
-     copy these template to your primary theme directory for editing. Do not edit them in the "theme_tripal" directory as
-     future Tripal updates may overwrite your customizations. See the <a href="http://tripal.info/">Tripal website </a>
-     for instructions on how to access variables and other Chado content within the template file.</p></li>
-
-     <li><p><b>Stock "Block" Templates</b>:  In the "theme_tripal" directory is a subdirectory named "tripal_stock".
-     Inside this directory is a set of templates that control distinct types of information for stocks.  For example,
-     there is a "base" template for displaying of data directly from the Chado stock table, and a "references"
-     template for showing external site references for a stock (data from the stock_dbxref table).  These templates are used both by Drupal blocks
-     for use in Drupal Panels (as described above) or for use in the default pre-set layout that the node template
-     provides (also desribed above).  You can customize this template as you desire.  Be sure to copy the
-     template to your primary theme directory for editing. Do not edit them in the "theme_tripal" directory as
-     future Tripal updates may overwrite your customizations.  See the <a href="http://tripal.info/">Tripal website </a>
-     for instructions on how to access variables and other Chado content within the template files.</p></li>
-     </li>
-
-     <li><p><b>Adding Links to the "Resources" Sidebar</b>: If you use the pre-set default Tripal layout for theming, you
-     will see a "Resources" sidebar on each page.  The links that appear on the sidebar are automatically generated
-     using Javascript for all of the stock "Blocks" that appear on the page. If you want to add additional links
-     (e.g. a dynamic link to additional stock content) and you want that link to appear in the
-     "Resources" sidebar, simply edit the Drupal Node Template (as described above) and add the link to the
-     section at the bottom of the template file where the resources section is found.</p></li>
-
-     </ul>
-   </p>
