@@ -299,6 +299,76 @@ function tf_node_load($nid) {
   return FALSE;
 }
 /**
+ *  We need to let drupal know about our theme functions and their arguments.
+ *  We create theme functions to allow users of the module to customize the
+ *  look and feel of the output generated in this module
+ *
+ * @ingroup tripal_feature
+ */
+function tripal_feature_theme() {
+  return array(
+    'tripal_feature_search_index' => array(
+      'arguments' => array('node'),
+    ),
+    'tripal_feature_search_results' => array(
+       'arguments' => array('node'),
+    ),
+    'tripal_organism_feature_browser' => array(
+       'arguments' => array('node' => NULL),
+       'template' => 'tripal_organism_feature_browser',
+    ),
+    'tripal_organism_feature_counts' => array(
+       'arguments' => array('node' => NULL),
+       'template' => 'tripal_organism_feature_counts',
+    ),
+    'tripal_feature_base' => array(
+       'arguments' => array('node' => NULL),
+       'template' => 'tripal_feature_base',
+    ),
+    'tripal_feature_sequence' => array(
+       'arguments' => array('node' => NULL),
+       'template' => 'tripal_feature_sequence',
+    ),
+    'tripal_feature_synonyms' => array(
+       'arguments' => array('node' => NULL),
+       'template' => 'tripal_feature_synonyms',
+    ),
+    'tripal_feature_featureloc_sequences' => array(
+       'arguments' => array('node' => NULL),
+       'template' => 'tripal_feature_featureloc_sequences',
+    ),
+    'tripal_feature_references' => array(
+       'arguments' => array('node' => NULL),
+       'template' => 'tripal_feature_references',
+    ),
+    'tripal_feature_properties' => array(
+       'arguments' => array('node' => NULL),
+       'template' => 'tripal_feature_properties',
+    ),
+    'tripal_feature_terms' => array(
+       'arguments' => array('node' => NULL),
+       'template' => 'tripal_feature_terms',
+    ),
+    'tripal_feature_alignments' => array(
+       'arguments' => array('node' => NULL),
+       'template' => 'tripal_feature_alignments',
+    ),
+    'tripal_feature_relationships' => array(
+       'arguments' => array('node' => NULL),
+       'template' => 'tripal_feature_relationships',
+    ),
+    'tripal_feature_edit_ALL_properties_form' => array(
+      'arguments' => array('form' => NULL),
+      'function' => 'theme_tripal_feature_edit_ALL_properties_form',
+    ),
+    'tripal_feature_admin' => array(
+      'template' => 'tripal_feature_admin',  
+      'arguments' =>  array(NULL),  
+      'path' => drupal_get_path('module', 'tripal_feature') . '/theme' 
+    ),
+  );
+}
+/**
  *
  *
  * @ingroup tripal_feature
@@ -329,7 +399,7 @@ function tripal_feature_block($op = 'list', $delta = 0, $edit=array()) {
 
       $blocks['alignments']['info'] = t('Tripal Feature Alignments');
       $blocks['alignments']['cache'] = BLOCK_NO_CACHE;
-
+      
       $blocks['relationships']['info'] = t('Tripal Feature Relationships');
       $blocks['relationships']['cache'] = BLOCK_NO_CACHE;
 
@@ -1494,40 +1564,30 @@ function tripal_feature_load_organism_feature_browser($organism) {
   $allowed_types = variable_get('chado_browser_feature_types', 'EST contig');
   $allowed_types = preg_replace("/[\s\n\r]+/", " ", $allowed_types);
   $so_terms = split(' ', $allowed_types);
-  $where_cvt = "";
-  foreach ($so_terms as $term) {
-    $where_cvt .= "CVT.name = '$term' OR ";
-  }
-  $where_cvt = drupal_substr($where_cvt, 0, drupal_strlen($where_cvt)-3);  # strip trailing 'OR'
 
-  // get the features for this organism
-  $sql  = "SELECT F.name,F.feature_id,F.uniquename,CVT.name as cvname ".
-         "FROM {feature} F ".
-            "  INNER JOIN {cvterm} CVT on F.type_id = CVT.cvterm_id ".
-          "WHERE organism_id = %s and ($where_cvt) ".
-          "ORDER BY feature_id ASC";
-
-  // the counting SQL
-  $csql  = "SELECT count(*) ".
-          "FROM {feature} F".
-          "  INNER JOIN {cvterm} CVT on F.type_id = CVT.cvterm_id ".
-          "WHERE organism_id = %s and ($where_cvt) ".
-          "GROUP BY organism_id ";
-
-  $previous_db = tripal_db_set_active('chado');  // use chado database
-  $org_features = pager_query($sql, 10, 0, $csql, $organism->organism_id);
-  tripal_db_set_active($previous_db);  // now use drupal database
+  // perform the query
+  $values = array(
+    'organism_id' => $organism->organism_id,
+    'type_id' => array(
+      'name' => $so_terms
+    ),
+  );
+  $columns = array('feature_id', 'name', 'uniquename', 'type_id');
+  $options = array(
+    'pager' => array('limit' => 10, 'element' => 0),
+    'order_by' => array('name' => 'ASC'),
+  );  
+  $features = tripal_core_chado_select('feature', $columns, $values, $options);
   $pager = theme('pager');
 
-  // prepare the query that will lookup node ids
-  $sql = "SELECT nid FROM {chado_feature} ".
-         "WHERE feature_id = %d";
-  $i=0;
-  $features = array();
-  while ($feature = db_fetch_object($org_features)) {
-    $node = db_fetch_object(db_query($sql, $feature->feature_id));
+  // add the node ids and types
+  $nsql = "SELECT nid FROM {chado_feature} WHERE feature_id = %d";
+  $tsql = "SELECT name FROM {cvterm} WHERE cvterm_id = %d";
+  foreach ($features as $feature) {
+    $node = db_fetch_object(db_query($nsql, $feature->feature_id));
+    $type = db_fetch_object(chado_query($tsql, $feature->type_id));
     $feature->nid = $node->nid;
-    $features[$i++] = $feature;
+    $feature->type_name = $type->name;
   }
 
   return array( 'features' => $features, 'pager' => $pager, 'enabled' => TRUE );
@@ -1850,76 +1910,7 @@ function tripal_feature_nodeapi(&$node, $op, $teaser, $page) {
   }
 }
 
-/**
- *  We need to let drupal know about our theme functions and their arguments.
- *  We create theme functions to allow users of the module to customize the
- *  look and feel of the output generated in this module
- *
- * @ingroup tripal_feature
- */
-function tripal_feature_theme() {
-  return array(
-    'tripal_feature_search_index' => array(
-      'arguments' => array('node'),
-    ),
-    'tripal_feature_search_results' => array(
-       'arguments' => array('node'),
-    ),
-    'tripal_organism_feature_browser' => array(
-       'arguments' => array('node' => NULL),
-       'template' => 'tripal_organism_feature_browser',
-    ),
-    'tripal_organism_feature_counts' => array(
-       'arguments' => array('node' => NULL),
-       'template' => 'tripal_organism_feature_counts',
-    ),
-    'tripal_feature_base' => array(
-       'arguments' => array('node' => NULL),
-       'template' => 'tripal_feature_base',
-    ),
-    'tripal_feature_sequence' => array(
-       'arguments' => array('node' => NULL),
-       'template' => 'tripal_feature_sequence',
-    ),
-    'tripal_feature_synonyms' => array(
-       'arguments' => array('node' => NULL),
-       'template' => 'tripal_feature_synonyms',
-    ),
-    'tripal_feature_featureloc_sequences' => array(
-       'arguments' => array('node' => NULL),
-       'template' => 'tripal_feature_featureloc_sequences',
-    ),
-    'tripal_feature_references' => array(
-       'arguments' => array('node' => NULL),
-       'template' => 'tripal_feature_references',
-    ),
-    'tripal_feature_properties' => array(
-       'arguments' => array('node' => NULL),
-       'template' => 'tripal_feature_properties',
-    ),
-    'tripal_feature_terms' => array(
-       'arguments' => array('node' => NULL),
-       'template' => 'tripal_feature_terms',
-    ),
-    'tripal_feature_alignments' => array(
-       'arguments' => array('node' => NULL),
-       'template' => 'tripal_feature_alignments',
-    ),
-    'tripal_feature_relationships' => array(
-       'arguments' => array('node' => NULL),
-       'template' => 'tripal_feature_relationships',
-    ),
-    'tripal_feature_edit_ALL_properties_form' => array(
-      'arguments' => array('form' => NULL),
-      'function' => 'theme_tripal_feature_edit_ALL_properties_form',
-    ),
-    'tripal_feature_admin' => array(
-      'template' => 'tripal_feature_admin',  
-      'arguments' =>  array(NULL),  
-      'path' => drupal_get_path('module', 'tripal_feature') . '/theme' 
-    ),
-  );
-}
+
 /**
  *
  *
