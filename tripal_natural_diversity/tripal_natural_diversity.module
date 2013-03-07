@@ -29,13 +29,21 @@ function tripal_natural_diversity_views_api() {
  */
 function tripal_natural_diversity_theme() {
   return array(
-    'tripal_feature_genotype_experiments' => array(
+    'tripal_feature_nd_genotypes' => array(
       'arguments' => array('node' => NULL),
-      'template' => 'tripal_feature-genotype_experiments',
+      'template' => 'tripal_feature_nd_genotypes',
     ),
     'tripal_stock_nd_genotypes' => array(
       'arguments' => array('node' => NULL),
       'template' => 'tripal_stock_nd_genotypes',
+    ),
+    'tripal_stock_nd_phenotypes' => array(
+      'arguments' => array('node' => NULL),
+      'template' => 'tripal_stock_nd_phenotypes',
+    ),
+    'tripal_stock_nd_locations' => array(
+      'arguments' => array('node' => NULL),
+      'template' => 'tripal_stock_nd_locations',
     ),
   );
 }
@@ -47,10 +55,22 @@ function tripal_natural_diversity_nodeapi(&$node, $op, $teaser, $page){
   switch ($op) {
     case 'view':
       if ($node->type == 'chado_feature') {
-        $node->content['tripal_feature_genotype_experiments'] = array(
-           '#value' => theme('tripal_feature_genotype_experiments', $node),
+        $node->content['tripal_feature_nd_genotypes'] = array(
+           '#value' => theme('tripal_feature_nd_genotypes', $node),
         );
       }
+      if ($node->type == 'chado_stock') {
+        $node->content['tripal_stock_nd_genotypes'] = array(
+           '#value' => theme('tripal_stock_nd_genotypes', $node),
+        );
+        $node->content['tripal_stock_nd_phenotypes'] = array(
+           '#value' => theme('tripal_stock_nd_phenotypes', $node),
+        );
+        $node->content['tripal_stock_nd_locations'] = array(
+           '#value' => theme('tripal_stock_nd_locations', $node),
+        );
+      }
+      break;
   }
 }
 

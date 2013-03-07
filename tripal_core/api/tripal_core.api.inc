@@ -2097,9 +2097,14 @@ function tripal_core_generate_chado_var($table, $values, $base_options = array()
  *
  * @ingroup tripal_chado_api
  */
-function tripal_core_expand_chado_vars($object, $type, $to_expand, $table_options = array()) {
-  $base_table = $object->tablename;
+function tripal_core_expand_chado_vars($object, $type, $to_expand, $table_options = array()) {  
 
+  // make sure we have a value
+  if (!$object) {
+    watchdog('tripal_core', 'Cannot pass non array as $object.', array(),WATCHDOG_ERROR);
+    return $object;  
+  }
+  
   // check to see if we are expanding an array of objects
   if (is_array($object)) {
     foreach ($object as $index => $o) {
@@ -2107,6 +2112,10 @@ function tripal_core_expand_chado_vars($object, $type, $to_expand, $table_option
     }
     return $object;
   }
+  
+  // get the base table name
+  $base_table = $object->tablename;
+  
   switch ($type) {
     case "field": //--------------------------------------------------------------------------------
       if (preg_match('/(\w+)\.(\w+)/', $to_expand, $matches)) {
@@ -2149,28 +2158,29 @@ function tripal_core_expand_chado_vars($object, $type, $to_expand, $table_option
         return $object;
       }
       $foreign_table_desc = tripal_core_get_chado_table_schema($foreign_table);
-      // If it's connected to the base table
-      if ($foreign_table_desc['foreign keys'][$base_table]) {
+      
+      // If it's connected to the base table via a FK constraint
+      if ($foreign_table_desc['foreign keys'][$base_table]) {       
         foreach ($foreign_table_desc['foreign keys'][$base_table]['columns'] as $left => $right) {
+          // if the FK value in the base table is not there then we can't expand it, so just skip it.
           if (!$object->{$right}) {
             continue;
           }
-          if (is_array($values)) {
-            $values = array_merge($values, array($left => $object->{$right}) );
-          }
-          else {
-            $values = array($left => $object->{$right});
-          }
-          // if a prepared statement is provide then generate a new name
+
+          // generate a new object for this table using the FK values in the base table.
+          // if a prepared statement is provided generate a new statement_name so that
+          // we don't conflict when we recurse.
           $new_options = $table_options;
           if (array_key_exists('statement_name', $table_options)) {
              $new_options['statement_name'] = "exp_" . $foreign_table . "_" . substr($left, 0, 2) . substr($right, 0, 2);
           }
           $foreign_object = tripal_core_generate_chado_var($foreign_table, array($left => $object->{$right}), $new_options);
+          
+          // if the generation of the object was successful, update the base object to include it.
           if ($foreign_object) {
             // in the case where the foreign key relationships exists more
-            // than once with the same table we want to alter the
-            // array structure
+            // than once with the same table we want to alter the array structure. rather than
+            // add the object with a key of the table name, we will add the FK field name in between
             if (count($foreign_table_desc['foreign keys'][$base_table]['columns']) > 1) {
               if (!is_object($object->{$foreign_table})) {
                 $object->{$foreign_table} = new stdClass();
@@ -2194,6 +2204,7 @@ function tripal_core_expand_chado_vars($object, $type, $to_expand, $table_option
           }
         }
       }
+      // if the foreign table is not connected to the base table through a FK constraint
       else {
         // We need to recurse -the table has a relationship to one of the nested objects
         $did_expansion = 0;
