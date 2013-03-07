@@ -92,6 +92,9 @@ function tripal_project_views_default_views() {
     return $views;
   }
 
+  $description_type_id = tripal_core_chado_select('cvterm',array('cvterm_id'),array('name' => 'project_description'));
+  $description_type_id = $description_type_id[0]->cvterm_id;
+
   // Main default view
   $view = new view;
   $view->name = 'project_listing';
@@ -100,7 +103,7 @@ function tripal_project_views_default_views() {
   $view->base_table = 'project';
   $view->core = 6;
   $view->api_version = '2';
-  $view->disabled = FALSE; /* Edit this to true to make a default view disabled initially */
+  $view->disabled = FALSE;
   $handler = $view->new_display('default', 'Defaults', 'default');
   $handler->override_option('fields', array(
     'name' => array(
@@ -137,7 +140,7 @@ function tripal_project_views_default_views() {
       'field' => 'name',
       'relationship' => 'none',
     ),
-    'description' => array(
+    'value' => array(
       'label' => 'Description',
       'alter' => array(
         'alter_text' => 0,
@@ -166,15 +169,18 @@ function tripal_project_views_default_views() {
       'type' => 'separator',
       'separator' => ', ',
       'exclude' => 0,
-      'id' => 'description',
-      'table' => 'project',
-      'field' => 'description',
+      'id' => 'value',
+      'table' => 'projectprop',
+      'field' => 'value',
+      'override' => array(
+        'button' => 'Override',
+      ),
       'relationship' => 'none',
     ),
   ));
   $handler->override_option('filters', array(
     'name' => array(
-      'operator' => 'contains',
+      'operator' => '~',
       'value' => '',
       'group' => '0',
       'exposed' => TRUE,
@@ -195,22 +201,52 @@ function tripal_project_views_default_views() {
         'aggregates_with' => 1,
       ),
     ),
-    'description' => array(
-      'operator' => 'contains',
+    'type_id' => array(
+      'operator' => '=',
+      'value' => $description_type_id,
+      'group' => '0',
+      'exposed' => FALSE,
+      'expose' => array(
+        'operator' => FALSE,
+        'label' => '',
+        'optional' => FALSE,
+      ),
+      'case' => 1,
+      'id' => 'type_id',
+      'table' => 'projectprop',
+      'field' => 'type_id',
+      'override' => array(
+        'button' => 'Override',
+      ),
+      'relationship' => 'none',
+      'values_form_type' => 'select',
+      'multiple' => 0,
+      'optional' => 0,
+      'show_all' => 0,
+      'agg' => array(
+        'records_with' => 0,
+        'aggregates_with' => 1,
+      ),
+    ),
+    'value' => array(
+      'operator' => '~',
       'value' => '',
       'group' => '0',
       'exposed' => TRUE,
       'expose' => array(
         'use_operator' => 0,
-        'operator' => 'description_op',
+        'operator' => 'value_op',
         'identifier' => 'description',
         'label' => 'Description Contains',
         'remember' => 0,
       ),
-      'case' => 1,
-      'id' => 'description',
-      'table' => 'project',
-      'field' => 'description',
+      'case' => 0,
+      'id' => 'value',
+      'table' => 'projectprop',
+      'field' => 'value',
+      'override' => array(
+        'button' => 'Override',
+      ),
       'relationship' => 'none',
       'agg' => array(
         'records_with' => 1,
@@ -270,6 +306,7 @@ function tripal_project_views_default_views() {
     'weight' => 0,
     'name' => 'navigation',
   ));
+
   // Add code specific to a local chado installation
   // NOTE: Edit $handler above to $default_handler for the default display
   if (tripal_core_chado_schema_exists()) {
@@ -326,7 +363,7 @@ function tripal_project_views_default_views() {
     $fields['name']['alter']['link_to_node'] = 1;
     $default_handler->override_option('fields', $fields);
     // Only show records with published nodes
-    /**
+/**
     $filters = $view->get_items('filter', 'default');
     $filters['status'] = array(
       'operator' => '=',
@@ -343,7 +380,7 @@ function tripal_project_views_default_views() {
       'relationship' => 'none',
     );
     $default_handler->override_option('filters', $filters);
-    */
+*/
   }
   $views[$view->name] = $view;
 

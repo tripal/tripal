@@ -41,7 +41,7 @@ function tripal_cv_views_data() {
     );
     foreach ($tables as $tablename) {
       $priority = 9;
-      
+
       // check to see if the table is integrated. If it is then integrate it's
       // corresponding 'chado_[table]' table.
       if (!tripal_views_is_integrated($tablename, $priority)) {
@@ -70,7 +70,7 @@ function tripal_cv_views_data() {
       'cvtermsynonym'
     );
     foreach ($tables as $tablename) {
-      $priority = 9;     
+      $priority = 9;
       if (!tripal_views_is_integrated($tablename, $priority)) {
         $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename, FALSE, $priority);
         tripal_views_integration_add_entry($table_integration_array);
@@ -327,7 +327,7 @@ function tripal_cv_views_default_views() {
       ),
     ),
     'name_1' => array(
-      'operator' => 'contains',
+      'operator' => '~',
       'value' => '',
       'group' => '0',
       'exposed' => TRUE,
@@ -353,7 +353,7 @@ function tripal_cv_views_default_views() {
       ),
     ),
     'definition' => array(
-      'operator' => 'contains',
+      'operator' => '~',
       'value' => '',
       'group' => '0',
       'exposed' => TRUE,
@@ -575,7 +575,7 @@ function tripal_cv_views_default_views() {
   ));
   $handler->override_option('filters', array(
     'name' => array(
-      'operator' => 'contains',
+      'operator' => '~',
       'value' => '',
       'group' => '0',
       'exposed' => TRUE,
@@ -600,7 +600,7 @@ function tripal_cv_views_default_views() {
       ),
     ),
     'definition' => array(
-      'operator' => 'contains',
+      'operator' => '~',
       'value' => '',
       'group' => '0',
       'exposed' => TRUE,

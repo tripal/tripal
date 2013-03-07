@@ -69,23 +69,70 @@ class chado_views_handler_filter_string extends views_handler_filter_string {
     }
     else {
 
-      // Only base records with value in the aggregated field
-      // This doesn't restrict the items in the aggregate field
       $this->ensure_my_table();
       $field = "$this->table_alias.$this->real_field";
-      if ($this->options['agg']['records_with']) {
-        $where = "'%s' = ANY($field)";
-        $this->query->add_where($this->options['group'], $where, $this->value);
-      }
 
+      // Want to filter both the base table and the aggregated field
+      if ($this->options['agg']['records_with'] && $this->options['agg']['aggregates_with']) {
+        $where = "$field IS NOT NULL";
+        $this->query->add_where($this->options['group'], $where);
+        $table['join']->filter[] = $field . " " . $this->operator . " '" . $this->value . "'";
+      }
+      // Only base records with value in the aggregated field
+      // This doesn't restrict the items in the aggregate field
+      elseif ($this->options['agg']['records_with']) {
+        if ($this->operator == '~') {
+          // Currently postgresql doesn't support 'somevalue' ~ ANY(field) as a means of
+          // selecting all records where the field matches somevalue. Instead what this notation means
+          // is return TRUE if one of the values of field matches 'somevalue'
+          // Instead add in a subclause
+          $where = "array_to_string($field,'###') ~ '%s'";
+          $this->query->add_where($this->options['group'], $where, $this->value);
+        }
+        else {
+          $where = "'%s' " . $this->operator . " ANY($field)";
+          $this->query->add_where($this->options['group'], $where, $this->value);
+        }
+
+      }
       // To restrict the items in the aggregate...
       // Tell the join handler about the filter
       // so it can be done in the join query
       if ($this->options['agg']['aggregates_with']) {
-        $table['join']->filter[] = $field . " = '" . $this->value . "'";
+        $table['join']->filter[] = $field . " " . $this->operator . " '" . $this->value . "'";
       }
     }
 
+  }
+
+  /**
+   * This kind of construct makes it relatively easy for a child class
+   * to add or remove functionality by overriding this function and
+   * adding/removing items from this array.
+   */
+  function operators() {
+    $operators = array(
+      '=' => array(
+        'title' => t('Is equal to'),
+        'short' => t('='),
+        'method' => 'op_equal',
+        'values' => 1,
+      ),
+      '!=' => array(
+        'title' => t('Is not equal to'),
+        'short' => t('!='),
+        'method' => 'op_equal',
+        'values' => 1,
+      ),
+      '~' => array(
+        'title' => t('Contains'),
+        'short' => t('contains'),
+        'method' => 'op_contains',
+        'values' => 1,
+      ),
+    );
+
+    return $operators;
   }
 
 }

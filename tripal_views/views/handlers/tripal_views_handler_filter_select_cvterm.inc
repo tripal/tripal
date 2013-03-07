@@ -206,8 +206,15 @@ class tripal_views_handler_filter_select_cvterm extends views_handler_filter_str
       // Tell the join handler about the filter
       // so it can be done in the join query
       if ($this->options['agg']['aggregates_with']) {
-        if (sizeof($this->value) == 1) {
-          $table['join']->filter[] = $field . " = '" . array_pop($this->value) . "'";
+
+        if (sizeof($this->value) == 1 && is_array($this->value)) {
+          $table['join']->filter[] = $field . " " . $this->operator . " '" . array_pop($this->value) . "'";
+        }
+        elseif (sizeof($this->value) == 1 && is_string($this->value)) {
+          $table['join']->filter[] = $field . " " . $this->operator . " '" . $this->value . "'";
+        }
+        elseif (sizeof($this->value) > 1 && is_array($this->value)) {
+          $table['join']->filter[] = $field . " IN (" . implode(',',$this->value) . ")";
         }
       }
     }

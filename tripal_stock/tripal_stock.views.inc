@@ -485,7 +485,7 @@ function tripal_stock_views_default_views() {
       ),
     ),
     'name' => array(
-      'operator' => 'contains',
+      'operator' => '~',
       'value' => '',
       'group' => '0',
       'exposed' => TRUE,
