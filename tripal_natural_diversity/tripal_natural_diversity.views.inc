@@ -245,7 +245,7 @@ function tripal_natural_diversity_views_default_views() {
     ),
     'description' => array(
       'operator' => '=',
-      'value' => 'University of Saskatchewan',
+      'value' => array(),
       'group' => '0',
       'exposed' => TRUE,
       'expose' => array(
