@@ -1121,7 +1121,14 @@ function tripal_core_chado_delete($table, $match, $options = NULL) {
  *  - is_duplicate: TRUE or FALSE.  Checks the values submited to see if
  *     they violate any of the unique constraints. If so, the record
  *     is returned, if not, FALSE is returned.
- *
+ *  - pager:  Use this option if it is desired to return only a subset of results 
+ *     so that they may be shown with in a Drupal-style pager. This should be
+ *     an array with two keys: 'limit' and 'element'.  The value of 'limit' 
+ *     should specify the number of records to return and 'element' is a 
+ *     unique integer to differentiate between pagers when more than one
+ *     appear on a page.  The 'element' should start with zero and increment by
+ *     one for each pager.  The pager currently does not work with prepared queries
+ *     (when using the -statement_name option).
  *
  * @return
  *  A database query result resource, FALSE if the query was not executed
@@ -1174,7 +1181,6 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
       WATCHDOG_ERROR);
       return FALSE;
   }
-
   if (!is_array($columns)) {
     watchdog('tripal_core', 'Cannot pass non array as columns for selecting.', array(),
       WATCHDOG_ERROR);
@@ -1214,6 +1220,10 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
   }
   if (!array_key_exists('is_duplicate', $options)) {
     $options['is_duplicate'] = FALSE;
+  }
+  $pager = array();
+  if (array_key_exists('pager', $options)) {
+    $pager = $options['pager'];
   }
 
   // if this is a prepared statement check to see if it has already been prepared
@@ -1548,12 +1558,16 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
       }
     }
     $sql = "EXECUTE " . $options['statement_name'] . "(" . implode(", ", $itypes) . ")";
-    // WARNING: This call creates a memory leak:  if you remove the $pvalues it doesn't
-    // do this. Got to find out what's causing this.
+    // TODO: make the pager option work with prepared queries.
     $resource = tripal_core_chado_execute_prepared($options['statement_name'], $sql, $pvalues);
   }
   else {
-    $resource = chado_query($sql, $args);
+    if (array_key_exists('limit', $pager)) {
+      $resource = chado_pager_query($sql, $pager['limit'], $pager['element'], NULL, $args);
+    } 
+    else {
+      $resource = chado_query($sql, $args);
+    }     
   }
 
   // format results into an array
@@ -1730,6 +1744,14 @@ function tripal_core_chado_get_foreign_key($table_desc, $field, $values, $option
  *
  *     The above array will expand the 'type_id' of the property table but only
  *     further expand the cv_id and the dbxref_id and will go no further.
+ *   - pager:  
+ *     Use this option if it is desired to return only a subset of results 
+ *     so that they may be shown within a Drupal-style pager. This should be
+ *     an array with two keys: 'limit' and 'element'.  The value of 'limit' 
+ *     should specify the number of records to return and 'element' is a 
+ *     unique integer to differentiate between pagers when more than one
+ *     appear on a page.  The 'element' should start with zero and increment by
+ *     one for each pager.  This only works when type is a 'table'.
  * @return
  *   Either an object (if only one record was selected from the base table)
  *   or an array of objects (if more than one record was selected from the base table).
@@ -1737,10 +1759,10 @@ function tripal_core_chado_get_foreign_key($table_desc, $field, $values, $option
  *
  * Example Usage:
  * @code
- $values = array(
-   'name' => 'Medtr4g030710'
- );
- $features = tripal_core_generate_chado_var('feature', $values);
+   $values = array(
+     'name' => 'Medtr4g030710'
+   );
+   $features = tripal_core_generate_chado_var('feature', $values);
  * @endcode
  * This will return an object if there is only one feature with the name Medtr4g030710 or it will
  * return an array of feature objects if more than one feature has that name.
@@ -1751,9 +1773,9 @@ function tripal_core_chado_get_foreign_key($table_desc, $field, $values, $option
  *      This hook allows you to add fields to be excluded on a per table basis. Simply implement
  *      this hook to return an array of fields to be excluded. For example:
  * @code
- mymodule_exclude_field_from_feature_by_default() {
-   return array('residues' => TRUE);
- }
+   mymodule_exclude_field_from_feature_by_default() {
+     return array('residues' => TRUE);
+   }
  * @endcode
  *      will ensure that feature.residues is ecluded from a feature object by default.
  *  - hook_exclude_type_by_default:
@@ -1762,9 +1784,9 @@ function tripal_core_chado_get_foreign_key($table_desc, $field, $values, $option
  *      Then all fields of that type where the criteria supplied returns TRUE will be excluded from
  *      any table. Tokens available in criteria are &gt;field_value&lt;  and &gt;field_name&lt; . For example:
  * @code
- mymodule_exclude_type_by_default() {
-   return array('text' => 'length(&gt;field_value&lt; ) > 50');
- }
+   mymodule_exclude_type_by_default() {
+     return array('text' => 'length(&gt;field_value&lt; ) > 50');
+   }
  * @endcode
  *      will exclude all text fields with a length > 50. Thus if $feature.residues is longer than 50 *      it will be excluded, otherwise it will be added.
  *
@@ -1781,7 +1803,10 @@ function tripal_core_generate_chado_var($table, $values, $base_options = array()
   if (array_key_exists('include_fk', $base_options)) {
     $include_fk = $base_options['include_fk'];
   }
-
+  $pager = array();
+  if (array_key_exists('pager', $base_options)) {
+    $pager = $base_options['pager'];
+  }
   // get description for the current table----------------------------------------------------------
   $table_desc = tripal_core_get_chado_table_schema($table);
   if (!$table_desc or count($table_desc) == 0) {
@@ -2042,6 +2067,14 @@ function tripal_core_generate_chado_var($table, $values, $base_options = array()
  *
  *     The above array will expand the 'type_id' of the property table but only
  *     further expand the cv_id and the dbxref_id and will go no further.
+ *   - pager:  
+ *     Use this option if it is desired to return only a subset of results 
+ *     so that they may be shown within a Drupal-style pager. This should be
+ *     an array with two keys: 'limit' and 'element'.  The value of 'limit' 
+ *     should specify the number of records to return and 'element' is a 
+ *     unique integer to differentiate between pagers when more than one
+ *     appear on a page.  The 'element' should start with zero and increment by
+ *     one for each pager.  This only works when type is a 'table'.
  * @return
  *   A chado object supplemented with the field/table/node requested to be expanded.
  *   If the type is a table and it has already been expanded no changes is made to the
@@ -2313,6 +2346,85 @@ function tripal_core_exclude_field_from_feature_by_default() {
   return array();
 }
 
+/**
+ * Use this function instead of pager_query() when selecting a
+ * subset of records from a Chado table.  
+ *
+ * @param $query
+ *   The SQL statement to execute, this is followed by a variable number of args
+ *   used as substitution values in the SQL statement.
+ * @param $limit
+ *   The number of query results to display per page.
+ * @param $element
+ *   An optional integer to distinguish between multiple pagers on one page.
+ *
+ * @returns
+ *   A database query result resource or FALSE if the query was not
+ *   executed correctly
+ */
+function chado_pager_query($query, $limit, $element, $count) {
+  
+  // The following code is almost an exact duplicate of the 
+  // Drupal pager_query function. However, substitions have
+  // been made to call chado_query rather than db_query
+  
+  global $pager_page_array, $pager_total, $pager_total_items;
+  $page = isset($_GET['page']) ? $_GET['page'] : '';
+
+  // Substitute in query arguments.
+  $args = func_get_args();
+  $args = array_slice($args, 4);
+  // Alternative syntax for '...'
+  if (isset($args[0]) && is_array($args[0])) {
+    $args = $args[0];
+  }
+
+  // Construct a count query if none was given.
+  if (!isset($count_query)) {
+    $count_query = preg_replace(array('/SELECT.*?FROM /As', '/ORDER BY .*/'), array('SELECT COUNT(*) FROM ', ''), $query);
+  }
+
+  // Convert comma-separated $page to an array, used by other functions.
+  $pager_page_array = explode(',', $page);
+
+  // We calculate the total of pages as ceil(items / limit).
+  $pager_total_items[$element] = db_result(chado_query($count_query, $args));
+  $pager_total[$element] = ceil($pager_total_items[$element] / $limit);
+  $pager_page_array[$element] = max(0, min((int) $pager_page_array[$element], ((int) $pager_total[$element]) - 1));  
+  
+  return chado_query_range($query, $args, $pager_page_array[$element] * $limit, $limit);
+}
+
+/**
+ * Use this function instead of db_query_range().
+ *
+ * @param $sql
+ *   The SQL statement to execute, this is followed by a variable number of args
+ *   used as substitution values in the SQL statement.
+ * @param $from
+ *   The first result row to return..
+ * @param $count
+ *   The maximum number of result rows to return.
+ *
+ * @returns
+ *   A database query result resource or FALSE if the query was not
+ *   executed correctly
+ */
+function chado_query_range($query) {
+  $args = func_get_args();
+  $count = array_pop($args);
+  $from = array_pop($args);
+  array_shift($args);
+
+  $query = db_prefix_tables($query);
+  if (isset($args[0]) and is_array($args[0])) { // 'All arguments in one array' syntax
+    $args = $args[0];
+  }
+  _db_query_callback($args, TRUE);
+  $query = preg_replace_callback(DB_QUERY_REGEXP, '_db_query_callback', $query);
+  $query .= ' LIMIT ' . (int) $count . ' OFFSET ' . (int) $from;  
+  return chado_query($query);
+}
 /**
  * Use this function instead of db_query() to avoid switching databases
  * when making query to the chado database
