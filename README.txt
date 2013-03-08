@@ -6,6 +6,7 @@ interface for the GMOD Chado database and is designed to allow anyone
 with genomic data to quickly create an online genomic database using 
 community supported tools.
 
+
 Features
 --------------
  - a Chado installer
@@ -21,6 +22,7 @@ Features
  - Content pieces exposed as blocks allowing the use of Panels for 
    custom layouts of Tripal Nodes
 
+
 Required Modules
 --------------
  - Drupal 6.x (work is currently underway for a 7.x compatible 
@@ -34,6 +36,7 @@ Chado Schema
 Highly Recommended Modules
  - Views 2.x (Views 3.x compatible version already exists in 6.x-0.4-dev)
  - Views Data Export
+
 
 Installation
 --------------
@@ -51,6 +54,7 @@ Installation
    module-specific instructions and a list of features and quick 
    links (Administer -> Tripal Managment -> [Module Name]
 
+
 Customization
 --------------
 Tripal can be used “as is” but also allows for complete customization.
@@ -58,6 +62,7 @@ PHP-based template files are provided for all data types to allow for
 precise customizations as required by the community. A well-developed 
 Tripal API provides a uniform set of variables and functions for 
 accessing any and all data within the Chado database.
+
 
 Future Work
 --------------
