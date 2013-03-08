@@ -1,4 +1,5 @@
 What is Tripal?
+--------------
 Tripal is a collection of open-source freely available Drupal modules 
 and is a member of the GMOD family of tools. Tripal serves as a web 
 interface for the GMOD Chado database and is designed to allow anyone 
@@ -6,6 +7,7 @@ with genomic data to quickly create an online genomic database using
 community supported tools.
 
 Features
+--------------
  - a Chado installer
  - Data loaders for ontologies (controlled vocabularies), GFF files, 
    and FASTA files
@@ -20,6 +22,7 @@ Features
    custom layouts of Tripal Nodes
 
 Required Modules
+--------------
  - Drupal 6.x (work is currently underway for a 7.x compatible 
    version)
  - Drupal Core Modules: Search and Path
@@ -33,6 +36,7 @@ Highly Recommended Modules
  - Views Data Export
 
 Installation
+--------------
 1. Enable/Install the Tripal Core Module
 2. Install a Chado database
      - Either allow Tripal to add a chado database in a separate 
@@ -48,6 +52,7 @@ Installation
    links (Administer -> Tripal Managment -> [Module Name]
 
 Customization
+--------------
 Tripal can be used “as is” but also allows for complete customization.
 PHP-based template files are provided for all data types to allow for 
 precise customizations as required by the community. A well-developed 
@@ -55,6 +60,7 @@ Tripal API provides a uniform set of variables and functions for
 accessing any and all data within the Chado database.
 
 Future Work
+--------------
 Currently, Tripal only supports visualization of a subset of the 
 current Chado schema, but further development is underway. Meanwhile, 
 others can use the Tripal API to develop their own extensions. Those 
