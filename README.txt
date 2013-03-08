@@ -67,4 +67,4 @@ For more information, see the recent publication:
 Stephen P. Ficklin, Lacey-Anne Sanderson, Chun-Huai Cheng, Margaret 
 Staton, Taein Lee, Il-Hyung Cho, Sook Jung, Kirstin E Bett, Dorrie 
 Main. Tripal: a construction Toolkit for Online Genome Databases. 
-Database, Sept 2011. Vol 2011.
+Database, Sept 2011. Vol 2011. 
