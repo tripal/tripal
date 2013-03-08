@@ -13,7 +13,6 @@
 /**
  * @defgroup tripal_stock_views Stock Views Integration
  * @ingroup views
- * @ingroup tripal_stock
  */
 
 /**

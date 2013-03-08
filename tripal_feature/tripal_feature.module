@@ -7,10 +7,10 @@
 
 /**
  * @defgroup tripal_feature Feature
+ * @ingroup tripal_modules
  * @{
  * Provides functions for managing chado features including creating details pages for each feature
  * @}
- * @ingroup tripal_modules
  */
 
 require_once "includes/tripal_feature.admin.inc";

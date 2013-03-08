@@ -13,7 +13,6 @@
 /**
  * @defgroup tripal_cv_views Controlled Vocabulary Views Integration
  * @ingroup views
- * @ingroup tripal_cv
  */
 
 /**

@@ -1,4 +1,11 @@
 <?php
+/**
+ * @file
+ * Tripal Ontology Loader
+ *
+ * @defgroup tripal_obo_loader Ontology Loader
+ * @ingroup tripal_cv
+ */
 
 /**
  * Purpose: Provides the form to load an already existing controlled
@@ -166,13 +173,7 @@ function tripal_cv_cvtermpath_form() {
 
   return $form;
 }
-/**
- * @file
- * Tripal Ontology Loader
- *
- * @defgroup tripal_obo_loader Tripal Ontology Loader
- * @ingroup tripal_cv
- */
+
 
 /**
  *

@@ -13,7 +13,6 @@
 /**
  * @defgroup tripal_library_views Library Views Integration
  * @ingroup views
- * @ingroup tripal_library
  */
 
 /*************************************************************************

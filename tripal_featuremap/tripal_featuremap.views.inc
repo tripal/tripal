@@ -13,7 +13,6 @@
 /**
  * @defgroup tripal_featuremap_views Map Views Integration
  * @ingroup views
- * @ingroup tripal_featuremap
  */
 
 /*************************************************************************

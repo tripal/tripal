@@ -10,6 +10,12 @@
  */
 
 /**
+ * @defgroup tripal_natural_diversity_views Natural Diversity Views Integration
+ * @ingroup views
+ */
+
+
+/**
  * Implements hook_views_data()
  * Purpose: Describe chado/tripal tables & fields to views
  *

@@ -7,10 +7,10 @@
 
 /**
  * @defgroup gff3_loader GFF3 Feature Loader
+ * @ingroup tripal_feature
  * @{
  * Provides gff3 loading functionality. Creates features based on their specification in a GFF3 file.
  * @}
- * @ingroup tripal_feature
  */
 
 /**

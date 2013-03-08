@@ -5,10 +5,13 @@
  * Contains all the main hook implementations for the tripal_analysis module
  *
  * @defgroup tripal_analysis Analysis Module
+ * @ingroup tripal_modules
  * @{
  * Provides functions for managing chado analysis' including creating details pages for each one
+ * 
  * @}
- * @ingroup tripal_modules
+ * 
+ * 
  */
 
 require('api/tripal_analysis.api.inc');

@@ -1,9 +1,11 @@
 <?php
 /**
  * @file
- * @todo Add file header description
+ * Provides an application programming interface (API) for working with features
+ *
+ * @defgroup tripal_feature_api Feature Module API
+ * @ingroup tripal_api
  */
-
 
 /**
  * Retrieve properties from the analysisfeatureprop table for a feature.

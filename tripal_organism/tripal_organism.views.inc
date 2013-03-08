@@ -13,7 +13,6 @@
 /**
  * @defgroup tripal_organism_views Organism Views Integration
  * @ingroup views
- * @ingroup tripal_organism
  */
 
 /**

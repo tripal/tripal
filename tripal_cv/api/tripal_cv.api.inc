@@ -6,7 +6,6 @@
  *
  * @defgroup tripal_cv_api CV Module API
  * @ingroup tripal_api
- * @ingroup tripal_cv
  * This module provides a set of functions to simplify working with
  * controlled vocabularies.  Most of the API functions deal with retrieving
  * terms or their parent vocabularies.

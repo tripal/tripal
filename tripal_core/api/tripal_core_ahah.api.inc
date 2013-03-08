@@ -1,12 +1,33 @@
 <?php
-
-/*
+/**
  * @file
- * Part of the Tripal Core API.
+ * The Tripal AJAX/AHAH API
  *
- * Provides support for dynamic forms through AHAH
+ * This file provides the API to help Tripal modules more easily use 
+ * Drupal's AHAH functionality with forms.
  */
 
+/**
+ * @defgroup tripal_ahah_api AHAH API
+ * @ingroup tripal_core_api
+ * @{
+ * Provides an application programming interface (API) for improved 
+ * support of Drupal's AHAH functionality.
+ *
+ * @} 
+ */
+
+/**
+ * This function should be called to initialize the page
+ * for use of AHAH elements in a form.
+ * 
+ * See http://tripal.info/documentation/ahah_api for example usage
+ *
+ * @returns
+ *   nothing
+ *
+ * @ingroup tripal_ahah_api
+ */
 function tripal_core_ahah_init_form() {
   // If form elements have autocomplete elements returned in
   // an ahah call they won't work because the following JS file
@@ -15,9 +36,17 @@ function tripal_core_ahah_init_form() {
   drupal_add_js('misc/autocomplete.js');
 }
 
-/*
+/**
  * This function simply gets the posted form ID, builds the form
- * and retrieves the specified element
+ * and retrieves the specified element.  This function should be
+ * called in an AHAH callback function to retrieve the form
+ *
+ * See http://tripal.info/documentation/ahah_api for example usage
+ *
+ * @returns
+ *   A Drupal form array 
+ *
+ * @ingroup tripal_ahah_api
  */
 function tripal_core_ahah_prepare_form() {
   
@@ -60,8 +89,17 @@ function tripal_core_ahah_prepare_form() {
   return $form;
 }
 
-/*
- * 
+/**
+ * This function rebuilds the $settings array needed by the 
+ * javascript that handles AHAH data returns.  This function should be
+ * called in an AHAH callback function prior to returning.
+ *
+ * See http://tripal.info/documentation/ahah_api for example usage
+ *
+ * @returns
+ *   an associative array with an 'ahah' key.
+ *
+ * @ingroup tripal_ahah_api
  */
 function tripal_core_ahah_bind_events() {
   
@@ -72,8 +110,18 @@ function tripal_core_ahah_bind_events() {
   return array('ahah' => $settings['ahah']);
 }
 
-/*
- * 
+/**
+ * This function is a helperfunction of the 
+ * tripal_core_ahah_prepare_form() function.  It simply
+ * disables field validations for all fields (recursively) so that
+ * when the form is rebuilt it doesn't try to validate and submit the form.
+ *
+ * See http://tripal.info/documentation/ahah_api for example usage
+ *
+ * @returns
+ *   nothing 
+ *
+ * @ingroup tripal_ahah_api
  */
 function tripal_core_ahah_form_element_disable_validation(&$form) {
   // --START code borrowed from ahah_helper module

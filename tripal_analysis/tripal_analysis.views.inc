@@ -13,7 +13,6 @@
 /**
  * @defgroup tripal_analysis_views Analysis Views Integration
  * @ingroup views
- * @ingroup tripal_analysis
  */
 
 /**

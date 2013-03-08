@@ -10,20 +10,9 @@ require_once "tripal_core.schema_v1.11.api.inc";
  * This file provides the API needed for all other Tripal and Tripal dependent
  * modules.
  *
- * @defgroup tripal_api Tripal API
- * @{
- * Provides an application programming interface (API) for Tripal
  *
- * The Tripal API currently provides generic insert/update/select functions for all chado content as
- * well as some module specific functions that insert/update/delete/select specific chado content.
- *
- * This API is currently in its infancy and some necessary functions might be missing. If you find
- * a missing function that you think should be included go to the sourceforge feature request
- * page and request it's inclusion in the API. Such feature requests with a working function
- * definition will be given priority.
- * @}
- *
- * @defgroup tripal_chado_api Core Module Chado API
+ * @defgroup tripal_chado_api Chado API
+ * @ingroup tripal_core_api
  * @{
  * Provides an application programming interface (API) to manage data withing the Chado database.
  * This includes functions for selecting, inserting, updating and deleting records
@@ -48,17 +37,10 @@ require_once "tripal_core.schema_v1.11.api.inc";
  * there is a set of functions for inserting, updating and deleting properties for
  * any table.  This provides quick lookup of properties (provided the CV term is
  * known).
- *
+ * 
  * @}
- * @ingroup tripal_api
  *
- * @defgroup tripal_files_api Core Module Files API
- * @{
- * Provides an application programming interface (API) for managing files within
- * the Tripal data directory structure.
- *
- * @}
- * @ingroup tripal_api
+ */
 
  /**
  * Provides a generic routine for inserting into any Chado table
@@ -2372,6 +2354,8 @@ function tripal_core_exclude_field_from_feature_by_default() {
  * @returns
  *   A database query result resource or FALSE if the query was not
  *   executed correctly
+ *   
+ * @ingroup tripal_chado_api
  */
 function chado_pager_query($query, $limit, $element, $count) {
   
@@ -2420,6 +2404,8 @@ function chado_pager_query($query, $limit, $element, $count) {
  * @returns
  *   A database query result resource or FALSE if the query was not
  *   executed correctly
+ *   
+ * @ingroup tripal_chado_api
  */
 function chado_query_range($query) {
   $args = func_get_args();
@@ -2448,6 +2434,8 @@ function chado_query_range($query) {
  * @returns
  *   A database query result resource or FALSE if the query was not
  *   executed correctly
+ *   
+ * @ingroup tripal_chado_api  
  */
 function chado_query($sql) {
   global $persistent_chado;
@@ -2565,6 +2553,8 @@ function chado_query($sql) {
  * Likewise,
  * $organism_id = chado_get_id_for_node ('organism', $node)
  * $feature_id = chado_get_id_for_node ('feature', $node)
+ * 
+ * @ingroup tripal_chado_api
  */
 function chado_get_id_for_node($table, $node) {
   return db_result(db_query("SELECT %s_id FROM {chado_%s} WHERE nid = %d", $table, $table, $node->nid));
@@ -2577,6 +2567,8 @@ function chado_get_id_for_node($table, $node) {
  *  Likewise,
  *  $nid = chado_get_node_id ('organism', $organism_id)
  *  $nid = chado_get_node_id ('feature', $feature_id)
+ *  
+ *  @ingroup tripal_chado_api
  */
 function chado_get_node_id($table, $id) {
   return db_result(db_query("SELECT nid FROM {chado_%s} WHERE %s_id = %d", $table, $table, $id));
@@ -2895,50 +2887,9 @@ function tripal_core_delete_property_by_id($basetable, $record_id) {
   return tripal_core_chado_delete($basetable . 'prop', $match);
 }
 
-/**
- * This function is typically used in the '.install' file for a Tripal module
- * Each module should call this function during installation to create
- * the module data directory which is sites/default/files/tripal/[module_name]
- * for default Drupal settings.  This directory can then be used by the module
- * for storing files.
- *
- * @param $module_name
- *   the name of the module being installed.
- *
- * @returns
- *   nothing
- *
- * @ingroup tripal_files_api
- */
-function tripal_create_moddir($module_name) {
 
-  // make the data directory for this module
-  $data_dir = file_directory_path() . "/tripal/$module_name";
-  if (!file_check_directory($data_dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS)) {
-    $message = "Cannot create directory $data_dir. This module may not ".
-               "behave correctly without this directory.  Please  create ".
-               "the directory manually or fix the problem and reinstall.";
-    drupal_set_message(check_plain(t($message)), 'error');
-    watchdog('tripal_core', $message, array(), WATCHDOG_ERROR);
-  }
-}
 
-/**
- * Each Tripal module has a unique data directory which was creatd using the
- * tripal_create_moddir function during installation.  This function
- * retrieves the directory path.
- *
- * @param $module_name
- *   The name of the module
- *
- * @returns
- *   The path within the Drupal installation where the data directory resides
- * @ingroup tripal_files_api
- */
-function tripal_get_moddir($module_name) {
-  $data_dir = file_directory_path() . "/tripal/$module_name";
-  return $data_dir;
-}
+
 
 /**
  * Set the Tripal Database
@@ -3090,10 +3041,10 @@ function tripal_core_is_sql_prepared($statement_name) {
  *   The name of the prepared statement
  * @param $psql
  *   The SQL statement to be executed via chado_query.
- *   Should be of the form PREPARE <statement name> AS <SQL Statement to be prepared>
+ *   Should be of the form PREPARE [statement name] AS [SQL Statement to be prepared]
  * @param $args
  *   An array of arguements required to execute the prepared statement. The keys of
- *   the array should correspond to the $\d in the prepare statement and the value should
+ *   the array should correspond to the variables in the prepared statement and the value should
  *   be the type of value needed (ie: text, int, etc.)
  */
 function tripal_core_chado_prepare($statement_name, $psql, $args) {
@@ -3144,7 +3095,7 @@ function tripal_core_chado_prepare($statement_name, $psql, $args) {
  *   The name of the prepared statement
  * @param $sql
  *   The SQL to execute using chado query.
- *   Should be of the form EXECUTE <statement_name> (<arg1>,<arg2>...<argn>)
+ *   Should be of the form EXECUTE [statement_name] ([arg1],[arg2]...[argn])
  * @param $values
  *   An array of values in the execute sql statement
  */
@@ -3327,7 +3278,9 @@ function tripal_db_set_savepoint_transaction($savepoint, $release = FALSE) {
 }
 
 /**
- * Commit changes made during the current transaction
+ * A simple function to commit a database transaction
+ *   
+ * @return nothing
  */
 function tripal_db_commit_transaction() {
   chado_query("COMMIT");
@@ -3341,6 +3294,12 @@ function tripal_db_commit_transaction() {
  *
  * @param $savepoint
  *   The name of the saved point in the transaction to rollback to
+ *   
+ * @param $commit
+ *   The transcation will only be committed if this value is TRUE. The
+ *   default is TRUE.
+ *   
+ * @return nothing
  */
 function tripal_db_rollback_transaction($savepoint = NULL, $commit = TRUE) {
 

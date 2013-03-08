@@ -1,13 +1,12 @@
 <?php
 /**
  * @file
- * @todo Add file header description
+ * Provides an application programming interface (API) to manage stocks
  */
 
 /**
  * @defgroup tripal_stock_api Stock Module API
  * @ingroup tripal_api
- * @ingroup tripal_stock
  */
 
 /**

@@ -2,10 +2,10 @@
 
 /**
  * @defgroup tripal_library Library
+ * @ingroup tripal_modules
  * @{
  * Provides functions for managing chado libraries including creating details pages for each library
  * @}
- * @ingroup tripal_modules
  */
 
 require('api/tripal_library.api.inc');

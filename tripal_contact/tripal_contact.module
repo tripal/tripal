@@ -11,6 +11,7 @@
 
 /**
  * @defgroup tripal_contact Contact Module
+ * @ingroup tripal_modules
  * @{
  * Currently this module only provides support for integration with Drupal
  * views and some support for querying using the Tripal Core API.
@@ -19,7 +20,6 @@
  * contact information within Chado, and full definitions for foreign
  * key relationships in Chado.
  * @}
- * @ingroup tripal_modules
  */
 
 require('api/tripal_contact.api.inc');

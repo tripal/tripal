@@ -1,13 +1,12 @@
 <?php
 /**
  * @file
- * @todo Add file header description
+ * Provides an application programming interface (API) to manage projects
  */
 
 /**
- * @defgroup tripal_project_api Library Module API
+ * @defgroup tripal_project_api Project Module API
  * @ingroup tripal_api
- * @ingroup tripal_project
  */
 
 /**

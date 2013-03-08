@@ -8,10 +8,11 @@
 
 /**
  * @defgroup fasta_loader FASTA Feature Loader
+ * @ingroup tripal_feature
  * @{
  * Provides fasta loading functionality. Creates features based on their specification in a fasta file.
  * @}
- * @ingroup tripal_feature
+ * 
  */
 
 /**

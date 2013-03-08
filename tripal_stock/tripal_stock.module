@@ -7,6 +7,7 @@
 
 /**
  * @defgroup tripal_stock Stock Module
+ * @ingroup tripal_modules
  * @{
  * Provides functions for managing chado stocks including creating details pages for each stock
  *
@@ -19,7 +20,6 @@
  * transgene), and could be described by some ontology term. For more information about the chado
  * Stock Module see the GMOD Wiki Page (http://gmod.org/wiki/Chado_Stock_Module)
  * @}
- * @ingroup tripal_modules
  */
 require_once("includes/tripal_stock-administration.inc");
 require_once("includes/other_module_api_functions.inc");

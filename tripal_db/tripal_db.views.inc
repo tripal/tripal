@@ -13,7 +13,6 @@
 /**
  * @defgroup tripal_db_views External Database Views Integration
  * @ingroup views
- * @ingroup tripal_db
  */
 
 /**

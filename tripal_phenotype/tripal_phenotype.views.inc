@@ -10,6 +10,11 @@
  *  http://views2.logrus.com/doc/html/index.html.
  */
 
+/**
+ * @defgroup tripal_phenotype_views Phenotype Views Integration
+ * @ingroup views
+ */
+
 /*************************************************************************
  * Implements hook_views_data()
  * Purpose: Describe chado/tripal tables & fields to views

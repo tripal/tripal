@@ -2,10 +2,10 @@
 
 /**
  * @defgroup tripal_featuremap Map
+ * @ingroup tripal_modules
  * @{
  * Provides functions for managing chado maps including creating details pages for each map
  * @}
- * @ingroup tripal_modules
  */
 
 require('api/tripal_featuremap.api.inc');

@@ -8,7 +8,8 @@
  *        (specifically to add missing definitions) by implementing
  *        hook_chado_schema_v1_2_<table name>().
  *
- * @defgroup tripal_schema_api Core Module Schema API
+ * @defgroup tripal_schema_v1_2_api Chado v1.2 Schema API
+ * @ingroup tripal_core_api
  * @{
  * Provides an application programming interface (API) for describing Chado tables.
  * This API consists of a set of functions, one for each table in Chado.  Each
@@ -30,7 +31,6 @@
  * hook function to retrieve the table schema.
  *
  * @}
- * @ingroup tripal_api
  */
 
 /**

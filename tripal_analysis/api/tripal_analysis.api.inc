@@ -5,7 +5,6 @@
  * API functions relating to Analysis'
  *
  * @defgroup tripal_analysis_api Analysis Module API
- * @ingroup tripal_analysis
  * @ingroup tripal_api
  */
 /**

@@ -16,30 +16,37 @@ include('views/chado_linking.TMP.inc');
  * @{
  * Provide rules for formatting and composition of fields
  * @}
- *
- * @defgroup views_field_handlers Views Field Handlers
+ * 
+ * @defgroup views_handlers Views Integration Handlers
+ * @ingroup views
  * @{
  * Provide rules for formatting and composition of fields
  * @}
- * @ingroup views
+ *
+ * @defgroup views_field_handlers Views Field Handlers
+ * @ingroup views_handlers
+ * @{
+ * Provide rules for formatting and composition of fields
+ * @}
+ * 
  *
  * @defgroup views_filter_handlers Views Filter Handlers
+ * @ingroup views_handlers
  * @{
  * Provide the ability to filter based on specified data
- * @}
- * @ingroup views
+ * @} 
  *
  * @defgroup views_sort_handlers Views Sort Handlers
+ * @ingroup views_handlers
  * @{
  * Provide methods describing how specific data should be sorted
  * @}
- * @ingroup views
  *
  * @defgroup views_argument_handlers Views Arguement Handlers
+ * @ingroup views_handlers
  * @{
  * Provide the ability to filter pased on arguments in the path of the view
  * @}
- * @ingroup views
  */
 
 /**

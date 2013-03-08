@@ -6,7 +6,6 @@
  *
  * @defgroup tripal_db_api DB Module API
  * @ingroup tripal_api
- * @ingroup tripal_db
  */
 
 /**
