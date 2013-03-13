@@ -435,7 +435,7 @@ function tripal_feature_set_taxonomy($node, $feature_id) {
 
   // iterate through the taxonomy classes that have been
   // selected by the admin user and make sure we only set those
-  $tax_classes = variable_get('tax_classes', '');
+  $tax_classes = variable_get('tax_classes', array());
   $do_ft = 0;
   $do_op = 0;
   $do_lb = 0;
