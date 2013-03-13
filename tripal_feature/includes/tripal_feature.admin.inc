@@ -321,7 +321,7 @@ function get_tripal_feature_admin_form_taxonomy_set(&$form) {
    '#suffix'      => '</div>',
    '#options'     => $tax_options,
    '#weight'      => 2,
-   '#default_value' => variable_get('tax_classes', ''),
+   '#default_value' => variable_get('tax_classes', array()),
   );
   $form['taxonomy']['button'] = array(
     '#type' => 'submit',
