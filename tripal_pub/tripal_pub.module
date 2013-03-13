@@ -1,7 +1,8 @@
 <?php
 
 //require_once('cron.php');
-
+require_once "includes/tripal_pub.admin.inc";
+require_once "includes/pubmed.inc";
 
 /**
  * @file
@@ -17,10 +18,26 @@
  */
 
 
-//-----------------------------------------------------------------------------
-//  SECTION: Main Outline Menu for Tripal Publication
-//-----------------------------------------------------------------------------
+/**
+ * Implementation of hook_tripal_pub_node_info().
+ *
+ * This node_info, is a simple node that describes the functionallity of the module.
+ *
+ */
+function tripal_pub_node_info() {
 
+  return array(
+    'chado_pub' => array(
+      'name' => t('Publication'),
+      'module' => 'chado_pub',
+      'description' => t('A module for interfacing the GMOD chado database with Drupal, providing viewing of publications'),
+      'title_label' => t('Article Title'),
+      'body_label' => t('Abstract'),
+      'has_title' => TRUE,
+      'has_body' => FALSE,
+    ),
+  );
+}
 
 /**
  * Tripal-Publication-Menu
@@ -38,10 +55,10 @@ function tripal_pub_menu() {
 
   $items[ 'admin/tripal/tripal_pub' ]= array(
     'title' => 'Publications',
-    'description' => ('A module for interfacing the GMOD chado database with Drupal,
-    providing viewing of publications'),
-    'page callback' => 'administration_description_page',
-    'access arguments' => array('administer site configuration'),
+    'description' => ('A module for interfacing the GMOD chado database with Drupal, providing viewing of publications'),
+    'page callback' => 'theme',
+    'page arguments' => array('tripal_pub_admin'),
+    'access arguments' => array('administer tripal pubs'),
     'type' => MENU_NORMAL_ITEM
   );
 
@@ -50,7 +67,7 @@ function tripal_pub_menu() {
     'description' => 'Configuration for this module',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_pub_configuration_form'),
-    'access arguments' => array('administer site configuration'),
+    'access arguments' => array('administer tripal pubs'),
     'type' => MENU_NORMAL_ITEM
     );
 
@@ -92,6 +109,11 @@ function tripal_pub_theme() {
     'publication_author' => array(
       'arguments' => array('element' => NULL)
     ),
+   'tripal_pub_admin' => array(
+      'template' => 'tripal_pub_admin',  
+      'arguments' =>  array(NULL),  
+      'path' => drupal_get_path('module', 'tripal_pub') . '/theme' 
+    ),
   );
 }
 
@@ -99,123 +121,14 @@ function tripal_pub_theme() {
  * Implement hook_perm().
  */
 function tripal_pub_perm() {
-
-  return array('edit own tripal_pub', 'edit tripal_pub', 'create tripal_pub');
-
+  return array(
+    'access chado_pub content',
+    'create chado_pub content',
+    'delete chado_pub content',
+    'edit chado_pub content',
+    'administer tripal pubs',
+  );
 }
-
-
-/**
- * This section uses HTML to output the descriptions of the module, through the Tripal Management
- * Administation window.Any installation instructions are given as well as included features
- * as well as a overview of the purpose Module.
- *
- * @return
- *   Returns '$text'The HTML description of the Module, its instructions, features, and any other
- *   important aspects. This is returned when the Administration page is selected.
- */
-function administration_description_page() {
-
-  $text = '';
-
-  $text = '<br /><h3>Tripal Publication Administrative Tools Quick Links</h3>';
-  $text .= '<ul>';
-  $text .= '<li>' . l('Configuration', 'admin/tripal/tripal_pub/configuration') . '</li>';
-  $text .= '<li>' . l('Create A Publication', 'node/add/publication') . '</li>';
-
-  $text .= '</ul>';
-
-  $text .= '<h3>Module Description:</h3>';
-  //================================================================================
-$text .= '<p>The Tripal Publication Module provides the functionality for adding, editing, deleting and
-accessing academic publications, entered by the user.This module also allows a time limited search,
-specified by the user, which searches the PubMed extracts and saves acedemic puplications.
-
-
- </p>';
-
-  $text .= '<h3>Setup Instructions:</h3>';
-  //================================================================================
-  $text .= '<ol>';
-      $text .= '<ol type="i">';
-      $text .= '</ol>';
-
-  $text .= '<li><p><b>Set Permissions</b>: The publication module supports the Drupal user permissions interface for
-               controlling access to publlication content and functions. These permissions include viewing,
-               creating, editing or administering of
-               publication content. The default is that only the original site administrator has these
-               permissions.  You can <a href="' . url('admin/user/roles') . '">add roles</a> for classifying users,
-               <a href="' . url('admin/user/user') . '">assign users to roles</a> and
-               <a href="' . url('admin/user/permissions') . '">assign permissions</a> for the publication content to
-               those roles.  For a simple setup, allow anonymous users access to view publication content and
-               allow the site administrator all other permissions.</p></li>';
-  $text .= '<li><p><b>Set Publication Type Controlled Vocabulary</b>: The select list for setting the publication '
-                . 'type is controlled be a controlled vocabulary (cv). '
-                . '<ul><li>Before you can add any publications you need '
-                . 'to create/load this cv. There is a limited cv included in this module. To use it, you need to '
-                . 'load it using the <a href="' . url('admin/tripal/tripal_cv/obo_loader') . '">OBO Loader included with Tripal</a>.</li>'
-                . '<li>After the controlled vocabulary is loaded you need to set it to be used for the publication '
-                . 'module. To do this, go to <a href="' . url('admin/tripal/tripal_pub/configuration') . '">Publication->Configuration</a>, select it in the controlled vocabulary '
-                . 'select list and click save configuration.</p></li></ul>';
-
-  $text .= '</ol>';
-  $text .= '<h3>Features of this Module:</h3>';
-  //================================================================================
-  $text .= '<ul>';
-
-
-
-
-  $text .= '<li><p><b>Configuration (Search For Academic Publications):</b>  The search capability implemented in
-  this module allows a user to search, by remote connection , the PubMEd database for articles
-  that relate to key search words, chosen by the user.The "search keys" are used to search through
-  Publication titles and when one of the key words is matched in a title, the recognized article will
-  be saved to the database.
-
-
-      <ul>
-
-      <li><b>Choose a Controlled Vocabulary:</b>The controlled vocabulary list is a set of terms
-
-      <li><b>Set Search Key Words:</b>The search keywords, are the user entered key terms, in which
-      the publications in the PubMed database can be recognized by. The user may enter any number
-      of search terms, as by adding more search terms, the search will limit the results to those
-      in which all of the search terms appear in the publication title.
-
-      <li><b>Set a time search interval:</b>The search term interval represents a pre-set ammount
-      of time for the search. The time search interval must be entered in minutes. This allows
-      the module to automatically search the PubMed database in a predetermined time interval.
-    </ul>
-
-
-
-
-
-
-  </p></li>';
-
-  $text .= '<li><b>Creating a Publication:</b>';
-
-  $text .= '<p>To <b>Create,update/delete a given property of a publication</b>:When Creating a Publication
-  it is neccessary to enter the requried fields in the form. These are marked with an astrix and
-  if they are not entered upon completion a warning will be issued and the user is forced to fill
-  in these entries. The author field, requires a given/surname/suffix to be entered. To add the
-  author to the publication, the add author button is to be pushed. The user is able to add as
-  many authors to the publication as needed.
-  </p>';
-
-
-
-
-
-  return $text;
-
-}
-
-
-//-----------------------------------------------------------------------------
-//  SECTION: Node Capability
-//-----------------------------------------------------------------------------
 
 
 /**
@@ -238,82 +151,28 @@ specified by the user, which searches the PubMed extracts and saves acedemic pup
  *
  */
 function chado_pub_access($op, $node, $account ) {
-
-  global $user;
-
-  if (empty($account)) {
-    $account = $user;
-  }
-
-  if ($op != 'create') {
-    $node = (object)$node;
-  }
-
   if ($op == 'create') {
-
-    if (user_access('create tripal_pub')) {
-
-        return TRUE;
-
-    }
-
-  }
-  elseif ($op == 'update' || $op == 'delete') {
-
-    if (user_access('edit tripal_pub')) {
-
-        return TRUE;
-    }
-    elseif (user_access('edit own tripal_pub') && $account->uid == $node->uid) {
-
-      return TRUE;
-    }
-
+    if (!user_access('create chado_pub content', $account)) {
+      return FALSE;
+      }
   }
 
-/////////////////The following is taken from the tripal_pub module insert later////////////////////
-  /*
-  if ($op == 'create') {
-    // Only users with permission to do so may create this node type.
-<<<<<<< .mine
-    return user_access('create tripal_pub', $account);
-=======
-    if(!user_access('create tripal_pub', $account)){
+  if ($op == 'update') {
+    if (!user_access('edit chado_pub content', $account)) {
       return FALSE;
     }
->>>>>>> .r25216
   }
-
-  // Users who create a node may edit or delete it later, assuming they have the
-  // necessary permissions.
-  if ($op == 'update' || $op == 'delete') {
-    if (user_access('edit own tripal_pub',$account) && ($account->uid == $node->uid)) {
-      return TRUE;
+  if ($op == 'delete') {
+    if (!user_access('delete chado_pub content', $account)) {
+      return FALSE;
     }
-  }*/
-///////////////////////////////////////////////////////////////////////////////////////////////////
-
-}
-
-/**
- * Implementation of hook_tripal_pub_node_info().
- *
- * This node_info, is a simple node that describes the functionallity of the module.
- *
- */
-function tripal_pub_node_info() {
-
-  return array(
-    'chado_pub' => array(
-      'name' => t('Publication'),
-      'module' => 'chado_pub',
-      'description' => t('A module for interfacing the GMOD chado database with Drupal, providing viewing of publications'),
-      'title_label' => t('Article Title'),
-      'body_label' => t('Abstract'),
-      'has_title' => TRUE,
-      'has_body' => FALSE,
-    ),
-  );
+  }
+  if ($op == 'view') {
+    if (!user_access('access chado_pub content', $account)) {
+      return FALSE;
+    }
+  }
+  return NULL;
 }
 
 
@@ -450,7 +309,6 @@ function chado_pub_form(&$node, $form_state) {
 
   }
 
-  /////////////////////Edit authors//////////////////////////////////////////////////////////////////
 
   if (isset($form_state['values']['edit_author'])) {
 
@@ -498,9 +356,6 @@ function chado_pub_form(&$node, $form_state) {
           'effect' => 'fade',
         ),
       );
-
-  ////////////////////////////////////////////////////////////////////////////////////
-
   }
   else{
 
@@ -541,9 +396,6 @@ function chado_pub_form(&$node, $form_state) {
       );
 
   }
-
-  ////////////////////////////////////////////////////////////////////////////////////////////////////
-
 
   $form['volumetitle'] = array(
     '#type' => 'textfield',
@@ -893,12 +745,6 @@ function chado_pub_load($node) {
   return $node;
 
 }
-
-
-//-----------------------------------------------------------------------------
-//  SECTION: Drupal AHAH Implementation & Edit Publication Section
-//-----------------------------------------------------------------------------
-
 
 /**
  * Submit handler for 'Add Author' button on node form.
@@ -1260,326 +1106,7 @@ function tripal_pub_cron(){
 }
   */
 
-//-----------------------------------------------------------------------------
-//  SECTION: Configuration form
-//-----------------------------------------------------------------------------
 
-
-/**
- * Implementation of tripal_pub_form().
- *
- *  This form takes the following information:A Publication Title,Volume title,Volume,Series Name,
- *  Issue,Publication Year,Pages where the Article is located, Miniref,Type-Id, if the article is Obsolete,
- *  Publishing company,Pubplication Place and a Uniquename for the the instance. It then puts the
- *  infromation into the Chado_project database table based on its 'pub_id'.
- *
- *
- *  @return $form
- *    An array of menu items '$form'
- *
- */
-function tripal_pub_configuration_form() {
-
-  $cv_options = tripal_cv_get_cv_options();
-
-  //Creating Fieldset for multiple fields in form
-  $form['node_form'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Create/Edit Publication Settings'),
-  );
-
-  $form['node_form']['tripal_pub_types_cv'] = array(
-    '#type' => 'select',
-    '#title' => t('Controlled Vocabularies'),
-    '#options' => $cv_options,
-    '#default_value' => variable_get('tripal_pub_types_cv', 0),
-    '#description' => 'Set the controlled vocabulary to pull publication type options from. Terms in this vocabulary will be available is the Publication Type select box on both the create and edit pages.',
-  );
-
-  $form['pubmed'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Create Nodes via PubMed Search'),
-  );
-
-  $form['pubmed']['description'] = array(
-    '#type' => 'item',
-    '#value' => 'Publication nodes are created based on the results of a PubMed publication search using '
-      .'the keywords entered below. No content is created until the sync is clicked below and the registered tripal job is '
-      .'run. This script attempts to only load new publications (ones which don\'t already have nodes from a previous search) '
-      .'by comparing the pub_id thus if a publication is added manually which also appears in the pubmed search it will likely '
-      .'get added twice.'
-  );
-
-  //define form elements for the node's title and body.
-  $form['pubmed']['unique_name'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Search Keywords'),
-    '#description' => t('Specific search terms. Must be seperated by a single space.'),
-    '#required' => FALSE,
-    '#default_value' => variable_get('unique_name', NULL)
-  );
-
-  //define form elements for the node's title and body.
-  /**
-  $form['set']['time_interval'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Time Search Interval (Minutes)'),
-    '#description'=>t(' The “Search Interval” set here determines when a drupal cron job should
-    schedule a tripal job. As such, in reality the time until publications are sync’d is “Search Interval”
-    + time remaining until drupal cron is run + time between drupal cron run and next tripal jobs run'),
-    '#required' => FALSE,
-    '#default_value' => variable_get('time_interval', NULL)
-  );
-  */
-
-  $form['pubmed']['sync_info'] = array(
-      '#type' => 'submit',
-      '#title' => t('Sync Publications Jobs'),
-      '#value' => t('Sync'),
-  );
-
-  $form['submit'] = array(
-    '#type' => 'submit',
-    '#weight' => 10,
-    '#value' => t('Save Configuration')
-  );
-
-  return $form;
-
-}
-
-
-/*
- * Pub Configuration-Form
- * This form submit uses variable_set to set the vocabularies that are used, as well as the
- * unique_name and time interval that was entered by the user. If the user selects the option
- * to Sync Publicatin Jobs, the 'tripal_add_job' function is called, and a tripal job
- * will be added.
- *
- * @param $form
- *    -The submitted form containing the user entered infromation
- * @param $form_state
- *    -Is the state of the form: i.e what button was pressed, what infromation was entered,etc.
- *    The key is the 'values'
- */
-function tripal_pub_configuration_form_submit($form, $form_state) {
-
-    global $user;    //needed to make the current users details available so access of user id is available
-
-    if ($form_state['values']['op'] == t('Save Configuration')) {
-
-        variable_set('tripal_pub_types_cv', $form_state['values']['tripal_pub_types_cv']);
-        variable_set('unique_name', $form_state['values']['unique_name'] );
-
-    }
-
-    //adding a tripal job if the user selects to Sync the Publications
-    if ($form_state['values']['op'] == t('Sync')) {
-
-        variable_set('unique_name', $form_state['values']['unique_name'] );
-        $job_args = array($form_state['values']['unique_name']);
-        $job_id = tripal_add_job('Search & Load PubMed Publications', 'tripal_pub', 'tripal_pub_search_load_pubmed_publications', $job_args, $user->uid);
-
-    }
-
-}
-
-
-/**
- * Tripal Pub Search Load Pubmed Publications
- *
- * This function takes a search term array and uses it as the parameters for the perl script
- * e_utiliies.pl, which needs to be included and installed in any system that wants full
- * functionality of this module, with respects to searching PubMed for relative articles.
- * When the function ends, and all of the form_state values are set, the drupal_execute()
- * function is called and retrieves a form using a form_id, populates it with $form_values,
- * processes it, and returns any validation errors that came up.
- *
- *
- *
- * @TODO: The loading of this function still needs to be fixed. When running the configuration, there
- * are still errors coming up, UFT8 warnings still come up, in random places. My guess, it is when
- * a article is found that is not in english
- *
- *
- *
- * @param $search_term_array
- *     -This arrary contains the search terms that were entered
- *
- *
- */
-function tripal_pub_search_load_pubmed_publications($search_term_array) {
-
-  $key_terms = preg_split('/\s+/', $search_term_array);
-
-  $search_terms= implode("+", $key_terms);
-
-  //Retrieving absolute path of current directory
-  $path = drupal_get_path('module', 'tripal_pub');
-
-  $i_path = realpath(".");
-
-  $absolute_path = $i_path . '/' . $path;
-
-  //perl file required for operating the NCBI PubMed database search, uses users working directory
-  $command = 'perl ' . $absolute_path  . '/e_utilities.pl' . ' ' . $search_terms . ' ' . 'uilist';
-
-  print "\nAccessing PubMed ID's\n";
-
-  exec($command, $output);
-
-
-  //for loop going through all the pub_med_id, creating a node for each one
-  for ($i=0; $i < sizeof($output); $i++) {
-
-    $pmid = $output[$i];
-
-    //aquiring the pubmed id from the pub table based on the uniquename
-    $pubmed_id = tripal_core_chado_select( 'pub', array('pub_id'), array( 'uniquename' => $pmid) );
-
-    //Checking that the pub-med id is not set & thus not in the database
-    if (!isset($pubmed_id[0]->pub_id)) {
-
-      print "\nRetrieving PubMed ID:" . $pmid . "\n";
-
-      $command = '';
-
-      $xml_report = '';
-
-      $newline_separated = '';
-
-      $xml = '';
-
-      //Uncomment below line to see any syntax errors within the perl script
-      //$command = 'perl ' ."-cs" .' ' . $absolute_path  .'/e_utilities.pl' .' ' .$pmid.'[uid] ' .'xml';
-
-      $command = 'perl ' . $absolute_path  . '/e_utilities.pl' . ' ' . $pmid . '[uid] ' . 'xml';
-
-      exec($command, $xml_report);
-
-      //adding the xml report once the new line characters have been removed
-      $newline_separated = implode("\n", $xml_report);
-
-      //relaying the xml output so it can be put in a string variable
-      $xml = simplexml_load_string($newline_separated);
-
-      //checking the Article Title exists, if so, procede with setting values
-      if (isset($xml->PubmedArticle->MedlineCitation->Article->ArticleTitle)) {
-
-        $form_id ='chado_pub_node_form';
-
-        $form_state = array();
-
-        module_load_include('inc', 'node', 'node.pages');
-
-        $node = array('type' => 'chado_pub');
-
-        $form_state = array();
-
-        $form_state['values']['title'] =
-        iconv(iconv_get_encoding((string)$xml->PubmedArticle->MedlineCitation->Article->ArticleTitle),
-        "UTF-8",
-        (string)$xml->PubmedArticle->MedlineCitation->Article->ArticleTitle);
-
-        $form_state['values']['abstract'] =
-        iconv(iconv_get_encoding((string)$xml->PubmedArticle),
-        "UTF-8",
-        (string)$xml->PubmedArticle);
-
-        $form_state['values']['authors'] =
-        iconv(iconv_get_encoding((string)$xml->PubmedArticle),
-        "UTF-8",
-        (string)$xml->PubmedArticle);
-
-        $form_state['values']['volumetitle'] =
-        iconv(iconv_get_encoding((string)$xml->PubmedArticle->MedlineCitation->Article->Journal->Title),
-        "UTF-8",
-        (string)$xml->PubmedArticle->MedlineCitation->Article->Journal->Title);
-
-        $form_state['values']['series_name'] =
-        iconv(iconv_get_encoding((string)$xml->PubmedArticle->MedlineCitation->Article->Journal->Title),
-        "UTF-8",
-        (string)$xml->PubmedArticle->MedlineCitation->Article->Journal->Title);
-
-        $form_state['values']['volume'] =
-        iconv(iconv_get_encoding((string)$xml->PubmedArticle->MedlineCitation->Article->Journal->JournalIssue->Volume),
-        "UTF-8",
-        (string)$xml->PubmedArticle->MedlineCitation->Article->Journal->JournalIssue->Volume);
-
-        $form_state['values']['issue'] =
-        iconv(iconv_get_encoding((string)$xml->PubmedArticle->MedlineCitation->Article->Journal->JournalIssue->Issue),
-        "UTF-8",
-        (string)$xml->PubmedArticle->MedlineCitation->Article->Journal->JournalIssue->Issue);
-
-        $form_state['values']['pyear'] =
-        iconv(iconv_get_encoding((string)$xml->PubmedArticle->MedlineCitation->Article->Journal->JournalIssue->PubDate->Year),
-        "UTF-8",
-        (string)$xml->PubmedArticle->MedlineCitation->Article->Journal->JournalIssue->PubDate->Year);
-
-        $form_state['values']['pages'] =
-        iconv(iconv_get_encoding((string)$xml->PubmedArticle->MedlineCitation->Article->Pagination->MedlinePgn),
-        "UTF-8",
-        (string)$xml->PubmedArticle->MedlineCitation->Article->Pagination->MedlinePgn);
-
-        $form_state['values']['uniquename'] =
-        iconv(iconv_get_encoding((string)$xml->PubmedArticle->MedlineCitation->PMID),
-        "UTF-8",
-        (string)$xml->PubmedArticle->MedlineCitation->PMID);
-
-        $type_id = tripal_core_chado_select( 'cvterm', array('cvterm_id'), array( 'name' => 'Article') );
-
-        $form_state['values']['type_id'] = $type_id[0]->cvterm_id;
-
-        $form_state['values']['is_obsolete']='f';
-
-        $form_state['values']['op'] = t('Save');
-
-        form_set_error(NULL, '', TRUE);
-
-        //If the required values & fields are not set, the drupal_execute function is not called and node is not added
-        if (isset($form_state['values']['volumetitle']) || isset($form_state['values']['series_name'])||
-            isset($form_state['values']['pages'])||isset($form_state['values']['uniquename'])) {
-
-          drupal_execute('tripal_pub_node_form', $form_state, (object)$node);
-
-        }
-
-        $errors = form_get_errors();
-
-        //if(isset($errors)){
-
-
-        if ( $errors !=
-          'Warning: pg_query(): Query failed: ERROR:  invalid byte sequence for encoding "UTF8": 0xfc
-          HINT:  This error can also happen if the byte sequence does not match the encoding expected
-          by the server, which is controlled by "client_encoding".') {
-
-          print "\nErrors:" . print_r($errors, TRUE) . "\n";
-
-          }
-          else{
-
-            print "\nErrors:" . print_r($errors, TRUE) . "\n";
-
-          }
-
-        }
-
-      }
-      elseif ($i==sizeof($output)) {
-
-        print "\n Search Completed Successfully \n";
-        print "\n Total Nodes Created:" . $i . "\n";
-
-      }
-      else{
-
-        print "\nERROR: The following PubMed ID:" . ' ' . $pubmed_id[0]->pub_id .  " Exists in database,skipped.\n";
-
-    }
-  }
-
-  }
 
 
 //-----------------------------------------------------------------------------
@@ -1691,9 +1218,7 @@ function expand_publication_author($element) {
  *
  */
 function theme_publication_author($element) {
-
   return theme('form_element', $element, '<div class="container-inline">' . $element['#children'] . '</div>');
-
 }
 
 /*
@@ -1702,28 +1227,13 @@ function theme_publication_author($element) {
  *
  */
 function publication_author_validate($element) {
-
-if ($element['#required']) {
-
-  if (trim($element['#value']['givennames']) == '' || trim($element['#value']['suffix']) == '' || trim($element['#value']['surname']) == '' ||
-
+  if ($element['#required']) {
+    if (trim($element['#value']['givennames']) == '' || trim($element['#value']['suffix']) == '' || trim($element['#value']['surname']) == '' ||
       !is_string($element['#value']['givennames']) || !is_string($element['#value']['givennames']) || !is_string($element['#value']['surname'])) {
-
       form_error($element, t('The Author name is required.'));
-
     }
-
   }
-
-
 }
-
-
-//-----------------------------------------------------------------------------
-//  End of Software
-//-----------------------------------------------------------------------------
-
-
 
 
 

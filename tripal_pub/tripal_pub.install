@@ -15,15 +15,27 @@
  * Implementation of hook_install().
  */
 function tripal_pub_install() {
+  
+  // create the module's data directory
+  tripal_create_moddir('tripal_pub');
 
+  // install the tripal_oub
   drupal_install_schema('tripal_pub');
-  $dbxref = array('accession' => 'abstract', 'db_id' => array('name' => 'tripal'));
-  $success = tripal_core_chado_insert('dbxref', $dbxref);
-  if ($success) {
-    tripal_core_chado_insert('cvterm', array('name' => 'abstract', 'cv_id' => array('name' => 'tripal'), 'dbxref_id' => $dbxref));
-  }
+  
+  // add any cvterms we need for this module
+  tripal_pub_add_cvterms();  
 }
 
+
+/*
+ * 
+ * 
+ */
+function tripal_pub_add_cvterms(){
+  
+  tripal_cv_add_cvterm(array('name' => 'abstract', 'def' => 'Publication abstract'), 
+    'tripal_pub', 0, 1, 'tripal');    
+}
 
 /**
  * Implementation of hook_uninstall().
@@ -39,31 +51,24 @@ function tripal_pub_uninstall() {
  * Implementation of hook_schema().
  */
 function tripal_pub_schema() {
-//specification for 'tripal_pub_instances'
+  
   $schema['chado_pub'] = array(
-
     'fields' => array(
-
-      //a int field that cannot be null and acts as a unique identifier for all nid's
-      'nid' => array(
-        'type' => 'int',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
-        ),
-
-      //a int field that cannot be null and is vid
-      'vid' => array(
-          'type' => 'int',
-          'not null' => TRUE,
-      ),
-
-      //a intfield, not null and project_id is the unique_id of the project in chado
-       'pub_id' => array(
-          'type' => 'int',
-          'unsigned' => TRUE,
-          'not null' => TRUE,
-      ),
-
+      'vid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+      'nid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+      'pub_id' => array('type' => 'int', 'not null' => TRUE, 'default' => 0),
+      'sync_date' => array('type' => 'int', 'not null' => FALSE, 'description' => 'UNIX integer sync date/time'),
+    ),
+    'indexes' => array(
+      'pub_id' => array('pub_id')
+    ),
+    'unique keys' => array(
+      'nid_vid' => array('nid', 'vid'),
+      'vid' => array('vid')
+    ),
+    'primary key' => array('nid'),
+  );
+      /*
        //a intfield, not null and project_id is the unique_id of the project in chado
        'pubmed_id' => array(
           'type' => 'int',
@@ -76,16 +81,26 @@ function tripal_pub_schema() {
         'not null' => TRUE,
         'default' => '',
         'description' => 'The Author Name.',
-      ),
-      ),
-     //end of shema
-
-    'primary key' => array('nid'),
-
-  );
-
+      ),*/
   return $schema;
 }
 
 
 
+/**
+ * Implementation of hook_requirements(). 
+ */
+function tripal_pub_requirements($phase) {
+  $requirements = array();
+  if ($phase == 'install') {
+    // make sure chado is installed
+    if (!tripal_core_is_chado_installed()) {
+      $requirements ['tripal_pub'] = array(
+        'title' => "tripal_pub",
+        'value' => "ERROR: Chado most be installed before this module can be enabled",
+        'severity' => REQUIREMENT_ERROR,
+      );
+    }
+  }
+  return $requirements;
+}
