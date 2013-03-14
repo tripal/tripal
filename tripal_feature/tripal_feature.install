@@ -41,6 +41,7 @@ function tripal_feature_update_6000() {
  *
  * @ingroup tripal_feature
  */
+/*
 function tripal_feature_update_6300() {
   // add the relationship aggregator table to the database
   $schema = tripal_feature_get_schemas('tripal_feature_relagg');
@@ -48,7 +49,7 @@ function tripal_feature_update_6300() {
   db_create_table($ret, 'tripal_feature_relagg', $schema['tripal_feature_relagg']);
 
   return $ret;
-}
+} */
 /**
  *
  * @ingroup tripal_feature

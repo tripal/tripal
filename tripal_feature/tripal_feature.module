@@ -1229,46 +1229,8 @@ function tripal_feature_get_aggregate_relationships($feature_id, $substitute=1,
   }
 
   // first get the relationships for this feature
-  $relationships = tripal_feature_load_relationships($feature_id, 'as_object');
+  return tripal_feature_load_relationships($feature_id, 'as_object');
 
-  // next, iterate through these relationships and descend, adding in those
-  // that are specified by the aggregator.
-  $i=0;
-  $new_relationships = array();
-  foreach ($relationships as $rindex => $rel) {
-    // set the base type id
-    if (!$base_type_id) {
-      $base_type_id = $rel->object_type_id;
-    }
-    // check to see if we have an aggregator for this base type
-    $sql = "SELECT * FROM {tripal_feature_relagg} WHERE type_id = %d and rel_type_id = %d";
-    $agg = db_fetch_object(db_query($sql, $base_type_id, $rel->subject_type_id));
-    if ($agg) {
-      // if we're not going to substitute the resulting relationships for the
-      // parent then we need to add the parent to our list
-      if (!$substitute) {
-        $new_relationships[$i++] = $rel;
-      }
-      // recurse all relationships
-      $agg_relationships = tripal_feature_get_aggregate_relationships(
-        $rel->subject_id, $levels, $base_type_id, $depth++);
-      // if we have an aggregate defined but we have no relationships beyond
-      // this point then there's nothing we can substitute
-      if (!$agg_relationships and $substitute) {
-        $new_relationships[$i++] = $rel;
-      }
-
-      // merge all relationships into one array
-      foreach ($agg_relationships as $aindex => $arel) {
-        $new_relationships[$i++] = $arel;
-      }
-    }
-    else {
-      // if we don't have an aggregate then keep the current relationship
-      $new_relationships[$i++] = $rel;
-    }
-    }
-    return $new_relationships;
 }
 /**
  *
