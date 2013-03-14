@@ -37,7 +37,7 @@ require_once "tripal_core.schema_v1.11.api.inc";
  * there is a set of functions for inserting, updating and deleting properties for
  * any table.  This provides quick lookup of properties (provided the CV term is
  * known).
- * 
+ *
  * @}
  *
  */
@@ -1103,10 +1103,10 @@ function tripal_core_chado_delete($table, $match, $options = NULL) {
  *  - is_duplicate: TRUE or FALSE.  Checks the values submited to see if
  *     they violate any of the unique constraints. If so, the record
  *     is returned, if not, FALSE is returned.
- *  - pager:  Use this option if it is desired to return only a subset of results 
+ *  - pager:  Use this option if it is desired to return only a subset of results
  *     so that they may be shown with in a Drupal-style pager. This should be
- *     an array with two keys: 'limit' and 'element'.  The value of 'limit' 
- *     should specify the number of records to return and 'element' is a 
+ *     an array with two keys: 'limit' and 'element'.  The value of 'limit'
+ *     should specify the number of records to return and 'element' is a
  *     unique integer to differentiate between pagers when more than one
  *     appear on a page.  The 'element' should start with zero and increment by
  *     one for each pager.  The pager currently does not work with prepared queries
@@ -1486,7 +1486,7 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
           if (in_array($field, $options['case_insensitive_columns'])) {
             $sql .= "lower($field) $operator lower('%s') AND ";
             $psql .= "lower($field) $operator lower('\$" . $i . "') AND ";
-            $args[] = $value;
+            $args[] = $value[0];
           }
           else {
             $sql .= "$field $operator '%s' AND ";
@@ -1546,10 +1546,10 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
   else {
     if (array_key_exists('limit', $pager)) {
       $resource = chado_pager_query($sql, $pager['limit'], $pager['element'], NULL, $args);
-    } 
+    }
     else {
       $resource = chado_query($sql, $args);
-    }     
+    }
   }
 
   // format results into an array
@@ -1726,11 +1726,11 @@ function tripal_core_chado_get_foreign_key($table_desc, $field, $values, $option
  *
  *     The above array will expand the 'type_id' of the property table but only
  *     further expand the cv_id and the dbxref_id and will go no further.
- *   - pager:  
- *     Use this option if it is desired to return only a subset of results 
+ *   - pager:
+ *     Use this option if it is desired to return only a subset of results
  *     so that they may be shown within a Drupal-style pager. This should be
- *     an array with two keys: 'limit' and 'element'.  The value of 'limit' 
- *     should specify the number of records to return and 'element' is a 
+ *     an array with two keys: 'limit' and 'element'.  The value of 'limit'
+ *     should specify the number of records to return and 'element' is a
  *     unique integer to differentiate between pagers when more than one
  *     appear on a page.  The 'element' should start with zero and increment by
  *     one for each pager.  This only works when type is a 'table'.
@@ -2049,11 +2049,11 @@ function tripal_core_generate_chado_var($table, $values, $base_options = array()
  *
  *     The above array will expand the 'type_id' of the property table but only
  *     further expand the cv_id and the dbxref_id and will go no further.
- *   - pager:  
- *     Use this option if it is desired to return only a subset of results 
+ *   - pager:
+ *     Use this option if it is desired to return only a subset of results
  *     so that they may be shown within a Drupal-style pager. This should be
- *     an array with two keys: 'limit' and 'element'.  The value of 'limit' 
- *     should specify the number of records to return and 'element' is a 
+ *     an array with two keys: 'limit' and 'element'.  The value of 'limit'
+ *     should specify the number of records to return and 'element' is a
  *     unique integer to differentiate between pagers when more than one
  *     appear on a page.  The 'element' should start with zero and increment by
  *     one for each pager.  This only works when type is a 'table'.
@@ -2079,14 +2079,14 @@ function tripal_core_generate_chado_var($table, $values, $base_options = array()
  *
  * @ingroup tripal_chado_api
  */
-function tripal_core_expand_chado_vars($object, $type, $to_expand, $table_options = array()) {  
+function tripal_core_expand_chado_vars($object, $type, $to_expand, $table_options = array()) {
 
   // make sure we have a value
   if (!$object) {
     watchdog('tripal_core', 'Cannot pass non array as $object.', array(),WATCHDOG_ERROR);
-    return $object;  
+    return $object;
   }
-  
+
   // check to see if we are expanding an array of objects
   if (is_array($object)) {
     foreach ($object as $index => $o) {
@@ -2094,10 +2094,10 @@ function tripal_core_expand_chado_vars($object, $type, $to_expand, $table_option
     }
     return $object;
   }
-  
+
   // get the base table name
   $base_table = $object->tablename;
-  
+
   switch ($type) {
     case "field": //--------------------------------------------------------------------------------
       if (preg_match('/(\w+)\.(\w+)/', $to_expand, $matches)) {
@@ -2140,9 +2140,9 @@ function tripal_core_expand_chado_vars($object, $type, $to_expand, $table_option
         return $object;
       }
       $foreign_table_desc = tripal_core_get_chado_table_schema($foreign_table);
-      
+
       // If it's connected to the base table via a FK constraint
-      if ($foreign_table_desc['foreign keys'][$base_table]) {       
+      if ($foreign_table_desc['foreign keys'][$base_table]) {
         foreach ($foreign_table_desc['foreign keys'][$base_table]['columns'] as $left => $right) {
           // if the FK value in the base table is not there then we can't expand it, so just skip it.
           if (!$object->{$right}) {
@@ -2157,7 +2157,7 @@ function tripal_core_expand_chado_vars($object, $type, $to_expand, $table_option
              $new_options['statement_name'] = "exp_" . $foreign_table . "_" . substr($left, 0, 2) . substr($right, 0, 2);
           }
           $foreign_object = tripal_core_generate_chado_var($foreign_table, array($left => $object->{$right}), $new_options);
-          
+
           // if the generation of the object was successful, update the base object to include it.
           if ($foreign_object) {
             // in the case where the foreign key relationships exists more
@@ -2341,7 +2341,7 @@ function tripal_core_exclude_field_from_feature_by_default() {
 
 /**
  * Use this function instead of pager_query() when selecting a
- * subset of records from a Chado table.  
+ * subset of records from a Chado table.
  *
  * @param $query
  *   The SQL statement to execute, this is followed by a variable number of args
@@ -2354,15 +2354,15 @@ function tripal_core_exclude_field_from_feature_by_default() {
  * @returns
  *   A database query result resource or FALSE if the query was not
  *   executed correctly
- *   
+ *
  * @ingroup tripal_chado_api
  */
 function chado_pager_query($query, $limit, $element, $count) {
-  
-  // The following code is almost an exact duplicate of the 
+
+  // The following code is almost an exact duplicate of the
   // Drupal pager_query function. However, substitions have
   // been made to call chado_query rather than db_query
-  
+
   global $pager_page_array, $pager_total, $pager_total_items;
   $page = isset($_GET['page']) ? $_GET['page'] : '';
 
@@ -2385,8 +2385,8 @@ function chado_pager_query($query, $limit, $element, $count) {
   // We calculate the total of pages as ceil(items / limit).
   $pager_total_items[$element] = db_result(chado_query($count_query, $args));
   $pager_total[$element] = ceil($pager_total_items[$element] / $limit);
-  $pager_page_array[$element] = max(0, min((int) $pager_page_array[$element], ((int) $pager_total[$element]) - 1));  
-  
+  $pager_page_array[$element] = max(0, min((int) $pager_page_array[$element], ((int) $pager_total[$element]) - 1));
+
   return chado_query_range($query, $args, $pager_page_array[$element] * $limit, $limit);
 }
 
@@ -2404,7 +2404,7 @@ function chado_pager_query($query, $limit, $element, $count) {
  * @returns
  *   A database query result resource or FALSE if the query was not
  *   executed correctly
- *   
+ *
  * @ingroup tripal_chado_api
  */
 function chado_query_range($query) {
@@ -2419,7 +2419,7 @@ function chado_query_range($query) {
   }
   _db_query_callback($args, TRUE);
   $query = preg_replace_callback(DB_QUERY_REGEXP, '_db_query_callback', $query);
-  $query .= ' LIMIT ' . (int) $count . ' OFFSET ' . (int) $from;  
+  $query .= ' LIMIT ' . (int) $count . ' OFFSET ' . (int) $from;
   return chado_query($query);
 }
 /**
@@ -2434,8 +2434,8 @@ function chado_query_range($query) {
  * @returns
  *   A database query result resource or FALSE if the query was not
  *   executed correctly
- *   
- * @ingroup tripal_chado_api  
+ *
+ * @ingroup tripal_chado_api
  */
 function chado_query($sql) {
   global $persistent_chado;
@@ -2553,7 +2553,7 @@ function chado_query($sql) {
  * Likewise,
  * $organism_id = chado_get_id_for_node ('organism', $node)
  * $feature_id = chado_get_id_for_node ('feature', $node)
- * 
+ *
  * @ingroup tripal_chado_api
  */
 function chado_get_id_for_node($table, $node) {
@@ -2567,7 +2567,7 @@ function chado_get_id_for_node($table, $node) {
  *  Likewise,
  *  $nid = chado_get_node_id ('organism', $organism_id)
  *  $nid = chado_get_node_id ('feature', $feature_id)
- *  
+ *
  *  @ingroup tripal_chado_api
  */
 function chado_get_node_id($table, $id) {
@@ -3279,7 +3279,7 @@ function tripal_db_set_savepoint_transaction($savepoint, $release = FALSE) {
 
 /**
  * A simple function to commit a database transaction
- *   
+ *
  * @return nothing
  */
 function tripal_db_commit_transaction() {
@@ -3294,11 +3294,11 @@ function tripal_db_commit_transaction() {
  *
  * @param $savepoint
  *   The name of the saved point in the transaction to rollback to
- *   
+ *
  * @param $commit
  *   The transcation will only be committed if this value is TRUE. The
  *   default is TRUE.
- *   
+ *
  * @return nothing
  */
 function tripal_db_rollback_transaction($savepoint = NULL, $commit = TRUE) {
