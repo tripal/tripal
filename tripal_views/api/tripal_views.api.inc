@@ -664,3 +664,135 @@ function tripal_views_add_node_relationship_to_chado_table_integration($defn_arr
 
   return $integrations;
 }
+
+/**
+ *
+ */
+function tripal_views_add_field_to_integration($table_name, $priority, $field) {
+  $no_errors = TRUE;
+
+  // First get the setup_id
+  $setup_id = db_result(db_query("SELECT setup_id FROM tripal_views WHERE table_name='%s' AND priority=%d", $table_name, $priority));
+
+  // If there isn't an integration matching that table/priority combination
+  // then clone the lightest priority integration
+  if (empty($setup_id)) {
+    $lightest_setup_id = tripal_views_get_lightest_priority_setup($table_name);
+    $defn_array = tripal_views_integration_export_entry($lightest_setup_id);
+    $defn_array['priority'] = $priority;
+    tripal_views_integration_add_entry($defn_array);
+    $setup_id = db_result(db_query("SELECT setup_id FROM tripal_views WHERE table_name='%s' AND priority=%d", $table_name, $priority));
+
+    if (empty($setup_id)) {
+      watchdog('tripal_views','Unable to clone lightest priority setup for %table in order to add the following field to the integration: %field.',
+        array('%table' => $table_name, '%field' => print_r($field_array,TRUE)),WATCHDOG_ERROR);
+      return FALSE;
+    }
+  }
+
+  // Now delete any existing field
+  db_query("DELETE FROM {tripal_views_field} WHERE setup_id=%d AND column_name='%s'", $setup_id, $field['name']);
+  db_query("DELETE FROM {tripal_views_handlers} WHERE setup_id=%d AND column_name='%s'", $setup_id, $field['name']);
+  db_query("DELETE FROM {tripal_views_join} WHERE setup_id=%d AND base_table='%s' AND base_field='%s'", $setup_id, $table_name, $field['name']);
+
+  // Now we need to add/update the field
+  $field_record = array(
+    'setup_id' => $setup_id,
+    'column_name' => $field['name'],
+    'name' => $field['title'],
+    'description' => $field['description'],
+    'type' => $field['type'],
+  );
+  if ($setup_id && $field['name'] && $field['title'] && $field['description'] && $field['type']) {
+    if ($defn_array['additional_content']) {
+      $is = db_fetch_object(db_query("SELECT true as present FROM {tripal_views_field} WHERE column_name='%s' AND setup_id=%d", $field_record['column_name'], $field_record['setup_id']));
+      if (!$is->present) {
+        $status = drupal_write_record('tripal_views_field', $field_record);
+      }
+      else {
+        $status = drupal_write_record('tripal_views_field', $field_record, array('setup_id', 'column_name'));
+      }
+    }
+    else {
+      $status = drupal_write_record('tripal_views_field', $field_record);
+    }
+  }
+  else {
+    drupal_set_message(t('Unable to integrate %name field due to missing required fields.', array('%name' => $field['name'])), 'error');
+    $status = FALSE;
+  }
+
+  if ($status) {
+
+    // Insert Handler Definitions
+    foreach ($field['handlers'] as $handler_type => $handler) {
+      $handler_record = array(
+        'setup_id' => $setup_id,
+        'column_name' => $field['name'],
+        'handler_type' => $handler_type,
+        'handler_name' => $handler['name'],
+        'arguments' => serialize($handler)
+      );
+      if ($setup_id && $field['name'] && $handler_type && $handler['name'] && $handler) {
+        $status = drupal_write_record('tripal_views_handlers', $handler_record);
+      }
+      else {
+        $status = FALSE;
+      }
+      if (!$status) {
+        drupal_set_message(t('Unable to integrate %handler_type handler: %handler_name', array('%handler_type' => $handler_type, '%handler_name' => $handler['name'])), 'error');
+        $no_errors = FALSE;
+      }
+    }
+
+    // Insert Joins
+    if (!is_array($field['joins'])) {
+      $field['joins'] = array();
+    }
+    foreach ($field['joins'] as $join) {
+      $join_record = array(
+        'setup_id' => $setup_id,
+        'base_table' => $defn_array['table'],
+        'base_field' => $field['name'],
+        'left_table' => $join['table'],
+        'left_field' => $join['field'],
+      );
+
+      if (!empty($join['handler'])) {
+        $join_record['handler'] = $join['handler'];
+      }
+      else {
+        $join_record['handler'] = 'views_join';
+      }
+
+      if ($setup_id && $defn_array['table'] && $field['name'] && $join['table'] && $join['field']) {
+        $status = drupal_write_record('tripal_views_join', $join_record);
+      }
+      else {
+        $status = FALSE;
+      }
+      if (!$status) {
+        drupal_set_message(
+          t(
+            'Unable to join %left_table.%left_field with %table.%field',
+            array(
+              '%left_table' => $join['table'],
+              '%left_field' => $join['field'],
+              '%table' => $defn_array['table'],
+              '%field' => $field['name']
+            )
+          ),
+          'error'
+        );
+        $no_errors = FALSE;
+      }
+    }
+
+  }
+  else {
+    drupal_set_message(t('Unable to integrate %field_name field', array('%field_name' => $field['name'])), 'error');
+    $no_errors = FALSE;
+  }
+
+  return $no_errors;
+}
