@@ -58,6 +58,30 @@ function tripal_views_get_lightest_priority_setup($table_name) {
 }
 
 /**
+ * Retrieve the views integration setup with the given priority/table combination
+ *
+ * @param $table_name
+ *   The name of the table to retrieve the setup ID for. This can be either a materialized
+ *   view or a chado table
+ * @param $priority
+ *   The priority of the integration to retrieve the setup_id for
+ *
+ * @return
+ *   On success, the setup_id to use for integration of this table; otherwise FALSE
+ */
+function tripal_views_get_setup_id($table_name, $priority) {
+
+  $sql = "SELECT setup_id FROM {tripal_views} WHERE table_name='%s' AND priority=%d ORDER BY priority ASC";
+  $setup = db_fetch_object(db_query($sql, $table_name, $priority));
+  if ($setup) {
+    return $setup->setup_id;
+  }
+  else {
+    return FALSE;
+  }
+}
+
+/**
  * Check to see if this table already has an integration record with the given priority
  *
  * @param $table_name
@@ -666,10 +690,74 @@ function tripal_views_add_node_relationship_to_chado_table_integration($defn_arr
 }
 
 /**
+ * Clone an integration
  *
+ * @param $table_name
+ *   The table for which you'd like to clone an integration
+ * @param $new_priority
+ *   The priority of the clone; this is the integration which will be created.
+ *   If no priority is supplied then one lighter then the $template_priority will be used.
+ * @param $template_priority
+ *   The priority of the template to be used for the clone; this is an existing integration.
+ *   If no priority is supplied then the lightest priority will be used.
+ */
+function tripal_views_clone_integration($table_name, $new_priority = NULL, $template_priority = NULL) {
+
+  if (empty($template_priority)) {
+    $template_setup_id = tripal_views_get_lightest_priority_setup($table_name);
+  }
+  else {
+    $template_setup_id = tripal_views_get_setup_id($table_name, $template_priority);
+  }
+
+  $defn_array = tripal_views_integration_export_entry($template_setup_id);
+
+  if (empty($new_priority)) {
+    $defn_array['priority'] = $new_priority;
+  }
+  else {
+    $new_priority = $defn_array['priority'] - 1;
+    $defn_array['priority'] = $defn_array['priority'] - 1;
+  }
+
+  tripal_views_integration_add_entry($defn_array);
+  $setup_id = db_result(db_query("SELECT setup_id FROM tripal_views WHERE table_name='%s' AND priority=%d", $table_name, $new_priority));
+
+  if (empty($setup_id)) {
+    watchdog('tripal_views','Unable to clone the setup for %table in order to add the following field to the integration: %field.',
+      array('%table' => $table_name, '%field' => print_r($field_array,TRUE)),WATCHDOG_ERROR);
+    return FALSE;
+  }
+  else {
+    return $setup_id;
+  }
+
+}
+
+/**
+ * Adds the given field to an existing or cloned integration. In the case of a cloned
+ * integration, the lightest integration is used as the template for the clone.
+ *
+ * NOTE: If that field already exists in the specified integration then it will first be
+ * deleted and the new one added.
+ *
+ * @param $table_name
+ *   The name of the table the integration is for
+ * @param $priority
+ *   The priority of the integration to use; pass NULL to use the lightest integration
+ * @param $field
+ *   An array describing the field ot add; uses the same format as the $defn_array
+ *
+ * @return
+ *   TRUE if the field was added successfully; FALSE otherwise
  */
 function tripal_views_add_field_to_integration($table_name, $priority, $field) {
   $no_errors = TRUE;
+
+  // If no priority is supplied then add the field to the lightest integration
+  if (empty($priority)) {
+    $priority = tripal_views_get_table_lightest_priority($table_name);
+  }
 
   // First get the setup_id
   $setup_id = db_result(db_query("SELECT setup_id FROM tripal_views WHERE table_name='%s' AND priority=%d", $table_name, $priority));
@@ -677,17 +765,7 @@ function tripal_views_add_field_to_integration($table_name, $priority, $field) {
   // If there isn't an integration matching that table/priority combination
   // then clone the lightest priority integration
   if (empty($setup_id)) {
-    $lightest_setup_id = tripal_views_get_lightest_priority_setup($table_name);
-    $defn_array = tripal_views_integration_export_entry($lightest_setup_id);
-    $defn_array['priority'] = $priority;
-    tripal_views_integration_add_entry($defn_array);
-    $setup_id = db_result(db_query("SELECT setup_id FROM tripal_views WHERE table_name='%s' AND priority=%d", $table_name, $priority));
-
-    if (empty($setup_id)) {
-      watchdog('tripal_views','Unable to clone lightest priority setup for %table in order to add the following field to the integration: %field.',
-        array('%table' => $table_name, '%field' => print_r($field_array,TRUE)),WATCHDOG_ERROR);
-      return FALSE;
-    }
+    $setup_id = tripal_views_clone_integration($table_name, $priority);
   }
 
   // Now delete any existing field
@@ -795,4 +873,29 @@ function tripal_views_add_field_to_integration($table_name, $priority, $field) {
   }
 
   return $no_errors;
+}
+
+/**
+ * Remove a join from an integration
+ *
+ * @param $setup_id
+ *   The setup_id of the integration to delete the join from
+ * @param $base_table
+ *   The name of the base table involved the join
+ * @param $base_field
+ *   The field from the base table involved in the join
+ * @param $left_table
+ *   The name of the other table involved in the join
+ * @param $left_field
+ *   The name of the field from the other table involved in the join
+ */
+function tripal_views_remove_join_from_integration($setup_id, $base_table, $base_field, $left_table, $left_field) {
+  db_query(
+    "DELETE FROM {tripal_views_join} WHERE setup_id=%d AND base_table='%s' AND base_field='%s' AND left_table='%s' AND left_field='%s'",
+    $setup_id,
+    $base_table,
+    $base_field,
+    $left_table,
+    $left_field
+  );
 }
