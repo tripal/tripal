@@ -10,6 +10,8 @@
  *
  * This form is meant to be included on the node page to allow users to submit/re-submit
  * loading jobs
+ *
+ * @ingroup tripal_bulk_loader
  */
 function tripal_bulk_loader_add_loader_job_form($form_state, $node) {
   $form = array();
@@ -58,6 +60,8 @@ function tripal_bulk_loader_add_loader_job_form($form_state, $node) {
 
 /**
  * Add Loader Job Form (Submit)
+ *
+ * @ingroup tripal_bulk_loader
  */
 function tripal_bulk_loader_add_loader_job_form_submit($form, $form_state) {
   global $user;
@@ -121,6 +125,8 @@ function tripal_bulk_loader_add_loader_job_form_submit($form, $form_state) {
  *
  * Note: Instead of returning a value this function updates the tripal_bulk_loader.status.
  *   Errors are thrown through watchdog and can be viewed at admin/reports/dblog.
+ *
+ * @ingroup tripal_bulk_loader
  */
 function tripal_bulk_loader_load_data($nid, $job_id) {
 
@@ -457,17 +463,13 @@ function tripal_bulk_loader_load_data($nid, $job_id) {
 }
 
 /**
+ * Process the data array for a given line
  *
+ * @param $addt
+ *   Requires: field2column', 'record2priority', 'line', 'line_num',
+ *   'group_index', 'node', 'nid'
  *
-         $options = array(
-          'field2column' => $field2column,
-          'record2priority' => $record2priority,
-          'line' => $line,
-          'line_num' => $num_lines,
-          'group_index' => $group_index,
-          'node' => $node,
-          'nid' => $node->nid,
-        );
+ * @ingroup tripal_bulk_loader
  */
 function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
 //$time_start = microtime(true);
@@ -828,6 +830,8 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
  *   An array mapping values fields to line columns
  * @return
  *   Supplemented values array
+ *
+ * @ingroup tripal_bulk_loader
  */
 function tripal_bulk_loader_add_spreadsheetdata_to_values($values, $line, $field2column) {
   foreach ($values as $field => $value) {
@@ -858,9 +862,9 @@ function tripal_bulk_loader_add_spreadsheetdata_to_values($values, $line, $field
  * the name of the record whose values array should be substituted here. Thus the foreign
  * record is looked up and the values array is substituted in.
  *
+ * @ingroup tripal_bulk_loader
  */
-function tripal_bulk_loader_add_foreignkey_to_values($table_array, $values, $data, $record2priority, $nid,
-  $priority, $default_data) {
+function tripal_bulk_loader_add_foreignkey_to_values($table_array, $values, $data, $record2priority, $nid, $priority, $default_data) {
 
   // iterate through each field in the $values arrray and
   // substitute any values for FK / referring fields
@@ -953,6 +957,8 @@ function tripal_bulk_loader_add_foreignkey_to_values($table_array, $values, $dat
  *   The select/insert values array for the given table
  * @param $table_data
  *   The data array for the given table
+ *
+ * @ingroup tripal_bulk_loader
  */
 function tripal_bulk_loader_regex_tranform_values($values, $table_data, $line) {
 
@@ -1000,6 +1006,8 @@ function tripal_bulk_loader_regex_tranform_values($values, $table_data, $line) {
 /**
  * Flattens an array up to two levels
  * Used for printing of arrays without taking up much space
+ *
+ * @ingroup tripal_bulk_loader
  */
 function tripal_bulk_loader_flatten_array($values) {
   $flattened_values = array();
@@ -1028,6 +1036,8 @@ function tripal_bulk_loader_flatten_array($values) {
 
 /**
  * Used to display loader progress to the user
+ *
+ * @ingroup tripal_bulk_loader
  */
 function tripal_bulk_loader_progress_bar($current=0, $total=100, $size=50) {
   $new_bar = FALSE;
@@ -1102,6 +1112,8 @@ function tripal_bulk_loader_progress_bar($current=0, $total=100, $size=50) {
  *   A boolean indicating whether the current line is finished
  * @param $close
  *   A boolean indicating that the file should be closed
+ *
+ * @ingroup tripal_bulk_loader
  */
 function tripal_bulk_loader_progress_file_track_job($job_id, $record_added, $line_complete = FALSE, $close = FALSE) {
   // retrieve the file handle

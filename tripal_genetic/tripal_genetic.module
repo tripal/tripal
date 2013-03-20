@@ -7,6 +7,9 @@
  *
  * For documentation regarding the Chado X module:
  * @see http://gmod.org/wiki/Chado_General_Module
+ *
+ * @defgroup tripal_genetic Genetic Module
+ * @ingroup tripal_modules
  */
 
 require('api/tripal_genetic.api.inc');
@@ -18,6 +21,8 @@ require('includes/tripal_genetic.schema.inc');
  * Purpose: Essentially this hook tells drupal that there is views support for
  *  for this module which then includes tripal_genetic.views.inc where all the
  *  views integration code is
+ *
+ * @ingroup tripal_genetic
  */
 function tripal_genetic_views_api() {
   return array(
@@ -25,8 +30,10 @@ function tripal_genetic_views_api() {
   );
 }
 
-/*
- * 
+/**
+ * Implements hook_theme().
+ *
+ * @ingroup tripal_genetic
  */
 function tripal_genetic_theme() {
   return array(
@@ -38,14 +45,16 @@ function tripal_genetic_theme() {
 }
 
 /**
+ * Implements hook_nodeapi().
  *
+ * @ingroup tripal_genetic
  */
 function tripal_genetic_nodeapi(&$node, $op, $teaser, $page) {
   switch ($op) {
     case 'view':
       if ($node->type == 'chado_feature') {
         // the tripal_natural_diversity module provides a tripal_feature_nd_genotype
-        // template.  The only difference between them is the addition of 
+        // template.  The only difference between them is the addition of
         // project information by this ND module's template.  Therefore,
         // if the tripal_natural_diversity content is present then don't add the
         // template from this module as the ND module would superceed this.

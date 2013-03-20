@@ -14,6 +14,8 @@
 
 /**
  * The main form reached at admin/tripal/tripal_bulk_loader/create and /edit
+ *
+ * @ingroup tripal_bulk_loader
  */
 function tripal_bulk_loader_modify_template_base_form($form_state = NULL, $mode) {
   $form = array();
@@ -347,6 +349,8 @@ function tripal_bulk_loader_modify_template_base_form($form_state = NULL, $mode)
 
 /**
  * Submit for tripal_bulk_loader_modify_template_base_form
+ *
+ * @ingroup tripal_bulk_loader
  */
 function tripal_bulk_loader_modify_template_base_form_submit($form, &$form_state) {
 
@@ -498,6 +502,8 @@ function tripal_bulk_loader_modify_template_base_form_submit($form, &$form_state
 /**
  * Delete Template Form
  * This form allows admin to delete already existing templates
+ *
+ * @ingroup tripal_bulk_loader
  */
 function tripal_bulk_loader_delete_template_base_form() {
   $form = array();
@@ -533,6 +539,8 @@ function tripal_bulk_loader_delete_template_base_form() {
  *   The form that was submitted
  * @param $form_state
  *   The values and storage that were submitted
+ *
+ * @ingroup tripal_bulk_loader
  */
 function tripal_bulk_loader_delete_template_base_form_submit($form, &$form_state) {
   $sql = "DELETE FROM {tripal_bulk_loader_template} WHERE template_id=%d";
@@ -559,6 +567,8 @@ function tripal_bulk_loader_delete_template_base_form_submit($form, &$form_state
  *   Either 'import' or 'export' to indicate which function is being performed
  * @return
  *   A form array to be rendered by drupal_get_form
+ *
+ * @ingroup tripal_bulk_loader
  */
 function tripal_bulk_loader_import_export_template_form($form_state = NULL, $mode) {
   $form = array();
@@ -621,6 +631,8 @@ function tripal_bulk_loader_import_export_template_form($form_state = NULL, $mod
  *   The form that was submitted
  * @param $form_state
  *   The values and storage that were submitted
+ *
+ * @ingroup tripal_bulk_loader
  */
 function tripal_bulk_loader_import_export_template_form_submit($form, &$form_state) {
   switch ($form_state['values']['mode']) {
@@ -669,6 +681,8 @@ function tripal_bulk_loader_import_export_template_form_submit($form, &$form_sta
  *   Contains the values and storage for the form
  * @return
  *   A form array to be rendered by drupal_get_form
+ *
+ * @ingroup tripal_bulk_loader
  */
 function tripal_bulk_loader_edit_template_record_form(&$form_state = NULL) {
   $form['#cache'] = TRUE; // Make sure the form is cached.
@@ -883,6 +897,11 @@ function tripal_bulk_loader_edit_template_record_form(&$form_state = NULL) {
   return $form;
 }
 
+/**
+ * Implements hook_form_validate()
+ *
+ * @ingroup tripal_bulk_loader
+ */
 function tripal_bulk_loader_edit_template_record_form_validate($form, $form_state) {
 
   // Don't worry about validation when Cancel button is clicked
@@ -907,6 +926,8 @@ function tripal_bulk_loader_edit_template_record_form_validate($form, $form_stat
  *   The form that was submitted
  * @param $form_state
  *   Contains the values and storage for the form
+ *
+ * @ingroup tripal_bulk_loader
  */
 function tripal_bulk_loader_edit_template_record_form_submit($form, &$form_state) {
   //dpm($form_state, 'form state -start submit');
@@ -1000,6 +1021,8 @@ function tripal_bulk_loader_edit_template_record_form_submit($form, &$form_state
  *   Contains the values and storage for the form
  * @return
  *   A form array to be rendered by drupal_get_form
+ *
+ * @ingroup tripal_bulk_loader
  */
 function tripal_bulk_loader_add_template_field_form(&$form_state = NULL) {
   $form = array();
@@ -1553,6 +1576,11 @@ function tripal_bulk_loader_add_template_field_form(&$form_state = NULL) {
   return $form;
 }
 
+/**
+ * Implements hook_form_validate().
+ *
+ * @ingroup tripal_bulk_loader
+ */
 function tripal_bulk_loader_add_template_field_form_validate($form, $form_state) {
 
   // Don't worry about validation when Cancel button is clicked
@@ -1577,6 +1605,8 @@ function tripal_bulk_loader_add_template_field_form_validate($form, $form_state)
  *   The form that was submitted
  * @param $form_state
  *   The values and storage for the form
+ *
+ * @ingroup tripal_bulk_loader
  */
 function tripal_bulk_loader_add_template_field_form_submit($form, &$form_state) {
 
@@ -1731,6 +1761,8 @@ function tripal_bulk_loader_add_template_field_form_submit($form, &$form_state) 
  *   Contains the values and storage for the form
  * @return
  *   A form array to be rendered by drupal_get_form
+ *
+ * @ingroup tripal_bulk_loader
  */
 function tripal_bulk_loader_edit_template_field_form(&$form_state = NULL) {
   $form = array();
@@ -2295,6 +2327,11 @@ function tripal_bulk_loader_edit_template_field_form(&$form_state = NULL) {
   return $form;
 }
 
+/**
+ * Implements hook_form_validate().
+ *
+ * @ingroup tripal_bulk_loader
+ */
 function tripal_bulk_loader_edit_template_field_form_validate($form, $form_state) {
 
   // Don't worry about validation when Cancel button is clicked
@@ -2319,6 +2356,8 @@ function tripal_bulk_loader_edit_template_field_form_validate($form, $form_state
  *   The form that was submitted
  * @param $form_state
  *   The values and storage for the form
+ *
+ * @ingroup tripal_bulk_loader
  */
 function tripal_bulk_loader_edit_template_field_form_submit($form, &$form_state) {
 
@@ -2534,6 +2573,8 @@ function tripal_bulk_loader_edit_template_field_form_submit($form, &$form_state)
  *
  * @return
  *  JSON Data printed to the screen
+ *
+ * @ingroup tripal_bulk_loader
  */
 function tripal_bulk_loader_add_field_ahah() {
 
@@ -2569,6 +2610,8 @@ function tripal_bulk_loader_add_field_ahah() {
  *
  * @return
  *  JSON Data printed to the screen
+ *
+ * @ingroup tripal_bulk_loader
  */
 function tripal_bulk_loader_edit_field_ahah() {
 

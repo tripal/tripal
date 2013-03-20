@@ -3,8 +3,8 @@
  * @file
  * The functions for the Tripal bulk loader.
  *
- * 
- * 
+ * @defgroup tripal_bulk_loader Tripal Bulk Loader Module
+ * @ingroup tripal_modules
  */
 include('tripal_bulk_loader.loader.inc');
 include('tripal_bulk_loader.constants.inc');
@@ -17,6 +17,8 @@ include('api/tripal_bulk_loader.api.templates.inc');
 /**
  * Implements hook_init
  * Used to add stylesheets and javascript files to the header
+ *
+ * @ingroup tripal_bulk_loader
  */
 function tripal_bulk_loader_init() {
   // Add javascript and style sheet
@@ -26,6 +28,8 @@ function tripal_bulk_loader_init() {
 
 /**
  * Implements hook_menu
+ *
+ * @ingroup tripal_bulk_loader
  */
 function tripal_bulk_loader_menu() {
   $items = array();
@@ -163,6 +167,8 @@ function tripal_bulk_loader_menu() {
 
 /**
  * Implements hook_theme
+ *
+ * @ingroup tripal_bulk_loader
  */
 function tripal_bulk_loader_theme() {
   return array(
@@ -190,6 +196,8 @@ function tripal_bulk_loader_theme() {
 
 /**
  *  Implements hook_access
+ *
+ * @ingroup tripal_bulk_loader
  */
 function tripal_bulk_loader_access($op, $node, $account) {
   if ($op == 'create') {
@@ -217,6 +225,8 @@ function tripal_bulk_loader_access($op, $node, $account) {
 
 /**
  * Implements hook_perm
+ *
+ * @ingroup tripal_bulk_loader
  */
 function tripal_bulk_loader_perm() {
   return array(
@@ -233,6 +243,8 @@ function tripal_bulk_loader_perm() {
 
 /**
  * Implements hook_node_info
+ *
+ * @ingroup tripal_bulk_loader
  */
 function tripal_bulk_loader_node_info() {
   $nodes = array();
@@ -250,6 +262,8 @@ function tripal_bulk_loader_node_info() {
 /**
  * Implements node_form
  * Used to gather the extra details stored with a Bulk Loading Job Node
+ *
+ * @ingroup tripal_bulk_loader
  */
 function tripal_bulk_loader_form($node, $form_state) {
   $form = array();
@@ -333,6 +347,8 @@ function tripal_bulk_loader_form($node, $form_state) {
 
 /**
  * Implements node_load
+ *
+ * @ingroup tripal_bulk_loader
  */
 function tripal_bulk_loader_load($node) {
   $sql = "SELECT * FROM {tripal_bulk_loader} WHERE nid = %d";
@@ -405,6 +421,8 @@ function tripal_bulk_loader_load($node) {
 /**
  * Implements node_insert
  * Insert the data from the node form on Create content
+ *
+ * @ingroup tripal_bulk_loader
  */
 function tripal_bulk_loader_insert($node) {
 
@@ -424,6 +442,8 @@ function tripal_bulk_loader_insert($node) {
 /**
  * Implements node_delete
  * Deletes the data when the delete button on the node form is clicked
+ *
+ * @ingroup tripal_bulk_loader
  */
 function tripal_bulk_loader_delete($node) {
   $sql = "DELETE FROM {tripal_bulk_loader} WHERE nid = %d";
@@ -433,6 +453,8 @@ function tripal_bulk_loader_delete($node) {
 /**
  * Implements node_update
  * Updates the data submitted by the node form on edit
+ *
+ * @ingroup tripal_bulk_loader
  */
 function tripal_bulk_loader_update($node) {
 
@@ -461,6 +483,8 @@ function tripal_bulk_loader_update($node) {
 
 /**
  * Preprocessor function for the tripal_bulk_loader template
+ *
+ * @ingroup tripal_bulk_loader
  */
 function tripal_bulk_loader_preprocess_tripal_bulk_loader_template(&$variables) {
 
@@ -489,6 +513,8 @@ function tripal_bulk_loader_preprocess_tripal_bulk_loader_template(&$variables) 
  *     total_lines = the total number of lines in the input file
  *     percent_file = the percent the input file has been loaded
  *     num_records = the number of records successfully inserted
+ *
+ * @ingroup tripal_bulk_loader
  */
 function tripal_bulk_loader_progess_file_get_progress($job_id, $update_progress = TRUE) {
   $filename = '/tmp/tripal_bulk_loader_progress-' . $job_id . '.out';
@@ -556,6 +582,8 @@ function tripal_bulk_loader_progess_file_get_progress($job_id, $update_progress 
  * @return
  *   An array where keys are the human readable headers describing each arguement
  *   and the value is the aguement passed in after formatting
+ *
+ * @ingroup tripal_bulk_loader
  */
 function tripal_bulk_loader_job_describe_args($callback, $args) {
 
@@ -572,6 +600,8 @@ function tripal_bulk_loader_job_describe_args($callback, $args) {
 /**
  * Implements hook_coder_ignore().
  * Defines the path to the file (tripal_bulk_loader.coder_ignores.txt) where ignore rules for coder are stored
+ *
+ * @ingroup tripal_bulk_loader
  */
 function tripal_bulk_loader_coder_ignore() {
   return array(

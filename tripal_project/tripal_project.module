@@ -10,6 +10,9 @@ require('api/tripal_project.api.inc');
  *
  * For documentation regarding the Chado General module:
  * @see http://gmod.org/wiki/Chado_General_Module
+ *
+ * @defgroup tripal_project Project Module
+ * @ingroup tripal_modules
  */
 
 /**
@@ -18,6 +21,8 @@ require('api/tripal_project.api.inc');
  * Purpose: Essentially this hook tells drupal that there is views support for
  *  for this module which then includes tripal_project.views.inc where all the
  *  views integration code is
+ *
+ * @ingroup tripal_project
  *
  */
 function tripal_project_views_api() {
@@ -28,12 +33,14 @@ function tripal_project_views_api() {
 
 /**
  * Implements hook_menu
+ *
+ * @ingroup tripal_project
  */
 function tripal_project_menu() {
   $items[ 'admin/tripal/tripal_project' ]= array(
     'title' => 'Projects',
     'page callback' => 'theme',
-    'page arguments' => array('tripal_project_admin'),   
+    'page arguments' => array('tripal_project_admin'),
     'access arguments' => array('adminster tripal projects'),
     'type' => MENU_NORMAL_ITEM
   );
@@ -55,6 +62,8 @@ function tripal_project_menu() {
  *  This function sets the permission for the user to access the information in the database.
  *  This includes creating, inserting, deleting and updating of information in the database
  *
+ *
+ * @ingroup tripal_project
  */
 function tripal_project_perm() {
   return array(
@@ -83,6 +92,8 @@ function tripal_project_perm() {
  *  @return
  *    True if a operation was performed
  *
+ *
+ * @ingroup tripal_project
  */
 function chado_project_access($op, $node, $account) {
 
@@ -120,6 +131,8 @@ function chado_project_access($op, $node, $account) {
  * that the title(Project Name) and body(Description) set to true so that they information can be
  * entered
  *
+ *
+ * @ingroup tripal_project
  */
 function tripal_project_node_info() {
   return array(
@@ -146,7 +159,7 @@ function tripal_project_theme() {
     'tripal_project_base' => array(
       'arguments' => array('node' => NULL),
       'template' => 'tripal_project_base',
-    ), 
+    ),
     'tripal_project_contact' => array(
        'arguments' => array('node' => NULL),
        'template' => 'tripal_project_contact',
@@ -164,9 +177,9 @@ function tripal_project_theme() {
        'template' => 'tripal_project_properties',
     ),
     'tripal_project_admin' => array(
-      'template' => 'tripal_project_admin',  
-      'arguments' =>  array(NULL),  
-      'path' => drupal_get_path('module', 'tripal_project') . '/theme' 
+      'template' => 'tripal_project_admin',
+      'arguments' =>  array(NULL),
+      'path' => drupal_get_path('module', 'tripal_project') . '/theme'
     ),
   );
 }
@@ -185,6 +198,8 @@ function tripal_project_theme() {
  *  @return $form
  *    An array as described by the Drupal Form API
  *
+ *
+ * @ingroup tripal_project
  */
 function chado_project_form(&$node, $form_state) {
   $form = array();
@@ -199,7 +214,7 @@ function chado_project_form(&$node, $form_state) {
   // the projectprop table and leave the project.description field blank.
   // however, for backwards compatibitily, we check to see if the description
   // is in the $node->body field. If it is we'll use that.  When the node is
-  // edited the text will be moved out of the body and into the projectprop 
+  // edited the text will be moved out of the body and into the projectprop
   // table where it should belong.
   if ($node->body) {
     $project_description = $node->body;
@@ -227,7 +242,7 @@ function chado_project_form(&$node, $form_state) {
     '#default_value' => $node->title,
     '#weight'        => 1
   );
- 
+
   $form['project_description']= array(
     '#type'          => 'textarea',
     '#title'         => t('Project Description'),
@@ -238,7 +253,7 @@ function chado_project_form(&$node, $form_state) {
   );
 
   return $form;
- 
+
 }
 /**
  *  validates submission of form when adding or updating a project node
@@ -267,13 +282,15 @@ function chado_project_validate($node) {
  *  @parm $node
  *    Then node that has the information stored within, accessed given the nid
  *
+ *
+ * @ingroup tripal_project
  */
 function chado_project_insert($node) {
 
   if ($node->project_id) {
     $project['project_id'] = $node->project_id;
   }
-  else {    
+  else {
     $values = array(
       'name' => $node->title,
       'description' => '',
@@ -283,7 +300,7 @@ function chado_project_insert($node) {
 
   if ($project) {
      // add the description property
-    tripal_project_insert_property($project['project_id'], 'project_description', 
+    tripal_project_insert_property($project['project_id'], 'project_description',
       $node->project_description);
 
     // make sure the entry for this feature doesn't already exist in the chado_project table
@@ -311,17 +328,19 @@ function chado_project_insert($node) {
  * The node which is to be deleted, only chado project and chado_project need to be dealt with
  * since the drupal node is deleted automagically
  *
+ *
+ * @ingroup tripal_project
  */
 function chado_project_delete($node) {
 
   $project_id = chado_get_id_for_node('project', $node);
-  
+
   // if we don't have a project id for this node then this isn't a node of
   // type chado_project or the entry in the chado_project table was lost.
   if (!$project_id) {
     return;
   }
-  
+
   // Remove data from {chado_project}, {node} and {node_revisions} tables of
   // drupal database
   $sql_del = "DELETE FROM {chado_project} ".
@@ -340,7 +359,7 @@ function chado_project_delete($node) {
 
   // Remove data from project and projectprop tables of chado database as well
   chado_query("DELETE FROM {projectprop} WHERE project_id = %d", $project_id);
-  chado_query("DELETE FROM {project} WHERE project_id = %d", $project_id);  
+  chado_query("DELETE FROM {project} WHERE project_id = %d", $project_id);
 }
 
 /**
@@ -350,6 +369,8 @@ function chado_project_delete($node) {
  *  The node which is to have its containing information updated when the user modifies information
  *  pertaining to the specific project
  *
+ *
+ * @ingroup tripal_project
  */
 function chado_project_update($node) {
  if ($node->revision) {
@@ -368,7 +389,7 @@ function chado_project_update($node) {
   );
   $status = tripal_core_chado_update('project', $match, $values);
   tripal_project_update_property($project_id, 'project_description', $node->project_description, 1);
-  
+
 
 }
 
@@ -381,6 +402,8 @@ function chado_project_update($node) {
  * @return $node
  *   The node, containing the loaded project with the current nid
  *
+ *
+ * @ingroup tripal_project
  */
 function chado_project_load($node) {
 
@@ -413,13 +436,13 @@ function tripal_project_block($op = 'list', $delta = '0', $edit = array()) {
 
     $blocks['projectprops']['info'] = t('Tripal Project Properties');
     $blocks['projectprops']['cache'] = BLOCK_NO_CACHE;
-    
+
     $blocks['projectpubs']['info'] = t('Tripal Project Publications');
     $blocks['projectpubs']['cache'] = BLOCK_NO_CACHE;
-    
+
     $blocks['projectcont']['info'] = t('Tripal Project Contact');
     $blocks['projectcont']['cache'] = BLOCK_NO_CACHE;
-    
+
     $blocks['projectrels']['info'] = t('Tripal Project Relationships');
     $blocks['projectrels']['cache'] = BLOCK_NO_CACHE;
 
@@ -466,7 +489,7 @@ function tripal_project_block($op = 'list', $delta = '0', $edit = array()) {
 function tripal_project_preprocess_tripal_project_relationships(&$variables) {
   // we want to provide a new variable that contains the matched projects.
   $project = $variables['node']->project;
-   
+
   // normally we would use tripal_core_expand_chado_vars to expand our
   // organism object and add in the relationships, however whan a large
   // number of relationships are present this significantly slows the
@@ -477,7 +500,7 @@ function tripal_project_preprocess_tripal_project_relationships(&$variables) {
       INNER JOIN project P       ON PR.object_project_id = P.project_id
       INNER JOIN cvterm CVT      ON PR.type_id           = CVT.cvterm_id
       LEFT JOIN chado_project CP ON P.project_id         = CP.project_id
-    WHERE PR.subject_project_id = %d      
+    WHERE PR.subject_project_id = %d
   ";
   $as_subject = chado_query($sql, $project->project_id);
   $sql = "
@@ -486,48 +509,48 @@ function tripal_project_preprocess_tripal_project_relationships(&$variables) {
       INNER JOIN project P       ON PR.subject_project_id = P.project_id
       INNER JOIN cvterm CVT      ON PR.type_id            = CVT.cvterm_id
       LEFT JOIN chado_project CP ON P.project_id          = CP.project_id
-    WHERE PR.object_project_id = %d      
+    WHERE PR.object_project_id = %d
   ";
-  $as_object = chado_query($sql, $project->project_id);   
-  
+  $as_object = chado_query($sql, $project->project_id);
+
   // combine both object and subject relationshisp into a single array
   $relationships = array();
   $relationships['object'] = array();
   $relationships['subject'] = array();
-  
+
   // iterate through the object relationships
   while ($relationship = db_fetch_object($as_object)) {
-     
+
      // get the relationship and child types
      $rel_type = t(preg_replace('/_/', " ", $relationship->rel_type));
      $sub_type = t(preg_replace('/_/', " ", $relationship->sub_type));
-     
+
      if (!array_key_exists($rel_type, $relationships['object'])) {
-       $relationships['object'][$rel_type] = array();   
+       $relationships['object'][$rel_type] = array();
      }
      if (!array_key_exists($sub_type, $relationships['object'][$rel_type])) {
-       $relationships['object'][$rel_type][$sub_type] = array();   
+       $relationships['object'][$rel_type][$sub_type] = array();
      }
-     $relationships['object'][$rel_type][$sub_type][] = $relationship;     
+     $relationships['object'][$rel_type][$sub_type][] = $relationship;
   }
-  
+
   // now add in the subject relationships
   while ($relationship = db_fetch_object($as_subject)) {
-     
+
      // get the relationship and child types
      $rel_type = t(preg_replace('/_/', " ", $relationship->rel_type));
      $obj_type = t(preg_replace('/_/', " ", $relationship->obj_type));
-     
+
      if (!array_key_exists($rel_type, $relationships['subject'])) {
-       $relationships['subject'][$rel_type] = array();   
+       $relationships['subject'][$rel_type] = array();
      }
      if (!array_key_exists($obj_type, $relationships['subject'][$rel_type])) {
-       $relationships['subject'][$rel_type][$obj_type] = array();   
+       $relationships['subject'][$rel_type][$obj_type] = array();
      }
-     $relationships['subject'][$rel_type][$obj_type][] = $relationship;     
+     $relationships['subject'][$rel_type][$obj_type][] = $relationship;
   }
-  
-  
+
+
   $project->all_relationships = $relationships;
 
 }

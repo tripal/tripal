@@ -5,7 +5,7 @@ require_once "includes/tripal_organism.admin.inc";
 
 /**
  * @file
- * @defgroup tripal_organism Organism
+ * @defgroup tripal_organism Organism Module
  * @ingroup tripal_modules
  */
 
@@ -145,9 +145,9 @@ function tripal_organism_theme() {
        'template' => 'tripal_organism_teaser',
     ),
     'tripal_organism_admin' => array(
-      'template' => 'tripal_organism_admin',  
-      'arguments' =>  array(NULL),  
-      'path' => drupal_get_path('module', 'tripal_organism') . '/theme' 
+      'template' => 'tripal_organism_admin',
+      'arguments' =>  array(NULL),
+      'path' => drupal_get_path('module', 'tripal_organism') . '/theme'
     ),
   );
 }
@@ -357,7 +357,7 @@ function chado_organism_update($node) {
  */
 function chado_organism_delete($node) {
   $organism_id = chado_get_id_for_node('organism', $node);
-  
+
   // if we don't have an organism id for this node then this isn't a node of
   // type chado_organism or the entry in the chado_organism table was lost.
   if (!$organism_id) {

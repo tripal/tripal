@@ -7,6 +7,8 @@
 
 /**
  * Provides a description page and quick links for the bulk loader
+ *
+ * @ingroup tripal_bulk_loader
  */
 function tripal_bulk_loader_admin_template() {
   $output = '';
@@ -75,6 +77,8 @@ function tripal_bulk_loader_admin_template() {
 
 /**
  * Provides a description page and quick links for template management
+ *
+ * @ingroup tripal_bulk_loader
  */
 function tripal_bulk_loader_admin_manage_templates() {
   $output = '';
@@ -116,6 +120,8 @@ function tripal_bulk_loader_admin_manage_templates() {
 
 /**
  * Provides a listing of bulk loader jobs and links for administration
+ *
+ * @ingroup tripal_bulk_loader
  */
 function tripal_bulk_loader_admin_jobs() {
   $output = '';
@@ -163,6 +169,8 @@ function tripal_bulk_loader_admin_jobs() {
 
 /**
  * A Configuration form for this module
+ *
+ * @ingroup tripal_bulk_loader
  */
 function tripal_bulk_loader_configuration_form($form_state = NULL) {
   $form = array();
@@ -254,6 +262,8 @@ function tripal_bulk_loader_configuration_form($form_state = NULL) {
 
 /**
  * A Configuration form for this module (Submit)
+ *
+ * @ingroup tripal_bulk_loader
  */
 function tripal_bulk_loader_configuration_form_submit($form, $form_state) {
 

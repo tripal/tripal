@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @defgroup tripal_library Library
+ * @defgroup tripal_library Library Module
  * @ingroup tripal_modules
  * @{
  * Provides functions for managing chado libraries including creating details pages for each library
@@ -240,9 +240,9 @@ function tripal_library_theme() {
        'template' => 'tripal_library_terms',
     ),
     'tripal_library_admin' => array(
-      'template' => 'tripal_library_admin',  
-      'arguments' =>  array(NULL),  
-      'path' => drupal_get_path('module', 'tripal_library') . '/theme', 
+      'template' => 'tripal_library_admin',
+      'arguments' =>  array(NULL),
+      'path' => drupal_get_path('module', 'tripal_library') . '/theme',
     ),
   );
 }
@@ -451,7 +451,7 @@ function chado_library_form($node) {
     '#default_value' => $uniquename,
     '#weight'        => 2
   );
-    
+
   // get the list of library types
   $values = array(
     'cv_id' => array(
@@ -549,7 +549,7 @@ function chado_library_insert($node) {
   if ($node->library_id) {
     $library['library_id'] = $node->library_id;
   }
-  else {    
+  else {
     $values = array(
       'name' => $node->title,
       'uniquename' => $node->uniquename,
@@ -561,7 +561,7 @@ function chado_library_insert($node) {
 
   if ($library) {
      // add the description property
-    tripal_library_insert_property($library['library_id'], 'library_description', 
+    tripal_library_insert_property($library['library_id'], 'library_description',
       $node->library_description);
 
     // make sure the entry for this feature doesn't already exist in the chado_library table
@@ -593,7 +593,7 @@ function chado_library_update($node) {
     // there is no way to handle revisions in Chado but leave
     // this here just to make not we've addressed it.
   }
-  
+
   $library_id = chado_get_id_for_node('library', $node) ;
   // update the library record
   $match = array(
@@ -661,13 +661,13 @@ function chado_library_view($node, $teaser = FALSE, $page = FALSE) {
 function chado_library_delete(&$node) {
 
   $library_id = chado_get_id_for_node('library', $node);
-  
+
   // if we don't have a library id for this node then this isn't a node of
   // type chado_library or the entry in the chado_library table was lost.
   if (!$library_id) {
     return;
   }
-  
+
   // Remove data from {chado_library}, {node} and {node_revisions} tables of
   // drupal database
   $sql_del = "DELETE FROM {chado_library} ".
@@ -681,11 +681,11 @@ function chado_library_delete(&$node) {
   $sql_del = "DELETE FROM {node} ".
             "WHERE nid = %d ".
             "AND vid = %d";
-  db_query($sql_del, $node->nid, $node->vid);  
+  db_query($sql_del, $node->nid, $node->vid);
 
   // Remove data from library and libraryprop tables of chado database as well
   chado_query("DELETE FROM {libraryprop} WHERE library_id = %d", $library_id);
-  chado_query("DELETE FROM {library} WHERE library_id = %d", $library_id);  
+  chado_query("DELETE FROM {library} WHERE library_id = %d", $library_id);
 }
 
 /**
@@ -705,7 +705,7 @@ function tripal_library_block($op = 'list', $delta = '0', $edit = array()) {
 
     $blocks['libbase']['info'] = t('Tripal Library Details');
     $blocks['libbase']['cache'] = BLOCK_NO_CACHE;
-    
+
     $blocks['libterms']['info'] = t('Tripal Library Terms');
     $blocks['libterms']['cache'] = BLOCK_NO_CACHE;
 

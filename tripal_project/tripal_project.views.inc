@@ -24,6 +24,8 @@
  *   definitions keyed by chado/tripal table name. Each table definition
  *   includes basic details about the table, fields in that table and
  *   relationships between that table and others (joins)
+ *
+ * @ingroup tripal_project_views
  */
 function tripal_project_views_data()  {
   $data = array();
@@ -74,6 +76,8 @@ function tripal_project_views_data()  {
  *   "how a field should be filtered", "how a field should be sorted"
  *
  * @return: An array of handler definitions
+ *
+ * @ingroup tripal_project_views
  */
 function tripal_project_views_handlers() {
   return array(
@@ -88,7 +92,8 @@ function tripal_project_views_handlers() {
 
 /**
  *
- * @ingroup tripal_feature_views
+ *
+ * @ingroup tripal_project_views
  */
 function tripal_project_views_default_views() {
   $views = array();

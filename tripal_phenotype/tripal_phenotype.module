@@ -7,6 +7,9 @@
  *
  * For documentation regarding the Chado X module:
  * @see http://gmod.org/wiki/Chado_General_Module
+ *
+ * @defgroup tripal_phenotype Phenotype Module
+ * @ingroup tripal_modules
  */
 
 /*************************************************************************
@@ -14,6 +17,8 @@
  * Purpose: Essentially this hook tells drupal that there is views support for
  *  for this module which then includes tripal_phenotype.views.inc where all the
  *  views integration code is
+ *
+ * @ingroup tripal_phenotype
  */
 function tripal_phenotype_views_api() {
   return array(

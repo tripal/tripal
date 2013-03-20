@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @defgroup tripal_featuremap Map
+ * @defgroup tripal_featuremap Feature Map Module
  * @ingroup tripal_modules
  * @{
  * Provides functions for managing chado maps including creating details pages for each map
@@ -106,7 +106,7 @@ function chado_featuremap_access($op, $node, $account) {
  */
 function tripal_featuremap_menu() {
   $items = array();
-  
+
   // The administative settings menu
   $items['admin/tripal/tripal_featuremap'] = array(
     'title' => 'Maps',
@@ -133,7 +133,7 @@ function tripal_featuremap_menu() {
     'access arguments' => array('administer tripal featuremap'),
     'type' => MENU_CALLBACK
   );
-  
+
   return $items;
 }
 
@@ -176,7 +176,7 @@ function tripal_featuremap_nodeapi(&$node, $op, $teaser, $page) {
         $node->content['tripal_featuremap_index_version'] = array(
           '#value' => theme('tripal_featuremap_search_result', $node),
         );
-      }      
+      }
   }
 }
 
@@ -208,9 +208,9 @@ function tripal_featuremap_theme() {
       'template' => 'tripal_featuremap_publication',
     ),
     'tripal_featuremap_admin' => array(
-      'template' => 'tripal_featuremap_admin',  
-      'arguments' =>  array(NULL),  
-      'path' => drupal_get_path('module', 'tripal_featuremap') . '/theme' 
+      'template' => 'tripal_featuremap_admin',
+      'arguments' =>  array(NULL),
+      'path' => drupal_get_path('module', 'tripal_featuremap') . '/theme'
     ),
   );
 }
@@ -276,7 +276,7 @@ function tripal_featuremap_map_access($op, $node, $account) {
  * @ingroup tripal_featuremap
  */
 function chado_featuremap_form($node) {
-  $type = node_get_types('type', $node);  
+  $type = node_get_types('type', $node);
   $form = array();
 
   $featuremap = $node->featuremap;
@@ -303,7 +303,7 @@ function chado_featuremap_form($node) {
     '#required'      => TRUE,
     '#default_value' => $featuremap->description,
   );
-  
+
   // get the list of unit types
   $values = array(
     'cv_id' => array(
@@ -339,7 +339,7 @@ function chado_featuremap_validate($node) {
   $map = 0;
   // check to make sure the unique name on the map is unique
   // before we try to insert into chado. If this is an update then we will
-  // have a featuremap_id, therefore we want to look for another map with this 
+  // have a featuremap_id, therefore we want to look for another map with this
   // name but with a different featuremap_id. If this is an insert, just look
   // for a case where the name already exists.
   if ($node->featuremap_id) {
@@ -421,7 +421,7 @@ function chado_featuremap_update($node) {
     'name' => $node->title,
     'unittype_id' => $node->unittype_id
   );
-  $status = tripal_core_chado_update('featuremap', $match, $values);  
+  $status = tripal_core_chado_update('featuremap', $match, $values);
 }
 /**
  *  When a node is requested by the user this function is called to allow us
@@ -451,7 +451,7 @@ function chado_featuremap_view($node, $teaser = FALSE, $page = FALSE) {
    // use drupal's default node view:
   if (!$teaser) {
 
-    $node = node_prepare($node, $teaser);    
+    $node = node_prepare($node, $teaser);
   }
   return $node;
 }
@@ -463,13 +463,13 @@ function chado_featuremap_view($node, $teaser = FALSE, $page = FALSE) {
 function chado_featuremap_delete(&$node) {
 
   $featuremap_id = chado_get_id_for_node('featuremap', $node);
-  
+
   // if we don't have a map id for this node then this isn't a node of
   // type chado_featuremap or the entry in the chado_featuremap table was lost.
   if (!$featuremap_id) {
     return;
   }
-  
+
   // Remove data from {chado_featuremap}, {node} and {node_revisions} tables of
   // drupal database
   $sql_del = "DELETE FROM {chado_featuremap} ".
@@ -491,7 +491,7 @@ function chado_featuremap_delete(&$node) {
 }
 
 /*
- * 
+ *
  */
 function theme_tripal_featuremap_search_result($node) {
 

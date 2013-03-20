@@ -3,6 +3,9 @@
 /**
  * @file
  * API functions for Tripal Views Integration
+ *
+ * @defgroup tripal_views_api Tripal Views Module API
+ * @ingroup tripal_api
  */
 
 /**
@@ -18,6 +21,8 @@
  * @return
  *   returns the lowest priority.  If the table has not been integrated, a priority of 10
  *   is returned.
+ *
+ * @ingroup tripal_views_api
  */
 function tripal_views_get_table_lightest_priority($table_name) {
 
@@ -44,6 +49,8 @@ function tripal_views_get_table_lightest_priority($table_name) {
  *
  * @return
  *   On success, the setup_id to use for integration of this table; otherwise FALSE
+ *
+ * @ingroup tripal_views_api
  */
 function tripal_views_get_lightest_priority_setup($table_name) {
 
@@ -68,6 +75,8 @@ function tripal_views_get_lightest_priority_setup($table_name) {
  *
  * @return
  *   On success, the setup_id to use for integration of this table; otherwise FALSE
+ *
+ * @ingroup tripal_views_api
  */
 function tripal_views_get_setup_id($table_name, $priority) {
 
@@ -93,6 +102,8 @@ function tripal_views_get_setup_id($table_name, $priority) {
  *  If the table is already integrated, the setup_id of the existing integration
  *  record is returned (If priority is not specified this will be the lightest record);
  *  Otherwise the table is not already integrated and FALSE is returned.
+ *
+ * @ingroup tripal_views_api
  */
 function tripal_views_is_integrated($table_name, $priority = NULL) {
 
@@ -121,6 +132,8 @@ function tripal_views_is_integrated($table_name, $priority = NULL) {
  *   The name of the table associated with this setup
  *
  * @return TRUE is this is the lightest priority; FALSE otherwise
+ *
+ * @ingroup tripal_views_api
  */
 function tripal_views_is_lightest_priority_setup($setup_id, $table_name) {
 
@@ -175,6 +188,8 @@ function tripal_views_is_lightest_priority_setup($setup_id, $table_name) {
   );
   tripal_views_integration_add_entry($defn_array);
  * @endcode
+ *
+ * @ingroup tripal_views_api
  */
 function tripal_views_integration_add_entry($defn_array) {
   $no_errors = TRUE;
@@ -350,6 +365,8 @@ function tripal_views_integration_add_entry($defn_array) {
  *
  * @return
  *   A views integration definition array as used by tripal_views_integration_add_entry()
+ *
+ * @ingroup tripal_views_api
  */
 function tripal_views_integration_export_entry($setup_id) {
 
@@ -409,6 +426,8 @@ function tripal_views_integration_export_entry($setup_id) {
  *
  * @return
  *   TRUE on Success; FALSE otherwise
+ *
+ * @ingroup tripal_views_api
  */
 function tripal_views_integration_remove_entry_by_table_name($table_name, $priority) {
 
@@ -432,6 +451,8 @@ function tripal_views_integration_remove_entry_by_table_name($table_name, $prior
  *
  * @param $setup_id
  *   The setup ID of the views integration entry to remove
+ *
+ * @ingroup tripal_views_api
  */
 function tripal_views_integration_remove_entry_by_setup_id($setup_id) {
 
@@ -445,6 +466,8 @@ function tripal_views_integration_remove_entry_by_setup_id($setup_id) {
 /**
  * Integrate all chado tables in the schema api.  This integration only occurs
  * once and sets all Chado tables to a priority of 10
+ *
+ * @ingroup tripal_views_api
  */
 function tripal_views_integrate_all_chado_tables() {
 
@@ -469,6 +492,8 @@ function tripal_views_integrate_all_chado_tables() {
  * @return
  *   The tripal views integration array which is the parameter for
  *   tripal_views_integration_add_entry($defn_array)
+ *
+ * @ingroup tripal_views_api
  */
 function tripal_views_get_integration_array_for_chado_table($table_name, $base_table = TRUE, $priority = 9) {
 
@@ -594,6 +619,8 @@ function tripal_views_get_integration_array_for_chado_table($table_name, $base_t
  *
  * @param &$defn_array
  *   The current definition array for a given table
+ *
+ * @ingroup tripal_views_api
  */
 function tripal_views_add_node_relationship_to_chado_table_integration($defn_array) {
   $integrations[$defn_array['table']] = $defn_array;
@@ -700,6 +727,8 @@ function tripal_views_add_node_relationship_to_chado_table_integration($defn_arr
  * @param $template_priority
  *   The priority of the template to be used for the clone; this is an existing integration.
  *   If no priority is supplied then the lightest priority will be used.
+ *
+ * @ingroup tripal_views_api
  */
 function tripal_views_clone_integration($table_name, $new_priority = NULL, $template_priority = NULL) {
 
@@ -750,6 +779,8 @@ function tripal_views_clone_integration($table_name, $new_priority = NULL, $temp
  *
  * @return
  *   TRUE if the field was added successfully; FALSE otherwise
+ *
+ * @ingroup tripal_views_api
  */
 function tripal_views_add_field_to_integration($table_name, $priority, $field) {
   $no_errors = TRUE;
@@ -888,6 +919,8 @@ function tripal_views_add_field_to_integration($table_name, $priority, $field) {
  *   The name of the other table involved in the join
  * @param $left_field
  *   The name of the field from the other table involved in the join
+ *
+ * @ingroup tripal_views_api
  */
 function tripal_views_remove_join_from_integration($setup_id, $base_table, $base_field, $left_table, $left_field) {
   db_query(

@@ -25,6 +25,8 @@
  * @return
  *   On success it returns the object (with primary key if inserted);
  *   on failure it returns FALSE
+ *
+ * @ingroup tripal_bulk_loader
  */
 function tripal_bulk_loader_update_constant($nid, $group_id, $table, $field, $record_id, $field_id, $value) {
 
@@ -68,6 +70,11 @@ function tripal_bulk_loader_update_constant($nid, $group_id, $table, $field, $re
   }
 }
 
+/**
+ * Check if a bulk loading job has exposed constants
+ *
+ * @ingroup tripal_bulk_loader
+ */
 function tripal_bulk_loader_has_exposed_fields($node) {
 
   // exposed fields isn't set
@@ -110,6 +117,8 @@ function tripal_bulk_loader_has_exposed_fields($node) {
  *
  * @return
  *   A form array to be rendered by drupal_get_form()
+ *
+ * @ingroup tripal_bulk_loader
  */
 function tripal_bulk_loader_set_constants_form($form_state, $node) {
   $form = array();
@@ -263,6 +272,8 @@ function tripal_bulk_loader_set_constants_form($form_state, $node) {
 /**
  * Validate that the values entered exist in the database
  * if indicated in hte template array
+ *
+ * @ingroup tripal_bulk_loader
  */
 function tripal_bulk_loader_set_constants_form_validate($form, $form_state) {
 
@@ -305,6 +316,8 @@ function tripal_bulk_loader_set_constants_form_validate($form, $form_state) {
 
 /**
  * Insert/update the constants associated with this node
+ *
+ * @ingroup tripal_bulk_loader
  */
 function tripal_bulk_loader_set_constants_form_submit($form, $form_state) {
 
@@ -332,6 +345,11 @@ function tripal_bulk_loader_set_constants_form_submit($form, $form_state) {
 
 }
 
+/**
+ * Themes the bulk loading job set constants form
+ *
+ * @ingroup tripal_bulk_loader
+ */
 function theme_tripal_bulk_loader_set_constants_form($form) {
   $output = '';
 
@@ -394,6 +412,8 @@ function theme_tripal_bulk_loader_set_constants_form($form) {
  *
  * @return
  *   A form array to be rendered by drupal_get_form()
+ *
+ * @ingroup tripal_bulk_loader
  */
 function tripal_bulk_loader_edit_constant_set_form($form_state, $node, $group_id) {
   $form = array();
@@ -491,6 +511,8 @@ function tripal_bulk_loader_edit_constant_set_form($form_state, $node, $group_id
 
 /**
  * Edit constants in the current constant set
+ *
+ * @ingroup tripal_bulk_loader
  */
 function tripal_bulk_loader_edit_constant_set_form_submit($form, $form_state) {
 
@@ -532,6 +554,8 @@ function tripal_bulk_loader_edit_constant_set_form_submit($form, $form_state) {
  *
  * @return
  *   A form array to be rendered by drupal_get_form()
+ *
+ * @ingroup tripal_bulk_loader
  */
 function tripal_bulk_loader_delete_constant_set_form($form_state, $node, $group_id) {
   $form = array();
@@ -560,6 +584,8 @@ function tripal_bulk_loader_delete_constant_set_form($form_state, $node, $group_
 
 /**
  * Delete the current constant set
+ *
+ * @ingroup tripal_bulk_loader
  */
 function tripal_bulk_loader_delete_constant_set_form_submit($form, $form_state) {
 

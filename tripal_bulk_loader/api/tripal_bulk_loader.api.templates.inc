@@ -2,6 +2,9 @@
 /**
  * @file
  * All functions in this file provide an API to administrative management of bulk loader templates
+ *
+ * @defgroup tripal_bulk_loader_api Tripal Bulk Loader Module API
+ * @ingroup tripal_api
  */
 
 /**
@@ -19,6 +22,8 @@
  *
  * @return
  *   TRUE if the record name is not empty and not already in the template_array; FALSE otherwise
+ *
+ * @ingroup tripal_bulk_loader_api
  */
 function tripal_bulk_loader_is_record_name_unique($new_record_name, $template_id, $template_array = NULL, $current_priority = NULL) {
 
@@ -63,6 +68,8 @@ function tripal_bulk_loader_is_record_name_unique($new_record_name, $template_id
  *
  * @return
  *   The modified template array
+ *
+ * @ingroup tripal_bulk_loader_api
  */
 function tripal_bulk_loader_delete_record($delete_priority, $template_array) {
 
@@ -95,6 +102,8 @@ function tripal_bulk_loader_delete_record($delete_priority, $template_array) {
  *
  * @return
  *   The modified template array
+ *
+ * @ingroup tripal_bulk_loader_api
  */
 function tripal_bulk_loader_delete_field($priority, $delete_field_index, $template_array) {
 
