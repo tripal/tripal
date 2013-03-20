@@ -16,7 +16,7 @@ include('views/chado_linking.TMP.inc');
  * @{
  * Provide rules for formatting and composition of fields
  * @}
- * 
+ *
  * @defgroup views_handlers Views Integration Handlers
  * @ingroup views
  * @{
@@ -28,13 +28,13 @@ include('views/chado_linking.TMP.inc');
  * @{
  * Provide rules for formatting and composition of fields
  * @}
- * 
+ *
  *
  * @defgroup views_filter_handlers Views Filter Handlers
  * @ingroup views_handlers
  * @{
  * Provide the ability to filter based on specified data
- * @} 
+ * @}
  *
  * @defgroup views_sort_handlers Views Sort Handlers
  * @ingroup views_handlers
@@ -317,7 +317,7 @@ function tripal_views_views_data() {
             $data[$base_table]['table']['join'][$left_table]['handler'] = $handler;
           }
         }
-        
+
 
         // Add in any handlers for node fields
         $sql = "SELECT * FROM {tripal_views_handlers} WHERE setup_id=%d";
@@ -336,11 +336,10 @@ function tripal_views_views_data() {
 
       // get the table description
       $table_desc = tripal_core_get_chado_table_schema($base_table);
-            
+
       $fields = $table_desc['fields'];
       if (!is_array($fields)) {
         $fields = array();
-        watchdog('tripal_views', 'No fields were described for this table (%table) through the Tripal Schema API.', array('%table' => $base_table), WATCHDOG_ERROR);
       }
       foreach ($fields as $column => $attrs) {
         $base_fields[$column] = array(
@@ -535,36 +534,36 @@ function tripal_views_views_pre_view(&$view, &$display_id, &$args) {
 }*/
 
 /*
- * 
- 
+ *
+
 function tripal_views_views_query_alter(&$view, &$query){
   // iterate through the tables and see if they are chado tables.
   // if they are then prefix them with a "chado." prefix
   dpm($query);
   $tables = $query->tables;
   foreach ($tables as $base => $subtables) {
-    $desc = tripal_core_get_chado_table_schema($base); 
-    if ($desc) {       
+    $desc = tripal_core_get_chado_table_schema($base);
+    if ($desc) {
       $query->tables["chado." . $base] = $subtables;
       unset($query->tables[$base]);
       $base = "chado." . $base;
     }
     foreach ($subtables as $subtable => $values) {
-      $desc = tripal_core_get_chado_table_schema($subtable);     
+      $desc = tripal_core_get_chado_table_schema($subtable);
       if ($desc) {
         $query->tables[$base]["chado." . $subtable] = $values;
         unset($query->tables[$base][$subtable]);
-      }  
+      }
     }
   }
-    
+
   dpm($query);
 } */
 /**
  * Implementation of hook_views_pre_execute().
  */
 function tripal_views_views_pre_execute(&$view) {
-  // if the base table is a chado table then we want to set the 
+  // if the base table is a chado table then we want to set the
   // search path so it can find all of the tables.
   // this will break views that use tables that have the same name
   // as chado tables (e.g. contact).
