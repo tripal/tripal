@@ -130,6 +130,18 @@ class chado_views_handler_filter_string extends views_handler_filter_string {
         'method' => 'op_contains',
         'values' => 1,
       ),
+      'starts' => array(
+        'title' => t('Starts with'),
+        'short' => t('begins'),
+        'method' => 'op_starts',
+        'values' => 1,
+      ),
+      'ends' => array(
+         'title' => t('Ends with'),
+         'short' => t('ends'),
+         'method' => 'op_ends',
+         'values' => 1,
+       ),
     );
 
     return $operators;
