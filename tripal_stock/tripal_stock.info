@@ -3,6 +3,6 @@ description = A module for interfacing the GMOD chado database with Drupal, prov
 core = 6.x
 project = tripal_stock
 package = Tripal
-version = 6.x-1.0
+version = 6.x-1.1
 dependencies[] = tripal_core
 dependencies[] = tripal_organism
