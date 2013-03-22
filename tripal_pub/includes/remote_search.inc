@@ -23,8 +23,7 @@ function tripal_pub_remote_search_page() {
   $pager = theme('pager');
   
   // join all to form the final page
-  $output = $form . "<p><b>Found " . number_format($total_items) . " Results</b></br>" . $table . '</p>' . $pager;
-    dpm($results);
+  $output = $form . "<p><b>Found " . number_format($total_items) . " Results</b></br>" . $table . '</p>' . $pager;    
   
   return $output;
 }

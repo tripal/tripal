@@ -74,10 +74,12 @@ function tripal_pub_remote_search_pubmed_range($terms, $start = 0, $limit = 10) 
     $query = tripal_pub_remote_search_pubmed_query($terms); 
     
     // second retrieve the individual record
-    $pub_xml = tripal_pub_remote_search_pubmed_fetch($terms, $query['QueryKey'], $query['WebEnv'], 'xml', 0, 1); 
-    $pubs[] = $pub_xml;
+    $pub_xml = tripal_pub_remote_search_pubmed_fetch($terms, $query['QueryKey'], $query['WebEnv'], 'xml', 0, 1);
+    $pub = tripal_pub_remote_search_pubmed_parse_pubxml($pub_xml);
+    $pubs[] = $pub;    
     
   } 
+  dpm($pubs);
   return $pubs;
 }
 
@@ -161,11 +163,11 @@ function tripal_pub_remote_search_pubmed_parse_pubxml($pub_xml) {
   while ($xml->read()) {    
     $element = $xml->name;    
     if ($xml->nodeType == XMLReader::ELEMENT) {
-      $xml->read();
-      $value = $xml->value;
+      
       switch ($element) {
         case 'PMID':
-          $pub['pub_accession'] = $value;
+          $xml->read(); // get the value for this element
+          $pub['pub_accession'] = $xml->value;
           $pub['pub_database'] = 'PMID';
           break;        
         case 'Article':
@@ -184,22 +186,25 @@ function tripal_pub_remote_search_pubmed_parse_pubxml($pub_xml) {
 function tripal_pub_remote_search_pubmed_parse_article($xml, &$pub) {
     
   while ($xml->read()) {
-    $element = $xml->name;  
+    // get this element name
+    $element = $xml->name;     
+        
     // if we're at the </Article> element then we're done with the article...
-    if ($xml->nodeType == XMLReader::END_ELEMENT and $element = 'Article') {
+    if ($xml->nodeType == XMLReader::END_ELEMENT and $element == 'Article') {
       return;  
     }
-    if ($xml->nodeType == XMLReader::ELEMENT) {
-      $element = $xml->name;
-      $xml->read();
-      $value = $xml->value;
+    if ($xml->nodeType == XMLReader::ELEMENT) {    
       switch ($element) {
         case 'Journal':
           tripal_pub_remote_search_pubmed_parse_journal($xml, $pub);
           break;
         case 'ArticleTitle':
+          $xml->read();
+          $pub['title'] = $xml->value;
           break;
         case 'AbstractText':
+          $xml->read();
+          $pub['abstract'] = $xml->value;
           break;
         case 'Affiliation':
           break;
@@ -207,6 +212,8 @@ function tripal_pub_remote_search_pubmed_parse_article($xml, &$pub) {
           tripal_pub_remote_search_pubmed_parse_authorlist($xml, $pub);
           break;
         case 'Language':
+          $xml->read();
+          $pub['language'] = $xml->value;
           break;
         case 'ArticleDate':
           break; 
@@ -226,7 +233,7 @@ function tripal_pub_remote_search_pubmed_parse_journal($xml, &$pub) {
       
     if ($xml->nodeType == XMLReader::END_ELEMENT){
       // if we're at the </AuthorList> element then we're done with the article...
-      if($element = 'Journal') {
+      if($element == 'Journal') {
         return;
       }
     }
@@ -273,8 +280,6 @@ function tripal_pub_remote_search_pubmed_parse_authorlist($xml, &$pub) {
       }  
     }
     if ($xml->nodeType == XMLReader::ELEMENT) {
-      $xml->read();
-      $value = $xml->value;
       switch ($element) {
         case 'Author':          
           break;
