@@ -3,6 +3,7 @@
 //require_once('cron.php');
 require_once "includes/tripal_pub.admin.inc";
 require_once "includes/pubmed.inc";
+require_once "includes/remote_search.inc";
 
 /**
  * @file
@@ -84,6 +85,14 @@ function tripal_pub_menu() {
   $items['tripal_pub/js/%'] = array(
     'page callback' => 'tripal_pub_js',
     'page arguments' => array(2),
+    'access arguments' => array('access content'),
+    'type ' => MENU_CALLBACK,
+  );
+  
+  $items['pub_finder'] = array(
+    'title' => t('Publication Finder'),
+    'description' => t('Finds publications using remote publication databases (e.g. PubMed).'),
+    'page callback' => 'tripal_pub_remote_search_page',
     'access arguments' => array('access content'),
     'type ' => MENU_CALLBACK,
   );

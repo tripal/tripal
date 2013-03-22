@@ -87,8 +87,7 @@ function tripal_feature_analysis_get_property($analysis_id = NULL, $feature_id =
  * @ingroup tripal_feature_api
  */
 function tripal_feature_analysis_insert_property($analysis_id = NULL, $feature_id = NUll,
-  $analysisfeature_id = NULL, $property, $value, $update_if_present = 0,
-  $cv_name = 'tripal') {
+  $analysisfeature_id = NULL, $property, $value, $update_if_present = 0, $cv_name = 'tripal') {
 
   // check that the incoming arguments are correct
   if (($analysis_id and !$feature_id) or
@@ -107,8 +106,15 @@ function tripal_feature_analysis_insert_property($analysis_id = NULL, $feature_i
   }
 
   // insert the property.
-  return tripal_core_insert_property('analysisfeature', $analysisfeature_id,
+  $success = tripal_core_insert_property('analysisfeature', $analysisfeature_id,
     $property, $cv_name, $value, $update_if_present);
+  if (!$success) {
+     watchdog('tripal_feature',
+      'tripal_feature_analysis_insert_property: Failed to insert analysis feature property',
+       array(), WATCHDOG_WARNING);  
+     return FALSE;
+  }
+  return $success;
 }
 
 /**
@@ -929,3 +935,119 @@ function tripal_feature_get_feature_relationships($feature) {
   }
   return $relationships;
 } 
+
+/*
+ * This function adds an entry to the feature_dbxref table.
+  *
+ * @param $feature_id
+ *   The numeric feature_if of the feature 
+ * @param $dbname
+ *   The name of the database to which the term belongs
+ * @param accession
+ *   The accession of the term   
+ *    
+ * @return
+ *   TRUE on success. FALSE on failure.
+ *
+ * @ingroup tripal_feature_api
+ */
+function tripal_feature_add_dbxref($feature_id, $dbname, $accession) {
+   
+  // make sure the db exists. If it doesn't, then add it
+  $values = array('name' => $dbname);
+  $options = array('statement_name' => 'sel_db_na');
+  $db = tripal_core_chado_select('db', array('db_id'), $values, $options);
+  if (!$db or count($db) == 0) {    
+    $options = array('statement_name' => 'ins_db_na');
+    $success = tripal_core_chado_insert('db', $values, $options);
+      if (!$success) {
+      watchdog('tripal_feature', 'tripal_feature_add_dbxref: The feature dbxref entry for feature, %feature_id, ". 
+        "could not be added because the database, %dbname, does not exist and cannot be added.', 
+        array('%feature_id' => $feature_id, '%dbname' => $dbname), WATCHDOG_WARNING);
+      return FALSE;
+    }
+  }
+  
+  // first make sure that the record doesn't already exist
+  $values = array(
+    'dbxref_id' => array(
+      'accession' => $accession,
+      'db_id' => array(
+        'name' => $dbname
+      ),
+    ),
+    'feature_id' => $feature_id,
+  );
+  $options = array('statement_name' => 'sel_featuredbxref_dbfe');
+  $xref = tripal_core_chado_select('feature_dbxref', array('feature_dbxref_id'), $values, $options);
+  if (count($xref) == 0) {    
+    // if the record doesn't exist then add it.
+    $options = array('statement_name' => 'ins_featuredbxref_dbfe');
+    $success = tripal_core_chado_insert('feature_dbxref', $values, $options);
+    if (!$success) {
+      watchdog('tripal_feature', 'tripal_feature_add_dbxref: The feature dbxref entry for feature, %feature_id, '. 
+        'could not be added: %db:%accession.', array('%feature_id' => $feature_id, '%db' => $dbname, 
+        '%accession' => $accession), WATCHDOG_WARNING);
+      return FALSE;
+    }
+  }
+  return TRUE;
+}
+
+/*
+ * This function adds an entry to the feature_cvterm table.
+  *
+ * @param $feature_id
+ *   The numeric feature_if of the feature 
+ * @param $cvname
+ *   The name of the controlled vocabulary to which the term belongs
+ * @param cvterm
+ *   The name of the cvterm  
+ *    
+ * @return
+ *   TRUE on success. FALSE on failure.
+ *
+ * @ingroup tripal_feature_api
+ */
+function tripal_feature_add_cvterm($feature_id, $cvname, $cvterm) {
+   
+  // make sure the cv exists. If it doesn't, then add it
+  $values = array('name' => $cvname);
+  $options = array('statement_name' => 'sel_cv_na');
+  $cv = tripal_core_chado_select('cv', array('cv_id'), $values, $options);
+  if (!$cv or count($cv) == 0) {    
+    $options = array('statement_name' => 'ins_cv_na');
+    $success = tripal_core_chado_insert('cv', $values, $options);
+      if (!$success) {
+      watchdog('tripal_feature', 'tripal_feature_add_cvterm: The feature cvterm entry for feature, %feature_id, ". 
+        "could not be added because the CV, %cvname, does not exist and cannot be added.', 
+        array('%feature_id' => $feature_id, '%cvname' => $cvname), WATCHDOG_WARNING);
+      return FALSE;
+    }
+  }
+  
+  // first make sure that the record doesn't already exist
+  $values = array(
+    'cvterm_id' => array(
+      'name' => $cvterm,
+      'cv_id' => array(
+        'name' => $cvname
+      ),
+    ),
+    'feature_id' => $feature_id,
+    'pub_id' => 1,
+  );
+  $options = array('statement_name' => 'sel_featuredcvterm_cvfepu');
+  $xref = tripal_core_chado_select('feature_cvterm', array('feature_cvterm_id'), $values, $options);
+  if (count($xref) == 0) {    
+    // if the record doesn't exist then add it.
+    $options = array('statement_name' => 'ins_featurecvterm_cvfepu');
+    $success = tripal_core_chado_insert('feature_cvterm', $values, $options);
+    if (!$success) {
+      watchdog('tripal_feature', 'tripal_feature_add_cvterm: The feature cvterm entry for feature, %feature_id, '. 
+        'could not be added: %cvterm.', array('%feature_id' => $feature_id, '%cvterm' => $cvterm), WATCHDOG_WARNING);
+      return FALSE;
+    }
+  }
+  return TRUE;
+}
