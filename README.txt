@@ -75,6 +75,7 @@ such as an active mailing list can be found on the Tripal website
 (http://tripal.sourceforge.net).
 
 For more information, see the recent publication:
+
 Stephen P. Ficklin, Lacey-Anne Sanderson, Chun-Huai Cheng, Margaret 
 Staton, Taein Lee, Il-Hyung Cho, Sook Jung, Kirstin E Bett, Dorrie 
 Main. Tripal: a construction Toolkit for Online Genome Databases. 
