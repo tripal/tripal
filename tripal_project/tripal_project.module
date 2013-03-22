@@ -39,6 +39,7 @@ function tripal_project_views_api() {
 function tripal_project_menu() {
   $items[ 'admin/tripal/tripal_project' ]= array(
     'title' => 'Projects',
+    'description' => ('A module for interfacing the GMOD chado database with Drupal, providing viewing of projects'),
     'page callback' => 'theme',
     'page arguments' => array('tripal_project_admin'),
     'access arguments' => array('adminster tripal projects'),

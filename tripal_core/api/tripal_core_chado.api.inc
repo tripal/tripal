@@ -2602,7 +2602,7 @@ function tripal_core_get_property($basetable, $record_id, $property, $cv_name) {
 
   // construct the array of values to be selected
   $values = array(
-  $fkcol => $record_id,
+    $fkcol => $record_id,
     'type_id' => array(
       'cv_id' => array(
         'name' => $cv_name,
@@ -2612,7 +2612,9 @@ function tripal_core_get_property($basetable, $record_id, $property, $cv_name) {
     ),
   );
   $results = tripal_core_generate_chado_var($basetable . 'prop', $values);
-  $results = tripal_core_expand_chado_vars($results, 'field', $basetable . 'prop.value');
+  if ($results) {
+    $results = tripal_core_expand_chado_vars($results, 'field', $basetable . 'prop.value');
+  }
 
   return $results;
 }
@@ -2680,26 +2682,40 @@ $cv_name, $value, $update_if_present = 0) {
     array('!prop_name' => $property), WATCHDOG_ERROR);
   }
 
-
+  // make sure the cvterm exists.  Otherwise we'll get an error with
+  // prepared statements not matching
+  $values = array(
+    'cv_id' => array(
+      'name' => $cv_name,
+    ),
+    'name' => $property,    
+  );
+  $options = array('statement_name' => 'sel_cvterm_cv');
+  $term = tripal_core_chado_select('cvterm', array('cvterm_id'), $values, $options);  
+  if(!$term or count($term) == 0) {
+    return FALSE;
+  }
+  
   // get the foreign key for this property table
   $table_desc = tripal_core_get_chado_table_schema($basetable . 'prop');
   $fkcol = key($table_desc['foreign keys'][$basetable]['columns']);
 
   // construct the array of values to be inserted
   $values = array(
-  $fkcol => $record_id,
+    $fkcol => $record_id,
     'type_id' => array(
       'cv_id' => array(
         'name' => $cv_name,
-  ),
+      ),
       'name' => $property,
-      'is_obsolete' => 0
-  ),
+    ),
     'value' => $value,
     'rank' => $rank,
   );
 
-  return tripal_core_chado_insert($basetable . 'prop', $values);
+  $options = array('statement_name' => 'ins_' . $basetable . 'prop_' . substr($fkcol, 0, 2) . 'tyvara');
+  $result = tripal_core_chado_insert($basetable . 'prop', $values, $options);
+  return $result;
 }
 
 /**

@@ -1,0 +1,2687 @@
+format-version: 1.2
+idspace: BIRN_ImagePhenotype http://ccdb.ucsd.edu/SAO/DPO/1.0/ImagePhenotype.owl ""
+idspace: BIRN_PDPO http://ccdb.ucsd.edu/PDPhenotypeOntology/1.0# ""
+idspace: BIRN_PDStage http://ccdb.ucsd.edu/PDStageOntology/1.0/ ""
+idspace: BIRN_SA http://ccdb.ucsd.edu/smart_atlas_ontology/sa.owl# ""
+idspace: NDPO http://ccdb.ucsd.edu/SAO/Disease/1.0/NDPO.owl# ""
+idspace: PKB http://ccdb.ucsd.edu/PKB/1.0/PKB.owl# ""
+idspace: SAO_HumanDPO http://ccdb.ucsd.edu/SAO/HumanDPO.owl# ""
+idspace: bfo http://www.ifomis.org/bfo/1.1# ""
+idspace: bfo1_0 http://www.ifomis.org/bfo/1.0# ""
+idspace: biopax1 http://www.biopax.org/release/biopax-level1.owl# ""
+idspace: birnlex_anatomy http://purl.org/nbirn/birnlex/ontology/BIRNLex-Anatomy.owl# ""
+idspace: birnlex_disease http://purl.org/nbirn/birnlex/ontology/BIRNLex-Disease.owl# ""
+idspace: birnlex_tax http://purl.org/nbirn/birnlex/ontology/BIRNLex-OrganismalTaxonomy.owl# ""
+idspace: c http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/cluster# ""
+idspace: daml http://www.daml.org/2001/03/daml+oil# ""
+idspace: dc http://purl.org/dc/elements/1.1/ ""
+idspace: dcterms http://purl.org/dc/terms/ ""
+idspace: eor http://dublincore.org/2000/03/13/eor# ""
+idspace: galen http://www.co-ode.org/ontologies/galen# ""
+idspace: mged http://mged.sourceforge.net/ontologies/MGEDOntology.owl# ""
+idspace: oban http://www.berkeleybop.org/ontologies/oban/alpha# ""
+idspace: obd http://www.bioontology.org/obd/obd-ontology# ""
+idspace: oboInOwl http://www.geneontology.org/formats/oboInOwl# ""
+idspace: owl http://www.w3.org/2002/07/owl# ""
+idspace: p http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/party# ""
+idspace: propreo http://lsdis.cs.uga.edu/projects/glycomics/propreo# ""
+idspace: r http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/region# ""
+idspace: rdf http://www.w3.org/1999/02/22-rdf-syntax-ns# ""
+idspace: rdfs http://www.w3.org/2000/01/rdf-schema# ""
+idspace: reactome http://www.reactome.org/biopax# ""
+idspace: sao http://ccdb.ucsd.edu/SAO/1.2# ""
+idspace: serql http://www.openrdf.org/schema/serql# ""
+idspace: skos http://www.w3.org/2004/02/skos/core# ""
+idspace: snap http://www.ifomis.org/bfo/1.1/snap# ""
+idspace: snap1_0 http://www.ifomis.org/bfo/1.0/snap# ""
+idspace: span http://www.ifomis.org/bfo/1.1/span# ""
+idspace: span1_0 http://www.ifomis.org/bfo/1.0/span# ""
+idspace: xsd http://www.w3.org/2001/XMLSchema# ""
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#A-General_Literature
+name: General Literature
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#IndexTerm  ! Index term
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#A_0-General
+name: General
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#A-General_Literature  ! General Literature
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#A_1-Introductory_And_Survey
+name: Introductory And Survey
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#A-General_Literature  ! General Literature
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#A_2-Reference
+name: Reference
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#A-General_Literature  ! General Literature
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#A_m-Miscellaneous
+name: Miscellaneous
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#A-General_Literature  ! General Literature
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Activity
+name: Activity
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Event  ! Event
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Conference  ! Conference
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Meeting  ! Meeting
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Workshop  ! Workshop
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Anthology
+name: Anthology
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Book  ! Book
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Biography  ! Biography
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Monograph  ! Monograph
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Article
+name: Article
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Publication  ! Publication
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Book  ! Book
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Journal  ! Journal
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Magazine  ! Magazine
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Newsletter  ! Newsletter
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Paper  ! Paper
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Poster  ! Poster
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Proceedings  ! Proceedings
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#TechnicalReport  ! Technical report
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Thesis  ! Thesis
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Transaction  ! Transaction
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Author
+name: Author
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: p:Person 
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B-Hardware
+name: Hardware
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#IndexTerm  ! Index term
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_0-General
+name: General
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B-Hardware  ! Hardware
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_1-Control_Structures_And_Microprogramming
+name: Control Structures And Microprogramming
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B-Hardware  ! Hardware
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_1_0-General
+name: General
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_1-Control_Structures_And_Microprogramming  ! Control Structures And Microprogramming
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_1_1-Control_Design_Styles
+name: Control Design Styles
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_1-Control_Structures_And_Microprogramming  ! Control Structures And Microprogramming
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_1_2-Control_Structure_Performance_Analysis_And_Design_Aids
+name: Control Structure Performance Analysis And Design Aids
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_1-Control_Structures_And_Microprogramming  ! Control Structures And Microprogramming
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_1_3-Control_Structure_Reliability__Testing__And_Fault-tolerance
+name: Control Structure Reliability, Testing, And Fault-tolerance**
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_1-Control_Structures_And_Microprogramming  ! Control Structures And Microprogramming
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_1_4-Microprogram_Design_Aids
+name: Microprogram Design Aids
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_1-Control_Structures_And_Microprogramming  ! Control Structures And Microprogramming
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_1_5-Microcode_Applications
+name: Microcode Applications
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_1-Control_Structures_And_Microprogramming  ! Control Structures And Microprogramming
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_1_m-Miscellaneous
+name: Miscellaneous
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_1-Control_Structures_And_Microprogramming  ! Control Structures And Microprogramming
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_2-Arithmetic_And_Logic_Structures
+name: Arithmetic And Logic Structures
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B-Hardware  ! Hardware
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_2_0-General
+name: General
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_2-Arithmetic_And_Logic_Structures  ! Arithmetic And Logic Structures
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_2_1-Design_Styles
+name: Design Styles
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_2-Arithmetic_And_Logic_Structures  ! Arithmetic And Logic Structures
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_2_2-Performance_Analysis_And_Design_Aids
+name: Performance Analysis And Design Aids**
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_2-Arithmetic_And_Logic_Structures  ! Arithmetic And Logic Structures
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_2_3-Reliability__Testing__And_Fault-tolerance
+name: Reliability, Testing, And Fault-tolerance**
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_2-Arithmetic_And_Logic_Structures  ! Arithmetic And Logic Structures
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_2_4-High-speed_Arithmetic
+name: High-speed Arithmetic
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_2-Arithmetic_And_Logic_Structures  ! Arithmetic And Logic Structures
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_2_m-Miscellaneous
+name: Miscellaneous
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_2-Arithmetic_And_Logic_Structures  ! Arithmetic And Logic Structures
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_3-Memory_Structures
+name: Memory Structures
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B-Hardware  ! Hardware
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_3_0-General
+name: General
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_3-Memory_Structures  ! Memory Structures
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_3_1-Semiconductor_Memories
+name: Semiconductor Memories
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_3-Memory_Structures  ! Memory Structures
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_3_2-Design_Styles
+name: Design Styles
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_3-Memory_Structures  ! Memory Structures
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_3_3-Performance_Analysis_And_Design_Aids
+name: Performance Analysis And Design Aids**
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_3-Memory_Structures  ! Memory Structures
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_3_4-Reliability__Testing__And_Fault-tolerance
+name: Reliability, Testing, And Fault-tolerance**
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_3-Memory_Structures  ! Memory Structures
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_3_m-Miscellaneous
+name: Miscellaneous
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_3-Memory_Structures  ! Memory Structures
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_4-Input-output_And_Data_Communications
+name: Input/output And Data Communications
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B-Hardware  ! Hardware
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_4_0-General
+name: General
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_4-Input-output_And_Data_Communications  ! Input/output And Data Communications
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_4_1-Data_Communications_Devices
+name: Data Communications Devices
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_4-Input-output_And_Data_Communications  ! Input/output And Data Communications
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_4_2-Input-output_Devices
+name: Input/output Devices
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_4-Input-output_And_Data_Communications  ! Input/output And Data Communications
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_4_3-Interconnections
+name: Interconnections (subsystems)
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_4-Input-output_And_Data_Communications  ! Input/output And Data Communications
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_4_4-Performance_Analysis_And_Design_Aids
+name: Performance Analysis And Design Aids**
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_4-Input-output_And_Data_Communications  ! Input/output And Data Communications
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_4_5-Reliability__Testing__And_Fault-tolerance
+name: Reliability, Testing, And Fault-tolerance**
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_4-Input-output_And_Data_Communications  ! Input/output And Data Communications
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_4_m-Miscellaneous
+name: Miscellaneous
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_4-Input-output_And_Data_Communications  ! Input/output And Data Communications
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_5-Register-transfer-level_Implementation
+name: Register-transfer-level Implementation
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B-Hardware  ! Hardware
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_5_0-General
+name: General
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_5-Register-transfer-level_Implementation  ! Register-transfer-level Implementation
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_5_1-Design
+name: Design
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_5-Register-transfer-level_Implementation  ! Register-transfer-level Implementation
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_5_2-Design_Aids
+name: Design Aids
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_5-Register-transfer-level_Implementation  ! Register-transfer-level Implementation
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_5_3-Reliability_And_Testing
+name: Reliability And Testing**
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_5-Register-transfer-level_Implementation  ! Register-transfer-level Implementation
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_5_m-Miscellaneous
+name: Miscellaneous
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_5-Register-transfer-level_Implementation  ! Register-transfer-level Implementation
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_6-Logic_Design
+name: Logic Design
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B-Hardware  ! Hardware
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_6_0-General
+name: General
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_6-Logic_Design  ! Logic Design
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_6_1-Design_Styles
+name: Design Styles
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_6-Logic_Design  ! Logic Design
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_6_2-Reliability_And_Testing
+name: Reliability And Testing**
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_6-Logic_Design  ! Logic Design
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_6_3-Design_Aids
+name: Design Aids
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_6-Logic_Design  ! Logic Design
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_6_m-Miscellaneous
+name: Miscellaneous
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_6-Logic_Design  ! Logic Design
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_7-Integrated_Circuits
+name: Integrated Circuits
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B-Hardware  ! Hardware
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_7_0-General
+name: General
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_7-Integrated_Circuits  ! Integrated Circuits
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_7_1-Types_And_Design_Styles
+name: Types And Design Styles
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_7-Integrated_Circuits  ! Integrated Circuits
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_7_2-Design_Aids
+name: Design Aids
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_7-Integrated_Circuits  ! Integrated Circuits
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_7_3-Reliability_And_Testing
+name: Reliability And Testing**
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_7-Integrated_Circuits  ! Integrated Circuits
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_7_m-Miscellaneous
+name: Miscellaneous
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_7-Integrated_Circuits  ! Integrated Circuits
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_8-Performance_And_Reliability
+name: Performance And Reliability
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B-Hardware  ! Hardware
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_8_0-General
+name: General
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_8-Performance_And_Reliability  ! Performance And Reliability
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_8_1-Reliability__Testing__And_Fault-tolerance
+name: Reliability, Testing, And Fault-tolerance
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_8-Performance_And_Reliability  ! Performance And Reliability
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_8_2-Performance_Analysis_And_Design_Aids
+name: Performance Analysis And Design Aids
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_8-Performance_And_Reliability  ! Performance And Reliability
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_8_m-Miscellaneous
+name: Miscellaneous
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_8-Performance_And_Reliability  ! Performance And Reliability
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B_m-Miscellaneous
+name: Miscellaneous
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#B-Hardware  ! Hardware
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Biography
+name: Biography
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Book  ! Book
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Anthology  ! Anthology
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Monograph  ! Monograph
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Book
+name: Book
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Publication  ! Publication
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Article  ! Article
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Journal  ! Journal
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Magazine  ! Magazine
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Newsletter  ! Newsletter
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Paper  ! Paper
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Poster  ! Poster
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Proceedings  ! Proceedings
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#TechnicalReport  ! Technical report
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Thesis  ! Thesis
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Transaction  ! Transaction
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#C-Computer_Systems_Organization
+name: Computer Systems Organization
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#IndexTerm  ! Index term
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#C_0-General
+name: General
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#C-Computer_Systems_Organization  ! Computer Systems Organization
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#C_1-Processor_Architectures
+name: Processor Architectures
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#C-Computer_Systems_Organization  ! Computer Systems Organization
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#C_1_0-General
+name: General
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#C_1-Processor_Architectures  ! Processor Architectures
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#C_1_1-Single_Data_Stream_Architectures
+name: Single Data Stream Architectures
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#C_1-Processor_Architectures  ! Processor Architectures
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#C_1_2-Multiple_Data_Stream_Architectures
+name: Multiple Data Stream Architectures (multiprocessors)
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#C_1-Processor_Architectures  ! Processor Architectures
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#C_1_3-Other_Architecture_Styles
+name: Other Architecture Styles
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#C_1-Processor_Architectures  ! Processor Architectures
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#C_1_4-Parallel_Architectures
+name: Parallel Architectures
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#C_1-Processor_Architectures  ! Processor Architectures
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#C_1_m-Miscellaneous
+name: Miscellaneous
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#C_1-Processor_Architectures  ! Processor Architectures
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#C_2-Computer-communication_Networks
+name: Computer-communication Networks
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#C-Computer_Systems_Organization  ! Computer Systems Organization
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#C_2_0-General
+name: General
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#C_2-Computer-communication_Networks  ! Computer-communication Networks
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#C_2_1-Network_Architecture_And_Design
+name: Network Architecture And Design
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#C_2-Computer-communication_Networks  ! Computer-communication Networks
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#C_2_2-Network_Protocols
+name: Network Protocols
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#C_2-Computer-communication_Networks  ! Computer-communication Networks
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#C_2_3-Network_Operations
+name: Network Operations
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#C_2-Computer-communication_Networks  ! Computer-communication Networks
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#C_2_4-Distributed_Systems
+name: Distributed Systems
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#C_2-Computer-communication_Networks  ! Computer-communication Networks
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#C_2_5-Local_And_Wide-area_Networks
+name: Local And Wide-area Networks
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#C_2-Computer-communication_Networks  ! Computer-communication Networks
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#C_2_6-Internetworking
+name: Internetworking
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#C_2-Computer-communication_Networks  ! Computer-communication Networks
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#C_2_m-Miscellaneous
+name: Miscellaneous
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#C_2-Computer-communication_Networks  ! Computer-communication Networks
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#C_3-Special-purpose_And_Application-based_Systems
+name: Special-purpose And Application-based Systems
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#C-Computer_Systems_Organization  ! Computer Systems Organization
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#C_4-Performance_Of_Systems
+name: Performance Of Systems
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#C-Computer_Systems_Organization  ! Computer Systems Organization
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#C_5-Computer_System_Implementation
+name: Computer System Implementation
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#C-Computer_Systems_Organization  ! Computer Systems Organization
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#C_5_0-General
+name: General
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#C_5-Computer_System_Implementation  ! Computer System Implementation
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#C_5_1-Large_And_Medium_Computers
+name: Large And Medium (\"mainframe\") Computers
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#C_5-Computer_System_Implementation  ! Computer System Implementation
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#C_5_2-Minicomputers
+name: Minicomputers**
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#C_5-Computer_System_Implementation  ! Computer System Implementation
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#C_5_3-Microcomputers
+name: Microcomputers
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#C_5-Computer_System_Implementation  ! Computer System Implementation
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#C_5_4-Vlsi_Systems
+name: Vlsi Systems
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#C_5-Computer_System_Implementation  ! Computer System Implementation
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#C_5_5-Servers
+name: Servers
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#C_5-Computer_System_Implementation  ! Computer System Implementation
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#C_5_m-Miscellaneous
+name: Miscellaneous
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#C_5-Computer_System_Implementation  ! Computer System Implementation
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#C_m-Miscellaneous
+name: Miscellaneous
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#C-Computer_Systems_Organization  ! Computer Systems Organization
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Conference
+name: Conference
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Event  ! Event
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Activity  ! Activity
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Meeting  ! Meeting
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Workshop  ! Workshop
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#ConferencePaper
+name: Conference paper
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Paper  ! Paper
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#WorkshopPaper  ! Workshop paper
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D-Software
+name: Software
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#IndexTerm  ! Index term
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D_0-General
+name: General
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D-Software  ! Software
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D_1-Programming_Techniques
+name: Programming Techniques
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D-Software  ! Software
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D_1_0-General
+name: General
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D_1-Programming_Techniques  ! Programming Techniques
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D_1_1-Applicative_Programming
+name: Applicative (functional) Programming
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D_1-Programming_Techniques  ! Programming Techniques
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D_1_2-Automatic_Programming
+name: Automatic Programming
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D_1-Programming_Techniques  ! Programming Techniques
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D_1_3-Concurrent_Programming
+name: Concurrent Programming
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D_1-Programming_Techniques  ! Programming Techniques
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D_1_4-Sequential_Programming
+name: Sequential Programming
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D_1-Programming_Techniques  ! Programming Techniques
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D_1_5-Object-oriented_Programming
+name: Object-oriented Programming
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D_1-Programming_Techniques  ! Programming Techniques
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D_1_6-Logic_Programming
+name: Logic Programming
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D_1-Programming_Techniques  ! Programming Techniques
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D_1_7-Visual_Programming
+name: Visual Programming
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D_1-Programming_Techniques  ! Programming Techniques
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D_1_m-Miscellaneous
+name: Miscellaneous
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D_1-Programming_Techniques  ! Programming Techniques
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D_2-Software_Engineering
+name: Software Engineering
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D-Software  ! Software
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D_2_0-General
+name: General
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D_2-Software_Engineering  ! Software Engineering
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D_2_1-Requirements-specifications
+name: Requirements/specifications
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D_2-Software_Engineering  ! Software Engineering
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D_2_2-Design_Tools_And_Techniques
+name: Design Tools And Techniques
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D_2-Software_Engineering  ! Software Engineering
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D_2_3-Coding_Tools_And_Techniques
+name: Coding Tools And Techniques
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D_2-Software_Engineering  ! Software Engineering
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D_2_4-Software-program_Verification
+name: Software/program Verification
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D_2-Software_Engineering  ! Software Engineering
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D_2_5-Testing_And_Debugging
+name: Testing And Debugging
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D_2-Software_Engineering  ! Software Engineering
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D_2_6-Programming_Environments
+name: Programming Environments
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D_2-Software_Engineering  ! Software Engineering
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D_2_7-Distribution__Maintenance__And_Enhancement
+name: Distribution, Maintenance, And Enhancement
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D_2-Software_Engineering  ! Software Engineering
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D_2_8-Metrics
+name: Metrics
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D_2-Software_Engineering  ! Software Engineering
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D_2_9-Management
+name: Management
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D_2-Software_Engineering  ! Software Engineering
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D_2_m-Miscellaneous
+name: Miscellaneous
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D_2-Software_Engineering  ! Software Engineering
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D_3-Programming_Languages
+name: Programming Languages
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D-Software  ! Software
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D_3_0-General
+name: General
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D_3-Programming_Languages  ! Programming Languages
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D_3_1-Formal_Definitions_And_Theory
+name: Formal Definitions And Theory
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D_3-Programming_Languages  ! Programming Languages
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D_3_2-Language_Classifications
+name: Language Classifications
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D_3-Programming_Languages  ! Programming Languages
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D_3_3-Language_Constructs_And_Features
+name: Language Constructs And Features
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D_3-Programming_Languages  ! Programming Languages
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D_3_4-Processors
+name: Processors
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D_3-Programming_Languages  ! Programming Languages
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D_3_m-Miscellaneous
+name: Miscellaneous
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D_3-Programming_Languages  ! Programming Languages
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D_4-Operating_Systems
+name: Operating Systems
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D-Software  ! Software
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D_4_0-General
+name: General
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D_4-Operating_Systems  ! Operating Systems
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D_4_1-Process_Management
+name: Process Management
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D_4-Operating_Systems  ! Operating Systems
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D_4_2-Storage_Management
+name: Storage Management
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D_4-Operating_Systems  ! Operating Systems
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D_4_3-File_Systems_Management
+name: File Systems Management
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D_4-Operating_Systems  ! Operating Systems
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D_4_4-Communications_Management
+name: Communications Management
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D_4-Operating_Systems  ! Operating Systems
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D_4_5-Reliability
+name: Reliability
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D_4-Operating_Systems  ! Operating Systems
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D_4_6-Security_And_Protection
+name: Security And Protection
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D_4-Operating_Systems  ! Operating Systems
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D_4_7-Organization_And_Design
+name: Organization And Design
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D_4-Operating_Systems  ! Operating Systems
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D_4_8-Performance
+name: Performance
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D_4-Operating_Systems  ! Operating Systems
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D_4_9-Systems_Programs_And_Utilities
+name: Systems Programs And Utilities
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D_4-Operating_Systems  ! Operating Systems
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D_4_m-Miscellaneous
+name: Miscellaneous
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D_4-Operating_Systems  ! Operating Systems
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D_m-Miscellaneous
+name: Miscellaneous
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#D-Software  ! Software
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#E-Data
+name: Data
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#IndexTerm  ! Index term
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#E_0-General
+name: General
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#E-Data  ! Data
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#E_1-Data_Structures
+name: Data Structures
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#E-Data  ! Data
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#E_2-Data_Storage_Representations
+name: Data Storage Representations
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#E-Data  ! Data
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#E_3-Data_Encryption
+name: Data Encryption
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#E-Data  ! Data
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#E_4-Coding_And_Information_Theory
+name: Coding And Information Theory
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#E-Data  ! Data
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#E_5-Files
+name: Files
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#E-Data  ! Data
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#E_m-Miscellaneous
+name: Miscellaneous
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#E-Data  ! Data
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Editor
+name: Editor
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: p:Person 
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Event
+name: Event
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#F-Theory_Of_Computation
+name: Theory Of Computation
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#IndexTerm  ! Index term
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#F_0-General
+name: General
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#F-Theory_Of_Computation  ! Theory Of Computation
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#F_1-Computation_By_Abstract_Devices
+name: Computation By Abstract Devices
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#F-Theory_Of_Computation  ! Theory Of Computation
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#F_1_0-General
+name: General
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#F_1-Computation_By_Abstract_Devices  ! Computation By Abstract Devices
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#F_1_1-Models_Of_Computation
+name: Models Of Computation
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#F_1-Computation_By_Abstract_Devices  ! Computation By Abstract Devices
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#F_1_2-Modes_Of_Computation
+name: Modes Of Computation
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#F_1-Computation_By_Abstract_Devices  ! Computation By Abstract Devices
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#F_1_3-Complexity_Measures_And_Classes
+name: Complexity Measures And Classes
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#F_1-Computation_By_Abstract_Devices  ! Computation By Abstract Devices
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#F_1_m-Miscellaneous
+name: Miscellaneous
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#F_1-Computation_By_Abstract_Devices  ! Computation By Abstract Devices
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#F_2-Analysis_Of_Algorithms_And_Problem_Complexity
+name: Analysis Of Algorithms And Problem Complexity
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#F-Theory_Of_Computation  ! Theory Of Computation
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#F_2_0-General
+name: General
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#F_2-Analysis_Of_Algorithms_And_Problem_Complexity  ! Analysis Of Algorithms And Problem Complexity
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#F_2_1-Numerical_Algorithms_And_Problems
+name: Numerical Algorithms And Problems
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#F_2-Analysis_Of_Algorithms_And_Problem_Complexity  ! Analysis Of Algorithms And Problem Complexity
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#F_2_2-Nonnumerical_Algorithms_And_Problems
+name: Nonnumerical Algorithms And Problems
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#F_2-Analysis_Of_Algorithms_And_Problem_Complexity  ! Analysis Of Algorithms And Problem Complexity
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#F_2_3-Tradeoffs_Among_Complexity_Measures
+name: Tradeoffs Among Complexity Measures
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#F_2-Analysis_Of_Algorithms_And_Problem_Complexity  ! Analysis Of Algorithms And Problem Complexity
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#F_2_m-Miscellaneous
+name: Miscellaneous
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#F_2-Analysis_Of_Algorithms_And_Problem_Complexity  ! Analysis Of Algorithms And Problem Complexity
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#F_3-Logics_And_Meanings_Of_Programs
+name: Logics And Meanings Of Programs
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#F-Theory_Of_Computation  ! Theory Of Computation
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#F_3_0-General
+name: General
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#F_3-Logics_And_Meanings_Of_Programs  ! Logics And Meanings Of Programs
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#F_3_1-Specifying_And_Verifying_And_Reasoning_About_Programs
+name: Specifying And Verifying And Reasoning About Programs
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#F_3-Logics_And_Meanings_Of_Programs  ! Logics And Meanings Of Programs
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#F_3_2-Semantics_Of_Programming_Languages
+name: Semantics Of Programming Languages
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#F_3-Logics_And_Meanings_Of_Programs  ! Logics And Meanings Of Programs
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#F_3_3-Studies_Of_Program_Constructs
+name: Studies Of Program Constructs
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#F_3-Logics_And_Meanings_Of_Programs  ! Logics And Meanings Of Programs
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#F_3_m-Miscellaneous
+name: Miscellaneous
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#F_3-Logics_And_Meanings_Of_Programs  ! Logics And Meanings Of Programs
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#F_4-Mathematical_Logic_And_Formal_Languages
+name: Mathematical Logic And Formal Languages
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#F-Theory_Of_Computation  ! Theory Of Computation
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#F_4_0-General
+name: General
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#F_4-Mathematical_Logic_And_Formal_Languages  ! Mathematical Logic And Formal Languages
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#F_4_1-Mathematical_Logic
+name: Mathematical Logic
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#F_4-Mathematical_Logic_And_Formal_Languages  ! Mathematical Logic And Formal Languages
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#F_4_2-Grammars_And_Other_Rewriting_Systems
+name: Grammars And Other Rewriting Systems
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#F_4-Mathematical_Logic_And_Formal_Languages  ! Mathematical Logic And Formal Languages
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#F_4_3-Formal_Languages
+name: Formal Languages
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#F_4-Mathematical_Logic_And_Formal_Languages  ! Mathematical Logic And Formal Languages
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#F_4_m-Miscellaneous
+name: Miscellaneous
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#F_4-Mathematical_Logic_And_Formal_Languages  ! Mathematical Logic And Formal Languages
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#F_m-Miscellaneous
+name: Miscellaneous
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#F-Theory_Of_Computation  ! Theory Of Computation
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#G-Mathematics_Of_Computing
+name: Mathematics Of Computing
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#IndexTerm  ! Index term
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#G_0-General
+name: General
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#G-Mathematics_Of_Computing  ! Mathematics Of Computing
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#G_1-Numerical_Analysis
+name: Numerical Analysis
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#G-Mathematics_Of_Computing  ! Mathematics Of Computing
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#G_1_0-General
+name: General
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#G_1-Numerical_Analysis  ! Numerical Analysis
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#G_1_1-Interpolation
+name: Interpolation
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#G_1-Numerical_Analysis  ! Numerical Analysis
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#G_1_2-Approximation
+name: Approximation
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#G_1-Numerical_Analysis  ! Numerical Analysis
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#G_1_3-Numerical_Linear_Algebra
+name: Numerical Linear Algebra
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#G_1-Numerical_Analysis  ! Numerical Analysis
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#G_1_4-Quadrature_And_Numerical_Differentiation
+name: Quadrature And Numerical Differentiation
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#G_1-Numerical_Analysis  ! Numerical Analysis
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#G_1_5-Roots_Of_Nonlinear_Equations
+name: Roots Of Nonlinear Equations
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#G_1-Numerical_Analysis  ! Numerical Analysis
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#G_1_6-Optimization
+name: Optimization
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#G_1-Numerical_Analysis  ! Numerical Analysis
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#G_1_7-Ordinary_Differential_Equations
+name: Ordinary Differential Equations
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#G_1-Numerical_Analysis  ! Numerical Analysis
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#G_1_8-Partial_Differential_Equations
+name: Partial Differential Equations
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#G_1-Numerical_Analysis  ! Numerical Analysis
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#G_1_9-Integral_Equations
+name: Integral Equations
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#G_1-Numerical_Analysis  ! Numerical Analysis
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#G_1_m-Miscellaneous
+name: Miscellaneous
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#G_1-Numerical_Analysis  ! Numerical Analysis
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#G_2-Discrete_Mathematics
+name: Discrete Mathematics
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#G-Mathematics_Of_Computing  ! Mathematics Of Computing
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#G_2_0-General
+name: General
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#G_2-Discrete_Mathematics  ! Discrete Mathematics
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#G_2_1-Combinatorics
+name: Combinatorics
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#G_2-Discrete_Mathematics  ! Discrete Mathematics
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#G_2_2-Graph_Theory
+name: Graph Theory
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#G_2-Discrete_Mathematics  ! Discrete Mathematics
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#G_2_3-Applications
+name: Applications
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#G_2-Discrete_Mathematics  ! Discrete Mathematics
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#G_2_m-Miscellaneous
+name: Miscellaneous
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#G_2-Discrete_Mathematics  ! Discrete Mathematics
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#G_3-Probability_And_Statistics
+name: Probability And Statistics
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#G-Mathematics_Of_Computing  ! Mathematics Of Computing
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#G_4-Mathematical_Software
+name: Mathematical Software
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#G-Mathematics_Of_Computing  ! Mathematics Of Computing
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#G_m-Miscellaneous
+name: Miscellaneous
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#G-Mathematics_Of_Computing  ! Mathematics Of Computing
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#H-Information_Systems
+name: Information Systems
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#IndexTerm  ! Index term
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#H_0-General
+name: General
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#H-Information_Systems  ! Information Systems
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#H_1-Models_And_Principles
+name: Models And Principles
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#H-Information_Systems  ! Information Systems
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#H_1_0-General
+name: General
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#H_1-Models_And_Principles  ! Models And Principles
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#H_1_1-Systems_And_Information_Theory
+name: Systems And Information Theory
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#H_1-Models_And_Principles  ! Models And Principles
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#H_1_2-User-machine_Systems
+name: User/machine Systems
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#H_1-Models_And_Principles  ! Models And Principles
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#H_1_m-Miscellaneous
+name: Miscellaneous
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#H_1-Models_And_Principles  ! Models And Principles
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#H_2-Database_Management
+name: Database Management
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#H-Information_Systems  ! Information Systems
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#H_2_0-General
+name: General
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#H_2-Database_Management  ! Database Management
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#H_2_1-Logical_Design
+name: Logical Design
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#H_2-Database_Management  ! Database Management
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#H_2_2-Physical_Design
+name: Physical Design
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#H_2-Database_Management  ! Database Management
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#H_2_3-Languages
+name: Languages
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#H_2-Database_Management  ! Database Management
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#H_2_4-Systems
+name: Systems
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#H_2-Database_Management  ! Database Management
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#H_2_5-Heterogeneous_Databases
+name: Heterogeneous Databases
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#H_2-Database_Management  ! Database Management
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#H_2_6-Database_Machines
+name: Database Machines
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#H_2-Database_Management  ! Database Management
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#H_2_7-Database_Administration
+name: Database Administration
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#H_2-Database_Management  ! Database Management
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#H_2_8-Database_Applications
+name: Database Applications
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#H_2-Database_Management  ! Database Management
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#H_2_m-Miscellaneous
+name: Miscellaneous
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#H_2-Database_Management  ! Database Management
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#H_3-Information_Storage_And_Retrieval
+name: Information Storage And Retrieval
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#H-Information_Systems  ! Information Systems
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#H_3_0-General
+name: General
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#H_3-Information_Storage_And_Retrieval  ! Information Storage And Retrieval
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#H_3_1-Content_Analysis_And_Indexing
+name: Content Analysis And Indexing
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#H_3-Information_Storage_And_Retrieval  ! Information Storage And Retrieval
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#H_3_2-Information_Storage
+name: Information Storage
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#H_3-Information_Storage_And_Retrieval  ! Information Storage And Retrieval
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#H_3_3-Information_Search_And_Retrieval
+name: Information Search And Retrieval
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#H_3-Information_Storage_And_Retrieval  ! Information Storage And Retrieval
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#H_3_4-Systems_And_Software
+name: Systems And Software
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#H_3-Information_Storage_And_Retrieval  ! Information Storage And Retrieval
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#H_3_5-On-line_Information_Services
+name: On-line Information Services
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#H_3-Information_Storage_And_Retrieval  ! Information Storage And Retrieval
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#H_3_6-Library_Automation
+name: Library Automation
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#H_3-Information_Storage_And_Retrieval  ! Information Storage And Retrieval
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#H_3_7-Digital_Libraries
+name: Digital Libraries
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#H_3-Information_Storage_And_Retrieval  ! Information Storage And Retrieval
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#H_3_m-Miscellaneous
+name: Miscellaneous
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#H_3-Information_Storage_And_Retrieval  ! Information Storage And Retrieval
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#H_4-Information_Systems_Applications
+name: Information Systems Applications
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#H-Information_Systems  ! Information Systems
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#H_4_0-General
+name: General
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#H_4-Information_Systems_Applications  ! Information Systems Applications
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#H_4_1-Office_Automation
+name: Office Automation
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#H_4-Information_Systems_Applications  ! Information Systems Applications
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#H_4_2-Types_Of_Systems
+name: Types Of Systems
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#H_4-Information_Systems_Applications  ! Information Systems Applications
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#H_4_3-Communications_Applications
+name: Communications Applications
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#H_4-Information_Systems_Applications  ! Information Systems Applications
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#H_4_m-Miscellaneous
+name: Miscellaneous
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#H_4-Information_Systems_Applications  ! Information Systems Applications
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#H_5-Information_Interfaces_And_Presentation
+name: Information Interfaces And Presentation (i.7)
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#H-Information_Systems  ! Information Systems
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#H_5_0-General
+name: General
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#H_5-Information_Interfaces_And_Presentation  ! Information Interfaces And Presentation (i.7)
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#H_5_1-Multimedia_Information_Systems
+name: Multimedia Information Systems
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#H_5-Information_Interfaces_And_Presentation  ! Information Interfaces And Presentation (i.7)
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#H_5_2-User_Interfaces
+name: User Interfaces (d.2.2, H.1.2, I.3.6)
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#H_5-Information_Interfaces_And_Presentation  ! Information Interfaces And Presentation (i.7)
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#H_5_3-Group_And_Organization_Interfaces
+name: Group And Organization Interfaces
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#H_5-Information_Interfaces_And_Presentation  ! Information Interfaces And Presentation (i.7)
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#H_5_4-Hypertext-hypermedia
+name: Hypertext/hypermedia
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#H_5-Information_Interfaces_And_Presentation  ! Information Interfaces And Presentation (i.7)
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#H_5_5-Sound_And_Music_Computing
+name: Sound And Music Computing
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#H_5-Information_Interfaces_And_Presentation  ! Information Interfaces And Presentation (i.7)
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#H_5_m-Miscellaneous
+name: Miscellaneous
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#H_5-Information_Interfaces_And_Presentation  ! Information Interfaces And Presentation (i.7)
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#H_m-Miscellaneous
+name: Miscellaneous
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#H-Information_Systems  ! Information Systems
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I-Computing_Methodologies
+name: Computing Methodologies
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#IndexTerm  ! Index term
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_0-General
+name: General
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I-Computing_Methodologies  ! Computing Methodologies
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_1-Symbolic_And_Algebraic_Manipulation
+name: Symbolic And Algebraic Manipulation
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I-Computing_Methodologies  ! Computing Methodologies
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_1_0-General
+name: General
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_1-Symbolic_And_Algebraic_Manipulation  ! Symbolic And Algebraic Manipulation
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_1_1-Expressions_And_Their_Representation
+name: Expressions And Their Representation
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_1-Symbolic_And_Algebraic_Manipulation  ! Symbolic And Algebraic Manipulation
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_1_2-Algorithms
+name: Algorithms
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_1-Symbolic_And_Algebraic_Manipulation  ! Symbolic And Algebraic Manipulation
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_1_3-Languages_And_Systems
+name: Languages And Systems
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_1-Symbolic_And_Algebraic_Manipulation  ! Symbolic And Algebraic Manipulation
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_1_4-Applications
+name: Applications
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_1-Symbolic_And_Algebraic_Manipulation  ! Symbolic And Algebraic Manipulation
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_1_m-Miscellaneous
+name: Miscellaneous
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_1-Symbolic_And_Algebraic_Manipulation  ! Symbolic And Algebraic Manipulation
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_2-Artificial_Intelligence
+name: Artificial Intelligence
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I-Computing_Methodologies  ! Computing Methodologies
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_2_0-General
+name: General
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_2-Artificial_Intelligence  ! Artificial Intelligence
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_2_1-Applications_And_Expert_Systems
+name: Applications And Expert Systems
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_2-Artificial_Intelligence  ! Artificial Intelligence
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_2_2-Automatic_Programming
+name: Automatic Programming
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_2-Artificial_Intelligence  ! Artificial Intelligence
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_2_3-Deduction_And_Theorem_Proving
+name: Deduction And Theorem Proving
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_2-Artificial_Intelligence  ! Artificial Intelligence
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_2_4-Knowledge_Representation_Formalisms_And_Methods
+name: Knowledge Representation Formalisms And Methods
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_2-Artificial_Intelligence  ! Artificial Intelligence
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_2_5-Programming_Languages_And_Software
+name: Programming Languages And Software
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_2-Artificial_Intelligence  ! Artificial Intelligence
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_2_6-Learning
+name: Learning
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_2-Artificial_Intelligence  ! Artificial Intelligence
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_2_7-Natural_Language_Processing
+name: Natural Language Processing
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_2-Artificial_Intelligence  ! Artificial Intelligence
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_2_8-Problem_Solving__Control_Methods__And_Search
+name: Problem Solving, Control Methods, And Search
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_2-Artificial_Intelligence  ! Artificial Intelligence
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_2_9-Robotics
+name: Robotics
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_2-Artificial_Intelligence  ! Artificial Intelligence
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_2_m-Miscellaneous
+name: Miscellaneous
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_2-Artificial_Intelligence  ! Artificial Intelligence
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_3-Computer_Graphics
+name: Computer Graphics
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I-Computing_Methodologies  ! Computing Methodologies
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_3_0-General
+name: General
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_3-Computer_Graphics  ! Computer Graphics
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_3_1-Hardware_Architecture
+name: Hardware Architecture
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_3-Computer_Graphics  ! Computer Graphics
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_3_2-Graphics_Systems
+name: Graphics Systems
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_3-Computer_Graphics  ! Computer Graphics
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_3_3-Picture-image_Generation
+name: Picture/image Generation
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_3-Computer_Graphics  ! Computer Graphics
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_3_4-Graphics_Utilities
+name: Graphics Utilities
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_3-Computer_Graphics  ! Computer Graphics
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_3_5-Computational_Geometry_And_Object_Modeling
+name: Computational Geometry And Object Modeling
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_3-Computer_Graphics  ! Computer Graphics
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_3_6-Methodology_And_Techniques
+name: Methodology And Techniques
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_3-Computer_Graphics  ! Computer Graphics
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_3_7-Three-dimensional_Graphics_And_Realism
+name: Three-dimensional Graphics And Realism
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_3-Computer_Graphics  ! Computer Graphics
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_3_8-Applications
+name: Applications
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_3-Computer_Graphics  ! Computer Graphics
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_3_m-Miscellaneous
+name: Miscellaneous
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_3-Computer_Graphics  ! Computer Graphics
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_4-Image_Processing_And_Computer_Vision
+name: Image Processing And Computer Vision
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I-Computing_Methodologies  ! Computing Methodologies
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_4_0-General
+name: General
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_4-Image_Processing_And_Computer_Vision  ! Image Processing And Computer Vision
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_4_1-Digitization_And_Image_Capture
+name: Digitization And Image Capture
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_4-Image_Processing_And_Computer_Vision  ! Image Processing And Computer Vision
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_4_2-Compression
+name: Compression (coding)
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_4-Image_Processing_And_Computer_Vision  ! Image Processing And Computer Vision
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_4_3-Enhancement
+name: Enhancement
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_4-Image_Processing_And_Computer_Vision  ! Image Processing And Computer Vision
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_4_4-Restoration
+name: Restoration
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_4-Image_Processing_And_Computer_Vision  ! Image Processing And Computer Vision
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_4_5-Reconstruction
+name: Reconstruction
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_4-Image_Processing_And_Computer_Vision  ! Image Processing And Computer Vision
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_4_6-Segmentation
+name: Segmentation
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_4-Image_Processing_And_Computer_Vision  ! Image Processing And Computer Vision
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_4_7-Feature_Measurement
+name: Feature Measurement
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_4-Image_Processing_And_Computer_Vision  ! Image Processing And Computer Vision
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_4_8-Scene_Analysis
+name: Scene Analysis
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_4-Image_Processing_And_Computer_Vision  ! Image Processing And Computer Vision
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_4_9-Applications
+name: Applications
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_4-Image_Processing_And_Computer_Vision  ! Image Processing And Computer Vision
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_4_m-Miscellaneous
+name: Miscellaneous
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_4-Image_Processing_And_Computer_Vision  ! Image Processing And Computer Vision
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_5-Pattern_Recognition
+name: Pattern Recognition
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I-Computing_Methodologies  ! Computing Methodologies
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_5_0-General
+name: General
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_5-Pattern_Recognition  ! Pattern Recognition
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_5_1-Models
+name: Models
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_5-Pattern_Recognition  ! Pattern Recognition
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_5_2-Design_Methodology
+name: Design Methodology
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_5-Pattern_Recognition  ! Pattern Recognition
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_5_3-Clustering
+name: Clustering
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_5-Pattern_Recognition  ! Pattern Recognition
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_5_4-Applications
+name: Applications
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_5-Pattern_Recognition  ! Pattern Recognition
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_5_5-Implementation
+name: Implementation
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_5-Pattern_Recognition  ! Pattern Recognition
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_5_m-Miscellaneous
+name: Miscellaneous
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_5-Pattern_Recognition  ! Pattern Recognition
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_6-Simulation_And_Modeling
+name: Simulation And Modeling
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I-Computing_Methodologies  ! Computing Methodologies
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_6_0-General
+name: General
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_6-Simulation_And_Modeling  ! Simulation And Modeling
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_6_1-Simulation_Theory
+name: Simulation Theory
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_6-Simulation_And_Modeling  ! Simulation And Modeling
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_6_2-Simulation_Languages
+name: Simulation Languages
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_6-Simulation_And_Modeling  ! Simulation And Modeling
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_6_3-Applications
+name: Applications
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_6-Simulation_And_Modeling  ! Simulation And Modeling
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_6_4-Model_Validation_And_Analysis
+name: Model Validation And Analysis
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_6-Simulation_And_Modeling  ! Simulation And Modeling
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_6_5-Model_Development
+name: Model Development
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_6-Simulation_And_Modeling  ! Simulation And Modeling
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_6_6-Simulation_Output_Analysis
+name: Simulation Output Analysis
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_6-Simulation_And_Modeling  ! Simulation And Modeling
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_6_7-Simulation_Support_Systems
+name: Simulation Support Systems
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_6-Simulation_And_Modeling  ! Simulation And Modeling
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_6_8-Types_Of_Simulation
+name: Types Of Simulation
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_6-Simulation_And_Modeling  ! Simulation And Modeling
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_6_m-Miscellaneous
+name: Miscellaneous
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_6-Simulation_And_Modeling  ! Simulation And Modeling
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_7-Document_And_Text_Processing
+name: Document And Text Processing
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I-Computing_Methodologies  ! Computing Methodologies
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_7_0-General
+name: General
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_7-Document_And_Text_Processing  ! Document And Text Processing
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_7_1-Document_And_Text_Editing
+name: Document And Text Editing
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_7-Document_And_Text_Processing  ! Document And Text Processing
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_7_2-Document_Preparation
+name: Document Preparation
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_7-Document_And_Text_Processing  ! Document And Text Processing
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_7_3-Index_Generation
+name: Index Generation**
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_7-Document_And_Text_Processing  ! Document And Text Processing
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_7_4-Electronic_Publishing
+name: Electronic Publishing
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_7-Document_And_Text_Processing  ! Document And Text Processing
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_7_5-Document_Capture
+name: Document Capture
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_7-Document_And_Text_Processing  ! Document And Text Processing
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_7_m-Miscellaneous
+name: Miscellaneous
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_7-Document_And_Text_Processing  ! Document And Text Processing
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I_m-Miscellaneous
+name: Miscellaneous
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#I-Computing_Methodologies  ! Computing Methodologies
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#IndexTerm
+name: Index term
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#J-Computer_Applications
+name: Computer Applications
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#IndexTerm  ! Index term
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#J_0-General
+name: General
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#J-Computer_Applications  ! Computer Applications
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#J_1-Administrative_Data_Processing
+name: Administrative Data Processing
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#J-Computer_Applications  ! Computer Applications
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#J_2-Physical_Sciences_And_Engineering
+name: Physical Sciences And Engineering
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#J-Computer_Applications  ! Computer Applications
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#J_3-Life_And_Medical_Sciences
+name: Life And Medical Sciences
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#J-Computer_Applications  ! Computer Applications
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#J_4-Social_And_Behavioral_Sciences
+name: Social And Behavioral Sciences
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#J-Computer_Applications  ! Computer Applications
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#J_5-Arts_And_Humanities
+name: Arts And Humanities
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#J-Computer_Applications  ! Computer Applications
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#J_6-Computer-aided_Engineering
+name: Computer-aided Engineering
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#J-Computer_Applications  ! Computer Applications
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#J_7-Computers_In_Other_Systems
+name: Computers In Other Systems
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#J-Computer_Applications  ! Computer Applications
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#J_m-Miscellaneous
+name: Miscellaneous
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#J-Computer_Applications  ! Computer Applications
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Journal
+name: Journal
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Publication  ! Publication
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Article  ! Article
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Book  ! Book
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Magazine  ! Magazine
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Newsletter  ! Newsletter
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Paper  ! Paper
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Poster  ! Poster
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Proceedings  ! Proceedings
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#TechnicalReport  ! Technical report
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Thesis  ! Thesis
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Transaction  ! Transaction
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#K-Computing_Milieux
+name: Computing Milieux
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#IndexTerm  ! Index term
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#K_0-General
+name: General
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#K-Computing_Milieux  ! Computing Milieux
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#K_1-The_Computer_Industry
+name: The Computer Industry
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#K-Computing_Milieux  ! Computing Milieux
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#K_2-History_Of_Computing
+name: History Of Computing
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#K-Computing_Milieux  ! Computing Milieux
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#K_3-Computers_And_Education
+name: Computers And Education
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#K-Computing_Milieux  ! Computing Milieux
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#K_3_0-General
+name: General
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#K_3-Computers_And_Education  ! Computers And Education
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#K_3_1-Computer_Uses_In_Education
+name: Computer Uses In Education
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#K_3-Computers_And_Education  ! Computers And Education
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#K_3_2-Computer_And_Information_Science_Education
+name: Computer And Information Science Education
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#K_3-Computers_And_Education  ! Computers And Education
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#K_3_m-Miscellaneous
+name: Miscellaneous
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#K_3-Computers_And_Education  ! Computers And Education
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#K_4-Computers_And_Society
+name: Computers And Society
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#K-Computing_Milieux  ! Computing Milieux
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#K_4_0-General
+name: General
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#K_4-Computers_And_Society  ! Computers And Society
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#K_4_1-Public_Policy_Issues
+name: Public Policy Issues
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#K_4-Computers_And_Society  ! Computers And Society
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#K_4_2-Social_Issues
+name: Social Issues
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#K_4-Computers_And_Society  ! Computers And Society
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#K_4_3-Organizational_Impacts
+name: Organizational Impacts
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#K_4-Computers_And_Society  ! Computers And Society
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#K_4_4-Electronic_Commerce
+name: Electronic Commerce
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#K_4-Computers_And_Society  ! Computers And Society
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#K_4_m-Miscellaneous
+name: Miscellaneous
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#K_4-Computers_And_Society  ! Computers And Society
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#K_5-Legal_Aspects_Of_Computing
+name: Legal Aspects Of Computing
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#K-Computing_Milieux  ! Computing Milieux
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#K_5_0-General
+name: General
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#K_5-Legal_Aspects_Of_Computing  ! Legal Aspects Of Computing
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#K_5_1-Hardware-software_Protection
+name: Hardware/software Protection
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#K_5-Legal_Aspects_Of_Computing  ! Legal Aspects Of Computing
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#K_5_2-Governmental_Issues
+name: Governmental Issues
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#K_5-Legal_Aspects_Of_Computing  ! Legal Aspects Of Computing
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#K_5_m-Miscellaneous
+name: Miscellaneous
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#K_5-Legal_Aspects_Of_Computing  ! Legal Aspects Of Computing
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#K_6-Management_Of_Computing_And_Information_Systems
+name: Management Of Computing And Information Systems
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#K-Computing_Milieux  ! Computing Milieux
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#K_6_0-General
+name: General
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#K_6-Management_Of_Computing_And_Information_Systems  ! Management Of Computing And Information Systems
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#K_6_1-Project_And_People_Management
+name: Project And People Management
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#K_6-Management_Of_Computing_And_Information_Systems  ! Management Of Computing And Information Systems
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#K_6_2-Installation_Management
+name: Installation Management
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#K_6-Management_Of_Computing_And_Information_Systems  ! Management Of Computing And Information Systems
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#K_6_3-Software_Management
+name: Software Management
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#K_6-Management_Of_Computing_And_Information_Systems  ! Management Of Computing And Information Systems
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#K_6_4-System_Management
+name: System Management
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#K_6-Management_Of_Computing_And_Information_Systems  ! Management Of Computing And Information Systems
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#K_6_5-Security_And_Protection
+name: Security And Protection (d.4.6, K.4.2)
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#K_6-Management_Of_Computing_And_Information_Systems  ! Management Of Computing And Information Systems
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#K_6_m-Miscellaneous
+name: Miscellaneous
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#K_6-Management_Of_Computing_And_Information_Systems  ! Management Of Computing And Information Systems
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#K_7-The_Computing_Profession
+name: The Computing Profession
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#K-Computing_Milieux  ! Computing Milieux
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#K_7_0-General
+name: General
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#K_7-The_Computing_Profession  ! The Computing Profession
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#K_7_1-Occupations
+name: Occupations
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#K_7-The_Computing_Profession  ! The Computing Profession
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#K_7_2-Organizations
+name: Organizations
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#K_7-The_Computing_Profession  ! The Computing Profession
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#K_7_3-Testing__Certification__And_Licensing
+name: Testing, Certification, And Licensing
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#K_7-The_Computing_Profession  ! The Computing Profession
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#K_7_4-Professional_Ethics
+name: Professional Ethics
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#K_7-The_Computing_Profession  ! The Computing Profession
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#K_7_m-Miscellaneous
+name: Miscellaneous
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#K_7-The_Computing_Profession  ! The Computing Profession
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#K_8-Personal_Computing
+name: Personal Computing
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#K-Computing_Milieux  ! Computing Milieux
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#K_8_0-General
+name: General
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#K_8-Personal_Computing  ! Personal Computing
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#K_8_1-Application_Packages
+name: Application Packages
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#K_8-Personal_Computing  ! Personal Computing
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#K_8_2-Hardware
+name: Hardware
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#K_8-Personal_Computing  ! Personal Computing
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#K_8_3-Management-maintenance
+name: Management/maintenance
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#K_8-Personal_Computing  ! Personal Computing
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#K_8_m-Miscellaneous
+name: Miscellaneous
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#K_8-Personal_Computing  ! Personal Computing
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#K_m-Miscellaneous
+name: Miscellaneous
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#K-Computing_Milieux  ! Computing Milieux
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Keyword
+name: Keyword
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Magazine
+name: Magazine
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Publication  ! Publication
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Article  ! Article
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Book  ! Book
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Journal  ! Journal
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Newsletter  ! Newsletter
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Paper  ! Paper
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Poster  ! Poster
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Proceedings  ! Proceedings
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#TechnicalReport  ! Technical report
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Thesis  ! Thesis
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Transaction  ! Transaction
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#MasterThesis
+name: Master thesis
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Thesis  ! Thesis
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#PhDThesis  ! PhD thesis
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Meeting
+name: Meeting
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Event  ! Event
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Activity  ! Activity
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Conference  ! Conference
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Workshop  ! Workshop
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Monograph
+name: Monograph
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Book  ! Book
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Anthology  ! Anthology
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Biography  ! Biography
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Newsletter
+name: Newsletter
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Publication  ! Publication
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Article  ! Article
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Book  ! Book
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Journal  ! Journal
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Magazine  ! Magazine
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Paper  ! Paper
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Poster  ! Poster
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Proceedings  ! Proceedings
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#TechnicalReport  ! Technical report
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Thesis  ! Thesis
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Transaction  ! Transaction
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Paper
+name: Paper
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Publication  ! Publication
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Article  ! Article
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Book  ! Book
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Journal  ! Journal
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Magazine  ! Magazine
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Newsletter  ! Newsletter
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Poster  ! Poster
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Proceedings  ! Proceedings
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#TechnicalReport  ! Technical report
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Thesis  ! Thesis
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Transaction  ! Transaction
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#PhDThesis
+name: PhD thesis
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Thesis  ! Thesis
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#MasterThesis  ! Master thesis
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Poster
+name: Poster
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Publication  ! Publication
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Article  ! Article
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Book  ! Book
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Journal  ! Journal
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Magazine  ! Magazine
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Newsletter  ! Newsletter
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Paper  ! Paper
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Proceedings  ! Proceedings
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#TechnicalReport  ! Technical report
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Thesis  ! Thesis
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Transaction  ! Transaction
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Proceedings
+name: Proceedings
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Publication  ! Publication
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Article  ! Article
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Book  ! Book
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Journal  ! Journal
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Magazine  ! Magazine
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Newsletter  ! Newsletter
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Paper  ! Paper
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Poster  ! Poster
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#TechnicalReport  ! Technical report
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Thesis  ! Thesis
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Transaction  ! Transaction
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Project
+name: Project
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Publication
+name: Publication
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Publisher
+name: Publisher
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: p:Organization 
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#TechnicalReport
+name: Technical report
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Publication  ! Publication
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Article  ! Article
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Book  ! Book
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Journal  ! Journal
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Magazine  ! Magazine
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Newsletter  ! Newsletter
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Paper  ! Paper
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Poster  ! Poster
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Proceedings  ! Proceedings
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Thesis  ! Thesis
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Transaction  ! Transaction
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Thesis
+name: Thesis
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Publication  ! Publication
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Article  ! Article
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Book  ! Book
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Journal  ! Journal
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Magazine  ! Magazine
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Newsletter  ! Newsletter
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Paper  ! Paper
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Poster  ! Poster
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Proceedings  ! Proceedings
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#TechnicalReport  ! Technical report
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Transaction  ! Transaction
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Transaction
+name: Transaction
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Publication  ! Publication
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Article  ! Article
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Book  ! Book
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Journal  ! Journal
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Magazine  ! Magazine
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Newsletter  ! Newsletter
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Paper  ! Paper
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Poster  ! Poster
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Proceedings  ! Proceedings
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#TechnicalReport  ! Technical report
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Thesis  ! Thesis
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Workshop
+name: Workshop
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Event  ! Event
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Activity  ! Activity
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Conference  ! Conference
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Meeting  ! Meeting
+
+[Term]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#WorkshopPaper
+name: Workshop paper
+namespace: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#
+is_a: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Paper  ! Paper
+disjoint_from: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#ConferencePaper  ! Conference paper
+
+[Typedef]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#abstract
+domain: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Publication  ! Publication
+range: xsd:string 
+
+[Typedef]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#contains
+domain: __/home/obo/galaxy_dist/database/files/000/dataset_219.dat#__Description8 
+range: __/home/obo/galaxy_dist/database/files/000/dataset_219.dat#__Description9 
+
+[Typedef]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#day
+domain: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Publication  ! Publication
+range: xsd:int 
+
+[Typedef]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#describesProject
+domain: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Publication  ! Publication
+range: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Project  ! Project
+
+[Typedef]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#endDate
+domain: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Event  ! Event
+range: xsd:date 
+
+[Typedef]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#firstPage
+domain: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Publication  ! Publication
+range: xsd:string 
+
+[Typedef]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#hasEditor
+domain: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Journal  ! Journal
+range: p:Person 
+
+[Typedef]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#hasKeyword
+domain: __/home/obo/galaxy_dist/database/files/000/dataset_219.dat#__Description5 
+range: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Keyword  ! Keyword
+
+[Typedef]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#hasTopic
+domain: __/home/obo/galaxy_dist/database/files/000/dataset_219.dat#__Description11 
+range: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#IndexTerm  ! Index term
+
+[Typedef]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#isAuthorOf
+domain: p:Person 
+range: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Publication  ! Publication
+
+[Typedef]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#isChairAt
+domain: p:Person 
+range: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Event  ! Event
+
+[Typedef]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#isCollaboratorOf
+domain: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Author  ! Author
+range: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Author  ! Author
+
+[Typedef]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#isDescribedBy
+domain: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Project  ! Project
+range: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Publication  ! Publication
+
+[Typedef]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#isEditorOf
+domain: p:Person 
+range: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Journal  ! Journal
+
+[Typedef]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#isKeywordOf
+domain: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Keyword  ! Keyword
+range: __/home/obo/galaxy_dist/database/files/000/dataset_219.dat#__Description4 
+
+[Typedef]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#isOrganizerOf
+domain: p:Organization 
+range: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Event  ! Event
+
+[Typedef]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#isPartOf
+domain: __/home/obo/galaxy_dist/database/files/000/dataset_219.dat#__Description6 
+range: __/home/obo/galaxy_dist/database/files/000/dataset_219.dat#__Description7 
+
+[Typedef]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#isPublishedBy
+domain: __/home/obo/galaxy_dist/database/files/000/dataset_219.dat#__Description13 
+range: p:Organization 
+
+[Typedef]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#isPublisherOf
+domain: p:Organization 
+range: __/home/obo/galaxy_dist/database/files/000/dataset_219.dat#__Description12 
+
+[Typedef]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#isReferencedBy
+domain: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Publication  ! Publication
+range: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Publication  ! Publication
+
+[Typedef]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#isRelatedTo
+domain: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Publication  ! Publication
+range: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Event  ! Event
+
+[Typedef]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#isTopicOf
+domain: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#IndexTerm  ! Index term
+range: __/home/obo/galaxy_dist/database/files/000/dataset_219.dat#__Description10 
+
+[Typedef]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#isWrittenBy
+domain: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Publication  ! Publication
+range: p:Person 
+
+[Typedef]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#isbn
+domain: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Book  ! Book
+range: xsd:string 
+
+[Typedef]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#lastPage
+domain: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Publication  ! Publication
+range: xsd:string 
+
+[Typedef]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#month
+domain: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Publication  ! Publication
+range: xsd:int 
+
+[Typedef]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#number
+domain: __/home/obo/galaxy_dist/database/files/000/dataset_219.dat#__Description15 
+range: xsd:string 
+
+[Typedef]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#references
+domain: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Publication  ! Publication
+range: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Publication  ! Publication
+
+[Typedef]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#similarPublication
+domain: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Publication  ! Publication
+range: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Publication  ! Publication
+
+[Typedef]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#source
+domain: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Publication  ! Publication
+range: xsd:string 
+
+[Typedef]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#startDate
+domain: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Event  ! Event
+range: xsd:date 
+
+[Typedef]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#takesPlaceAt
+domain: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Event  ! Event
+range: p:Address 
+
+[Typedef]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#title
+domain: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Publication  ! Publication
+range: xsd:string 
+
+[Typedef]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#volume
+domain: __/home/obo/galaxy_dist/database/files/000/dataset_219.dat#__Description16 
+range: xsd:int 
+
+[Typedef]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#web
+domain: __/home/obo/galaxy_dist/database/files/000/dataset_219.dat#__Description14 
+range: xsd:string 
+
+[Typedef]
+id: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#year
+domain: http://mapekus.fiit.stuba.sk/mapekus/ontologies/v0.2/publication#Publication  ! Publication
+range: xsd:int 
+
