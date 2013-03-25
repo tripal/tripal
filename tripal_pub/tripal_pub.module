@@ -16,6 +16,15 @@ require_once "includes/remote_search.inc";
 
 
 /**
+ *
+ * @ingroup tripal_pub
+ */
+function tripal_pub_init() {
+  drupal_add_js(drupal_get_path('theme', 'tripal') . '/js/tripal_pub.js');
+}
+
+
+/**
  * Implementation of hook_tripal_pub_node_info().
  *
  * This node_info, is a simple node that describes the functionallity of the module.
@@ -69,10 +78,17 @@ function tripal_pub_menu() {
   );
 
   $items['admin/tripal/tripal_pub/import_setup'] = array(
-    'title' => t('Publication Finder'),
+    'title' => t('Pub Loader Setup'),
     'description' => t('Finds publications using remote publication databases (e.g. PubMed).'),
     'page callback' => 'tripal_pub_remote_search_page',
-    'access arguments' => array('access content'),
+    'access arguments' => array('administer tripal pubs'),
+    'type ' => MENU_CALLBACK,
+  );
+  
+  $items['admin/tripal/tripal_pub/import_setup/criteria/%/%'] = array(
+    'page callback' => 'tripal_pub_remote_search_page_update_criteria',
+    'page arguments' => array(5, 6),
+    'access arguments' => array('administer tripal pubs'),    
     'type ' => MENU_CALLBACK,
   );
   
@@ -1246,5 +1262,15 @@ function publication_author_validate($element) {
   }
 }
 
+/*
+ * 
+ */
 
-
+function tripal_pub_form_alter(&$form, &$form_state, $form_id) {
+  if ($form_id == "tripal_pub_remote_search_form") {    
+    // updating the form through the ahah callback sets the action of
+    // the form to the ahah callback URL. We need to set it back
+    // to the normal form URL
+    $form['#action'] = url("admin/tripal/tripal_pub/import_setup");
+  }
+}

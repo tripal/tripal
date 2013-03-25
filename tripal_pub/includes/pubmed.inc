@@ -14,16 +14,34 @@ function tripal_pub_remote_search_pubmed($search_array, $num_to_retrieve, $pager
   
   // convert the terms list provicded by the caller into a string with words
   // separated by a '+' symbol.
-  $terms = '';
-  if ($search_array['search_terms']) {
-    $terms = '(' . implode("+", preg_split('/\s+/', trim($search_array['search_terms']))) . '[Title/Abstract]) AND ';
-  }
-  if ($search_array['author']) {
-    $terms = "(" . $search_array . "[Author]) AND ";
-  }
-  $terms = substr($terms, 0, -4);
-  
+  $num_criteria = $search_array['num_criteria'];
+  $days = $search_array['num_criteria'];
+
+  $search_str = '';
+  for ($i = 0; $i <= $num_criteria; $i++) {
+    $search_terms = $search_array['criteria'][$i]['search_terms'];
+    $scope = $search_array['criteria'][$i]['scope'];
+    $op = $search_array['criteria'][$i]['operation'];
+    
+    if ($op) {
+      $search_str .= "$op";
+    }
+    
+    $search_str .= '(';
+    $search_str .= implode("+", preg_split('/\s+/', trim($search_terms)));
+    if($scope == 'title') {
+      $search_str .= '[Title]';
+    }    
+    elseif($scope == 'author') {
+      $search_str .= '[Author]';
+    }    
+    elseif($scope == 'abstract') {
+      $search_str .= '[Title/Abstract]';
+    }
+    $search_str .= ')'; 
+  }  
   $search_array['limit'] = $num_to_retrieve;
+  $search_array['search_terms'] = $search_str;
 
   // we want to get the list of pubs using the search terms but using a Drupal style pager
   $pubs = tripal_pager_callback('tripal_pub_remote_search_pubmed_range',  
