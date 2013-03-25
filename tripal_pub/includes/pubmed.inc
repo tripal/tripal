@@ -10,26 +10,25 @@
 /**
  *
  */
-function tripal_pub_remote_search_pubmed($terms_str, $num_to_retrieve, $pager_id) {
-
+function tripal_pub_remote_search_pubmed($search_array, $num_to_retrieve, $pager_id) {
+  
   // convert the terms list provicded by the caller into a string with words
   // separated by a '+' symbol.
-  $search_terms = implode("+", preg_split('/\s+/', trim($terms_str)));
+  $terms = '';
+  if ($search_array['search_terms']) {
+    $terms = '(' . implode("+", preg_split('/\s+/', trim($search_array['search_terms']))) . '[Title/Abstract]) AND ';
+  }
+  if ($search_array['author']) {
+    $terms = "(" . $search_array . "[Author]) AND ";
+  }
+  $terms = substr($terms, 0, -4);
+  
+  $search_array['limit'] = $num_to_retrieve;
 
   // we want to get the list of pubs using the search terms but using a Drupal style pager
-  $pubs = tripal_pager_callback('tripal_pub_remote_search_pubmed_range',
-    'tripal_pub_remote_search_pubmed_count', $num_to_retrieve, $pager_id, $search_terms);
-  
-  if ($pubs) {
-    foreach ($pubs as $pub) {
-      /*
-      $pmid = $output[$i];
-  
-      //aquiring the pubmed id from the pub table based on the uniquename
-      $values = array( 'uniquename' => $pmid);
-      $pubmed_id = tripal_core_chado_select('pub', array('pub_id'), $values); */
-    }
-  }
+  $pubs = tripal_pager_callback('tripal_pub_remote_search_pubmed_range',  
+    $num_to_retrieve, $pager_id, 'tripal_pub_remote_search_pubmed_count', $search_array);
+ 
   return $pubs;
 }
 
@@ -38,15 +37,18 @@ function tripal_pub_remote_search_pubmed($terms_str, $num_to_retrieve, $pager_id
  * tripal_pager_callback function.  This function returns a count of
  * the dataset to be paged.
  */
-function tripal_pub_remote_search_pubmed_count($terms) {
+function tripal_pub_remote_search_pubmed_count($search_array) {
+  $terms = $search_array['search_terms'];
+  $days = $search_array['days'];
+  $limit = $search_array['limit'];
+  
+  $results = tripal_pub_remote_search_pubmed_search_init($terms, $limit, $days);
+  $_SESSION['tripal_pub_pubmed_query'][$terms]['Count'] = $results['Count'];
+  $_SESSION['tripal_pub_pubmed_query'][$terms]['WebEnv'] = $results['WebEnv'];
+  $_SESSION['tripal_pub_pubmed_query'][$terms]['QueryKey'] = $results['QueryKey'];
+  
+  return $results['Count'];
 
-  // do a quick query using the provided terms, set the session variables
-  // so we can reuse this query and then return the total number of records.
-  $results = tripal_pub_remote_search_pubmed_query($terms);
-  $_SESSION['tripal_pub_pubmed_query']['WebEnv'] = $results['WebEnv'];
-  $_SESSION['tripal_pub_pubmed_query']['QueryKey'] = $results['QueryKey'];
-    
-  return $total_records;
 }
 
 /*
@@ -54,44 +56,53 @@ function tripal_pub_remote_search_pubmed_count($terms) {
  * tripal_pager_callback function.  This function returns the results
  * within the specified range
  */
-function tripal_pub_remote_search_pubmed_range($terms, $start = 0, $limit = 10) {
-
+function tripal_pub_remote_search_pubmed_range($search_array, $start = 0, $limit = 10) {
+  $terms = $search_array['search_terms'];
+  $days = $search_array['days'];
+  $limit = $search_array['limit'];
+  
   // get the query_key and the web_env from the previous count query.
-  $query_key = $_SESSION['tripal_pub_pubmed_query']['QueryKey'];
-  $web_env = $_SESSION['tripal_pub_pubmed_query']['WebEnv'];
-     
-  // repeat the search performed previously (using WebEnv & QueryKey) to retrieve
-  // the PMID's within the range specied.  The PMIDs will be returned as a text list
-  $pmids_txt = tripal_pub_remote_search_pubmed_fetch($terms, $query_key, $web_env, 'uilist', 'text', $start, $limit);  
+  $query_key = $_SESSION['tripal_pub_pubmed_query'][$terms]['QueryKey'];
+  $web_env = $_SESSION['tripal_pub_pubmed_query'][$terms]['WebEnv'];
+  
+  // if this function has been called without calling the count function
+  // then we need to do the query.
+  if (!$query_key) {
+    $results = tripal_pub_remote_search_pubmed_search_init($terms, $limit, $days);
+    $_SESSION['tripal_pub_pubmed_query']['WebEnv'] = $results['WebEnv'];
+    $_SESSION['tripal_pub_pubmed_query']['QueryKey'] = $results['QueryKey']; 
+    $query_key =  $results['QueryKey'];
+    $web_env = $results['WebEnv'];
+  }
+
+  // now get the list of PMIDs from the previous search
+  $pmids_txt = tripal_pub_remote_search_pubmed_fetch($query_key, $web_env, 'uilist', 'text', $start, $limit);  
   
   // iterate through each PMID and get the publication record. This requires a new search and new fetch
   $pmids = explode("\n", trim($pmids_txt));
   $pubs = array();
   foreach ($pmids as $pmid) {
-    
-    // first intialize the search for a single PMID. This will give us a new query key and Web env 
-    $term = $pmid . "[uid]";    
-    $query = tripal_pub_remote_search_pubmed_query($terms); 
-    
-    // second retrieve the individual record
-    $pub_xml = tripal_pub_remote_search_pubmed_fetch($terms, $query['QueryKey'], $query['WebEnv'], 'null', 'xml', 0, 1);
+    // now retrieve the individual record
+    $pub_xml = tripal_pub_remote_search_pubmed_fetch($query_key, $web_env, 'null', 'xml', 0, 1, array('id' => $pmid));
     $pub = tripal_pub_remote_search_pubmed_parse_pubxml($pub_xml);
     $pubs[] = $pub;    
-    
   } 
-  dpm($pubs);
   return $pubs;
 }
 
 /*
  * 
  */
-function tripal_pub_remote_search_pubmed_query($terms){
+function tripal_pub_remote_search_pubmed_search_init($terms, $retmax, $days = 0){
    
   // do a search for a single result so that we can establish a history, and get
   // the number of records. Once we have the number of records we can retrieve
   // those requested in the range.
-  $query_url = "http://www.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=Pubmed&retmax=1&usehistory=y&term=$terms";
+  $query_url = "http://www.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=Pubmed&retmax=$retmax&usehistory=y&term=$terms";
+  if($days) {
+    $query_url .= "&reldate=$days&datetype=edat";
+  }
+  //dpm($query_url);
   $rfh = fopen($query_url, "r");
   if (!$rfh) {
     drupal_set_message('Could not perform Pubmed query. Cannot connect to Entrez.', 'error');
@@ -104,25 +115,34 @@ function tripal_pub_remote_search_pubmed_query($terms){
     $query_xml .= fread($rfh, 255);
   }
   fclose($rfh);
+  //dpm("<pre>$query_xml</pre>");
   $xml = new XMLReader();
   $xml->xml($query_xml);
   
   // iterate though the child nodes of the <eSearchResult> tag and get the count, history and query_id
   $result = array();
   while ($xml->read()) {
+    $element = $xml->name;
+  
+    if ($xml->nodeType == XMLReader::END_ELEMENT and $element == 'WebEnv') {
+      // we've read as much as we need. If we go too much further our counts 
+      // will get messed up by other 'Count' elements.  so we're done.
+      break;
+    }
     if ($xml->nodeType == XMLReader::ELEMENT) {
-      $element = $xml->name;
-      $xml->read();
-      $value = $xml->value;
+      
       switch ($element) {
         case 'Count':
-          $result['Count'] = $value;
+          $xml->read();
+          $result['Count'] = $xml->value;
           break;        
         case 'WebEnv':
-          $result['WebEnv'] = $value;
+          $xml->read();
+          $result['WebEnv'] = $xml->value;
           break;
         case 'QueryKey':
-          $result['QueryKey'] = $value;
+          $xml->read();
+          $result['QueryKey'] = $xml->value;
           break;
       }
     }
@@ -133,18 +153,38 @@ function tripal_pub_remote_search_pubmed_query($terms){
 /*
  * 
  */
-function tripal_pub_remote_search_pubmed_fetch($terms, $query_key, $web_env, $rettype = 'null', 
-  $retmod = 'null', $start = 0, $limit = 10){
-  
+function tripal_pub_remote_search_pubmed_fetch($query_key, $web_env, $rettype = 'null', 
+  $retmod = 'null', $start = 0, $limit = 10, $args = array()){
+
   // repeat the search performed previously (using WebEnv & QueryKey) to retrieve
   // the PMID's within the range specied.  The PMIDs will be returned as a text list
   $fetch_url = "http://www.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?rettype=$rettype&retmode=$retmod&retstart=$start&retmax=$limit&db=Pubmed&query_key=$query_key&WebEnv=$web_env";
+  //dpm($fetch_url);
+  foreach ($args as $key => $value) {
+    if(is_array($value)) {
+      $fetch_url .= "&$key=";
+      foreach ($value as $item) {
+        $fetch_url .= "$item,";
+      }
+      $fetch_url = substr($fetch_url, 0, -1); // remove trailing comma  
+    }
+    else {
+      $fetch_url .= "&$key=$value";
+    }
+  }
+  
   $rfh = fopen($fetch_url, "r");
+  if (!$rfh) {
+    drupal_set_message('Could not perform Pubmed query. Cannot connect to Entrez.', 'error');
+    return '';    
+  }
   $results = '';
-  while (!feof($rfh)) {
-    $results .= fread($rfh, 255);
-  }  
-  fclose($rfh);
+  if($rfh) {
+    while (!feof($rfh)) {
+      $results .= fread($rfh, 255);
+    }  
+    fclose($rfh);
+  }
   
   return $results;
 }
@@ -163,6 +203,10 @@ function tripal_pub_remote_search_pubmed_fetch($terms, $query_key, $web_env, $re
  */
 function tripal_pub_remote_search_pubmed_parse_pubxml($pub_xml) {
   $pub = array();
+  
+  if (!$pub_xml) {
+    return $pub;
+  }
   
   // read the XML and iterate through it.
   $xml = new XMLReader();
@@ -232,7 +276,24 @@ function tripal_pub_remote_search_pubmed_parse_pubxml($pub_xml) {
       }
     }
   }
+  $pub['citation'] = $pub['author_list'] . 
+    '. <a href="http://www.ncbi.nlm.nih.gov/pubmed/' . $pub['pub_accession'] . '" target="_blank">' . $pub['title'] .  '</a> ' .
+    $pub['journal_iso_abbreviation']. '. ' . $pub['publication_date'];
+  if ($pub['volume'] or $pub['issue']) {
+    $pub['citation'] .= '; ';  
+  }
+  if ($pub['volume']) {
+    $pub['citation'] .= $pub['volume'];
+  }
+  if ($pub['issue']) {
+    $pub['citation'] .= '(' . $pub['issue'] . ')';
+  }
+  if ($pub['pages']) {
+    $pub['citation'] .= ':' . $pub['pages'];
+  }
+  $pub['citation'] .= '. PubMed PMID: ' . $pub['pub_accession']; 
   
+  $pub['xml'] = $pub_xml;
   return $pub;
 }
 
@@ -369,7 +430,7 @@ function tripal_pub_remote_search_pubmed_parse_publication_type($xml, &$pub) {
     $element = $xml->name;    
       
     if ($xml->nodeType == XMLReader::END_ELEMENT and $element == 'PublicationTypeList') {
-      // we've reached the </Pagination> element so we're done.
+      // we've reached the </PublicationTypeList> element so we're done.
       return;
     }
     if ($xml->nodeType == XMLReader::ELEMENT) {
@@ -439,7 +500,9 @@ function tripal_pub_remote_search_pubmed_parse_pagination($xml, &$pub) {
       switch ($element) {
         case 'MedlinePgn':  
           $xml->read();
-          $pub['pages'] = $xml->value;
+          if(trim($xml->value)) {
+            $pub['pages'] = $xml->value;
+          }
           break;          
         default:
           break;
@@ -455,11 +518,8 @@ function tripal_pub_remote_search_pubmed_parse_journal($xml, &$pub) {
   while ($xml->read()) {
     $element = $xml->name;
       
-    if ($xml->nodeType == XMLReader::END_ELEMENT){
-      // if we're at the </AuthorList> element then we're done with the article...
-      if($element == 'Journal') {
-        return;
-      }
+    if ($xml->nodeType == XMLReader::END_ELEMENT and $element == 'Journal') {
+      return;
     }
     if ($xml->nodeType == XMLReader::ELEMENT) {
       switch ($element) {
@@ -477,7 +537,7 @@ function tripal_pub_remote_search_pubmed_parse_journal($xml, &$pub) {
           break;
         case 'JournalIssue':   
           // valid values of cited_medium are 'Internet' and 'Print'
-          $cited_medium = $xml->getAttribute('CitedMedium');          
+          $cited_medium = $xml->getAttribute('CitedMedium');                    
           tripal_pub_remote_search_pubmed_parse_journal_issue($xml, $pub);       
           break;        
         case 'Title': 
@@ -502,7 +562,7 @@ function tripal_pub_remote_search_pubmed_parse_journal_issue($xml, &$pub) {
   while ($xml->read()) {
     $element = $xml->name;
       
-    if ($xml->nodeType == XMLReader::END_ELEMENT and $element = 'JournalIssue'){
+    if ($xml->nodeType == XMLReader::END_ELEMENT and $element == 'JournalIssue'){
       // if we're at the </JournalIssue> element then we're done 
       return;
     }
@@ -510,7 +570,7 @@ function tripal_pub_remote_search_pubmed_parse_journal_issue($xml, &$pub) {
       switch ($element) {
         case 'Volume': 
           $xml->read();
-          $pub['volumn'] = $xml->value;         
+          $pub['volume'] = $xml->value;         
           break;
         case 'Issue':
           $xml->read();
@@ -521,8 +581,9 @@ function tripal_pub_remote_search_pubmed_parse_journal_issue($xml, &$pub) {
           $year = $date['year'];
           $month = $date['month'];
           $day = $date['day']; 
-          $medline = $date['medline']; 
-            
+          $medline = $date['medline'];
+           
+          $pub['year'] = $year;            
           if ($month and $day and $year) {
             $pub['publication_date'] = "$year $month $day";
           }
@@ -536,7 +597,7 @@ function tripal_pub_remote_search_pubmed_parse_journal_issue($xml, &$pub) {
             $pub['publication_date'] = $medline;
           }
           else {
-            $pub['publication_date'] = "Unknown";
+            $pub['publication_date'] = "Date Unknown";
           }             
           break;
         default:
@@ -555,7 +616,7 @@ function tripal_pub_remote_search_pubmed_parse_date ($xml, $element_name) {
   while ($xml->read()) {
     $element = $xml->name;
       
-    if ($xml->nodeType == XMLReader::END_ELEMENT and $element = $element_name){
+    if ($xml->nodeType == XMLReader::END_ELEMENT and $element == $element_name){
       // if we're at the </$element_name> then we're done 
       return $date;
     }

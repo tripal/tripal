@@ -7,10 +7,6 @@ require_once "includes/remote_search.inc";
 
 /**
  * @file
- * This file contains all the functions which provide functionality to this module.
- * This module was developed by Chad N.A. Krilow and Lacey-Anne Sanderson,
- * The University of Saskatchewan.
- *
  *
  * The Tripal Publication module allows you to search the PubMed databse for academic articles,
  * that relate to user specified tpoic\s. As well, it allows management of publications so that
@@ -62,16 +58,24 @@ function tripal_pub_menu() {
     'access arguments' => array('administer tripal pubs'),
     'type' => MENU_NORMAL_ITEM
   );
-
+ 
   $items['admin/tripal/tripal_pub/configuration'] = array(
     'title' => 'Configuration',
     'description' => 'Configuration for this module',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_pub_configuration_form'),
     'access arguments' => array('administer tripal pubs'),
-    'type' => MENU_NORMAL_ITEM
-    );
+    'type' => MENU_NORMAL_ITEM  
+  );
 
+  $items['admin/tripal/tripal_pub/import_setup'] = array(
+    'title' => t('Publication Finder'),
+    'description' => t('Finds publications using remote publication databases (e.g. PubMed).'),
+    'page callback' => 'tripal_pub_remote_search_page',
+    'access arguments' => array('access content'),
+    'type ' => MENU_CALLBACK,
+  );
+  
   // Automatically generate checkboxes.
   $items['node/add/tripal_pub/ahah_authors'] = array(
     'title' => 'Add Additional Authors',
@@ -85,14 +89,6 @@ function tripal_pub_menu() {
   $items['tripal_pub/js/%'] = array(
     'page callback' => 'tripal_pub_js',
     'page arguments' => array(2),
-    'access arguments' => array('access content'),
-    'type ' => MENU_CALLBACK,
-  );
-  
-  $items['pub_finder'] = array(
-    'title' => t('Publication Finder'),
-    'description' => t('Finds publications using remote publication databases (e.g. PubMed).'),
-    'page callback' => 'tripal_pub_remote_search_page',
     'access arguments' => array('access content'),
     'type ' => MENU_CALLBACK,
   );
@@ -118,7 +114,13 @@ function tripal_pub_theme() {
     'publication_author' => array(
       'arguments' => array('element' => NULL)
     ),
-   'tripal_pub_admin' => array(
+    'publication_author' => array(
+      'arguments' => array('element' => NULL)
+    ),
+    'tripal_pub_remote_search_form' => array(
+       'arguments' => array('form'),
+    ),
+    'tripal_pub_admin' => array(
       'template' => 'tripal_pub_admin',  
       'arguments' =>  array(NULL),  
       'path' => drupal_get_path('module', 'tripal_pub') . '/theme' 
