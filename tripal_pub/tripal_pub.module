@@ -1,6 +1,6 @@
 <?php
 
-//require_once('cron.php');
+require_once "api/tripal_pub.api.inc";
 require_once "includes/tripal_pub.admin.inc";
 require_once "includes/pubmed.inc";
 require_once "includes/remote_search.inc";
@@ -21,6 +21,7 @@ require_once "includes/remote_search.inc";
  */
 function tripal_pub_init() {
   drupal_add_js(drupal_get_path('theme', 'tripal') . '/js/tripal_pub.js');
+  drupal_add_css(drupal_get_path('theme', 'tripal') . '/css/tripal_pub.css');
 }
 
 

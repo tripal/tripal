@@ -11,6 +11,7 @@ function tripal_pub_remote_search_page() {
   
   // generate the search form 
   $form = drupal_get_form('tripal_pub_remote_search_form');
+  $output = $form;
 
   // retrieve any results
   $remote_db = $_SESSION['tripal_pub_search']['remote_db'];
@@ -26,34 +27,35 @@ function tripal_pub_remote_search_page() {
     $search_array['criteria'][$i]['scope'] = $_SESSION['tripal_pub_search']['criteria'][$i]['scope'];  
     $search_array['criteria'][$i]['operation'] = $_SESSION['tripal_pub_search']['criteria'][$i]['operation'];
   }
+  
     
-  // get the list of publications from the remote database using the search criteria.
-  $pubs = tripal_pub_get_remote_search_results($remote_db, $search_array, $limit, $pager_id);
-
-  // generate the pager
-  $total_pages = $pager_total[$pager_id];
-  $total_items = $pager_total_items[$pager_id];
-  $page = isset($_GET['page']) ? $_GET['page'] : '0';
-  $pager = theme('pager');
+  if ($_SESSION['tripal_pub_search']['perform_search']) {
+    // get the list of publications from the remote database using the search criteria.  
+    $pubs = tripal_pub_get_remote_search_results($remote_db, $search_array, $limit, $pager_id);
   
-  // iterate through the results and construct the table displaying the publications
-  $rows = array();
-  $i = $page * $limit + 1;
-  if (count($pubs) > 0) {
-    foreach ($pubs as $pub) {
-      $rows[] = array(number_format($i), $pub['citation']);
-      $i++;
+    // generate the pager
+    $total_pages = $pager_total[$pager_id];
+    $total_items = $pager_total_items[$pager_id];
+    $page = isset($_GET['page']) ? $_GET['page'] : '0';
+    $pager = theme('pager');
+    
+    // iterate through the results and construct the table displaying the publications
+    $rows = array();
+    $i = $page * $limit + 1;
+    if (count($pubs) > 0) {
+      foreach ($pubs as $pub) {
+        $rows[] = array(number_format($i), $pub['citation']);
+        $i++;
+      }
     }
+    $headers = array('', 'Citation');
+    $table = theme('table', $headers, $rows);   
+  
+    // join all to form the results
+    $output .= "<br><p><b>Found " . number_format($total_items) .  
+      ". Page " . ($page + 1) . " of $total_pages. " .
+      " Results</b></br>" . $table . '</p>' . $pager;    
   }
-  $headers = array('', 'Citation');
-  $table = theme('table', $headers, $rows);
-  
-  
-  // join all to form the final page
-  $output =  $form . "<p><b>Found " . number_format($total_items) .  
-    ". Page " . ($page + 1) . " of $total_pages. " .
-    " Results</b></br>" . $table . '</p>' . $pager;    
-  
   return $output;
 }
 /*
@@ -70,11 +72,19 @@ function theme_tripal_pub_remote_search_form($form) {
         array('data' => drupal_render($element["add-$i"]) . drupal_render($element["remove-$i"]), 'width' => '5%'),
       );
     }
-  }
+  } 
   $headers = array('Operation','Scope', 'Search Terms', '');
+  
+  $markup  = '<div id="pub-search-form-row1">';
+  $markup .= '  <div id="pub-search-form-col1">' . drupal_render($form['loader_name']) . '</div>';
+  $markup .= '  <div id="pub-search-form-col2">' . drupal_render($form['remote_db']) . '</div>';
+  $markup .= '  <div id="pub-search-form-col3">' . drupal_render($form['days']) . '</div>';
+  $markup .= '</div>';
+  $markup .= theme('table', $headers, $rows);
+  
   $form['criteria'] = array(
     '#type' => 'markup',
-    '#value' =>  theme('table', $headers, $rows),
+    '#value' =>  $markup,
     '#weight' => -10,
   );
   return drupal_render($form);
@@ -91,7 +101,7 @@ function tripal_pub_remote_search_form(&$form_state = NULL) {
   $remote_db = $form_state['values']['remote_db'] ? $form_state['values']['remote_db'] : $_SESSION['tripal_pub_search']['remote_db'];
   $days = $form_state['values']['days'] ? $form_state['values']['days'] : $_SESSION['tripal_pub_search']['days']; 
   $num_criteria = $form_state['values']['num_criteria'] ? $form_state['values']['num_criteria'] : $_SESSION['tripal_pub_search']['num_criteria'];
-  $loader_name = $form_state['values']['loader_name'];
+  $loader_name = $form_state['values']['loader_name'] ? $form_state['values']['loader_name'] : $_SESSION['tripal_pub_search']['loader_name'];
   
   // change the number of criteria based on form_state post data.
   if (!$num_criteria) {
@@ -109,11 +119,12 @@ function tripal_pub_remote_search_form(&$form_state = NULL) {
     '#title'         => t('Loader Name'),
     '#description'   => t('Please provide a name for this loader setup..'),
     '#default_value' => $loader_name,
+    '#required'      => TRUE,
   );
    
   $remote_dbs = array('Pubmed' => 'Pubmed');
   $form['remote_db'] = array(
-    '#title' => t('Remote Publication Database'),
+    '#title' => t('Remote Database'),
     '#type' => 'select',
     '#options' => $remote_dbs,
     '#default_value' => $remote_db,
@@ -122,6 +133,14 @@ function tripal_pub_remote_search_form(&$form_state = NULL) {
   $form['num_criteria']= array(
     '#type'          => 'hidden',
     '#default_value' => $num_criteria,
+  );
+  
+  $form['days'] = array(
+    '#type'          => 'textfield',
+    '#title'         => t('Days'),
+    '#description'   => t('The number of days <br>from today to search.'),
+    '#default_value' => $days,
+    '#size'          => 5,
   );
   
   for($i = 0; $i <= $num_criteria; $i++) {
@@ -138,6 +157,7 @@ function tripal_pub_remote_search_form(&$form_state = NULL) {
       '#type'          => 'textfield',
       '#description'   => t('Please provide a list of words, separated by spaces for searching.'),
       '#default_value' => $search_terms,
+      '#required'      => TRUE,
     );
     $form['criteria'][$i]["scope-$i"] = array(
       '#type'          => 'select',
@@ -189,20 +209,12 @@ function tripal_pub_remote_search_form(&$form_state = NULL) {
       );
     }
   }
-
   
-  $form['days'] = array(
-    '#type'          => 'textfield',
-    '#title'         => t('Number of Days'),
-    '#description'   => t('Please provide the number of days to limit your search.  For example, to search only the last 60 days, enter the number 60 in the field.'),
-    '#default_value' => $days,
-  );
-  
-  $form['submit'] = array(
+  $form['test'] = array(
     '#type'         => 'submit',
     '#value'        => t('Test Criteria'),
   );
-  $form['submit'] = array(
+  $form['save'] = array(
     '#type'         => 'submit',
     '#value'        => t('Save Criteria'),
   );
@@ -217,6 +229,7 @@ function tripal_pub_remote_search_form_validate($form, &$form_state) {
   $num_criteria = $form_state['values']['num_criteria'];
   $remote_db =  $form_state['values']["remote_db"];
   $days =  trim($form_state['values']["days"]);
+  $loader_name =  trim($form_state['values']["loader_name"]);
 
   for ($i = 0; $i <= $num_criteria; $i++) {            
     $search_terms =  trim($form_state['values']["search_terms-$i"]);
@@ -226,9 +239,6 @@ function tripal_pub_remote_search_form_validate($form, &$form_state) {
     if ($days and !is_numeric($days) or preg_match('/\./', $days)) {
       form_set_error("days-$i", "Please enter a numeric, non decimal value, for the number of days.");
     }
-    if (!$search_terms) {
-      form_set_error("search_terms-$i", "Please enter a value for searching.");
-    }
   }
 }
 
@@ -236,14 +246,17 @@ function tripal_pub_remote_search_form_validate($form, &$form_state) {
  *
  */
 function tripal_pub_remote_search_form_submit($form, &$form_state) {
- 
+   
   $num_criteria = $form_state['values']['num_criteria'];
   $remote_db =  $form_state['values']["remote_db"];
   $days =  trim($form_state['values']["days"]);
+  $loader_name =  trim($form_state['values']["loader_name"]);
     
   $_SESSION['tripal_pub_search']['remote_db'] = $remote_db;
   $_SESSION['tripal_pub_search']['days'] = $days;
   $_SESSION['tripal_pub_search']['num_criteria'] = $num_criteria;
+  $_SESSION['tripal_pub_search']['loader_name'] = $loader_name;
+  unset($_SESSION['tripal_pub_search']['criteria']);
   for ($i = 0; $i <= $num_criteria; $i++) {
     $search_terms =  trim($form_state['values']["search_terms-$i"]);
     $scope =  $form_state['values']["scope-$i"];
@@ -254,23 +267,24 @@ function tripal_pub_remote_search_form_submit($form, &$form_state) {
       'scope' => $scope,
       'operation' => $operation
     );
-  } 
-}
-/*
- * 
- */
-function tripal_pub_get_remote_search_results($remote_db, $search_array, $num_to_retrieve, $pager_id) {
-   
-  // construct the callback function using the remote database name
-  $callback = 'tripal_pub_remote_search_' . strtolower($remote_db);
-   
-  // now call the callback function to get the rsults
-  $pubs = array();
-  if (function_exists($callback)) {
-    $pubs = call_user_func($callback, $search_array, $num_to_retrieve, $pager_id);
-  }    
-  
-  return $pubs;  
+  }   
+
+  if ($form_state['values']['op'] == 'Test Criteria') {
+    $_SESSION['tripal_pub_search']['perform_search'] = 1;
+  }
+  if ($form_state['values']['op'] == 'Save Criteria') {
+    unset($_SESSION['tripal_pub_search']['perform_search']);
+    $record = array(
+      'name' => $loader_name,
+      'criteria' => serialize($_SESSION['tripal_pub_search']),
+    );
+    if(drupal_write_record('tripal_pub_import', $record)){
+      drupal_set_message('Publication import settings saved');
+    }
+    else {
+      drupal_set_message('Could not save publication import settings', 'error');
+    }
+  }  
 }
 
 /*

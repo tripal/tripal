@@ -15,7 +15,7 @@ function tripal_pub_remote_search_pubmed($search_array, $num_to_retrieve, $pager
   // convert the terms list provicded by the caller into a string with words
   // separated by a '+' symbol.
   $num_criteria = $search_array['num_criteria'];
-  $days = $search_array['num_criteria'];
+  $days = $search_array['days'];
 
   $search_str = '';
   for ($i = 0; $i <= $num_criteria; $i++) {

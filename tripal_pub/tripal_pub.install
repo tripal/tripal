@@ -68,20 +68,19 @@ function tripal_pub_schema() {
     ),
     'primary key' => array('nid'),
   );
-      /*
-       //a intfield, not null and project_id is the unique_id of the project in chado
-       'pubmed_id' => array(
-          'type' => 'int',
-          'unsigned' => TRUE,
-          'not null' => FALSE,
-      ),
-      'author' => array(
-        'type' => 'text',
-        'size' => 'normal',
-        'not null' => TRUE,
-        'default' => '',
-        'description' => 'The Author Name.',
-      ),*/
+  $schema['tripal_pub_import'] = array(
+    'fields' => array(
+      'pub_import_id' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+      'name' => array('type' => 'varchar', 'length' => 255, 'not null' => TRUE),
+      'criteria' => array('type' => 'text', 'size' => 'normal', 'not null' => TRUE, 'description' => 'Contains a serialized PHP array containing the search criteria'),
+      'disabled'  => array('type' => 'int', 'unsigned' => TRUE, 'not NULL' => TRUE, 'default' => 0),      
+    ),
+    'primary key' => array('pub_import_id'),
+    'indexes' => array(
+      'name' => array('name')
+    ),
+  );
+       
   return $schema;
 }
 
