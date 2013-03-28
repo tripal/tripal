@@ -15,9 +15,18 @@ function tripal_analysis_install() {
   // Use schema API to create database table.
   drupal_install_schema('tripal_analysis');
 
-  // Create analysisfeatureprop table in chado. This cannot be accomplished
-  // by calling drupal_install_schema because it's not in the drupal db. This
-  // table is used to store Blast xml and Interpro html/goterms
+  // we may need the analysisfeatureprop table if it doesn't already exist
+  tripal_analysis_create_analysisfeatureprop();
+  
+  // add cvterms
+  tripal_analysis_add_cvterms();
+}
+/*
+ * 
+ */
+function tripal_analysis_create_analysisfeatureprop(){
+  // Create analysisfeatureprop table in chado.  This is needed for Chado 
+  // version 1.11, the table exists in Chado 1.2. 
   if (!db_table_exists('analysisfeatureprop')) {
     $sql = "CREATE TABLE analysisfeatureprop (".
             "  analysisfeatureprop_id SERIAL PRIMARY KEY, ".
@@ -30,9 +39,14 @@ function tripal_analysis_install() {
             "  CONSTRAINT analysisfeature_id_type_id_rank UNIQUE(analysisfeature_id, type_id, rank)".
             ")";
     chado_query($sql);
-  }
-
-  // add some cvterms
+  } 
+}
+/*
+ * 
+ */
+function tripal_analysis_add_cvterms(){
+  
+  // add analysis_type
   $term = array(
     'name' => 'analysis_type', 
     'def' => 'The type of analysis was performed. This value is automatically set by '.
@@ -40,18 +54,21 @@ function tripal_analysis_install() {
              '(e.g. tripal_analysis_blast, tripal_analysis_go).'
   );
   tripal_cv_add_cvterm($term, 'tripal', 0, 1, 'tripal');
+  
+  // add analysis_date
   $term = array(
     'name' => 'analysis_date', 
     'def' => 'The date that an analysis was performed.'
   );
   tripal_cv_add_cvterm($term, 'tripal', 0, 1, 'tripal');
+  
+  // add analysis_short_name
   $term = array(
     'name' => 'analysis_short_name', 
     'def' => 'A computer legible (no spaces or special characters) abbreviation for the analysis.'
   );     
-  tripal_cv_add_cvterm($term, 'tripal', 0, 1 , 'tripal');
+  tripal_cv_add_cvterm($term, 'tripal', 0, 1 , 'tripal'); 
 }
-
 /**
  * Implementation of hook_uninstall().
  */

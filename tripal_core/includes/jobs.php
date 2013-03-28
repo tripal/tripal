@@ -15,9 +15,13 @@ function tripal_jobs_report_form($form, &$form_state = NULL) {
 
   // set the default values
   $default_status = $form_state['values']['job_status'];
+  $default_job_name = $form_state['values']['job_name'];
 
   if (!$default_status) {
-    $default_status = $_SESSION['tripal_job_status_filter'];
+    $default_status = $_SESSION['tripal_job_filter']['job_status'];    
+  }
+  if (!$default_job_name) {
+    $default_job_name = $_SESSION['tripal_job_filter']['job_name'];
   }
 
   $form['job_status'] = array(
@@ -33,6 +37,12 @@ function tripal_jobs_report_form($form, &$form_state = NULL) {
 	    'Error'     => 'Error',
 	  ),
   );
+  $form['job_name'] = array(
+    '#type'          => 'textfield',
+    '#title'         => t('Filter by Job Name'),
+    '#description'   => t('The jobs will be filtered if text provided is contained in the job name'),
+    '#default_value' => $default_job_name,        
+  );
 
   $form['submit'] = array(
     '#type'         => 'submit',
@@ -45,8 +55,12 @@ function tripal_jobs_report_form($form, &$form_state = NULL) {
  * @ingroup tripal_core
  */
 function tripal_jobs_report_form_submit($form, &$form_state = NULL) {
+  
   $job_status = $form_state['values']['job_status'];
-  $_SESSION['tripal_job_status_filter'] = $job_status;
+  $job_name = $form_state['values']['job_name'];
+  
+  $_SESSION['tripal_job_filter']['job_status'] = $job_status;
+  $_SESSION['tripal_job_filter']['job_name'] = $job_name;
 }
 /**
  * Returns the Tripal Job Report
@@ -62,7 +76,8 @@ function tripal_jobs_report() {
   // change the status of jobs that have errored out
   tripal_jobs_check_running();
 
-	$jobs_status_filter = $_SESSION['tripal_job_status_filter'];
+	$job_status = $_SESSION['tripal_job_filter']['job_status'];
+	$job_name = $_SESSION['tripal_job_filter']['job_name'];
 
   $sql = "
     SELECT
@@ -70,13 +85,21 @@ function tripal_jobs_report() {
       TJ.status as job_status, TJ,submit_date,TJ.start_time,
       TJ.end_time,TJ.priority,U.name as username
     FROM {tripal_jobs} TJ
-      INNER JOIN {users} U on TJ.uid = U.uid ";
-  if ($jobs_status_filter) {
-    $sql .= "WHERE TJ.status = '%s' ";
+      INNER JOIN {users} U on TJ.uid = U.uid 
+    WHERE 1=1 
+  ";
+  $args = array();
+  if ($job_status) {
+    $sql .= "AND TJ.status = '%s' ";
+    $args[] = $job_status;
+  }
+  if ($job_name) {
+    $sql .= "AND TJ.job_name like '%%%s%%'";
+    $args[] = $job_name;
   }
   $sql .= "ORDER BY job_id DESC";
 
-  $jobs = pager_query($sql, 25, 0, "SELECT count(*) FROM ($sql) as t1", $jobs_status_filter);
+  $jobs = pager_query($sql, 25, 0, "SELECT count(*) FROM ($sql) as t1", $args);
   $header = array(
     'Job ID',
     'User',

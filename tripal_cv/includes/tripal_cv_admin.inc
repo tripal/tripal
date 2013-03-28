@@ -7,7 +7,7 @@
  */
 function tripal_cv_edit_page() {
   $output .= drupal_get_form('tripal_cv_select_form');
-  $output .= '<div id="db-edit-div">Please select a vocabulary above to view or edit</div>';
+  $output .= '<div id="cv-edit-div">Please select a vocabulary above to view or edit</div>';
 
   return $output;
 }
@@ -37,7 +37,7 @@ function tripal_cv_select_form() {
     '#options' => $cvs,
     '#ahah' => array(
       'path' => 'admin/tripal/tripal_cv/cv/edit/js',
-      'wrapper' => 'db-edit-div',
+      'wrapper' => 'cv-edit-div',
       'effect' => 'fade',
       'event' => 'change',
       'method' => 'replace',

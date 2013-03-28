@@ -16,6 +16,8 @@
 
 require('api/tripal_analysis.api.inc');
 require('includes/tripal_analysis_privacy.inc');
+require('includes/tripal_analysis.admin.inc');
+
 
 
 /**

@@ -3,5 +3,5 @@ description = A module for uploading tab-delimit data into GMOD chado database u
 core = 6.x
 project = tripal_bulk_loader
 package = Tripal
-version = 6.x-1.0
+version = 6.x-1.0-fix1
 dependencies[] = tripal_core

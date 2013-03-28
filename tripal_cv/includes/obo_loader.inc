@@ -222,7 +222,7 @@ function tripal_cv_load_obo_v1_2_file($obo_name, $file, $jobid = NULL, $is_new =
   if ($is_new) {
     tripal_cv_load_obo_add_ref($obo_name, $file);
   }
-  print "Ontology Sucessfully loaded!\n";
+  print "\nOntology Sucessfully loaded!\n";
 
   // update the cvtermpath table
   tripal_cv_load_update_cvtermpath($newcvs, $jobid);
@@ -348,19 +348,12 @@ function tripal_cv_load_obo_v1_2($file, $jobid = NULL, &$newcvs) {
   $newcvs[$header['default-namespace'][0]] = $defaultcv->cv_id;
 
   // add any typedefs to the vocabulary first
-  $sql = "
-    SELECT * FROM tripal_obo_temp
-    WHERE type = 'Typedef' 
-  ";
-  $typedefs = chado_query($sql);
-  while ($typedef = db_fetch_object($typedefs)) {
-    $term = unserialize(base64_decode($typedef->stanza));
-    tripal_cv_obo_process_term($term, $defaultcv->name, 1, $newcvs, $default_db);
-  }
+  print "\nStep 2: Loading type defs...\n"; 
+  tripal_cv_obo_load_typedefs($defaultcv, $newcvs, $default_db, $jobid);
 
   // next add terms to the vocabulary
-  print "\nStep 2: Loading terms...\n";  
-  if (!tripal_cv_obo_process_terms($defaultcv->name, $jobid, $newcvs, $default_db)) {
+  print "\nStep 3: Loading terms...\n";  
+  if (!tripal_cv_obo_process_terms($defaultcv, $jobid, $newcvs, $default_db)) {
     tripal_cv_obo_quiterror('Cannot add terms from this ontology');
   }
 
@@ -380,6 +373,58 @@ function tripal_cv_obo_quiterror($message) {
 
 }
 
+/*
+ * 
+ */
+function tripal_cv_obo_load_typedefs($defaultcv, $newcvs, $default_db, $jobid){
+  $sql = "
+    SELECT * 
+    FROM tripal_obo_temp
+    WHERE type = 'Typedef' 
+  ";
+  $typedefs = chado_query($sql);
+  
+    $sql = "
+    SELECT count(*) as num_terms
+    FROM tripal_obo_temp
+    WHERE type = 'Typedef'     
+  "; 
+  $result = db_fetch_object(chado_query($sql));
+  $count = $result->num_terms;
+  
+  // calculate the interval for updates
+  $interval = intval($count * 0.0001);
+  if ($interval < 1) {
+    $interval = 1;
+  }
+  $i = 0;
+  while ($typedef = db_fetch_object($typedefs)) {
+    $term = unserialize(base64_decode($typedef->stanza));
+    
+    // update the job status every interval
+    if ($jobid and $i % $interval == 0) {
+      $complete = ($i / $count) * 33.33333333;
+      tripal_job_set_progress($jobid, intval($complete + 33.33333333)); 
+      printf("%d of %d records. (%0.2f%%) Memory: %s bytes\r", $i, $count, $complete * 3, number_format(memory_get_usage()));                                                             
+    } 
+    
+    tripal_cv_obo_process_term($term, $defaultcv->name, 1, $newcvs, $default_db);
+    
+    $i++;
+  }
+    // set the final status
+  if ($jobid) {
+    if ($count > 0) {
+      $complete = ($i / $count) * 33.33333333;
+    }
+    else {
+      $complete = 33.33333333;
+    }
+    tripal_job_set_progress($jobid, intval($complete + 33.33333333)); 
+    printf("%d of %d records. (%0.2f%%) Memory: %s bytes\r", $i, $count, $complete * 3, number_format(memory_get_usage()));
+  }  
+  return 1;
+}
 /**
  *
  * @ingroup tripal_obo_loader
@@ -391,11 +436,18 @@ function tripal_cv_obo_process_terms($defaultcv, $jobid = NULL, &$newcvs, $defau
   // iterate through each term from the OBO file and add it
   $sql = "
     SELECT * FROM tripal_obo_temp
-    WHERE type = 'Term' 
+    WHERE type = 'Term'
     ORDER BY id
   ";
   $terms = chado_query($sql);
-  $count = pg_num_rows($terms);
+  
+  $sql = "
+    SELECT count(*) as num_terms
+    FROM tripal_obo_temp
+    WHERE type = 'Term'     
+  "; 
+  $result = db_fetch_object(chado_query($sql));
+  $count = $result->num_terms;
   
   // calculate the interval for updates
   $interval = intval($count * 0.0001);
@@ -407,13 +459,13 @@ function tripal_cv_obo_process_terms($defaultcv, $jobid = NULL, &$newcvs, $defau
     
     // update the job status every interval
     if ($jobid and $i % $interval == 0) {
-      $complete = ($i / $count) * 50;
-      tripal_job_set_progress($jobid + 50, intval($complete)); 
-      printf("%d of %d records. (%0.2f%%) Memory: %s bytes\r", $i, $count, $complete * 2, number_format(memory_get_usage()));                                                             
+      $complete = ($i / $count) * 33.33333333;
+      tripal_job_set_progress($jobid, intval($complete + 66.666666)); 
+      printf("%d of %d records. (%0.2f%%) Memory: %s bytes\r", $i, $count, $complete * 3, number_format(memory_get_usage()));                                                             
     }                                 
     
     // add/update this term
-    if (!tripal_cv_obo_process_term($term, $defaultcv, 0, $newcvs, $default_db)) {
+    if (!tripal_cv_obo_process_term($term, $defaultcv->name, 0, $newcvs, $default_db)) {
       tripal_cv_obo_quiterror("Failed to process terms from the ontology");
     }
 
@@ -422,9 +474,14 @@ function tripal_cv_obo_process_terms($defaultcv, $jobid = NULL, &$newcvs, $defau
   
   // set the final status
   if ($jobid) {
-    $complete = ($i / $count) * 50;
-    tripal_job_set_progress($jobid + 50, intval($complete)); 
-    printf("%d of %d records. (%0.2f%%) Memory: %s bytes\r", $i, $count, $complete * 2, number_format(memory_get_usage()));
+    if ($count > 0) {
+      $complete = ($i / $count) * 33.33333333;
+    }
+    else {
+      $complete = 33.33333333;
+    }
+    tripal_job_set_progress($jobid, intval($complete + 66.666666)); 
+    printf("%d of %d records. (%0.2f%%) Memory: %s bytes\r", $i, $count, $complete * 3, number_format(memory_get_usage()));
   }                                                             
   
   return 1;
@@ -810,7 +867,7 @@ function tripal_cv_obo_parse($obo_file, &$header, $jobid) {
     if ($jobid and $intv_read >= $interval) {            
       $percent = sprintf("%.2f", ($num_read / $filesize) * 100);
       print "Parsing Line $line_num (" . $percent . "%). Memory: " . number_format(memory_get_usage()) . " bytes.\r";
-      tripal_job_set_progress($jobid, intval(($num_read / $filesize) * 50));
+      tripal_job_set_progress($jobid, intval(($num_read / $filesize) * 33.33333333));
       $intv_read = 0;      
     }
     
@@ -895,6 +952,9 @@ function tripal_cv_obo_parse($obo_file, &$header, $jobid) {
       watchdog('T_obo_loader', "ERROR: Cannot insert stanza into temporary table.", array(), 'error');
       exit;
     }
+    $percent = sprintf("%.2f", ($num_read / $filesize) * 100);
+    print "Parsing Line $line_num (" . $percent . "%). Memory: " . number_format(memory_get_usage()) . " bytes.\r";
+    tripal_job_set_progress($jobid, intval(($num_read / $filesize) * 33.33333333));
   }
   return $default_db;
 }

@@ -1,0 +1,436 @@
+format-version: 1.2
+date: 22:03:2013 17:53
+saved-by: ficklin
+auto-generated-by: OBO-Edit 2.1-beta18
+default-namespace: tripal_pub
+
+[Term]
+id: TPUB:0000001
+name: publication_dbxref
+relationship: part_of TPUB:0000037 ! publication_details
+
+[Term]
+id: TPUB:0000002
+name: publication
+
+[Term]
+id: TPUB:0000003
+name: citation
+relationship: part_of TPUB:0000037 ! publication_details
+
+[Term]
+id: TPUB:0000004
+name: book
+is_a: TPUB:0000015 ! publication_type
+
+[Term]
+id: TPUB:0000005
+name: pub_accession
+relationship: part_of TPUB:0000001 ! publication_dbxref
+
+[Term]
+id: TPUB:0000006
+name: collective
+comment: Used when an author is a collective of individuals rather than a person.
+is_a: TPUB:0000015 ! publication_type
+relationship: part_of TPUB:0000016 ! author
+
+[Term]
+id: TPUB:0000007
+name: masters_thesis
+relationship: part_of TPUB:0000006 ! collective
+
+[Term]
+id: TPUB:0000008
+name: PhD_thesis
+comment: PhD thesis or dissertation.
+relationship: part_of TPUB:0000006 ! collective
+
+[Term]
+id: TPUB:0000009
+name: pub_database
+relationship: part_of TPUB:0000001 ! publication_dbxref
+
+[Term]
+id: TPUB:0000010
+name: received_date
+is_a: TPUB:0000046 ! publication_date
+
+[Term]
+id: TPUB:0000011
+name: conference_name
+relationship: part_of TPUB:0000037 ! publication_details
+
+[Term]
+id: TPUB:0000012
+name: book_chapter
+is_a: TPUB:0000015 ! publication_type
+
+[Term]
+id: TPUB:0000013
+name: unknown_type
+is_a: TPUB:0000015 ! publication_type
+
+[Term]
+id: TPUB:0000014
+name: web_page
+is_a: TPUB:0000015 ! publication_type
+
+[Term]
+id: TPUB:0000015
+name: publication_type
+relationship: part_of TPUB:0000002 ! publication
+
+[Term]
+id: TPUB:0000016
+name: author
+relationship: part_of TPUB:0000002 ! publication
+
+[Term]
+id: TPUB:0000017
+name: first_initials
+comment: The first initials for the author including the initial for the first name and any middle names (not the initial for the last name).
+relationship: part_of TPUB:0000016 ! author
+
+[Term]
+id: TPUB:0000018
+name: surname
+synonym: "family_name" EXACT []
+synonym: "last_name" EXACT []
+relationship: part_of TPUB:0000016 ! author
+
+[Term]
+id: TPUB:0000019
+name: given_name
+synonym: "first_name" EXACT []
+relationship: part_of TPUB:0000016 ! author
+
+[Term]
+id: TPUB:0000020
+name: middle_names
+comment: One or more middle names for this person.
+relationship: part_of TPUB:0000016 ! author
+
+[Term]
+id: TPUB:0000021
+name: middle_initials
+comment: The middle initials for this person excluding the initial for the given name and the surname.
+relationship: part_of TPUB:0000016 ! author
+
+[Term]
+id: TPUB:0000022
+name: affiliation
+relationship: part_of TPUB:0000016 ! author
+
+[Term]
+id: TPUB:0000023
+name: department
+comment: The department of an institution or organization.
+relationship: part_of TPUB:0000022 ! affiliation
+
+[Term]
+id: TPUB:0000024
+name: institution
+relationship: part_of TPUB:0000022 ! affiliation
+
+[Term]
+id: TPUB:0000025
+name: organization
+comment: A generic term for any organization.
+relationship: part_of TPUB:0000022 ! affiliation
+
+[Term]
+id: TPUB:0000026
+name: address
+relationship: part_of TPUB:0000016 ! author
+
+[Term]
+id: TPUB:0000027
+name: address_line1
+relationship: part_of TPUB:0000026 ! address
+
+[Term]
+id: TPUB:0000028
+name: address_line2
+relationship: part_of TPUB:0000026 ! address
+
+[Term]
+id: TPUB:0000029
+name: address_line3
+relationship: part_of TPUB:0000026 ! address
+
+[Term]
+id: TPUB:0000030
+name: city
+relationship: part_of TPUB:0000026 ! address
+
+[Term]
+id: TPUB:0000031
+name: state
+relationship: part_of TPUB:0000026 ! address
+
+[Term]
+id: TPUB:0000032
+name: province
+relationship: part_of TPUB:0000026 ! address
+
+[Term]
+id: TPUB:0000033
+name: country
+relationship: part_of TPUB:0000026 ! address
+
+[Term]
+id: TPUB:0000034
+name: postal_code
+relationship: part_of TPUB:0000026 ! address
+
+[Term]
+id: TPUB:0000035
+name: epub_date
+is_a: TPUB:0000046 ! publication_date
+
+[Term]
+id: TPUB:0000036
+name: accepted_date
+is_a: TPUB:0000046 ! publication_date
+
+[Term]
+id: TPUB:0000037
+name: publication_details
+relationship: part_of TPUB:0000002 ! publication
+
+[Term]
+id: TPUB:0000038
+name: journal_ISO_abbreviation
+relationship: part_of TPUB:0000037 ! publication_details
+created_by: stephen
+creation_date: 2013-03-20T07:02:18Z
+
+[Term]
+id: TPUB:0000039
+name: title
+relationship: part_of TPUB:0000037 ! publication_details
+
+[Term]
+id: TPUB:0000040
+name: journal
+is_a: TPUB:0000015 ! publication_type
+
+[Term]
+id: TPUB:0000041
+name: patent
+is_a: TPUB:0000015 ! publication_type
+
+[Term]
+id: TPUB:0000042
+name: volume
+relationship: part_of TPUB:0000037 ! publication_details
+
+[Term]
+id: TPUB:0000043
+name: issue
+relationship: part_of TPUB:0000037 ! publication_details
+
+[Term]
+id: TPUB:0000044
+name: pages
+relationship: part_of TPUB:0000037 ! publication_details
+
+[Term]
+id: TPUB:0000045
+name: start_page
+relationship: part_of TPUB:0000037 ! publication_details
+
+[Term]
+id: TPUB:0000046
+name: publication_date
+relationship: part_of TPUB:0000037 ! publication_details
+
+[Term]
+id: TPUB:0000047
+name: authors
+relationship: part_of TPUB:0000037 ! publication_details
+
+[Term]
+id: TPUB:0000048
+name: ISSN
+comment: International Standard Serial Number (ISSN) is an eight-character value that uniquely identifies a periodicals in print or other media. There are two sub categories of ISSN: print, p-ISSN and electronic e-ISSN.
+relationship: part_of TPUB:0000037 ! publication_details
+
+[Term]
+id: TPUB:0000049
+name: DOI
+comment: Digital Object Identifier.
+is_a: TPUB:0000080 ! elocation
+
+[Term]
+id: TPUB:0000050
+name: abstract
+relationship: part_of TPUB:0000037 ! publication_details
+
+[Term]
+id: TPUB:0000051
+name: comments
+relationship: part_of TPUB:0000037 ! publication_details
+
+[Term]
+id: TPUB:0000052
+name: URL
+relationship: part_of TPUB:0000037 ! publication_details
+
+[Term]
+id: TPUB:0000053
+name: file_attachment
+relationship: part_of TPUB:0000037 ! publication_details
+
+[Term]
+id: TPUB:0000059
+name: year
+relationship: part_of TPUB:0000046 ! publication_date
+
+[Term]
+id: TPUB:0000064
+name: language
+relationship: part_of TPUB:0000037 ! publication_details
+
+[Term]
+id: TPUB:0000065
+name: keywords
+relationship: part_of TPUB:0000037 ! publication_details
+
+[Term]
+id: TPUB:0000066
+name: original_title
+relationship: part_of TPUB:0000037 ! publication_details
+
+[Term]
+id: TPUB:0000067
+name: alias
+relationship: part_of TPUB:0000037 ! publication_details
+
+[Term]
+id: TPUB:0000068
+name: journal_code
+relationship: part_of TPUB:0000037 ! publication_details
+
+[Term]
+id: TPUB:0000069
+name: pISSN
+is_a: TPUB:0000048 ! ISSN
+
+[Term]
+id: TPUB:0000070
+name: conference_proceedings
+comment: A generic term for any article, talk, workshop or poster that is part of a conference proceedings.
+is_a: TPUB:0000015 ! publication_type
+
+[Term]
+id: TPUB:0000071
+name: journal_article
+is_a: TPUB:0000015 ! publication_type
+
+[Term]
+id: TPUB:0000072
+name: eISSN
+is_a: TPUB:0000048 ! ISSN
+
+[Term]
+id: TPUB:0000073
+name: proceedings_talk
+is_a: TPUB:0000070 ! conference_proceedings
+
+[Term]
+id: TPUB:0000074
+name: proceedings_article
+is_a: TPUB:0000070 ! conference_proceedings
+
+[Term]
+id: TPUB:0000075
+name: journal_name
+relationship: part_of TPUB:0000037 ! publication_details
+
+[Term]
+id: TPUB:0000076
+name: proceedings_poster
+is_a: TPUB:0000070 ! conference_proceedings
+
+[Term]
+id: TPUB:0000077
+name: conference_year
+relationship: part_of TPUB:0000037 ! publication_details
+
+[Term]
+id: TPUB:0000078
+name: proceedings_computer_demo
+is_a: TPUB:0000070 ! conference_proceedings
+
+[Term]
+id: TPUB:0000079
+name: vernacular_title
+comment: The title of a publication in its original foreign language.
+relationship: part_of TPUB:0000037 ! publication_details
+creation_date: 2013-03-22T05:35:02Z
+
+[Term]
+id: TPUB:0000080
+name: elocation
+comment: Provides an electronic location for the items. This includes Digital Object Identifiers (DOI) or Publisher Item Identifiers (PII).
+relationship: part_of TPUB:0000037 ! publication_details
+creation_date: 2013-03-22T05:36:24Z
+
+[Term]
+id: TPUB:0000081
+name: publication_model
+comment: This term is used to identify the medium/media in which the item is published. There are four possible values which are the same as used by: print, print-electronic, electronic,  electronic-print.  Further explanation:  "print", the journal is published in print format only; "print-electronic",  the journal is published in both print and electronic format; "electronic", the journal is published in electronic format only; "electronic-print", the journal is published first in electronic format followed by print.
+relationship: part_of TPUB:0000037 ! publication_details
+creation_date: 2013-03-22T02:37:00Z
+
+[Term]
+id: TPUB:0000082
+name: PII
+comment: Publisher Item Identifier.
+is_a: TPUB:0000081 ! publication_model
+
+[Term]
+id: TPUB:0000083
+name: structured_abstract_part
+comment: A subset of an abstract.  For example, abstracts that have section headers such as 'Purpose', 'Results', etc., each of these sections would be an individual part of a structured abstract.
+relationship: part_of TPUB:0000050 ! abstract
+
+[Term]
+id: TPUB:0000084
+name: copyright
+comment: Information regarding the copyright of the publication.
+relationship: part_of TPUB:0000037 ! publication_details
+
+[Term]
+id: TPUB:0000085
+name: suffix
+comment: Name suffix such as 2nd, 3rd, Jr, Sr., etc.
+relationship: part_of TPUB:0000016 ! author
+creation_date: 2013-03-22T04:10:15Z
+
+[Term]
+id: TPUB:0000087
+name: language_abbr
+comment: An abbreviation for a language (e.g. 3 letters)
+is_a: TPUB:0000064 ! language
+
+[Term]
+id: TPUB:0000100
+name: journal_country
+comment: The country where the journal was published.
+relationship: part_of TPUB:0000037 ! publication_details
+created_by: ficklin
+creation_date: 2013-03-22T05:52:57Z
+
+[Typedef]
+id: is_a
+name: is_a
+is_transitive: true
+
+[Typedef]
+id: part_of
+name: part_of
+is_transitive: true
+
