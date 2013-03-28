@@ -579,8 +579,11 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
         $attr_name = $attr_uniquename;  
       }
       // if the row has a parent then generate a uniquename using the parent name
+      // add the date to the name in the event there are more than one child with
+      // the same parent.
       elseif (array_key_exists('Parent', $tags)) {
-        $attr_uniquename = $tags['Parent'][0] . "-$type-$landmark:$fmin..$fmax";
+        $date = getdate();
+        $attr_uniquename = $tags['Parent'][0] . "-$type-$landmark-" . $date[0] . ":$fmin..$fmax";
         $attr_name = $attr_uniquename;
       }
       // generate a unique name based on the date, type and location
@@ -592,35 +595,62 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
       }      
     }
 
-    // if a name is not specified then use the unique name
+    // if a name is not specified then use the unique name as the name
     if (strcmp($attr_name, '')==0) {
       $attr_name = $attr_uniquename;
     }
 
-    // if an ID attribute is not specified then use the attribute name and
-    // hope for the best
+    // if an ID attribute is not specified then use the attribute name plus the date
     if (!$attr_uniquename) {
-      $attr_uniquename = $attr_name;
+      $date = getdate();
+      $attr_uniquename = $attr_name . '-' . $date[0];
     }
 
-    // make sure the landmark sequence exists in the database.  We don't
-    // know the type of the landmark so we'll hope that it's unique across
-    // all types. If not we'll error out.  This test is only necessary if
-    // if the landmark and the uniquename are different.  If they are the same
-    // then this is the information for the landmark
-    if (!$remove and strcmp($landmark, $attr_uniquename) != 0 ) {
+    // make sure the landmark sequence exists in the database.  If the user 
+    // has not specified a landmark type (and it's not requiredin the GFF foramt)
+    // then We don't know the type of the landmark so we'll hope that it's unique across
+    // all types for the orgnaism. Only do this test if the landmark and the feature are
+    // different.
+    if (!$remove and !(strcmp($landmark, $attr_uniquename) == 0 or strcmp($landmark, $attr_name) == 0)) {
       $select = array(
-         'organism_id' => $organism_id,
-         'uniquename'  => $landmark,
-      );
+        'organism_id' => $organism_id,
+        'uniquename'  => $landmark,
+      );      
       $columns = array('count(*) as num_landmarks');
-      $options = array('statement_name' => 'sel_feature_numland');      
-      $count = tripal_core_chado_select('feature', $columns, $select, $options);   
-      if (!$count or count($count) == 0 or $count[0]->num_landmarks == 0) {
-        watchdog('T_gff3_loader', "The landmark '%landmark' cannot be found for this organism (" . $organism->genus . " " . $organism->species . ") " .
-              "Please add the landmark and then retry the import of this GFF3 ".
-              "file", array('%landmark' => $landmark), WATCHDOG_ERROR);
-        return '';
+      $options = array('statement_name' => 'sel_feature_numland');
+      if ($landmark_type) {
+        $select['type_id'] = array(
+          'name' => $landmark_type,
+        );
+        $options = array('statement_name' => 'sel_feature_numlandty');
+      }      
+      $count = tripal_core_chado_select('feature', $columns, $select, $options);        
+      if (!$count or count($count) == 0 or $count[0]->num_landmarks == 0) {        
+        // now look for the landmark using the name rather than uniquename.
+        $select = array(
+          'organism_id' => $organism_id,
+          'name'  => $landmark,
+        );
+        $columns = array('count(*) as num_landmarks');
+        $options = array('statement_name' => 'sel_feature_numlandna');              
+        if ($landmark_type) {
+          $select['type_id'] = array(
+            'name' => $landmark_type,
+          );
+          $options = array('statement_name' => 'sel_feature_numlandnaty');
+        }
+        $count = tripal_core_chado_select('feature', $columns, $select, $options); 
+        if (!$count or count($count) == 0 or $count[0]->num_landmarks == 0) {
+          watchdog('T_gff3_loader', "The landmark '%landmark' cannot be found for this organism (%species) " .
+                "Please add the landmark and then retry the import of this GFF3 ".
+                "file", array('%landmark' => $landmark, '%species' => $organism->genus . " " . $organism->species), WATCHDOG_ERROR);
+          return '';
+        }
+        elseif($count[0]->num_landmarks > 1) {
+          watchdog('T_gff3_loader', "The landmark '%landmark' has more than one entry for this organism (%species) " .
+                "Cannot continue", array('%landmark' => $landmark, '%species' => $organism->genus . " " . $organism->species), WATCHDOG_ERROR);
+          return '';  
+        }
 
       }
       if ($count[0]->num_landmarks > 1) {
