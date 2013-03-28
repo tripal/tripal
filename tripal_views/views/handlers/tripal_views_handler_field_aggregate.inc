@@ -74,29 +74,57 @@ class tripal_views_handler_field_aggregate extends chado_views_handler_field {
 
   function pre_render(&$values) {
 
+    // further check the results to see if this field is a postgresql array
+    $this->aggregated = chado_wrapper_is_aggregated_by_result($this, $values);
+
     if ($this->aggregated) {
+
+      // Split Aggregated Results
+      chado_wrapper_split_array_agg_results($this, $values);
+
+      // Now each result is of the following form:
+      // stockprop_id::16554,stock_id::12037,type_id::3650,value::Sm2008-P13,rank::1...
+      // we need to split it further
       foreach ($values as $k => $v) {
-        $values[$k]->{$this->field_alias} = $this->split_array_agg_results($v->{$this->field_alias});
+        $this->split_aggregated_result_with_keys($values[$k]->{$this->field_alias});
+      }
+    }
+  }
 
-        foreach ($values[$k]->{$this->field_alias} as &$val) {
+  // Split a single value in the $values array into an associative array
+  // $value will be an array where each value is of the following form:
+  // stockprop_id::16554,stock_id::12037,type_id::3650,value::Sm2008-P13,rank::1...
+  function split_aggregated_result_with_keys(&$value) {
 
-          // First, get the token values
-          $subparts = explode(',', $val);
-          $token_values = array();
-          foreach ($subparts as $ssk => $ssv) {
-            if (preg_match('/(.*)::(.*)/', $ssv, $matches)) {
-              $token_values[ '[all-' . $matches[1] . ']' ] = $matches[2];
-            }
+    foreach ($value as $k => $v) {
+
+      if (preg_match('/.*::.*/',$v)) {
+        $subparts = explode(',', $v);
+        $token_values = array();
+        foreach ($subparts as $ssk => $ssv) {
+          if (preg_match('/(.*)::(.*)/', $ssv, $matches)) {
+            $values[ $matches[1] ] = $matches[2];
+            $tokens[ '[' . $this->options['id'] . '-' . $matches[1] . ']' ] = $matches[2];
           }
+        }
 
-          // Now manually sub them in
-          $val = str_replace(array_keys($token_values), $token_values, $this->options['format']['format_string']);
-
+        if ($this->options['format']['format_string']) {
+          $value[$k] = str_replace(array_keys($tokens), $tokens, $this->options['format']['format_string']);
+        }
+        else {
+          $value[$k] = $values;
         }
       }
-
+      else {
+        if ($this->options['format']['format_string']) {
+          $value[$k] = '';
+        }
+        else {
+          $value[$k] = array();
+        }
+      }
     }
-
+    $value = array_filter($value);
   }
 
 }
