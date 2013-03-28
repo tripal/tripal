@@ -133,7 +133,9 @@ class chado_views_handler_field extends views_handler_field {
   function render_node_link($link_text, $values) {
 
     $node_field = $this->view->field['nid'];
-    $nid = $values->{$node_field->aliases['nid']};
+    if (isset($node_field->aliases['nid'])) {
+      $nid = $values->{$node_field->aliases['nid']};
+    }
 
     if ($nid) {
       return l($link_text, 'node/' . $nid);
