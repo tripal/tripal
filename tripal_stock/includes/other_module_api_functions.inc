@@ -44,7 +44,7 @@ function get_max_chado_rank($tablename, $where_options) {
   }
 
   $result = db_fetch_object(chado_query(
-    "SELECT max(rank) as max_rank, count(rank) as count FROM %s WHERE %s",
+    "SELECT max(rank) as max_rank, count(rank) as count FROM {%s} WHERE %s",
     $tablename,
     implode(' AND ', $where)
   ));

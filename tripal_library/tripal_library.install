@@ -29,7 +29,7 @@ function tripal_library_install() {
     '   L.name, '.
     '    count(F.feature_id) as num_features, '.
     '    CVT.name as feature_type '.
-    'FROM {Library} L '.
+    'FROM Library L '.
     '    INNER JOIN Library_Feature LF  ON LF.library_id = L.library_id '.
     '    INNER JOIN Feature F           ON LF.feature_id = F.feature_id '.
     '    INNER JOIN Cvterm CVT          ON F.type_id = CVT.cvterm_id '.

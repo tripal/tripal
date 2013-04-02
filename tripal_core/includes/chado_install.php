@@ -79,10 +79,10 @@ function tripal_core_chado_load_form_submit($form, &$form_state) {
  */
 function tripal_core_install_chado($action) {
 
-  $vsql = "INSERT INTO chadoprop (type_id, value) VALUES  " .
+  $vsql = "INSERT INTO {chadoprop} (type_id, value) VALUES  " .
           "((SELECT cvterm_id " .
-          "FROM cvterm CVT " .
-          " INNER JOIN cv CV on CVT.cv_id = CV.cv_id " .
+          "FROM {cvterm} CVT " .
+          " INNER JOIN {cv} CV on CVT.cv_id = CV.cv_id " .
           "WHERE CV.name = 'chado_properties' AND CVT.name = 'version'), " .
           "'%s') ";
 

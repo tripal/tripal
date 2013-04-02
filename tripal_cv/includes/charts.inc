@@ -74,7 +74,7 @@
  *    $analysis_id = preg_replace("/^tripal_analysis_go_cv_chart_(\d+)-(\d+)_(bp|cc|mf)$/","$2",$chart_id);
  *    $type        = preg_replace("/^tripal_analysis_go_cv_chart_(\d+)-(\d+)_(bp|cc|mf)$/","$3",$chart_id);
  *
- *    $sql = "SELECT * FROM {Analysis} WHERE analysis_id = %d";
+ *    $sql = "SELECT * FROM {analysis} WHERE analysis_id = %d";
  *    $analysis = db_fetch_object(chado_query($sql,$analysis_id));
  *
  *    if (strcmp($type,'mf')==0) {
@@ -98,9 +98,9 @@
  *          CNT.analysis_id = $analysis_id AND
  *          CNT.cvterm_id IN (
  *            SELECT CVTR.subject_id
- *            FROM {CVTerm_relationship} CVTR
- *              INNER JOIN CVTerm CVT on CVTR.object_id = CVT.cvterm_id
- *              INNER JOIN CV on CVT.cv_id = CV.cv_id
+ *            FROM {cvterm_relationship} CVTR
+ *              INNER JOIN {CVTerm} CVT on CVTR.object_id = CVT.cvterm_id
+ *              INNER JOIN {CV} on CVT.cv_id = CV.cv_id
  *            WHERE CVT.name = '$class' AND
  *                   CV.name = '$class'
  *          )

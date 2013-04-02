@@ -94,12 +94,12 @@ function drush_tripal_feature_tripal_get_sequence() {
   // get the list of features
   $vars = array();
   $sql  = "SELECT DISTINCT F.feature_id, F.name, F.uniquename, O.genus, O.species, CVT.name as feature_type ".
-          "FROM feature F ".
-          "  INNER JOIN organism O on O.organism_id = F.organism_id ".
-          "  INNER JOIN cvterm CVT on CVT.cvterm_id = F.type_id ";
+          "FROM {feature} F ".
+          "  INNER JOIN {organism} O on O.organism_id = F.organism_id ".
+          "  INNER JOIN {cvterm} CVT on CVT.cvterm_id = F.type_id ";
   if ($analysis_name) {
-     $sql .= "  INNER JOIN analysisfeature AF on AF.feature_id = F.feature_id ".
-             "  INNER JOIN analysis A on AF.analysis_id = A.analysis_id ";
+     $sql .= "  INNER JOIN {analysisfeature} AF on AF.feature_id = F.feature_id ".
+             "  INNER JOIN {analysis} A on AF.analysis_id = A.analysis_id ";
   }         
   $sql .= "WHERE (1=1) ";
   if ($org_commonname) {

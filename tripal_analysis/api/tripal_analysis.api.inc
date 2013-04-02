@@ -132,8 +132,8 @@ function tripal_analysis_delete_property($analysis_id, $property) {
  */
 function tripal_analysis_get_node($analysis_id) {
   $sql = "SELECT *
-           FROM chado_analysis CA
-              INNER JOIN node N on CA.nid = N.nid
+           FROM {chado_analysis} CA
+              INNER JOIN {node} N on CA.nid = N.nid
            WHERE analysis_id = %d";
   $node = db_fetch_object(db_query($sql, $analysis_id));
   return $node;

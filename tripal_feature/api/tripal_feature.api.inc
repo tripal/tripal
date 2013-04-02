@@ -551,11 +551,11 @@ function tripal_feature_get_formatted_sequence($feature_id, $feature_name,
                     END                   
                 END as downstream,  
                 OF.residues                                                     
-              FROM featureloc FL 
-                INNER JOIN feature SF on FL.feature_id = SF.feature_id
-                INNER JOIN cvterm SCVT on SF.type_id = SCVT.cvterm_id
-                INNER JOIN feature OF on FL.srcfeature_id = OF.feature_id                
-                INNER JOIN cvterm OCVT on OF.type_id = OCVT.cvterm_id
+              FROM {featureloc} FL 
+                INNER JOIN {feature} SF on FL.feature_id = SF.feature_id
+                INNER JOIN {cvterm} SCVT on SF.type_id = SCVT.cvterm_id
+                INNER JOIN {feature} OF on FL.srcfeature_id = OF.feature_id                
+                INNER JOIN {cvterm} OCVT on OF.type_id = OCVT.cvterm_id
               WHERE SF.feature_id = $3) as tbl1
     ';              
     $status = tripal_core_chado_prepare('sequence_by_parent', $psql, array('int', 'int', 'int'));
@@ -570,11 +570,11 @@ function tripal_feature_get_formatted_sequence($feature_id, $feature_name,
     // feature (arg #2).
     $psql ='PREPARE sub_features (int, int) AS 
             SELECT SF.feature_id, CVT.name as type_name, SF.type_id
-            FROM feature_relationship FR
-              INNER JOIN feature SF on SF.feature_id = FR.subject_id
-              INNER JOIN cvterm CVT on CVT.cvterm_id = SF.type_id
-              INNER JOIN featureloc FL on FL.feature_id = FR.subject_id
-              INNER JOIN feature PF on PF.feature_id = FL.srcfeature_id
+            FROM {feature_relationship} FR
+              INNER JOIN {feature} SF on SF.feature_id = FR.subject_id
+              INNER JOIN {cvterm} CVT on CVT.cvterm_id = SF.type_id
+              INNER JOIN {featureloc} FL on FL.feature_id = FR.subject_id
+              INNER JOIN {feature} PF on PF.feature_id = FL.srcfeature_id
             WHERE FR.object_id = $1 and PF.feature_id = $2
             ORDER BY FL.fmin ASC';            
     $status = tripal_core_chado_prepare('sub_features', $psql, array('int', 'int'));
@@ -585,11 +585,11 @@ function tripal_feature_get_formatted_sequence($feature_id, $feature_name,
     }
     $psql ='PREPARE count_sub_features (int, int) AS 
             SELECT count(*) as num_children
-            FROM feature_relationship FR
-              INNER JOIN feature SF on SF.feature_id = FR.subject_id
-              INNER JOIN cvterm CVT on CVT.cvterm_id = SF.type_id
-              INNER JOIN featureloc FL on FL.feature_id = FR.subject_id
-              INNER JOIN feature PF on PF.feature_id = FL.srcfeature_id
+            FROM {feature_relationship} FR
+              INNER JOIN {feature} SF on SF.feature_id = FR.subject_id
+              INNER JOIN {cvterm} CVT on CVT.cvterm_id = SF.type_id
+              INNER JOIN {featureloc} FL on FL.feature_id = FR.subject_id
+              INNER JOIN {feature} PF on PF.feature_id = FL.srcfeature_id
             WHERE FR.object_id = $1 and PF.feature_id = $2';            
     $status = tripal_core_chado_prepare('count_sub_features', $psql, array('int', 'int'));
     if (!$status) {
@@ -732,7 +732,7 @@ function tripal_feature_get_formatted_sequence($feature_id, $feature_name,
   // if we are not getting the sequence from the parent sequence then
   // use what comes through from the feature record
   else {
-    $sql = "SELECT * FROM feature F WHERE feature_id = %d";
+    $sql = "SELECT * FROM {feature} F WHERE feature_id = %d";
     $values = db_fetch_object(chado_query($sql, $feature_id));
     $residues = $values->residues;
     if ($output_format == 'fasta_html') {

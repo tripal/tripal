@@ -480,8 +480,8 @@ function tripal_feature_set_taxonomy($node, $feature_id) {
   // get the cvterm and the organism for this feature
   $sql = "SELECT CVT.name AS cvname, O.genus, O.species ".
         "FROM {CVTerm} CVT ".
-        "  INNER JOIN Feature F on F.type_id = CVT.cvterm_id ".
-        "  INNER JOIN Organism O ON F.organism_id = O.organism_id ".
+        "  INNER JOIN {Feature} F on F.type_id = CVT.cvterm_id ".
+        "  INNER JOIN {Organism} O ON F.organism_id = O.organism_id ".
         "WHERE F.feature_id = $feature_id";
   $feature = db_fetch_object(chado_query($sql));
 
@@ -498,7 +498,7 @@ function tripal_feature_set_taxonomy($node, $feature_id) {
   if ($do_lb && $lb_vid) {
     $sql = "SELECT L.name ".
            "FROM {Library} L ".
-           "  INNER JOIN Library_feature LF ON LF.library_id = L.library_id ".
+           "  INNER JOIN {Library_feature} LF ON LF.library_id = L.library_id ".
            "WHERE LF.feature_id = %d ";
     $library = db_fetch_object(chado_query($sql, $feature_id));
     $tags["$lb_vid"] = "$library->name";
@@ -514,7 +514,7 @@ function tripal_feature_set_taxonomy($node, $feature_id) {
   if ($do_an && $an_vid) {
     $sql = "SELECT A.name ".
            "FROM {Analysis} A ".
-           "  INNER JOIN Analysisfeature AF ON AF.analysis_id = A.analysis_id ".
+           "  INNER JOIN {Analysisfeature} AF ON AF.analysis_id = A.analysis_id ".
            "WHERE AF.feature_id = $feature_id ";
     $results = chado_query($sql);
     $analysis_terms = array();

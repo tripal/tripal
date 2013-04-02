@@ -286,7 +286,7 @@ function tripal_bulk_loader_set_constants_form_validate($form, $form_state) {
         foreach ($array as $field_id) {
           if ($template[$record_id]['fields'][$field_id]['exposed_validate']) {
             $result = db_fetch_object(chado_query(
-              "SELECT 1 as valid FROM %s WHERE %s='%s'",
+              "SELECT 1 as valid FROM {%s} WHERE %s='%s'",
               $template[$record_id]['table'],
               $template[$record_id]['fields'][$field_id]['field'],
               $form_state['values'][$record_id . '-' . $field_id]

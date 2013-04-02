@@ -68,7 +68,7 @@ class tripal_views_handler_field_sequence extends chado_views_handler_field {
          'fasta_html' => 'FASTA in HTML format',
          'fasta_txt'  => 'FASTA in text format',
       ),
-      '#description' => t('Select an output format.  Raw output cannot be used when the sequence is derived from the parent.'),
+      '#description' => t('Choose an output format.  Raw output cannot be used when the sequence is derived from the parent.'),
       '#default_value' => $default_ouput_format,
     );
   }  

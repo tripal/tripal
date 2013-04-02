@@ -310,7 +310,7 @@ function tripal_cv_load_obo_v1_2($file, $jobid = NULL, &$newcvs) {
     } 
   }
   // empty the temp table
-  $sql = "DELETE FROM tripal_obo_temp";
+  $sql = "DELETE FROM {tripal_obo_temp}";
   chado_query($sql);
 
   // get a persistent connection
@@ -435,7 +435,7 @@ function tripal_cv_obo_process_terms($defaultcv, $jobid = NULL, &$newcvs, $defau
 
   // iterate through each term from the OBO file and add it
   $sql = "
-    SELECT * FROM tripal_obo_temp
+    SELECT * FROM {tripal_obo_temp}
     WHERE type = 'Term'
     ORDER BY id
   ";
@@ -443,7 +443,7 @@ function tripal_cv_obo_process_terms($defaultcv, $jobid = NULL, &$newcvs, $defau
   
   $sql = "
     SELECT count(*) as num_terms
-    FROM tripal_obo_temp
+    FROM {tripal_obo_temp}
     WHERE type = 'Term'     
   "; 
   $result = db_fetch_object(chado_query($sql));

@@ -430,7 +430,12 @@ function tripal_cv_cvterm_form(&$form_state, $action = 'add') {
  * @ingroup tripal_cv
  */
 function tripal_cv_cvterm_name_autocomplete($cv_id, $string = '') {
-  $sql = "SELECT cvterm_id, name FROM cvterm WHERE cv_id = %d and name like '%s%%' ORDER by name";
+  $sql = "
+    SELECT cvterm_id, name 
+    FROM {cvterm} 
+    WHERE cv_id = %d and name like '%s%%' 
+    ORDER by name
+  ";
   $results = chado_query($sql, $cv_id, $string);
   $items = array();
   while($term = db_fetch_object($results)) {

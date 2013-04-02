@@ -83,7 +83,7 @@ function tripal_feature_add_organism_count_mview() {
     'SELECT O.organism_id, O.genus, O.species, O.common_name,
         count(F.feature_id) as num_features,
         CVT.cvterm_id, CVT.name as feature_type
-     FROM {Organism} O
+     FROM Organism O
         INNER JOIN Feature F           ON O.Organism_id = F.organism_id
         INNER JOIN Cvterm CVT          ON F.type_id = CVT.cvterm_id
      GROUP BY O.Organism_id, O.genus, O.species, O.common_name,

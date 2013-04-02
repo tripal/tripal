@@ -266,7 +266,7 @@ function theme_tripal_library_search_index($node) {
     while ($library = db_fetch_object($results)) {
       // get the description
       $sql = "SELECT * FROM {libraryprop} LP ".
-             "  INNER JOIN CVTerm CVT ON CVT.cvterm_id = LP.type_id ".
+             "  INNER JOIN {CVTerm} CVT ON CVT.cvterm_id = LP.type_id ".
             "WHERE LP.library_id = $library->library_id ".
             "  AND CVT.name = 'library_description'";
       $desc = db_fetch_object(chado_query($sql));
@@ -285,7 +285,7 @@ function theme_tripal_library_search_index($node) {
     $content = "";
     $organism_id = $node->feature->organism_id;
     $sql = "SELECT * FROM {library} L ".
-           "  INNER JOIN Library_feature LF ON L.library_id = LF.library_id ".
+           "  INNER JOIN {Library_feature} LF ON L.library_id = LF.library_id ".
             "WHERE LF.feature_id = " . $node->feature->feature_id;
     $libraries = array();
     $results = chado_query($sql);

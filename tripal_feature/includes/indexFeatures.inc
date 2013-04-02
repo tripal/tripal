@@ -76,7 +76,7 @@ function tripal_features_reindex($max_sync, $job_id = NULL) {
   // reindexing, but adjusted to include the chado_feature
   $sql = "SELECT N.nid, N.title, CF.feature_id ".
         "FROM {node} N ".
-        "  INNER JOIN chado_feature CF ON CF.nid = N.nid ";
+        "  INNER JOIN {chado_feature} CF ON CF.nid = N.nid ";
   $results = db_query($sql);
 
   // load into ids array

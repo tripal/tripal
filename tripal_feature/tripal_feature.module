@@ -1402,12 +1402,12 @@ function tripal_feature_get_matched_alignments($feature) {
           "   FL2.phase            as right_phase, ".
           "   FL2.locgroup         as right_locgroup, ".
           "   FL2.rank             as right_rank ".
-          "FROM feature F1 ".
-          "  INNER JOIN featureloc FL1 on FL1.srcfeature_id = F1.feature_id ".
-          "  INNER JOIN feature F2 on FL1.feature_id = F2.feature_id ".
-          "  INNER JOIN featureloc FL2 on FL2.feature_id = F2.feature_id ".
-          "  INNER JOIN feature F3 on FL2.srcfeature_id = F3.feature_id ".
-          "  INNER JOIN cvterm CVT2 on F2.type_id = CVT2.cvterm_id ".
+          "FROM {feature} F1 ".
+          "  INNER JOIN {featureloc} FL1 on FL1.srcfeature_id = F1.feature_id ".
+          "  INNER JOIN {feature} F2 on FL1.feature_id = F2.feature_id ".
+          "  INNER JOIN {featureloc} FL2 on FL2.feature_id = F2.feature_id ".
+          "  INNER JOIN {feature} F3 on FL2.srcfeature_id = F3.feature_id ".
+          "  INNER JOIN {cvterm} CVT2 on F2.type_id = CVT2.cvterm_id ".
           "WHERE F1.feature_id = %d and NOT F3.feature_id = %d ".
           "  AND (CVT2.name = 'match' or CVT2.name like '%_match') ".
           "ORDER BY FL1.fmin";
@@ -2255,11 +2255,11 @@ function tripal_feature_match_features_page($id) {
       CVT.cvterm_id, CVT.name as type_name,
       CF.nid,
       array_agg(S.name) as synonyms
-    FROM feature F
-      INNER JOIN organism O on F.organism_id = O.organism_id
-      INNER JOIN cvterm CVT on CVT.cvterm_id = F.type_id
-      LEFT JOIN feature_synonym FS on FS.feature_id = F.feature_id
-      LEFT JOIN synonym S on S.synonym_id = FS.synonym_id
+    FROM {feature} F
+      INNER JOIN {organism} O on F.organism_id = O.organism_id
+      INNER JOIN {cvterm} CVT on CVT.cvterm_id = F.type_id
+      LEFT JOIN {feature_synonym} FS on FS.feature_id = F.feature_id
+      LEFT JOIN {synonym} S on S.synonym_id = FS.synonym_id
       INNER JOIN public.chado_feature CF on CF.feature_id = F.feature_id
     WHERE
       F.uniquename = '%s' or

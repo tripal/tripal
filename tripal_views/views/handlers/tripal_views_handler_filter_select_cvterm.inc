@@ -36,11 +36,11 @@ class tripal_views_handler_filter_select_cvterm extends views_handler_filter_str
       else {
         //get a list of cvs currently used
         if ($this->view->base_table == 'cvterm') {
-          $sql = 'SELECT distinct(cv.cv_id) FROM ' . $this->view->base_table
+          $sql = 'SELECT distinct(cv.cv_id) FROM {' . $this->view->base_table . '}' 
             .' LEFT JOIN cv cv ON cv.cv_id=cvterm.cv_id';
         }
         else {
-          $sql = 'SELECT distinct(cv.cv_id) FROM ' . $this->view->base_table
+          $sql = 'SELECT distinct(cv.cv_id) FROM {' . $this->view->base_table . '}'
             .' LEFT JOIN cvterm cvterm ON cvterm.cvterm_id=' . $this->view->base_table . '.type_id '
             .'LEFT JOIN cv cv ON cv.cv_id=cvterm.cv_id';
         }
@@ -60,7 +60,7 @@ class tripal_views_handler_filter_select_cvterm extends views_handler_filter_str
     }
     else {
       // @coder-ignore: non-drupal schema therefore table prefixing does not apply
-      $sql = "SELECT cvterm_id, name FROM cvterm WHERE cvterm_id IN (SELECT distinct(%s) FROM %s)";
+      $sql = "SELECT cvterm_id, name FROM {cvterm} WHERE cvterm_id IN (SELECT distinct(%s) FROM {%s})";
       $resource = chado_query($sql, $this->field, $this->table);
       $cvterms = array();
       while ( $r = db_fetch_object($resource) ) {

@@ -2,6 +2,3 @@
 ; file:line:warning-type
 ; where warning-type is one of security, style, sql, i18n, comment, etc.
 
-; This query selects from a non-drupal schema where the database prefixes are not
-; applied and thus the curcly brackets ({}) are not needed
-tripal_cv.module:1062:sql

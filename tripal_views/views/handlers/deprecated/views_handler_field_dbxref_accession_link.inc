@@ -28,7 +28,7 @@ class views_handler_field_dbxref_accession_link extends views_handler_field {
 
     if (!empty($db_id) AND !empty($accession)) {
       // @coder-ignore: non-drupal schema therefore table prefixing does not apply
-      $result = db_fetch_object(chado_query('SELECT urlprefix FROM db WHERE db_id=%d', $db_id));
+      $result = db_fetch_object(chado_query('SELECT urlprefix FROM {db} WHERE db_id=%d', $db_id));
       $urlprefix = $result->urlprefix;
 
       if (!empty($urlprefix)) {

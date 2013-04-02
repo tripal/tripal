@@ -515,8 +515,8 @@ function chado_stock_form($node, $form_state) {
  */
 function chado_stock_validate($node, &$form) {
 
-  $int_in_chado_sql = "SELECT count(*) as count FROM %s WHERE %s=%d";
-  $string_in_chado_sql = "SELECT count(*) as count FROM %s WHERE %s='%s'";
+  $int_in_chado_sql = "SELECT count(*) as count FROM {%s} WHERE %s=%d";
+  $string_in_chado_sql = "SELECT count(*) as count FROM {%s} WHERE %s='%s'";
 
   // Validate Uniquename only if add
   if (empty($node->stock_id)) {
@@ -981,11 +981,11 @@ function tripal_stock_preprocess_tripal_stock_relationships(&$variables) {
       S.name, S.uniquename, S.stock_id, CS.nid, 
       CVT.name as rel_type, CVTs.name as obj_type,
       SR.value
-    FROM stock_relationship SR
-      INNER JOIN stock S on SR.object_id = S.stock_id
-      INNER JOIN cvterm CVT on SR.type_id = CVT.cvterm_id
-      INNER JOIN cvterm CVTs on S.type_id = CVTs.cvterm_id
-      LEFT JOIN chado_stock CS on S.stock_id = CS.stock_id
+    FROM {stock_relationship} SR
+      INNER JOIN {stock} S on SR.object_id = S.stock_id
+      INNER JOIN {cvterm} CVT on SR.type_id = CVT.cvterm_id
+      INNER JOIN {cvterm} CVTs on S.type_id = CVTs.cvterm_id
+      LEFT JOIN public.chado_stock CS on S.stock_id = CS.stock_id
     WHERE SR.subject_id = %d      
   ";
   $as_subject = chado_query($sql, $stock->stock_id);
@@ -994,11 +994,11 @@ function tripal_stock_preprocess_tripal_stock_relationships(&$variables) {
       S.name, S.uniquename,  S.stock_id, CS.nid, 
       CVT.name as rel_type, CVTs.name as sub_type,
       SR.value
-    FROM stock_relationship SR
-      INNER JOIN stock S on SR.subject_id = S.stock_id
-      INNER JOIN cvterm CVT on SR.type_id = CVT.cvterm_id
-      INNER JOIN cvterm CVTs on S.type_id = CVTs.cvterm_id
-      LEFT JOIN chado_stock CS on S.stock_id = CS.stock_id
+    FROM {stock_relationship} SR
+      INNER JOIN {stock} S on SR.subject_id = S.stock_id
+      INNER JOIN {cvterm} CVT on SR.type_id = CVT.cvterm_id
+      INNER JOIN {cvterm} CVTs on S.type_id = CVTs.cvterm_id
+      LEFT JOIN public.chado_stock CS on S.stock_id = CS.stock_id
     WHERE SR.object_id = %d      
   ";
   $as_object = chado_query($sql, $stock->stock_id);   

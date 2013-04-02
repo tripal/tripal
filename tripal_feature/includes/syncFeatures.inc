@@ -128,8 +128,8 @@ function tripal_feature_set_urls($job_id = NULL) {
   while ($node = db_fetch_object($nodes)) {
     // now get the feature details
     $sql = "SELECT * 
-            FROM feature F
-              INNER JOIN organism O on O.organism_id = F.organism_id
+            FROM {feature} F
+              INNER JOIN {organism} O on O.organism_id = F.organism_id
             WHERE F.feature_id = %d";     
     $feature = db_fetch_object(chado_query($sql, $node->feature_id));
     if ($feature) {
@@ -220,8 +220,8 @@ function tripal_feature_sync_features($max_sync = 0, $organism_id = NULL,
   // use this SQL statement to get the features that we're going to upload
   $sql = "SELECT feature_id ".
         "FROM {FEATURE} F ".
-        "  INNER JOIN Cvterm CVT ON F.type_id = CVT.cvterm_id ".
-        "  INNER JOIN CV on CV.cv_id = CVT.cv_id ".
+        "  INNER JOIN {Cvterm} CVT ON F.type_id = CVT.cvterm_id ".
+        "  INNER JOIN {CV} on CV.cv_id = CVT.cv_id ".
         "WHERE ($where_cvt) AND ($where_org) AND CV.name = 'sequence' ".
         "ORDER BY feature_id";
 
@@ -302,8 +302,8 @@ function tripal_feature_sync_feature($feature_id) {
   $fsql = "SELECT F.feature_id, F.name, F.uniquename,O.genus, ".
          "    O.species,CVT.name as cvname,F.residues,F.organism_id ".
          "FROM {FEATURE} F ".
-         "  INNER JOIN Cvterm CVT ON F.type_id = CVT.cvterm_id ".
-         "  INNER JOIN Organism O ON F.organism_id = O.organism_ID ".
+         "  INNER JOIN {Cvterm} CVT ON F.type_id = CVT.cvterm_id ".
+         "  INNER JOIN {Organism} O ON F.organism_id = O.organism_ID ".
          "WHERE F.feature_id = %d";
   $feature = db_fetch_object(chado_query($fsql, $feature_id));
 

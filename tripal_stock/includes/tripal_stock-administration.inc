@@ -270,7 +270,7 @@ function tripal_stock_sync_stock_set($organism_id, $job_id) {
           //Add stock id to chado_stock table
           /**
            db_query(
-             "INSERT INTO chado_stock (stock_id, nid, vid) VALUES (%d, %d, %d)",
+             "INSERT INTO {chado_stock} (stock_id, nid, vid) VALUES (%d, %d, %d)",
              $r->stock_id,
              $node->nid,
              $node->vid

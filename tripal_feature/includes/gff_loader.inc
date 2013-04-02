@@ -307,7 +307,7 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
     } 
   }
   // empty the temp table
-  $sql = "DELETE FROM tripal_gff_temp";
+  $sql = "DELETE FROM {tripal_gff_temp}";
   chado_query($sql);
 
   // get a persistent connection
@@ -357,8 +357,7 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
 
   // get the controlled vocaubulary that we'll be using.  The
   // default is the 'sequence' ontology
-  // @coder-ignore: non-drupal schema thus table prefixing does not apply
-  $sql = "SELECT * FROM cv WHERE name = '%s'";
+  $sql = "SELECT * FROM {cv} WHERE name = '%s'";
   $cv = db_fetch_object(chado_query($sql, 'sequence'));
   if (!$cv) {   
     watchdog('T_gff3_loader', "Cannot find the 'sequence' ontology", 
@@ -367,8 +366,7 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
   }
 
   // get the organism for which this GFF3 file belongs
-  // @coder-ignore: non-drupal schema thus table prefixing does not apply
-  $sql = "SELECT * FROM organism WHERE organism_id = %d";
+  $sql = "SELECT * FROM {organism} WHERE organism_id = %d";
   $organism = db_fetch_object(chado_query($sql, $organism_id));
 
   $interval = intval($filesize * 0.0001);
@@ -775,18 +773,18 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
     // get features in a relationship that are also children of an alignment
     $sql = "SELECT DISTINCT F.feature_id, F.organism_id, F.type_id, 
               F.uniquename, FL.strand 
-            FROM tripal_gff_temp TGT 
-              INNER JOIN feature F                ON TGT.feature_id = F.feature_id
-              INNER JOIN feature_relationship FR  ON FR.object_id = TGT.feature_id
-              INNER JOIN cvterm CVT               ON CVT.cvterm_id = FR.type_id  
-              INNER JOIN featureloc FL            ON FL.feature_id = F.feature_id    
+            FROM {tripal_gff_temp} TGT 
+              INNER JOIN {feature} F                ON TGT.feature_id = F.feature_id
+              INNER JOIN {feature_relationship} FR  ON FR.object_id = TGT.feature_id
+              INNER JOIN {cvterm} CVT               ON CVT.cvterm_id = FR.type_id  
+              INNER JOIN {featureloc} FL            ON FL.feature_id = F.feature_id    
             WHERE CVT.name = 'part_of'";
     $parents = chado_query($sql);
     
     // build and prepare the SQL for selecting the children relationship
     $sql = "SELECT DISTINCT FR.feature_relationship_id, FL.fmin, FR.rank
-            FROM feature_relationship FR              
-              INNER JOIN featureloc FL on FL.feature_id = FR.subject_id";
+            FROM {feature_relationship} FR              
+              INNER JOIN {featureloc} FL on FL.feature_id = FR.subject_id";
     if (!$connection) {
       $sql .= "WHERE FR.object_id = %d ".
               "ORDER BY FL.fmin ASC ";
@@ -942,9 +940,9 @@ function tripal_feature_load_gff3_parents($feature, $cvterm, $parents, $organism
   if (!tripal_core_is_sql_prepared('sel_cvterm_cvname_cvtname_synonym')) {
     $psql = "PREPARE sel_cvterm_cvname_cvtname_synonym (text, text, text) AS
              SELECT CVT.cvterm_id
-             FROM cvterm CVT
-               INNER JOIN cv CV on CVT.cv_id = CV.cv_id
-               LEFT JOIN cvtermsynonym CVTS on CVTS.cvterm_id = CVT.cvterm_id
+             FROM {cvterm} CVT
+               INNER JOIN {cv} CV on CVT.cv_id = CV.cv_id
+               LEFT JOIN {cvtermsynonym} CVTS on CVTS.cvterm_id = CVT.cvterm_id
              WHERE cv.name = $1 and (CVT.name = $2 or CVTS.synonym = $3)";
     $status = tripal_core_chado_prepare('sel_cvterm_cvname_cvtname_synonym', $psql, array('text', 'text' ,'text'));
     if (!$status) {
@@ -1298,11 +1296,11 @@ function tripal_feature_load_gff3_alias($feature, $aliases) {
       // prepare the statement
       if (!tripal_core_is_sql_prepared('ins_pub_uniquename_typeid')) {
         $psql = "PREPARE ins_pub_uniquename_typeid (text, text) AS
-                 INSERT INTO pub (uniquename,type_id) VALUES ('%s',
+                 INSERT INTO {pub} (uniquename,type_id) VALUES ('%s',
                  (SELECT cvterm_id
-                  FROM cvterm CVT
-                    INNER JOIN dbxref DBX on DBX.dbxref_id = CVT.dbxref_id
-                    INNER JOIN db DB on DB.db_id = DBX.db_id
+                  FROM {cvterm} CVT
+                    INNER JOIN {dbxref} DBX on DBX.dbxref_id = CVT.dbxref_id
+                    INNER JOIN {db} DB on DB.db_id = DBX.db_id
                   WHERE CVT.name = $1 and DB.name = $2)";
         $status = tripal_core_chado_prepare('ins_pub_uniquename_typeid', $psql, args('text', 'text'));
         if (!$status) {

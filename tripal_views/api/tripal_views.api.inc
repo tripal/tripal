@@ -750,7 +750,7 @@ function tripal_views_clone_integration($table_name, $new_priority = NULL, $temp
   }
 
   tripal_views_integration_add_entry($defn_array);
-  $setup_id = db_result(db_query("SELECT setup_id FROM tripal_views WHERE table_name='%s' AND priority=%d", $table_name, $new_priority));
+  $setup_id = db_result(db_query("SELECT setup_id FROM {tripal_views} WHERE table_name='%s' AND priority=%d", $table_name, $new_priority));
 
   if (empty($setup_id)) {
     watchdog('tripal_views','Unable to clone the setup for %table in order to add the following field to the integration: %field.',
@@ -791,7 +791,7 @@ function tripal_views_add_field_to_integration($table_name, $priority, $field) {
   }
 
   // First get the setup_id
-  $setup_id = db_result(db_query("SELECT setup_id FROM tripal_views WHERE table_name='%s' AND priority=%d", $table_name, $priority));
+  $setup_id = db_result(db_query("SELECT setup_id FROM {tripal_views} WHERE table_name='%s' AND priority=%d", $table_name, $priority));
 
   // If there isn't an integration matching that table/priority combination
   // then clone the lightest priority integration

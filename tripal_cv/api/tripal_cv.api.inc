@@ -466,10 +466,10 @@ function tripal_cv_add_cvterm($term, $defaultcv = '_global', $is_relationship = 
       PREPARE sel_cvterm_by_accession(text, text) AS
       SELECT CVT.name, CVT.cvterm_id, CV.cv_id, CV.name as cvname, 
         DB.name as dbname, DB.db_id, DBX.accession 
-      FROM cvterm CVT
-        INNER JOIN dbxref DBX on CVT.dbxref_id = DBX.dbxref_id
-        INNER JOIN db DB on DBX.db_id = DB.db_id
-        INNER JOIN cv CV on CV.cv_id = CVT.cv_id
+      FROM {cvterm} CVT
+        INNER JOIN {dbxref} DBX on CVT.dbxref_id = DBX.dbxref_id
+        INNER JOIN {db} DB on DBX.db_id = DB.db_id
+        INNER JOIN {cv} CV on CV.cv_id = CVT.cv_id
       WHERE DBX.accession = $1 and DB.name = $2";
     if (!tripal_core_chado_prepare('sel_cvterm_by_accession', $pcvtermsql, array('text', 'text'))) {
       watchdog('tripal_cv', "Cannot prepare statement 'sel_cvterm_by_accession'", NULL, WATCHDOG_WARNING);

@@ -3374,11 +3374,8 @@ function tripal_get_max_chado_rank($tablename, $where_options) {
       $where[] = $key . $operator . "'" . $val_array['value'] . "'";
     }
   }
-  $previous_db = tripal_db_set_active('chado');
-  $result = db_fetch_object(db_query("SELECT max(rank) as max_rank, count(rank) as count FROM %s WHERE %s",
-    $tablename,  implode(' AND ', $where)));
-  tripal_db_set_active($previous_db);
-  //drupal_set_message("Max Rank Query=SELECT max(rank) as max_rank, count(rank) as count FROM ".$tablename." WHERE ".implode(' AND ',$where));
+  $sql = "SELECT max(rank) as max_rank, count(rank) as count FROM {%s} WHERE %s";
+  $result = db_fetch_object(chado_query($sql, $tablename,  implode(' AND ', $where)));
   if ($result->count > 0) {
     return $result->max_rank;
   }
@@ -3546,9 +3543,9 @@ function tripal_core_set_chado_version() {
   // because the Tripal API depends on this function to
   // tell it the version. So, we need a typical SQL statement
   $sql = "SELECT value "
-  ."FROM chadoprop CP "
-  ."  INNER JOIN cvterm CVT on CVT.cvterm_id = CP.type_id "
-  ."  INNER JOIN cv CV on CVT.cv_id = CV.cv_id "
+  ."FROM {chadoprop} CP "
+  ."  INNER JOIN {cvterm} CVT on CVT.cvterm_id = CP.type_id "
+  ."  INNER JOIN {cv} CV on CVT.cv_id = CV.cv_id "
   ."WHERE CV.name = 'chado_properties' and CVT.name = 'version'";
   $previous_db = tripal_db_set_active('chado');
   $v = db_fetch_object(db_query($sql));
@@ -3666,9 +3663,9 @@ function tripal_core_clean_orphaned_nodes($table, $job_id) {
   // build the SQL statments needed to check if nodes point to valid analyses
   $dsql = "SELECT * FROM {node} WHERE type = 'chado_%s' order by nid";
   $nsql = "SELECT * FROM {node} WHERE nid = %d";
-  $csql = "SELECT * FROM {chado_%s} where nid = %d ";
+  $csql = "SELECT * FROM {chado_%s} WHERE nid = %d ";
   $clsql= "SELECT * FROM {chado_%s}";
-  $lsql = "SELECT * FROM %s where %s_id = %d ";
+  $lsql = "SELECT * FROM {%s} where %s_id = %d ";
 
   // load into nodes array
   print "Getting nodes\n";
