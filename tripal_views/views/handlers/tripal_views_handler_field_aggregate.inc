@@ -97,34 +97,35 @@ class tripal_views_handler_field_aggregate extends chado_views_handler_field {
   function split_aggregated_result_with_keys(&$value) {
 
     foreach ($value as $k => $v) {
+      if (!is_array($v)) {
+        if (preg_match('/.*::.*/',$v)) {
+          $subparts = explode(',', $v);
+          $token_values = array();
+          foreach ($subparts as $ssk => $ssv) {
+            if (preg_match('/(.*)::(.*)/', $ssv, $matches)) {
+              $values[ $matches[1] ] = $matches[2];
+              $tokens[ '[' . $this->options['id'] . '-' . $matches[1] . ']' ] = $matches[2];
+            }
+          }
 
-      if (preg_match('/.*::.*/',$v)) {
-        $subparts = explode(',', $v);
-        $token_values = array();
-        foreach ($subparts as $ssk => $ssv) {
-          if (preg_match('/(.*)::(.*)/', $ssv, $matches)) {
-            $values[ $matches[1] ] = $matches[2];
-            $tokens[ '[' . $this->options['id'] . '-' . $matches[1] . ']' ] = $matches[2];
+          if ($this->options['format']['format_string']) {
+            $value[$k] = str_replace(array_keys($tokens), $tokens, $this->options['format']['format_string']);
+          }
+          else {
+            $value[$k] = $values;
           }
         }
-
-        if ($this->options['format']['format_string']) {
-          $value[$k] = str_replace(array_keys($tokens), $tokens, $this->options['format']['format_string']);
-        }
         else {
-          $value[$k] = $values;
+          if ($this->options['format']['format_string']) {
+            $value[$k] = '';
+          }
+          else {
+            $value[$k] = array();
+          }
         }
-      }
-      else {
-        if ($this->options['format']['format_string']) {
-          $value[$k] = '';
-        }
-        else {
-          $value[$k] = array();
-        }
+        $value = array_filter($value);
       }
     }
-    $value = array_filter($value);
   }
 
 }

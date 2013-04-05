@@ -18,12 +18,15 @@ function chado_wrapper_split_array_agg_results($handler, &$values) {
 
   if ($handler->aggregated) {
     foreach ($values as $k => $v) {
-
-      if (preg_match('/^{(.*)}$/', $v->{$handler->field_alias}, $matches)) {
-        $values[$k]->{$handler->field_alias} = str_getcsv($matches[1]);
-      }
-      else {
-        $values[$k]->{$handler->field_alias} = array();
+      // Some custom handlers re-use the same field
+      // This ensures that an already split value doesn't get re-split
+      if (!is_array($v->{$handler->field_alias})) {
+        if (preg_match('/^{(.*)}$/', $v->{$handler->field_alias}, $matches)) {
+          $values[$k]->{$handler->field_alias} = str_getcsv($matches[1]);
+        }
+        else {
+          $values[$k]->{$handler->field_alias} = array();
+        }
       }
     }
   }
@@ -71,7 +74,10 @@ function chado_wrapper_is_aggregated_by_result($handler, $values) {
     $i++;
   }
 
-  if (preg_match('/^{.*}$/', $values[$i]->{$handler->field_alias})) {
+  if (is_array($values[$i]->{$handler->field_alias})) {
+    $aggregated = TRUE;
+  }
+  elseif (preg_match('/^{.*}$/', $values[$i]->{$handler->field_alias})) {
     $aggregated = TRUE;
   }
 
