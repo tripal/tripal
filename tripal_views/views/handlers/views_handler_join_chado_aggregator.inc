@@ -177,11 +177,11 @@ class views_handler_join_chado_aggregator extends views_join {
             else {
               $fields[] = 'array_agg(' . $table . '.' . $fname . ') as '. $alias . $fname;
             }
-            $composite_field_parts[] = "'" . $alias . $fname . "::' ||" . $table . '.' . $fname;
+            $composite_field_parts[] = "'" . $alias . $fname . "::' || COALESCE(CAST(" . $table . '.' . $fname . " as text), '')";
           }
           else {
             $fields[] = $fname;
-            $composite_field_parts[] = "'" . $alias . $fname . "::' ||" . $table . '.' . $fname;
+            $composite_field_parts[] = "'" . $alias . $fname . "::' || COALESCE(CAST(" . $table . '.' . $fname . " as text), '')";
           }
         }
       }
@@ -216,11 +216,11 @@ class views_handler_join_chado_aggregator extends views_join {
           else {
             $fields[] = 'array_agg(' . $table . '.' . $fname . ') as ' . $alias . $fname;
           }
-          $composite_field_parts[] = "'" . $alias . $fname . "::' ||" . $table . '.' . $fname;
+          $composite_field_parts[] = "'" . $alias . $fname . "::' || COALESCE(CAST(" . $table . '.' . $fname . " as text), '')";
         }
         else {
           $fields[] = $fname;
-          $composite_field_parts[] = "'" . $alias . $fname . "::' ||" . $table . '.' . $fname;
+          $composite_field_parts[] = "'" . $alias . $fname . "::' || COALESCE(CAST(" . $table . '.' . $fname . " as text), '')";
         }
       }
 
