@@ -152,14 +152,15 @@ class views_handler_join_chado_aggregator extends views_join {
       foreach ($table_desc['foreign keys'] as $defn) {
         if ($defn['table'] != $opt['left_table']) {
           foreach ( $defn['columns'] as $left => $right) {
+            $table_alias = 'fk_' . $defn['table']  . '_' . $left;
             $left = $opt['table'] . '.' . $left;
-            $right = $defn['table'] . '.' . $right;
-            $joins[] = "LEFT JOIN $defn[table] $defn[table] ON $left=$right";
-          }
+            $right = $table_alias . '.' . $right;
+            $joins[] = "LEFT JOIN $defn[table] $table_alias ON $left=$right";
 
-          // Fields to be selected from joined table
-          $join_table = tripal_core_get_chado_table_schema($defn['table']);
-          $select_fields[ $defn['table'] ] = $join_table['fields'];
+            // Fields to be selected from joined table
+            $join_table = tripal_core_get_chado_table_schema($defn['table']);
+            $select_fields[ $table_alias ] = $join_table['fields'];
+          }
         }
       }
 
@@ -233,7 +234,7 @@ class views_handler_join_chado_aggregator extends views_join {
       foreach ($opt['additional_joins'] as $join_defn) {
 
         // Add the join SQL in
-        $table = ($join_defn['table_alias']) ? $join_defn['table_alias'] : $join_defn['table'];
+        $table = ($join_defn['table_alias']) ? $join_defn['table_alias'] : 'adt_' . $join_defn['table'] . '_' . $join_defn['left_field'];
         $left = $join_defn['left_table'] . '.' . $join_defn['left_field'];
         $right = $table . '.' . $join_defn['field'];
         $joins[] = "LEFT JOIN $join_defn[table] $table ON $left=$right";
