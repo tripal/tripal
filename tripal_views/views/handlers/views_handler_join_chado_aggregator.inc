@@ -53,6 +53,7 @@ class views_handler_join_chado_aggregator extends views_join {
       'table_aggregated' => $this->definition['table_aggregated'],
       'sort' => $this->sort,
       'filter' => $this->filter,
+      'additional_joins' => $this->additional_joins,
       'postgresql_9up' => $this->postgresql_9up,
     );
 
@@ -143,10 +144,11 @@ class views_handler_join_chado_aggregator extends views_join {
     $table_desc = tripal_core_get_chado_table_schema($opt['table']);
     $select_fields[ $opt['table'] ] = $table_desc['fields'];
 
+
+    $joins = array();
     if (!empty($table_desc)) {
       // Add joins to tables with a foreign key in this table
       // (ie: add join to cvterm if this table has a type_id
-      $joins = array();
       foreach ($table_desc['foreign keys'] as $defn) {
         if ($defn['table'] != $opt['left_table']) {
           foreach ( $defn['columns'] as $left => $right) {
@@ -191,8 +193,8 @@ class views_handler_join_chado_aggregator extends views_join {
     }
     else {
 
-      // No known foreign key reelationships
-      $joins = array();
+      // No known foreign key relationships
+      // so don't add to $joins
 
       // Fields to be selected
       $sql = "SELECT
@@ -224,6 +226,32 @@ class views_handler_join_chado_aggregator extends views_join {
         }
       }
 
+    }
+
+    // Add in any additional joins specified by handlers
+    if (!empty($opt['additional_joins'])) {
+      foreach ($opt['additional_joins'] as $join_defn) {
+
+        // Add the join SQL in
+        $table = ($join_defn['table_alias']) ? $join_defn['table_alias'] : $join_defn['table'];
+        $left = $join_defn['left_table'] . '.' . $join_defn['left_field'];
+        $right = $table . '.' . $join_defn['field'];
+        $joins[] = "LEFT JOIN $join_defn[table] $table ON $left=$right";
+
+        // Add to the fields and composite field
+        $join_table_desc = tripal_core_get_chado_table_schema($join_defn['table']);
+        $alias = $table . '_';
+        foreach ($join_table_desc['fields'] as $fname => $fdesc) {
+          // Add sort to aggregate field if postgreSQL 9.0+
+          if ($opt['postgresql_9up'] && !empty($order_by)) {
+            $fields[] = 'array_agg(' . $table . '.' . $fname . ' ORDER BY ' . implode(',', $order_by) . ') as ' . $alias . $fname;
+          }
+          else {
+            $fields[] = 'array_agg(' . $table . '.' . $fname . ') as ' . $alias . $fname;
+          }
+          $composite_field_parts[] = "'" . $alias . $fname . "::' || COALESCE(CAST(" . $table . '.' . $fname . " as text), '')";
+        }
+      }
     }
 
     // composite field
