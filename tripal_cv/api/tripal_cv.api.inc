@@ -205,7 +205,11 @@ function tripal_cv_get_cvterm_by_name($name, $cv_id = 0, $cv_name = 'tripal') {
        'name' => $name,
        'cv_id' => $cv_id,
     );
-    $r = tripal_core_chado_select('cvterm', array('*'), $values);
+    $options = array(
+      'statement_name' => 'sel_cvterm_nacv', 
+      'case_insensitive_columns' => array('name')
+    );
+    $r = tripal_core_chado_select('cvterm', array('*'), $values, $options);
   }
   elseif ($cv_name) {
     $values = array(
@@ -213,25 +217,83 @@ function tripal_cv_get_cvterm_by_name($name, $cv_id = 0, $cv_name = 'tripal') {
       'cv_id' => array(
         'name' => $cv_name,
       ),
+    );    
+    $options = array(
+      'statement_name' => 'sel_cvterm_nacv', 
+      'case_insensitive_columns' => array('name')
     );
-    $r = tripal_core_chado_select('cvterm', array('*'), $values);
+    $r = tripal_core_chado_select('cvterm', array('*'), $values, $options);  
   }
   else {
     $values = array(
       'name' => $name,
     );
-    $r = tripal_core_chado_select('cvterm', array('*'), $values);
+    $options = array(
+      'statement_name' => 'sel_cvterm_na', 
+      'case_insensitive_columns' => array('name')
+    );
+    $r = tripal_core_chado_select('cvterm', array('*'), $values, $options);
   }
 
   if (!$r) {
     return FALSE;
   }
-  if (count($r) > 0) {
+  if (count($r) > 1) {
     return FALSE;
   }
   return $r[0];
 }
 
+/**
+ * Retrieve a chado cvterm object with a given name
+ *
+ * @param $synonym
+ *   the synonym of the term
+ * @param $cv_id
+ *   the cv_id of the term you are looking for
+ * @param $cv_name
+ *   the name of the CV
+ *
+ * @return
+ *   cvterm object
+ *
+ * @ingroup tripal_cv_api
+ */
+function tripal_cv_get_cvterm_by_synonym($synonym, $cv_id = NULL, $cv_name = 'tripal') {
+
+  // first find the CVTerm synonym
+  $values = array(
+     'synonym' => $synonym,
+  );
+  $statement = "sel_cvtermsynonym_sy";
+  if ($cv_id) {
+    $values['cvterm_id'] = array('cv_id' => $cv_id);
+    $statement = "sel_cvtermsynonym_sycv";    
+  }
+  if ($cv_name) {
+    $values['cvterm_id'] = array('cv_id' => array('name' => $cv_name));
+    $statement = "sel_cvtermsynonym_sycv";
+  }
+  $options = array(
+    'statement_name' => $statement,
+    'case_insensitive_columns' => array('name')
+  );
+  $synonym = tripal_core_chado_select('cvtermsynonym', array('cvterm_id'), $values, $options);
+  
+  // if the synonym doens't exist or more than one record is returned then return false
+  if(count($synonym) == 0) {
+    return FALSE;
+  }
+  if(count($synonym) > 1) {
+    return FALSE;
+  }
+  
+  // get the cvterm
+  $values = array('cvterm_id' => $synonym[0]->cvterm_id);
+  $options = array('statement_name' => 'sel_cvterm_id');
+  $cvterm = tripal_core_chado_select('cvterm', array('*'), $values, $options);
+  return $cvterm[0]; 
+}
 /**
  * Create an options array to be used in a form element
  *   which provides a list of all chado cvterms
@@ -676,7 +738,7 @@ function tripal_cv_add_cvterm($term, $defaultcv = '_global', $is_relationship = 
  * This function defines the custom tables that will be created 
  * in the chado schema.
  *
- * @ingroup tripal_cv
+ * @ingroup tripal_cv_api
  */
 function tripal_cv_get_custom_tables($table = NULL) {
 
@@ -709,4 +771,81 @@ function tripal_cv_get_custom_tables($table = NULL) {
     );
   }
   return $schema;
+}
+
+/**
+ * This function allows other modules to programatically
+ * submit an ontology for loading into Chado.  This function
+ * will add a job to the Jobs subsystem for parsing the ontology.
+ * You can either pass a known OBO ID to the function or the URL
+ * or full path the the ontology file.  If a URL or file name is
+ * passed then the $obo_name argument must also be provided.  If
+ * this is the first time the ontology has been provided to Tripal
+ * then it will be added to the database and will be assigned a
+ * unique OBO ID.
+ * 
+ * @param $obo_id
+ *   If the ontology is already loaded into the Tripal tables then
+ *   use this argument to specify the unique ID for the ontology
+ *   that will be loaded
+ * @param $obo_name
+ *   If the OBO has not been added before then use this argument
+ *   to specify the human readable name of the ontology.
+ * @param $obo_url
+ *   If the OBO to be loaded is located on a remote server then
+ *   use this argument to provide the URL.
+ * @param $obo_file
+ *   If the OBO is housed on the local file system of the server then
+ *   use this argument to specify the full path.  
+ *   
+ * @return
+ *   returns the job_id of the submitted job or FALSE if the job was not added
+ *   
+ * @ingroup tripal_cv_api
+ */
+function tripal_cv_submit_obo_job($obo_id = NULL, $obo_name = NULL, $obo_url = NULL, $obo_file = NULL) {
+  global $user;
+
+  if ($obo_id) {
+    $sql = "SELECT * FROM {tripal_cv_obo} WHERE obo_id = %d";
+    $obo = db_fetch_object(db_query($sql, $obo_id));
+    
+    $args = array($obo_id);
+    return tripal_add_job("Load OBO $obo->name", 'tripal_cv',
+       "tripal_cv_load_obo_v1_2_id", $args, $user->uid);
+  }
+  else {
+    if ($obo_url) {
+      $args = array($obo_name, $obo_url);
+      return tripal_add_job("Load OBO $obo_name", 'tripal_cv',
+        "tripal_cv_load_obo_v1_2_url", $args, $user->uid);
+    }
+    elseif ($obo_file) {
+      $args = array($obo_name, $obo_file);
+      return tripal_add_job("Load OBO $obo_name", 'tripal_cv',
+        "tripal_cv_load_obo_v1_2_file", $args, $user->uid);
+    }
+  }
+  return FALSE;
+}
+
+/**
+ * Add the obo to the tripal_cv_obo table in the Drupal database
+ * 
+ * @param $name
+ * The human readable name of this ontology
+ * @param $path
+ * The file path or URL of the ontology
+ * 
+ * @return
+ * Returns the ontology ID
+ * 
+ * @ingroup tripal_cv_api
+ */
+function tripal_cv_add_obo_ref($name, $path) {
+  $record = new stdClass;
+  $record->name = $name;
+  $record->path = $path;
+  drupal_write_record('tripal_cv_obo', $record);
+  return $record->obo_id;
 }

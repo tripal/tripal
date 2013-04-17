@@ -1,0 +1,163 @@
+<?php
+
+/**
+ * @file
+ * This file contains all the functions which describe and implement drupal database tables
+ * needed by this module. This module was developed by Chad N.A. Krilow and Lacey-Anne Sanderson,
+ * University of Saskatchewan.
+ *
+ * The contact manamgenet module allows you to sync data in a chado/Tripal instance with
+ * multiple contact/mysql instances as well as manage and create such contact instances
+ */
+
+/**
+ * Implementation of hook_install().
+ */
+function tripal_contact_install() {
+  // add the tripal_contact table to Drupal
+  drupal_install_schema('tripal_contact');
+  
+  // add the contactprop table to Chado
+  tripal_contact_add_custom_tables();
+  
+  // add loading of the the tripal contact ontology to the job queue
+  $obo_path =  realpath('./') . '/' . drupal_get_path('module', 'tripal_contact') . '/tcontact.obo';
+  $obo_id = tripal_cv_add_obo_ref('Tripal Contacts', $obo_path);
+  tripal_cv_submit_obo_job($obo_id);
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function tripal_contact_uninstall() {
+  drupal_uninstall_schema('tripal_contact');
+}
+
+/**
+ * Implementation of hook_schema().
+ */
+function tripal_contact_schema() {
+  $schema['chado_contact'] = array(
+    'fields' => array(
+      'nid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'vid' => array(
+          'type' => 'int',
+          'not null' => TRUE,
+      ),
+      'contact_id' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+    ),
+    'primary key' => array('nid', 'vid', 'contact_id'),
+  );
+  return $schema;
+}
+
+/**
+ * Implementation of hook_requirements(). 
+ *
+ */
+function tripal_contact_requirements($phase) {
+  $requirements = array();
+  if ($phase == 'install') {
+    // make sure chado is installed
+    if (!tripal_core_is_chado_installed()) {
+      $requirements ['tripal_contact'] = array(
+            'title' => "tripal_contact",
+            'value' => "ERROR: Chado most be installed before this module can be enabled",
+            'severity' => REQUIREMENT_ERROR,
+      );
+    }
+  }
+  return $requirements;
+}
+/*
+ * 
+ */
+function tripal_contact_add_custom_tables(){
+  $schema = array (
+    'table' => 'contactprop',
+    'fields' => array (
+      'contactprop_id' => array (
+        'type' => 'serial',
+        'not null' => true,
+      ),
+      'contact_id' => array (
+        'type' => 'int',
+        'not null' => true,
+      ),
+      'type_id' => array (
+        'type' => 'int',
+        'not null' => true,
+      ),
+      'value' => array (
+        'type' => 'text',
+        'not null' => false,
+      ),
+      'rank' => array (
+        'type' => 'int',
+        'not null' => true,
+        'default' => 0,
+      ),
+    ),
+    'primary key' => array (
+      0 => 'contactprop_id',
+    ),
+    'unique keys' => array (
+      'contactprop_c1' => array (
+        0 => 'contact_id',
+        1 => 'type_id',
+        2 => 'rank',
+      ),
+    ),
+    'indexes' => array (
+      'contactprop_idx1' => array (
+        0 => 'contact_id',
+      ),
+      'contactprop_idx2' => array (
+        0 => 'type_id',
+      ),
+    ),
+    'foreign keys' => array (
+      'cvterm' => array (
+        'table' => 'cvterm',
+        'columns' => array (
+          'type_id' => 'cvterm_id',
+        ),
+      ),
+      'contact' => array (
+        'table' => 'contact',
+        'columns' => array (
+          'contact_id' => 'contact_id',
+        ),
+      ),
+    ),
+  );
+  tripal_core_create_custom_table(&$ret, 'contactprop', $schema, TRUE);
+}
+/**
+ *  Update for Drupal 6.x, Tripal 1.0
+ *  This update
+ *   - adds a new contact node
+ *
+ * @ingroup tripal_contact
+ */
+function tripal_contact_update_6001() {
+  // add the tripal_contact table
+  drupal_install_schema('tripal_contact');
+  
+  // add the custom tables
+  tripal_contact_add_custom_tables();
+
+  // add loading of the the tripal contact ontology to the job queue
+  $obo_path =  realpath('./') . '/' . drupal_get_path('module', 'tripal_contact') . '/tcontact.obo';
+  $obo_id = tripal_cv_add_obo_ref('Tripal Contacts', $obo_path);
+  tripal_cv_submit_obo_job($obo_id);
+  return $ret;
+}

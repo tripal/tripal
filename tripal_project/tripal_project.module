@@ -498,8 +498,8 @@ function tripal_project_preprocess_tripal_project_relationships(&$variables) {
   $sql = "
     SELECT P.name, P.project_id, CP.nid, CVT.name as rel_type
     FROM project_relationship PR
-      INNER JOIN {project} P       ON PR.object_project_id = P.project_id
-      INNER JOIN {cvterm} CVT      ON PR.type_id           = CVT.cvterm_id
+      INNER JOIN {project} P            ON PR.object_project_id = P.project_id
+      INNER JOIN {cvterm} CVT           ON PR.type_id           = CVT.cvterm_id
       LEFT JOIN public.chado_project CP ON P.project_id         = CP.project_id
     WHERE PR.subject_project_id = %d
   ";
@@ -507,8 +507,8 @@ function tripal_project_preprocess_tripal_project_relationships(&$variables) {
   $sql = "
     SELECT P.name, P.project_id, CP.nid, CVT.name as rel_type
     FROM project_relationship PR
-      INNER JOIN {project P}       ON PR.subject_project_id = P.project_id
-      INNER JOIN {cvterm CVT}      ON PR.type_id            = CVT.cvterm_id
+      INNER JOIN {project} P            ON PR.subject_project_id = P.project_id
+      INNER JOIN {cvterm} CVT           ON PR.type_id            = CVT.cvterm_id
       LEFT JOIN public.chado_project CP ON P.project_id          = CP.project_id
     WHERE PR.object_project_id = %d
   ";

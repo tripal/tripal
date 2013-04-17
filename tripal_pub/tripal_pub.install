@@ -24,6 +24,14 @@ function tripal_pub_install() {
   
   // add any cvterms we need for this module
   tripal_pub_add_cvterms();  
+  
+  // add loading of the the tripal pub ontology to the job queue
+  $obo_path =  realpath('./') . '/' . drupal_get_path('module', 'tripal_pub') . '/tpub.obo';
+  $obo_id = tripal_cv_add_obo_ref('Tripal Publication', $obo_path);
+  tripal_cv_submit_obo_job($obo_id);
+  
+  // add the custom tables
+  tripal_pub_add_custom_tables();
 }
 
 
@@ -102,4 +110,51 @@ function tripal_pub_requirements($phase) {
     }
   }
   return $requirements;
+}
+
+/*
+ * 
+ */
+function tripal_pub_add_custom_tables() {
+  $schema = array (
+    'table' => 'pubauthor_contact',
+    'fields' => array (
+      'pubauthor_contact_id' => array (
+        'type' => 'serial',
+        'not null' => true,
+      ),
+      'contact_id' => array (
+        'type' => 'int',
+        'not null' => true,
+      ),
+      'pubauthor_id' => array (
+        'type' => 'int',
+        'not null' => true,
+      ),
+    ),
+    'primary key' => array (
+      0 => 'pubauthor_contact_id',
+    ),
+    'unique keys' => array (
+      'pubauthor_contact_c1' => array (
+        0 => 'contact_id',
+        1 => 'pubauthor_id',
+      ),
+    ),
+    'foreign keys' => array (
+      'contact' => array (
+        'table' => 'contact',
+        'columns' => array (
+          'contact_id' => 'contact_id',
+        ),
+      ),
+      'pubauthor' => array (
+        'table' => 'pubauthor',
+        'columns' => array (
+          'pubauthor_id' => 'pubauthor_id',
+        ),
+      ),
+    ),
+  );
+  tripal_core_create_custom_table(&$ret, 'pubauthor_contact', $schema, TRUE);
 }

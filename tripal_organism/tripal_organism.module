@@ -284,11 +284,8 @@ function chado_organism_insert($node) {
     $organism = tripal_core_chado_insert('organism', $values);
     if (!$organism) {
       drupal_set_message(t('Unable to add organism.', 'warning'));
-      watchdog('tripal_organism',
-        'Insert Organism: Unable to create organism where values:%values',
-        array('%values' => print_r($values, TRUE)),
-        WATCHDOG_WARNING
-      );
+      watchdog('tripal_organism', 'Insert Organism: Unable to create organism where values:%values',
+        array('%values' => print_r($values, TRUE)), WATCHDOG_ERROR);
       return;
     }
     $organism_id = $organism['organism_id'];

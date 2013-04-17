@@ -44,8 +44,8 @@ function tripal_pub_remote_search_pubmed($search_array, $num_to_retrieve, $pager
   $search_array['search_terms'] = $search_str;
 
   // we want to get the list of pubs using the search terms but using a Drupal style pager
-  $pubs = tripal_pager_callback('tripal_pub_remote_search_pubmed_range',  
-    $num_to_retrieve, $pager_id, 'tripal_pub_remote_search_pubmed_count', $search_array);
+  $pubs = tripal_pager_callback('tripal_pub_pubmed_range',  
+    $num_to_retrieve, $pager_id, 'tripal_pub_pubmed_count', $search_array);
  
   return $pubs;
 }
@@ -55,12 +55,12 @@ function tripal_pub_remote_search_pubmed($search_array, $num_to_retrieve, $pager
  * tripal_pager_callback function.  This function returns a count of
  * the dataset to be paged.
  */
-function tripal_pub_remote_search_pubmed_count($search_array) {
+function tripal_pub_pubmed_count($search_array) {
   $terms = $search_array['search_terms'];
   $days = $search_array['days'];
   $limit = $search_array['limit'];
   
-  $results = tripal_pub_remote_search_pubmed_search_init($terms, $limit, $days);
+  $results = tripal_pub_pubmed_search_init($terms, $limit, $days);
   $_SESSION['tripal_pub_pubmed_query'][$terms]['Count'] = $results['Count'];
   $_SESSION['tripal_pub_pubmed_query'][$terms]['WebEnv'] = $results['WebEnv'];
   $_SESSION['tripal_pub_pubmed_query'][$terms]['QueryKey'] = $results['QueryKey'];
@@ -74,11 +74,13 @@ function tripal_pub_remote_search_pubmed_count($search_array) {
  * tripal_pager_callback function.  This function returns the results
  * within the specified range
  */
-function tripal_pub_remote_search_pubmed_range($search_array, $start = 0, $limit = 10) {
+function tripal_pub_pubmed_range($search_array, $start = 0, $limit = 10) {
   $terms = $search_array['search_terms'];
   $days = $search_array['days'];
   $limit = $search_array['limit'];
   
+  $count = $_SESSION['tripal_pub_pubmed_query'][$terms]['Count'];
+    
   // get the query_key and the web_env from the previous count query.
   $query_key = $_SESSION['tripal_pub_pubmed_query'][$terms]['QueryKey'];
   $web_env = $_SESSION['tripal_pub_pubmed_query'][$terms]['WebEnv'];
@@ -86,7 +88,7 @@ function tripal_pub_remote_search_pubmed_range($search_array, $start = 0, $limit
   // if this function has been called without calling the count function
   // then we need to do the query.
   if (!$query_key) {
-    $results = tripal_pub_remote_search_pubmed_search_init($terms, $limit, $days);
+    $results = tripal_pub_pubmed_search_init($terms, $limit, $days);
     $_SESSION['tripal_pub_pubmed_query']['WebEnv'] = $results['WebEnv'];
     $_SESSION['tripal_pub_pubmed_query']['QueryKey'] = $results['QueryKey']; 
     $query_key =  $results['QueryKey'];
@@ -94,15 +96,15 @@ function tripal_pub_remote_search_pubmed_range($search_array, $start = 0, $limit
   }
 
   // now get the list of PMIDs from the previous search
-  $pmids_txt = tripal_pub_remote_search_pubmed_fetch($query_key, $web_env, 'uilist', 'text', $start, $limit);  
+  $pmids_txt = tripal_pub_pubmed_fetch($query_key, $web_env, 'uilist', 'text', $start, $limit);  
   
   // iterate through each PMID and get the publication record. This requires a new search and new fetch
   $pmids = explode("\n", trim($pmids_txt));
   $pubs = array();
   foreach ($pmids as $pmid) {
     // now retrieve the individual record
-    $pub_xml = tripal_pub_remote_search_pubmed_fetch($query_key, $web_env, 'null', 'xml', 0, 1, array('id' => $pmid));
-    $pub = tripal_pub_remote_search_pubmed_parse_pubxml($pub_xml);
+    $pub_xml = tripal_pub_pubmed_fetch($query_key, $web_env, 'null', 'xml', 0, 1, array('id' => $pmid));
+    $pub = tripal_pub_pubmed_parse_pubxml($pub_xml);
     $pubs[] = $pub;    
   } 
   return $pubs;
@@ -111,7 +113,7 @@ function tripal_pub_remote_search_pubmed_range($search_array, $start = 0, $limit
 /*
  * 
  */
-function tripal_pub_remote_search_pubmed_search_init($terms, $retmax, $days = 0){
+function tripal_pub_pubmed_search_init($terms, $retmax, $days = 0){
    
   // do a search for a single result so that we can establish a history, and get
   // the number of records. Once we have the number of records we can retrieve
@@ -171,7 +173,7 @@ function tripal_pub_remote_search_pubmed_search_init($terms, $retmax, $days = 0)
 /*
  * 
  */
-function tripal_pub_remote_search_pubmed_fetch($query_key, $web_env, $rettype = 'null', 
+function tripal_pub_pubmed_fetch($query_key, $web_env, $rettype = 'null', 
   $retmod = 'null', $start = 0, $limit = 10, $args = array()){
 
   // repeat the search performed previously (using WebEnv & QueryKey) to retrieve
@@ -219,7 +221,7 @@ function tripal_pub_remote_search_pubmed_fetch($query_key, $web_env, $rettype = 
  * Information about PubMed's citation format can be found here
  * http://www.nlm.nih.gov/bsd/policy/cit_format.html
  */
-function tripal_pub_remote_search_pubmed_parse_pubxml($pub_xml) {
+function tripal_pub_pubmed_parse_pubxml($pub_xml) {
   $pub = array();
   
   if (!$pub_xml) {
@@ -236,16 +238,16 @@ function tripal_pub_remote_search_pubmed_parse_pubxml($pub_xml) {
       switch ($element) {
         case 'PMID':
           $xml->read(); // get the value for this element
-          $pub['pub_accession'] = $xml->value;
-          $pub['pub_database'] = 'PMID';
+          $pub['Pub Accession'] = $xml->value;
+          $pub['Publication Database'] = 'PMID';
           break;        
         case 'Article':
           $pub_model = $xml->getAttribute('PubModel');
-          $pub['publication_model'] = $pub_model;
-          tripal_pub_remote_search_pubmed_parse_article($xml, $pub);
+          $pub['Publication Model'] = $pub_model;
+          tripal_pub_pubmed_parse_article($xml, $pub);
           break;
         case 'MedlineJournalInfo':
-          tripal_pub_remote_search_pubmed_parse_medline_journal_info($xml, $pub);
+          tripal_pub_pubmed_parse_medline_journal_info($xml, $pub);
           break;
         case 'ChemicalList':
           // TODO: handle this
@@ -294,31 +296,31 @@ function tripal_pub_remote_search_pubmed_parse_pubxml($pub_xml) {
       }
     }
   }
-  $pub['citation'] = $pub['author_list'] . 
-    '. <a href="http://www.ncbi.nlm.nih.gov/pubmed/' . $pub['pub_accession'] . '" target="_blank">' . $pub['title'] .  '</a> ' .
-    $pub['journal_iso_abbreviation']. '. ' . $pub['publication_date'];
-  if ($pub['volume'] or $pub['issue']) {
-    $pub['citation'] .= '; ';  
+  $pub['Citation'] = $pub['Author List'] . 
+    '. <a href="http://www.ncbi.nlm.nih.gov/pubmed/' . $pub['Pub Accession'] . '" target="_blank">' . $pub['Title'] .  '</a> ' .
+    $pub['Journal ISO Abbreviation']. '. ' . $pub['Publication Date'];
+  if ($pub['Volume'] or $pub['Issue']) {
+    $pub['Citation'] .= '; ';  
   }
-  if ($pub['volume']) {
-    $pub['citation'] .= $pub['volume'];
+  if ($pub['Volume']) {
+    $pub['Citation'] .= $pub['Volume'];
   }
-  if ($pub['issue']) {
-    $pub['citation'] .= '(' . $pub['issue'] . ')';
+  if ($pub['Issue']) {
+    $pub['Citation'] .= '(' . $pub['Issue'] . ')';
   }
-  if ($pub['pages']) {
-    $pub['citation'] .= ':' . $pub['pages'];
+  if ($pub['Pages']) {
+    $pub['Citation'] .= ':' . $pub['Pages'];
   }
-  $pub['citation'] .= '. PubMed PMID: ' . $pub['pub_accession']; 
+  $pub['Citation'] .= '. PubMed PMID: ' . $pub['Pub Accession']; 
   
-  $pub['xml'] = $pub_xml;
+  //$pub['xml'] = $pub_xml;
   return $pub;
 }
 
 /*
  * 
  */
-function tripal_pub_remote_search_pubmed_parse_medline_journal_info($xml, &$pub) {
+function tripal_pub_pubmed_parse_medline_journal_info($xml, &$pub) {
   while ($xml->read()) {
     // get this element name
     $element = $xml->name;     
@@ -332,7 +334,7 @@ function tripal_pub_remote_search_pubmed_parse_medline_journal_info($xml, &$pub)
         case 'Country':
           // the place of publication of the journal
           $xml->read();
-          $pub['journal_country'] = $xml->value;
+          $pub['Journal Country'] = $xml->value;
           break;
         case 'MedlineTA':
           // TODO: not sure how this is different from ISOAbbreviation
@@ -353,7 +355,7 @@ function tripal_pub_remote_search_pubmed_parse_medline_journal_info($xml, &$pub)
 /*
  * 
  */
-function tripal_pub_remote_search_pubmed_parse_article($xml, &$pub) {
+function tripal_pub_pubmed_parse_article($xml, &$pub) {
     
   while ($xml->read()) {
     // get this element name
@@ -366,17 +368,17 @@ function tripal_pub_remote_search_pubmed_parse_article($xml, &$pub) {
     if ($xml->nodeType == XMLReader::ELEMENT) {    
       switch ($element) {
         case 'Journal':
-          tripal_pub_remote_search_pubmed_parse_journal($xml, $pub);
+          tripal_pub_pubmed_parse_journal($xml, $pub);
           break;
         case 'ArticleTitle':
           $xml->read();
-          $pub['title'] = $xml->value;
+          $pub['Title'] = $xml->value;
           break;
         case 'Abstract':
-          tripal_pub_remote_search_pubmed_parse_abstract($xml, $pub);
+          tripal_pub_pubmed_parse_abstract($xml, $pub);
           break;
         case 'Pagination':
-          tripal_pub_remote_search_pubmed_parse_pagination($xml, $pub);
+          tripal_pub_pubmed_parse_pagination($xml, $pub);
           break;  
         case 'ELocationID':
           $type = $xml->getAttribute('EIdType');
@@ -389,16 +391,16 @@ function tripal_pub_remote_search_pubmed_parse_article($xml, &$pub) {
           if ($type == 'pii' and $valid == 'Y') {
             $pub['PII'] = $elocation;
           }
-          $pub['elocation'] = $elocation;
+          $pub['Elocation'] = $elocation;
           break;        
         case 'Affiliation':
           // the affiliation tag at this level is meant solely for the first author
           $xml->read();
-          $pub['authors'][0]['affiliation'] = $xml->value;
+          $pub['Authors'][0]['Affiliation'] = $xml->value;
           break;
         case 'AuthorList':
           $complete = $xml->getAttribute('CompleteYN');
-          tripal_pub_remote_search_pubmed_parse_authorlist($xml, $pub);
+          tripal_pub_pubmed_parse_authorlist($xml, $pub);
           break;
         case 'InvestigatorList':
           // TODO: perhaps handle this one day.  The investigator list is to list the names of people who 
@@ -408,8 +410,8 @@ function tripal_pub_remote_search_pubmed_parse_article($xml, &$pub) {
           $xml->read();
           $lang_abbr = $xml->value;
           // there may be multiple languages so we store these in an array
-          $pub['language'][] = tripal_pub_remote_search_get_language($lang_abbr);
-          $pub['language_abbr'][] = $lang_abbr;
+          $pub['Language'][] = tripal_pub_remote_search_get_language($lang_abbr);
+          $pub['Language Abbr'][] = $lang_abbr;
           break;
         case 'DataBankList':
           // TODO: handle this case
@@ -418,11 +420,11 @@ function tripal_pub_remote_search_pubmed_parse_article($xml, &$pub) {
           // TODO: handle this case
           break;
         case 'PublicationTypeList':
-          tripal_pub_remote_search_pubmed_parse_publication_type($xml, $pub);
+          tripal_pub_pubmed_parse_publication_type($xml, $pub);
           break;
         case 'VernacularTitle':
           $xml->read();
-          $pub['vernacular_title'][] = $xml->value;;
+          $pub['Vernacular Title'][] = $xml->value;
           break;
         case 'ArticleDate': 
           // TODO: figure out what to do with this element. We already have the
@@ -442,7 +444,7 @@ function tripal_pub_remote_search_pubmed_parse_article($xml, &$pub) {
  * The Tripal Pub ontology doesn't yet have terms for all of the 
  * publication types so we store the value in the 'publication_type' term.
  */
-function tripal_pub_remote_search_pubmed_parse_publication_type($xml, &$pub) {
+function tripal_pub_pubmed_parse_publication_type($xml, &$pub) {
   
   while ($xml->read()) {
     $element = $xml->name;    
@@ -454,8 +456,19 @@ function tripal_pub_remote_search_pubmed_parse_publication_type($xml, &$pub) {
     if ($xml->nodeType == XMLReader::ELEMENT) {
       switch ($element) {
         case 'PublicationType':  
-          $xml->read();          
-          $pub['publication_type'][] = $xml->value;
+          $xml->read();
+          $pub_cvterm = tripal_cv_get_cvterm_by_name($xml->value, NULL, 'tripal_pub');
+          if (!$pub_cvterm) {
+            // see if this we can find the name using a synonym
+            $pub_cvterm = tripal_cv_get_cvterm_by_synonym($xml->value, NULL, 'tripal_pub');
+            if (!$pub_cvterm) {
+              watchdog('tpub_pubmed', 'Cannot find a valid vocabulary term for the publication type: "%term".', 
+                array('%term' => $xml->value), WATCHDOG_ERROR);
+            }
+          }
+          else {
+            $pub['Publication Type'][] = $pub_cvterm->name;
+          }            
           break;          
         default:
           break;
@@ -466,7 +479,7 @@ function tripal_pub_remote_search_pubmed_parse_publication_type($xml, &$pub) {
 /*
  * 
  */
-function tripal_pub_remote_search_pubmed_parse_abstract($xml, &$pub) {
+function tripal_pub_pubmed_parse_abstract($xml, &$pub) {
   $abstract = '';
   
   while ($xml->read()) {
@@ -474,7 +487,7 @@ function tripal_pub_remote_search_pubmed_parse_abstract($xml, &$pub) {
       
     if ($xml->nodeType == XMLReader::END_ELEMENT and $element == 'Abstract') {
       // we've reached the </Abstract> element so return   
-      $pub['abstract'] = $abstract;        
+      $pub['Abstract'] = $abstract;        
       return;
     }
     // the abstract text can be just a singe paragraph or be broken into multiple
@@ -486,7 +499,7 @@ function tripal_pub_remote_search_pubmed_parse_abstract($xml, &$pub) {
           $label = $xml->getAttribute('Label');
           $xml->read();
           if ($label) {
-            $pub['structured_abstract_part'][][$label] = $xml->value;
+            $pub['Structured Abstract Part'][] = $xml->value;
             $abstract .= "<p><b>$label</b></br>" . $xml->value . '</p>';
           }
           else {
@@ -495,7 +508,7 @@ function tripal_pub_remote_search_pubmed_parse_abstract($xml, &$pub) {
           break;
         case 'CopyrightInformation':
           $xml->read();
-          $pub['copyright'] = $xml->value;
+          $pub['Copyright'] = $xml->value;
           break;          
         default:
           break;
@@ -506,7 +519,7 @@ function tripal_pub_remote_search_pubmed_parse_abstract($xml, &$pub) {
 /*
  * 
  */
-function tripal_pub_remote_search_pubmed_parse_pagination($xml, &$pub) {
+function tripal_pub_pubmed_parse_pagination($xml, &$pub) {
   while ($xml->read()) {
     $element = $xml->name;
       
@@ -519,7 +532,7 @@ function tripal_pub_remote_search_pubmed_parse_pagination($xml, &$pub) {
         case 'MedlinePgn':  
           $xml->read();
           if(trim($xml->value)) {
-            $pub['pages'] = $xml->value;
+            $pub['Pages'] = $xml->value;
           }
           break;          
         default:
@@ -531,7 +544,7 @@ function tripal_pub_remote_search_pubmed_parse_pagination($xml, &$pub) {
 /*
  * 
  */
-function tripal_pub_remote_search_pubmed_parse_journal($xml, &$pub) {
+function tripal_pub_pubmed_parse_journal($xml, &$pub) {
   
   while ($xml->read()) {
     $element = $xml->name;
@@ -556,15 +569,15 @@ function tripal_pub_remote_search_pubmed_parse_journal($xml, &$pub) {
         case 'JournalIssue':   
           // valid values of cited_medium are 'Internet' and 'Print'
           $cited_medium = $xml->getAttribute('CitedMedium');                    
-          tripal_pub_remote_search_pubmed_parse_journal_issue($xml, $pub);       
+          tripal_pub_pubmed_parse_journal_issue($xml, $pub);       
           break;        
         case 'Title': 
           $xml->read();
-          $pub['journal_name'] = $xml->value;          
+          $pub['Journal Name'] = $xml->value;          
           break;
         case 'ISOAbbreviation': 
           $xml->read();
-          $pub['journal_iso_abbreviation'] = $xml->value;         
+          $pub['Journal ISO Abbreviation'] = $xml->value;         
           break;
         default:
           break;
@@ -575,7 +588,7 @@ function tripal_pub_remote_search_pubmed_parse_journal($xml, &$pub) {
 /*
  * 
  */
-function tripal_pub_remote_search_pubmed_parse_journal_issue($xml, &$pub) {
+function tripal_pub_pubmed_parse_journal_issue($xml, &$pub) {
   
   while ($xml->read()) {
     $element = $xml->name;
@@ -588,34 +601,34 @@ function tripal_pub_remote_search_pubmed_parse_journal_issue($xml, &$pub) {
       switch ($element) {
         case 'Volume': 
           $xml->read();
-          $pub['volume'] = $xml->value;         
+          $pub['Volume'] = $xml->value;         
           break;
         case 'Issue':
           $xml->read();
-          $pub['issue'] = $xml->value;           
+          $pub['Issue'] = $xml->value;           
           break;
         case 'PubDate':
-          $date = tripal_pub_remote_search_pubmed_parse_date($xml, 'PubDate');
+          $date = tripal_pub_pubmed_parse_date($xml, 'PubDate');
           $year = $date['year'];
           $month = $date['month'];
           $day = $date['day']; 
           $medline = $date['medline'];
            
-          $pub['year'] = $year;            
+          $pub['Year'] = $year;            
           if ($month and $day and $year) {
-            $pub['publication_date'] = "$year $month $day";
+            $pub['Publication Date'] = "$year $month $day";
           }
           elseif ($month and !$day and $year) {
-            $pub['publication_date'] = "$year $month";
+            $pub['Publication Date'] = "$year $month";
           }
           elseif (!$month and !$day and $year) {
-            $pub['publication_date'] = $year;
+            $pub['Publication Date'] = $year;
           } 
           elseif ($medline) {
-            $pub['publication_date'] = $medline;
+            $pub['Publication Date'] = $medline;
           }
           else {
-            $pub['publication_date'] = "Date Unknown";
+            $pub['Publication Date'] = "Date Unknown";
           }             
           break;
         default:
@@ -628,7 +641,7 @@ function tripal_pub_remote_search_pubmed_parse_journal_issue($xml, &$pub) {
 /*
  * 
  */
-function tripal_pub_remote_search_pubmed_parse_date ($xml, $element_name) {
+function tripal_pub_pubmed_parse_date ($xml, $element_name) {
   $date = array();
   
   while ($xml->read()) {
@@ -667,7 +680,7 @@ function tripal_pub_remote_search_pubmed_parse_date ($xml, $element_name) {
 /*
  * 
  */
-function tripal_pub_remote_search_pubmed_parse_authorlist($xml, &$pub) {
+function tripal_pub_pubmed_parse_authorlist($xml, &$pub) {
   $num_authors = 0;
   
   while ($xml->read()) {
@@ -678,21 +691,21 @@ function tripal_pub_remote_search_pubmed_parse_authorlist($xml, &$pub) {
       if($element == 'AuthorList') {
         // build the author list before returning
         $author_list = '';
-        foreach ($pub['authors'] as $author) {
+        foreach ($pub['Authors'] as $author) {
           if ($author['valid'] == 'N') {
             // skip non-valid entries.  A non-valid entry should have 
             // a corresponding corrected entry so we can saftely skip it.
             continue;
           }
-          if ($author['collective']) {
-            $author_list .= $author['collective'] . ', ';
+          if ($author['Collective']) {
+            $author_list .= $author['Collective'] . ', ';
           }
           else {
-            $author_list .= $author['surname'] . ' ' . $author['first_initials'] . ', '; 
+            $author_list .= $author['Surname'] . ' ' . $author['First Initials'] . ', '; 
           }             
         }
         $author_list = substr($author_list, 0, -2);
-        $pub['author_list'] = $author_list;
+        $pub['Author List'] = $author_list;
         return;
       }
       // if we're at the end </Author> element then we're done with the author and we can
@@ -705,27 +718,27 @@ function tripal_pub_remote_search_pubmed_parse_authorlist($xml, &$pub) {
       switch ($element) {
         case 'Author':
           $valid = $xml->getAttribute('ValidYN');
-          $pub['authors'][$num_authors]['valid'] = $valid;          
+          $pub['Authors'][$num_authors]['valid'] = $valid;          
           break;
         case 'LastName':  
           $xml->read(); 
-          $pub['authors'][$num_authors]['surname'] = $xml->value;         
+          $pub['Authors'][$num_authors]['Surname'] = $xml->value;         
           break;
         case 'ForeName': 
           $xml->read(); 
-          $pub['authors'][$num_authors]['given_name'] = $xml->value;          
+          $pub['Authors'][$num_authors]['Given Name'] = $xml->value;          
           break;
         case 'Initials': 
           $xml->read(); 
-          $pub['authors'][$num_authors]['first_initials'] = $xml->value;          
+          $pub['Authors'][$num_authors]['First Initials'] = $xml->value;          
           break;
         case 'Suffix': 
           $xml->read(); 
-          $pub['authors'][$num_authors]['suffix'] = $xml->value;          
+          $pub['Authors'][$num_authors]['Suffix'] = $xml->value;          
           break;
         case 'CollectiveName': 
           $xml->read(); 
-          $pub['authors'][$num_authors]['collective'] = $xml->value;          
+          $pub['Authors'][$num_authors]['Collective'] = $xml->value;          
           break;
         case 'Identifier': 
           // according to the specification, this element is not yet used.                  

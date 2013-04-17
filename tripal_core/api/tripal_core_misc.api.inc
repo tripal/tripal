@@ -29,7 +29,7 @@ function tripal_pager_callback($func, $limit = 9, $element = 0, $cfunc) {
   
   global $pager_page_array, $pager_total, $pager_total_items;
   $page = isset($_GET['page']) ? $_GET['page'] : '';
-  
+   
   // Substitute in query arguments.
   $args = func_get_args();
   $args = array_slice($args, 4);
@@ -38,6 +38,7 @@ function tripal_pager_callback($func, $limit = 9, $element = 0, $cfunc) {
     $args = $args[0];
   }
 
+  // count the number of records by calling the counting callbackup function
   $count = $cfunc($args);  
   
   // Convert comma-separated $page to an array, used by other functions.

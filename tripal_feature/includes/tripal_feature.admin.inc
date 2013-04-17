@@ -344,9 +344,7 @@ function get_tripal_feature_admin_form_url_set(&$form) {
                         'example http://my-tripal-site.org/ID1034, where the '.
                         'element just after the final slash is the unique '.
                         'identifier for the feature.'),
-
   );
-
   $options = array(
     'internal ID'          => 'Internal ID (Chado feature_id)',
     'feature unique name'  => 'Feature unique name',

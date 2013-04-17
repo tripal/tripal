@@ -1,0 +1,160 @@
+format-version: 1.2
+default-namespace: tripal_contact
+
+[Term]
+id: TContact:0000001
+name: Contact Type
+
+
+[Term]
+id: TContact:0000002
+name: Collective
+def: Used when a contact is a collective of individuals rather than a person.
+is_a: TContact:0000001 ! Contact Type
+
+[Term]
+id: TContact:0000003
+name: Person
+is_a: TContact:0000001 ! Contact Type
+
+[Term]
+id: TContact:0000004
+name: Organization
+is_a: TContact:0000001 ! Contact Type
+
+[Term]
+id: TContact:0000005
+name: University
+is_a: TContact:0000001 ! Contact Type
+
+[Term]
+id: TContact:0000006
+name: Lab
+is_a: TContact:0000001 ! Contact Type
+
+[Term]
+id: TContact:0000007
+name: Institute
+is_a: TContact:0000001 ! Contact Type
+
+[Term]
+id: TContact:0000008
+name: Research Group
+is_a: TContact:0000001 ! Contact Type
+
+[Term]
+id: TContact:0000009
+name: Department
+is_a: TContact:0000001 ! Contact Type
+
+[Term]
+id: TContact:0000010
+name: First Initials
+def: The first initials for the author including the initial for the first name and any middle names (not the initial for the last name).
+relationship: part_of TContact:0000003 ! Person
+
+[Term]
+id: TContact:0000011
+name: Surname
+synonym: "family_name" EXACT []
+synonym: "last_name" EXACT []
+relationship: part_of TContact:0000003 ! Person
+
+[Term]
+id: TContact:0000012
+name: Given Name
+synonym: "first_name" EXACT []
+relationship: part_of TContact:0000003 ! Person
+
+[Term]
+id: TContact:0000013
+name: Middle Names
+def: One or more middle names for this person.
+relationship: part_of TContact:0000003 ! Person
+
+[Term]
+id: TContact:0000014
+name: Middle Initials
+def: The middle initials for this person excluding the initial for the given name and the surname.
+relationship: part_of TContact:0000003 ! Person
+
+[Term]
+id: TContact:0000015
+name: Affiliation
+
+[Term]
+id: TContact:0000016
+name: Department
+def: The department of an institution or organization.
+relationship: part_of TContact:0000015 ! Affiliation
+
+[Term]
+id: TContact:0000017
+name: Institution
+relationship: part_of TContact:0000015 ! Affiliation
+
+[Term]
+id: TContact:0000018
+name: Organization
+def: A generic term for any organization.
+relationship: part_of TContact:0000015 ! Affiliation
+
+[Term]
+id: TContact:0000019
+name: Address
+
+[Term]
+id: TContact:0000020
+name: Address Line 1
+relationship: part_of TContact:0000019 ! Address
+
+[Term]
+id: TContact:0000021
+name: Address Line 2
+relationship: part_of TContact:0000019 ! Address
+
+[Term]
+id: TContact:0000022
+name: Address Line 3
+relationship: part_of TContact:0000019 ! Address
+
+[Term]
+id: TContact:0000023
+name: City
+relationship: part_of TContact:0000019 ! Address
+
+[Term]
+id: TContact:0000024
+name: State
+relationship: part_of TContact:0000019 ! Address
+
+[Term]
+id: TContact:0000025
+name: Province
+relationship: part_of TContact:0000019 ! Address
+
+[Term]
+id: TContact:0000026
+name: Country
+relationship: part_of TContact:0000019 ! Address
+
+[Term]
+id: TContact:0000027
+name: Postal Code
+relationship: part_of TContact:0000019 ! Address
+
+[Term]
+id: TContact:0000028
+name: contact_description
+def: A description of the contact
+
+
+[Typedef]
+id: is_a
+name: is a
+is_transitive: true
+
+[Typedef]
+id: part_of
+name: part of
+is_transitive: true

@@ -102,7 +102,8 @@ function tripal_project_views_default_views() {
     return $views;
   }
 
-  $description_type_id = tripal_core_chado_select('cvterm',array('cvterm_id'),array('name' => 'project_description'));
+  $values = array('name' => 'project_description');
+  $description_type_id = tripal_core_chado_select('cvterm', array('cvterm_id'), $values);
   $description_type_id = $description_type_id[0]->cvterm_id;
 
   // Main default view

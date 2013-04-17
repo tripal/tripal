@@ -104,33 +104,12 @@ function tripal_cv_obo_form(&$form_state = NULL) {
    * @ingroup tripal_obo_loader
  */
 function tripal_cv_obo_form_submit($form, &$form_state) {
-  global $user;
-
   $obo_id =  $form_state['values']['obo_id'];
   $obo_name =  $form_state['values']['obo_name'];
   $obo_url =  $form_state['values']['obo_url'];
   $obo_file  = $form_state['values']['obo_file'];
-
-  $sql = "SELECT * FROM {tripal_cv_obo} WHERE obo_id = %d";
-  $obo = db_fetch_object(db_query($sql, $obo_id));
-
-  if ($obo_id) {
-    $args = array($obo_id);
-    tripal_add_job("Load OBO $obo->name", 'tripal_cv',
-       "tripal_cv_load_obo_v1_2_id", $args, $user->uid);
-  }
-  else {
-    if ($obo_url) {
-      $args = array($obo_name, $obo_url);
-      tripal_add_job("Load OBO $obo_name", 'tripal_cv',
-        "tripal_cv_load_obo_v1_2_url", $args, $user->uid);
-    }
-    elseif ($obo_file) {
-      $args = array($obo_name, $obo_file);
-      tripal_add_job("Load OBO $obo_name", 'tripal_cv',
-        "tripal_cv_load_obo_v1_2_file", $args, $user->uid);
-    }
-  }
+  
+  tripal_cv_submit_obo_job($obo_id, $obo_name, $obo_url, $obo_file);
 }
 
 /**
@@ -220,9 +199,9 @@ function tripal_cv_load_obo_v1_2_file($obo_name, $file, $jobid = NULL, $is_new =
   
   tripal_cv_load_obo_v1_2($file, $jobid, $newcvs);
   if ($is_new) {
-    tripal_cv_load_obo_add_ref($obo_name, $file);
+    tripal_cv_add_obo_ref($obo_name, $file);
   }
-  print "\nOntology Sucessfully loaded!\n";
+  print "\nDone\n";
 
   // update the cvtermpath table
   tripal_cv_load_update_cvtermpath($newcvs, $jobid);
@@ -262,13 +241,13 @@ function tripal_cv_load_obo_v1_2_url($obo_name, $url, $jobid = NULL, $is_new = T
   unlink($temp);
 
   if ($is_new) {
-    tripal_cv_load_obo_add_ref($obo_name, $url);
+    tripal_cv_add_obo_ref($obo_name, $url);
   }
 
   // update the cvtermpath table
   tripal_cv_load_update_cvtermpath($newcvs, $jobid);
 
-  print "Ontology Sucessfully loaded!\n";
+  print "Done\n";
 }
 
 /**
@@ -283,13 +262,7 @@ function tripal_cv_load_update_cvtermpath($newcvs, $jobid) {
   }
 }
 
-/**
- * Add the obo to the tripal_cv_obo table in the Drupal database
- */
-function tripal_cv_load_obo_add_ref($name, $path) {
-  $isql = "INSERT INTO {tripal_cv_obo} (name,path) VALUES ('%s','%s')";
-  db_query($isql, $name, $path);
-}
+
 
 /**
  *
@@ -514,7 +487,7 @@ function tripal_cv_obo_process_term($term, $defaultcv, $is_relationship = 0, &$n
   // add the cvterm
   $cvterm = tripal_cv_add_cvterm($t, $defaultcv, $is_relationship, 1, $default_db); 
   if (!$cvterm) {
-    tripal_cv_obo_quiterror("Cannot add the term " . $term['id']);
+    tripal_cv_obo_quiterror("Cannot add the term " . $term['id'][0]);
   }  
  
   if (array_key_exists('namespace', $term)) {

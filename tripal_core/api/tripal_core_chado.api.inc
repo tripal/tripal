@@ -73,7 +73,7 @@ require_once "tripal_core.schema_v1.11.api.inc";
  *
  * @return
  *  On success this function returns the inserted record with the new primary keys
- *  add to the returned array. On failure, it returns FALSE.
+ *  added to the returned array. On failure, it returns FALSE.
  *
  * Example usage:
  * @code
@@ -318,7 +318,7 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
   }
 
   // create the SQL
-  $sql = "INSERT INTO {$table} (" . implode(", ", $ifields) . ") VALUES (" . implode(", ", $itypes) . ")";
+  $sql = 'INSERT INTO {' . $table . '} (' . implode(", ", $ifields) . ") VALUES (" . implode(", ", $itypes) . ")";
 
   // if this is a prepared statement then execute it
   if ($prepared) {
@@ -326,7 +326,7 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
     // then we need to do the prepare, otherwise just execute
     if ($options['is_prepared'] != TRUE) {
       // prepare the statement
-      $psql = "PREPARE " . $options['statement_name'] . " (" . implode(', ', $idatatypes) . ") AS INSERT INTO {$table} (" . implode(", ", $ifields) . ") VALUES (" . implode(", ", $iplaceholders) . ")";
+      $psql = "PREPARE " . $options['statement_name'] . " (" . implode(', ', $idatatypes) . ') AS INSERT INTO {' . $table . '} (' . implode(", ", $ifields) . ") VALUES (" . implode(", ", $iplaceholders) . ")";
       $status = tripal_core_chado_prepare($options['statement_name'], $psql, $idatatypes);
 
       if (!$status) {
@@ -334,12 +334,11 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
         return FALSE;
       }
     }
-
     $sql = "EXECUTE " . $options['statement_name'] . "(" . implode(", ", $itypes) . ")";
     $result = tripal_core_chado_execute_prepared($options['statement_name'], $sql, $ivalues);
   }
   // if it's not a prepared statement then insert normally
-  else {
+  else {        
     $result = chado_query($sql, $ivalues);
   }
 
@@ -377,7 +376,8 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
     return TRUE;
   }
   else {
-    watchdog('tripal_core', "tripal_core_chado_insert: Cannot insert record into $table table: " . print_r($values, 1), array(), 'WATCHDOG_ERROR');
+    watchdog('tripal_core', "tripal_core_chado_insert: Cannot insert record into '%table': " . print_r($values, 1), 
+      array('%table' => $table), 'WATCHDOG_ERROR');
     return FALSE;
   }
 
@@ -604,8 +604,8 @@ function tripal_core_chado_update($table, $match, $values, $options = NULL) {
   }
 
   // now build the SQL statement
-  $sql  = "UPDATE {$table} SET ";
-  $psql = "UPDATE {$table} SET ";
+  $sql  = 'UPDATE {' . $table . '} SET ';
+  $psql = 'UPDATE {' . $table . '} SET ';
   $uargs = array();
   $idatatypes = array();
   $pvalues = array();
@@ -934,7 +934,7 @@ function tripal_core_chado_delete($table, $match, $options = NULL) {
   }
 
   // now build the SQL statement
-  $sql = "DELETE FROM {$table} WHERE ";
+  $sql = 'DELETE FROM {' . $table . '} WHERE ';
   $psql = $sql;
   $uargs = array();
   $idatatypes = array();
@@ -1352,7 +1352,7 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
         // select the value from the foreign key relationship for this value
         $foreign_options = array(
           'regex_columns' => $options['regex_columns'],
-          'case_insensitive_columns' => $options['case_insensitive_columns']
+//          'case_insensitive_columns' => $options['case_insensitive_columns']
         );
         if (array_key_exists('statement_name', $options) and $options['statement_name']) {
           // add the fk relationship info to the prepared statement name so that
@@ -1367,17 +1367,6 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
 
         $results = tripal_core_chado_get_foreign_key($table_desc, $field, $value, $foreign_options);
         if (!$results or count($results)==0) {
-
-          // foreign key records are required
-          // thus if none matched then return FALSE and alert the admin through watchdog
-          /*watchdog('tripal_core',
-           'tripal_core_chado_select: no record in the table referenced by the foreign key (!field)   exists. tripal_core_chado_select table=!table, columns=!columns, values=!values',
-           array('!table' => $table,
-             '!columns' => '<pre>' . print_r($columns, TRUE) . '</pre>',
-             '!values' => '<pre>' . print_r($values, TRUE) . '</pre>',
-             '!field' => $field,
-           ),
-           WATCHDOG_WARNING);*/
           return array();
         }
         else {
@@ -1406,13 +1395,13 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
   if (empty($where)) {
     // sometimes want to select everything
     $sql  = "SELECT " . implode(', ', $columns) . " ";
-    $sql .= "FROM {$table} ";
+    $sql .= 'FROM {' . $table . '} ';
     // we don't prepare a statement if there is no where clause
     $prepared = FALSE;
   }
   else {
     $sql  = "SELECT " . implode(', ', $columns) . " ";
-    $sql .= "FROM {$table} ";
+    $sql .= 'FROM {' . $table . '} ';
 
     // if $values is empty then we want all results so no where clause
     if (!empty($values)) {
@@ -1453,8 +1442,8 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
         // get the types for the prepared statement. First check if the type
         // is an integer
         if (strcasecmp($table_desc['fields'][$field]['type'], 'serial')==0 OR
-        strcasecmp($table_desc['fields'][$field]['type'], 'int')==0 OR
-        strcasecmp($table_desc['fields'][$field]['type'], 'integer')==0) {
+            strcasecmp($table_desc['fields'][$field]['type'], 'int')==0 OR
+            strcasecmp($table_desc['fields'][$field]['type'], 'integer')==0) {
           $sql .= "$field $operator %d AND ";
           $psql .= "$field $operator \$" . $i . " AND ";
           $args[] = $value[0];
@@ -1485,7 +1474,7 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
         else {
           if (in_array($field, $options['case_insensitive_columns'])) {
             $sql .= "lower($field) $operator lower('%s') AND ";
-            $psql .= "lower($field) $operator lower('\$" . $i . "') AND ";
+            $psql .= "lower($field) $operator lower(\$" . $i . ") AND ";
             $args[] = $value[0];
           }
           else {
@@ -2464,8 +2453,9 @@ function chado_query($sql) {
     // 'substring' function of postgres. But since table names can't start with
     // a number we exclude words numeric values. We also exclude tables that
     // already have a schema prefix.
-    $sql = preg_replace('/FROM\s+([^0123456789\(][^\.]*?)(\s|$)/i', 'FROM chado.\1 ', $sql);
-    $sql = preg_replace('/INNER\s+JOIN\s+([^\.]*?)\s/i', 'INNER JOIN chado.\1 ', $sql);
+//    $sql = preg_replace('/FROM\s+([^0123456789\(][^\.]*?)(\s|$)/i', 'FROM chado.\1 ', $sql);
+//    $sql = preg_replace('/INNER\s+JOIN\s+([^\.]*?)\s/i', 'INNER JOIN chado.\1 ', $sql);
+    $sql = preg_replace('/\{.*?\}/', 'chado.$1', $sql);
   }
   //print "$sql\n";
 
@@ -2629,7 +2619,7 @@ function tripal_core_get_property($basetable, $record_id, $property, $cv_name) {
  *   The base table for which the property should be inserted. Thus to insert a property
  *   for a feature the basetable=feature and property is inserted into featureprop
  * @param $record_id
- *   The foriegn key field of the base table. This should be in integer.
+ *   The foriegn key value of the base table. This should be in integer.
  * @param $property
  *   The cvterm name describing the type of properties to be inserted
  * @param $cv_name
@@ -2653,9 +2643,10 @@ $cv_name, $value, $update_if_present = 0) {
   // then we can do that, but otherwise we want to increment the rank and
   // insert
   $props = tripal_core_get_property($basetable, $record_id, $property, $cv_name);
-  if (!is_array($props)) {
+  if (!is_array($props) and $props) {
     $props = array($props);
   }
+  
   $rank = 0;
   if (count($props) > 0) {
     if ($update_if_present) {
@@ -2669,18 +2660,14 @@ $cv_name, $value, $update_if_present = 0) {
         if ($p->rank > $rank) {
           $rank = $p->rank;
         }
-        if (strcmp($p->value, $value) == 0) {
+        if (strcmp($p->value, $value) == 0) {          
           return TRUE;
         }
       }
       // now add 1 to the rank
       $rank++;
     }
-  }
-  else {
-    watchdog('tripal_core', "Cannot find property '!prop_name'.",
-    array('!prop_name' => $property), WATCHDOG_ERROR);
-  }
+  } 
 
   // make sure the cvterm exists.  Otherwise we'll get an error with
   // prepared statements not matching
@@ -2690,9 +2677,12 @@ $cv_name, $value, $update_if_present = 0) {
     ),
     'name' => $property,    
   );
+  
   $options = array('statement_name' => 'sel_cvterm_cv');
   $term = tripal_core_chado_select('cvterm', array('cvterm_id'), $values, $options);  
   if(!$term or count($term) == 0) {
+    watchdog('tripal_core', "Cannot find property '%prop_name'.",
+      array('%prop_name' => $property), WATCHDOG_ERROR);
     return FALSE;
   }
   
@@ -2772,9 +2762,9 @@ function tripal_core_update_property($basetable, $record_id, $property,
     'type_id' => array(
       'cv_id' => array(
         'name' => $cv_name,
-  ),
+      ),
       'name' => $property,
-  ),
+    ),
   );
 
   // construct the array of values to be updated

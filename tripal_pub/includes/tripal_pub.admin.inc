@@ -1,119 +1,475 @@
 <?php
+
 /**
- * Implementation of tripal_pub_form().
+ * A function to render a listing of all publication importers
  *
- *  This form takes the following information:A Publication Title,Volume title,Volume,Series Name,
- *  Issue,Publication Year,Pages where the Article is located, Miniref,Type-Id, if the article is Obsolete,
- *  Publishing company,Pubplication Place and a Uniquename for the the instance. It then puts the
- *  infromation into the Chado_project database table based on its 'pub_id'.
- *
- *
- *  @return $form
- *    An array of menu items '$form'
- *
+ * @ingroup tripal_pub
  */
-function tripal_pub_configuration_form() {
+function tripal_pub_importers_list() {
+  $header = array('', 'Importer Name', 'Database', 'Search String', 'Disabled', '');
+  $rows = array();
+  $importers = db_query("SELECT * FROM {tripal_pub_import} ORDER BY name");    
 
-  $cv_options = tripal_cv_get_cv_options();
+  while ($importer = db_fetch_object($importers)) {
+    $criteria = unserialize($importer->criteria);
+    $num_criteria = $criteria['num_criteria'];
+    $criteria_str = '';
+    for ($i = 0; $i <= $num_criteria; $i++) {
+      $search_terms = $criteria['criteria'][$i]['search_terms'];
+      $scope = $criteria['criteria'][$i]['scope'];
+      $operation = $criteria['criteria'][$i]['operation'];
+      $criteria_str .= "$operation ($scope: $search_terms) ";
+    }
+ 
+    $rows[] = array(
+      l(t('Edit/Test'), "admin/tripal/tripal_pub/import/edit/$importer->pub_import_id"),
+      $importer->name,
+      $criteria['remote_db'],
+      $criteria_str,
+      $importer->disabled ? 'Yes' : 'No',
+      l(t('Delete'), "admin/tripal/tripal_pub/import/delete/$importer->pub_import_id"),
+    );
+  }
 
-  //Creating Fieldset for multiple fields in form
-  $form['node_form'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Create/Edit Publication Settings'),
+  $rows[] = array(
+    'data' => array(
+      array('data' => l(t('Create a new publication importer.'), "admin/tripal/tripal_pub/import/new"),
+        'colspan' => 6),
+    )
   );
 
-  $form['node_form']['tripal_pub_types_cv'] = array(
+  $page = theme('table', $header, $rows);
+  return $page;
+}
+
+/*
+ * 
+ */
+function tripal_pub_importer_setup($action = 'new', $pub_import_id = NULL) {
+  global $pager_total, $pager_total_items;
+  
+  $pager_id = 0;
+  $limit = 10;
+  
+  // generate the search form 
+  $form = drupal_get_form('tripal_pub_importer_setup_form',  $pub_import_id, $action);
+  
+  $output = l("Return to publication importers list", "admin/tripal/tripal_pub/import_list");
+  $output .= $form;
+
+  // retrieve any results
+  $remote_db = $_SESSION['tripal_pub_search']['remote_db'];
+  $num_criteria = $_SESSION['tripal_pub_search']['num_criteria'];
+  $days = $_SESSION['tripal_pub_search']['days'];
+ 
+  $search_array = array();
+  $search_array['remote_db'] = $remote_db;
+  $search_array['num_criteria'] = $num_criteria;
+  $search_array['days'] = $days; 
+  for ($i = 0; $i <= $num_criteria; $i++) {
+    $search_array['criteria'][$i]['search_terms'] = $_SESSION['tripal_pub_search']['criteria'][$i]['search_terms'];
+    $search_array['criteria'][$i]['scope'] = $_SESSION['tripal_pub_search']['criteria'][$i]['scope'];  
+    $search_array['criteria'][$i]['operation'] = $_SESSION['tripal_pub_search']['criteria'][$i]['operation'];
+  }
+  
+    
+  if ($_SESSION['tripal_pub_search']['perform_search']) {
+    // get the list of publications from the remote database using the search criteria.  
+    $pubs = tripal_pub_get_remote_search_results($remote_db, $search_array, $limit, $pager_id);
+  
+    // generate the pager
+    $total_pages = $pager_total[$pager_id];
+    $total_items = $pager_total_items[$pager_id];
+    $page = isset($_GET['page']) ? $_GET['page'] : '0';
+    $pager = theme('pager');
+    
+    // iterate through the results and construct the table displaying the publications
+    $rows = array();
+    $i = $page * $limit + 1;
+    if (count($pubs) > 0) {
+      foreach ($pubs as $pub) {
+        $rows[] = array(number_format($i), $pub['citation']);
+        $i++;
+      }
+    }
+    $headers = array('', 'Citation');
+    $table = theme('table', $headers, $rows);   
+  
+    // join all to form the results
+    $output .= "<br><p><b>Found " . number_format($total_items) .  
+      ". Page " . ($page + 1) . " of $total_pages. " .
+      " Results</b></br>" . $table . '</p>' . $pager;    
+  }
+  return $output;
+}
+/*
+ * 
+ */
+function theme_tripal_pub_importer_setup_form($form) {
+  $rows = array();
+  foreach ($form['criteria'] as $i => $element) {
+    if(is_numeric($i)) {
+      $rows[] = array(  
+        array('data' => drupal_render($element["operation-$i"]), 'width' => '10%'),    
+        array('data' => drupal_render($element["scope-$i"]), 'width' => '10%'),
+        drupal_render($element["search_terms-$i"]),
+        array('data' => drupal_render($element["add-$i"]) . drupal_render($element["remove-$i"]), 'width' => '5%'),
+      );
+    }
+  } 
+  $headers = array('Operation','Scope', 'Search Terms', '');
+  
+  $markup  = '<div id="pub-search-form-row1">';
+  $markup .= '  <div id="pub-search-form-col1">' . drupal_render($form['loader_name']) . '</div>';
+  $markup .= '  <div id="pub-search-form-col2">' . drupal_render($form['remote_db']) . '</div>';
+  $markup .= '  <div id="pub-search-form-col3">' . drupal_render($form['days']) . '</div>';
+  $markup .= '  <div id="pub-search-form-col4">' . drupal_render($form['disabled']) . '</div>';
+  $markup .= '</div>';
+  $markup .= theme('table', $headers, $rows);
+  
+  $form['criteria'] = array(
+    '#type' => 'markup',
+    '#value' =>  $markup,
+    '#weight' => -10,
+  );
+  return drupal_render($form);
+}
+/**
+ * Purpose: Provides the form to search pubmed
+ *
+  * @ingroup tripal_pub
+ */
+function tripal_pub_importer_setup_form(&$form_state = NULL, $import_id = NULL, $action = 'new') {
+  tripal_core_ahah_init_form();
+
+  
+  // Set the default values. If the pub_import_id isn't already defined by the form values 
+  // and one is provided then look it up in the database
+  $criteria = NULL;
+  if ($action == "edit" and !$form_state['values']) {
+    $pub_import_id = $form_state['values']['$pub_import_id'];    
+    $sql = "SELECT * FROM {tripal_pub_import} WHERE pub_import_id = %d";
+    $importer = db_fetch_object(db_query($sql, $import_id));
+    
+    $criteria     = unserialize($importer->criteria);
+    $remote_db    = $criteria['remote_db'];
+    $days         = $criteria['days'];
+    $disabled     = $criteria['disabled'];
+    $num_criteria = $criteria['num_criteria'];    
+    $loader_name  = $criteria['loader_name'];  
+  }
+
+  // if the session has variables then use those.  This should only happen when
+  // the 'Test Criteria' button is clicked.
+  $num_criteria = $_SESSION['tripal_pub_search']['num_criteria'] ? $_SESSION['tripal_pub_search']['num_criteria'] : $num_criteria;    
+  $loader_name  = $_SESSION['tripal_pub_search']['loader_name']  ? $_SESSION['tripal_pub_search']['loader_name']  : $loader_name;
+  $remote_db    = $_SESSION['tripal_pub_search']['remote_db']    ? $_SESSION['tripal_pub_search']['remote_db']    : $remote_db;
+  $disabled     = $_SESSION['tripal_pub_search']['disabled']     ? $_SESSION['tripal_pub_search']['disabled']     : $disabled;    
+  $days         = $_SESSION['tripal_pub_search']['days']         ? $_SESSION['tripal_pub_search']['days']         : $days;    
+  
+  
+  // If the form_state has variables then use those.  This happens when an error occurs on the form or the 
+  // form is resbumitted using AJAX
+  $num_criteria = $form_state['values']['num_criteria'] ? $form_state['values']['num_criteria'] : $num_criteria;    
+  $loader_name  = $form_state['values']['loader_name']  ? $form_state['values']['loader_name']  : $loader_name;
+  $remote_db    = $form_state['values']['remote_db']    ? $form_state['values']['remote_db']    : $remote_db;
+  $disabled     = $form_state['values']['disabled']     ? $form_state['values']['disabled']     : $disabled;    
+  $days         = $form_state['values']['days']         ? $form_state['values']['days']         : $days;    
+  
+   
+  // change the number of criteria based on form_state post data.
+  if (!$num_criteria) {
+    $num_criteria = 0;
+  }
+  if($form_state['post']["add-$num_criteria"]) {    
+    $num_criteria++;
+  }
+  if($form_state['post']["remove-$num_criteria"]) {    
+    $num_criteria--;
+  }
+  
+  $form['pub_import_id'] = array(
+    '#type'          => 'hidden',
+    '#value'         => $pub_import_id,
+    '#required'      => TRUE,
+  );
+  $form['action'] = array(
+    '#type'          => 'hidden',
+    '#value'         => $action,
+    '#required'      => TRUE,
+  );
+  
+  $form['loader_name'] = array(
+    '#type'          => 'textfield',
+    '#title'         => t('Loader Name'),
+    '#description'   => t('Please provide a name for this loader setup..'),
+    '#default_value' => $loader_name,
+    '#required'      => TRUE,
+  );
+   
+  $remote_dbs = array('Pubmed' => 'Pubmed');
+  $form['remote_db'] = array(
+    '#title' => t('Remote Database'),
     '#type' => 'select',
-    '#title' => t('Controlled Vocabularies'),
-    '#options' => $cv_options,
-    '#default_value' => variable_get('tripal_pub_types_cv', 0),
-    '#description' => 'Set the controlled vocabulary to pull publication type options from. Terms in this vocabulary will be available is the Publication Type select box on both the create and edit pages.',
+    '#options' => $remote_dbs,
+    '#default_value' => $remote_db,
   );
 
-  $form['pubmed'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Create Nodes via PubMed Search'),
+  $form['num_criteria']= array(
+    '#type'          => 'hidden',
+    '#default_value' => $num_criteria,
   );
-
-  $form['pubmed']['description'] = array(
-    '#type' => 'item',
-    '#value' => 'Publication nodes are created based on the results of a PubMed publication search using '
-      .'the keywords entered below. No content is created until the sync is clicked below and the registered tripal job is '
-      .'run. This script attempts to only load new publications (ones which don\'t already have nodes from a previous search) '
-      .'by comparing the pub_id thus if a publication is added manually which also appears in the pubmed search it will likely '
-      .'get added twice.'
+  $form['pub_import_id']= array(
+    '#type'          => 'hidden',
+    '#default_value' => $pub_import_id,
   );
-
-  //define form elements for the node's title and body.
-  $form['pubmed']['unique_name'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Search Keywords'),
-    '#description' => t('Specific search terms. Must be seperated by a single space.'),
-    '#required' => FALSE,
-    '#default_value' => variable_get('unique_name', NULL)
+  
+  $form['days'] = array(
+    '#type'          => 'textfield',
+    '#title'         => t('Days'),
+    '#description'   => t('The number of days <br>from today to search.'),
+    '#default_value' => $days,
+    '#size'          => 5,
   );
-
-  //define form elements for the node's title and body.
-  /**
-  $form['set']['time_interval'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Time Search Interval (Minutes)'),
-    '#description'=>t(' The “Search Interval” set here determines when a drupal cron job should
-    schedule a tripal job. As such, in reality the time until publications are sync’d is “Search Interval”
-    + time remaining until drupal cron is run + time between drupal cron run and next tripal jobs run'),
-    '#required' => FALSE,
-    '#default_value' => variable_get('time_interval', NULL)
+  $form['disabled'] = array(
+    '#type'          => 'checkbox',
+    '#title'         => t('Disabled'),
+    '#default_value' => $disabled,
+    '#size'          => 5,
   );
-  */
-
-  $form['pubmed']['sync_info'] = array(
-      '#type' => 'submit',
-      '#title' => t('Sync Publications Jobs'),
-      '#value' => t('Sync'),
+  
+  for($i = 0; $i <= $num_criteria; $i++) {
+    // if we have criteria supplied from the database then use that, othrewise look from the form_state or the session
+    if ($criteria) {
+      $search_terms = $criteria['criteria'][$i]['search_terms'];
+      $scope = $criteria['criteria'][$i]['scope'];
+      $operation = $criteria['criteria'][$i]['operation'];
+    }
+    // first populate defaults using any values in the SESSION variable
+    $search_terms = $_SESSION['tripal_pub_search']['criteria'][$i]['search_terms'] ? $_SESSION['tripal_pub_search']['criteria'][$i]['search_terms'] : $search_terms;
+    $scope        = $_SESSION['tripal_pub_search']['criteria'][$i]['scope']        ? $_SESSION['tripal_pub_search']['criteria'][$i]['scope']        : $scope;
+    $operation    = $_SESSION['tripal_pub_search']['criteria'][$i]['operation']    ? $_SESSION['tripal_pub_search']['criteria'][$i]['operation']    : $operation;
+    
+    // next populate defaults using any form values
+    $search_terms = $form_state['values']["search_terms-$i"] ? $form_state['values']["search_terms-$i"] : $search_terms;
+    $scope        = $form_state['values']["scope-$i"]        ? $form_state['values']["scope-$i"]        : $scope;
+    $operation    = $form_state['values']["operation-$i"]    ? $form_state['values']["operation-$i"]    : $operation;
+    
+    // default to searching the title and abstract
+    if (!$scope) {
+      $scope = 'abstract';
+    }
+  
+    $form['criteria'][$i]["search_terms-$i"] = array(
+      '#type'          => 'textfield',
+      '#description'   => t('Please provide a list of words, separated by spaces for searching.'),
+      '#default_value' => $search_terms,
+      '#required'      => TRUE,
+    );
+    $form['criteria'][$i]["scope-$i"] = array(
+      '#type'          => 'select',
+      '#description'   => t('Please select the fields to search for this term.'),
+      '#options'       => array(
+        'any'      => 'Any Field',
+        'title'    => 'Title',
+        'abstract' => 'Title/Abstract',
+        'author'   => 'Author'),
+      '#default_value' => $scope,
+    );    
+    
+    if ($i > 0) {
+      $form['criteria'][$i]["operation-$i"] = array(
+        '#type'          => 'select',
+        '#options'       => array(
+          'AND' => 'AND',
+          'OR'  => 'OR',
+          'NOT' => 'NOT'),
+        '#default_value' => $operation,
+      );
+    }
+    if ($i == $num_criteria) {    
+      if($i > 0) {
+        $form['criteria'][$i]["remove-$i"] = array(
+          '#type'         => 'image_button',
+          '#value'        => t('Remove'),
+          '#src'          => drupal_get_path('theme', 'tripal') . '/images/minus.png',
+          '#ahah' => array(
+            'path'    => "admin/tripal/tripal_pub/import/criteria/minus/$i",
+            'wrapper' => 'tripal-pub-importer-setup-form',
+            'event'   => 'click',
+            'method'  => 'replace',
+          ), 
+          '#attributes' => array('onClick' => 'return false;'),
+        );
+      }
+      $form['criteria'][$i]["add-$i"] = array(
+        '#type'         => 'image_button',      
+        '#value'        => t('Add'),
+        '#src'          => drupal_get_path('theme', 'tripal') . '/images/add.png',
+        '#ahah' => array(
+          'path'    => "admin/tripal/tripal_pub/import/criteria/add/$i",
+          'wrapper' => 'tripal-pub-importer-setup-form',
+          'event'   => 'click',
+          'method'  => 'replace',          
+        ),   
+        '#attributes' => array('onClick' => 'return false;'),
+      );
+    }
+  }
+  
+  $form['test'] = array(
+    '#type'         => 'submit',
+    '#value'        => t('Test Importer'),
   );
-
-  $form['submit'] = array(
-    '#type' => 'submit',
-    '#weight' => 10,
-    '#value' => t('Save Configuration')
+  $form['save'] = array(
+    '#type'         => 'submit',
+    '#value'        => t('Save Importer'),
+  );
+  $form['delete'] = array(
+    '#type'         => 'submit',
+    '#value'        => t('Delete Importer'),
   );
 
   return $form;
-
 }
 
+/**
+ *
+ */
+function tripal_pub_importer_setup_form_validate($form, &$form_state) {
+  $num_criteria = $form_state['values']['num_criteria'];
+  $remote_db =  $form_state['values']["remote_db"];
+  $days =  trim($form_state['values']["days"]);
+  $disabled =  $form_state['values']["disabled"];
+  $loader_name =  trim($form_state['values']["loader_name"]);
+
+  for ($i = 0; $i <= $num_criteria; $i++) {            
+    $search_terms =  trim($form_state['values']["search_terms-$i"]);
+    $scope =  $form_state['values']["scope-$i"];
+    $operation =  $form_state['values']["operation-$i"];
+    
+    if ($days and !is_numeric($days) or preg_match('/\./', $days)) {
+      form_set_error("days-$i", "Please enter a numeric, non decimal value, for the number of days.");
+    }
+  }
+}
+
+/**
+ *
+ */
+function tripal_pub_importer_setup_form_submit($form, &$form_state) {
+   
+  $pub_import_id = $form_state['values']['pub_import_id'];
+  $num_criteria = $form_state['values']['num_criteria'];
+  $remote_db =  $form_state['values']["remote_db"];
+  $days =  trim($form_state['values']["days"]);
+  $loader_name =  trim($form_state['values']["loader_name"]);
+  $disabled =  $form_state['values']["disabled"];
+
+  // set the session variables
+  $_SESSION['tripal_pub_search']['remote_db'] = $remote_db;
+  $_SESSION['tripal_pub_search']['days'] = $days;
+  $_SESSION['tripal_pub_search']['num_criteria'] = $num_criteria;
+  $_SESSION['tripal_pub_search']['loader_name'] = $loader_name;
+  $_SESSION['tripal_pub_search']['disabled'] = $disabled;
+  unset($_SESSION['tripal_pub_search']['criteria']);
+  for ($i = 0; $i <= $num_criteria; $i++) {
+    $search_terms =  trim($form_state['values']["search_terms-$i"]);
+    $scope =  $form_state['values']["scope-$i"];
+    $operation =  $form_state['values']["operation-$i"];
+    
+    $_SESSION['tripal_pub_search']['criteria'][$i] = array(
+      'search_terms' => $search_terms,
+      'scope' => $scope,
+      'operation' => $operation
+    );
+  }
+
+  // now perform the appropriate action for the button clicked
+  if ($form_state['values']['op'] == 'Test Importer') {
+    $_SESSION['tripal_pub_search']['perform_search'] = 1;
+  }
+  if ($form_state['values']['op'] == 'Save Importer') {    
+    $record = array(
+      'name' => $loader_name,
+      'criteria' => serialize($_SESSION['tripal_pub_search']),
+      'disabled' => $disabled,
+    );
+    // first check to see if this pub_import_id is already present. If so,
+    // do an update rather than an insert    
+    $sql = "SELECT * FROM {tripal_pub_import} WHERE pub_import_id = %d";
+    $importer = db_fetch_object(db_query($sql, $pub_import_id));
+    if($importer) {
+      // do the update
+      $record['pub_import_id'] = $pub_import_id;
+      if(drupal_write_record('tripal_pub_import', $record, 'pub_import_id')){
+        unset($_SESSION['tripal_pub_search']);
+        drupal_set_message('Publication import settings updated.');
+        drupal_goto('admin/tripal/tripal_pub/import_list');       
+      }
+      else {
+        drupal_set_message('Could not update publication import settings.', 'error');
+      }
+    }     
+    else {         
+      // do the insert        
+      if(drupal_write_record('tripal_pub_import', $record)){
+        unset($_SESSION['tripal_pub_search']);
+        drupal_set_message('Publication import settings saved.');
+        drupal_goto('admin/tripal/tripal_pub/import_list');
+      }
+      else {
+        drupal_set_message('Could not save publication import settings.', 'error');
+      }
+    }    
+  }
+  if ($form_state['values']['op'] == 'Delete Importer') {
+    $sql = "DELETE FROM {tripal_pub_import} WHERE pub_import_id = %d";
+    $success = db_query($sql, $pub_import_id);
+    if ($success) {
+      drupal_set_message('Publication importer deleted.');
+      drupal_goto('admin/tripal/tripal_pub/import_list');  
+    }
+    else {
+      drupal_set_message('Could not delete publication importer.', 'error');
+    }
+  }  
+}
 
 /*
- * Pub Configuration-Form
- * This form submit uses variable_set to set the vocabularies that are used, as well as the
- * unique_name and time interval that was entered by the user. If the user selects the option
- * to Sync Publicatin Jobs, the 'tripal_add_job' function is called, and a tripal job
- * will be added.
- *
- * @param $form
- *    -The submitted form containing the user entered infromation
- * @param $form_state
- *    -Is the state of the form: i.e what button was pressed, what infromation was entered,etc.
- *    The key is the 'values'
+ * 
  */
-function tripal_pub_configuration_form_submit($form, $form_state) {
+function tripal_pub_importer_delete($pub_import_id) {
+  $sql = "DELETE FROM {tripal_pub_import} WHERE pub_import_id = %d";
+  $success = db_query($sql, $pub_import_id);
+  if ($success) {
+    drupal_set_message('Publication importer deleted.');
+    drupal_goto('admin/tripal/tripal_pub/import_list');  
+  }
+  else {
+    drupal_set_message('Could not delete publication importer.', 'error');
+  }
+}
+/*
+ * AHAH callback
+ */
+function tripal_pub_importer_setup_page_update_criteria($action, $i) {
+  $status = TRUE;
 
-    global $user;    //needed to make the current users details available so access of user id is available
+  // prepare and render the form
+  $form = tripal_core_ahah_prepare_form();   
+  $data = theme('tripal_pub_importer_setup_form', $form);  
 
-    if ($form_state['values']['op'] == t('Save Configuration')) {
+  // bind javascript events to the new objects that will be returned 
+  // so that AHAH enabled elements will work.
+  $settings = tripal_core_ahah_bind_events();
 
-        variable_set('tripal_pub_types_cv', $form_state['values']['tripal_pub_types_cv']);
-        variable_set('unique_name', $form_state['values']['unique_name'] );
-
-    }
-
-    //adding a tripal job if the user selects to Sync the Publications
-    if ($form_state['values']['op'] == t('Sync')) {
-
-        variable_set('unique_name', $form_state['values']['unique_name'] );
-        $job_args = array($form_state['values']['unique_name']);
-        $job_id = tripal_add_job('Search & Load PubMed Publications', 'tripal_pub', 'tripal_pub_search_load_pubmed_publications', $job_args, $user->uid);
-
-    }
-
+  // return the updated JSON
+  drupal_json(
+    array(
+      'status'   => $status, 
+      'data'     => $data,
+      'settings' => $settings,
+    )  
+  );
 }
