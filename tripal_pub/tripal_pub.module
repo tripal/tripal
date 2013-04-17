@@ -3,7 +3,6 @@
 require_once "api/tripal_pub.api.inc";
 require_once "includes/tripal_pub.admin.inc";
 require_once "includes/pubmed.inc";
-require_once "includes/pub_search.inc";
 require_once "includes/pub_sync.inc";
 
 /**
