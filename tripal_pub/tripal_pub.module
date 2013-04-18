@@ -69,7 +69,7 @@ function tripal_pub_menu() {
     'type' => MENU_NORMAL_ITEM
   );
   
-    $items['admin/tripal/tripal_pub/sync'] = array(
+  $items['admin/tripal/tripal_pub/sync'] = array(
     'title' => ' Sync Publications',
     'description' => 'Sync publications in Chado with Drupal',
     'page callback' => 'drupal_get_form',

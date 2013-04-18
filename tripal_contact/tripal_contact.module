@@ -10,6 +10,8 @@
  */
 
 require('api/tripal_contact.api.inc');
+require('includes/contact_sync.inc');
+require('includes/tripal_contact.admin.inc');
 
 /**
  * @defgroup tripal_contact Contact Module
@@ -90,7 +92,16 @@ function tripal_contact_menu() {
     'access arguments' => array('administer tripal contacts'),
     'type' => MENU_NORMAL_ITEM
   );
-
+  
+  $items['admin/tripal/tripal_contact/sync'] = array(
+    'title' => ' Sync Contacts',
+    'description' => 'Sync contacts in Chado with Drupal',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_contact_sync_form'),
+    'access arguments' => array('administer tripal contacts'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+  
   return $items;
 }
   
@@ -328,7 +339,7 @@ function chado_contact_insert($node) {
    
     // add the description property
     tripal_contact_insert_property($contact['contact_id'], 'contact_description',
-      $node->contact_description);
+      $node->contact_description, TRUE);
     
     // make sure the entry for this contact doesn't already exist in the chado_contact table
     // if it doesn't exist then we want to add it.

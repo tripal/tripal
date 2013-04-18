@@ -34,10 +34,7 @@ function tripal_pub_sync_form_submit($form, $form_state) {
  * @ingroup tripal_pub
  */
 function tripal_pub_sync_pubs($job_id = NULL) {
-
-  global $user;
-  $page_content = '';
-
+  
   // get the list of pubs that have not yet been synced
   // and ignore the default 'NULL' pub. we don't want
   // to sync that one.
@@ -51,30 +48,46 @@ function tripal_pub_sync_pubs($job_id = NULL) {
 
 
   while ($pub = db_fetch_object($results)) {
+    $node = tripal_pub_sync_pub($pub);
+  }
+}
+/**
+ * @param $pub
+ *   A publication object
+ *   
+ * @return
+ *   A new Drupal node object on success. FALSE on failure
+ *   
+ * @ingroup tripal_pub
+ */
+function tripal_pub_sync_pub($pub) {
+  global $user;
+  
+  $new_node = new stdClass();
+  $new_node->pub_id = $pub->pub_id;
+  $new_node->type = 'chado_pub';
+  $new_node->uid = $user->uid;
+  $new_node->title = $pub->title;
+  $new_node->pyear = $pub->pyear;
+  $new_node->uniquename = $pub->uniquename;
+  $new_node->type_id = $pub->type_id;
 
-    $new_node = new stdClass();
-    $new_node->pub_id = $pub->pub_id;
-    $new_node->type = 'chado_pub';
-    $new_node->uid = $user->uid;
-    $new_node->title = $pub->title;
-    $new_node->pyear = $pub->pyear;
-    $new_node->uniquename = $pub->uniquename;
-    $new_node->type_id = $pub->type_id;
-
-    node_validate($new_node);
-    $errors = form_get_errors();
-    if (!$errors) {
-      $node = node_submit($new_node);
-      node_save($node);
-      if ($node->nid) {
-        print "Added " . $pub->pub_id . "\n";
-      }
-      else {
-        print "ERROR: Unable to create " . $pub->name . "\n";
-      }
+  node_validate($new_node);
+  $errors = form_get_errors();
+  if (!$errors) {
+    $node = node_submit($new_node);
+    node_save($node);
+    if ($node->nid) {
+      print "Added " . $pub->pub_id . "\n";      
     }
     else {
-      print "ERROR: Unable to create " . $pub->name . "\n" . print_r($errors, TRUE) . "\n";
-    }   
+      print "ERROR: Unable to create " . $pub->name . "\n";
+      return FALSE;
+    }
   }
+  else {
+    print "ERROR: Unable to create " . $pub->name . "\n" . print_r($errors, TRUE) . "\n";
+    return FALSE;
+  }
+  return $node; 
 }

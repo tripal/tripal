@@ -194,11 +194,11 @@ function tripal_cv_get_cv_options() {
  *   the name of the CV
  *
  * @return
- *   cvterm object
+ *   cvterm array or FALSE on error
  *
  * @ingroup tripal_cv_api
  */
-function tripal_cv_get_cvterm_by_name($name, $cv_id = 0, $cv_name = 'tripal') {
+function tripal_cv_get_cvterm_by_name($name, $cv_id = NULL, $cv_name = 'tripal') {
 
   if ($cv_id) {
     $values = array(
@@ -206,7 +206,7 @@ function tripal_cv_get_cvterm_by_name($name, $cv_id = 0, $cv_name = 'tripal') {
        'cv_id' => $cv_id,
     );
     $options = array(
-      'statement_name' => 'sel_cvterm_nacv', 
+      'statement_name' => 'sel_cvterm_nacv',
       'case_insensitive_columns' => array('name')
     );
     $r = tripal_core_chado_select('cvterm', array('*'), $values, $options);
@@ -218,18 +218,19 @@ function tripal_cv_get_cvterm_by_name($name, $cv_id = 0, $cv_name = 'tripal') {
         'name' => $cv_name,
       ),
     );    
+
     $options = array(
-      'statement_name' => 'sel_cvterm_nacv', 
+      'statement_name' => 'sel_cvterm_nacv',
       'case_insensitive_columns' => array('name')
     );
-    $r = tripal_core_chado_select('cvterm', array('*'), $values, $options);  
+    $r = tripal_core_chado_select('cvterm', array('*'), $values, $options);      
   }
   else {
     $values = array(
       'name' => $name,
     );
     $options = array(
-      'statement_name' => 'sel_cvterm_na', 
+      'statement_name' => 'sel_cvterm_na',
       'case_insensitive_columns' => array('name')
     );
     $r = tripal_core_chado_select('cvterm', array('*'), $values, $options);
@@ -239,6 +240,8 @@ function tripal_cv_get_cvterm_by_name($name, $cv_id = 0, $cv_name = 'tripal') {
     return FALSE;
   }
   if (count($r) > 1) {
+    watchdog('tripal_cv', "Cannot find a unique term for the term '%name' in the vocabulary '%cv'. Multiple entries exist for this name",
+      array('%name' => $name, '%cv' => $cv_name ? $cv_name : $cv_id), WATCHDOG_ERROR);
     return FALSE;
   }
   return $r[0];

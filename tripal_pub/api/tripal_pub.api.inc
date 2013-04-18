@@ -74,7 +74,7 @@ function tripal_pub_get_remote_search_results($remote_db, $search_array,
  * @ingroup tripal_pub_api
  */
 function tripal_pub_import_publications() {
-  $num_to_retrieve = 10;
+  $num_to_retrieve = 100;
   $pager_id = 0;
   $page = 0;
   $num_pubs = 0;
@@ -109,7 +109,10 @@ function tripal_pub_import_publications() {
        // now add the publications
        foreach ($pubs as $pub) {
                
+         // add the publication to Chado and sync it with Chado
          $pub_id = tripal_pub_add_publication($pub);
+         
+         // add the publication cross reference (e.g. to PubMed)
          if ($pub_id) {         
            $pub_dbxref = tripal_pub_add_pub_dbxref($pub_id, $pub);
          }                                      
@@ -123,6 +126,12 @@ function tripal_pub_import_publications() {
      // our requested numer of records.  This means we've hit the end
      while (count($pubs) == $num_to_retrieve);    
   }
+  
+  // sync the newly added publications with Drupal
+  print "Syncing publications with Drupal...\n";
+  tripal_pub_sync_pubs();
+  print "Syncing contacts with Drupal...\n";
+  tripal_contact_sync_contacts();
   
   // transaction is complete
   tripal_db_commit_transaction();
@@ -243,8 +252,8 @@ function tripal_pub_add_publication($pub_details) {
        $cvterm = tripal_cv_get_cvterm_by_synonym($key, NULL, 'tripal_pub');
      }
      if (!$cvterm) {
-       watchdog('tripal_pub', "Cannot find term: '%prop'. Skipping.", 
-         array('%prop' => $key), WATCHDOG_ERROR);
+       print_r($cvterm);
+       watchdog('tripal_pub', "Cannot find term: '%prop'. Skipping.", array('%prop' => $key), WATCHDOG_ERROR);
        continue;
      }
 
@@ -275,10 +284,9 @@ function tripal_pub_add_publication($pub_details) {
        $success = tripal_core_insert_property('pub', $pub_id, $key, 'tripal_pub', $value, TRUE);
      }
      if (!$success) { 
-       print_r($success); 
        watchdog('tripal_pub', "Cannot add property '%prop' to publication. Skipping.", 
          array('%prop' => $key), WATCHDOG_ERROR);
-         continue;
+       continue;
      }
   }
   
@@ -289,5 +297,69 @@ function tripal_pub_add_publication($pub_details) {
  * 
  */
 function tripal_pub_add_authors($pub_id, $authors) {
-  print_r($authors);
+  $rank = 0;  
+  
+  // first remove any of the existing pubauthor entires
+  $sql = "DELETE FROM {pubauthor} WHERE pub_id = %d";
+  chado_query($sql, $pub_id);
+  
+  // iterate through the authors and add them to the pubauthors and contact 
+  // tables of chado, then link them through the custom pubauthors_contact table
+  foreach ($authors as $author) {    
+    // skip invalid author entires
+    if ($author['valid'] == 'N') {
+      continue;
+    }
+    // remove the 'valid' property as we don't have a CV term for it
+    unset($author['valid']);
+    
+    // construct the contact.name field using the author information
+    $name = '';
+    $type = 'Person';
+    if ($author['Given Name']) {
+      $name .= $author['Given Name'];
+    }
+    if ($author['Surname']) { 
+      $name .= ' ' . $author['Surname'];
+    }
+    if ($author['Suffix']) { 
+      $name .= ' ' . $author['Suffix'];
+    }
+    if ($author['Collective']) {
+      $name = $author['Collective'];
+      $type = 'Collective';
+    }
+    $name = trim($name);    
+        
+    // Add the contact 
+    $contact = tripal_contact_add_contact($name, '', $type, $author);
+    
+    // add an entry to the pubauthors table
+    $values = array(
+      'pub_id' => $pub_id,
+      'rank' => $rank,
+      'surname' => $author['Surname'] ? $author['Surname'] : $author['Collective'],
+      'givennames' => $author['Given Name'],
+      'suffix' => $author['Suffix'],
+    );
+    $options = array('statement_name' => 'ins_pubauthor_idrasugisu');
+    $pubauthor = tripal_core_chado_insert('pubauthor', $values, $options);
+    
+    // if we have succesfully added the contact and the pubauthor entries then we want to
+    // link them together 
+    if ($contact and $pubauthor) {
+    
+      // link the pubauthor entry to the contact 
+      $values = array(
+        'pubauthor_id' => $pubauthor['pubauthor_id'],
+        'contact_id' => $contact['contact_id'],
+      );
+      $options = array('statement_name' => 'ins_pubauthorcontact_puco');
+      $pubauthor_contact = tripal_core_chado_insert('pubauthor_contact', $values, $options);
+      if (!$pubauthor_contact) {
+        watchdog('tripal_pub', "Cannot link pub authro and contact.", array(), WATCHDOG_ERROR);
+      }
+    }
+    $rank++;   
+  }
 }
