@@ -76,7 +76,8 @@ function tripal_pub_get_remote_search_results($remote_db, $search_array,
 /*
  * @ingroup tripal_pub_api
  */
-function tripal_pub_update_publications() {
+function tripal_pub_update_publications($do_contact = FALSE) {
+  
   // get a persistent connection
   $connection = tripal_db_persistent_chado();
   if (!$connection) {
@@ -120,7 +121,7 @@ function tripal_pub_update_publications() {
       if ($curr_db) {
         $search['num_criteria'] = $i - 1;
         $pubs = tripal_pub_get_remote_search_results($remote_db, $search, $i, 0);
-        tripal_pub_add_publications($pubs); 
+        tripal_pub_add_publications($pubs, $do_contact); 
       }
       $curr_db = $remote_db;      
       $search = array(
@@ -135,7 +136,7 @@ function tripal_pub_update_publications() {
     if($i == $num_to_retrieve) {      
       $search['num_criteria'] = $i - 1;
       $pubs = tripal_pub_get_remote_search_results($remote_db, $search, $i, 0);
-      tripal_pub_add_publications($pubs);
+      tripal_pub_add_publications($pubs, $do_contact);
       $search['criteria'] = array();
       $i = 0;
     }
@@ -151,13 +152,17 @@ function tripal_pub_update_publications() {
   // now update any remaining in the search criteria array
   $search['num_criteria'] = $i - 1;
   $pubs = tripal_pub_get_remote_search_results($remote_db, $search, $i, 0);
-  tripal_pub_add_publications($pubs);
+  tripal_pub_add_publications($pubs, $do_contact);
   
   // sync the newly added publications with Drupal
   print "Syncing publications with Drupal...\n";
   tripal_pub_sync_pubs();
-  print "Syncing contacts with Drupal...\n";
-  tripal_contact_sync_contacts();
+  
+  // if the caller wants to create contacts then we should sync them
+  if ($do_contact) {
+    print "Syncing contacts with Drupal...\n";
+    tripal_contact_sync_contacts();
+  }
   
   // transaction is complete
   tripal_db_commit_transaction();
@@ -191,24 +196,34 @@ function tripal_pub_import_publications() {
   // get all of the loaders
   $sql = "SELECT * FROM {tripal_pub_import} WHERE disabled = 0";
   $results = db_query($sql);
+  $do_contact = FALSE;
   while ($import = db_fetch_object($results)) {
-     $criteria = unserialize($import->criteria); 
-     $remote_db = $criteria['remote_db'];
-     do {       
-       // retrieve the pubs for this page. We'll retreive 10 at a time
-       $pubs = tripal_pub_get_remote_search_results($remote_db, $criteria, $num_to_retrieve, $pager_id, $page);             
-       $page++;
-     } 
-     // continue looping until we have a $pubs array that does not have
-     // our requested numer of records.  This means we've hit the end
-     while (count($pubs) == $num_to_retrieve);    
+    // keep track if any of the importers want to create contacts from authors
+    if ($import->do_contact == 1) {
+      $do_contact = TRUE;      
+    }
+    $criteria = unserialize($import->criteria); 
+    $remote_db = $criteria['remote_db'];
+    do {       
+      // retrieve the pubs for this page. We'll retreive 10 at a time
+      $pubs = tripal_pub_get_remote_search_results($remote_db, $criteria, $num_to_retrieve, $pager_id, $page);
+      tripal_pub_add_publications($pubs, $import->do_contact);             
+      $page++;
+    } 
+    // continue looping until we have a $pubs array that does not have
+    // our requested numer of records.  This means we've hit the end
+    while (count($pubs) == $num_to_retrieve);    
   }
   
   // sync the newly added publications with Drupal
   print "Syncing publications with Drupal...\n";
   tripal_pub_sync_pubs();
-  print "Syncing contacts with Drupal...\n";
-  tripal_contact_sync_contacts();
+  
+  // if any of the importers wanted to create contacts from the authors then sync them
+  if($do_contact) {
+    print "Syncing contacts with Drupal...\n";
+    tripal_contact_sync_contacts();
+  }
   
   // transaction is complete
   tripal_db_commit_transaction();
@@ -218,13 +233,13 @@ function tripal_pub_import_publications() {
 /*
  * 
  */
-function tripal_pub_add_publications($pubs) {
-  
+function tripal_pub_add_publications($pubs, $do_contact) {
+ 
   // iterate through the publications and add each one
   foreach ($pubs as $pub) {
          
     // add the publication to Chado and sync it with Chado
-    $pub_id = tripal_pub_add_publication($pub);
+    $pub_id = tripal_pub_add_publication($pub, $do_contact);
    
     // add the publication cross reference (e.g. to PubMed)
     if ($pub_id) {         
@@ -289,7 +304,7 @@ function tripal_pub_add_pub_dbxref($pub_id, $pub) {
 /*
  * 
  */
-function tripal_pub_add_publication($pub_details) {
+function tripal_pub_add_publication($pub_details, $do_contact) {
   
    // check to see if the publication already exists
    $pub_id = 0;
@@ -355,7 +370,7 @@ function tripal_pub_add_publication($pub_details) {
 
      // skip details that won't be stored as properties
      if ($key == 'Authors') {
-       tripal_pub_add_authors($pub_id, $value);
+       tripal_pub_add_authors($pub_id, $value, $do_contact);
        continue;
      }
      if ($key == 'Title' or $key == 'Volume' or $key == 'Journal Name' or $key == 'Issue' or
@@ -392,8 +407,8 @@ function tripal_pub_add_publication($pub_details) {
 /*
  * 
  */
-function tripal_pub_add_authors($pub_id, $authors) {
-  $rank = 0;  
+function tripal_pub_add_authors($pub_id, $authors, $do_contact) {
+  $rank = 0;   
   
   // first remove any of the existing pubauthor entires
   $sql = "DELETE FROM {pubauthor} WHERE pub_id = %d";
@@ -426,10 +441,7 @@ function tripal_pub_add_authors($pub_id, $authors) {
       $type = 'Collective';
     }
     $name = trim($name);    
-        
-    // Add the contact 
-    $contact = tripal_contact_add_contact($name, '', $type, $author);
-    
+           
     // add an entry to the pubauthors table
     $values = array(
       'pub_id' => $pub_id,
@@ -440,20 +452,26 @@ function tripal_pub_add_authors($pub_id, $authors) {
     );
     $options = array('statement_name' => 'ins_pubauthor_idrasugisu');
     $pubauthor = tripal_core_chado_insert('pubauthor', $values, $options);
-    
-    // if we have succesfully added the contact and the pubauthor entries then we want to
-    // link them together 
-    if ($contact and $pubauthor) {
-    
-      // link the pubauthor entry to the contact 
-      $values = array(
-        'pubauthor_id' => $pubauthor['pubauthor_id'],
-        'contact_id' => $contact['contact_id'],
-      );
-      $options = array('statement_name' => 'ins_pubauthorcontact_puco');
-      $pubauthor_contact = tripal_core_chado_insert('pubauthor_contact', $values, $options);
-      if (!$pubauthor_contact) {
-        watchdog('tripal_pub', "Cannot link pub authro and contact.", array(), WATCHDOG_ERROR);
+
+    // if the user wants us to create a contact for each author then do it.
+    if ($do_contact) {
+      // Add the contact 
+      $contact = tripal_contact_add_contact($name, '', $type, $author);
+            
+      // if we have succesfully added the contact and the pubauthor entries then we want to
+      // link them together 
+      if ($contact and $pubauthor) {
+      
+        // link the pubauthor entry to the contact 
+        $values = array(
+          'pubauthor_id' => $pubauthor['pubauthor_id'],
+          'contact_id' => $contact['contact_id'],
+        );
+        $options = array('statement_name' => 'ins_pubauthorcontact_puco');
+        $pubauthor_contact = tripal_core_chado_insert('pubauthor_contact', $values, $options);
+        if (!$pubauthor_contact) {
+          watchdog('tripal_pub', "Cannot link pub authro and contact.", array(), WATCHDOG_ERROR);
+        }
       }
     }
     $rank++;   

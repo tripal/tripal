@@ -6,7 +6,7 @@
  * @ingroup tripal_pub
  */
 function tripal_pub_importers_list() {
-  $header = array('', 'Importer Name', 'Database', 'Search String', 'Disabled', '');
+  $header = array('', 'Importer Name', 'Database', 'Search String', 'Disabled', 'Create Contact', '');
   $rows = array();
   $importers = db_query("SELECT * FROM {tripal_pub_import} ORDER BY name");    
 
@@ -27,6 +27,7 @@ function tripal_pub_importers_list() {
       $criteria['remote_db'],
       $criteria_str,
       $importer->disabled ? 'Yes' : 'No',
+      $importer->do_contact ? 'Yes' : 'No',
       l(t('Delete'), "admin/tripal/tripal_pub/import/delete/$importer->pub_import_id"),
     );
   }
@@ -34,7 +35,7 @@ function tripal_pub_importers_list() {
   $rows[] = array(
     'data' => array(
       array('data' => l(t('Create a new publication importer.'), "admin/tripal/tripal_pub/import/new"),
-        'colspan' => 6),
+        'colspan' => 7),
     )
   );
 
@@ -123,8 +124,9 @@ function theme_tripal_pub_importer_setup_form($form) {
   $markup .= '  <div id="pub-search-form-col1">' . drupal_render($form['loader_name']) . '</div>';
   $markup .= '  <div id="pub-search-form-col2">' . drupal_render($form['remote_db']) . '</div>';
   $markup .= '  <div id="pub-search-form-col3">' . drupal_render($form['days']) . '</div>';
-  $markup .= '  <div id="pub-search-form-col4">' . drupal_render($form['disabled']) . '</div>';
   $markup .= '</div>';
+  $markup .= '<div id="pub-search-form-row2">' . drupal_render($form['disabled']) . '</div>'; 
+  $markup .= '<div id="pub-search-form-row3">' . drupal_render($form['do_contact']) . '</div>';
   $markup .= theme('table', $headers, $rows);
   
   $form['criteria'] = array(
@@ -139,7 +141,7 @@ function theme_tripal_pub_importer_setup_form($form) {
  *
   * @ingroup tripal_pub
  */
-function tripal_pub_importer_setup_form(&$form_state = NULL, $import_id = NULL, $action = 'new') {
+function tripal_pub_importer_setup_form(&$form_state = NULL, $pub_import_id = NULL, $action = 'new') {
   tripal_core_ahah_init_form();
 
   
@@ -147,16 +149,16 @@ function tripal_pub_importer_setup_form(&$form_state = NULL, $import_id = NULL, 
   // and one is provided then look it up in the database
   $criteria = NULL;
   if ($action == "edit" and !$form_state['values']) {
-    $pub_import_id = $form_state['values']['$pub_import_id'];    
     $sql = "SELECT * FROM {tripal_pub_import} WHERE pub_import_id = %d";
-    $importer = db_fetch_object(db_query($sql, $import_id));
+    $importer = db_fetch_object(db_query($sql, $pub_import_id));
     
-    $criteria     = unserialize($importer->criteria);
-    $remote_db    = $criteria['remote_db'];
-    $days         = $criteria['days'];
-    $disabled     = $criteria['disabled'];
-    $num_criteria = $criteria['num_criteria'];    
-    $loader_name  = $criteria['loader_name'];  
+    $criteria       = unserialize($importer->criteria);
+    $remote_db      = $criteria['remote_db'];
+    $days           = $criteria['days'];
+    $disabled       = $criteria['disabled'];
+    $do_contact     = $criteria['do_contact'];
+    $num_criteria   = $criteria['num_criteria'];    
+    $loader_name    = $criteria['loader_name'];  
   }
 
   // if the session has variables then use those.  This should only happen when
@@ -165,6 +167,7 @@ function tripal_pub_importer_setup_form(&$form_state = NULL, $import_id = NULL, 
   $loader_name  = $_SESSION['tripal_pub_search']['loader_name']  ? $_SESSION['tripal_pub_search']['loader_name']  : $loader_name;
   $remote_db    = $_SESSION['tripal_pub_search']['remote_db']    ? $_SESSION['tripal_pub_search']['remote_db']    : $remote_db;
   $disabled     = $_SESSION['tripal_pub_search']['disabled']     ? $_SESSION['tripal_pub_search']['disabled']     : $disabled;    
+  $do_contact   = $_SESSION['tripal_pub_search']['do_contact']   ? $_SESSION['tripal_pub_search']['do_contact']   : $do_contact;
   $days         = $_SESSION['tripal_pub_search']['days']         ? $_SESSION['tripal_pub_search']['days']         : $days;    
   
   
@@ -173,7 +176,8 @@ function tripal_pub_importer_setup_form(&$form_state = NULL, $import_id = NULL, 
   $num_criteria = $form_state['values']['num_criteria'] ? $form_state['values']['num_criteria'] : $num_criteria;    
   $loader_name  = $form_state['values']['loader_name']  ? $form_state['values']['loader_name']  : $loader_name;
   $remote_db    = $form_state['values']['remote_db']    ? $form_state['values']['remote_db']    : $remote_db;
-  $disabled     = $form_state['values']['disabled']     ? $form_state['values']['disabled']     : $disabled;    
+  $disabled     = $form_state['values']['disabled']     ? $form_state['values']['disabled']     : $disabled;
+  $do_contact   = $form_state['values']['do_contact']   ? $form_state['values']['do_contact']   : $do_contact;
   $days         = $form_state['values']['days']         ? $form_state['values']['days']         : $days;    
   
    
@@ -227,15 +231,22 @@ function tripal_pub_importer_setup_form(&$form_state = NULL, $import_id = NULL, 
   $form['days'] = array(
     '#type'          => 'textfield',
     '#title'         => t('Days'),
-    '#description'   => t('The number of days <br>from today to search.'),
+    '#description'   => t('The number of days from today to search.'),
     '#default_value' => $days,
     '#size'          => 5,
   );
   $form['disabled'] = array(
     '#type'          => 'checkbox',
     '#title'         => t('Disabled'),
+    '#description'   => t('Check to disable this importer.'),
     '#default_value' => $disabled,
-    '#size'          => 5,
+  );
+  $form['do_contact'] = array(
+    '#type'          => 'checkbox',
+    '#title'         => t('Create Contact'),
+    '#description'   => t('Check to create an entry in the contact table for each author of a matching publication during import. This allows storage of 
+       additional information such as affilation, etc. Otherwise, only authors names are retrieved.'),
+    '#default_value' => $do_contact,
   );
   
   for($i = 0; $i <= $num_criteria; $i++) {
@@ -262,7 +273,7 @@ function tripal_pub_importer_setup_form(&$form_state = NULL, $import_id = NULL, 
   
     $form['criteria'][$i]["search_terms-$i"] = array(
       '#type'          => 'textfield',
-      '#description'   => t('Please provide a list of words, separated by spaces for searching.'),
+      '#description'   => t('Please provide a list of words for searching. You may use conjunctions such as "AND" or "OR" to separate words if they are expected in the same scope"'),
       '#default_value' => $search_terms,
       '#required'      => TRUE,
     );
@@ -341,6 +352,7 @@ function tripal_pub_importer_setup_form_validate($form, &$form_state) {
   $remote_db =  $form_state['values']["remote_db"];
   $days =  trim($form_state['values']["days"]);
   $disabled =  $form_state['values']["disabled"];
+  $do_contact =  $form_state['values']["do_contact"];
   $loader_name =  trim($form_state['values']["loader_name"]);
 
   for ($i = 0; $i <= $num_criteria; $i++) {            
@@ -365,6 +377,7 @@ function tripal_pub_importer_setup_form_submit($form, &$form_state) {
   $days =  trim($form_state['values']["days"]);
   $loader_name =  trim($form_state['values']["loader_name"]);
   $disabled =  $form_state['values']["disabled"];
+  $do_contact =  $form_state['values']["do_contact"];
 
   // set the session variables
   $_SESSION['tripal_pub_search']['remote_db'] = $remote_db;
@@ -372,6 +385,7 @@ function tripal_pub_importer_setup_form_submit($form, &$form_state) {
   $_SESSION['tripal_pub_search']['num_criteria'] = $num_criteria;
   $_SESSION['tripal_pub_search']['loader_name'] = $loader_name;
   $_SESSION['tripal_pub_search']['disabled'] = $disabled;
+  $_SESSION['tripal_pub_search']['do_contact'] = $do_contact;
   unset($_SESSION['tripal_pub_search']['criteria']);
   for ($i = 0; $i <= $num_criteria; $i++) {
     $search_terms =  trim($form_state['values']["search_terms-$i"]);
@@ -394,6 +408,7 @@ function tripal_pub_importer_setup_form_submit($form, &$form_state) {
       'name' => $loader_name,
       'criteria' => serialize($_SESSION['tripal_pub_search']),
       'disabled' => $disabled,
+      'do_contact' => $do_contact
     );
     // first check to see if this pub_import_id is already present. If so,
     // do an update rather than an insert    

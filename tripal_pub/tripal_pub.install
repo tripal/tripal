@@ -21,10 +21,7 @@ function tripal_pub_install() {
 
   // install the tripal_oub
   drupal_install_schema('tripal_pub');
-  
-  // add any cvterms we need for this module
-  tripal_pub_add_cvterms();  
-  
+    
   // add loading of the the tripal pub ontology to the job queue
   $obo_path =  realpath('./') . '/' . drupal_get_path('module', 'tripal_pub') . '/tpub.obo';
   $obo_id = tripal_cv_add_obo_ref('Tripal Publication', $obo_path);
@@ -34,16 +31,6 @@ function tripal_pub_install() {
   tripal_pub_add_custom_tables();
 }
 
-
-/*
- * 
- * 
- */
-function tripal_pub_add_cvterms(){
-  
-  tripal_cv_add_cvterm(array('name' => 'abstract', 'def' => 'Publication abstract'), 
-    'tripal_pub', 0, 1, 'tripal');    
-}
 
 /**
  * Implementation of hook_uninstall().
@@ -78,10 +65,11 @@ function tripal_pub_schema() {
   );
   $schema['tripal_pub_import'] = array(
     'fields' => array(
-      'pub_import_id' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+      'pub_import_id' => array('type' => 'serial', 'not null' => TRUE),
       'name' => array('type' => 'varchar', 'length' => 255, 'not null' => TRUE),
       'criteria' => array('type' => 'text', 'size' => 'normal', 'not null' => TRUE, 'description' => 'Contains a serialized PHP array containing the search criteria'),
       'disabled'  => array('type' => 'int', 'unsigned' => TRUE, 'not NULL' => TRUE, 'default' => 0),      
+      'do_contact'  => array('type' => 'int', 'unsigned' => TRUE, 'not NULL' => TRUE, 'default' => 0),
     ),
     'primary key' => array('pub_import_id'),
     'indexes' => array(

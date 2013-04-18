@@ -116,24 +116,7 @@ function tripal_pub_menu() {
     'access arguments' => array('administer tripal pubs'),    
     'type ' => MENU_CALLBACK,
   );
-  
-  // Automatically generate checkboxes.
-  $items['node/add/tripal_pub/ahah_authors'] = array(
-    'title' => 'Add Additional Authors',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('author_addition_fields_ahah_callback'),
-    'access callback' => TRUE,
-    'type' => MENU_CALLBACK,
-    'weight' => 2,
-  );
-
-  $items['tripal_pub/js/%'] = array(
-    'page callback' => 'tripal_pub_js',
-    'page arguments' => array(2),
-    'access arguments' => array('access content'),
-    'type ' => MENU_CALLBACK,
-  );
-
+ 
   return $items;
 }
 
@@ -541,8 +524,8 @@ function tripal_pub_form_alter(&$form, &$form_state, $form_id) {
     if ($form_state['values']['action'] == 'edit') {
       $form['#action'] = url("admin/tripal/tripal_pub/import/edit/" . $form['pub_import_id']);
     } 
-    if ($form_state['values']['action'] == 'add') {
-      $form['#action'] = url("admin/tripal/tripal_pub/import/add");
+    if ($form_state['values']['action'] == 'new') {
+      $form['#action'] = url("admin/tripal/tripal_pub/import/new");
     }
   }
 } 

@@ -35,8 +35,12 @@ function tripal_pub_drush_command() {
   );
   $items['tripal-pubs-update'] = array(
     'description' => dt('Updates publication information for publications with a supported database cross-reference.'),
+    'options' => array(
+      'create_contacts' => dt('provide this option to create or update contacts for authors. By default contacts are not created or updated.'),
+    ),
     'examples' => array(
       'Standard example' => 'drush tripal-pubs-update',
+      'Create contacts during update' => 'drush tripal-pubs-update --create_contacts=1',
     ),
     'aliases' => array('tpubs-update'),
   );
@@ -56,5 +60,7 @@ function drush_tripal_pub_tripal_pubs_import() {
  *
  */
 function drush_tripal_pub_tripal_pubs_update() {
-  tripal_pub_update_publications();
+  $create_contacts = drush_get_option('create_contacts');
+  
+  tripal_pub_update_publications($create_contacts);
 }
