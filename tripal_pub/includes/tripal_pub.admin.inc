@@ -88,7 +88,7 @@ function tripal_pub_importer_setup($action = 'new', $pub_import_id = NULL) {
     $i = $page * $limit + 1;
     if (count($pubs) > 0) {
       foreach ($pubs as $pub) {
-        $rows[] = array(number_format($i), $pub['citation']);
+        $rows[] = array(number_format($i), $pub['Citation']);
         $i++;
       }
     }
@@ -207,7 +207,7 @@ function tripal_pub_importer_setup_form(&$form_state = NULL, $import_id = NULL, 
     '#required'      => TRUE,
   );
    
-  $remote_dbs = array('Pubmed' => 'Pubmed');
+  $remote_dbs = array('PMID' => 'Pubmed');
   $form['remote_db'] = array(
     '#title' => t('Remote Database'),
     '#type' => 'select',

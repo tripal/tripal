@@ -26,12 +26,19 @@ function tripal_pub_drush_help($command) {
  */
 function tripal_pub_drush_command() {
   $items = array();
-  $items['tripal-pub-import'] = array(
+  $items['tripal-pubs-import'] = array(
     'description' => dt('Imports publications from remote databases using saved configuration settings.'),
     'examples' => array(
-      'Standard example' => 'drush tripal-pub-import',
+      'Standard example' => 'drush tripal-pubs-import',
     ),
-    'aliases' => array('trp-pubs'),
+    'aliases' => array('tpubs-import'),
+  );
+  $items['tripal-pubs-update'] = array(
+    'description' => dt('Updates publication information for publications with a supported database cross-reference.'),
+    'examples' => array(
+      'Standard example' => 'drush tripal-pubs-update',
+    ),
+    'aliases' => array('tpubs-update'),
   );
   return $items;
 }
@@ -40,6 +47,14 @@ function tripal_pub_drush_command() {
  * Imports publications into Chado
  *
  */
-function drush_tripal_pub_import() {
+function drush_tripal_pub_tripal_pubs_import() {
   tripal_pub_import_publications();
+}
+
+/**
+ * Imports publications into Chado
+ *
+ */
+function drush_tripal_pub_tripal_pubs_update() {
+  tripal_pub_update_publications();
 }

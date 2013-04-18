@@ -3,14 +3,14 @@
  * @file
  * Tripal Pub PubMed Interface
  *
- * @defgroup tripal_pub_pubmed PubMed Interface
+ * @defgroup tripal_pub_PMID PubMed Interface
  * @ingroup tripal_pub
  */
 
 /**
  *
  */
-function tripal_pub_remote_search_pubmed($search_array, $num_to_retrieve, $pager_id) {
+function tripal_pub_remote_search_PMID($search_array, $num_to_retrieve, $pager_id) {
   
   // convert the terms list provicded by the caller into a string with words
   // separated by a '+' symbol.
@@ -38,14 +38,17 @@ function tripal_pub_remote_search_pubmed($search_array, $num_to_retrieve, $pager
     elseif($scope == 'abstract') {
       $search_str .= '[Title/Abstract]';
     }
+    elseif($scope == 'id') {
+      $search_str .= '[Uid]';
+    }
     $search_str .= ')'; 
   }  
   $search_array['limit'] = $num_to_retrieve;
   $search_array['search_terms'] = $search_str;
 
   // we want to get the list of pubs using the search terms but using a Drupal style pager
-  $pubs = tripal_pager_callback('tripal_pub_pubmed_range',  
-    $num_to_retrieve, $pager_id, 'tripal_pub_pubmed_count', $search_array);
+  $pubs = tripal_pager_callback('tripal_pub_PMID_range',  
+    $num_to_retrieve, $pager_id, 'tripal_pub_PMID_count', $search_array);
  
   return $pubs;
 }
@@ -55,15 +58,15 @@ function tripal_pub_remote_search_pubmed($search_array, $num_to_retrieve, $pager
  * tripal_pager_callback function.  This function returns a count of
  * the dataset to be paged.
  */
-function tripal_pub_pubmed_count($search_array) {
+function tripal_pub_PMID_count($search_array) {
   $terms = $search_array['search_terms'];
-  $days = $search_array['days'];
+  $days  = $search_array['days'];
   $limit = $search_array['limit'];
   
-  $results = tripal_pub_pubmed_search_init($terms, $limit, $days);
-  $_SESSION['tripal_pub_pubmed_query'][$terms]['Count'] = $results['Count'];
-  $_SESSION['tripal_pub_pubmed_query'][$terms]['WebEnv'] = $results['WebEnv'];
-  $_SESSION['tripal_pub_pubmed_query'][$terms]['QueryKey'] = $results['QueryKey'];
+  $results = tripal_pub_PMID_search_init($terms, $limit, $days);
+  $_SESSION['tripal_pub_PMID_query'][$terms]['Count'] = $results['Count'];
+  $_SESSION['tripal_pub_PMID_query'][$terms]['WebEnv'] = $results['WebEnv'];
+  $_SESSION['tripal_pub_PMID_query'][$terms]['QueryKey'] = $results['QueryKey'];
   
   return $results['Count'];
 
@@ -74,38 +77,38 @@ function tripal_pub_pubmed_count($search_array) {
  * tripal_pager_callback function.  This function returns the results
  * within the specified range
  */
-function tripal_pub_pubmed_range($search_array, $start = 0, $limit = 10) {
+function tripal_pub_PMID_range($search_array, $start = 0, $limit = 10) {
   $terms = $search_array['search_terms'];
-  $days = $search_array['days'];
+  $days  = $search_array['days'];
   $limit = $search_array['limit'];
   
-  $count = $_SESSION['tripal_pub_pubmed_query'][$terms]['Count'];
+  $count = $_SESSION['tripal_pub_PMID_query'][$terms]['Count'];
     
   // get the query_key and the web_env from the previous count query.
-  $query_key = $_SESSION['tripal_pub_pubmed_query'][$terms]['QueryKey'];
-  $web_env = $_SESSION['tripal_pub_pubmed_query'][$terms]['WebEnv'];
+  $query_key = $_SESSION['tripal_pub_PMID_query'][$terms]['QueryKey'];
+  $web_env   = $_SESSION['tripal_pub_PMID_query'][$terms]['WebEnv'];
   
   // if this function has been called without calling the count function
   // then we need to do the query.
   if (!$query_key) {
-    $results = tripal_pub_pubmed_search_init($terms, $limit, $days);
-    $_SESSION['tripal_pub_pubmed_query']['WebEnv'] = $results['WebEnv'];
-    $_SESSION['tripal_pub_pubmed_query']['QueryKey'] = $results['QueryKey']; 
+    $results = tripal_pub_PMID_search_init($terms, $limit, $days);
+    $_SESSION['tripal_pub_PMID_query']['WebEnv'] = $results['WebEnv'];
+    $_SESSION['tripal_pub_PMID_query']['QueryKey'] = $results['QueryKey']; 
     $query_key =  $results['QueryKey'];
     $web_env = $results['WebEnv'];
   }
 
-  // now get the list of PMIDs from the previous search
-  $pmids_txt = tripal_pub_pubmed_fetch($query_key, $web_env, 'uilist', 'text', $start, $limit);  
+  // now get the list of PMIDs from the previous search  
+  $pmids_txt = tripal_pub_PMID_fetch($query_key, $web_env, 'uilist', 'text', $start, $limit);  
   
   // iterate through each PMID and get the publication record. This requires a new search and new fetch
   $pmids = explode("\n", trim($pmids_txt));
   $pubs = array();
   foreach ($pmids as $pmid) {
     // now retrieve the individual record
-    $pub_xml = tripal_pub_pubmed_fetch($query_key, $web_env, 'null', 'xml', 0, 1, array('id' => $pmid));
-    $pub = tripal_pub_pubmed_parse_pubxml($pub_xml);
-    $pubs[] = $pub;    
+    $pub_xml = tripal_pub_PMID_fetch($query_key, $web_env, 'null', 'xml', 0, 1, array('id' => $pmid));
+    $pub     = tripal_pub_PMID_parse_pubxml($pub_xml);
+    $pubs[]  = $pub;    
   } 
   return $pubs;
 }
@@ -113,7 +116,7 @@ function tripal_pub_pubmed_range($search_array, $start = 0, $limit = 10) {
 /*
  * 
  */
-function tripal_pub_pubmed_search_init($terms, $retmax, $days = 0){
+function tripal_pub_PMID_search_init($terms, $retmax, $days = 0){
    
   // do a search for a single result so that we can establish a history, and get
   // the number of records. Once we have the number of records we can retrieve
@@ -173,7 +176,7 @@ function tripal_pub_pubmed_search_init($terms, $retmax, $days = 0){
 /*
  * 
  */
-function tripal_pub_pubmed_fetch($query_key, $web_env, $rettype = 'null', 
+function tripal_pub_PMID_fetch($query_key, $web_env, $rettype = 'null', 
   $retmod = 'null', $start = 0, $limit = 10, $args = array()){
 
   // repeat the search performed previously (using WebEnv & QueryKey) to retrieve
@@ -221,7 +224,7 @@ function tripal_pub_pubmed_fetch($query_key, $web_env, $rettype = 'null',
  * Information about PubMed's citation format can be found here
  * http://www.nlm.nih.gov/bsd/policy/cit_format.html
  */
-function tripal_pub_pubmed_parse_pubxml($pub_xml) {
+function tripal_pub_PMID_parse_pubxml($pub_xml) {
   $pub = array();
   
   if (!$pub_xml) {
@@ -244,10 +247,10 @@ function tripal_pub_pubmed_parse_pubxml($pub_xml) {
         case 'Article':
           $pub_model = $xml->getAttribute('PubModel');
           $pub['Publication Model'] = $pub_model;
-          tripal_pub_pubmed_parse_article($xml, $pub);
+          tripal_pub_PMID_parse_article($xml, $pub);
           break;
         case 'MedlineJournalInfo':
-          tripal_pub_pubmed_parse_medline_journal_info($xml, $pub);
+          tripal_pub_PMID_parse_medline_journal_info($xml, $pub);
           break;
         case 'ChemicalList':
           // TODO: handle this
@@ -320,7 +323,7 @@ function tripal_pub_pubmed_parse_pubxml($pub_xml) {
 /*
  * 
  */
-function tripal_pub_pubmed_parse_medline_journal_info($xml, &$pub) {
+function tripal_pub_PMID_parse_medline_journal_info($xml, &$pub) {
   while ($xml->read()) {
     // get this element name
     $element = $xml->name;     
@@ -355,7 +358,7 @@ function tripal_pub_pubmed_parse_medline_journal_info($xml, &$pub) {
 /*
  * 
  */
-function tripal_pub_pubmed_parse_article($xml, &$pub) {
+function tripal_pub_PMID_parse_article($xml, &$pub) {
     
   while ($xml->read()) {
     // get this element name
@@ -368,17 +371,17 @@ function tripal_pub_pubmed_parse_article($xml, &$pub) {
     if ($xml->nodeType == XMLReader::ELEMENT) {    
       switch ($element) {
         case 'Journal':
-          tripal_pub_pubmed_parse_journal($xml, $pub);
+          tripal_pub_PMID_parse_journal($xml, $pub);
           break;
         case 'ArticleTitle':
           $xml->read();
           $pub['Title'] = $xml->value;
           break;
         case 'Abstract':
-          tripal_pub_pubmed_parse_abstract($xml, $pub);
+          tripal_pub_PMID_parse_abstract($xml, $pub);
           break;
         case 'Pagination':
-          tripal_pub_pubmed_parse_pagination($xml, $pub);
+          tripal_pub_PMID_parse_pagination($xml, $pub);
           break;  
         case 'ELocationID':
           $type = $xml->getAttribute('EIdType');
@@ -400,7 +403,7 @@ function tripal_pub_pubmed_parse_article($xml, &$pub) {
           break;
         case 'AuthorList':
           $complete = $xml->getAttribute('CompleteYN');
-          tripal_pub_pubmed_parse_authorlist($xml, $pub);
+          tripal_pub_PMID_parse_authorlist($xml, $pub);
           break;
         case 'InvestigatorList':
           // TODO: perhaps handle this one day.  The investigator list is to list the names of people who 
@@ -420,7 +423,7 @@ function tripal_pub_pubmed_parse_article($xml, &$pub) {
           // TODO: handle this case
           break;
         case 'PublicationTypeList':
-          tripal_pub_pubmed_parse_publication_type($xml, $pub);
+          tripal_pub_PMID_parse_publication_type($xml, $pub);
           break;
         case 'VernacularTitle':
           $xml->read();
@@ -444,7 +447,7 @@ function tripal_pub_pubmed_parse_article($xml, &$pub) {
  * The Tripal Pub ontology doesn't yet have terms for all of the 
  * publication types so we store the value in the 'publication_type' term.
  */
-function tripal_pub_pubmed_parse_publication_type($xml, &$pub) {
+function tripal_pub_PMID_parse_publication_type($xml, &$pub) {
   
   while ($xml->read()) {
     $element = $xml->name;    
@@ -479,7 +482,7 @@ function tripal_pub_pubmed_parse_publication_type($xml, &$pub) {
 /*
  * 
  */
-function tripal_pub_pubmed_parse_abstract($xml, &$pub) {
+function tripal_pub_PMID_parse_abstract($xml, &$pub) {
   $abstract = '';
   
   while ($xml->read()) {
@@ -519,7 +522,7 @@ function tripal_pub_pubmed_parse_abstract($xml, &$pub) {
 /*
  * 
  */
-function tripal_pub_pubmed_parse_pagination($xml, &$pub) {
+function tripal_pub_PMID_parse_pagination($xml, &$pub) {
   while ($xml->read()) {
     $element = $xml->name;
       
@@ -544,7 +547,7 @@ function tripal_pub_pubmed_parse_pagination($xml, &$pub) {
 /*
  * 
  */
-function tripal_pub_pubmed_parse_journal($xml, &$pub) {
+function tripal_pub_PMID_parse_journal($xml, &$pub) {
   
   while ($xml->read()) {
     $element = $xml->name;
@@ -569,7 +572,7 @@ function tripal_pub_pubmed_parse_journal($xml, &$pub) {
         case 'JournalIssue':   
           // valid values of cited_medium are 'Internet' and 'Print'
           $cited_medium = $xml->getAttribute('CitedMedium');                    
-          tripal_pub_pubmed_parse_journal_issue($xml, $pub);       
+          tripal_pub_PMID_parse_journal_issue($xml, $pub);       
           break;        
         case 'Title': 
           $xml->read();
@@ -588,7 +591,7 @@ function tripal_pub_pubmed_parse_journal($xml, &$pub) {
 /*
  * 
  */
-function tripal_pub_pubmed_parse_journal_issue($xml, &$pub) {
+function tripal_pub_PMID_parse_journal_issue($xml, &$pub) {
   
   while ($xml->read()) {
     $element = $xml->name;
@@ -608,7 +611,7 @@ function tripal_pub_pubmed_parse_journal_issue($xml, &$pub) {
           $pub['Issue'] = $xml->value;           
           break;
         case 'PubDate':
-          $date = tripal_pub_pubmed_parse_date($xml, 'PubDate');
+          $date = tripal_pub_PMID_parse_date($xml, 'PubDate');
           $year = $date['year'];
           $month = $date['month'];
           $day = $date['day']; 
@@ -641,7 +644,7 @@ function tripal_pub_pubmed_parse_journal_issue($xml, &$pub) {
 /*
  * 
  */
-function tripal_pub_pubmed_parse_date ($xml, $element_name) {
+function tripal_pub_PMID_parse_date ($xml, $element_name) {
   $date = array();
   
   while ($xml->read()) {
@@ -680,7 +683,7 @@ function tripal_pub_pubmed_parse_date ($xml, $element_name) {
 /*
  * 
  */
-function tripal_pub_pubmed_parse_authorlist($xml, &$pub) {
+function tripal_pub_PMID_parse_authorlist($xml, &$pub) {
   $num_authors = 0;
   
   while ($xml->read()) {

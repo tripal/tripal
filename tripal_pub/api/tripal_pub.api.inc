@@ -12,8 +12,11 @@
  *  keys correspond directly with Tripal Pub CV terms.
  *  
  * @param remote_db
- *    The name of the remote publication database to query. Valid values
- *    include: 'pubmed'.
+ *    The name of the remote publication database to query. These names should
+ *    match the name of the databases in the Chado 'db' table. Currently 
+ *    supported databass include
+ *      'PMID':  PubMed
+ *      
  * @param search_array
  *    An associate array containing the search criteria. The following key 
  *    are expected
@@ -73,6 +76,97 @@ function tripal_pub_get_remote_search_results($remote_db, $search_array,
 /*
  * @ingroup tripal_pub_api
  */
+function tripal_pub_update_publications() {
+  // get a persistent connection
+  $connection = tripal_db_persistent_chado();
+  if (!$connection) {
+     print "A persistant connection was not obtained. Loading will be slow\n";
+  }
+          
+  // if we cannot get a connection then let the user know the loading will be slow
+  tripal_db_start_transaction();
+  if ($connection) {
+     print "\nNOTE: Loading of publications is performed using a database transaction. \n" .
+           "If the load fails or is terminated prematurely then the entire set of \n" .
+           "insertions/updates is rolled back and will not be found in the database\n\n";
+  }
+  
+  // get a list of all publications that have 
+  // supported databases
+  $sql = "
+    SELECT DB.name as db_name, DBX.accession
+    FROM pub P
+      INNER JOIN pub_dbxref PDBX ON P.pub_id = PDBX.pub_id
+      INNER JOIN dbxref DBX      ON DBX.dbxref_id = PDBX.dbxref_id
+      INNER JOIN db DB           ON DB.db_id = DBX.db_id
+    ORDER BY DB.name
+  ";
+  $results = chado_query($sql);
+  
+  $num_to_retrieve = 100;
+  $i = 0;                 // count the number of IDs. When we hit $num_to_retrieve we'll do the query
+  $curr_db = '';          // keeps track of the current current database
+  $ids = array();         // the list of IDs for the database
+  $search = array();      // the search array passed to the search function
+  
+  // iterate through the pub IDs
+  while ($pub = db_fetch_object($results)) {    
+    $accession = $pub->accession;
+    $remote_db = $pub->db_name;
+    
+    // if we're switching databases then reset the search array    
+    if($remote_db != $curr_db) {
+      // if we had a previous DB then do the update.
+      if ($curr_db) {
+        $search['num_criteria'] = $i - 1;
+        $pubs = tripal_pub_get_remote_search_results($remote_db, $search, $i, 0);
+        tripal_pub_add_publications($pubs); 
+      }
+      $curr_db = $remote_db;      
+      $search = array(
+        'remote_db' => $remote_db,
+        'criteria' => array(),
+      );
+      $ids = array();
+      $i = 0;
+    }
+    
+    // if we've hit the maximum number to retrieve then do the search
+    if($i == $num_to_retrieve) {      
+      $search['num_criteria'] = $i - 1;
+      $pubs = tripal_pub_get_remote_search_results($remote_db, $search, $i, 0);
+      tripal_pub_add_publications($pubs);
+      $search['criteria'] = array();
+      $i = 0;
+    }
+    
+    // add each accession to the search criteria
+    $search['criteria'][] = array(
+      'search_terms' => $accession,
+      'scope' => 'id',
+      'operation' => 'OR'
+    );
+    $i++;   
+  }
+  // now update any remaining in the search criteria array
+  $search['num_criteria'] = $i - 1;
+  $pubs = tripal_pub_get_remote_search_results($remote_db, $search, $i, 0);
+  tripal_pub_add_publications($pubs);
+  
+  // sync the newly added publications with Drupal
+  print "Syncing publications with Drupal...\n";
+  tripal_pub_sync_pubs();
+  print "Syncing contacts with Drupal...\n";
+  tripal_contact_sync_contacts();
+  
+  // transaction is complete
+  tripal_db_commit_transaction();
+  
+  print "Done.\n";
+}
+/*
+ * @ingroup tripal_pub_api
+ */
 function tripal_pub_import_publications() {
   $num_to_retrieve = 100;
   $pager_id = 0;
@@ -101,25 +195,8 @@ function tripal_pub_import_publications() {
      $criteria = unserialize($import->criteria); 
      $remote_db = $criteria['remote_db'];
      do {       
-       // get the number of records
-       
        // retrieve the pubs for this page. We'll retreive 10 at a time
-       $pubs = tripal_pub_get_remote_search_results($remote_db, $criteria, $num_to_retrieve, $pager_id, $page);
-       
-       // now add the publications
-       foreach ($pubs as $pub) {
-               
-         // add the publication to Chado and sync it with Chado
-         $pub_id = tripal_pub_add_publication($pub);
-         
-         // add the publication cross reference (e.g. to PubMed)
-         if ($pub_id) {         
-           $pub_dbxref = tripal_pub_add_pub_dbxref($pub_id, $pub);
-         }                                      
-
-         $num_pubs++;
-         print $num_pubs . ".  " . $pub['Publication Database'] . ' ' . $pub['Pub Accession'] . "\n";                          
-       } // end for loop       
+       $pubs = tripal_pub_get_remote_search_results($remote_db, $criteria, $num_to_retrieve, $pager_id, $page);             
        $page++;
      } 
      // continue looping until we have a $pubs array that does not have
@@ -138,7 +215,26 @@ function tripal_pub_import_publications() {
   
   print "Done.\n";
 }
-
+/*
+ * 
+ */
+function tripal_pub_add_publications($pubs) {
+  
+  // iterate through the publications and add each one
+  foreach ($pubs as $pub) {
+         
+    // add the publication to Chado and sync it with Chado
+    $pub_id = tripal_pub_add_publication($pub);
+   
+    // add the publication cross reference (e.g. to PubMed)
+    if ($pub_id) {         
+      $pub_dbxref = tripal_pub_add_pub_dbxref($pub_id, $pub);
+    }                                      
+  
+    $num_pubs++;
+    print $num_pubs . ".  " . $pub['Publication Database'] . ' ' . $pub['Pub Accession'] . "\n";                          
+  } // end for loop        
+}
 /*
  * 
  */
