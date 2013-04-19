@@ -1292,6 +1292,13 @@ id: TPUB:0000240
 name: Author List
 relationship: part_of TPUB:0000037 ! Publication Details
 
+[Term]
+id: TPUB0000241
+name: English Abstract
+subset: MeSH_Publication_Type
+is_a: TPUB:0000015 ! Publication Type
+
+
 [Typedef]
 id: is_a
 name: is a
