@@ -308,11 +308,17 @@ function tripal_pub_add_publication($pub_details, $do_contact) {
   
    // check to see if the publication already exists
    $pub_id = 0;
-   $values = array(
-     'title' => $pub_details['Title'],
-     'pyear' => $pub_details['Year'],
-   );
-   $options = array('statement_name' => 'sel_pub_tipy');
+   $values = array();
+   $stmnt_suffix = '';
+   if ($pub_details['Title']) {
+     $values['title'] = $pub_details['Title'];
+     $stmnt_suffix .= 'ti';
+   }
+   if ($pub_details['Year']) {
+     $values['pyear'] = $pub_details['Year'];
+     $stmnt_suffix .= 'py';
+   }
+   $options = array('statement_name' => 'sel_pub_');
    $results = tripal_core_chado_select('pub', array('*'), $values, $options);
 
    if (count($results) == 1) {
