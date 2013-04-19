@@ -306,59 +306,83 @@ function tripal_pub_add_pub_dbxref($pub_id, $pub) {
  */
 function tripal_pub_add_publication($pub_details, $do_contact) {
   
-   // check to see if the publication already exists
-   $pub_id = 0;
-   $values = array();
-   $stmnt_suffix = '';
-   if ($pub_details['Title']) {
-     $values['title'] = $pub_details['Title'];
-     $stmnt_suffix .= 'ti';
-   }
-   if ($pub_details['Year']) {
-     $values['pyear'] = $pub_details['Year'];
-     $stmnt_suffix .= 'py';
-   }
-   $options = array('statement_name' => 'sel_pub_');
-   $results = tripal_core_chado_select('pub', array('*'), $values, $options);
+  $pub_id = 0;
 
-   if (count($results) == 1) {
-     $pub_id = $results[0]->pub_id;
-   }
-   elseif (count($results) > 1) {
-     watchdog('tripal_pub', "The publication with the same title is present multiple times. Cannot ".
-       "determine which to use.  Title: %title", array('%title' => $pub_details['Title']), WATCHDOG_ERROR);     
-     return FALSE;          
-   }
-   // add the publication if it doens't exist
-   elseif(count($results) == 0) {  
-     // get the publication type (use the first publication type, any others will get stored as properties)
-     $pub_type = tripal_cv_get_cvterm_by_name($pub_details['Publication Type'][0], NULL, 'tripal_pub');
-     if (!$pub_type) {
-       watchdog('tripal_pub', "Cannot find publication type: %type", 
-         array('%type' => $pub_type), WATCHDOG_ERROR);
-       return FALSE;   
-     }
-     // if the publication does not exist then create it.      
-     $values = array(
-       'title' => $pub_details['Title'],
-       'volume' => $pub_details['Volume'],
-       'series_name' => $pub_details['Journal Name'],
-       'issue' => $pub_details['Issue'],
-       'pyear' => $pub_details['Year'],
-       'pages' => $pub_details['Pages'],
-       'uniquename' => $pub_details['Citation'],
-       'type_id' => $pub_type->cvterm_id,
-     );
+  // first try to find the publication using the accession number. It will ahve
+  // one if the pub has already been loaded for the publication database
+  if ($pub_details['Pub Accession'] and $pub_details['Publication Database']) {
+    $values = array(
+      'dbxref_id' => array (
+        'accession' => $pub_details['Pub Accession'],
+        'db_id' => array(
+          'name' => $pub_details['Publication Database']
+        ),
+      ),
+    );
+    $options = array('statement_name' => 'sel_pubdbxref_db');
+    $results = tripal_core_chado_select('pub_dbxref', array('pub_id'), $values, $options);
+    if(count($results) == 1) {
+      $pub_id = $results[0]->pub_id;     
+    }
+    elseif(count($results) > 1) {
+      watchdog('tripal_pub', "There are two publications with this accession: %db:%accession. Cannot determine which to update.", 
+        array('%db' => $pub_details['Publication Database'], '%accession' => $pub_details['Pub Accession']), WATCHDOG_ERROR);     
+      return FALSE;    
+    }
+  }   
+  // if we couldn't find a publication by the accession (which means it doesn't
+  // yet exist or it has been added using a different publication database) then
+  // try to find it using the title and publication year.
+  elseif ($pub_details['Title']) {
+    $values = array();
+    $values['title'] = $pub_details['Title'];
+    $stmnt_suffix = 'ti';
+    if ($pub_details['Year']) {
+      $values['pyear'] = $pub_details['Year'];
+      $stmnt_suffix .= 'py';
+    }
+    $options = array('statement_name' => 'sel_pub_');
+    $results = tripal_core_chado_select('pub', array('*'), $values, $options);
 
-     $options = array('statement_name' => 'ins_pub_tivoseispypaunty');
-     $pub = tripal_core_chado_insert('pub', $values, $options);     
-     if (!$pub) {
-       watchdog('tripal_pub', "Cannot insert the publication with title: %title", 
-         array('%title' => $pub_details['Title']), WATCHDOG_ERROR);
-       return FALSE;   
-     }
-     $pub_id = $pub['pub_id'];
-   } 
+    if (count($results) == 1) {
+      $pub_id = $results[0]->pub_id;
+    }
+    elseif (count($results) > 1) {
+      watchdog('tripal_pub', "The publication with the same title is present multiple times. Cannot ".
+        "determine which to use.  Title: %title", array('%title' => $pub_details['Title']), WATCHDOG_ERROR);     
+      return FALSE;          
+    }
+  }
+  
+  // if we couldn't find the publication using the database accession or the title/year then add it
+  if(!$pub_id) {  
+    // get the publication type (use the first publication type, any others will get stored as properties)
+    $pub_type = tripal_cv_get_cvterm_by_name($pub_details['Publication Type'][0], NULL, 'tripal_pub');
+    if (!$pub_type) {
+      watchdog('tripal_pub', "Cannot find publication type: %type", 
+        array('%type' => $pub_type), WATCHDOG_ERROR);
+      return FALSE;   
+    }
+    // if the publication does not exist then create it.      
+    $values = array(
+      'title' => $pub_details['Title'],
+      'volume' => $pub_details['Volume'],
+      'series_name' => $pub_details['Journal Name'],
+      'issue' => $pub_details['Issue'],
+      'pyear' => $pub_details['Year'],
+      'pages' => $pub_details['Pages'],
+      'uniquename' => $pub_details['Citation'],
+      'type_id' => $pub_type->cvterm_id,
+    );
+    $options = array('statement_name' => 'ins_pub_tivoseispypaunty');
+    $pub = tripal_core_chado_insert('pub', $values, $options);     
+    if (!$pub) {
+      watchdog('tripal_pub', "Cannot insert the publication with title: %title", 
+        array('%title' => $pub_details['Title']), WATCHDOG_ERROR);
+      return FALSE;   
+    }
+    $pub_id = $pub['pub_id'];
+  } 
   
   // now add in any other items that remain as properties of the publication  
   foreach ($pub_details as $key => $value) {
