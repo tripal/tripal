@@ -2433,7 +2433,6 @@ function chado_query($sql) {
 
   $args = func_get_args();
   array_shift($args); // remove the $sql from the argument list
-  $sql = db_prefix_tables($sql);
   if (isset($args[0]) and is_array($args[0])) { // 'All arguments in one array' syntax
     $args = $args[0];
   }
@@ -2444,25 +2443,12 @@ function chado_query($sql) {
 
   // add the chado schema to the table names if Chado is local to the Drupal database
   if ($is_local) {
-    // TODO: this regular expression really needs to be removed as there are too many
-    // cases where it could break. Instead we need to surround tables with brackets
-    // like Drupal tables are and then find those and prefix those with chado.
     $sql = preg_replace('/\n/', '', $sql);  // remove carriage returns
-    // in the statement below we want to add 'chado.' to the beginning of each table
-    // we use the FROM keyword to look for tables, but FROM is also used in the
-    // 'substring' function of postgres. But since table names can't start with
-    // a number we exclude words numeric values. We also exclude tables that
-    // already have a schema prefix.
-//    $sql = preg_replace('/FROM\s+([^0123456789\(][^\.]*?)(\s|$)/i', 'FROM chado.\1 ', $sql);
-//    $sql = preg_replace('/INNER\s+JOIN\s+([^\.]*?)\s/i', 'INNER JOIN chado.\1 ', $sql);
-    $sql = preg_replace('/\{.*?\}/', 'chado.$1', $sql);
+    $sql = preg_replace('/\{(.*?)\}/', 'chado.$1', $sql);
   }
-  //print "$sql\n";
 
-  // If the query is not a select then we still need to change the search_path
-  if (!preg_match('/^SELECT/i',$sql)) {
-    $change_path = TRUE;
-  }
+  // let Drupal add any prefixes to tables
+  $sql = db_prefix_tables($sql);
 
   // Execute the query on the chado database/schema
   // Use the persistent chado connection if it already exists
@@ -2479,13 +2465,7 @@ function chado_query($sql) {
     }
     // if we're local we can just run the query
     if ($is_local) {
-      if ($change_path) {
-        $previous_db = tripal_db_set_active('chado');
-      }
       $last_result = pg_query($persistent_chado, $query);
-      if ($change_path) {
-        tripal_db_set_active($previous_db);
-      }
     }
     else {
       $previous_db = tripal_db_set_active('chado');
@@ -2519,13 +2499,7 @@ function chado_query($sql) {
     // search_path but that caused a lot of database calls and wasted
     // resources during long jobs.
     if ($is_local) {
-      if ($change_path) {
-        $previous_db = tripal_db_set_active('chado');
-      }
       $results = _db_query($sql);
-      if ($change_path) {
-        tripal_db_set_active($previous_db);
-      }
     }
     else {
       $previous_db = tripal_db_set_active('chado') ;
