@@ -650,8 +650,8 @@ function chado_feature_delete($node) {
  */
 function chado_feature_add_synonyms($synonyms, $feature_id) {
 
-  // make sure we only have a single space between each synonym
-  $synonyms = preg_replace("/[\s\n\r]+/", " ", $synonyms);
+  // separate synomys by carriage returns
+  $synonyms = preg_replace("/[\n\r]+/", " ", $synonyms);
   // split the synonyms into an array based on a space as the delimieter
   $syn_array = array();
   $syn_array = explode(" ", $synonyms);
@@ -910,7 +910,7 @@ function chado_feature_form($node, $param) {
     '#title' => t('Synonyms'),
     '#required' => FALSE,
     '#default_value' => $syn_text,
-    '#description' => t('Enter alternate names (synonmys) for this feature to help in searching and identification. You may enter as many alternate names as needed separated by spaces or on different lines.'),
+    '#description' => t('Enter alternate names (synonmys) for this feature to help in searching and identification. You may enter as many alternate names as needed each on different lines.'),
     '#weight' => 5,
   );
 
