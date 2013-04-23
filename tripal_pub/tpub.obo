@@ -1293,17 +1293,22 @@ name: Author List
 relationship: part_of TPUB:0000037 ! Publication Details
 
 [Term]
-id: TPUB0000241
+id: TPUB:0000241
 name: English Abstract
 subset: MeSH_Publication_Type
 is_a: TPUB:0000015 ! Publication Type
 
 [Term]
-id: TPUB0000242
+id: TPUB:0000242
 name: Meta-Analysis
 def: Works consisting of studies using a quantitative method of combining the results of independent studies (usually drawn from the published literature) and synthesizing summaries and conclusions which may be used to evaluate therapeutic effectiveness, plan new studies, etc. It is often an overview of clinical trials. It is usually called a meta-analysis by the author or sponsoring body and should be differentiated from reviews of literature.
 subset: MeSH_Publication_Type
 is_a: TPUB:0000015 ! Publication Type
+
+[Term]
+id: TPUB:0000243
+name: Volume Title
+relationship: part_of TPUB:0000037 ! Publication Details
 
 [Typedef]
 id: is_a

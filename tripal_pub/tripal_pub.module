@@ -4,6 +4,7 @@ require_once "api/tripal_pub.api.inc";
 require_once "includes/tripal_pub.admin.inc";
 require_once "includes/pubmed.inc";
 require_once "includes/pub_sync.inc";
+require_once "includes/pub_form.inc";
 
 /**
  * @file
@@ -117,6 +118,21 @@ function tripal_pub_menu() {
     'type ' => MENU_CALLBACK,
   );
  
+  $items['tripal_pub/properties/add/%'] = array(    
+    'page callback' => 'tripal_pub_property_add',
+    'page arguments' => array(3),
+    'access arguments' => array('edit chado_pub content'),
+    'type ' => MENU_CALLBACK,
+  );
+  
+  $items['tripal_pub/properties/minus/%'] = array(    
+    'page callback' => 'tripal_pub_property_delete',
+    'page arguments' => array(3),
+    'access arguments' => array('edit chado_pub content'),
+    'type ' => MENU_CALLBACK,
+  );
+  
+  
   return $items;
 }
 
@@ -148,6 +164,9 @@ function tripal_pub_theme() {
       'arguments' => array('node' => NULL)
     ),
     'tripal_pub_importer_setup_form' => array(
+       'arguments' => array('form'),
+    ),
+    'chado_pub_node_form' => array(
        'arguments' => array('form'),
     ),
     'tripal_pub_admin' => array(
@@ -217,134 +236,7 @@ function chado_pub_access($op, $node, $account ) {
 }
 
 
-/**
- * Implementation of tripal_pub_form().
- *
- *
- *
- *  @parm &$node
- *    The node that is created when the database is initialized
- *
- *  @parm $form_state
- *    The state of the form, that has the user entered information that is neccessary for, setting
- *    up the database tables for the publication
- *
- *  @return $form
- *    The information that was enterd allong with
- *
- */
-function chado_pub_form(&$node, $form_state) {
 
-  $type = node_get_types('type', $node);
-
-  $form['pub_id'] = array(
-    '#type' => 'hidden',
-    '#value' => (isset($node->pub_id)) ? $node->pub_id->pub_id : NULL ,
-  );
-  
-  $sql = "
-    SELECT CVTS.cvterm_id, CVTS.name
-    FROM {cvtermpath} CVTP
-      INNER JOIN {cvterm} CVTS ON CVTP.subject_id = CVTS.cvterm_id
-      INNER JOIN {cvterm} CVTO ON CVTP.object_id = CVTO.cvterm_id
-      INNER JOIN {cv} ON CVTO.cv_id = CV.cv_id
-    WHERE CV.name = 'tripal_pub' and CVTO.name = 'Publication Type'
-    ORDER BY CVTS.name ASC 
-  ";
-  $results = chado_query($sql);
-  $pub_types = array();
-  $default_type = '';
-  while ($pub_type = db_fetch_object($results)) {
-    $pub_types[$pub_type->cvterm_id] = $pub_type->name;
-    if (strcmp($pub_type->name,"Journal Article") == 0) {
-      $default_type = $pub_type->cvterm_id;
-    }
-  }
-  $form['type_id'] = array(
-    '#type' => 'select',
-    '#title' => t('Publication Type'),
-    '#options' => $pub_types,
-    '#required' => TRUE,
-    '#default_value' => isset($node->pub_id->type_id) ? $node->pub_id->type_id : $default_type,
-  );
-  
-  // Article Title.
-  $form['title'] = array(
-    '#type' => 'textfield',
-    '#title' => check_plain($type->title_label),
-    '#default_value' => $node->title,
-    '#required' => TRUE,
-  );
-  
-  $form['volume'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Volume'),
-    '#default_value' => isset($node->pub_id->volume) ? $node->pub_id->volume : ''
-  );
-  
-  $form['volumetitle'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Volume Title'),
-    '#description' => t('Title of part if one of a series.'),
-    '#default_value' => isset($node->pub_id->volumetitle) ? $node->pub_id->volumetitle : ''
-  );
-  
-  $form['series_name'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Series Name'),
-    '#description' => t('Full name of (journal) series.'),
-    '#default_value' => isset($node->pub_id->series_name) ? $node->pub_id->series_name : ''
-  );
-
-  $form['issue'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Issue'),
-    '#default_value' => isset($node->pub_id->issue) ? $node->pub_id->issue : ''
-  );
-
-  $form['pyear'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Publication Year'),
-    '#default_value' => isset($node->pub_id->pyear) ? $node->pub_id->pyear : ''
-  );
-
-  $form['pages'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Pages'),
-    '#description' => t('Page number range[s], e.g. 457--459, viii + 664pp, lv--lvii.'),
-    '#default_value' => isset($node->pub_id->pages) ? $node->pub_id->pages : ''
-  );
-
-  $form['miniref'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Mini-Ref'),
-    '#required' => FALSE,
-    '#default_value' => isset($node->pub_id->miniref) ? $node->pub_id->miniref : ''
-  );
-
-  $form['publisher'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Publisher Name'),
-    '#required' => FALSE,
-    '#default_value' => isset($node->pub_id->publisher) ? $node->pub_id->publisher : ''
-  );
-
-  $form['pubplace'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Place of Publication'),
-    '#required' => FALSE,
-    '#default_value' => isset($node->pub_id->pubplace) ? $node->pub_id->pubplace  : ''
-  );
-  
-  $form['is_obsolete'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Is Obsolete? (Check for Yes)'),
-    '#required' => TRUE,
-    '#default_value' => isset($node->pub_id->is_obsolete) ? $node->pub_id->is_obsolete : FALSE
-  );
-  return $form;
-
-}
 
 
 /**

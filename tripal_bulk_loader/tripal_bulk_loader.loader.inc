@@ -497,6 +497,12 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
 
   // get the table description
   $table_desc = tripal_core_get_chado_table_schema($table);
+  if (!$table_desc) {
+    watchdog('T_bulk_loader', "Failure: Tripal does not know about the table named %table. If this is a custom table, 
+      please define it first", array(), WATCHDOG_ERROR);
+    $data[$priority]['error'] = TRUE;
+    return;  
+  }
 
   // Check that template required fields are present. if a required field is
   // missing and this
@@ -587,12 +593,13 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
     $table_data['update_if_duplicate'] = 0;
   }
 
-  // if "select if duplicate" is enabled then check to ensure unique constraint is not violoated.
-  // If it is violoated then simply return, the record already exists in the database.
+  // if "select if duplicate" is enabled then check to ensure unique constraint is not violated.
+  // If it is violated then simply return, the record already exists in the database.
   // We check for "insert_unique" for backwards compatibilty but that mode no longer exists
   $data[$priority]['is_duplicate'] = 0;
   if (preg_match('/insert_unique/', $table_data['mode']) or
-     $table_data['select_if_duplicate'] == 1 or $table_data['update_if_duplicate'] == 1) {
+     $table_data['select_if_duplicate'] == 1 or 
+     $table_data['update_if_duplicate'] == 1) {
     $options = array('is_duplicate' => TRUE);
     $duplicate = tripal_core_chado_select($table, array_keys($table_desc['fields']), $values, $options);
 
