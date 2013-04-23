@@ -1,28 +1,13 @@
 <?php 
 
 /**
- * Because we are using AJAX with a node form we need to provide a callback
- * for the chado_pub node form.  This callback is different from the 
- * default 'chado_pub_form' callback
- */
-function tripal_pub_forms($form_id, $args) {
-  $forms = array();
-  if($form_id == 'chado_pub_node_form') {
-    $forms[$form_id] = array(
-      'callback' => 'chado_pub_node_form',
-      'callback arguments' => array($args)
-    );
-  }
-  return $forms;
-}
-
-/**
  * This is the chado_pub node form callback. The arguments
  * are out of order from a typical form because it's a defined callback 
  */
 function chado_pub_node_form($form_state, $node) {   
   tripal_core_ahah_init_form();
   $form = array();
+  dpm($form_state);
 
   $type = node_get_types('type', $node);
   $pub = $node->pub;
@@ -135,27 +120,27 @@ function chado_pub_node_form($form_state, $node) {
     // if any of the properties match the fields in the pub table then we want to include those 
     // automatically
     if($prop->name == 'Volume' and $d_volume) {
-      $d_properties[$num_properties][0]['name'] =  $prop->name;     
-      $d_properties[$num_properties][0]['id'] = $prop->cvterm_id;
-      $d_properties[$num_properties][0]['value'] = $d_volume;
+      $d_properties[$prop->cvterm_id][0]['name']  =  $prop->name;     
+      $d_properties[$prop->cvterm_id][0]['id']    = $prop->cvterm_id;
+      $d_properties[$prop->cvterm_id][0]['value'] = $d_volume;
       $num_properties++;
     }
     if($prop->name == 'Volume Title' and $d_volumetitle) {
-      $d_properties[$num_properties][0]['name'] =  $prop->name;
-      $d_properties[$num_properties][0]['id'] = $prop->cvterm_id;
-      $d_properties[$num_properties][0]['value'] = $d_volumetitle;
+      $d_properties[$prop->cvterm_id][0]['name']  =  $prop->name;
+      $d_properties[$prop->cvterm_id][0]['id']    = $prop->cvterm_id;
+      $d_properties[$prop->cvterm_id][0]['value'] = $d_volumetitle;
       $num_properties++;
     }
     if($prop->name == 'Issue' and $d_issue) {
-      $d_properties[$num_properties][0]['name'] =  $prop->name;
-      $d_properties[$num_properties][0]['id'] = $prop->cvterm_id;
-      $d_properties[$num_properties][0]['value'] = $d_issue;
+      $d_properties[$prop->cvterm_id][0]['name']  =  $prop->name;
+      $d_properties[$prop->cvterm_id][0]['id']    = $prop->cvterm_id;
+      $d_properties[$prop->cvterm_id][0]['value'] = $d_issue;
       $num_properties++;
     }
     if($prop->name == 'Pages' and $d_pages) {
-      $d_properties[$num_properties][0]['name'] =  $prop->name;
-      $d_properties[$num_properties][0]['id'] = $prop->cvterm_id;
-      $d_properties[$num_properties][0]['value'] = $d_pages;
+      $d_properties[$prop->cvterm_id][0]['name']  =  $prop->name;
+      $d_properties[$prop->cvterm_id][0]['id']    = $prop->cvterm_id;
+      $d_properties[$prop->cvterm_id][0]['value'] = $d_pages;
       $num_properties++;
     }
   }
@@ -179,18 +164,20 @@ function chado_pub_node_form($form_state, $node) {
       }
       // add new properties that weren't handled yet
       if(array_key_exists($prop->cvterm_id, $properties)) {
-        $d_properties[$num_properties][$prop->rank]['name']  =  $prop->name;
-        $d_properties[$num_properties][$prop->rank]['id']    = $prop->cvterm_id;
-        $d_properties[$num_properties][$prop->rank]['value'] = $prop->value;
+        $d_properties[$prop->cvterm_id][$prop->rank]['name']  = $prop->name;
+        $d_properties[$prop->cvterm_id][$prop->rank]['id']    = $prop->cvterm_id;
+        $d_properties[$prop->cvterm_id][$prop->rank]['value'] = $prop->value;
         $num_properties++; 
       }
     }
   }
-    
+
+  
   // build the fields for the properties  
-  for ($i = 0; $i < $num_properties; $i++) {
-    foreach ($d_properties[$i] as $rank => $d_property) {
-      $form['properties'][$i][$rank]["prop_id-$i-$rank"] = array(
+  $i = 0;
+  foreach ($d_properties as $type_id => $ranks) {
+    foreach ($ranks as $rank => $d_property) {
+      $form['properties'][$type_id][$rank]["prop_id-$type_id-$rank"] = array(
         '#type'          => 'select',
         '#options'       => $properties,
         '#default_value' => $d_property['id']
@@ -199,7 +186,7 @@ function chado_pub_node_form($form_state, $node) {
       if  (preg_match('/Abstract/', $d_property['name'])) {
         $rows = 10;
       }
-      $form['properties'][$i][$rank]["prop_value-$i-$rank"] = array(
+      $form['properties'][$type_id][$rank]["prop_value-$type_id-$rank"] = array(
         '#type'          => 'textarea',
         '#options'       => $properties,
         '#default_value' => $d_property['value'],
@@ -207,12 +194,12 @@ function chado_pub_node_form($form_state, $node) {
         '#rows'          => $rows
       );
       
-      $form['properties'][$i][$rank]["remove-$i-$rank"] = array(
+      $form['properties'][$type_id][$rank]["remove-$type_id-$rank"] = array(
         '#type'         => 'image_button',
         '#value'        => t('Remove'),
         '#src'          => drupal_get_path('theme', 'tripal') . '/images/minus.png',
         '#ahah' => array(
-          'path'    => "tripal_pub/properties/minus/$i",
+          'path'    => "tripal_pub/properties/minus/$type_id/$rank",
           'wrapper' => 'chado-pub-details',
           'event'   => 'click',
           'method'  => 'replace',
@@ -220,12 +207,12 @@ function chado_pub_node_form($form_state, $node) {
         '#attributes' => array('onClick' => 'return false;'),
       );
       if($i == $num_properties - 1) {
-        $form['properties'][$i][$rank]["add-$i-$rank"] = array(
+        $form['properties'][$type_id][$rank]["add-$type_id-$rank"] = array(
           '#type'         => 'image_button',      
           '#value'        => t('Add'),
           '#src'          => drupal_get_path('theme', 'tripal') . '/images/add.png',
           '#ahah' => array(
-            'path'    => "tripal_pub/properties/add/$i",
+            'path'    => "tripal_pub/properties/add/$type_id",
             'wrapper' => 'chado-pub-details',
             'event'   => 'click',
             'method'  => 'replace',          
@@ -233,6 +220,7 @@ function chado_pub_node_form($form_state, $node) {
           '#attributes' => array('onClick' => 'return false;'),
         );
       }
+      $i++;
     }
   }
   /*

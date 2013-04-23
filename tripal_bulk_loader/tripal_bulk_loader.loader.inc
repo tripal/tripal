@@ -498,7 +498,7 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
   // get the table description
   $table_desc = tripal_core_get_chado_table_schema($table);
   if (!$table_desc) {
-    watchdog('T_bulk_loader', "Failure: Tripal does not know about the table named %table. If this is a custom table, 
+    watchdog('T_bulk_loader', "Failure: Tripal does not know about the table named '%table'. If this is a custom table, 
       please define it first", array('%table' => $table), WATCHDOG_ERROR);
     $data[$priority]['error'] = TRUE;
     return;  

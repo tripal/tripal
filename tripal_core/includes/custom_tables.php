@@ -268,17 +268,6 @@ function tripal_custom_tables_form_validate($form, &$form_state) {
         form_set_error($form_state['values']['schema'],
           t("The schema array must have key named 'table'"));
       }
-      // check to see if the table name matches an existing table
-      // if this is an add
-      if ($action == 'Add') {
-        $previous_db = tripal_db_set_active('chado');
-        $exists = db_table_exists($schema_array['table']);
-        tripal_db_set_active($previous_db);        
-        if ($exists) {
-          form_set_error($form_state['values']['schema'],
-            t("The table name already exists, please choose a different name."));  
-        }
-      } 
       if ($action == 'Edit') {
         // see if the table name has changed. If so, then check to make sure
         // it doesn't already exists. We don't want to drop a table we didn't mean to

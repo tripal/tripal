@@ -125,9 +125,9 @@ function tripal_pub_menu() {
     'type ' => MENU_CALLBACK,
   );
   
-  $items['tripal_pub/properties/minus/%'] = array(    
+  $items['tripal_pub/properties/minus/%/%'] = array(    
     'page callback' => 'tripal_pub_property_delete',
-    'page arguments' => array(3),
+    'page arguments' => array(3,4),
     'access arguments' => array('edit chado_pub content'),
     'type ' => MENU_CALLBACK,
   );
@@ -402,6 +402,22 @@ function chado_pub_delete(&$node) {
   // Remove data from pub and pubprop tables of chado database as well
   chado_query("DELETE FROM {pubprop} WHERE pub_id = %d", $pub_id);
   chado_query("DELETE FROM {pub} WHERE pub_id = %d", $pub_id);
+}
+
+/**
+ * Because we are using AJAX with a node form we need to provide a callback
+ * for the chado_pub node form.  This callback is different from the 
+ * default 'chado_pub_form' callback
+ */
+function tripal_pub_forms($form_id, $args) {
+  $forms = array();
+  if($form_id == 'chado_pub_node_form') {
+    $forms[$form_id] = array(
+      'callback' => 'chado_pub_node_form',
+      'callback arguments' => array($args)
+    );
+  }
+  return $forms;
 }
 
 /*
