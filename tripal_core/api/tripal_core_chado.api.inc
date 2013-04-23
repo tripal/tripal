@@ -3101,12 +3101,15 @@ function tripal_core_chado_execute_prepared($statement_name, $sql, $values) {
       if (isset($required_values[$k])) {
         switch ($required_values[$k]) {
           case 'text':
+            // anything can be converted to a string, so if the type is 'text' let's just convert it
+            $values[$k] = (string) $v;
+            /*
             $check = is_string($v);
             if ($v != '' and !$check) {
               watchdog('tripal_core', "chado_execute_prepared: wrong argument type supplied for '%name' statement, field %k. Expected %required but recieved '%value'",
                 array('%name' => $statement_name, '%k' => $k+1, '%required' => $required_values[$k], '%value' => print_r($v, TRUE)), WATCHDOG_ERROR);
               return FALSE;
-            }
+            } */
             break;
           case 'int':
             $check = is_numeric($v);
