@@ -298,10 +298,10 @@ function chado_organism_insert($node) {
   // chado_organism table if it doesn't exist then we want to add it.
 
   if (!chado_get_id_for_node('organism', $node) ) {
-  // next add the item to the drupal table
-  $sql = "INSERT INTO {chado_organism} (nid, vid, organism_id) ".
-         "VALUES (%d, %d, %d)";
-  chado_query($sql, $node->nid, $node->vid, $organism_id);
+    // next add the item to the drupal table
+    $sql = "INSERT INTO {chado_organism} (nid, vid, organism_id) ".
+           "VALUES (%d, %d, %d)";
+    db_query($sql, $node->nid, $node->vid, $organism_id);
   }
 
   // set the title for the node

@@ -320,14 +320,14 @@ function tripal_organism_sync_organisms($organism_id = NULL, $job_id = NULL) {
     $results = chado_query($sql);
   }
   else {
-    $sql = "SELECT * FROM {Organism} L WHERE organism_id = %d";
+    $sql = "SELECT * FROM {organism} L WHERE organism_id = %d";
     $results = chado_query($sql, $organism_id);
   }
 
   // We'll use the following SQL statement for checking if the organism
   // already exists as a drupal node.
   $sql = "SELECT * FROM {chado_organism} ".
-        "WHERE organism_id = %d";
+         "WHERE organism_id = %d";
 
   while ($organism = db_fetch_object($results)) {
 

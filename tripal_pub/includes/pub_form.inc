@@ -26,14 +26,18 @@ function chado_pub_node_form($form_state, $node) {
   $d_miniref      = $form_state['values']['miniref']      ? $form_state['values']['miniref']     : $pub->miniref;
   $d_publisher    = $form_state['values']['publisher']    ? $form_state['values']['publisher']   : $pub->publisher;
   $d_pubplace     = $form_state['values']['pubplace']     ? $form_state['values']['pubplace']    : $pub->pubplace;
-  $d_is_obsolete  = $form_state['values']['is_obsolete']  ? $form_state['values']['is_obsolete'] : $pub->is_obsolete;  
+  $d_is_obsolete  = $form_state['values']['is_obsolete']  ? $form_state['values']['is_obsolete'] : $pub->is_obsolete;
+
+  // on AHAH callbacks we want to keep a list of all the properties that have been removed 
+  // we'll store this info in a hidden field and retrieve it here
+  $d_removed = $form_state['values']['removed']; 
   
   // get the defaults first from the database and then from the form_state
   $default_type = $pub->type_id->cvterm_id;
 
   $form['pub_id'] = array(
     '#type' => 'hidden',
-    '#value' => (isset($node->pub_id)) ? $node->pub_id->pub_id : NULL ,
+    '#value' => $pub_id,
   );
   
   // get the list of publication types.  In the Tripal publication
@@ -100,7 +104,7 @@ function chado_pub_node_form($form_state, $node) {
         suffer taxonomic influence?</a> J Ethnopharmacol. 2013 Apr 19; 146(3):842-52. PubMed PMID: 23462414</pre>'),
     '#required' => TRUE,
   );
-   
+  
   // get publication properties list and create the array that will be used for selecting a property type
   $sql = "
     SELECT CVTS.cvterm_id, CVTS.name
@@ -115,8 +119,20 @@ function chado_pub_node_form($form_state, $node) {
   $num_properties = 0;
   $d_properties = array();  
   $properties = array();  
+  $removed = array();
+  $properties[] = 'Select a Property';
   while ($prop = db_fetch_object($prop_types)) {
     $properties[$prop->cvterm_id] = $prop->name;
+
+    // skip any properties that the user requested to delete through a previous
+    // AHAH callback or through the current AHAH callback
+    if($d_removed[$prop->cvterm_id . '-0']) {
+      continue;
+    }
+    if($form_state['post']['remove-' . $prop->cvterm_id . '-0']) {
+      $d_removed[$prop->cvterm_id . '-0'] = 1;
+      continue;
+    }
     // if any of the properties match the fields in the pub table then we want to include those 
     // automatically
     if($prop->name == 'Volume' and $d_volume) {
@@ -162,6 +178,15 @@ function chado_pub_node_form($form_state, $node) {
          $prop->name == "Citation") {
            continue;
       }
+      // skip any properties that the user requested to delete through a previous
+      // AHAH callback or through the current AHAH callback
+      if($d_removed[$prop->cvterm_id . '-' . $prop->rank]) {
+        continue;
+      }
+      if($form_state['post']['remove-' . $prop->cvterm_id . '-' . $prop->rank]) {
+        $d_removed[$prop->cvterm_id . '-0'] = 1;
+        continue;
+      }
       // add new properties that weren't handled yet
       if(array_key_exists($prop->cvterm_id, $properties)) {
         $d_properties[$prop->cvterm_id][$prop->rank]['name']  = $prop->name;
@@ -171,7 +196,11 @@ function chado_pub_node_form($form_state, $node) {
       }
     }
   }
-
+  
+  $form['removed'] = array(
+    '#type' => 'hidden',
+    '#value' => $d_removed,
+  );
   
   // build the fields for the properties  
   $i = 0;
@@ -188,7 +217,6 @@ function chado_pub_node_form($form_state, $node) {
       }
       $form['properties'][$type_id][$rank]["prop_value-$type_id-$rank"] = array(
         '#type'          => 'textarea',
-        '#options'       => $properties,
         '#default_value' => $d_property['value'],
         '#cols'          => 20,
         '#rows'          => $rows
@@ -205,24 +233,33 @@ function chado_pub_node_form($form_state, $node) {
           'method'  => 'replace',
         ), 
         '#attributes' => array('onClick' => 'return false;'),
-      );
-      if($i == $num_properties - 1) {
-        $form['properties'][$type_id][$rank]["add-$type_id-$rank"] = array(
-          '#type'         => 'image_button',      
-          '#value'        => t('Add'),
-          '#src'          => drupal_get_path('theme', 'tripal') . '/images/add.png',
-          '#ahah' => array(
-            'path'    => "tripal_pub/properties/add/$type_id",
-            'wrapper' => 'chado-pub-details',
-            'event'   => 'click',
-            'method'  => 'replace',          
-          ),   
-          '#attributes' => array('onClick' => 'return false;'),
-        );
-      }
+      );      
       $i++;
     }
   }
+  // add one more blank field
+  $form['properties']['new_id'] = array(
+    '#type'          => 'select',
+    '#options'       => $properties,
+  );
+  $form['properties']['new_value'] = array(
+    '#type'          => 'textarea',
+    '#default_value' => '',
+    '#cols'          => 5,
+    '#rows'          => $rows
+  );
+  $form['properties']["add"] = array(
+    '#type'         => 'image_button',      
+    '#value'        => t('Add'),
+    '#src'          => drupal_get_path('theme', 'tripal') . '/images/add.png',
+    '#ahah' => array(
+      'path'    => "tripal_pub/properties/add",
+      'wrapper' => 'chado-pub-details',
+      'event'   => 'click',
+      'method'  => 'replace',          
+    ),   
+    '#attributes' => array('onClick' => 'return false;'),
+  );    
   /*
   $form['volume'] = array(
     '#type' => 'textfield',
@@ -293,13 +330,18 @@ function theme_chado_pub_node_form($form) {
             $rows[] = array(  
               array('data' => drupal_render($elements["prop_id-$i-$rank"]), 'width' => '20%'),    
               drupal_render($elements["prop_value-$i-$rank"]),
-              array('data' => drupal_render($elements["add-$i-$rank"]) . drupal_render($elements["remove-$i-$rank"]), 'width' => '5%'),
+              array('data' => drupal_render($elements["remove-$i-$rank"]), 'width' => '5%'),
             );
           }
         }
       }
-    } 
-  }
+    }
+    $rows[] = array(
+      array('data' => drupal_render($form['properties']['new_id']), 'width' => '20%'),    
+      drupal_render($form['properties']['new_value']),
+      array('data' => drupal_render($form['properties']['add']), 'width' => '5%'),
+    ); 
+  }  
   $headers = array('Property Type','Value', '');
   
   $markup = '<div id="chado-pub-details">';
@@ -328,7 +370,7 @@ function tripal_pub_property_add() {
 
   // prepare and render the form
   $form = tripal_core_ahah_prepare_form();   
-  $data = theme('node_form', $form);
+  $data = theme('chado_pub_node_form', $form);  
 
   // bind javascript events to the new objects that will be returned 
   // so that AHAH enabled elements will work.

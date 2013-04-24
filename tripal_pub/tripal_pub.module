@@ -118,16 +118,15 @@ function tripal_pub_menu() {
     'type ' => MENU_CALLBACK,
   );
  
-  $items['tripal_pub/properties/add/%'] = array(    
+  $items['tripal_pub/properties/add'] = array(    
     'page callback' => 'tripal_pub_property_add',
-    'page arguments' => array(3),
     'access arguments' => array('edit chado_pub content'),
     'type ' => MENU_CALLBACK,
   );
   
   $items['tripal_pub/properties/minus/%/%'] = array(    
     'page callback' => 'tripal_pub_property_delete',
-    'page arguments' => array(3,4),
+    'page arguments' => array(3, 4),
     'access arguments' => array('edit chado_pub content'),
     'type ' => MENU_CALLBACK,
   );
