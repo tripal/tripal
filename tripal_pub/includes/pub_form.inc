@@ -87,7 +87,10 @@ function chado_pub_form($node, $form_state) {
     // both as a property and as the uniquename for the publiation table
     // it is present by default in the initial fields of the form so
     // we don't want it again in the drop-down list
-    if ($prop->name != 'Citation') {
+    // also remove other terms associated with the DBXref
+    if ($prop->name != "Citation" and
+        $prop->name != "Publication Accession" and
+        $prop->name != "Publication Database") {
       $properties_select[$prop->cvterm_id] = $prop->name;
     }
     $properties_list[$prop->cvterm_id] = $prop;
@@ -182,12 +185,19 @@ function chado_pub_node_form_add_new_empty_props(&$form, $properties_select) {
   $form['properties']['new']["new_id"] = array(
     '#type'          => 'select',
     '#options'       => $properties_select,
+    '#ahah' => array(
+      'path'    => "tripal_pub/properties/description",
+      'wrapper' => 'tripal-pub-new_value-desc',
+      'event'   => 'change',
+      'method'  => 'replace',          
+    ),   
   );
   $form['properties']['new']["new_value"] = array(
     '#type'          => 'textarea',
     '#default_value' => '',
     '#cols'          => 5,
-    '#rows'          => $rows
+    '#rows'          => $rows,
+    '#description'   => '<div id="tripal-pub-new_value-desc"></div>'
   );
   $form['properties']['new']["add"] = array(
     '#type'         => 'image_button',      
@@ -243,11 +253,7 @@ function chado_pub_node_form_add_new_props(&$form, $form_state, $num_new, &$d_pr
         if (preg_match('/Abstract/', $cvterm[0]->name)) {
           $rows = 10;
         }
-        
-        // adjust the term description if needed
-        $description = $cvterm[0]->definition;
         if ($cvterm[0]->name == 'Author List') {
-          $description .= ' For PubMed style citations list each author with the last name first, followed by initials. Each author should be separated by a comma.';
           $rows = 2;
         }
         
@@ -304,11 +310,7 @@ function chado_pub_node_form_add_new_props(&$form, $form_state, $num_new, &$d_pr
     if (preg_match('/Abstract/', $cvterm[0]->name)) {
       $rows = 10;
     }
-    
-    // adjust the term description if needed
-    $description = $cvterm[0]->definition;
     if ($cvterm[0]->name == 'Author List') {
-      $description .= ' For PubMed style citations list each author with the last name first, followed by initials. Each author should be separated by a comma.';
       $rows = 2;
     }
     
@@ -395,12 +397,7 @@ function chado_pub_node_form_add_pubprop_table_props(&$form, $form_state, $pub_i
     if (preg_match('/Abstract/', $prop->name)) {
       $rows = 10;
     }
-  
-    // adjust the term description if needed
-    $description = $prop->definition;
     if ($prop->name == 'Author List') {
-      $description .= ' For PubMed style citations list each author with the last name first, followed by 
-        initials. Each author should be separated by a comma.';
       $rows = 2;
     }
   
@@ -483,11 +480,7 @@ function chado_pub_node_form_add_pub_table_props(&$form, $form_state, $propertie
       if (preg_match('/Abstract/', $prop->name)) {
         $rows = 10;
       }
-      
-      // adjust the term description if needed
-      $description = $prop->definition;
       if ($prop->name == 'Author List') {
-        $description .= ' For PubMed style citations list each author with the last name first, followed by initials. Each author should be separated by a comma.';
         $rows = 2;
       }
       
@@ -648,5 +641,25 @@ function tripal_pub_property_delete() {
       'data'     => $data,
       'settings' => $settings,
     )  
+  );
+}
+/*
+ * 
+ */
+function tripal_pub_property_get_description() {
+  $new_id = $_POST['new_id'];
+  
+  $values = array('cvterm_id' => $new_id);
+  $cvterm = tripal_core_chado_select('cvterm', array('definition'), $values);
+  
+  $description = '&nbsp;';
+  if ($cvterm[0]->definition) {
+    $description = $cvterm[0]->definition;
+  }
+  drupal_json(
+    array(
+      'status' => TRUE,
+      'data'   => '<div id="tripal-pub-new_value-desc">' . $description . '</div>',
+    )    
   );
 }

@@ -6,6 +6,7 @@ subsetdef: MeSH_Publication_Type "MeSH Publication Types"
 id: TPUB:0000001
 name: Publication Dbxref
 relationship: part_of TPUB:0000037 ! Publication Details
+def: A unique identifer for the publication in a remote database.  The format is a database abbreviation and a unique accession separated by a colon.  (e.g. PMID:23493063)
 
 [Term]
 id: TPUB:0000002
@@ -15,6 +16,7 @@ name: Publication
 id: TPUB:0000003
 name: Citation
 relationship: part_of TPUB:0000037 ! Publication Details
+def: Biblographic reference for the publication.   
 
 [Term]
 id: TPUB:0000004
@@ -53,11 +55,13 @@ relationship: part_of TPUB:0000001 ! Publication Dbxref
 id: TPUB:0000010
 name: Received Date
 is_a: TPUB:0000046 ! Publication Date
+def: The date when the manuscript was first received by the editor for consideration for print. This should be in the format: YYYY Mon Day, where YYYY is a 4 digit year, Mon is a 3-letter English abbreviation for the month followed by the day.  The month and day are optional.
 
 [Term]
 id: TPUB:0000011
 name: Conference Name
 relationship: part_of TPUB:0000037 ! Publication Details
+def: The name of a conference from which presented works are published.
 
 [Term]
 id: TPUB:0000012
@@ -88,11 +92,13 @@ relationship: part_of TPUB:0000002 ! Publication
 id: TPUB:0000035
 name: Epub Date
 is_a: TPUB:0000046 ! Publication Date
+def:  The date when a manuscript for the publication was first published online.  This may not be the same date it was formally printed. This should be in the format: YYYY Mon Day, where YYYY is a 4 digit year, Mon is a 3-letter English abbreviation for the month followed by the day. The month and day are optional.
 
 [Term]
 id: TPUB:0000036
 name: Accepted Date
 is_a: TPUB:0000046 ! Publication Date
+def:  The date when a manuscript for the publication was first accepted for publication by the editor. This should be in the format: YYYY Mon Day, where YYYY is a 4 digit year, Mon is a 3-letter English abbreviation for the month followed by the day. The month and day are optional.
 
 [Term]
 id: TPUB:0000037
@@ -103,11 +109,13 @@ relationship: part_of TPUB:0000002 ! Publication
 id: TPUB:0000038
 name: Journal ISO Abbreviation
 relationship: part_of TPUB:0000037 ! Publication Details
+def: The journal title ISO Abbreviation.
 
 [Term]
 id: TPUB:0000039
 name: Title
 relationship: part_of TPUB:0000037 ! Publication Details
+def:  The title of the published work.
 
 [Term]
 id: TPUB:0000040
@@ -123,32 +131,38 @@ is_a: TPUB:0000015 ! Publication Type
 id: TPUB:0000042
 name: Volume
 relationship: part_of TPUB:0000037 ! Publication Details
+def:  The volume of the journal where the publication was printed. 
 
 [Term]
 id: TPUB:0000043
 name: Issue
 relationship: part_of TPUB:0000037 ! Publication Details
+def:  The issue of the journal where the publication was printed. 
 
 [Term]
 id: TPUB:0000044
 name: Pages
 relationship: part_of TPUB:0000037 ! Publication Details
+def:  The pages in the published work where the cited information is found.
 
 [Term]
 id: TPUB:0000045
 name: Start Page
 relationship: part_of TPUB:0000037 ! Publication Details
+def:  The first page in the published work where the cited information is found.
 
 [Term]
 id: TPUB:0000046
 name: Publication Date
 relationship: part_of TPUB:0000037 ! Publication Details
+def:  The date the work was published.  This should be in the format: YYYY Mon Day, where YYYY is a 4 digit year, Mon is a 3-letter English abbreviation for the month followed by the day. The month and day are optional.
 
 [Term]
 id: TPUB:0000047
 name: Authors
 relationship: part_of TPUB:0000037 ! Publication Details
 is_obsolete: true
+def:  This term is deprecated.  Please use the 'Authors List' term.
 
 [Term]
 id: TPUB:0000048
@@ -166,46 +180,54 @@ is_a: TPUB:0000080 ! Elocation
 id: TPUB:0000050
 name: Abstract
 relationship: part_of TPUB:0000037 ! Publication Details
+def:  The fully printed abstract for the publication.
 
 [Term]
 id: TPUB:0000051
 name: Comments
 relationship: part_of TPUB:0000037 ! Publication Details
+def:  Comments regarding the content in the publication.
 
 [Term]
 id: TPUB:0000052
 name: URL
 relationship: part_of TPUB:0000037 ! Publication Details
+def: A univeral resource locator (URL) reference where the publication can be found.  For publications found online, this would be the web address for the publication. 
 
 [Term]
 id: TPUB:0000053
 name: File Attachment
 relationship: part_of TPUB:0000037 ! Publication Details
+def: The names of a file associated with the publication (e.g. supplemental data). 
 
 [Term]
 id: TPUB:0000059
 name: Year
 relationship: part_of TPUB:0000046 ! Publication Date
+def: The year the work was published. This should be a 4 digit year.
 
 [Term]
 id: TPUB:0000064
 name: Language
 relationship: part_of TPUB:0000037 ! Publication Details
+def:  The full name of the languge of the publication (e.g. English).
 
 [Term]
 id: TPUB:0000065
 name: Keywords
 relationship: part_of TPUB:0000037 ! Publication Details
+def:  Contains controlled terms that describe the content of the article. Multiple keywords should be separated with a comma.  For keyworks with that exist in a formal ontology or vocabulary, the format can be the database abbreviation, followed by the term accession separated by a comma (e.g. GO:591743).
 
 [Term]
 id: TPUB:0000066
 name: Original Title
 relationship: part_of TPUB:0000037 ! Publication Details
-
+ 
 [Term]
 id: TPUB:0000067
 name: Alias
 relationship: part_of TPUB:0000037 ! Publication Details
+def: A synonym or alternative name for this publication. 
 
 [Term]
 id: TPUB:0000068
@@ -216,6 +238,7 @@ relationship: part_of TPUB:0000037 ! Publication Details
 id: TPUB:0000069
 name: pISSN
 is_a: TPUB:0000048 ! ISSN
+def: International Standard Serial Number (ISSN) is an eight-character value that uniquely identifies a periodicals in print or other media. There are two sub categories of ISSN: print, p-ISSN and electronic e-ISSN.
 
 [Term]
 id: TPUB:0000070
@@ -227,6 +250,7 @@ is_a: TPUB:0000015 ! Publication Type
 id: TPUB:0000072
 name: eISSN
 is_a: TPUB:0000048 ! ISSN
+def: International Standard Serial Number (ISSN) is an eight-character value that uniquely identifies a periodicals in print or other media. There are two sub categories of ISSN: print, p-ISSN and electronic e-ISSN.
 
 [Term]
 id: TPUB:0000073
@@ -1292,6 +1316,8 @@ is_a: TPUB:0000015 ! Publication Type
 id: TPUB:0000240
 name: Author List
 relationship: part_of TPUB:0000037 ! Publication Details
+synonym: "Authors" EXACT []
+def:  The list of authors of the publication. For PubMed style citations list each author with the last name first, followed by initials. Each author should be separated by a comma.
 
 [Term]
 id: TPUB:0000241

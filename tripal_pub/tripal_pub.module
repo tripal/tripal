@@ -123,7 +123,11 @@ function tripal_pub_menu() {
     'access arguments' => array('edit chado_pub content'),
     'type ' => MENU_CALLBACK,
   );
-  
+  $items['tripal_pub/properties/description'] = array(    
+    'page callback' => 'tripal_pub_property_get_description',
+    'access arguments' => array('edit chado_pub content'),
+    'type ' => MENU_CALLBACK,
+  );
   $items['tripal_pub/properties/minus/%/%'] = array(    
     'page callback' => 'tripal_pub_property_delete',
     'page arguments' => array(3, 4),

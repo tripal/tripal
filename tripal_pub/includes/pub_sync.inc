@@ -81,12 +81,12 @@ function tripal_pub_sync_pub($pub) {
       print "Added " . $pub->pub_id . "\n";      
     }
     else {
-      print "ERROR: Unable to create " . $pub->name . "\n";
+      print "ERROR: Unable to create publication node: " . $pub->title . "\n";
       return FALSE;
     }
   }
   else {
-    print "ERROR: Unable to create " . $pub->name . "\n" . print_r($errors, TRUE) . "\n";
+    print "ERROR: Unable to create publication node: " . $pub->title . "\n" . print_r($errors, TRUE) . "\n";
     return FALSE;
   }
   return $node; 
