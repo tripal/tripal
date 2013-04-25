@@ -148,6 +148,7 @@ relationship: part_of TPUB:0000037 ! Publication Details
 id: TPUB:0000047
 name: Authors
 relationship: part_of TPUB:0000037 ! Publication Details
+is_obsolete: true
 
 [Term]
 id: TPUB:0000048

@@ -53,7 +53,8 @@ function chado_pub_form($node, $form_state) {
       INNER JOIN {cvterm} CVTS ON CVTP.subject_id = CVTS.cvterm_id
       INNER JOIN {cvterm} CVTO ON CVTP.object_id = CVTO.cvterm_id
       INNER JOIN {cv} ON CVTO.cv_id = CV.cv_id
-    WHERE CV.name = 'tripal_pub' and CVTO.name = 'Publication Type'
+    WHERE CV.name = 'tripal_pub' and CVTO.name = 'Publication Type' and 
+      NOT CVTS.is_obsolete = 1
     ORDER BY CVTS.name ASC 
   ";
   $results = chado_query($sql);
@@ -76,7 +77,8 @@ function chado_pub_form($node, $form_state) {
       INNER JOIN {cvterm} CVTS ON CVTP.subject_id = CVTS.cvterm_id
       INNER JOIN {cvterm} CVTO ON CVTP.object_id = CVTO.cvterm_id
       INNER JOIN {cv} ON CVTO.cv_id = CV.cv_id
-    WHERE CV.name = 'tripal_pub' and CVTO.name = 'Publication Details'
+    WHERE CV.name = 'tripal_pub' and CVTO.name = 'Publication Details' and 
+      NOT CVTS.is_obsolete = 1
     ORDER BY CVTS.name ASC 
   ";
   $prop_types = chado_query($sql); 
@@ -132,8 +134,7 @@ function chado_pub_form($node, $form_state) {
     '#description' => t('All publications must have a unique citation. Please enter the full citation for this publication. 
       For PubMed style citations list 
       the last name of the author followed by initials. Each author should be separated by a comma. Next comes 
-      the title, followed by the series title (e.g. journal name), publication date (3 character Month, day, 4 
-      digit year), volume, issue and page numbers. You may also use HTML to provide a link in the citation.  
+      the title, followed by the series title (e.g. journal name), publication date (4 digit year, 3 character Month, day), volume, issue and page numbers. You may also use HTML to provide a link in the citation.  
       Below is an example: <pre>Medeiros PM, Ladio AH, Santos AM, Albuquerque UP. <a href="http://www.ncbi.nlm.nih.gov/pubmed/23462414" target="_blank">Does the selection of medicinal plants by Brazilian local populations 
         suffer taxonomic influence?</a> J Ethnopharmacol. 2013 Apr 19; 146(3):842-52. PubMed PMID: 23462414</pre>'),
     '#required' => TRUE,
@@ -211,60 +212,72 @@ function chado_pub_node_form_add_new_props(&$form, $form_state, $num_new, &$d_pr
   $num_properties++;
 
   // we need to find the
-  foreach ($form_state['values'] as $element_name => $value) {
-    if (preg_match('/new_value-(\d+)-(\d+)/', $element_name, $matches)) {
-      $new_id = $matches[1];
-      $rank = $matches[2];
+  if ($form_state['values']) {
+    foreach ($form_state['values'] as $element_name => $value) {
+      if (preg_match('/new_value-(\d+)-(\d+)/', $element_name, $matches)) {
+        $new_id = $matches[1];
+        $rank = $matches[2];
+        
+        // skip any properties that the user requested to delete through a previous
+        // AHAH callback or through the current AHAH callback
+        if($d_removed["$new_id-$rank"]) {
+          continue;
+        }
+        if($form_state['post']['remove-' . $new_id . '-' . $rank]) {
+          $d_removed["$new_id-$rank"] = 1;
+          continue;
+        }
+        
+        // get this new_id information
+        $cvterm = tripal_core_chado_select('cvterm', array('name', 'definition'), array('cvterm_id' => $new_id));
+        
+        // add it to the $d_properties array
+        $d_properties[$new_id][$rank]['name']  = $cvterm->name;
+        $d_properties[$new_id][$rank]['id']    = $new_id;
+        $d_properties[$new_id][$rank]['value'] = $value;
+        $d_properties[$new_id][$rank]['definition']  = $cvterm->definition;
+        $num_properties++; 
       
-      // get this new_id information
-      $cvterm = tripal_core_chado_select('cvterm', array('name', 'definition'), array('cvterm_id' => $new_id));
-      
-      // add it to the $d_properties array
-      $d_properties[$new_id][$rank]['name']  = $cvterm->name;
-      $d_properties[$new_id][$rank]['id']    = $new_id;
-      $d_properties[$new_id][$rank]['value'] = $value;
-      $d_properties[$new_id][$rank]['definition']  = $cvterm->definition;
-      $num_properties++; 
-    
-      // determine how many rows we need in the textarea
-      $rows = 1;
-      if (preg_match('/Abstract/', $cvterm[0]->name)) {
-        $rows = 10;
-      }
-      
-      // adjust the term description if needed
-      $description = $cvterm[0]->definition;
-      if ($cvterm[0]->name == 'Author List') {
-        $description .= ' For PubMed style citations list each author with the last name first, followed by initials. Each author should be separated by a comma.';
-        $rows = 2;
-      }
-      
-      // add the new fields
-      $form['properties']['new'][$new_id][$rank]["new_id-$new_id-$rank"] = array(
-        '#type'          => 'item',
-        '#value'         => $cvterm[0]->name
-      );
-      $form['properties']['new'][$new_id][$rank]["new_value-$new_id-$rank"] = array(
-        '#type'          => 'textarea',
-        '#default_value' => $value,
-        '#cols'          => 50,
-        '#rows'          => $rows,
-        '#description'   => $description,
-      );
-      
-      $form['properties']['new'][$new_id][$rank]["remove-$new_id-$rank"] = array(
-        '#type'         => 'image_button',
-        '#value'        => t('Remove'),
-        '#src'          => drupal_get_path('theme', 'tripal') . '/images/minus.png',
-        '#ahah' => array(
-          'path'    => "tripal_pub/properties/minus/$new_id/$rank",
-          'wrapper' => 'tripal-pub-edit-properties-table',
-          'event'   => 'click',
-          'method'  => 'replace',
-        ), 
-        '#attributes' => array('onClick' => 'return false;'),
-      );  
-    }           
+        // determine how many rows we need in the textarea
+        $rows = 1;
+        if (preg_match('/Abstract/', $cvterm[0]->name)) {
+          $rows = 10;
+        }
+        
+        // adjust the term description if needed
+        $description = $cvterm[0]->definition;
+        if ($cvterm[0]->name == 'Author List') {
+          $description .= ' For PubMed style citations list each author with the last name first, followed by initials. Each author should be separated by a comma.';
+          $rows = 2;
+        }
+        
+        // add the new fields
+        $form['properties']['new'][$new_id][$rank]["new_id-$new_id-$rank"] = array(
+          '#type'          => 'item',
+          '#value'         => $cvterm[0]->name
+        );
+        $form['properties']['new'][$new_id][$rank]["new_value-$new_id-$rank"] = array(
+          '#type'          => 'textarea',
+          '#default_value' => $value,
+          '#cols'          => 50,
+          '#rows'          => $rows,
+          '#description'   => $description,
+        );
+        
+        $form['properties']['new'][$new_id][$rank]["remove-$new_id-$rank"] = array(
+          '#type'         => 'image_button',
+          '#value'        => t('Remove'),
+          '#src'          => drupal_get_path('theme', 'tripal') . '/images/minus.png',
+          '#ahah' => array(
+            'path'    => "tripal_pub/properties/minus/$new_id/$rank",
+            'wrapper' => 'tripal-pub-edit-properties-table',
+            'event'   => 'click',
+            'method'  => 'replace',
+          ), 
+          '#attributes' => array('onClick' => 'return false;'),
+        );  
+      }           
+    }
   }
   
   
@@ -354,7 +367,7 @@ function chado_pub_node_form_add_pubprop_table_props(&$form, $form_state, $pub_i
     $type_id = $prop->cvterm_id;
     $rank = count($d_properties[$type_id]);
     
-    // skip properties that were handled above
+    // skip properties that are found in the pub table
     if($prop->name == "Volume" or $prop->name == "Volume Title" or 
        $prop->name == "Issue"  or $prop->name == "Pages" or
        $prop->name == "Citation") {
@@ -363,11 +376,11 @@ function chado_pub_node_form_add_pubprop_table_props(&$form, $form_state, $pub_i
     
     // skip any properties that the user requested to delete through a previous
     // AHAH callback or through the current AHAH callback
-    if($d_removed[$type_id . '-' . $rank]) {
+    if($d_removed["$type_id-$rank"]) {
       continue;
     }
     if($form_state['post']['remove-' . $type_id . '-' . $rank]) {
-      $d_removed[$type_id . '-0'] = 1;
+      $d_removed["$type_id-$rank"] = 1;
       continue;
     }
     
