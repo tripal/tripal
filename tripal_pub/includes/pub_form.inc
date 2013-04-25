@@ -253,7 +253,7 @@ function chado_pub_node_form_add_new_props(&$form, $form_state, $num_new, &$d_pr
         if (preg_match('/Abstract/', $cvterm[0]->name)) {
           $rows = 10;
         }
-        if ($cvterm[0]->name == 'Author List') {
+        if ($cvterm[0]->name == 'Authors') {
           $rows = 2;
         }
         
@@ -310,7 +310,7 @@ function chado_pub_node_form_add_new_props(&$form, $form_state, $num_new, &$d_pr
     if (preg_match('/Abstract/', $cvterm[0]->name)) {
       $rows = 10;
     }
-    if ($cvterm[0]->name == 'Author List') {
+    if ($cvterm[0]->name == 'Authors') {
       $rows = 2;
     }
     
@@ -397,7 +397,7 @@ function chado_pub_node_form_add_pubprop_table_props(&$form, $form_state, $pub_i
     if (preg_match('/Abstract/', $prop->name)) {
       $rows = 10;
     }
-    if ($prop->name == 'Author List') {
+    if ($prop->name == 'Authors') {
       $rows = 2;
     }
   
@@ -480,7 +480,7 @@ function chado_pub_node_form_add_pub_table_props(&$form, $form_state, $propertie
       if (preg_match('/Abstract/', $prop->name)) {
         $rows = 10;
       }
-      if ($prop->name == 'Author List') {
+      if ($prop->name == 'Authors') {
         $rows = 2;
       }
       

@@ -299,7 +299,7 @@ function tripal_pub_PMID_parse_pubxml($pub_xml) {
       }
     }
   }
-  $pub['Citation'] = $pub['Author List'] . 
+  $pub['Citation'] = $pub['Authors'] . 
     '. <a href="http://www.ncbi.nlm.nih.gov/pubmed/' . $pub['Publication Accession'] . '" target="_blank">' . $pub['Title'] .  '</a> ' .
     $pub['Journal ISO Abbreviation']. '. ' . $pub['Publication Date'];
   if ($pub['Volume'] or $pub['Issue']) {
@@ -708,7 +708,7 @@ function tripal_pub_PMID_parse_authorlist($xml, &$pub) {
           }             
         }
         $author_list = substr($author_list, 0, -2);
-        $pub['Author List'] = $author_list;
+        $pub['Authors'] = $author_list;
         return;
       }
       // if we're at the end </Author> element then we're done with the author and we can

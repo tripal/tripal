@@ -161,8 +161,8 @@ def:  The date the work was published.  This should be in the format: YYYY Mon D
 id: TPUB:0000047
 name: Authors
 relationship: part_of TPUB:0000037 ! Publication Details
-is_obsolete: true
-def:  This term is deprecated.  Please use the 'Authors List' term.
+synonym: "Author List" EXACT []
+def:  The list of authors of the publication. For PubMed style citations list each author with the last name first, followed by initials. Each author should be separated by a comma.
 
 [Term]
 id: TPUB:0000048
@@ -1312,12 +1312,6 @@ def: For publications noted as supported by US Government.
 subset: MeSH_Publication_Type
 is_a: TPUB:0000015 ! Publication Type
 
-[Term]
-id: TPUB:0000240
-name: Author List
-relationship: part_of TPUB:0000037 ! Publication Details
-synonym: "Authors" EXACT []
-def:  The list of authors of the publication. For PubMed style citations list each author with the last name first, followed by initials. Each author should be separated by a comma.
 
 [Term]
 id: TPUB:0000241

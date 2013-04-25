@@ -117,8 +117,8 @@ function tripal_library_menu() {
   );
 
   $items['admin/tripal/tripal_library/configuration'] = array(
-    'title' => 'Library Configuration',
-    'description' => 'Manage integration of Chado libraries including associated features.',
+    'title' => 'Configuration',
+    'description' => 'Configure the Tripal Library module',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_library_admin'),
     'access arguments' => array('administer tripal libraries'),

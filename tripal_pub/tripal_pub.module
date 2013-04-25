@@ -2,10 +2,11 @@
 
 require_once "api/tripal_pub.api.inc";
 require_once "includes/tripal_pub.admin.inc";
-require_once "includes/pubmed.inc";
 require_once "includes/pub_sync.inc";
 require_once "includes/pub_form.inc";
-
+require_once "includes/pub_importers.inc";
+require_once "includes/pubmed.inc";
+require_once "includes/agricola.inc";
 /**
  * @file
  *
@@ -58,16 +59,24 @@ function tripal_pub_node_info() {
  *   as the program is ran
  */
 function tripal_pub_menu() {
-
   $items = array();
-
-  $items[ 'admin/tripal/tripal_pub' ]= array(
+  
+  $items['admin/tripal/tripal_pub' ]= array(
     'title' => 'Publications',
     'description' => ('A module for interfacing the GMOD chado database with Drupal, providing viewing of publications'),
     'page callback' => 'theme',
     'page arguments' => array('tripal_pub_admin'),
     'access arguments' => array('administer tripal pubs'),
     'type' => MENU_NORMAL_ITEM
+  );
+  
+  $items['admin/tripal/tripal_pub/configuration'] = array(
+    'title' => 'Configuration',
+    'description' => 'Configure the Tripal publication module.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_pub_admin'),
+    'access arguments' => array('administer tripal pubs'),
+    'type' => MENU_NORMAL_ITEM,
   );
   
   $items['admin/tripal/tripal_pub/sync'] = array(
