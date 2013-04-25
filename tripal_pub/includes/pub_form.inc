@@ -85,12 +85,7 @@ function chado_pub_form($node, $form_state) {
   while ($prop = db_fetch_object($prop_types)) {
     // the 'Citation' term is special because it serves
     // both as a property and as the uniquename for the publiation table
-    // it is present by default in the initial fields of the form so
-    // we don't want it again in the drop-down list
-    // also remove other terms associated with the DBXref
-    if ($prop->name != "Citation" and
-        $prop->name != "Publication Accession" and
-        $prop->name != "Publication Database") {
+    if ($prop->name != "Citation") {
       $properties_select[$prop->cvterm_id] = $prop->name;
     }
     $properties_list[$prop->cvterm_id] = $prop;
@@ -267,7 +262,7 @@ function chado_pub_node_form_add_new_props(&$form, $form_state, $num_new, &$d_pr
           '#default_value' => $value,
           '#cols'          => 50,
           '#rows'          => $rows,
-          '#description'   => $description,
+          '#description'   => $cvterm->definition,
         );
         
         $form['properties']['new'][$new_id][$rank]["remove-$new_id-$rank"] = array(
@@ -324,7 +319,7 @@ function chado_pub_node_form_add_new_props(&$form, $form_state, $num_new, &$d_pr
       '#default_value' => $new_value,
       '#cols'          => 50,
       '#rows'          => $rows,
-      '#description'   => $description,
+      '#description'   => $cvterm->definition,
     );
     
     $form['properties']['new'][$new_id][$rank]["remove-$new_id-$rank"] = array(
@@ -410,7 +405,7 @@ function chado_pub_node_form_add_pubprop_table_props(&$form, $form_state, $pub_i
       '#default_value' => $prop->value,
       '#cols'          => 50,
       '#rows'          => $rows,
-      '#description'   => $description,
+      '#description'   => $prop->definition,
     );
     
     $form['properties'][$type_id][$rank]["remove-$type_id-$rank"] = array(

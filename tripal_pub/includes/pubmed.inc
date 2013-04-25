@@ -241,8 +241,7 @@ function tripal_pub_PMID_parse_pubxml($pub_xml) {
       switch ($element) {
         case 'PMID':
           $xml->read(); // get the value for this element
-          $pub['Publication Accession'] = $xml->value;
-          $pub['Publication Database'] = 'PMID';
+          $pub['Publication Dbxref'] = 'PMID:' . $xml->value;
           break;        
         case 'Article':
           $pub_model = $xml->getAttribute('PubModel');
@@ -299,9 +298,8 @@ function tripal_pub_PMID_parse_pubxml($pub_xml) {
       }
     }
   }
-  $pub['Citation'] = $pub['Authors'] . 
-    '. <a href="http://www.ncbi.nlm.nih.gov/pubmed/' . $pub['Publication Accession'] . '" target="_blank">' . $pub['Title'] .  '</a> ' .
-    $pub['Journal ISO Abbreviation']. '. ' . $pub['Publication Date'];
+  $pub['Citation'] = $pub['Authors'] . '. ' . $pub['Title'] .  ' ' .
+    $pub['Journal ISO Abbreviation'] . '. ' . $pub['Publication Date'];
   if ($pub['Volume'] or $pub['Issue']) {
     $pub['Citation'] .= '; ';  
   }
@@ -314,7 +312,6 @@ function tripal_pub_PMID_parse_pubxml($pub_xml) {
   if ($pub['Pages']) {
     $pub['Citation'] .= ':' . $pub['Pages'];
   }
-  $pub['Citation'] .= '. PubMed PMID: ' . $pub['Publication Accession']; 
   
   //$pub['xml'] = $pub_xml;
   return $pub;
@@ -399,7 +396,7 @@ function tripal_pub_PMID_parse_article($xml, &$pub) {
         case 'Affiliation':
           // the affiliation tag at this level is meant solely for the first author
           $xml->read();
-          $pub['Authors'][0]['Affiliation'] = $xml->value;
+          $pub['Author List'][0]['Affiliation'] = $xml->value;
           break;
         case 'AuthorList':
           $complete = $xml->getAttribute('CompleteYN');
@@ -501,9 +498,10 @@ function tripal_pub_PMID_parse_abstract($xml, &$pub) {
         case 'AbstractText':
           $label = $xml->getAttribute('Label');
           $xml->read();
-          if ($label) {
-            $pub['Structured Abstract Part'][] = $xml->value;
-            $abstract .= "<p><b>$label</b></br>" . $xml->value . '</p>';
+          if ($label) { 
+            $part = "<p><b>$label</b></br>" . $xml->value . '</p>';           
+            $abstract .= $part;
+            $pub['Structured Abstract Part'][] = $part;
           }
           else {
             $abstract .= '<p>' . $xml->value . '</p>';
@@ -693,22 +691,22 @@ function tripal_pub_PMID_parse_authorlist($xml, &$pub) {
       // if we're at the </AuthorList> element then we're done with the article...
       if($element == 'AuthorList') {
         // build the author list before returning
-        $author_list = '';
-        foreach ($pub['Authors'] as $author) {
+        $authors = '';
+        foreach ($pub['Author List'] as $author) {
           if ($author['valid'] == 'N') {
             // skip non-valid entries.  A non-valid entry should have 
             // a corresponding corrected entry so we can saftely skip it.
             continue;
           }
           if ($author['Collective']) {
-            $author_list .= $author['Collective'] . ', ';
+            $authors .= $author['Collective'] . ', ';
           }
           else {
-            $author_list .= $author['Surname'] . ' ' . $author['First Initials'] . ', '; 
+            $authors .= $author['Surname'] . ' ' . $author['First Initials'] . ', '; 
           }             
         }
-        $author_list = substr($author_list, 0, -2);
-        $pub['Authors'] = $author_list;
+        $authors = substr($authors, 0, -2);
+        $pub['Authors'] = $authors;
         return;
       }
       // if we're at the end </Author> element then we're done with the author and we can
@@ -721,27 +719,27 @@ function tripal_pub_PMID_parse_authorlist($xml, &$pub) {
       switch ($element) {
         case 'Author':
           $valid = $xml->getAttribute('ValidYN');
-          $pub['Authors'][$num_authors]['valid'] = $valid;          
+          $pub['Author List'][$num_authors]['valid'] = $valid;          
           break;
         case 'LastName':  
           $xml->read(); 
-          $pub['Authors'][$num_authors]['Surname'] = $xml->value;         
+          $pub['Author List'][$num_authors]['Surname'] = $xml->value;         
           break;
         case 'ForeName': 
           $xml->read(); 
-          $pub['Authors'][$num_authors]['Given Name'] = $xml->value;          
+          $pub['Author List'][$num_authors]['Given Name'] = $xml->value;          
           break;
         case 'Initials': 
           $xml->read(); 
-          $pub['Authors'][$num_authors]['First Initials'] = $xml->value;          
+          $pub['Author List'][$num_authors]['First Initials'] = $xml->value;          
           break;
         case 'Suffix': 
           $xml->read(); 
-          $pub['Authors'][$num_authors]['Suffix'] = $xml->value;          
+          $pub['Author List'][$num_authors]['Suffix'] = $xml->value;          
           break;
         case 'CollectiveName': 
           $xml->read(); 
-          $pub['Authors'][$num_authors]['Collective'] = $xml->value;          
+          $pub['Author List'][$num_authors]['Collective'] = $xml->value;          
           break;
         case 'Identifier': 
           // according to the specification, this element is not yet used.                  
@@ -821,5 +819,5 @@ function tripal_pub_remote_search_get_language($lang_abbr) {
     'vie' => 'Vietnamese',
     'wel' => 'Welsh',
   );
-  return $languages[$lang_abbr];
+  return $languages[strtolower($lang_abbr)];
 }

@@ -27,6 +27,7 @@ is_a: TPUB:0000015 ! Publication Type
 id: TPUB:0000005
 name: Publication Accession
 relationship: part_of TPUB:0000001 ! publication_dbxref
+is_obsolete: true
 
 [Term]
 id: TPUB:0000006
@@ -50,6 +51,7 @@ relationship: part_of TPUB:0000006 ! Collective
 id: TPUB:0000009
 name: Publication Database
 relationship: part_of TPUB:0000001 ! Publication Dbxref
+is_obsolete: true
 
 [Term]
 id: TPUB:0000010

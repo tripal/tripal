@@ -103,11 +103,19 @@ function tripal_db_get_db_by_db_id($db_id) {
  */
 function tripal_db_get_db_by_name($name) {
 
-  $r = db_fetch_object(chado_query(
-    "SELECT * FROM {db} WHERE name='%s'", $name
-  ));
-
-  return $r;
+  $values = array('name' => $name);
+  $options = array('statement_name' => 'sel_db_na');
+  
+  $db = tripal_core_chado_select('db', array('*'), $values, $options);
+  if (count($db) == 1) {
+    return $db[0];
+  }
+  if (count($db) == 0) {
+    return FALSE;
+  }
+  if (count($db) > 1) {
+    return FALSE;
+  }
 }
 
 // Purpose: To retrieve a chado db object

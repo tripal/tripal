@@ -24,6 +24,10 @@ require_once "includes/agricola.inc";
 function tripal_pub_init() {
   drupal_add_js(drupal_get_path('theme', 'tripal') . '/js/tripal_pub.js');
   drupal_add_css(drupal_get_path('theme', 'tripal') . '/css/tripal_pub.css');
+  
+  // this variable indicates which databases are supported by the Tripal pub module
+  // for importing
+  variable_set('tripal_pub_supported_dbs', array('PMID'));
 }
 
 
@@ -270,6 +274,9 @@ function chado_pub_insert($node) {
     $pub['pub_id'] = $node->pub_id;
   }
   else {
+    $properties = array(); // stores all of the properties we need to add
+    $cross_refs = array(); // stores any cross references for this publication
+    
     // get the list of properties for easy lookup (without doing lots of database queries
     $properties_list = array();
     $sql = "
@@ -283,7 +290,6 @@ function chado_pub_insert($node) {
       ORDER BY CVTS.name ASC 
     ";
     $prop_types = chado_query($sql); 
-    $properties = array();
     while ($prop = db_fetch_object($prop_types)) {
       $properties_list[$prop->cvterm_id] = $prop->name;
       // The 'Citation' term is special because it serves
@@ -341,6 +347,11 @@ function chado_pub_insert($node) {
         $pubplace = $value;
         unset($properties[$name]);
       }
+      elseif ($name == "Publication Dbxref") {
+        // we will add the cross-references to the pub_dbxref table
+        // but we also want to keep the property in the pubprop table so don't unset it
+        $cross_refs[] = $value;
+      }
     }
     
     // insert the pub record
@@ -364,11 +375,12 @@ function chado_pub_insert($node) {
       drupal_set_message("Error inserting publication", "error");
       watchdog('tripal_pub', "Error inserting publication", array(), WATCHDOG_ERROR);
       return;
-    }
+    }       
     
     // now add in the properties 
     foreach ($properties as $property => $elements) {
-      foreach ($elements as $rank => $value) {      
+      foreach ($elements as $rank => $value) {   
+           
         $status = tripal_pub_insert_property($pub['pub_id'], $property, $value, FALSE);
         if (!$status) {
           drupal_set_message("Error cannot add property: $property", "error");
@@ -377,6 +389,16 @@ function chado_pub_insert($node) {
         }
       } 
     }
+    
+    // add in any database cross-references
+    foreach ($cross_refs as $index => $ref) {
+      $pub_dbxref = tripal_pub_add_pub_dbxref($pub_id, $ref);
+      if (!$pub_dbxref) { 
+        drupal_set_message("Error cannot add publication cross reference: $ref", "error");
+        watchdog('tripal_pub', "Error cannot add publication cross reference: %ref", 
+          array('%ref' => $ref), WATCHDOG_ERROR);
+      }   
+    }          
   } // if ($node->pub_id) {} else 
 
   if ($pub) {   
@@ -418,6 +440,8 @@ function chado_pub_update($node) {
   
   // get the publication ID for this publication
   $pub_id = chado_get_id_for_node('pub', $node) ;
+  $properties = array(); // stores all of the properties we need to add
+  $cross_refs = array(); // stores any cross references for this publication  
    
   // get the list of properties for easy lookup (without doing lots of database queries
   $properties_list = array();
@@ -431,8 +455,7 @@ function chado_pub_update($node) {
       NOT CVTS.is_obsolete = 1    
     ORDER BY CVTS.name ASC 
   ";
-  $prop_types = chado_query($sql); 
-  $properties = array();
+  $prop_types = chado_query($sql);   
   while ($prop = db_fetch_object($prop_types)) {
     $properties_list[$prop->cvterm_id] = $prop->name;
     // The 'Citation' term is special because it serves
@@ -447,14 +470,15 @@ function chado_pub_update($node) {
   //  1) prop_value-[type id]-[index]
   //  2) new_value-[type id]-[index]
   //  3) new_id, new_value  
-  foreach ($node as $name => $value) {
-    if (preg_match('/^prop_value-(\d+)-(\d+)/', $name, $matches)) {
+//  dpm($node);
+  foreach ($node as $key => $value) {
+    if (preg_match('/^prop_value-(\d+)-(\d+)/', $key, $matches)) {
       $type_id = $matches[1];
       $index = $matches[2];  
       $name = $properties_list[$type_id];  
       $properties[$name][$index] = $value;     
     }
-    if (preg_match('/^new_value-(\d+)-(\d+)/', $name, $matches)) {
+    if (preg_match('/^new_value-(\d+)-(\d+)/', $key, $matches)) {
       $type_id = $matches[1];
       $index = $matches[2];
       $name = $properties_list[$type_id];
@@ -462,40 +486,46 @@ function chado_pub_update($node) {
     }      
   }
   if ($node->new_id and $node->new_value) {
-    $type_id = $node->new_id;
-    $index = count($properties[$name]);
+    $type_id = $node->new_id;    
     $name = $properties_list[$type_id];
+    $index = count($properties[$name]);
     $properties[$name][$index] = $node->new_value;    
   } 
   
   // iterate through all of the properties and remove those that really are
   // part of the pub table fields
   foreach ($properties as $name => $element) {
-    $value = $element[0];
-    if ($name == "Volume") {
-      $volume = $value;
-      unset($properties[$name]);
-    } 
-    elseif ($name == "Volume Title") {
-      $volumetitle = $value;
-      unset($properties[$name]);
-    }
-    elseif ($name == "Issue") {
-      $issue = $value;
-      unset($properties[$name]);
-    }
-    elseif ($name == "Pages") {
-      $pages = $value;
-      unset($properties[$name]);
-    }
-    elseif ($name == "Publisher") {
-      $publisher = $value;
-      unset($properties[$name]);
-    }
-    elseif ($name == "Journal Country" or $name == "Published Location") {
-      $pubplace = $value;
-      unset($properties[$name]);
-    }
+    foreach ($element as $index => $value) {
+      if ($name == "Volume") {
+        $volume = $value;
+        unset($properties[$name]);
+      } 
+      elseif ($name == "Volume Title") {
+        $volumetitle = $value;
+        unset($properties[$name]);
+      }
+      elseif ($name == "Issue") {
+        $issue = $value;
+        unset($properties[$name]);
+      }
+      elseif ($name == "Pages") {
+        $pages = $value;
+        unset($properties[$name]);
+      }
+      elseif ($name == "Publisher") {
+        $publisher = $value;
+        unset($properties[$name]);
+      }
+      elseif ($name == "Journal Country" or $name == "Published Location") {
+        $pubplace = $value;
+        unset($properties[$name]);
+      }
+      elseif ($name == "Publication Dbxref") {
+        // we will add the cross-references to the pub_dbxref table
+        // but we also want to keep the property in the pubprop table so don't unset it
+        $cross_refs[] = $value;
+      } 
+    }   
   }
   
   // update the pub record
@@ -537,6 +567,17 @@ function chado_pub_update($node) {
       }
     } 
   }
+  
+  // add in any database cross-references after first removing 
+  tripal_core_chado_delete('pub_dbxref', array('pub_id' => $pub_id));
+  foreach ($cross_refs as $index => $ref) {
+    $pub_dbxref = tripal_pub_add_pub_dbxref($pub_id, $ref);
+    if (!$pub_dbxref) { 
+      drupal_set_message("Error cannot add publication cross reference: $ref", "error");
+      watchdog('tripal_pub', "Error cannot add publication cross reference: %ref", 
+        array('%ref' => $ref), WATCHDOG_ERROR);
+    }   
+  }   
 }
 
 
