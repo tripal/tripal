@@ -241,7 +241,7 @@ function tripal_pub_PMID_parse_pubxml($pub_xml) {
       switch ($element) {
         case 'PMID':
           $xml->read(); // get the value for this element
-          $pub['Pub Accession'] = $xml->value;
+          $pub['Publication Accession'] = $xml->value;
           $pub['Publication Database'] = 'PMID';
           break;        
         case 'Article':
@@ -300,7 +300,7 @@ function tripal_pub_PMID_parse_pubxml($pub_xml) {
     }
   }
   $pub['Citation'] = $pub['Author List'] . 
-    '. <a href="http://www.ncbi.nlm.nih.gov/pubmed/' . $pub['Pub Accession'] . '" target="_blank">' . $pub['Title'] .  '</a> ' .
+    '. <a href="http://www.ncbi.nlm.nih.gov/pubmed/' . $pub['Publication Accession'] . '" target="_blank">' . $pub['Title'] .  '</a> ' .
     $pub['Journal ISO Abbreviation']. '. ' . $pub['Publication Date'];
   if ($pub['Volume'] or $pub['Issue']) {
     $pub['Citation'] .= '; ';  
@@ -314,7 +314,7 @@ function tripal_pub_PMID_parse_pubxml($pub_xml) {
   if ($pub['Pages']) {
     $pub['Citation'] .= ':' . $pub['Pages'];
   }
-  $pub['Citation'] .= '. PubMed PMID: ' . $pub['Pub Accession']; 
+  $pub['Citation'] .= '. PubMed PMID: ' . $pub['Publication Accession']; 
   
   //$pub['xml'] = $pub_xml;
   return $pub;

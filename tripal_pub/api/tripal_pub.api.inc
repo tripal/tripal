@@ -247,7 +247,7 @@ function tripal_pub_add_publications($pubs, $do_contact) {
     }                                      
   
     $num_pubs++;
-    print $num_pubs . ".  " . $pub['Publication Database'] . ' ' . $pub['Pub Accession'] . "\n";                          
+    print $num_pubs . ".  " . $pub['Publication Database'] . ' ' . $pub['Publication Accession'] . "\n";                          
   } // end for loop        
 }
 /*
@@ -258,7 +258,7 @@ function tripal_pub_add_pub_dbxref($pub_id, $pub) {
   // check to see if the pub_dbxref record already exist
   $values = array(
     'dbxref_id' => array(
-      'accession' => $pub['Pub Accession'],
+      'accession' => $pub['Publication Accession'],
       'db_id' => array(
         'name' => $pub['Publication Database'],
       ),
@@ -278,14 +278,14 @@ function tripal_pub_add_pub_dbxref($pub_id, $pub) {
    
   // get the database cross-reference
   $dbxvalues = array(
-    'accession' => $pub['Pub Accession'],
+    'accession' => $pub['Publication Accession'],
     'db_id' => $db->db_id,
   );
   $dbxoptions = array('statement_name' => 'sel_dbxref_acdb');
   $results = tripal_core_chado_select('dbxref', array('dbxref_id'), $dbxvalues, $dbxoptions);
   // if the accession doesn't exist then add it
   if(count($results) == 0){
-    $dbxref = tripal_db_add_dbxref($db->db_id, $pub['Pub Accession']);          
+    $dbxref = tripal_db_add_dbxref($db->db_id, $pub['Publication Accession']);          
   }
   else {
     $dbxref = $results[0];
@@ -296,7 +296,7 @@ function tripal_pub_add_pub_dbxref($pub_id, $pub) {
   $results = tripal_core_chado_insert('pub_dbxref', $values, $options);
   if (!$results) {
     watchdog('tripal_pub', "Cannot add publication dbxref: %db:%accession.",
-      array('%db' => $pub['Publication Database'], '%accession' => $pub['Pub Accession']). WATCHDOG_ERROR);
+      array('%db' => $pub['Publication Database'], '%accession' => $pub['Publication Accession']). WATCHDOG_ERROR);
     return FALSE;
   }
   return $results;
@@ -310,10 +310,10 @@ function tripal_pub_add_publication($pub_details, $do_contact) {
 
   // first try to find the publication using the accession number. It will ahve
   // one if the pub has already been loaded for the publication database
-  if ($pub_details['Pub Accession'] and $pub_details['Publication Database']) {
+  if ($pub_details['Publication Accession'] and $pub_details['Publication Database']) {
     $values = array(
       'dbxref_id' => array (
-        'accession' => $pub_details['Pub Accession'],
+        'accession' => $pub_details['Publication Accession'],
         'db_id' => array(
           'name' => $pub_details['Publication Database']
         ),
@@ -326,7 +326,7 @@ function tripal_pub_add_publication($pub_details, $do_contact) {
     }
     elseif(count($results) > 1) {
       watchdog('tripal_pub', "There are two publications with this accession: %db:%accession. Cannot determine which to update.", 
-        array('%db' => $pub_details['Publication Database'], '%accession' => $pub_details['Pub Accession']), WATCHDOG_ERROR);     
+        array('%db' => $pub_details['Publication Database'], '%accession' => $pub_details['Publication Accession']), WATCHDOG_ERROR);     
       return FALSE;    
     }
   }   
@@ -506,4 +506,85 @@ function tripal_pub_add_authors($pub_id, $authors, $do_contact) {
     }
     $rank++;   
   }
+}
+
+/**
+ * Retrieve properties of a given type for a given pub
+ *
+ * @param $pub_id
+ *    The pub_id of the properties you would like to retrieve
+ * @param $property
+ *    The cvterm name of the properties to retrieve
+ *
+ * @return
+ *    An pub chado variable with the specified properties expanded
+ *
+ * @ingroup tripal_pub_api
+ */
+function tripal_pub_get_property($pub_id, $property) {
+  return tripal_core_get_property('pub', $pub_id, $property, 'tripal');
+}
+
+/**
+ * Insert a given property
+ *
+ * @param $pub_id
+ *   The pub_id of the property to insert
+ * @param $property
+ *   The cvterm name of the property to insert
+ * @param $value
+ *   The value of the property to insert
+ * @param $update_if_present
+ *   A boolean indicated whether to update the record if it's already present
+ *
+ * @return
+ *   True of success, False otherwise
+ *
+ * @ingroup tripal_pub_api
+ */
+function tripal_pub_insert_property($pub_id, $property, $value, $update_if_present = 0) {
+  return tripal_core_insert_property('pub', $pub_id, $property, 'tripal_pub', $value, $update_if_present);
+}
+
+/**
+ * Update a given property
+ *
+ * @param $pub_id
+ *   The pub_id of the property to update
+ * @param $property
+ *   The cvterm name of the property to update
+ * @param $value
+ *   The value of the property to update
+ * @param $insert_if_missing
+ *   A boolean indicated whether to insert the record if it's absent
+ *
+ * Note: The property will be identified using the unique combination of the $pub_id and $property
+ * and then it will be updated with the supplied value
+ *
+ * @return
+ *   True of success, False otherwise
+ *
+ * @ingroup tripal_pub_api
+ */
+function tripal_pub_update_property($pub_id, $property, $value, $insert_if_missing = 0) {
+  return tripal_core_update_property('pub', $pub_id, $property, 'tripal_pub', $value, $insert_if_missing);
+}
+/**
+ * Delete a given property
+ *
+ * @param $pub_id
+ *   The pub_id of the property to delete
+ * @param $property
+ *   The cvterm name of the property to delete
+ *
+ * Note: The property will be identified using the unique combination of the $pub_id and $property
+ * and then it will be deleted
+ *
+ * @return
+ *   True of success, False otherwise
+ *
+ * @ingroup tripal_pub_api
+ */
+function tripal_pub_delete_property($pub_id, $property) {
+  return tripal_core_delete_property('pub', $pub_id, $property, 'tripal');
 }

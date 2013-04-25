@@ -109,6 +109,15 @@ function tripal_core_init() {
   
   // create a persistent connection
   $connection = tripal_db_persistent_chado();
+  
+  // If we want AHAH elements on the node forms (e.g. chado_pub form) then we need to include
+  // the node.pages file. Otherwise this error message is given:
+  //
+  // warning: call_user_func_array() expects parameter 1 to be a valid callback, 
+  // function 'node_form' not found or invalid function name 
+  // in /var/www/includes/form.inc on line 382.
+  module_load_include('inc', 'node', 'node.pages');    
+  
 }
 
 /**

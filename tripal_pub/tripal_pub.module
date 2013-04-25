@@ -274,6 +274,8 @@ function chado_pub_insert($node) {
       'type_id' => $node->type_id
     );
     $pub = tripal_core_chado_insert('pub', $values);
+    
+
   }
 
   if ($pub) {   
@@ -312,29 +314,127 @@ function chado_pub_update($node) {
     // there is no way to handle revisions in Chado but leave
     // this here just to make not we've addressed it.
   }
-
+  
+  // get the publication ID for this publication
   $pub_id = chado_get_id_for_node('pub', $node) ;
+   
+  // get the list of properties for easy lookup (without doing lots of database queries
+  $properties_list = array();
+  $sql = "
+    SELECT CVTS.cvterm_id, CVTS.name, CVTS.definition
+    FROM {cvtermpath} CVTP
+      INNER JOIN {cvterm} CVTS ON CVTP.subject_id = CVTS.cvterm_id
+      INNER JOIN {cvterm} CVTO ON CVTP.object_id = CVTO.cvterm_id
+      INNER JOIN {cv} ON CVTO.cv_id = CV.cv_id
+    WHERE CV.name = 'tripal_pub' and CVTO.name = 'Publication Details'
+    ORDER BY CVTS.name ASC 
+  ";
+  $prop_types = chado_query($sql); 
+  $properties = array();
+  while ($prop = db_fetch_object($prop_types)) {
+    $properties_list[$prop->cvterm_id] = $prop->name;
+    // The 'Citation' term is special because it serves
+    // both as a property and as the uniquename for the
+    // pub and we want it stored in both the pub table and the pubprop table
+    if ($prop->name == 'Citation') {
+      $properties[$prop->name][0] = $node->uniquename;   
+    }
+  }
+  
+  // get the properties that should be added. Properties are in one of three forms: 
+  //  1) prop_value-[type id]-[index]
+  //  2) new_value-[type id]-[index]
+  //  3) new_id, new_value  
+  foreach ($node as $name => $value) {
+    if (preg_match('/^prop_value-(\d+)-(\d+)/', $name, $matches)) {
+      $type_id = $matches[1];
+      $index = $matches[2];  
+      $name = $properties_list[$type_id];  
+      $properties[$name][$index] = $value;     
+    }
+    if (preg_match('/^new_value-(\d+)-(\d+)/', $name, $matches)) {
+      $type_id = $matches[1];
+      $index = $matches[2];
+      $name = $properties_list[$type_id];
+      $properties[$name][$index] = $value;
+    }      
+  }
+  if ($node->new_id and $node->new_value) {
+    $type_id = $node->new_id;
+    $index = count($properties[$name]);
+    $name = $properties_list[$type_id];
+    $properties[$name][$index] = $node->new_value;    
+  } 
+  
+  // iterate through all of the properties and remove those that really are
+  // part of the pub table fields
+  foreach ($properties as $name => $element) {
+    $value = $element[0];
+    if ($name == "Volume") {
+      $volume = $value;
+      unset($properties[$name]);
+    } 
+    elseif ($name == "Volume Title") {
+      $volumetitle = $value;
+      unset($properties[$name]);
+    }
+    elseif ($name == "Issue") {
+      $issue = $value;
+      unset($properties[$name]);
+    }
+    elseif ($name == "Pages") {
+      $pages = $value;
+      unset($properties[$name]);
+    }
+    elseif ($name == "Publisher") {
+      $publisher = $value;
+      unset($properties[$name]);
+    }
+    elseif ($name == "Journal Country" or $name == "Published Location") {
+      $pubplace = $value;
+      unset($properties[$name]);
+    }
+  }
+  
   // update the pub record
   $match = array(
-     'pub_id' => $pub_id,
+    'pub_id' => $pub_id,
   );
   $values = array(
-    'title' => $node->title,
-    'volumetitle' => $node->volumetitle,
-    'volume' => $node->volume,
+    'title'       => $node->title,
     'series_name' => $node->series_name,
-    'issue' => $node->issue,
-    'pyear' => $node->pyear,
-    'pages' => $node->pages,
-    'miniref' => $node->miniref,
-    'uniquename' => $node->uniquename,
-    'type_id' => $node->type_id,
-    'is_obsolete' => $node->is_obsolete,
-    'publisher' => $node->publisher,
-    'pubplace' => $node->pubplace,
-    'type_id' => $node->type_id
+    'type_id'     => $node->type_id,
+    'pyear'       => $node->pyear,
+    'is_obsolete' => $node->is_obsolete ? 'true' : 'false', 
+    'uniquename'  => $node->uniquename,
+    'volumetitle' => $volumetitle,
+    'volume'      => $volume,    
+    'issue'       => $issue,    
+    'pages'       => $pages,
+    'miniref'     => $miniref,        
+    'publisher'   => $publisher,
+    'pubplace'    => $pubplace,
   );
   $status = tripal_core_chado_update('pub', $match, $values);
+  if (!$status) {
+    drupal_set_message("Error updating publication", "error");
+    watchdog('tripal_pub', "Error updating publication", array(), WATCHDOG_ERROR);
+    return;
+  }
+  
+  // now add in the properties by first removing any the publication
+  // already has and adding the ones we have
+  tripal_core_chado_delete('pubprop', array('pub_id' => $pub_id));
+  foreach ($properties as $property => $elements) {
+    foreach ($elements as $rank => $value) {      
+      $status = tripal_pub_insert_property($pub_id, $property, $value, FALSE);
+      if (!$status) {
+        drupal_set_message("Error cannot add property: $property", "error");
+        watchdog('tripal_pub', "Error cannot add property: %prop", 
+          array('%property' => $property), WATCHDOG_ERROR);
+      }
+    } 
+  }
 }
 
 
@@ -355,6 +455,12 @@ function chado_pub_load($node) {
 
   $values = array('pub_id' => $pub_id);
   $pub = tripal_core_generate_chado_var('pub', $values); 
+  
+  // expand the 'text' fields as those aren't included by default
+  // and they really shouldn't be so large to cause problems
+  $pub = tripal_core_expand_chado_vars($pub, 'field', 'pub.title');
+  $pub = tripal_core_expand_chado_vars($pub, 'field', 'pub.volumetitle');  
+  $pub = tripal_core_expand_chado_vars($pub, 'field', 'pub.uniquename');;
 
   $additions = new stdClass();
   $additions->pub = $pub;
@@ -408,6 +514,7 @@ function chado_pub_delete(&$node) {
  * for the chado_pub node form.  This callback is different from the 
  * default 'chado_pub_form' callback
  */
+/*
 function tripal_pub_forms($form_id, $args) {
   $forms = array();
   if($form_id == 'chado_pub_node_form') {
@@ -417,7 +524,7 @@ function tripal_pub_forms($form_id, $args) {
     );
   }
   return $forms;
-}
+}*/
 
 /*
  * 
@@ -434,6 +541,8 @@ function tripal_pub_form_alter(&$form, &$form_state, $form_id) {
     if ($form_state['values']['action'] == 'new') {
       $form['#action'] = url("admin/tripal/tripal_pub/import/new");
     }
+  }
+  if ($form_id == "chado_pub_node_form") {
   }
 } 
 

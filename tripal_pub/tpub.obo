@@ -23,7 +23,7 @@ is_a: TPUB:0000015 ! Publication Type
 
 [Term]
 id: TPUB:0000005
-name: Pub Accession
+name: Publication Accession
 relationship: part_of TPUB:0000001 ! publication_dbxref
 
 [Term]
@@ -1308,6 +1308,16 @@ is_a: TPUB:0000015 ! Publication Type
 [Term]
 id: TPUB:0000243
 name: Volume Title
+relationship: part_of TPUB:0000037 ! Publication Details
+
+[Term]
+id: TPUB:0000244
+name: Publisher
+relationship: part_of TPUB:0000037 ! Publication Details
+
+[Term]
+id: TPUB:0000245
+name: Published Location
 relationship: part_of TPUB:0000037 ! Publication Details
 
 [Typedef]

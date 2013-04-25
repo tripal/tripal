@@ -84,7 +84,6 @@ function tripal_core_ahah_prepare_form() {
   // The new form gets cached and processed again, but because $_POST is
   // destroyed, the submit handlers will not be called again.
   $form = drupal_rebuild_form($form_id, $form_state, $args, $form_build_id);
-  
 
   return $form;
 }
