@@ -160,6 +160,11 @@ function tripal_pub_update_publications($do_contact = FALSE) {
   $pubs = tripal_pub_get_remote_search_results($remote_db, $search, $i, 0);
   tripal_pub_add_publications($pubs, $do_contact, TRUE);
   
+  // transaction is complete
+  tripal_db_commit_transaction();
+  
+  print "Transaction Complete\n";
+  
   // sync the newly added publications with Drupal
   print "Syncing publications with Drupal...\n";
   tripal_pub_sync_pubs();
@@ -169,9 +174,6 @@ function tripal_pub_update_publications($do_contact = FALSE) {
     print "Syncing contacts with Drupal...\n";
     tripal_contact_sync_contacts();
   }
-  
-  // transaction is complete
-  tripal_db_commit_transaction();
   
   print "Done.\n";
 }
@@ -222,6 +224,11 @@ function tripal_pub_import_publications() {
     while (count($pubs) == $num_to_retrieve);    
   }
   
+  // transaction is complete
+  tripal_db_commit_transaction();
+  
+  print "Transaction Complete\n";
+  
   // sync the newly added publications with Drupal
   print "Syncing publications with Drupal...\n";
   tripal_pub_sync_pubs();
@@ -231,10 +238,7 @@ function tripal_pub_import_publications() {
     print "Syncing contacts with Drupal...\n";
     tripal_contact_sync_contacts();
   }
-  
-  // transaction is complete
-  tripal_db_commit_transaction();
-  
+   
   print "Done.\n";
 }
 /*
