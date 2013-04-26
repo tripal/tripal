@@ -134,7 +134,7 @@ function chado_pub_form($node, $form_state) {
       the last name of the author followed by initials. Each author should be separated by a comma. Next comes 
       the title, followed by the series title (e.g. journal name), publication date (4 digit year, 3 character Month, day), volume, issue and page numbers. You may also use HTML to provide a link in the citation.  
       Below is an example: <pre>Medeiros PM, Ladio AH, Santos AM, Albuquerque UP. <a href="http://www.ncbi.nlm.nih.gov/pubmed/23462414" target="_blank">Does the selection of medicinal plants by Brazilian local populations 
-        suffer taxonomic influence?</a> J Ethnopharmacol. 2013 Apr 19; 146(3):842-52. PubMed PMID: 23462414</pre>'),
+        suffer taxonomic influence?</a> J Ethnopharmacol. 2013 Apr 19; 146(3):842-52.</pre>'),
     '#required' => TRUE,
   );
   

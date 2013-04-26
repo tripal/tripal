@@ -392,7 +392,7 @@ function chado_pub_insert($node) {
     
     // add in any database cross-references
     foreach ($cross_refs as $index => $ref) {
-      $pub_dbxref = tripal_pub_add_pub_dbxref($pub_id, $ref);
+      $pub_dbxref = tripal_pub_add_pub_dbxref($pub['pub_id'], $ref);
       if (!$pub_dbxref) { 
         drupal_set_message("Error cannot add publication cross reference: $ref", "error");
         watchdog('tripal_pub', "Error cannot add publication cross reference: %ref", 
