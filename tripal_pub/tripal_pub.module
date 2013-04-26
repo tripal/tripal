@@ -309,20 +309,20 @@ function chado_pub_insert($node) {
         $type_id = $matches[1];
         $index = $matches[2];
         $name = $properties_list[$type_id];
-        $properties[$name][$index] = $value;
+        $properties[$name][$index] = trim($value);
       }      
     }
     if ($node->new_id and $node->new_value) {
       $type_id = $node->new_id;
       $index = count($properties[$name]);
       $name = $properties_list[$type_id];
-      $properties[$name][$index] = $node->new_value;    
+      $properties[$name][$index] = trim($node->new_value);    
     } 
     
     // iterate through all of the properties and remove those that really are
     // part of the pub table fields
     foreach ($properties as $name => $element) {
-      $value = $element[0];
+      $value = trim($element[0]);
       if ($name == "Volume") {
         $volume = $value;
         unset($properties[$name]);
@@ -356,12 +356,12 @@ function chado_pub_insert($node) {
     
     // insert the pub record
     $values = array(
-      'title'       => $node->title,
-      'series_name' => $node->series_name,
-      'type_id'     => $node->type_id,
-      'pyear'       => $node->pyear,
+      'title'       => trim($node->title),
+      'series_name' => trim($node->series_name),
+      'type_id'     => trim($node->type_id),
+      'pyear'       => trim($node->pyear),
       'is_obsolete' => $node->is_obsolete ? 'true' : 'false', 
-      'uniquename'  => $node->uniquename,
+      'uniquename'  => trim($node->uniquename),
       'volumetitle' => $volumetitle,
       'volume'      => $volume,    
       'issue'       => $issue,    
@@ -392,7 +392,7 @@ function chado_pub_insert($node) {
     
     // add in any database cross-references
     foreach ($cross_refs as $index => $ref) {
-      $pub_dbxref = tripal_pub_add_pub_dbxref($pub['pub_id'], $ref);
+      $pub_dbxref = tripal_pub_add_pub_dbxref($pub['pub_id'], trim($ref));
       if (!$pub_dbxref) { 
         drupal_set_message("Error cannot add publication cross reference: $ref", "error");
         watchdog('tripal_pub', "Error cannot add publication cross reference: %ref", 
@@ -476,20 +476,20 @@ function chado_pub_update($node) {
       $type_id = $matches[1];
       $index = $matches[2];  
       $name = $properties_list[$type_id];  
-      $properties[$name][$index] = $value;     
+      $properties[$name][$index] = trim($value);     
     }
     if (preg_match('/^new_value-(\d+)-(\d+)/', $key, $matches)) {
       $type_id = $matches[1];
       $index = $matches[2];
       $name = $properties_list[$type_id];
-      $properties[$name][$index] = $value;
+      $properties[$name][$index] = trim($value);
     }      
   }
   if ($node->new_id and $node->new_value) {
     $type_id = $node->new_id;    
     $name = $properties_list[$type_id];
     $index = count($properties[$name]);
-    $properties[$name][$index] = $node->new_value;    
+    $properties[$name][$index] = trim($node->new_value);    
   } 
   
   // iterate through all of the properties and remove those that really are
@@ -533,12 +533,12 @@ function chado_pub_update($node) {
     'pub_id' => $pub_id,
   );
   $values = array(
-    'title'       => $node->title,
-    'series_name' => $node->series_name,
-    'type_id'     => $node->type_id,
-    'pyear'       => $node->pyear,
+    'title'       => trim($node->title),
+    'series_name' => trim($node->series_name),
+    'type_id'     => trim($node->type_id),
+    'pyear'       => trim($node->pyear),
     'is_obsolete' => $node->is_obsolete ? 'true' : 'false', 
-    'uniquename'  => $node->uniquename,
+    'uniquename'  => trim($node->uniquename),
     'volumetitle' => $volumetitle,
     'volume'      => $volume,    
     'issue'       => $issue,    
@@ -571,7 +571,7 @@ function chado_pub_update($node) {
   // add in any database cross-references after first removing 
   tripal_core_chado_delete('pub_dbxref', array('pub_id' => $pub_id));
   foreach ($cross_refs as $index => $ref) {
-    $pub_dbxref = tripal_pub_add_pub_dbxref($pub_id, $ref);
+    $pub_dbxref = tripal_pub_add_pub_dbxref($pub_id, trim($ref));
     if (!$pub_dbxref) { 
       drupal_set_message("Error cannot add publication cross reference: $ref", "error");
       watchdog('tripal_pub', "Error cannot add publication cross reference: %ref", 

@@ -240,8 +240,16 @@ function tripal_pub_PMID_parse_pubxml($pub_xml) {
       
       switch ($element) {
         case 'PMID':
+          // thre are multiple places where a PMID is present in the XML and
+          // since this code does not descend into every branch of the XML tree
+          // we will encounter many of them here.  Therefore, we only want the
+          // PMID that we first encounter. If we already have the PMID we will 
+          // just skip it.  Examples of other PMIDs are in the articles that
+          // cite this one.
           $xml->read(); // get the value for this element
-          $pub['Publication Dbxref'] = 'PMID:' . $xml->value;
+          if(!$pub['Publication Dbxref']) {
+            $pub['Publication Dbxref'] = 'PMID:' . $xml->value;
+          }
           break;        
         case 'Article':
           $pub_model = $xml->getAttribute('PubModel');
@@ -298,7 +306,7 @@ function tripal_pub_PMID_parse_pubxml($pub_xml) {
       }
     }
   }
-  $pub['Citation'] = $pub['Authors'] . '. ' . $pub['Title'] .  ' ' .
+  $pub['Citation'] = $pub['Authors'] . '. ' . $pub['Title'] .  '. ' .
     $pub['Journal ISO Abbreviation'] . '. ' . $pub['Publication Date'];
   if ($pub['Volume'] or $pub['Issue']) {
     $pub['Citation'] .= '; ';  
@@ -372,7 +380,8 @@ function tripal_pub_PMID_parse_article($xml, &$pub) {
           break;
         case 'ArticleTitle':
           $xml->read();
-          $pub['Title'] = $xml->value;
+          // remoave any trailing period from the title
+          $pub['Title'] = preg_replace('/\.$/', '', $xml->value); 
           break;
         case 'Abstract':
           tripal_pub_PMID_parse_abstract($xml, $pub);

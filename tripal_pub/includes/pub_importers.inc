@@ -142,9 +142,7 @@ function theme_tripal_pub_importer_setup_form($form) {
  */
 function tripal_pub_importer_setup_form(&$form_state = NULL, $pub_import_id = NULL, $action = 'new') {
   tripal_core_ahah_init_form();
-
-  dpm($form_state);
-  
+ 
   // Set the default values. If the pub_import_id isn't already defined by the form values 
   // and one is provided then look it up in the database
   $criteria = NULL;

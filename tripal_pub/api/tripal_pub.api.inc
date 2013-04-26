@@ -330,38 +330,132 @@ function tripal_pub_add_pub_dbxref($pub_id, $pub_dbxref) {
   }
   return $results;
 }
-/*
+/**
+ * Returns the list of publications that are assigned the database
+ * cross-reference provided
+ * 
+ * @param $pub_dbxref
+ *   The database cross reference accession.  It should be in the form
+ *   DB:ACCESSION, where DB is the database name and ACCESSION is the 
+ *   unique publication identifier (e.g. PMID:4382934)
+ * 
+ * @return
+ *   Returns an array of all the publications that have the provided
+ *   cross reference. If no publications match, then an empty array
+ *   is returned.
+ *   
+ * @ingroup tripal_pub_api 
  * 
  */
-function tripal_pub_add_publication($pub_details, $do_contact, $update = FALSE) {
+function tripal_pub_get_pubs_by_dbxref($pub_dbxref) {
+  
+  $return = array();
+  
+  if(preg_match('/^(.*?):(.*?)$/', $pub_dbxref, $matches)) {
+    $dbname = $matches[1];
+    $accession = $matches[2];
+  
+    $values = array(
+      'dbxref_id' => array (
+        'accession' => $accession,
+        'db_id' => array(
+          'name' => $dbname
+        ),
+      ),
+    );
+    $options = array('statement_name' => 'sel_pubdbxref_db');
+    $results = tripal_core_chado_select('pub_dbxref', array('pub_id'), $values, $options);      
+    foreach ($results as $index => $pub) {
+      $return[] = $pub->pub_id;  
+    }    
+  } 
+  return $return;
+}
+/**
+ * Returns the list of publications that match a given title and year
+ * 
+ * @param title
+ *   The title of the publication to look for
+ * @param type
+ *   The publication type. The value of this field should come from 
+ *   the Tripal Pub vocabulary
+ * @param year
+ *   Optional. The year the publication was published.
+ * 
+ * @return
+ *   Returns an array of all the publications that have the provided
+ *   cross reference. If no publications match, then an empty array
+ *   is returned.
+ *   
+ * @ingroup tripal_pub_api 
+ * 
+ */
+function tripal_pub_get_pubs_by_title_type_pyear($title, $type, $pyear = '') {
+  
+  $return = array();
+  
+  // build the values array for the query.  The $pyear is not required.
+  $values = array(
+    'title' => $title,
+    'type_id' => array(
+      'name' => $type,
+      'cv_id' => array(
+        'name' => 'tripal_pub'
+      )
+    )
+  );
+  $stmnt_suffix = 'tity';
+  if ($pub_details['Year']) {
+    $values['pyear'] = $pyear;
+    $stmnt_suffix .= 'py';
+  }
+  $options = array('statement_name' => 'sel_pub_' . $stmnt_suffix);
+  $results = tripal_core_chado_select('pub', array('pub_id'), $values, $options);
+  
+  // iterate through any matches and pull out the pub_id
+  foreach ($results as $index => $pub) {
+    $return[] = $pub->pub_id;  
+  }
+  return $return;  
+}
+/**
+ * Adds a new publication to the Chado, along with all properties and
+ * database cross-references. If the publication does not already exist
+ * in Chado then it is added.  If it does exist nothing is done.  If
+ * the $update parameter is TRUE then the publication is updated if it exists.
+ *
+ * @param $pub_details
+ *   An associative array containing all of the details about the publication.  
+ * @param $do_contact
+ *   Optional. Set to TRUE if a contact entry should be added to the Chado contact table
+ *   for authors of the publication.
+ * @param $update
+ *   Optional.  If the publication already exists then this function will return
+ *   without adding a new publication.  However, set this value to TRUE to force
+ *   the function to pudate the publication using the $pub_details that are provided.
+ *   
+ * @return
+ *   On successful addition of the publication, the new publication ID is returned. If
+ *   the publication already exists but $update is FALSE then TRUE is returned indicating
+ *   that the publication is there already.  If $update is TRUE and the publication
+ *   exists then the publication ID is returned.
+ *   
+ */
+function tripal_pub_add_publication($pub_details, $do_contact = FALSE, $update = FALSE) {
   
   $pub_id = 0;
 
   // first try to find the publication using the accession number. It will have
   // one if the pub has already been loaded for the publication database
   if ($pub_details['Publication Dbxref']) {
-    if(preg_match('/^(.*?):(.*?)$/', $pub_details['Publication Dbxref'], $matches)) {
-      $dbname = $matches[1];
-      $accession = $matches[2];
-    
-      $values = array(
-        'dbxref_id' => array (
-          'accession' => $accession,
-          'db_id' => array(
-            'name' => $dbname
-          ),
-        ),
-      );
-      $options = array('statement_name' => 'sel_pubdbxref_db');
-      $results = tripal_core_chado_select('pub_dbxref', array('pub_id'), $values, $options);
-      if(count($results) == 1) {
-        $pub_id = $results[0]->pub_id;     
-      }
-      elseif(count($results) > 1) {
-        watchdog('tripal_pub', "There are two publications with this accession: %db:%accession. Cannot determine which to update.", 
-          array('%db' => $dbname, '%accession' => $accession), WATCHDOG_ERROR);     
-        return FALSE;    
-      }
+    $results = tripal_pub_get_pubs_by_dbxref($pub_details['Publication Dbxref']);       
+    if(count($results) == 1) {
+      $pub_id = $results[0];     
+    }
+    elseif(count($results) > 1) {
+      watchdog('tripal_pub', "There are two publications with this accession: %db:%accession. Cannot determine which to update.", 
+        array('%db' => $dbname, '%accession' => $accession), WATCHDOG_ERROR);     
+      return FALSE;    
     }
     // If we found the publication and we do not want to do the update then
     // return true to indicate the publication has been added
@@ -373,22 +467,14 @@ function tripal_pub_add_publication($pub_details, $do_contact, $update = FALSE) 
   // yet exist or it has been added using a different publication database) then
   // try to find it using the title and publication year.
   elseif ($pub_details['Title']) {
-    $values = array();
-    $values['title'] = $pub_details['Title'];
-    $stmnt_suffix = 'ti';
-    if ($pub_details['Year']) {
-      $values['pyear'] = $pub_details['Year'];
-      $stmnt_suffix .= 'py';
-    }
-    $options = array('statement_name' => 'sel_pub_');
-    $results = tripal_core_chado_select('pub', array('*'), $values, $options);
-
+    $results = tripal_pub_get_pubs_by_title_type_pyear($pub_details['Title'], $pub_details['Publication Type'], $pub_details['Year']);    
     if (count($results) == 1) {
-      $pub_id = $results[0]->pub_id;
+      $pub_id = $results[0];
     }
     elseif (count($results) > 1) {
-      watchdog('tripal_pub', "The publication with the same title is present multiple times. Cannot ".
-        "determine which to use.  Title: %title", array('%title' => $pub_details['Title']), WATCHDOG_ERROR);     
+      watchdog('tripal_pub', "The publication with the same title, type and year is present multiple times. Cannot ".
+        "determine which to use.  Title: '%title'. Type: '%type'. Year: '%year'", 
+        array('%title' => $pub_details['Title'], '%type' => $pub_details['Publication Type'], '%year' => $pub_details['Year']), WATCHDOG_ERROR);     
       return FALSE;          
     }
     // If we found the publication and we do not want to do the update then

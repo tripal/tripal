@@ -174,6 +174,82 @@ function chado_pub_form($node, $form_state) {
 /*
  * 
  */
+function chado_pub_validate($node) {
+  
+  // get the submitted values
+  $title        = trim($node->title);
+  $uniquename   = trim($node->uniquename);
+  $type_id      = trim($node->type_id);
+  $volume       = trim($node->volume);
+  $volumetitle  = trim($node->volumetitle);
+  $series_name  = trim($node->series_name);
+  $issue        = trim($node->issue);
+  $pyear        = trim($node->pyear);
+  $pages        = trim($node->pages);
+  $miniref      = trim($node->miniref);
+  $publisher    = trim($node->publisher);
+  $pubplace     = trim($node->pubplace);
+  $is_obsolete  = $node->is_obsolete;
+  $pub_id       = $node->pub_id;
+  
+  // if this is a delete then don't validate
+  if($node->op == 'Delete') {
+    return;
+  }
+
+  // make sure the year is four digits
+  if(!preg_match('/^\d\d\d\d$/', $pyear)){
+    form_set_error('pyear', t('The publication year should be a 4 digit year.'), array());
+  }
+  
+  // get the type of publication
+  $values = array('cvterm_id' => $type_id);
+  $options = array('statement_name' => 'sel_pub_ty');
+  $cvterm = tripal_core_chado_select('cvterm', array('name'), $values, $options);
+  if (count($cvterm) == 0) {
+    form_set_error('type_id', t('Invalided publication type.'), array());
+    return;
+  }
+
+  // on an insert (no $pub_id) make sure the publication doesn't already exist
+  if (!$pub_id) {
+    $results = tripal_pub_get_pubs_by_title_type_pyear($title, $cvterm[0]->name, $pyear);   
+    if (count($results) > 0) {
+      form_set_error('pyear',t('A publication with this title, type and publication year, already exists.  Cannot add this publication'), array());
+    }
+  }
+  
+  // on an update, make sure that if the title has changed that it doesn't
+  // conflict with any other publication
+  if ($pub_id) {
+    // first get the original title, type and year before it was changed
+    $values = array('pub_id' => $pub_id);
+    $columns =  array('title','pyear','type_id');
+    $options = array('statement_name' => 'sel_pub_id');
+    $pub = tripal_core_chado_select('pub', $columns, $values, $options);
+    
+    // if the title or year doesn't match then it was changed and we want to make
+    // sure it doesn't already exist in another publication
+    if((strcmp($pub[0]->title, $title) != 0) or
+       ($pub[0]->type_id != $type_id) or
+       ($pub[0]->year != $pyear)) {
+      $results = tripal_pub_get_pubs_by_title_type_pyear($title, $cvterm[0]->name, $pyear);
+
+      // make sure we don't capture our pub_id in the list (remove it)
+      foreach ($results as $index => $found_pub_id) {
+        if($found_pub_id == $pub_id){
+          unset($results[$index]);
+        }
+      }         
+      if (count($results) > 0) {
+        form_set_error('pyear',t('A publication with this title and publication year, already exists.  Cannot update this publication'), array());       
+      }
+    }
+  } 
+}
+/*
+ * 
+ */
 function chado_pub_node_form_add_new_empty_props(&$form, $properties_select) {
   
   // add one more blank set of property fields
