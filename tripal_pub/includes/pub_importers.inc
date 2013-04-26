@@ -38,7 +38,7 @@ function tripal_pub_importers_list() {
     )
   );
 
-  $page = theme('table', $header, $rows, array('id' => 'tripal-pub-importer-table'));
+  $page = theme('table', $header, $rows);
   return $page;
 }
 
@@ -126,7 +126,7 @@ function theme_tripal_pub_importer_setup_form($form) {
   $markup .= '</div>';
   $markup .= '<div id="pub-search-form-row2">' . drupal_render($form['disabled']) . '</div>'; 
   $markup .= '<div id="pub-search-form-row3">' . drupal_render($form['do_contact']) . '</div>';
-  $markup .= theme('table', $headers, $rows);
+  $markup .= theme('table', $headers, $rows, array('id' => 'tripal-pub-importer-table'));
   
   $form['criteria'] = array(
     '#type' => 'markup',
