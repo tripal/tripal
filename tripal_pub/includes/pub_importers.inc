@@ -38,7 +38,7 @@ function tripal_pub_importers_list() {
     )
   );
 
-  $page = theme('table', $header, $rows);
+  $page = theme('table', $header, $rows, array('id' => 'tripal-pub-importer-table'));
   return $page;
 }
 
