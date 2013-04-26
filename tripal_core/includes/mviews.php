@@ -410,6 +410,9 @@ function tripal_mviews_form_submit($form, &$form_state) {
   $comment = $form_state['values']['comment'];
   $schema = $form_state['values']['schema'];
   $modulename = $form_state['values']['modulename'];
+  if (!$modulename) {
+    $modulename = 'tripal_core';
+  }
 
   if (strcmp($action, 'Edit') == 0) {
     tripal_edit_mview($mview_id, $name, $modulename, $mv_table, $mv_specs,
