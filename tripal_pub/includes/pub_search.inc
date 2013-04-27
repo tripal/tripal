@@ -6,7 +6,7 @@ function tripal_pub_search_page() {
   global $pager_total, $pager_total_items;
   
   $pager_id = 0;
-  $limit = 10;
+  $limit = 25;
   
   // generate the search form 
   $form = drupal_get_form('tripal_pub_search_form');  
@@ -284,7 +284,7 @@ function tripal_pub_search_page_update_criteria($action, $i) {
 function tripal_pub_get_search_results($search_array, $limit, $pager_id) {
 
   // build the SQL based on the criteria provided by the user
-  $select = "SELECT P.*, CP.nid ";
+  $select = "SELECT DISTINCT P.*, CP.nid ";
   $from   = "FROM {pub} P
                LEFT JOIN public.chado_pub CP on P.pub_id = CP.pub_id 
             ";
@@ -348,6 +348,7 @@ function tripal_pub_get_search_results($search_array, $limit, $pager_id) {
     $from .= " INNER JOIN {pubprop} PP ON PP.pub_id = P.pub_id ";    
   }
   $sql = "$select $from $where $order";
+  $count = "SELECT count(*) FROM ($select $from $where $order) as t1";
   //dpm(array($mode, $sql, $args));
-  return chado_pager_query($sql, $limit, $pager_id, NULL, $args);
+  return chado_pager_query($sql, $limit, $pager_id, $count, $args);
 }
