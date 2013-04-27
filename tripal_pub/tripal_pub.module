@@ -7,6 +7,7 @@ require_once "includes/pub_form.inc";
 require_once "includes/pub_importers.inc";
 require_once "includes/pubmed.inc";
 require_once "includes/agricola.inc";
+require_once "includes/pub_search.inc";
 /**
  * @file
  *
@@ -65,7 +66,23 @@ function tripal_pub_node_info() {
 function tripal_pub_menu() {
   $items = array();
   
-  $items['admin/tripal/tripal_pub' ]= array(
+  
+  $items['find/publications' ]= array(
+    'title' => 'Publication Search',
+    'description' => ('Search for publications'),
+    'page callback' => 'tripal_pub_search_page',
+    'access arguments' => array('access chado_pub content'),
+    'type' => MENU_NORMAL_ITEM
+  );
+  
+  $items['find/publications/criteria/%/%'] = array(
+    'page callback' => 'tripal_pub_search_page_update_criteria',
+    'page arguments' => array(5, 6),
+    'access arguments' => array('administer tripal pubs'),    
+    'type ' => MENU_CALLBACK,
+  );
+  
+  $items['admin/tripal/tripal_pub']= array(
     'title' => 'Publications',
     'description' => ('A module for interfacing the GMOD chado database with Drupal, providing viewing of publications'),
     'page callback' => 'theme',
@@ -164,6 +181,7 @@ function tripal_pub_menu() {
 function tripal_pub_theme() {
 
   return array(
+    // node templates
     'tripal_pub_base' => array(
       'arguments' => array('node' => NULL),
     ),
@@ -179,16 +197,23 @@ function tripal_pub_theme() {
     'tripal_pub_relationships' => array(
       'arguments' => array('node' => NULL)
     ),
-    'tripal_pub_importer_setup_form' => array(
-       'arguments' => array('form'),
-    ),
-    'chado_pub_node_form' => array(
-       'arguments' => array('form'),
-    ),
+    
+    // instructions page for the pub module
     'tripal_pub_admin' => array(
       'template' => 'tripal_pub_admin',  
       'arguments' =>  array(NULL),  
       'path' => drupal_get_path('module', 'tripal_pub') . '/theme' 
+    ),
+    
+    // themed forms
+    'tripal_pub_importer_setup_form' => array(
+       'arguments' => array('form'),
+    ),
+    'tripal_pub_search_form' => array(
+       'arguments' => array('form'),
+    ),
+    'chado_pub_node_form' => array(
+       'arguments' => array('form'),
     ),
   );
 }
@@ -684,6 +709,9 @@ function tripal_pub_form_alter(&$form, &$form_state, $form_id) {
     if ($form_state['values']['action'] == 'new') {
       $form['#action'] = url("admin/tripal/tripal_pub/import/new");
     }
+  }
+  if ($form_id == "tripal_pub_search_form") {    
+    $form['#action'] = url("find/publications");
   }
   if ($form_id == "chado_pub_node_form") {
   }

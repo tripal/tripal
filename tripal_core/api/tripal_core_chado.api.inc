@@ -2339,6 +2339,8 @@ function tripal_core_exclude_field_from_feature_by_default() {
  *   The number of query results to display per page.
  * @param $element
  *   An optional integer to distinguish between multiple pagers on one page.
+ * @param $count_query
+ *   An SQL query used to count matching records.
  *
  * @returns
  *   A database query result resource or FALSE if the query was not
@@ -2346,7 +2348,7 @@ function tripal_core_exclude_field_from_feature_by_default() {
  *
  * @ingroup tripal_chado_api
  */
-function chado_pager_query($query, $limit, $element, $count) {
+function chado_pager_query($query, $limit, $element, $count_query) {
 
   // The following code is almost an exact duplicate of the
   // Drupal pager_query function. However, substitions have
@@ -2465,6 +2467,7 @@ function chado_query($sql) {
     }
     // if we're local we can just run the query
     if ($is_local) {
+      //dpm($query);
       $last_result = pg_query($persistent_chado, $query);
     }
     else {
