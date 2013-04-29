@@ -38,15 +38,33 @@ function tripal_pub_search_page() {
     $rows = array();
     $i = $page * $limit + 1;
     while($pub = db_fetch_object($pubs)) {
-      $citation =  $pub->uniquename;
-      if ($pub->nid) {
-        $citation = l($pub->uniquename,'node/' . $pub->nid, array('attributes' => array('target' => '_blank')));
+      // get the citation for this publication
+      $values = array(
+        'pub_id' => $pub->pub_id, 
+        'type_id' => array(
+          'name' => 'Citation',
+        ),
+      );
+      $citation_rec = tripal_core_generate_chado_var('pubprop', $values); 
+      $citation_rec = tripal_core_expand_chado_vars($citation_rec, 'field', 'pubprop.value');
+      // if we have the citation then use it, otherwise, just use the title
+      if ($citation_rec->value) {
+        $citation = $citation_rec->value;
+        if ($pub->nid) {
+          $citation = l($citation_rec->value ,'node/' . $pub->nid, array('attributes' => array('target' => '_blank')));
+        }
+      } 
+      else {
+        $citation = $pub->title;
+        if ($pub->nid) {
+          $citation = l($pub->title ,'node/' . $pub->nid, array('attributes' => array('target' => '_blank')));
+        }
       }
-      $rows[] = array(number_format($i), $pub->pyear, $citation);
+      $rows[] = array(number_format($i) . ".", $pub->pyear, $citation);
       $i++;
     }
 
-    $headers = array('', 'Year', 'Citation');
+    $headers = array('', 'Year', 'Publication');
     $table = theme('table', $headers, $rows);   
   
     // join all to form the results
