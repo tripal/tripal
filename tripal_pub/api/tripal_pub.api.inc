@@ -100,7 +100,7 @@ function tripal_pub_get_raw_data($dbxref) {
     $search['num_criteria'] = 0;
     $pubs = tripal_pub_get_remote_search_results($remote_db, $search, 1, 0);
     
-    return '<textarea cols=80 rows=20>' . $pubs[0]['xml'] . '</textarea>';
+    return '<textarea cols=80 rows=20>' . $pubs[0]['raw'] . '</textarea>';
   }  
   return 'Invalid DB xref';    
 }
@@ -566,7 +566,10 @@ function tripal_pub_add_publication($pub_details, $do_contact = FALSE, $update =
   } 
   
   foreach ($pub_details as $key => $value) {
-     
+     // the pub_details may have the raw search data (e.g. in XML from PubMed.  We'll irgnore this for now
+     if($key == 'raw') {
+       continue;
+     }         
      // get the cvterm by name or synonym
      $cvterm = tripal_cv_get_cvterm_by_name($key, NULL, 'tripal_pub');
      if (!$cvterm) {

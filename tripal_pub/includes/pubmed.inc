@@ -335,7 +335,7 @@ function tripal_pub_PMID_parse_pubxml($pub_xml) {
     $pub['Citation'] .= ':' . $pub['Pages'];
   }
   
-  $pub['xml'] = $pub_xml;
+  $pub['raw'] = $pub_xml;
   return $pub;
 }
 
