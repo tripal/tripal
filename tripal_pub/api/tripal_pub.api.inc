@@ -107,7 +107,7 @@ function tripal_pub_get_raw_data($dbxref) {
 /*
  * @ingroup tripal_pub_api
  */
-function tripal_pub_update_publications($do_contact = FALSE) {
+function tripal_pub_update_publications($do_contact = FALSE, $dbxref = NULL) {
   
   // get a persistent connection
   $connection = tripal_db_persistent_chado();
@@ -131,9 +131,17 @@ function tripal_pub_update_publications($do_contact = FALSE) {
       INNER JOIN pub_dbxref PDBX ON P.pub_id = PDBX.pub_id
       INNER JOIN dbxref DBX      ON DBX.dbxref_id = PDBX.dbxref_id
       INNER JOIN db DB           ON DB.db_id = DBX.db_id
-    ORDER BY DB.name, P.pub_id
   ";
-  $results = chado_query($sql);
+  $args = array();
+  if ($dbxref and preg_match('/^(.*?):(.*?)$/', $dbxref, $matches)) {
+    $dbname = $matches[1];
+    $accession = $matches[2];
+    $sql .= "WHERE DBX.accession = '%s' and DB.name = '%s' ";
+    $args[] = $accession;
+    $args[] = $dbname;    
+  }
+  $sql .= "ORDER BY DB.name, P.pub_id";
+  $results = chado_query($sql, $args);
   
   $num_to_retrieve = 100;
   $i = 0;                 // count the number of IDs. When we hit $num_to_retrieve we'll do the query
@@ -496,7 +504,7 @@ function tripal_pub_add_publication($pub_details, $do_contact = FALSE, $update =
     // return true to indicate the publication has been added
     if (!$update and $pub_id) {
       return TRUE;
-    }
+    }    
   }   
   // if we couldn't find a publication by the accession (which means it doesn't
   // yet exist or it has been added using a different publication database) then
@@ -519,27 +527,28 @@ function tripal_pub_add_publication($pub_details, $do_contact = FALSE, $update =
     }
   }
   
-  // if we couldn't find the publication using the database accession or the title/year then add it
-  if(!$pub_id) {  
-    // get the publication type (use the first publication type, any others will get stored as properties)
-    $pub_type = tripal_cv_get_cvterm_by_name($pub_details['Publication Type'][0], NULL, 'tripal_pub');
-    if (!$pub_type) {
-      watchdog('tripal_pub', "Cannot find publication type: '%type'", 
-        array('%type' => $pub_details['Publication Type'][0]), WATCHDOG_ERROR);
-      return FALSE;   
-    }
-    // if the publication does not exist then create it.      
-    $values = array(
-      'title'       => $pub_details['Title'],
-      'volume'      => $pub_details['Volume'],
-      'series_name' => $pub_details['Journal Name'],
-      'issue'       => $pub_details['Issue'],
-      'pyear'       => $pub_details['Year'],
-      'pages'       => $pub_details['Pages'],
-      'uniquename'  => $pub_details['Citation'],
-      'type_id'     => $pub_type->cvterm_id,
-    );
-    $options = array('statement_name' => 'ins_pub_tivoseispypaunty');
+  // get the publication type (use the first publication type, any others will get stored as properties)
+  $pub_type = tripal_cv_get_cvterm_by_name($pub_details['Publication Type'][0], NULL, 'tripal_pub');
+  if (!$pub_type) {
+    watchdog('tripal_pub', "Cannot find publication type: '%type'", 
+      array('%type' => $pub_details['Publication Type'][0]), WATCHDOG_ERROR);
+    return FALSE;   
+  }
+  // if the publication does not exist then create it.      
+  $values = array(
+    'title'       => $pub_details['Title'],
+    'volume'      => $pub_details['Volume'],
+    'series_name' => $pub_details['Journal Name'],
+    'issue'       => $pub_details['Issue'],
+    'pyear'       => $pub_details['Year'],
+    'pages'       => $pub_details['Pages'],
+    'uniquename'  => $pub_details['Citation'],
+    'type_id'     => $pub_type->cvterm_id,
+  );
+  
+  // if there is no pub_id then we need to do an insert.
+  if (!$pub_id) {
+    $options = array('statement_name' => 'ins_pub_tivoseispypaunty');  
     $pub = tripal_core_chado_insert('pub', $values, $options);     
     if (!$pub) {
       watchdog('tripal_pub', "Cannot insert the publication with title: %title", 
@@ -547,7 +556,18 @@ function tripal_pub_add_publication($pub_details, $do_contact = FALSE, $update =
       return FALSE;   
     }
     $pub_id = $pub['pub_id'];
-  } 
+  }
+  elseif($update) {
+    $match = array('pub_id' => $pub_id);
+    $options = array('statement_name' => 'up_pub_tivoseispypaunty');  
+    $success = tripal_core_chado_update('pub', $match, $values, $options);     
+    if (!$success) {
+      watchdog('tripal_pub', "Cannot update the publication with title: %title", 
+        array('%title' => $pub_details['Title']), WATCHDOG_ERROR);
+      return FALSE;   
+    } 
+  }
+
   
   // before we add any new properties we need to remove those that are there if this 
   // is an update.  The only thing we don't want to remove are the 'Publication Dbxref'

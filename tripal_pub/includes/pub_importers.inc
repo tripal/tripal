@@ -217,7 +217,10 @@ function tripal_pub_importer_setup_form(&$form_state = NULL, $pub_import_id = NU
     '#required'      => TRUE,
   );
    
-  $remote_dbs = array('PMID' => 'Pubmed');
+  $remote_dbs = array(
+    'PMID' => 'Pubmed',
+    'AGRICOLA' => 'AGRICOLA',
+  );
   $form['remote_db'] = array(
     '#title' => t('Remote Database'),
     '#type' => 'select',
