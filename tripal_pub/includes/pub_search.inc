@@ -393,13 +393,13 @@ function tripal_pub_get_search_results($search_array, $limit, $pager_id) {
     
     $action = "= lower('%s')";
     if($mode == 'Contains') {
-      $action = "LIKE lower('%%%s%%')";
+      $action = 'LIKE lower(\'%%%s%%\')';
     }
     if($mode == 'Starts With') {
-      $action = "= lower('%%%s')";  
+      $action = '= lower(\'%%%s\')';  
     }
     if($mode == 'Ends With') {
-      $action = "= lower('%s%%')";  
+      $action = '= lower(\'%s%%\')';  
     }
    
     // get the scope type
@@ -422,11 +422,29 @@ function tripal_pub_get_search_results($search_array, $limit, $pager_id) {
       $where .= " $op (lower(P.issue)  $action)";
       $args[] = $value;
     }
+    elseif ($type_name == 'Journal Name') {
+      $join = 1;
+      $where .= " $op (lower(P.series_name) $action OR (lower(PP.value) $action AND PP.type_id = %d)) ";
+      $args[] = $value;  
+      $args[] = $value;
+      $args[] = $type_id;
+    }
     elseif ($type_id == 0) { //'Any Field'
       $join = 1;
-      $where .= " $op ((lower(PP.value)  $action) OR (lower(P.title) $action)) ";
+      $where .= " $op (lower(PP.value)  $action OR 
+                       lower(P.title) $action OR 
+                       lower(P.volumetitle) $action OR
+                       lower(P.publisher) $action OR
+                       lower(P.pubplace) $action OR
+                       lower(P.miniref) $action OR
+                       lower(P.series_name) $action) ";
       $args[] = $value;
       $args[] = $value;  
+      $args[] = $value;
+      $args[] = $value;
+      $args[] = $value;
+      $args[] = $value;
+      $args[] = $value;
     }
     else {
       $join = 1;
