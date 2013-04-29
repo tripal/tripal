@@ -113,20 +113,27 @@ function tripal_pub_search_form(&$form_state = NULL) {
   }
   
   for($i = 0; $i <= $num_criteria; $i++) {
+    $search_terms = '';
+    $scope = '';
+    $operation = '';
+    $mode = '';
     // if we have criteria supplied from the database then use that, othrewise look from the form_state or the session
     if ($criteria) {
       $search_terms = $criteria['criteria'][$i]['search_terms'];
       $scope = $criteria['criteria'][$i]['scope'];
+      $mode = $criteria['criteria'][$i]['mode'];
       $operation = $criteria['criteria'][$i]['operation'];
     }
     // first populate defaults using any values in the SESSION variable
     $search_terms = $_SESSION['tripal_pub_search_form']['criteria'][$i]['search_terms'] ? $_SESSION['tripal_pub_search_form']['criteria'][$i]['search_terms'] : $search_terms;
     $scope        = $_SESSION['tripal_pub_search_form']['criteria'][$i]['scope']        ? $_SESSION['tripal_pub_search_form']['criteria'][$i]['scope']        : $scope;
+    $mode         = $_SESSION['tripal_pub_search_form']['criteria'][$i]['mode']         ? $_SESSION['tripal_pub_search_form']['criteria'][$i]['mode']         : $mode;
     $operation    = $_SESSION['tripal_pub_search_form']['criteria'][$i]['operation']    ? $_SESSION['tripal_pub_search_form']['criteria'][$i]['operation']    : $operation;
     
     // next populate defaults using any form values
     $search_terms = $form_state['values']["search_terms-$i"] ? $form_state['values']["search_terms-$i"] : $search_terms;
     $scope        = $form_state['values']["scope-$i"]        ? $form_state['values']["scope-$i"]        : $scope;
+    $mode         = $form_state['values']["mode-$i"]         ? $form_state['values']["mode-$i"]         : $mode;
     $operation    = $form_state['values']["operation-$i"]    ? $form_state['values']["operation-$i"]    : $operation;
     
     // default to searching the title and abstract
@@ -337,12 +344,18 @@ function tripal_pub_get_search_results($search_array, $limit, $pager_id) {
       $where .= " $op (lower(P.issue)  $action)";
       $args[] = $value;
     }
+    elseif ($type_id == 0) { //'Any Field'
+      $join = 1;
+      $where .= " $op ((lower(PP.value)  $action) OR (lower(P.title) $action)) ";
+      $args[] = $value;  
+    }
     else {
       $join = 1;
       $where .= " $op (lower(PP.value) $action AND PP.type_id = %d) ";
       $args[] = $value;
       $args[] = $type_id;
     }
+
   }  
   if ($join) {
     $from .= " INNER JOIN {pubprop} PP ON PP.pub_id = P.pub_id ";    
