@@ -347,6 +347,7 @@ function tripal_pub_get_search_results($search_array, $limit, $pager_id) {
     elseif ($type_id == 0) { //'Any Field'
       $join = 1;
       $where .= " $op ((lower(PP.value)  $action) OR (lower(P.title) $action)) ";
+      $args[] = $value;
       $args[] = $value;  
     }
     else {
