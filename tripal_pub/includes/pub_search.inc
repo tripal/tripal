@@ -15,9 +15,13 @@ function tripal_pub_search_page() {
   // retrieve any results       
   if ($_SESSION['tripal_pub_search_form']['perform_search']) {
     $num_criteria = $_SESSION['tripal_pub_search_form']['num_criteria'];
+    $from_year    = $_SESSION['tripal_pub_search_form']['from_year'];
+    $to_year      = $_SESSION['tripal_pub_search_form']['to_year'];
      
     $search_array = array();
     $search_array['num_criteria'] = $num_criteria;
+    $search_array['from_year'] = $from_year;
+    $search_array['to_year'] = $to_year;
     for ($i = 0; $i <= $num_criteria; $i++) {
       $search_array['criteria'][$i]['search_terms'] = $_SESSION['tripal_pub_search_form']['criteria'][$i]['search_terms'];
       $search_array['criteria'][$i]['scope']        = $_SESSION['tripal_pub_search_form']['criteria'][$i]['scope'];  
@@ -47,20 +51,20 @@ function tripal_pub_search_page() {
       );
       $citation_rec = tripal_core_generate_chado_var('pubprop', $values); 
       $citation_rec = tripal_core_expand_chado_vars($citation_rec, 'field', 'pubprop.value');
+      
       // if we have the citation then use it, otherwise, just use the title
       if ($citation_rec->value) {
-        $citation = $citation_rec->value;
-        if ($pub->nid) {
-          $citation = l($citation_rec->value ,'node/' . $pub->nid, array('attributes' => array('target' => '_blank')));
-        }
+        $pub_info = $citation_rec->value;
       } 
       else {
-        $citation = $pub->title;
-        if ($pub->nid) {
-          $citation = l($pub->title ,'node/' . $pub->nid, array('attributes' => array('target' => '_blank')));
-        }
+        $pub_info = $pub->title;     
       }
-      $rows[] = array(number_format($i) . ".", $pub->pyear, $citation);
+      
+      // if the publication has a node then link to it
+      if ($pub->nid) {
+        $pub_info = l($pub_info ,'node/' . $pub->nid, array('attributes' => array('target' => '_blank')));
+      }
+      $rows[] = array(number_format($i) . ".", $pub->pyear, $pub_info);
       $i++;
     }
 
@@ -89,6 +93,8 @@ function tripal_pub_search_form(&$form_state = NULL) {
   // if the session has variables then use those.  This should only happen when
   // the 'Test Criteria' button is clicked.
   $num_criteria = $_SESSION['tripal_pub_search_form']['num_criteria'] ? $_SESSION['tripal_pub_search_form']['num_criteria'] : $num_criteria;    
+  $from_year = $_SESSION['tripal_pub_search_form']['from_year'] ? $_SESSION['tripal_pub_search_form']['from_year'] : '';
+  $to_year = $_SESSION['tripal_pub_search_form']['to_year'] ? $_SESSION['tripal_pub_search_form']['to_year'] : '';
  
   
   // If the form_state has variables then use those.  This happens when an error occurs on the form or the 
@@ -135,6 +141,7 @@ function tripal_pub_search_form(&$form_state = NULL) {
     $scope = '';
     $operation = '';
     $mode = '';
+    
     // if we have criteria supplied from the database then use that, othrewise look from the form_state or the session
     if ($criteria) {
       $search_terms = $criteria['criteria'][$i]['search_terms'];
@@ -220,7 +227,23 @@ function tripal_pub_search_form(&$form_state = NULL) {
       );
     }
   }
-  
+  $form['criteria']["from_year"] = array(
+    '#type'          => 'textfield',
+    '#default_value' => $from_year,
+    '#required'      => FALSE,
+    '#title'         => 'Years from',
+    '#size'          => 4,
+    '#maxlength'     => 4,
+  );
+  $form['criteria']["to_year"] = array(
+    '#type'          => 'textfield',
+    '#default_value' => $to_year,
+    '#required'      => FALSE,
+    '#title'         => 'to',
+    '#size'          => 4,
+    '#maxlength'     => 4,
+  );
+    
   $form['search'] = array(
     '#type'         => 'submit',
     '#value'        => t('Search'),
@@ -244,7 +267,18 @@ function theme_tripal_pub_search_form($form) {
     }
   } 
   $headers = array('Operation','Scope', 'Search Terms', '');  
-  $markup = theme('table', $headers, $rows, array('id' => 'tripal-pub-search-table'));
+  $markup  = "
+     <div id=\"pub-search-form-row1\"> ".
+       theme('table', $headers, $rows, array('id' => 'tripal-pub-search-table')) . "
+     </div>
+     <div id=\"pub-search-form-row2\"> 
+       <div id=\"pub-search-form-dates\"> ".
+        drupal_render($form['criteria']['from_year']) . 
+        drupal_render($form['criteria']['to_year']) . '
+      </div>
+     </div>
+     <div style="clear: both;">
+  '; 
   
   $form['criteria'] = array(
     '#type' => 'markup',
@@ -256,9 +290,31 @@ function theme_tripal_pub_search_form($form) {
 /**
  *
  */
+function tripal_pub_search_form_validate($form, &$form_state) {
+  $from_year = $form_state['values']['from_year'];
+  $to_year = $form_state['values']['to_year'];
+    
+  if($from_year and !$to_year) {
+    form_set_error('to_year', 'Please provide a 4-digit year.');
+  }  
+  if(!$from_year and $to_year) {
+    form_set_error('from_year', 'Please provide a 4-digit year.');
+  }
+  if(!preg_match('/\d\d\d\d/' , $from_year)) {
+    form_set_error('from_year', 'Please provide a 4-digit year.');
+  }
+  if(!preg_match('/\d\d\d\d/' , $to_year)) {
+    form_set_error('to_year', 'Please provide a 4-digit year.');
+  }  
+}
+/**
+ *
+ */
 function tripal_pub_search_form_submit($form, &$form_state) {
    
   $num_criteria = $form_state['values']['num_criteria'];
+  $from_year    = $form_state['values']['from_year'];
+  $to_year      = $form_state['values']['to_year'];
 
   // set the session variables
   $_SESSION['tripal_pub_search_form']['num_criteria'] = $num_criteria;  
@@ -276,7 +332,8 @@ function tripal_pub_search_form_submit($form, &$form_state) {
       'operation' => $operation
     );
   }
-  
+  $_SESSION['tripal_pub_search_form']['from_year'] = $from_year;
+  $_SESSION['tripal_pub_search_form']['to_year'] = $to_year;
   $_SESSION['tripal_pub_search_form']['perform_search'] = 1;
 }
 
@@ -319,6 +376,9 @@ function tripal_pub_get_search_results($search_array, $limit, $pager_id) {
   $join = 0;
   
   $num_criteria = $search_array['num_criteria'];
+  $from_year    = $search_array['from_year'];
+  $to_year      = $search_array['to_year'];
+  
   for ($i = 0; $i <= $num_criteria; $i++) {
     $value = $search_array['criteria'][$i]['search_terms'];
     $type_id = $search_array['criteria'][$i]['scope'];
@@ -378,6 +438,11 @@ function tripal_pub_get_search_results($search_array, $limit, $pager_id) {
   }  
   if ($join) {
     $from .= " INNER JOIN {pubprop} PP ON PP.pub_id = P.pub_id ";    
+  }
+  if($from_year and $to_year) {
+    $where .= " AND (to_number(P.pyear,'9999') >= %d and to_number(P.pyear,'9999') <= %d) ";
+    $args[] = $from_year;
+    $args[] = $to_year;
   }
   $sql = "$select $from $where $order";
   $count = "SELECT count(*) FROM ($select $from $where $order) as t1";
