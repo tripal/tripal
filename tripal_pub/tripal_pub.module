@@ -127,6 +127,13 @@ function tripal_pub_menu() {
     'type ' => MENU_CALLBACK,
   );
   
+  $items['admin/tripal/tripal_pub/import/raw/%'] = array(
+    'page callback' => 'tripal_pub_get_raw_data',
+    'page arguments' => array(5),
+    'access arguments' => array('administer tripal pubs'),
+    'type ' => MENU_CALLBACK,
+  );
+  
   $items['admin/tripal/tripal_pub/import/edit/%'] = array(    
     'page callback' => 'tripal_pub_importer_setup',
     'page arguments' => array(4, 5),

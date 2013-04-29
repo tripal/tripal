@@ -64,13 +64,14 @@ function tripal_pub_sync_pub($pub) {
   global $user;
   
   $new_node = new stdClass();
-  $new_node->pub_id = $pub->pub_id;
-  $new_node->type = 'chado_pub';
-  $new_node->uid = $user->uid;
-  $new_node->title = $pub->title;
-  $new_node->pyear = $pub->pyear;
-  $new_node->uniquename = $pub->uniquename;
-  $new_node->type_id = $pub->type_id;
+  $new_node->pub_id      = $pub->pub_id;
+  $new_node->type        = 'chado_pub';
+  $new_node->uid         = $user->uid;
+  $new_node->title       = $pub->title;
+  $new_node->pyear       = $pub->pyear;
+  $new_node->uniquename  = $pub->uniquename;
+  $new_node->type_id     = $pub->type_id;
+  $new_node->series_name = $pub->series_name;
 
   node_validate($new_node);
   $errors = form_get_errors();

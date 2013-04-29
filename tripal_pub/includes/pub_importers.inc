@@ -76,7 +76,7 @@ function tripal_pub_importer_setup($action = 'new', $pub_import_id = NULL) {
   if ($_SESSION['tripal_pub_search']['perform_search']) {
     // get the list of publications from the remote database using the search criteria.  
     $pubs = tripal_pub_get_remote_search_results($remote_db, $search_array, $limit, $pager_id);
-  
+    
     // generate the pager
     $total_pages = $pager_total[$pager_id];
     $total_items = $pager_total_items[$pager_id];
@@ -88,15 +88,23 @@ function tripal_pub_importer_setup($action = 'new', $pub_import_id = NULL) {
     $i = $page * $limit + 1;
     if (count($pubs) > 0) {
       foreach ($pubs as $pub) {
-        $rows[] = array(number_format($i), $pub['Citation']);
+        $raw_link = '';
+        if($pub['Publication Dbxref']) {
+          $raw_link = l('raw', 'admin/tripal/tripal_pub/import/raw/' . $pub['Publication Dbxref'], array('attributes' => array('target' => '_blank')));
+        }
+        $rows[] = array(
+          number_format($i), 
+          $pub['Citation'], 
+          $raw_link,
+        );        
         $i++;
       }
     }
-    $headers = array('', 'Citation');
+    $headers = array('', 'Publication', '');
     $table = theme('table', $headers, $rows);   
   
     // join all to form the results
-    $output .= "<br><p><b>Found " . number_format($total_items) .  
+    $output .= "<br>Search String: $search_str<br><p><b>Found " . number_format($total_items) .  
       ". Page " . ($page + 1) . " of $total_pages. " .
       " Results</b></br>" . $table . '</p>' . $pager;    
   }
@@ -334,10 +342,16 @@ function tripal_pub_importer_setup_form(&$form_state = NULL, $pub_import_id = NU
     '#type'         => 'submit',
     '#value'        => t('Save Importer'),
   );
+  /*
+  $form['import'] = array(
+    '#type'         => 'submit',
+    '#value'        => t('Save & Import Now'),
+  );*/
   $form['delete'] = array(
     '#type'         => 'submit',
     '#value'        => t('Delete Importer'),
   );
+
 
   return $form;
 }
@@ -401,7 +415,8 @@ function tripal_pub_importer_setup_form_submit($form, &$form_state) {
   if ($form_state['values']['op'] == 'Test Importer') {
     $_SESSION['tripal_pub_search']['perform_search'] = 1;
   }
-  if ($form_state['values']['op'] == 'Save Importer') {    
+  if ($form_state['values']['op'] == 'Save Importer' or 
+      $form_state['values']['op'] == 'Save & Import Now') {    
     $record = array(
       'name' => $loader_name,
       'criteria' => serialize($_SESSION['tripal_pub_search']),
@@ -428,7 +443,12 @@ function tripal_pub_importer_setup_form_submit($form, &$form_state) {
       // do the insert        
       if(drupal_write_record('tripal_pub_import', $record)){
         unset($_SESSION['tripal_pub_search']);
-        drupal_set_message('Publication import settings saved.');
+        drupal_set_message('Publication import settings saved.');        
+        // if the user wants to do the import now then do it (may time out
+        // for long jobs)
+        if ($form_state['values']['op'] == 'Save & Import Now') {
+          tripal_pub_import_publications($record['pub_import_id']);
+        }
         drupal_goto('admin/tripal/tripal_pub/import_list');
       }
       else {
@@ -446,7 +466,7 @@ function tripal_pub_importer_setup_form_submit($form, &$form_state) {
     else {
       drupal_set_message('Could not delete publication importer.', 'error');
     }
-  }  
+  } 
 }
 
 /*

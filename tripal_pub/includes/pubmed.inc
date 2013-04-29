@@ -28,27 +28,27 @@ function tripal_pub_remote_search_PMID($search_array, $num_to_retrieve, $pager_i
     }
     
     $search_str .= '(';
-    $search_str .= implode("+", preg_split('/\s+/', trim($search_terms)));
+    
     if($scope == 'title') {
-      $search_str .= '[Title]';
+      $search_str .= '"' . implode("+", preg_split('/\s+/', trim($search_terms))) . '"[Title]';
     }    
     elseif($scope == 'author') {
-      $search_str .= '[Author]';
+      $search_str .= '"' . implode("+", preg_split('/\s+/', trim($search_terms))) . '"[Author]';
     }    
     elseif($scope == 'abstract') {
-      $search_str .= '[Title/Abstract]';
+      $search_str .= '"' . implode("+", preg_split('/\s+/', trim($search_terms))) . '"[Title/Abstract]';
     }
     elseif($scope == 'id') {
-      $search_str .= '[Uid]';
-    }
+      $search_str .= '' . implode("+", preg_split('/\s+/', trim($search_terms))) . '[Uid]';      
+    }    
     $search_str .= ')'; 
   }  
   $search_array['limit'] = $num_to_retrieve;
-  $search_array['search_terms'] = $search_str;
-
+  $search_array['search_string'] = $search_str;
+    
   // we want to get the list of pubs using the search terms but using a Drupal style pager
-  $pubs = tripal_pager_callback('tripal_pub_PMID_range',  
-    $num_to_retrieve, $pager_id, 'tripal_pub_PMID_count', $search_array);
+  $pubs = tripal_pager_callback('tripal_pub_PMID_range',  $num_to_retrieve, $pager_id, 
+    'tripal_pub_PMID_count', $search_array);
  
   return $pubs;
 }
@@ -59,7 +59,7 @@ function tripal_pub_remote_search_PMID($search_array, $num_to_retrieve, $pager_i
  * the dataset to be paged.
  */
 function tripal_pub_PMID_count($search_array) {
-  $terms = $search_array['search_terms'];
+  $terms = $search_array['search_string'];
   $days  = $search_array['days'];
   $limit = $search_array['limit'];
   
@@ -67,7 +67,7 @@ function tripal_pub_PMID_count($search_array) {
   $_SESSION['tripal_pub_PMID_query'][$terms]['Count'] = $results['Count'];
   $_SESSION['tripal_pub_PMID_query'][$terms]['WebEnv'] = $results['WebEnv'];
   $_SESSION['tripal_pub_PMID_query'][$terms]['QueryKey'] = $results['QueryKey'];
-  
+   
   return $results['Count'];
 
 }
@@ -78,11 +78,14 @@ function tripal_pub_PMID_count($search_array) {
  * within the specified range
  */
 function tripal_pub_PMID_range($search_array, $start = 0, $limit = 10) {
-  $terms = $search_array['search_terms'];
+  $terms = $search_array['search_string'];
   $days  = $search_array['days'];
   $limit = $search_array['limit'];
   
   $count = $_SESSION['tripal_pub_PMID_query'][$terms]['Count'];
+  if ($count == 0) {
+    return array();
+  }
     
   // get the query_key and the web_env from the previous count query.
   $query_key = $_SESSION['tripal_pub_PMID_query'][$terms]['QueryKey'];
@@ -121,7 +124,11 @@ function tripal_pub_PMID_search_init($terms, $retmax, $days = 0){
   // do a search for a single result so that we can establish a history, and get
   // the number of records. Once we have the number of records we can retrieve
   // those requested in the range.
-  $query_url = "http://www.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=Pubmed&retmax=$retmax&usehistory=y&term=$terms";
+  $query_url = "http://www.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?" .
+    "db=Pubmed" .
+    "&retmax=$retmax" .
+    "&usehistory=y".
+    "&term=$terms";
   if($days) {
     $query_url .= "&reldate=$days&datetype=edat";
   }
@@ -181,8 +188,15 @@ function tripal_pub_PMID_fetch($query_key, $web_env, $rettype = 'null',
 
   // repeat the search performed previously (using WebEnv & QueryKey) to retrieve
   // the PMID's within the range specied.  The PMIDs will be returned as a text list
-  $fetch_url = "http://www.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?rettype=$rettype&retmode=$retmod&retstart=$start&retmax=$limit&db=Pubmed&query_key=$query_key&WebEnv=$web_env";
-  //dpm($fetch_url);
+  $fetch_url = "http://www.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?".
+    "rettype=$rettype" .
+    "&retmode=$retmod" . 
+    "&retstart=$start" .
+    "&retmax=$limit" .
+    "&db=Pubmed" .
+    "&query_key=$query_key".
+    "&WebEnv=$web_env";
+  
   foreach ($args as $key => $value) {
     if(is_array($value)) {
       $fetch_url .= "&$key=";
@@ -195,10 +209,10 @@ function tripal_pub_PMID_fetch($query_key, $web_env, $rettype = 'null',
       $fetch_url .= "&$key=$value";
     }
   }
-  
+  //dpm($fetch_url);
   $rfh = fopen($fetch_url, "r");
   if (!$rfh) {
-    drupal_set_message('Could not perform Pubmed query. Cannot connect to Entrez.', 'error');
+    drupal_set_message('ERROR: Could not perform PubMed query.', 'error');
     return '';    
   }
   $results = '';
@@ -321,7 +335,7 @@ function tripal_pub_PMID_parse_pubxml($pub_xml) {
     $pub['Citation'] .= ':' . $pub['Pages'];
   }
   
-  //$pub['xml'] = $pub_xml;
+  $pub['xml'] = $pub_xml;
   return $pub;
 }
 

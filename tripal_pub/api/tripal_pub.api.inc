@@ -76,6 +76,37 @@ function tripal_pub_get_remote_search_results($remote_db, $search_array,
 /*
  * @ingroup tripal_pub_api
  */
+function tripal_pub_get_raw_data($dbxref) {
+  
+  if(preg_match('/^(.*?):(.*?)$/', $dbxref, $matches)) {
+    $remote_db = $matches[1];
+    $accession = $matches[2];
+    
+    // check that the database is supported
+    $supported_dbs = variable_get('tripal_pub_supported_dbs', array());    
+    if(!in_array($remote_db, $supported_dbs)) {
+      return "Unsupported database: $dbxref";
+    }
+    // build the search criteria
+    $search = array(
+      'remote_db' => $remote_db,
+      'criteria' => array(
+        array(
+          'search_terms' => $accession,
+          'scope' => 'id',
+        ),
+      ),
+    );  
+    $search['num_criteria'] = 0;
+    $pubs = tripal_pub_get_remote_search_results($remote_db, $search, 1, 0);
+    
+    return '<textarea cols=80 rows=20>' . $pubs[0]['xml'] . '</textarea>';
+  }  
+  return 'Invalid DB xref';    
+}
+/*
+ * @ingroup tripal_pub_api
+ */
 function tripal_pub_update_publications($do_contact = FALSE) {
   
   // get a persistent connection
@@ -180,7 +211,7 @@ function tripal_pub_update_publications($do_contact = FALSE) {
 /*
  * @ingroup tripal_pub_api
  */
-function tripal_pub_import_publications() {
+function tripal_pub_import_publications($pub_import_id = NULL) {
   $num_to_retrieve = 100;
   $pager_id = 0;
   $page = 0;
@@ -198,12 +229,16 @@ function tripal_pub_import_publications() {
      print "\nNOTE: Loading of publications is performed using a database transaction. \n" .
            "If the load fails or is terminated prematurely then the entire set of \n" .
            "insertions/updates is rolled back and will not be found in the database\n\n";
-  }
-  
+  }  
   
   // get all of the loaders
-  $sql = "SELECT * FROM {tripal_pub_import} WHERE disabled = 0";
-  $results = db_query($sql);
+  $args = array();
+  $sql = "SELECT * FROM {tripal_pub_import} WHERE disabled = 0 ";
+  if ($pub_import_id) {
+    $sql .= " AND pub_import_id = %d";
+    $args[] = $pub_import_id;
+  }
+  $results = db_query($sql, $args);
   $do_contact = FALSE;
   while ($import = db_fetch_object($results)) {
     print "Importing: " . $import->name . "\n";
@@ -495,14 +530,14 @@ function tripal_pub_add_publication($pub_details, $do_contact = FALSE, $update =
     }
     // if the publication does not exist then create it.      
     $values = array(
-      'title' => $pub_details['Title'],
-      'volume' => $pub_details['Volume'],
+      'title'       => $pub_details['Title'],
+      'volume'      => $pub_details['Volume'],
       'series_name' => $pub_details['Journal Name'],
-      'issue' => $pub_details['Issue'],
-      'pyear' => $pub_details['Year'],
-      'pages' => $pub_details['Pages'],
-      'uniquename' => $pub_details['Citation'],
-      'type_id' => $pub_type->cvterm_id,
+      'issue'       => $pub_details['Issue'],
+      'pyear'       => $pub_details['Year'],
+      'pages'       => $pub_details['Pages'],
+      'uniquename'  => $pub_details['Citation'],
+      'type_id'     => $pub_type->cvterm_id,
     );
     $options = array('statement_name' => 'ins_pub_tivoseispypaunty');
     $pub = tripal_core_chado_insert('pub', $values, $options);     
