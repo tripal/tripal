@@ -38,15 +38,15 @@ function tripal_pub_search_page() {
     $rows = array();
     $i = $page * $limit + 1;
     while($pub = db_fetch_object($pubs)) {
-      $title =  $pub->title;
+      $citation =  $pub->uniquename;
       if ($pub->nid) {
-        $title = l($pub->title,'node/' . $pub->nid, array('attributes' => array('target' => '_blank')));
+        $citation = l($pub->uniquename,'node/' . $pub->nid, array('attributes' => array('target' => '_blank')));
       }
-      $rows[] = array(number_format($i), $pub->pyear, $title);
+      $rows[] = array(number_format($i), $pub->pyear, $citation);
       $i++;
     }
 
-    $headers = array('', 'Year', 'Title');
+    $headers = array('', 'Year', 'Citation');
     $table = theme('table', $headers, $rows);   
   
     // join all to form the results
