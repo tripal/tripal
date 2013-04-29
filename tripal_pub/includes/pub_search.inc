@@ -300,10 +300,10 @@ function tripal_pub_search_form_validate($form, &$form_state) {
   if(!$from_year and $to_year) {
     form_set_error('from_year', 'Please provide a 4-digit year.');
   }
-  if(!preg_match('/\d\d\d\d/' , $from_year)) {
+  if($from_year and !preg_match('/\d\d\d\d/' , $from_year)) {
     form_set_error('from_year', 'Please provide a 4-digit year.');
   }
-  if(!preg_match('/\d\d\d\d/' , $to_year)) {
+  if($to_year and !preg_match('/\d\d\d\d/' , $to_year)) {
     form_set_error('to_year', 'Please provide a 4-digit year.');
   }  
 }
