@@ -34,10 +34,7 @@ function chado_pub_form($node, $form_state) {
   // on AHAH callbacks we want to keep a list of all the properties that have been removed 
   // we'll store this info in a hidden field and retrieve it here
   $d_removed = $form_state['values']['removed']; 
-  
-  // get the defaults first from the database and then from the form_state
-  $default_type = $pub->type_id->cvterm_id;
-  
+    
   // get the number of new fields that have been aded via AHAH callbacks
   $num_new = $form_state['values']['num_new'] ? $form_state['values']['num_new'] : 0;
 
@@ -102,6 +99,7 @@ function chado_pub_form($node, $form_state) {
     '#default_value' => $d_title,
     '#required' => TRUE,
   );
+  
   $form['type_id'] = array(
     '#type' => 'select',
     '#title' => t('Publication Type'),
@@ -110,21 +108,13 @@ function chado_pub_form($node, $form_state) {
     '#default_value' => $d_type_id,
   );
     
-  $form['series_name'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Series Name (e.g. Journal Name)'),
-    '#description' => t('Full name of (journal) series.'),
-    '#default_value' => $d_series_name,
-    '#required' => TRUE,
-  );
   $form['pyear'] = array(
     '#type' => 'textfield',
     '#title' => t('Publication Year'),
     '#default_value' => $d_pyear,
     '#required' => TRUE,
     '#size' => 5,
-  );
-  
+  );  
   $form['uniquename'] = array(
     '#type' => 'textarea',
     '#title' => t('Citation'),
@@ -140,7 +130,7 @@ function chado_pub_form($node, $form_state) {
   
   // add in the properties that are actually stored in the pub table fields.
   $num_properties = chado_pub_node_form_add_pub_table_props($form, $form_state, $properties_list, 
-    $d_properties, $d_removed, $d_volume, $d_volumetitle, $d_issue, $d_pages);
+    $d_properties, $d_removed, $d_volume, $d_volumetitle, $d_issue, $d_pages, $d_series_name);
   
   // add in the properties from the pubprop table   
   $num_properties += chado_pub_node_form_add_pubprop_table_props($form, $form_state, $pub_id, $d_properties, $d_removed);
@@ -443,7 +433,7 @@ function chado_pub_node_form_add_pubprop_table_props(&$form, $form_state, $pub_i
     // skip properties that are found in the pub table
     if($prop->name == "Volume" or $prop->name == "Volume Title" or 
        $prop->name == "Issue"  or $prop->name == "Pages" or
-       $prop->name == "Citation") {
+       $prop->name == "Citation" or $prop->name == "Journal Name") {
          continue;
     }
     
@@ -503,7 +493,7 @@ function chado_pub_node_form_add_pubprop_table_props(&$form, $form_state, $pub_i
  * 
  */
 function chado_pub_node_form_add_pub_table_props(&$form, $form_state, $properties_list,
-    &$d_properties, &$d_removed, $d_volume, $d_volumetitle, $d_issue, $d_pages) {
+    &$d_properties, &$d_removed, $d_volume, $d_volumetitle, $d_issue, $d_pages, $d_series_name) {
       
   $num_properties = 0;
   $rank = 0;
@@ -521,12 +511,13 @@ function chado_pub_node_form_add_pub_table_props(&$form, $form_state, $propertie
       continue;
     }
         
-    // if any of the properties match the fields in the pub table then we want to include those 
-    // automatically
+    // if any of the properties match the fields in the pub table then we 
+    // want to include those automatically
     if (($prop->name == 'Volume' and $d_volume) or         
         ($prop->name == 'Issue' and $d_issue) or 
         ($prop->name == 'Pages' and $d_pages) or
-        ($prop->name == 'Volume Title' and $d_volumetitle)) {
+        ($prop->name == 'Volume Title' and $d_volumetitle) or
+        ($prop->name == 'Journal Name' and $d_series_name)) {
           
       $d_properties[$type_id][$rank]['name']  = $prop->name;           
       $d_properties[$type_id][$rank]['id']    = $type_id;            
@@ -544,6 +535,9 @@ function chado_pub_node_form_add_pub_table_props(&$form, $form_state, $propertie
       }
       if ($prop->name == 'Volume Title') {
         $d_properties[$type_id][$rank]['value'] = $d_volumetitle;
+      }
+      if ($prop->name == 'Journal Name') {
+        $d_properties[$type_id][$rank]['value'] = $d_series_name;
       }
       
       // determine how many rows we need in the textarea

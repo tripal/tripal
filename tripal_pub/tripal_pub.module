@@ -592,14 +592,14 @@ function chado_pub_update($node) {
   
   // now add in the properties by first removing any the publication
   // already has and adding the ones we have
-  tripal_core_chado_delete('pubprop', array('pub_id' => $pub_id));
+  tripal_core_chado_delete('pubprop', array('pub_id' => $pub_id));  
   foreach ($properties as $property => $elements) {
     foreach ($elements as $rank => $value) {      
       $status = tripal_pub_insert_property($pub_id, $property, $value, FALSE);
       if (!$status) {
-        drupal_set_message("Error cannot add property: $property", "error");
-        watchdog('tripal_pub', "Error cannot add property: %prop", 
-          array('%property' => $property), WATCHDOG_ERROR);
+        drupal_set_message("Error cannot add property: '$property'", "error");
+        watchdog('tripal_pub', "Error cannot add property: '%prop'", 
+          array('%prop' => $property), WATCHDOG_ERROR);
       }
     } 
   }

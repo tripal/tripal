@@ -180,7 +180,7 @@ function tripal_pub_update_publications($do_contact = FALSE, $dbxref = NULL) {
     // if we've hit the maximum number to retrieve then do the search
     if($i == $num_to_retrieve) {      
       $search['num_criteria'] = $i - 1;
-      $pubs = tripal_pub_get_remote_search_results($remote_db, $search, $i, 0);
+      $pubs = tripal_pub_get_remote_search_results($remote_db, $search, $i, 0);      
       tripal_pub_add_publications($pubs, $do_contact, TRUE);
       $search['criteria'] = array();
       $i = 0;
@@ -487,7 +487,7 @@ function tripal_pub_get_pubs_by_title_type_pyear($title, $type, $pyear = '') {
 function tripal_pub_add_publication($pub_details, $do_contact = FALSE, $update = FALSE) {
   
   $pub_id = 0;
-
+  
   // first try to find the publication using the accession number. It will have
   // one if the pub has already been loaded for the publication database
   if ($pub_details['Publication Dbxref']) {

@@ -83,7 +83,7 @@ is_a: TPUB:0000015 ! Publication Type
 [Term]
 id: TPUB:0000015
 name: Publication Type
-relationship: part_of TPUB:0000002 ! Publication
+relationship: part_of TPUB:0000037 ! Publication Details
 
 [Term]
 id: TPUB:0000016
