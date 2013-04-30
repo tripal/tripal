@@ -122,12 +122,13 @@ function tripal_pub_search_form(&$form_state = NULL) {
   $properties = array();
   $properties[] = 'Any Field';
   $sql = "
-    SELECT CVTS.cvterm_id, CVTS.name, CVTS.definition
+    SELECT DISTINCT CVTS.cvterm_id, CVTS.name, CVTS.definition
     FROM {cvtermpath} CVTP
       INNER JOIN {cvterm} CVTS ON CVTP.subject_id = CVTS.cvterm_id
       INNER JOIN {cvterm} CVTO ON CVTP.object_id = CVTO.cvterm_id
       INNER JOIN {cv} ON CVTO.cv_id = CV.cv_id
-    WHERE CV.name = 'tripal_pub' and CVTO.name = 'Publication Details' and 
+    WHERE CV.name = 'tripal_pub' and 
+      (CVTO.name = 'Publication Details' or CVTS.name = 'Publication Type') and 
       NOT CVTS.is_obsolete = 1
     ORDER BY CVTS.name ASC 
   ";

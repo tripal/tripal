@@ -478,13 +478,14 @@ function chado_pub_update($node) {
   // get the list of properties for easy lookup (without doing lots of database queries
   $properties_list = array();
   $sql = "
-    SELECT CVTS.cvterm_id, CVTS.name, CVTS.definition
+    SELECT DISTINCT CVTS.cvterm_id, CVTS.name, CVTS.definition
     FROM {cvtermpath} CVTP
       INNER JOIN {cvterm} CVTS ON CVTP.subject_id = CVTS.cvterm_id
       INNER JOIN {cvterm} CVTO ON CVTP.object_id = CVTO.cvterm_id
       INNER JOIN {cv} ON CVTO.cv_id = CV.cv_id
-    WHERE CV.name = 'tripal_pub' and CVTO.name = 'Publication Details'  and 
-      NOT CVTS.is_obsolete = 1    
+    WHERE CV.name = 'tripal_pub' and 
+      (CVTO.name = 'Publication Details' or CVTS.name = 'Publication Type') and 
+      NOT CVTS.is_obsolete = 1
     ORDER BY CVTS.name ASC 
   ";
   $prop_types = chado_query($sql);   
