@@ -424,15 +424,15 @@ function tripal_pub_get_search_results($search_array, $limit, $pager_id) {
       $args[] = $value;
     }
     elseif ($type_name == 'Journal Name') {
-      $join = 1;
-      $where .= " $op (lower(P.series_name) $action OR (lower(PP.value) $action AND PP.type_id = %d)) ";
+      $from .= " INNER JOIN {pubprop} PP$i ON PP$i.pub_id = P.pub_id ";
+      $where .= " $op (lower(P.series_name) $action OR (lower(PP$i.value) $action AND PP$i.type_id = %d)) ";
       $args[] = $value;  
       $args[] = $value;
       $args[] = $type_id;
     }
     elseif ($type_id == 0) { //'Any Field'
-      $join = 1;
-      $where .= " $op (lower(PP.value)  $action OR 
+      $from .= " INNER JOIN {pubprop} PP$i ON PP$i.pub_id = P.pub_id ";
+      $where .= " $op (lower(PP$i.value)  $action OR 
                        lower(P.title) $action OR 
                        lower(P.volumetitle) $action OR
                        lower(P.publisher) $action OR
@@ -448,16 +448,13 @@ function tripal_pub_get_search_results($search_array, $limit, $pager_id) {
       $args[] = $value;
     }
     else {
-      $join = 1;
-      $where .= " $op (lower(PP.value) $action AND PP.type_id = %d) ";
+      $from .= " INNER JOIN {pubprop} PP$i ON PP$i.pub_id = P.pub_id ";
+      $where .= " $op (lower(PP$i.value) $action AND PP$i.type_id = %d) ";
       $args[] = $value;
       $args[] = $type_id;
     }
 
   }  
-  if ($join) {
-    $from .= " INNER JOIN {pubprop} PP ON PP.pub_id = P.pub_id ";    
-  }
   if($from_year and $to_year) {
     $where .= " AND (to_number(P.pyear,'9999') >= %d and to_number(P.pyear,'9999') <= %d) ";
     $args[] = $from_year;
