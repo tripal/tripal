@@ -2357,7 +2357,7 @@ function chado_pager_query($query, $limit, $element, $count_query) {
   global $pager_page_array, $pager_total, $pager_total_items;
   $page = isset($_GET['page']) ? $_GET['page'] : '';
 
-  // Substitute in query arguments.
+  // get the SQL query arguments that get substituted into modifiers later.
   $args = func_get_args();
   $args = array_slice($args, 4);
   // Alternative syntax for '...'
@@ -2404,14 +2404,13 @@ function chado_query_range($query) {
   $from = array_pop($args);
   array_shift($args);
 
-  $query = db_prefix_tables($query);
+
   if (isset($args[0]) and is_array($args[0])) { // 'All arguments in one array' syntax
     $args = $args[0];
   }
-  _db_query_callback($args, TRUE);
-  $query = preg_replace_callback(DB_QUERY_REGEXP, '_db_query_callback', $query);
   $query .= ' LIMIT ' . (int) $count . ' OFFSET ' . (int) $from;
-  return chado_query($query);
+
+  return chado_query($query, $args);
 }
 /**
  * Use this function instead of db_query() to avoid switching databases
