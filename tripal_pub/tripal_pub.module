@@ -78,7 +78,7 @@ function tripal_pub_menu() {
   $items['find/publications/criteria/%/%'] = array(
     'page callback' => 'tripal_pub_search_page_update_criteria',
     'page arguments' => array(5, 6),
-    'access arguments' => array('administer tripal pubs'),    
+    'access arguments' => array('access chado_pub content'),    
     'type ' => MENU_CALLBACK,
   );
   
