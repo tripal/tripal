@@ -171,7 +171,7 @@ function tripal_pub_search_form(&$form_state = NULL) {
       '#type'          => 'textfield',
       '#description'   => t('Please provide a list of words for searching"'),
       '#default_value' => $search_terms,
-      '#required'      => TRUE,
+      '#required'      => FALSE,
     );
     $form['criteria'][$i]["scope-$i"] = array(
       '#type'          => 'select',
@@ -296,6 +296,7 @@ function theme_tripal_pub_search_form($form) {
  *
  */
 function tripal_pub_search_form_validate($form, &$form_state) {
+  $num_criteria = $form_state['values']['num_criteria'];
   $from_year = $form_state['values']['from_year'];
   $to_year   = $form_state['values']['to_year'];
   $op        = $form_state['values']['op'];
@@ -316,7 +317,14 @@ function tripal_pub_search_form_validate($form, &$form_state) {
   }
   if($to_year and !preg_match('/\d\d\d\d/' , $to_year)) {
     form_set_error('to_year', 'Please provide a 4-digit year.');
-  }  
+  }
+  // make sure we have values for all criteria 
+  for ($i = 0; $i <= $num_criteria; $i++) {
+    $search_terms =  trim($form_state['values']["search_terms-$i"]);
+    if (!$search_terms or $search_terms = '') {
+     form_set_error("search_terms-$i", 'Please provide criteria for searching'); 
+    }      
+  } 
 }
 /**
  *
@@ -473,7 +481,7 @@ function tripal_pub_get_search_results($search_array, $limit, $pager_id) {
 
   }  
   if($from_year and $to_year) {
-    $where .= " AND (P.pyear ~ '\d\d\d\d' AND to_number(P.pyear,'9999') >= %d AND to_number(P.pyear,'9999') <= %d) ";
+    $where .= " AND (P.pyear ~ '....' AND to_number(P.pyear,'9999') >= %d AND to_number(P.pyear,'9999') <= %d) ";
     $wargs[] = $from_year;
     $wargs[] = $to_year;
   }
