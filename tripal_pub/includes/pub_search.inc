@@ -467,7 +467,7 @@ function tripal_pub_get_search_results($search_array, $limit, $pager_id) {
 
   }  
   if($from_year and $to_year) {
-    $where .= " AND (to_number(P.pyear,'9999') >= %d and to_number(P.pyear,'9999') <= %d) ";
+    $where .= " AND (P.pyear ~ '\d\d\d\d' AND to_number(P.pyear,'9999') >= %d AND to_number(P.pyear,'9999') <= %d) ";
     $wargs[] = $from_year;
     $wargs[] = $to_year;
   }
