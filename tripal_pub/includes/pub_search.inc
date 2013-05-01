@@ -4,7 +4,7 @@
  */
 function tripal_pub_search_page() {
   global $pager_total, $pager_total_items;
-  
+
   $pager_id = 0;
   $limit = 25;
   
@@ -297,7 +297,13 @@ function theme_tripal_pub_search_form($form) {
  */
 function tripal_pub_search_form_validate($form, &$form_state) {
   $from_year = $form_state['values']['from_year'];
-  $to_year = $form_state['values']['to_year'];
+  $to_year   = $form_state['values']['to_year'];
+  $op        = $form_state['values']['op'];
+
+  // no need to vlaidate on a reset
+  if ($op == 'Reset') {
+    return;
+  }
     
   if($from_year and !$to_year) {
     form_set_error('to_year', 'Please provide a 4-digit year.');
