@@ -249,6 +249,10 @@ function tripal_pub_search_form(&$form_state = NULL) {
     '#type'         => 'submit',
     '#value'        => t('Search'),
   );
+  $form['reset'] = array(
+    '#type'         => 'submit',
+    '#value'        => t('Reset'),
+  );
 
   return $form;
 }
@@ -312,30 +316,35 @@ function tripal_pub_search_form_validate($form, &$form_state) {
  *
  */
 function tripal_pub_search_form_submit($form, &$form_state) {
-   
   $num_criteria = $form_state['values']['num_criteria'];
   $from_year    = $form_state['values']['from_year'];
   $to_year      = $form_state['values']['to_year'];
+  $op           = $form_state['values']['op'];
 
   // set the session variables
-  $_SESSION['tripal_pub_search_form']['num_criteria'] = $num_criteria;  
-  unset($_SESSION['tripal_pub_search_form']['criteria']);
-  for ($i = 0; $i <= $num_criteria; $i++) {
-    $search_terms =  trim($form_state['values']["search_terms-$i"]);
-    $scope =  $form_state['values']["scope-$i"];
-    $mode =  $form_state['values']["mode-$i"];
-    $operation =  $form_state['values']["operation-$i"];
-    
-    $_SESSION['tripal_pub_search_form']['criteria'][$i] = array(
-      'search_terms' => $search_terms,
-      'scope' => $scope,
-      'mode' => $mode,
-      'operation' => $operation
-    );
+  if($op == 'Search') {
+    $_SESSION['tripal_pub_search_form']['num_criteria'] = $num_criteria;  
+    unset($_SESSION['tripal_pub_search_form']['criteria']);
+    for ($i = 0; $i <= $num_criteria; $i++) {
+      $search_terms =  trim($form_state['values']["search_terms-$i"]);
+      $scope =  $form_state['values']["scope-$i"];
+      $mode =  $form_state['values']["mode-$i"];
+      $operation =  $form_state['values']["operation-$i"];
+      
+      $_SESSION['tripal_pub_search_form']['criteria'][$i] = array(
+        'search_terms' => $search_terms,
+        'scope' => $scope,
+        'mode' => $mode,
+        'operation' => $operation
+      );
+    }
+    $_SESSION['tripal_pub_search_form']['from_year'] = $from_year;
+    $_SESSION['tripal_pub_search_form']['to_year'] = $to_year;
+    $_SESSION['tripal_pub_search_form']['perform_search'] = 1;
   }
-  $_SESSION['tripal_pub_search_form']['from_year'] = $from_year;
-  $_SESSION['tripal_pub_search_form']['to_year'] = $to_year;
-  $_SESSION['tripal_pub_search_form']['perform_search'] = 1;
+  if($op == 'Reset') {
+    unset($_SESSION['tripal_pub_search_form']);
+  }
 }
 
 /*
