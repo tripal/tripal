@@ -136,9 +136,13 @@ function tripal_pub_search_form(&$form_state = NULL) {
       NOT CVTS.is_obsolete = 1
     ORDER BY CVTS.name ASC 
   ";
+  $allowed_fields = variable_get('tripal_pub_allowed_search_fields', array());
+  dpm($allowed_fields);
   $prop_types = chado_query($sql); 
   while ($prop = db_fetch_object($prop_types)) {
-    $properties[$prop->cvterm_id] = $prop->name;
+    if($allowed_fields[$prop->cvterm_id] > 0) {
+      $properties[$prop->cvterm_id] = $prop->name;
+    }
   }
   
   for($i = 1; $i <= $num_criteria; $i++) {
