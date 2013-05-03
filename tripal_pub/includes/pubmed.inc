@@ -320,20 +320,7 @@ function tripal_pub_PMID_parse_pubxml($pub_xml) {
       }
     }
   }
-  $pub['Citation'] = $pub['Authors'] . '. ' . $pub['Title'] .  '. ' .
-    $pub['Journal ISO Abbreviation'] . '. ' . $pub['Publication Date'];
-  if ($pub['Volume'] or $pub['Issue']) {
-    $pub['Citation'] .= '; ';  
-  }
-  if ($pub['Volume']) {
-    $pub['Citation'] .= $pub['Volume'];
-  }
-  if ($pub['Issue']) {
-    $pub['Citation'] .= '(' . $pub['Issue'] . ')';
-  }
-  if ($pub['Pages']) {
-    $pub['Citation'] .= ':' . $pub['Pages'];
-  }
+  $pub['Citation'] = tripal_pub_create_citation($pub);
   
   $pub['raw'] = $pub_xml;
   return $pub;
@@ -601,7 +588,7 @@ function tripal_pub_PMID_parse_journal($xml, &$pub) {
           break;
         case 'ISOAbbreviation': 
           $xml->read();
-          $pub['Journal ISO Abbreviation'] = $xml->value;         
+          $pub['Journal Abbreviation'] = $xml->value;         
           break;
         default:
           break;

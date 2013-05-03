@@ -25,7 +25,7 @@
  *  callback f unction should receive one argument: an array of values that
  *  are passed into the tripal_pager_callbck function. 
  */
-function tripal_pager_callback($func, $limit = 9, $element = 0, $cfunc) {
+function tripal_pager_callback($func, $limit = 10, $element = 0, $cfunc) {
   
   global $pager_page_array, $pager_total, $pager_total_items;
   $page = isset($_GET['page']) ? $_GET['page'] : '';

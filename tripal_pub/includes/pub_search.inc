@@ -53,18 +53,18 @@ function tripal_pub_search_page() {
       $citation_rec = tripal_core_expand_chado_vars($citation_rec, 'field', 'pubprop.value');
       
       // if we have the citation then use it, otherwise, just use the title
-      if ($citation_rec->value) {
-        $pub_info = $citation_rec->value;
-      } 
-      else {
-        $pub_info = $pub->title;     
-      }
-      
-      // if the publication has a node then link to it
+      $result = $pub->title;
       if ($pub->nid) {
-        $pub_info = l($pub_info ,'node/' . $pub->nid, array('attributes' => array('target' => '_blank')));
-      }
-      $rows[] = array(number_format($i) . ".", $pub->pyear, $pub_info);
+        $result = l($pub->title ,'node/' . $pub->nid, array('attributes' => array('target' => '_blank')));
+      }      
+      if ($citation_rec->value) {
+        $result .= '<br>' . $citation_rec->value;
+      } 
+      $rows[] = array(
+        number_format($i) . ".", 
+        $pub->pyear, 
+        $result
+      );
       $i++;
     }
 
@@ -104,7 +104,7 @@ function tripal_pub_search_form(&$form_state = NULL) {
    
   // change the number of criteria based on form_state post data.
   if (!$num_criteria) {
-    $num_criteria = 0;
+    $num_criteria = 2;
   }
   if($form_state['post']["add-$num_criteria"]) {    
     $num_criteria++;
@@ -116,6 +116,10 @@ function tripal_pub_search_form(&$form_state = NULL) {
   $form['num_criteria']= array(
     '#type'          => 'hidden',
     '#default_value' => $num_criteria,
+  );
+  $form['instructions'] = array(
+    '#type'  => 'item',
+    '#value' => t('To search for publications enter keywords in the text boxes below.  You can limit your search by selecting the field in the dropdown box.'),
   );
   
   // get publication properties list 
@@ -137,7 +141,7 @@ function tripal_pub_search_form(&$form_state = NULL) {
     $properties[$prop->cvterm_id] = $prop->name;
   }
   
-  for($i = 0; $i <= $num_criteria; $i++) {
+  for($i = 1; $i <= $num_criteria; $i++) {
     $search_terms = '';
     $scope = '';
     $operation = '';
@@ -169,16 +173,15 @@ function tripal_pub_search_form(&$form_state = NULL) {
   
     $form['criteria'][$i]["search_terms-$i"] = array(
       '#type'          => 'textfield',
-      '#description'   => t('Please provide a list of words for searching"'),
       '#default_value' => $search_terms,
       '#required'      => FALSE,
     );
     $form['criteria'][$i]["scope-$i"] = array(
       '#type'          => 'select',
-      '#description'   => t('Please select the fields to search for this term.'),
       '#options'       => $properties,
       '#default_value' => $scope,
     );  
+    /*
     $form['criteria'][$i]["mode-$i"] = array(
       '#type'          => 'select',
       '#options'       => array(
@@ -187,9 +190,9 @@ function tripal_pub_search_form(&$form_state = NULL) {
         'Ends With'   => 'Ends With',
         'Exactly'     => 'Exactly'),
       '#default_value' => $mode,
-    );   
+    );*/   
     
-    if ($i > 0) {
+    if ($i > 1) {
       $form['criteria'][$i]["operation-$i"] = array(
         '#type'          => 'select',
         '#options'       => array(
@@ -200,7 +203,7 @@ function tripal_pub_search_form(&$form_state = NULL) {
       );
     }
     if ($i == $num_criteria) {    
-      if($i > 0) {
+      if($i > 1) {
         $form['criteria'][$i]["remove-$i"] = array(
           '#type'         => 'image_button',
           '#value'        => t('Remove'),
@@ -228,11 +231,18 @@ function tripal_pub_search_form(&$form_state = NULL) {
       );
     }
   }
+  $form['criteria']["date"] = array(
+      '#type'          => 'select',
+      '#options'       => array(
+        'Years'    => 'Years',
+       ),
+      '#default_value' => $date,
+  );
   $form['criteria']["from_year"] = array(
     '#type'          => 'textfield',
     '#default_value' => $from_year,
     '#required'      => FALSE,
-    '#title'         => 'Years from',
+    '#title'         => 'from',
     '#size'          => 4,
     '#maxlength'     => 4,
   );
@@ -264,26 +274,35 @@ function theme_tripal_pub_search_form($form) {
   foreach ($form['criteria'] as $i => $element) {
     if(is_numeric($i)) {
       $rows[] = array(  
-        array('data' => drupal_render($element["operation-$i"]), 'width' => '10%'),    
-        array('data' => drupal_render($element["scope-$i"]), 'width' => '10%'),
-        drupal_render($element["mode-$i"]) . drupal_render($element["search_terms-$i"]),
-        array('data' => drupal_render($element["add-$i"]) . drupal_render($element["remove-$i"]), 'width' => '5%'),
+        drupal_render($element["operation-$i"]),    
+        drupal_render($element["scope-$i"]),
+        //drupal_render($element["mode-$i"]) . 
+        drupal_render($element["search_terms-$i"]),
+        drupal_render($element["add-$i"]) . drupal_render($element["remove-$i"]),
       );
     }
   } 
-  $headers = array('Operation','Scope', 'Search Terms', '');  
-  $markup  = "
-     <div id=\"pub-search-form-row1\"> ".
-       theme('table', $headers, $rows, array('id' => 'tripal-pub-search-table')) . "
-     </div>
-     <div id=\"pub-search-form-row2\"> 
-       <div id=\"pub-search-form-dates\"> ".
-        drupal_render($form['criteria']['from_year']) . 
-        drupal_render($form['criteria']['to_year']) . '
-      </div>
-     </div>
-     <div style="clear: both;">
-  '; 
+    
+  $rows[] = array(
+    drupal_render($form['criteria']['date']),
+    array(
+      'data' =>
+        "<div id=\"pub-search-form-dates-row\"> 
+           <div id=\"pub-search-form-dates\"> ".
+            drupal_render($form['criteria']['from_year']) . 
+            drupal_render($form['criteria']['to_year']) . "
+          </div>
+         </div>",
+       'colspan' => 2,
+    ),
+    ''
+  );
+  $table = theme('table', $headers, $rows, array('id' => 'tripal-pub-search-form-table', 'border' => '0')); 
+  $headers = array();  
+  $markup  = drupal_render($form['instructions']) . "
+     <div id=\"pub-search-form-row1\">$table</div>
+     <div style=\"clear: both;\">
+  "; 
   
   $form['criteria'] = array(
     '#type' => 'markup',
@@ -318,13 +337,6 @@ function tripal_pub_search_form_validate($form, &$form_state) {
   if($to_year and !preg_match('/\d\d\d\d/' , $to_year)) {
     form_set_error('to_year', 'Please provide a 4-digit year.');
   }
-  // make sure we have values for all criteria 
-  for ($i = 0; $i <= $num_criteria; $i++) {
-    $search_terms =  trim($form_state['values']["search_terms-$i"]);
-    if (!$search_terms or $search_terms = '') {
-     form_set_error("search_terms-$i", 'Please provide criteria for searching'); 
-    }      
-  } 
 }
 /**
  *
@@ -342,7 +354,8 @@ function tripal_pub_search_form_submit($form, &$form_state) {
     for ($i = 0; $i <= $num_criteria; $i++) {
       $search_terms =  trim($form_state['values']["search_terms-$i"]);
       $scope =  $form_state['values']["scope-$i"];
-      $mode =  $form_state['values']["mode-$i"];
+      //$mode =  $form_state['values']["mode-$i"];
+      $mode = 'Contains';
       $operation =  $form_state['values']["operation-$i"];
       
       $_SESSION['tripal_pub_search_form']['criteria'][$i] = array(
@@ -404,11 +417,16 @@ function tripal_pub_get_search_results($search_array, $limit, $pager_id) {
   $from_year    = $search_array['from_year'];
   $to_year      = $search_array['to_year'];
   
-  for ($i = 0; $i <= $num_criteria; $i++) {
+  for ($i = 1; $i <= $num_criteria; $i++) {
     $value = $search_array['criteria'][$i]['search_terms'];
     $type_id = $search_array['criteria'][$i]['scope'];
     $mode = $search_array['criteria'][$i]['mode'];
     $op = $search_array['criteria'][$i]['operation'];
+    
+    // skip criteria with no values
+    if(!$value) {
+      continue;
+    }
     
     // to prevent SQL injection make sure our operator is
     // what we expect    

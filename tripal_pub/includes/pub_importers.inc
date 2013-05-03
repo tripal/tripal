@@ -76,6 +76,7 @@ function tripal_pub_importer_setup($action = 'new', $pub_import_id = NULL) {
   if ($_SESSION['tripal_pub_search']['perform_search']) {
     // get the list of publications from the remote database using the search criteria.  
     $pubs = tripal_pub_get_remote_search_results($remote_db, $search_array, $limit, $pager_id);
+      dpm($pubs);
     
     // generate the pager
     $total_pages = $pager_total[$pager_id];
@@ -104,7 +105,7 @@ function tripal_pub_importer_setup($action = 'new', $pub_import_id = NULL) {
     $table = theme('table', $headers, $rows);   
   
     // join all to form the results
-    $output .= "<br>Search String: $search_str<br><p><b>Found " . number_format($total_items) .  
+    $output .= "<br><p><b>Found " . number_format($total_items) .  
       ". Page " . ($page + 1) . " of $total_pages. " .
       " Results</b></br>" . $table . '</p>' . $pager;    
   }

@@ -55,9 +55,6 @@
  */
 function tripal_pub_get_remote_search_results($remote_db, $search_array, 
   $num_to_retrieve, $pager_id = 0, $page = 0) {
-   
-  // construct the callback function using the remote database name
-  $callback = 'tripal_pub_remote_search_' . strtolower($remote_db);
 
   // manually set the $_GET['page'] parameter to trick the pager
   // into giving us the requested page
@@ -65,7 +62,8 @@ function tripal_pub_get_remote_search_results($remote_db, $search_array,
     $_GET['page'] = $page;
   }  
   
-  // now call the callback function to get the rsults
+  // now call the callback function to get the results
+  $callback = 'tripal_pub_remote_search_' . strtolower($remote_db);
   $pubs = array();
   if (function_exists($callback)) {
     $pubs = call_user_func($callback, $search_array, $num_to_retrieve, $pager_id);
@@ -789,4 +787,37 @@ function tripal_pub_update_property($pub_id, $property, $value, $insert_if_missi
  */
 function tripal_pub_delete_property($pub_id, $property) {
   return tripal_core_delete_property('pub', $pub_id, $property, 'tripal');
+}
+
+/*
+ * 
+ */
+function tripal_pub_create_citation($pub) {
+  $citation = $pub['Authors'] . '. ' . $pub['Title'] .  '. ';
+  
+  if ($pub['Journal ISO Abbreviation']) {
+    $citation .= $pub['Journal ISO Abbreviation'] . '. ';
+  } 
+  elseif ($pub['Journal Name']) {
+    $pub['Journal Name'] = preg_replace('/\.$/', '', $pub['Journal Name']);
+    $citation .= $pub['Journal Name'] . '. ';
+  }
+  $citation .= $pub['Publication Date'];
+  if ($pub['Volume'] or $pub['Issue'] or $pub['Pages']) {
+    $citation .= '; ';  
+  }
+  if ($pub['Volume']) {
+    $citation .= $pub['Volume'];
+  }
+  if ($pub['Issue']) {
+    $citation .= '(' . $pub['Issue'] . ')';
+  }
+  if ($pub['Pages']) {
+    if($pub['Volume']) {
+      $citation .= ':';
+    }    
+    $citation .= $pub['Pages'];
+  }
+  $citation .= '.';
+  return $citation;
 }

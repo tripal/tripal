@@ -39,13 +39,13 @@ relationship: part_of TPUB:0000016 ! Author
 [Term]
 id: TPUB:0000007
 name: Master's Thesis
-relationship: part_of TPUB:0000006 ! Collective
+is_a: TPUB:0000015 ! Publication Type
 
 [Term]
 id: TPUB:0000008
 name: PhD Thesis
 def: PhD thesis or dissertation.
-relationship: part_of TPUB:0000006 ! Collective
+is_a: TPUB:0000015 ! Publication Type
 
 [Term]
 id: TPUB:0000009
@@ -109,7 +109,7 @@ relationship: part_of TPUB:0000002 ! Publication
 
 [Term]
 id: TPUB:0000038
-name: Journal ISO Abbreviation
+name: Journal Abbreviation
 relationship: part_of TPUB:0000037 ! Publication Details
 def: The journal title ISO Abbreviation.
 
@@ -1342,6 +1342,12 @@ relationship: part_of TPUB:0000037 ! Publication Details
 id: TPUB:0000245
 name: Published Location
 relationship: part_of TPUB:0000037 ! Publication Details
+
+[Term]
+id: TPUB:0000246
+name: Prefix
+def: A prefix for a name such as a title (e.g. Mr., Mrs., Dr., Chief, Esquire, etc.)
+relationship: part_of TPUB:0000016 ! Author
 
 [Typedef]
 id: is_a
