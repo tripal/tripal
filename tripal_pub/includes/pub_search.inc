@@ -53,12 +53,14 @@ function tripal_pub_search_page() {
       $citation_rec = tripal_core_expand_chado_vars($citation_rec, 'field', 'pubprop.value');
       
       // if we have the citation then use it, otherwise, just use the title
-      $result = $pub->title;
+      $title = htmlspecialchars($pub->title);
+      $result = $title;
       if ($pub->nid) {
-        $result = l($pub->title ,'node/' . $pub->nid, array('attributes' => array('target' => '_blank')));
+        $result = l($title ,'node/' . $pub->nid, array('attributes' => array('target' => '_blank')));
       }      
       if ($citation_rec->value) {
-        $result .= '<br>' . $citation_rec->value;
+        $citation = htmlspecialchars($citation_rec->value);
+        $result .= '<br>' . $citation;
       } 
       $rows[] = array(
         number_format($i) . ".", 

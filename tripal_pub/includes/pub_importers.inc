@@ -89,13 +89,14 @@ function tripal_pub_importer_setup($action = 'new', $pub_import_id = NULL) {
     $i = $page * $limit + 1;
     if (count($pubs) > 0) {
       foreach ($pubs as $pub) {
+        $citation = htmlspecialchars($pub['Citation']);
         $raw_link = '';
         if($pub['Publication Dbxref']) {
           $raw_link = l('raw', 'admin/tripal/tripal_pub/import/raw/' . $pub['Publication Dbxref'], array('attributes' => array('target' => '_blank')));
         }
         $rows[] = array(
           number_format($i), 
-          $pub['Citation'], 
+          $citation, 
           $raw_link,
         );        
         $i++;

@@ -1349,6 +1349,18 @@ name: Prefix
 def: A prefix for a name such as a title (e.g. Mr., Mrs., Dr., Chief, Esquire, etc.)
 relationship: part_of TPUB:0000016 ! Author
 
+[Term]
+id: TPUB:0000247
+name: ISBN
+def: Internaltional Standard Book Number
+relationship: part_of TPUB:0000037 ! Publication Details
+
+[Term]
+id: TPUB:0000247
+name: Notes
+def: Information about the publication that is not classified using another term.
+relationship: part_of TPUB:0000037 ! Publication Details
+
 [Typedef]
 id: is_a
 name: is a

@@ -48,6 +48,7 @@ function tripal_pub_remote_search_AGRICOLA($search_array, $num_to_retrieve, $pag
     elseif($scope == 'abstract') {
     }
     elseif($scope == 'id') {
+       
     }    
   }   
   dpm($search_str); 
@@ -115,7 +116,7 @@ function tripal_pub_AGRICOLA_range($search_array, $start = 0, $limit = 10) {
     $limit = $count - $start;
   }
   for($i = $start; $i < $start + $limit; $i++) { 
-    $pub_xml = yaz_record($yazc, $i + 1, 'xml');
+    $pub_xml = yaz_record($yazc, $i + 1, 'xml; charset=marc-8,utf-8');
     $pub     = tripal_pub_AGRICOLA_parse_pubxml($pub_xml);
     $pubs[]  = $pub;     
   } 
@@ -142,7 +143,8 @@ function tripal_pub_AGRICOLA_parse_pubxml($pub_xml) {
 
     if ($xml->nodeType == XMLReader::ELEMENT and $element == 'controlfield') {      
       $tag = $xml->getAttribute('tag');
-      $value = $xml->read(); 
+      $xml->read(); 
+      $value = $xml->value;
       switch ($tag) {
         case '001':  // control number
           break;
@@ -155,6 +157,29 @@ function tripal_pub_AGRICOLA_parse_pubxml($pub_xml) {
         case '007':  // physical description fixed field
           break;
         case '008':  // fixed length data elements
+          $month = array(
+            '01' => 'Jan', '02' => 'Feb', '03' => 'Mar', 
+            '04' => 'Apr', '05' => 'May', '06' => 'Jun', 
+            '07' => 'Jul', '08' => 'Aug', '09' => 'Sep', 
+            '10' => 'Oct', '11' => 'Nov', '12' => 'Dec'
+          );
+          $date1 = substr($value, 7, 4);
+          $date2 = substr($value, 11, 4);
+          $place = substr($value, 15, 3);
+          $lang  = substr($value, 35, 3);
+          if (preg_match('/\d\d\d\d/', $date1)) {
+            $pub['Year'] = $date1;
+            $pub['Publication Date'] = $date1;
+          }
+          if (preg_match('/\d\d/', $date2)) {
+            $pub['Publication Date'] = $date1 . " " . $month[substr($date2, 0, 2)] . " " . substr($date2, 3, 2);
+          }
+          if (!preg_match('/\s+/', $place)) {
+            $pub['Published Location'] = $place;
+          }
+          if (!preg_match('/\s+/', $lang)) {
+            $pub['Language Abbr'] = $lang;
+          }
           break;
         default:  // unhandled tag
           break;
@@ -165,7 +190,14 @@ function tripal_pub_AGRICOLA_parse_pubxml($pub_xml) {
       $ind1 = $xml->getAttribute('ind1');
       $ind2 = $xml->getAttribute('ind2');
       switch ($tag) {
-
+        case '16':  // National Bibliographic Agency Control Number
+          break;
+        case '35':  // System Control Number
+          break;
+        case '40':  // Cataloging Source (NR)
+          break;
+        case '72':  // Subject Category Code
+          break;
         case '100':  // main entry-personal name
           $author = tripal_pub_remote_search_AGRICOLA_get_author($xml, $ind1);
           $pub['Author List'][] = $author; 
@@ -275,9 +307,12 @@ function tripal_pub_AGRICOLA_parse_pubxml($pub_xml) {
           }
           break;                      
 
-        case '490':  // series statements
-          break;
 
+        case '500':  // series statements
+          $pub['Notes'] = $value;
+          break;
+        case '504':  // Bibliography, Etc. Note
+          break;
         case '520':  // Summary, etc
           $codes = tripal_pub_remote_search_AGRICOLA_get_subfield($xml);
           foreach ($codes as $code => $value) {    
@@ -288,7 +323,26 @@ function tripal_pub_AGRICOLA_parse_pubxml($pub_xml) {
             }
           }
           break;
-        
+        case '650':  // Subject Added Entry-Topical Term
+          $codes = tripal_pub_remote_search_AGRICOLA_get_subfield($xml);
+          foreach ($codes as $code => $value) {    
+            switch ($code) {
+              case 'a':
+                $pub['Keywords'][] = $value;
+                break;  
+            }
+          }          
+          break;
+        case '653':  // Index Term-Uncontrolled
+          $codes = tripal_pub_remote_search_AGRICOLA_get_subfield($xml);
+          foreach ($codes as $code => $value) {    
+            switch ($code) {
+              case 'a':
+                $pub['Keywords'][] = $value;
+                break;  
+            }
+          }
+          break;
         case '700':  // Added Entry-Personal Name
           $author = tripal_pub_remote_search_AGRICOLA_get_author($xml, $ind1);
           $pub['Author List'][] = $author; 
@@ -317,49 +371,70 @@ function tripal_pub_AGRICOLA_parse_pubxml($pub_xml) {
                 break;
               case 'g':
                 $matches = array();
-                if(preg_match('/^(\d\d\d\d)/', $value, $matches)) {
+                if (preg_match('/^(\d\d\d\d)/', $value, $matches)) {
                   $pub['Year'] = $matches[1];
                   $pub['Publication Date'] = $matches[1];
                 }
-                elseif(preg_match('/(.*?)(\.|\s+)\s*(\d+),\s(\d\d\d\d)/', $value, $matches)) {
+                elseif (preg_match('/(.*?)(\.|\s+)\s*(\d+),\s(\d\d\d\d)/', $value, $matches)) {
                   $year = $matches[4];
                   $month = $matches[1];
                   $day = $matches[3];
                   $pub['Year'] = $year;
                   $pub['Publication Date'] = "$year $month $day"; 
                 }
-                elseif(preg_match('/\((.*?)(\.|\s+)(\d\d\d\d)\)/', $value, $matches)) {
+                elseif (preg_match('/\((.*?)(\.|\s+)(\d\d\d\d)\)/', $value, $matches)) {
                   $year = $matches[3];
                   $month = $matches[1];
                   $pub['Year'] = $year;
                   $pub['Publication Date'] = "$year $month"; 
                 }
-                elseif(preg_match('/^(.*?) (\d\d\d\d)/', $value, $matches)) {
+                elseif (preg_match('/^(.*?) (\d\d\d\d)/', $value, $matches)) {
                   $year = $matches[2];
                   $month = $matches[1];
                   $pub['Year'] = $year;
                   $pub['Publication Date'] = "$year $month"; 
                 }
-                if(preg_match('/v\. (.*?)(,|\s+)/', $value, $matches)) {
+                if (preg_match('/v\. (.*?)(,|\s+)/', $value, $matches)) {
                   $pub['Volume'] = $matches[1];
                 }
-                if(preg_match('/v\. (.*?)(,|\s+)\((.*?)\)/', $value, $matches)) {
+                if (preg_match('/v\. (.*?)(,|\s+)\((.*?)\)/', $value, $matches)) {
                   $pub['Volume'] = $matches[1];
                   $pub['Issue'] = $matches[3];
                 }
-                if(preg_match('/no\. (.*?)(\s|$)/', $value, $matches)) {
+                if (preg_match('/no\. (.*?)(\s|$)/', $value, $matches)) {
                   $pub['Issue'] = $matches[1];
                 }
                 break;
               case 'p':
                 $pub['Journal Abbreviation'] = $value;
                 break;
+              case 'z':
+                $pub['ISBN'] = $value;
+                break;
             }
           }
+          break;
+        case '852': // Location (Where is the publication held)
+          break;
+        case '856': // Electronic Location and Access
+          $codes = tripal_pub_remote_search_AGRICOLA_get_subfield($xml);
+          foreach ($codes as $code => $value) {    
+            switch ($code) {
+              case 'u':
+                $pub['URL'] = $value; 
+                break;    
+            }
+          }
+          break;
+        default:
+          $codes = tripal_pub_remote_search_AGRICOLA_get_subfield($xml);
+          $unhandled[$tag][] = $codes;
           break;
       }
     }
   }
+  dpm($unhandled);
+
   // build the full authors list
   foreach ($pub['Author List'] as $author) {
     if ($author['valid'] == 'N') {

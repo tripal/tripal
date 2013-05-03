@@ -795,13 +795,12 @@ function tripal_pub_delete_property($pub_id, $property) {
 function tripal_pub_create_citation($pub) {
   $citation = $pub['Authors'] . '. ' . $pub['Title'] .  '. ';
   
-  if ($pub['Journal ISO Abbreviation']) {
-    $citation .= $pub['Journal ISO Abbreviation'] . '. ';
-  } 
-  elseif ($pub['Journal Name']) {
-    $pub['Journal Name'] = preg_replace('/\.$/', '', $pub['Journal Name']);
+  if ($pub['Journal Name']) {
     $citation .= $pub['Journal Name'] . '. ';
   }
+  elseif ($pub['Journal Abbreviation']) {
+    $citation .= $pub['Journal Abbreviation'] . '. ';  
+  }  
   $citation .= $pub['Publication Date'];
   if ($pub['Volume'] or $pub['Issue'] or $pub['Pages']) {
     $citation .= '; ';  
@@ -819,5 +818,6 @@ function tripal_pub_create_citation($pub) {
     $citation .= $pub['Pages'];
   }
   $citation .= '.';
+  
   return $citation;
 }
