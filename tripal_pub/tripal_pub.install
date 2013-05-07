@@ -29,16 +29,22 @@ function tripal_pub_install() {
   
   // add the custom tables
   tripal_pub_add_custom_tables();
+  
 }
 
-
+function tripal_pub_enable() {
+  // make sure we have our supported databases
+  tripal_db_add_db('PMID', 'PubMed', 'http://www.ncbi.nlm.nih.gov/pubmed', 'http://www.ncbi.nlm.nih.gov/pubmed/', TRUE);
+  tripal_db_add_db('AGL', 'USDA National Agricultural Library', 'http://agricola.nal.usda.gov/', '', TRUE);
+  
+  variable_set('tripal_pub_supported_dbs', array('PMID', 'AGL'));
+}
 /**
  * Implementation of hook_uninstall().
  */
 function tripal_pub_uninstall() {
   //Remove tables
   drupal_uninstall_schema('tripal_pub');
-
 }
 
 

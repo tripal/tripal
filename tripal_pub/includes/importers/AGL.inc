@@ -6,7 +6,6 @@
  * 3) Add "extension=yaz.so" to php.ini
  * 4) Restart apache
  * 
- *  http://agricola.nal.usda.gov/help/z3950.html
  *  
  */
 
@@ -14,64 +13,109 @@
 /**
  *
  */
-function tripal_pub_remote_search_AGRICOLA($search_array, $num_to_retrieve, $pager_id) {
-  // get some values from the serach array
+function tripal_pub_remote_search_AGL($search_array, $num_to_retrieve, $pager_id) {
+  // get some values from the serach array  
   $num_criteria = $search_array['num_criteria'];
-  $days = $search_array['days'];     
+  $days = $search_array['days'];   
+
+  // set some defaults
+  $search_array['limit'] = $num_to_retrieve;
   
   // Build the query by iterating through the search array values
-  $search_str = '';
-  for ($i = 0; $i <= $num_criteria; $i++) {
-    $search_terms = $search_array['criteria'][$i]['search_terms'];
+  $ccl = '';
+  for ($i = 1; $i <= $num_criteria; $i++) {
+    $search_terms = trim($search_array['criteria'][$i]['search_terms']);
     $scope = $search_array['criteria'][$i]['scope'];
+    $is_phrase = $search_array['criteria'][$i]['is_phrase'];
     $op = $search_array['criteria'][$i]['operation'];
-    // Quick Reference For Attribute Fields 
-    // (eg: "@attr 2=" refers to the Relation attribute) 
-    // 1 = Use Field
-    // 2 = Relation
-    // 3 = Position
-    // 4 = Structure
-    // 5 = Truncate
-    // 6 = Completeness
-    // The attribute set used by AGRICOLA can be found at the bottom of this page:
-    // http://agricola.nal.usda.gov/help/z3950.html  
-    // 1003 == Author
-    // 4 = Title
     if ($op) {
-      $search_str .= "$op";
-    }        
-    if($scope == 'title') {
-      $search_str = "@attr 1=4 \"$search_terms\"";
-    }    
-    elseif($scope == 'author') {
-    }    
-    elseif($scope == 'abstract') {
+      $ccl .= " " . strtolower($op) . " ";
     }
-    elseif($scope == 'id') {
-       
+    $search_terms = trim($search_terms);
+    // if this is not a phrase then make sure the AND and OR are lower-case
+    if (!$is_phrase) {
+      $search_terms = preg_replace('/ OR /', ' or ', $search_terms);
+      $search_terms = preg_replace('/ AND /', ' and ', $search_terms);
+    }
+    // else make sure the search terms are surrounded by quotes 
+    else {
+      $search_terms = "\"$search_terms\""; 
+    }        
+    $ccl .= ' (';
+    if ($scope == 'title') {      
+      $ccl .= "title=($search_terms)";
     }    
-  }   
-  dpm($search_str); 
-         
-  $search_array['limit'] = $num_to_retrieve;
-  $search_array['search_string'] = $search_str; 
+    elseif ($scope == 'author') {
+      $ccl .= "author=($search_terms)";
+    }    
+    elseif ($scope == 'abstit') {
+      $ccl .= "(title=($search_terms) or abstract=($search_terms))";
+    }
+    elseif ($scope == 'id') {
+      $search_terms = preg_replace('/AGL:([^\s]*)/', 'id=($1)', $search_terms);
+      $ccl .= $search_terms;
+    }  
+    else {
+     $ccl .= "$search_terms"; 
+    }
+    $ccl .= ') ';
+  } 
+
+  if ($days) {
+    // get the date of the day suggested
+    $past_timestamp = time() - ($days * 86400);
+    $past_date = getdate($past_timestamp); 
+    $ccl .= " and (date>=" . sprintf("%04d%02d%02d", $past_date['year'], $past_date['mon'], $past_date['mday']) . ")";
+  }
+  //$ccl = "(date=20110805220826.0)";
 
   // yaz_connect() prepares for a connection to a Z39.50 server. This function is non-blocking 
   // and does not attempt to establish a connection - it merely prepares a connect to be 
   // performed later when yaz_wait() is called.
   //$yazc = yaz_connect('agricola.nal.usda.gov:7090/voyager'); // NAL Catalog
   $yazc = yaz_connect('agricola.nal.usda.gov:7190/voyager');  // NAL Article Citation Database
-  $_SESSION['tripal_pub_AGRICOLA_query'][$search_str]['yaz_connection'] = $yazc;
-  
+    
   // use the USMARC record type.  But OPAC is also supported by Agricola
   yaz_syntax($yazc, "usmarc");
   
+  // the search query is built using CCL, we need to first
+  // configure it so it can map the attributes to defined identifiers
+  // The attribute set used by AGL can be found at the bottom of this page:
+  // http://agricola.nal.usda.gov/help/z3950.html  
+  // 
+  // More in depth details:  http://www.loc.gov/z3950/agency/bib1.html
+  //
+  // CCL Syntax: http://www.indexdata.com/yaz/doc/tools.html#CCL
+  //
+  $fields = array(
+    "title"    => "u=4",
+    "author"   => "u=1003",
+    "abstract" => "u=62",
+    "id"       => "u=12",
+    "date"     => "u=1012 r=o p=3 s=100 ", 
+  );
+  yaz_ccl_conf($yazc, $fields);
+  
+  //dpm($ccl);
+  if (!yaz_ccl_parse($yazc, $ccl, &$cclresult)) {
+    drupal_set_message('Error parsing search string: ' . $cclresult["errorstring"], "error");
+    watchdog('tripal_pub', 'Error: %errstr', array('%errstr' => $cclresult["errorstring"]), WATCHDOG_ERROR);
+    return array();
+  } 
+  $search_str = $cclresult["rpn"];    
+  
+  $search_array['search_string'] = $search_str;
+  //dpm($search_array);
+    
+  // save the YAZ connection in the session for use by other functions
+  $_SESSION['tripal_pub_AGL_query'][$search_str]['yaz_connection'] = $yazc;
+  
   // we want to get the list of pubs using the search terms but using a Drupal style pager
-  $pubs = tripal_pager_callback('tripal_pub_AGRICOLA_range',  $num_to_retrieve, $pager_id, 
-    'tripal_pub_AGRICOLA_count', $search_array);
+  $pubs = tripal_pager_callback('tripal_pub_AGL_range',  $num_to_retrieve, $pager_id, 
+    'tripal_pub_AGL_count', $search_array);
   
   // close the connection
-  unset($_SESSION['tripal_pub_AGRICOLA_query'][$search_str]['yaz_connection']);
+  unset($_SESSION['tripal_pub_AGL_query'][$search_str]['yaz_connection']);
   yaz_close($yazc);  
   
   return $pubs;
@@ -81,18 +125,37 @@ function tripal_pub_remote_search_AGRICOLA($search_array, $num_to_retrieve, $pag
  * tripal_pager_callback function.  This function returns a count of
  * the dataset to be paged.
  */
-function tripal_pub_AGRICOLA_count($search_array) {
+function tripal_pub_AGL_count($search_array) {
   $search_str = $search_array['search_string'];
   $days       = $search_array['days'];
   $limit      = $search_array['limit'];
   
-  $yazc = $_SESSION['tripal_pub_AGRICOLA_query'][$search_str]['yaz_connection'];
-  yaz_search($yazc, "rpn", $search_str);  
-  yaz_wait();
+  $yazc = $_SESSION['tripal_pub_AGL_query'][$search_str]['yaz_connection'];
+  //yaz_sort($yazc, "1=31 id"); // sort by publication date descending
+  if (!yaz_search($yazc, "rpn", $search_str)){
+    $error_no = yaz_errno($yazc);
+    $error_msg = yaz_error($yazc);
+    $additional = yaz_addinfo($yazc);
+    if ($additional != $error_msg) {
+      $error_msg .= " $additional";
+    }
+    drupal_set_message("ERROR preparing search at AGL: ($error_no) $error_msg", "error");
+    return 0;    
+  }
+  if (!yaz_wait()) {
+    $error_no = yaz_errno($yazc);
+    $error_msg = yaz_error($yazc);
+    $additional = yaz_addinfo($yazc);
+    if ($additional != $error_msg) {
+      $error_msg .= " $additional";
+    }
+    drupal_set_message("ERROR waiting on search at AGL: ($error_no) $error_msg", "error");
+    return 0;
+  }
   
   // get the total number of results from the serach
   $count = yaz_hits($yazc);  
-  $_SESSION['tripal_pub_AGRICOLA_query'][$search_str]['Count'] = $count; 
+  $_SESSION['tripal_pub_AGL_query'][$search_str]['Count'] = $count; 
   return $count;
 }
 
@@ -101,23 +164,33 @@ function tripal_pub_AGRICOLA_count($search_array) {
  * tripal_pager_callback function.  This function returns the results
  * within the specified range
  */
-function tripal_pub_AGRICOLA_range($search_array, $start = 0, $limit = 10) {
+function tripal_pub_AGL_range($search_array, $start = 0, $limit = 10) {
+  $pubs = array();
+  
   $search_str = $search_array['search_string'];
   $days       = $search_array['days'];
   $limit      = $search_array['limit'];
   
-  $yazc  = $_SESSION['tripal_pub_AGRICOLA_query'][$search_str]['yaz_connection'];
-  $count = $_SESSION['tripal_pub_AGRICOLA_query'][$search_str]['Count'];
+  $yazc  = $_SESSION['tripal_pub_AGL_query'][$search_str]['yaz_connection'];
+  $count = $_SESSION['tripal_pub_AGL_query'][$search_str]['Count'];
   yaz_range($yazc, 1, $num_pubs); 
-  yaz_present($yazc);
-  
-  $pubs = array();   
+  if (!yaz_present($yazc)) {
+    $error_no = yaz_errno($yazc);
+    $error_msg = yaz_error($yazc);
+    $additional = yaz_addinfo($yazc);
+    if ($additional != $error_msg) {
+      $error_msg .= " $additional";
+    }
+    drupal_set_message("ERROR waiting on search at AGL: ($error_no) $error_msg", "error");
+    return $pubs;
+  }  
+     
   if ($start + $limit > $count) {
     $limit = $count - $start;
   }
   for($i = $start; $i < $start + $limit; $i++) { 
     $pub_xml = yaz_record($yazc, $i + 1, 'xml; charset=marc-8,utf-8');
-    $pub     = tripal_pub_AGRICOLA_parse_pubxml($pub_xml);
+    $pub     = tripal_pub_AGL_parse_pubxml($pub_xml);
     $pubs[]  = $pub;     
   } 
   return $pubs;
@@ -128,7 +201,7 @@ function tripal_pub_AGRICOLA_range($search_array, $start = 0, $limit = 10) {
  * http://www.loc.gov/marc/bibliographic/bdsummary.html
  * 
  */
-function tripal_pub_AGRICOLA_parse_pubxml($pub_xml) {
+function tripal_pub_AGL_parse_pubxml($pub_xml) {
   $pub = array();
   
   if (!$pub_xml) {
@@ -147,6 +220,7 @@ function tripal_pub_AGRICOLA_parse_pubxml($pub_xml) {
       $value = $xml->value;
       switch ($tag) {
         case '001':  // control number
+          $pub['Publication Accession'] = $value;
           break;
         case '003':  // control number identifier
           break;
@@ -163,8 +237,9 @@ function tripal_pub_AGRICOLA_parse_pubxml($pub_xml) {
             '07' => 'Jul', '08' => 'Aug', '09' => 'Sep', 
             '10' => 'Oct', '11' => 'Nov', '12' => 'Dec'
           );
-          $date1 = substr($value, 7, 4);
-          $date2 = substr($value, 11, 4);
+          $date0 = substr($value, 0, 6);  // date entered on file
+          $date1 = substr($value, 7, 4);  // year of publication
+          $date2 = substr($value, 11, 4); // month of publication
           $place = substr($value, 15, 3);
           $lang  = substr($value, 35, 3);
           if (preg_match('/\d\d\d\d/', $date1)) {
@@ -193,18 +268,35 @@ function tripal_pub_AGRICOLA_parse_pubxml($pub_xml) {
         case '16':  // National Bibliographic Agency Control Number
           break;
         case '35':  // System Control Number
-          break;
+          $author = array();
+          $codes = tripal_pub_remote_search_AGL_get_subfield($xml);
+          foreach ($codes as $code => $value) {    
+            switch ($code) {                
+              case 'a': // System control number
+                $pub['Publication Accession'] = $value;
+                break;
+            }
+          }
         case '40':  // Cataloging Source (NR)
+          $author = array();
+          $codes = tripal_pub_remote_search_AGL_get_subfield($xml);
+          foreach ($codes as $code => $value) {    
+            switch ($code) {                
+              case 'a':  // original cataolging agency
+                $pub['Publication Database'] = $value;
+                break;
+            }
+          }
           break;
         case '72':  // Subject Category Code
           break;
         case '100':  // main entry-personal name
-          $author = tripal_pub_remote_search_AGRICOLA_get_author($xml, $ind1);
+          $author = tripal_pub_remote_search_AGL_get_author($xml, $ind1);
           $pub['Author List'][] = $author; 
           break;
         case '110':  // main entry-corporate nmae
           $author = array();
-          $codes = tripal_pub_remote_search_AGRICOLA_get_subfield($xml);
+          $codes = tripal_pub_remote_search_AGL_get_subfield($xml);
           foreach ($codes as $code => $value) {    
             switch ($code) {                
               case 'a': // Corporate name or jurisdiction name as entry elemen
@@ -233,7 +325,7 @@ function tripal_pub_AGRICOLA_parse_pubxml($pub_xml) {
         case '243':  // collective uniform title
           break;
         case '245':  // title statement
-          $codes = tripal_pub_remote_search_AGRICOLA_get_subfield($xml);
+          $codes = tripal_pub_remote_search_AGL_get_subfield($xml);
           foreach ($codes as $code => $value) {          
             switch ($code) {                
               case 'a':
@@ -266,7 +358,7 @@ function tripal_pub_AGRICOLA_parse_pubxml($pub_xml) {
         case '258':  // philatelic issue data
           break;
         case '260':  // publication, distribution ,etc (imprint)
-          $codes = tripal_pub_remote_search_AGRICOLA_get_subfield($xml);
+          $codes = tripal_pub_remote_search_AGL_get_subfield($xml);
           foreach ($codes as $code => $value) {          
             switch ($code) {                
               case 'a':
@@ -289,7 +381,7 @@ function tripal_pub_AGRICOLA_parse_pubxml($pub_xml) {
           break;
           
         case '300':  // Address
-          $codes = tripal_pub_remote_search_AGRICOLA_get_subfield($xml);
+          $codes = tripal_pub_remote_search_AGL_get_subfield($xml);
           foreach ($codes as $code => $value) {          
             switch ($code) {                
               case 'a':
@@ -314,7 +406,7 @@ function tripal_pub_AGRICOLA_parse_pubxml($pub_xml) {
         case '504':  // Bibliography, Etc. Note
           break;
         case '520':  // Summary, etc
-          $codes = tripal_pub_remote_search_AGRICOLA_get_subfield($xml);
+          $codes = tripal_pub_remote_search_AGL_get_subfield($xml);
           foreach ($codes as $code => $value) {    
             switch ($code) {                
               case 'a':
@@ -324,7 +416,7 @@ function tripal_pub_AGRICOLA_parse_pubxml($pub_xml) {
           }
           break;
         case '650':  // Subject Added Entry-Topical Term
-          $codes = tripal_pub_remote_search_AGRICOLA_get_subfield($xml);
+          $codes = tripal_pub_remote_search_AGL_get_subfield($xml);
           foreach ($codes as $code => $value) {    
             switch ($code) {
               case 'a':
@@ -334,7 +426,7 @@ function tripal_pub_AGRICOLA_parse_pubxml($pub_xml) {
           }          
           break;
         case '653':  // Index Term-Uncontrolled
-          $codes = tripal_pub_remote_search_AGRICOLA_get_subfield($xml);
+          $codes = tripal_pub_remote_search_AGL_get_subfield($xml);
           foreach ($codes as $code => $value) {    
             switch ($code) {
               case 'a':
@@ -344,12 +436,12 @@ function tripal_pub_AGRICOLA_parse_pubxml($pub_xml) {
           }
           break;
         case '700':  // Added Entry-Personal Name
-          $author = tripal_pub_remote_search_AGRICOLA_get_author($xml, $ind1);
+          $author = tripal_pub_remote_search_AGL_get_author($xml, $ind1);
           $pub['Author List'][] = $author; 
           break;
         case '710':  // Added Entry-Corporate Name
           $author = array();
-          $codes = tripal_pub_remote_search_AGRICOLA_get_subfield($xml);
+          $codes = tripal_pub_remote_search_AGL_get_subfield($xml);
           foreach ($codes as $code => $value) {    
             switch ($code) {                
               case 'a': // Corporate name or jurisdiction name as entry elemen
@@ -363,7 +455,7 @@ function tripal_pub_AGRICOLA_parse_pubxml($pub_xml) {
           $pub['Author List'][] = $author; 
           break;
         case '773': // host item entry
-          $codes = tripal_pub_remote_search_AGRICOLA_get_subfield($xml);
+          $codes = tripal_pub_remote_search_AGL_get_subfield($xml);
           foreach ($codes as $code => $value) {    
             switch ($code) {                
               case 't':                
@@ -417,7 +509,7 @@ function tripal_pub_AGRICOLA_parse_pubxml($pub_xml) {
         case '852': // Location (Where is the publication held)
           break;
         case '856': // Electronic Location and Access
-          $codes = tripal_pub_remote_search_AGRICOLA_get_subfield($xml);
+          $codes = tripal_pub_remote_search_AGL_get_subfield($xml);
           foreach ($codes as $code => $value) {    
             switch ($code) {
               case 'u':
@@ -427,13 +519,23 @@ function tripal_pub_AGRICOLA_parse_pubxml($pub_xml) {
           }
           break;
         default:
-          $codes = tripal_pub_remote_search_AGRICOLA_get_subfield($xml);
+          $codes = tripal_pub_remote_search_AGL_get_subfield($xml);
           $unhandled[$tag][] = $codes;
           break;
       }
     }
   }
-  dpm($unhandled);
+  //dpm($unhandled);
+  
+  // build the Dbxref
+  if ($pub['Publication Database'] != 'AGL') {
+    
+  }
+  if ($pub['Publication Accession'] and $pub['Publication Database']) {
+    $pub['Publication Dbxref'] = $pub['Publication Database'] . ":" . $pub['Publication Accession'];
+    unset($pub['Publication Accession']);
+    unset($pub['Publication Database']);
+  }
 
   // build the full authors list
   foreach ($pub['Author List'] as $author) {
@@ -463,7 +565,7 @@ function tripal_pub_AGRICOLA_parse_pubxml($pub_xml) {
  * 
  * 
  */
-function tripal_pub_remote_search_AGRICOLA_get_subfield($xml) {
+function tripal_pub_remote_search_AGL_get_subfield($xml) {
   $codes = array();
   while ($xml->read()) {    
     $sub_element = $xml->name;
@@ -486,9 +588,9 @@ function tripal_pub_remote_search_AGRICOLA_get_subfield($xml) {
  * 
  * 
  */
-function tripal_pub_remote_search_AGRICOLA_get_author($xml, $ind1) {
+function tripal_pub_remote_search_AGL_get_author($xml, $ind1) {
   $author = array();
-  $codes = tripal_pub_remote_search_AGRICOLA_get_subfield($xml);
+  $codes = tripal_pub_remote_search_AGL_get_subfield($xml);
   foreach ($codes as $code => $value) {          
     switch ($code) {                
       case 'a':

@@ -5,9 +5,9 @@ require_once "includes/tripal_pub.admin.inc";
 require_once "includes/pub_sync.inc";
 require_once "includes/pub_form.inc";
 require_once "includes/pub_importers.inc";
-require_once "includes/pubmed.inc";
-require_once "includes/agricola.inc";
 require_once "includes/pub_search.inc";
+require_once "includes/importers/PMID.inc";
+require_once "includes/importers/AGL.inc";
 /**
  * @file
  *
@@ -24,11 +24,7 @@ require_once "includes/pub_search.inc";
  */
 function tripal_pub_init() {
   drupal_add_js(drupal_get_path('theme', 'tripal') . '/js/tripal_pub.js');
-  drupal_add_css(drupal_get_path('theme', 'tripal') . '/css/tripal_pub.css');
-  
-  // this variable indicates which databases are supported by the Tripal pub module
-  // for importing
-  variable_set('tripal_pub_supported_dbs', array('PMID'));
+  drupal_add_css(drupal_get_path('theme', 'tripal') . '/css/tripal_pub.css');  
 }
 
 
@@ -716,7 +712,7 @@ function tripal_pub_form_alter(&$form, &$form_state, $form_id) {
     // the form to the ahah callback URL. We need to set it back
     // to the normal form URL
     if ($form_state['values']['action'] == 'edit') {
-      $form['#action'] = url("admin/tripal/tripal_pub/import/edit/" . $form['pub_import_id']);
+      $form['#action'] = url("admin/tripal/tripal_pub/import/edit/" . $form_state['values']['pub_import_id']);
     } 
     if ($form_state['values']['action'] == 'new') {
       $form['#action'] = url("admin/tripal/tripal_pub/import/new");

@@ -18,34 +18,51 @@ function tripal_pub_remote_search_PMID($search_array, $num_to_retrieve, $pager_i
   $days = $search_array['days'];
 
   $search_str = '';
-  for ($i = 0; $i <= $num_criteria; $i++) {
-    $search_terms = $search_array['criteria'][$i]['search_terms'];
+  for ($i = 1; $i <= $num_criteria; $i++) {
+    $search_terms = trim($search_array['criteria'][$i]['search_terms']);
     $scope = $search_array['criteria'][$i]['scope'];
+    $is_phrase = $search_array['criteria'][$i]['is_phrase'];
     $op = $search_array['criteria'][$i]['operation'];
     
     if ($op) {
       $search_str .= "$op";
-    }
+    }    
     
+    // if this is phrase make sure the search terms are surrounded by quotes
+    if ($is_phrase) {
+      $search_terms = "\"$search_terms\""; 
+    }
     $search_str .= '(';
     
-    if($scope == 'title') {
-      $search_str .= '"' . implode("+", preg_split('/\s+/', trim($search_terms))) . '"[Title]';
+    if ($scope == 'title') {
+      $search_str .= $search_terms . '[Title]';
     }    
-    elseif($scope == 'author') {
-      $search_str .= '"' . implode("+", preg_split('/\s+/', trim($search_terms))) . '"[Author]';
+    elseif ($scope == 'author') {
+      $search_str .= $search_terms . '[Author]';
     }    
-    elseif($scope == 'abstract') {
-      $search_str .= '"' . implode("+", preg_split('/\s+/', trim($search_terms))) . '"[Title/Abstract]';
+    elseif ($scope == 'abstit') {
+      $search_str .= $search_terms . '[Title/Abstract]';
     }
-    elseif($scope == 'id') {
-      $search_str .= '' . implode("+", preg_split('/\s+/', trim($search_terms))) . '[Uid]';      
+    elseif ($scope == 'id') {
+      $search_terms = preg_replace('/PMID:([^\s]*)/', 'id=($1)', $search_terms);
+      $search_str .= '(' . $search_terms . ')[Uid]';      
+    }
+    else {
+      $search_str .= $search_terms;
     }    
     $search_str .= ')'; 
   }  
+  if ($days) {
+    // get the date of the day suggested
+    $past_timestamp = time() - ($days * 86400);
+    $past_date = getdate($past_timestamp); 
+    $search_str .= " AND (\"" . sprintf("%04d/%02d/%02d", $past_date['year'], $past_date['mon'], $past_date['mday']) . "\"[Date - Create] : \"3000\"[Date - Create]))";
+  }  
+  
   $search_array['limit'] = $num_to_retrieve;
-  $search_array['search_string'] = $search_str;
-    
+  $search_array['search_string'] = $search_str;  
+  dpm($search_array);  
+  
   // we want to get the list of pubs using the search terms but using a Drupal style pager
   $pubs = tripal_pager_callback('tripal_pub_PMID_range',  $num_to_retrieve, $pager_id, 
     'tripal_pub_PMID_count', $search_array);
@@ -59,14 +76,13 @@ function tripal_pub_remote_search_PMID($search_array, $num_to_retrieve, $pager_i
  * the dataset to be paged.
  */
 function tripal_pub_PMID_count($search_array) {
-  $terms = $search_array['search_string'];
-  $days  = $search_array['days'];
+  $search_str = $search_array['search_string'];
   $limit = $search_array['limit'];
   
-  $results = tripal_pub_PMID_search_init($terms, $limit, $days);
-  $_SESSION['tripal_pub_PMID_query'][$terms]['Count'] = $results['Count'];
-  $_SESSION['tripal_pub_PMID_query'][$terms]['WebEnv'] = $results['WebEnv'];
-  $_SESSION['tripal_pub_PMID_query'][$terms]['QueryKey'] = $results['QueryKey'];
+  $results = tripal_pub_PMID_search_init($search_str, $limit);
+  $_SESSION['tripal_pub_PMID_query'][$search_str]['Count'] = $results['Count'];
+  $_SESSION['tripal_pub_PMID_query'][$search_str]['WebEnv'] = $results['WebEnv'];
+  $_SESSION['tripal_pub_PMID_query'][$search_str]['QueryKey'] = $results['QueryKey'];
    
   return $results['Count'];
 
@@ -78,23 +94,22 @@ function tripal_pub_PMID_count($search_array) {
  * within the specified range
  */
 function tripal_pub_PMID_range($search_array, $start = 0, $limit = 10) {
-  $terms = $search_array['search_string'];
-  $days  = $search_array['days'];
+  $search_str = $search_array['search_string'];
   $limit = $search_array['limit'];
   
-  $count = $_SESSION['tripal_pub_PMID_query'][$terms]['Count'];
+  $count = $_SESSION['tripal_pub_PMID_query'][$search_str]['Count'];
   if ($count == 0) {
     return array();
   }
     
   // get the query_key and the web_env from the previous count query.
-  $query_key = $_SESSION['tripal_pub_PMID_query'][$terms]['QueryKey'];
-  $web_env   = $_SESSION['tripal_pub_PMID_query'][$terms]['WebEnv'];
+  $query_key = $_SESSION['tripal_pub_PMID_query'][$search_str]['QueryKey'];
+  $web_env   = $_SESSION['tripal_pub_PMID_query'][$search_str]['WebEnv'];
   
   // if this function has been called without calling the count function
   // then we need to do the query.
   if (!$query_key) {
-    $results = tripal_pub_PMID_search_init($terms, $limit, $days);
+    $results = tripal_pub_PMID_search_init($search_str, $limit);
     $_SESSION['tripal_pub_PMID_query']['WebEnv'] = $results['WebEnv'];
     $_SESSION['tripal_pub_PMID_query']['QueryKey'] = $results['QueryKey']; 
     $query_key =  $results['QueryKey'];
@@ -119,7 +134,7 @@ function tripal_pub_PMID_range($search_array, $start = 0, $limit = 10) {
 /*
  * 
  */
-function tripal_pub_PMID_search_init($terms, $retmax, $days = 0){
+function tripal_pub_PMID_search_init($search_str, $retmax){
    
   // do a search for a single result so that we can establish a history, and get
   // the number of records. Once we have the number of records we can retrieve
@@ -128,10 +143,8 @@ function tripal_pub_PMID_search_init($terms, $retmax, $days = 0){
     "db=Pubmed" .
     "&retmax=$retmax" .
     "&usehistory=y".
-    "&term=$terms";
-  if($days) {
-    $query_url .= "&reldate=$days&datetype=edat";
-  }
+    "&term=" . urlencode($search_str);
+
   //dpm($query_url);
   $rfh = fopen($query_url, "r");
   if (!$rfh) {
