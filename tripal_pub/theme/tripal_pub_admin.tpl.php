@@ -1,4 +1,4 @@
-<br /><h3>Tripal Publication Administrative Tools Quick Links</h3>
+<br /><h3>Tripal Publication Quick Links</h3>
 <ul>
   <li><?php print l('Search for Publications', 'find/publications') ?></li>
   <li><?php print l('Configuration', 'admin/tripal/tripal_pub/configuration') ?></li>
