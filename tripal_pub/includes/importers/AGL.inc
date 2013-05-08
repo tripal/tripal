@@ -1,14 +1,7 @@
 <?php
 /**
- * Installation:
- * 1) Install the yaz libraries: sudo apt-get install yaz libyaz3 libyaz3-dev
- * 2) Install the PHP module: sudo pecl install yaz
- * 3) Add "extension=yaz.so" to php.ini
- * 4) Restart apache
- * 
  *  
  */
-
 
 /**
  *
@@ -65,9 +58,8 @@ function tripal_pub_remote_search_AGL($search_array, $num_to_retrieve, $pager_id
     // get the date of the day suggested
     $past_timestamp = time() - ($days * 86400);
     $past_date = getdate($past_timestamp); 
-    $ccl .= " and (date>=" . sprintf("%04d%02d%02d", $past_date['year'], $past_date['mon'], $past_date['mday']) . ")";
+    $ccl .= " and (date>=" . sprintf("%04d%02d%02d.0", $past_date['year'], $past_date['mon'], $past_date['mday']) . ")";
   }
-  //$ccl = "(date=20110805220826.0)";
 
   // yaz_connect() prepares for a connection to a Z39.50 server. This function is non-blocking 
   // and does not attempt to establish a connection - it merely prepares a connect to be 
@@ -92,7 +84,7 @@ function tripal_pub_remote_search_AGL($search_array, $num_to_retrieve, $pager_id
     "author"   => "u=1003",
     "abstract" => "u=62",
     "id"       => "u=12",
-    "date"     => "u=1012 r=o p=3 s=100 ", 
+    "date"     => "u=1011 r=o p=3 s=100 ", 
   );
   yaz_ccl_conf($yazc, $fields);
   

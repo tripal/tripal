@@ -28,10 +28,22 @@ been added to Chado database.
     to "sync" them with Drupal.  Use the <?php print l('sync publications', 'admin/tripal/tripal_pub/sync') ?>
     page to sync all publications.</p></li>
   <li><p><b>Configure the Search Behavior</b>: Before allowing site visitors to search for publications 
-   visit the <?php print l('configuration page', 'admin/tripal/tripal_pub/configuration') ?> to disable or enable
-   fields for searching.  Tripal uses its own ontology for storing publication information in Chado, and all 
-   child terms of the "Publication Details" are made available for searching. However, some of these
-   may not be desired for searching and can be disabled.</p></li>
+    visit the <?php print l('configuration page', 'admin/tripal/tripal_pub/configuration') ?> to disable or enable
+    fields for searching.  Tripal uses its own ontology for storing publication information in Chado, and all 
+    child terms of the "Publication Details" are made available for searching. However, some of these
+    may not be desired for searching and can be disabled.</p></li>
+  <li><p><b>AGL Importer</b>: Initially, the Tripal publication module supports creating publication 
+    importers using PubMed and the USDA National Agricultural Library (AGL).  The AGL database uses 
+    a Z39.50 protocol for querying and therefore Tripal requires the 'YAZ' library to connect.  Before
+    you can query AGL you must install the YAZ library and the PHP YAZ library.  The following steps can
+    be used on an Ubuntu 12.04 server to intall the necessary pre-requisites:
+    <ol>
+      <li>Install the YAZ libraries: sudo apt-get install yaz libyaz4-dev</li>
+      <li>Install the PHP YAZ extension: sudo pecl install yaz</li>
+      <li>Add the text 'extesion=yaz.so' to the appropriate php.ini file (e.g. /etc/php5/apache2filter/php.ini)</li>
+      <li>Restart the webserver</li>
+    </ol>
+    </p></li>
 </ol>
 <h3>Features of this Module:</h3>
 <ul>
@@ -39,7 +51,7 @@ been added to Chado database.
     Once added, publications can be modified or deleted by clicking the Edit tab at the top of a publication page.</p></li>
   
   <li><p><b>Publication Search Tool</b>: A <?php print l('search tool','find/publications') ?> is provided for 
-    finding publications. Unlike most default search tools for Tripal, this tool does not relies on Drupal Views</p></li>
+    finding publications. Unlike most default search tools for Tripal, this tool does not rely on Drupal Views</p></li>
     
   <li><p><b>Bulk Import of Publications</b>: Site administrators can  <?php print l('add a new publication importer', 'admin/tripal/tripal_pub/import/new') ?> 
     which provides a set of search terms for querying a remote publication database (e.g. PubMed). Publications

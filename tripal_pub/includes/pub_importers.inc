@@ -260,8 +260,8 @@ function tripal_pub_importer_setup_form(&$form_state = NULL, $pub_import_id = NU
   
   $form['days'] = array(
     '#type'          => 'textfield',
-    '#title'         => t('Days'),
-    '#description'   => t('Limit the search to include pubs that have been added to the database this many days before today.'),
+    '#title'         => t('Days since record modified'),
+    '#description'   => t('Limit the search to include pubs that have been added no more than this many days before today.'),
     '#default_value' => $days,
     '#size'          => 5,
   );
