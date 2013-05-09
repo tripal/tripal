@@ -247,6 +247,12 @@ function tripal_pub_importer_setup_form(&$form_state = NULL, $pub_import_id = NU
     '#type' => 'select',
     '#options' => $remote_dbs,
     '#default_value' => $remote_db,
+    '#ahah' => array(
+      'path'    => "admin/tripal/tripal_pub/import/changedb",
+      'wrapper' => 'tripal-pub-importer-setup-form',
+      'event'   => 'click',
+      'method'  => 'replace',
+    ), 
   );
 
   $form['num_criteria']= array(
@@ -278,6 +284,21 @@ function tripal_pub_importer_setup_form(&$form_state = NULL, $pub_import_id = NU
        additional information such as affilation, etc. Otherwise, only authors names are retrieved.'),
     '#default_value' => $do_contact,
   );
+  
+  // choices array
+  $scope_choices = array(
+    'any'      => 'Any Field',
+    'abstract' => 'Abstract',  
+    'author'   => 'Author',
+    'id'       => 'Accession',
+    'title'    => 'Title',
+  );
+
+  $op_choices = array(
+    'AND' => 'AND',
+    'OR'  => 'OR',
+    'NOT' => 'NOT'
+  );
   for($i = 1; $i <= $num_criteria; $i++) {
     
     // if we have criteria supplied from the database then use that as the initial defaults
@@ -300,12 +321,7 @@ function tripal_pub_importer_setup_form(&$form_state = NULL, $pub_import_id = NU
       $is_phrase    = $form_state['values']["is_phrase-$i"];
       $operation    = $form_state['values']["operation-$i"];
     }
-    
-    // default to searching the title and abstract
-    if (!$scope) {
-      $scope = 'abstract';
-    }
-  
+      
     $form['criteria'][$i]["search_terms-$i"] = array(
       '#type'          => 'textfield',
       '#description'   => t('Please provide a list of words for searching. You may use 
@@ -317,13 +333,7 @@ function tripal_pub_importer_setup_form(&$form_state = NULL, $pub_import_id = NU
     $form['criteria'][$i]["scope-$i"] = array(
       '#type'          => 'select',
       '#description'   => t('Please select the fields to search for this term.'),
-      '#options'       => array(
-        'any'      => 'Any Field',
-        'author'   => 'Author',
-        'id'       => 'Accession',
-        'title'    => 'Title',
-        'abstit'   => 'Title & Abstract',
-      ),
+      '#options'       => $scope_choices,
       '#default_value' => $scope,
     );  
     $form['criteria'][$i]["is_phrase-$i"] = array(
@@ -335,10 +345,7 @@ function tripal_pub_importer_setup_form(&$form_state = NULL, $pub_import_id = NU
     if ($i > 1) {
       $form['criteria'][$i]["operation-$i"] = array(
         '#type'          => 'select',
-        '#options'       => array(
-          'AND' => 'AND',
-          'OR'  => 'OR',
-          'NOT' => 'NOT'),
+        '#options'       => $op_choices,
         '#default_value' => $operation,
       );
     }
@@ -390,6 +397,9 @@ function tripal_pub_importer_setup_form(&$form_state = NULL, $pub_import_id = NU
     '#value'        => t('Delete Importer'),
   );
 
+  // allow the selected remote database to make changes to the form if needed
+  $callback = "tripal_pub_remote_alter_form_$remote_db";  
+  call_user_func($callback, &$form, $form_state);
 
   return $form;
 }
@@ -409,12 +419,15 @@ function tripal_pub_importer_setup_form_validate($form, &$form_state) {
     $search_terms =  trim($form_state['values']["search_terms-$i"]);
     $scope =  $form_state['values']["scope-$i"];
     $is_phrase =  $form_state['values']["is_phrase-$i"];
-    $operation =  $form_state['values']["operation-$i"];
-    
-    if ($days and !is_numeric($days) or preg_match('/\./', $days)) {
-      form_set_error("days-$i", "Please enter a numeric, non decimal value, for the number of days.");
-    }
+    $operation =  $form_state['values']["operation-$i"];    
   }
+
+  if ($days and !is_numeric($days) or preg_match('/\./', $days)) {
+    form_set_error("days", "Please enter a numeric, non decimal value, for the number of days.");
+  }
+  // allow the selected remote database to validate any changes to the form if needed
+  $callback = "tripal_pub_remote_validate_form_$remote_db";
+  call_user_func($callback, &$form, $form_state);
 }
 
 /**
@@ -524,6 +537,29 @@ function tripal_pub_importer_delete($pub_import_id) {
   else {
     drupal_set_message('Could not delete publication importer.', 'error');
   }
+}
+/*
+ * AHAH callback
+ */
+function tripal_pub_importer_setup_page_update_remotedb() {
+  $status = TRUE;
+
+  // prepare and render the form
+  $form = tripal_core_ahah_prepare_form();   
+  $data = theme('tripal_pub_importer_setup_form', $form);  
+
+  // bind javascript events to the new objects that will be returned 
+  // so that AHAH enabled elements will work.
+  $settings = tripal_core_ahah_bind_events();
+
+  // return the updated JSON
+  drupal_json(
+    array(
+      'status'   => $status, 
+      'data'     => $data,
+      'settings' => $settings,
+    )  
+  );
 }
 /*
  * AHAH callback

@@ -63,7 +63,7 @@ function tripal_pub_get_remote_search_results($remote_db, $search_array,
   }  
   
   // now call the callback function to get the results
-  $callback = 'tripal_pub_remote_search_' . strtolower($remote_db);
+  $callback = "tripal_pub_remote_search_$remote_db";
   $pubs = array();
   if (function_exists($callback)) {
     $pubs = call_user_func($callback, $search_array, $num_to_retrieve, $pager_id);

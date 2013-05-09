@@ -2,7 +2,24 @@
 /**
  *  
  */
-
+function tripal_pub_remote_alter_form_AGL(&$form, $form_state) {
+  // So far we haven't been able to get AGL to filter results to only 
+  // include pubs by the XX number days in the past.  So, we will
+  // change the 'days' element to be the year to query
+  $form['days']['#title'] = t('Year');
+  $form['days']['#description']  = t('Please enter a year to limit records by the year they were published, created or modified in the database.');
+  
+}
+/**
+ *  
+ */
+function tripal_pub_remote_validate_form_AGL(&$form, $form_state) {
+  $days =  trim($form_state['values']["days"]);
+  
+  if ($days and !preg_match('/^\d\d\d\d$/', $days)) {
+    form_set_error("days", "Please enter a four digit year.");
+  }
+}
 /**
  *
  */
@@ -14,15 +31,44 @@ function tripal_pub_remote_search_AGL($search_array, $num_to_retrieve, $pager_id
   // set some defaults
   $search_array['limit'] = $num_to_retrieve;
   
-  // Build the query by iterating through the search array values
+  // To build the CCL search string we want to have a single entry for 'author', 'title', 'abstract'
+  // or 'id', and also the corresponding 'not for each of those. 
+  // But the search form allows the user to have multiple rows of the same type. So, we will build the
+  // search string separately for each category and it's negative category (if NOT is selected as the op)
+  // and at the end we will put them together into a single search string.  We need to keep
+  // track of the first entry of any category because it will not have an op (e.g. 'or' or 'and') but the
+  // operation will be pushed out to separate the categories.  The op for any second or third instance of
+  // the same category will be included within the search string for the catgory.
   $ccl = '';
+  $title = '';
+  $author = '';
+  $abstract = '';
+  $id = '';
+  $any = '';
+  $negate_title = '';
+  $negate_author = '';
+  $negate_abstract = '';
+  $negate_id = '';
+  $negate_any = '';
+  $order = array();
+  $first_abstract = 1;
+  $first_author = 1;
+  $first_title = 1;
+  $first_id = 1;
+  $first_any = 1;
+  $first_negate_abstract = 1;
+  $first_negate_author = 1;
+  $first_negate_title = 1;
+  $first_negate_id = 1;
+  $first_negate_any = 1;
   for ($i = 1; $i <= $num_criteria; $i++) {
     $search_terms = trim($search_array['criteria'][$i]['search_terms']);
     $scope = $search_array['criteria'][$i]['scope'];
     $is_phrase = $search_array['criteria'][$i]['is_phrase'];
     $op = $search_array['criteria'][$i]['operation'];
+    
     if ($op) {
-      $ccl .= " " . strtolower($op) . " ";
+      $op = strtolower($op);
     }
     $search_terms = trim($search_terms);
     // if this is not a phrase then make sure the AND and OR are lower-case
@@ -33,34 +79,176 @@ function tripal_pub_remote_search_AGL($search_array, $num_to_retrieve, $pager_id
     // else make sure the search terms are surrounded by quotes 
     else {
       $search_terms = "\"$search_terms\""; 
-    }        
-    $ccl .= ' (';
-    if ($scope == 'title') {      
-      $ccl .= "title=($search_terms)";
-    }    
+    }   
+    
+    // if this is a 'not' operation then we want to change it to an
+    // and
+    $negate = '';    
+    if ($op == 'not') {
+      $scope = "negate_$scope";
+      $op = 'or';
+    }
+    $order[] = array('scope' => $scope, 'op' => $op);
+    
+    // build each category
+    if ($scope == 'title') {
+      if ($first_title) {
+        $title .= "($search_terms) ";
+        $first_title = 0;
+      } 
+      else {
+        $title .= "$op ($search_terms) "; 
+      }
+    }  
+    if ($scope == 'negate_title') {
+      if ($first_negate_title) {
+        $negate_title .= "($search_terms) ";
+        $first_negate_title = 0;
+      } 
+      else {
+        $negate_title .= "$op ($search_terms) "; 
+      }
+    } 
     elseif ($scope == 'author') {
-      $ccl .= "author=($search_terms)";
-    }    
-    elseif ($scope == 'abstit') {
-      $ccl .= "(title=($search_terms) or abstract=($search_terms))";
+      if ($first_author) {
+        $author .= "($search_terms) ";
+        $first_author = 0;  
+      }
+      else {
+        $author .= "$op ($search_terms) ";
+      }
+    }
+    elseif ($scope == 'negate_author') {
+      if ($first_negate_author) {
+        $negate_author .= "($search_terms) ";
+        $first_negate_author = 0;  
+      }
+      else {
+        $negate_author .= "$op ($search_terms) ";
+      }
+    } 
+    elseif ($scope == 'abstract') {
+      if ($first_abstract) {
+        $abstract .= "($search_terms) ";
+        $first_abstract = 0;
+      }
+      else {
+        $abstract .= "$op ($search_terms) ";
+      }
+    }
+    elseif ($scope == 'negate_abstract') {
+      if ($first_negate_abstract) {
+        $negate_abstract .= "($search_terms) ";
+        $first_negate_abstract = 0;
+      }
+      else {
+        $negate_abstract .= "$op ($search_terms) ";
+      }
     }
     elseif ($scope == 'id') {
-      $search_terms = preg_replace('/AGL:([^\s]*)/', 'id=($1)', $search_terms);
-      $ccl .= $search_terms;
-    }  
-    else {
-     $ccl .= "$search_terms"; 
+      if ($first_id) {
+        $id .= "(" . preg_replace('/AGL:([^\s]*)/', 'id=($1)', $search_terms) . ") ";
+        $first_id = 0; 
+      }
+      else {
+        $id .= "$op (" . preg_replace('/AGL:([^\s]*)/', 'id=($1)', $search_terms) . ") ";
+      }
+    } 
+    elseif ($scope == 'negate_id') {
+      if ($first_negate_id) {
+        $negate_id .= "(" . preg_replace('/AGL:([^\s]*)/', 'id=($1)', $search_terms) . ") ";
+        $first_negate_id = 0; 
+      }
+      else {
+        $negate_id .= "$op (" . preg_replace('/AGL:([^\s]*)/', 'id=($1)', $search_terms) . ") ";
+      }
+    } 
+    elseif ($scope == 'any'){
+      if ($first_any) {
+        $any .= "($search_terms) ";
+        $first_any = 0;
+      }
+      else {
+        $any .= "$op ($search_terms) ";
+      } 
     }
-    $ccl .= ') ';
+    elseif ($scope == 'negate_any'){
+      if ($first_negate_any) {
+        $negate_any .= "($search_terms) ";
+        $first_any = 0;
+      }
+      else {
+        $negate_any .= "$op ($search_terms) ";
+      } 
+    }
   } 
-
-  if ($days) {
-    // get the date of the day suggested
-    $past_timestamp = time() - ($days * 86400);
-    $past_date = getdate($past_timestamp); 
-    $ccl .= " and (date>=" . sprintf("%04d%02d%02d.0", $past_date['year'], $past_date['mon'], $past_date['mday']) . ")";
+  // now build the CCL string in order 
+  $abstract_done = 0;
+  $author_done = 0;
+  $title_done = 0;
+  $id_done = 0;
+  $any_done = 0;
+  $negate_abstract_done = 0;
+  $negate_author_done = 0;
+  $negate_title_done = 0;
+  $negate_id_done = 0;
+  $negate_any_done = 0;
+  for ($i = 1; $i < count($order) ; $i++) {
+    if ($order[$i]['scope'] == 'abstract' and !$abstract_done) {
+      $op = $order[$i]['op'];
+      $ccl .= "$op abstract=($abstract) ";
+      $abstract_done = 1;
+    }
+    if ($order[$i]['scope'] == 'negate_abstract' and !$negate_abstract_done) {
+      $ccl .= "not abstract=($negate_abstract) ";
+      $negate_abstract_done = 1;
+    }
+    if ($order[$i]['scope'] == 'author' and !$author_done) {
+      $op = $order[$i]['op'];
+      $ccl .= "$op author=($author) ";
+      $author_done = 1;
+    }
+    if ($order[$i]['scope'] == 'negate_author' and !$negate_author_done) {
+      $ccl .= "not author=($negate_author) ";
+      $negate_author_done = 1;
+    }
+    if ($order[$i]['scope'] == 'id' and !$id_done) {
+      $op = $order[$i]['op'];
+      $ccl .= "$op id=($id) ";
+      $id_done = 1;
+    }
+    if ($order[$i]['scope'] == 'negate_id' and !$negate_id_done) {
+      $ccl .= "not id=($negate_id) ";
+      $negate_id_done = 1;
+    }
+    if ($order[$i]['scope'] == 'title' and !$title_done) {
+      $op = $order[$i]['op'];
+      $ccl .= "$op title=($title) ";
+      $title_done = 1;
+    }
+    if ($order[$i]['scope'] == 'negate_title' and !$negate_title_done) {
+      $ccl .= "not title=($negate_title) ";
+      $negate_title_done = 1;
+    }
+    if ($order[$i]['scope'] == 'any' and !$any_done) {
+      $op = $order[$i]['op'];
+      $ccl .= "$op ($any) ";
+      $any_done = 1;
+    }
+    if ($order[$i]['scope'] == 'negate_any' and !$negate_any_done) {
+      $ccl .= "not ($negate_any) ";
+      $negate_any_done = 1;
+    }
   }
 
+  // for AGL the 'days' form element was converted to represent the year
+  if ($days) {
+    $ccl .= "and year=($days)";
+  }
+  
+  // remove any preceeding 'and' or 'or'
+  $ccl = preg_replace('/^\s*(and|or)/', '', $ccl);
+    
   // yaz_connect() prepares for a connection to a Z39.50 server. This function is non-blocking 
   // and does not attempt to establish a connection - it merely prepares a connect to be 
   // performed later when yaz_wait() is called.
@@ -84,11 +272,10 @@ function tripal_pub_remote_search_AGL($search_array, $num_to_retrieve, $pager_id
     "author"   => "u=1003",
     "abstract" => "u=62",
     "id"       => "u=12",
-    "date"     => "u=1011 r=o p=3 s=100 ", 
+    "year"     => "u=30 r=o", 
   );
   yaz_ccl_conf($yazc, $fields);
-  
-  //dpm($ccl);
+    
   if (!yaz_ccl_parse($yazc, $ccl, &$cclresult)) {
     drupal_set_message('Error parsing search string: ' . $cclresult["errorstring"], "error");
     watchdog('tripal_pub', 'Error: %errstr', array('%errstr' => $cclresult["errorstring"]), WATCHDOG_ERROR);
@@ -97,7 +284,6 @@ function tripal_pub_remote_search_AGL($search_array, $num_to_retrieve, $pager_id
   $search_str = $cclresult["rpn"];    
   
   $search_array['search_string'] = $search_str;
-  //dpm($search_array);
     
   // save the YAZ connection in the session for use by other functions
   $_SESSION['tripal_pub_AGL_query'][$search_str]['yaz_connection'] = $yazc;
@@ -109,7 +295,7 @@ function tripal_pub_remote_search_AGL($search_array, $num_to_retrieve, $pager_id
   // close the connection
   unset($_SESSION['tripal_pub_AGL_query'][$search_str]['yaz_connection']);
   yaz_close($yazc);  
-  
+    
   return $pubs;
 }
 /*

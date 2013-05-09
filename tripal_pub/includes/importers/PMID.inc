@@ -6,7 +6,24 @@
  * @defgroup tripal_pub_PMID PubMed Interface
  * @ingroup tripal_pub
  */
-
+/**
+ *  
+ */
+function tripal_pub_remote_alter_form_PMID(&$form, $form_state) {
+  $num_criteria = $form['num_criteria']['#default_value'];
+  
+  // PubMed doesn't have an 'Abstract' field, so we need to convert the criteria
+  // from 'Abstract' to 'Title/Abstract'
+  for($i = 1; $i <= $num_criteria; $i++) {
+    $form['criteria'][$i]["scope-$i"]['#options']['abstract'] = 'Abstract/Title';
+  }
+}
+/**
+ *  
+ */
+function tripal_pub_remote_validate_form_PMID(&$form, $form_state) {
+  // no additional validation needed  
+}
 /**
  *
  */
@@ -40,7 +57,7 @@ function tripal_pub_remote_search_PMID($search_array, $num_to_retrieve, $pager_i
     elseif ($scope == 'author') {
       $search_str .= $search_terms . '[Author]';
     }    
-    elseif ($scope == 'abstit') {
+    elseif ($scope == 'abstract') {
       $search_str .= $search_terms . '[Title/Abstract]';
     }
     elseif ($scope == 'id') {

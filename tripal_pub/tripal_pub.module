@@ -143,6 +143,12 @@ function tripal_pub_menu() {
     'access arguments' => array('administer tripal pubs'),
     'type ' => MENU_CALLBACK,
   );
+  $items['admin/tripal/tripal_pub/import/changedb'] = array(
+    'page callback' => 'tripal_pub_importer_setup_page_update_remotedb',
+    'page arguments' => array(),
+    'access arguments' => array('administer tripal pubs'),    
+    'type ' => MENU_CALLBACK,
+  );
   
   $items['admin/tripal/tripal_pub/import/criteria/%/%'] = array(
     'page callback' => 'tripal_pub_importer_setup_page_update_criteria',
