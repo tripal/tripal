@@ -22,7 +22,15 @@ function tripal_pub_remote_alter_form_PMID(&$form, $form_state) {
  *  
  */
 function tripal_pub_remote_validate_form_PMID(&$form, $form_state) {
-  // no additional validation needed  
+  $num_criteria = $form['num_criteria']['#default_value'];
+    
+  for ($i = 1; $i <= $num_criteria; $i++) {            
+    $search_terms =  trim($form_state['values']["search_terms-$i"]);
+    $scope =  $form_state['values']["scope-$i"];
+    if ($scope == 'id' and !preg_match('/^PMID:\d+$/', $search_terms)) {
+      form_set_error("search_terms-$i", "The PubMed accession must be a numeric value, prefixed with 'PMID:' (e.g. PMID:23024789).");  
+    }       
+  }  
 }
 /**
  *
@@ -61,8 +69,8 @@ function tripal_pub_remote_search_PMID($search_array, $num_to_retrieve, $pager_i
       $search_str .= $search_terms . '[Title/Abstract]';
     }
     elseif ($scope == 'id') {
-      $search_terms = preg_replace('/PMID:([^\s]*)/', 'id=($1)', $search_terms);
-      $search_str .= '(' . $search_terms . ')[Uid]';      
+      $search_terms = preg_replace('/PMID:([^\s]*)/', '$1', $search_terms);
+      $search_str .=  $search_terms . '[Uid]';      
     }
     else {
       $search_str .= $search_terms;
@@ -80,6 +88,7 @@ function tripal_pub_remote_search_PMID($search_array, $num_to_retrieve, $pager_i
   $search_array['search_string'] = $search_str;  
   //dpm($search_array);  
   
+  unset($_SESSION['tripal_pub_PMID_query']);
   // we want to get the list of pubs using the search terms but using a Drupal style pager
   $pubs = tripal_pager_callback('tripal_pub_PMID_range',  $num_to_retrieve, $pager_id, 
     'tripal_pub_PMID_count', $search_array);
@@ -134,8 +143,8 @@ function tripal_pub_PMID_range($search_array, $start = 0, $limit = 10) {
   }
 
   // now get the list of PMIDs from the previous search  
-  $pmids_txt = tripal_pub_PMID_fetch($query_key, $web_env, 'uilist', 'text', $start, $limit);  
-  
+  $pmids_txt = tripal_pub_PMID_fetch($query_key, $web_env, 'uilist', 'text', $start, $limit);
+ 
   // iterate through each PMID and get the publication record. This requires a new search and new fetch
   $pmids = explode("\n", trim($pmids_txt));
   $pubs = array();
@@ -283,6 +292,10 @@ function tripal_pub_PMID_parse_pubxml($pub_xml) {
     if ($xml->nodeType == XMLReader::ELEMENT) {
       
       switch ($element) {
+        case 'ERROR':
+          $xml->read(); // get the value for this element
+          watchdog('tripal_pub', "Error: %err", array('%err' => $xml->value), WATCHDOG_ERROR);
+          break;
         case 'PMID':
           // thre are multiple places where a PMID is present in the XML and
           // since this code does not descend into every branch of the XML tree

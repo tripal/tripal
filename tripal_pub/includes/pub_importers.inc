@@ -242,6 +242,10 @@ function tripal_pub_importer_setup_form(&$form_state = NULL, $pub_import_id = NU
   foreach ($dbs as $index => $db) {
     $remote_dbs[$db->name] = $db->description;
   };
+  // use PubMed as the default
+  if (!$remote_db) {
+    $remote_db = 'PMID';
+  }
   $form['remote_db'] = array(
     '#title' => t('Remote Database'),
     '#type' => 'select',

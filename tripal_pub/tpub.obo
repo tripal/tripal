@@ -1356,7 +1356,7 @@ def: Internaltional Standard Book Number
 relationship: part_of TPUB:0000037 ! Publication Details
 
 [Term]
-id: TPUB:0000247
+id: TPUB:0000248
 name: Notes
 def: Information about the publication that is not classified using another term.
 relationship: part_of TPUB:0000037 ! Publication Details

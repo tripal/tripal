@@ -61,7 +61,6 @@ function tripal_pub_get_remote_search_results($remote_db, $search_array,
   if (is_int($page) and $page > 0) {
     $_GET['page'] = $page;
   }  
-  
   // now call the callback function to get the results
   $callback = "tripal_pub_remote_search_$remote_db";
   $pubs = array();
@@ -105,7 +104,7 @@ function tripal_pub_get_raw_data($dbxref) {
 /*
  * @ingroup tripal_pub_api
  */
-function tripal_pub_update_publications($do_contact = FALSE, $dbxref = NULL) {
+function tripal_pub_update_publications($do_contact = FALSE, $dbxref = NULL, $db = NULL) {
   
   // get a persistent connection
   $connection = tripal_db_persistent_chado();
@@ -121,8 +120,7 @@ function tripal_pub_update_publications($do_contact = FALSE, $dbxref = NULL) {
            "insertions/updates is rolled back and will not be found in the database\n\n";
   }
   
-  // get a list of all publications that have 
-  // supported databases
+  // get a list of all publications by their Dbxrefs that have supported databases
   $sql = "
     SELECT DB.name as db_name, DBX.accession
     FROM pub P
@@ -138,8 +136,12 @@ function tripal_pub_update_publications($do_contact = FALSE, $dbxref = NULL) {
     $args[] = $accession;
     $args[] = $dbname;    
   }
+  elseif ($db) {
+    $sql .= " WHERE DB.name = '%s' ";
+    $args[] = $db;
+  }
   $sql .= "ORDER BY DB.name, P.pub_id";
-  $results = chado_query($sql, $args);
+  $results = chado_query($sql, $args);  
   
   $num_to_retrieve = 100;
   $i = 0;                 // count the number of IDs. When we hit $num_to_retrieve we'll do the query
@@ -151,51 +153,28 @@ function tripal_pub_update_publications($do_contact = FALSE, $dbxref = NULL) {
   while ($pub = db_fetch_object($results)) {    
     $accession = $pub->accession;
     $remote_db = $pub->db_name;
-    
+        
     // here we need to only update publications for databases we support
     $supported_dbs = variable_get('tripal_pub_supported_dbs', array());
     if(!in_array($remote_db, $supported_dbs)) {
       continue;
-    }
-    
-    // if we're switching databases then reset the search array    
-    if($remote_db != $curr_db) {
-      // if we had a previous DB then do the update.
-      if ($curr_db) {
-        $search['num_criteria'] = $i - 1;
-        $pubs = tripal_pub_get_remote_search_results($remote_db, $search, $i, 0);
-        tripal_pub_add_publications($pubs, $do_contact, TRUE); 
-      }
-      $curr_db = $remote_db;      
-      $search = array(
-        'remote_db' => $remote_db,
-        'criteria' => array(),
-      );
-      $ids = array();
-      $i = 0;
-    }
-    
-    // if we've hit the maximum number to retrieve then do the search
-    if($i == $num_to_retrieve) {      
-      $search['num_criteria'] = $i - 1;
-      $pubs = tripal_pub_get_remote_search_results($remote_db, $search, $i, 0);      
-      tripal_pub_add_publications($pubs, $do_contact, TRUE);
-      $search['criteria'] = array();
-      $i = 0;
-    }
-    
-    // add each accession to the search criteria
-    $search['criteria'][] = array(
-      'search_terms' => $accession,
-      'scope' => 'id',
-      'operation' => 'OR'
+    }    
+    $search = array(
+      'num_criteria' => 1,
+      'remote_db' => $remote_db,
+      'criteria' => array(
+        '1' => array(
+          'search_terms' => "$remote_db:$accession",
+          'scope' => 'id',
+          'operation' => '',
+          'is_phrase' => 0,
+        ),
+      ),
     );
+    $pubs = tripal_pub_get_remote_search_results($remote_db, $search, 1, 0);
+    tripal_pub_add_publications($pubs, $do_contact, TRUE);  
     $i++;   
   }
-  // now update any remaining in the search criteria array
-  $search['num_criteria'] = $i - 1;
-  $pubs = tripal_pub_get_remote_search_results($remote_db, $search, $i, 0);
-  tripal_pub_add_publications($pubs, $do_contact, TRUE);
   
   // transaction is complete
   tripal_db_commit_transaction();
@@ -526,7 +505,16 @@ function tripal_pub_add_publication($pub_details, $do_contact = FALSE, $update =
   }
   
   // get the publication type (use the first publication type, any others will get stored as properties)
-  $pub_type = tripal_cv_get_cvterm_by_name($pub_details['Publication Type'][0], NULL, 'tripal_pub');
+  if(is_array($pub_details['Publication Type'])) {
+    $pub_type = tripal_cv_get_cvterm_by_name($pub_details['Publication Type'][0], NULL, 'tripal_pub');
+  } 
+  elseif($pub_details['Publication Type']) {
+    $pub_type = tripal_cv_get_cvterm_by_name($pub_details['Publication Type'], NULL, 'tripal_pub');
+  }
+  else {
+    watchdog('tripal_pub', "The Publication Type is a required property but is missing", array(), WATCHDOG_ERROR);
+    return FALSE;
+  }
   if (!$pub_type) {
     watchdog('tripal_pub', "Cannot find publication type: '%type'", 
       array('%type' => $pub_details['Publication Type'][0]), WATCHDOG_ERROR);

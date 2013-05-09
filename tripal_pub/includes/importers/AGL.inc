@@ -15,9 +15,25 @@ function tripal_pub_remote_alter_form_AGL(&$form, $form_state) {
  */
 function tripal_pub_remote_validate_form_AGL(&$form, $form_state) {
   $days =  trim($form_state['values']["days"]);
+  $num_criteria = $form['num_criteria']['#default_value'];
   
   if ($days and !preg_match('/^\d\d\d\d$/', $days)) {
     form_set_error("days", "Please enter a four digit year.");
+  }
+  
+  $num_ids = 0;
+  for ($i = 1; $i <= $num_criteria; $i++) {            
+    $search_terms =  trim($form_state['values']["search_terms-$i"]);
+    $scope =  $form_state['values']["scope-$i"];
+    if ($scope == 'id' and !preg_match('/^AGL:\d+$/', $search_terms)) {
+      form_set_error("search_terms-$i", "The AGL accession be a numeric value, prefixed with 'AGL:' (e.g. AGL:3890740).");  
+    }       
+    if ($scope == 'id') {
+      $num_ids++;
+    }
+    if($num_ids > 1) {
+      form_set_error("search_terms-$i", "Unfortuantely, the AGL importer can only support a single accession at a time. Please remove the others.");
+    }
   }
 }
 /**
@@ -147,20 +163,20 @@ function tripal_pub_remote_search_AGL($search_array, $num_to_retrieve, $pager_id
     }
     elseif ($scope == 'id') {
       if ($first_id) {
-        $id .= "(" . preg_replace('/AGL:([^\s]*)/', 'id=($1)', $search_terms) . ") ";
+        $id .= "(" . preg_replace('/AGL:([^\s]*)/', '$1', $search_terms) . ") ";
         $first_id = 0; 
       }
       else {
-        $id .= "$op (" . preg_replace('/AGL:([^\s]*)/', 'id=($1)', $search_terms) . ") ";
+        $id .= "$op (" . preg_replace('/AGL:([^\s]*)/', '$1', $search_terms) . ") ";
       }
     } 
     elseif ($scope == 'negate_id') {
       if ($first_negate_id) {
-        $negate_id .= "(" . preg_replace('/AGL:([^\s]*)/', 'id=($1)', $search_terms) . ") ";
+        $negate_id .= "(" . preg_replace('/AGL:([^\s]*)/', '$1', $search_terms) . ") ";
         $first_negate_id = 0; 
       }
       else {
-        $negate_id .= "$op (" . preg_replace('/AGL:([^\s]*)/', 'id=($1)', $search_terms) . ") ";
+        $negate_id .= "$op (" . preg_replace('/AGL:([^\s]*)/', '$1', $search_terms) . ") ";
       }
     } 
     elseif ($scope == 'any'){
@@ -193,7 +209,7 @@ function tripal_pub_remote_search_AGL($search_array, $num_to_retrieve, $pager_id
   $negate_title_done = 0;
   $negate_id_done = 0;
   $negate_any_done = 0;
-  for ($i = 1; $i < count($order) ; $i++) {
+  for ($i = 0; $i < count($order) ; $i++) {
     if ($order[$i]['scope'] == 'abstract' and !$abstract_done) {
       $op = $order[$i]['op'];
       $ccl .= "$op abstract=($abstract) ";
@@ -212,7 +228,7 @@ function tripal_pub_remote_search_AGL($search_array, $num_to_retrieve, $pager_id
       $ccl .= "not author=($negate_author) ";
       $negate_author_done = 1;
     }
-    if ($order[$i]['scope'] == 'id' and !$id_done) {
+    if ($order[$i]['scope'] == 'id' and !$id_done) {      
       $op = $order[$i]['op'];
       $ccl .= "$op id=($id) ";
       $id_done = 1;
@@ -245,7 +261,7 @@ function tripal_pub_remote_search_AGL($search_array, $num_to_retrieve, $pager_id
   if ($days) {
     $ccl .= "and year=($days)";
   }
-  
+
   // remove any preceeding 'and' or 'or'
   $ccl = preg_replace('/^\s*(and|or)/', '', $ccl);
     
@@ -295,7 +311,7 @@ function tripal_pub_remote_search_AGL($search_array, $num_to_retrieve, $pager_id
   // close the connection
   unset($_SESSION['tripal_pub_AGL_query'][$search_str]['yaz_connection']);
   yaz_close($yazc);  
-    
+  
   return $pubs;
 }
 /*
@@ -381,6 +397,9 @@ function tripal_pub_AGL_range($search_array, $start = 0, $limit = 10) {
  */
 function tripal_pub_AGL_parse_pubxml($pub_xml) {
   $pub = array();
+  
+  // publications from the NAL Article Citation Database are all journal articles
+  $pub['Publication Type'][] = 'Journal Article';
   
   if (!$pub_xml) {
     return $pub;
