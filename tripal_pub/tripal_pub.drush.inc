@@ -30,6 +30,11 @@ function tripal_pub_drush_command() {
     'description' => dt('Imports publications from remote databases using saved configuration settings.'),
     'examples' => array(
       'Standard example' => 'drush tripal-pubs-import',
+      'Import single publication' => 'drush tripal-pub-import --dbxref=PMID:23582642',  
+    ),
+    'options' => array(
+      'create_contacts' => dt('provide this option to create or update contacts for authors. By default contacts are not created or updated.'),
+      'dbxref' => dt('An accession number for a publication from a remote database (e.g. PMID:23582642)'),
     ),
     'aliases' => array('tpubs-import'),
   );
@@ -48,6 +53,7 @@ function tripal_pub_drush_command() {
     ),
     'aliases' => array('tpubs-update'),
   );
+
   return $items;
 }
 
@@ -56,9 +62,15 @@ function tripal_pub_drush_command() {
  *
  */
 function drush_tripal_pub_tripal_pubs_import() {
-  tripal_pub_import_publications();
+  $create_contacts = drush_get_option('create_contacts');
+  $dbxref = drush_get_option('dbxref');
+  if ($dbxref) {
+    tripal_pub_import_by_dbxref($dbxref, $create_contacts);  
+  }
+  else {
+    tripal_pub_import_publications();
+  }
 }
-
 /**
  * Imports publications into Chado
  *

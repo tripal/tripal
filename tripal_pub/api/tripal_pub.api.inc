@@ -262,6 +262,62 @@ function tripal_pub_import_publications($pub_import_id = NULL) {
   print "Done.\n";
 }
 /*
+ * @ingroup tripal_pub_api
+ */
+function tripal_pub_import_by_dbxref($pub_dbxref, $do_contact = FALSE) {
+  $num_to_retrieve = 1;
+  $pager_id = 0;
+  $page = 0;
+  $num_pubs = 0;
+  
+  // get a persistent connection
+  $connection = tripal_db_persistent_chado();
+  if (!$connection) {
+     print "A persistant connection was not obtained. Loading will be slow\n";
+  }
+          
+  // if we cannot get a connection then let the user know the loading will be slow
+  tripal_db_start_transaction();
+  if ($connection) {
+     print "\nNOTE: Loading of the publication is performed using a database transaction. \n" .
+           "If the load fails or is terminated prematurely then the entire set of \n" .
+           "insertions/updates is rolled back and will not be found in the database\n\n";
+  }    
+      
+  if(preg_match('/^(.*?):(.*?)$/', $pub_dbxref, $matches)) {    
+    $dbname = $matches[1];
+    $accession = $matches[2];
+    
+    $criteria['remote_db'] = $dbname;
+    $criteria['num_criteria'] = 1;
+    $criteria['criteria'][1]['search_terms'] = $accession;
+    $criteria['criteria'][1]['scope']        = 'id';  
+    $criteria['criteria'][1]['is_phrase']    = 0;
+    $criteria['criteria'][1]['operation']    = '';
+    $remote_db = $criteria['remote_db'];
+    $pubs = tripal_pub_get_remote_search_results($remote_db, $criteria, $num_to_retrieve, $pager_id, $page);
+    $pub_id = tripal_pub_add_publications($pubs, $do_contact);
+          
+  }
+  
+  // transaction is complete
+  tripal_db_commit_transaction();
+  
+  print "Transaction Complete\n";
+  
+  // sync the newly added publications with Drupal
+  print "Syncing publications with Drupal...\n";
+  tripal_pub_sync_pubs();
+  
+  // if any of the importers wanted to create contacts from the authors then sync them
+  if($do_contact) {
+    print "Syncing contacts with Drupal...\n";
+    tripal_contact_sync_contacts();
+  }
+   
+  print "Done.\n";
+}
+/*
  * 
  */
 function tripal_pub_add_publications($pubs, $do_contact, $update = FALSE) {
@@ -271,21 +327,17 @@ function tripal_pub_add_publications($pubs, $do_contact, $update = FALSE) {
          
     // add the publication to Chado and sync it with Chado
     $pub_id = tripal_pub_add_publication($pub, $do_contact, $update);
-    if (is_numeric($pub_id)){
+    if ($pub_id){
       // add the publication cross reference (e.g. to PubMed)
-      if ($pub_id and $pub['Publication Dbxref']) {              
+      if ($pub_id and $pub['Publication Dbxref']) {
         $pub_dbxref = tripal_pub_add_pub_dbxref($pub_id, $pub['Publication Dbxref']);
       }                                        
       $num_pubs++; 
-      print "Success: " . $pub['Publication Dbxref'] . "\n";  
+      print "Done: " . $pub['Publication Dbxref'] . "\n";  
     } 
-    elseif($pub_id) {
-      print "Skipped: " . $pub['Publication Dbxref'] . "\n";  
-    }
     else {
       print "Failed: " . $pub['Publication Dbxref'] . "\n";  
-    } 
-    
+    }     
   }         
 }
 /*
@@ -472,21 +524,16 @@ function tripal_pub_add_publication($pub_details, $do_contact = FALSE, $update =
     if(count($results) == 1) {
       $pub_id = $results[0];     
     }
-    elseif(count($results) > 1) {
+    elseif (count($results) > 1) {
       watchdog('tripal_pub', "There are two publications with this accession: %db:%accession. Cannot determine which to update.", 
         array('%db' => $dbname, '%accession' => $accession), WATCHDOG_ERROR);     
       return FALSE;    
     }
-    // If we found the publication and we do not want to do the update then
-    // return true to indicate the publication has been added
-    if (!$update and $pub_id) {
-      return TRUE;
-    }    
   }   
   // if we couldn't find a publication by the accession (which means it doesn't
   // yet exist or it has been added using a different publication database) then
   // try to find it using the title and publication year.
-  elseif ($pub_details['Title']) {
+  if (!$pub_id and $pub_details['Title']) {
     $results = tripal_pub_get_pubs_by_title_type_pyear($pub_details['Title'], $pub_details['Publication Type'], $pub_details['Year']);    
     if (count($results) == 1) {
       $pub_id = $results[0];
@@ -497,18 +544,18 @@ function tripal_pub_add_publication($pub_details, $do_contact = FALSE, $update =
         array('%title' => $pub_details['Title'], '%type' => $pub_details['Publication Type'], '%year' => $pub_details['Year']), WATCHDOG_ERROR);     
       return FALSE;          
     }
-    // If we found the publication and we do not want to do the update then
-    // return true to indicate the publication has been added
-    if (!$update and $pub_id) {
-      return TRUE;
-    }
   }
   
+  // if there is a pub id and we've been told not to update then return
+  if ($pub_id and !$update) {
+    return $pub_id;
+  }  
+  
   // get the publication type (use the first publication type, any others will get stored as properties)
-  if(is_array($pub_details['Publication Type'])) {
+  if (is_array($pub_details['Publication Type'])) {
     $pub_type = tripal_cv_get_cvterm_by_name($pub_details['Publication Type'][0], NULL, 'tripal_pub');
   } 
-  elseif($pub_details['Publication Type']) {
+  elseif ($pub_details['Publication Type']) {
     $pub_type = tripal_cv_get_cvterm_by_name($pub_details['Publication Type'], NULL, 'tripal_pub');
   }
   else {
@@ -520,7 +567,8 @@ function tripal_pub_add_publication($pub_details, $do_contact = FALSE, $update =
       array('%type' => $pub_details['Publication Type'][0]), WATCHDOG_ERROR);
     return FALSE;   
   }
-  // if the publication does not exist then create it.      
+
+  // build the values array for inserting or updating
   $values = array(
     'title'       => $pub_details['Title'],
     'volume'      => $pub_details['Volume'],
@@ -543,7 +591,9 @@ function tripal_pub_add_publication($pub_details, $do_contact = FALSE, $update =
     }
     $pub_id = $pub['pub_id'];
   }
-  elseif($update) {
+  
+  // if there is a pub_id and we've been told to update, then do the update
+  if ($pub_id and $update) {
     $match = array('pub_id' => $pub_id);
     $options = array('statement_name' => 'up_pub_tivoseispypaunty');  
     $success = tripal_core_chado_update('pub', $match, $values, $options);     
@@ -553,11 +603,10 @@ function tripal_pub_add_publication($pub_details, $do_contact = FALSE, $update =
       return FALSE;   
     } 
   }
-
   
   // before we add any new properties we need to remove those that are there if this 
   // is an update.  The only thing we don't want to remove are the 'Publication Dbxref'
-  if($update) {
+  if ($update) {
     $sql = "
       DELETE FROM {pubprop} 
       WHERE 
@@ -571,6 +620,7 @@ function tripal_pub_add_publication($pub_details, $do_contact = FALSE, $update =
     chado_query($sql, $pub_id);
   } 
   
+  // iterate through the properties and add them
   foreach ($pub_details as $key => $value) {
      // the pub_details may have the raw search data (e.g. in XML from PubMed.  We'll irgnore this for now
      if($key == 'raw') {
