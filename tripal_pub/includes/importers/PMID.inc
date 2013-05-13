@@ -425,7 +425,7 @@ function tripal_pub_PMID_parse_article($xml, &$pub) {
         case 'ArticleTitle':
           $xml->read();
           // remoave any trailing period from the title
-          $pub['Title'] = preg_replace('/\.$/', '', $xml->value); 
+          $pub['Title'] = trim(preg_replace('/\.$/', '', $xml->value)); 
           break;
         case 'Abstract':
           tripal_pub_PMID_parse_abstract($xml, $pub);

@@ -526,7 +526,7 @@ function tripal_pub_AGL_parse_pubxml($pub_xml) {
           foreach ($codes as $code => $value) {          
             switch ($code) {                
               case 'a':
-                $pub['Title'] = preg_replace('/\.$/', '', $value);
+                $pub['Title'] = trim(preg_replace('/\.$/', '', $value));
                 break;
               case 'b':
                 $pub['Title'] .= ' ' . $value;
