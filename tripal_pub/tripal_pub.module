@@ -834,6 +834,12 @@ function tripal_pub_mail($key, &$message, $params) {
  * 
  */
 function tripal_pub_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
+  // we want the publications to always have a URL of http://[base url]/pub/[pub id]
+  // where [pub id] is the Chado publication ID.  This will allow for easy linking
+  // into the publication without needing to know the node.  Of course if you know the
+  // node that will still work too (e.g. http://[base url]/node/[node id]
+  // so the nodeapi function ensures that the URL path is set after insert or update
+  // of the node and when the node is loaded if it hasn't yet been set.
   if ($node->type == 'chado_pub') {
     switch ($op) {
       case 'presave':                        

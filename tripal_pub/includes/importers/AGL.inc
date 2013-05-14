@@ -407,7 +407,7 @@ function tripal_pub_AGL_parse_pubxml($pub_xml) {
   
   // read the XML and iterate through it.
   $xml = new XMLReader();
-  $xml->xml($pub_xml);
+  $xml->xml(trim($pub_xml));
   while ($xml->read()) {    
     $element = $xml->name; 
 
