@@ -84,17 +84,19 @@ function tripal_pub_get_raw_data($dbxref) {
     if(!in_array($remote_db, $supported_dbs)) {
       return "Unsupported database: $dbxref";
     }
-    // build the search criteria
+
     $search = array(
+      'num_criteria' => 1,
       'remote_db' => $remote_db,
       'criteria' => array(
-        array(
-          'search_terms' => $accession,
+        '1' => array(
+          'search_terms' => "$remote_db:$accession",
           'scope' => 'id',
+          'operation' => '',
+          'is_phrase' => 0,
         ),
       ),
-    );  
-    $search['num_criteria'] = 0;
+    );
     $pubs = tripal_pub_get_remote_search_results($remote_db, $search, 1, 0);
     
     return '<textarea cols=80 rows=20>' . $pubs[0]['raw'] . '</textarea>';
@@ -313,12 +315,18 @@ function tripal_pub_import_by_dbxref($pub_dbxref, $do_contact = FALSE) {
     $dbname = $matches[1];
     $accession = $matches[2];
     
-    $criteria['remote_db'] = $dbname;
-    $criteria['num_criteria'] = 1;
-    $criteria['criteria'][1]['search_terms'] = $accession;
-    $criteria['criteria'][1]['scope']        = 'id';  
-    $criteria['criteria'][1]['is_phrase']    = 0;
-    $criteria['criteria'][1]['operation']    = '';
+    $criteria = array(
+      'num_criteria' => 1,
+      'remote_db' => $dbname,
+      'criteria' => array(
+        '1' => array(
+          'search_terms' => "$dbname:$accession",
+          'scope' => 'id',
+          'operation' => '',
+          'is_phrase' => 0,
+        ),
+      ),
+    );
     $remote_db = $criteria['remote_db'];
     $pubs = tripal_pub_get_remote_search_results($remote_db, $criteria, $num_to_retrieve, $pager_id, $page);
     $pub_id = tripal_pub_add_publications($pubs, $do_contact);
