@@ -79,6 +79,18 @@
   <p>Aside from data loading and feature page setup (as described in the Setup section above),
   The Tripal feature module also provides the following functionality
   <ul>
+     <li><p><b>Generic Feature URL</b>:  As described in the setup instructions above, it is often convenient to have a 
+     simple URL for each feature page. For example, http://www.mygenomesite.org/[feature], where [feature] is a 
+     unique identifier for a feature page.  The
+     <?php print l('Feature Configuration page','admin/tripal/tripal_feature/configuration') ?> allows a 
+     site admin to generate unique URLs for all feature.  The unique URL is necessary, however, sometimes
+     it is easier to allow for links to the feature name without knowing the unique URL.  This is possible
+     using the URL: http://[site url]/feature/[feature name], where [site url] is the URL for the site and 
+     [feature name] is the name of the feature.  If the feature name is not unique then a page will be
+     presented listing all of the features with the same name and allow the user to choose which one to 
+     view.  If the feature name is unique then the user will automatically be redirected to the 
+     unique URL for the feature.</p></li>
+     
     <li><p><b>Feature Browser:</b>  The feature browser is a tabular list of features with links to their
      feature pages which appears on the organism
      page.  It was created to provide a mechanism to allow site visitors to quickly

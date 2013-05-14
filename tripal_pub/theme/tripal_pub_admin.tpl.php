@@ -63,6 +63,7 @@ been added to Chado database.
 </ol>
 <h3>Features of this Module:</h3>
 <ul>
+     
   <li><p><b>Add/Edit/Delete Publications</b>: Publications can be maually added <?php  l('here', 'node/add/chado-pub') ?>. 
     Once added, publications can be modified or deleted by clicking the Edit tab at the top of a publication page.</p></li>
   
@@ -77,6 +78,8 @@ been added to Chado database.
     This will allow the site to import publications which have been newly added to remote databases and which 
     are relative to the site.  Site administrators can <?php print l('see the list of importers', 'admin/tripal/tripal_pub/import_list') ?> 
     and edit, disable or delete the importers.</p></li>
+    
+  
 
 </ul>
 

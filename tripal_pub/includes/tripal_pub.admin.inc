@@ -140,3 +140,18 @@ function tripal_pub_cleanup($dummy = NULL, $job_id = NULL) {
   
 }
 
+/**
+ *
+ */
+function tripal_pub_set_pub_url($node, $pub_id) {
+  
+  $node_url = "node/$node->nid";
+  $url_alias = "pub/$pub_id";
+
+  // remove any previous alias
+  db_query("DELETE FROM {url_alias} WHERE src = '%s'", $node_url);
+  // add the new alias
+  path_set_alias($node_url, $url_alias);
+  
+  return $url_alias;
+}

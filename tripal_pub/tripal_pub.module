@@ -300,10 +300,11 @@ function chado_pub_access($op, $node, $account ) {
  *
  *
  */
-function chado_pub_insert($node) {
+function chado_pub_insert($node) { 
  
   // if a pub_id already exists for this node then it already exists in Chado and 
   // we get here because we are syncing the node.  Therefore, we can skip the insert
+  // but we always want to set the URL path alias to be the Chado pub ID
   if ($node->pub_id) {
     $pub['pub_id'] = $node->pub_id;
   }
@@ -471,9 +472,10 @@ function chado_pub_update($node) {
     // there is no way to handle revisions in Chado but leave
     // this here just to make not we've addressed it.
   }
-  
+ 
   // get the publication ID for this publication
   $pub_id = chado_get_id_for_node('pub', $node) ;
+  
   $properties = array(); // stores all of the properties we need to add
   $cross_refs = array(); // stores any cross references for this publication  
    
@@ -643,6 +645,9 @@ function chado_pub_load($node) {
   $pub = tripal_core_expand_chado_vars($pub, 'field', 'pub.title');
   $pub = tripal_core_expand_chado_vars($pub, 'field', 'pub.volumetitle');  
   $pub = tripal_core_expand_chado_vars($pub, 'field', 'pub.uniquename');;
+  
+  // set the URL path
+  $path = "pub/$pub_id";
 
   $additions = new stdClass();
   $additions->pub = $pub;
@@ -822,5 +827,33 @@ function tripal_pub_mail($key, &$message, $params) {
       $message['subject'] = t('Publication import from !site', $variables, $language->language);
       $message['body'][] = $params['message'];
       break;
+  }
+}
+
+/*
+ * 
+ */
+function tripal_pub_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
+  if ($node->type == 'chado_pub') {
+    switch ($op) {
+      case 'presave':                        
+        break;
+      case 'insert':
+        $pub_id = chado_get_id_for_node('pub', $node);
+        tripal_pub_set_pub_url($node, $pub_id);
+        break;
+      case 'load':
+        if (!$node->path) {          
+          $pub_id = chado_get_id_for_node('pub', $node);
+          $path = tripal_pub_set_pub_url($node, $pub_id);
+        }
+        break;
+      case 'update':
+        $pub_id = chado_get_id_for_node('pub', $node);
+        tripal_pub_set_pub_url($node, $pub_id);
+        break;
+      case 'view':
+        break;
+    }
   }
 }
