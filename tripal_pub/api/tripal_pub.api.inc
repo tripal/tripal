@@ -251,11 +251,7 @@ function tripal_pub_import_publications($report_email = FALSE) {
   // requested a report then we don't want to print any syncing information
   // so pass 'FALSE' to the sync call
   print "Syncing publications with Drupal...\n";
-  if ($do_report) {
-    tripal_pub_sync_pubs(FALSE);
-  } else {
-    tripal_pub_sync_pubs(TRUE);
-  }
+  tripal_pub_sync_pubs();
   
   // iterate through each of the reports and generate a final report with HTML links
   $HTML_report = '';

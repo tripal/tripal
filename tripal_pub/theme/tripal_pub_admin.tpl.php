@@ -50,12 +50,13 @@ been added to Chado database.
     the site by creating a cron job with a <?php print l('Drush', "http://drupal.org/project/drush")?> command. The 
     cron job can be setup to run the importers periodically.  The following
     is an example entry, added to the 'root' crontab, that would run importers on a weekly bases (Friday at 9am):  <br>
-    <pre>0 9 * * 5  su - [web user] -c 'cd [drupal install path]; drush -l http://[site url] tpubs-import --report=Y'
+    <pre>0 9 * * 5  su - [web user] -c 'cd [drupal install path]; drush -l http://[site url] tpubs-import --report=[email]'
     </pre>
     Where:<br>
      [web user] is the name of the user on the system under which the web server runs</br>
      [drupal install path] is the location where drupal is installed</br>
      [site url] is the URL path for the site </br>
+     [email] is the email address of the person who should receive an HTML report of the publications added.  Separate multiple emails with a comma (no spaces).</br>
      The --report=Y option indicates that an HTML style report should be generated listing the publications
      that were added.  If this options is not used then no report is generated.
     </p></li>

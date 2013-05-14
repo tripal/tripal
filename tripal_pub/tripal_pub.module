@@ -810,6 +810,15 @@ function tripal_pub_mail($key, &$message, $params) {
   $variables = user_mail_tokens($params['account'], $language);
   switch($key) {
     case 'import_report':
+      $headers = array(
+        'MIME-Version' => '1.0',
+        'Content-Type' => 'text/html; charset=UTF-8; format=flowed',
+        'Content-Transfer-Encoding' => '8Bit',
+        'X-Mailer' => 'Drupal'
+      );
+      foreach ($headers as $key => $value) {
+        $message['headers'][$key] = $value;
+      }
       $message['subject'] = t('Publication import from !site', $variables, $language->language);
       $message['body'][] = $params['message'];
       break;

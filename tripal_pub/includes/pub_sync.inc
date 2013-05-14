@@ -60,7 +60,7 @@ function tripal_pub_sync_pubs($job_id = NULL) {
  *   
  * @ingroup tripal_pub
  */
-function tripal_pub_sync_pub($pub, $report = FALSE) {
+function tripal_pub_sync_pub($pub) {
   global $user;
   
   $new_node = new stdClass();
@@ -79,9 +79,7 @@ function tripal_pub_sync_pub($pub, $report = FALSE) {
     $node = node_submit($new_node);
     node_save($node);
     if ($node->nid) {
-      if ($report) {
-        print "Added " . $pub->pub_id . "\n";
-      }      
+      print "Added " . $pub->pub_id . "\n";      
     }
     else {
       print "ERROR: Unable to create publication node: " . $pub->title . "\n";
