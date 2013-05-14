@@ -197,7 +197,7 @@ function tripal_pub_update_publications($do_contact = FALSE, $dbxref = NULL, $db
 /*
  * @ingroup tripal_pub_api
  */
-function tripal_pub_import_publications($do_report = 'N') {
+function tripal_pub_import_publications($report_email = FALSE) {
   $num_to_retrieve = 100;
   $pager_id = 0;
   $page = 0;
@@ -258,21 +258,29 @@ function tripal_pub_import_publications($do_report = 'N') {
   }
   
   // iterate through each of the reports and generate a final report with HTML links
-  if ($do_report == 'Y') {
+  $HTML_report = '';
+  if ($report_email) {
+    $HTML_report .= "<html>";
     global $base_url;  
     foreach ($reports as $importer => $report) {
       $total = count($report['inserted']);
-      print "<b>$total new publications from importer: $importer</b><br><ol>\n";
+      $HTML_report .= "<b>$total new publications from importer: $importer</b><br><ol>\n";
       foreach ($report['inserted'] as $pub) {
         $item = $pub['Title'];
         if ($pub['pub_id']) {
           $nid = chado_get_node_id('pub', $pub['pub_id']);
           $item = l($pub['Title'], "$base_url/node/$nid");
         } 
-        print "<li>$item</li>\n";      
+        $HTML_report .= "<li>$item</li>\n";      
       }
-      print "</ol>\n";   
+      $HTML_report .= "</ol>\n";   
     }  
+    $HTML_report .= "</html>";
+    $site_email = variable_get('site_mail', '');
+    $params = array(
+      'message' => $HTML_report
+    );
+    drupal_mail('tripal_pub', 'import_report', $report_email, language_default(), $params, $site_email, TRUE);
   }
   
   // if any of the importers wanted to create contacts from the authors then sync them

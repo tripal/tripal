@@ -28,14 +28,15 @@ function tripal_pub_drush_command() {
   $items = array();
   $items['tripal-pubs-import'] = array(
     'description' => dt('Imports publications from remote databases using saved configuration settings.'),
-    'examples' => array(
-      'Standard example' => 'drush tripal-pubs-import',
-      'Import single publication' => 'drush tripal-pub-import --dbxref=PMID:23582642',  
-    ),
     'options' => array(
       'create_contacts' => dt('provide this option to create or update contacts for authors. By default contacts are not created or updated.'),
       'dbxref' => dt('An accession number for a publication from a remote database (e.g. PMID:23582642).'),
-      'report' => dt("Set to 'Y' to generate an HTML report of the publications that have been added."),
+      'report' => dt("Set to the email address of the recipient who should receive an HTML report of the publications that have been added."),
+    ),
+    'examples' => array(
+      'Standard example' => 'drush tripal-pubs-import',
+      'Standard example' => 'drush -l http://[site url] tripal-pubs-import --report=[email]. Where [site url] is the URL of the website and [email] is the email address of the recipient to receive the HTML report',
+      'Import single publication' => 'drush tripal-pub-import --dbxref=PMID:23582642',  
     ),
     'aliases' => array('tpubs-import'),
   );

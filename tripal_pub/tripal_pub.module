@@ -802,3 +802,16 @@ function tripal_pub_preprocess_tripal_pub_relationships(&$variables) {
 
   $pub->all_relationships = $relationships;
 }
+/**
+ * 
+ */
+function tripal_pub_mail($key, &$message, $params) {
+  $language = $message['language'];
+  $variables = user_mail_tokens($params['account'], $language);
+  switch($key) {
+    case 'import_report':
+      $message['subject'] = t('Publication import from !site', $variables, $language->language);
+      $message['body'][] = $params['message'];
+      break;
+  }
+}
