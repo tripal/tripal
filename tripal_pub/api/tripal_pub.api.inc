@@ -264,8 +264,7 @@ function tripal_pub_import_publications($report_email = FALSE) {
       foreach ($report['inserted'] as $pub) {
         $item = $pub['Title'];
         if ($pub['pub_id']) {
-          $nid = chado_get_node_id('pub', $pub['pub_id']);
-          $item = l($pub['Title'], "$base_url/node/$nid");
+          $item = l($pub['Title'], "$base_url/pub/" . $pub['pub_id']);
         } 
         $HTML_report .= "<li>$item</li>\n";      
       }
