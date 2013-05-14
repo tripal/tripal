@@ -172,7 +172,8 @@ function tripal_pub_update_publications($do_contact = FALSE, $dbxref = NULL, $db
       ),
     );
     $pubs = tripal_pub_get_remote_search_results($remote_db, $search, 1, 0);
-    tripal_pub_add_publications($pubs, $do_contact, TRUE);  
+    tripal_pub_add_publications($pubs, $do_contact, TRUE);
+    
     $i++;   
   }
   
@@ -196,7 +197,7 @@ function tripal_pub_update_publications($do_contact = FALSE, $dbxref = NULL, $db
 /*
  * @ingroup tripal_pub_api
  */
-function tripal_pub_import_publications($pub_import_id = NULL) {
+function tripal_pub_import_publications($do_report = 'N') {
   $num_to_retrieve = 100;
   $pager_id = 0;
   $page = 0;
@@ -219,12 +220,9 @@ function tripal_pub_import_publications($pub_import_id = NULL) {
   // get all of the loaders
   $args = array();
   $sql = "SELECT * FROM {tripal_pub_import} WHERE disabled = 0 ";
-  if ($pub_import_id) {
-    $sql .= " AND pub_import_id = %d";
-    $args[] = $pub_import_id;
-  }
   $results = db_query($sql, $args);
   $do_contact = FALSE;
+  $reports = array();
   while ($import = db_fetch_object($results)) {
     print "Importing: " . $import->name . "\n";
     // keep track if any of the importers want to create contacts from authors
@@ -236,7 +234,7 @@ function tripal_pub_import_publications($pub_import_id = NULL) {
     do {       
       // retrieve the pubs for this page. We'll retreive 10 at a time
       $pubs = tripal_pub_get_remote_search_results($remote_db, $criteria, $num_to_retrieve, $pager_id, $page);
-      tripal_pub_add_publications($pubs, $import->do_contact);             
+      $reports[$import->name] = tripal_pub_add_publications($pubs, $import->do_contact);             
       $page++;
     } 
     // continue looping until we have a $pubs array that does not have
@@ -249,9 +247,33 @@ function tripal_pub_import_publications($pub_import_id = NULL) {
   
   print "Transaction Complete\n";
   
-  // sync the newly added publications with Drupal
+  // sync the newly added publications with Drupal. If the user
+  // requested a report then we don't want to print any syncing information
+  // so pass 'FALSE' to the sync call
   print "Syncing publications with Drupal...\n";
-  tripal_pub_sync_pubs();
+  if ($do_report) {
+    tripal_pub_sync_pubs(FALSE);
+  } else {
+    tripal_pub_sync_pubs(TRUE);
+  }
+  
+  // iterate through each of the reports and generate a final report with HTML links
+  if ($do_report == 'Y') {
+    global $base_url;  
+    foreach ($reports as $importer => $report) {
+      $total = count($report['inserted']);
+      print "<b>$total new publications from importer: $importer</b><br><ol>\n";
+      foreach ($report['inserted'] as $pub) {
+        $item = $pub['Title'];
+        if ($pub['pub_id']) {
+          $nid = chado_get_node_id('pub', $pub['pub_id']);
+          $item = l($pub['Title'], "$base_url/node/$nid");
+        } 
+        print "<li>$item</li>\n";      
+      }
+      print "</ol>\n";   
+    }  
+  }
   
   // if any of the importers wanted to create contacts from the authors then sync them
   if($do_contact) {
@@ -321,24 +343,44 @@ function tripal_pub_import_by_dbxref($pub_dbxref, $do_contact = FALSE) {
  * 
  */
 function tripal_pub_add_publications($pubs, $do_contact, $update = FALSE) {
+  $report = array();
+  $report['error'] = 0;
+  $report['inserted'] = array();
+  $report['skipped'] = array();
+  $total_pubs = count($pubs);
  
   // iterate through the publications and add each one
-  foreach ($pubs as $pub) {
-         
-    // add the publication to Chado and sync it with Chado
-    $pub_id = tripal_pub_add_publication($pub, $do_contact, $update);
+  $i = 1;
+  foreach ($pubs as $pub) {     
+    $memory = number_format(memory_get_usage()) . " bytes";
+    print "Processing $i of $total_pubs. Memory usage: $memory.\r";  
+     
+    // add the publication to Chado
+    $action = '';
+    $pub_id = tripal_pub_add_publication($pub, $action, $do_contact, $update);
     if ($pub_id){
       // add the publication cross reference (e.g. to PubMed)
       if ($pub_id and $pub['Publication Dbxref']) {
         $pub_dbxref = tripal_pub_add_pub_dbxref($pub_id, $pub['Publication Dbxref']);
-      }                                        
-      $num_pubs++; 
-      print "Done: " . $pub['Publication Dbxref'] . "\n";  
-    } 
-    else {
-      print "Failed: " . $pub['Publication Dbxref'] . "\n";  
-    }     
-  }         
+      } 
+      $pub['pub_id'] = $pub_id;                                               
+    }
+
+    switch ($action) {
+      case 'error':
+        $report['error']++;
+        break;
+      case 'inserted':
+        $report['inserted'][] = $pub;
+        break;
+      case 'skipped':
+        $report['skipped'][] = $pub;
+        break;
+    }    
+    $i++;
+  }  
+  print "\n";  
+  return $report;      
 }
 /*
  * 
@@ -497,23 +539,29 @@ function tripal_pub_get_pubs_by_title_type_pyear($title, $type, $pyear = '') {
  * the $update parameter is TRUE then the publication is updated if it exists.
  *
  * @param $pub_details
- *   An associative array containing all of the details about the publication.  
+ *   An associative array containing all of the details about the publication.
+ * @param $action
+ *   This variable will get set to a text value indicating the action that was 
+ *   performed. The values include 'skipped', 'inserted', 'updated' or 'error'.    
  * @param $do_contact
  *   Optional. Set to TRUE if a contact entry should be added to the Chado contact table
  *   for authors of the publication.
- * @param $update
+ * @param $update_if_exists
  *   Optional.  If the publication already exists then this function will return
  *   without adding a new publication.  However, set this value to TRUE to force
  *   the function to pudate the publication using the $pub_details that are provided.
  *   
  * @return
- *   On successful addition of the publication, the new publication ID is returned. If
- *   the publication already exists but $update is FALSE then TRUE is returned indicating
- *   that the publication is there already.  If $update is TRUE and the publication
- *   exists then the publication ID is returned.
+ *   If the publication already exists, is inserted or updated then the publication
+ *   ID is returned, otherwise FALSE is returned. If the publication already exists 
+ *   and $update_if_exists is not TRUE then the $action variable is set to 'skipped'.
+ *   If the publication already exists and $update_if_exists is TRUE and if the update
+ *   was successful then $action is set to 'updated'.  Otherwise on successful insert
+ *   the $action variable is set to 'inserted'.  If the function failes then the
+ *   $action variable is set to 'error'
  *   
  */
-function tripal_pub_add_publication($pub_details, $do_contact = FALSE, $update = FALSE) {
+function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE, $update_if_exists = FALSE) {
   
   $pub_id = 0;
   
@@ -526,7 +574,8 @@ function tripal_pub_add_publication($pub_details, $do_contact = FALSE, $update =
     }
     elseif (count($results) > 1) {
       watchdog('tripal_pub', "There are two publications with this accession: %db:%accession. Cannot determine which to update.", 
-        array('%db' => $dbname, '%accession' => $accession), WATCHDOG_ERROR);     
+        array('%db' => $dbname, '%accession' => $accession), WATCHDOG_ERROR);
+      $action = 'error';     
       return FALSE;    
     }
   }   
@@ -541,13 +590,15 @@ function tripal_pub_add_publication($pub_details, $do_contact = FALSE, $update =
     elseif (count($results) > 1) {
       watchdog('tripal_pub', "The publication with the same title, type and year is present multiple times. Cannot ".
         "determine which to use.  Title: '%title'. Type: '%type'. Year: '%year'", 
-        array('%title' => $pub_details['Title'], '%type' => $pub_details['Publication Type'], '%year' => $pub_details['Year']), WATCHDOG_ERROR);     
+        array('%title' => $pub_details['Title'], '%type' => $pub_details['Publication Type'], '%year' => $pub_details['Year']), WATCHDOG_ERROR);
+      $action = 'error';     
       return FALSE;          
     }
   }
   
   // if there is a pub id and we've been told not to update then return
-  if ($pub_id and !$update) {
+  if ($pub_id and !$update_if_exists) {
+    $action = 'skipped';
     return $pub_id;
   }  
   
@@ -560,11 +611,13 @@ function tripal_pub_add_publication($pub_details, $do_contact = FALSE, $update =
   }
   else {
     watchdog('tripal_pub', "The Publication Type is a required property but is missing", array(), WATCHDOG_ERROR);
+    $action = 'error';
     return FALSE;
   }
   if (!$pub_type) {
     watchdog('tripal_pub', "Cannot find publication type: '%type'", 
       array('%type' => $pub_details['Publication Type'][0]), WATCHDOG_ERROR);
+    $action = 'error';
     return FALSE;   
   }
 
@@ -587,26 +640,30 @@ function tripal_pub_add_publication($pub_details, $do_contact = FALSE, $update =
     if (!$pub) {
       watchdog('tripal_pub', "Cannot insert the publication with title: %title", 
         array('%title' => $pub_details['Title']), WATCHDOG_ERROR);
+      $action = 'error';
       return FALSE;   
     }
     $pub_id = $pub['pub_id'];
+    $action = 'inserted';
   }
   
   // if there is a pub_id and we've been told to update, then do the update
-  if ($pub_id and $update) {
+  if ($pub_id and $update_if_exists) {
     $match = array('pub_id' => $pub_id);
     $options = array('statement_name' => 'up_pub_tivoseispypaunty');  
     $success = tripal_core_chado_update('pub', $match, $values, $options);     
     if (!$success) {
       watchdog('tripal_pub', "Cannot update the publication with title: %title", 
         array('%title' => $pub_details['Title']), WATCHDOG_ERROR);
+      $action = 'error';
       return FALSE;   
     } 
+    $action = 'updated';
   }
   
   // before we add any new properties we need to remove those that are there if this 
   // is an update.  The only thing we don't want to remove are the 'Publication Dbxref'
-  if ($update) {
+  if ($update_if_exists) {
     $sql = "
       DELETE FROM {pubprop} 
       WHERE 
