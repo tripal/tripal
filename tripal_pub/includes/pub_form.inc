@@ -189,8 +189,9 @@ function chado_pub_validate($node) {
   }
 
   // make sure the year is four digits
-  if(!preg_match('/^\d\d\d\d$/', $pyear)){
-    form_set_error('pyear', t('The publication year should be a 4 digit year.'), array());
+  if(!preg_match('/^\d{4}$/', $pyear)){
+    form_set_error('pyear', t('The publication year should be a 4 digit year.'));
+    return;
   }
   
   // get the type of publication
@@ -198,7 +199,7 @@ function chado_pub_validate($node) {
   $options = array('statement_name' => 'sel_pub_ty');
   $cvterm = tripal_core_chado_select('cvterm', array('name'), $values, $options);
   if (count($cvterm) == 0) {
-    form_set_error('type_id', t('Invalided publication type.'), array());
+    form_set_error('type_id', t('Invalided publication type.'));
     return;
   }
 
@@ -206,7 +207,7 @@ function chado_pub_validate($node) {
   if (!$pub_id) {
     $results = tripal_pub_get_pubs_by_title_type_pyear($title, $cvterm[0]->name, $pyear);   
     if (count($results) > 0) {
-      form_set_error('pyear',t('A publication with this title, type and publication year, already exists.  Cannot add this publication'), array());
+      form_set_error('pyear',t('A publication with this title, type and publication year, already exists.  Cannot add this publication'));
     }
   }
   
@@ -233,7 +234,7 @@ function chado_pub_validate($node) {
         }
       }         
       if (count($results) > 0) {
-        form_set_error('pyear',t('A publication with this title and publication year, already exists.  Cannot update this publication'), array());       
+        form_set_error('pyear',t('A publication with this title and publication year, already exists.  Cannot update this publication'));       
       }
     }
   } 

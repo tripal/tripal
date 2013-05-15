@@ -661,26 +661,22 @@ function tripal_pub_AGL_parse_pubxml($pub_xml) {
               case 'g':
                 $matches = array();
                 if (preg_match('/^(\d\d\d\d)/', $value, $matches)) {
-                  $pub['Year'] = $matches[1];
                   $pub['Publication Date'] = $matches[1];
                 }
                 elseif (preg_match('/(.*?)(\.|\s+)\s*(\d+),\s(\d\d\d\d)/', $value, $matches)) {
                   $year = $matches[4];
                   $month = $matches[1];
                   $day = $matches[3];
-                  $pub['Year'] = $year;
                   $pub['Publication Date'] = "$year $month $day"; 
                 }
                 elseif (preg_match('/\((.*?)(\.|\s+)(\d\d\d\d)\)/', $value, $matches)) {
                   $year = $matches[3];
                   $month = $matches[1];
-                  $pub['Year'] = $year;
                   $pub['Publication Date'] = "$year $month"; 
                 }
                 elseif (preg_match('/^(.*?) (\d\d\d\d)/', $value, $matches)) {
                   $year = $matches[2];
                   $month = $matches[1];
-                  $pub['Year'] = $year;
                   $pub['Publication Date'] = "$year $month"; 
                 }
                 if (preg_match('/v\. (.*?)(,|\s+)/', $value, $matches)) {

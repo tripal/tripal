@@ -86,7 +86,9 @@ function tripal_pub_sync_pub($pub) {
       return FALSE;
     }
   }
+  // if there are form errors then we need to reset the form errors cache, print a message and return
   else {
+    form_set_error(NULL,'',TRUE);
     print "ERROR: Unable to create publication node: " . $pub->title . "\n" . print_r($errors, TRUE) . "\n";
     return FALSE;
   }
