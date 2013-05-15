@@ -56,7 +56,7 @@ function tripal_pub_search_page() {
       $title = htmlspecialchars($pub->title);
       $result = $title;
       if ($pub->nid) {
-        $result = l($title ,'pub/' . $pub->pub_id, array('attributes' => array('target' => '_blank')));
+        $result = l($title ,'node/' . $pub->nid, array('attributes' => array('target' => '_blank')));
       }      
       if ($citation_rec->value) {
         $citation = htmlspecialchars($citation_rec->value);
