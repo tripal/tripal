@@ -165,7 +165,7 @@ function chado_pub_form($node, $form_state) {
 /*
  * 
  */
-function chado_pub_validate($node) {
+function chado_pub_validate($node, &$form) {
   
   // get the submitted values
   $title        = trim($node->title);
@@ -182,23 +182,25 @@ function chado_pub_validate($node) {
   $pubplace     = trim($node->pubplace);
   $is_obsolete  = $node->is_obsolete;
   $pub_id       = $node->pub_id;
-  
+
   // if this is a delete then don't validate
   if($node->op == 'Delete') {
     return;
   }
 
   // make sure the year is four digits
-  if(!preg_match('/^\d\d\d\d$/', $pyear)){
-    form_set_error('pyear', t('The publication year should be a 4 digit year.'), array());
-  }
-  
+  if (!preg_match('/^\d{4}$/', $pyear)) {
+    $message = t('The publication year should be a 4 digit year.');
+    form_set_error('pyear', $message);
+    return;
+  } 
   // get the type of publication
   $values = array('cvterm_id' => $type_id);
   $options = array('statement_name' => 'sel_pub_ty');
   $cvterm = tripal_core_chado_select('cvterm', array('name'), $values, $options);
   if (count($cvterm) == 0) {
-    form_set_error('type_id', t('Invalided publication type.'), array());
+    $message = t('Invalided publication type.');
+    form_set_error('type_id', $message);
     return;
   }
 
@@ -206,7 +208,9 @@ function chado_pub_validate($node) {
   if (!$pub_id) {
     $results = tripal_pub_get_pubs_by_title_type_pyear($title, $cvterm[0]->name, $pyear);   
     if (count($results) > 0) {
-      form_set_error('pyear',t('A publication with this title, type and publication year, already exists.  Cannot add this publication'), array());
+      $message = t('A publication with this title, type and publication year, already exists.  Cannot add this publication');
+      form_set_error('pyear', $message);
+      return;
     }
   }
   
@@ -233,7 +237,8 @@ function chado_pub_validate($node) {
         }
       }         
       if (count($results) > 0) {
-        form_set_error('pyear',t('A publication with this title and publication year, already exists.  Cannot update this publication'), array());       
+        $message = t('A publication with this title and publication year, already exists.  Cannot update this publication'); 
+        form_set_error('pyear', $message);
       }
     }
   } 
