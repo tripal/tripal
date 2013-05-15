@@ -642,9 +642,11 @@ function chado_pub_load($node) {
   
   // expand the 'text' fields as those aren't included by default
   // and they really shouldn't be so large to cause problems
-  $pub = tripal_core_expand_chado_vars($pub, 'field', 'pub.title');
-  $pub = tripal_core_expand_chado_vars($pub, 'field', 'pub.volumetitle');  
-  $pub = tripal_core_expand_chado_vars($pub, 'field', 'pub.uniquename');;
+  if (is_array($pub)) {
+    $pub = tripal_core_expand_chado_vars($pub, 'field', 'pub.title');
+    $pub = tripal_core_expand_chado_vars($pub, 'field', 'pub.volumetitle');  
+    $pub = tripal_core_expand_chado_vars($pub, 'field', 'pub.uniquename');;
+  }
   
   // set the URL path
   $path = "pub/$pub_id";
