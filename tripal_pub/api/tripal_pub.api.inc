@@ -199,7 +199,7 @@ function tripal_pub_update_publications($do_contact = FALSE, $dbxref = NULL, $db
 /*
  * @ingroup tripal_pub_api
  */
-function tripal_pub_import_publications($report_email = FALSE) {
+function tripal_pub_import_publications($report_email = FALSE, $do_update = FALSE) {
   $num_to_retrieve = 100;
   $pager_id = 0;
   $page = 0;
@@ -236,7 +236,7 @@ function tripal_pub_import_publications($report_email = FALSE) {
     do {       
       // retrieve the pubs for this page. We'll retreive 10 at a time
       $pubs = tripal_pub_get_remote_search_results($remote_db, $criteria, $num_to_retrieve, $pager_id, $page);
-      $reports[$import->name] = tripal_pub_add_publications($pubs, $import->do_contact);             
+      $reports[$import->name] = tripal_pub_add_publications($pubs, $import->do_contact, $do_update);             
       $page++;
     } 
     // continue looping until we have a $pubs array that does not have
@@ -291,7 +291,7 @@ function tripal_pub_import_publications($report_email = FALSE) {
 /*
  * @ingroup tripal_pub_api
  */
-function tripal_pub_import_by_dbxref($pub_dbxref, $do_contact = FALSE) {
+function tripal_pub_import_by_dbxref($pub_dbxref, $do_contact = FALSE, $do_update) {
   $num_to_retrieve = 1;
   $pager_id = 0;
   $page = 0;
@@ -329,7 +329,7 @@ function tripal_pub_import_by_dbxref($pub_dbxref, $do_contact = FALSE) {
     );
     $remote_db = $criteria['remote_db'];
     $pubs = tripal_pub_get_remote_search_results($remote_db, $criteria, $num_to_retrieve, $pager_id, $page);
-    $pub_id = tripal_pub_add_publications($pubs, $do_contact);
+    $pub_id = tripal_pub_add_publications($pubs, $do_contact, $do_update);
           
   }
   

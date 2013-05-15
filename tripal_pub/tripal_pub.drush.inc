@@ -32,6 +32,7 @@ function tripal_pub_drush_command() {
       'create_contacts' => dt('provide this option to create or update contacts for authors. By default contacts are not created or updated.'),
       'dbxref' => dt('An accession number for a publication from a remote database (e.g. PMID:23582642).'),
       'report' => dt("Set to the email address of the recipient who should receive an HTML report of the publications that have been added."),
+      'update' => dt("Set to 'Y' to update existing pubs.  By default only new pubs are inserted."),
     ),
     'examples' => array(
       'Standard example' => 'drush tripal-pubs-import',
@@ -67,12 +68,20 @@ function drush_tripal_pub_tripal_pubs_import() {
   $create_contacts = drush_get_option('create_contacts');
   $dbxref = drush_get_option('dbxref');
   $do_report = drush_get_option('report');
+  $update = drush_get_option('$update');
+  
+  if($update == 'Y') {
+    $update = TRUE;
+  }
+  else {
+    $update = FALSE;
+  }
   
   if ($dbxref) {
     tripal_pub_import_by_dbxref($dbxref, $create_contacts);  
   }
   else {
-    tripal_pub_import_publications($do_report);
+    tripal_pub_import_publications($do_report, $update);
   }
 }
 /**
