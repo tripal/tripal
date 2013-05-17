@@ -23,7 +23,7 @@ function tripal_pub_install() {
   drupal_install_schema('tripal_pub');
     
   // add loading of the the tripal pub ontology to the job queue
-  $obo_path =  realpath('./') . '/' . drupal_get_path('module', 'tripal_pub') . '/tpub.obo';
+  $obo_path =  realpath('./') . '/' . drupal_get_path('module', 'tripal_pub') . '/files/tpub.obo';
   $obo_id = tripal_cv_add_obo_ref('Tripal Publication', $obo_path);
   tripal_cv_submit_obo_job($obo_id);
   

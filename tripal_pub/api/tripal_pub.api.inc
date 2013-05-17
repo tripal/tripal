@@ -129,7 +129,7 @@ function tripal_pub_update_publications($do_contact = FALSE, $dbxref = NULL, $db
       INNER JOIN pub_dbxref PDBX ON P.pub_id = PDBX.pub_id
       INNER JOIN dbxref DBX      ON DBX.dbxref_id = PDBX.dbxref_id
       INNER JOIN db DB           ON DB.db_id = DBX.db_id
-  ";
+  "; 
   $args = array();
   if ($dbxref and preg_match('/^(.*?):(.*?)$/', $dbxref, $matches)) {
     $dbname = $matches[1];
@@ -384,6 +384,9 @@ function tripal_pub_add_publications($pubs, $do_contact, $update = FALSE) {
       case 'inserted':
         $report['inserted'][] = $pub;
         break;
+      case 'updated':
+        $report['updated'][] = $pub;
+        break;
       case 'skipped':
         $report['skipped'][] = $pub;
         break;
@@ -497,12 +500,12 @@ function tripal_pub_get_pubs_by_dbxref($pub_dbxref) {
   return $return;
 }
 /**
- * Returns the list of publications that match a given title and year
+ * Returns the list of publications that match a given title, type and year
  * 
  * @param title
  *   The title of the publication to look for
  * @param type
- *   The publication type. The value of this field should come from 
+ *   Optional. The publication type. The value of this field should come from 
  *   the Tripal Pub vocabulary
  * @param year
  *   Optional. The year the publication was published.
@@ -515,22 +518,25 @@ function tripal_pub_get_pubs_by_dbxref($pub_dbxref) {
  * @ingroup tripal_pub_api 
  * 
  */
-function tripal_pub_get_pubs_by_title_type_pyear($title, $type, $pyear = '') {
+function tripal_pub_get_pubs_by_title_type_pyear($title, $type = NULL, $pyear = NULL) {
   
   $return = array();
   
-  // build the values array for the query.  The $pyear is not required.
+  // build the values array for the query. 
   $values = array(
     'title' => $title,
-    'type_id' => array(
+  );
+  $stmnt_suffix = 'ti';
+  if ($type) {
+    $values['type_id'] = array(
       'name' => $type,
       'cv_id' => array(
         'name' => 'tripal_pub'
       )
-    )
-  );
-  $stmnt_suffix = 'tity';
-  if ($pub_details['Year']) {
+    );
+    $stmnt_suffix .= 'ty';
+  }
+  if ($pyear) {
     $values['pyear'] = $pyear;
     $stmnt_suffix .= 'py';
   }
@@ -590,11 +596,13 @@ function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE,
       return FALSE;    
     }
   }   
+  
   // if we couldn't find a publication by the accession (which means it doesn't
   // yet exist or it has been added using a different publication database) then
   // try to find it using the title and publication year.
   if (!$pub_id and $pub_details['Title']) {
-    $results = tripal_pub_get_pubs_by_title_type_pyear($pub_details['Title'], $pub_details['Publication Type'], $pub_details['Year']);    
+    
+    $results = tripal_pub_get_pubs_by_title_type_pyear($pub_details['Title'], NULL, $pub_details['Year']);    
     if (count($results) == 1) {
       $pub_id = $results[0];
     }
@@ -606,7 +614,7 @@ function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE,
       return FALSE;          
     }
   }
-  
+  print "PUB ID: $pub_id\n";
   // if there is a pub id and we've been told not to update then return
   if ($pub_id and !$update_if_exists) {
     $action = 'skipped';
