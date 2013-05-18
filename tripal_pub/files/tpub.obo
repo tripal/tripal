@@ -1361,6 +1361,12 @@ name: Notes
 def: Information about the publication that is not classified using another term.
 relationship: part_of TPUB:0000037 ! Publication Details
 
+[Term]
+id: TPUB:0000249
+name: Thesis
+def: A Master's or PhD thesis.
+is_a: TPUB:0000015 ! Publication Type
+
 [Typedef]
 id: is_a
 name: is a

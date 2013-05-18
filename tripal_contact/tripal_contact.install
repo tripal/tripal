@@ -21,7 +21,7 @@ function tripal_contact_install() {
   tripal_contact_add_custom_tables();
   
   // add loading of the the tripal contact ontology to the job queue
-  $obo_path =  realpath('./') . '/' . drupal_get_path('module', 'tripal_contact') . '/tcontact.obo';
+  $obo_path =  realpath('./') . '/' . drupal_get_path('module', 'tripal_contact') . '/files/tcontact.obo';
   $obo_id = tripal_cv_add_obo_ref('Tripal Contacts', $obo_path);
   tripal_cv_submit_obo_job($obo_id);
 }
