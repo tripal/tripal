@@ -20,6 +20,25 @@ function tripal_analysis_install() {
   
   // add cvterms
   tripal_analysis_add_cvterms();
+  
+  // add materialized views
+  tripal_analysis_add_mview_analysis_organism();
+}
+
+/**
+ *  Update for Drupal 6.x, Tripal 1.1, Analysis Module 1.1
+ *  This update adds a new analysis_organism materialized view
+ *
+ */
+function tripal_analysis_update_6100() {
+  // add the new materialized view
+  tripal_analysis_add_mview_analysis_organism();
+  
+  $ret = array(
+    '#finished' => 1,
+  );
+
+  return $ret;
 }
 /*
  * 
@@ -174,4 +193,62 @@ function tripal_analysis_requirements($phase) {
     }
   }
   return $requirements;
+}
+
+/*
+ * 
+ * @ingroup tripal_network
+ */
+function tripal_analysis_add_mview_analysis_organism() {
+  
+  // this is the SQL used to identify the organism to which an analsysis
+  // has been used.  This is obtained though the analysisfeature -> feature -> organism
+  // joins
+  $sql = "
+    SELECT DISTINCT A.analysis_id, O.organism_id
+    FROM analysis A
+      INNER JOIN analysisfeature AF ON A.analysis_id = AF.analysis_id
+      INNER JOIN feature F          ON AF.feature_id = F.feature_id
+      INNER JOIN organism O         ON O.organism_id = F.organism_id
+  ";
+  
+  // the schema array for describing this view
+  $schema = array(
+    'table' => 'analysis_organism',
+    'fields' => array(  
+      'analysis_id' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'organism_id' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+      ),       
+    ),
+    'indexes' => array(
+      'networkmod_qtl_indx0' => array('analysis_id'),
+      'networkmod_qtl_indx1' => array('organism_id'),
+    ),
+    'foreign keys' => array(
+      'analysis' => array(
+        'table' => 'analysis',
+        'columns' => array(
+          'analysis_id' => 'analysis_id',
+        ),
+      ),
+      'organism' => array(
+        'table' => 'organism',
+        'columns' => array(
+          'organism_id' => 'organism_id',
+        ),
+      ),      
+    ),
+  );
+  
+  // add a comment to make sure this view makes sense to the site administator
+  $comment = t('This view is for associating an organism (via it\'s associated features) to an analaysis.');
+  
+  // add the view
+  tripal_add_mview('analysis_organism', 'tripal_analysis', NULL, NULL, NULL,
+    $sql, NULL, $comment, $schema);
 }

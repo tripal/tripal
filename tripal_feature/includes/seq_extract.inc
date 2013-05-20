@@ -4,49 +4,56 @@
  */
 function tripal_feature_seq_extract_page() {
   // generate the search form 
-  $form = drupal_get_form('tripal_feature_seq_extract_form');  
-  $output .= $form;
+  $output .= '';
+  if (user_access('access administration pages')) { 
+    $output .= "
+      <div class=\"tripal-no-results\">
+        <p>Administrators, the " . l('organism_feature_count', 'admin/tripal/mviews') . " and 
+        " . l('analysis_organism', 'admin/tripal/mviews') . " materialized
+        views must be populated before using this form.  Those views should be re-populated 
+        when new data is added.</p>         
+      </div>
+    ";
+  }
+  $output .= drupal_get_form('tripal_feature_seq_extract_form');  
   return $output;
 }
 /*
  * 
  */
 function theme_tripal_feature_seq_extract_form($form) {
-  $rows = array();
- 
-  $rows[] = array(
-    drupal_render($form['genus']),
-    drupal_render($form['species']) ,
-    drupal_render($form['ftypes']) ,
-  );
-  $rows[] = array(
-    drupal_render($form['analysis']) ,
-    drupal_render($form['upstream']) ,
-    drupal_render($form['downstream']) ,
-  );
-  $rows[] = array(
-    drupal_render($form['format']),
-    array(
-      'data' =>  drupal_render($form['fname']),
-      'colspan' => 2,
+  $rows = array(
+    0 => array(
+      drupal_render($form['genus']),
+      drupal_render($form['species']) ,
+      drupal_render($form['ftypes']) ,
     ),
-  );
-  $rows[] = array(
-    array(
-      'data' =>  drupal_render($form['advanced']),
-      'colspan' => 3,
-    ),    
-  );
-  $rows[] = array(
-    array(
-      'data' =>  drupal_render($form['retrieve_btn']),
-      'colspan' => 3,
-    ),    
+    1 => array(
+      array('data' => drupal_render($form['analysis']), 'colspan' => 2),
+      drupal_render($form['format']),    
+    ),
+    2 => array(     
+      array('data' =>  drupal_render($form['fname']), 'colspan' => 2),
+      drupal_render($form['upstream']) . drupal_render($form['downstream']) ,
+    ),
+    3 => array(
+      array(
+        'data' =>  drupal_render($form['advanced']),
+        'colspan' => 3,
+      ),    
+    ),
+    4 => array(
+      array(
+        'data' =>  drupal_render($form['retrieve_btn']),
+        'colspan' => 3,
+      ),    
+    ),
   );
   $headers = array();
   $table = theme('table', $headers, $rows, array('id' => 'tripal-feature-seq-extract-form-table', 'border' => '0'));   
   
-  $markup = $table;
+  $markup = ''; 
+  $markup .= $table;
   $form['criteria'] = array(
     '#type' => 'markup',
     '#value' =>  $markup,
@@ -168,23 +175,21 @@ function tripal_feature_seq_extract_form(&$form_state = NULL) {
   $ftypes = array();
   if ($dgenus) {  
     $sql = "
-      SELECT DISTINCT CVT.cvterm_id, CVT.name
-      FROM {cvterm} CVT 
-        INNER JOIN {feature} F on CVT.cvterm_id = F.type_id
-        INNER JOIN {organism} O on O.organism_id = F.organism_id
-      WHERE O.genus = '%s'
+      SELECT DISTINCT OFC.cvterm_id, OFC.feature_type
+      FROM {organism_feature_count} OFC 
+      WHERE OFC.genus = '%s'
     ";
     $args = array();
     $args[] = $dgenus;
     if ($dspecies) {
-      $sql .= " AND O.species = '%s'";
+      $sql .= " AND OFC.species = '%s'";
       $args[] = $dspecies;
     }
     $results = chado_query($sql, $args);
     
     $ftypes[] = '';
     while ($type = db_fetch_object($results)) {
-      $ftypes[$type->cvterm_id] = $type->name;  
+      $ftypes[$type->cvterm_id] = $type->feature_type;  
     }
   }
   $form['ftypes'] = array(
@@ -201,6 +206,7 @@ function tripal_feature_seq_extract_form(&$form_state = NULL) {
     '#type'          => 'textarea',
     '#default_value' => $dfname,
     '#description'   => t('The names of the features to retrieve. Separate each with a space. Leave blank to retrieve all features matching other criteria.'),
+    '#rows'          => 8
   );
   $form['upstream'] = array(
     '#title'         => t('Upstream Bases'),
