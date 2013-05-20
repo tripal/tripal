@@ -18,6 +18,7 @@ require_once "includes/syncFeatures.inc";
 require_once "includes/indexFeatures.inc";
 require_once "includes/fasta_loader.inc";
 require_once "includes/gff_loader.inc";
+require_once "includes/seq_extract.inc";
 
 require_once "api/tripal_feature.api.inc";
 
@@ -154,6 +155,36 @@ function chado_feature_access($op, $node, $account) {
 function tripal_feature_menu() {
   $items = array();
 
+  // the administative settings menu
+  $items['seq_extract'] = array(
+    'title' => 'Sequence Retrieval',
+    'description' => 'Download a file of sequences',
+    'page callback' => 'tripal_feature_seq_extract_page',
+    'access arguments' => array('access chado_feature content'),
+    'type' => MENU_CALLBACK,
+  );
+  
+  $items['seq_extract/set_genus'] = array(
+    'title' => 'Sequence Retrieval',
+    'page callback' => 'tripal_feature_seq_extract_set_genus',
+    'access arguments' => array('access chado_feature content'),
+    'type' => MENU_CALLBACK,
+  );
+  
+  $items['seq_extract/set_species'] = array(
+    'title' => 'Sequence Retrieval',
+    'page callback' => 'tripal_feature_seq_extract_set_species',
+    'access arguments' => array('access chado_feature content'),
+    'type' => MENU_CALLBACK,
+  );
+  
+  $items['seq_extract/set_source'] = array(
+    'title' => 'Sequence Retrieval',
+    'page callback' => 'tripal_feature_seq_extract_set_source',
+    'access arguments' => array('access chado_feature content'),
+    'type' => MENU_CALLBACK,
+  );
+  
   // the administative settings menu
   $items['admin/tripal/tripal_feature'] = array(
     'title' => 'Features',
@@ -366,6 +397,11 @@ function tripal_feature_theme() {
       'arguments' =>  array(NULL),
       'path' => drupal_get_path('module', 'tripal_feature') . '/theme'
     ),
+    
+    // themed forms
+    'tripal_feature_seq_extract_form' => array(
+       'arguments' => array('form'),
+    )
   );
 }
 /**
