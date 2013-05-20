@@ -129,29 +129,26 @@ function tripal_feature_seq_extract_form(&$form_state = NULL) {
   );
 
   $analyses = array();
-  $args = array();
-  $sql = "
-    SELECT DISTINCT A.analysis_id, A.name
-    FROM {analysis} A 
-      INNER JOIN {analysisfeature} AF  ON A.analysis_id = AF.analysis_id
-  ";
   if ($dgenus) {
-    $sql .= "
+    $sql = "
+      SELECT DISTINCT A.analysis_id, A.name
+      FROM {analysis} A 
+        INNER JOIN {analysisfeature} AF  ON A.analysis_id = AF.analysis_id
         INNER JOIN {feature} F on F.feature_id = AF.feature_id
         INNER JOIN {organism} O on O.organism_id = F.organism_id
       WHERE O.genus = '%s'
     ";
+    $args = array();
     $args[] = $dgenus;
-  }
-  if ($dgenus and $dspecies) {
-    $sql .= " AND O.species = '%s' ";
-    $args[] = $dspecies;
-  }
-  
-  $results = chado_query($sql, $args);  
-  $analyses[] = '';
-  while ($analysis = db_fetch_object($results)) {
-    $analyses[$analysis->analysis_id] = $analysis->name;  
+    if ($dspecies) {
+      $sql .= " AND O.species = '%s' ";
+      $args[] = $dspecies;
+    }
+    $results = chado_query($sql, $args);  
+    $analyses[] = '';
+    while ($analysis = db_fetch_object($results)) {
+      $analyses[$analysis->analysis_id] = $analysis->name;  
+    }
   }
   $form['analysis'] = array(
     '#title'         => t('Source'),
