@@ -139,10 +139,9 @@ function tripal_feature_seq_extract_form(&$form_state = NULL) {
   if ($dgenus) {
     $sql = "
       SELECT DISTINCT A.analysis_id, A.name
-      FROM {analysis} A 
-        INNER JOIN {analysisfeature} AF  ON A.analysis_id = AF.analysis_id
-        INNER JOIN {feature} F on F.feature_id = AF.feature_id
-        INNER JOIN {organism} O on O.organism_id = F.organism_id
+      FROM {analysis_organism} AO 
+        INNER JOIN {analysis} A ON A.analysis_id = AO.analysis_id
+        INNER JOIN {organism} O ON O.organism_id = AO.organism_id
       WHERE O.genus = '%s'
     ";
     $args = array();
