@@ -483,11 +483,13 @@ function tripal_pub_get_search_results($search_array, $limit, $pager_id) {
                        lower(P.title) $action OR 
                        lower(P.volumetitle) $action OR
                        lower(P.publisher) $action OR
+                       lower(P.uniquename) $action OR
                        lower(P.pubplace) $action OR
                        lower(P.miniref) $action OR
                        lower(P.series_name) $action) ";
       $wargs[] = $value;
       $wargs[] = $value;  
+      $wargs[] = $value;
       $wargs[] = $value;
       $wargs[] = $value;
       $wargs[] = $value;
