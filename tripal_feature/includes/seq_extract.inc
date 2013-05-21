@@ -209,12 +209,12 @@ function tripal_feature_seq_extract_form(&$form_state = NULL) {
     }
   }
   $form['analysis'] = array(
-    '#title'         => t('Source'),
+    '#title'         => t('Analyses'),
     '#type'          => 'select',
     '#options'       => $analyses, 
     '#default_value' => $danalysis,    
     '#multiple'      => FALSE,
-    '#description'  => t('The feature source. If specified, only features derived or part of the selected source will be retrieved.'),
+    '#description'  => t('You can limit sequences by the analyses to which it was derived or was used. If specified, only features associated with the specific analysis will be retrieved.'),
   );
   
   $ftype = array();
