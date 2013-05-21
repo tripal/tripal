@@ -80,63 +80,9 @@ function drush_tripal_feature_tripal_get_sequence() {
   $aggregate = drush_get_option('agg');
   $child = drush_get_option('child');
   
-  $sub_features = explode(',', $child);
-    
-  if (!$output_format) {
-     $output_format = 'fasta_txt';
-  }
-  
-  if (!$type and !$feature_name and !$org_commonname) {
-     print "Please provide a type, feature name or organism common name\n";
-     return;
-  }
-
-  // get the list of features
-  $vars = array();
-  $sql  = "SELECT DISTINCT F.feature_id, F.name, F.uniquename, O.genus, O.species, CVT.name as feature_type ".
-          "FROM {feature} F ".
-          "  INNER JOIN {organism} O on O.organism_id = F.organism_id ".
-          "  INNER JOIN {cvterm} CVT on CVT.cvterm_id = F.type_id ";
-  if ($analysis_name) {
-     $sql .= "  INNER JOIN {analysisfeature} AF on AF.feature_id = F.feature_id ".
-             "  INNER JOIN {analysis} A on AF.analysis_id = A.analysis_id ";
-  }         
-  $sql .= "WHERE (1=1) ";
-  if ($org_commonname) {
-     $sql .= "AND O.common_name = '%s' ";
-     $vars[] = $org_commonname;
-  }
-  if ($genus) {
-     $sql .= "AND O.genus = '%s' ";
-     $vars[] = $genus;
-  }
-  if ($species) {
-     $sql .= "AND O.species = '%s' ";
-     $vars[] = $species;
-  }
-  if ($type) {
-    $sql .= "AND CVT.name = '%s' ";
-    $vars[] = $type; 
-  }
-  if ($feature_name) {
-     $sql .= "AND F.name = '%s'";
-     $vars[] = $feature_name;
-  }
-  if ($analysis_name) {
-     $sql .= "AND A.name = '%s'";
-     $vars[] = $analysis_name;
-  }
-  $num_bases_per_line = 50;
-  $q = chado_query($sql, $vars);
-  while ($feature = db_fetch_object($q)) {
-    $feature_id = $feature->feature_id;
-    $feature_name = "$feature->uniquename $feature->name $feature->feature_type ($feature->genus $feature->species)";
-      
-    $sequence = tripal_feature_get_formatted_sequence($feature_id, $feature_name, 
-      $num_bases_per_line, $derive_from_parent, $aggregate, $output_format,
-      $upstream, $downstream, $sub_features);
-    print $sequence;
-  }
+  tripal_feature_seq_extract_get_features($org_commonname, $genus, $species, $analysis_name, 
+    $type, $feature_name, $upstream, $downstream, $output_format, $derive_from_parent, 
+    $aggregate, $child);   
 }
 /*
  * 

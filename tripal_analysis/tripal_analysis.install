@@ -246,7 +246,7 @@ function tripal_analysis_add_mview_analysis_organism() {
   );
   
   // add a comment to make sure this view makes sense to the site administator
-  $comment = t('This view is for associating an organism (via it\'s associated features) to an analaysis.');
+  $comment = t('This view is for associating an organism (via it\'s associated features) to an analysis.');
   
   // add the view
   tripal_add_mview('analysis_organism', 'tripal_analysis', NULL, NULL, NULL,
