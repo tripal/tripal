@@ -104,6 +104,38 @@ function theme_tripal_feature_seq_extract_form($form) {
 function tripal_feature_seq_extract_form(&$form_state = NULL) {   
   tripal_core_ahah_init_form();
   
+  // we want to allow the query string to provide values for the form
+  if ($_GET['fnames']) {
+    $form_state['values']['fnames']['items'] = $_GET['fnames'];  
+  }
+  if ($_GET['genus']) {
+    $form_state['values']['genus'] = $_GET['genus'];  
+  }
+  if ($_GET['species']) {
+    $form_state['values']['species'] = $_GET['species'];  
+  }
+  if ($_GET['ftype']) {
+    $form_state['values']['ftype'] = $_GET['ftype'];  
+  }
+  if ($_GET['analysis']) {
+    $form_state['values']['analysis'] = $_GET['analysis'];  
+  }
+  if ($_GET['upstream']) {
+    $form_state['values']['upstream'] = $_GET['upstream'];  
+  }
+  if ($_GET['downstream']) {
+    $form_state['values']['downstream'] = $_GET['downstream'];  
+  }
+  if ($_GET['use_parent']) {
+    $form_state['values']['use_parent'] = $_GET['use_parent'];  
+  }
+  if ($_GET['aggregate']) {
+    $form_state['values']['aggregate'] = $_GET['aggregate'];  
+  }
+  if ($_GET['agg_types']) {
+    $form_state['values']['agg_types'] = $_GET['agg_types'];  
+  }
+
   // get defaults
   $dgenus      = isset($form_state['values']['genus'])      ? $form_state['values']['genus']      : $_SESSION['tripal_feature_seq_extract']['genus'];
   $dspecies    = isset($form_state['values']['species'])    ? $form_state['values']['species']    : $_SESSION['tripal_feature_seq_extract']['species'];
