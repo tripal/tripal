@@ -47,6 +47,7 @@ function tripal_feature_seq_extract_page() {
       </div>
     ";
   }
+  $output .= "<div id=\"tripal-feature-seq-extract-form-block\">";
   $output .= drupal_get_form('tripal_feature_seq_extract_form');  
   return $output;
 }
@@ -148,7 +149,7 @@ function tripal_feature_seq_extract_form(&$form_state = NULL) {
     '#description'   => t('The organism\'s genus. If specified, features for all organism with this genus will be retrieved.'),
     '#ahah' => array(
       'path'    => 'seq_extract/update',
-      'wrapper' => 'tripal-feature-seq-extract-form',
+      'wrapper' => 'tripal-feature-seq-extract-form-block',
       'event'   => 'change',
       'method'  => 'replace',
     ), 
@@ -177,7 +178,7 @@ function tripal_feature_seq_extract_form(&$form_state = NULL) {
     '#description'   => t('The organism\'s species name. If specified, features for all organisms with this species will be retrieved.  Please first select a genus'),
     '#ahah' => array(
       'path'    => 'seq_extract/update',
-      'wrapper' => 'tripal-feature-seq-extract-form',
+      'wrapper' => 'tripal-feature-seq-extract-form-block',
       'event'   => 'change',
       'method'  => 'replace',
     ), 
