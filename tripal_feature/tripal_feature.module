@@ -156,7 +156,7 @@ function tripal_feature_menu() {
   $items = array();
 
   // the administative settings menu
-  $items['seq_extract'] = array(
+  $items['find/sequences'] = array(
     'title' => 'Sequence Retrieval',
     'description' => 'Download a file of sequences',
     'page callback' => 'tripal_feature_seq_extract_page',
@@ -164,7 +164,7 @@ function tripal_feature_menu() {
     'type' => MENU_CALLBACK,
   );
   
-  $items['seq_extract/update'] = array(
+  $items['find/sequences/ajax'] = array(
     'title' => 'Sequence Retrieval',
     'page callback' => 'tripal_feature_seq_extract_form_ahah_update',
     'access arguments' => array('access chado_feature content'),
@@ -2340,6 +2340,6 @@ function tripal_feature_form_alter(&$form, &$form_state, $form_id) {
     // updating the form through the ahah callback sets the action of
     // the form to the ahah callback URL. We need to set it back
     // to the normal form URL
-    $form['#action'] = url("seq_extract");
+    $form['#action'] = url("find/sequences");
   }
 } 

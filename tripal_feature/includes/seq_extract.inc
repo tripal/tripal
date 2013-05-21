@@ -148,7 +148,7 @@ function tripal_feature_seq_extract_form(&$form_state = NULL) {
     '#multiple'      => FALSE,
     '#description'   => t('The organism\'s genus. If specified, features for all organism with this genus will be retrieved.'),
     '#ahah' => array(
-      'path'    => 'seq_extract/update',
+      'path'    => 'find/sequences/ajax',
       'wrapper' => 'tripal-feature-seq-extract-form-block',
       'event'   => 'change',
       'method'  => 'replace',
@@ -177,7 +177,7 @@ function tripal_feature_seq_extract_form(&$form_state = NULL) {
     '#multiple'      => FALSE,
     '#description'   => t('The organism\'s species name. If specified, features for all organisms with this species will be retrieved.  Please first select a genus'),
     '#ahah' => array(
-      'path'    => 'seq_extract/update',
+      'path'    => 'find/sequences/ajax',
       'wrapper' => 'tripal-feature-seq-extract-form-block',
       'event'   => 'change',
       'method'  => 'replace',
@@ -361,7 +361,7 @@ function tripal_feature_seq_extract_form_validate($form, &$form_state) {
   $agg_types  = $form_state['values']['agg_types'];  
   $op         = $form_state['values']['op'];
   
-  if ($op == 'Retreive') {
+  if ($op == 'Retrieve') {
     if ($upstream and !preg_match('/^\d+$/', $upstream)) {
       form_set_error('upstream', 'Please enter a positive numeric value for the upstream bases');
     }
@@ -391,14 +391,13 @@ function tripal_feature_seq_extract_form_submit($form, &$form_state) {
   $agg_types  = $form_state['values']['agg_types'];
   $op         = $form_state['values']['op'];
 
-
   // we must use the parent sequence if the user has selected 
   // the upstream, downstream or to aggregate
   if ($upstream or $downstream or $aggregate) {
     $use_parent = 1;
   }
   
-  if ($op == 'Retreive') {
+  if ($op == 'Retrieve') {
     $_SESSION['tripal_feature_seq_extract']['genus']      = $genus;
     $_SESSION['tripal_feature_seq_extract']['species']    = $species;
     $_SESSION['tripal_feature_seq_extract']['analysis']   = $analysis;
