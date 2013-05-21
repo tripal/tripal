@@ -15,18 +15,19 @@ function tripal_feature_seq_extract_page() {
     $use_parent = $_SESSION['tripal_feature_seq_extract']['use_parent'];
     $aggregate  = $_SESSION['tripal_feature_seq_extract']['aggregate'];
     $agg_types  = $_SESSION['tripal_feature_seq_extract']['agg_types'];
+    unset($_SESSION['tripal_feature_seq_extract']);
      
     if ($format == 'fasta_html') {
       drupal_set_header('Content-Type: text/html');
     }
     else {
-      drupal_set_header('Content-Type: text/plain');
+      drupal_set_header('Content-Type: text');
+      drupal_set_header('Content-Disposition: attachment; filename="sequences.fna"');
     }
     
     tripal_feature_seq_extract_get_features(NULL, $genus, $species, $analysis, 
       $ftype, $fname, $upstream, $downstream, $format, $use_parent, $aggregate, $agg_types);
       
-    unset($_SESSION['tripal_feature_seq_extract']);
     return;
   }
  
@@ -57,8 +58,8 @@ function theme_tripal_feature_seq_extract_form($form) {
       drupal_render($form['ftype']),
     ),
     1 => array(
-      array('data' => drupal_render($form['analysis']), 'colspan' => 2),
-      drupal_render($form['format']),    
+      array('data' => drupal_render($form['analysis']), 'colspan' => 3),
+      //drupal_render($form['format']),    
     ),
     2 => array(     
       array('data' =>  drupal_render($form['fname']), 'colspan' => 2),
@@ -178,6 +179,7 @@ function tripal_feature_seq_extract_form(&$form_state = NULL) {
       $sql .= " AND O.species = '%s' ";
       $args[] = $dspecies;
     }
+    $sql .=" ORDER BY A.name ";
     $results = chado_query($sql, $args);  
     $analyses[] = '';
     while ($analysis = db_fetch_object($results)) {
@@ -212,6 +214,7 @@ function tripal_feature_seq_extract_form(&$form_state = NULL) {
       $sql .= " AND OFC.species = '%s'";
       $args[] = $dspecies;
     }
+    $sql .= " ORDER BY OFC.feature_type ";
     $results = chado_query($sql, $args);
     
     $ftype[] = '';
@@ -251,7 +254,7 @@ function tripal_feature_seq_extract_form(&$form_state = NULL) {
   );
   $form['format'] = array(
     '#title'         => t('Output Format'),
-    '#type'          => 'select',
+    '#type'          => 'hidden',
     '#default_value' => $dformat,
     '#options'       => array(
       'fasta_html'  => 'FASTA (in browser)',
