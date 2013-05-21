@@ -7,7 +7,7 @@ function tripal_feature_seq_extract_page() {
     $genus      = $_SESSION['tripal_feature_seq_extract']['genus'];
     $species    = $_SESSION['tripal_feature_seq_extract']['species'];
     $analysis   = $_SESSION['tripal_feature_seq_extract']['analysis'];
-    $ftypes     = $_SESSION['tripal_feature_seq_extract']['ftypes'];
+    $ftype      = $_SESSION['tripal_feature_seq_extract']['ftype'];
     $fname      = $_SESSION['tripal_feature_seq_extract']['fname'];
     $upstream   = $_SESSION['tripal_feature_seq_extract']['upstream'];
     $downstream = $_SESSION['tripal_feature_seq_extract']['downstream'];
@@ -22,8 +22,9 @@ function tripal_feature_seq_extract_page() {
     else {
       drupal_set_header('Content-Type: text/plain');
     }
+    
     tripal_feature_seq_extract_get_features(NULL, $genus, $species, $analysis, 
-      $ftypes, $fname, $upstream, $downstream, $format, $use_parent, $aggregate, $agg_types);
+      $ftype, $fname, $upstream, $downstream, $format, $use_parent, $aggregate, $agg_types);
       
     unset($_SESSION['tripal_feature_seq_extract']);
     return;
@@ -53,7 +54,7 @@ function theme_tripal_feature_seq_extract_form($form) {
     0 => array(
       drupal_render($form['genus']),
       drupal_render($form['species']) ,
-      drupal_render($form['ftypes']) ,
+      drupal_render($form['ftype']),
     ),
     1 => array(
       array('data' => drupal_render($form['analysis']), 'colspan' => 2),
@@ -98,7 +99,7 @@ function tripal_feature_seq_extract_form(&$form_state = NULL) {
   $dgenus      = $form_state['values']['genus'];
   $dspecies    = $form_state['values']['species'];
   $danalysis   = $form_state['values']['analysis'];
-  $dftypes     = $form_state['values']['ftypes'];
+  $dftype     = $form_state['values']['ftype'];
   $dfname      = $form_state['values']['fname'];
   $dupstream   = $form_state['values']['upstream'];
   $ddownstream = $form_state['values']['downstream'];
@@ -180,7 +181,7 @@ function tripal_feature_seq_extract_form(&$form_state = NULL) {
     $results = chado_query($sql, $args);  
     $analyses[] = '';
     while ($analysis = db_fetch_object($results)) {
-      $analyses[$analysis->analysis_id] = $analysis->name;  
+      $analyses[$analysis->name] = $analysis->name;  
     }
   }
   $form['analysis'] = array(
@@ -198,7 +199,7 @@ function tripal_feature_seq_extract_form(&$form_state = NULL) {
     ), 
   );
   
-  $ftypes = array();
+  $ftype = array();
   if ($dgenus) {  
     $sql = "
       SELECT DISTINCT OFC.cvterm_id, OFC.feature_type
@@ -213,17 +214,17 @@ function tripal_feature_seq_extract_form(&$form_state = NULL) {
     }
     $results = chado_query($sql, $args);
     
-    $ftypes[] = '';
+    $ftype[] = '';
     while ($type = db_fetch_object($results)) {
-      $ftypes[$type->cvterm_id] = $type->feature_type;  
+      $ftype[$type->feature_type] = $type->feature_type;  
     }
   }
-  $form['ftypes'] = array(
-    '#title'         => t('Feature Types'),
+  $form['ftype'] = array(
+    '#title'         => t('Feature Type'),
     '#type'          => 'select',
-    '#options'       => $ftypes,     
+    '#options'       => $ftype,     
     '#multiple'      => FALSE,
-    '#default_value' => $dftypes,
+    '#default_value' => $dftype,
     '#description'   => t('The type of feature to retrieve (e.g. mRNA). All features that match this type will be retrieved.'),
   );
   
@@ -366,7 +367,7 @@ function tripal_feature_seq_extract_form_validate($form, &$form_state) {
   $genus      = $form_state['values']['genus'];
   $species    = $form_state['values']['species'];
   $analysis   = $form_state['values']['analysis'];
-  $ftypes     = $form_state['values']['ftypes'];
+  $ftype      = $form_state['values']['ftype'];
   $fname      = $form_state['values']['fname'];
   $upstream   = $form_state['values']['upstream'];
   $downstream = $form_state['values']['downstream'];
@@ -381,6 +382,9 @@ function tripal_feature_seq_extract_form_validate($form, &$form_state) {
    if ($downstream and !preg_match('/^\d+$/', $downstream)) {
     form_set_error('downstream', 'Please enter a positive numeric value for the downstream bases');
   }
+  if (!$genus and !$species and !$ftype and !$fname) {
+    form_set_error('', 'Please provide a feature name, a feature type or a genus.');
+  }
 }
 
 /**
@@ -390,7 +394,7 @@ function tripal_feature_seq_extract_form_submit($form, &$form_state) {
   $genus      = $form_state['values']['genus'];
   $species    = $form_state['values']['species'];
   $analysis   = $form_state['values']['analysis'];
-  $ftypes     = $form_state['values']['ftypes'];
+  $ftype      = $form_state['values']['ftype'];
   $fname      = $form_state['values']['fname'];
   $upstream   = $form_state['values']['upstream'];
   $downstream = $form_state['values']['downstream'];
@@ -402,7 +406,7 @@ function tripal_feature_seq_extract_form_submit($form, &$form_state) {
   $_SESSION['tripal_feature_seq_extract']['genus']      = $genus;
   $_SESSION['tripal_feature_seq_extract']['species']    = $species;
   $_SESSION['tripal_feature_seq_extract']['analysis']   = $analysis;
-  $_SESSION['tripal_feature_seq_extract']['ftypes']     = $ftypes;
+  $_SESSION['tripal_feature_seq_extract']['ftype']      = $ftype;
   $_SESSION['tripal_feature_seq_extract']['fname']      = $fname;
   $_SESSION['tripal_feature_seq_extract']['upstream']   = $upstream;
   $_SESSION['tripal_feature_seq_extract']['downstream'] = $downstream;
@@ -424,8 +428,8 @@ function tripal_feature_seq_extract_get_features($org_commonname, $genus, $speci
      $output_format = 'fasta_txt';
   }
   
-  if (!$type and !$feature_name and !$org_commonname) {
-     print "Please provide a type, feature name or organism common name\n";
+  if (!$type and !$feature_name and !$genus) {
+     print "Please provide a type, feature name or genus\n";
      return;
   }
 
