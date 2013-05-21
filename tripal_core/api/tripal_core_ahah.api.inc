@@ -44,7 +44,7 @@ function tripal_core_ahah_init_form() {
  * See http://tripal.info/documentation/ahah_api for example usage
  *
  * @returns
- *   A Drupal form array 
+ *   A Drupal form array.  If no form is available then FALSE is returned
  *
  * @ingroup tripal_ahah_api
  */
@@ -53,10 +53,17 @@ function tripal_core_ahah_prepare_form() {
   // Retrieve the form from the cache
   $form_state = array('storage' => NULL);
   $form_build_id = filter_xss($_POST['form_build_id']);
+  if (!$form_build_id) {
+    return FALSE;
+  }
   $form = form_get_cache($form_build_id, $form_state);
 
   // Preparing to process the form
-  $args = $form['#parameters'];
+  $args = $form['#parameters']; 
+  if (!is_array($args)) {
+    // if there is no form #parameters as an array then the form was not built property
+    return FALSE;
+  }  
   $form_id = array_shift($args);
   $form_state['post'] = $form['#post'] = $_POST;
   $form['#programmed'] = $form['#redirect'] = FALSE;

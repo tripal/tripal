@@ -70,46 +70,9 @@ class tripal_views_handler_filter_file_upload extends views_handler_filter {
     $this->ensure_my_table();
     $field = "$this->table.$this->real_field";
 
-    // get the form element value
-    $value = $this->value[0];
-
-    // the form element value has sub values, so get those
-    $items =  $value['items'];
-    $file_path = $value['file_path'];
-
-    $holders = array();
-    $values = array();
-
-    // get the file upload content if one has been provided
-    if ($file_path) {
-      $fh = fopen($file_path, 'r');
-      while ($line = fgets($fh)) {
-        $items = trim($line);
-
-        // remove extra spaces and new lines
-        $items = preg_replace("/\s+,/", ",", $items);
-        $items = preg_replace("/\s+\n/", "\n", $items);
-        $items = preg_replace("/,\n/", "\n", $items);
-
-        // add the values from this line to the values[] array
-        $vals = preg_split("/[\n,]+/", $items);
-        $values = array_merge($values, $vals);
-      }
-    }
-
-    // if a file upload has not been provided then use the value in the textarea
-    if ($items) {
-
-      // remove extra spaces and new lines
-      $items = preg_replace("/\s+,/", ",", $items);
-      $items = preg_replace("/\s+\n/", "\n", $items);
-      $items = preg_replace("/,\n/", "\n", $items);
-
-      // in the event the user uploaded a file and provided items in the
-      // textbox then we need to merge these two lists
-      $vals = preg_split("/[\n,]+/", $items);
-      $values = array_merge($values, $vals);
-    }
+    // get the form element values
+    $value = $this->value[0]; 
+    $values = $value['items_array'];
 
     // iterate through all of the values and generate the corresponding
     // sprintf style holders

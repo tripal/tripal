@@ -3,7 +3,6 @@
 require_once "tripal_views.views.inc";
 
 require_once "includes/tripal_views_integration.inc";
-require_once "includes/tripal_views_form_elements.inc";
 require_once "includes/tripal_views_integration_port.inc";
 
 /**

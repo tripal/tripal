@@ -164,23 +164,9 @@ function tripal_feature_menu() {
     'type' => MENU_CALLBACK,
   );
   
-  $items['seq_extract/set_genus'] = array(
+  $items['seq_extract/update'] = array(
     'title' => 'Sequence Retrieval',
-    'page callback' => 'tripal_feature_seq_extract_set_genus',
-    'access arguments' => array('access chado_feature content'),
-    'type' => MENU_CALLBACK,
-  );
-  
-  $items['seq_extract/set_species'] = array(
-    'title' => 'Sequence Retrieval',
-    'page callback' => 'tripal_feature_seq_extract_set_species',
-    'access arguments' => array('access chado_feature content'),
-    'type' => MENU_CALLBACK,
-  );
-  
-  $items['seq_extract/set_source'] = array(
-    'title' => 'Sequence Retrieval',
-    'page callback' => 'tripal_feature_seq_extract_set_source',
+    'page callback' => 'tripal_feature_seq_extract_form_ahah_update',
     'access arguments' => array('access chado_feature content'),
     'type' => MENU_CALLBACK,
   );

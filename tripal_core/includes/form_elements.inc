@@ -8,11 +8,11 @@
 /**
  * Register form elements
  */
-function tripal_views_elements() {
+function tripal_core_elements() {
 
   $type['file_upload_combo'] = array(
-    '#input' => TRUE,
-    '#process' => array('expand_file_upload_combo'),
+    '#input'            => TRUE,
+    '#process'          => array('expand_file_upload_combo'),
     '#element_validate' => array('file_upload_combo_validate'),
   );
   
@@ -69,6 +69,61 @@ function expand_file_upload_combo($element, $edit, $form_state, $complete_form) 
 
   return $element;
 }
+
+
+/**
+ * Theme the file upload combo form element
+ */
+function theme_file_upload_combo($element) {
+  return theme('form_element', $element, '<div class="container-inline">' . $element['#children'] . '</div>');
+}
+
+
+/**
+ * Validate all content passed into the file upload combo form element
+ */
+function file_upload_combo_validate($element, &$form) {
+  
+  $values = array();
+  
+  // get the items in the textbox
+  $items =  $form['values'][$element['#name']]['items'];
+  if ($items) {
+    // split on new line or comma
+    $vals  = preg_split("/[\n,]+/", $items);
+    // iterate through the values and trim surrounding space
+    foreach ($vals as $i => $value) {
+      $values[] = trim($value);
+    }
+  }
+
+  // merge any items from the file upload
+  $file = file_save_upload($element['#name'], array());
+  if ($file) {
+    $file_path = $file->filepath;
+    
+    $form['values'][$element['#name']]['file_path'] = $file_path;
+    // we need to add our file path to the $_GET element as if it were
+    // submitted along with the rest of the form
+    $_GET[$element['#name']]['file_path'] = $file_path;
+
+    $fh = fopen($file_path, 'r');
+    while ($line = fgets($fh)) {
+      $items = trim($line);
+
+      // split on new line or comma
+      $vals  = preg_split("/[\n,]+/", $items);
+      // iterate through the values and trim surrounding space
+      foreach ($vals as $i => $value) {
+        $values[] = trim($value);
+      }
+    }       
+  }
+  
+  // add a new 'items_array' element that contains the array of 
+  // submitted items from both the textbox and the input file
+  $form['values'][$element['#name']]['items_array'] = $values;
+}
 /**
  * Form element description
  */
@@ -105,34 +160,6 @@ function expand_sequence_combo($element, $edit, $form_state, $complete_form) {
   );
   return $element;
 }
-
-/**
- * Theme the file upload combo form element
- */
-function theme_file_upload_combo($element) {
-  return theme('form_element', $element, '<div class="container-inline">' . $element['#children'] . '</div>');
-}
-
-/**
- * Theme the file sequence form element
- */
-function theme_sequence_combo($element) {
-  return theme('form_element', $element, '<div class="container-inline">' . $element['#children'] . '</div>');
-}
-
-/**
- * Validate all content passed into the file upload combo form element
- */
-function file_upload_combo_validate($element, &$form) {
-  $file = file_save_upload($element['#name'], array());
-  if ($file) {
-    $form['values'][$element['#name']]['file_path'] = $file->filepath;
-    // we need to add our file path to the $_GET element as if it were
-    // submitted along with the rest of the form
-    $_GET[$element['#name']]['file_path'] = $file->filepath;
-  }
-}
-
 /**
  * Validate all content passed into the sequence combo form element
  */
@@ -154,4 +181,11 @@ function sequence_combo_validate($element, &$form) {
   if ($downstream and !preg_match('/^\d+$/', $downstream)) {
     form_set_error($element['#name'], 'Please provide a decimal number for downstream bases');
   }
+}
+
+/**
+ * Theme the file sequence form element
+ */
+function theme_sequence_combo($element) {
+  return theme('form_element', $element, '<div class="container-inline">' . $element['#children'] . '</div>');
 }
