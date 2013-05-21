@@ -1,5 +1,6 @@
- <h3>Tripal Feature Administrative Tools Quick Links:</h3>
+ <h3>Tripal Feature Quick Links:</h3>
   <ul>
+   <li><a href="<?php print url("find/sequences") ?>">Retrieve Sequences</a></li>
    <li><a href="<?php print url("admin/tripal/tripal_feature/configuration") ?>">Feature Configuration</a></li>
    <li><a href="<?php print url("admin/tripal/tripal_feature/fasta_loader") ?>">Import a multi-FASTA file</a></li>
    <li><a href="<?php print url("admin/tripal/tripal_feature/gff3_load") ?>">Import a GFF3 file</a></li>
@@ -79,6 +80,15 @@
   <p>Aside from data loading and feature page setup (as described in the Setup section above),
   The Tripal feature module also provides the following functionality
   <ul>
+    <li><p><b>Retrieve Sequences</b>: A tool to <?php print l('retrieve sequences','find/sequences') ?> is provided 
+     which allows end-users to download sequences in FASTA format.  The site admin must first load sequence residues
+     as well as alignments.  The <?php  print l('organism_feature_count', 'admin/tripal/mviews') ?> and 
+     <?php print l('analysis_organism', 'admin/tripal/mviews') ?> materialized
+     views must be populated before using this tool.  Those views should be re-populated 
+     when new data is added.  If you use the <?php print l('jquery_update module', 'http://drupal.org/project/jquery_update') ?>
+     the tool may break.  You will need to update the jquery_update/replace/jquery.form.js file with <?php 
+     print l('a more recent version','https://raw.github.com/malsup/form/master/jquery.form.js') ?>. </p></li>
+    
      <li><p><b>Generic Feature URL</b>:  As described in the setup instructions above, it is often convenient to have a 
      simple URL for each feature page. For example, http://www.mygenomesite.org/[feature], where [feature] is a 
      unique identifier for a feature page.  The
