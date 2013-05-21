@@ -697,7 +697,7 @@ function tripal_feature_get_formatted_sequence($feature_id, $feature_name,
          $seq = wordwrap($seq, $num_bases_per_line, "<br>", TRUE);
       } 
       elseif ($output_format == 'fasta_txt') {
-         $seq = wordwrap($seq, $num_bases_per_line, "\n", TRUE);
+         $seq = wordwrap($seq, $num_bases_per_line, "\r\n", TRUE);
       }
       $residues .= ">$feature_name ($parent->typename) $parent->srcname:" . ($parent->adjfmin + 1) . ".." . $parent->adjfmax ." ($dir). ";
       if (count($types) > 0) {
@@ -715,14 +715,14 @@ function tripal_feature_get_formatted_sequence($feature_id, $feature_name,
           $residues .= "No sequence available.</br>"; 
         } 
         else {
-          $residues .= "No sequence available.\n"; 
+          $residues .= "No sequence available.\r\n"; 
         }         
       }
       else {
         if ($output_format == 'fasta_html') {
           $residues .= "<br>";
         }
-        $residues .= "\n" . $seq . "\n";          
+        $residues .= "\r\n" . $seq . "\r\n";          
         if ($output_format == 'fasta_html') {
           $residues .= "<br>";
         }
@@ -739,9 +739,9 @@ function tripal_feature_get_formatted_sequence($feature_id, $feature_name,
        $residues = wordwrap($residues, $num_bases_per_line, "<br>", TRUE);  
     } 
     elseif ($output_format == 'fasta_txt') {
-       $residues = wordwrap($residues, $num_bases_per_line, "\n", TRUE);  
+       $residues = wordwrap($residues, $num_bases_per_line, "\r\n", TRUE);  
     }
-    $residues = ">$feature_name\n$residues\n";
+    $residues = ">$feature_name\r\n$residues\r\n";
   }
   
   // format the residues for display
