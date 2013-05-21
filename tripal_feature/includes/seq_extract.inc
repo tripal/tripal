@@ -23,7 +23,7 @@ function tripal_feature_seq_extract_page() {
     }
     else {
       drupal_set_header('Content-Type: text');
-      drupal_set_header('Content-Disposition: attachment; filename="sequences.fna"');
+      drupal_set_header('Content-Disposition: attachment; filename="sequences.fasta.txt"');
     }
     
     tripal_feature_seq_extract_get_features(NULL, $genus, $species, $analysis, 
@@ -248,14 +248,14 @@ function tripal_feature_seq_extract_form(&$form_state = NULL) {
   $form['upstream'] = array(
     '#title'         => t('Upstream Bases'),
     '#type'          => 'textfield',
-    '#description'   => t('An numeric value specifying the number of upstream bases to include.'),
+    '#description'   => t('A numeric value specifying the number of upstream bases to include. Only works if the feature is aligned to a larger sequence.'),
     '#default_value' => $dupstream,
     '#size'          => 5,
   );
   $form['downstream'] = array(
     '#title'         => t('Downstream Bases'),
     '#type'          => 'textfield',
-    '#description'   => t('An numeric value specifying the number of downstream bases to incldue.'),
+    '#description'   => t('A numeric value specifying the number of downstream bases to incldue.  Only works if the feature is aligned to a larger sequence.'),
     '#default_value' => $ddownstream,
     '#size'          => 5,
   );
