@@ -20,7 +20,8 @@ function tripal_feature_seq_extract_page() {
       drupal_set_header('Content-Type: text/html');
     }
     else {
-      drupal_set_header('Content-Type: text/plain');
+      drupal_set_header('Content-Type: text');
+      drupal_set_header('Content-Disposition: attachment; filename="sequences.fna"');
     }
     
     tripal_feature_seq_extract_get_features(NULL, $genus, $species, $analysis, 
@@ -80,7 +81,7 @@ function theme_tripal_feature_seq_extract_form($form) {
   $headers = array();
   $table = theme('table', $headers, $rows, array('id' => 'tripal-feature-seq-extract-form-table', 'border' => '0'));   
   
-  $markup = ''; 
+  $markup = drupal_render($form['description']); 
   $markup .= $table;
   $form['criteria'] = array(
     '#type' => 'markup',
@@ -99,7 +100,7 @@ function tripal_feature_seq_extract_form(&$form_state = NULL) {
   $dgenus      = $form_state['values']['genus'];
   $dspecies    = $form_state['values']['species'];
   $danalysis   = $form_state['values']['analysis'];
-  $dftype     = $form_state['values']['ftype'];
+  $dftype      = $form_state['values']['ftype'];
   $dfname      = $form_state['values']['fname'];
   $dupstream   = $form_state['values']['upstream'];
   $ddownstream = $form_state['values']['downstream'];
@@ -108,6 +109,12 @@ function tripal_feature_seq_extract_form(&$form_state = NULL) {
   $daggregate  = $form_state['values']['aggregate'];
   $dagg_types  = $form_state['values']['agg_types'];
 
+  
+  $form['description'] = array(
+    '#type'    => 'markup',
+    '#value'   => t('Use this form to extract sequences in FASTA format.'),
+  );
+  
   $sql = "
     SELECT DISTINCT genus 
     FROM {organism} 
@@ -119,6 +126,7 @@ function tripal_feature_seq_extract_form(&$form_state = NULL) {
   while ($organism = db_fetch_object($results)) {
     $genus[$organism->genus] = $organism->genus;  
   }
+  
   $form['genus'] = array(
     '#title'         => t('Genus'),
     '#type'          => 'select',
