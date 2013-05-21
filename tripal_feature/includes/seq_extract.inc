@@ -79,7 +79,7 @@ function theme_tripal_feature_seq_extract_form($form) {
     ),
     5 => array(
       array(
-        'data' =>  drupal_render($form['retrieve_btn']),
+        'data' =>  drupal_render($form['retrieve_btn']) . drupal_render($form['reset_btn']),
         'colspan' => 3,
       ),    
     ),
@@ -303,6 +303,10 @@ function tripal_feature_seq_extract_form(&$form_state = NULL) {
     '#type' => 'submit',
     '#value' => 'Retrieve',
   );
+  $form['reset_btn'] = array(
+    '#type' => 'submit',
+    '#value' => 'Reset',
+  );
   return $form;
 }
 
@@ -347,22 +351,25 @@ function tripal_feature_seq_extract_form_validate($form, &$form_state) {
   $species    = $form_state['values']['species'];
   $analysis   = $form_state['values']['analysis'];
   $ftype      = $form_state['values']['ftype'];
-  $fnames      = $form_state['values']['fnames'];
+  $fnames     = $form_state['values']['fnames'];
   $upstream   = $form_state['values']['upstream'];
   $downstream = $form_state['values']['downstream'];
   $format     = $form_state['values']['format'];
   $use_parent = $form_state['values']['use_parent'];
   $aggregate  = $form_state['values']['aggregate'];
   $agg_types  = $form_state['values']['agg_types'];  
+  $op         = $form_state['values']['op'];
   
-  if ($upstream and !preg_match('/^\d+$/', $upstream)) {
-    form_set_error('upstream', 'Please enter a positive numeric value for the upstream bases');
-  }
-   if ($downstream and !preg_match('/^\d+$/', $downstream)) {
-    form_set_error('downstream', 'Please enter a positive numeric value for the downstream bases');
-  }
-  if (!$genus and !$species and !$ftype and !$fnames) {
-    form_set_error('', 'Please provide a feature name, a feature type or a genus.');
+  if ($op == 'Retreive') {
+    if ($upstream and !preg_match('/^\d+$/', $upstream)) {
+      form_set_error('upstream', 'Please enter a positive numeric value for the upstream bases');
+    }
+     if ($downstream and !preg_match('/^\d+$/', $downstream)) {
+      form_set_error('downstream', 'Please enter a positive numeric value for the downstream bases');
+    }
+    if (!$genus and !$species and !$ftype and !$fnames) {
+      form_set_error('', 'Please provide a feature name, a feature type or a genus.');
+    }
   }
 }
 
@@ -381,6 +388,7 @@ function tripal_feature_seq_extract_form_submit($form, &$form_state) {
   $use_parent = $form_state['values']['use_parent'];
   $aggregate  = $form_state['values']['aggregate'];
   $agg_types  = $form_state['values']['agg_types'];
+  $op         = $form_state['values']['op'];
 
 
   // we must use the parent sequence if the user has selected 
@@ -389,18 +397,23 @@ function tripal_feature_seq_extract_form_submit($form, &$form_state) {
     $use_parent = 1;
   }
   
-  $_SESSION['tripal_feature_seq_extract']['genus']      = $genus;
-  $_SESSION['tripal_feature_seq_extract']['species']    = $species;
-  $_SESSION['tripal_feature_seq_extract']['analysis']   = $analysis;
-  $_SESSION['tripal_feature_seq_extract']['ftype']      = $ftype;
-  $_SESSION['tripal_feature_seq_extract']['fnames']     = $fnames;
-  $_SESSION['tripal_feature_seq_extract']['upstream']   = $upstream;
-  $_SESSION['tripal_feature_seq_extract']['downstream'] = $downstream;
-  $_SESSION['tripal_feature_seq_extract']['format']     = $format;
-  $_SESSION['tripal_feature_seq_extract']['use_parent'] = $use_parent;
-  $_SESSION['tripal_feature_seq_extract']['aggregate']  = $aggregate;
-  $_SESSION['tripal_feature_seq_extract']['agg_types']  = $agg_types;
-  $_SESSION['tripal_feature_seq_extract']['download']   = 1;
+  if ($op == 'Retreive') {
+    $_SESSION['tripal_feature_seq_extract']['genus']      = $genus;
+    $_SESSION['tripal_feature_seq_extract']['species']    = $species;
+    $_SESSION['tripal_feature_seq_extract']['analysis']   = $analysis;
+    $_SESSION['tripal_feature_seq_extract']['ftype']      = $ftype;
+    $_SESSION['tripal_feature_seq_extract']['fnames']     = $fnames;
+    $_SESSION['tripal_feature_seq_extract']['upstream']   = $upstream;
+    $_SESSION['tripal_feature_seq_extract']['downstream'] = $downstream;
+    $_SESSION['tripal_feature_seq_extract']['format']     = $format;
+    $_SESSION['tripal_feature_seq_extract']['use_parent'] = $use_parent;
+    $_SESSION['tripal_feature_seq_extract']['aggregate']  = $aggregate;
+    $_SESSION['tripal_feature_seq_extract']['agg_types']  = $agg_types;
+    $_SESSION['tripal_feature_seq_extract']['download']   = 1;
+  }
+  if ($op == 'Reset') {
+    unset($_SESSION['tripal_feature_seq_extract']);
+  }
 }
 
 /*
