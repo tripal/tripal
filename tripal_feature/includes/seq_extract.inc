@@ -43,7 +43,9 @@ function tripal_feature_seq_extract_page() {
         <p>Administrators, the " . l('organism_feature_count', 'admin/tripal/mviews') . " and 
         " . l('analysis_organism', 'admin/tripal/mviews') . " materialized
         views must be populated before using this form.  Those views should be re-populated 
-        when new data is added.</p>         
+        when new data is added.  If you use the " . l('jquery_update module', 'http://drupal.org/project/jquery_update') . ", it may break this form.
+        You will need to update the  jquery_update/replace/jquery.form.js file with " .
+        l('a more recent version','https://raw.github.com/malsup/form/master/jquery.form.js') . "</p>         
       </div>
     ";
   }
@@ -316,7 +318,7 @@ function tripal_feature_seq_extract_form(&$form_state = NULL) {
  */
 function tripal_feature_seq_extract_form_ahah_update() {
   $status = TRUE;
-
+  
   // prepare and render the form. If no form is returned that means
   // we got here by an AHAH call after the form has been submitted.  This
   // is possible because results are downloaded and the page is not refreshed
