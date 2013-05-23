@@ -51,6 +51,7 @@ function tripal_feature_seq_extract_page() {
   }
   $output .= "<div id=\"tripal-feature-seq-extract-form-block\">";
   $output .= drupal_get_form('tripal_feature_seq_extract_form');  
+  $output .= "</div>";
   return $output;
 }
 /*
