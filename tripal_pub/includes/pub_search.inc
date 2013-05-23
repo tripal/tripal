@@ -306,7 +306,7 @@ function theme_tripal_pub_search_form($form) {
   $headers = array();  
   $markup  = drupal_render($form['instructions']) . "
      <div id=\"pub-search-form-row1\">$table</div>
-     <div style=\"clear: both;\">
+     <div style=\"clear: both;\"></div>
   "; 
   
   $form['criteria'] = array(
