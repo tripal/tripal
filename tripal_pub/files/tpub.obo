@@ -1369,9 +1369,9 @@ is_a: TPUB:0000015 ! Publication Type
 
 [Term]
 id: TPUB:0000250
-name: Journal Alias
+name: Media Alias
 relationship: part_of TPUB:0000037 ! Publication Details
-def: An alternate name for the journal
+def: An alternate name for the journal, book, conference proceedings, etc.
 
 [Term]
 id: TPUB:0000251
