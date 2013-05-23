@@ -1369,15 +1369,27 @@ is_a: TPUB:0000015 ! Publication Type
 
 [Term]
 id: TPUB:0000250
-name: Media Alias
+name: Journal Alias
 relationship: part_of TPUB:0000037 ! Publication Details
-def: An alternate name for the journal, book, conference proceedings, etc.
+def: An alternate name for a journal
 
 [Term]
 id: TPUB:0000251
 name: Book Name
 relationship: part_of TPUB:0000037 ! Publication Details
 def: The name of a book to which a book chapter belongs.
+
+[Term]
+id: TPUB:0000252
+name: Media Alias
+relationship: part_of TPUB:0000037 ! Publication Details
+def: An alternate name for a journal, book, conference proceedings, etc.
+
+[Term]
+id: TPUB:0000253
+name: Media Code
+relationship: part_of TPUB:0000037 ! Publication Details
+def: A unique special code for a journal, book, conference proceeding, etc
 
 [Typedef]
 id: is_a
