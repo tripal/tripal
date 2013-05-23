@@ -63,6 +63,11 @@ function tripal_pub_sync_pubs($job_id = NULL) {
 function tripal_pub_sync_pub($pub) {
   global $user;
   
+  if(!$pub->pyear) {
+    watchdog('tpub_sync', "Skipping pub without published year: %title.", array('%title' => $pub->title), WATCHDOG_WARNING);
+    return FALSE;  
+  }
+  
   $new_node = new stdClass();
   $new_node->pub_id      = $pub->pub_id;
   $new_node->type        = 'chado_pub';
@@ -82,14 +87,15 @@ function tripal_pub_sync_pub($pub) {
       print "Added " . $pub->pub_id . "\n";      
     }
     else {
-      print "ERROR: Unable to create publication node: " . $pub->title . "\n";
+      watchdog('tpub_sync', "Unable to create publication node: %title.", array('%title' => $pub->title), WATCHDOG_ERROR);
       return FALSE;
     }
   }
   // if there are form errors then we need to reset the form errors cache, print a message and return
   else {
     form_set_error(NULL,'',TRUE);
-    print "ERROR: Unable to create publication node: " . $pub->title . "\n" . print_r($errors, TRUE) . "\n";
+    watchdog('tpub_sync', "Unable to create publication node: %title\n%errs", 
+      array('%title' => $pub->title, '%errs' => print_r($errors, TRUE)), WATCHDOG_ERROR);
     return FALSE;
   }
   return $node; 
