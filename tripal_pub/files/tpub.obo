@@ -1367,6 +1367,12 @@ name: Thesis
 def: A Master's or PhD thesis.
 is_a: TPUB:0000015 ! Publication Type
 
+[Term]
+id: TPUB:0000250
+name: Journal Alias
+relationship: part_of TPUB:0000037 ! Publication Details
+def: An alternate name for the journal
+
 [Typedef]
 id: is_a
 name: is a
