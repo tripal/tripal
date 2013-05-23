@@ -1373,6 +1373,12 @@ name: Journal Alias
 relationship: part_of TPUB:0000037 ! Publication Details
 def: An alternate name for the journal
 
+[Term]
+id: TPUB:0000251
+name: Book Name
+relationship: part_of TPUB:0000037 ! Publication Details
+def: The name of a book to which a book chapter belongs.
+
 [Typedef]
 id: is_a
 name: is a
