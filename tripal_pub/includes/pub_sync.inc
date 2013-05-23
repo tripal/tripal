@@ -72,7 +72,8 @@ function tripal_pub_sync_pub($pub) {
   $new_node->pub_id      = $pub->pub_id;
   $new_node->type        = 'chado_pub';
   $new_node->uid         = $user->uid;
-  $new_node->title       = $pub->title;
+  $new_node->title       = substr($pub->title, 0 ,255); // node titles can't be longer than 255 characters
+  $new_node->pubtitle    = $pub->title;
   $new_node->pyear       = $pub->pyear;
   $new_node->uniquename  = $pub->uniquename;
   $new_node->type_id     = $pub->type_id;

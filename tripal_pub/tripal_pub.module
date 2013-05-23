@@ -391,7 +391,7 @@ function chado_pub_insert($node) {
     
     // insert the pub record
     $values = array(
-      'title'       => trim($node->title),
+      'title'       => trim($node->pubtitle),
       'series_name' => trim($node->series_name),
       'type_id'     => trim($node->type_id),
       'pyear'       => trim($node->pyear),
@@ -574,7 +574,7 @@ function chado_pub_update($node) {
     'pub_id' => $pub_id,
   );
   $values = array(
-    'title'       => trim($node->title),
+    'title'       => trim($node->pubtitle),
     'type_id'     => trim($node->type_id),
     'pyear'       => trim($node->pyear),
     'is_obsolete' => $node->is_obsolete ? 'true' : 'false', 
@@ -639,15 +639,15 @@ function chado_pub_load($node) {
 
   $values = array('pub_id' => $pub_id);
   $pub = tripal_core_generate_chado_var('pub', $values); 
-  
+    
   // expand the 'text' fields as those aren't included by default
   // and they really shouldn't be so large to cause problems
-  if (is_array($pub)) {
+  if (is_array($pub) or is_object($pub)) {
     $pub = tripal_core_expand_chado_vars($pub, 'field', 'pub.title');
     $pub = tripal_core_expand_chado_vars($pub, 'field', 'pub.volumetitle');  
-    $pub = tripal_core_expand_chado_vars($pub, 'field', 'pub.uniquename');;
+    $pub = tripal_core_expand_chado_vars($pub, 'field', 'pub.uniquename');
   }
-  
+    
   // set the URL path
   $path = "pub/$pub_id";
 

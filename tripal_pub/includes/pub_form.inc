@@ -11,8 +11,8 @@ function chado_pub_form($node, $form_state) {
   
   $pub = $node->pub;  
   $pub_id = $pub->pub_id;
-  
-  $d_title        = $form_state['values']['title']        ? $form_state['values']['title']       : $node->title;
+    
+  $d_title        = $form_state['values']['pubtitle']     ? $form_state['values']['pubtitle']    : $pub->title;
   $d_uniquename   = $form_state['values']['uniquename']   ? $form_state['values']['uniquename']  : $pub->uniquename;
   $d_type_id      = $form_state['values']['type_id']      ? $form_state['values']['type_id']     : $pub->type_id->cvterm_id;
   $d_volume       = $form_state['values']['volume']       ? $form_state['values']['volume']      : $pub->volume;
@@ -94,7 +94,14 @@ function chado_pub_form($node, $form_state) {
     '#value' => $pub_id,
   );
   
+  // a drupal title can only be 255 characters, but the Chado title can be much longer.
+  // we use the publication title as the drupal title, but we'll need to truncate it.
   $form['title'] = array(
+    '#type' => 'hidden',
+    '#value' => substr($d_title, 0, 255),
+  );
+  
+  $form['pubtitle'] = array(
     '#type' => 'textarea',
     '#title' => t('Publication Title'),
     '#default_value' => $d_title,
@@ -168,7 +175,7 @@ function chado_pub_form($node, $form_state) {
 function chado_pub_validate($node, &$form) {
   
   // get the submitted values
-  $title        = trim($node->title);
+  $title        = trim($node->pubtitle);
   $uniquename   = trim($node->uniquename);
   $type_id      = trim($node->type_id);
   $volume       = trim($node->volume);
@@ -592,7 +599,7 @@ function theme_chado_pub_node_form($form) {
   $properties_table = tripal_pub_theme_node_form_properties($form);
   
   $markup  = drupal_render($form['pub_id']);
-  $markup .= drupal_render($form['title']);
+  $markup .= drupal_render($form['pubtitle']);
   $markup .= drupal_render($form['type_id']);
   $markup .= drupal_render($form['series_name']);
   $markup .= drupal_render($form['pyear']);
