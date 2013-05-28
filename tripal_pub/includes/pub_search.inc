@@ -121,7 +121,7 @@ function tripal_pub_search_form(&$form_state = NULL) {
   );
   $form['instructions'] = array(
     '#type'  => 'item',
-    '#value' => t('To search for publications enter keywords in the text boxes below.  You can limit your search by selecting the field in the dropdown box.'),
+    '#value' => t('To search for publications enter keywords in the text boxes below.  You can limit your search by selecting the field in the dropdown box. Click the plus and minus symbols to add additional fields for searching. '),
   );
   
   // get publication properties list 
@@ -185,6 +185,7 @@ function tripal_pub_search_form(&$form_state = NULL) {
       '#type'          => 'select',
       '#options'       => $properties,
       '#default_value' => $scope,
+      '#attributes' => array('class' => 'tripal-pub-search-form-scope-select'),
     );  
     /*
     $form['criteria'][$i]["mode-$i"] = array(
@@ -238,10 +239,8 @@ function tripal_pub_search_form(&$form_state = NULL) {
   }
   $form['criteria']["date"] = array(
       '#type'          => 'select',
-      '#options'       => array(
-        'Years'    => 'Years',
-       ),
-      '#default_value' => $date,
+      '#options'       => array('Years' => 'Years'),
+      '#attributes' => array('class' => 'tripal-pub-search-form-scope-select'),
   );
   $form['criteria']["from_year"] = array(
     '#type'          => 'textfield',
@@ -289,6 +288,7 @@ function theme_tripal_pub_search_form($form) {
   } 
     
   $rows[] = array(
+    '&nbsp;',
     drupal_render($form['criteria']['date']),
     array(
       'data' =>
@@ -298,7 +298,6 @@ function theme_tripal_pub_search_form($form) {
             drupal_render($form['criteria']['to_year']) . "
           </div>
          </div>",
-       'colspan' => 2,
     ),
     ''
   );
