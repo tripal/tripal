@@ -1391,6 +1391,12 @@ name: Media Code
 relationship: part_of TPUB:0000037 ! Publication Details
 def: A unique special code for a journal, book, conference proceeding, etc
 
+[Term]
+id: TPUB:0000254
+name: Publication Code
+relationship: part_of TPUB:0000037 ! Publication Details
+def: A unique special code for journal article, book, book chapter or any publication type.
+
 [Typedef]
 id: is_a
 name: is a

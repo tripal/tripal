@@ -34,6 +34,18 @@ function tripal_analysis_update_6100() {
   // add the new materialized view
   tripal_analysis_add_mview_analysis_organism();
   
+  // move the analysis_type property into a new CV so that user's can change this property if
+  // they want too  
+  tripal_cv_add_cv('tripal_analysis', 'Terms used for managing analyses in Tripal');
+  
+  $sql = "
+    UPDATE {cvterm} SET cv_id = 
+      (SELECT cv_id FROM {cv} WHERE name = 'tripal_analysis')
+    WHERE cv_id = (SELECT cv_id FROM {cv} WHERE name = 'tripal') AND
+      name = 'analysis_type'
+  ";
+  chado_query($sql);
+  
   $ret = array(
     '#finished' => 1,
   );
@@ -65,28 +77,34 @@ function tripal_analysis_create_analysisfeatureprop(){
  */
 function tripal_analysis_add_cvterms(){
   
-  // add analysis_type
+  tripal_cv_add_cv('tripal_analysis', 'Terms used for managing analyses in Tripal');
+  
+  // add analysis_type. This goes in the 'tripal_analysis' CV so that site admins
+  // change change this property
   $term = array(
     'name' => 'analysis_type', 
     'def' => 'The type of analysis was performed. This value is automatically set by '.
              'each Tripal Analysis module and should be equal to the module name '.
              '(e.g. tripal_analysis_blast, tripal_analysis_go).'
   );
-  tripal_cv_add_cvterm($term, 'tripal', 0, 1, 'tripal');
+  tripal_cv_add_cvterm($term, 'tripal_analysis', 0, 1, 'tripal');
   
-  // add analysis_date
+  // add analysis_date.  This is no longer used (as far as we can tell) but we don't
+  // get rid of it in case it is used, so just keep it in the Tripal CV
   $term = array(
     'name' => 'analysis_date', 
     'def' => 'The date that an analysis was performed.'
   );
   tripal_cv_add_cvterm($term, 'tripal', 0, 1, 'tripal');
   
-  // add analysis_short_name
+  // add analysis_short_name.  This is no longer used (as far as we can tell) but we don't
+  // get rid of it in case it is used, so just keep it in the Tripal CV
   $term = array(
     'name' => 'analysis_short_name', 
     'def' => 'A computer legible (no spaces or special characters) abbreviation for the analysis.'
   );     
-  tripal_cv_add_cvterm($term, 'tripal', 0, 1 , 'tripal'); 
+  tripal_cv_add_cvterm($term, 'tripal', 0, 1 , 'tripal');     
+  
 }
 /**
  * Implementation of hook_uninstall().

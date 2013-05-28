@@ -17,7 +17,7 @@
 require('api/tripal_analysis.api.inc');
 require('includes/tripal_analysis_privacy.inc');
 require('includes/tripal_analysis.admin.inc');
-
+require('includes/tripal_analysis-properties.inc');
 
 
 /**
@@ -63,7 +63,36 @@ function tripal_analysis_menu() {
       'type' => MENU_NORMAL_ITEM,
       'file' => 'includes/tripal_analysis.admin.inc',
   );
+  
+  //Edit/Deleting Properties-------------
+/*  $items['node/%ta_node/edit_analysis_properties'] = array(
+    'title' => 'Edit Properties',
+    'description' => 'Analysis Properties',
+    'page callback' => 'tripal_analysis_edit_ALL_properties_page',
+    'page arguments' => array(1),
+    'access arguments' => array('edit chado_analysis content'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 8,
+  );*/
   return $items;
+}
+/**
+ * Implements Menu wildcard_load hook
+ * Purpose: Allows the node ID of a chado analysis to be dynamically
+ *   pulled from the path. The node is loaded from this node ID
+ *   and supplied to the page as an arguement
+ *
+ * @ingroup tripal_analysis
+ */
+function ta_node_load($nid) {  
+  if (is_numeric($nid)) {
+    $node = node_load($nid);
+    $analysis_id = chado_get_id_for_node('analysis', $node);
+    if ($analysis_id) {
+      return $node;
+    }
+  }
+  return FALSE;
 }
 
 /**
@@ -736,5 +765,6 @@ function tripal_analysis_views_api() {
     'api' => 2.0,
   );
 }
+
 
 
