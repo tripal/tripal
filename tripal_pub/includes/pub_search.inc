@@ -441,6 +441,9 @@ function tripal_pub_get_search_results($search_array, $limit, $pager_id) {
     if ($op == 'NOT') {
       $op = 'AND NOT';
     }
+    if (!$op) {
+      $op = 'AND';
+    }
     
     $action = "= lower('%s')";
     if($mode == 'Contains') {
