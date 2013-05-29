@@ -523,7 +523,6 @@ function tripal_pub_get_search_results($search_array, $limit, $pager_id) {
     $wargs[] = $to_year;
   }
   $sql = "$select $from $where $order";
-  dpm($sql);
   $count = "SELECT count(*) FROM ($select $from $where $order) as t1";
   $args = array_merge($fargs, $wargs);
   //dpm(array($mode, $sql, $args));
