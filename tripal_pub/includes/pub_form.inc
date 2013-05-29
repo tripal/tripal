@@ -261,7 +261,7 @@ function chado_pub_validate($node, &$form) {
   if (!$skip_duplicate_check) {  
 
     // make sure the publication is unique using the prefereed import duplication check
-    $import_dups_check = variable_get('tripal_pub_import_duplicate_check', 'title_year');
+    $import_dups_check = variable_get('tripal_pub_import_duplicate_check', 'title_year_media');
     switch ($import_dups_check) {            
       case 'title_year':
         $results = tripal_pub_get_pubs_by_title_type_pyear_series($title, NULL, $pyear, NULL);

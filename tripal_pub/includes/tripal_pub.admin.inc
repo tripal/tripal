@@ -55,7 +55,7 @@ function get_tripal_pub_admin_form_importing_set(&$form) {
     '#description' => t('During import, Tripal will attempt to find duplicate publications. 
        There are several options for how to find a duplicate publication.  Choose the
        option that best suits your needs.'),
-    '#default_value' => variable_get('tripal_pub_import_duplicate_check', 'title_year'),
+    '#default_value' => variable_get('tripal_pub_import_duplicate_check', 'title_year_media'),
   );
 }
 
