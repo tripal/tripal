@@ -8,6 +8,8 @@ function tripal_pub_sync_form() {
     '#type' => 'item',
     '#value' => t('Syncing a publication will create a Drupal page for every publicatoin record in the Chado database. Click the button below to sync all publications in Chado that currently are not already synced with Drupal.'),
   );
+  
+
 
   $form['submit'] = array(
     '#type' => 'submit',

@@ -378,6 +378,10 @@ function chado_pub_insert($node) {
         $publisher = $value;
         unset($properties[$name]);
       }
+      elseif ($name == "Journal Name" or $name == "Conference Name") {
+        $node->series_name = $value;
+        unset($properties[$name]);
+      }
       elseif ($name == "Journal Country" or $name == "Published Location") {
         $pubplace = $value;
         unset($properties[$name]);
@@ -553,8 +557,8 @@ function chado_pub_update($node) {
         $publisher = $value;
         unset($properties[$name]);
       }
-      elseif ($name == "Journal Name") {
-        $series_name = $value;
+      elseif ($name == "Journal Name" or $name == "Conference Name") {
+        $node->series_name = $value;
         unset($properties[$name]);
       }
       elseif ($name == "Journal Country" or $name == "Published Location") {
@@ -579,7 +583,7 @@ function chado_pub_update($node) {
     'pyear'       => trim($node->pyear),
     'is_obsolete' => $node->is_obsolete ? 'true' : 'false', 
     'uniquename'  => trim($node->uniquename),
-    'series_name' => $series_name,
+    'series_name' => trim($node->series_name),
     'volumetitle' => $volumetitle,
     'volume'      => $volume,    
     'issue'       => $issue,    

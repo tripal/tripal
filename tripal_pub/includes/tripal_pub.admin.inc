@@ -19,6 +19,7 @@ function tripal_pub_admin() {
   // add the field set for syncing publications
   if (!$active_jobs) {
     get_tripal_pub_admin_form_select_search_list($form);    
+    get_tripal_pub_admin_form_importing_set($form);
     get_tripal_pub_admin_form_cleanup_set($form);
   }
   else {
@@ -33,7 +34,30 @@ function tripal_pub_admin() {
 
   return system_settings_form($form);
 }
-
+/**
+ *
+ *
+ * @ingroup tripal_pub
+ */
+function get_tripal_pub_admin_form_importing_set(&$form) {
+  $form['import'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Import Settings')
+  );
+  $form['import']['import_duplicate_check'] = array(
+    '#type' => 'radios', 
+    '#title' => t('Unique Constraint'),     
+    '#options' => array(
+      'title_year' => t('Title and Year'), 
+      'title_year_media' => t('Title, Year, Media name (e.g. Journal Name, etc.)'), 
+      'title_year_type' => t('Title, Year, Media type (e.g. Journal, Conference Proceedings, etc.'),
+    ),
+    '#description' => t('During import, Tripal will attempt to find duplicate publications. 
+       There are several options for how to find a duplicate publication.  Choose the
+       option that best suits your needs.'),
+    '#default_value' => variable_get('tripal_pub_import_duplicate_check', 'title_year'),
+  );
+}
 
 /**
  *
@@ -115,6 +139,9 @@ function tripal_pub_admin_validate($form, &$form_state) {
     }  
   }
   variable_set('tripal_pub_allowed_search_fields', $allowed_fields);
+  
+  $import_duplicate_check = $form_state['values']['import_duplicate_check'];
+  variable_set('tripal_pub_import_duplicate_check', $import_duplicate_check);
     
   // -------------------------------------
   // Submit the Cleanup Job if selected  

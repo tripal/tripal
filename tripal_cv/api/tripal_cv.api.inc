@@ -182,7 +182,29 @@ function tripal_cv_get_cv_options() {
   return $options;
 
 }
-
+/**
+ * Retrieve a chado cvterm object with a given name
+ *
+ * @param $cvterm_id
+ *   the cvterm.cvterm_id
+ *
+ * @return
+ *   cvterm array or FALSE on error
+ *
+ * @ingroup tripal_cv_api
+ */
+function tripal_cv_get_cvterm_by_id($cvterm_id) {
+  if (!is_numeric($cvterm_id)) {
+    return FALSE;
+  }
+  $values = array('cvterm_id' => $cvterm_id);
+  $options = array('statement_name' => 'sel_cvterm_id');
+  $r = tripal_core_chado_select('cvterm', array('*'), $values, $options);  
+  if (!$r) {
+    return FALSE;
+  }
+  return $r[0];
+}
 /**
  * Retrieve a chado cvterm object with a given name
  *
