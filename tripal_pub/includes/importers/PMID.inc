@@ -43,6 +43,7 @@ function tripal_pub_remote_search_PMID($search_array, $num_to_retrieve, $pager_i
   $days = $search_array['days'];
 
   $search_str = '';
+  
   for ($i = 1; $i <= $num_criteria; $i++) {
     $search_terms = trim($search_array['criteria'][$i]['search_terms']);
     $scope = $search_array['criteria'][$i]['scope'];
@@ -50,7 +51,7 @@ function tripal_pub_remote_search_PMID($search_array, $num_to_retrieve, $pager_i
     $op = $search_array['criteria'][$i]['operation'];
     
     if ($op) {
-      $search_str .= "$op";
+      $search_str .= "$op ";
     }    
     
     // if this is phrase make sure the search terms are surrounded by quotes
@@ -67,6 +68,9 @@ function tripal_pub_remote_search_PMID($search_array, $num_to_retrieve, $pager_i
     }    
     elseif ($scope == 'abstract') {
       $search_str .= $search_terms . '[Title/Abstract]';
+    }
+    elseif ($scope == 'journal') {
+      $search_str .= $search_terms . '[Journal]';
     }
     elseif ($scope == 'id') {
       $search_terms = preg_replace('/PMID:([^\s]*)/', '$1', $search_terms);
@@ -86,7 +90,6 @@ function tripal_pub_remote_search_PMID($search_array, $num_to_retrieve, $pager_i
   
   $search_array['limit'] = $num_to_retrieve;
   $search_array['search_string'] = $search_str;  
-  //dpm($search_array);  
   
   unset($_SESSION['tripal_pub_PMID_query']);
   // we want to get the list of pubs using the search terms but using a Drupal style pager
