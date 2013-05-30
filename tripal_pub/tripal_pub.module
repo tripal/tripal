@@ -189,7 +189,7 @@ function tripal_pub_menu() {
  */
 function tripal_pub_theme() {
 
-  return array(
+  $themes = array(
     // node templates
     'tripal_pub_base' => array(
       'arguments' => array('node' => NULL),
@@ -223,8 +223,10 @@ function tripal_pub_theme() {
     ),
     'chado_pub_node_form' => array(
        'arguments' => array('form'),
-    ),
+    ),   
   );
+  
+  return $themes;
 }
 
 /**

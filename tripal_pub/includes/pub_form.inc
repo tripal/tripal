@@ -212,7 +212,7 @@ function chado_pub_validate($node, &$form) {
   $options = array('statement_name' => 'sel_pub_ty');
   $cvterm = tripal_core_chado_select('cvterm', array('name'), $values, $options);
   if (count($cvterm) == 0) {
-    $message = t('Invalided publication type.');
+    $message = t('Invalid publication type.');
     form_set_error('type_id', $message);
     return;
   }
@@ -226,20 +226,33 @@ function chado_pub_validate($node, &$form) {
       $prop_type = tripal_cv_get_cvterm_by_id($prop_type_id);
       if($prop_type->name == 'Conference Name' or $prop_type->name == 'Journal Name') {
         $series_name = $value;
-      }    
+      }  
+      if($prop_type->name == 'Citation') {
+        $uniquename = $value;
+      }  
     }
     // if this is a new property (added by this submit of the form)
     elseif ($element = 'new_id') {
       $prop_type = tripal_cv_get_cvterm_by_id($value);
       if($prop_type->name == 'Conference Name' or $prop_type->name == 'Journal Name') {
         $series_name = $node->new_value;
-      }  
+      }
+      if($prop_type->name == 'Citation') {
+        $uniquename = $value;
+      }    
     }
+  }
+  
+  $skip_duplicate_check = 0; 
+  
+  // if this publication is a Patent then skip the validation below.  Patents can have the title
+  // name and year but be different    
+  if (strcmp($cvterm[0]->name,'Patent') == 0) {
+    $skip_duplicate_check = 1;
   }
  
   // on an update ($pub_id is set), check to see if there have been  changes to fields that
-  // are used to check for duplicates. If not, then no need to check for duplicates
-  $skip_duplicate_check = 0; 
+  // are used to check for duplicates. If not, then no need to check for duplicates  
   if ($pub_id) {
     // first get the original title, type and year before it was changed
     $values = array('pub_id' => $pub_id);
@@ -306,6 +319,21 @@ function chado_pub_validate($node, &$form) {
         break;
     }      
   } 
+  // even though we are skipping the duplication checks above we must make sure the uniquename is unique 
+  // as that is the offical table constraint
+  else {
+    $results = tripal_pub_get_pub_by_uniquename($uniquename);
+    // make sure we don't capture our pub_id in the list (remove it)
+    foreach ($results as $index => $found_pub_id) {
+      if($found_pub_id == $pub_id){
+        unset($results[$index]);
+      }
+    }         
+    if (count($results) > 0) {
+      $message = t('A publication with this unique citation already exists.'); 
+      form_set_error('uniquename', $message);
+    }  
+  }
 }
 /*
  * 
