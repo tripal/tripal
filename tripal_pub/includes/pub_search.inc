@@ -492,6 +492,10 @@ function tripal_pub_get_search_results($search_array, $limit, $pager_id) {
       $wargs[] = $value;
       $wargs[] = $value;
     }
+    elseif ($type_name == 'Publication Type') {
+      $where .= " $op (lower(CVT.name) $action)";
+      $wargs[] = $value;
+    }
     elseif ($type_id == 0) { //'Any Field'
       $from .= " LEFT JOIN {pubprop} PP$i ON PP$i.pub_id = P.pub_id ";
       $where .= " $op (lower(PP$i.value)  $action OR 
