@@ -496,12 +496,13 @@ function tripal_feature_get_formatted_sequence($feature_id, $feature_name,
     $psql ='PREPARE sequence_by_parent (int, int, int) AS 
             SELECT srcname, srcfeature_id, strand, srctypename, typename,
               fmin, fmax, upstream, downstream, adjfmin, adjfmax, 
-              substring(residues from (adjfmin + 1) for (upstream + (fmax - fmin) + downstream))  as residues
+              substring(residues from (adjfmin + 1) for (upstream + (fmax - fmin) + downstream))  as residues,
+              genus, species
             FROM (
               SELECT
                 OF.name srcname, FL.srcfeature_id, FL.strand, 
                 OCVT.name as srctypename, SCVT.name as typename,
-                FL.fmin, FL.fmax,
+                FL.fmin, FL.fmax, OO.genus, OO.species,
                 CASE 
                   WHEN FL.strand >= 0 THEN 
                     CASE 
@@ -556,11 +557,12 @@ function tripal_feature_get_formatted_sequence($feature_id, $feature_name,
                 INNER JOIN {cvterm} SCVT on SF.type_id = SCVT.cvterm_id
                 INNER JOIN {feature} OF on FL.srcfeature_id = OF.feature_id                
                 INNER JOIN {cvterm} OCVT on OF.type_id = OCVT.cvterm_id
+                INNER JOIN {organism} OO on OF.organism_id = OO.organism_id
               WHERE SF.feature_id = $3) as tbl1
     ';              
     $status = tripal_core_chado_prepare('sequence_by_parent', $psql, array('int', 'int', 'int'));
     if (!$status) {
-      watchdog('tripal_views_handler_field_sequence', 
+      watchdog('tripal_feature', 
         "init: not able to prepare SQL statement '%name'", 
         array('%name' => 'sequence_by_parent'), 'WATCHDOG ERROR');
     }
@@ -699,7 +701,7 @@ function tripal_feature_get_formatted_sequence($feature_id, $feature_name,
       elseif ($output_format == 'fasta_txt') {
          $seq = wordwrap($seq, $num_bases_per_line, "\r\n", TRUE);
       }
-      $residues .= ">$feature_name ($parent->typename) $parent->srcname:" . ($parent->adjfmin + 1) . ".." . $parent->adjfmax ." ($dir). ";
+      $residues .= ">$feature_name. Sequence derived from $parent->srctypename of $parent->genus $parent->species: $parent->srcname:" . ($parent->adjfmin + 1) . ".." . $parent->adjfmax ." ($dir). ";
       if (count($types) > 0) {
         $residues .= "Excludes all bases but those of type(s): " . implode(', ', $types) . ". " ;
       }
