@@ -558,7 +558,7 @@ function tripal_feature_get_formatted_sequence($feature_id, $feature_name,
                 INNER JOIN {feature} OF on FL.srcfeature_id = OF.feature_id                
                 INNER JOIN {cvterm} OCVT on OF.type_id = OCVT.cvterm_id
                 INNER JOIN {organism} OO on OF.organism_id = OO.organism_id
-              WHERE SF.feature_id = $3) as tbl1
+              WHERE SF.feature_id = $3 and NOT (OF.residues = \'\' or OF.residues IS NULL)) as tbl1
     ';              
     $status = tripal_core_chado_prepare('sequence_by_parent', $psql, array('int', 'int', 'int'));
     if (!$status) {
