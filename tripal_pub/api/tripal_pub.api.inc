@@ -506,9 +506,11 @@ function tripal_pub_get_pubs_by_dbxref($pub_dbxref) {
  *   The title of the publication to look for
  * @param type
  *   Optional. The publication type. The value of this field should come from 
- *   the Tripal Pub vocabulary
+ *   the Tripal Pub vocabulary. This should be the type name (e.g. cvterm.name)
  * @param year
  *   Optional. The year the publication was published.
+ * @param series_name
+ *   Optional.  The name of the series (e.g. Journal name)
  * 
  * @return
  *   Returns an array of all the publications that have the provided
@@ -518,7 +520,7 @@ function tripal_pub_get_pubs_by_dbxref($pub_dbxref) {
  * @ingroup tripal_pub_api 
  * 
  */
-function tripal_pub_get_pubs_by_title_type_pyear($title, $type = NULL, $pyear = NULL) {
+function tripal_pub_get_pubs_by_title_type_pyear_series($title, $type = NULL, $pyear = NULL, $series_name = NULL) {
   
   $return = array();
   
@@ -540,7 +542,55 @@ function tripal_pub_get_pubs_by_title_type_pyear($title, $type = NULL, $pyear = 
     $values['pyear'] = $pyear;
     $stmnt_suffix .= 'py';
   }
-  $options = array('statement_name' => 'sel_pub_' . $stmnt_suffix);
+  if ($series_name) {
+    $values['series_name'] = strtolower($series_name);
+    $stmnt_suffix .= 'se';
+  }
+  $options = array(
+    'statement_name' => 'sel_pub_' . $stmnt_suffix,
+    'case_insensitive_columns' => array('title', 'series_name'),
+  );
+  $results = tripal_core_chado_select('pub', array('pub_id'), $values, $options);
+  
+  // iterate through any matches and pull out the pub_id
+  foreach ($results as $index => $pub) {
+    $return[] = $pub->pub_id;  
+  }
+  return $return;  
+}
+/**
+ * Returns the list of publications that match a given title, type and year
+ * 
+ * @param title
+ *   The title of the publication to look for
+ * @param type
+ *   Optional. The publication type. The value of this field should come from 
+ *   the Tripal Pub vocabulary. This should be the type name (e.g. cvterm.name)
+ * @param year
+ *   Optional. The year the publication was published.
+ * @param series_name
+ *   Optional.  The name of the series (e.g. Journal name)
+ * 
+ * @return
+ *   Returns an array of all the publications that have the provided
+ *   cross reference. If no publications match, then an empty array
+ *   is returned.
+ *   
+ * @ingroup tripal_pub_api 
+ * 
+ */
+function tripal_pub_get_pub_by_uniquename($name) {
+  
+  $return = array();
+  
+  // build the values array for the query. 
+  $values = array(
+    'uniquename' => $name,
+  );
+  $options = array(
+    'statement_name' => 'sel_pub_un',
+    'case_insensitive_columns' => array('uniquename'),
+  );
   $results = tripal_core_chado_select('pub', array('pub_id'), $values, $options);
   
   // iterate through any matches and pull out the pub_id

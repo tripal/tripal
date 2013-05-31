@@ -436,7 +436,7 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
         $result = chado_query("EXECUTE sel_cvterm_idnasy (%d, '%s', '%s')", $cv->cv_id, $landmark_type, $landmark_type);
         $cvterm = db_fetch_object($result);
         if (!$cvterm) {
-          watchdog('T_gff3_loader', 'cannot find feature term \'%landmark_type\' on line %line_num of the GFF file', 
+          watchdog('T_gff3_loader', 'cannot find feature type \'%landmark_type\' on line %line_num of the GFF file', 
             array('%landmark_type' => $landmark_type, '%line_num' => $line_num), WATCHDOG_ERROR);
           return '';
         }

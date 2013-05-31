@@ -189,7 +189,7 @@ function tripal_pub_menu() {
  */
 function tripal_pub_theme() {
 
-  return array(
+  $themes = array(
     // node templates
     'tripal_pub_base' => array(
       'arguments' => array('node' => NULL),
@@ -223,8 +223,10 @@ function tripal_pub_theme() {
     ),
     'chado_pub_node_form' => array(
        'arguments' => array('form'),
-    ),
+    ),   
   );
+  
+  return $themes;
 }
 
 /**
@@ -376,6 +378,10 @@ function chado_pub_insert($node) {
       }
       elseif ($name == "Publisher") {
         $publisher = $value;
+        unset($properties[$name]);
+      }
+      elseif ($name == "Journal Name" or $name == "Conference Name") {
+        $node->series_name = $value;
         unset($properties[$name]);
       }
       elseif ($name == "Journal Country" or $name == "Published Location") {
@@ -553,8 +559,8 @@ function chado_pub_update($node) {
         $publisher = $value;
         unset($properties[$name]);
       }
-      elseif ($name == "Journal Name") {
-        $series_name = $value;
+      elseif ($name == "Journal Name" or $name == "Conference Name") {
+        $node->series_name = $value;
         unset($properties[$name]);
       }
       elseif ($name == "Journal Country" or $name == "Published Location") {
@@ -579,7 +585,7 @@ function chado_pub_update($node) {
     'pyear'       => trim($node->pyear),
     'is_obsolete' => $node->is_obsolete ? 'true' : 'false', 
     'uniquename'  => trim($node->uniquename),
-    'series_name' => $series_name,
+    'series_name' => trim($node->series_name),
     'volumetitle' => $volumetitle,
     'volume'      => $volume,    
     'issue'       => $issue,    

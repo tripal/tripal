@@ -296,8 +296,13 @@ function tripal_pub_importer_setup_form(&$form_state = NULL, $pub_import_id = NU
     'author'   => 'Author',
     'id'       => 'Accession',
     'title'    => 'Title',
+    'journal'   => 'Journal Name'
   );
 
+  $first_op_choices = array(
+    ''    => '',
+    'NOT' => 'NOT'
+  ); 
   $op_choices = array(
     'AND' => 'AND',
     'OR'  => 'OR',
@@ -346,6 +351,14 @@ function tripal_pub_importer_setup_form(&$form_state = NULL, $pub_import_id = NU
       '#default_value' => $is_phrase,
     );  
     
+    if ($i == 1) {
+      /*
+      $form['criteria'][$i]["operation-$i"] = array(
+        '#type'          => 'select',
+        '#options'       => $first_op_choices,
+        '#default_value' => $operation,
+      );*/
+    }
     if ($i > 1) {
       $form['criteria'][$i]["operation-$i"] = array(
         '#type'          => 'select',

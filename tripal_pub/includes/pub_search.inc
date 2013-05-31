@@ -410,8 +410,9 @@ function tripal_pub_get_search_results($search_array, $limit, $pager_id) {
   $select = "SELECT DISTINCT P.*, CP.nid ";
   $from   = "FROM {pub} P
                LEFT JOIN public.chado_pub CP on P.pub_id = CP.pub_id 
+               INNER JOIN cvterm CVT on CVT.cvterm_id = P.type_id
             ";
-  $where  = "WHERE ";
+  $where  = "WHERE (NOT P.title = 'null') "; // always exclude the dummy pub
   $order  = "ORDER BY P.pyear DESC, P.title ASC";
   $fargs = array(); // arguments for from, inner join clause
   $wargs = array();  // arguments for where clause
@@ -439,6 +440,9 @@ function tripal_pub_get_search_results($search_array, $limit, $pager_id) {
     }
     if ($op == 'NOT') {
       $op = 'AND NOT';
+    }
+    if (!$op) {
+      $op = 'AND';
     }
     
     $action = "= lower('%s')";
@@ -473,8 +477,24 @@ function tripal_pub_get_search_results($search_array, $limit, $pager_id) {
       $wargs[] = $value;
     }
     elseif ($type_name == 'Journal Name') {
-      $where .= " $op (lower(P.series_name) $action) ";
-      $wargs[] = $value;             
+      $from .= " LEFT JOIN {pubprop} PP$i ON PP$i.pub_id = P.pub_id AND PP$i.type_id = %d ";      
+      $where .= " $op ((lower(P.series_name) $action and CVT.name = 'Journal Article') OR 
+                       (lower(PP$i.value) $action)) ";
+      $fargs[] = $type_id;
+      $wargs[] = $value;
+      $wargs[] = $value;            
+    }
+    elseif ($type_name == 'Conference Name') {
+      $from .= " LEFT JOIN {pubprop} PP$i ON PP$i.pub_id = P.pub_id AND PP$i.type_id = %d ";      
+      $where .= " $op ((lower(P.series_name) $action and CVT.name = 'Conference Proceedings') OR 
+                       (lower(PP$i.value) $action)) ";
+      $fargs[] = $type_id;
+      $wargs[] = $value;
+      $wargs[] = $value;
+    }
+    elseif ($type_name == 'Publication Type') {
+      $where .= " $op (lower(CVT.name) $action)";
+      $wargs[] = $value;
     }
     elseif ($type_id == 0) { //'Any Field'
       $from .= " LEFT JOIN {pubprop} PP$i ON PP$i.pub_id = P.pub_id ";

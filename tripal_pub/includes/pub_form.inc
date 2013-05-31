@@ -144,7 +144,7 @@ function chado_pub_form($node, $form_state) {
   $num_properties += chado_pub_node_form_add_pubprop_table_props($form, $form_state, $pub_id, $d_properties, $d_removed);
     
   // add in any new properties that have been added by the user through an AHAH callback  
-  $num_properties += chado_pub_node_form_add_new_props($form, $form_state, $num_new, $d_properties, $d_removed);
+  $num_new = chado_pub_node_form_add_new_props($form, $form_state, $d_properties, $d_removed);
   
   // add an empty row of field to allow for addition of a new property
   chado_pub_node_form_add_new_empty_props($form, $properties_select);
@@ -158,6 +158,10 @@ function chado_pub_form($node, $form_state) {
   $form['num_new'] = array(
     '#type' => 'hidden',
     '#value' => $num_new,
+  );
+  $form['num_properties'] = array(
+    '#type' => 'hidden',
+    '#value' => $num_properties,
   );
   
   $form['is_obsolete'] = array(
@@ -189,7 +193,9 @@ function chado_pub_validate($node, &$form) {
   $pubplace     = trim($node->pubplace);
   $is_obsolete  = $node->is_obsolete;
   $pub_id       = $node->pub_id;
-
+  $num_properties = $node->num_properties;
+  $num_new = $node->num_new;
+  
   // if this is a delete then don't validate
   if($node->op == 'Delete') {
     return;
@@ -206,49 +212,128 @@ function chado_pub_validate($node, &$form) {
   $options = array('statement_name' => 'sel_pub_ty');
   $cvterm = tripal_core_chado_select('cvterm', array('name'), $values, $options);
   if (count($cvterm) == 0) {
-    $message = t('Invalided publication type.');
+    $message = t('Invalid publication type.');
     form_set_error('type_id', $message);
     return;
   }
-
-  // on an insert (no $pub_id) make sure the publication doesn't already exist
-  if (!$pub_id) {
-    $results = tripal_pub_get_pubs_by_title_type_pyear($title, $cvterm[0]->name, $pyear);   
-    if (count($results) > 0) {
-      $message = t('A publication with this title, type and publication year, already exists.  Cannot add this publication');
-      form_set_error('pyear', $message);
-      return;
+  
+  // get the media name looking at the properties
+  foreach ($node as $element => $value) {
+    // if this is an existing property (either previously in the database or
+    // added via AHAH/AJAX callback)
+    if (preg_match('/^prop_value-(\d+)-(\d+)$/', $element, $matches)) {
+      $prop_type_id = $matches[1];
+      $prop_type = tripal_cv_get_cvterm_by_id($prop_type_id);
+      if($prop_type->name == 'Conference Name' or $prop_type->name == 'Journal Name') {
+        $series_name = $value;
+      }  
+      if($prop_type->name == 'Citation') {
+        $uniquename = $value;
+      }  
+    }
+    // if this is a new property (added by this submit of the form)
+    elseif ($element = 'new_id') {
+      $prop_type = tripal_cv_get_cvterm_by_id($value);
+      if($prop_type->name == 'Conference Name' or $prop_type->name == 'Journal Name') {
+        $series_name = $node->new_value;
+      }
+      if($prop_type->name == 'Citation') {
+        $uniquename = $value;
+      }    
     }
   }
   
-  // on an update, make sure that if the title has changed that it doesn't
-  // conflict with any other publication
+  $skip_duplicate_check = 0; 
+  
+  // if this publication is a Patent then skip the validation below.  Patents can have the title
+  // name and year but be different    
+  if (strcmp($cvterm[0]->name,'Patent') == 0) {
+    $skip_duplicate_check = 1;
+  }
+ 
+  // on an update ($pub_id is set), check to see if there have been  changes to fields that
+  // are used to check for duplicates. If not, then no need to check for duplicates  
   if ($pub_id) {
     // first get the original title, type and year before it was changed
     $values = array('pub_id' => $pub_id);
-    $columns =  array('title','pyear','type_id');
+    $columns =  array('title', 'pyear', 'type_id', 'series_name');
     $options = array('statement_name' => 'sel_pub_id');
-    $pub = tripal_core_chado_select('pub', $columns, $values, $options);
-    
-    // if the title or year doesn't match then it was changed and we want to make
-    // sure it doesn't already exist in another publication
-    if((strcmp($pub[0]->title, $title) != 0) or
-       ($pub[0]->type_id != $type_id) or
-       ($pub[0]->year != $pyear)) {
-      $results = tripal_pub_get_pubs_by_title_type_pyear($title, $cvterm[0]->name, $pyear);
+    $pub = tripal_core_chado_select('pub', $columns, $values, $options);       
 
-      // make sure we don't capture our pub_id in the list (remove it)
-      foreach ($results as $index => $found_pub_id) {
-        if($found_pub_id == $pub_id){
-          unset($results[$index]);
-        }
-      }         
-      if (count($results) > 0) {
-        $message = t('A publication with this title and publication year, already exists.  Cannot update this publication'); 
-        form_set_error('pyear', $message);
-      }
+    // if the title, type,  year or series_name have changed then check the pub 
+    // to see if it is a duplicate of another
+    if((strcmp(strtolower($pub[0]->title), strtolower($title)) == 0) and
+       (strcmp(strtolower($pub[0]->series_name), strtolower($series_name)) == 0) and
+       ($pub[0]->type_id == $type_id) and
+       ($pub[0]->year == $pyear)) {
+       $skip_duplicate_check = 1;
     }
+  }
+  
+  // check to see if a duplicate publication already exists
+  if (!$skip_duplicate_check) {  
+
+    // make sure the publication is unique using the prefereed import duplication check
+    $import_dups_check = variable_get('tripal_pub_import_duplicate_check', 'title_year_media');
+    switch ($import_dups_check) {            
+      case 'title_year':
+        $results = tripal_pub_get_pubs_by_title_type_pyear_series($title, NULL, $pyear, NULL);
+        // make sure we don't capture our pub_id in the list (remove it)
+        foreach ($results as $index => $found_pub_id) {
+          if($found_pub_id == $pub_id){
+            unset($results[$index]);
+          }
+        }         
+        if (count($results) > 0) {
+          $message = t('A publication with this title and publication year, already exists.'); 
+          form_set_error('pyear', $message);
+        }
+        break;        
+      case 'title_year_type':          
+        $results = tripal_pub_get_pubs_by_title_type_pyear_series($title, $cvterm[0]->name, $pyear, NULL);
+    
+        // make sure we don't capture our pub_id in the list (remove it)
+        foreach ($results as $index => $found_pub_id) {
+          if($found_pub_id == $pub_id){
+            unset($results[$index]);
+          }
+        }         
+        if (count($results) > 0) {
+          $message = t('A publication with this title, type and publication year, already exists.'); 
+          form_set_error('pyear', $message);
+        }
+        break;        
+      case 'title_year_media':          
+        $results = tripal_pub_get_pubs_by_title_type_pyear_series($title, NULL, $pyear, $series_name);
+    
+        // make sure we don't capture our pub_id in the list (remove it)
+        foreach ($results as $index => $found_pub_id) {
+          if($found_pub_id == $pub_id){
+            unset($results[$index]);
+          }
+        }         
+        if (count($results) > 0) {
+          $message = t('A publication with this title, media name (e.g. Journal Name) and publication year, already exists.'); 
+          form_set_error('pyear', $message);
+        }
+        break;
+    }      
   } 
+  // even though we are skipping the duplication checks above we must make sure the uniquename is unique 
+  // as that is the offical table constraint
+  else {
+    $results = tripal_pub_get_pub_by_uniquename($uniquename);
+    // make sure we don't capture our pub_id in the list (remove it)
+    foreach ($results as $index => $found_pub_id) {
+      if($found_pub_id == $pub_id){
+        unset($results[$index]);
+      }
+    }         
+    if (count($results) > 0) {
+      $message = t('A publication with this unique citation already exists.'); 
+      form_set_error('uniquename', $message);
+    }  
+  }
 }
 /*
  * 
@@ -289,7 +374,7 @@ function chado_pub_node_form_add_new_empty_props(&$form, $properties_select) {
 /*
  * 
  */
-function chado_pub_node_form_add_new_props(&$form, $form_state, $num_new, &$d_properties, &$d_removed) {
+function chado_pub_node_form_add_new_props(&$form, $form_state, &$d_properties, &$d_removed) {
    
   // first, add in all of the new properties that were added through a previous AHAH callback 
   $j = 0;

@@ -3,11 +3,18 @@
  *  
  */
 function tripal_pub_remote_alter_form_AGL(&$form, $form_state) {
+  $num_criteria = $form['num_criteria']['#default_value'];
+  
   // So far we haven't been able to get AGL to filter results to only 
   // include pubs by the XX number days in the past.  So, we will
   // change the 'days' element to be the year to query
   $form['days']['#title'] = t('Year');
   $form['days']['#description']  = t('Please enter a year to limit records by the year they were published, created or modified in the database.');
+  
+  // The Journal Name filter doesn't seem to work, so remove it
+  for($i = 1; $i <= $num_criteria; $i++) {
+    unset($form['criteria'][$i]["scope-$i"]['#options']['journal']);
+  }
   
 }
 /**
@@ -161,6 +168,24 @@ function tripal_pub_remote_search_AGL($search_array, $num_to_retrieve, $pager_id
         $negate_abstract .= "$op ($search_terms) ";
       }
     }
+    elseif ($scope == 'journal') {
+      if ($first_journal) {
+        $journal .= "($search_terms) ";
+        $first_jounral = 0;
+      }
+      else {
+        $journal .= "$op ($search_terms) ";
+      }
+    }
+    elseif ($scope == 'negate_journal') {
+      if ($first_negate_journal) {
+        $negate_journal .= "($search_terms) ";
+        $first_negate_journal = 0;
+      }
+      else {
+        $negate_journal .= "$op ($search_terms) ";
+      }
+    }
     elseif ($scope == 'id') {
       if ($first_id) {
         $id .= "(" . preg_replace('/AGL:([^\s]*)/', '$1', $search_terms) . ") ";
@@ -201,10 +226,12 @@ function tripal_pub_remote_search_AGL($search_array, $num_to_retrieve, $pager_id
   // now build the CCL string in order 
   $abstract_done = 0;
   $author_done = 0;
+  $journal_done = 0;
   $title_done = 0;
   $id_done = 0;
   $any_done = 0;
   $negate_abstract_done = 0;
+  $negate_journal_done = 0;
   $negate_author_done = 0;
   $negate_title_done = 0;
   $negate_id_done = 0;
@@ -227,6 +254,15 @@ function tripal_pub_remote_search_AGL($search_array, $num_to_retrieve, $pager_id
     if ($order[$i]['scope'] == 'negate_author' and !$negate_author_done) {
       $ccl .= "not author=($negate_author) ";
       $negate_author_done = 1;
+    }
+    if ($order[$i]['scope'] == 'journal' and !$journal_done) {
+      $op = $order[$i]['op'];
+      $ccl .= "$op journal=($journal) ";
+      $journal_done = 1;
+    }
+    if ($order[$i]['scope'] == 'negate_journal' and !$negate_journal_done) {
+      $ccl .= "not author=($negate_journal) ";
+      $negate_journal_done = 1;
     }
     if ($order[$i]['scope'] == 'id' and !$id_done) {      
       $op = $order[$i]['op'];
@@ -289,6 +325,7 @@ function tripal_pub_remote_search_AGL($search_array, $num_to_retrieve, $pager_id
     "abstract" => "u=62",
     "id"       => "u=12",
     "year"     => "u=30 r=o", 
+    "journal"  => "u=1033"
   );
   yaz_ccl_conf($yazc, $fields);
     
@@ -304,6 +341,7 @@ function tripal_pub_remote_search_AGL($search_array, $num_to_retrieve, $pager_id
   // save the YAZ connection in the session for use by other functions
   $_SESSION['tripal_pub_AGL_query'][$search_str]['yaz_connection'] = $yazc;
   
+  //dpm($search_array);
   // we want to get the list of pubs using the search terms but using a Drupal style pager
   $pubs = tripal_pager_callback('tripal_pub_AGL_range',  $num_to_retrieve, $pager_id, 
     'tripal_pub_AGL_count', $search_array);
