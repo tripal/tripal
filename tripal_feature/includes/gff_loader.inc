@@ -137,6 +137,16 @@ function tripal_feature_gff3_load_form() {
     '#description' => t('Features present in the GFF file that exist in the database
                          will be removed rather than imported'),
   );
+  $form['import_options']['create_organism']= array(
+    '#type' => 'checkbox',
+    '#title' => t('Create organism'),
+    '#required' => FALSE,
+    '#description' => t('The Tripal GFF loader supports the "organism" attribute. This allows features of a 
+       different organism to be aligned to the landmark sequence of another species.  The format of the 
+       attribute is "organism=[genus]:[species]", where [genus] is the organism\'s genus and [species] is the
+       species name. Check this box to automatically add the organism to the database if it does not already exists.
+       Otherwise lines with an oraganism attribute where the organism is not present in the database will be skipped.'),
+  );
 
   $form['targets'] = array(
     '#type' => 'fieldset',
@@ -204,6 +214,7 @@ function tripal_feature_gff3_load_form_validate($form, &$form_state) {
   $target_organism_id = $form_state['values']['target_organism_id'];
   $target_type = trim($form_state['values']['target_type']);
   $create_target = $form_state['values']['create_target'];
+  $create_organism = $form_state['values']['create_organism'];
   $add_only = $form_state['values']['add_only'];
   $update   = $form_state['values']['update'];
   $refresh  = $form_state['values']['refresh'];
@@ -261,10 +272,13 @@ function tripal_feature_gff3_load_form_submit($form, &$form_state) {
   $line_number   = trim($form_state['values']['line_number']);
   $landmark_type   = trim($form_state['values']['landmark_type']);
   $alt_id_attr   = trim($form_state['values']['alt_id_attr']);
+  $create_organism = $form_state['values']['create_organism'];
+  
     
   $args = array($gff_file, $organism_id, $analysis_id, $add_only, 
     $update, $refresh, $remove, $use_transaction, $target_organism_id, 
-    $target_type, $create_target, $line_number, $landmark_type, $alt_id_attr);
+    $target_type, $create_target, $line_number, $landmark_type, $alt_id_attr, 
+    $create_organism);
     
   $type = '';
   if ($add_only) {
@@ -292,9 +306,10 @@ function tripal_feature_gff3_load_form_submit($form, &$form_state) {
  * @ingroup gff3_loader
  */
 function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id, 
-  $add_only =0, $update = 0, $refresh = 0, $remove = 0, $use_transaction = 1, 
+  $add_only = 0, $update = 0, $refresh = 0, $remove = 0, $use_transaction = 1, 
   $target_organism_id = NULL, $target_type = NULL,  $create_target = 0, 
-  $start_line = 1, $landmark_type = '', $alt_id_attr = '', $job = NULL) {     
+  $start_line = 1, $landmark_type = '', $alt_id_attr = '', $create_organism = FALSE, 
+  $job = NULL) {     
 
   // make sure our temporary table exists
   $ret = array(); 
@@ -517,8 +532,14 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
     $attr_fmax_partial = 'f';
     $attr_is_obsolete = 'f';
     $attr_is_analysis = 'f';
-    $attr_others = '';
+    $attr_others = '';       
     $residues = '';
+    
+    // the organism to which a feature belongs can be set in the GFF
+    // file using the 'organism' attribute.  By default we 
+    // set the $feature_organism variable to the default organism for the landmark
+    $attr_organism = ''; 
+    $feature_organism = $organism;
 
     foreach ($attrs as $attr) {
       $attr = rtrim($attr);
@@ -549,23 +570,66 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
       }
       
       // get the name and ID tags
+      $skip_feature = 0;  // if there is a problem with any of the attributes this variable gets set
       if (strcmp($tag_name, 'ID') == 0) {
         $attr_uniquename =  urldecode($tag[1]);
       }
       elseif (strcmp($tag_name, 'Name') == 0) {
         $attr_name =  urldecode($tag[1]);
       }
+      elseif (strcmp($tag_name, 'organism') == 0) {
+        $attr_organism = urldecode($tag[1]);
+        $org_matches = array();
+        if (preg_match('/^(.*?):(.*?)$/', $attr_organism, $org_matches)) {
+          $values = array(
+            'genus' => $org_matches[1],
+            'species' => $org_matches[2],
+          ); 
+          $options = array('statement_name' => 'sel_organism_gesp');
+          $org = tripal_core_chado_select('organism', array("*"), $values, $options);
+          if (count($org) == 0) {
+            if ($create_organism) {
+              $options = array('statement_name' => 'ins_organism_gesp');
+              $feature_organism = (object) tripal_core_chado_insert('organism', $values, $options);
+              if (!$feature_organism) {
+                watchdog('T_gff3_loader', "Could not add the organism, '%org', from line %line. Skipping this line. ",
+                  array('%org' => $attr_organism, '%line' => $line_num), WATCHDOG_ERROR); 
+                $skip_feature = 1; 
+              }                
+            } 
+            else {
+              watchdog('T_gff3_loader', "The organism attribute '%org' on line %line does not exist. Skipping this line. ",
+                array('%org' => $attr_organism, '%line' => $line_num), WATCHDOG_ERROR); 
+              $skip_feature = 1;
+            }             
+          }
+          else {
+            // we found the organism in the database so use it
+            $feature_organism = $org[0];
+          }
+        } 
+        else {
+          watchdog('T_gff3_loader', "The organism attribute '%org' on line %line is not properly formated. It ".
+            "should be of the form: organism=Genus:species.  Skipping this line.", 
+            array('%org' => $attr_organism, '%line' => $line_num), WATCHDOG_ERROR);
+          $skip_feature = 1;  
+        }        
+      }
       // get the list of non-reserved attributes
-      elseif (strcmp($tag_name, 'Alias') !=0        and strcmp($tag_name, 'Parent') !=0 and
-              strcmp($tag_name, 'Target') !=0       and strcmp($tag_name, 'Gap') !=0 and
-              strcmp($tag_name, 'Derives_from') !=0 and strcmp($tag_name, 'Note') !=0 and
-              strcmp($tag_name, 'Dbxref') !=0       and strcmp($tag_name, 'Ontology_term') !=0 and
-              strcmp($tag_name, 'Is_circular') !=0  and strcmp($tag_name, 'target_organism') !=0 and
-              strcmp($tag_name, 'target_type') != 0) {
+      elseif (strcmp($tag_name, 'Alias') != 0        and strcmp($tag_name, 'Parent') != 0 and
+              strcmp($tag_name, 'Target') != 0       and strcmp($tag_name, 'Gap') != 0 and
+              strcmp($tag_name, 'Derives_from') != 0 and strcmp($tag_name, 'Note') != 0 and
+              strcmp($tag_name, 'Dbxref') != 0       and strcmp($tag_name, 'Ontology_term') != 0 and
+              strcmp($tag_name, 'Is_circular') != 0  and strcmp($tag_name, 'target_organism') != 0 and
+              strcmp($tag_name, 'target_type') != 0  and strcmp($tag_name, 'organism' != 0)) {
         foreach ($tags[$tag_name] as $value) {
           $attr_others[$tag_name][] = $value;
         }
       }
+    }
+    
+    if ($skip_line) {
+      continue;
     }
 
     // if neither name nor uniquename are provided then generate one
@@ -611,7 +675,7 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
     // different.
     if (!$remove and !(strcmp($landmark, $attr_uniquename) == 0 or strcmp($landmark, $attr_name) == 0)) {
       $select = array(
-        'organism_id' => $organism_id,
+        'organism_id' => $organism->organism_id,
         'uniquename'  => $landmark,
       );      
       $columns = array('count(*) as num_landmarks');
@@ -626,7 +690,7 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
       if (!$count or count($count) == 0 or $count[0]->num_landmarks == 0) {        
         // now look for the landmark using the name rather than uniquename.
         $select = array(
-          'organism_id' => $organism_id,
+          'organism_id' => $organism->organism_id,
           'name'  => $landmark,
         );
         $columns = array('count(*) as num_landmarks');
@@ -664,7 +728,7 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
       $sql = "DELETE FROM {feature}
               WHERE organism_id = %d and uniquename = '%s' and type_id = %d";
       $match = array(
-         'organism_id' => $organism->organism_id,
+         'organism_id' => $feature_organism->organism_id,
          'uniquename'  => $attr_uniquename,
          'type_id'     => $cvterm->cvterm_id
       );
@@ -681,7 +745,7 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
     if ($update or $refresh or $add_only) {
 
       // add/update the feature
-      $feature = tripal_feature_load_gff3_feature($organism, $analysis_id, $cvterm,
+      $feature = tripal_feature_load_gff3_feature($feature_organism, $analysis_id, $cvterm,
         $attr_uniquename, $attr_name, $residues, $attr_is_analysis,
         $attr_is_obsolete, $add_only, $score);  
    
@@ -729,7 +793,7 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
         }       
         // add parent relationships
         if (array_key_exists('Parent', $tags)) {
-          tripal_feature_load_gff3_parents($feature, $cvterm, $tags['Parent'], $organism_id, $fmin);
+          tripal_feature_load_gff3_parents($feature, $cvterm, $tags['Parent'], $feature_organism->organism_id, $fmin);
         }               
         // add target relationships
         if (array_key_exists('Target', $tags)) {
@@ -749,7 +813,7 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
         }
         // add the Derives_from relationship (e.g. polycistronic genes).
         if (array_key_exists('Derives_from', $tags)) {
-          tripal_feature_load_gff3_derives_from($feature, $tags['Derives_from'][0], $organism);
+          tripal_feature_load_gff3_derives_from($feature, $tags['Derives_from'][0], $feature_organism);
         }
         // add in the GFF3_source dbxref so that GBrowse can find the feature using the source column
         $source_ref = array('GFF_source:' . $source);
