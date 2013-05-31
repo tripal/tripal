@@ -206,6 +206,21 @@ function tripal_pub_theme() {
     'tripal_pub_relationships' => array(
       'arguments' => array('node' => NULL)
     ),
+    'tripal_pub_featuremaps' => array(
+      'arguments' => array('node' => NULL)
+    ),
+    'tripal_pub_features' => array(
+      'arguments' => array('node' => NULL)
+    ),
+    'tripal_pub_libraries' => array(
+      'arguments' => array('node' => NULL)
+    ),
+    'tripal_pub_projects' => array(
+      'arguments' => array('node' => NULL)
+    ),
+    'tripal_pub_stocks' => array(
+      'arguments' => array('node' => NULL)
+    ),
     
     // instructions page for the pub module
     'tripal_pub_admin' => array(
