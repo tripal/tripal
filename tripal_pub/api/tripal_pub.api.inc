@@ -652,7 +652,7 @@ function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE,
   // try to find it using the title and publication year.
   if (!$pub_id and $pub_details['Title']) {
     
-    $results = tripal_pub_get_pubs_by_title_type_pyear($pub_details['Title'], NULL, $pub_details['Year']);    
+    $results = tripal_pub_get_pubs_by_title_type_pyear_series($pub_details['Title'], NULL, $pub_details['Year']);    
     if (count($results) == 1) {
       $pub_id = $results[0];
     }
