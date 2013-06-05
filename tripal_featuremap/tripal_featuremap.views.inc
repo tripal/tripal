@@ -154,7 +154,7 @@ function tripal_featuremap_views_default_views() {
         'alter_text' => 0,
         'text' => '',
         'make_link' => 0,
-        'path' => '',
+        'path' => 'node/[nid]',
         'absolute' => 0,
         'link_class' => '',
         'alt' => '',
@@ -374,6 +374,7 @@ function tripal_featuremap_views_default_views() {
       'name' => 'name',
       'description' => 'description',
       'name_1' => 'name_1',
+      'nid' => 'nid',
     ),
     'info' => array(
       'name' => array(
@@ -388,9 +389,13 @@ function tripal_featuremap_views_default_views() {
         'sortable' => 1,
         'separator' => '',
       ),
+      'nid' => array(
+        'separator' => '',
+      ),
     ),
     'default' => '-1',
   ));
+  $default_handler = $handler;
   $handler = $view->new_display('page', 'Page', 'page_1');
   $handler->override_option('path', 'chado/featuremaps');
   $handler->override_option('menu', array(
@@ -407,6 +412,82 @@ function tripal_featuremap_views_default_views() {
     'weight' => 0,
     'name' => 'navigation',
   ));
+  
+  // Add code specific to a local chado installation
+  // NOTE: Edit $handler above to $default_handler for the default display
+  if (tripal_core_chado_schema_exists()) {
+    // Add nid field
+    $fields = $view->get_items('field', 'default');
+    $new_fields = array(
+      'nid' => array(
+        'label' => 'Nid',
+        'alter' => array(
+          'alter_text' => 0,
+          'text' => '',
+          'make_link' => 0,
+          'path' => '',
+          'absolute' => 0,
+          'link_class' => '',
+          'alt' => '',
+          'rel' => '',
+          'prefix' => '',
+          'suffix' => '',
+          'target' => '',
+          'help' => '',
+          'trim' => 0,
+          'max_length' => '',
+          'word_boundary' => 1,
+          'ellipsis' => 1,
+          'html' => 0,
+          'strip_tags' => 0,
+        ),
+        'empty' => '',
+        'hide_empty' => 0,
+        'empty_zero' => 0,
+        'hide_alter_empty' => 1,
+        'link_to_node' => 0,
+        'exclude' => 1,
+        'id' => 'nid',
+        'table' => 'node',
+        'field' => 'nid',
+        'relationship' => 'none',
+      )
+    );
+    $fields = $new_fields + $fields;
+    // Adds feature => Node relationship
+    $default_handler->override_option('relationships', array(
+      'nid' => array(
+        'label' => 'Map to Node',
+        'required' => 0,
+        'id' => 'nid',
+        'table' => 'chado_featuremap',
+        'field' => 'nid',
+        'relationship' => 'none',
+      ),
+    ));
+    // Change analysis.name to have a link to the node
+    $fields['name']['alter']['link_to_node'] = 1;
+    $default_handler->override_option('fields', $fields);
+    // Only show records with published nodes
+    /**
+    $filters = $view->get_items('filter', 'default');
+    $filters['status'] = array(
+      'operator' => '=',
+      'value' => '1',
+      'group' => '0',
+      'exposed' => FALSE,
+      'expose' => array(
+        'operator' => FALSE,
+        'label' => '',
+      ),
+      'id' => 'status',
+      'table' => 'node',
+      'field' => 'status',
+      'relationship' => 'none',
+    );
+    $default_handler->override_option('filters', $filters);
+    */
+  }
   $views[$view->name] = $view;
 
   return $views;
