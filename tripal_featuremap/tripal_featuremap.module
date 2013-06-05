@@ -13,6 +13,16 @@ require('includes/tripal_featuremap.admin.inc');
 require('includes/tripal_featuremap.form.inc');
 
 /**
+ *
+ * @ingroup tripal_featuremap
+ */
+function tripal_featuremap_init() {
+  //drupal_add_js(drupal_get_path('theme', 'tripal') . '/js/tripal_pub.js');
+  drupal_add_css(drupal_get_path('theme', 'tripal') . '/css/tripal_featuremap_pub.css');
+}
+
+
+/**
  * Display help and module information
  * @param path which path of the site we're displaying help
  * @param arg array that holds the current path as would be returned from arg()
