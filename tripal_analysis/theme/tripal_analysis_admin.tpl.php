@@ -14,7 +14,7 @@
 </p>
 
 <h3>Setup Instructions:</h3>
-<p>After installation of the analysis module or any specialized analysis module.  The following tasks should be performed
+<p>After installation of the analysis module or any specialized analysis module.  The following tasks should be performed</p>
 <ol>
   <li><p><b>Set Permissions</b>: By default only the site administrator account has access to create, edit, delete
    or administer analyses. Navigate to the <?php print l('permissions page', 'admin/user/permissions')?> and set the
@@ -22,18 +22,18 @@
    users access to view content and create a special role for creating, editing and other administrative tasks.</p></li>
 
 
-<li><p><b>Create an Analysis</b>:  An analysis should be <?php print l('created', 'node/add/chado-analysis')?> before 
-data is imported into chado.  The generic analysis type should only be used when a more specialized analysis module
-(e.g. Tripal Analysis Blast module) does not already exists.  All data imported into Chado should be associated with 
-an analysis to help keep track of the source for data.</p></li>
+  <li><p><b>Create an Analysis</b>:  An analysis should be <?php print l('created', 'node/add/chado-analysis')?> before 
+  data is imported into chado.  The generic analysis type should only be used when a more specialized analysis module
+  (e.g. Tripal Analysis Blast module) does not already exists.  All data imported into Chado should be associated with 
+  an analysis to help keep track of the source for data.</p></li>
 
-<li><p><b>Sync Analyses</b>:  If you have analyses already stored in Chado and would like to create pages for them, then
-analyses can be synced using the
- <?php print l('analysis configuration page', 'admin/tripal/tripal_analysis/configuration') ?>. The process of 'syncing'
- automatically creates the pages as if you had created them using the step above.
-</p></li>
+  <li><p><b>Sync Analyses</b>:  If you have analyses already stored in Chado and would like to create pages for them, then
+  analyses can be synced using the
+   <?php print l('analysis configuration page', 'admin/tripal/tripal_analysis/configuration') ?>. The process of 'syncing'
+   automatically creates the pages as if you had created them using the step above.
+  </p></li>
 </ol>
-</p>
+
 
 <h3>Additional Features of this Module:</h3>
   <ul>
@@ -42,4 +42,4 @@ analyses can be synced using the
     which must be installed to see the search tool.  Look for it in the navigation menu under the item 
     "Search Biological Data". </p></li>
 </ul>
-</p>
+

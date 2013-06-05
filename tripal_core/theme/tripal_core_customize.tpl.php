@@ -17,7 +17,7 @@ been exposed to Drupal Views</p></li>
 <h3>Customizations Without Programming</h3>
 <p>There are several ways to customize the look-and-feel for the way Chado data is presented through Tripal.
 Below is a description of several methods.  These methods may be used in conjunction with one another to
-provide fine-grained control.
+provide fine-grained control.</p>
 <ul>
 
 <li><p><b>Integration with Drupal Panels</b>:  <a href="http://drupal.org/project/views">Drupal Panels</a>
@@ -39,7 +39,7 @@ If using Panels, the CCK field can be added to the location desired using the Pa
 
 <li><p><b>Adding Links to the "Resources" Sidebar</b>: You can add new items to the resources side-bar of any Tripal node using the 
 <a href="http://drupal.org/project/cck">Content Construction Kit (CCK) </a>module and adding new field types to Tripal node types.  Instructions for adding these fields can be found
-on the <?php l('Tripal v1.0 Tutorial', 'http://www.gmod.org/wiki/Tripal_Tutorial_(v1.0)#Adding_Additional_Resources')?>  </p></li>
+on the <?php l('Tripal v1.0 Tutorial', 'http://www.gmod.org/wiki/Tripal_Tutorial_(v1.0)#Adding_Additional_Resources')?>  </p>
 </li>
 
 </ul>
@@ -56,7 +56,7 @@ section at the bottom of the template file where the resources section is found.
 <li><p><b>Editing Templates and Creating Custom Extension Modules</b>:There are several ways to customize the look-and-feel
   for the way Chado data is presented through Tripal.
   See the <a href="http://www.gmod.org/wiki/Tripal_Developer's_Handbook">Developers Handbook</a> for further infromation.   
-</p>
+</p></li>
 
 <li><p><b>Sharing your customizations</b>: If you create a custom extension module that uses the Tripal API in
 accordance with the instructions in the Developers Handbook you can share your modules with other Tripal users.

@@ -22,13 +22,14 @@
    <li><p><b>Loading of Ontologies</b>:  
      Before loading genomic features you must also have several vocabularies loaded as well. Using the
      <?php print l('OGO loader','admin/tripal/tripal_cv/obo_loader')?> you should load the following
-     ontologies:
+     ontologies:</p>
      <ul>
         <li>Chado Feature Properties</li>
         <li>Relationship Ontology</li>
         <li>Sequence Ontology</li>
         <li>Gene Ontology (if loading GO terms for features)</li>
-     </ul></p></li>
+     </ul>
+   </li>
 
      <li><p><b>Create Organisms</b>:  Before adding feature data you must already have the
      organisms loaded in the database.  See the
@@ -73,12 +74,11 @@
      URL.  Select the one that will guarantee a unique identifier for feature pages.</p></li>
 
   </ol>
-  </p>
 
 
   <h3>Features of this Module:</h3>
   <p>Aside from data loading and feature page setup (as described in the Setup section above),
-  The Tripal feature module also provides the following functionality
+  The Tripal feature module also provides the following functionality</p>
   <ul>
     <li><p><b>Retrieve Sequences</b>: A tool to <?php print l('retrieve sequences','find/sequences') ?> is provided 
      which allows end-users to download sequences in FASTA format.  The site admin must first load sequence residues
@@ -131,4 +131,3 @@
     by providing a list of feature names, or for a specific organism or for a specific feature type. Be sure you have
     a full backup of your site before performing a bulk delete.</p></li>
   </ul>
-</p>

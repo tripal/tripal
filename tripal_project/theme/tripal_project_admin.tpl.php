@@ -20,7 +20,7 @@
 
 <h3>Features of this Module:</h3>
 <ul>
-  <li><b>Add/Edit/Delete Projects</b>: Projects can be created ' . l('here', 'node/add/chado-project') ?>. 
+  <li><b>Add/Edit/Delete Projects</b>: Projects can be created <?php print l('here', 'node/add/chado-project') ?>. 
   After creation, projects (regardless of the method used to create them) can be
   edited or deleted by clicking the Edit tab at the top of the Project Page.</li>
     <li><p><b>Simple Search Tool</b>: A <?php print l('simple search tool','chado/projects') ?> is provided for 

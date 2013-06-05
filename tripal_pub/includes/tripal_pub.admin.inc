@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 /**
  * Administrative settings form
@@ -18,7 +18,7 @@ function tripal_pub_admin() {
 
   // add the field set for syncing publications
   if (!$active_jobs) {
-    get_tripal_pub_admin_form_select_search_list($form);    
+    get_tripal_pub_admin_form_select_search_list($form);
     get_tripal_pub_admin_form_importing_set($form);
     get_tripal_pub_admin_form_cleanup_set($form);
   }
@@ -51,7 +51,7 @@ function get_tripal_pub_admin_form_importing_set(&$form) {
       'title_year' => t('Title and Year'), 
       'title_year_media' => t('Title, Year, Media name (e.g. Journal Name, etc.)'), 
       'title_year_type' => t('Title, Year, Media type (e.g. Journal, Conference Proceedings, etc.'),
-    ),
+  ),
     '#description' => t('During import, Tripal will attempt to find duplicate publications. 
        There are several options for how to find a duplicate publication.  Choose the
        option that best suits your needs.'),
@@ -95,7 +95,7 @@ function get_tripal_pub_admin_form_select_search_list(&$form) {
     '#type' => 'fieldset',
     '#title' => t('Searching Options')
   );
-  // get publication properties list 
+  // get publication properties list
   $properties = array();
   $properties[] = 'Any Field';
   $sql = "
@@ -109,7 +109,7 @@ function get_tripal_pub_admin_form_select_search_list(&$form) {
       NOT CVTS.is_obsolete = 1
     ORDER BY CVTS.name ASC 
   ";
-  $prop_types = chado_query($sql); 
+  $prop_types = chado_query($sql);
   while ($prop = db_fetch_object($prop_types)) {
     $properties[$prop->cvterm_id] = $prop->name;
   }
@@ -136,15 +136,15 @@ function tripal_pub_admin_validate($form, &$form_state) {
   foreach ($allowed_fields as $cvterm_id => $selected) {
     if (!$selected) {
       unset($allowed_fields[$cvterm_id]);
-    }  
+    }
   }
   variable_set('tripal_pub_allowed_search_fields', $allowed_fields);
-  
+
   $import_duplicate_check = $form_state['values']['import_duplicate_check'];
   variable_set('tripal_pub_import_duplicate_check', $import_duplicate_check);
-    
+
   // -------------------------------------
-  // Submit the Cleanup Job if selected  
+  // Submit the Cleanup Job if selected
   if ($form_state['values']['op'] == t('Clean up orphaned publications')) {
     tripal_add_job('Cleanup orphaned publications', 'tripal_pub',
        'tripal_pub_cleanup', $job_args, $user->uid);
@@ -164,14 +164,14 @@ function tripal_pub_admin_validate($form, &$form_state) {
 function tripal_pub_cleanup($dummy = NULL, $job_id = NULL) {
 
   return tripal_core_clean_orphaned_nodes('pub', $job_id);
-  
+
 }
 
 /**
  *
  */
 function tripal_pub_set_pub_url($node, $pub_id) {
-  
+
   $node_url = "node/$node->nid";
   $url_alias = "pub/$pub_id";
 
@@ -179,6 +179,6 @@ function tripal_pub_set_pub_url($node, $pub_id) {
   db_query("DELETE FROM {url_alias} WHERE src = '%s'", $node_url);
   // add the new alias
   path_set_alias($node_url, $url_alias);
-  
+
   return $url_alias;
 }

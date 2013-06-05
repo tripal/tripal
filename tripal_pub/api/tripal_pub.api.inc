@@ -2,30 +2,30 @@
 /**
  * @file
  * The Tripal Pub API
- * 
+ *
  * @defgroup tripal_pub_api Publication Module API
- * @ingroup tripal_api 
+ * @ingroup tripal_api
  */
- 
-/*  
+
+/*
  * Retrieves a list of publications as an associated array where
  *  keys correspond directly with Tripal Pub CV terms.
- *  
+ *
  * @param remote_db
  *    The name of the remote publication database to query. These names should
- *    match the name of the databases in the Chado 'db' table. Currently 
+ *    match the name of the databases in the Chado 'db' table. Currently
  *    supported databass include
  *      'PMID':  PubMed
- *      
+ *
  * @param search_array
- *    An associate array containing the search criteria. The following key 
+ *    An associate array containing the search criteria. The following key
  *    are expected
  *      'remote_db':     Specifies the name of the remote publication database
  *      'num_criteria':  Specifies the number of criteria present in the search array
  *      'days':          The number of days to include in the search starting from today
  *      'criteria':      An associate array containing the search critiera. There should
  *                       be no less than 'num_criteria' elements in this array.
- *                       
+ *
  *    The following keys are expected in the 'criteria' array
  *      'search_terms':  A list of terms to search on, separated by spaces.
  *      'scope':         The fields to search in the remote database. Valid values
@@ -33,9 +33,9 @@
  *      'operation':     The logical operation to use for this criteria. Valid
  *                       values include: 'AND', 'OR' and 'NOT'.
  * @param $num_to_retrieve
- *    The number of records to retrieve.  In cases with large numbers of 
+ *    The number of records to retrieve.  In cases with large numbers of
  *    records to retrieve, the remote database may limit the size of each
- *    retrieval.  
+ *    retrieval.
  * @param $pager_id
  *    Optional.  This function uses the 'tripal_pager_callback' function
  *    to page a set of results.  This is helpful when generating results to
@@ -43,44 +43,44 @@
  *    of drupal. Simply provide a unique integer value for this argument.  Each
  *    form on a single page should have a unique $pager_id.
  * @param $page
- *    Optional.  If this function is called where the 
+ *    Optional.  If this function is called where the
  *    page for the pager cannot be set using the $_GET variable, use this
- *    argument to specify the page to retrieve. 
- *    
+ *    argument to specify the page to retrieve.
+ *
  * @return
  *   Returns an array of pubs where each element is
- *   an associative array where the keys are Tripal Pub CV terms.  
- * 
+ *   an associative array where the keys are Tripal Pub CV terms.
+ *
  * @ingroup tripal_pub_api
  */
-function tripal_pub_get_remote_search_results($remote_db, $search_array, 
-  $num_to_retrieve, $pager_id = 0, $page = 0) {
+function tripal_pub_get_remote_search_results($remote_db, $search_array,
+$num_to_retrieve, $pager_id = 0, $page = 0) {
 
   // manually set the $_GET['page'] parameter to trick the pager
   // into giving us the requested page
   if (is_int($page) and $page > 0) {
     $_GET['page'] = $page;
-  }  
+  }
   // now call the callback function to get the results
   $callback = "tripal_pub_remote_search_$remote_db";
   $pubs = array();
   if (function_exists($callback)) {
     $pubs = call_user_func($callback, $search_array, $num_to_retrieve, $pager_id);
-  }    
-  
-  return $pubs;  
+  }
+
+  return $pubs;
 }
 /*
  * @ingroup tripal_pub_api
  */
 function tripal_pub_get_raw_data($dbxref) {
-  
+
   if(preg_match('/^(.*?):(.*?)$/', $dbxref, $matches)) {
     $remote_db = $matches[1];
     $accession = $matches[2];
-    
+
     // check that the database is supported
-    $supported_dbs = variable_get('tripal_pub_supported_dbs', array());    
+    $supported_dbs = variable_get('tripal_pub_supported_dbs', array());
     if(!in_array($remote_db, $supported_dbs)) {
       return "Unsupported database: $dbxref";
     }
@@ -94,34 +94,34 @@ function tripal_pub_get_raw_data($dbxref) {
           'scope' => 'id',
           'operation' => '',
           'is_phrase' => 0,
-        ),
-      ),
+    ),
+    ),
     );
     $pubs = tripal_pub_get_remote_search_results($remote_db, $search, 1, 0);
-    
+
     return '<textarea cols=80 rows=20>' . $pubs[0]['raw'] . '</textarea>';
-  }  
-  return 'Invalid DB xref';    
+  }
+  return 'Invalid DB xref';
 }
 /*
  * @ingroup tripal_pub_api
  */
 function tripal_pub_update_publications($do_contact = FALSE, $dbxref = NULL, $db = NULL) {
-  
+
   // get a persistent connection
   $connection = tripal_db_persistent_chado();
   if (!$connection) {
-     print "A persistant connection was not obtained. Loading will be slow\n";
+    print "A persistant connection was not obtained. Loading will be slow\n";
   }
-          
+
   // if we cannot get a connection then let the user know the loading will be slow
   tripal_db_start_transaction();
   if ($connection) {
-     print "\nNOTE: Loading of publications is performed using a database transaction. \n" .
+    print "\nNOTE: Loading of publications is performed using a database transaction. \n" .
            "If the load fails or is terminated prematurely then the entire set of \n" .
            "insertions/updates is rolled back and will not be found in the database\n\n";
   }
-  
+
   // get a list of all publications by their Dbxrefs that have supported databases
   $sql = "
     SELECT DB.name as db_name, DBX.accession
@@ -136,31 +136,31 @@ function tripal_pub_update_publications($do_contact = FALSE, $dbxref = NULL, $db
     $accession = $matches[2];
     $sql .= "WHERE DBX.accession = '%s' and DB.name = '%s' ";
     $args[] = $accession;
-    $args[] = $dbname;    
+    $args[] = $dbname;
   }
   elseif ($db) {
     $sql .= " WHERE DB.name = '%s' ";
     $args[] = $db;
   }
   $sql .= "ORDER BY DB.name, P.pub_id";
-  $results = chado_query($sql, $args);  
-  
+  $results = chado_query($sql, $args);
+
   $num_to_retrieve = 100;
   $i = 0;                 // count the number of IDs. When we hit $num_to_retrieve we'll do the query
   $curr_db = '';          // keeps track of the current current database
   $ids = array();         // the list of IDs for the database
   $search = array();      // the search array passed to the search function
-  
+
   // iterate through the pub IDs
-  while ($pub = db_fetch_object($results)) {    
+  while ($pub = db_fetch_object($results)) {
     $accession = $pub->accession;
     $remote_db = $pub->db_name;
-        
+
     // here we need to only update publications for databases we support
     $supported_dbs = variable_get('tripal_pub_supported_dbs', array());
     if(!in_array($remote_db, $supported_dbs)) {
       continue;
-    }    
+    }
     $search = array(
       'num_criteria' => 1,
       'remote_db' => $remote_db,
@@ -170,30 +170,30 @@ function tripal_pub_update_publications($do_contact = FALSE, $dbxref = NULL, $db
           'scope' => 'id',
           'operation' => '',
           'is_phrase' => 0,
-        ),
-      ),
+    ),
+    ),
     );
     $pubs = tripal_pub_get_remote_search_results($remote_db, $search, 1, 0);
     tripal_pub_add_publications($pubs, $do_contact, TRUE);
-    
-    $i++;   
+
+    $i++;
   }
-  
+
   // transaction is complete
   tripal_db_commit_transaction();
-  
+
   print "Transaction Complete\n";
-  
+
   // sync the newly added publications with Drupal
   print "Syncing publications with Drupal...\n";
   tripal_pub_sync_pubs();
-  
+
   // if the caller wants to create contacts then we should sync them
   if ($do_contact) {
     print "Syncing contacts with Drupal...\n";
     tripal_contact_sync_contacts();
   }
-  
+
   print "Done.\n";
 }
 /*
@@ -204,21 +204,21 @@ function tripal_pub_import_publications($report_email = FALSE, $do_update = FALS
   $pager_id = 0;
   $page = 0;
   $num_pubs = 0;
-  
+
   // get a persistent connection
   $connection = tripal_db_persistent_chado();
   if (!$connection) {
-     print "A persistant connection was not obtained. Loading will be slow\n";
+    print "A persistant connection was not obtained. Loading will be slow\n";
   }
-          
+
   // if we cannot get a connection then let the user know the loading will be slow
   tripal_db_start_transaction();
   if ($connection) {
-     print "\nNOTE: Loading of publications is performed using a database transaction. \n" .
+    print "\nNOTE: Loading of publications is performed using a database transaction. \n" .
            "If the load fails or is terminated prematurely then the entire set of \n" .
            "insertions/updates is rolled back and will not be found in the database\n\n";
-  }  
-  
+  }
+
   // get all of the loaders
   $args = array();
   $sql = "SELECT * FROM {tripal_pub_import} WHERE disabled = 0 ";
@@ -229,37 +229,37 @@ function tripal_pub_import_publications($report_email = FALSE, $do_update = FALS
     print "Importing: " . $import->name . "\n";
     // keep track if any of the importers want to create contacts from authors
     if ($import->do_contact == 1) {
-      $do_contact = TRUE;      
+      $do_contact = TRUE;
     }
-    $criteria = unserialize($import->criteria); 
+    $criteria = unserialize($import->criteria);
     $remote_db = $criteria['remote_db'];
-    do {       
+    do {
       // retrieve the pubs for this page. We'll retreive 10 at a time
       $pubs = tripal_pub_get_remote_search_results($remote_db, $criteria, $num_to_retrieve, $pager_id, $page);
-      $reports[$import->name] = tripal_pub_add_publications($pubs, $import->do_contact, $do_update);             
+      $reports[$import->name] = tripal_pub_add_publications($pubs, $import->do_contact, $do_update);
       $page++;
-    } 
+    }
     // continue looping until we have a $pubs array that does not have
     // our requested numer of records.  This means we've hit the end
-    while (count($pubs) == $num_to_retrieve);    
+    while (count($pubs) == $num_to_retrieve);
   }
-  
+
   // transaction is complete
   tripal_db_commit_transaction();
-  
+
   print "Transaction Complete\n";
-  
+
   // sync the newly added publications with Drupal. If the user
   // requested a report then we don't want to print any syncing information
   // so pass 'FALSE' to the sync call
   print "Syncing publications with Drupal...\n";
   tripal_pub_sync_pubs();
-  
+
   // iterate through each of the reports and generate a final report with HTML links
   $HTML_report = '';
   if ($report_email) {
     $HTML_report .= "<html>";
-    global $base_url;  
+    global $base_url;
     foreach ($reports as $importer => $report) {
       $total = count($report['inserted']);
       $HTML_report .= "<b>$total new publications from importer: $importer</b><br><ol>\n";
@@ -267,11 +267,11 @@ function tripal_pub_import_publications($report_email = FALSE, $do_update = FALS
         $item = $pub['Title'];
         if ($pub['pub_id']) {
           $item = l($pub['Title'], "$base_url/pub/" . $pub['pub_id']);
-        } 
-        $HTML_report .= "<li>$item</li>\n";      
+        }
+        $HTML_report .= "<li>$item</li>\n";
       }
-      $HTML_report .= "</ol>\n";   
-    }  
+      $HTML_report .= "</ol>\n";
+    }
     $HTML_report .= "</html>";
     $site_email = variable_get('site_mail', '');
     $params = array(
@@ -279,7 +279,7 @@ function tripal_pub_import_publications($report_email = FALSE, $do_update = FALS
     );
     drupal_mail('tripal_pub', 'import_report', $report_email, language_default(), $params, $site_email, TRUE);
   }
-  
+
   // if any of the importers wanted to create contacts from the authors then sync them
   if($do_contact) {
     print "Syncing contacts with Drupal...\n";
@@ -296,25 +296,25 @@ function tripal_pub_import_by_dbxref($pub_dbxref, $do_contact = FALSE, $do_updat
   $pager_id = 0;
   $page = 0;
   $num_pubs = 0;
-  
+
   // get a persistent connection
   $connection = tripal_db_persistent_chado();
   if (!$connection) {
-     print "A persistant connection was not obtained. Loading will be slow\n";
+    print "A persistant connection was not obtained. Loading will be slow\n";
   }
-          
+
   // if we cannot get a connection then let the user know the loading will be slow
   tripal_db_start_transaction();
   if ($connection) {
-     print "\nNOTE: Loading of the publication is performed using a database transaction. \n" .
+    print "\nNOTE: Loading of the publication is performed using a database transaction. \n" .
            "If the load fails or is terminated prematurely then the entire set of \n" .
            "insertions/updates is rolled back and will not be found in the database\n\n";
-  }    
-      
-  if(preg_match('/^(.*?):(.*?)$/', $pub_dbxref, $matches)) {    
+  }
+
+  if(preg_match('/^(.*?):(.*?)$/', $pub_dbxref, $matches)) {
     $dbname = $matches[1];
     $accession = $matches[2];
-    
+
     $criteria = array(
       'num_criteria' => 1,
       'remote_db' => $dbname,
@@ -324,24 +324,24 @@ function tripal_pub_import_by_dbxref($pub_dbxref, $do_contact = FALSE, $do_updat
           'scope' => 'id',
           'operation' => '',
           'is_phrase' => 0,
-        ),
-      ),
+    ),
+    ),
     );
     $remote_db = $criteria['remote_db'];
     $pubs = tripal_pub_get_remote_search_results($remote_db, $criteria, $num_to_retrieve, $pager_id, $page);
     $pub_id = tripal_pub_add_publications($pubs, $do_contact, $do_update);
-          
+
   }
-  
+
   // transaction is complete
   tripal_db_commit_transaction();
-  
+
   print "Transaction Complete\n";
-  
+
   // sync the newly added publications with Drupal
   print "Syncing publications with Drupal...\n";
   tripal_pub_sync_pubs();
-  
+
   // if any of the importers wanted to create contacts from the authors then sync them
   if($do_contact) {
     print "Syncing contacts with Drupal...\n";
@@ -351,7 +351,7 @@ function tripal_pub_import_by_dbxref($pub_dbxref, $do_contact = FALSE, $do_updat
   print "Done.\n";
 }
 /*
- * 
+ *
  */
 function tripal_pub_add_publications($pubs, $do_contact, $update = FALSE) {
   $report = array();
@@ -359,12 +359,12 @@ function tripal_pub_add_publications($pubs, $do_contact, $update = FALSE) {
   $report['inserted'] = array();
   $report['skipped'] = array();
   $total_pubs = count($pubs);
- 
+
   // iterate through the publications and add each one
   $i = 1;
-  foreach ($pubs as $pub) {     
+  foreach ($pubs as $pub) {
     $memory = number_format(memory_get_usage()) . " bytes";
-    print "Processing $i of $total_pubs. Memory usage: $memory.\r";  
+    print "Processing $i of $total_pubs. Memory usage: $memory.\r";
      
     // add the publication to Chado
     $action = '';
@@ -373,8 +373,8 @@ function tripal_pub_add_publications($pubs, $do_contact, $update = FALSE) {
       // add the publication cross reference (e.g. to PubMed)
       if ($pub_id and $pub['Publication Dbxref']) {
         $pub_dbxref = tripal_pub_add_pub_dbxref($pub_id, $pub['Publication Dbxref']);
-      } 
-      $pub['pub_id'] = $pub_id;                                               
+      }
+      $pub['pub_id'] = $pub_id;
     }
 
     switch ($action) {
@@ -390,17 +390,17 @@ function tripal_pub_add_publications($pubs, $do_contact, $update = FALSE) {
       case 'skipped':
         $report['skipped'][] = $pub;
         break;
-    }    
+    }
     $i++;
-  }  
-  print "\n";  
-  return $report;      
+  }
+  print "\n";
+  return $report;
 }
 /*
- * 
+ *
  */
 function tripal_pub_add_pub_dbxref($pub_id, $pub_dbxref) {
-  
+
   // break apart the dbxref
   $dbname = '';
   $accession = '';
@@ -411,25 +411,25 @@ function tripal_pub_add_pub_dbxref($pub_id, $pub_dbxref) {
   else {
     return FALSE;
   }
-  
+
   // check to see if the pub_dbxref record already exist
   $values = array(
     'dbxref_id' => array(
       'accession' => $accession,
       'db_id' => array(
         'name' => $dbname,
-      ),
-    ), 
+  ),
+  ),
     'pub_id' => $pub_id,
   );
   $options = array('statement_name' => 'sel_pubdbxref_dbpu');
   $results = tripal_core_chado_select('pub_dbxref', array('*'), $values, $options);
-  
+
   // if the pub_dbxref record  exist then we don't need to re-add it.
   if(count($results) > 0) {
-    return $results[0];  
+    return $results[0];
   }
-  
+
   // make sure our database already exists
   $db = tripal_db_add_db($dbname);
    
@@ -442,18 +442,18 @@ function tripal_pub_add_pub_dbxref($pub_id, $pub_dbxref) {
   $results = tripal_core_chado_select('dbxref', array('dbxref_id'), $dbxvalues, $dbxoptions);
   // if the accession doesn't exist then add it
   if(count($results) == 0){
-    $dbxref = tripal_db_add_dbxref($db->db_id, $accession);          
+    $dbxref = tripal_db_add_dbxref($db->db_id, $accession);
   }
   else {
     $dbxref = $results[0];
   }
-  
+
   // now add the record
   $options = array('statement_name' => 'ins_pubdbxref_dbpu');
   $results = tripal_core_chado_insert('pub_dbxref', $values, $options);
   if (!$results) {
     watchdog('tripal_pub', "Cannot add publication dbxref: %db:%accession.",
-      array('%db' => $dbname, '%accession' => $accession). WATCHDOG_ERROR);
+    array('%db' => $dbname, '%accession' => $accession). WATCHDOG_ERROR);
     return FALSE;
   }
   return $results;
@@ -461,70 +461,70 @@ function tripal_pub_add_pub_dbxref($pub_id, $pub_dbxref) {
 /**
  * Returns the list of publications that are assigned the database
  * cross-reference provided
- * 
+ *
  * @param $pub_dbxref
  *   The database cross reference accession.  It should be in the form
- *   DB:ACCESSION, where DB is the database name and ACCESSION is the 
+ *   DB:ACCESSION, where DB is the database name and ACCESSION is the
  *   unique publication identifier (e.g. PMID:4382934)
- * 
+ *
  * @return
  *   Returns an array of all the publications that have the provided
  *   cross reference. If no publications match, then an empty array
  *   is returned.
- *   
- * @ingroup tripal_pub_api 
- * 
+ *
+ * @ingroup tripal_pub_api
+ *
  */
 function tripal_pub_get_pubs_by_dbxref($pub_dbxref) {
-  
+
   $return = array();
-  
+
   if(preg_match('/^(.*?):(.*?)$/', $pub_dbxref, $matches)) {
     $dbname = $matches[1];
     $accession = $matches[2];
-  
+
     $values = array(
       'dbxref_id' => array (
         'accession' => $accession,
         'db_id' => array(
           'name' => $dbname
-        ),
-      ),
+    ),
+    ),
     );
     $options = array('statement_name' => 'sel_pubdbxref_db');
-    $results = tripal_core_chado_select('pub_dbxref', array('pub_id'), $values, $options);      
+    $results = tripal_core_chado_select('pub_dbxref', array('pub_id'), $values, $options);
     foreach ($results as $index => $pub) {
-      $return[] = $pub->pub_id;  
-    }    
-  } 
+      $return[] = $pub->pub_id;
+    }
+  }
   return $return;
 }
 /**
  * Returns the list of publications that match a given title, type and year
- * 
+ *
  * @param title
  *   The title of the publication to look for
  * @param type
- *   Optional. The publication type. The value of this field should come from 
+ *   Optional. The publication type. The value of this field should come from
  *   the Tripal Pub vocabulary. This should be the type name (e.g. cvterm.name)
  * @param year
  *   Optional. The year the publication was published.
  * @param series_name
  *   Optional.  The name of the series (e.g. Journal name)
- * 
+ *
  * @return
  *   Returns an array of all the publications that have the provided
  *   cross reference. If no publications match, then an empty array
  *   is returned.
- *   
- * @ingroup tripal_pub_api 
- * 
+ *
+ * @ingroup tripal_pub_api
+ *
  */
 function tripal_pub_get_pubs_by_title_type_pyear_series($title, $type = NULL, $pyear = NULL, $series_name = NULL) {
-  
+
   $return = array();
-  
-  // build the values array for the query. 
+
+  // build the values array for the query.
   $values = array(
     'title' => $title,
   );
@@ -534,9 +534,9 @@ function tripal_pub_get_pubs_by_title_type_pyear_series($title, $type = NULL, $p
       'name' => $type,
       'cv_id' => array(
         'name' => 'tripal_pub'
-      )
-    );
-    $stmnt_suffix .= 'ty';
+        )
+        );
+        $stmnt_suffix .= 'ty';
   }
   if ($pyear) {
     $values['pyear'] = $pyear;
@@ -551,39 +551,39 @@ function tripal_pub_get_pubs_by_title_type_pyear_series($title, $type = NULL, $p
     'case_insensitive_columns' => array('title', 'series_name'),
   );
   $results = tripal_core_chado_select('pub', array('pub_id'), $values, $options);
-  
+
   // iterate through any matches and pull out the pub_id
   foreach ($results as $index => $pub) {
-    $return[] = $pub->pub_id;  
+    $return[] = $pub->pub_id;
   }
-  return $return;  
+  return $return;
 }
 /**
  * Returns the list of publications that match a given title, type and year
- * 
+ *
  * @param title
  *   The title of the publication to look for
  * @param type
- *   Optional. The publication type. The value of this field should come from 
+ *   Optional. The publication type. The value of this field should come from
  *   the Tripal Pub vocabulary. This should be the type name (e.g. cvterm.name)
  * @param year
  *   Optional. The year the publication was published.
  * @param series_name
  *   Optional.  The name of the series (e.g. Journal name)
- * 
+ *
  * @return
  *   Returns an array of all the publications that have the provided
  *   cross reference. If no publications match, then an empty array
  *   is returned.
- *   
- * @ingroup tripal_pub_api 
- * 
+ *
+ * @ingroup tripal_pub_api
+ *
  */
 function tripal_pub_get_pub_by_uniquename($name) {
-  
+
   $return = array();
-  
-  // build the values array for the query. 
+
+  // build the values array for the query.
   $values = array(
     'uniquename' => $name,
   );
@@ -592,12 +592,12 @@ function tripal_pub_get_pub_by_uniquename($name) {
     'case_insensitive_columns' => array('uniquename'),
   );
   $results = tripal_core_chado_select('pub', array('pub_id'), $values, $options);
-  
+
   // iterate through any matches and pull out the pub_id
   foreach ($results as $index => $pub) {
-    $return[] = $pub->pub_id;  
+    $return[] = $pub->pub_id;
   }
-  return $return;  
+  return $return;
 }
 /**
  * Adds a new publication to the Chado, along with all properties and
@@ -608,8 +608,8 @@ function tripal_pub_get_pub_by_uniquename($name) {
  * @param $pub_details
  *   An associative array containing all of the details about the publication.
  * @param $action
- *   This variable will get set to a text value indicating the action that was 
- *   performed. The values include 'skipped', 'inserted', 'updated' or 'error'.    
+ *   This variable will get set to a text value indicating the action that was
+ *   performed. The values include 'skipped', 'inserted', 'updated' or 'error'.
  * @param $do_contact
  *   Optional. Set to TRUE if a contact entry should be added to the Chado contact table
  *   for authors of the publication.
@@ -617,51 +617,51 @@ function tripal_pub_get_pub_by_uniquename($name) {
  *   Optional.  If the publication already exists then this function will return
  *   without adding a new publication.  However, set this value to TRUE to force
  *   the function to pudate the publication using the $pub_details that are provided.
- *   
+ *
  * @return
  *   If the publication already exists, is inserted or updated then the publication
- *   ID is returned, otherwise FALSE is returned. If the publication already exists 
+ *   ID is returned, otherwise FALSE is returned. If the publication already exists
  *   and $update_if_exists is not TRUE then the $action variable is set to 'skipped'.
  *   If the publication already exists and $update_if_exists is TRUE and if the update
  *   was successful then $action is set to 'updated'.  Otherwise on successful insert
  *   the $action variable is set to 'inserted'.  If the function failes then the
  *   $action variable is set to 'error'
- *   
+ *
  */
 function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE, $update_if_exists = FALSE) {
-  
+
   $pub_id = 0;
-  
+
   // first try to find the publication using the accession number. It will have
   // one if the pub has already been loaded for the publication database
   if ($pub_details['Publication Dbxref']) {
-    $results = tripal_pub_get_pubs_by_dbxref($pub_details['Publication Dbxref']);       
+    $results = tripal_pub_get_pubs_by_dbxref($pub_details['Publication Dbxref']);
     if(count($results) == 1) {
-      $pub_id = $results[0];     
+      $pub_id = $results[0];
     }
     elseif (count($results) > 1) {
-      watchdog('tripal_pub', "There are two publications with this accession: %db:%accession. Cannot determine which to update.", 
-        array('%db' => $dbname, '%accession' => $accession), WATCHDOG_ERROR);
-      $action = 'error';     
-      return FALSE;    
+      watchdog('tripal_pub', "There are two publications with this accession: %db:%accession. Cannot determine which to update.",
+      array('%db' => $dbname, '%accession' => $accession), WATCHDOG_ERROR);
+      $action = 'error';
+      return FALSE;
     }
-  }   
-  
+  }
+
   // if we couldn't find a publication by the accession (which means it doesn't
   // yet exist or it has been added using a different publication database) then
   // try to find it using the title and publication year.
   if (!$pub_id and $pub_details['Title']) {
-    
-    $results = tripal_pub_get_pubs_by_title_type_pyear_series($pub_details['Title'], NULL, $pub_details['Year']);    
+
+    $results = tripal_pub_get_pubs_by_title_type_pyear_series($pub_details['Title'], NULL, $pub_details['Year']);
     if (count($results) == 1) {
       $pub_id = $results[0];
     }
     elseif (count($results) > 1) {
       watchdog('tripal_pub', "The publication with the same title, type and year is present multiple times. Cannot ".
         "determine which to use.  Title: '%title'. Type: '%type'. Year: '%year'", 
-        array('%title' => $pub_details['Title'], '%type' => $pub_details['Publication Type'], '%year' => $pub_details['Year']), WATCHDOG_ERROR);
-      $action = 'error';     
-      return FALSE;          
+      array('%title' => $pub_details['Title'], '%type' => $pub_details['Publication Type'], '%year' => $pub_details['Year']), WATCHDOG_ERROR);
+      $action = 'error';
+      return FALSE;
     }
   }
   print "PUB ID: $pub_id\n";
@@ -669,12 +669,12 @@ function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE,
   if ($pub_id and !$update_if_exists) {
     $action = 'skipped';
     return $pub_id;
-  }  
-  
+  }
+
   // get the publication type (use the first publication type, any others will get stored as properties)
   if (is_array($pub_details['Publication Type'])) {
     $pub_type = tripal_cv_get_cvterm_by_name($pub_details['Publication Type'][0], NULL, 'tripal_pub');
-  } 
+  }
   elseif ($pub_details['Publication Type']) {
     $pub_type = tripal_cv_get_cvterm_by_name($pub_details['Publication Type'], NULL, 'tripal_pub');
   }
@@ -684,10 +684,10 @@ function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE,
     return FALSE;
   }
   if (!$pub_type) {
-    watchdog('tripal_pub', "Cannot find publication type: '%type'", 
-      array('%type' => $pub_details['Publication Type'][0]), WATCHDOG_ERROR);
+    watchdog('tripal_pub', "Cannot find publication type: '%type'",
+    array('%type' => $pub_details['Publication Type'][0]), WATCHDOG_ERROR);
     $action = 'error';
-    return FALSE;   
+    return FALSE;
   }
 
   // build the values array for inserting or updating
@@ -701,36 +701,36 @@ function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE,
     'uniquename'  => $pub_details['Citation'],
     'type_id'     => $pub_type->cvterm_id,
   );
-  
+
   // if there is no pub_id then we need to do an insert.
   if (!$pub_id) {
-    $options = array('statement_name' => 'ins_pub_tivoseispypaunty');  
-    $pub = tripal_core_chado_insert('pub', $values, $options);     
+    $options = array('statement_name' => 'ins_pub_tivoseispypaunty');
+    $pub = tripal_core_chado_insert('pub', $values, $options);
     if (!$pub) {
-      watchdog('tripal_pub', "Cannot insert the publication with title: %title", 
-        array('%title' => $pub_details['Title']), WATCHDOG_ERROR);
+      watchdog('tripal_pub', "Cannot insert the publication with title: %title",
+      array('%title' => $pub_details['Title']), WATCHDOG_ERROR);
       $action = 'error';
-      return FALSE;   
+      return FALSE;
     }
     $pub_id = $pub['pub_id'];
     $action = 'inserted';
   }
-  
+
   // if there is a pub_id and we've been told to update, then do the update
   if ($pub_id and $update_if_exists) {
     $match = array('pub_id' => $pub_id);
-    $options = array('statement_name' => 'up_pub_tivoseispypaunty');  
-    $success = tripal_core_chado_update('pub', $match, $values, $options);     
+    $options = array('statement_name' => 'up_pub_tivoseispypaunty');
+    $success = tripal_core_chado_update('pub', $match, $values, $options);
     if (!$success) {
-      watchdog('tripal_pub', "Cannot update the publication with title: %title", 
-        array('%title' => $pub_details['Title']), WATCHDOG_ERROR);
+      watchdog('tripal_pub', "Cannot update the publication with title: %title",
+      array('%title' => $pub_details['Title']), WATCHDOG_ERROR);
       $action = 'error';
-      return FALSE;   
-    } 
+      return FALSE;
+    }
     $action = 'updated';
   }
-  
-  // before we add any new properties we need to remove those that are there if this 
+
+  // before we add any new properties we need to remove those that are there if this
   // is an update.  The only thing we don't want to remove are the 'Publication Dbxref'
   if ($update_if_exists) {
     $sql = "
@@ -744,98 +744,98 @@ function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE,
         )
     ";
     chado_query($sql, $pub_id);
-  } 
-  
+  }
+
   // iterate through the properties and add them
   foreach ($pub_details as $key => $value) {
-     // the pub_details may have the raw search data (e.g. in XML from PubMed.  We'll irgnore this for now
-     if($key == 'raw') {
-       continue;
-     }         
-     // get the cvterm by name or synonym
-     $cvterm = tripal_cv_get_cvterm_by_name($key, NULL, 'tripal_pub');
-     if (!$cvterm) {
-       $cvterm = tripal_cv_get_cvterm_by_synonym($key, NULL, 'tripal_pub');
-     }
-     if (!$cvterm) {
-       watchdog('tripal_pub', "Cannot find term: '%prop'. Skipping.", array('%prop' => $key), WATCHDOG_ERROR);
-       continue;
-     }
+    // the pub_details may have the raw search data (e.g. in XML from PubMed.  We'll irgnore this for now
+    if($key == 'raw') {
+      continue;
+    }
+    // get the cvterm by name or synonym
+    $cvterm = tripal_cv_get_cvterm_by_name($key, NULL, 'tripal_pub');
+    if (!$cvterm) {
+      $cvterm = tripal_cv_get_cvterm_by_synonym($key, NULL, 'tripal_pub');
+    }
+    if (!$cvterm) {
+      watchdog('tripal_pub', "Cannot find term: '%prop'. Skipping.", array('%prop' => $key), WATCHDOG_ERROR);
+      continue;
+    }
 
-     // skip details that won't be stored as properties
-     if ($key == 'Author List') {
-       tripal_pub_add_authors($pub_id, $value, $do_contact);
-       continue;
-     }
-     if ($key == 'Title' or $key == 'Volume' or $key == 'Journal Name' or $key == 'Issue' or
-         $key == 'Year' or $key == 'Pages') {
-       continue;      
-     }     
+    // skip details that won't be stored as properties
+    if ($key == 'Author List') {
+      tripal_pub_add_authors($pub_id, $value, $do_contact);
+      continue;
+    }
+    if ($key == 'Title' or $key == 'Volume' or $key == 'Journal Name' or $key == 'Issue' or
+    $key == 'Year' or $key == 'Pages') {
+      continue;
+    }
      
-     $success = 0;
-     if (is_array($value)) {       
-       foreach ($value as $subkey => $subvalue) {
-         // if the key is an integer then this array is a simple list and
-         // we will insert using the primary key. Otheriwse, use the new key 
-         if(is_int($subkey)) {
-           $success = tripal_core_insert_property('pub', $pub_id, $key, 'tripal_pub', $subvalue, FALSE);
-         }
-         else {
-           $success = tripal_core_insert_property('pub', $pub_id, $subkey, 'tripal_pub', $subvalue, FALSE);           
-         }
-       }  
-     }
-     else {
-       $success = tripal_core_insert_property('pub', $pub_id, $key, 'tripal_pub', $value, TRUE);
-     }
-     if (!$success) { 
-       watchdog('tripal_pub', "Cannot add property '%prop' to publication. Skipping.", 
-         array('%prop' => $key), WATCHDOG_ERROR);
-       continue;
-     }
+    $success = 0;
+    if (is_array($value)) {
+      foreach ($value as $subkey => $subvalue) {
+        // if the key is an integer then this array is a simple list and
+        // we will insert using the primary key. Otheriwse, use the new key
+        if(is_int($subkey)) {
+          $success = tripal_core_insert_property('pub', $pub_id, $key, 'tripal_pub', $subvalue, FALSE);
+        }
+        else {
+          $success = tripal_core_insert_property('pub', $pub_id, $subkey, 'tripal_pub', $subvalue, FALSE);
+        }
+      }
+    }
+    else {
+      $success = tripal_core_insert_property('pub', $pub_id, $key, 'tripal_pub', $value, TRUE);
+    }
+    if (!$success) {
+      watchdog('tripal_pub', "Cannot add property '%prop' to publication. Skipping.",
+      array('%prop' => $key), WATCHDOG_ERROR);
+      continue;
+    }
   }
-  
+
   return $pub_id;
 }
 
 /*
- * 
+ *
  */
 function tripal_pub_add_authors($pub_id, $authors, $do_contact) {
-  $rank = 0;   
-  
+  $rank = 0;
+
   // first remove any of the existing pubauthor entires
   $sql = "DELETE FROM {pubauthor} WHERE pub_id = %d";
   chado_query($sql, $pub_id);
-  
-  // iterate through the authors and add them to the pubauthors and contact 
+
+  // iterate through the authors and add them to the pubauthors and contact
   // tables of chado, then link them through the custom pubauthors_contact table
-  foreach ($authors as $author) {    
+  foreach ($authors as $author) {
     // skip invalid author entires
     if ($author['valid'] == 'N') {
       continue;
     }
     // remove the 'valid' property as we don't have a CV term for it
     unset($author['valid']);
-    
+
     // construct the contact.name field using the author information
     $name = '';
     $type = 'Person';
     if ($author['Given Name']) {
       $name .= $author['Given Name'];
     }
-    if ($author['Surname']) { 
+    if ($author['Surname']) {
       $name .= ' ' . $author['Surname'];
     }
-    if ($author['Suffix']) { 
+    if ($author['Suffix']) {
       $name .= ' ' . $author['Suffix'];
     }
     if ($author['Collective']) {
       $name = $author['Collective'];
       $type = 'Collective';
     }
-    $name = trim($name);    
-           
+    $name = trim($name);
+     
     // add an entry to the pubauthors table
     $values = array(
       'pub_id' => $pub_id,
@@ -849,14 +849,14 @@ function tripal_pub_add_authors($pub_id, $authors, $do_contact) {
 
     // if the user wants us to create a contact for each author then do it.
     if ($do_contact) {
-      // Add the contact 
+      // Add the contact
       $contact = tripal_contact_add_contact($name, '', $type, $author);
-            
+
       // if we have succesfully added the contact and the pubauthor entries then we want to
-      // link them together 
+      // link them together
       if ($contact and $pubauthor) {
-      
-        // link the pubauthor entry to the contact 
+
+        // link the pubauthor entry to the contact
         $values = array(
           'pubauthor_id' => $pubauthor['pubauthor_id'],
           'contact_id' => $contact['contact_id'],
@@ -868,7 +868,7 @@ function tripal_pub_add_authors($pub_id, $authors, $do_contact) {
         }
       }
     }
-    $rank++;   
+    $rank++;
   }
 }
 
@@ -954,20 +954,20 @@ function tripal_pub_delete_property($pub_id, $property) {
 }
 
 /*
- * 
+ *
  */
 function tripal_pub_create_citation($pub) {
   $citation = $pub['Authors'] . '. ' . $pub['Title'] .  '. ';
-  
+
   if ($pub['Journal Name']) {
     $citation .= $pub['Journal Name'] . '. ';
   }
   elseif ($pub['Journal Abbreviation']) {
-    $citation .= $pub['Journal Abbreviation'] . '. ';  
-  }  
+    $citation .= $pub['Journal Abbreviation'] . '. ';
+  }
   $citation .= $pub['Publication Date'];
   if ($pub['Volume'] or $pub['Issue'] or $pub['Pages']) {
-    $citation .= '; ';  
+    $citation .= '; ';
   }
   if ($pub['Volume']) {
     $citation .= $pub['Volume'];
@@ -978,10 +978,10 @@ function tripal_pub_create_citation($pub) {
   if ($pub['Pages']) {
     if($pub['Volume']) {
       $citation .= ':';
-    }    
+    }
     $citation .= $pub['Pages'];
   }
   $citation .= '.';
-  
+
   return $citation;
 }

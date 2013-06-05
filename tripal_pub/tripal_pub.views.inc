@@ -26,26 +26,26 @@ function tripal_pub_views_data()  {
   if (module_exists('tripal_views')) {
     $tables = array(
       'pub'
-    );
-    foreach ($tables as $tablename) {
-      if (!tripal_views_is_integrated($tablename, 10)) {
-        $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename, TRUE);
-        tripal_views_integration_add_entry($table_integration_array);
+      );
+      foreach ($tables as $tablename) {
+        if (!tripal_views_is_integrated($tablename, 10)) {
+          $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename, TRUE);
+          tripal_views_integration_add_entry($table_integration_array);
+        }
       }
-    }
 
-    $tables = array(
+      $tables = array(
       'pub_dbxref',
       'pub_relationship',
       'pubauthor',
       'pubprop'
-    );
-    foreach ($tables as $tablename) {
-      if (!tripal_views_is_integrated($tablename, 10)) {
-        $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename, FALSE);
-        tripal_views_integration_add_entry($table_integration_array);
+      );
+      foreach ($tables as $tablename) {
+        if (!tripal_views_is_integrated($tablename, 10)) {
+          $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename, FALSE);
+          tripal_views_integration_add_entry($table_integration_array);
+        }
       }
-    }
   }
 
   return $data;
@@ -63,9 +63,9 @@ function tripal_pub_views_handlers() {
   return array(
    'info' => array(
      'path' => drupal_get_path('module', 'tripal_pub') . '/views/handlers',
-    ),
+  ),
    'handlers' => array(
 
-    ),
+  ),
   );
 }

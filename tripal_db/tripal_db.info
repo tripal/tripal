@@ -3,5 +3,5 @@ description = The database module for the Tripal package that integrates Drupal 
 core = 6.x
 project = tripal_db
 package = Tripal
-version = 6.x-1.0-fix1
+version = 6.x-1.1
 dependencies[] = tripal_core

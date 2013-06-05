@@ -1,40 +1,40 @@
 <?php
 /**
- *  
+ *
  */
 function tripal_pub_remote_alter_form_AGL(&$form, $form_state) {
   $num_criteria = $form['num_criteria']['#default_value'];
-  
-  // So far we haven't been able to get AGL to filter results to only 
+
+  // So far we haven't been able to get AGL to filter results to only
   // include pubs by the XX number days in the past.  So, we will
   // change the 'days' element to be the year to query
   $form['days']['#title'] = t('Year');
   $form['days']['#description']  = t('Please enter a year to limit records by the year they were published, created or modified in the database.');
-  
+
   // The Journal Name filter doesn't seem to work, so remove it
   for($i = 1; $i <= $num_criteria; $i++) {
     unset($form['criteria'][$i]["scope-$i"]['#options']['journal']);
   }
-  
+
 }
 /**
- *  
+ *
  */
 function tripal_pub_remote_validate_form_AGL(&$form, $form_state) {
   $days =  trim($form_state['values']["days"]);
   $num_criteria = $form['num_criteria']['#default_value'];
-  
+
   if ($days and !preg_match('/^\d\d\d\d$/', $days)) {
     form_set_error("days", "Please enter a four digit year.");
   }
-  
+
   $num_ids = 0;
-  for ($i = 1; $i <= $num_criteria; $i++) {            
+  for ($i = 1; $i <= $num_criteria; $i++) {
     $search_terms =  trim($form_state['values']["search_terms-$i"]);
     $scope =  $form_state['values']["scope-$i"];
     if ($scope == 'id' and !preg_match('/^AGL:\d+$/', $search_terms)) {
-      form_set_error("search_terms-$i", "The AGL accession be a numeric value, prefixed with 'AGL:' (e.g. AGL:3890740).");  
-    }       
+      form_set_error("search_terms-$i", "The AGL accession be a numeric value, prefixed with 'AGL:' (e.g. AGL:3890740).");
+    }
     if ($scope == 'id') {
       $num_ids++;
     }
@@ -47,15 +47,15 @@ function tripal_pub_remote_validate_form_AGL(&$form, $form_state) {
  *
  */
 function tripal_pub_remote_search_AGL($search_array, $num_to_retrieve, $pager_id) {
-  // get some values from the serach array  
+  // get some values from the serach array
   $num_criteria = $search_array['num_criteria'];
-  $days = $search_array['days'];   
+  $days = $search_array['days'];
 
   // set some defaults
   $search_array['limit'] = $num_to_retrieve;
-  
+
   // To build the CCL search string we want to have a single entry for 'author', 'title', 'abstract'
-  // or 'id', and also the corresponding 'not for each of those. 
+  // or 'id', and also the corresponding 'not for each of those.
   // But the search form allows the user to have multiple rows of the same type. So, we will build the
   // search string separately for each category and it's negative category (if NOT is selected as the op)
   // and at the end we will put them together into a single search string.  We need to keep
@@ -89,7 +89,7 @@ function tripal_pub_remote_search_AGL($search_array, $num_to_retrieve, $pager_id
     $scope = $search_array['criteria'][$i]['scope'];
     $is_phrase = $search_array['criteria'][$i]['is_phrase'];
     $op = $search_array['criteria'][$i]['operation'];
-    
+
     if ($op) {
       $op = strtolower($op);
     }
@@ -99,43 +99,43 @@ function tripal_pub_remote_search_AGL($search_array, $num_to_retrieve, $pager_id
       $search_terms = preg_replace('/ OR /', ' or ', $search_terms);
       $search_terms = preg_replace('/ AND /', ' and ', $search_terms);
     }
-    // else make sure the search terms are surrounded by quotes 
+    // else make sure the search terms are surrounded by quotes
     else {
-      $search_terms = "\"$search_terms\""; 
-    }   
-    
+      $search_terms = "\"$search_terms\"";
+    }
+
     // if this is a 'not' operation then we want to change it to an
     // and
-    $negate = '';    
+    $negate = '';
     if ($op == 'not') {
       $scope = "negate_$scope";
       $op = 'or';
     }
     $order[] = array('scope' => $scope, 'op' => $op);
-    
+
     // build each category
     if ($scope == 'title') {
       if ($first_title) {
         $title .= "($search_terms) ";
         $first_title = 0;
-      } 
-      else {
-        $title .= "$op ($search_terms) "; 
       }
-    }  
+      else {
+        $title .= "$op ($search_terms) ";
+      }
+    }
     if ($scope == 'negate_title') {
       if ($first_negate_title) {
         $negate_title .= "($search_terms) ";
         $first_negate_title = 0;
-      } 
-      else {
-        $negate_title .= "$op ($search_terms) "; 
       }
-    } 
+      else {
+        $negate_title .= "$op ($search_terms) ";
+      }
+    }
     elseif ($scope == 'author') {
       if ($first_author) {
         $author .= "($search_terms) ";
-        $first_author = 0;  
+        $first_author = 0;
       }
       else {
         $author .= "$op ($search_terms) ";
@@ -144,12 +144,12 @@ function tripal_pub_remote_search_AGL($search_array, $num_to_retrieve, $pager_id
     elseif ($scope == 'negate_author') {
       if ($first_negate_author) {
         $negate_author .= "($search_terms) ";
-        $first_negate_author = 0;  
+        $first_negate_author = 0;
       }
       else {
         $negate_author .= "$op ($search_terms) ";
       }
-    } 
+    }
     elseif ($scope == 'abstract') {
       if ($first_abstract) {
         $abstract .= "($search_terms) ";
@@ -189,21 +189,21 @@ function tripal_pub_remote_search_AGL($search_array, $num_to_retrieve, $pager_id
     elseif ($scope == 'id') {
       if ($first_id) {
         $id .= "(" . preg_replace('/AGL:([^\s]*)/', '$1', $search_terms) . ") ";
-        $first_id = 0; 
+        $first_id = 0;
       }
       else {
         $id .= "$op (" . preg_replace('/AGL:([^\s]*)/', '$1', $search_terms) . ") ";
       }
-    } 
+    }
     elseif ($scope == 'negate_id') {
       if ($first_negate_id) {
         $negate_id .= "(" . preg_replace('/AGL:([^\s]*)/', '$1', $search_terms) . ") ";
-        $first_negate_id = 0; 
+        $first_negate_id = 0;
       }
       else {
         $negate_id .= "$op (" . preg_replace('/AGL:([^\s]*)/', '$1', $search_terms) . ") ";
       }
-    } 
+    }
     elseif ($scope == 'any'){
       if ($first_any) {
         $any .= "($search_terms) ";
@@ -211,7 +211,7 @@ function tripal_pub_remote_search_AGL($search_array, $num_to_retrieve, $pager_id
       }
       else {
         $any .= "$op ($search_terms) ";
-      } 
+      }
     }
     elseif ($scope == 'negate_any'){
       if ($first_negate_any) {
@@ -220,10 +220,10 @@ function tripal_pub_remote_search_AGL($search_array, $num_to_retrieve, $pager_id
       }
       else {
         $negate_any .= "$op ($search_terms) ";
-      } 
+      }
     }
-  } 
-  // now build the CCL string in order 
+  }
+  // now build the CCL string in order
   $abstract_done = 0;
   $author_done = 0;
   $journal_done = 0;
@@ -264,7 +264,7 @@ function tripal_pub_remote_search_AGL($search_array, $num_to_retrieve, $pager_id
       $ccl .= "not author=($negate_journal) ";
       $negate_journal_done = 1;
     }
-    if ($order[$i]['scope'] == 'id' and !$id_done) {      
+    if ($order[$i]['scope'] == 'id' and !$id_done) {
       $op = $order[$i]['op'];
       $ccl .= "$op id=($id) ";
       $id_done = 1;
@@ -300,21 +300,21 @@ function tripal_pub_remote_search_AGL($search_array, $num_to_retrieve, $pager_id
 
   // remove any preceeding 'and' or 'or'
   $ccl = preg_replace('/^\s*(and|or)/', '', $ccl);
-    
-  // yaz_connect() prepares for a connection to a Z39.50 server. This function is non-blocking 
-  // and does not attempt to establish a connection - it merely prepares a connect to be 
+
+  // yaz_connect() prepares for a connection to a Z39.50 server. This function is non-blocking
+  // and does not attempt to establish a connection - it merely prepares a connect to be
   // performed later when yaz_wait() is called.
   //$yazc = yaz_connect('agricola.nal.usda.gov:7090/voyager'); // NAL Catalog
   $yazc = yaz_connect('agricola.nal.usda.gov:7190/voyager');  // NAL Article Citation Database
-    
+
   // use the USMARC record type.  But OPAC is also supported by Agricola
   yaz_syntax($yazc, "usmarc");
-  
+
   // the search query is built using CCL, we need to first
   // configure it so it can map the attributes to defined identifiers
   // The attribute set used by AGL can be found at the bottom of this page:
-  // http://agricola.nal.usda.gov/help/z3950.html  
-  // 
+  // http://agricola.nal.usda.gov/help/z3950.html
+  //
   // More in depth details:  http://www.loc.gov/z3950/agency/bib1.html
   //
   // CCL Syntax: http://www.indexdata.com/yaz/doc/tools.html#CCL
@@ -326,31 +326,31 @@ function tripal_pub_remote_search_AGL($search_array, $num_to_retrieve, $pager_id
     "id"       => "u=12",
     "year"     => "u=30 r=o", 
     "journal"  => "u=1033"
-  );
-  yaz_ccl_conf($yazc, $fields);
-    
-  if (!yaz_ccl_parse($yazc, $ccl, &$cclresult)) {
-    drupal_set_message('Error parsing search string: ' . $cclresult["errorstring"], "error");
-    watchdog('tripal_pub', 'Error: %errstr', array('%errstr' => $cclresult["errorstring"]), WATCHDOG_ERROR);
-    return array();
-  } 
-  $search_str = $cclresult["rpn"];    
-  
-  $search_array['search_string'] = $search_str;
-    
-  // save the YAZ connection in the session for use by other functions
-  $_SESSION['tripal_pub_AGL_query'][$search_str]['yaz_connection'] = $yazc;
-  
-  //dpm($search_array);
-  // we want to get the list of pubs using the search terms but using a Drupal style pager
-  $pubs = tripal_pager_callback('tripal_pub_AGL_range',  $num_to_retrieve, $pager_id, 
+    );
+    yaz_ccl_conf($yazc, $fields);
+
+    if (!yaz_ccl_parse($yazc, $ccl, &$cclresult)) {
+      drupal_set_message('Error parsing search string: ' . $cclresult["errorstring"], "error");
+      watchdog('tripal_pub', 'Error: %errstr', array('%errstr' => $cclresult["errorstring"]), WATCHDOG_ERROR);
+      return array();
+    }
+    $search_str = $cclresult["rpn"];
+
+    $search_array['search_string'] = $search_str;
+
+    // save the YAZ connection in the session for use by other functions
+    $_SESSION['tripal_pub_AGL_query'][$search_str]['yaz_connection'] = $yazc;
+
+    //dpm($search_array);
+    // we want to get the list of pubs using the search terms but using a Drupal style pager
+    $pubs = tripal_pager_callback('tripal_pub_AGL_range',  $num_to_retrieve, $pager_id,
     'tripal_pub_AGL_count', $search_array);
-  
-  // close the connection
-  unset($_SESSION['tripal_pub_AGL_query'][$search_str]['yaz_connection']);
-  yaz_close($yazc);  
-  
-  return $pubs;
+
+    // close the connection
+    unset($_SESSION['tripal_pub_AGL_query'][$search_str]['yaz_connection']);
+    yaz_close($yazc);
+
+    return $pubs;
 }
 /*
  * This function is used as the callback function when used with the
@@ -361,7 +361,7 @@ function tripal_pub_AGL_count($search_array) {
   $search_str = $search_array['search_string'];
   $days       = $search_array['days'];
   $limit      = $search_array['limit'];
-  
+
   $yazc = $_SESSION['tripal_pub_AGL_query'][$search_str]['yaz_connection'];
   //yaz_sort($yazc, "1=31 id"); // sort by publication date descending
   if (!yaz_search($yazc, "rpn", $search_str)){
@@ -372,7 +372,7 @@ function tripal_pub_AGL_count($search_array) {
       $error_msg .= " $additional";
     }
     drupal_set_message("ERROR preparing search at AGL: ($error_no) $error_msg", "error");
-    return 0;    
+    return 0;
   }
   if (!yaz_wait()) {
     $error_no = yaz_errno($yazc);
@@ -384,10 +384,10 @@ function tripal_pub_AGL_count($search_array) {
     drupal_set_message("ERROR waiting on search at AGL: ($error_no) $error_msg", "error");
     return 0;
   }
-  
+
   // get the total number of results from the serach
-  $count = yaz_hits($yazc);  
-  $_SESSION['tripal_pub_AGL_query'][$search_str]['Count'] = $count; 
+  $count = yaz_hits($yazc);
+  $_SESSION['tripal_pub_AGL_query'][$search_str]['Count'] = $count;
   return $count;
 }
 
@@ -398,14 +398,14 @@ function tripal_pub_AGL_count($search_array) {
  */
 function tripal_pub_AGL_range($search_array, $start = 0, $limit = 10) {
   $pubs = array();
-  
+
   $search_str = $search_array['search_string'];
   $days       = $search_array['days'];
   $limit      = $search_array['limit'];
-  
+
   $yazc  = $_SESSION['tripal_pub_AGL_query'][$search_str]['yaz_connection'];
   $count = $_SESSION['tripal_pub_AGL_query'][$search_str]['Count'];
-  yaz_range($yazc, 1, $num_pubs); 
+  yaz_range($yazc, 1, $num_pubs);
   if (!yaz_present($yazc)) {
     $error_no = yaz_errno($yazc);
     $error_msg = yaz_error($yazc);
@@ -415,43 +415,43 @@ function tripal_pub_AGL_range($search_array, $start = 0, $limit = 10) {
     }
     drupal_set_message("ERROR waiting on search at AGL: ($error_no) $error_msg", "error");
     return $pubs;
-  }  
-     
+  }
+   
   if ($start + $limit > $count) {
     $limit = $count - $start;
   }
-  for($i = $start; $i < $start + $limit; $i++) { 
+  for($i = $start; $i < $start + $limit; $i++) {
     $pub_xml = yaz_record($yazc, $i + 1, 'xml; charset=marc-8,utf-8');
     $pub     = tripal_pub_AGL_parse_pubxml($pub_xml);
-    $pubs[]  = $pub;     
-  } 
+    $pubs[]  = $pub;
+  }
   return $pubs;
 }
 
 /*
  * Description of XML format:
  * http://www.loc.gov/marc/bibliographic/bdsummary.html
- * 
+ *
  */
 function tripal_pub_AGL_parse_pubxml($pub_xml) {
   $pub = array();
-  
+
   // publications from the NAL Article Citation Database are all journal articles
   $pub['Publication Type'][] = 'Journal Article';
-  
+
   if (!$pub_xml) {
     return $pub;
   }
-  
+
   // read the XML and iterate through it.
   $xml = new XMLReader();
   $xml->xml(trim($pub_xml));
-  while ($xml->read()) {    
-    $element = $xml->name; 
+  while ($xml->read()) {
+    $element = $xml->name;
 
-    if ($xml->nodeType == XMLReader::ELEMENT and $element == 'controlfield') {      
+    if ($xml->nodeType == XMLReader::ELEMENT and $element == 'controlfield') {
       $tag = $xml->getAttribute('tag');
-      $xml->read(); 
+      $xml->read();
       $value = $xml->value;
       switch ($tag) {
         case '001':  // control number
@@ -471,31 +471,31 @@ function tripal_pub_AGL_parse_pubxml($pub_xml) {
             '04' => 'Apr', '05' => 'May', '06' => 'Jun', 
             '07' => 'Jul', '08' => 'Aug', '09' => 'Sep', 
             '10' => 'Oct', '11' => 'Nov', '12' => 'Dec'
-          );
-          $date0 = substr($value, 0, 6);  // date entered on file
-          $date1 = substr($value, 7, 4);  // year of publication
-          $date2 = substr($value, 11, 4); // month of publication
-          $place = substr($value, 15, 3);
-          $lang  = substr($value, 35, 3);
-          if (preg_match('/\d\d\d\d/', $date1)) {
-            $pub['Year'] = $date1;
-            $pub['Publication Date'] = $date1;
-          }
-          if (preg_match('/\d\d/', $date2)) {
-            $pub['Publication Date'] = $date1 . " " . $month[substr($date2, 0, 2)] . " " . substr($date2, 3, 2);
-          }
-          if (!preg_match('/\s+/', $place)) {
-            $pub['Published Location'] = $place;
-          }
-          if (!preg_match('/\s+/', $lang)) {
-            $pub['Language Abbr'] = $lang;
-          }
-          break;
+            );
+            $date0 = substr($value, 0, 6);  // date entered on file
+            $date1 = substr($value, 7, 4);  // year of publication
+            $date2 = substr($value, 11, 4); // month of publication
+            $place = substr($value, 15, 3);
+            $lang  = substr($value, 35, 3);
+            if (preg_match('/\d\d\d\d/', $date1)) {
+              $pub['Year'] = $date1;
+              $pub['Publication Date'] = $date1;
+            }
+            if (preg_match('/\d\d/', $date2)) {
+              $pub['Publication Date'] = $date1 . " " . $month[substr($date2, 0, 2)] . " " . substr($date2, 3, 2);
+            }
+            if (!preg_match('/\s+/', $place)) {
+              $pub['Published Location'] = $place;
+            }
+            if (!preg_match('/\s+/', $lang)) {
+              $pub['Language Abbr'] = $lang;
+            }
+            break;
         default:  // unhandled tag
           break;
-      }          
+      }
     }
-    elseif ($xml->nodeType == XMLReader::ELEMENT and $element == 'datafield') { 
+    elseif ($xml->nodeType == XMLReader::ELEMENT and $element == 'datafield') {
       $tag  = $xml->getAttribute('tag');
       $ind1 = $xml->getAttribute('ind1');
       $ind2 = $xml->getAttribute('ind2');
@@ -505,8 +505,8 @@ function tripal_pub_AGL_parse_pubxml($pub_xml) {
         case '35':  // System Control Number
           $author = array();
           $codes = tripal_pub_remote_search_AGL_get_subfield($xml);
-          foreach ($codes as $code => $value) {    
-            switch ($code) {                
+          foreach ($codes as $code => $value) {
+            switch ($code) {
               case 'a': // System control number
                 $pub['Publication Accession'] = $value;
                 break;
@@ -515,8 +515,8 @@ function tripal_pub_AGL_parse_pubxml($pub_xml) {
         case '40':  // Cataloging Source (NR)
           $author = array();
           $codes = tripal_pub_remote_search_AGL_get_subfield($xml);
-          foreach ($codes as $code => $value) {    
-            switch ($code) {                
+          foreach ($codes as $code => $value) {
+            switch ($code) {
               case 'a':  // original cataolging agency
                 $pub['Publication Database'] = $value;
                 break;
@@ -527,13 +527,13 @@ function tripal_pub_AGL_parse_pubxml($pub_xml) {
           break;
         case '100':  // main entry-personal name
           $author = tripal_pub_remote_search_AGL_get_author($xml, $ind1);
-          $pub['Author List'][] = $author; 
+          $pub['Author List'][] = $author;
           break;
         case '110':  // main entry-corporate nmae
           $author = array();
           $codes = tripal_pub_remote_search_AGL_get_subfield($xml);
-          foreach ($codes as $code => $value) {    
-            switch ($code) {                
+          foreach ($codes as $code => $value) {
+            switch ($code) {
               case 'a': // Corporate name or jurisdiction name as entry elemen
                 $author['Collective'] = $value;
                 break;
@@ -542,7 +542,7 @@ function tripal_pub_AGL_parse_pubxml($pub_xml) {
                 break;
             }
           }
-          $pub['Author List'][] = $author; 
+          $pub['Author List'][] = $author;
           break;
         case '111':  // main entry-meeting name
           break;
@@ -561,8 +561,8 @@ function tripal_pub_AGL_parse_pubxml($pub_xml) {
           break;
         case '245':  // title statement
           $codes = tripal_pub_remote_search_AGL_get_subfield($xml);
-          foreach ($codes as $code => $value) {          
-            switch ($code) {                
+          foreach ($codes as $code => $value) {
+            switch ($code) {
               case 'a':
                 $pub['Title'] = trim(preg_replace('/\.$/', '', $value));
                 break;
@@ -578,7 +578,7 @@ function tripal_pub_AGL_parse_pubxml($pub_xml) {
         case '246':  // varying form of title
           break;
         case '247':  // former title
-          break;            
+          break;
 
         case '250':  // edition statement
           break;
@@ -586,7 +586,7 @@ function tripal_pub_AGL_parse_pubxml($pub_xml) {
           break;
         case '255':  // cartographic mathematical data
           break;
-        case '256':  // computer file characteristics 
+        case '256':  // computer file characteristics
           break;
         case '257':  // country of producing entity
           break;
@@ -594,14 +594,14 @@ function tripal_pub_AGL_parse_pubxml($pub_xml) {
           break;
         case '260':  // publication, distribution ,etc (imprint)
           $codes = tripal_pub_remote_search_AGL_get_subfield($xml);
-          foreach ($codes as $code => $value) {          
-            switch ($code) {                
+          foreach ($codes as $code => $value) {
+            switch ($code) {
               case 'a':
                 $pub['Published Location'] = $value;
                 break;
               case 'b':
                 $pub['Publisher'] = $value;
-                break;                
+                break;
               case 'c':
                 $pub['Publication Date'] = $value;
                 break;
@@ -614,25 +614,25 @@ function tripal_pub_AGL_parse_pubxml($pub_xml) {
           break;
         case '270':  // Address
           break;
-          
+
         case '300':  // Address
           $codes = tripal_pub_remote_search_AGL_get_subfield($xml);
-          foreach ($codes as $code => $value) {          
-            switch ($code) {                
+          foreach ($codes as $code => $value) {
+            switch ($code) {
               case 'a':
                 $pages = $value;
                 $pages = preg_replace('/^p\. /', '', $pages);
                 $pages = preg_replace('/\.$/', '' , $pages);
                 if(preg_match('/p$/', $pages)) {
                   // skip this, it's the number of pages not the page numbers
-                } 
+                }
                 else {
                   $pub['Pages'] = $pages;
                 }
                 break;
             }
           }
-          break;                      
+          break;
 
 
         case '500':  // series statements
@@ -642,8 +642,8 @@ function tripal_pub_AGL_parse_pubxml($pub_xml) {
           break;
         case '520':  // Summary, etc
           $codes = tripal_pub_remote_search_AGL_get_subfield($xml);
-          foreach ($codes as $code => $value) {    
-            switch ($code) {                
+          foreach ($codes as $code => $value) {
+            switch ($code) {
               case 'a':
                 $pub['Abstract'] = $value;
                 break;
@@ -652,33 +652,33 @@ function tripal_pub_AGL_parse_pubxml($pub_xml) {
           break;
         case '650':  // Subject Added Entry-Topical Term
           $codes = tripal_pub_remote_search_AGL_get_subfield($xml);
-          foreach ($codes as $code => $value) {    
+          foreach ($codes as $code => $value) {
             switch ($code) {
               case 'a':
                 $pub['Keywords'][] = $value;
-                break;  
+                break;
             }
-          }          
+          }
           break;
         case '653':  // Index Term-Uncontrolled
           $codes = tripal_pub_remote_search_AGL_get_subfield($xml);
-          foreach ($codes as $code => $value) {    
+          foreach ($codes as $code => $value) {
             switch ($code) {
               case 'a':
                 $pub['Keywords'][] = $value;
-                break;  
+                break;
             }
           }
           break;
         case '700':  // Added Entry-Personal Name
           $author = tripal_pub_remote_search_AGL_get_author($xml, $ind1);
-          $pub['Author List'][] = $author; 
+          $pub['Author List'][] = $author;
           break;
         case '710':  // Added Entry-Corporate Name
           $author = array();
           $codes = tripal_pub_remote_search_AGL_get_subfield($xml);
-          foreach ($codes as $code => $value) {    
-            switch ($code) {                
+          foreach ($codes as $code => $value) {
+            switch ($code) {
               case 'a': // Corporate name or jurisdiction name as entry elemen
                 $author['Collective'] = $value;
                 break;
@@ -687,13 +687,13 @@ function tripal_pub_AGL_parse_pubxml($pub_xml) {
                 break;
             }
           }
-          $pub['Author List'][] = $author; 
+          $pub['Author List'][] = $author;
           break;
         case '773': // host item entry
           $codes = tripal_pub_remote_search_AGL_get_subfield($xml);
-          foreach ($codes as $code => $value) {    
-            switch ($code) {                
-              case 't':                
+          foreach ($codes as $code => $value) {
+            switch ($code) {
+              case 't':
                 $pub['Journal Name'] = preg_replace('/\.$/', '', $value);
                 break;
               case 'g':
@@ -705,17 +705,17 @@ function tripal_pub_AGL_parse_pubxml($pub_xml) {
                   $year = $matches[4];
                   $month = $matches[1];
                   $day = $matches[3];
-                  $pub['Publication Date'] = "$year $month $day"; 
+                  $pub['Publication Date'] = "$year $month $day";
                 }
                 elseif (preg_match('/\((.*?)(\.|\s+)(\d\d\d\d)\)/', $value, $matches)) {
                   $year = $matches[3];
                   $month = $matches[1];
-                  $pub['Publication Date'] = "$year $month"; 
+                  $pub['Publication Date'] = "$year $month";
                 }
                 elseif (preg_match('/^(.*?) (\d\d\d\d)/', $value, $matches)) {
                   $year = $matches[2];
                   $month = $matches[1];
-                  $pub['Publication Date'] = "$year $month"; 
+                  $pub['Publication Date'] = "$year $month";
                 }
                 if (preg_match('/v\. (.*?)(,|\s+)/', $value, $matches)) {
                   $pub['Volume'] = $matches[1];
@@ -741,11 +741,11 @@ function tripal_pub_AGL_parse_pubxml($pub_xml) {
           break;
         case '856': // Electronic Location and Access
           $codes = tripal_pub_remote_search_AGL_get_subfield($xml);
-          foreach ($codes as $code => $value) {    
+          foreach ($codes as $code => $value) {
             switch ($code) {
               case 'u':
-                $pub['URL'] = $value; 
-                break;    
+                $pub['URL'] = $value;
+                break;
             }
           }
           break;
@@ -757,10 +757,10 @@ function tripal_pub_AGL_parse_pubxml($pub_xml) {
     }
   }
   //dpm($unhandled);
-  
+
   // build the Dbxref
   if ($pub['Publication Database'] != 'AGL') {
-    
+
   }
   if ($pub['Publication Accession'] and $pub['Publication Database']) {
     $pub['Publication Dbxref'] = $pub['Publication Database'] . ":" . $pub['Publication Accession'];
@@ -771,7 +771,7 @@ function tripal_pub_AGL_parse_pubxml($pub_xml) {
   // build the full authors list
   foreach ($pub['Author List'] as $author) {
     if ($author['valid'] == 'N') {
-      // skip non-valid entries.  A non-valid entry should have 
+      // skip non-valid entries.  A non-valid entry should have
       // a corresponding corrected entry so we can saftely skip it.
       continue;
     }
@@ -779,32 +779,32 @@ function tripal_pub_AGL_parse_pubxml($pub_xml) {
       $authors .= $author['Collective'] . ', ';
     }
     else {
-      $authors .= $author['Surname'] . ' ' . $author['First Initials'] . ', '; 
-    }             
+      $authors .= $author['Surname'] . ' ' . $author['First Initials'] . ', ';
+    }
   }
   $authors = substr($authors, 0, -2);
   $pub['Authors'] = $authors;
-  
+
   // build the citation
   $pub['Citation'] = tripal_pub_create_citation($pub);
-  
+
   $pub['raw'] = $pub_xml;
   return $pub;
-}      
+}
 
 /*
- * 
- * 
+ *
+ *
  */
 function tripal_pub_remote_search_AGL_get_subfield($xml) {
   $codes = array();
-  while ($xml->read()) {    
+  while ($xml->read()) {
     $sub_element = $xml->name;
     // when we've reached the end of the datafield element then break out of the while loop
     if ($xml->nodeType == XMLReader::END_ELEMENT and $sub_element == 'datafield') {
-      return $codes; 
-    }    
-    // if inside the subfield element then get the code 
+      return $codes;
+    }
+    // if inside the subfield element then get the code
     if ($xml->nodeType == XMLReader::ELEMENT and $sub_element == 'subfield') {
       $code = $xml->getAttribute('code');
       $xml->read();
@@ -816,25 +816,25 @@ function tripal_pub_remote_search_AGL_get_subfield($xml) {
 }
 
 /*
- * 
- * 
+ *
+ *
  */
 function tripal_pub_remote_search_AGL_get_author($xml, $ind1) {
   $author = array();
   $codes = tripal_pub_remote_search_AGL_get_subfield($xml);
-  foreach ($codes as $code => $value) {          
-    switch ($code) {                
+  foreach ($codes as $code => $value) {
+    switch ($code) {
       case 'a':
         // remove any trailing commas
         $value = preg_replace('/,$/', '', $value);
         if ($ind1 == 0) { // Given Name is first
           $author['Given Name'] = $names[0];
         }
-        if ($ind1 == 1) { // Surname is first          
+        if ($ind1 == 1) { // Surname is first
           // split the parts of the name using a comma
           $names = explode(',', $value);
           $author['Surname'] = $names[0];
-          $author['Given Name'] = ''; 
+          $author['Given Name'] = '';
           unset($names[0]);
           foreach($names as $index => $name) {
             $author['Given Name'] .= $name . ' ';
@@ -842,11 +842,11 @@ function tripal_pub_remote_search_AGL_get_author($xml, $ind1) {
           $first_names = explode(' ', $author['Given Name']);
           $author['First Initials'] = '';
           foreach ($first_names as $index => $name) {
-            $author['First Initials'] .= substr($name, 0, 1); 
+            $author['First Initials'] .= substr($name, 0, 1);
           }
         }
         if ($ind1 == 3) { // A family name
-          
+
         }
         break;
     }

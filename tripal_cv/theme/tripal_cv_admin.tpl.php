@@ -25,7 +25,7 @@
    permissions under the 'tripal_cv' section as appropriate for your site. For a simple setup, allow anonymous 
    users access to view content and create a special role for creating, editing and other administrative tasks.</p></li>
 
-      <li><b>Loading of Ontologies/Controlled Vocabularies</b>: You can access this loader at <?php 
+      <li><p><b>Loading of Ontologies/Controlled Vocabularies</b>: You can access this loader at <?php 
         print l('Admin->Tripal Management->Tripal CV->Load Ontology With OBO File', 'admin/tripal/tripal_cv/obo_loader')
         ?>. This loader allows you to choose from a list of common ontologies or
         enter the URL or location to an OBO file. Even the list of common

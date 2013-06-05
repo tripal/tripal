@@ -478,7 +478,7 @@ function tripal_feature_views_default_views() {
       ),
     ),
     'name_1' => array(
-      'operator' => 'allwords',
+      'operator' => '~',
       'value' => '',
       'group' => '0',
       'exposed' => TRUE,
