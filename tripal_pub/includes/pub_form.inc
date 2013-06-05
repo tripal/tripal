@@ -263,9 +263,9 @@ function chado_pub_validate($node, &$form) {
     // if the title, type,  year or series_name have changed then check the pub
     // to see if it is a duplicate of another
     if((strcmp(strtolower($pub[0]->title), strtolower($title)) == 0) and
-    (strcmp(strtolower($pub[0]->series_name), strtolower($series_name)) == 0) and
-    ($pub[0]->type_id == $type_id) and
-    ($pub[0]->year == $pyear)) {
+       (strcmp(strtolower($pub[0]->series_name), strtolower($series_name)) == 0) and
+       ($pub[0]->type_id == $type_id) and
+       ($pub[0]->year == $pyear)) {
       $skip_duplicate_check = 1;
     }
   }

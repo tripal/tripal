@@ -886,7 +886,7 @@ function tripal_pub_add_authors($pub_id, $authors, $do_contact) {
  * @ingroup tripal_pub_api
  */
 function tripal_pub_get_property($pub_id, $property) {
-  return tripal_core_get_property('pub', $pub_id, $property, 'tripal');
+  return tripal_core_get_property('pub', $pub_id, $property, 'tripal_pub');
 }
 
 /**
@@ -950,7 +950,7 @@ function tripal_pub_update_property($pub_id, $property, $value, $insert_if_missi
  * @ingroup tripal_pub_api
  */
 function tripal_pub_delete_property($pub_id, $property) {
-  return tripal_core_delete_property('pub', $pub_id, $property, 'tripal');
+  return tripal_core_delete_property('pub', $pub_id, $property, 'tripal_pub');
 }
 
 /*
