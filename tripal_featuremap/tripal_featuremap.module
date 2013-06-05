@@ -18,7 +18,7 @@ require('includes/tripal_featuremap.form.inc');
  */
 function tripal_featuremap_init() {
   //drupal_add_js(drupal_get_path('theme', 'tripal') . '/js/tripal_pub.js');
-  drupal_add_css(drupal_get_path('theme', 'tripal') . '/css/tripal_featuremap_pub.css');
+  drupal_add_css(drupal_get_path('theme', 'tripal') . '/css/tripal_featuremap.css');
 }
 
 
