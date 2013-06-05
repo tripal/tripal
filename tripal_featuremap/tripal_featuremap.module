@@ -419,6 +419,7 @@ function chado_featuremap_update($node) {
   );
   $values = array(
     'name' => $node->title,
+    'description' => $node->description,
     'unittype_id' => $node->unittype_id
   );
   $status = tripal_core_chado_update('featuremap', $match, $values);
@@ -435,6 +436,9 @@ function chado_featuremap_load($node) {
 
   $values = array('featuremap_id' => $featuremap_id);
   $featuremap = tripal_core_generate_chado_var('featuremap', $values);
+  
+  // expand the description field as it is needed by the form
+  $featuremap = tripal_core_expand_chado_vars($featuremap, 'field', 'featuremap.description');
 
   $additions = new stdClass();
   $additions->featuremap = $featuremap;
