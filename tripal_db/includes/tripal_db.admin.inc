@@ -135,7 +135,8 @@ function tripal_db_form(&$form_state = NULL, $action = 'Update') {
     '#description'   => t('Please enter the name for this external database.'),
     '#required'      => TRUE,
     '#default_value' => $default_db,
-    '#weight'        => 1
+    '#weight'        => 1,
+    '#maxlength'     => 255,
   );
 
   $form['description']= array(
@@ -143,21 +144,24 @@ function tripal_db_form(&$form_state = NULL, $action = 'Update') {
     '#title'         => t('Description'),
     '#description'   => t('Please enter a description for this database'),
     '#default_value' => $default_desc,
-    '#weight'        => 2
+    '#weight'        => 2,
+    '#maxlength'     => 255,
   );
   $form['url']= array(
     '#type'          => 'textfield',
     '#title'         => t('URL'),
     '#description'   => t('Please enter the web address for this database.'),
     '#default_value' => $default_url,
-    '#weight'        => 3
+    '#weight'        => 3,
+    '#maxlength'     => 255,
   );
   $form['urlprefix']= array(
     '#type'          => 'textfield',
     '#title'         => t('URL prefix'),
     '#description'   => t('Tripal can provide links to external databases when accession numbers or unique identifiers are known.  Typically, a database will provide a unique web address for each accession and the accession usually is the last component of the page address.  Please enter the web address, minus the accession number for this database.  When an accession number is present, Tripal will combine this web address with the accession and provide a link to the external site.'),
     '#default_value' => $default_urlprefix,
-    '#weight'        => 4
+    '#weight'        => 4,
+    '#maxlength'     => 255,
   );
 
 

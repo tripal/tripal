@@ -288,8 +288,10 @@ function tripal_bulk_loader_load_data($nid, $job_id) {
     // Open File
     print "\tPreparing to load the current constant set...\n";
     print "\t\tOpen File...\n";
-    $file = new SplFileObject($node->file, 'r');
-    if (!$file) {
+    try {
+      $file = new SplFileObject($node->file, 'r');
+    }
+    catch (Exception $e) {
       watchdog('T_bulk_loader', 'Could not open file %file',
         array($node->file), WATCHDOG_ERROR);
       return;
