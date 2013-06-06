@@ -105,6 +105,15 @@ function tripal_analysis_add_cvterms(){
   );     
   tripal_cv_add_cvterm($term, 'tripal', 0, 1 , 'tripal');     
   
+  
+  // the 'analysis_property' vocabulary is for user definable properties.  Even though we already have
+  // an analysis_type term in the 'tripal_analysis' vocabular we duplicate it here because the 
+  // tripal_analysis vocabulary is intended for use by the extension modules.  user's should not be able
+  // to directly modify properties set by extension modules for an analysis.
+  tripal_cv_add_cvterm(array('name' => 'Analysis Type','def' => 'The type of analysis was performed.'), 
+     'analysis_property', 0, 1, 'tripal');
+  tripal_cv_add_cvterm(array('name' => 'Analysis Type','def' => 'The type of analysis was performed.'), 
+     'analysis_property', 0, 1, 'tripal');
 }
 /**
  * Implementation of hook_uninstall().

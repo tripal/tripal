@@ -17,7 +17,7 @@
 require('api/tripal_analysis.api.inc');
 require('includes/tripal_analysis_privacy.inc');
 require('includes/tripal_analysis.admin.inc');
-require('includes/tripal_analysis-properties.inc');
+require('includes/tripal_analysis.fofrm.inc');
 
 
 /**
@@ -27,6 +27,7 @@ require('includes/tripal_analysis-properties.inc');
  */
 function tripal_analysis_init() {
   drupal_add_js(drupal_get_path('theme', 'tripal') . '/js/tripal_analysis.js');
+  drupal_add_css(drupal_get_path('theme', 'tripal') . '/css/tripal_analysis.css');    
 }
 
 /**
@@ -63,37 +64,30 @@ function tripal_analysis_menu() {
       'type' => MENU_NORMAL_ITEM,
       'file' => 'includes/tripal_analysis.admin.inc',
   );
-  
-  //Edit/Deleting Properties-------------
-/*  $items['node/%ta_node/edit_analysis_properties'] = array(
-    'title' => 'Edit Properties',
-    'description' => 'Analysis Properties',
-    'page callback' => 'tripal_analysis_edit_ALL_properties_page',
-    'page arguments' => array(1),
+ 
+    
+  // AJAX calls for adding/removing properties to a contact
+  $items['tripal_analysis/properties/add'] = array(
+    'page callback' => 'tripal_analysis_property_add',
     'access arguments' => array('edit chado_analysis content'),
-    'type' => MENU_LOCAL_TASK,
-    'weight' => 8,
-  );*/
+    'type ' => MENU_CALLBACK,
+  );
+  $items['tripal_analysis/properties/description'] = array(
+    'page callback' => 'tripal_analysis_property_get_description',
+    'access arguments' => array('edit chado_analysis content'),
+    'type ' => MENU_CALLBACK,
+  );
+  $items['tripal_analysis/properties/minus/%/%'] = array(
+    'page callback' => 'tripal_analysis_property_delete',
+    'page arguments' => array(3, 4),
+    'access arguments' => array('edit chado_analysis content'),
+    'type ' => MENU_CALLBACK,
+  );
+  
+  
   return $items;
 }
-/**
- * Implements Menu wildcard_load hook
- * Purpose: Allows the node ID of a chado analysis to be dynamically
- *   pulled from the path. The node is loaded from this node ID
- *   and supplied to the page as an arguement
- *
- * @ingroup tripal_analysis
- */
-function ta_node_load($nid) {  
-  if (is_numeric($nid)) {
-    $node = node_load($nid);
-    $analysis_id = chado_get_id_for_node('analysis', $node);
-    if ($analysis_id) {
-      return $node;
-    }
-  }
-  return FALSE;
-}
+
 
 /**
  * Provide information to drupal about the node types that we're creating
@@ -291,159 +285,7 @@ function chado_analysis_update($node) {
   drupal_write_record('node_revisions', $record, 'nid');
 }
 
-/**
- *  When editing or creating a new node of type 'chado_analysis' we need
- *  a form.  This function creates the form that will be used for this.
- *
- * @ingroup tripal_analysis
- */
-function chado_analysis_form($node) {
 
-  $analysis = $node->analysis;
-
-  // add in the description column. It is a text field and may not be included
-  // if the text is too big.
-  $analysis = tripal_core_expand_chado_vars($analysis, 'field', 'analysis.description');
-
-  // get form defaults
-  $analysis_id = $node->analysis_id;
-  if (!$analysis_id) {
-    $analysis_id = $analysis->analysis_id;
-  }
-  $analysisname = $node->analysisname;
-  if (!$analysisname) {
-    $analysisname = $analysis->name;
-  }
-  $program = $node->program;
-  if (!$program) {
-    $program = $analysis->program;
-  }
-  $programversion = $node->programversion;
-  if (!$programversion) {
-    $programversion = $analysis->programversion;
-  }
-  $algorithm = $node->algorithm;
-  if (!$algorithm) {
-    $algorithm = $analysis->algorithm;
-  }
-  $sourcename = $node->sourcename;
-  if (!$sourcename) {
-    $sourcename = $analysis->sourcename;
-  }
-  $sourceversion = $node->sourceversion;
-  if (!$sourceversion) {
-    $sourceversion = $analysis->sourceversion;
-  }
-  $sourceuri = $node->sourceuri;
-  if (!$sourceuri) {
-    $sourceuri = $analysis->sourceuri;
-  }
-  $timeexecuted = $node->timeexecuted;
-  if (!$timeexecuted) {
-    $timeexecuted = $analysis->timeexecuted;
-  }
-  $description = $node->description;
-  if (!$description) {
-    $description = $analysis->description;
-  }
-  $form = array();
-  $form['title']= array(
-      '#type' => 'hidden',
-      '#default_value' => $node->title,
-  );
-  $form['analysis_id']= array(
-      '#type' => 'hidden',
-      '#default_value' => $analysis_id,
-  );
-  $form['analysisname']= array(
-      '#type' => 'textfield',
-      '#title' => t('Analysis Name'),
-      '#required' => TRUE,
-      '#default_value' => $analysisname,
-      '#description' => t("This should be a brief name that
-         describes the analysis succintly. This name will helps the user find analyses."),
-  );
-  $form['program']= array(
-      '#type' => 'textfield',
-      '#title' => t('Program'),
-      '#required' => TRUE,
-      '#default_value' => $program,
-      '#description' => t("Program name, e.g. blastx, blastp, sim4, genscan."),
-  );
-  $form['programversion']= array(
-      '#type' => 'textfield',
-      '#title' => t('Program Version'),
-      '#required' => TRUE,
-      '#default_value' => $programversion,
-      '#description' => t("Version description, e.g. TBLASTX 2.0MP-WashU [09-Nov-2000]. Enter 'n/a' if no version is available."),
-  );
-  $form['algorithm']= array(
-      '#type' => 'textfield',
-      '#title' => t('Algorithm'),
-      '#required' => FALSE,
-      '#default_value' => $algorithm,
-      '#description' => t("Algorithm name, e.g. blast."),
-  );
-  $form['sourcename']= array(
-      '#type' => 'textfield',
-      '#title' => t('Source Name'),
-      '#required' => TRUE,
-      '#default_value' => $sourcename,
-      '#description' => t('The name of the source data.  This could be a file name, data set name or a
-           small description for how the data was collected.  For long descriptions use the description field below'),
-
-  );
-  $form['sourceversion']= array(
-      '#type' => 'textfield',
-      '#title' => t('Source Version'),
-      '#required' => FALSE,
-      '#default_value' => $sourceversion,
-      '#description' => t('If the source dataset has a version, include it here'),
-  );
-  $form['sourceuri']= array(
-      '#type' => 'textfield',
-      '#title' => t('Source URI'),
-      '#required' => FALSE,
-      '#default_value' => $sourceuri,
-      '#description' => t("This is a permanent URL or URI for the source of the analysis.
-         Someone could recreate the analysis directly by going to this URI and
-         fetching the source data (e.g. the blast database, or the training model)."),
-  );
-  // Get time saved in chado
-  $default_time = $timeexecuted;
-  $year = preg_replace("/^(\d+)-\d+-\d+ .*/", "$1", $default_time);
-  $month = preg_replace("/^\d+-0?(\d+)-\d+ .*/", "$1", $default_time);
-  $day = preg_replace("/^\d+-\d+-0?(\d+) .*/", "$1", $default_time);
-  // If the time is not set, use current time
-  if (!$default_time) {
-    $default_time = time();
-    $year = format_date($default_time, 'custom', 'Y');
-    $month = format_date($default_time, 'custom', 'n');
-    $day = format_date($default_time, 'custom', 'j');
-  }
-  $form['timeexecuted']= array(
-      '#type' => 'date',
-      '#title' => t('Time Executed'),
-      '#required' => TRUE,
-      '#default_value' => array(
-         'year' => $year,
-         'month' => $month,
-         'day' => $day,
-      ),
-  );
-  $form['description']= array(
-      '#type' => 'textarea',
-      '#rows' => 15,
-      '#title' => t('Materials & Methods (Description and/or Program Settings)'),
-      '#required' => FALSE,
-      '#default_value' => $description,
-      '#description' => t('Please provide all necessary information to allow
-         someone to recreate the analysis, including materials and methods
-         for collection of the source data and performing the analysis'),
-  );
-
-  return $form;
-}
 
  /**
   *  When a node is requested by the user this function is called to allow us
@@ -490,106 +332,7 @@ function chado_analysis_view($node, $teaser = FALSE, $page = FALSE) {
 
 
 
-/**
- * Validates the user input before creating an analysis node
- *
- * @ingroup tripal_analysis
- */
-function chado_analysis_validate($node, &$form) {
-   // use the analysis parent to validate the node
-  tripal_analysis_validate($node, $form);
-}
 
-/**
- * This validation is being used for three activities:
- *   CASE A: Update a node that exists in both drupal and chado
- *   CASE B: Synchronizing a node from chado to drupal
- *   CASE C: Inserting a new node that exists in niether drupal nor chado
- *
- * @ingroup tripal_analysis
- */
-function tripal_analysis_validate($node, &$form) {
-  
- 
-  // Only nodes being updated will have an nid already
-  if (!is_null($node->nid)) {    
-    // CASE A: We are validating a form for updating an existing node
-    
-    // get the existing node    
-    $values = array('analysis_id' => $node->analysis_id);      
-    $result = tripal_core_chado_select('analysis', array('*'), $values);
-    $analysis = $result[0];
-      
-    // if the name has changed make sure it doesn't conflict with an existing name
-    if($analysis->name != $node->analysisname) {
-      $values = array('name' => $node->analysisname);
-      $result = tripal_core_chado_select('analysis', array('analysis_id'), $values);
-      if($result and count($result) > 0) {
-        form_set_error('analysisname', 'Cannot update the analysis with this analysis name. An analysis with this name already exists.');
-        return;
-      }  
-    }
-    
-    // if the unique constraint has changed check to make sure it doesn't conflict with an
-    // existing record
-    if($analysis->program != $node->program or $analysis->programversion != $node->programversion or 
-       $analysis->sourcename != $node->sourcename) {
-      $values = array(
-        'program' => $node->program,
-        'programversion' => $node->programversion,
-        'sourcename' => $node->sourcename,
-      );
-      $result = tripal_core_chado_select('analysis', array('analysis_id'), $values);
-      if ($result and count($result) > 0) {
-        if ($analysis->program != $node->program) {
-          $field = 'program';  
-        }
-        if ($analysis->programversion != $node->programversion) {
-          $field = 'programversion';  
-        }
-        if ($analysis->sourcename != $node->sourcename) {
-          $field = 'sourcename';  
-        }
-        form_set_error($field, 'Cannot update the analysis with this program,
-          program version and source name. An analysis with these values already exists.');
-        return;
-      }  
-    }
-  }
-  else{
-    // To differentiate if we are syncing or creating a new analysis altogther, see if an
-    // analysis_id already exists
-    if ($node->analysis_id and $node->analysis_id != 0) {
-      // CASE B: Synchronizing a node from chado to drupal
-      // we don't need to do anything.
-    }
-    else {
-      // CASE C: We are validating a form for inserting a new node
-      // The unique constraint for the chado analysis table is: program, programversion, sourcename
-      $values = array(
-        'program' => $node->program,
-        'programversion' => $node->programversion,
-        'sourcename' => $node->sourcename,
-      );
-      $analysis = tripal_core_chado_select('analysis', array('analysis_id'), $values);
-      if ($analysis and count($analysis) > 0) {
-        form_set_error('program', 'Cannot add the analysis with this program,
-          program version and source name. An analysis with these values already exists.');
-        return;
-      }
-      
-      // make sure we have a unique analysis name. This is not a requirement 
-      // for the analysis table but we use the analysis name for the Drupal node
-      // title, so it should be unique      
-      $values = array('name' => $node->analysisname);
-      $result = tripal_core_chado_select('analysis', array('analysis_id'), $values);
-      if($result and count($result) > 0) {
-        form_set_error('analysisname', 'Cannot add the analysis with this analysis name. An analysis with this name already exists.');
-        return;
-      }
-    }
-  }
-}
 
 /**
  * Display help and module information
@@ -682,6 +425,11 @@ function tripal_analysis_theme() {
       'arguments' =>  array(NULL),  
       'path' => drupal_get_path('module', 'tripal_analysis') . '/theme', 
     ),
+    
+    // Themed Forms
+    'chado_analysis_node_form' => array(
+      'arguments' => array('form'),
+    ),
   );
 }
 /**
@@ -768,3 +516,11 @@ function tripal_analysis_views_api() {
 
 
 
+
+/*
+ * 
+ */
+function tripal_analysis_form_alter(&$form, &$form_state, $form_id) {
+  if ($form_id == "chado_analysis_node_form") {
+  }
+}
