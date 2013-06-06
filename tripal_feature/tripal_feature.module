@@ -350,6 +350,10 @@ function tripal_feature_theme() {
        'arguments' => array('node' => NULL),
        'template' => 'tripal_feature_synonyms',
     ),
+    'tripal_feature_phenotypes' => array(
+       'arguments' => array('node' => NULL),
+       'template' => 'tripal_feature_phenotypes',
+    ),
     'tripal_feature_featureloc_sequences' => array(
        'arguments' => array('node' => NULL),
        'template' => 'tripal_feature_featureloc_sequences',
