@@ -120,15 +120,20 @@ function tripal_featuremap_add_cvterms() {
   
    // add cvterms for the map unit types
    tripal_cv_add_cvterm(array('name' => 'cM','def' => 'Centimorgan units'), 
-     'tripal_featuremap', 0, 1, 'tripal');
+     'featuremap_units', 0, 1, 'tripal');
    tripal_cv_add_cvterm(array('name' => 'bp','def' => 'Base pairs units'), 
-     'tripal_featuremap', 0, 1, 'tripal');
+     'featuremap_units', 0, 1, 'tripal');
    tripal_cv_add_cvterm(array('name' => 'bin_unit','def' => 'The bin unit'), 
-     'tripal_featuremap', 0, 1, 'tripal');   
+     'featuremap_units', 0, 1, 'tripal');   
    tripal_cv_add_cvterm(array('name' => 'marker_order','def' => 'Units simply to define marker order.'), 
-     'tripal_featuremap', 0, 1, 'tripal');
+     'featuremap_units', 0, 1, 'tripal');
    tripal_cv_add_cvterm(array('name' => 'undefined','def' => 'A catch-all for an undefined unit type'), 
-     'tripal_featuremap', 0, 1, 'tripal');
+     'featuremap_units', 0, 1, 'tripal');
+   
+    tripal_cv_add_cvterm(array('name' => 'start','def' => 'The start coordinate for a map feature.'), 
+     'featurepos_property', 0, 1, 'tripal');
+    tripal_cv_add_cvterm(array('name' => 'stop','def' => 'The end coordinate for a map feature'), 
+     'featurepos_property', 0, 1, 'tripal');
    
    // add cvterms for map properties
    tripal_cv_add_cvterm(array('name' => 'Map Dbxref','def' => 'A unique identifer for the map in a remote database.  The format is a database abbreviation and a unique accession separated by a colon.  (e.g. Gramene:tsh1996a)'), 
@@ -266,11 +271,71 @@ function tripal_featuremap_add_custom_tables(){
     'referring_tables' => NULL,
   );
   tripal_core_create_custom_table(&$ret, 'featuremap_dbxref', $schema, TRUE);
+  
+  $schema = array (
+    'table' => 'featureposprop',
+    'fields' => array (
+      'featureposprop_id' => array (
+        'type' => 'serial',
+        'not null' => true,
+      ),
+      'featurepos_id' => array (
+        'type' => 'int',
+        'not null' => true,
+      ),
+      'type_id' => array (
+        'type' => 'int',
+        'not null' => true,
+      ),
+      'value' => array (
+        'type' => 'text',
+        'not null' => false,
+      ),
+      'rank' => array (
+        'type' => 'int',
+        'not null' => true,
+        'default' => 0,
+      ),
+    ),
+    'primary key' => array (
+      0 => 'featureposprop_id',
+    ),
+    'unique keys' => array (
+      'featureposprop_id' => array (
+        0 => 'featurepos_id',
+        1 => 'type_id',
+        2 => 'rank',
+      ),
+    ),
+    'indexes' => array (
+      'featureposprop_c1' => array (
+        0 => 'featurepos_id',
+      ),
+      'featureposprop_idx2' => array (
+        0 => 'type_id',
+      ),
+    ),
+    'foreign keys' => array (
+      'cvterm' => array (
+        'table' => 'cvterm',
+        'columns' => array (
+          'type_id' => 'cvterm_id',
+        ),
+      ),
+      'featurepos' => array (
+        'table' => 'featurepos',
+        'columns' => array (
+          'featurepos_id' => 'featurepos_id',
+        ),
+      ),
+    ),
+  );
+  tripal_core_create_custom_table(&$ret, 'featureposprop', $schema, TRUE);
 }
 
 /**
  *  Update for Drupal 6.x, Tripal 1.1, FeatureMap Module 1.1
- *  This update adds a new featuremapprop and featuremap_dbxref tables and 
+ *  This update adds a new featuremapprop, featureposprop, and featuremap_dbxref tables and 
  *  CV terms for the featuremap_property CV
  *
  */

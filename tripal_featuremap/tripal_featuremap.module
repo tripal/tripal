@@ -232,6 +232,10 @@ function tripal_featuremap_theme() {
       'arguments' => array('node' => NULL),
       'template' => 'tripal_featuremap_properties',
     ),
+    'tripal_featuremap_featurepos' => array(
+      'arguments' => array('node' => NULL),
+      'template' => 'tripal_featuremap_featurepos',
+    ),
     'tripal_featuremap_publication' => array(
       'arguments' => array('node' => NULL),
       'template' => 'tripal_featuremap_publication',

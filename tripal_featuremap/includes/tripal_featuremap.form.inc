@@ -29,7 +29,7 @@ function chado_featuremap_form($node) {
   // get the list of unit types
   $values = array(
     'cv_id' => array(
-      'name' => 'tripal_featuremap',
+      'name' => 'featuremap_units',
     )
   );
   $columns = array('cvterm_id','name');
