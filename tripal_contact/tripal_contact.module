@@ -94,6 +94,16 @@ function tripal_contact_menu() {
     'type' => MENU_NORMAL_ITEM
   );
   
+  $items['admin/tripal/tripal_contact/configuration'] = array(
+    'title' => 'Configuration',
+    'description' => 'Integration of Chado contacts.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_contact_admin'),
+    'access arguments' => array('administer tripal contact'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+  
+  
   $items['admin/tripal/tripal_contact/sync'] = array(
     'title' => ' Sync Contacts',
     'description' => 'Sync contacts in Chado with Drupal',
@@ -142,6 +152,9 @@ function tripal_contact_theme() {
       'arguments' => array('node' => NULL)
     ),
     'tripal_contact_relationships' => array(
+      'arguments' => array('node' => NULL)
+    ),
+    'tripal_contact_publications' => array(
       'arguments' => array('node' => NULL)
     ),
     'tripal_contact_admin' => array(

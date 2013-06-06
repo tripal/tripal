@@ -1,4 +1,4 @@
-<h3>Tripal Feature Map Administrative Tools Quick Links:</h3>
+<h3>Tripal Feature Map Quick Links:</h3>
 <ul>
   <li><a href="<?php print url('admin/tripal/tripal_featuremap/configuration') ?>">Map Configuration</a></li>
 </ul>
@@ -12,8 +12,8 @@
 <h3>Setup Instructions:</h3>
 <ol>
    <li><p><b>Set Permissions</b>: By default only the site administrator account has access to create, edit, delete
-   or administer features. Navigate to the <?php print l('permissions page', 'admin/user/permissions')?> and set the
-   permissions under the 'tripal_library' section as appropriate for your site. For a simple setup, allow anonymous 
+   or administer maps. Navigate to the <?php print l('permissions page', 'admin/user/permissions')?> and set the
+   permissions under the 'tripal_featuremap' section as appropriate for your site. For a simple setup, allow anonymous 
    users access to view content and create a special role for creating, editing and other administrative tasks.</p></li>
  
  <li><p><b>Create a Map</b>:  An map (called a feature map in Chado) can be <?php print l('created', 'node/add/chado-featuremap')?> 
