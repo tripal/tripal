@@ -38,14 +38,15 @@ function tripal_natural_diversity_update_6100() {
  * 
  */
 function tripal_natural_diversity_add_cvterms(){
-  
-  tripal_cv_add_cv('nd_experiment_types', 'Terms for defining the natural diversity experiment types for the chado.nd_experiment table.');
-  
+   
   // add cvterms for the nd_experiment_types 
   tripal_cv_add_cvterm(array('name' => 'Genotyping','def' => 'An experiment where genotypes of individuals are identified.'), 
     'nd_experiment_types', 0, 1, 'tripal');
   tripal_cv_add_cvterm(array('name' => 'Phenotyping','def' => 'An experiment where phenotypes of individuals are identified.'), 
     'nd_experiment_types', 0, 1, 'tripal');
+  
+  tripal_cv_add_cvterm(array('name' => 'Location','def' => 'The name of the location.'), 
+    'nd_geolocation_property', 0, 1, 'tripal');
 }
 /**
  * Implementation of hook_uninstall().
