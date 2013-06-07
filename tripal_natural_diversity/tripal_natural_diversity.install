@@ -1,0 +1,74 @@
+<?php
+/**
+ * @file
+ * Implements hooks from the Schema API
+ */
+
+/**
+ * Implementation of hook_install().
+ */
+function tripal_natural_diversity_install() {
+
+  // create the module's data directory
+  tripal_create_moddir('tripal_natural_diversity');
+  
+  // add cvterms
+  tripal_natural_diversity_add_cvterms();
+  
+}
+
+/**
+ *  Update for Drupal 6.x, Tripal 1.1, Natural Diversity Module 1.1
+ *  This update adds new cvterms for experiment types
+ *
+ */
+function tripal_natural_diversity_update_6100() {
+   
+  // add cvterms
+  tripal_natural_diversity_add_cvterms(); 
+  
+  $ret = array(
+    '#finished' => 1,
+  );
+
+  return $ret;
+}
+
+/*
+ * 
+ */
+function tripal_natural_diversity_add_cvterms(){
+  
+  tripal_cv_add_cv('nd_experiment_types', 'Terms for defining the natural diversity experiment types for the chado.nd_experiment table.');
+  
+  // add cvterms for the nd_experiment_types 
+  tripal_cv_add_cvterm(array('name' => 'Genotyping','def' => 'An experiment where genotypes of individuals are identified.'), 
+    'nd_experiment_types', 0, 1, 'tripal');
+  tripal_cv_add_cvterm(array('name' => 'Phenotyping','def' => 'An experiment where phenotypes of individuals are identified.'), 
+    'nd_experiment_types', 0, 1, 'tripal');
+}
+/**
+ * Implementation of hook_uninstall().
+ */
+function tripal_natural_diversity_uninstall() {
+
+}
+
+
+/**
+ * Implementation of hook_requirements(). 
+ */
+function tripal_natural_diversity_requirements($phase) {
+  $requirements = array();
+  if ($phase == 'install') {
+    // make sure chado is installed
+    if (!tripal_core_is_chado_installed()) {
+      $requirements ['tripal_natural_diversity'] = array(
+            'title' => "tripal_natural_diversity",
+            'value' => "ERROR: Chado most be installed before this module can be enabled",
+            'severity' => REQUIREMENT_ERROR,
+      );
+    }
+  }
+  return $requirements;
+}
