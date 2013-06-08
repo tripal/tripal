@@ -280,10 +280,6 @@ function tripal_stock_theme() {
        'arguments' => array('node' => NULL),
        'template' => 'tripal_stock_phenotypes',
     ),
-    'tripal_stock_genotypes' => array(
-       'arguments' => array('node' => NULL),
-       'template' => 'tripal_stock_genotypes',
-    ),
     'tripal_stock_locations' => array(
        'arguments' => array('node' => NULL),
        'template' => 'tripal_stock_locations',
