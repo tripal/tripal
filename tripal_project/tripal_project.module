@@ -99,22 +99,22 @@ function tripal_project_perm() {
 function chado_project_access($op, $node, $account) {
 
   if ($op == 'create') {
-    if (!user_access('create chado_project content', $account)) {
+    if (!user_access('create chado_projects content', $account)) {
       return FALSE;
     }
   }
   if ($op == 'update') {
-    if (!user_access('edit chado_project content', $account)) {
+    if (!user_access('edit chado_projects content', $account)) {
       return FALSE;
     }
   }
   if ($op == 'delete') {
-    if (!user_access('delete chado_project content', $account)) {
+    if (!user_access('delete chado_projects content', $account)) {
       return FALSE;
     }
   }
   if ($op == 'view') {
-    if (!user_access('access chado_project content', $account)) {
+    if (!user_access('access chado_projects content', $account)) {
       return FALSE;
     }
   }
