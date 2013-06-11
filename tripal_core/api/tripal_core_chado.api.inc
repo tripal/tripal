@@ -347,7 +347,7 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
     if (array_key_exists('primary key', $table_desc) and is_array($table_desc['primary key'])) {
       foreach ($table_desc['primary key'] as $field) {
         $sql = '';
-        $psql = "PREPARE currval_" . $table . "_" . $field . " AS SELECT CURRVAL('" . $table . "_" . $field . "_seq')";
+        $psql = "PREPARE currval_" . $table . "_" . $field . " AS SELECT CURRVAL('{" . $table . "}_" . $field . "_seq')";
         $is_prepared = tripal_core_chado_prepare("currval_" . $table . "_" . $field, $psql, array());
         $value = '';
         if ($is_prepared) {
@@ -359,7 +359,7 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
           }
         }
         else {
-          $sql = "SELECT CURRVAL('" . $table . "_" . $field . "_seq')";
+          $sql = "SELECT CURRVAL('{" . $table . "}_" . $field . "_seq')";
           $value =  db_result(chado_query($sql));
           if (!$value) {
             watchdog('tripal_core', "tripal_core_chado_insert: not able to retrieve primary key after insert: %sql",
