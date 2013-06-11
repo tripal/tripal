@@ -530,7 +530,9 @@ function tripal_analysis_theme() {
       'arguments' =>  array(NULL),  
       'path' => drupal_get_path('module', 'tripal_analysis') . '/theme', 
     ),
-    
+  	 'tripal_analysis_properties' => array(
+  				'arguments' => array('node' => NULL)
+  	 ),
     // Themed Forms
     'chado_analysis_node_form' => array(
       'arguments' => array('form'),
