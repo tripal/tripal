@@ -72,7 +72,7 @@ function tripal_analysis_get_property($analysis_id, $property) {
  * @ingroup tripal_analysis_api
  */
 function tripal_analysis_insert_property($analysis_id, $property, $value, $update_if_present = 0) {
-    return tripal_core_insert_property('analysis', $analysis_id, $property, 'tripal', $value, $update_if_present);
+    return tripal_core_insert_property('analysis', $analysis_id, $property, 'analysis_property', $value, $update_if_present);
 }
 
 /**

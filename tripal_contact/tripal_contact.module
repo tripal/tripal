@@ -113,7 +113,7 @@ function tripal_contact_menu() {
     'type' => MENU_NORMAL_ITEM,
   );
   
-    // AJAX calls for adding/removing properties to a contact
+  // AJAX calls for adding/removing properties to a contact
   $items['tripal_contact/properties/add'] = array(
     'page callback' => 'tripal_contact_property_add',
     'access arguments' => array('edit chado_contact content'),
