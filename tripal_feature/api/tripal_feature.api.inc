@@ -640,9 +640,14 @@ function tripal_feature_get_formatted_sequence($feature_id, $feature_name,
           
           $sql = "EXECUTE sequence_by_parent (%d, %d, %d)";
 
+          // if the feature is the only child then we need to get the upstream and downstream at the same time
+          // this if statement can handle both in either up or downstream
+          if ($i == 0 and $i == $num_children->num_children - 1) {
+            $q = chado_query($sql, $upstream, $downstream, $child->feature_id);
+          }
           // if the first sub feature we need to include the upstream bases. first check if 
           // the feature is in the foward direction or the reverse.
-          if ($i == 0 and $parent->strand >= 0) {  // forward direction
+          elseif ($i == 0 and $parent->strand >= 0) {  // forward direction
             // -------------------------- ref
             //    ....---->  ---->        
             //     up    1       2         
@@ -654,10 +659,10 @@ function tripal_feature_get_formatted_sequence($feature_id, $feature_name,
             //    down  1       2
             $q = chado_query($sql, 0, $downstream, $child->feature_id);
           }
-                    
-          // Next, if the last sub feature we need to include the downstream bases. first check if
+          
+          // if the last sub feature we need to include the downstream bases. first check if
           // the feature is in teh forward direction or the reverse
-          if ($i == $num_children->num_children - 1 and $parent->strand >= 0) {  // forward direction
+          elseif ($i == $num_children->num_children - 1 and $parent->strand >= 0) {  // forward direction
             // -------------------------- ref
             //        ---->  ---->....
             //          1       2 down
@@ -668,8 +673,8 @@ function tripal_feature_get_formatted_sequence($feature_id, $feature_name,
             //        <----  <----....
             //          1       2  up
             $q = chado_query($sql, $upstream, 0, $child->feature_id);
-          }
-          
+          }                   
+          	
           // for internal sub features we don't want upstream or downstream bases
           else {         
             $sql = "EXECUTE sequence_by_parent (%d, %d, %d)";
