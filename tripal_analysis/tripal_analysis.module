@@ -17,7 +17,7 @@
 require('api/tripal_analysis.api.inc');
 require('includes/tripal_analysis_privacy.inc');
 require('includes/tripal_analysis.admin.inc');
-require('includes/tripal_analysis.fofrm.inc');
+require('includes/tripal_analysis.form.inc');
 
 
 /**
@@ -188,6 +188,55 @@ function chado_analysis_insert($node) {
    // use by other analysis modules that may be using this function
     $node->analysis = $analysis;
     $node->analysis_id = $analysis_id; // we need to set this for children
+    
+    // now add the properties
+    $properties = array(); // stores all of the properties we need to add    
+    // get the list of properties for easy lookup (without doing lots of database queries
+    $properties_list = array();
+    $sql = "
+      SELECT DISTINCT CVT.cvterm_id, CVT.name, CVT.definition
+      FROM  {cvterm} CVT
+        INNER JOIN {cv} ON CVT.cv_id = CV.cv_id
+      WHERE
+        CV.name = 'analysis_property' AND
+        NOT CVT.is_obsolete = 1
+      ORDER BY CVT.name ASC
+    ";
+    $prop_types = chado_query($sql);
+    while ($prop = db_fetch_object($prop_types)) {
+    	$properties_list[$prop->cvterm_id] = $prop->name;
+    }
+    
+    // get the properties that should be added. Properties are in one of two forms:
+    //  1) prop_value-[type id]-[index]
+    //  2) new_value-[type id]-[index]
+    //  3) new_id, new_value
+
+    foreach ($node as $name => $value) {
+    	if (preg_match('/^new_value-(\d+)-(\d+)/', $name, $matches)) {
+    		$type_id = $matches[1];
+    		$index = $matches[2];
+    		$name = $properties_list[$type_id];
+    		$properties[$name][$index] = trim($value);
+    	}
+    }
+    if ($node->new_id and $node->new_value) {
+    	$type_id = $node->new_id;
+    	$name = $properties_list[$type_id];
+    	$index = count($properties[$name]);
+    	$properties[$name][$index] = trim($node->new_value);
+    }
+    // now add in the properties
+    foreach ($properties as $property => $elements) {
+      foreach ($elements as $rank => $value) {
+    	  $status = tripal_analysis_insert_property($analysis_id, $property, $value, FALSE);
+        if (!$status) {
+            drupal_set_message("Error cannot add property: $property", "error");
+            watchdog('t_analysis', "Error cannot add property: %prop",
+              array('%property' => $property), WATCHDOG_ERROR);
+    		}
+      }
+    }
 }
 
 /**
@@ -234,58 +283,114 @@ function chado_analysis_delete($node) {
  * @ingroup tripal_analysis
  */
 function chado_analysis_update($node) {
-  global $user;
-  if ($node->revision) {
-    // TODO -- decide what to do about revisions
-  }
-  // Create a timestamp so we can insert it into the chado database
-  $time = $node->timeexecuted;
-  $month = $time['month'];
-  $day = $time['day'];
-  $year = $time['year'];
-  $timestamp = $month . '/' . $day . '/' . $year;
+	global $user;
+	if ($node->revision) {
+		// TODO -- decide what to do about revisions
+	}
+	// Create a timestamp so we can insert it into the chado database
+	$time = $node->timeexecuted;
+	$month = $time['month'];
+	$day = $time['day'];
+	$year = $time['year'];
+	$timestamp = $month . '/' . $day . '/' . $year;
 
-  // get the analysis_id for this node:
-  $sql = "SELECT analysis_id ".
-           "FROM {chado_analysis} ".
-           "WHERE nid = %d";
-  $analysis_id = db_fetch_object(db_query($sql, $node->nid))->analysis_id;
+	// get the analysis_id for this node:
+	$sql = "SELECT analysis_id ".
+			"FROM {chado_analysis} ".
+			"WHERE nid = %d";
+	$analysis_id = db_fetch_object(db_query($sql, $node->nid))->analysis_id;
 
-  $sql = "UPDATE {analysis} ".
-           "SET name = '%s', ".
-           "    description = '%s', ".
-           "    program = '%s', ".
-           "    programversion = '%s', ".
-           "    algorithm = '%s', ".
-           "    sourcename = '%s', ".
-           "    sourceversion = '%s', ".
-           "    sourceuri = '%s', ".
-           "    timeexecuted = '%s' ".
-           "WHERE analysis_id = %d ";
+	$sql = "UPDATE {analysis} ".
+			"SET name = '%s', ".
+			"    description = '%s', ".
+			"    program = '%s', ".
+			"    programversion = '%s', ".
+			"    algorithm = '%s', ".
+			"    sourcename = '%s', ".
+			"    sourceversion = '%s', ".
+			"    sourceuri = '%s', ".
+			"    timeexecuted = '%s' ".
+			"WHERE analysis_id = %d ";
 
-  chado_query($sql, $node->analysisname, $node->description, $node->program,
-    $node->programversion, $node->algorithm, $node->sourcename,
-    $node->sourceversion, $node->sourceuri, $timestamp, $analysis_id);
+	chado_query($sql, $node->analysisname, $node->description, $node->program,
+	$node->programversion, $node->algorithm, $node->sourcename,
+	$node->sourceversion, $node->sourceuri, $timestamp, $analysis_id);
 
-  // Create a title for the analysis node using the unique keys so when the
-  // node is saved, it will have a title
-  $record = new stdClass();
-  // If the analysis has a name, use it as the node title. If not, construct
-  // the title using program, programversion, and sourcename
-  if ($node->analysisname) {
-    $record->title = $node->analysisname;
-  }
-  else {
-    //Construct node title as "program (version)
-    $record->title = "$node->program ($node->programversion)";
-  }
+	// Create a title for the analysis node using the unique keys so when the
+	// node is saved, it will have a title
+	$record = new stdClass();
+	// If the analysis has a name, use it as the node title. If not, construct
+	// the title using program, programversion, and sourcename
+	if ($node->analysisname) {
+		$record->title = $node->analysisname;
+	}
+	else {
+		//Construct node title as "program (version)
+		$record->title = "$node->program ($node->programversion)";
+	}
 
-  $record->nid = $node->nid;
-  drupal_write_record('node', $record, 'nid');
-  drupal_write_record('node_revisions', $record, 'nid');
+	$record->nid = $node->nid;
+	drupal_write_record('node', $record, 'nid');
+	drupal_write_record('node_revisions', $record, 'nid');
+
+	// now update the properties
+	$properties = array(); // stores all of the properties we need to add
+	// get the list of properties for easy lookup (without doing lots of database queries
+	$properties_list = array();
+	$sql = "
+			SELECT DISTINCT CVT.cvterm_id, CVT.name, CVT.definition
+			FROM  {cvterm} CVT
+			INNER JOIN {cv} ON CVT.cv_id = CV.cv_id
+			WHERE
+			CV.name = 'analysis_property' AND
+			NOT CVT.is_obsolete = 1
+			ORDER BY CVT.name ASC
+			";
+	$prop_types = chado_query($sql);
+	while ($prop = db_fetch_object($prop_types)) {
+		$properties_list[$prop->cvterm_id] = $prop->name;
+	}
+
+	// get the properties that should be added. Properties are in one of three forms:
+	//  1) prop_value-[type id]-[index]
+	//  2) new_value-[type id]-[index]
+	//  3) new_id, new_value
+	//  dpm($node);
+	foreach ($node as $key => $value) {
+		if (preg_match('/^prop_value-(\d+)-(\d+)/', $key, $matches)) {
+			$type_id = $matches[1];
+			$index = $matches[2];
+			$name = $properties_list[$type_id];
+			$properties[$name][$index] = trim($value);
+		}
+		if (preg_match('/^new_value-(\d+)-(\d+)/', $key, $matches)) {
+			$type_id = $matches[1];
+			$index = $matches[2];
+			$name = $properties_list[$type_id];
+			$properties[$name][$index] = trim($value);
+		}
+	}
+	if ($node->new_id and $node->new_value) {
+		$type_id = $node->new_id;
+		$name = $properties_list[$type_id];
+		$index = count($properties[$name]);
+		$properties[$name][$index] = trim($node->new_value);
+	}
+
+	// now add in the properties by first removing any the analysis
+	// already has and adding the ones we have
+	tripal_core_chado_delete('analysisprop', array('analysis_id' => $analysis_id));
+	foreach ($properties as $property => $elements) {
+		foreach ($elements as $rank => $value) {
+			$status = tripal_analysis_insert_property($analysis_id, $property, $value, FALSE);
+			if (!$status) {
+				drupal_set_message("Error cannot add property: '$property'", "error");
+				watchdog('t_analysis', "Error cannot add property: '%prop'",
+				array('%prop' => $property), WATCHDOG_ERROR);
+			}
+		}
+	}
 }
-
-
 
  /**
   *  When a node is requested by the user this function is called to allow us

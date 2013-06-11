@@ -52,6 +52,21 @@ function tripal_analysis_update_6100() {
 
   return $ret;
 }
+
+/**
+ *  Update for Drupal 6.x, Tripal 1.1, Analysis Module 1.1
+ *  This update adds a new analysis_property cv and 'Analysis Type' cvterm
+ */
+function tripal_analysis_update_6101() {
+   tripal_cv_add_cvterm(array('name' => 'Analysis Type','def' => 'The type of analysis was performed.'), 
+     'analysis_property', 0, 1, 'tripal');
+
+	$ret = array(
+			'#finished' => 1,
+	);
+	return $ret;
+}
+
 /*
  * 
  */
@@ -110,8 +125,6 @@ function tripal_analysis_add_cvterms(){
   // an analysis_type term in the 'tripal_analysis' vocabular we duplicate it here because the 
   // tripal_analysis vocabulary is intended for use by the extension modules.  user's should not be able
   // to directly modify properties set by extension modules for an analysis.
-  tripal_cv_add_cvterm(array('name' => 'Analysis Type','def' => 'The type of analysis was performed.'), 
-     'analysis_property', 0, 1, 'tripal');
   tripal_cv_add_cvterm(array('name' => 'Analysis Type','def' => 'The type of analysis was performed.'), 
      'analysis_property', 0, 1, 'tripal');
 }

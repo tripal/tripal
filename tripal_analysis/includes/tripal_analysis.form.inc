@@ -5,7 +5,7 @@
  *
  * @ingroup tripal_analysis
  */
-function chado_analysis_form($node) {
+function chado_analysis_form(&$node, $form_state) {
   tripal_core_ahah_init_form();
   $form = array();
 
@@ -162,6 +162,33 @@ function chado_analysis_form($node) {
          someone to recreate the analysis, including materials and methods
          for collection of the source data and performing the analysis'),
   );
+  
+  // get the analysis properties
+  $properties_select = array();
+  $properties_select[] = 'Select a Property';
+  $properties_list = array();
+  $sql = "
+    SELECT DISTINCT CVT.cvterm_id, CVT.name, CVT.definition
+    FROM  {cvterm} CVT
+      INNER JOIN {cv} ON CVT.cv_id = CV.cv_id
+    WHERE
+      CV.name = 'analysis_property' AND
+      NOT CVT.is_obsolete = 1
+    ORDER BY CVT.name ASC
+  ";
+  $prop_types = chado_query($sql);
+  while ($prop = db_fetch_object($prop_types)) {
+  	$properties_select[$prop->cvterm_id] = $prop->name;
+  	$properties_list[$prop->cvterm_id] = $prop;
+  }
+  // add in the properties from the analysisprop table
+  $num_properties += chado_analysis_node_form_add_analysisprop_table_props($form, $form_state, $analysis_id, $d_properties, $d_removed);
+  
+  // add in any new properties that have been added by the user through an AHAH callback
+  $num_new = chado_analysis_node_form_add_new_props($form, $form_state, $d_properties, $d_removed);
+  
+  // add an empty row of field to allow for addition of a new property
+  chado_analysis_node_form_add_new_empty_props($form, $properties_select);
 
   return $form;
 }
@@ -393,12 +420,6 @@ function chado_analysis_node_form_add_new_props(&$form, $form_state, &$d_propert
 
     // determine how many rows we need in the textarea
     $rows = 1;
-    if (preg_match('/Abstract/', $cvterm[0]->name)) {
-      $rows = 10;
-    }
-    if ($cvterm[0]->name == 'Authors') {
-      $rows = 2;
-    }
 
     // add the new fields
     $form['properties']['new'][$new_id][$rank]["new_id-$new_id-$rank"] = array(
@@ -642,5 +663,6 @@ function theme_chado_analysis_node_form($form) {
     '#type' => 'markup',
     '#value' =>  $markup,
   );
+  $form['buttons']['#weight'] = 50;
   return drupal_render($form);
 }
