@@ -523,9 +523,9 @@ function tripal_feature_seq_extract_get_features($org_commonname, $genus, $speci
     $feature_id = $feature->feature_id;
     
     // build the header for each FASTA entry
-    if ($feature->uniquename == $feature->name) {
-    	$feature_name = "$feature->uniquename $feature->feature_type ($feature->genus $feature->species)";
-    }
+    if($feature->uniquename == $feature->name) {
+      $feature_name = "$feature->uniquename $feature->feature_type ($feature->genus $feature->species)";
+    } 
     else {
       $feature_name = "$feature->uniquename $feature->name $feature->feature_type ($feature->genus $feature->species)";
     }

@@ -24,7 +24,7 @@ function chado_contact_form(&$node, $form_state) {
     
   $d_title        = $form_state['values']['title']       ? $form_state['values']['title']       : $contact->name;
   $d_description  = $form_state['values']['description'] ? $form_state['values']['description'] : $contact->description;
-  $d_type_id      = $form_state['values']['type_id']     ? $form_state['values']['type_id'] : $contact->type_id->cvterm_id;
+  $d_type_id      = $form_state['values']['type_id']     ? $form_state['values']['type_id']     : $contact->type_id->cvterm_id;
   
   // on AHAH callbacks we want to keep a list of all the properties that have been removed
   // we'll store this info in a hidden field and retrieve it here
@@ -257,12 +257,7 @@ function chado_contact_node_form_add_new_props(&$form, $form_state, &$d_properti
 
         // determine how many rows we need in the textarea
         $rows = 1;
-        if (preg_match('/Abstract/', $cvterm[0]->name)) {
-          $rows = 10;
-        }
-        if ($cvterm[0]->name == 'Authors') {
-          $rows = 2;
-        }
+
 
         // add the new fields
         $form['properties']['new'][$new_id][$rank]["new_id-$new_id-$rank"] = array(
@@ -523,11 +518,11 @@ function tripal_contact_property_delete() {
 
   // return the updated JSON
   drupal_json(
-  array(
+    array(
       'status'   => $status, 
       'data'     => $data,
       'settings' => $settings,
-  )
+    )
   );
 }
 /*
