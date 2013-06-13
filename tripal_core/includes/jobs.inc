@@ -13,29 +13,34 @@
 function tripal_jobs_report_form($form, &$form_state = NULL) {
   $form = array();
 
-  // set the default values
-  $default_status = $form_state['values']['job_status'];
-  $default_job_name = $form_state['values']['job_name'];
-
-  if (!$default_status) {
-    $default_status = $_SESSION['tripal_job_filter']['job_status'];    
+  // set the default values 
+  $default_status = '';
+  $default_job_name = '';
+  if (array_key_exists('values', $form_state)) {
+    $default_status = array_key_exists('job_status', $form_state['values']) ? $form_state['values']['job_status'] : '';
+    $default_job_name = array_key_exists('job_name', $form_state['values']) ? $form_state['values']['job_name'] : '';
   }
-  if (!$default_job_name) {
-    $default_job_name = $_SESSION['tripal_job_filter']['job_name'];
+  
+  if (!$default_status and array_key_exists('tripal_job_filter', $_SESSION)) {
+    $job_status = array_key_exists('job_status', $_SESSION['tripal_job_filter']) ? $_SESSION['tripal_job_filter']['job_status'] : '';
   }
+  if (!$default_job_name and array_key_exists('tripal_job_filter', $_SESSION)) {
+    $default_job_name = array_key_exists('job_name', $_SESSION['tripal_job_filter']) ? $_SESSION['tripal_job_filter']['job_name'] : '';
+  }
+  
 
   $form['job_status'] = array(
     '#type'          => 'select',
     '#title'         => t('Filter by Job Status'),
     '#default_value' => $default_status,
     '#options' => array(
-	    0           => 'All Jobs',
-	    'Running'   => 'Running',
-	    'Waiting'   => 'Waiting',
-	    'Completed' => 'Completed',
-	    'Cancelled' => 'Cancelled',
-	    'Error'     => 'Error',
-	  ),
+    0           => 'All Jobs',
+    'Running'   => 'Running',
+    'Waiting'   => 'Waiting',
+    'Completed' => 'Completed',
+    'Cancelled' => 'Cancelled',
+    'Error'     => 'Error',
+  ),
   );
   $form['job_name'] = array(
     '#type'          => 'textfield',
@@ -75,10 +80,15 @@ function tripal_jobs_report() {
   // run the following function which will
   // change the status of jobs that have errored out
   tripal_jobs_check_running();
+  
+  $job_status = '';
+  $job_name = '';
+  if (array_key_exists('tripal_job_filter', $_SESSION)) {
+    $job_status = array_key_exists('job_status', $_SESSION['tripal_job_filter']) ? $_SESSION['tripal_job_filter']['job_status'] : '';
+    $job_name = array_key_exists('job_name', $_SESSION['tripal_job_filter']) ? $_SESSION['tripal_job_filter']['job_name'] : '';
+  }
 
-	$job_status = $_SESSION['tripal_job_filter']['job_status'];
-	$job_name = $_SESSION['tripal_job_filter']['job_name'];
-
+  // build the SQL for getting the jobs
   $sql = "
     SELECT
       TJ.job_id,TJ.uid,TJ.job_name,TJ.modulename,TJ.progress,
@@ -87,32 +97,38 @@ function tripal_jobs_report() {
     FROM {tripal_jobs} TJ
       INNER JOIN {users} U on TJ.uid = U.uid 
     WHERE 1=1 
-  ";
+  ";  
   $args = array();
   if ($job_status) {
-    $sql .= "AND TJ.status = '%s' ";
-    $args[] = $job_status;
+    $sql .= "AND TJ.status = :status ";
+    $args[':status'] = $job_status;
   }
   if ($job_name) {
-    $sql .= "AND TJ.job_name like '%%%s%%'";
-    $args[] = $job_name;
+    $sql .= "AND TJ.job_name like :job_name";
+    $args[':job_name'] = "%$job_name%";
   }
-  $sql .= "ORDER BY job_id DESC";
+  $sql .= " ORDER BY job_id DESC ";
+  
+  // create the SQL that returns the total number of records
+  $count_sql = "SELECT count(*) as total FROM ($sql) as t1";  
+  $result = db_query($count_sql, $args);
+  $total_jobs = $result->fetchObject();
 
-  $jobs = pager_query($sql, 25, 0, "SELECT count(*) FROM ($sql) as t1", $args);
-  $header = array(
-    'Job ID',
-    'User',
-    'Job Name',
-    array('data' => 'Dates', 'style'=> "white-space: nowrap"),
-    'Priority',
-    'Progress',
-    'Status',
-    'Action');
-  $rows = array();
-
-  // iterate through the jobs
-  while ($job = db_fetch_object($jobs)) {
+  // initialize the pager
+  $num_per_page = 25;
+  $page = pager_find_page();
+  pager_default_initialize($total_jobs->total, $num_per_page);
+  
+  // get results
+  $pager_sql = "$sql LIMIT  :number OFFSET :offset";
+  $args[':number'] = $num_per_page;
+  $args[':offset'] = $num_per_page * $page;
+  $jobs = db_query($pager_sql, $args);
+  
+  
+  // iterate through the jobs and build the table rows
+  $rows = array();  
+  foreach ($jobs as $job) {
     $submit = tripal_jobs_get_submit_date($job);
     $start = tripal_jobs_get_start_time($job);
     $end = tripal_jobs_get_end_time($job);
@@ -133,14 +149,35 @@ function tripal_jobs_report() {
       "$cancel_link $rerun_link $view_link",
     );
   }
-
+  
+  // the header for the jobs table  
+  $header = array(
+    'Job ID',
+    'User',
+    'Job Name',
+    array('data' => 'Dates', 'style' => "white-space: nowrap"),
+    'Priority',
+    'Progress',
+    'Status',
+    'Action'
+  );
+  $table = array(
+    'header' => $header, 
+    'rows' => $rows, 
+    'attributes' => array(), 
+    'sticky' => FALSE,
+    'caption' => '',
+    'colgroups' => array(), 
+    'empty' => 'No jobs have been submitted', 
+  );
+    
   // create the report page
-  $output .= "Waiting jobs are executed first by priority level (the lower the ".
-             "number the higher the priority) and second by the order they ".
-             "were entered";
-  $output .= drupal_get_form('tripal_jobs_report_form');
-  $output .= theme('table', $header, $rows);
-  $output .= theme_pager();
+  $output = "Waiting jobs are executed first by priority level (the lower the " .
+             "number the higher the priority) and second by the order they " .
+             "were entered";  
+  $output .= drupal_render(drupal_get_form('tripal_jobs_report_form'));   
+  $output .= theme_table($table);
+  $output .= theme('pager');
   return $output;
 }
 /**
@@ -176,8 +213,9 @@ function tripal_core_preprocess_tripal_core_job_view(&$variables) {
             TJ.callback,TJ.error_msg,TJ.pid
      FROM {tripal_jobs} TJ
        INNER JOIN users U on TJ.uid = U.uid
-     WHERE TJ.job_id = %d";
-  $job = db_fetch_object(db_query($sql, $job_id));
+     WHERE TJ.job_id = :job_id";
+  $results = db_query($sql, array(':job_id' => $job_id));
+  $job = $results->fetchObject();
 
   // we do not know what the arguments are for and we want to provide a
   // meaningful description to the end-user. So we use a callback function

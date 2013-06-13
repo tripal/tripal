@@ -70,7 +70,7 @@ function tripal_add_job($job_name, $modulename, $callback, $arguments, $uid, $pr
   $record->modulename = $modulename;
   $record->callback = $callback;
   $record->status = 'Waiting';
-  $record->submit_date = time();
+  $record->submit_date = REQUEST_TIME;
   $record->uid = $uid;
   $record->priority = $priority;  # the lower the number the higher the priority
   if ($args) {
@@ -101,10 +101,10 @@ function tripal_jobs_check_running() {
   // and see if it is still running. If it is not
   // running but does not have an end_time then
   // set the end time and set the status to 'Error'
-  $sql =  "SELECT * FROM {tripal_jobs} TJ ".
+  $sql =  "SELECT * FROM {tripal_jobs} TJ " .
           "WHERE TJ.end_time IS NULL and NOT TJ.start_time IS NULL ";
   $jobs = db_query($sql);
-  while ($job = db_fetch_object($jobs)) {
+  foreach ($jobs as $job) {
     $status = `ps -p $job->pid -o pid=`;
     if ($job->pid && $status) {
       // the job is still running so let it go
@@ -115,7 +115,7 @@ function tripal_jobs_check_running() {
       // the job is not running so terminate it
       $record = new stdClass();
       $record->job_id = $job->job_id;
-      $record->end_time = time();
+      $record->end_time = REQUEST_TIME;
       $record->status = 'Error';
       $record->error_msg = 'Job has terminated unexpectedly.';
       drupal_write_record('tripal_jobs', $record, 'job_id');
@@ -186,16 +186,11 @@ function tripal_jobs_get_end_time($job) {
 function tripal_jobs_rerun($job_id, $goto_jobs_page = TRUE) {
   global $user;
 
-  $sql = "SELECT * FROM {tripal_jobs} WHERE job_id = %d";
-  $job = db_fetch_object(db_query($sql, $job_id));
+  $sql = "SELECT * FROM {tripal_jobs} WHERE job_id = :job_id";
+  $results = db_query($sql, array(':job_id' => $job_id));
+  $job = $results->fetchObject();
   $args = explode("::", $job->arguments);
-  $job_id = tripal_add_job(
-    $job->job_name,
-    $job->modulename,
-    $job->callback,
-    $args,
-    $user->uid,
-    $job->priority);
+  $job_id = tripal_add_job($job->job_name, $job->modulename, $job->callback, $args, $user->uid, $job->priority);
 
   if ($goto_jobs_page) {
     drupal_goto("admin/tripal/tripal_jobs");
@@ -212,14 +207,15 @@ function tripal_jobs_rerun($job_id, $goto_jobs_page = TRUE) {
  * @ingroup tripal_jobs_api
  */
 function tripal_jobs_cancel($job_id, $redirect = TRUE) {
-  $sql = "SELECT * FROM {tripal_jobs} WHERE job_id = %d";
-  $job = db_fetch_object(db_query($sql, $job_id));
+  $sql = "SELECT * FROM {tripal_jobs} WHERE job_id = :job_id";
+  $results = db_query($sql, array(':job_id' => $job_id));
+  $job = $results->fetchOjbect();
 
   // set the end time for this job
   if ($job->start_time == 0) {
     $record = new stdClass();
     $record->job_id = $job->job_id;
-    $record->end_time = time();
+    $record->end_time = REQUEST_TIME;
     $record->status = 'Cancelled';
     $record->progress = '0';
     drupal_write_record('tripal_jobs', $record, 'job_id');
@@ -261,22 +257,22 @@ function tripal_jobs_launch($do_parallel = 0, $job_id = NULL) {
   // get all jobs that have not started and order them such that
   // they are processed in a FIFO manner.
   if ($job_id) {
-    $sql =  "SELECT * FROM {tripal_jobs} TJ ".
-            "WHERE TJ.start_time IS NULL and TJ.end_time IS NULL and TJ.job_id = %d ".
+    $sql =  "SELECT * FROM {tripal_jobs} TJ " .
+            "WHERE TJ.start_time IS NULL and TJ.end_time IS NULL and TJ.job_id = %d " .
             "ORDER BY priority ASC,job_id ASC";
-    $job_res = db_query($sql,$job_id);
+    $job_res = db_query($sql, $job_id);
   }
   else {
-    $sql =  "SELECT * FROM {tripal_jobs} TJ ".
-            "WHERE TJ.start_time IS NULL and TJ.end_time IS NULL ".
+    $sql =  "SELECT * FROM {tripal_jobs} TJ " .
+            "WHERE TJ.start_time IS NULL and TJ.end_time IS NULL " .
             "ORDER BY priority ASC,job_id ASC";
     $job_res = db_query($sql);
   }
-  while ($job = db_fetch_object($job_res)) {
+  foreach ($job_res as $job) {
     // set the start time for this job
     $record = new stdClass();
     $record->job_id = $job->job_id;
-    $record->start_time = time();
+    $record->start_time = REQUEST_TIME;
     $record->status = 'Running';
     $record->pid = getmypid();
     drupal_write_record('tripal_jobs', $record, 'job_id');
@@ -290,7 +286,7 @@ function tripal_jobs_launch($do_parallel = 0, $job_id = NULL) {
     print "Calling: $callback(" . implode(", ", $args) . ")\n";
     call_user_func_array($callback, $args);
     // set the end time for this job
-    $record->end_time = time();
+    $record->end_time = REQUEST_TIME;
     $record->status = 'Completed';
     $record->progress = '100';
     drupal_write_record('tripal_jobs', $record, 'job_id');
@@ -337,9 +333,10 @@ function tripal_job_set_progress($job_id, $percentage) {
  * @ingroup tripal_jobs_api
  */
 function tripal_get_module_active_jobs($modulename) {
-  $sql =  "SELECT * FROM {tripal_jobs} TJ ".
-           "WHERE TJ.end_time IS NULL and TJ.modulename = '%s' ";
-  return db_fetch_object(db_query($sql, $modulename));
+  $sql =  "SELECT * FROM {tripal_jobs} TJ " .
+           "WHERE TJ.end_time IS NULL and TJ.modulename = :modulename ";
+  $results = db_query($sql, array(':modulename' => $modulename));
+  return $results->fetchObject();
 }
 
 /**

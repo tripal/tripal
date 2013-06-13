@@ -47,7 +47,7 @@ function tripal_core_edit_custom_table($table_id, $table_name, $schema, $skip_cr
   }
 
   // if skip creation is not set, then drop the table from chado if it exists
-  if(!$skip_creation){
+  if (!$skip_creation) {
     if (db_table_exists($custom_table->table_name)) {
       chado_query("DROP TABLE %s", $custom_table->table_name);
       drupal_set_message(t("Custom Table '%name' dropped", array('%name' => $custom_table->table_name)));
@@ -58,7 +58,7 @@ function tripal_core_edit_custom_table($table_id, $table_name, $schema, $skip_cr
   if (drupal_write_record('tripal_custom_tables', $record, 'table_id')) {
 
     // drop the table from chado if it exists
-    if(!$skip_creation){
+    if (!$skip_creation) {
       if (db_table_exists($custom_table->table_name)) {
         chado_query("DROP TABLE %s", $custom_table->table_name);
         drupal_set_message(t("Custom Table '%name' dropped", array('%name' => $custom_table->table_name)));
@@ -159,7 +159,7 @@ function tripal_core_create_custom_table(&$ret, $table, $schema, $skip_creation 
   }
   
   // now add any foreign key constraints
-  if(!$skip_creation and array_key_exists('foreign keys', $schema)){
+  if (!$skip_creation and array_key_exists('foreign keys', $schema)) {
     $fkeys = $schema['foreign keys'];
     foreach ($fkeys as $fktable => $fkdetails) {
       $relations = $fkdetails['columns'];
@@ -167,7 +167,7 @@ function tripal_core_create_custom_table(&$ret, $table, $schema, $skip_creation 
         $sql = "ALTER TABLE $table ADD CONSTRAINT " . 
           $table . "_" . $left . "_fkey FOREIGN KEY ($left) REFERENCES  $fktable ($right) " .
           "ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED";
-        if(!chado_query($sql)){
+        if (!chado_query($sql)) {
           watchdog('tripal_core', "Error, could not add foreign key contraint to custom table.",
             array('!table_name' => $table), WATCHDOG_ERROR);
           drupal_set_message(t("Could not add foreign key contraint to table %table_name. 
@@ -193,7 +193,7 @@ function tripal_core_create_custom_table(&$ret, $table, $schema, $skip_creation 
  * @ingroup tripal_custom_tables_api
  */
 function tripal_custom_tables_get_table_id($table_name) {
-  $sql = "SELECT * FROM {tripal_custom_tables} ".
+  $sql = "SELECT * FROM {tripal_custom_tables} " .
          "WHERE table_name = '%s'";
   if (db_table_exists('tripal_custom_tables')) {
     $custom_table = db_fetch_object(db_query($sql, $table_name));

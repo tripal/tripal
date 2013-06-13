@@ -402,7 +402,7 @@ function chado_organism_add_image($node) {
   // directory for display with the organism
   if (isset($_FILES['files']) && $_FILES['files']['name']['organism_image'] &&
     is_uploaded_file($_FILES['files']['tmp_name']['organism_image'])) {
-      $dest = file_directory_path() . "/tripal/tripal_organism/images";
+      $dest = tripal_file_directory_path() . "/tripal_organism/images";
       $validators = array(
         'file_validate_is_image' => array(),
       );

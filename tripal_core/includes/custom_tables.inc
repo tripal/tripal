@@ -31,15 +31,15 @@ function tripal_custom_table_view($table_id) {
   $output .= "<br />";
   $output .= "<table class=\"border-table\">";
   if ($custom_table->table_name) {
-    $output .= "  <tr>".
-    "    <th>Table Name</th>".
-    "    <td>$custom_table->table_name</td>".
+    $output .= "  <tr>" .
+    "    <th>Table Name</th>" .
+    "    <td>$custom_table->table_name</td>" .
     "  </tr>";
   }
   if ($custom_table->schema) {
-    $output .= "  <tr>".
-    "    <th>Table Field Definitions</th>".
-    "    <td><pre>" . var_export(unserialize($custom_table->schema),1) . "</pre></td>".
+    $output .= "  <tr>" .
+    "    <th>Table Field Definitions</th>" .
+    "    <td><pre>" . var_export(unserialize($custom_table->schema), 1) . "</pre></td>" .
     "  </tr>";
   }
 
@@ -47,9 +47,9 @@ function tripal_custom_table_view($table_id) {
   // clean URLs are or are not used
   $delete_url = url("admin/tripal/custom_tables/action/delete/$custom_table->table_id");
   $edit_url = url("admin/tripal/custom_tables/edit/$custom_table->table_id");
-  $output .= "<tr><th>Actions</th>".
-            "<td>".
-            "     <a href='$edit_url'>Edit</a>, ".
+  $output .= "<tr><th>Actions</th>" .
+            "<td>" .
+            "     <a href='$edit_url'>Edit</a>, " .
             "     <a href='$delete_url'>Delete</a></td></tr>";
   $output .= "</table>";
 
@@ -69,8 +69,8 @@ function tripal_custom_tables_list() {
   while ($custom_table = db_fetch_object($custom_tables)) {
  
     $rows[] = array(
-      l(t('View'), "admin/tripal/custom_tables/view/$custom_table->table_id") ." | ".
-      l(t('Edit'), "admin/tripal/custom_tables/edit/$custom_table->table_id") ." | ".
+      l(t('View'), "admin/tripal/custom_tables/view/$custom_table->table_id") . " | " .
+      l(t('Edit'), "admin/tripal/custom_tables/edit/$custom_table->table_id") . " | " .
       $custom_table->table_name,
       $custom_table->comment,
       l(t('Delete'), "admin/tripal/custom_tables/action/delete/$custom_table->table_id"),
@@ -125,8 +125,8 @@ function tripal_custom_tables_form(&$form_state = NULL, $table_id = NULL) {
       $default_table = $custom_table->table_name;
     }
     if (!$default_schema) {
-      $default_schema = var_export(unserialize($custom_table->schema),1);
-      $default_schema = preg_replace('/=>\s+\n\s+array/','=> array', $default_schema);
+      $default_schema = var_export(unserialize($custom_table->schema), 1);
+      $default_schema = preg_replace('/=>\s+\n\s+array/', '=> array', $default_schema);
     }
   }
 
@@ -311,7 +311,7 @@ function tripal_custom_tables_form_submit($form, &$form_state) {
   eval("\$schema_arr = $schema;");
   
 
-  if (strcmp($action, 'Edit') == 0) {  	
+  if (strcmp($action, 'Edit') == 0) {    
     tripal_core_edit_custom_table($table_id, $schema_arr['table'], $schema_arr, $skip_creation);
   }
   elseif (strcmp($action, 'Add') == 0) {
@@ -350,14 +350,14 @@ function tripal_custom_tables_action($op, $table_id, $redirect = FALSE) {
   if ($op == 'delete') {
   
     // remove the entry from the tripal_custom tables table
-    $sql = "DELETE FROM {tripal_custom_tables} ".
+    $sql = "DELETE FROM {tripal_custom_tables} " .
            "WHERE table_id = $table_id";
     db_query($sql);
     
     // drop the table from chado if it exists
     if (db_table_exists($custom_table->table_name)) {
       $success = chado_query("DROP TABLE %s", $custom_table->table_name);
-      if($success){
+      if ($success) {
         drupal_set_message(t("Custom Table '%name' dropped", array('%name' => $custom_table->table_name)));
       }
     }

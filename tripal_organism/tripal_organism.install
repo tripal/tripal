@@ -20,7 +20,7 @@ function tripal_organism_install() {
   // The user that performs the syncing will receive ownership of the
   // images directory which may not allow for write access by the web server
   // user.  So, we create it here
-  $dest = file_directory_path() . "/tripal/tripal_organism/images";
+  $dest = tripal_file_directory_path() . "/tripal_organism/images";
   file_check_directory($dest, FILE_CREATE_DIRECTORY);
 
   // create the tables that correlate drupal nodes with chado

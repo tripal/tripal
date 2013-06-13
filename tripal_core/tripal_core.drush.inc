@@ -71,7 +71,7 @@ function tripal_core_drush_command() {
     'examples' => array(
       'Standard example' => 'drush tripal-jobs-current',
     ),
-    'aliases' => array('trpjob-cur','tripal-current-job'),
+    'aliases' => array('trpjob-cur', 'tripal-current-job'),
   );
   $items['tripal-jobs-launch'] = array(
     // used by drush help
@@ -88,7 +88,7 @@ function tripal_core_drush_command() {
       'parallel' => dt('Normally jobs are executed one at a time. But if you are certain no conflicts will occur with other currently running jobs you may set this argument to a value of 1 to make the job run in parallel with other running jobs.'),
       'job_id' => dt('Provide a job_id to run a specific job. Only jobs that have not been run already can be used'),
     ),
-    'aliases' => array('trpjob-run','tripal-launch-jobs')
+    'aliases' => array('trpjob-run', 'tripal-launch-jobs')
   );
   $items['tripal-jobs-rerun'] = array(
     // used by drush help
@@ -105,7 +105,7 @@ function tripal_core_drush_command() {
     'options' => array(
       'parallel' => dt('Normally jobs are executed one at a time. But if you are certain no conflicts will occur with other currently running jobs you may set this argument to a value of 1 to make the job run in parallel with other running jobs.'),
     ),
-    'aliases' => array('trpjob-rerun','tripal-rerun-job')
+    'aliases' => array('trpjob-rerun', 'tripal-rerun-job')
   );
 
   // Chado-specific
@@ -178,8 +178,13 @@ function drush_tripal_core_tripal_jobs_launch($username) {
   $job_id = drush_get_option('job_id');
 
   if ($username) {
+    $sql = "SELECT uid FROM {user} WHERE name = '%s'";
+    $u = db_fetch_object(db_query($sql, $username));
+    if (!$u) {
+      drush_print('ERROR: Please provide a valid username for running this job.');  
+    }
     global $user;
-    $user = user_load(array('name' => $username));
+    $user = user_load($u->uid);
   }
   else {
     drush_print('ERROR: Please provide a username for running this job.');
@@ -218,18 +223,18 @@ function drush_tripal_core_tripal_jobs_rerun($username, $job_id) {
  * NOTE: The following code is executed when 'drush trpjob-curr' or 'drush tripal-current-job' is called
  */
 function drush_tripal_core_tripal_jobs_current() {
-  $sql =  "SELECT * FROM {tripal_jobs} TJ ".
+  $sql =  "SELECT * FROM {tripal_jobs} TJ " .
             "WHERE TJ.end_time IS NULL and NOT TJ.start_time IS NULL ";
   $jobs = db_query($sql);
   while ($job = db_fetch_object($jobs)) {
     $job_pid = $job->pid;
     $output = "Name: " . $job->job_name . "\n"
-             ."Submitted: " . date(DATE_RFC822, $job->submit_date) . "\n"
-             ."Started: " . date(DATE_RFC822, $job->start_time) . "\n"
-             ."Module: " . $job->modulename . "\n"
-             ."Callback: " . $job->callback . "\n"
-             ."Process ID: " . $job->pid . "\n"
-             ."Progress: " . $job->progress . "%\n";
+             . "Submitted: " . date(DATE_RFC822, $job->submit_date) . "\n"
+             . "Started: " . date(DATE_RFC822, $job->start_time) . "\n"
+             . "Module: " . $job->modulename . "\n"
+             . "Callback: " . $job->callback . "\n"
+             . "Process ID: " . $job->pid . "\n"
+             . "Progress: " . $job->progress . "%\n";
     drush_print($output);
   }
   if (!$job_pid) {
@@ -284,7 +289,7 @@ function drush_tripal_core_tripal_update_mview() {
  */
 function drush_tripal_core_tripal_chado_version() {
   $version = tripal_core_get_chado_version();
-  drush_print('Current Chado Version: '.$version);
+  drush_print('Current Chado Version: ' . $version);
 }
 
 /**
@@ -300,10 +305,10 @@ function drush_tripal_core_tripal_chadotable_desc($table_name) {
   $desc = tripal_core_get_chado_table_schema($table_name);
 
   if (!empty($section)) {
-    drush_print("$section = ".print_r($desc[$section],TRUE));
+    drush_print("$section = " . print_r($desc[$section], TRUE));
   }
   else {
-    drush_print(print_r($desc,TRUE));
+    drush_print(print_r($desc, TRUE));
   }
 }
 
@@ -314,7 +319,7 @@ function drush_tripal_core_tripal_chadotable_desc($table_name) {
  *  The name of a module with nodes associated with it. For example, feature
  */
 function drush_tripal_core_tripal_node_sync($module) {
-  switch($module) {
+  switch ($module) {
     case 'analysis':
       call_user_func('tripal_analysis_sync_analyses');
       break;

@@ -92,8 +92,8 @@ function tripal_mviews_report() {
     }
 
     $rows[] = array(
-      l(t('View'), "admin/tripal/mviews/report/$mview->mview_id") ." | ".
-      l(t('Edit'), "admin/tripal/mviews/edit/$mview->mview_id") ." | ".
+      l(t('View'), "admin/tripal/mviews/report/$mview->mview_id") . " | " .
+      l(t('Edit'), "admin/tripal/mviews/edit/$mview->mview_id") . " | " .
       l(t('Populate'), "admin/tripal/mviews/action/update/$mview->mview_id"),
       $mview->name,
       $update,
@@ -114,7 +114,7 @@ function tripal_mviews_report() {
     data storage platform, but unfortunately some queries may be slow.  MViews alleviate slowness by aggregating data
     into tables that are more easy to query.  Use MViews to create tables for custom search pages or custom Tripal
     module development.") . '</p>';
-  $page .= '<p><b>' . t("MViews behaves in the following way:") . '</b><ul>'.
+  $page .= '<p><b>' . t("MViews behaves in the following way:") . '</b><ul>' .
            '<li>' . t("The SQL statement defined for an MVIEW will be used to populate the table") . '</li>' .
            '<li>' . t("Altering the table structure of an MView will cause the MView table to be dropped and recreated.  All records in the MView will be lost.") . '</li>' .
            '<li>' . t("Altering the query of an existing view will not change the MView table. No records will be lost. ") . '</li>' .
@@ -251,8 +251,8 @@ function tripal_mviews_form(&$form_state = NULL, $mview_id = NULL) {
   $form['schema'] = array(
     '#type' => 'fieldset',
     '#title' => 'Drupal Schema API Setup',
-    '#description' => t('Use the Drupal Schema API array to describe a table. The benefit is that it '.
-                       'can be fully integrated with Tripal Views.  Tripal supports an extended '.
+    '#description' => t('Use the Drupal Schema API array to describe a table. The benefit is that it ' .
+                       'can be fully integrated with Tripal Views.  Tripal supports an extended ' .
                        'array format to allow for descriptoin of foreign key relationships.'),
     '#collapsible' => 1,
     '#collapsed' => $schema_collapsed ,
@@ -271,8 +271,8 @@ function tripal_mviews_form(&$form_state = NULL, $mview_id = NULL) {
   $form['traditional'] = array(
     '#type' => 'fieldset',
     '#title' => 'Legacy MViews Setup',
-    '#description' => t('Traditionally MViews were created by specifying PostgreSQL style '.
-                       'column types.  This method can be used but is deprecated in favor of the '.
+    '#description' => t('Traditionally MViews were created by specifying PostgreSQL style ' .
+                       'column types.  This method can be used but is deprecated in favor of the ' .
                        'newer Drupal schema API method provided above. In rare cases where the Drupal Schema API ' .
                        'does not support a desired data type the Legacy Mviews should be used'),
     '#collapsible' => 1,
@@ -359,7 +359,7 @@ function tripal_mviews_form_validate($form, &$form_state) {
 
   if ($schema and ($mv_table or $mv_specs or $indexed or $special_index)) {
     form_set_error($form_state['values']['schema'],
-      t('You can create an MView using the Drupal Schema API method or the '.
+      t('You can create an MView using the Drupal Schema API method or the ' .
         'traditional method but not both.'));
   }
   if (!$schema) {

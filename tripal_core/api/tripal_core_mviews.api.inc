@@ -180,7 +180,7 @@ function tripal_edit_mview($mview_id, $name, $modulename, $mv_table, $mv_specs,
   $create_table = 1;  
   $sql = "SELECT * FROM {tripal_mviews} WHERE mview_id = %d";
   $mview = db_fetch_object(db_query($sql, $mview_id));  
-  if($mview->mv_schema == $mv_schema and $mview->mv_table == $mv_table and 
+  if ($mview->mv_schema == $mv_schema and $mview->mv_table == $mv_table and 
      $mview->mv_specs == $mv_specs and $mview->indexed == $indexed and 
      $mview->special_index == $special_index) {
     // nothing has changed so simpy update the SQL and other fields 
@@ -270,7 +270,7 @@ function tripal_edit_mview($mview_id, $name, $modulename, $mv_table, $mv_specs,
  * @ingroup tripal_mviews_api
  */
 function tripal_mviews_get_mview_id($view_name) {
-  $sql = "SELECT * FROM {tripal_mviews} ".
+  $sql = "SELECT * FROM {tripal_mviews} " .
         "WHERE name = '%s'";
   if (db_table_exists('tripal_mviews')) {
     $mview = db_fetch_object(db_query($sql, $view_name));
@@ -313,7 +313,7 @@ function tripal_mviews_action($op, $mview_id, $redirect = FALSE) {
   }
   if ($op == 'delete') {
     // remove the mview from the tripal_mviews table
-    $sql = "DELETE FROM {tripal_mviews} ".
+    $sql = "DELETE FROM {tripal_mviews} " .
            "WHERE mview_id = $mview_id";
     db_query($sql);
     // drop the table from chado if it exists
@@ -362,7 +362,7 @@ function tripal_update_mview($mview_id) {
       tripal_db_set_active($previous_db);  // now use drupal database
       $record = new stdClass();
       $record->mview_id = $mview_id;
-      $record->last_update = time();
+      $record->last_update = REQUEST_TIME;
       $record->status = "Populated with " . number_format($count->cnt) . " rows";
       drupal_write_record('tripal_mviews', $record, 'mview_id');
       return TRUE;

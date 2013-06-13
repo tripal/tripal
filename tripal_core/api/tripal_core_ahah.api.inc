@@ -110,7 +110,8 @@ function tripal_core_ahah_prepare_form() {
 function tripal_core_ahah_bind_events() {
   
   // Get the JS settings so we can merge them.
-  $javascript = drupal_add_js(NULL, NULL, 'header');
+  $options = array('scope' => 'header'); 
+  $javascript = drupal_add_js(NULL, $options);
   $settings = call_user_func_array('array_merge_recursive', $javascript['setting']);
   
   return array('ahah' => $settings['ahah']);

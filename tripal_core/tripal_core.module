@@ -59,13 +59,7 @@ require_once "includes/form_elements.inc";
  */
 function tripal_core_init() {
   global $base_url;     
-  
-  // we need to declare here the persistent_chado global variable
-  global $persistent_chado;
-  global $prepared_statements;
-  $persistent_chado = NULL;
-  $prepared_statements = array();
-  
+    
   // add javascript files 
   drupal_add_js(drupal_get_path('theme', 'tripal') . '/js/tripal.ahah.js');
   
@@ -76,15 +70,24 @@ function tripal_core_init() {
     // make sure the current version of chado is set
     tripal_core_set_chado_version();  
   
-    if (!db_fetch_object(chado_query("SELECT * FROM {cv} WHERE name = 'tripal'"))) {
+    // if the Tripal cv is missing then add
+    $results = chado_query("SELECT * FROM {cv} WHERE name = 'tripal'");
+    $tripal_cv = $results->fetchObject();    
+    if (!$tripal_cv) {
       $results = chado_query(
-        "INSERT INTO {cv} (name,definition) ".
-        "VALUES ('tripal', 'Terms used by Tripal for modules to manage data such as that stored in property tables like featureprop, analysisprop, etc')");
+        "INSERT INTO {cv} (name,definition) " .
+        "VALUES ('tripal', 'Terms used by Tripal for modules to manage data such as that stored in property tables like featureprop, analysisprop, etc')"
+      );
     }
-    if (!db_fetch_object(chado_query("SELECT * FROM {db} WHERE name = 'tripal'"))) {
+    
+    // if the Tripal db is missing then add it
+    $results = chado_query("SELECT * FROM {db} WHERE name = 'tripal'");
+    $tripal_db = $results->fetchObject();
+    if (!$tripal_db) {
       $results = chado_query(
-        "INSERT INTO {db} (name,description) ".
-        "VALUES ('tripal', 'Used as a database placeholder for tripal defined objects such as tripal cvterms')");
+        "INSERT INTO {db} (name,description) " .
+        "VALUES ('tripal', 'Used as a database placeholder for tripal defined objects such as tripal cvterms')"
+      );
     }
   }
 
@@ -101,16 +104,8 @@ function tripal_core_init() {
   // make sure the date time settings are the way Tripal will insert them
   // otherwise PostgreSQL version that may have a different datestyle setting
   // will fail when inserting or updating a date column in a table.
-  db_query("SET DATESTYLE TO '%s'", 'MDY'); 
-
-  // in the event that an errant Tripal or extension function fails to
-  // set the postgres search_path back to noraml we do it here on 
-  // init of the core
-  tripal_db_set_default_search_path(); 
-  
-  // create a persistent connection
-  $connection = tripal_db_persistent_chado();
-  
+  db_query("SET DATESTYLE TO :style", array(':style' => 'MDY')); 
+   
   // If we want AHAH elements on the node forms (e.g. chado_pub form) then we need to include
   // the node.pages file. Otherwise this error message is given:
   //
@@ -287,8 +282,13 @@ function tripal_core_menu() {
  *
  * @ingroup tripal_core
  */
-function tripal_core_perm() {
-  return array('install chado');
+function tripal_core_permission() {
+  return array(
+    'install chado' => array(
+      'title' => t('Install Chado'),
+      'description' => t('Allow the user to install or upgrade a Chado database in the existing Drupal database.')
+    ),
+  );
 }
 
 /**

@@ -13,50 +13,16 @@
 function tripal_core_install() {
 
   // make the data directory for this module
-  $data_dir = file_directory_path() . "/tripal";
+  $data_dir = tripal_file_directory_path();
   if (!file_check_directory($data_dir, FILE_CREATE_DIRECTORY)) {
-    $message = "Cannot create directory $data_dir. This module may not ".
-               "behave correctly without this directory.  Please  create ".
+    $message = "Cannot create directory $data_dir. This module may not " .
+               "behave correctly without this directory.  Please  create " .
                "the directory manually or fix the problem and reinstall.";
     drupal_set_message(check_plain($message), 'error');
     watchdog('tripal_core', $message, array(), WATCHDOG_ERROR);
   }
 
-  // create the tables that manage materialized views and jobs
-  drupal_install_schema('tripal_core');
-
 }
-
-/**
- *  Update for Drupal 6.x, Tripal 1.0
- *  This update
- *   - adjusts the materialized view by adding status, comment and mv_schema columns
- *   - changes the specs of mv_table, mv_specs and indexed
- *   - creates the tripal_custom_tables table
- *
- * @ingroup tripal_core
- */
-function tripal_core_update_6000() {
-  // add additional columns to the tripal_mviews table
-  db_add_field($ret, 'tripal_mviews', 'status', array('type' => 'text', 'size' => 'normal', 'not NULL' => FALSE));
-  db_add_field($ret, 'tripal_mviews', 'comment', array('type' => 'text', 'size' => 'normal', 'not NULL' => FALSE));
-  db_add_field($ret, 'tripal_mviews', 'mv_schema', array('type' => 'text', 'size' => 'normal', 'not NULL' => FALSE));
-  db_change_field($ret, 'tripal_mviews', 'mv_table', 'mv_table', array('type' => 'varchar', 'length' => 128, 'not NULL' => FALSE));
-  db_change_field($ret, 'tripal_mviews', 'mv_specs', 'mv_specs', array('type' => 'text', 'size' => 'normal', 'not NULL' => FALSE));
-  db_change_field($ret, 'tripal_mviews', 'indexed', 'indexed', array('type' => 'text', 'size' => 'normal', 'not NULL' => FALSE));
-
-  // create the custom tables table
-  $ret = array();
-  $schema = tripal_core_custom_tables_schema();
-  db_create_table($ret, 'tripal_custom_tables', $schema['tripal_custom_tables']);
-
-  $ret = array(
-    '#finished' => 1,
-  );
-
-  return $ret;
-}
-
 /**
  * Implementation of hook_schema().
  *
@@ -75,8 +41,8 @@ function tripal_core_schema() {
   // Chado database.
   if (db_table_exists('tripal_custom_tables')) {
     $sql = 'SELECT * FROM {tripal_custom_tables}';
-    $q = db_query($sql);
-    while ($custom = db_fetch_object($q)) {
+    $results = db_query($sql);    
+    foreach ($results as $custom) {
       $schema[$custom->table_name] = unserialize($custom->schema);
     }
   }
@@ -90,7 +56,6 @@ function tripal_core_schema() {
  * @ingroup tripal_core
  */
 function tripal_core_uninstall() {
-  drupal_uninstall_schema('tripal_core');
 }
 
 /**
