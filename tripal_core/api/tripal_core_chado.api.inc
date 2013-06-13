@@ -3378,7 +3378,7 @@ function tripal_get_chado_custom_schema($table) {
 }
 
 /**
- * Check that the Chado schema exists
+ * Check that the Chado schema exists within the local database
  *
  * @return
  *   TRUE/FALSE depending upon whether it exists

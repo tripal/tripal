@@ -15,59 +15,6 @@
  * @ingroup views
  */
 
-/**
- * Implements hook_views_data()
- * Purpose: Describe chado/tripal tables & fields to views
- * @return: a data array which follows the structure outlined in the
- *   views2 documentation for this hook. Essentially, it's an array of table
- *   definitions keyed by chado/tripal table name. Each table definition
- *   includes basic details about the table, fields in that table and
- *   relationships between that table and others (joins)
- *
- * @ingroup tripal_db_views
- */
-function tripal_db_views_data()  {
-  $data = array();
-
-  if (module_exists('tripal_views')) {
-    // Base Tables
-    $tables = array(
-      'db',
-      'dbxref'
-    );
-    foreach ($tables as $tablename) {
-      $priority = 9;
-
-      // check to see if the table is integrated. If it is then integrate it's
-      // corresponding 'chado_[table]' table.
-      if (!tripal_views_is_integrated($tablename, $priority)) {
-        $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename, TRUE, $priority);
-
-        // add specialty handlers
-        if ($tablename == 'db') {
-          $table_integration_array['fields']['name']['handlers']['filter']['name'] = 'tripal_views_handler_filter_select_string';
-        }
-
-        tripal_views_integration_add_entry($table_integration_array);
-      }
-    }
-
-    // Additional Tables
-    $tables = array(
-      'dbxrefprop'
-    );
-    foreach ($tables as $tablename) {
-      $priority = 9;
-      if (!tripal_views_is_integrated($tablename, $priority)) {
-        $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename, FALSE, $priority);
-        tripal_views_integration_add_entry($table_integration_array);
-      }
-    }
-  }
-
-  return $data;
-
-}
 
 /**
  *

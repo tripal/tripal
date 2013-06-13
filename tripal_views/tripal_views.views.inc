@@ -5,9 +5,6 @@ include('views/handlers/views_handler_join_chado_aggregator.inc');
 include('api/tripal_views.api.inc');
 
 
-// TEMPORARY
-include('views/chado_linking.TMP.inc');
-
 /**
  * @file
  * Tripal Views Integration
@@ -299,6 +296,13 @@ function tripal_views_views_data() {
       // if we are we want to add to a current integration
       // as compared to create a whole new one
       if ($base_table == 'node') {
+
+      	/* -- SPF Jun 13, 2013 -- not sure why the node table 
+      	 *    is included in the Chado integrated tables. I've commented
+      	 *    out.  I think it was here for integration of chado tables wiht 
+      	 *    nodes, but code to do this has been added below and it's not
+      	 *    necessary to have the node table in the list of integrated tables
+      	 *
         // Add any joins between the node table and other tables
         $sql = "SELECT * FROM {tripal_views_join} WHERE setup_id = %d";
         $joins = db_query($sql, $setup_id);
@@ -331,8 +335,9 @@ function tripal_views_views_data() {
             $data[$base_table][$handler->column_name][$handler->handler_type] = array_merge($data[$base_table][$handler->column_name][$handler->handler_type], unserialize($handler->arguments));
           }
         }
+        */
         continue;
-      }
+      } 
 
       // get the table description
       $table_desc = tripal_core_get_chado_table_schema($base_table);
@@ -357,47 +362,155 @@ function tripal_views_views_data() {
       }
     }
 
-      // Setup the base table info in the data array
-      $data[$base_table]['table']['group'] = t("$tvi_row->name");
+    // Setup the base table info in the data array
+    $data[$base_table]['table']['group'] = t("$tvi_row->name");
 
-      if ($is_base_table) {
-        $data[$base_table]['table']['base'] = array(
-          'group' => "$tvi_row->name",
-          'title' => "$tvi_row->name",
-          'help'  => $tvi_row->comment,
-        );
-      }
-      else {
-        $data[$base_table]['table'] = array(
-          'group' => "$tvi_row->name",
-          'title' => "$tvi_row->name",
-          'help'  => $tvi_row->comment,
-        );
-      }
+    if ($is_base_table) {
+      $data[$base_table]['table']['base'] = array(
+        'group' => "$tvi_row->name",
+        'title' => "$tvi_row->name",
+        'help'  => $tvi_row->comment,
+      );
+    }
+    else {
+      $data[$base_table]['table'] = array(
+        'group' => "$tvi_row->name",
+        'title' => "$tvi_row->name",
+        'help'  => $tvi_row->comment,
+      );
+    }
 
-      // first add the fields
-      foreach ($base_fields as $column_name => $base_field) {
-        $data[$base_table][$column_name] = array(
-          'title' => t($base_field['name']),
-          'help' => t($base_field['help']),
-          'field' => array(
-            'click sortable' => TRUE,
-          ),
-        );
+    // first add the fields
+    foreach ($base_fields as $column_name => $base_field) {
+      $data[$base_table][$column_name] = array(
+        'title' => t($base_field['name']),
+        'help' => t($base_field['help']),
+        'field' => array(
+          'click sortable' => TRUE,
+        ),
+      );
 
 
-        // now add the handlers
-        $sql = "SELECT * FROM {tripal_views_handlers} WHERE setup_id = %d AND column_name = '%s'";
-        $handlers = db_query($sql, $setup_id, $column_name);
-        while ($handler = db_fetch_object($handlers)) {
-          $data[$base_table][$column_name][$handler->handler_type]['handler'] = $handler->handler_name;
+      // now add the handlers
+      $sql = "SELECT * FROM {tripal_views_handlers} WHERE setup_id = %d AND column_name = '%s'";
+      $handlers = db_query($sql, $setup_id, $column_name);
+      while ($handler = db_fetch_object($handlers)) {
+        $data[$base_table][$column_name][$handler->handler_type]['handler'] = $handler->handler_name;
 
-          // Add in any additional arguments
-          // This should be a serialized array including (at a minimum) name => <handler name>
-          if ($handler->arguments) {
-            $data[$base_table][$column_name][$handler->handler_type] = array_merge($data[$base_table][$column_name][$handler->handler_type], unserialize($handler->arguments));
-          }
-        };
+        // Add in any additional arguments
+        // This should be a serialized array including (at a minimum) name => <handler name>
+        if ($handler->arguments) {
+          $data[$base_table][$column_name][$handler->handler_type] = array_merge($data[$base_table][$column_name][$handler->handler_type], unserialize($handler->arguments));
+        }
+      };
+      
+      // add in joins to the node tables if the Chado schema is local
+		  if (tripal_core_chado_schema_exists()) {
+		    
+		    $linker_table = 'chado_' . $base_table;
+		    $linker_name = ucwords(str_replace('_', ' ', $base_table));
+		    $schema = tripal_core_get_chado_table_schema($base_table);
+		    $pkey = $schema['primary key'][0];
+		    
+		    // if a node linking table exists then add in the joins
+		    if (db_table_exists($linker_table)) {		
+		    		    		      
+		    	// add the linker table to the data array
+			    $data[$linker_table] = array(
+			      // describe the table
+			      'table' => array(
+			        'title' => 'Chado ' . $linker_name,
+              'group' => 'Chado ' . $linker_name,
+			        // join to the base table and the node table
+			        'join' => array(
+				        $base_table => array(
+			            'left_field' => $pkey,
+			            'field' => $pkey,
+				        ),
+				        'node' => array(
+                  'left_field' => 'nid',
+                  'field' => 'nid',
+				        ),
+				      ),
+				    ),
+				    // add the nid field
+            'nid' => array(
+              'title' => t($linker_name . ' Node ID'),
+              'help' => t("The node ID for this $linker_name"),
+              'field' => array(
+                'handler' => 'views_handler_field_numeric',
+                'click sortable' => TRUE,
+              ),
+              'filter' => array(
+                'handler' => 'views_handler_filter_numeric',
+              ),
+              'sort' => array(
+                'handler' => 'views_handler_sort',
+              ),
+            ),
+            // add the primary key field
+            $pkey => array(
+              'title' => t($linker_name . ' ' . $pkey),
+              'help' => t("The $base_table primary key"),
+              'field' => array(
+                'handler' => 'views_handler_field_numeric',
+                'click sortable' => TRUE,
+              ),
+              'filter' => array(
+                'handler' => 'views_handler_filter_numeric',
+              ),
+              'sort' => array(
+                'handler' => 'views_handler_sort',
+              ),
+            ),            
+          );  
+
+          // add the join instructions for the base table
+          // (we'll add the recipricol joins for the node table in the hook_views_data_alter
+          $data[$base_table]['table']['join'][$linker_table] = array(
+            'left_field' => 'organism_id',
+            'field' => 'organism_id',
+          );
+          $data[$base_table]['table']['join']['node'] = array(
+            'left_table' => $linker_table,
+            'left_field' => 'organism_id',
+            'field' => 'organism_id',
+          );
+
+			
+			    // Add relationship between linker and base table
+			    $data[$linker_table][$base_table . '_nid'] = array(
+			      'group' => $linker_name,
+			      'title' => $linker_name . 'Node',
+			      'help' => "Links Chado $linker_name Fields/Data to the Nodes in the current View.",
+			      'real field' => $pkey,
+			      'relationship' => array(
+			        'handler' => 'views_handler_relationship',
+			        'title' => t("Chado => $linker_name"),
+			        'label' => t("Chado => $linker_name"),
+			        'real field' => $pkey,
+			        'base' => $base_table,
+			        'base field' => $pkey
+			      ),
+			    );
+			
+			    // Add node relationship to base table
+			    $data[$linker_table][$linker_table .'_nid'] = array(
+			      'group' => $linker_name,
+			      'title' => $linker_name . 'Node',
+			      'help' => "Links Chado $linker_name Fields/Data to the Nodes in the current View.",
+			      'real field' => 'nid',
+			      'relationship' => array(
+			        'handler' => 'views_handler_relationship',
+			        'title' => t('Chado => Node'),
+			        'label' => t('Chado => Node'),
+			        'real field' => 'nid',
+			        'base' => 'node',
+			        'base field' => 'nid'
+			      ),
+			    );
+		    } 
+		  }		  
     }
 
     // now add the joins
@@ -411,6 +524,12 @@ function tripal_views_views_data() {
       $left_field = $join->left_field;
       $base_field = $join->base_field;
       $handler = $join->handler;
+      
+      // if the 'node' table is in our integrated list then
+      // we want to skip it. It shouldn't be there.
+      if ($left_table == 'node') {
+      	continue;
+      }
 
       // add join entry
       $data[$base_table]['table']['join'][$left_table] = array(
@@ -422,10 +541,6 @@ function tripal_views_views_data() {
       }
     }
   }
-
-  // TEMPORARY: needed to join chado base tables to node linking tables
-  // currently done using old-style data arrays
-  //$data = tripal_views_TEMPORARY_chado_linking_data($data);
   return $data;
 }
 
@@ -442,6 +557,7 @@ function tripal_views_views_data_alter(&$data) {
       //ids we'll use for queries
       $mview_id = $tvi_row->mview_id;
       $setup_id = $tvi_row->setup_id;
+      
 
       // iterate through the columns and alter the existing data array for
       // joins to other tables
@@ -454,15 +570,33 @@ function tripal_views_views_data_alter(&$data) {
         $base_table = $join->base_table;
 
         // add the recipricol join entries for each column
-        if (array_key_exists($left_table, $data)) {
+        if (array_key_exists($left_table, $data) and $base_table != 'node') {
           $data[$left_table]['table']['join'][$base_table] = array(
             'left_field' => $base_field,
             'field' => $left_field,
           );
         }
       }
-    }
-
+      
+      // add in joins to the node tables if the Chado schema is local
+      if (tripal_core_chado_schema_exists()) {
+        $base_table = $tvi_row->table_name;
+        $linker_table = 'chado_' . $base_table;
+        // if a node linking table exists then add in the joins
+        if (db_table_exists($linker_table)) {         
+      
+          $data['node']['table']['join'][$linker_table] = array(
+            'left_field' => 'nid',
+            'field' => 'nid',
+          );
+          $data['node']['table']['join'][$base_table] = array(
+            'left_table' => $linker_table,
+            'left_field' => 'nid',
+            'field' => 'nid',
+          );
+        }
+      }
+    }     
     return $data;
 }
 

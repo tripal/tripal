@@ -606,7 +606,7 @@ function tripal_views_get_integration_array_for_chado_table($table_name, $base_t
         'name' => 'chado_views_handler_relationship',
         'base' => $foreign_key_schema['table'],
         'base field' => $right_field,
-        'label' => $table_name . ' ' . $left_field . ' to ' . $foreign_key_schema['table'] . ' ' . $right_field
+        'label' => $table_name . ' ' . $left_field . ' => ' . $foreign_key_schema['table'] . ' ' . $right_field
       );
     }
   }

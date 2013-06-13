@@ -16,83 +16,6 @@
  */
 
 /**
- * Implements hook_views_data()
- *
- * Purpose: Describe chado/tripal tables & fields to views
- *
- * @return: a data array which follows the structure outlined in the
- *   views2 documentation for this hook. Essentially, it's an array of table
- *   definitions keyed by chado/tripal table name. Each table definition
- *   includes basic details about the table, fields in that table and
- *   relationships between that table and others (joins)
- *
- * @ingroup tripal_feature_views
- */
-function tripal_feature_views_data()  {
-  $data = array();
-
-  if (module_exists('tripal_views')) {
-    $tables = array(
-      'feature',
-    );
-
-    foreach ($tables as $tablename) {
-      $priority = 9;
-
-      // check to see if the table is integrated. If it is then integrate it's
-      // corresponding 'chado_[table]' table.
-      if (!tripal_views_is_integrated($tablename, $priority)) {
-        $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename, TRUE, $priority);
-
-        // Add in node relationships if chado is in the same db as drupal
-        if (tripal_core_chado_schema_exists()) {
-          $integrations = tripal_views_add_node_relationship_to_chado_table_integration($table_integration_array);
-          foreach ($integrations as $integration) {
-            tripal_views_integration_add_entry($integration);
-          }
-        }
-        else {
-          tripal_views_integration_add_entry($table_integration_array);
-        }
-
-      }
-    }
-
-    $tables = array(
-      'feature_cvterm',
-      'feature_cvterm_dbxref',
-      'feature_cvterm_pub',
-      'feature_cvtermprop',
-      'feature_dbxref',
-      'feature_pub',
-      'feature_pubprop',
-      'feature_relationship',
-      'feature_relationship_pub',
-      'feature_relationshipprop',
-      'feature_relationshipprop_pub',
-      'feature_synonym',
-      'featureloc',
-      'featureloc_pub',
-      'featureprop',
-      'featureprop_pub',
-      'featuremap',
-      'featuremap_pub',
-      'featurepos',
-      'featurerange'
-    );
-    foreach ($tables as $tablename) {
-      $priority = 9;
-      if (!tripal_views_is_integrated($tablename, $priority)) {
-        $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename, FALSE, $priority);
-        tripal_views_integration_add_entry($table_integration_array);
-      }
-    }
-  }
-
-  return $data;
-}
-
-/**
  * Implements hook_views_handlers()
  *
  * Purpose: Register all custom handlers with views
@@ -109,39 +32,12 @@ function tripal_feature_views_handlers() {
       'path' => drupal_get_path('module', 'tripal_feature') . '/views_handlers',
     ),
     'handlers' => array(
-    'views_handler_field_residues' => array(
-      'parent' => 'views_handler_field',
-    ),
+      'views_handler_field_residues' => array(
+        'parent' => 'views_handler_field',
+      ),
     ),
   );
 }
-
-/**
- * Implementation of hook_views_data_alter().
- */
-function tripal_feature_views_data_alter(&$data) {
-
-  if ( !(is_array($db_url) and array_key_exists('chado', $db_url)) ) {
-
-    // Add featuer relationship to node
-    $data['node']['feature_chado_nid'] = array(
-      'group' => 'Feature',
-      'title' => 'Feature Node',
-      'help' => 'Links Chado Feature Fields/Data to the Nodes in the current View.',
-      'real field' => 'nid',
-      'relationship' => array(
-        'handler' => 'views_handler_relationship',
-        'title' => t('Node => Chado'),
-        'label' => t('Node => Chado'),
-        'real field' => 'nid',
-        'base' => 'chado_feature',
-        'base field' => 'nid'
-      ),
-    );
-  }
-
-}
-
 /**
  *
  * @ingroup tripal_feature_views

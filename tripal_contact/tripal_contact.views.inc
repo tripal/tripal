@@ -10,76 +10,7 @@
  *  http://views2.logrus.com/doc/html/index.html.
  */
 
-/*************************************************************************
- * Implements hook_views_data()
- * Purpose: Describe chado/tripal tables & fields to views
- *
- * @return: a data array which follows the structure outlined in the
- *   views2 documentation for this hook. Essentially, it's an array of table
- *   definitions keyed by chado/tripal table name. Each table definition
- *   includes basic details about the table, fields in that table and
- *   relationships between that table and others (joins)
- *
- * @ingroup tripal_contact
- */
-function tripal_contact_views_data()  {
-  $data = array();
 
-  if (module_exists('tripal_views')) {
-
-    // Base Table: contact
-    $tablename = 'contact';
-    $priority = 9;
-
-    // check to see if the table is integrated. If it is then integrate it's
-    // corresponding 'chado_[table]' table.
-    if (!tripal_views_is_integrated($tablename, $priority)) {
-      $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename, TRUE, $priority);
-      $status = tripal_views_integration_add_entry($table_integration_array);
-        if (!$status) {
-          drupal_set_message(t('Tripal Contact is unable to integrate %table', array('%table' => $tablename)), 'error');
-        }
-    }
-
-    // Additional tables
-    $tables = array(
-      'contact_relationship',
-    );
-    foreach ($tables as $tablename) {
-      $priority = 9;
-      if (!tripal_views_is_integrated($tablename, $priority)) {
-        $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename, FALSE, $priority);
-        $status = tripal_views_integration_add_entry($table_integration_array);
-        if (!$status) {
-          drupal_set_message(t('Tripal Contact is unable to integrate %table', array('%table' => $tablename)), 'error');
-        }
-      }
-    }
-  }
-
-  return $data;
-}
-
-/*************************************************************************
- * Implements hook_views_handlers()
- * Purpose: Register all custom handlers with views
- *   where a handler describes either "the type of field",
- *   "how a field should be filtered", "how a field should be sorted"
- *
- * @return: An array of handler definitions
- *
- * @ingroup tripal_contact
- */
-function tripal_contact_views_handlers() {
-  return array(
-   'info' => array(
-     'path' => drupal_get_path('module', 'tripal_contact') . '/views/handlers',
-  ),
-   'handlers' => array(
-
-  ),
-  );
-}
 
 /**
  *
