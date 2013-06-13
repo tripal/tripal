@@ -21,6 +21,12 @@
  *
  * @ingroup tripal_natural_diversity_views
  */
+
+
+/* -- SPF Jun 13, 2013 removed as a search by ND experiment 
+ * results in a huge return list.  As in the case of a genotyping
+ * GWAS experiment where tens of thousands of SNP genotypes are
+ * present.  --
 function tripal_natural_diversity_views_default_views() {
   $views = array();
 
@@ -38,7 +44,7 @@ function tripal_natural_diversity_views_default_views() {
   $view->base_table = 'nd_experiment';
   $view->core = 6;
   $view->api_version = '2';
-  $view->disabled = FALSE; /* Edit this to true to make a default view disabled initially */
+  $view->disabled = FALSE; 
   $handler = $view->new_display('default', 'Defaults', 'default');
   $handler->override_option('fields', array(
     'name' => array(
@@ -259,7 +265,7 @@ function tripal_natural_diversity_views_default_views() {
   $view->base_table = 'nd_geolocation';
   $view->core = 6;
   $view->api_version = '2';
-  $view->disabled = FALSE; /* Edit this to true to make a default view disabled initially */
+  $view->disabled = FALSE; 
   $handler = $view->new_display('default', 'Defaults', 'default');
   $handler->override_option('fields', array(
     'description' => array(
@@ -645,7 +651,7 @@ function tripal_natural_diversity_views_default_views() {
   $view->base_table = 'nd_protocol';
   $view->core = 6;
   $view->api_version = '2';
-  $view->disabled = FALSE; /* Edit this to true to make a default view disabled initially */
+  $view->disabled = FALSE; 
   $handler = $view->new_display('default', 'Defaults', 'default');
   $handler->override_option('fields', array(
     'name' => array(
@@ -782,7 +788,7 @@ function tripal_natural_diversity_views_default_views() {
   $view->base_table = 'nd_reagent';
   $view->core = 6;
   $view->api_version = '2';
-  $view->disabled = FALSE; /* Edit this to true to make a default view disabled initially */
+  $view->disabled = FALSE; 
   $handler = $view->new_display('default', 'Defaults', 'default');
   $handler->override_option('fields', array(
     'name_1' => array(
@@ -956,4 +962,5 @@ function tripal_natural_diversity_views_default_views() {
 
   return $views;
 }
+*/
 
