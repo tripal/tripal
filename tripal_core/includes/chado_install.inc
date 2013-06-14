@@ -77,12 +77,15 @@ function tripal_core_chado_load_form_submit($form, &$form_state) {
  */
 function tripal_core_install_chado($action) {
 
-  $vsql = "INSERT INTO {chadoprop} (type_id, value) VALUES  " .
-          "((SELECT cvterm_id " .
-          "FROM {cvterm} CVT " .
-          " INNER JOIN {cv} CV on CVT.cv_id = CV.cv_id " .
-          "WHERE CV.name = 'chado_properties' AND CVT.name = 'version'), " .
-          "'%s') ";
+  $vsql = "
+    INSERT INTO {chadoprop} (type_id, value) 
+      VALUES (
+       (SELECT cvterm_id 
+        FROM {cvterm} CVT 
+          INNER JOIN {cv} CV on CVT.cv_id = CV.cv_id 
+         WHERE CV.name = 'chado_properties' AND CVT.name = 'version'), 
+       :version) 
+  ";
 
   if ($action == 'Install Chado v1.2') {
     $schema_file = drupal_get_path('module', 'tripal_core') . '/chado_schema/default_schema-1.2.sql';
@@ -104,7 +107,7 @@ function tripal_core_install_chado($action) {
         print "Installation (Step 2 of 2) Problems!  Please check output above for errors.\n";
         exit;
       }
-      chado_query($vsql, '1.2'); # set the version
+      chado_query($vsql, array(':version' => '1.2')); # set the version
     }
     else {
       print "ERROR: cannot install chado.  Please check database permissions\n";
@@ -130,7 +133,7 @@ function tripal_core_install_chado($action) {
       print "Upgrade (Step 2 of 2) problems!  Please check output above for errors.\n";
       exit;
     }
-    chado_query($vsql, '1.2'); # set the version
+    chado_query($vsql, array(':version' => '1.2')); # set the version
   }
   elseif ($action == 'Install Chado v1.11') {
     $schema_file = drupal_get_path('module', 'tripal_core') . '/chado_schema/default_schema-1.11.sql';
@@ -361,11 +364,11 @@ function tripal_core_install_sql($sql_file) {
       }
       
       if (!$chado_local) {
-        $previous = tripal_db_set_active('chado');
+        $previous = db_set_active('chado');
       }
       $result = db_query($query);
       if (!$chado_local) {
-        tripal_db_set_active($previous);
+        db_set_active($previous);
       }
       if (!$result) {
         $error  = pg_last_error();
@@ -388,6 +391,5 @@ function tripal_core_install_sql($sql_file) {
  */
 function tripal_core_chado_install_done() {
 
-  // return the search path to normal
-  db_query("set search_path to public");
+  db_query("set search_path to default");
 }

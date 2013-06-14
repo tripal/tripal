@@ -53,7 +53,7 @@ function get_chado_fk_relationships($version) {
         information_schema.table_constraints AS tc 
         JOIN information_schema.key_column_usage AS kcu ON tc.constraint_name = kcu.constraint_name
         JOIN information_schema.constraint_column_usage AS ccu ON ccu.constraint_name = tc.constraint_name
-    WHERE constraint_type = 'FOREIGN KEY' AND tc.table_name='%s'
+    WHERE constraint_type = 'FOREIGN KEY' AND tc.table_name=:table_name
   ";
     
   // iterate through the tables and get the foreign keys
@@ -108,8 +108,8 @@ function get_chado_fk_relationships($version) {
     $table_arr['table'] = $table;
     
     // get the foreign keys and add them to the array
-    $fks = db_query($sql,$table);
-    while ($fk = db_fetch_object($fks)) {
+    $fks = db_query($sql, array(':table_name' => $table));
+    foreach ($fks as $fk) {
       $table_arr['foreign keys'][$fk->foreign_table_name]['table'] = $fk->foreign_table_name;
       $table_arr['foreign keys'][$fk->foreign_table_name]['columns'][$fk->column_name] = $fk->foreign_column_name;
       $reffering[$fk->foreign_table_name][] = $table;

@@ -290,7 +290,7 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
   $i = 1;
   foreach ($insert_values as $field => $value) {
     $ifields[] = $field;
-    $ivalues[] = $value;
+    $ivalues[":$field"] = $value;
     $iplaceholders[] = '$' . $i;
     $i++;
     if (strcmp($value, '__NULL__')==0) {
@@ -351,7 +351,8 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
         $is_prepared = tripal_core_chado_prepare("currval_" . $table . "_" . $field, $psql, array());
         $value = '';
         if ($is_prepared) {
-           $value = db_result(chado_query("EXECUTE currval_" . $table . "_" . $field));
+           $results = db_result(chado_query("EXECUTE currval_" . $table . "_" . $field));
+           $value = $results->fetchObject();
            if (!$value) {
             watchdog('tripal_core', "tripal_core_chado_insert: not able to retrieve primary key after insert: %sql",
               array('%sql' => $psql), WATCHDOG_ERROR);
@@ -360,7 +361,8 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
         }
         else {
           $sql = "SELECT CURRVAL('{" . $table . "_" . $field . "_seq}')";
-          $value =  db_result(chado_query($sql));
+          $results =  db_result(chado_query($sql));
+          $value = $results->fetchObject();
           if (!$value) {
             watchdog('tripal_core', "tripal_core_chado_insert: not able to retrieve primary key after insert: %sql",
               array('%sql' => $sql), WATCHDOG_ERROR);
@@ -1543,7 +1545,7 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
 
   // format results into an array
   $results = array();
-  while ($r = db_fetch_object($resource)) {
+  foreach ($resource as $r) {
     $results[] = $r;
   }
   if ($options['has_record']) {
@@ -1880,9 +1882,12 @@ function tripal_core_generate_chado_var($table, $values, $base_options = array()
       if (db_table_exists('chado_' . $table)) {
         // that has a foreign key to this one ($table_desc['primary key'][0]
         // and to the node table (nid)
-        $sql = "SELECT %s, nid FROM {chado_%s} WHERE %s=%d";
-        $mapping = db_fetch_object(db_query($sql, $table_primary_key, $table,
-          $table_primary_key, $object->{$table_primary_key}));
+        $sql = "
+          SELECT $table_primary_key, nid 
+          FROM {chado_$table} 
+          WHERE $table_primary_key = :$table_primary_key";
+        $results = db_query($sql, array(":$table_primary_key" . $object->{$table_primary_key}));
+        $mapping = $results->fetchObject();
         if ($mapping->{$table_primary_key}) {
           $object->nid = $mapping->nid;
           $object->expandable_nodes[] = $table;
@@ -2387,6 +2392,8 @@ function chado_pager_query($query, $limit, $element, $count_query) {
  * @param $sql
  *   The SQL statement to execute, this is followed by a variable number of args
  *   used as substitution values in the SQL statement.
+ * @param $args
+ *   The SQL arguments
  * @param $from
  *   The first result row to return..
  * @param $count
@@ -2398,16 +2405,8 @@ function chado_pager_query($query, $limit, $element, $count_query) {
  *
  * @ingroup tripal_chado_api
  */
-function chado_query_range($query) {
-  $args = func_get_args();
-  $count = array_pop($args);
-  $from = array_pop($args);
-  array_shift($args);
+function chado_query_range($query, $args, $from, $count) {
 
-
-  if (isset($args[0]) and is_array($args[0])) { // 'All arguments in one array' syntax
-    $args = $args[0];
-  }
   $query .= ' LIMIT ' . (int) $count . ' OFFSET ' . (int) $from;
 
   return chado_query($query, $args);
@@ -2431,8 +2430,9 @@ function chado_query_range($query) {
  * @ingroup tripal_chado_api
  */
 function chado_query($sql, $args = array()) {
-  global $_tripal_core_persistent_chado;
-  
+	
+  $is_local = tripal_core_is_chado_local();
+    
   // if Chado is local to the database then prefix the Chado table
   // names with 'chado'.
   if ($is_local) {
@@ -2443,9 +2443,9 @@ function chado_query($sql, $args = array()) {
   // if Chado is not local to the Drupal database then we have to 
   // switch to another database
   else {
-    $previous_db = tripal_db_set_active('chado') ;
-    $results = _db_query($sql);
-    tripal_db_set_active($previous_db);
+    $previous_db = db_set_active('chado') ;
+    $results = db_query($sql);
+    db_set_active($previous_db);
   }
   
   return $results;
@@ -2462,7 +2462,9 @@ function chado_query($sql, $args = array()) {
  * @ingroup tripal_chado_api
  */
 function chado_get_id_for_node($table, $node) {
-  return db_result(db_query("SELECT %s_id FROM {chado_%s} WHERE nid = %d", $table, $table, $node->nid));
+	$sql = "SELECT " . $table . "_id FROM {chado_$table} WHERE nid = :nid";
+	$results = db_query($sql, array(':nid' => $node->nid));
+	return $results->fetchObject();
 }
 
 /**
@@ -2476,7 +2478,9 @@ function chado_get_id_for_node($table, $node) {
  *  @ingroup tripal_chado_api
  */
 function chado_get_node_id($table, $id) {
-  return db_result(db_query("SELECT nid FROM {chado_%s} WHERE %s_id = %d", $table, $table, $id));
+	$sql = "SELECT nid FROM {chado_$table} WHERE " . $table . "_id = :" . $table . "_id";
+  $results = db_query($sql, array(":" . $table . "_id" => $id));
+  return $results->fetchObject();
 }
 
 /**
@@ -2808,101 +2812,6 @@ function tripal_core_delete_property_by_id($basetable, $record_id) {
   return tripal_core_chado_delete($basetable . 'prop', $match);
 }
 
-
-
-
-
-/**
- * Set the Tripal Database
- *
- * The tripal_db_set_active function is used to prevent namespace collisions
- * when chado and drupal are installed in the same database but in different
- * schemas.  It is also used for backwards compatibility with older versions
- * of tripal or in cases where chado is located outside of the Drupal database.
- *
- * @ingroup tripal_chado_api
- */
-function tripal_db_set_active($dbname  = 'default') {
-  global $db_url, $db_type, $active_db;
-  $chado_exists = 0;
-
-  // only postgres can support search paths.  So if this is MysQL then
-  // just run the normal tripal_db_set_active function.
-  if (strcmp($db_type, 'pgsql')==0) {
-
-    // if the 'chado' database is in the $db_url variable then chado is
-    // not in the same Drupal database, so we don't need to set any
-    // search_path and can just change the database
-    if (is_array($db_url)) {
-      if (isset($db_url[$dbname])) {
-        return db_set_active($dbname);
-      }
-    }
-
-    // if this is the default database then set the search path and return
-    if (strcmp($dbname, 'default')==0) {
-      return db_set_active($dbname);
-    }
-    // if the user requests a database other than the default
-    // then we need to try and set the chado search path.  This
-    // only works if Chado is local to the Drpual database. If it
-    // fails then do nothing.
-    else {
-      if (tripal_db_set_chado_search_path($dbname)) {
-         // if the chado schema is local to Drupal then
-         // just return the active database.
-         return 'default';
-      }
-      else {
-        watchdog('tripal_core', "Cannot set 'search_path' variable for Postgres to %dbname",
-          array('%dbname' => $dbname), WATCHDOG_ERROR);
-      }
-    }
-  }
-  // a non postgres database
-  else {
-    return db_set_active($dbname);
-  }
-}
-
-/**
- * Gets the current search_path for PostgreSQL
- *
- * @ingroup tripal_chado_api
- */
-function tripal_db_get_search_path() {
-  $path = db_fetch_object(db_query("show search_path"));
-  return $path->search_path;
-}
-
-/**
- * Set the chado search_path for PostgreSQL
- *
- * Sets the database search_path for postgreSQL to the
- * chado schema.
- *
- * @ingroup tripal_chado_api
- */
-function tripal_db_set_chado_search_path($dbname) {
-
-  // check to make sure the chado schema exists
-  $chado_exists = variable_get('chado_schema_exists', FALSE);
-  if (!$chado_exists) {
-    $chado_exists = tripal_core_chado_schema_exists();
-  }
-
-  // here we make the assumption that the default database schema is
-  // 'public'.  This will most likely always be the case but if not,
-  // then this code will break
-  if ($chado_exists) {
-    db_query('set search_path to %s', "$dbname,public");
-    return TRUE;
-  }
-  else {
-    return FALSE;
-  }
-}
-
 /**
  * Indicates if the SQL statement is prepapred
  *
@@ -2926,9 +2835,9 @@ function tripal_core_is_sql_prepared($statement_name) {
   }
 
   // @coder-ignore: acting on postgres tables rather then drupal schema therefore, table prefixing does not apply
-  $sql = "SELECT name FROM pg_prepared_statements WHERE name = '%s'";
-  // do not use 'chado_query' here or it causes memory-leaks
-  $result = db_fetch_object(db_query($sql, $statement_name));
+  $sql = "SELECT name FROM pg_prepared_statements WHERE name = :name";
+  $results = db_query($sql, array(':name' => $statement_name));
+  $result = $results->fetchObject();
 
   if ($result) {
     return TRUE;
@@ -3093,11 +3002,12 @@ function tripal_core_chado_clear_prepared($statement_name_regex = NULL) {
   global $_tripal_core_prepared_statements;
 
   if ($statement_name_regex) {
-    $resource = chado_query("SELECT * FROM pg_catalog.pg_prepared_statements WHERE name~'%s'", $statement_name_regex);
-    while ($r = db_fetch_object($resource)) {
+  	$sql = "SELECT * FROM pg_catalog.pg_prepared_statements WHERE name~:name_regex";
+    $resource = chado_query($sql, array(':name_regex' => $statement_name_regex));
+    foreach ($resource as $r) {
       $k = array_search($r->name, $_tripal_core_prepared_statements);
       unset($_tripal_core_prepared_statements[$k]);
-      chado_query('DEALLOCATE PREPARE %s', $r->name);
+      chado_query('DEALLOCATE PREPARE :statement_name', array(':statement_name' => $r->name));
     }
   }
   else {
@@ -3177,9 +3087,9 @@ function tripal_db_start_transaction() {
 function tripal_db_set_savepoint_transaction($savepoint, $release = FALSE) {
   // Postgresql requires a savepoint of the same name to be unset before re-use
   if ($release) {
-    chado_query("RELEASE SAVEPOINT %s", $savepoint);
+    chado_query("RELEASE SAVEPOINT :savepoint", array(':savepoint' => $savepoint));
   }
-  chado_query("SAVEPOINT %s", $savepoint);
+  chado_query("SAVEPOINT :savepoint", array(':savepoint' => $savepoint));
 }
 
 /**
@@ -3209,7 +3119,7 @@ function tripal_db_commit_transaction() {
 function tripal_db_rollback_transaction($savepoint = NULL, $commit = TRUE) {
 
   if ($savepoint) {
-    chado_query("ROLLBACK TO SAVEPOINT %s", $savepoint);
+    chado_query("ROLLBACK TO SAVEPOINT :savepoint", array(':savepoint' => $savepoint));
   }
   else {
     chado_query("ROLLBACK");
@@ -3219,58 +3129,6 @@ function tripal_db_rollback_transaction($savepoint = NULL, $commit = TRUE) {
     tripal_db_commit_transaction();
   }
 
-}
-
-/**
- * Purpose: Get max rank for a given set of criteria
- *   This function was developed with the many property tables in chado in mind
- *
- * @param $tablename
- *    The name of the chado table you want to select the max rank from this table must contain a
- *    rank column of type integer
- * @param $where_options
- *   where options should include the id and type for that table to correctly
- *     group a set of records together where the only difference are the value and rank
- * @code
- *  array(
- *     <column_name> => array(
- *        'type' => <type of column: INT/STRING>,
- *       'value' => <the value you want to filter on>,
- *      'exact' => <if TRUE use =; if FALSE use ~>,
- *    )
- *  )
- * @endcode
- * @return the maximum rank
- *
- * @ingroup tripal_chado_api
- */
-function tripal_get_max_chado_rank($tablename, $where_options) {
-  $where= array();
-
-  //generate the where clause from supplied options
-  // the key is the column name
-  foreach ($where_options as $key => $val_array) {
-    if (preg_match('/INT/', $val_array['type'])) {
-      $where[] = $key . "=" . $val_array['value'];
-    }
-    else {
-      if ($val_array['exact']) {
-        $operator='=';
-      }
-      else {
-        $operator='~';
-      }
-      $where[] = $key . $operator . "'" . $val_array['value'] . "'";
-    }
-  }
-  $sql = "SELECT max(rank) as max_rank, count(rank) as count FROM {%s} WHERE %s";
-  $result = db_fetch_object(chado_query($sql, $tablename,  implode(' AND ', $where)));
-  if ($result->count > 0) {
-    return $result->max_rank;
-  }
-  else {
-    return -1;
-  }
 }
 
 /**
@@ -3287,8 +3145,9 @@ function tripal_get_max_chado_rank($tablename, $where_options) {
  */
 function tripal_get_chado_custom_schema($table) {
 
-  $sql = "SELECT schema FROM {tripal_custom_tables} WHERE table_name = '%s'";
-  $custom = db_fetch_object(db_query($sql, $table));
+  $sql = "SELECT schema FROM {tripal_custom_tables} WHERE table_name = :table_name";
+  $results = db_query($sql, array(':table_name' => $table));
+  $custom = $results->fetchObject();
   if (!$custom) {
     return FALSE;
   }
@@ -3306,7 +3165,7 @@ function tripal_get_chado_custom_schema($table) {
 function tripal_core_chado_schema_exists() {
 
   $exists = variable_get('chado_schema_exists', FALSE);
-
+  
   if (!$exists) {
     // This is postgresql-specific code to check the existence of the chado schema
     // @coder-ignore: acting on pg_catalog schema rather then drupal schema therefore, table prefixing does not apply
@@ -3398,7 +3257,7 @@ function tripal_core_get_chado_tables($include_custom = NULL) {
     $sql = "SELECT table_name FROM {tripal_custom_tables}";
     $resource = db_query($sql);
 
-    while ($r = db_fetch_object($resource)) {
+    foreach ($resource as $r) {
       $tables[$r->table_name] = $r->table_name;
     }
   }
@@ -3417,6 +3276,7 @@ function tripal_core_get_chado_tables($include_custom = NULL) {
  */
 function tripal_core_set_chado_version() {
   global $databases;
+  $is_local = 0;  
 
   // check that Chado is installed if not return 'uninstalled as the version'
   $chado_exists = tripal_core_chado_schema_exists();
@@ -3428,20 +3288,21 @@ function tripal_core_set_chado_version() {
       // return uninstalled as the version
       return 'not installed';
     }
+    $previous_db = db_set_active('chado');
+    $prop_exists = db_table_exists('chadoprop');
+    db_set_active($previous_db);
   }
-
+  else {
+  	$is_local = 1;
+  	$prop_exists = db_table_exists('chado.chadoprop');
+  }
+  
   // if the table doesn't exist then we don't know what version but we know
   // it must be 1.11 or older.
-  $previous_db = tripal_db_set_active('chado');
-  $prop_exists = db_table_exists('chadoprop');
-  tripal_db_set_active($previous_db);
   if (!$prop_exists) {
     return "1.11 or older";
   }
 
-  // we can't use the Tripal API to query this table
-  // because the Tripal API depends on this function to
-  // tell it the version. So, we need a typical SQL statement
   $sql = "
     SELECT value 
     FROM {chadoprop} CP 
@@ -3449,14 +3310,19 @@ function tripal_core_set_chado_version() {
       INNER JOIN {cv} CV on CVT.cv_id = CV.cv_id 
     WHERE CV.name = 'chado_properties' and CVT.name = 'version'
   ";
-  $previous_db = tripal_db_set_active('chado');
-  $resultes = db_query($sql);
-  tripal_db_set_active($previous_db);
+  if (!$is_local) {
+	  $previous_db = db_set_active('chado');
+	  $results = db_query($sql);
+	  db_set_active($previous_db);
+  }
+  else {
+    $results = chado_query($sql);
+  }
   $v = $results->fetchObject();
 
   // if we don't have a version in the chadoprop table then it must be
   // v1.11 or older
-  if (!$v->value) {
+  if (!$v) {
     variable_set('chado_version', "1.11 or older");
     return "1.11 or older";
   }
@@ -3564,17 +3430,17 @@ function tripal_core_clean_orphaned_nodes($table, $job_id) {
   $count = 0;
 
   // build the SQL statments needed to check if nodes point to valid analyses
-  $dsql = "SELECT * FROM {node} WHERE type = 'chado_%s' order by nid";
-  $nsql = "SELECT * FROM {node} WHERE nid = %d";
-  $csql = "SELECT * FROM {chado_%s} WHERE nid = %d ";
-  $clsql= "SELECT * FROM {chado_%s}";
-  $lsql = "SELECT * FROM {%s} where %s_id = %d ";
+  $dsql = "SELECT * FROM {node} WHERE type = 'chado_" . $table . "' order by nid";
+  $nsql = "SELECT * FROM {node} WHERE nid = :nid";
+  $csql = "SELECT * FROM {chado_" . $table . "} WHERE nid = :nid ";
+  $clsql= "SELECT * FROM {chado_" . $table . "}";
+  $lsql = "SELECT * FROM {" . $table . "} where " . $table . "_id = :" . $table . "_id ";
 
   // load into nodes array
   print "Getting nodes\n";
   $nodes = array();
-  $res = db_query($dsql, $table);
-  while ($node = db_fetch_object($res)) {
+  $res = db_query($dsql);
+  foreach ($res as $node) {  
     $nodes[$count] = $node;
     $count++;
   }
@@ -3582,8 +3448,8 @@ function tripal_core_clean_orphaned_nodes($table, $job_id) {
   // load the chado_$table into an array
   print "Getting chado_$table\n";
   $cnodes = array();
-  $res = db_query($clsql, $table);
-  while ($node = db_fetch_object($res)) {
+  $res = db_query($clsql);
+  foreach ($res as $node) {
     $cnodes[$count] = $node;
     $count++;
   }
@@ -3604,20 +3470,23 @@ function tripal_core_clean_orphaned_nodes($table, $job_id) {
     }
 
     // see if the node exits, if not remove the entry from the chado_$table table
-    $node = db_fetch_object(db_query($nsql, $nid->nid));
+    $results = db_query($nsql, array(':nid' => $nid->nid));
+    $node = $results->fetchObject();
     if (!$node) {
       $deleted++;
-      db_query("DELETE FROM {chado_%s} WHERE nid = %d", $table, $nid->nid);
+      db_query("DELETE FROM {chado_" . $table . "} WHERE nid = :nid", array(':nid' => $nid->nid));
       $message = "chado_$table missing node.... DELETING: $nid->nid";
       watchdog('tripal_core', $message, array(), WATCHDOG_WARNING);
     }
 
     // see if the record in chado exist, if not remove the entry from the chado_$table
     $table_id = $table . "_id";
-    $record = db_fetch_object(chado_query($lsql, $table, $table, $nid->$table_id));
+    $results = chado_query($lsql, array(":" . $table . "_id " => $nid->$table_id));
+    $record = $results->fetchObject();
     if (!$record) {
       $deleted++;
-      db_query("DELETE FROM {chado_%s} WHERE %s_id = '%d'", $table, $table, $nid->$table_id);
+      $sql = "DELETE FROM {chado_" . $table . "} WHERE " . $table . "_id = :" . $table . "_id";
+      db_query($sql, array(":" . $table . "_id" => $nid->$table_id));
       $message = "chado_$table missing $table.... DELETING entry.";
       watchdog('tripal_core', $message, array(), WATCHDOG_WARNING);
     }
@@ -3637,7 +3506,8 @@ function tripal_core_clean_orphaned_nodes($table, $job_id) {
 
     // check to see if the node has a corresponding entry
     // in the chado_$table table. If not then delete the node.
-    $link = db_fetch_object(db_query($csql, $table, $node->nid));
+    $results = db_query($csql, array(":nid" => $node->nid));
+    $link = $results->fetchObject();
     if (!$link) {
       if (node_access('delete', $node)) {
         $deleted++;
@@ -3666,14 +3536,11 @@ function tripal_core_clean_orphaned_nodes($table, $job_id) {
  * @ingroup tripal_chado_api
  */
 function tripal_core_is_chado_installed() {
-  global $db_url, $db_type;
+  global $databases;
 
-  // first check if chado is in the db_url of the
-  // settings.php file
-  if (is_array($db_url)) {
-    if (isset($db_url['chado'])) {
-      return TRUE;
-    }
+  // first check if chado is in the $databases variable of the settings.php file
+  if (array_key_exists('chado', $databases)) {
+    return TRUE;
   }
 
   // check to make sure the chado schema exists

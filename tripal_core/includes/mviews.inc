@@ -17,8 +17,9 @@
 function tripal_mview_report($mview_id) {
 
   // get this mview details
-  $sql = "SELECT * FROM {tripal_mviews} WHERE mview_id = %d";
-  $mview = db_fetch_object(db_query($sql, $mview_id));
+  $sql = "SELECT * FROM {tripal_mviews} WHERE mview_id = :mview_id";
+  $results = db_query($sql, array(':mview_id' => $mview_id));
+  $mview = $results->fetchObject();
   
   $rows = array();
 
@@ -83,7 +84,7 @@ function tripal_mviews_report() {
   $rows = array();
   $mviews = db_query("SELECT * FROM {tripal_mviews} ORDER BY name");
 
-  while ($mview = db_fetch_object($mviews)) {
+  foreach ($mviews as $mview) {
     if ($mview->last_update > 0) {
       $update = format_date($mview->last_update);
     }
@@ -155,8 +156,9 @@ function tripal_mviews_form(&$form_state = NULL, $mview_id = NULL) {
   
   // get this requested view
   if (strcmp($action, 'Edit')==0) {
-    $sql = "SELECT * FROM {tripal_mviews} WHERE mview_id = %d ";
-    $mview = db_fetch_object(db_query($sql, $mview_id));
+    $sql = "SELECT * FROM {tripal_mviews} WHERE mview_id = :mview_id ";
+    $results = db_query($sql, array(':mview_id' => $mview_id));
+    $mview = $results->fetchObject();
 
     // set the default values.  If there is a value set in the
     // form_state then let's use that, otherwise, we'll pull

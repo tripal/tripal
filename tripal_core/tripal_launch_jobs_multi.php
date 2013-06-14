@@ -99,13 +99,16 @@ function runjob($sitename, $username) {
 
   drupal_bootstrap(DRUPAL_BOOTSTRAP_FULL);
 
-  if (!db_fetch_object(db_query("SELECT * FROM {users} WHERE name = '%s'", $username))) {
-    fwrite(STDOUT, "'$username' is not a valid Drupal username. exiting...\n");
-    exit;
-  }
-
-  $user = $username;
-  $user = user_load(array('name' => $username));
+	// check to make sure the username is valid
+	$results = db_query("SELECT * FROM {users} WHERE name = :name", array(':name' => $username));
+	$u = $results->fetchObject();
+	if (!$u) {
+	  fwrite($stdout, "'$username' is not a valid Drupal username. exiting...\n");
+	  exit;
+	}
+	
+	global $user;
+	$user = user_load($u->uid);
 
   tripal_jobs_launch();
 }

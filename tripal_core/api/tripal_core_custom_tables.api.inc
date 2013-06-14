@@ -36,8 +36,9 @@ function tripal_core_edit_custom_table($table_id, $table_name, $schema, $skip_cr
   $record->schema = serialize($schema);
 
   // get the current custom table record
-  $sql = "SELECT * FROM {tripal_custom_tables} WHERE table_id = %d";
-  $custom_table = db_fetch_object(db_query($sql, $table_id));
+  $sql = "SELECT * FROM {tripal_custom_tables} WHERE table_id = :table_id";
+  $results = db_query($sql, array(':table_id' => $table_id));
+  $custom_table = $results->fetchObject();
   
   // if the user changed the table name, we want to drop the old one and force
   // creation of the new one.
@@ -107,20 +108,21 @@ function tripal_core_create_custom_table(&$ret, $table, $schema, $skip_creation 
   $ret = array();
       
   // see if the table entry already exists in the tripal_custom_tables table.
-  $sql = "SELECT * FROM {tripal_custom_tables} WHERE table_name = '%s'";
-  $centry = db_fetch_object(db_query($sql, $table));
+  $sql = "SELECT * FROM {tripal_custom_tables} WHERE table_name = :table_name";
+  $results = db_query($sql, array(':table_name' => $table));
+  $centry = $results->fetchObject();
   
   // check to see if the table already exists in the chado schema  
-  $previous_db = tripal_db_set_active('chado');  // use chado database
+  $previous_db = db_set_active('chado');  // use chado database
   $exists = db_table_exists($table);
-  tripal_db_set_active($previous_db);  // now use drupal database
+  db_set_active($previous_db);  // now use drupal database
 
   
   // if the table does not exist then create it
   if (!$exists) {
-    $previous_db = tripal_db_set_active('chado');  // use chado database
+    $previous_db = db_set_active('chado');  // use chado database
     db_create_table($ret, $table, $schema);
-    tripal_db_set_active($previous_db);  // now use drupal database
+    db_set_active($previous_db);  // now use drupal database
     if (count($ret)==0) {
       watchdog('tripal_core', "Error adding custom table '!table_name'.",
         array('!table_name' => $table), WATCHDOG_ERROR);
@@ -133,10 +135,10 @@ function tripal_core_create_custom_table(&$ret, $table, $schema, $skip_creation 
   if ($exists and is_object($centry) and !$skip_creation) {    
     
     // drop the table we'll recreate it with the new schema
-    $previous_db = tripal_db_set_active('chado');  // use chado database
+    $previous_db = db_set_active('chado');  // use chado database
     db_drop_table($ret, $table);
     db_create_table($ret, $table, $schema);
-    tripal_db_set_active($previous_db);  // now use drupal database
+    db_set_active($previous_db);  // now use drupal database
   }
 
   // add an entry in the tripal_custom_table
@@ -146,8 +148,8 @@ function tripal_core_create_custom_table(&$ret, $table, $schema, $skip_creation 
 
   // if an entry already exists then remove it
   if ($centry) {
-    $sql = "DELETE FROM {tripal_custom_tables} WHERE table_name = '%s'";
-    db_query($sql, $table);
+    $sql = "DELETE FROM {tripal_custom_tables} WHERE table_name = :table_name";
+    db_query($sql, array(':table_name' => $table));
   }
   $success = drupal_write_record('tripal_custom_tables', $record);
   if (!$success) {
@@ -193,10 +195,10 @@ function tripal_core_create_custom_table(&$ret, $table, $schema, $skip_creation 
  * @ingroup tripal_custom_tables_api
  */
 function tripal_custom_tables_get_table_id($table_name) {
-  $sql = "SELECT * FROM {tripal_custom_tables} " .
-         "WHERE table_name = '%s'";
   if (db_table_exists('tripal_custom_tables')) {
-    $custom_table = db_fetch_object(db_query($sql, $table_name));
+    $sql = "SELECT * FROM {tripal_custom_tables} WHERE table_name = :table_name";
+    $results = db_query($sql, array(':table_name' => $table_name));
+    $custom_table = $results->fetchObject();
     if ($custom_table) {
       return $custom_table->table_id;
     }

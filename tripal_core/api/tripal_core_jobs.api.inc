@@ -258,9 +258,9 @@ function tripal_jobs_launch($do_parallel = 0, $job_id = NULL) {
   // they are processed in a FIFO manner.
   if ($job_id) {
     $sql =  "SELECT * FROM {tripal_jobs} TJ " .
-            "WHERE TJ.start_time IS NULL and TJ.end_time IS NULL and TJ.job_id = %d " .
+            "WHERE TJ.start_time IS NULL and TJ.end_time IS NULL and TJ.job_id = :job_id " .
             "ORDER BY priority ASC,job_id ASC";
-    $job_res = db_query($sql, $job_id);
+    $job_res = db_query($sql, array(':job_id', $job_id));
   }
   else {
     $sql =  "SELECT * FROM {tripal_jobs} TJ " .

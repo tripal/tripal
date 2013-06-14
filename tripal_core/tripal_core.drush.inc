@@ -178,10 +178,12 @@ function drush_tripal_core_tripal_jobs_launch($username) {
   $job_id = drush_get_option('job_id');
 
   if ($username) {
-    $sql = "SELECT uid FROM {user} WHERE name = '%s'";
-    $u = db_fetch_object(db_query($sql, $username));
+    $sql = "SELECT uid FROM {users} WHERE name = :name";
+    $results = db_query($sql, array(':name' => $username));
+    $u = $results->fetchObject();
     if (!$u) {
-      drush_print('ERROR: Please provide a valid username for running this job.');  
+      drush_print('ERROR: Please provide a valid username for running this job.'); 
+      exit; 
     }
     global $user;
     $user = user_load($u->uid);
@@ -226,7 +228,7 @@ function drush_tripal_core_tripal_jobs_current() {
   $sql =  "SELECT * FROM {tripal_jobs} TJ " .
             "WHERE TJ.end_time IS NULL and NOT TJ.start_time IS NULL ";
   $jobs = db_query($sql);
-  while ($job = db_fetch_object($jobs)) {
+  foreach ($jobs as $job) {
     $job_pid = $job->pid;
     $output = "Name: " . $job->job_name . "\n"
              . "Submitted: " . date(DATE_RFC822, $job->submit_date) . "\n"
@@ -262,8 +264,9 @@ function drush_tripal_core_tripal_update_mview() {
   if (!$mview_id) {
     if ($table_name) {
       // if table_name supplied use that to get mview_id
-      $sql = "SELECT mview_id FROM {tripal_mviews} WHERE mv_table='%s'";
-      $r = db_fetch_object(db_query($sql, $table_name));
+      $sql = "SELECT mview_id FROM {tripal_mviews} WHERE mv_table = :mv_table";
+      $results = db_query($sql, array(':mv_table' => $table_name));      
+      $r = $resuls->fetchObject();
       if (!$r->mview_id) {
         drush_set_error('No Materialized View associated with that table_name.');
       }

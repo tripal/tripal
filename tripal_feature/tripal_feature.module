@@ -1629,9 +1629,7 @@ function tripal_feature_load_library_feature_browser($library) {
           "WHERE LF.library_id = %d and ($where_cvt) ".
           "GROUP BY L.library_id ";
 
-  $previous_db = tripal_db_set_active('chado');  // use chado database
-  $org_features = pager_query($sql, 10, 0, $csql, $library->library_id);
-  tripal_db_set_active($previous_db);  // now use drupal database
+  $org_features = chado_pager_query($sql, 10, 0, $csql, $library->library_id);
   $pager = theme('pager');
 
   // prepare the query that will lookup node ids
@@ -1691,9 +1689,7 @@ function tripal_feature_load_analysis_feature_browser($analysis) {
           "WHERE A.analysis_id = %d and ($where_cvt) ".
           "GROUP BY A.analysis_id ";
 
-  $previous_db = tripal_db_set_active('chado');  // use chado database
-  $org_features = pager_query($sql, 10, 0, $csql, $analysis->analysis_id);
-  tripal_db_set_active($previous_db);  // now use drupal database
+  $org_features = chado_pager_query($sql, 10, 0, $csql, $analysis->analysis_id);
   $pager = theme('pager');
 
   // prepare the query that will lookup node ids

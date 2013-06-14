@@ -19,8 +19,9 @@
 function tripal_custom_table_view($table_id) {
 
   // get this custom_table details
-  $sql = "SELECT * FROM {tripal_custom_tables} WHERE table_id = %d";
-  $custom_table = db_fetch_object(db_query($sql, $table_id));
+  $sql = "SELECT * FROM {tripal_custom_tables} WHERE table_id = :table_id";
+  $results = db_query($sql, array(':table_id' => $table_id));
+  $custom_table = $results->fetchObject();
 
   // create a table with each row containig stats for
   // an individual job in the results set.
@@ -66,7 +67,7 @@ function tripal_custom_tables_list() {
   $rows = array();
   $custom_tables = db_query("SELECT * FROM {tripal_custom_tables} ORDER BY table_name");
 
-  while ($custom_table = db_fetch_object($custom_tables)) {
+  foreach ($custom_tables as $custom_table) {
  
     $rows[] = array(
       l(t('View'), "admin/tripal/custom_tables/view/$custom_table->table_id") . " | " .
@@ -112,8 +113,9 @@ function tripal_custom_tables_form(&$form_state = NULL, $table_id = NULL) {
 
   // get this requested table
   if (strcmp($action, 'Edit')==0) {
-    $sql = "SELECT * FROM {tripal_custom_tables} WHERE table_id = %d ";
-    $custom_table = db_fetch_object(db_query($sql, $table_id));
+    $sql = "SELECT * FROM {tripal_custom_tables} WHERE table_id = :table_id ";
+    $results = db_query($sql, array(':table_id' => $table_id));
+    $custom_table = $results->fetchObject();
 
     // set the default values.  If there is a value set in the
     // form_state then let's use that, otherwise, we'll pull
@@ -271,12 +273,13 @@ function tripal_custom_tables_form_validate($form, &$form_state) {
       if ($action == 'Edit') {
         // see if the table name has changed. If so, then check to make sure
         // it doesn't already exists. We don't want to drop a table we didn't mean to
-        $sql = "SELECT * FROM {tripal_custom_tables} WHERE table_id = %d";
-        $ct = db_fetch_object(db_query($sql, $table_id));
+        $sql = "SELECT * FROM {tripal_custom_tables} WHERE table_id = :table_id";
+        $results = db_query($sql, array(':table_id' => $table_id));
+        $ct = $results->fetchObject();
         if ($ct->table_name != $schema_array['table']) {
-          $previous_db = tripal_db_set_active('chado');
+          $previous_db = db_set_active('chado');
           $exists = db_table_exists($schema_array['table']);
-          tripal_db_set_active($previous_db);        
+          db_set_active($previous_db);        
           if ($exists) {
             form_set_error($form_state['values']['schema'],
               t("The table name already exists, please choose a different name."));  
@@ -344,8 +347,9 @@ function tripal_custom_tables_action($op, $table_id, $redirect = FALSE) {
   }
 
   // get this table details
-  $sql = "SELECT * FROM {tripal_custom_tables} WHERE table_id = %d";
-  $custom_table = db_fetch_object(db_query($sql, $table_id));
+  $sql = "SELECT * FROM {tripal_custom_tables} WHERE table_id = :table_id";
+  $results = db_query($sql, array(':table_id' => $table_id));
+  $custom_table = $results->fetchObject();
 
   if ($op == 'delete') {
   

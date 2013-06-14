@@ -78,12 +78,12 @@ function tripal_add_mview($name, $modulename, $mv_table, $mv_specs, $indexed,
   if (drupal_write_record('tripal_mviews', $record)) {
 
     // drop the table from chado if it exists
-    $previous_db = tripal_db_set_active('chado');  // use chado database
+    $previous_db = db_set_active('chado');  // use chado database
     if (db_table_exists($mv_table)) {
       $sql = "DROP TABLE $mv_table";
       db_query($sql);
     }
-    tripal_db_set_active($previous_db);  // now use drupal database
+    db_set_active($previous_db);  // now use drupal database
 
     // now construct the indexes
     $index = '';
@@ -110,9 +110,9 @@ function tripal_add_mview($name, $modulename, $mv_table, $mv_specs, $indexed,
     else {
       // add the table to the database
       $sql = "CREATE TABLE {$mv_table} ($mv_specs); $index";
-      $previous_db = tripal_db_set_active('chado');  // use chado database
+      $previous_db = db_set_active('chado');  // use chado database
       $results = db_query($sql);
-      tripal_db_set_active($previous_db);  // now use drupal database
+      db_set_active($previous_db);  // now use drupal database
       if ($results) {
         drupal_set_message(t("View '%name' created", array('%name' => $name)));
       }
@@ -178,8 +178,9 @@ function tripal_edit_mview($mview_id, $name, $modulename, $mv_table, $mv_specs,
   // changed. IF so, then we want to drop and recreate the table. If not, then
   // just save the updated SQL.
   $create_table = 1;  
-  $sql = "SELECT * FROM {tripal_mviews} WHERE mview_id = %d";
-  $mview = db_fetch_object(db_query($sql, $mview_id));  
+  $sql = "SELECT * FROM {tripal_mviews} WHERE mview_id = :mview_id";
+  $results = db_query($sql, array(':mview_id' => $mview_id));
+  $mview = $results->fetchObject();  
   if ($mview->mv_schema == $mv_schema and $mview->mv_table == $mv_table and 
      $mview->mv_specs == $mv_specs and $mview->indexed == $indexed and 
      $mview->special_index == $special_index) {
@@ -198,13 +199,13 @@ function tripal_edit_mview($mview_id, $name, $modulename, $mv_table, $mv_specs,
   
   // if we are going to create the table then we must first drop it if it exists
   if ($create_table) {
-    $previous_db = tripal_db_set_active('chado');  // use chado database
+    $previous_db = db_set_active('chado');  // use chado database
     if (db_table_exists($mview->mv_table)) {
-      $sql = "DROP TABLE %s";
-      db_query($sql, $mview->mv_table);
+      $sql = "DROP TABLE :table_name";
+      db_query($sql, array(':table_name' => $mview->mv_table));
       drupal_set_message(t("View '%name' dropped", array('%name' => $name)));
     }
-    tripal_db_set_active($previous_db);  // now use drupal database
+    db_set_active($previous_db);  // now use drupal database
   }
 
   // update the record to the tripal_mviews table and if successful
@@ -270,10 +271,10 @@ function tripal_edit_mview($mview_id, $name, $modulename, $mv_table, $mv_specs,
  * @ingroup tripal_mviews_api
  */
 function tripal_mviews_get_mview_id($view_name) {
-  $sql = "SELECT * FROM {tripal_mviews} " .
-        "WHERE name = '%s'";
   if (db_table_exists('tripal_mviews')) {
-    $mview = db_fetch_object(db_query($sql, $view_name));
+  	$sql = "SELECT * FROM {tripal_mviews} WHERE name = :name";
+  	$results = db_query($sql, array(':name' => $view_name));
+    $mview = $results->fetchObject();
     if ($mview) {
       return $mview->mview_id;
     }
@@ -303,8 +304,9 @@ function tripal_mviews_action($op, $mview_id, $redirect = FALSE) {
   }
 
   // get this mview details
-  $sql = "SELECT * FROM {tripal_mviews} WHERE mview_id = %d";
-  $mview = db_fetch_object(db_query($sql, $mview_id));
+  $sql = "SELECT * FROM {tripal_mviews} WHERE mview_id = :mview_id";
+  $results = db_query($sql, array(':mview_id' => $mview_id));
+  $mview = $results->fetchObject();
 
   // add a job or perform the action based on the given operation
   if ($op == 'update') {
@@ -317,12 +319,12 @@ function tripal_mviews_action($op, $mview_id, $redirect = FALSE) {
            "WHERE mview_id = $mview_id";
     db_query($sql);
     // drop the table from chado if it exists
-    $previous_db = tripal_db_set_active('chado');  // use chado database
+    $previous_db = db_set_active('chado');  // use chado database
     if (db_table_exists($mview->mv_table)) {
       $sql = "DROP TABLE $mview->mv_table";
       db_query($sql);
     }
-    tripal_db_set_active($previous_db);  // now use drupal database
+    db_set_active($previous_db);  // now use drupal database
   }
 
   // Redirect the user
@@ -343,23 +345,23 @@ function tripal_mviews_action($op, $mview_id, $redirect = FALSE) {
  * @ingroup tripal_mviews_api
  */
 function tripal_update_mview($mview_id) {
-  $sql = "SELECT * FROM {tripal_mviews} WHERE mview_id = %d ";
-  $mview = db_fetch_object(db_query($sql, $mview_id));
+  $sql = "SELECT * FROM {tripal_mviews} WHERE mview_id = :mview_id ";
+  $results = db_query($sql, array(':mview_id' => $mview_id));
+  $mview = $results->fetchObject();
   if ($mview) {    
     // execute the query inside a transaction so that it doesn't destroy existing data
     // that may leave parts of the site unfunctional
     tripal_db_start_transaction();
-    $previous_db = tripal_db_set_active('chado');  // use chado database
-    $results = db_query("DELETE FROM {%s}", $mview->mv_table);
-    $results = db_query("INSERT INTO {%s} ($mview->query)", $mview->mv_table);    
-    tripal_db_set_active($previous_db);  // now use drupal database
+    $previous_db = db_set_active('chado');  // use chado database
+    $results = db_query("DELETE FROM {" . $mview->mv_table . "}");
+    $results = db_query("INSERT INTO {" . $mview->mv_table . "} ($mview->query)");    
+    db_set_active($previous_db);  // now use drupal database
     if ($results) {
       // commit the transaction
       tripal_db_commit_transaction();
-      $sql = "SELECT count(*) as cnt FROM {%s}";
-      $previous_db = tripal_db_set_active('chado');  // use chado database
-      $count = db_fetch_object(db_query($sql, $mview->mv_table));
-      tripal_db_set_active($previous_db);  // now use drupal database
+      $sql = "SELECT count(*) as cnt FROM {" . $mview->mv_table . "}";
+      $results = chado_query($sql);
+      $count = $results->fetchObject();
       $record = new stdClass();
       $record->mview_id = $mview_id;
       $record->last_update = REQUEST_TIME;

@@ -29,13 +29,15 @@ drupal_bootstrap(DRUPAL_BOOTSTRAP_FULL);
 // check to make sure the username is valid
 $username = $argv[1];
 $do_parallel = $argv[2];
-if (!db_fetch_object(db_query("SELECT * FROM {users} WHERE name = '%s'", $username))) {
+$results = db_query("SELECT * FROM {users} WHERE name = :name", array(':name' => $username));
+$u = $results->fetchObject();
+if (!$u) {
   fwrite($stdout, "'$username' is not a valid Drupal username. exiting...\n");
   exit;
 }
 
 global $user;
-$user = user_load(array('name' => $username));
+$user = user_load($u->uid);
 
 
 fwrite($stdout, "Tripal Job Launcher\n");
