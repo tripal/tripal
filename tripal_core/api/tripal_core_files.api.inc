@@ -47,7 +47,7 @@ function tripal_create_moddir($module_name) {
 
   // make the data directory for this module
   $data_dir = tripal_file_directory_path() . "$module_name";
-  if (!file_check_directory($data_dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS)) {
+  if (!file_prepare_directory($data_dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS)) {
     $message = "Cannot create directory $data_dir. This module may not " .
                "behave correctly without this directory.  Please  create " .
                "the directory manually or fix the problem and reinstall.";

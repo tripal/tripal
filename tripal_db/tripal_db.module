@@ -39,7 +39,7 @@ function tripal_db_menu() {
     'title' => 'Edit a Database',
     'description' => 'Manage Databases ',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_db_form', 'Update'),
+    'page arguments' => array('tripal_db_db_edit_form'),
     'access callback' => 'user_access',
     'access arguments' => array('administer db cross-references'),
     'type' => MENU_NORMAL_ITEM,
@@ -48,17 +48,12 @@ function tripal_db_menu() {
   $items['admin/tripal/tripal_db/add_db'] = array(
     'title' => 'Add a Database',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_db_form', 'Add'),
+    'page arguments' => array('tripal_db_db_add_form'),
     'access callback' => 'user_access',
     'access arguments' => array('administer db cross-references'),
     'type' => MENU_NORMAL_ITEM,
   );
-  $items['admin/tripal/tripal_db/edit/js'] = array(
-    'page callback' => 'tripal_ajax_db_edit',
-    'access callback' => 'user_access',
-    'access arguments' => array('access administration pages'),
-    'type' => MENU_CALLBACK,
-  );
+
 
   return $items;
 }
@@ -70,9 +65,12 @@ function tripal_db_menu() {
  *
  * @ingroup tripal_db
  */
-function tripal_db_perm() {
+function tripal_db_permission() {
   return array(
-    'administer db cross-references',
+    'administer db cross-references' => array(
+      'title' => t('Administer the list of external databases used for data cross-references.'),
+      'description' => t('Allows the user to add, edit or delete databases stored in the Chado database.'),
+    ),
   );
 }
 
@@ -93,11 +91,13 @@ function tripal_db_form_alter(&$form, &$form_state, $form_id) {
     // updating the form through the ahah callback sets the action of
     // the form to the ahah callback URL. We need to set it back
     // to the normal form URL 
-    if ($form_state['values']['form_action'] == 'Update') {
-      $form['#action'] = url("admin/tripal/tripal_db/edit_db");
-    }
-    if ($form_state['values']['form_action'] == 'Add') {
-      $form['#action'] = url("admin/tripal/tripal_db/add_db");
+    if (array_key_exists('values', $form_state)) {
+	    if ($form_state['values']['form_action'] == 'Update') {
+	      $form['#action'] = url("admin/tripal/tripal_db/edit_db");
+	    }
+	    if ($form_state['values']['form_action'] == 'Add') {
+	      $form['#action'] = url("admin/tripal/tripal_db/add_db");
+	    }
     }
   } 
 }

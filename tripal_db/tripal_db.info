@@ -1,7 +1,7 @@
 name = Tripal DB
 description = The database module for the Tripal package that integrates Drupal and GMOD chado. This module provides support for managing and viewing external databases.
-core = 6.x
+core = 7.x
 project = tripal_db
 package = Tripal
-version = 6.x-1.1
+version = 7.x-2.0
 dependencies[] = tripal_core

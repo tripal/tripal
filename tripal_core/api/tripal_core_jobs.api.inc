@@ -209,7 +209,7 @@ function tripal_jobs_rerun($job_id, $goto_jobs_page = TRUE) {
 function tripal_jobs_cancel($job_id, $redirect = TRUE) {
   $sql = "SELECT * FROM {tripal_jobs} WHERE job_id = :job_id";
   $results = db_query($sql, array(':job_id' => $job_id));
-  $job = $results->fetchOjbect();
+  $job = $results->fetchObject();
 
   // set the end time for this job
   if ($job->start_time == 0) {

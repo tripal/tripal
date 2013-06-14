@@ -190,22 +190,8 @@ function tripal_jobs_report() {
  *   The HTML describing the indicated job
  * @ingroup tripal_core
  */
-function tripal_jobs_view($job_id) {
-  return theme('tripal_core_job_view', $job_id);
-}
-
-/**
- * Registers variables for the tripal_core_job_view themeing function
- *
- * @param $variables
- *   An array containing all variables supplied to this template
- *
- * @ingroup tripal_core
- */
-function tripal_core_preprocess_tripal_core_job_view(&$variables) {
-
+function tripal_jobs_view($job_id) { 
   // get the job record
-  $job_id = $variables['job_id'];
   $sql =
     "SELECT TJ.job_id,TJ.uid,TJ.job_name,TJ.modulename,TJ.progress,
             TJ.status as job_status, TJ,submit_date,TJ.start_time,
@@ -236,14 +222,55 @@ function tripal_core_preprocess_tripal_core_job_view(&$variables) {
   else {
     $job->arguments = $args;
   }
-
+  // generate the list of arguments for display
+  $arguments = '';  
+  foreach ($job->arguments as $key => $value) {
+     $arguments .= "$key: $value<br>";
+  } 
+  
+  // build the links
+  $links  = l('Return to jobs list', "admin/tripal/tripal_jobs/") . ' | ';
+  $links .= l('Re-run this job', "admin/tripal/tripal_jobs/rerun/" . $job->job_id)  . ' | ';
+  if ($job->start_time == 0 and $job->end_time == 0) {
+    $links .= l('Cancel this job', "admin/tripal/tripal_jobs/cancel/" . $job->job_id)  . ' | ';
+  }
+  
   // make our start and end times more legible
   $job->submit_date = tripal_jobs_get_submit_date($job);
   $job->start_time = tripal_jobs_get_start_time($job);
   $job->end_time = tripal_jobs_get_end_time($job);
-
-  // add the job to the variables that get exported to the template
-  $variables['job'] = $job;
+  
+  // construct the table headers
+  $header = array('Detail', 'Value');
+  
+  // construct the table rows
+  $rows[] = array('Job Description', $job->job_name);
+  $rows[] = array('Submitting Module',$job->modulename);
+  $rows[] = array('Callback function', $job->callback);
+  $rows[] = array('Arguments', $arguments);
+  $rows[] = array('Progress', $job->progress . "%");
+  $rows[] = array('Status', $job->job_status);
+  $rows[] = array('Process ID', $job->pid);
+  $rows[] = array('Submit Date', $job->submit_date);
+  $rows[] = array('Start time', $job->start_time);
+  $rows[] = array('End time', $job->end_time);
+  $rows[] = array('Error Message', $job->error_msg);
+  $rows[] = array('Priority', $job->priority);
+  $rows[] = array('Submitting User', $job->username);
+  
+  $table = array(
+    'header' => $header, 
+    'rows' => $rows, 
+    'attributes' => array(), 
+    'sticky' => FALSE,
+    'caption' => '',
+    'colgroups' => array(), 
+    'empty' => '', 
+  );  	
+  
+  $output = '<p>' . substr($links, 0, -2) . '</p>'; // remove trailing |
+  $output .= theme_table($table);
+  return $output;
 }
 
 

@@ -9,6 +9,14 @@
  */
 
 /**
+ * 
+ */
+function tripal_custom_table_new_page() {
+	$output = drupal_render(drupal_get_form('tripal_custom_tables_form'));
+	return $output;   	
+	
+}
+/**
  * A template function which returns markup to display details for the custom table
  *
  * @param $table_id
@@ -84,8 +92,17 @@ function tripal_custom_tables_list() {
         'colspan' => 6),
     )
   );
+  $table = array(
+    'header' => $header, 
+    'rows' => $rows, 
+    'attributes' => array(), 
+    'sticky' => FALSE,
+    'caption' => '',
+    'colgroups' => array(), 
+    'empty' => 'No custom tables have been added', 
+  );
 
-  $page = theme('table', $header, $rows);
+  $page = theme_table($table);  
   return $page;
 }
 
@@ -102,7 +119,7 @@ function tripal_custom_tables_list() {
  *
  * @ingroup tripal_core
  */
-function tripal_custom_tables_form(&$form_state = NULL, $table_id = NULL) {
+function tripal_custom_tables_form($form, &$form_state = NULL, $table_id = NULL) {
 
   if (!$table_id) {
     $action = 'Add';
@@ -112,6 +129,8 @@ function tripal_custom_tables_form(&$form_state = NULL, $table_id = NULL) {
   }
 
   // get this requested table
+  $default_schema = '';
+  $default_force_drop = 0;
   if (strcmp($action, 'Edit')==0) {
     $sql = "SELECT * FROM {tripal_custom_tables} WHERE table_id = :table_id ";
     $results = db_query($sql, array(':table_id' => $table_id));
@@ -144,8 +163,8 @@ function tripal_custom_tables_form(&$form_state = NULL, $table_id = NULL) {
   );
   
   $form['instructions']= array(
-    '#type'          => 'markup',
-    '#value'         => t('At times it is necessary to add a custom table to the Chado schema.  
+    '#type'          => 'item',
+    '#description'         => t('At times it is necessary to add a custom table to the Chado schema.  
        These are not offically sanctioned tables but may be necessary for local data requirements.  
        Avoid creating custom tables when possible as other GMOD tools may not recognize these tables
        nor the data in them.  Linker tables or property tables are often a good candidate for
@@ -185,13 +204,13 @@ function tripal_custom_tables_form(&$form_state = NULL, $table_id = NULL) {
   $form['#redirect'] = 'admin/tripal/custom_tables';
   
   $form['example']= array(
-    '#type'          => 'markup',
-    '#value'         => "<br>Example library_stock table: <pre>
+    '#type'          => 'item',
+    '#description'         => "<br>Example library_stock table: <pre>
 array (
   'table' => 'library_stock',
   'fields' => array (
     'library_stock_id' => array(
-      'type' => serial,
+      'type' => 'serial',
       'not null' => TRUE,
     ),
     'library_id' => array(
@@ -277,9 +296,9 @@ function tripal_custom_tables_form_validate($form, &$form_state) {
         $results = db_query($sql, array(':table_id' => $table_id));
         $ct = $results->fetchObject();
         if ($ct->table_name != $schema_array['table']) {
-          $previous_db = db_set_active('chado');
+          $previous_db = tripal_db_set_active('chado');
           $exists = db_table_exists($schema_array['table']);
-          db_set_active($previous_db);        
+          tripal_db_set_active($previous_db);        
           if ($exists) {
             form_set_error($form_state['values']['schema'],
               t("The table name already exists, please choose a different name."));  
@@ -318,7 +337,7 @@ function tripal_custom_tables_form_submit($form, &$form_state) {
     tripal_core_edit_custom_table($table_id, $schema_arr['table'], $schema_arr, $skip_creation);
   }
   elseif (strcmp($action, 'Add') == 0) {
-    tripal_core_create_custom_table($ret, $schema_arr['table'], $schema_arr, $skip_creation);
+    tripal_core_create_custom_table($schema_arr['table'], $schema_arr, $skip_creation);
   }
   else {
     drupal_set_message(t("No action performed."));

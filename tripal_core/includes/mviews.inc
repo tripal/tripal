@@ -25,8 +25,7 @@ function tripal_mview_report($mview_id) {
 
   // create a table with each row containig stats for
   // an individual job in the results set.
-  $return_url = url("admin/tripal/mviews/");
-  $output .= "<p><a href=\"$return_url\">Return to table of materialized views.</a></p>";
+  $output  = "<p>" . l("Return to table of materialized views", "admin/tripal/mviews/") . "</p>";
   $output .= "<p>Details for <b>$mview->name</b>:</p>";
   
   // build the URLs using the url function so we can handle installations where
@@ -56,7 +55,7 @@ function tripal_mview_report($mview_id) {
     $rows[] = array('Table Field Definitions', $mview->mv_specs);
   }
   if ($mview->query) {
-    $rows[] = array('Query', "<pre>" . $mview->query . "</pre>");
+    $rows[] = array('Query', "<textarea rows=\"15\" cols=\"120\" style=\"font-family:Consolas,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New, monospace;\">" . $mview->query . "</textarea>");
   }
   if ($mview->indexed) {
     $rows[] = array('Indexed Fields', $mview->indexed);
@@ -65,10 +64,20 @@ function tripal_mview_report($mview_id) {
     $rows[] = array('Special Indexed Fields', $mview->special_index);
   }
   if ($mview->mv_schema) {
-    $rows[] = array('Drupal Schema API Definition', "<pre>" . $mview->mv_schema . "</pre>");
+    $rows[] = array('Drupal Schema API Definition', "<textarea rows=\"20\" cols=\"120\" style=\"font-family:Consolas,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New, monospace;\">"  . $mview->mv_schema . "</textarea>");
   }
   
-  $table = theme_table(array(), $rows);
+  $header = array('Detail','Value');
+  $table = array(
+    'header' => $header, 
+    'rows' => $rows, 
+    'attributes' => array(), 
+    'sticky' => FALSE,
+    'caption' => '',
+    'colgroups' => array(), 
+    'empty' => 'There are no materialized views', 
+  ); 
+  $table = theme_table($table);
   $output .= $table;
 
   return $output;
@@ -123,7 +132,16 @@ function tripal_mviews_report() {
            '<li>' . t("A database transaction will be used when populating MViews. Therefore replacement of records does not occur until the query completes.  Any search forms or pages dependent on the MView will continue to function.") . '</li>' .
            '</ul></p>';
   $page .= '<b>' . t("Existing MViews") . '</b>';
-  $page .= theme('table', $header, $rows);
+  $table = array(
+    'header' => $header, 
+    'rows' => $rows, 
+    'attributes' => array(), 
+    'sticky' => FALSE,
+    'caption' => '',
+    'colgroups' => array(), 
+    'empty' => 'There are no materialized views', 
+  ); 
+  $page .= theme_table($table);
   return $page;
 }
 
@@ -140,8 +158,7 @@ function tripal_mviews_report() {
  *
  * @ingroup tripal_core
  */
-function tripal_mviews_form(&$form_state = NULL, $mview_id = NULL) {
-
+function tripal_mviews_form($form, &$form_state = NULL, $mview_id = NULL) {
   if (!$mview_id) {
     $action = 'Add';
   }
@@ -153,9 +170,22 @@ function tripal_mviews_form(&$form_state = NULL, $mview_id = NULL) {
   $schema_collapsed = 0;
   $traditional_collapsed = 1;  
   
+  $default_name = '';
+  $default_mv_table = '';
+  $default_mv_specs = '';
+  $default_indexed = '';
+  $default_mvquery = '';
+  $default_special_index = '';
+  $default_comment = '';
+  $default_modulename = '';
+  $default_schema =  '';
+  
+  // if the view is the older style legacy view then this value get's set to 1
+  $is_legacy = 0;
+  
   
   // get this requested view
-  if (strcmp($action, 'Edit')==0) {
+  if (strcmp($action, 'Edit') == 0 ) {
     $sql = "SELECT * FROM {tripal_mviews} WHERE mview_id = :mview_id ";
     $results = db_query($sql, array(':mview_id' => $mview_id));
     $mview = $results->fetchObject();
@@ -163,14 +193,16 @@ function tripal_mviews_form(&$form_state = NULL, $mview_id = NULL) {
     // set the default values.  If there is a value set in the
     // form_state then let's use that, otherwise, we'll pull
     // the values from the database
-    $default_name = $form_state['values']['name'];
-    $default_mv_table = $form_state['values']['mv_table'];
-    $default_mv_specs = $form_state['values']['mv_specs'];
-    $default_indexed = $form_state['values']['indexed'];
-    $default_mvquery = $form_state['values']['mvquery'];
-    $default_special_index = $form_state['values']['special_index'];
-    $default_comment = $form_state['values']['comment'];
-    $default_modulename = $form_state['values']['modulename'];
+    if (array_key_exists('values', $form_state)) {
+	    $default_name = $form_state['values']['name'];
+	    $default_mv_table = $form_state['values']['mv_table'];
+	    $default_mv_specs = $form_state['values']['mv_specs'];
+	    $default_indexed = $form_state['values']['indexed'];
+	    $default_mvquery = $form_state['values']['mvquery'];
+	    $default_special_index = $form_state['values']['special_index'];
+	    $default_comment = $form_state['values']['comment'];
+	    $default_modulename = $form_state['values']['modulename'];
+    }
 
     if (!$default_name) {
       $default_name = $mview->name;
@@ -200,6 +232,9 @@ function tripal_mviews_form(&$form_state = NULL, $mview_id = NULL) {
       $default_modulename = $mview->modulename ? $mview->modulename : 'tripal_core';
     }
     
+    if ($mview->mv_specs) {
+    	$is_legacy = 1;
+    }
 
     // the mv_table column of the tripal_mviews table always has the table
     // name even if it is a custom table. However, for the sake of the form,
@@ -223,6 +258,11 @@ function tripal_mviews_form(&$form_state = NULL, $mview_id = NULL) {
     '#value' => $action
   );
 
+  $form['is_legacy'] = array(
+    '#type' => 'value',
+    '#value' => $is_legacy
+  );
+  
   $form['mview_id'] = array(
     '#type' => 'value',
     '#value' => $mview_id
@@ -232,6 +272,12 @@ function tripal_mviews_form(&$form_state = NULL, $mview_id = NULL) {
     '#type' => 'value',
     '#value' => $default_modulename,
   );
+  
+  $form['return_link'] = array(
+    '#type' => 'item',
+    '#description' => l("Return to table of materialized views", "admin/tripal/mviews/"),
+  );
+  
 
   $form['name']= array(
     '#type'          => 'textfield',
@@ -267,53 +313,59 @@ function tripal_mviews_form(&$form_state = NULL, $mview_id = NULL) {
     '#required'      => FALSE,
     '#default_value' => $default_schema,
     '#rows'          => 25,
+    '#attributes' => array(
+      'style' => "font-family:Consolas,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New, monospace;",      
+    ),
   );
 
-  // add a fieldset for the Original Table Description fields
-  $form['traditional'] = array(
-    '#type' => 'fieldset',
-    '#title' => 'Legacy MViews Setup',
-    '#description' => t('Traditionally MViews were created by specifying PostgreSQL style ' .
-                       'column types.  This method can be used but is deprecated in favor of the ' .
-                       'newer Drupal schema API method provided above. In rare cases where the Drupal Schema API ' .
-                       'does not support a desired data type the Legacy Mviews should be used'),
-    '#collapsible' => 1,
-    '#collapsed' => $traditional_collapsed,
-  );
-
-  $form['traditional']['mv_table']= array(
-    '#type'          => 'textfield',
-    '#title'         => t('Table Name'),
-    '#description'   => t('Please enter the table name that this view will generate in the database.  You can use the schema and table name for querying the view'),
-    '#required'      => FALSE,
-    '#default_value' => $default_mv_table,
-  );
-
-  $form['traditional']['mv_specs']= array(
-    '#type'          => 'textarea',
-    '#title'         => t('Table Definition'),
-    '#description'   => t('Please enter the field definitions for this view. Each field should be separated by a comma or enter each field definition on each line.'),
-    '#required'      => FALSE,
-    '#default_value' => $default_mv_specs,
-  );
-
-  $form['traditional']['indexed']= array(
-    '#type'          => 'textarea',
-    '#title'         => t('Indexed Fields'),
-    '#description'   => t('Please enter the field names (as provided in the table definition above) that will be indexed for this view.  Separate by a comma or enter each field on a new line.'),
-    '#required'      => FALSE,
-    '#default_value' => $default_indexed,
-  );
-
-  /**
-  $form['traditional']['special_index']= array(
-    '#type'          => 'textarea',
-    '#title'         => t('View Name'),
-    '#description'   => t('Please enter the name for this materialized view.'),
-    '#required'      => TRUE,
-    '#default_value' => $default_special_index,
-  );
-  */
+  // only let folks edit legacy MViews, not create new ones 
+  if ($is_legacy) {
+	  // add a fieldset for the Original Table Description fields
+	  $form['traditional'] = array(
+	    '#type' => 'fieldset',
+	    '#title' => 'Legacy MViews Setup',
+	    '#description' => t('Traditionally MViews were created by specifying PostgreSQL style ' .
+	                       'column types.  This method can be used but is deprecated in favor of the ' .
+	                       'newer Drupal schema API method provided above. In rare cases where the Drupal Schema API ' .
+	                       'does not support a desired data type the Legacy Mviews should be used'),
+	    '#collapsible' => 1,
+	    '#collapsed' => $traditional_collapsed,
+	  );
+	
+	  $form['traditional']['mv_table']= array(
+	    '#type'          => 'textfield',
+	    '#title'         => t('Table Name'),
+	    '#description'   => t('Please enter the table name that this view will generate in the database.  You can use the schema and table name for querying the view'),
+	    '#required'      => FALSE,
+	    '#default_value' => $default_mv_table,
+	  );
+	
+	  $form['traditional']['mv_specs']= array(
+	    '#type'          => 'textarea',
+	    '#title'         => t('Table Definition'),
+	    '#description'   => t('Please enter the field definitions for this view. Each field should be separated by a comma or enter each field definition on each line.'),
+	    '#required'      => FALSE,
+	    '#default_value' => $default_mv_specs,
+	  );
+	
+	  $form['traditional']['indexed']= array(
+	    '#type'          => 'textarea',
+	    '#title'         => t('Indexed Fields'),
+	    '#description'   => t('Please enter the field names (as provided in the table definition above) that will be indexed for this view.  Separate by a comma or enter each field on a new line.'),
+	    '#required'      => FALSE,
+	    '#default_value' => $default_indexed,
+	  );
+	
+	  /**
+	  $form['traditional']['special_index']= array(
+	    '#type'          => 'textarea',
+	    '#title'         => t('View Name'),
+	    '#description'   => t('Please enter the name for this materialized view.'),
+	    '#required'      => TRUE,
+	    '#default_value' => $default_special_index,
+	  );
+	  */
+  }
 
   $form['mvquery']= array(
     '#type'          => 'textarea',
@@ -322,6 +374,9 @@ function tripal_mviews_form(&$form_state = NULL, $mview_id = NULL) {
     '#required'      => TRUE,
     '#default_value' => $default_mvquery,
     '#rows'          => 25,
+    '#attributes' => array(
+      'style' => "font-family:Consolas,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New, monospace;",      
+    ),
   );
 
   if ($action == 'Edit') {
@@ -351,11 +406,20 @@ function tripal_mviews_form_validate($form, &$form_state) {
   $action = $form_state['values']['action'];
   $mview_id = $form_state['values']['mview_id'];
   $name = $form_state['values']['name'];
-  $mv_table = $form_state['values']['mv_table'];
-  $mv_specs = $form_state['values']['mv_specs'];
-  $indexed = $form_state['values']['indexed'];
+  $is_legacy = $form_state['values']['is_legacy'];
   $query = $form_state['values']['mvquery'];
-  $special_index = $form_state['values']['special_index'];
+  if ($is_legacy) {
+	  $mv_table = $form_state['values']['mv_table'];
+	  $mv_specs = $form_state['values']['mv_specs'];
+	  $indexed = $form_state['values']['indexed'];	  
+	  $special_index = '';//$form_state['values']['special_index'];
+  }
+  else {
+  	$mv_table = '';
+    $mv_specs = '';
+    $indexed = '';
+    $special_index = '';
+  }
   $comment = $form_state['values']['comment'];
   $schema = $form_state['values']['schema'];
 
@@ -404,11 +468,20 @@ function tripal_mviews_form_submit($form, &$form_state) {
   $action = $form_state['values']['action'];
   $mview_id = $form_state['values']['mview_id'];
   $name = $form_state['values']['name'];
-  $mv_table = $form_state['values']['mv_table'];
-  $mv_specs = $form_state['values']['mv_specs'];
-  $indexed = $form_state['values']['indexed'];
+  $is_legacy = $form_state['values']['is_legacy'];
   $query = $form_state['values']['mvquery'];
-  $special_index = $form_state['values']['special_index'];
+  if ($is_legacy) {
+	  $mv_table = $form_state['values']['mv_table'];
+	  $mv_specs = $form_state['values']['mv_specs'];
+	  $indexed = $form_state['values']['indexed'];	  
+	  $special_index = '';//$form_state['values']['special_index'];
+  }
+  else {
+    $mv_table = '';
+    $mv_specs = '';
+    $indexed = '';
+    $special_index = '';
+  }
   $comment = $form_state['values']['comment'];
   $schema = $form_state['values']['schema'];
   $modulename = $form_state['values']['modulename'];

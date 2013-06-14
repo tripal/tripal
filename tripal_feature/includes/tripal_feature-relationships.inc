@@ -188,15 +188,13 @@ function tripal_feature_add_ONE_relationship_form_validate($form, &$form_state) 
 function tripal_feature_add_ONE_relationship_form_submit($form, &$form_state) {
 
   if ($form_state['values']['subject_id'] > 0) {
-    $previous_db = db_set_active('chado');
-    db_query(
+    chado_query(
       "INSERT INTO {stock_relationship} (subject_id, type_id, object_id, value) VALUES (%d, %d, %d, '%s')",
       $form_state['values']['subject_id'],
       $form_state['values']['type_id'],
       $form_state['values']['object_id'],
       $form_state['values']['r_description']
     );
-    db_set_active($previous_db);
 
     drupal_set_message(t('Successfully Added Relationship.'));
   } //end of insert relationship
