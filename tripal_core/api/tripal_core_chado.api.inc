@@ -299,14 +299,6 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
  *  An associative array containing the values for updating.
  * @param $options
  *  An array of options such as:
- *  - statement_name: the name of the prepared statement to use. If the statement
- *     has not yet been prepared it will be prepared automatically. On subsequent
- *     calls with the same statement_name only an execute on the previously
- *     prepared statement will occur.
- *  - is_prepared: TRUE or FALSE. Whether or not the statement is prepared. By
- *     default if the statement is not prepared it will be automatically.
- *     However to avoid this check, which requires a database query you can
- *     set this value to true and the check will not be performed.
  *  - return_record: by default, the function will return the TRUE if the record
  *     was succesfully updated.  However, set this option to TRUE to return the
  *     record that was updated.  The returned record will have the fields provided
@@ -381,14 +373,7 @@ function tripal_core_chado_update($table, $match, $values, $options = NULL) {
   if (!is_array($options)) {
     $options = array();
   }
-/*  
-  if (!array_key_exists('is_prepared', $options)) {
-    $options['is_prepared'] = FALSE;
-  }
-  if (!array_key_exists('statement_name', $options)) {
-    $options['statement_name'] = FALSE;
-  }
-*/  
+
   if (!array_key_exists('return_record', $options)) {
     $options['return_record'] = FALSE;
   }
@@ -396,28 +381,6 @@ function tripal_core_chado_update($table, $match, $values, $options = NULL) {
   $update_values = array();   // contains the values to be updated
   $update_matches = array();  // contains the values for the where clause
 
-/*  
-  // Determine plan of action
-  if ($options['statement_name']) {
-    // we have a prepared statment (or want to create one) so set $prepared = TRUE
-    $prepared = TRUE;
-
-    // we need to get a persistent connection.  If one exists this function
-    // will not recreate it, but if not it will create one and store it in
-    // a Drupal variable for reuse later.
-    $connection = tripal_db_persistent_chado();
-
-    // if we cannot get a connection the abandon the prepared statement
-    if (!$connection ) {
-       $prepared = FALSE;
-       unset($options['statement_name']);
-    }
-  }
-  else {
-    //print "NO STATEMENT (update): $table\n";
-    //debug_print_backtrace();
-  }
-*/  
 
   // get the table description
   $table_desc = tripal_core_get_chado_table_schema($table);
@@ -446,21 +409,8 @@ function tripal_core_chado_update($table, $match, $values, $options = NULL) {
 
   // get the values needed for matching in the SQL statement
   foreach ($match as $field => $value) {
-    if (is_array($value)) {
-      $foreign_options = array();
-/*      
-      if ($options['statement_name']) {
-        // add the fk relationship info to the prepared statement name so that
-        // we can prepare the selects run by the recrusive tripal_core_chado_get_foreign_key
-        // function.
-        $fk_sname = "fk_" . $table . "_" . $field;
-        foreach ($value as $k => $v) {
-          $fk_sname .= substr($k, 0, 2);
-        }
-        $foreign_options['statement_name'] = $fk_sname;
-      }
-*/      
-      $results = tripal_core_chado_get_foreign_key($table_desc, $field, $value, $foreign_options);
+    if (is_array($value)) {   
+      $results = tripal_core_chado_get_foreign_key($table_desc, $field, $value);
       if (sizeof($results) > 1) {
         watchdog('tripal_core', 'tripal_core_chado_update: When trying to find record to update, too many records match the criteria supplied for !foreign_key foreign key constraint (!criteria)', array('!foreign_key' => $field, '!criteria' => print_r($value, TRUE)), WATCHDOG_ERROR);
       }
@@ -480,19 +430,7 @@ function tripal_core_chado_update($table, $match, $values, $options = NULL) {
   foreach ($values as $field => $value) {
     if (is_array($value)) {
       $foreign_options = array();
-      // select the value from the foreign key relationship for this value
-/*      
-      if ($options['statement_name']) {
-        // add the fk relationship info to the prepared statement name so that
-        // we can prepare the selects run by the recrusive tripal_core_chado_get_foreign_key
-        // function.
-        $fk_sname = "fk_" . $table . "_" . $field;
-        foreach ($value as $k => $v) {
-          $fk_sname .= substr($k, 0, 2);
-        }
-        $foreign_options['statement_name'] = $fk_sname;
-      }
-*/      
+      // select the value from the foreign key relationship for this value   
       $results = tripal_core_chado_get_foreign_key($table_desc, $field, $value, $foreign_options);
       if (sizeof($results) > 1) {
         watchdog('tripal_core', 'tripal_core_chado_update: When trying to find update values, too many records match the criteria supplied for !foreign_key foreign key constraint (!criteria)', array('!foreign_key' => $field, '!criteria' => print_r($value, TRUE)), WATCHDOG_ERROR);
@@ -511,171 +449,32 @@ function tripal_core_chado_update($table, $match, $values, $options = NULL) {
 
   // now build the SQL statement
   $sql  = 'UPDATE {' . $table . '} SET ';
-  $psql = 'UPDATE {' . $table . '} SET ';
-  $uargs = array();
-  $idatatypes = array();
-  $pvalues = array();
-  $ivalues = array();
-  $i = 1;
-  foreach ($update_values as $field => $value) {
-
-    if (strcasecmp($table_desc['fields'][$field]['type'], 'serial')==0 OR
-        strcasecmp($table_desc['fields'][$field]['type'], 'int')==0 OR
-        strcasecmp($table_desc['fields'][$field]['type'], 'integer')==0) {
-      if (strcmp($value, '__NULL__') == 0) {
-        $sql .= " $field = %s, ";
-        $ivalues[] = 'NULL';
-        $pvalues[] = '%s';
-        $uargs[] = 'NULL';
-      }
-      else {
-        $sql .= " $field = %d, ";
-        $ivalues[] = $value;
-        $pvalues[] = '%d';
-        $uargs[] = $value;
-      }
-      $idatatypes[] = 'int';
-
-    }
-    elseif (strcasecmp($table_desc['fields'][$field]['type'], 'boolean')==0) {
-      $sql .= " $field = %s, ";
-      $pvalues[] = '%s';
-      if (strcmp($value, '__NULL__')==0) {
-        $ivalues[] = 'NULL';
-        $uargs[] = 'NULL';
-      }
-      else {
-        $ivalues[] = $value;
-        $uargs[] = $value;
-      }
-      $idatatypes[] = 'bool';
-    }
-    elseif (strcasecmp($table_desc['fields'][$field]['type'], 'float')==0) {
-      $sql .= " $field = %s, ";
-      $pvalues[] = '%s';
-      if (strcmp($value, '__NULL__')==0) {
-        $ivalues[] = 'NULL';
-        $uargs[] = 'NULL';
-      }
-      else {
-        $ivalues[] = $value;
-        $uargs[] = $value;
-      }
-      $idatatypes[] = 'numeric';
+  $args = array();        // arguments passed to chado_query
+  foreach ($update_values as $field => $value) {    
+    if (strcmp($value, '__NULL__') == 0) {
+      $sql .= " $field = NULL, ";
     }
     else {
-      if (strcmp($value, '__NULL__') == 0) {
-        $sql .= " $field = %s, ";
-        $ivalues[] = 'NULL';
-        $uargs[] = 'NULL';
-        $pvalues[] = '%s';
-      }
-      else {
-        $sql .= " $field = '%s', ";
-        $ivalues[] = $value;
-        $uargs[] = $value;
-        $pvalues[] = "'%s'";
-      }
-      $idatatypes[] = 'text';
-    }
-    $psql .= "$field = \$" . $i . ", ";
-    $i++;
+      $sql .= " $field = :$field, ";
+      $args[":$field"] = $value;
+    }    
   }
   $sql = drupal_substr($sql, 0, -2);  // get rid of the trailing comma & space
-  $psql = drupal_substr($psql, 0, -2);  // get rid of the trailing comma & space
 
   $sql .= " WHERE ";
-  $psql .= " WHERE ";
   foreach ($update_matches as $field => $value) {
-
-    if (strcasecmp($table_desc['fields'][$field]['type'], 'serial')==0 OR
-        strcasecmp($table_desc['fields'][$field]['type'], 'int')==0 OR
-        strcasecmp($table_desc['fields'][$field]['type'], 'integer')==0) {
-      if (strcmp($value, '__NULL__')==0) {
-        $sql .= " $field = %s AND ";
-        $ivalues[] = 'NULL';
-        $uargs[] = 'NULL';
-        $pvalues[] = '%s';
-      }
-      else {
-        $sql .= " $field = %d AND ";
-        $ivalues[] = $value;
-        $uargs[] = $value;
-        $pvalues[] = '%s';
-      }
-      $idatatypes[] = 'int';
-    }
-    elseif (strcasecmp($table_desc['fields'][$field]['type'], 'boolean')==0) {
-      $sql .= " $field = %s AND ";
-      $pvalues[] = '%s';
-      if (strcmp($value, '__NULL__')==0) {
-        $ivalues[] = 'NULL';
-        $uargs[] = 'NULL';
-      }
-      else {
-        $ivalues[] = $value;
-        $uargs[] = $value;
-      }
-      $idatatypes[] = 'bool';
-    }
-    elseif (strcasecmp($table_desc['fields'][$field]['type'], 'float')==0) {
-      $sql .= " $field = %s AND ";
-      $pvalues[] = '%s';
-      if (strcmp($value, '__NULL__')==0) {
-        $ivalues[] = 'NULL';
-        $uargs[] = 'NULL';
-      }
-      else {
-        $ivalues[] = $value;
-        $uargs[] = $value;
-      }
-      $idatatypes[] = 'numeric';
+    if (strcmp($value, '__NULL__')==0) {
+      $sql .= " $field = NULL AND ";
     }
     else {
-      if (strcmp($value, '__NULL__')==0) {
-        $sql .= " $field = %s AND ";
-        $ivalues[] = 'NULL';
-        $uargs[] = 'NULL';
-        $pvalues[] = '%s';
-      }
-      else {
-        $sql .= " $field = '%s' AND ";
-        $ivalues[] = $value;
-        $uargs[] = $value;
-        $pvalues[] = "'%s'";
-      }
-      $idatatypes[] = 'text';
-    }
-    $psql .= "$field = \$" . $i . " AND ";
-    $i++;
+      $sql .= " $field = :$field AND ";
+      $args[":$field"] = $value;
+    }    
   }
   $sql = drupal_substr($sql, 0, -4);  // get rid of the trailing 'AND'
-  $psql = drupal_substr($psql, 0, -4);  // get rid of the trailing 'AND'
 
-  // finish constructing the prepared SQL statement
-//  $psql =  "PREPARE " . $options['statement_name'] . " (" . implode(', ', $idatatypes) . ") AS " . $psql;
+  $result = chado_query($sql, $args);
 
-  // finally perform the update.  If successful, return the updated record
-/*  
-  if ($prepared) {
-    // if this is the first time we've run this query
-    // then we need to do the prepare, otherwise just execute
-    if ($options['is_prepared'] != TRUE and !tripal_core_is_sql_prepared($options['statement_name'])) {
-      $status = chado_query($psql);
-      if (!$status) {
-        watchdog('tripal_core', "tripal_core_chado_update: not able to prepare '%name' statement for: %sql",
-          array('%name' => $options['statement_name'], '%sql' => $sql), WATCHDOG_ERROR);
-        return FALSE;
-      }
-    }
-    $sql = "EXECUTE " . $options['statement_name'] . "(" . implode(", ", $pvalues) . ")";
-    $result = chado_query($sql, $ivalues);
-  }
-  // if it's not a prepared statement then insert normally
-  else {
-*/  
-    $result = chado_query($sql, $uargs);
-//  }
   // if we have a result then add primary keys to return array
   if ($options['return_record'] == TRUE and $result) {
     // only if we have a single result do we want to add the primary keys to the values
@@ -713,15 +512,7 @@ function tripal_core_chado_update($table, $match, $values, $options = NULL) {
  * @param $match
  *  An associative array containing the values for locating a record to update.
  * @param $options
- *  An array of options such as:
- *  - statement_name: the name of the prepared statement to use. If the statement
- *     has not yet been prepared it will be prepared automatically. On subsequent
- *     calls with the same statement_name only an execute on the previously
- *     prepared statement will occur.
- *  - is_prepared: TRUE or FALSE. Whether or not the statement is prepared. By
- *     default if the statement is not prepared it will be automatically.
- *     However to avoid this check, which requires a database query you can
- *     set this value to true and the check will not be performed.
+ *  Currently there are no options
  * @return
  *   On success this function returns TRUE. On failure, it returns FALSE.
  *
@@ -751,7 +542,7 @@ function tripal_core_chado_update($table, $match, $values, $options = NULL) {
      'is_obsolete' => 0
    ),
  );
- *   $result = tripal_core_chado_update('feature',$umatch,$uvalues);
+ *   $result = tripal_core_chado_update('feature', $umatch, $uvalues);
  * @endcode
  * The above code species that a feature with a given uniquename, organism_id,
  * and type_id (the unique constraint for the feature table) will be deleted.
@@ -781,35 +572,7 @@ function tripal_core_chado_delete($table, $match, $options = NULL) {
   if (!is_array($options)) {
     $options = array();
   }
-/*  
-  if (!array_key_exists('is_prepared', $options)) {
-    $options['is_prepared'] = FALSE;
-  }
-  if (!array_key_exists('statement_name', $options)) {
-    $options['statement_name'] = FALSE;
-  }
 
-  // Determine plan of action
-  if ($options['statement_name']) {
-    // we have a prepared statment (or want to create one) so set $prepared = TRUE
-    $prepared = TRUE;
-
-    // we need to get a persistent connection.  If one exists this function
-    // will not recreate it, but if not it will create one and store it in
-    // a Drupal variable for reuse later.
-    $connection = tripal_db_persistent_chado();
-
-    // if we cannot get a connection the abandon the prepared statement
-    if (!$connection ) {
-       $prepared = FALSE;
-       unset($options['statement_name']);
-    }
-  }
-  else {
-    //print "NO STATEMENT (update): $table\n";
-    //debug_print_backtrace();
-  }
-*/
   $delete_matches = array();  // contains the values for the where clause
 
   // get the table description
@@ -844,118 +607,36 @@ function tripal_core_chado_delete($table, $match, $options = NULL) {
 
   // now build the SQL statement
   $sql = 'DELETE FROM {' . $table . '} WHERE ';
-  $psql = $sql;
-  $uargs = array();
-  $idatatypes = array();
-  $pvalues = array();
-  $ivalues = array();
-  $dargs = array();
-  $void_prepared = 0;
-  $i = 1;
+  $args = array();
   foreach ($delete_matches as $field => $value) {
-
     // if we have an array values then this is an "IN" clasue.
     // we cannot use prepared statements with these
+    
     if (count($value) > 1) {
-      $sql .= "$field IN (" . db_placeholders($value, 'varchar') . ") AND ";
+      $sql .= "$field IN (";
+      $index = 0;
       foreach ($value as $v) {
-        $dargs[] = $v;
+      	$sql .= ":$field" . $index . ", ";
+        $args[":$field" . $index] = $v;
+        $index++;
       }
-      $void_prepared = 1;
-      continue;
-    }
-
-    if (strcasecmp($table_desc['fields'][$field]['type'], 'serial') == 0 OR
-        strcasecmp($table_desc['fields'][$field]['type'], 'int') == 0 OR
-        strcasecmp($table_desc['fields'][$field]['type'], 'integer') == 0) {
-      if (strcmp($value, '__NULL__') == 0) {
-        $sql .= " $field = NULL AND ";
-        $ivalues[] = 'NULL';
-        $pvalues[] = '%s';
-        $uargs[] = 'NULL';
-      }
-      else {
-        $sql .= " $field = %d AND ";
-        $ivalues[] = $value;
-        $pvalues[] = '%d';
-        $uargs[] = $value;
-      }
-      $idatatypes[] = 'int';
-    }
-    elseif (strcasecmp($table_desc['fields'][$field]['type'], 'boolean')==0) {
-      $sql .= " $field = %s AND ";
-      $pvalues[] = '%s';
-      if (strcmp($value, '__NULL__')==0) {
-        $ivalues[] = 'NULL';
-        $uargs[] = 'NULL';
-      }
-      else {
-        $ivalues[] = $value;
-        $uargs[] = $value;
-      }
-      $idatatypes[] = 'bool';
-    }
-    elseif (strcasecmp($table_desc['fields'][$field]['type'], 'float')==0) {
-      $sql .= " $field = %s AND ";
-      $pvalues[] = '%s';
-      if (strcmp($value, '__NULL__')==0) {
-        $ivalues[] = 'NULL';
-        $uargs[] = 'NULL';
-      }
-      else {
-        $ivalues[] = $value;
-        $uargs[] = $value;
-      }
-      $idatatypes[] = 'numeric';
+      $sql = drupal_substr($sql, 0, -2); // get rid of trailing ', '
+      $sql .= ") AND ";
     }
     else {
-      if (strcmp($value, '__NULL__')==0) {
-        $sql .= " $field = %s AND ";
-        $ivalues[] = 'NULL';
-        $uargs[] = 'NULL';
-        $pvalues[] = '%s';
+      if (strcmp($value, '__NULL__') == 0) {
+        $sql .= " $field = NULL AND ";
       }
       else {
-        $sql .= " $field = '%s' AND ";
-        $ivalues[] = $value;
-        $uargs[] = $value;
-        $pvalues[] = "'%s'";
+        $sql .= " $field = :$field AND ";
+        $args[":$field"] = $value;
       }
-      $idatatypes[] = 'text';
     }
-    array_push($dargs, $value);
-    $psql .= "$field = \$" . $i . " AND ";
-    $i++;
   }
   $sql = drupal_substr($sql, 0, -4);  // get rid of the trailing 'AND'
-  $psql = drupal_substr($psql, 0, -4);  // get rid of the trailing 'AND'
-
-  // finish constructing the prepared SQL statement
-//  $psql =  "PREPARE " . $options['statement_name'] . " (" . implode(', ', $idatatypes) . ") AS " . $psql;
-/*
-  // finally perform the update.  If successful, return the updated record
-  if ($prepared and !$void_prepared) {
-    // if this is the first time we've run this query
-    // then we need to do the prepare, otherwise just execute
-    if ($options['is_prepared'] != TRUE and
-    !tripal_core_is_sql_prepared($options['statement_name'])) {
-      $status = chado_query($psql);
-      if (!$status) {
-        watchdog('tripal_core', "tripal_core_chado_delete: not able to prepare '%name' statement for: %sql", array('%name' => $options['statement_name'], '%sql' => $sql), WATCHDOG_ERROR);
-        return FALSE;
-      }
-    }
-    $sql = "EXECUTE " . $options['statement_name'] . "(" . implode(", ", $pvalues) . ")";
-    $resource = chado_query($sql, $ivalues);
-  }
-  // if it's not a prepared statement then insert normally
-  else {
-*/  
-    $resource = chado_query($sql, $uargs);
-//  }
 
   // finally perform the delete.  If successful, return the updated record
-  $result = chado_query($sql, $dargs);
+  $result = chado_query($sql, $args);
   if ($result) {
     return TRUE;
   }
@@ -1332,10 +1013,11 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
         $sql .= "$field IN (";
         $index = 0;
         foreach ($value as $v) {
-        	$sql .= ':' . $field . $index . ', ';
-          $args[':' . $field . $index] = $v;
+        	$sql .= ":$field" . $index . ', ';
+          $args[":$field" . $index] = $v;
+          $index++;
         }
-        $sql = substr($sql, -2, 0); // remove trailing ', '
+        $sql = drupal_substr($sql, 0, -2); // remove trailing ', '
         $sql .= ") AND ";
       }
       // if we have a null value then we need an IS NULL in our where statement

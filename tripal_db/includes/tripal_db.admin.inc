@@ -25,7 +25,7 @@ function tripal_db_select_form() {
  * 
  * @ingroup tripal_db
  */
-function tripal_db_db_edit_form($form, $form_state) {
+function tripal_db_db_edit_form($form, &$form_state) {
   
 	// get the dbid if form was submitted via AJAX
 	$dbid = 0;
@@ -54,24 +54,15 @@ function tripal_db_db_edit_form($form, $form_state) {
       'event'    => 'change',
       'method'   => 'replace',
     ),
-    '#suffix' => '<div id="db-edit-div"></div>',
-    '#default_value' => $dbid,
+    '#default_value' => $dbid,    
   );
+  
       
-  // if we don't have a db_id then we can safetly return the form
+  // if we don't have a db_id then we can  return the form, otherwise
+  // add in the other fields
   if ($dbid) {
-  	  	
-    // if we are here because of an AJAX calback, that means the database select
-    // box was changed and the form is being rebuilt on an AJAX call not on a
-    // form validation error.  Therefore, we want to provide the dbid  
-    if (array_key_exists('triggering_element', $form_state) and 
-        $form_statte['triggerming_element']['#ajax']['callback'] = tripal_db_edit_form_ajax) {
-	    tripal_db_add_db_form_fields($form, $form_state, $dbid);
-    }
-    else {
-    	tripal_db_add_db_form_fields($form, $form_state);
-    }
-	  
+    tripal_db_add_db_form_fields($form, $form_state, $dbid);
+    	  
 	  $form['update'] = array(
 	    '#type'         => 'submit',
 	    '#value'        => t('Update'),
@@ -82,6 +73,15 @@ function tripal_db_db_edit_form($form, $form_state) {
 	    '#value'        => t('Delete'),
       '#weight'       => 6,
     );
+  }
+  else {
+  	// if we don't have a dbid then this is the first time the form has
+  	// benn loaded and we need to create the div where ajax replacement elements get stored
+  	$form['div_replace'] = array(
+  	  '#type' => 'item',
+  	  '#prefix' => '<div id="db-edit-div">',
+  	  '#suffix' => '</div>',
+  	);
   }
   return $form;
 }
@@ -118,23 +118,17 @@ function tripal_db_add_db_form_fields(&$form, $form_state, $dbid = NULL) {
   $default_desc      = '';
   $default_url       = '';
   $default_urlprefix = '';
-      
-  // get the default values from the databae first  
+        
+  // get the default values from the database first  
   if ($dbid) {
     $values = array('db_id' => $dbid);
-    $db = tripal_core_chado_select('db', array('*'), $values);    
-    $default_db        = $db[0]->name;
-    $default_desc      = $db[0]->description;
-    $default_url       = $db[0]->url;
-    $default_urlprefix = $db[0]->urlprefix;  
-  }    
-  // set the default value to the form_state if those exist
-  elseif (array_key_exists('values', $form_state)) {
-    $default_db        = array_key_exists('name', $form_state['values'])        ? $form_state['values']['name']        : $default_db;
-    $default_desc      = array_key_exists('description', $form_state['values']) ? $form_state['values']['description'] : $default_desc;
-    $default_url       = array_key_exists('url', $form_state['values'])         ? $form_state['values']['url']         : $default_url;
-    $default_urlprefix = array_key_exists('urlprefix', $form_state['values'])   ? $form_state['values']['urlprefix']   : $default_urlprefix;      
-  }     
+    $result = tripal_core_chado_select('db', array('*'), $values);
+    $db = $result[0]; 
+    $default_db = $db->name;
+    $default_desc = $db->description;
+    $default_url = $db->url;
+    $default_urlprefix = $db->urlprefix;   
+  }   
     
   // add a fieldset for the Drupal Schema API
   $form['fields'] = array(
@@ -149,7 +143,6 @@ function tripal_db_add_db_form_fields(&$form, $form_state, $dbid = NULL) {
     '#description'   => t('Please enter the name for this external database.'),
     '#required'      => TRUE,
     '#default_value' => $default_db,
-    '#weight'        => 1,
     '#maxlength'     => 255,
   );
 
@@ -158,7 +151,6 @@ function tripal_db_add_db_form_fields(&$form, $form_state, $dbid = NULL) {
     '#title'         => t('Description'),
     '#description'   => t('Please enter a description for this database'),
     '#default_value' => $default_desc,
-    '#weight'        => 2,
     '#maxlength'     => 255,
   );
   $form['fields']['url']= array(
@@ -166,7 +158,6 @@ function tripal_db_add_db_form_fields(&$form, $form_state, $dbid = NULL) {
     '#title'         => t('URL'),
     '#description'   => t('Please enter the web address for this database.'),
     '#default_value' => $default_url,
-    '#weight'        => 3,
     '#maxlength'     => 255,
   );
   $form['fields']['urlprefix']= array(
@@ -174,10 +165,8 @@ function tripal_db_add_db_form_fields(&$form, $form_state, $dbid = NULL) {
     '#title'         => t('URL prefix'),
     '#description'   => t('Tripal can provide links to external databases when accession numbers or unique identifiers are known.  Typically, a database will provide a unique web address for each accession and the accession usually is the last component of the page address.  Please enter the web address, minus the accession number for this database.  When an accession number is present, Tripal will combine this web address with the accession and provide a link to the external site.'),
     '#default_value' => $default_urlprefix,
-    '#weight'        => 4,
     '#maxlength'     => 255,
   );
-
   return $form;
 }
 
@@ -209,10 +198,11 @@ function tripal_db_db_edit_form_validate($form, &$form_state) {
  * @ingroup tripal_db
  */
 function tripal_db_form_fields_validate($form, &$form_state) {
-  $name =  trim($form_state['values']['name']);
-  $desc =  trim($form_state['values']['description']);
-  $url  =  trim($form_state['values']['url']);
-  $urlp =  trim($form_state['values']['urlprefix']);
+  $name =  array_key_exists('name', $form_state['values'])        ? trim($form_state['values']['name']) : '';
+  $desc =  array_key_exists('description', $form_state['values']) ? trim($form_state['values']['description']) : '';
+  $url  =  array_key_exists('url', $form_state['values'])         ? trim($form_state['values']['url']) : '';
+  $urlp =  array_key_exists('urlprefix', $form_state['values'])   ? trim($form_state['values']['urlprefix']) : '';  
+  $dbid =  array_key_exists('dbid', $form_state['values'])        ? trim($form_state['values']['dbid']) : '';
  
   // make sure the database name is unique
   $values = array('name' => $name);
@@ -230,10 +220,10 @@ function tripal_db_form_fields_validate($form, &$form_state) {
  */
 function tripal_db_db_add_form_submit($form, &$form_state) {
 
-  $name =  trim($form_state['values']['name']);
-  $desc =  trim($form_state['values']['description']);
-  $url  =  trim($form_state['values']['url']);
-  $urlp =  trim($form_state['values']['urlprefix']);
+  $name =  array_key_exists('name', $form_state['values'])        ? trim($form_state['values']['name']) : '';
+  $desc =  array_key_exists('description', $form_state['values']) ? trim($form_state['values']['description']) : '';
+  $url  =  array_key_exists('url', $form_state['values'])         ? trim($form_state['values']['url']) : '';
+  $urlp =  array_key_exists('urlprefix', $form_state['values'])   ? trim($form_state['values']['urlprefix']) : '';  
 
   $values = array(
     'name' => $name,
@@ -259,11 +249,11 @@ function tripal_db_db_add_form_submit($form, &$form_state) {
  */
 function tripal_db_db_edit_form_submit($form, &$form_state) {
 
-  $name =  trim($form_state['values']['name']);
-  $desc =  trim($form_state['values']['description']);
-  $url  =  trim($form_state['values']['url']);
-  $urlp =  trim($form_state['values']['urlprefix']);
-  $dbid =  trim($form_state['values']['dbid']);
+  $name =  array_key_exists('name', $form_state['values'])        ? trim($form_state['values']['name']) : '';
+  $desc =  array_key_exists('description', $form_state['values']) ? trim($form_state['values']['description']) : '';
+  $url  =  array_key_exists('url', $form_state['values'])         ? trim($form_state['values']['url']) : '';
+  $urlp =  array_key_exists('urlprefix', $form_state['values'])   ? trim($form_state['values']['urlprefix']) : '';  
+  $dbid =  array_key_exists('dbid', $form_state['values'])        ? trim($form_state['values']['dbid']) : '';
   $op   =  trim($form_state['values']['op']);
 
   $values = array(
@@ -272,6 +262,7 @@ function tripal_db_db_edit_form_submit($form, &$form_state) {
     'url' => $url,
     'urlprefix' => $urlp,
   );
+
   if (strcmp($op, 'Update')==0) {      
     $match = array('db_id' => $dbid);
     $success = tripal_core_chado_update('db', $match, $values);
@@ -298,6 +289,27 @@ function tripal_db_db_edit_form_submit($form, &$form_state) {
  * @ingroup tripal_db
  */
 function tripal_db_edit_form_ajax($form, $form_state) {
-	unset($form['dbid']);	
-  return $form;
+	
+	$elements = array();
+	
+	// add in the form fields and the buttons	
+	if (array_key_exists('dbid', $form_state['values'])) {
+		$elements['fields'] = $form['fields'];
+		$elements['update'] = $form['update'];
+		$elements['delete'] = $form['delete'];
+	}
+	
+	 // add back in the db-edit-div that is used for the next round of AJAX
+  $elements['fields']['#prefix'] =  '<div id="db-edit-div">';
+  $elements['fields']['#suffix'] =  '</div">';
+  
+  // reset the values for the fields to the defaults
+  $elements['fields']['name']['#value']        = $elements['fields']['name']['#default_value'];
+  $elements['fields']['description']['#value'] = $elements['fields']['description']['#default_value'];
+  $elements['fields']['url']['#value']         = $elements['fields']['url']['#default_value'];
+  $elements['fields']['urlprefix']['#value']   = $elements['fields']['urlprefix']['#default_value'];
+	
+	//drupal_set_message('<pre>' . print_r($elements, TRUE) . '</pre>', "status");
+	
+  return $elements;
 }
