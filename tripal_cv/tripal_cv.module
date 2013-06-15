@@ -191,9 +191,12 @@ function tripal_cv_menu() {
  *
  * @ingroup tripal_cv
  */
-function tripal_cv_perm() {
+function tripal_cv_permission() {
   return array(
-    'administer controlled vocabularies',
+    'administer controlled vocabularies' => array(
+      'title' => t('Administer controlled vocabularies (CVs).'),
+      'description' => t('Allow a user to add, edit and delete controlled vocabularies as well as add and edit terms.')
+    ),
   );
 }
 

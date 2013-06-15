@@ -13,7 +13,7 @@
  *
   * @ingroup tripal_obo_loader
  */
-function tripal_cv_obo_form(&$form_state = NULL) {
+function tripal_cv_obo_form($form, &$form_state) {
 
   // get a list of db from chado for user to choose
   $sql = "SELECT * FROM {tripal_cv_obo} ORDER BY name";
@@ -21,7 +21,7 @@ function tripal_cv_obo_form(&$form_state = NULL) {
 
   $obos = array();
   $obos[] = '';
-  while ($obo = db_fetch_object($results)) {
+  foreach ($results as $obo) {
 //    $obos[$obo->obo_id] = "$obo->name  | $obo->path";
     $obos[$obo->obo_id] = $obo->name;
   }
@@ -41,21 +41,18 @@ function tripal_cv_obo_form(&$form_state = NULL) {
                    installation of the Tripal CV module or were added from a previous upload.  Select
                    an OBO, then click the submit button to load the vocabulary into the database.  If the
                    vocabularies already exist then the ontology will be updated.'),
-    '#weight'        => -1
   );
 
   $form['obo_existing']['obo_id'] = array(
     '#title' => t('Ontology OBO File Reference'),
     '#type' => 'select',
     '#options' => $obos,
-    '#weight'        => 0
   );
 
   $form['obo_new']['path_instructions']= array(
     '#value' => t('Provide the name and path for the OBO file.  If the vocabulary OBO file
                    is stored local to the server provide a file name. If the vocabulry is stored remotely,
                    provide a URL.  Only provide a URL or a local file, not both.'),
-    '#weight'        => 0
   );
 
   $form['obo_new']['obo_name']= array(
@@ -63,7 +60,6 @@ function tripal_cv_obo_form(&$form_state = NULL) {
     '#title'         => t('New Vocabulary Name'),
     '#description'   => t('Please provide a name for this vocabulary.  After upload, this name will appear in the drop down
                            list above for use again later.'),
-    '#weight'        => 1
   );
 
   $form['obo_new']['obo_url']= array(
@@ -71,8 +67,6 @@ function tripal_cv_obo_form(&$form_state = NULL) {
     '#title'         => t('Remote URL'),
     '#description'   => t('Please enter a URL for the online OBO file.  The file will be downloaded and parsed.
                            (e.g. http://www.obofoundry.org/ro/ro.obo'),
-    '#default_value' => $default_desc,
-    '#weight'        => 2
   );
 
   $form['obo_new']['obo_file']= array(
@@ -81,14 +75,11 @@ function tripal_cv_obo_form(&$form_state = NULL) {
     '#description'   => t('Please enter the full system path for an OBO definition file, or a path within the Drupal
                            installation (e.g. /sites/default/files/xyz.obo).  The path must be accessible to the
                            server on which this Drupal instance is running.'),
-    '#default_value' => $default_desc,
-    '#weight'        => 3
   );
 
   $form['submit'] = array(
     '#type'         => 'submit',
     '#value'        => t('Submit'),
-    '#weight'       => 5,
     '#executes_submit_callback' => TRUE,
   );
 
@@ -125,7 +116,7 @@ function tripal_cv_cvtermpath_form() {
 
   $cvs = array();
   $cvs[] = '';
-  while ($cv = db_fetch_object($results)) {
+  foreach ($results as $cv) {
     $cvs[$cv->cv_id] = $cv->name;
   }
 
@@ -161,8 +152,8 @@ function tripal_cv_cvtermpath_form() {
 function tripal_cv_load_obo_v1_2_id($obo_id, $jobid = NULL) {
 
   // get the OBO reference
-  $sql = "SELECT * FROM {tripal_cv_obo} WHERE obo_id = %d";
-  $obo = db_fetch_object(db_query($sql, $obo_id));
+  $sql = "SELECT * FROM {tripal_cv_obo} WHERE obo_id = :obo_id";
+  $obo = db_query($sql, array(':obo_id' => $obo_id))->fetchObject();
 
   // if the reference is for a remote URL then run the URL processing function
   if (preg_match("/^http:\/\//", $obo->path) or preg_match("/^ftp:\/\//", $obo->path)) {
@@ -274,9 +265,9 @@ function tripal_cv_load_obo_v1_2($file, $jobid = NULL, &$newcvs) {
     
   // make sure our temporary table exists
   $ret = array(); 
-  if (!db_table_exists('tripal_obo_temp')) { 
+  if (!chado_table_exists('tripal_obo_temp')) { 
     $schema = tripal_cv_get_custom_tables('tripal_obo_temp');  
-    $success = tripal_core_create_custom_table($ret, 'tripal_obo_temp', $schema['tripal_obo_temp']);
+    $success = tripal_core_create_custom_table('tripal_obo_temp', $schema['tripal_obo_temp']);
     if (!$success) {
       watchdog('T_obo_loader', "Cannot create temporary loading table", array(), WATCHDOG_ERROR); 
       return;
@@ -285,20 +276,6 @@ function tripal_cv_load_obo_v1_2($file, $jobid = NULL, &$newcvs) {
   // empty the temp table
   $sql = "DELETE FROM {tripal_obo_temp}";
   chado_query($sql);
-
-  // get a persistent connection
-  $connection = tripal_db_persistent_chado();
-  if (!$connection) {
-     print "A persistant connection was not obtained. Loading will be slow\n";
-  }
-          
-  // if we cannot get a connection then let the user know the loading will be slow
-  tripal_db_start_transaction();
-  if ($connection) {
-     print "\nNOTE: Loading of this OBO file is performed using a database transaction. \n" .
-           "If the load fails or is terminated prematurely then the entire set of \n" .
-           "insertions/updates is rolled back and will not be found in the database\n\n";
-  }
 
   print "Step 1: Preloading File $file\n";  
 
@@ -350,19 +327,15 @@ function tripal_cv_obo_quiterror($message) {
  * 
  */
 function tripal_cv_obo_load_typedefs($defaultcv, $newcvs, $default_db, $jobid){
-  $sql = "
-    SELECT * 
-    FROM tripal_obo_temp
-    WHERE type = 'Typedef' 
-  ";
+  $sql = "SELECT * FROM {tripal_obo_temp} WHERE type = 'Typedef' ";
   $typedefs = chado_query($sql);
   
-    $sql = "
+  $sql = "
     SELECT count(*) as num_terms
-    FROM tripal_obo_temp
+    FROM {tripal_obo_temp}
     WHERE type = 'Typedef'     
   "; 
-  $result = db_fetch_object(chado_query($sql));
+  $result = chado_query($sql)->fetchObject();
   $count = $result->num_terms;
   
   // calculate the interval for updates
@@ -371,7 +344,7 @@ function tripal_cv_obo_load_typedefs($defaultcv, $newcvs, $default_db, $jobid){
     $interval = 1;
   }
   $i = 0;
-  while ($typedef = db_fetch_object($typedefs)) {
+  foreach ($typedefs as $typedef) {
     $term = unserialize(base64_decode($typedef->stanza));
     
     // update the job status every interval
@@ -419,7 +392,7 @@ function tripal_cv_obo_process_terms($defaultcv, $jobid = NULL, &$newcvs, $defau
     FROM {tripal_obo_temp}
     WHERE type = 'Term'     
   "; 
-  $result = db_fetch_object(chado_query($sql));
+  $result = chado_query($sql)->fetchObject();
   $count = $result->num_terms;
   
   // calculate the interval for updates
@@ -427,7 +400,7 @@ function tripal_cv_obo_process_terms($defaultcv, $jobid = NULL, &$newcvs, $defau
   if ($interval < 1) {
     $interval = 1;
   }
-  while($t = db_fetch_object($terms)) {
+  foreach ($terms as $t) {
     $term = unserialize(base64_decode($t->stanza));
     
     // update the job status every interval

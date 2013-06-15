@@ -2697,7 +2697,7 @@ function tripal_get_chado_custom_schema($table) {
  * @return
  *   TRUE/FALSE depending upon whether it exists
  */
-function tripal_chado_table_exists($table) {
+function chado_table_exists($table) {
 	global $databases;
 	
 	$default_db = $databases['default']['default']['database'];

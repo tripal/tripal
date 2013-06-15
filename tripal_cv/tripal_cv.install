@@ -31,8 +31,8 @@ function tripal_cv_install() {
     // SQL statement that populates the view
     'SELECT DISTINCT CVT.name,CVT.cvterm_id, CV.cv_id, CV.name
      FROM {cvterm_relationship} CVTR
-       INNER JOIN cvterm CVT on CVTR.object_id = CVT.cvterm_id
-       INNER JOIN CV on CV.cv_id = CVT.cv_id
+       INNER JOIN {cvterm} CVT on CVTR.object_id = CVT.cvterm_id
+       INNER JOIN {cv} CV on CV.cv_id = CVT.cv_id
      WHERE CVTR.object_id not in
        (SELECT subject_id FROM {cvterm_relationship}) ',
     // special index
@@ -40,25 +40,7 @@ function tripal_cv_install() {
   );
 
   // create the tables that correlate OBO files/references with a chado CV
-  drupal_install_schema('tripal_cv');
   tripal_cv_add_obo_defaults();
-}
-
-/**
- *  This update adds the new tripal_obo table.  This is an upgrade from
- *  Tripal version 0.2
- *
- * @ingroup tripal_cv
- */
-
-function tripal_cv_update_6000() {
-  drupal_install_schema('tripal_cv');
-  tripal_cv_add_obo_defaults();
-  $ret = array(
-    '#finished' => 1,
-  );
-
-  return $ret;
 }
 
 /**
@@ -73,8 +55,6 @@ function tripal_cv_uninstall() {
   if ($mview) {
     tripal_mviews_action('delete', $mview);
   }
-
-  drupal_uninstall_schema('tripal_cv');
 }
 
 /**
@@ -83,21 +63,6 @@ function tripal_cv_uninstall() {
  * @ingroup tripal_cv
  */
 function tripal_cv_schema() {
-  $schema = tripal_cv_get_schemas();
-  return $schema;
-}
-
-/**
- * This function simply defines all tables needed for the module to work
- * correctly.  By putting the table definitions in a separate function we
- * can easily provide the entire list for hook_install or individual
- * tables for an update.
- *
- * @ingroup tripal_cv
- */
-function tripal_cv_get_schemas() {
-  $schema = array();
-
   $schema['tripal_cv_obo'] = array(
     'fields' => array(
       'obo_id' => array('type' => 'serial', 'unsigned' => TRUE, 'not null' => TRUE),
@@ -131,13 +96,8 @@ function tripal_cv_add_obo_defaults() {
     array('Plant Growth and Development Stages Ontology', 'http://palea.cgrb.oregonstate.edu/viewsvn/Poc/trunk/ontology/OBO_format/po_temporal.obo?view=co')
   );
   foreach ($ontologies as $o) {
-    db_query(
-      "INSERT INTO {tripal_cv_obo} (name,path) VALUES ('%s','%s')",
-      $o[0],
-      $o[1]
-    );
+    db_query("INSERT INTO {tripal_cv_obo} (name,path) VALUES (:name, :path)", array(':name' => $o[0], ':path' => $o[1]));
   }
-
 }
 
 /**

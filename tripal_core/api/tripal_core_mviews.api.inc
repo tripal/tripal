@@ -78,12 +78,10 @@ function tripal_add_mview($name, $modulename, $mv_table, $mv_specs, $indexed,
   if (drupal_write_record('tripal_mviews', $record)) {
 
     // drop the table from chado if it exists
-    $previous_db = tripal_db_set_active('chado');  // use chado database
-    if (db_table_exists($mv_table)) {
-      $sql = "DROP TABLE $mv_table";
-      db_query($sql);
+    if (chado_table_exists($mv_table)) {
+      $sql = "DROP TABLE {$mv_table}";
+      chado_query($sql);
     }
-    tripal_db_set_active($previous_db);  // now use drupal database
 
     // now construct the indexes
     $index = '';
@@ -297,8 +295,7 @@ function tripal_mviews_get_mview_id($view_name) {
  */
 function tripal_mviews_action($op, $mview_id, $redirect = FALSE) {
   global $user;
-
-  $args = array("$mview_id");
+  
   if (!$mview_id) {
     return '';
   }
@@ -310,6 +307,7 @@ function tripal_mviews_action($op, $mview_id, $redirect = FALSE) {
 
   // add a job or perform the action based on the given operation
   if ($op == 'update') {
+  	$args = array("$mview_id");
     tripal_add_job("Populate materialized view '$mview->name'", 'tripal_core',
        'tripal_update_mview', $args, $user->uid);
   }
@@ -321,7 +319,7 @@ function tripal_mviews_action($op, $mview_id, $redirect = FALSE) {
     // drop the table from chado if it exists
     $previous_db = tripal_db_set_active('chado');  // use chado database
     if (db_table_exists($mview->mv_table)) {
-      $sql = "DROP TABLE $mview->mv_table";
+      $sql = "DROP TABLE " . $mview->mv_table;
       db_query($sql);
     }
     tripal_db_set_active($previous_db);  // now use drupal database

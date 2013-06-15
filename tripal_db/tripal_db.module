@@ -86,21 +86,6 @@ function tripal_db_views_api() {
   return array('api' => 2.0);
 }
 
-function tripal_db_form_alter(&$form, &$form_state, $form_id) {
-  if ($form_id == "tripal_db_form") {    
-    // updating the form through the ahah callback sets the action of
-    // the form to the ahah callback URL. We need to set it back
-    // to the normal form URL 
-    if (array_key_exists('values', $form_state)) {
-	    if ($form_state['values']['form_action'] == 'Update') {
-	      $form['#action'] = url("admin/tripal/tripal_db/edit_db");
-	    }
-	    if ($form_state['values']['form_action'] == 'Add') {
-	      $form['#action'] = url("admin/tripal/tripal_db/add_db");
-	    }
-    }
-  } 
-}
 
 /**
  *  We need to let drupal know about our theme functions and their arguments.

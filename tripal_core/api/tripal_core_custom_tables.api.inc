@@ -113,7 +113,7 @@ function tripal_core_create_custom_table($table, $schema, $skip_creation = 1) {
   $centry = $results->fetchObject();
   
   // check to see if the table already exists in the chado schema
-  $exists = tripal_chado_table_exists($table); 
+  $exists = chado_table_exists($table); 
   
   // if the table does not exist then create it
   if (!$exists) { 

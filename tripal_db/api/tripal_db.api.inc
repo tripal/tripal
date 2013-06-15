@@ -84,11 +84,8 @@ function tripal_db_get_db($select_values) {
  */
 function tripal_db_get_db_by_db_id($db_id) {
 
-  $r = db_fetch_object(chado_query(
-    "SELECT * FROM {db} WHERE db_id=%d", $db_id
-  ));
-
-  return $r;
+  $r = chado_query("SELECT * FROM {db} WHERE db_id = :db_id", array(':db_id' => $db_id ));
+  return $r->fetchObject();
 }
 
 /**
@@ -142,12 +139,10 @@ function tripal_db_get_db_by_name($name) {
  */
 function tripal_db_get_db_options() {
 
-  $result = chado_query(
-    "SELECT db_id, name FROM {db}"
-  );
+  $result = chado_query("SELECT db_id, name FROM {db}");
 
   $options = array();
-  while ( $r = db_fetch_object($result) ) {
+  foreach ($result as $r) {
     $options[$r->db_id] = $r->name;
   }
 
@@ -257,19 +252,15 @@ function tripal_db_get_dbxref($select_values) {
 function tripal_db_get_dbxref_by_accession($accession, $db_id=0) {
 
   if (!empty($db_id)) {
-    $r = db_fetch_object(chado_query(
-      "SELECT * FROM {dbxref} WHERE accession='%s' AND db_id=%d",
-      $accession, $db_id
-    ));
+  	$sql = "SELECT * FROM {dbxref} WHERE accession = :accession AND db_id = :db_id";
+    $r = chado_query($sql, array(':accession' => $accession, ':db_id' => $db_id));
   }
   else {
-    $r = db_fetch_object(chado_query(
-      "SELECT * FROM {dbxref} WHERE accession='%s'",
-      $accession
-    ));
+  	$sql = "SELECT * FROM {dbxref} WHERE accession = :accession";
+    $r = chado_query($sql, array(':accession' => $accession));
   }
 
-  return $r;
+  return $r->fetchObject();
 }
 
 /**

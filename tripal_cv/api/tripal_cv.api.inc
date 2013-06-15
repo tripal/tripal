@@ -151,10 +151,9 @@ function tripal_cv_get_cv_by_id($cv_id) {
  */
 function tripal_cv_get_cv_id($cv_name) {
 
-  $sql = "
-    SELECT cv_id FROM {cv} WHERE name = '%s'
-  ";
-  $cv = db_fetch_object(chado_query($sql, $cv_name));
+  $sql = "SELECT cv_id FROM {cv} WHERE name = :name";
+  $result = chado_query($sql, array(':name' => $cv_name));
+  $cv = $result->fetchObject();
 
   return $cv->cv_id;
 }
@@ -368,13 +367,24 @@ function tripal_cv_update_cvtermpath($cvid, $job_id = NULL) {
   // TODO: need better error checking in this function
 
   // first get the controlled vocabulary name:
-  $cv = db_fetch_object(chado_query("SELECT * FROM {cv} WHERE cv_id = %d", $cvid));
+  $sql = "SELECT * FROM {cv} WHERE cv_id = :cv_id";
+  $result = chado_query($sql, array(':cv_id' => $cvid));
+  $cv = $result->fetchObject();
+  
   print "\nUpdating cvtermpath for $cv->name...\n";
-
-  // now fill the cvtermpath table
-  // @coder-ignore: using a function rather then tablename therefore table prefixing doesn't apply
-  $sql = "SELECT * FROM fill_cvtermpath('%s')";
-  $success = chado_query($sql, $cv->name); 
+  
+  $previous = tripal_db_set_active('chado');
+  try {
+    $sql = "SELECT * FROM fill_cvtermpath(':name')";
+    db_query($sql, array(':name' => $cv->name));
+    tripal_db_set_active($previous); 
+  }
+  catch (Exception $e) {
+    tripal_db_set_active($previous);	
+    $error = $e->getMessage();
+    watchdog('tripal_cv', "Could not fill cvtermpath table: @error", array('@error' => $error), WATCHDOG_ERROR);
+    return FALSE;
+  }
 
   return TRUE;
 }
@@ -548,22 +558,15 @@ function tripal_cv_add_cvterm($term, $defaultcv = '_global', $is_relationship = 
   // here for easy reference below.  Because CV terms can change their names
   // but accessions don't change, the following SQL finds cvterms based on
   // their accession rather than the name
-  if (!tripal_core_is_sql_prepared('sel_cvterm_by_accession')) {
-    $pcvtermsql = "
-      PREPARE sel_cvterm_by_accession(text, text) AS
-      SELECT CVT.name, CVT.cvterm_id, CV.cv_id, CV.name as cvname, 
-        DB.name as dbname, DB.db_id, DBX.accession 
-      FROM {cvterm} CVT
-        INNER JOIN {dbxref} DBX on CVT.dbxref_id = DBX.dbxref_id
-        INNER JOIN {db} DB on DBX.db_id = DB.db_id
-        INNER JOIN {cv} CV on CV.cv_id = CVT.cv_id
-      WHERE DBX.accession = $1 and DB.name = $2";
-    if (!tripal_core_chado_prepare('sel_cvterm_by_accession', $pcvtermsql, array('text', 'text'))) {
-      watchdog('tripal_cv', "Cannot prepare statement 'sel_cvterm_by_accession'", NULL, WATCHDOG_WARNING);
-      return 0; 
-    }
-  } 
-  $cvtermsql = "EXECUTE sel_cvterm_by_accession('%s','%s')";  
+  $cvtermsql = "     
+    SELECT CVT.name, CVT.cvterm_id, CV.cv_id, CV.name as cvname, 
+      DB.name as dbname, DB.db_id, DBX.accession 
+    FROM {cvterm} CVT
+      INNER JOIN {dbxref} DBX on CVT.dbxref_id = DBX.dbxref_id
+      INNER JOIN {db} DB on DBX.db_id = DB.db_id
+      INNER JOIN {cv} CV on CV.cv_id = CVT.cv_id
+    WHERE DBX.accession = :accession and DB.name = :name
+  ";    
   
   // add the database. The function will just return the DB object if the
   // database already exists.
@@ -676,7 +679,8 @@ function tripal_cv_add_cvterm($term, $defaultcv = '_global', $is_relationship = 
         }
       }        
       // get the original cvterm with the same name and return that.
-      $cvterm = db_fetch_object(chado_query($cvtermsql, $dbxref->accession, $dbname));
+      $result = chado_query($cvtermsql, array(':accession' => $dbxref->accession, ':name' => $dbname));
+      $cvterm = $result->fetchObject();
       return $cvterm;
     }
     
@@ -685,10 +689,8 @@ function tripal_cv_add_cvterm($term, $defaultcv = '_global', $is_relationship = 
   }
   
   // get the CVterm record
-  $cvterm = db_fetch_object(chado_query($cvtermsql, $accession, $dbname)); 
-  //print "$pcvtermsql\n$cvtermsql\n$accession, $dbname\n";
-  //print "CVTERM:\n";
-  //print_r($cvterm);
+  $result = chado_query($cvtermsql, array(':accession' => $accession, ':name' => $dbname));
+  $cvterm = $result->fetchObject();
   if (!$cvterm) {
 
     // check to see if the dbxref exists if not, add it
@@ -731,8 +733,9 @@ function tripal_cv_add_cvterm($term, $defaultcv = '_global', $is_relationship = 
     else {
       watchdog('tripal_cv', "The dbxref already exists for another cvterm record: $name (cv: " . $cvname . " db: $dbname)", NULL, WATCHDOG_WARNING);
       return 0;
-    }    
-    $cvterm = db_fetch_object(chado_query($cvtermsql, $accession, $dbname));
+    } 
+    $result = chado_query($cvtermsql, array(':accession' => $accession, ':name' => $dbname));
+    $cvterm = $result->fetchObject();   
   }
   // upate the cvterm
   elseif ($update) { 
@@ -749,7 +752,8 @@ function tripal_cv_add_cvterm($term, $defaultcv = '_global', $is_relationship = 
       watchdog('tripal_cv', "Failed to update the term: $name", NULL, WATCHDOG_WARNING);
       return 0;
     }
-    $cvterm = db_fetch_object(chado_query($cvtermsql, $accession, $dbname));
+    $result = chado_query($cvtermsql, array(':accession' => $accession, ':name' => $dbname));
+    $cvterm = $result->fetchObject();
   } 
   else {
      // do nothing, we have the cvterm but we don't want to update
@@ -832,9 +836,9 @@ function tripal_cv_submit_obo_job($obo_id = NULL, $obo_name = NULL, $obo_url = N
   global $user;
 
   if ($obo_id) {
-    $sql = "SELECT * FROM {tripal_cv_obo} WHERE obo_id = %d";
-    $obo = db_fetch_object(db_query($sql, $obo_id));
-    
+    $sql = "SELECT * FROM {tripal_cv_obo} WHERE obo_id = :obo_id";
+    $obo = db_query($sql, array(':obo_id' => $obo_id))->fetchObject();
+        
     $args = array($obo_id);
     return tripal_add_job("Load OBO $obo->name", 'tripal_cv',
        "tripal_cv_load_obo_v1_2_id", $args, $user->uid);
