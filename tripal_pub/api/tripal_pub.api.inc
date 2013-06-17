@@ -953,35 +953,174 @@ function tripal_pub_delete_property($pub_id, $property) {
   return tripal_core_delete_property('pub', $pub_id, $property, 'tripal_pub');
 }
 
-/*
- *
- */
-function tripal_pub_create_citation($pub) {
-  $citation = $pub['Authors'] . '. ' . $pub['Title'] .  '. ';
 
-  if ($pub['Journal Name']) {
-    $citation .= $pub['Journal Name'] . '. ';
+
+/**
+ * This function generates an array suitable for use with the 
+ * tripal_pub_create_citation function for any publication
+ * already stored in the Chado tables.
+ *  
+ * @param $pub_id
+ *   The publication ID
+ * @param $skip_existing
+ *   Set to TRUE to skip publications that already have a citation
+ *   in the pubprop table.  Set to FALSE to generate a citation 
+ *   regardless if the citation already exists.
+ *   
+ * @return
+ *   An array suitable for the trpial_pub_create_citation function. On
+ *   failure returns FALSE.
+ */
+
+function tripal_pub_get_publication_array($pub_id, $skip_existing = TRUE) {
+
+	$options = array('return_array' => 1);
+	 
+  // ---------------------------------
+  // get the publication
+  // ---------------------------------
+	$values = array('pub_id' => $pub_id);
+	$pub = tripal_core_generate_chado_var($pub, $values);	
+	
+	// expand the title
+	$pub = tripal_core_expand_chado_vars($pub, 'field', 'pub.title');
+	$pub = tripal_core_expand_chado_vars($pub, 'field', 'pub.volumetitle', $options);
+
+  // ---------------------------------
+  // get the citation
+  // ---------------------------------
+	$values = array(
+	  'pub_id' => $pub->pub_id, 
+	  'type_id' => array(
+	    'name' => 'Citation',
+	  ),
+	);
+	$citation = tripal_core_generate_chado_var('pubprop', $values); 
+	$citation = tripal_core_expand_chado_vars($citation, 'field', 'pubprop.value', $options);
+  if (count($citation > 1)) {
+    watchdog('tripal_pub', "Publication has multiple citations already: %pub_id", 
+      array('%pub_id' => $pubid), WATCHDOG_ERROR);
+    return FALSE;
   }
-  elseif ($pub['Journal Abbreviation']) {
-    $citation .= $pub['Journal Abbreviation'] . '. ';
-  }
-  $citation .= $pub['Publication Date'];
-  if ($pub['Volume'] or $pub['Issue'] or $pub['Pages']) {
-    $citation .= '; ';
-  }
-  if ($pub['Volume']) {
-    $citation .= $pub['Volume'];
-  }
-  if ($pub['Issue']) {
-    $citation .= '(' . $pub['Issue'] . ')';
-  }
-  if ($pub['Pages']) {
-    if($pub['Volume']) {
-      $citation .= ':';
+  elseif (count($citation) == 1 and $skip_existing == TRUE) {
+    // skip this publication, it already has a citation
+    return FALSE;
+  }  
+	
+	// ---------------------------------
+	// get the publication types
+	// ---------------------------------
+  $values = array(
+    'pub_id' => $pub->pub_id, 
+    'type_id' => array(
+      'name' => 'Publication Type',
+    ),
+  );
+  $ptypes = tripal_core_generate_chado_var('pubprop', $values); 
+  $ptypes = tripal_core_expand_chado_vars($ptypes, 'field', 'pubprop.value', $options);
+  $found_type = 0;
+  foreach ($ptypes as $ptype) {
+    if($ptype->value == 'Journal Article') { 
+      $pub['Publication Type'] = 'Journal Article';   
+      $found_type = 1;  
     }
-    $citation .= $pub['Pages'];
+    if($ptype->value == 'Book') {
+    	$pub['Publication Type'] = 'Book';
+      $found_type = 1;
+    }
+    if($ptype->value == 'Book Chapter') {
+    	$pub['Publication Type'] = 'Book Chapter';
+      $found_type = 1;
+    }    
+    if($ptype->value == 'Conference Proceedings') {
+    	$pub['Publication Type'] = 'Conference Proceedings';
+      $found_type = 1;
+    }
   }
-  $citation .= '.';
+  if (!$found_type) {
+    watchdog('tripal_pub', "Publication type is not yet handled for creating citations: %pub_id", 
+      array('%pub_id' => $pub_id), WATCHDOG_ERROR);
+    return FALSE;
+  }  
+
+  // ---------------------------------
+  // get the authors list
+  // ---------------------------------
+  $values = array(
+    'pub_id' => $pub->pub_id, 
+    'type_id' => array(
+      'name' => 'Authors',
+    ),
+  );
+  $authors = tripal_core_generate_chado_var('pubprop', $values); 
+  $authors = tripal_core_expand_chado_vars($authors, 'field', 'pubprop.value', $options);
+  if (count($authors > 1)) {
+    watchdog('tripal_pub', "Publication has multiple author lists. It should have only one list: %pub_id", 
+      array('%pub_id' => $pubid), WATCHDOG_ERROR);
+    return FALSE;
+  }
+  else {
+    $pub['Authors'] = $authors->value;
+  }
+  
+  // if there is no 'Author's property then try to retreive authors from the pubauthor table
+
+  
+  return $pub;
+  
+}
+
+
+/**
+ * This function generates citations for publications.  It requires
+ * an array structure with keys being the terms in the Tripal
+ * publication ontology.  This function is intended to be used
+ * for any function that needs to generate a citation. 
+ * 
+ * @param $pub
+ *   An array structure containing publication details where the keys
+ *   are the publication ontology term names and values are the 
+ *   corresponding details.
+ * @param $type
+ *   The type of publication. Supported types include
+ *   'Journal Article', 'Book', 'Book Chapter', 
+ *   'Conference Proceedings',
+ * @return
+ *   A text string containing the citation
+ */
+function tripal_pub_create_citation($pub, $type = 'Journal Article') {
+	$citation = '';
+	
+	if ($type == 'Journal Article') {
+	  $citation = $pub['Authors'] . '. ' . $pub['Title'] .  '. ';
+	
+	  if ($pub['Journal Name']) {
+	    $citation .= $pub['Journal Name'] . '. ';
+	  }
+	  elseif ($pub['Journal Abbreviation']) {
+	    $citation .= $pub['Journal Abbreviation'] . '. ';
+	  }
+	  $citation .= $pub['Publication Date'];
+	  if ($pub['Volume'] or $pub['Issue'] or $pub['Pages']) {
+	    $citation .= '; ';
+	  }
+	  if ($pub['Volume']) {
+	    $citation .= $pub['Volume'];
+	  }
+	  if ($pub['Issue']) {
+	    $citation .= '(' . $pub['Issue'] . ')';
+	  }
+	  if ($pub['Pages']) {
+	    if($pub['Volume']) {
+	      $citation .= ':';
+	    }
+	    $citation .= $pub['Pages'];
+	  }
+	  $citation .= '.';
+	}
+	if ($type == 'Book') {
+	
+	}
 
   return $citation;
 }
