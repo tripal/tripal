@@ -152,8 +152,7 @@ function tripal_cv_get_cv_by_id($cv_id) {
 function tripal_cv_get_cv_id($cv_name) {
 
   $sql = "SELECT cv_id FROM {cv} WHERE name = :name";
-  $result = chado_query($sql, array(':name' => $cv_name));
-  $cv = $result->fetchObject();
+  $cv = chado_query($sql, array(':name' => $cv_name))->fetchObject();
 
   return $cv->cv_id;
 }
@@ -368,14 +367,13 @@ function tripal_cv_update_cvtermpath($cvid, $job_id = NULL) {
 
   // first get the controlled vocabulary name:
   $sql = "SELECT * FROM {cv} WHERE cv_id = :cv_id";
-  $result = chado_query($sql, array(':cv_id' => $cvid));
-  $cv = $result->fetchObject();
+  $cv = chado_query($sql, array(':cv_id' => $cvid))->fetchObject();
   
   print "\nUpdating cvtermpath for $cv->name...\n";
   
   $previous = tripal_db_set_active('chado');
   try {
-    $sql = "SELECT * FROM fill_cvtermpath(':name')";
+    $sql = "SELECT * FROM fill_cvtermpath(:name)";
     db_query($sql, array(':name' => $cv->name));
     tripal_db_set_active($previous); 
   }

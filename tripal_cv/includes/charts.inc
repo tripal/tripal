@@ -74,8 +74,8 @@
  *    $analysis_id = preg_replace("/^tripal_analysis_go_cv_chart_(\d+)-(\d+)_(bp|cc|mf)$/","$2",$chart_id);
  *    $type        = preg_replace("/^tripal_analysis_go_cv_chart_(\d+)-(\d+)_(bp|cc|mf)$/","$3",$chart_id);
  *
- *    $sql = "SELECT * FROM {analysis} WHERE analysis_id = %d";
- *    $analysis = db_fetch_object(chado_query($sql,$analysis_id));
+ *    $sql = "SELECT * FROM {analysis} WHERE analysis_id = :analysis_id";
+ *    $analysis = chado_query($sql, array(':analysis_id' => $analysis_id))->fetchObject();
  *
  *    if (strcmp($type,'mf')==0) {
  *       $class = 'molecular_function';

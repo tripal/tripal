@@ -191,9 +191,9 @@ function tripal_cv_init_tree($cv_id, $cnt_table = NULL, $fk_column = NULL,
   $sql = "
     SELECT *
     FROM {cv_root_mview} CRM
-    WHERE cv_id = %d
+    WHERE cv_id = :cv_id
   ";
-  $results = chado_query($sql, $cv_id);
+  $results = chado_query($sql, array(':cv_id' => $cv_id));
 
   // prepare the SQL statement that will allow us to pull out count
   // information for each term in the tree.
@@ -205,17 +205,17 @@ function tripal_cv_init_tree($cv_id, $cnt_table = NULL, $fk_column = NULL,
        SELECT CVT.name, CVT.cvterm_id, CNT.$cnt_column as num_items
        FROM {$cnt_table} CNT
         INNER JOIN {cvterm} CVT on CNT.$fk_column = CVT.cvterm_id
-       WHERE $filter AND CVT.cvterm_id = %d
+       WHERE $filter AND CVT.cvterm_id = :cvterm_id
        ORDER BY $cnt_column desc
     ";
   }
 
-  while ($term = db_fetch_object($results)) {
+  foreach ($results as $term) {
     $name = $term->name;
     $count = 0;
     if ($cnt_table) {
-      $cnt_results = chado_query($cnt_sql, $term->cvterm_id);
-      while ($cnt = db_fetch_object($cnt_results)) {
+      $cnt_results = chado_query($cnt_sql, array(':cvterm_id' => $term->cvterm_id));
+      foreach ($cnt_results as $cnt) {
         $count += $cnt->cnt;
       }
       if ($count > 0) {
@@ -257,10 +257,10 @@ function tripal_cv_get_term_children($cvterm_id, $cnt_table = NULL,
        INNER JOIN {CVTerm} CVT2 on CVTR.object_id = CVT2.cvterm_id
        INNER JOIN {CVTerm} CVT3 on CVTR.type_id = CVT3.cvterm_id
        INNER JOIN {CV} on CV.cv_id = CVT1.cv_id
-    WHERE CVTR.object_id = %d
+    WHERE CVTR.object_id = :cvterm_id
     ORDER BY CVT1.name
   ";
-  $results = chado_query($sql, $cvterm_id);
+  $results = chado_query($sql, array(':cvterm_id' => $cvterm_id));
 
   // prepare the SQL statement that will allow us to pull out count
   // information for each term in the tree.
@@ -272,26 +272,26 @@ function tripal_cv_get_term_children($cvterm_id, $cnt_table = NULL,
        SELECT CVT.name, CVT.cvterm_id, CNT.$cnt_column as num_items
        FROM {$cnt_table} CNT
         INNER JOIN {cvterm} CVT on CNT.$fk_column = CVT.cvterm_id
-       WHERE $filter AND CVT.cvterm_id = %d
+       WHERE $filter AND CVT.cvterm_id = :cvterm_id
        ORDER BY $cnt_column desc
     ";
   }
 
   // populate the JSON content array
-  while ($term = db_fetch_object($results)) {
+  foreach ($results as $term) {
     // count the number of items per term if requested
     $name = $term->subject_name;
     $count = 0;
     if ($cnt_table) {
-      $cnt_results = chado_query($cnt_sql, $term->subject_id);
-      while ($cnt = db_fetch_object($cnt_results)) {
+      $cnt_results = chado_query($cnt_sql, array(':cvterm_id' => $term->subject_id));
+      foreach ($cnt_results as $cnt) {
         $count += $cnt->num_items;
       }
       if ($count > 0) {
         $name .= " (" . number_format($count) . " $label)";
 
         // check if we have any children if so then set the value
-        $children = db_fetch_object(chado_query($sql, $term->subject_id));
+        $children = chado_query($sql, array(':cvterm_id' => $term->subject_id))->fetchObject();
         $state = 'leaf';
         if ($children) {
           $state = 'closed';
@@ -308,7 +308,7 @@ function tripal_cv_get_term_children($cvterm_id, $cnt_table = NULL,
     }
     else {
       // check if we have any children if so then set the value
-      $children = db_fetch_object(chado_query($sql, $term->subject_id));
+      $children = chado_query($sql, array(':cvterm_id' => $term->subject_id))->fetchObject();
       $state = 'leaf';
       if ($children) {
         $state = 'closed';
@@ -380,19 +380,19 @@ function tripal_cv_cvterm_info($cvterm_id) {
       INNER JOIN {CV} on CVT.cv_id = CV.cv_id
       INNER JOIN {dbxref} DBX on CVT.dbxref_id = DBX.dbxref_id
       INNER JOIN {DB} on DBX.db_id = DB.db_id
-    WHERE CVT.cvterm_id = %d
+    WHERE CVT.cvterm_id = :cvterm_id
   ";
-  $cvterm = db_fetch_object(chado_query($sql, $cvterm_id));
+  $cvterm = chado_query($sql, array(':cvterm_id' => $cvterm_id))->fetchObject();
 
   $sql = "
     SELECT CVTS.synonym, CVT.name as cvname
     FROM {cvtermsynonym} CVTS
       INNER JOIN {cvterm} CVT on CVTS.type_id = CVT.cvterm_id
-    WHERE CVTS.cvterm_id = %d
+    WHERE CVTS.cvterm_id = :cvterm_id
 
   ";
-  $results = chado_query($sql, $cvterm_id);
-  while ($synonym = db_fetch_object($results)) {
+  $results = chado_query($sql, array(':cvterm_id' => $cvterm_id));
+  foreach ($results as $synonym) {
     $synonym_rows .= "<b>$synonym->cvname:</b>  $synonym->synonym<br />";
   }
 
@@ -445,7 +445,7 @@ function tripal_cv_list_form($form_state) {
 
   $blastdbs = array();
   $cvs[''] = '';
-  while ($cv = db_fetch_object($results)) {
+  foreach ($results as $cv) {
     $cvs[$cv->cv_id] = $cv->name;
   }
 

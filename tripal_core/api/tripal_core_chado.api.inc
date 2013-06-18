@@ -1329,6 +1329,7 @@ function tripal_core_generate_chado_var($table, $values, $base_options = array()
   }
   $all->expandable_nodes = array();
 
+  /*
   // Get fields to be removed by name.................................
   $fields_to_remove = module_invoke_all('exclude_field_from_' . $table . '_by_default');
   foreach ($fields_to_remove as $field_name => $criteria) {
@@ -1342,11 +1343,6 @@ function tripal_core_generate_chado_var($table, $values, $base_options = array()
     //if criteria then remove from query
     // @coder-ignore: only module designers can populate $criteria -not security risk
     $success = php_eval('<?php return ' . $criteria . '; ?>');
-    //    watchdog('tripal_core',
-    //      'Evaluating criteria (%criteria) for field %field in tripal_core_generate_chado_var for %table evaluated to %success',
-    //      array('%table' => $table, '%criteria'=>$criteria, '%field' => $field_name, '%success'=>$success),
-    //      WATCHDOG_NOTICE
-    //    );
     if ($success) {
       unset($table_columns[array_search($field_name, $table_columns)]);
       unset($fields_to_remove[$field_name]);
@@ -1378,11 +1374,6 @@ function tripal_core_generate_chado_var($table, $values, $base_options = array()
         //if criteria then remove from query
         // @coder-ignore: only module designers can populate $criteria -not security risk
         $success = php_eval('<?php return ' . $criteria . '; ?>');
-        //        watchdog('tripal_core',
-        //          'Evaluating criteria (%criteria) for field %field of $type in tripal_core_generate_chado_var for %table evaluated to %success',
-        //          array('%table'=>$table, '%criteria'=>$criteria, '%field'=>$field_name, '%type'=>$field_type, '%success'=>$success),
-        //          WATCHDOG_NOTICE
-        //        );
         if ($success) {
           unset($table_columns[array_search($field_name, $table_columns)]);
           $all->expandable_fields[] = $table . '.' . $field_name;
@@ -1390,7 +1381,7 @@ function tripal_core_generate_chado_var($table, $values, $base_options = array()
       } //end of foreach field of that type
     }
   } //end of foreach type to be removed
-
+*/
   // get the values for the record in the current table---------------------------------------------
   $results = tripal_core_chado_select($table, $table_columns, $values, $base_options);
   if ($results) {
@@ -1419,26 +1410,19 @@ function tripal_core_generate_chado_var($table, $values, $base_options = array()
         }
       }
 
-      // remove any fields where criteria need to be evalulated---------------------------------------
-      foreach ($fields_to_remove as $field_name => $criteria) {
+      // remove any fields where criteria needs to be evalulated---------------------------------------
+/*      foreach ($fields_to_remove as $field_name => $criteria) {
         if (!isset($object->{$field_name})) {
           break;
         }
         $criteria = preg_replace('/&gt;field_value&lt; /', addslashes($object->{$field_name}), $criteria);
-        //if criteria then remove from query
-        // @coder-ignore: only module designers can populate $criteria -not security risk
         $success = php_eval('<?php return ' . $criteria . '; ?>');
-        //      watchdog('tripal_core',
-        //        'Evaluating criteria (%criteria) for field %field in tripal_core_generate_chado_var for   %table evaluated to %success',
-        //        array('%table' => $table, '%criteria'=>$criteria, '%field' => $field_name, '%success'=>$success),
-        //        WATCHDOG_NOTICE
-        //      );
         if ($success) {
           unset($object->{$field_name});
           $object->expandable_fields[] = $table . '.' . $field_name;
         }
       }
-
+*/
       // recursively follow foreign key relationships nesting objects as we go------------------------
       if ($table_desc['foreign keys']) {
         foreach ($table_desc['foreign keys'] as $foreign_key_array) {
@@ -2339,267 +2323,6 @@ function tripal_core_delete_property_by_id($basetable, $record_id) {
   return tripal_core_chado_delete($basetable . 'prop', $match);
 }
 
-/**
- * Indicates if the SQL statement is prepapred
- *
- * @param $statement_name
- *   The name of the statement to check if it is prepared.
- *
- * @return
- *   TRUE if the statement is preapred, FALSE otherwise
- */
-function tripal_core_is_sql_prepared($statement_name) {
-/*	
-  global $_tripal_core_prepared_statements;
-
-  if (!is_array($_tripal_core_prepared_statements)) {
-    watchdog('tripal_core', "tripal_core_is_sql_prepared: argument must be an array", array(), WATCHDOG_ERROR);
-      return FALSE;
-  }
-
-  // check to see if the statement is prepared already
-  if (in_array($statement_name, $_tripal_core_prepared_statements)) {
-    return TRUE;
-  }
-
-  // @coder-ignore: acting on postgres tables rather then drupal schema therefore, table prefixing does not apply
-  $sql = "SELECT name FROM pg_prepared_statements WHERE name = :name";
-  $results = db_query($sql, array(':name' => $statement_name));
-  $result = $results->fetchObject();
-
-  if ($result) {
-    return TRUE;
-  }
-  return FALSE;
-*/  
-}
-
-/**
- * Prepare a chado query
- *
- * @param $statement_name
- *   The name of the prepared statement
- * @param $psql
- *   The SQL statement to be executed via chado_query.
- *   Should be of the form PREPARE [statement name] AS [SQL Statement to be prepared]
- * @param $args
- *   An array of arguements required to execute the prepared statement. The keys of
- *   the array should correspond to the variables in the prepared statement and the value should
- *   be the type of value needed (ie: text, int, etc.)
- */
-function tripal_core_chado_prepare($statement_name, $psql, $args) {
-/*	
-  global $_tripal_core_persistent_chado;
-  global $_tripal_core_prepared_statements;
-
-  if (!$_tripal_core_persistent_chado) {
-    watchdog('tripal_core', "chado_prepare: not able to prepare '%name' statement as no persistent connection is available", array('%name' => $statement_name, '%sql' => $psql), WATCHDOG_ERROR);
-    return FALSE;
-  }
-
-  // Check to see if this statement was already prepared
-  if (tripal_core_is_sql_prepared($statement_name)) {
-    // check that the arguments are the same
-    $prepared_args = $_tripal_core_prepared_statements[$statement_name]['prepared_args'];
-    $prepared_sql = $_tripal_core_prepared_statements[$statement_name]['prepared_sql'];
-    if ($prepared_args == $args) {
-      // This statement is already prepared
-      return TRUE;
-    }
-    else {
-      // Although a statement with this name is already prepared it is not the same!
-      watchdog('tripal_core', "chado_prepare: '%name' statement already prepared with different arguments! " .
-        "You want to prepare \n%sql\n with \n%values\n and the existing statement is \n%esql\n with \n%existing",
-        array('%name' => $statement_name, '%sql' => $psql, '%values' => print_r($args, TRUE), '%esql' => $prepared_sql,
-          '%existing' => print_r($prepared_args, TRUE)), WATCHDOG_ERROR);
-      return FALSE;
-    }
-  }
-
-  $status = chado_query($psql);
-  if (!$status) {
-    watchdog('tripal_core', "chado_prepare: not able to prepare '%name' statement for: %sql", array('%name' => $statement_name, '%sql' => $psql), WATCHDOG_ERROR);
-    return FALSE;
-  }
-  else {
-    $_tripal_core_prepared_statements[$statement_name] = array();
-    $_tripal_core_prepared_statements[$statement_name]['prepared_args'] = $args;
-    $_tripal_core_prepared_statements[$statement_name]['prepared_sql'] = $psql;
-    return TRUE;
-  }
-*/  
-}
-
-/**
- * Execute a prepared statement with the supplied values
- *
- * @param $statement_name
- *   The name of the prepared statement
- * @param $sql
- *   The SQL to execute using chado query.
- *   Should be of the form EXECUTE [statement_name] ([arg1],[arg2]...[argn])
- * @param $values
- *   An array of values in the execute sql statement
- */
-function tripal_core_chado_execute_prepared($statement_name, $sql, $values) {
-/*	
-  global $_tripal_core_prepared_statements;
-
-  if (!tripal_core_is_sql_prepared($statement_name)) {
-    watchdog('tripal_core', "tripal_core_chado_execute_prepared: Cannot execute an unprepared statement: '%name'", array('%name' => $statement_name), WATCHDOG_ERROR);
-    return FALSE;
-  }
-
-  // Before Executing, Ensure that all the values are supplied
-  $required_values = $_tripal_core_prepared_statements[$statement_name]['prepared_args'];
-  if (!$required_values) {
-    watchdog('tripal_core', "tripal_core_chado_execute_prepared: missing prepare arguments for this statement: '%name'", array('%name' => $statement_name), WATCHDOG_ERROR);
-    return FALSE;
-  }
-
-  if (sizeof($required_values) == sizeof($values)) {
-
-    $error = FALSE;
-    foreach ($values as $k => $v) {
-      if (isset($required_values[$k])) {
-        switch ($required_values[$k]) {
-          case 'text':
-            // anything can be converted to a string, so if the type is 'text' let's just convert it
-            $values[$k] = (string) $v;
-
-            break;
-          case 'int':
-            $check = is_numeric($v);
-            if (!$check) {
-              watchdog('tripal_core', "chado_execute_prepared: wrong argument type supplied for '%name' statement, field %k. Expected %required but recieved '%value'",
-                array('%name' => $statement_name, '%k' => $k+1, '%required' => $required_values[$k], '%value' => print_r($v, TRUE)), WATCHDOG_ERROR);
-              return FALSE;
-            }
-            break;
-          case 'bool':
-            if ($v != 'TRUE' and $v != 'FALSE') {
-              watchdog('tripal_core', "chado_execute_prepared: wrong argument type supplied for '%name' statement, field %k. Expected %required but recieved '%value'",
-                array('%name' => $statement_name, '%k' => $k+1, '%required' => $required_values[$k], '%value' => print_r($v, TRUE)), WATCHDOG_ERROR);
-              return FALSE;
-            }
-            break;
-          case 'numeric':
-            $check = is_numeric($v);
-            if (!$check) {
-              watchdog('tripal_core', "chado_execute_prepared: wrong argument type supplied for '%name' statement, field %k. Expected %required but recieved '%value'",
-                array('%name' => $statement_name, '%k' => $k+1, '%required' => $required_values[$k], '%value' => print_r($v, TRUE)), WATCHDOG_ERROR);
-              return FALSE;
-            }
-            break;
-          default:
-            watchdog('tripal_core', "chado_execute_prepared: unsupported argument type (supplied for '%name' statement %type)",
-
-            array('%name' => $statement_name, '%type' => $required_values[$k]), WATCHDOG_WARNING);
-            break;
-        }
-      }
-      else {
-        watchdog('tripal_core', "chado_execute_prepared: wrong number of arguments supplied for '%name' statement. Expected %required but recieved %values",
-          array('%name' => $statement_name, '%required' => print_r($required_values, TRUE), '%values' => print_r($values, TRUE)), WATCHDOG_ERROR);
-        return FALSE;
-      }
-    }
-
-    // Since all values are supplied, execute
-    $resource = chado_query($sql, $values);
-    return $resource;
-  }
-  else {
-    watchdog('tripal_core', "chado_execute_prepared: wrong number of arguments supplied for '%name' statement. ' .
-      'Expected %required but recieved %values. Statement: %statement.",
-      array('%name' => $statement_name, '%required' => print_r($required_values, TRUE),
-        '%values' => print_r($values, TRUE), '%statement' => $_tripal_core_prepared_statements[$statement_name]['prepared_sql']), WATCHDOG_ERROR);
-    return FALSE;
-  }
-  */
-}
-
-
-/**
- * Clears prepared statements to avoid conflicts
- *
- * If no statement_name_regex is supplied then it clears ALL prepared statements;
- * Otherwise, it clears prepared statement names that match the regex provided
- */
-function tripal_core_chado_clear_prepared($statement_name_regex = NULL) {
-/*	
-  global $_tripal_core_prepared_statements;
-
-  if ($statement_name_regex) {
-  	$sql = "SELECT * FROM pg_catalog.pg_prepared_statements WHERE name~:name_regex";
-    $resource = chado_query($sql, array(':name_regex' => $statement_name_regex));
-    foreach ($resource as $r) {
-      $k = array_search($r->name, $_tripal_core_prepared_statements);
-      unset($_tripal_core_prepared_statements[$k]);
-      chado_query('DEALLOCATE PREPARE :statement_name', array(':statement_name' => $r->name));
-    }
-  }
-  else {
-    $_tripal_core_prepared_statements = array();
-    chado_query('DEALLOCATE PREPARE ALL');
-  }
-  */
-}
-
-/**
- * Instantiate or Return a persistent chado connection.  This should not be confused with
- * PHP persistent connections. Here we use the drupal db_connect function to
- *
- * NOTE: cannot use $active_db since a new connection is created each time
- * db_set_active() is called
- *
- * @return
- *   A postgresql connection object which can be used by pg_prepare, pg_execute, etc.
- */
-function tripal_db_persistent_chado() {
-/*	
-  global $db_url;
-  global $_tripal_core_persistent_chado;
-
-  // get connection if it already exists otherwise we need to set it
-  if ($_tripal_core_persistent_chado) {
-    return $_tripal_core_persistent_chado;
-  }
-  else {
-    if (is_array($db_url) && isset($db_url['chado'])) {
-      $connection = db_connect($db_url['chado']);
-      if (!$connection) {
-        watchdog('tripal_core', "Could not create persistant connection", array(), WATCHDOG_ERROR);
-        return FALSE;
-      }
-      $_tripal_core_persistent_chado = $connection;
-    }
-    else {
-      if (is_array($db_url)) {
-        $connection = db_connect($db_url['default']);
-      }
-      else {
-        $connection = db_connect($db_url);
-      }
-      if (!$connection) {
-        $_tripal_core_persistent_chado = NULL;
-        watchdog('tripal_core', "Could not create persistant connection", array(), WATCHDOG_ERROR);
-        return FALSE;
-      }
-      $_tripal_core_persistent_chado = $connection;
-    }
-    return $connection;
-  }
-  return FALSE;
-  */
-}
-
-/**
- * Release a persistent chado connection
- */
-function tripal_db_release_persistent_chado() {
-//  $_tripal_core_persistent_chado = NULL;
-}
 
 /**
  * Start a transaction block. Ensures the use of a persistent chado connection

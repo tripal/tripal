@@ -3,8 +3,12 @@
 require_once "includes/charts.inc";
 require_once "includes/trees.inc";
 require_once "includes/obo_loader.inc";
-require_once "includes/tripal_cv_admin.inc";
 require_once "api/tripal_cv.api.inc";
+
+require_once "includes/cv_form.inc";
+require_once "includes/cvterm_form.inc";
+require_once "includes/cvtermpath_form.inc";
+
 
 /**
  * @defgroup tripal_cv CV Module
@@ -58,6 +62,10 @@ function tripal_cv_menu() {
     'type' => MENU_NORMAL_ITEM,
   );
   
+  /*
+   * Menu for updating the cvtermpath
+   */
+  
   $items['admin/tripal/tripal_cv/cvtermpath'] = array(
     'title' => 'Update Chado cvtermpath table',
     'description' => 'The Chado cvtermpath table provides lineage for terms and is useful for quickly finding any ancestor parent of a term.  However, this table must be populated.  This page allows for populating of this table one vocabulary at a time',
@@ -70,59 +78,49 @@ function tripal_cv_menu() {
   /*
    * Menu items for adding and editing CVs
    */
-  $items['admin/tripal/tripal_cv/cv/add'] = array(
-    'title' => 'Add a Vocabulary',
+  $items['admin/tripal/tripal_cv/edit_cv'] = array(
+    'title' => 'Edit a Database',
+    'description' => 'Manage Databases ',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_cv_add_form'),
+    'page arguments' => array('tripal_cv_cv_edit_form'),
+    'access callback' => 'user_access',
     'access arguments' => array('administer controlled vocabularies'),
     'type' => MENU_NORMAL_ITEM,
   );
-  
-  $items['admin/tripal/tripal_cv/cv/edit'] = array(
-    'title' => 'Edit a Vocabulary',
-    'description' => 'Edit a controlled vocabularies/ontolgoies in Chado ',
-    'page callback' => 'tripal_cv_edit_page',
+
+  $items['admin/tripal/tripal_cv/add_cv'] = array(
+    'title' => 'Add a Database',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_cv_cv_add_form'),
+    'access callback' => 'user_access',
     'access arguments' => array('administer controlled vocabularies'),
     'type' => MENU_NORMAL_ITEM,
-  );
-      
-  $items['admin/tripal/tripal_cv/cv/edit/js'] = array(
-    'page callback' => 'tripal_ajax_cv_edit',
-    'access arguments' => array('administer controlled vocabularies'),
-    'type' => MENU_CALLBACK,
   );
 
   /*
-   * Menu items for adding and editing CV terms
+   * Menu items for adding and editing CVterms
    */
   $items['admin/tripal/tripal_cv/cvterm/add'] = array(
     'title' => 'Add a Term',
     'description' => 'Manage controlled vocabulary/ontology terms in Chado ',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_cv_cvterm_form', 'add'),
+    'page arguments' => array('tripal_cv_cvterm_add_form'),
     'access arguments' => array('administer controlled vocabularies'),
     'type' => MENU_NORMAL_ITEM,
-  );
-  
-  $items['admin/tripal/tripal_cv/cvterm/ahah'] = array(
-    'page callback' => 'tripal_cv_cvterm_callback',
+  );  
+  $items['admin/tripal/tripal_cv/cvterm/edit'] = array(
+    'title' => 'Edit a Term',
+    'description' => 'Edit an existing controlled vocabulary/ontology terms in Chado ',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_cv_cvterm_edit_form'),
     'access arguments' => array('administer controlled vocabularies'),
-    'type' => MENU_CALLBACK,
+    'type' => MENU_NORMAL_ITEM,
   );
   $items['admin/tripal/tripal_cv/cvterm/auto_name/%/%'] = array(
     'page callback' => 'tripal_cv_cvterm_name_autocomplete',
     'page arguments' => array(5, 6),
     'access arguments' => array('administer controlled vocabularies'),
     'type' => MENU_CALLBACK,
-  );
-  
-  $items['admin/tripal/tripal_cv/cvterm/edit'] = array(
-    'title' => 'Edit a Term',
-    'description' => 'Edit an existing controlled vocabulary/ontology terms in Chado ',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_cv_cvterm_form', 'edit'),
-    'access arguments' => array('administer controlled vocabularies'),
-    'type' => MENU_NORMAL_ITEM,
   );
   
   /*

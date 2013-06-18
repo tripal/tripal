@@ -1,10 +1,10 @@
 <br><h3>Tripal Controlled Vocabulary Administrative Tools Quick Links</h3>
     <ul>
-      <li><?php print l('Add a Vocabulary', 'admin/tripal/tripal_cv/cv/add') ?></li>
-      <li><?php print l('Edit a Vocabulary', 'admin/tripal/tripal_cv/cv/edit') ?></li>
+      <li><?php print l('Add a vocabulary', 'admin/tripal/tripal_cv/add_cv') ?></li>
+      <li><?php print l('Edit a vocabulary', 'admin/tripal/tripal_cv/edit_cv') ?></li>
       <li><?php print l('Load ontology with OBO file', 'admin/tripal/tripal_cv/obo_loader') ?></li>
-      <li><?php print l('Add a Term', 'admin/tripal/tripal_cv/cvterm/add') ?></li>
-      <li><?php print l('Edit a Term', 'admin/tripal/tripal_cv/cvterm/edit') ?></li>      
+      <li><?php print l('Add a term to a vocabulary', 'admin/tripal/tripal_cv/cvterm/add') ?></li>
+      <li><?php print l('Edit a term in a vocabulary', 'admin/tripal/tripal_cv/cvterm/edit') ?></li>      
       <li><?php print l('Update cvtermpath', 'admin/tripal/tripal_cv/cvtermpath') ?></li>
     </ul>
 

@@ -66,12 +66,11 @@ function tripal_db_db_edit_form($form, &$form_state) {
 	  $form['update'] = array(
 	    '#type'         => 'submit',
 	    '#value'        => t('Update'),
-	    '#weight'       => 5,
 	  );
 	  $form['delete'] = array(
 	    '#type'         => 'submit',
 	    '#value'        => t('Delete'),
-      '#weight'       => 6,
+	    '#attributes'   => array('onclick' => 'if(!confirm("Really Delete?")){return false;}'), 
     );
   }
   else {

@@ -104,48 +104,6 @@ function tripal_cv_obo_form_submit($form, &$form_state) {
 }
 
 /**
- * Form for re-doing the cvterm path
- *
- * @ingroup tripal_cv
- */
-function tripal_cv_cvtermpath_form() {
-
-  // get a list of db from chado for user to choose
-  $sql = "SELECT * FROM {cv} WHERE NOT name = 'tripal' ORDER BY name ";
-  $results = chado_query($sql);
-
-  $cvs = array();
-  $cvs[] = '';
-  foreach ($results as $cv) {
-    $cvs[$cv->cv_id] = $cv->name;
-  }
-
-  $form['cvid'] = array(
-    '#title' => t('Controlled Vocabulary/Ontology Name'),
-    '#type' => 'select',
-    '#options' => $cvs,
-    '#description' => t('The Chado cvtermpath is a database table that provides lineage for ontology terms 
-      and is useful for quickly finding any ancestor parent of a term.  This table must be populated for each
-      ontology.  Select a controlled vocabulary for which you would like to upate the cvtermpath.'),
-  );
-
-  $form['description'] = array(
-    '#type' => 'item',
-    '#value' => t("Submit a job to update chado cvtermpath table."),
-    '#weight' => 1,
-  );
-
-  $form['button'] = array(
-    '#type' => 'submit',
-    '#value' => t('Update cvtermpath'),
-    '#weight' => 2,
-  );
-
-  return $form;
-}
-
-
-/**
  *
  * @ingroup tripal_obo_loader
  */
