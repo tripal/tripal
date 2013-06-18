@@ -309,6 +309,7 @@ function tripal_pub_importer_setup_form(&$form_state = NULL, $pub_import_id = NU
     'NOT' => 'NOT'
     );
     for($i = 1; $i <= $num_criteria; $i++) {
+    	$is_phrase = 1;
 
       // if we have criteria supplied from the database then use that as the initial defaults
       if ($criteria) {
@@ -322,6 +323,7 @@ function tripal_pub_importer_setup_form(&$form_state = NULL, $pub_import_id = NU
       $scope        = isset($_SESSION['tripal_pub_import']['criteria'][$i]['scope'])        ? $_SESSION['tripal_pub_import']['criteria'][$i]['scope']        : $scope;
       $is_phrase    = isset($_SESSION['tripal_pub_import']['criteria'][$i]['is_phrase'])    ? $_SESSION['tripal_pub_import']['criteria'][$i]['is_phrase']    : $is_phrase;
       $operation    = isset($_SESSION['tripal_pub_import']['criteria'][$i]['operation'])    ? $_SESSION['tripal_pub_import']['criteria'][$i]['operation']    : $operation;
+      
       // If the form_state has variables then use those.  This happens when an error occurs on the form or the
       // form is resbumitted using AJAX
       if ($form_state['values']) {
@@ -335,7 +337,7 @@ function tripal_pub_importer_setup_form(&$form_state = NULL, $pub_import_id = NU
       '#type'          => 'textfield',
       '#description'   => t('Please provide a list of words for searching. You may use 
         conjunctions such as "AND" or "OR" to separate words if they are expected in 
-        the same scope. Uncheck the "Is Phrase" checkbox to use conjunctions'),
+        the same scope, but do not mix ANDs and ORs.  Uncheck the "Is Phrase" checkbox to use conjunctions'),
       '#default_value' => $search_terms,
       '#required'      => TRUE,
       );
@@ -437,10 +439,18 @@ function tripal_pub_importer_setup_form_validate($form, &$form_state) {
     $scope =  $form_state['values']["scope-$i"];
     $is_phrase =  $form_state['values']["is_phrase-$i"];
     $operation =  $form_state['values']["operation-$i"];
+    
+    if (!$is_phrase) {
+    	if (preg_match('/and/i', $search_terms) and preg_match('/or/i', $search_terms)) {
+    	  form_set_error("search_terms-$i", "You may use 'AND' or 'OR' but cannot use both. Add a new entry below with the same scope for the other conunction.");
+    	  $_SESSION['tripal_pub_import']['perform_search'] = 0;	
+    	}
+    }
   }
 
   if ($days and !is_numeric($days) or preg_match('/\./', $days)) {
     form_set_error("days", "Please enter a numeric, non decimal value, for the number of days.");
+    $_SESSION['tripal_pub_import']['perform_search'] = 0;
   }
   // allow the selected remote database to validate any changes to the form if needed
   $callback = "tripal_pub_remote_validate_form_$remote_db";

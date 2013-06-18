@@ -1018,30 +1018,10 @@ function tripal_pub_get_publication_array($pub_id, $skip_existing = TRUE) {
   );
   $ptypes = tripal_core_generate_chado_var('pubprop', $values); 
   $ptypes = tripal_core_expand_chado_vars($ptypes, 'field', 'pubprop.value', $options);
-  $found_type = 0;
   foreach ($ptypes as $ptype) {
-    if($ptype->value == 'Journal Article') { 
-      $pub['Publication Type'] = 'Journal Article';   
-      $found_type = 1;  
-    }
-    if($ptype->value == 'Book') {
-    	$pub['Publication Type'] = 'Book';
-      $found_type = 1;
-    }
-    if($ptype->value == 'Book Chapter') {
-    	$pub['Publication Type'] = 'Book Chapter';
-      $found_type = 1;
-    }    
-    if($ptype->value == 'Conference Proceedings') {
-    	$pub['Publication Type'] = 'Conference Proceedings';
-      $found_type = 1;
-    }
+  	$pub['Publication Type'][] = $ptype->value;
   }
-  if (!$found_type) {
-    watchdog('tripal_pub', "Publication type is not yet handled for creating citations: %pub_id", 
-      array('%pub_id' => $pub_id), WATCHDOG_ERROR);
-    return FALSE;
-  }  
+ 
 
   // ---------------------------------
   // get the authors list
@@ -1080,18 +1060,54 @@ function tripal_pub_get_publication_array($pub_id, $skip_existing = TRUE) {
  * @param $pub
  *   An array structure containing publication details where the keys
  *   are the publication ontology term names and values are the 
- *   corresponding details.
- * @param $type
- *   The type of publication. Supported types include
- *   'Journal Article', 'Book', 'Book Chapter', 
- *   'Conference Proceedings',
+ *   corresponding details.  The pub array can contain the following
+ *   keys with corresponding values:   
+ *     - Publication Type:  an array of publication types. a publication can have more than one type
+ *     - Authors: a  string containing all of the authors of a publication
+ *     - Journal Name:  a string containing the journal name
+ *     - Journal Abbreviation: a string containing the journal name abbreviation
+ *     - Series Name: a string containing the series (e.g. conference proceedings) name
+ *     - Series Abbreviation: a string containing the series name abbreviation     
+ *     - Volume: the serives volume number
+ *     - Issue: the series issue number
+ *     - Pages: the page numbers for the publication
+ *     - Publication Date:  A date in the format "Year Month Day"
+ *      
  * @return
  *   A text string containing the citation
  */
-function tripal_pub_create_citation($pub, $type = 'Journal Article') {
+function tripal_pub_create_citation($pub) {
 	$citation = '';
+	$pub_type = '';
 	
-	if ($type == 'Journal Article') {
+	// An article may have more than one publication type. For example,
+	// a publication type can be 'Journal Article' but also a 'Clinical Trial'.
+	// Therefore, we need to select the type that makes most sense for 
+	// construction of the citation. Here we'll iterate through them all
+	// and select the one that matches best.
+	if(is_array($pub['Publication Type'])) {		
+	  foreach ($pub['Publication Type'] as $ptype) {
+	    if ($ptype == 'Journal Article' or
+	        $ptype == 'Book' or
+	        $ptype == 'Book Chapter' or
+	        $ptype == 'Conference Proceedings'){ 
+	      $pub_type = $ptype;   
+	    }
+	  }
+	  if (!$pub_type) {
+      watchdog('tripal_pub', "Cannot generate citation for publication type: %types", 
+        array('%types' => print_r($pub['Publication Type'], TRUE)), WATCHDOG_ERROR);
+      return FALSE;
+    }
+	}
+	else {
+	  $pub_type = $pub['Publication Type'];
+	}	
+	
+	//----------------------
+  // Journal Article
+  //----------------------
+	if ($pub_type == 'Journal Article') {
 	  $citation = $pub['Authors'] . '. ' . $pub['Title'] .  '. ';
 	
 	  if ($pub['Journal Name']) {
@@ -1118,9 +1134,48 @@ function tripal_pub_create_citation($pub, $type = 'Journal Article') {
 	  }
 	  $citation .= '.';
 	}
-	if ($type == 'Book') {
+	//----------------------
+  // Book
+  //----------------------
+	elseif ($pub_type == 'Book') {
 	
 	}
+	//----------------------
+  // Book Chapter
+  //----------------------
+  elseif ($pub_type == 'Book Chapter') {
+  	
+  }
+	//----------------------
+	// Conference Proceedings
+  //----------------------
+  elseif ($pub_type == 'Conference Proceedings') {
+    $citation = $pub['Authors'] . '. ' . $pub['Title'] .  '. ';
+  
+    if ($pub['Series Name']) {
+      $citation .= $pub['Series Name'] . '. ';
+    }
+    elseif ($pub['Series Abbreviation']) {
+      $citation .= $pub['Series Abbreviation'] . '. ';
+    }
+    $citation .= $pub['Publication Date'];
+    if ($pub['Volume'] or $pub['Issue'] or $pub['Pages']) {
+      $citation .= '; ';
+    }
+    if ($pub['Volume']) {
+      $citation .= $pub['Volume'];
+    }
+    if ($pub['Issue']) {
+      $citation .= '(' . $pub['Issue'] . ')';
+    }
+    if ($pub['Pages']) {
+      if($pub['Volume']) {
+        $citation .= ':';
+      }
+      $citation .= $pub['Pages'];
+    }
+    $citation .= '.';
+  }
 
   return $citation;
 }

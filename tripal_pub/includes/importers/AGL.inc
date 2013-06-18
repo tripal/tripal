@@ -436,8 +436,10 @@ function tripal_pub_AGL_range($search_array, $start = 0, $limit = 10) {
 function tripal_pub_AGL_parse_pubxml($pub_xml) {
   $pub = array();
 
-  // publications from the NAL Article Citation Database are all journal articles
-  $pub['Publication Type'][] = 'Journal Article';
+  // we will set the default publication type as a journal article. The NAL
+  // dataset doesn't specify an article type so we'll have to glean the type
+  // from other information (e.g. series name has 'Proceedings' in it)
+  $pub['Publication Type'][0] = 'Journal Article';
 
   if (!$pub_xml) {
     return $pub;
@@ -693,7 +695,20 @@ function tripal_pub_AGL_parse_pubxml($pub_xml) {
           $codes = tripal_pub_remote_search_AGL_get_subfield($xml);
           foreach ($codes as $code => $value) {
             switch ($code) {
+            	case 'a':
+            		if (preg_match('/Proceedings/i', $value)) {
+            		  $pub['Series Name'] = preg_replace('/\.$/', '', $value);
+            		  $pub['Publication Type'][0] = 'Conference Proceedings';
+            		}
+            		else {
+            			$pub['Journal Name'] = preg_replace('/\.$/', '', $value);
+            		}
+                break;
               case 't':
+                if (preg_match('/Proceedings/i', $value)) {
+                  $pub['Series Name'] = preg_replace('/\.$/', '', $value);
+                  $pub['Publication Type'][0] = 'Conference Proceedings';
+                }
                 $pub['Journal Name'] = preg_replace('/\.$/', '', $value);
                 break;
               case 'g':
