@@ -566,7 +566,7 @@ function chado_library_insert($node) {
 
     // make sure the entry for this feature doesn't already exist in the chado_library table
     // if it doesn't exist then we want to add it.
-    $library_id = chado_get_id_for_node('library', $node) ;
+    $library_id = chado_get_id_for_node('library', $node->nid) ;
     if (!$library_id) {
        // next add the item to the drupal table
       $sql = "INSERT INTO {chado_library} (nid, vid, library_id) ".
@@ -594,7 +594,7 @@ function chado_library_update($node) {
     // this here just to make not we've addressed it.
   }
 
-  $library_id = chado_get_id_for_node('library', $node) ;
+  $library_id = chado_get_id_for_node('library', $node->nid ;
   // update the library record
   $match = array(
      'library_id' => $library_id,
@@ -618,7 +618,7 @@ function chado_library_update($node) {
  */
 function chado_library_load($node) {
   // get the feature details from chado
-  $library_id = chado_get_id_for_node('library', $node);
+  $library_id = chado_get_id_for_node('library', $node->nid);
 
   $values = array('library_id' => $library_id);
   $library = tripal_core_generate_chado_var('library', $values);
@@ -660,7 +660,7 @@ function chado_library_view($node, $teaser = FALSE, $page = FALSE) {
  */
 function chado_library_delete(&$node) {
 
-  $library_id = chado_get_id_for_node('library', $node);
+  $library_id = chado_get_id_for_node('library', $node->nid);
 
   // if we don't have a library id for this node then this isn't a node of
   // type chado_library or the entry in the chado_library table was lost.

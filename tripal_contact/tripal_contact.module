@@ -325,7 +325,7 @@ function chado_contact_insert($node) {
     
     // make sure the entry for this contact doesn't already exist in the chado_contact table
     // if it doesn't exist then we want to add it.
-    $contact_id = chado_get_id_for_node('contact', $node) ;
+    $contact_id = chado_get_id_for_node('contact', $node->nid) ;
     if (!$contact_id) {
        // next add the item to the drupal table
       $sql = "INSERT INTO {chado_contact} (nid, vid, contact_id) ".
@@ -360,7 +360,7 @@ function chado_contact_update($node) {
     // this here just to make not we've addressed it.
   }
   
-  $contact_id = chado_get_id_for_node('contact', $node) ;
+  $contact_id = chado_get_id_for_node('contact', $node->nid) ;
   
   // check to see if this contact name doens't already exists.    
   $sql = "SELECT contact_id FROM {contact} WHERE NOT contact_id = %d AND name = '%s'";
@@ -464,7 +464,7 @@ function chado_contact_update($node) {
  */
 function chado_contact_load($node) {
   // get the feature details from chado
-  $contact_id = chado_get_id_for_node('contact', $node);
+  $contact_id = chado_get_id_for_node('contact', $node->nid);
 
   $values = array('contact_id' => $contact_id);
   $contact = tripal_core_generate_chado_var('contact', $values);
@@ -506,7 +506,7 @@ function chado_contact_load($node) {
  */
 function chado_contact_delete(&$node) {
 
-  $contact_id = chado_get_id_for_node('contact', $node);
+  $contact_id = chado_get_id_for_node('contact', $node->nid);
 
   // if we don't have a contact id for this node then this isn't a node of
   // type chado_contact or the entry in the chado_contact table was lost.

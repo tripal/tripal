@@ -1,9 +1,9 @@
 name = Tripal Organism
 description = A module for interfacing the GMOD chado database with Drupal, providing viewing, inserting and editing of organisms.
-core = 6.x
+core = 7.x
 project = tripal_organism
 package = Tripal
-version = 6.x-1.1
+version = 7.x-2.0
 dependencies[] = tripal_core
 dependencies[] = search
 dependencies[] = path

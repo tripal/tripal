@@ -14,7 +14,7 @@ function tripal_core_install() {
 
   // make the data directory for this module
   $data_dir = tripal_file_directory_path();
-  if (!file_check_directory($data_dir, FILE_CREATE_DIRECTORY)) {
+  if (!file_prepare_directory($data_dir, FILE_CREATE_DIRECTORY)) {
     $message = "Cannot create directory $data_dir. This module may not " .
                "behave correctly without this directory.  Please  create " .
                "the directory manually or fix the problem and reinstall.";

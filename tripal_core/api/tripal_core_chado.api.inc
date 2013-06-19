@@ -779,22 +779,12 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
   if (!array_key_exists('order_by', $options)) {
     $options['order_by'] = array();
   }
-/*  
-  if (!array_key_exists('is_prepared', $options)) {
-    $options['is_prepared'] = FALSE;
-  }
-*/  
   if (!array_key_exists('return_sql', $options)) {
     $options['return_sql'] = FALSE;
   }
   if (!array_key_exists('has_record', $options)) {
     $options['has_record'] = FALSE;
   }
-/*  
-  if (!array_key_exists('statement_name', $options)) {
-    $options['statement_name'] = FALSE;
-  }
-*/  
   if (!array_key_exists('is_duplicate', $options)) {
     $options['is_duplicate'] = FALSE;
   }
@@ -802,27 +792,7 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
   if (array_key_exists('pager', $options)) {
     $pager = $options['pager'];
   }
-/*
-  // if this is a prepared statement check to see if it has already been prepared
-  $prepared = FALSE;
-  if ($options['statement_name']) {
-    $prepared = TRUE;
-    // we need to get a persistent connection.  If one exists this function
-    // will not recreate it, but if not it will create one and store it in
-    // a Drupal variable for reuse later.
-    $connection = tripal_db_persistent_chado();
 
-    // if we cannot get a connection the abandon the prepared statement
-    if (!$connection) {
-      $prepared = FALSE;
-      unset($options['statement_name']);
-    }
-  }
-  else {
-    //print "NO STATEMENT (select): $table\n";
-    //debug_print_backtrace();
-  }
-*/
   // check that our columns and values arguments are proper arrays
   if (!is_array($columns)) {
     watchdog('tripal_core', 'the $columns argument for tripal_core_chado_select must be an array.');
@@ -837,7 +807,7 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
   $table_desc = tripal_core_get_chado_table_schema($table);
   $select = '';
   $from = '';
-  $where = '';
+  $where = array();
   $args = array();
 
   // if the 'use_unique' option is turned on then we want
@@ -947,20 +917,8 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
         // select the value from the foreign key relationship for this value
         $foreign_options = array(
           'regex_columns' => $options['regex_columns'],
-//          'case_insensitive_columns' => $options['case_insensitive_columns']
         );
-/*        
-        if (array_key_exists('statement_name', $options) and $options['statement_name']) {
-          // add the fk relationship info to the prepared statement name so that
-          // we can prepare the selects run by the recrusive tripal_core_chado_get_foreign_key
-          // function. we need the statement name to be unique so take the first two characters of each column
-          $fk_sname = "fk_" . $table . "_" . $field;
-          foreach ($value as $k => $v) {
-            $fk_sname .= substr($k, 0, 2);
-          }
-          $foreign_options['statement_name'] = $fk_sname;
-        }
-*/
+
         $results = tripal_core_chado_get_foreign_key($table_desc, $field, $value, $foreign_options);
         if (!$results or count($results)==0) {
           return array();
@@ -985,6 +943,7 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
     }
   }
 
+  
   // now build the SQL and prepared SQL statements. We may not use
   // the prepared statement if it wasn't requested in the options or if the
   // argument in a where statement has multiple values.
@@ -1003,8 +962,6 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
     if (!empty($values)) {
       $sql .= "WHERE ";
     }
-    $i = 1;
-    $itypes = array();
     foreach ($where as $field => $value) {
 
       // if we have multiple values returned then we need an 'IN' statement
@@ -1024,7 +981,6 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
       elseif ($value === NULL) {
         $sql .= "$field IS NULL AND ";
         // Need to remove one from the argument count b/c nulls don't add an argument
-        $i--;
       }
       // if we have a single value then we need an = in our where statement
       else {
@@ -1041,7 +997,6 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
 	        $args[":$field"] = $value[0];        	
         }
       }
-      $i++;
     } // end foreach item in where clause
     $sql = drupal_substr($sql, 0, -4);  // get rid of the trailing 'AND '
   } // end if (empty($where)){ } else {
@@ -1060,7 +1015,6 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
   if ($options['return_sql'] == TRUE) {
     return array('sql' => $sql, 'args' => $args);
   }
- 
   if (array_key_exists('limit', $pager)) {
     $resource = chado_pager_query($sql, $pager['limit'], $pager['element'], NULL, $args);
   }
@@ -1384,6 +1338,7 @@ function tripal_core_generate_chado_var($table, $values, $base_options = array()
 */
   // get the values for the record in the current table---------------------------------------------
   $results = tripal_core_chado_select($table, $table_columns, $values, $base_options);
+  
   if ($results) {
     foreach ($results as $key => $object) {
       // Add empty expandable_x arrays
@@ -1402,8 +1357,7 @@ function tripal_core_generate_chado_var($table, $values, $base_options = array()
           SELECT $table_primary_key, nid 
           FROM {chado_$table} 
           WHERE $table_primary_key = :$table_primary_key";
-        $results = db_query($sql, array(":$table_primary_key" . $object->{$table_primary_key}));
-        $mapping = $results->fetchObject();
+        $mapping = db_query($sql, array(":$table_primary_key" => $object->{$table_primary_key}))->fetchObject();
         if ($mapping->{$table_primary_key}) {
           $object->nid = $mapping->nid;
           $object->expandable_nodes[] = $table;
@@ -1483,15 +1437,20 @@ function tripal_core_generate_chado_var($table, $values, $base_options = array()
       }
     }
   }
-
+  
+  // convert the results into an array
+  $results_arr = array(); 
+  foreach ($results as $record) {
+  	$results_arr[] = $record;
+  }
   // check only one result returned
   if (!$return_array) {
-    if (sizeof($results) == 1) {
+    if (sizeof($results_arr) == 1) {
       // add results to object
-      return $results[0];
+      return $results_arr[0];
     }
-    elseif (!empty($results)) {
-      return $results;
+    elseif (!empty($results_arr)) {
+      return $results_arr;
     }
     else {
       // no results returned
@@ -1500,11 +1459,11 @@ function tripal_core_generate_chado_var($table, $values, $base_options = array()
   // the caller has requested results are always returned as
   // an array
   else {
-    if (!$results) {
+    if (!$results_arr) {
       return array();
     }
     else {
-      return $results;
+      return $results_arr;
     }
   }
 }
@@ -1964,18 +1923,22 @@ function chado_query($sql, $args = array()) {
 
 /**
  * Get chado id for a node. E.g, if you want to get 'analysis_id' from the
- * 'analysis' table for a synced 'chado_analysis' node, use:
- * $analysis_id = chado_get_id_for_node ('analysis', $node)
- * Likewise,
- * $organism_id = chado_get_id_for_node ('organism', $node)
- * $feature_id = chado_get_id_for_node ('feature', $node)
+ * 'analysis' table for a synced 'chado_analysis' node, (the same for
+ * organisms and features):
+ * $analysis_id = chado_get_id_for_node ('analysis', $node->nid)
+ * $organism_id = chado_get_id_for_node ('organism', $node->nid)
+ * $feature_id  = chado_get_id_for_node ('feature', $node->nid)
  *
+ * @param $table
+ * @param $nid
+ * 
  * @ingroup tripal_chado_api
  */
-function chado_get_id_for_node($table, $node) {
-	$sql = "SELECT " . $table . "_id FROM {chado_$table} WHERE nid = :nid";
-	$results = db_query($sql, array(':nid' => $node->nid));
-	return $results->fetchObject();
+function chado_get_id_for_node($table, $nid) {
+	$sql = "SELECT " . $table . "_id as id FROM {chado_$table} WHERE nid = :nid";
+	$result = db_query($sql, array(':nid' => $nid))->fetchObject();
+	
+	return $result->id;
 }
 
 /**
@@ -1990,8 +1953,8 @@ function chado_get_id_for_node($table, $node) {
  */
 function chado_get_node_id($table, $id) {
 	$sql = "SELECT nid FROM {chado_$table} WHERE " . $table . "_id = :" . $table . "_id";
-  $results = db_query($sql, array(":" . $table . "_id" => $id));
-  return $results->fetchObject();
+  $result = db_query($sql, array(":" . $table . "_id" => $id))->fetchObject();
+  return $results->nid;
 }
 
 /**

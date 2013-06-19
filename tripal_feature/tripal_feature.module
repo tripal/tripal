@@ -603,7 +603,7 @@ function chado_feature_update($node) {
   );
   $type = tripal_core_chado_select('cvterm', array('cvterm_id'), $values);
 
-  $feature_id = chado_get_id_for_node('feature', $node) ;
+  $feature_id = chado_get_id_for_node('feature', $node->nid) ;
 
   if (sizeof($type) > 0) {
     $match = array(
@@ -641,7 +641,7 @@ function chado_feature_update($node) {
  */
 function chado_feature_delete($node) {
 
-  $feature_id  = chado_get_id_for_node('feature', $node);
+  $feature_id  = chado_get_id_for_node('feature', $node->nid);
 
   // if we don't have a library id for this node then this isn't a node of
   // type chado_library or the entry in the chado_library table was lost.
@@ -1019,7 +1019,7 @@ function chado_feature_validate($node) {
 function chado_feature_load($node) {
 
   // get the feature details from chado
-  $feature_id = chado_get_id_for_node('feature', $node);
+  $feature_id = chado_get_id_for_node('feature', $node->nid);
 
   $values = array('feature_id' => $feature_id);
   $feature = tripal_core_generate_chado_var('feature', $values);

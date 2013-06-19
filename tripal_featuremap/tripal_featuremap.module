@@ -420,7 +420,7 @@ function chado_featuremap_insert($node) {
   if ($featuremap) {
     // make sure the entry for this feature doesn't already exist in the chado_featuremap table
     // if it doesn't exist then we want to add it.
-    $featuremap_id = chado_get_id_for_node('featuremap', $node) ;
+    $featuremap_id = chado_get_id_for_node('featuremap', $node->nid) ;
     if (!$featuremap_id) {
        // next add the item to the drupal table
       $sql = "INSERT INTO {chado_featuremap} (nid, vid, featuremap_id) VALUES (%d, %d, %d)";
@@ -442,7 +442,7 @@ function chado_featuremap_update($node) {
     // there is no way to handle revisions in Chado but leave
     // this here just to make not we've addressed it.
   }
-  $featuremap_id = chado_get_id_for_node('featuremap', $node) ;
+  $featuremap_id = chado_get_id_for_node('featuremap', $node->nid) ;
 
   // update the map record
   $match = array(
@@ -551,7 +551,7 @@ function chado_featuremap_update($node) {
  */
 function chado_featuremap_load($node) {
   // get the feature details from chado
-  $featuremap_id = chado_get_id_for_node('featuremap', $node);
+  $featuremap_id = chado_get_id_for_node('featuremap', $node->nid);
 
   $values = array('featuremap_id' => $featuremap_id);
   $featuremap = tripal_core_generate_chado_var('featuremap', $values);
@@ -585,7 +585,7 @@ function chado_featuremap_view($node, $teaser = FALSE, $page = FALSE) {
  */
 function chado_featuremap_delete(&$node) {
 
-  $featuremap_id = chado_get_id_for_node('featuremap', $node);
+  $featuremap_id = chado_get_id_for_node('featuremap', $node->nid);
 
   // if we don't have a map id for this node then this isn't a node of
   // type chado_featuremap or the entry in the chado_featuremap table was lost.

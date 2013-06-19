@@ -460,7 +460,7 @@ function chado_pub_insert($node) {
   if ($pub) {
     // make sure the entry for this feature doesn't already exist in the chado_pub table
     // if it doesn't exist then we want to add it.
-    $pub_id = chado_get_id_for_node('pub', $node) ;
+    $pub_id = chado_get_id_for_node('pub', $node->nid) ;
     if (!$pub_id) {
       // next add the item to the drupal table
       $sql = "INSERT INTO {chado_pub} (nid, vid, pub_id) ".
@@ -495,7 +495,7 @@ function chado_pub_update($node) {
   }
 
   // get the publication ID for this publication
-  $pub_id = chado_get_id_for_node('pub', $node) ;
+  $pub_id = chado_get_id_for_node('pub', $node->nid) ;
 
   $properties = array(); // stores all of the properties we need to add
   $cross_refs = array(); // stores any cross references for this publication
@@ -656,7 +656,7 @@ function chado_pub_update($node) {
  */
 function chado_pub_load($node) {
   // get the feature details from chado
-  $pub_id = chado_get_id_for_node('pub', $node);
+  $pub_id = chado_get_id_for_node('pub', $node->nid);
 
   $values = array('pub_id' => $pub_id);
   $pub = tripal_core_generate_chado_var('pub', $values);
@@ -691,7 +691,7 @@ function chado_pub_load($node) {
  */
 function chado_pub_delete(&$node) {
 
-  $pub_id = chado_get_id_for_node('pub', $node);
+  $pub_id = chado_get_id_for_node('pub', $node->nid);
 
   // if we don't have a pub id for this node then this isn't a node of
   // type chado_pub or the entry in the chado_pub table was lost.
@@ -868,17 +868,17 @@ function tripal_pub_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
       case 'presave':
         break;
       case 'insert':
-        $pub_id = chado_get_id_for_node('pub', $node);
+        $pub_id = chado_get_id_for_node('pub', $node->nid);
         tripal_pub_set_pub_url($node, $pub_id);
         break;
       case 'load':
         if (!$node->path) {
-          $pub_id = chado_get_id_for_node('pub', $node);
+          $pub_id = chado_get_id_for_node('pub', $node->nid);
           $path = tripal_pub_set_pub_url($node, $pub_id);
         }
         break;
       case 'update':
-        $pub_id = chado_get_id_for_node('pub', $node);
+        $pub_id = chado_get_id_for_node('pub', $node->nid);
         tripal_pub_set_pub_url($node, $pub_id);
         break;
       case 'view':

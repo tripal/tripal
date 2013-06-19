@@ -46,11 +46,32 @@ function tripal_file_directory_path() {
 function tripal_create_moddir($module_name) {
 
   // make the data directory for this module
-  $data_dir = tripal_file_directory_path() . "$module_name";
+  $data_dir = tripal_file_directory_path() . "/$module_name";
   if (!file_prepare_directory($data_dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS)) {
     $message = "Cannot create directory $data_dir. This module may not " .
                "behave correctly without this directory.  Please  create " .
                "the directory manually or fix the problem and reinstall.";
+    drupal_set_message(check_plain(t($message)), 'error');
+    watchdog('tripal_core', $message, array(), WATCHDOG_ERROR);
+  }
+}
+
+/**
+ * This function creates directories inside of the module's
+ * Data directory.
+ * 
+ * @param $module_name
+ * @param $path
+ */
+function tripal_create_mod_subdir($module_name, $path) {
+
+  // make sure the module data directory exists
+	tripal_create_moddir($module_name);
+  
+  // now make sure the sub dir exists
+  $sub_dir = tripal_file_directory_path() . $module_name . $path;
+  if (!file_prepare_directory($sub_dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS)) {
+    $message = "Cannot create directory $sub_dir. ";
     drupal_set_message(check_plain(t($message)), 'error');
     watchdog('tripal_core', $message, array(), WATCHDOG_ERROR);
   }
@@ -70,6 +91,6 @@ function tripal_create_moddir($module_name) {
  * @ingroup tripal_files_api
  */
 function tripal_get_moddir($module_name) {
-  $data_dir = tripal_file_directory_path() . "$module_name";
+  $data_dir = tripal_file_directory_path() . "/$module_name";
   return $data_dir;
 }

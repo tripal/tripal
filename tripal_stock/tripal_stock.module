@@ -330,7 +330,7 @@ function tripal_stock_node_info() {
 function chado_stock_load($node) {
 
   // get the stock details from chado
-  $stock_id = chado_get_id_for_node('stock', $node);
+  $stock_id = chado_get_id_for_node('stock', $node->nid);
   
   // build the variable with all the stock details
   $values = array('stock_id' => $stock_id);

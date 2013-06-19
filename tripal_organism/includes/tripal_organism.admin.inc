@@ -78,7 +78,7 @@ function get_tripal_organism_admin_form_taxonomy_set(&$form) {
 
   // iterate through all of the libraries
   $org_boxes = array();
-  while ($organism = db_fetch_object($org_rset)) {
+  foreach ($org_rset as $organism) {
     $org_boxes[$organism->organism_id] = "$organism->genus $organism->species";
   }
 
@@ -123,7 +123,7 @@ function get_tripal_organism_admin_form_reindex_set(&$form) {
 
   // iterate through all of the libraries
   $org_boxes = array();
-  while ($organism = db_fetch_object($org_rset)) {
+  foreach ($org_rset as $organism) {
     $org_boxes[$organism->organism_id] = "$organism->genus $organism->species";
   }
   $form['reindex']['description'] = array(
@@ -179,11 +179,11 @@ function get_tripal_organism_admin_form_sync_set(&$form) {
     // a message stating that all organisms are currently synced.
     $org_boxes = array();
     $added = 0;
-    while ($organism = db_fetch_object($org_rset)) {
+    foreach ($org_rset as $organism) {
       // check to see if the organism is already present as a node in drupal.
       // if so, then skip it.
-      $sql = "SELECT * FROM {chado_organism} WHERE organism_id = %d";
-      if (!db_fetch_object(db_query($sql, $organism->organism_id))) {
+      $sql = "SELECT * FROM {chado_organism} WHERE organism_id = :organism_id";
+      if (!db_query($sql, array(':organism_id' => $organism->organism_id))->fetchObject()) {
         $org_boxes[$organism->organism_id] = "$organism->genus $organism->species ($organism->common_name)";
         $added++;
       }
@@ -244,8 +244,8 @@ function tripal_organism_admin_validate($form, &$form_state) {
       }
       if ($organism_id and preg_match("/^\d+$/i" , $organism_id)) {
         // get the list of organisms
-        $sql = "SELECT * FROM {Organism} WHERE organism_id = %d";
-        $organism = db_fetch_object(chado_query($sql, $organism_id));
+        $sql = "SELECT * FROM {organism} WHERE organism_id = :organism_id";
+        $organism = chado_query($sql, array(':organism_id' => $organism_id))->fetchObject();
         $to_sync[$organism_id] = "$organism->genus $organism->species";
       }
     }
@@ -271,8 +271,8 @@ function tripal_organism_admin_validate($form, &$form_state) {
     foreach ($organisms as $organism_id) {
       if ($organism_id and preg_match("/^\d+$/i" , $organism_id)) {
         // get the organism info
-        $sql = "SELECT * FROM {organism} WHERE organism_id = %d";
-        $organism = db_fetch_object(chado_query($sql , $organism_id));
+        $sql = "SELECT * FROM {organism} WHERE organism_id = :organism_id";
+        $organism = chado_query($sql, array(':organism_id' => $organism_id))->fetchObject();
         $job_args[0] = $organism_id;
         tripal_add_job("Reindex features for organism: $organism->genus ".
          "$organism->species", 'tripal_organism' ,
@@ -288,8 +288,8 @@ function tripal_organism_admin_validate($form, &$form_state) {
     foreach ($organisms as $organism_id) {
       if ($organism_id and preg_match("/^\d+$/i", $organism_id)) {
         // get the organism info
-        $sql = "SELECT * FROM {organism} WHERE organism_id = %d";
-        $organism = db_fetch_object(chado_query($sql , $organism_id));
+        $sql = "SELECT * FROM {organism} WHERE organism_id = :organism_id";
+        $organism = chado_query($sql, array(':organism_id' => $organism_id))->fetchObject();
         $job_args[0] = $organism_id;
         tripal_add_job("Set taxonomy for features in organism: ".
           "$organism->genus $organism->species" , 'tripal_organism',
@@ -320,20 +320,20 @@ function tripal_organism_sync_organisms($organism_id = NULL, $job_id = NULL) {
     $results = chado_query($sql);
   }
   else {
-    $sql = "SELECT * FROM {organism} L WHERE organism_id = %d";
-    $results = chado_query($sql, $organism_id);
+    $sql = "SELECT * FROM {organism} WHERE organism_id = :organism_id";
+    $results = chado_query($sql, array(':organism_id' => $organism_id));
   }
 
   // We'll use the following SQL statement for checking if the organism
   // already exists as a drupal node.
   $sql = "SELECT * FROM {chado_organism} ".
-         "WHERE organism_id = %d";
+         "WHERE organism_id = :organism_id";
 
-  while ($organism = db_fetch_object($results)) {
+  foreach ($results as $organism) {
 
     // check if this organism already exists in the drupal database. if it
     // does then skip this organism and go to the next one.
-    if (!db_fetch_object(db_query($sql, $organism->organism_id))) {
+    if (!db_query($sql, array(':organism_id' => $organism->organism_id))->fetchObject()) {
 
       $new_node = new stdClass();
       $new_node->type = 'chado_organism';
@@ -343,7 +343,9 @@ function tripal_organism_sync_organisms($organism_id = NULL, $job_id = NULL) {
       $new_node->genus = $organism->genus;
       $new_node->species = $organism->species;
       $new_node->description = '';
-      node_validate($new_node);
+      $form = array(); // dummy variable
+      $form_state = array(); // dummy variable
+      node_validate($new_node, $form, $form_state);
       if (!form_get_errors()) {
         $node = node_submit($new_node);
         node_save($node);
@@ -372,16 +374,17 @@ function tripal_organism_reindex_features($organism_id = NULL, $job_id = NULL) {
     return;
   }
 
-  $sql = "SELECT * ".
-        "FROM {feature} ".
-        "WHERE organism_id = $organism_id ".
-        "ORDER BY feature_id";
-  $results = chado_query($sql);
+  $sql = "
+    SELECT * 
+    FROM {feature} 
+    WHERE organism_id = :organism_id 
+    ORDER BY feature_id";
+  $results = chado_query($sql, array(':organism_id' => $organism_id));
 
   // load into ids array
   $count = 0;
   $ids = array();
-  while ($id = db_fetch_object($results)) {
+  foreach ($results as $id) {
     $ids[$count] = $id->feature_id;
     $count++;
   }
@@ -407,16 +410,18 @@ function tripal_organism_taxonify_features($organism_id = NULL, $job_id = NULL) 
     return;
   }
 
-  $sql = "SELECT * ".
-        "FROM {feature} ".
-        "WHERE organism_id = $organism_id ".
-        "ORDER BY feature_id";
-  $results = chado_query($sql);
+  $sql = "
+    SELECT * 
+    FROM {feature} 
+    WHERE organism_id = :organism_id 
+    ORDER BY feature_id
+  ";
+  $results = chado_query($sql, array(':organism_id' => $organism_id));
 
   // load into ids array
   $count = 0;
   $ids = array();
-  while ($id = db_fetch_object($results)) {
+  foreach ($results as $id) {
     $ids[$count] = $id->feature_id;
     $count++;
   }
@@ -427,7 +432,7 @@ function tripal_organism_taxonify_features($organism_id = NULL, $job_id = NULL) 
   // use this SQL for getting the nodes
   $nsql =  "SELECT * FROM {chado_feature} CF ".
           "  INNER JOIN {node} N ON N.nid = CF.nid ".
-          "WHERE feature_id = %d";
+          "WHERE feature_id = :feature_id";
 
   // iterate through the features and set the taxonomy
   $interval = intval($count * 0.01);
@@ -436,7 +441,7 @@ function tripal_organism_taxonify_features($organism_id = NULL, $job_id = NULL) 
     if ($job_id and $i % $interval == 0) {
       tripal_job_set_progress($job_id, intval(($i/$count)*100));
     }
-    $node = db_fetch_object(db_query($nsql, $feature_id));
+    $node = db_query($nsql, array(':feature_id' => $feature_id))->fetchObject();
     tripal_feature_set_taxonomy($node, $feature_id);
     $i++;
   }

@@ -302,7 +302,7 @@ function chado_project_insert($node) {
 
     // make sure the entry for this feature doesn't already exist in the chado_project table
     // if it doesn't exist then we want to add it.
-    $project_id = chado_get_id_for_node('project', $node) ;
+    $project_id = chado_get_id_for_node('project', $node->nid) ;
     if (!$project_id) {
        // next add the item to the drupal table
       $sql = "INSERT INTO {chado_project} (nid, vid, project_id) ".
@@ -330,7 +330,7 @@ function chado_project_insert($node) {
  */
 function chado_project_delete($node) {
 
-  $project_id = chado_get_id_for_node('project', $node);
+  $project_id = chado_get_id_for_node('project', $node->nid);
 
   // if we don't have a project id for this node then this isn't a node of
   // type chado_project or the entry in the chado_project table was lost.
@@ -376,7 +376,7 @@ function chado_project_update($node) {
   }
 
   // update the project and the description
-  $project_id = chado_get_id_for_node('project', $node) ;
+  $project_id = chado_get_id_for_node('project', $node->nid) ;
   $match = array(
      'project_id' => $project_id,
   );
@@ -405,7 +405,7 @@ function chado_project_update($node) {
 function chado_project_load($node) {
 
   // get the feature details from chado
-  $project_id = chado_get_id_for_node('project', $node);
+  $project_id = chado_get_id_for_node('project', $node->nid);
 
   $values = array('project_id' => $project_id);
   $project = tripal_core_generate_chado_var('project', $values);

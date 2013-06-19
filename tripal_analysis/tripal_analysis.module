@@ -248,7 +248,7 @@ function chado_analysis_insert($node) {
  * @ingroup tripal_analysis
  */
 function chado_analysis_delete($node) {
-  $analysis_id = chado_get_id_for_node('analysis', $node);
+  $analysis_id = chado_get_id_for_node('analysis', $node->nid);
   
   // if we don't have an organism id for this node then this isn't a node of
   // type chado_organism or the entry in the chado_organism table was lost.
@@ -401,7 +401,7 @@ function chado_analysis_update($node) {
 function chado_analysis_load($node) {
 
    // get the feature details from chado
-  $analysis_id = chado_get_id_for_node('analysis', $node);
+  $analysis_id = chado_get_id_for_node('analysis', $node->nid);
 
   $values = array('analysis_id' => $analysis_id);
   $analysis = tripal_core_generate_chado_var('analysis', $values);
