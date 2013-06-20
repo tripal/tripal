@@ -334,23 +334,24 @@ function tripal_pub_importer_setup_form(&$form_state = NULL, $pub_import_id = NU
       }
 
       $form['criteria'][$i]["search_terms-$i"] = array(
-      '#type'          => 'textfield',
-      '#description'   => t('Please provide a list of words for searching. You may use 
-        conjunctions such as "AND" or "OR" to separate words if they are expected in 
-        the same scope, but do not mix ANDs and ORs.  Uncheck the "Is Phrase" checkbox to use conjunctions'),
-      '#default_value' => $search_terms,
-      '#required'      => TRUE,
+        '#type'          => 'textfield',
+        '#description'   => t('Please provide a list of words for searching. You may use 
+          conjunctions such as "AND" or "OR" to separate words if they are expected in 
+          the same scope, but do not mix ANDs and ORs.  Uncheck the "Is Phrase" checkbox to use conjunctions'),
+        '#default_value' => $search_terms,
+        '#required'      => TRUE,
+        '#maxlength' => 2048,
       );
       $form['criteria'][$i]["scope-$i"] = array(
-      '#type'          => 'select',
-      '#description'   => t('Please select the fields to search for this term.'),
-      '#options'       => $scope_choices,
-      '#default_value' => $scope,
+        '#type'          => 'select',
+        '#description'   => t('Please select the fields to search for this term.'),
+        '#options'       => $scope_choices,
+        '#default_value' => $scope,
       );
       $form['criteria'][$i]["is_phrase-$i"] = array(
-      '#type'    => 'checkbox',
-      '#title'   => t('Is Phrase?'),    
-      '#default_value' => $is_phrase,
+        '#type'    => 'checkbox',
+        '#title'   => t('Is Phrase?'),    
+        '#default_value' => $is_phrase,
       );
 
       if ($i == 1) {
