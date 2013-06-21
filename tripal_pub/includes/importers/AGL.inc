@@ -784,21 +784,26 @@ function tripal_pub_AGL_parse_pubxml($pub_xml) {
   }
 
   // build the full authors list
-  foreach ($pub['Author List'] as $author) {
-    if ($author['valid'] == 'N') {
-      // skip non-valid entries.  A non-valid entry should have
-      // a corresponding corrected entry so we can saftely skip it.
-      continue;
-    }
-    if ($author['Collective']) {
-      $authors .= $author['Collective'] . ', ';
-    }
-    else {
-      $authors .= $author['Surname'] . ' ' . $author['First Initials'] . ', ';
-    }
+  if (is_array($pub['Author List'])) {
+	  foreach ($pub['Author List'] as $author) {
+	    if ($author['valid'] == 'N') {
+	      // skip non-valid entries.  A non-valid entry should have
+	      // a corresponding corrected entry so we can saftely skip it.
+	      continue;
+	    }
+	    if ($author['Collective']) {
+	      $authors .= $author['Collective'] . ', ';
+	    }
+	    else {
+	      $authors .= $author['Surname'] . ' ' . $author['First Initials'] . ', ';
+	    }
+	  }
+	  $authors = substr($authors, 0, -2);
+	  $pub['Authors'] = $authors;
   }
-  $authors = substr($authors, 0, -2);
-  $pub['Authors'] = $authors;
+  else {
+    $pub['Authors'] = $pub['Author List'];	
+  }
 
   // build the citation
   $pub['Citation'] = tripal_pub_create_citation($pub);
