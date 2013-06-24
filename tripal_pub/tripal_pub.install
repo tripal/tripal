@@ -59,16 +59,17 @@ function tripal_pub_schema() {
       'nid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
       'pub_id' => array('type' => 'int', 'not null' => TRUE, 'default' => 0),
       'sync_date' => array('type' => 'int', 'not null' => FALSE, 'description' => 'UNIX integer sync date/time'),
-  ),
+    ),
     'indexes' => array(
       'pub_id' => array('pub_id')
-  ),
+    ),
     'unique keys' => array(
       'nid_vid' => array('nid', 'vid'),
       'vid' => array('vid')
-  ),
+    ),
     'primary key' => array('nid'),
   );
+  
   $schema['tripal_pub_import'] = array(
     'fields' => array(
       'pub_import_id' => array('type' => 'serial', 'not null' => TRUE),
@@ -76,11 +77,11 @@ function tripal_pub_schema() {
       'criteria' => array('type' => 'text', 'size' => 'normal', 'not null' => TRUE, 'description' => 'Contains a serialized PHP array containing the search criteria'),
       'disabled'  => array('type' => 'int', 'unsigned' => TRUE, 'not NULL' => TRUE, 'default' => 0),      
       'do_contact'  => array('type' => 'int', 'unsigned' => TRUE, 'not NULL' => TRUE, 'default' => 0),
-  ),
+    ),
     'primary key' => array('pub_import_id'),
     'indexes' => array(
       'name' => array('name')
-  ),
+    ),
   );
    
   return $schema;

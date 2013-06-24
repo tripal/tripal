@@ -10,10 +10,15 @@
  * multiple contact/mysql instances as well as manage and create such contact instances
  */
 
+
 /**
  * Implementation of hook_install().
  */
 function tripal_contact_install() {
+	
+	// create the module's data directory
+  tripal_create_moddir('tripal_contact');
+  
   // add the tripal_contact table to Drupal
   drupal_install_schema('tripal_contact');
   
@@ -39,22 +44,32 @@ function tripal_contact_uninstall() {
 function tripal_contact_schema() {
   $schema['chado_contact'] = array(
     'fields' => array(
+      'vid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0
+      ),
       'nid' => array(
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
-      ),
-      'vid' => array(
-          'type' => 'int',
-          'not null' => TRUE,
+        'default' => 0
       ),
       'contact_id' => array(
         'type' => 'int',
-        'unsigned' => TRUE,
         'not null' => TRUE,
-      ),
+        'default' => 0
+      )
     ),
-    'primary key' => array('nid', 'vid', 'contact_id'),
+    'indexes' => array(
+      'contact_id' => array('contact_id')
+    ),
+    'unique keys' => array(
+      'nid_vid' => array('nid', 'vid'),
+      'vid' => array('vid')
+    ),
+    'primary key' => array('nid'),
   );
   return $schema;
 }
