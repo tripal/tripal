@@ -25,21 +25,21 @@ function tripal_pub_importers_list() {
     }
 
     $rows[] = array(
-    l(t('Edit/Test'), "admin/tripal/tripal_pub/import/edit/$importer->pub_import_id"),
-    $importer->name,
-    $criteria['remote_db'],
-    $criteria_str,
-    $importer->disabled ? 'Yes' : 'No',
-    $importer->do_contact ? 'Yes' : 'No',
-    l(t('Delete'), "admin/tripal/tripal_pub/import/delete/$importer->pub_import_id"),
+      l(t('Edit/Test'), "admin/tripal/tripal_pub/import/edit/$importer->pub_import_id"),
+      $importer->name,
+      $criteria['remote_db'],
+      $criteria_str,
+      $importer->disabled ? 'Yes' : 'No',
+      $importer->do_contact ? 'Yes' : 'No',
+      l(t('Delete'), "admin/tripal/tripal_pub/import/delete/$importer->pub_import_id"),
     );
   }
 
   $rows[] = array(
     'data' => array(
-  array('data' => l(t('Create a new publication importer.'), "admin/tripal/tripal_pub/import/new"),
+     array('data' => l(t('Create a new publication importer.'), "admin/tripal/tripal_pub/import/new"),
         'colspan' => 7),
-  )
+     )
   );
 
   $page = theme('table', $header, $rows);
@@ -54,6 +54,18 @@ function tripal_pub_importer_setup($action = 'new', $pub_import_id = NULL) {
 
   $pager_id = 0;
   $limit = 20;
+  
+  // make sure the tripal_pub and tripal_contact ontologies are loaded
+  $values = array('name' => 'tripal_pub');
+  $tpub_cv = tripal_core_chado_select('cv', array('cv_id'), $values);
+  if (count($tpub_cv) == 0) {
+  	drupal_set_message(t('Before importing publications you must first ') . l(t('load the Tripal Pub Ontology'), 'admin/tripal/tripal_cv/obo_loader'), 'error');
+  }
+  $values = array('name' => 'tripal_contact');
+  $tpub_cv = tripal_core_chado_select('cv', array('cv_id'), $values);
+  if (count($tpub_cv) == 0) {
+    drupal_set_message(t('If you want to create contact pages for authors, you must first ') . l(t('load the Tripal Contact Ontology'), 'admin/tripal/tripal_cv/obo_loader'), 'error');
+  }
 
   // generate the search form
   $form = drupal_get_form('tripal_pub_importer_setup_form',  $pub_import_id, $action);

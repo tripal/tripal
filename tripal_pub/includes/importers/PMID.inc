@@ -385,7 +385,7 @@ function tripal_pub_PMID_parse_pubxml($pub_xml) {
     }
   }
   $pub['Citation'] = tripal_pub_create_citation($pub);
-
+  
   $pub['raw'] = $pub_xml;
   return $pub;
 }
@@ -531,13 +531,14 @@ function tripal_pub_PMID_parse_publication_type($xml, &$pub) {
       switch ($element) {
         case 'PublicationType':
           $xml->read();
-          $pub_cvterm = tripal_cv_get_cvterm_by_name($xml->value, NULL, 'tripal_pub');
+          $value = $xml->value;          
+          $pub_cvterm = tripal_cv_get_cvterm_by_name($value, NULL, 'tripal_pub');          
           if (!$pub_cvterm) {
             // see if this we can find the name using a synonym
-            $pub_cvterm = tripal_cv_get_cvterm_by_synonym($xml->value, NULL, 'tripal_pub');
+            $pub_cvterm = tripal_cv_get_cvterm_by_synonym($value, NULL, 'tripal_pub');
             if (!$pub_cvterm) {
               watchdog('tpub_pubmed', 'Cannot find a valid vocabulary term for the publication type: "%term".',
-              array('%term' => $xml->value), WATCHDOG_ERROR);
+              array('%term' => $value), WATCHDOG_ERROR);
             }
           }
           else {
