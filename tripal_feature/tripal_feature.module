@@ -23,10 +23,10 @@ require_once "includes/seq_extract.inc";
 require_once "api/tripal_feature.api.inc";
 
 require_once "includes/tripal_feature-delete.inc";
-require_once "includes/tripal_feature-secondary_tables.inc";
-require_once "includes/tripal_feature-properties.inc";
-require_once "includes/tripal_feature-relationships.inc";
-require_once "includes/tripal_feature-db_references.inc";
+//require_once "includes/tripal_feature-secondary_tables.inc";
+//require_once "includes/tripal_feature-properties.inc";
+//require_once "includes/tripal_feature-relationships.inc";
+//require_once "includes/tripal_feature-db_references.inc";
 
 
 /**
@@ -223,68 +223,6 @@ function tripal_feature_menu() {
     'type' => MENU_NORMAL_ITEM,
   );
 
-  // Adding Secondary Properties
-
-  /**
-  $items['node/%tf_node/tf_properties'] = array(
-    'title' => t('Add Properties & Synonyms'),
-    'description' => t('Settings for Features'),
-    'page callback' => 'tripal_feature_add_ALL_property_page',
-    'page arguments' => array(1),
-    'access arguments' => array('create chado_feature content'),
-    'type' => MENU_CALLBACK
-  );
-
-  $items['node/%tf_node/tf_db_references'] = array(
-    'title' => t('Add Database References'),
-    'description' => t('Settings for Features'),
-    'page callback' => 'tripal_feature_add_ALL_dbreferences_page',
-    'page arguments' => array(1),
-    'access arguments' => array('create chado_feature content'),
-    'type' => MENU_CALLBACK
-  );
-
-  $items['node/%tf_node/tf_relationships'] = array(
-    'title' => t('Add Relationships'),
-    'description' => t('Settings for Features'),
-    'page callback' => 'tripal_feature_add_ALL_relationships_page',
-    'page arguments' => array(1),
-    'access arguments' => array('create chado_feature content'),
-    'type' => MENU_CALLBACK
-  );
-  */
-
-  //Edit/Deleting Secondary Properties-------------
-  $items['node/%tf_node/edit_feature_properties'] = array(
-    'title' => 'Edit Properties',
-    'description' => 'Settings for Features',
-    'page callback' => 'tripal_feature_edit_ALL_properties_page',
-    'page arguments' => array(1),
-    'access arguments' => array('edit chado_feature content'),
-    'type' => MENU_LOCAL_TASK,
-    'weight' => 8,
-  );
-  /**
-  $items['node/%tf_node/tf_edit_relationships'] = array(
-    'title' => t('Edit Relationships'),
-    'description' => t('Settings for Feature'),
-    'page callback' => 'tripal_feature_edit_ALL_relationships_page',
-    'page arguments' => array(1),
-    'access arguments' => array('edit chado_feature content'),
-    'type' => MENU_LOCAL_TASK,
-    'weight' => 9,
-  );
-  */
-  $items['node/%tf_node/tf_edit_db_references'] = array(
-    'title' => 'Edit References',
-    'description' => 'Settings for Feature',
-    'page callback' => 'tripal_feature_edit_ALL_dbreferences_page',
-    'page arguments' => array(1),
-    'access arguments' => array('edit chado_feature content'),
-    'type' => MENU_LOCAL_TASK,
-    'weight' => 10,
-  );
-
   // the menu link for addressing any feature (by name, uniquename, synonym)
   $items['feature/%'] = array(
     'title' => 'Matched Features',
@@ -296,24 +234,6 @@ function tripal_feature_menu() {
   );
 
   return $items;
-}
-
-/**
- * Implements Menu wildcard_load hook
- * Purpose: Allows the node ID of a chado feature to be dynamically
- *   pulled from the path. The node is loaded from this node ID
- *   and supplied to the page as an arguement
- *
- * @ingroup tripal_feature
- */
-function tf_node_load($nid) {
-  if (is_numeric($nid)) {
-    $node = node_load($nid);
-    if ($node->type == 'chado_feature') {
-      return $node;
-    }
-  }
-  return FALSE;
 }
 /**
  *  We need to let drupal know about our theme functions and their arguments.

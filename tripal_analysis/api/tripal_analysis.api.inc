@@ -44,14 +44,16 @@ function tripal_analysis_unregister_child($modulename) {
  *    The analysis_id of the properties you would like to retrieve
  * @param $property
  *    The cvterm name of the properties to retrieve
+ * @param $cvname
+ *   The name of the vocabulary to which the term belongs. Defaults to 'tripal'.
  *
  * @return
  *    An analysis chado variable with the specified properties expanded
  *
  * @ingroup tripal_analysis_api
  */
-function tripal_analysis_get_property($analysis_id, $property) {
-  return tripal_core_get_property('analysis', $analysis_id, $property, 'tripal');
+function tripal_analysis_get_property($analysis_id, $property, $cvname = 'tripal') {
+  return tripal_core_get_property('analysis', $analysis_id, $property, $cvname);
 }
 
 /**
@@ -65,14 +67,16 @@ function tripal_analysis_get_property($analysis_id, $property) {
  *   The value of the property to insert
  * @param $update_if_present
  *   A boolean indicated whether to update the record if it's already present
+ * @param $cvname
+ *   The name of the vocabulary to which the term belongs. Defaults to 'tripal'.
  *
  * @return
  *   True of success, False otherwise
  *
  * @ingroup tripal_analysis_api
  */
-function tripal_analysis_insert_property($analysis_id, $property, $value, $update_if_present = 0) {
-    return tripal_core_insert_property('analysis', $analysis_id, $property, 'analysis_property', $value, $update_if_present);
+function tripal_analysis_insert_property($analysis_id, $property, $value, $update_if_present = 0, $cvname = 'tripal') {
+    return tripal_core_insert_property('analysis', $analysis_id, $property, $cvname, $value, $update_if_present);
 }
 
 /**
@@ -86,6 +90,8 @@ function tripal_analysis_insert_property($analysis_id, $property, $value, $updat
  *   The value of the property to update
  * @param $insert_if_missing
  *   A boolean indicated whether to insert the record if it's absent
+ * @param $cvname
+ *   The name of the vocabulary to which the term belongs. Defaults to 'tripal'.
  *
  * Note: The property will be identified using the unique combination of the $analysis_id and $property
  * and then it will be updated with the supplied value
@@ -95,8 +101,8 @@ function tripal_analysis_insert_property($analysis_id, $property, $value, $updat
  *
  * @ingroup tripal_analysis_api
  */
-function tripal_analysis_update_property($analysis_id, $property, $value, $insert_if_missing = 0) {
-  return tripal_core_update_property('analysis', $analysis_id, $property, 'tripal', $value, $insert_if_missing);
+function tripal_analysis_update_property($analysis_id, $property, $value, $insert_if_missing = 0, $cvname = 'tripal') {
+  return tripal_core_update_property('analysis', $analysis_id, $property, $cvname, $value, $insert_if_missing);
 }
 
 /**
@@ -106,6 +112,8 @@ function tripal_analysis_update_property($analysis_id, $property, $value, $inser
  *   The analysis_id of the property to delete
  * @param $property
  *   The cvterm name of the property to delete
+ * @param $cvname
+ *   The name of the vocabulary to which the term belongs. Defaults to 'tripal'.
  *
  * Note: The property will be identified using the unique combination of the $analysis_id and $property
  * and then it will be deleted
@@ -115,8 +123,8 @@ function tripal_analysis_update_property($analysis_id, $property, $value, $inser
  *
  * @ingroup tripal_analysis_api
  */
-function tripal_analysis_delete_property($analysis_id, $property) {
-  return tripal_core_delete_property('analysis', $analysis_id, $property, 'tripal');
+function tripal_analysis_delete_property($analysis_id, $property, $cvname = 'tripal') {
+  return tripal_core_delete_property('analysis', $analysis_id, $property, $cvname);
 }
 
 /**
