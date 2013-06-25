@@ -191,7 +191,7 @@ function chado_analysis_form(&$node, $form_state = NULL) {
       as many properties as desired by clicking the plus button on the right.  To 
       remove a property, click the minus button.  If a property is not available
       you may add it by ' . l('adding the term', 'admin/tripal/tripal_cv/cvterm/add') . '
-      to the <b>analysis_property</b> vocabulary'),
+      to the <b>analysis_property</b> vocabulary within the <b>tripal</b> database'),
   );
   $form['properties']['table'] = array(
     '#type' => 'markup',

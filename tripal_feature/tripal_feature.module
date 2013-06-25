@@ -784,7 +784,6 @@ function chado_feature_form($node, $param) {
     '#required' => TRUE,
     '#default_value' => $node->title,
     '#description' => t('The title must be a unique identifier for this feature.  It is recommended to use a combination of uniquename, organism and feature type in the title as this is guranteed to be unique.'),
-    '#weight' => 1,
     '#maxlength' => 255
   );
 
@@ -794,7 +793,6 @@ function chado_feature_form($node, $param) {
     '#required' => TRUE,
     '#default_value' => $feature->uniquename,
     '#description' => t('Enter a unique name for this feature.  This name must be unique for the organism and feature type.'),
-    '#weight' => 1,
     '#maxlength' => 255
   );
 
@@ -804,26 +802,21 @@ function chado_feature_form($node, $param) {
     '#required' => TRUE,
     '#default_value' => $feature->name,
     '#description' => t('Enter the name used by humans to refer to this feature.'),
-    '#weight' => 1,
     '#maxlength' => 255
   );
 
-  // get the list of supported feature types
-  $ftypes = array();
-  $ftypes[''] = '';
-  $supported_ftypes = split("[ \n]", variable_get('tripal_feature_type_setting', 'gene mRNA EST contig'));
-  foreach ($supported_ftypes as $ftype) {
-    $ftypes["$ftype"] = $ftype;
-  }
+  // get the sequence ontology CV ID
+  $values = array('name' => 'sequence');
+  $cv = tripal_core_chado_select('cv', array('cv_id'), $values); 
+  $cv_id = $cv[0]->cv_id; 
 
   $form['feature_type'] = array(
    '#title'       => t('Feature Type'),
-   '#type'        => t('select'),
+   '#type'        => 'textfield',
    '#description' => t("Choose the feature type."),
    '#required'    => TRUE,
    '#default_value' => $feature->type_id->name,
-   '#options'     => $ftypes,
-   '#weight'      => 2
+   '#autocomplete_path' => "admin/tripal/tripal_cv/cvterm/auto_name/$cv_id",
   );
 
   // get the list of organisms
@@ -841,7 +834,6 @@ function chado_feature_form($node, $param) {
     '#required'    => TRUE,
     '#default_value' => $feature->organism_id->organism_id,
     '#options'     => $organisms,
-    '#weight'      => 3,
   );
 
   // Get synonyms
@@ -861,7 +853,6 @@ function chado_feature_form($node, $param) {
     '#required' => FALSE,
     '#default_value' => $syn_text,
     '#description' => t('Enter alternate names (synonmys) for this feature to help in searching and identification. You may enter as many alternate names as needed each on different lines.'),
-    '#weight' => 5,
   );
 
   $form['residues']= array(
@@ -870,7 +861,6 @@ function chado_feature_form($node, $param) {
     '#required' => FALSE,
     '#default_value' => $feature->residues,
     '#description' => t('Enter the nucelotide sequences for this feature'),
-    '#weight' => 6
   );
 
   $checked = '';
@@ -883,7 +873,6 @@ function chado_feature_form($node, $param) {
     '#required' => FALSE,
     '#default_value' => $checked,
     '#description' => t('Check this box if this sequence should be retired and no longer included in further analysis.'),
-    '#weight' => 8
   );
   return $form;
 }
@@ -894,6 +883,12 @@ function chado_feature_form($node, $param) {
  */
 function chado_feature_validate($node) {
   $result = 0;
+  
+  // make sure the feature type is a real sequence ontology term
+  $type = tripal_cv_get_cvterm_by_name($node->feature_type, NULL, 'sequence');
+  if (!$type) {
+     form_set_error('feature_type', t("The feature type is not a valid name from the Sequence Ontology."));	
+  }
 
   // if this is an update, we want to make sure that a different feature for
   // the organism doesn't already have this uniquename. We don't want to give

@@ -515,7 +515,13 @@ function theme_chado_featuremap_node_form($form) {
   $markup .= drupal_render($form['title']);
   $markup .= drupal_render($form['unittype_id']);
   $markup .= drupal_render($form['description']);
-  $markup .= "<b>Include Additional Details</b><br>You may add additional properties to this map by scrolling to the bottom of this table, selecting a property type from the dropdown and adding text.  You may add as many properties as desired by clicking the plus button on the right.  To remove a property, click the minus button";
+  $markup .= "<b>Include Additional Details</b><br>You may add additional 
+    properties to this map by scrolling to the bottom of this table, selecting 
+    a property type from the dropdown and adding text.  You may add as many 
+    properties as desired by clicking the plus button on the right.  To 
+    remove a property, click the minus button. If a property is not available
+    you may add it by " . l('adding the term', 'admin/tripal/tripal_cv/cvterm/add') . "
+    to the <b>featuremap_property</b> vocabulary within the <b>tripal</b> database.";
   $markup .= $properties_table;
   $markup .= drupal_render($form['is_obsolete']);
 
