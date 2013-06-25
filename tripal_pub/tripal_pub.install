@@ -117,39 +117,39 @@ function tripal_pub_add_custom_tables() {
       'pubauthor_contact_id' => array (
         'type' => 'serial',
         'not null' => true,
-  ),
+      ),
       'contact_id' => array (
         'type' => 'int',
         'not null' => true,
-  ),
+      ),
       'pubauthor_id' => array (
         'type' => 'int',
         'not null' => true,
-  ),
-  ),
+      ),
+    ),
     'primary key' => array (
-  0 => 'pubauthor_contact_id',
-  ),
+      0 => 'pubauthor_contact_id',
+    ),
     'unique keys' => array (
       'pubauthor_contact_c1' => array (
-  0 => 'contact_id',
-  1 => 'pubauthor_id',
-  ),
-  ),
+        0 => 'contact_id',
+        1 => 'pubauthor_id',
+      ),
+    ),
     'foreign keys' => array (
       'contact' => array (
         'table' => 'contact',
         'columns' => array (
           'contact_id' => 'contact_id',
-  ),
-  ),
+        ),
+      ),
       'pubauthor' => array (
         'table' => 'pubauthor',
         'columns' => array (
           'pubauthor_id' => 'pubauthor_id',
-  ),
-  ),
-  ),
+        ),
+      ),
+    ),
   );
-  tripal_core_create_custom_table(&$ret, 'pubauthor_contact', $schema, TRUE);
+  tripal_core_create_custom_table($ret, 'pubauthor_contact', $schema, TRUE);
 }

@@ -329,7 +329,7 @@ function tripal_pub_remote_search_AGL($search_array, $num_to_retrieve, $pager_id
     );
     yaz_ccl_conf($yazc, $fields);
 
-    if (!yaz_ccl_parse($yazc, $ccl, &$cclresult)) {
+    if (!yaz_ccl_parse($yazc, $ccl, $cclresult)) {
       drupal_set_message('Error parsing search string: ' . $cclresult["errorstring"], "error");
       watchdog('tripal_pub', 'Error: %errstr', array('%errstr' => $cclresult["errorstring"]), WATCHDOG_ERROR);
       return array();

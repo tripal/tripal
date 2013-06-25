@@ -185,7 +185,7 @@ function tripal_project_theme() {
  *
  *  This form takes the Project Title information and description from the user.
  *
- *  @parm &$node
+ *  @parm $node
  *    The initialized node
  *
  *  @parm $form_state

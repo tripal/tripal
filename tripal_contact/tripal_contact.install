@@ -154,7 +154,7 @@ function tripal_contact_add_custom_tables(){
       ),
     ),
   );
-  tripal_core_create_custom_table(&$ret, 'contactprop', $schema, TRUE);
+  tripal_core_create_custom_table($ret, 'contactprop', $schema, TRUE);
 }
 /**
  *  Update for Drupal 6.x, Tripal 1.0
