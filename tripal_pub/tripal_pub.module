@@ -274,7 +274,10 @@ function tripal_pub_perm() {
  *  A user object representing the user for whom the operation is to be performed
  *
  *  @return
- *  TRUE
+ *  If the permission for the specified operation is not set then return FALSE. If the
+ *  permission is set then return NULL as this allows other modules to disable
+ *  access.  The only exception is when the $op == 'create'.  We will always 
+ *  return TRUE if the permission is set.
  *
  */
 function chado_pub_access($op, $node, $account ) {
@@ -282,6 +285,7 @@ function chado_pub_access($op, $node, $account ) {
     if (!user_access('create chado_pub content', $account)) {
       return FALSE;
     }
+    return TRUE;
   }
 
   if ($op == 'update') {

@@ -195,8 +195,25 @@ function tripal_bulk_loader_theme() {
 }
 
 /**
- *  Implements hook_access
+ * Implement hook_access().
  *
+ * This hook allows node modules to limit access to the node types they define.
+ *
+ *  @param $op
+ *  The operation to be performed
+ *
+ *  @param $node
+ *  The node on which the operation is to be performed, or, if it does not yet exist, the
+ *  type of node to be created
+ *
+ *  @param $account
+ *  A user object representing the user for whom the operation is to be performed
+ *
+ *  @return
+ *  If the permission for the specified operation is not set then return FALSE. If the
+ *  permission is set then return NULL as this allows other modules to disable
+ *  access.  The only exception is when the $op == 'create'.  We will always 
+ *  return TRUE if the permission is set.
  * @ingroup tripal_bulk_loader
  */
 function tripal_bulk_loader_access($op, $node, $account) {
@@ -204,6 +221,7 @@ function tripal_bulk_loader_access($op, $node, $account) {
     if (!user_access('create tripal_bulk_loader', $account)) {
       return FALSE;
     }
+    return TRUE;
   }
   if ($op == 'update') {
     if (!user_access('edit tripal_bulk_loader', $account)) {

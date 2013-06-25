@@ -275,8 +275,25 @@ function tripal_featuremap_cron() {
 
 }
 /**
- *  The following function proves access control for users trying to
- *  perform actions on data managed by this module
+ * Implement hook_access().
+ *
+ * This hook allows node modules to limit access to the node types they define.
+ *
+ *  @param $op
+ *  The operation to be performed
+ *
+ *  @param $node
+ *  The node on which the operation is to be performed, or, if it does not yet exist, the
+ *  type of node to be created
+ *
+ *  @param $account
+ *  A user object representing the user for whom the operation is to be performed
+ *
+ *  @return
+ *  If the permission for the specified operation is not set then return FALSE. If the
+ *  permission is set then return NULL as this allows other modules to disable
+ *  access.  The only exception is when the $op == 'create'.  We will always 
+ *  return TRUE if the permission is set.
  *
  * @ingroup tripal_featuremap
  */
@@ -285,6 +302,7 @@ function tripal_featuremap_map_access($op, $node, $account) {
     if (!user_access('create chado_featuremap content', $account)) {
       return FALSE;
     }
+    return TRUE;
   }
 
   if ($op == 'update') {

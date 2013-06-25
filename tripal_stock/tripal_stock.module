@@ -167,17 +167,25 @@ function tripal_stock_perm() {
 }
 
 /**
- * Implements hook_access(): Maps permission catagories to actions
+ * Implement hook_access().
  *
- * @param $op
- *   The operation current operation: one of create, update, delete
- * @param $node
- *   The node object the current operation is being performed on
- * @param $account
- *   A user object representing the user for whom the operation is to be performed
+ * This hook allows node modules to limit access to the node types they define.
  *
- * @return
- *   TRUE grants access; FALSE denies it
+ *  @param $op
+ *  The operation to be performed
+ *
+ *  @param $node
+ *  The node on which the operation is to be performed, or, if it does not yet exist, the
+ *  type of node to be created
+ *
+ *  @param $account
+ *  A user object representing the user for whom the operation is to be performed
+ *
+ *  @return
+ *  If the permission for the specified operation is not set then return FALSE. If the
+ *  permission is set then return NULL as this allows other modules to disable
+ *  access.  The only exception is when the $op == 'create'.  We will always 
+ *  return TRUE if the permission is set.
  *
  * @ingroup tripal_stock
  */
@@ -186,6 +194,7 @@ function chado_stock_access($op, $node, $account) {
     if (!user_access('create chado_stock content', $account)) {
       return FALSE;
     }
+    return TRUE;
   }
   if ($op == 'update') {
     if (!user_access('edit chado_stock content', $account)) {
