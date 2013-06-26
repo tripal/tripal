@@ -25,7 +25,7 @@ function tripal_organism_init() {
  *
  * @ingroup tripal_organism
  */
-function tripal_org_acanism_node_info() {
+function tripal_organism_node_info() {
   $nodes = array();
   $nodes['chado_organism'] = array(
     'name' => t('Organism'),
