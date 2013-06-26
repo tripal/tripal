@@ -1116,6 +1116,12 @@ function tripal_pub_create_citation($pub) {
 	  elseif ($pub['Journal Abbreviation']) {
 	    $citation .= $pub['Journal Abbreviation'] . '. ';
 	  }
+	  elseif ($pub['Series Name']) {
+	    $citation .= $pub['Series Name'] . '. ';	
+	  }
+	  elseif ($pub['Series Abbreviation']) {
+      $citation .= $pub['Series Abbreviation'] . '. ';
+    }
 	  $citation .= $pub['Publication Date'];
 	  if ($pub['Volume'] or $pub['Issue'] or $pub['Pages']) {
 	    $citation .= '; ';
@@ -1152,8 +1158,11 @@ function tripal_pub_create_citation($pub) {
   elseif ($pub_type == 'Conference Proceedings') {
     $citation = $pub['Authors'] . '. ' . $pub['Title'] .  '. ';
   
-    if ($pub['Series Name']) {
-      $citation .= $pub['Series Name'] . '. ';
+    if ($pub['Conference Name']) {
+      $citation .= $pub['Conference Name'] . '. ';
+    }
+    elseif ($pub['Series Name']) {
+      $citation .= $pub['Series Name'] . '. ';  
     }
     elseif ($pub['Series Abbreviation']) {
       $citation .= $pub['Series Abbreviation'] . '. ';
