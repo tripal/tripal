@@ -200,6 +200,7 @@ function chado_pub_validate($node, &$form) {
   $pub_id       = $node->pub_id;
   $num_properties = $node->num_properties;
   $num_new = $node->num_new;
+  dpm($node);
   
   $pub = array();
 
@@ -241,15 +242,15 @@ function chado_pub_validate($node, &$form) {
       $pub[$prop_type->name] = $value;
     }
     // if this is a new property (added by this submit of the form)
-    elseif ($element = 'new_id') {
+    elseif ($element == 'new_id') {    	 
       $prop_type = tripal_cv_get_cvterm_by_id($value);
       if($prop_type->name == 'Conference Name' or $prop_type->name == 'Journal Name') {
         $series_name = $node->new_value;
       }
       if($prop_type->name == 'Citation') {
-        $uniquename = $value;
+        $uniquename = $node->new_value;
       }
-      $pub[$prop_type->name] = $value;
+      $pub[$prop_type->name] = $node->new_value;
     }
   }
   // if the citation is missing then try to generate one

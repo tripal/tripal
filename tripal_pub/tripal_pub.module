@@ -381,12 +381,13 @@ function chado_pub_insert($node) {
 
     // iterate through all of the properties and remove those that really are
     // part of the pub table fields
-    foreach ($properties as $name => $element) {
+    foreach ($properties as $name => $element) {    	    
+      $value = trim($element[0]);
+      
     	// populate our $pub_array for building a citation
     	$pub_arr[$name] = $value;
     	
-    	// remove properties that are stored in the pub table
-      $value = trim($element[0]);
+      // remove properties that are stored in the pub table
       if ($name == "Volume") {
         $volume = $value;
         unset($properties[$name]);
@@ -421,7 +422,6 @@ function chado_pub_insert($node) {
         $cross_refs[] = $value;
       }
     }
-    
     // generate a citation for this pub if one doesn't already exist 
     if (!$node->uniquename and array_key_exists('Citation', $properties)) {
     	$pub_type = tripal_cv_get_cvterm_by_id($node->type_id);
