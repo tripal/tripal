@@ -332,6 +332,10 @@ function chado_pub_access($op, $node, $account ) {
  */
 function chado_pub_insert($node) {
 
+	// we need an array suitable for the tripal_pub_create_citation() function
+	// to automatically generate a citation if a uniquename doesn't already exist
+	$pub_arr = array();
+	
   // if a pub_id already exists for this node then it already exists in Chado and
   // we get here because we are syncing the node.  Therefore, we can skip the insert
   // but we always want to set the URL path alias to be the Chado pub ID
@@ -386,8 +390,13 @@ function chado_pub_insert($node) {
 
     // iterate through all of the properties and remove those that really are
     // part of the pub table fields
-    foreach ($properties as $name => $element) {
+    foreach ($properties as $name => $element) {    	    
       $value = trim($element[0]);
+      
+    	// populate our $pub_array for building a citation
+    	$pub_arr[$name] = $value;
+    	
+      // remove properties that are stored in the pub table
       if ($name == "Volume") {
         $volume = $value;
         unset($properties[$name]);
@@ -422,7 +431,16 @@ function chado_pub_insert($node) {
         $cross_refs[] = $value;
       }
     }
-
+    // generate a citation for this pub if one doesn't already exist 
+    if (!$node->uniquename and array_key_exists('Citation', $properties)) {
+    	$pub_type = tripal_cv_get_cvterm_by_id($node->type_id);
+    	$pub_arr['Title'] = $node->pubtitle;
+      $pub_arr['Publication Type'][0] = $pub_type->name;
+      $pub_arr['Year'] = $node->pyear;
+      $node->uniquename = tripal_pub_create_citation($pub_arr);
+      $properties['Citation'][0] = $node->uniquename;
+    }
+    
     // insert the pub record
     $values = array(
       'title'       => trim($node->pubtitle),
@@ -506,6 +524,10 @@ function chado_pub_update($node) {
     // there is no way to handle revisions in Chado but leave
     // this here just to make not we've addressed it.
   }
+  
+  // we need an array suitable for the tripal_pub_create_citation() function
+  // to automatically generate a citation if a uniquename doesn't already exist
+  $pub_arr = array();
 
   // get the publication ID for this publication
   $pub_id = chado_get_id_for_node('pub', $node) ;
@@ -567,6 +589,10 @@ function chado_pub_update($node) {
   // part of the pub table fields
   foreach ($properties as $name => $element) {
     foreach ($element as $index => $value) {
+    	// populate our $pub_array for building a citation
+      $pub_arr[$name] = $value;
+      
+      // remove properties that are stored in the pub table
       if ($name == "Volume") {
         $volume = $value;
         unset($properties[$name]);
@@ -601,6 +627,15 @@ function chado_pub_update($node) {
         $cross_refs[] = $value;
       }
     }
+  }
+  // generate a citation for this pub if one doesn't already exist 
+  if (!$node->uniquename) {
+    $pub_type = tripal_cv_get_cvterm_by_id($node->type_id);
+    $pub_arr['Title'] = $node->pubtitle;
+    $pub_arr['Publication Type'][0] = $pub_type->name;
+    $pub_arr['Year'] = $node->pyear;
+    $node->uniquename = tripal_pub_create_citation($pub_arr);
+    $properties['Citation'][0] = $node->uniquename;
   }
 
   // update the pub record

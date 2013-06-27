@@ -1122,7 +1122,12 @@ function tripal_pub_create_citation($pub) {
 	  elseif ($pub['Series Abbreviation']) {
       $citation .= $pub['Series Abbreviation'] . '. ';
     }
-	  $citation .= $pub['Publication Date'];
+    if ($pub['Publication Date']) {
+	    $citation .= $pub['Publication Date'];
+    }
+    elseif ($pub['Year']) {
+    	$citation .= $pub['Year'];
+    }
 	  if ($pub['Volume'] or $pub['Issue'] or $pub['Pages']) {
 	    $citation .= '; ';
 	  }
@@ -1167,7 +1172,12 @@ function tripal_pub_create_citation($pub) {
     elseif ($pub['Series Abbreviation']) {
       $citation .= $pub['Series Abbreviation'] . '. ';
     }
-    $citation .= $pub['Publication Date'];
+    if ($pub['Publication Date']) {
+      $citation .= $pub['Publication Date'];
+    }
+    elseif ($pub['Year']) {
+      $citation .= $pub['Year'];
+    }
     if ($pub['Volume'] or $pub['Issue'] or $pub['Pages']) {
       $citation .= '; ';
     }
