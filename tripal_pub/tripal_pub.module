@@ -6,6 +6,7 @@ require_once "includes/pub_sync.inc";
 require_once "includes/pub_form.inc";
 require_once "includes/pub_importers.inc";
 require_once "includes/pub_search.inc";
+require_once "includes/pub_citation.inc";
 require_once "includes/importers/PMID.inc";
 require_once "includes/importers/AGL.inc";
 /**
@@ -174,6 +175,14 @@ function tripal_pub_menu() {
     'type ' => MENU_CALLBACK,
   );
 
+  $items['admin/tripal/tripal_pub/citation'] = array(
+      'title' => ' Create Citations',
+      'description' => 'Create citations in Chado with Drupal',
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array('tripal_pub_citation_form'),
+      'access arguments' => array('administer tripal pubs'),
+      'type' => MENU_NORMAL_ITEM,
+  );
 
   return $items;
 }
