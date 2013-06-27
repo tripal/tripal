@@ -63,6 +63,9 @@ function chado_pub_form($node, $form_state) {
       $d_type_id = $pub_type->cvterm_id;
     }
   }
+  
+  // reset the default to use the stored variable if one exists
+  $d_type_id = variable_get('tripal_pub_default_type', $d_type_id);
 
   // get publication properties list
   $properties_select = array();

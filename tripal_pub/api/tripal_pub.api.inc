@@ -1077,7 +1077,6 @@ function tripal_pub_get_publication_array($pub_id, $skip_existing = TRUE) {
  *   A text string containing the citation
  */
 function tripal_pub_create_citation($pub) {
-	dpm($pub);
 	$citation = '';
 	$pub_type = '';
 	
