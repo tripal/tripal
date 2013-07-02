@@ -23,7 +23,7 @@ function tripal_pub_remote_alter_form_PMID($form, $form_state) {
 /**
  *
  */
-function tripal_pub_remote_validate_form_PMID(&$form, $form_state) {
+function tripal_pub_remote_validate_form_PMID($form, $form_state) {
   $num_criteria = $form['num_criteria']['#default_value'];
 
   for ($i = 1; $i <= $num_criteria; $i++) {
@@ -33,6 +33,7 @@ function tripal_pub_remote_validate_form_PMID(&$form, $form_state) {
       form_set_error("search_terms-$i", "The PubMed accession must be a numeric value, prefixed with 'PMID:' (e.g. PMID:23024789).");
     }
   }
+  return $form;
 }
 /**
  *
