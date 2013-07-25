@@ -2,7 +2,8 @@
 /**
  *
  */
-function tripal_pub_remote_alter_form_AGL(&$form, $form_state) {
+function tripal_pub_remote_alter_form_AGL($form, $form_state) {
+
   $num_criteria = $form['num_criteria']['#default_value'];
 
   // So far we haven't been able to get AGL to filter results to only
@@ -15,12 +16,12 @@ function tripal_pub_remote_alter_form_AGL(&$form, $form_state) {
   for($i = 1; $i <= $num_criteria; $i++) {
     unset($form['criteria'][$i]["scope-$i"]['#options']['journal']);
   }
-
+  return $form;
 }
 /**
  *
  */
-function tripal_pub_remote_validate_form_AGL(&$form, $form_state) {
+function tripal_pub_remote_validate_form_AGL($form, $form_state) {
   $days =  trim($form_state['values']["days"]);
   $num_criteria = $form['num_criteria']['#default_value'];
 
@@ -42,6 +43,7 @@ function tripal_pub_remote_validate_form_AGL(&$form, $form_state) {
       form_set_error("search_terms-$i", "Unfortuantely, the AGL importer can only support a single accession at a time. Please remove the others.");
     }
   }
+  return $form;
 }
 /**
  *

@@ -431,7 +431,7 @@ function tripal_pub_importer_setup_form(&$form_state = NULL, $pub_import_id = NU
 
     // allow the selected remote database to make changes to the form if needed
     $callback = "tripal_pub_remote_alter_form_$remote_db";
-    call_user_func($callback, $form, $form_state);
+    $form = call_user_func($callback, $form, $form_state);
 
     return $form;
 }
@@ -467,7 +467,7 @@ function tripal_pub_importer_setup_form_validate($form, &$form_state) {
   }
   // allow the selected remote database to validate any changes to the form if needed
   $callback = "tripal_pub_remote_validate_form_$remote_db";
-  call_user_func($callback, $form, $form_state);
+  $form = call_user_func($callback, $form, $form_state);
 }
 
 /**
