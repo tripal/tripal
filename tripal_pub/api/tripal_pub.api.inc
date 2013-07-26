@@ -1014,6 +1014,7 @@ function tripal_pub_get_publication_array($pub_id, $skip_existing = TRUE) {
   if (trim($pub->uniquename)) {
     $pub_array['Uniquename'] = $pub->uniquename;
   }
+  $pub_array['Publication Type'][] = $pub->type_id->name;
 
   // ---------------------------------
   // get the citation
@@ -1053,8 +1054,6 @@ function tripal_pub_get_publication_array($pub_id, $skip_existing = TRUE) {
     foreach ($ptypes as $ptype) {
      $pub_array['Publication Type'][] = $ptype->value;
     }
-  } else {
-  	return FALSE;
   }
 
   // ---------------------------------

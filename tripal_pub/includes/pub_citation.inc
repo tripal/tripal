@@ -44,11 +44,11 @@ function tripal_pub_create_citations ($options) {
   $citation_type_id = db_result(chado_query("SELECT cvterm_id FROM {cvterm} WHERE name = 'Citation' AND cv_id = (SELECT cv_id FROM {cv} WHERE name = 'tripal_pub')"));
   // Create and replace citation for all pubs
   if ($options == 'all') {
-  	$sql = "SELECT pub_id FROM {pub} P";
+  	$sql = "SELECT pub_id FROM {pub} P WHERE pub_id <> 1";
     $skip_existing = FALSE;
   // Create citation for pubs that don't already have one
   } else if ($options == 'new') {
-  	$sql = "SELECT pub_id FROM {pub} P WHERE (SELECT value FROM {pubprop} PB WHERE type_id = $citation_type_id AND P.pub_id = PB.pub_id AND rank = 0) IS NULL";
+  	$sql = "SELECT pub_id FROM {pub} P WHERE (SELECT value FROM {pubprop} PB WHERE type_id = $citation_type_id AND P.pub_id = PB.pub_id AND rank = 0) IS NULL AND  pub_id <> 1";
   	$skip_existing = TRUE;
   }
 
