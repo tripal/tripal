@@ -77,23 +77,26 @@ function tripal_project_perm() {
 }
 
 /**
- * Implements hook_access()
+ * Implement hook_access().
  *
- *  This function sets the access permission for operations on the database.
+ * This hook allows node modules to limit access to the node types they define.
  *
- *  @parm $op
- *    The operation that is to be performed
+ *  @param $op
+ *  The operation to be performed
  *
- *  @parm $node
- *    The specific node that is to have the operation performed
+ *  @param $node
+ *  The node on which the operation is to be performed, or, if it does not yet exist, the
+ *  type of node to be created
  *
- *  @parm $account
- *    The account of the user that is performing the operations
+ *  @param $account
+ *  A user object representing the user for whom the operation is to be performed
  *
  *  @return
- *    True if a operation was performed
- *
- *
+ *  If the permission for the specified operation is not set then return FALSE. If the
+ *  permission is set then return NULL as this allows other modules to disable
+ *  access.  The only exception is when the $op == 'create'.  We will always 
+ *  return TRUE if the permission is set.
+ *  
  * @ingroup tripal_project
  */
 function chado_project_access($op, $node, $account) {
@@ -102,6 +105,7 @@ function chado_project_access($op, $node, $account) {
     if (!user_access('create chado_projects content', $account)) {
       return FALSE;
     }
+    return TRUE;
   }
   if ($op == 'update') {
     if (!user_access('edit chado_projects content', $account)) {
@@ -185,7 +189,7 @@ function tripal_project_theme() {
  *
  *  This form takes the Project Title information and description from the user.
  *
- *  @parm &$node
+ *  @parm $node
  *    The initialized node
  *
  *  @parm $form_state

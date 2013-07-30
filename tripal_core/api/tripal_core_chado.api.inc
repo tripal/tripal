@@ -1545,7 +1545,7 @@ function tripal_core_expand_chado_vars($object, $type, $to_expand, $table_option
 
   // make sure we have a value
   if (!$object) {
-    watchdog('tripal_core', 'Cannot pass non array as arugment, $object, to tripal_core_expand_chado_vars function.', array(), WATCHDOG_ERROR);
+    watchdog('tripal_core', 'Cannot pass non array as argument, $object, to tripal_core_expand_chado_vars function.', array(), WATCHDOG_ERROR);
     return $object;
   }
 

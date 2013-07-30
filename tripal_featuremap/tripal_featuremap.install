@@ -218,7 +218,7 @@ function tripal_featuremap_add_custom_tables(){
       ),
     ),
   );  
-  tripal_core_create_custom_table(&$ret, 'featuremapprop', $schema, TRUE);
+  tripal_core_create_custom_table($ret, 'featuremapprop', $schema, TRUE);
   
   // add the featuremap_dbxref table to Chado
   $schema = array (
@@ -270,7 +270,7 @@ function tripal_featuremap_add_custom_tables(){
     ),
     'referring_tables' => NULL,
   );
-  tripal_core_create_custom_table(&$ret, 'featuremap_dbxref', $schema, TRUE);
+  tripal_core_create_custom_table($ret, 'featuremap_dbxref', $schema, TRUE);
   
   $schema = array (
     'table' => 'featureposprop',
@@ -330,7 +330,7 @@ function tripal_featuremap_add_custom_tables(){
       ),
     ),
   );
-  tripal_core_create_custom_table(&$ret, 'featureposprop', $schema, TRUE);
+  tripal_core_create_custom_table($ret, 'featureposprop', $schema, TRUE);
 }
 
 /**

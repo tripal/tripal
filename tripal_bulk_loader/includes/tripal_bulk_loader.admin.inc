@@ -5,75 +5,7 @@
  * Bulk Loader Administration (Miscellaneous)
  */
 
-/**
- * Provides a description page and quick links for the bulk loader
- *
- * @ingroup tripal_bulk_loader
- */
-function tripal_bulk_loader_admin_template() {
-  $output = '';
 
-  $output .= '<br /><h3>Quick Links:</h3>';
-  $output .= '<ul>'
-    . '<li>'
-      . t('<a href="@link">Configure settings</a>',
-        array('@link' => url('admin/tripal/tripal_bulk_loader_template/configure')))
-      . '</li>'
-    . '<li>'
-      . t('List <a href="@link">Bulk Loader Jobs</a>',
-      array('@link' => url('admin/tripal/tripal_bulk_loader_template/jobs')))
-      . '</li>'
-    . '<li>'
-      . t('List <a href="@link">Manage Templates</a>',
-      array('@link' => url('admin/tripal/tripal_bulk_loader_template/manage_templates')))
-      . '</li>'
-      . '<ul>'
-      . '<li>'
-        . t('<a href="@create">Create</a> a new template',
-        array('@create' => url('admin/tripal/tripal_bulk_loader_template/manage_templates/create')))
-        . '</li>'
-      . '<li>'
-        . t('<a href="@edit">Edit</a> an existing template',
-        array('@edit' => url('admin/tripal/tripal_bulk_loader_template/manage_templates/edit')))
-        . '</li>'
-      . '<li>'
-        . t('<a href="@delete">Delete</a> an existing template',
-        array('@delete' => url('admin/tripal/tripal_bulk_loader_template/manage_templates/delete')))
-        . '</li>'
-      . '<li>'
-        . t('<a href="@import">Import</a> a new template',
-        array('@import' => url('admin/tripal/tripal_bulk_loader_template/manage_templates/import')))
-        . '</li>'
-      . '<li>'
-        . t('<a href="@export">Export</a> an existing template',
-        array('@export' => url('admin/tripal/tripal_bulk_loader_template/manage_templates/export')))
-        . '</li>'
-      . '</ul>'
-    . '</ul>';
-
-  $output .= '<h3>Module Description:</h3>';
-  $output .= '<p>This module provides the ability to create loading templates for any tab-delimited '
-    . 'data file allowing it to be loaded into chado. The Loading Templates are a direct mapping '
-    . 'between the columns in your file and the columns in chado tables. As such to use this tool '
-    . 'you need to be very familar with the chado schema -See '
-    . l(t('Chado -Getting Started'), 'http://gmod.org/wiki/Chado_-_Getting_Started')
-    . '. The ability to add constants and specify foreign key contraints is also provided '
-    . 'in order for the loader to fill chado columns which may be required but are not specified '
-    . 'in your input file.</p>';
-  $output .= '<br />';
-
-  $output .= '<h3>Setup Instructions</h3>';
-  $output .= '<p>After intallation of the bulk loader module, the following tasks should be performed:</p>';
-  $output .= '<ol>';
-  $output .= '<li><b>Install Theme:</b> In order for Bulk Loading pages to be displayed correctly, '
-    .'the contents of the Tripal Bulk Loader theme directory ([drupal root]/sites/all/modules/tripal/tripal_bulk_loader/theme) '
-    .'should be moved to the base directory of the Tripal theme ([drupal root]/sites/all/themes/tripal). '
-    .'Finally the drupal cache should be cleared for the new theme to take effect -navigate to admin/settings/performance '
-    .'and click the Clear Cached Data button.</li>';
-  $output .= '</ol>';
-
-  return $output;
-}
 
 /**
  * Provides a description page and quick links for template management

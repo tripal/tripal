@@ -42,7 +42,7 @@ function tripal_cv_show_browser() {
  * to the function.  For example, the Tripal GO Analysis module generates
  * tree ids of the form:
  *
- *  tripal_analysis_go_cv_tree_10_2_bp
+ *  tripal_analysis_go_cv_tree_10-2_bp
  *
  * In this case the module that will manage this tree is identified as 'tripal_analysis_go' and within
  * the [unique id] portion contains the

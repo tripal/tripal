@@ -112,8 +112,9 @@ relationship: part_of TPUB:0000002 ! Publication
 [Term]
 id: TPUB:0000038
 name: Journal Abbreviation
-relationship: part_of TPUB:0000037 ! Publication Details
 def: The journal title ISO Abbreviation.
+is_a: TPUB:0000257 ! Series Abbreviation
+relationship: part_of TPUB:0000037 ! Publication Details
 
 [Term]
 id: TPUB:0000039
@@ -272,6 +273,7 @@ is_a: TPUB:0000070 ! Conference Proceedings
 [Term]
 id: TPUB:0000075
 name: Journal Name
+is_a: TPUB:0000256 ! Series Name
 relationship: part_of TPUB:0000037 ! Publication Details
 
 [Term]
@@ -1410,6 +1412,17 @@ name: Patent Number
 relationship: part_of TPUB:0000037 ! Publication Details
 def: A unique special code for journal article, book, book chapter or any publication type.
 
+[Term]
+id: TPUB:0000256
+name: Series Name
+relationship: part_of TPUB:0000037 ! Publication Details
+def: The name media that produces a series of publications (e.g. journal, conference proceedings, etc.)
+
+[Term]
+id: TPUB:0000257
+name: Series Abbreviation
+relationship: part_of TPUB:0000037 ! Publication Details
+def: An abbreviation for the series name.  (e.g. the journal title ISO Abbreviation).
 
 [Typedef]
 id: is_a

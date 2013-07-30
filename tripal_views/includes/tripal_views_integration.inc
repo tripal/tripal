@@ -196,7 +196,7 @@ function tripal_views_integration_delete($setup_id) {
  *   handlers when integrating a table with views.  This form is used for both
  *   creating a new record and editing an existing record.
  *
- * @param &$form_state
+ * @param $form_state
  *    The form state which is passed automatically by drupal
  *
  * @param $setup_id
@@ -847,7 +847,7 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL) {
  * @param $form
  *    The form object which is passed automatically by drupal
  *
- * @param &$form_state
+ * @param $form_state
  *    The form state pbject which is passed automatically by drupal
  *
  * @ingroup tripal_views_integration
@@ -883,7 +883,7 @@ function tripal_views_integration_form_validate($form, &$form_state) {
  * @param $form
  *    The form object which is passed automatically by drupal
  *
- * @param &$form_state
+ * @param $form_state
  *    The form state pbject which is passed automatically by drupal
  *
  * @ingroup tripal_views_integration

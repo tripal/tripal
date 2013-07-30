@@ -23,10 +23,10 @@ require_once "includes/seq_extract.inc";
 require_once "api/tripal_feature.api.inc";
 
 require_once "includes/tripal_feature-delete.inc";
-require_once "includes/tripal_feature-secondary_tables.inc";
-require_once "includes/tripal_feature-properties.inc";
-require_once "includes/tripal_feature-relationships.inc";
-require_once "includes/tripal_feature-db_references.inc";
+//require_once "includes/tripal_feature-secondary_tables.inc";
+//require_once "includes/tripal_feature-properties.inc";
+//require_once "includes/tripal_feature-relationships.inc";
+//require_once "includes/tripal_feature-db_references.inc";
 
 
 /**
@@ -117,15 +117,34 @@ function tripal_feature_perm() {
 }
 
 /**
- *  Set the permission types that the module uses.
+ * Implement hook_access().
  *
+ * This hook allows node modules to limit access to the node types they define.
+ *
+ *  @param $op
+ *  The operation to be performed
+ *
+ *  @param $node
+ *  The node on which the operation is to be performed, or, if it does not yet exist, the
+ *  type of node to be created
+ *
+ *  @param $account
+ *  A user object representing the user for whom the operation is to be performed
+ *
+ *  @return
+ *  If the permission for the specified operation is not set then return FALSE. If the
+ *  permission is set then return NULL as this allows other modules to disable
+ *  access.  The only exception is when the $op == 'create'.  We will always 
+ *  return TRUE if the permission is set.
+ *  
  * @ingroup tripal_feature
  */
 function chado_feature_access($op, $node, $account) {
   if ($op == 'create') {
     if (!user_access('create chado_feature content', $account)) {
       return FALSE;
-      }
+    }
+    return TRUE;
   }
 
   if ($op == 'update') {
@@ -223,68 +242,6 @@ function tripal_feature_menu() {
     'type' => MENU_NORMAL_ITEM,
   );
 
-  // Adding Secondary Properties
-
-  /**
-  $items['node/%tf_node/tf_properties'] = array(
-    'title' => t('Add Properties & Synonyms'),
-    'description' => t('Settings for Features'),
-    'page callback' => 'tripal_feature_add_ALL_property_page',
-    'page arguments' => array(1),
-    'access arguments' => array('create chado_feature content'),
-    'type' => MENU_CALLBACK
-  );
-
-  $items['node/%tf_node/tf_db_references'] = array(
-    'title' => t('Add Database References'),
-    'description' => t('Settings for Features'),
-    'page callback' => 'tripal_feature_add_ALL_dbreferences_page',
-    'page arguments' => array(1),
-    'access arguments' => array('create chado_feature content'),
-    'type' => MENU_CALLBACK
-  );
-
-  $items['node/%tf_node/tf_relationships'] = array(
-    'title' => t('Add Relationships'),
-    'description' => t('Settings for Features'),
-    'page callback' => 'tripal_feature_add_ALL_relationships_page',
-    'page arguments' => array(1),
-    'access arguments' => array('create chado_feature content'),
-    'type' => MENU_CALLBACK
-  );
-  */
-
-  //Edit/Deleting Secondary Properties-------------
-  $items['node/%tf_node/edit_feature_properties'] = array(
-    'title' => 'Edit Properties',
-    'description' => 'Settings for Features',
-    'page callback' => 'tripal_feature_edit_ALL_properties_page',
-    'page arguments' => array(1),
-    'access arguments' => array('edit chado_feature content'),
-    'type' => MENU_LOCAL_TASK,
-    'weight' => 8,
-  );
-  /**
-  $items['node/%tf_node/tf_edit_relationships'] = array(
-    'title' => t('Edit Relationships'),
-    'description' => t('Settings for Feature'),
-    'page callback' => 'tripal_feature_edit_ALL_relationships_page',
-    'page arguments' => array(1),
-    'access arguments' => array('edit chado_feature content'),
-    'type' => MENU_LOCAL_TASK,
-    'weight' => 9,
-  );
-  */
-  $items['node/%tf_node/tf_edit_db_references'] = array(
-    'title' => 'Edit References',
-    'description' => 'Settings for Feature',
-    'page callback' => 'tripal_feature_edit_ALL_dbreferences_page',
-    'page arguments' => array(1),
-    'access arguments' => array('edit chado_feature content'),
-    'type' => MENU_LOCAL_TASK,
-    'weight' => 10,
-  );
-
   // the menu link for addressing any feature (by name, uniquename, synonym)
   $items['feature/%'] = array(
     'title' => 'Matched Features',
@@ -296,24 +253,6 @@ function tripal_feature_menu() {
   );
 
   return $items;
-}
-
-/**
- * Implements Menu wildcard_load hook
- * Purpose: Allows the node ID of a chado feature to be dynamically
- *   pulled from the path. The node is loaded from this node ID
- *   and supplied to the page as an arguement
- *
- * @ingroup tripal_feature
- */
-function tf_node_load($nid) {
-  if (is_numeric($nid)) {
-    $node = node_load($nid);
-    if ($node->type == 'chado_feature') {
-      return $node;
-    }
-  }
-  return FALSE;
 }
 /**
  *  We need to let drupal know about our theme functions and their arguments.
@@ -864,7 +803,6 @@ function chado_feature_form($node, $param) {
     '#required' => TRUE,
     '#default_value' => $node->title,
     '#description' => t('The title must be a unique identifier for this feature.  It is recommended to use a combination of uniquename, organism and feature type in the title as this is guranteed to be unique.'),
-    '#weight' => 1,
     '#maxlength' => 255
   );
 
@@ -874,7 +812,6 @@ function chado_feature_form($node, $param) {
     '#required' => TRUE,
     '#default_value' => $feature->uniquename,
     '#description' => t('Enter a unique name for this feature.  This name must be unique for the organism and feature type.'),
-    '#weight' => 1,
     '#maxlength' => 255
   );
 
@@ -884,26 +821,21 @@ function chado_feature_form($node, $param) {
     '#required' => TRUE,
     '#default_value' => $feature->name,
     '#description' => t('Enter the name used by humans to refer to this feature.'),
-    '#weight' => 1,
     '#maxlength' => 255
   );
 
-  // get the list of supported feature types
-  $ftypes = array();
-  $ftypes[''] = '';
-  $supported_ftypes = split("[ \n]", variable_get('tripal_feature_type_setting', 'gene mRNA EST contig'));
-  foreach ($supported_ftypes as $ftype) {
-    $ftypes["$ftype"] = $ftype;
-  }
+  // get the sequence ontology CV ID
+  $values = array('name' => 'sequence');
+  $cv = tripal_core_chado_select('cv', array('cv_id'), $values); 
+  $cv_id = $cv[0]->cv_id; 
 
   $form['feature_type'] = array(
    '#title'       => t('Feature Type'),
-   '#type'        => t('select'),
+   '#type'        => 'textfield',
    '#description' => t("Choose the feature type."),
    '#required'    => TRUE,
    '#default_value' => $feature->type_id->name,
-   '#options'     => $ftypes,
-   '#weight'      => 2
+   '#autocomplete_path' => "admin/tripal/tripal_cv/cvterm/auto_name/$cv_id",
   );
 
   // get the list of organisms
@@ -921,7 +853,6 @@ function chado_feature_form($node, $param) {
     '#required'    => TRUE,
     '#default_value' => $feature->organism_id->organism_id,
     '#options'     => $organisms,
-    '#weight'      => 3,
   );
 
   // Get synonyms
@@ -941,7 +872,6 @@ function chado_feature_form($node, $param) {
     '#required' => FALSE,
     '#default_value' => $syn_text,
     '#description' => t('Enter alternate names (synonmys) for this feature to help in searching and identification. You may enter as many alternate names as needed each on different lines.'),
-    '#weight' => 5,
   );
 
   $form['residues']= array(
@@ -950,7 +880,6 @@ function chado_feature_form($node, $param) {
     '#required' => FALSE,
     '#default_value' => $feature->residues,
     '#description' => t('Enter the nucelotide sequences for this feature'),
-    '#weight' => 6
   );
 
   $checked = '';
@@ -963,7 +892,6 @@ function chado_feature_form($node, $param) {
     '#required' => FALSE,
     '#default_value' => $checked,
     '#description' => t('Check this box if this sequence should be retired and no longer included in further analysis.'),
-    '#weight' => 8
   );
   return $form;
 }
@@ -974,6 +902,12 @@ function chado_feature_form($node, $param) {
  */
 function chado_feature_validate($node) {
   $result = 0;
+  
+  // make sure the feature type is a real sequence ontology term
+  $type = tripal_cv_get_cvterm_by_name($node->feature_type, NULL, 'sequence');
+  if (!$type) {
+     form_set_error('feature_type', t("The feature type is not a valid name from the Sequence Ontology."));	
+  }
 
   // if this is an update, we want to make sure that a different feature for
   // the organism doesn't already have this uniquename. We don't want to give

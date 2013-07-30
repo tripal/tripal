@@ -199,14 +199,18 @@ function tripal_contact_perm() {
  *  A user object representing the user for whom the operation is to be performed
  *
  *  @return
- *  TRUE
+ *  If the permission for the specified operation is not set then return FALSE. If the
+ *  permission is set then return NULL as this allows other modules to disable
+ *  access.  The only exception is when the $op == 'create'.  We will always 
+ *  return TRUE if the permission is set.
  *
  */
 function chado_contact_access($op, $node, $account ) {
   if ($op == 'create') {
     if (!user_access('create chado_contact content', $account)) {
       return FALSE;
-      }
+    }
+    return TRUE;
   }
 
   if ($op == 'update') {

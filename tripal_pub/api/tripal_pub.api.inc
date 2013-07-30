@@ -953,35 +953,334 @@ function tripal_pub_delete_property($pub_id, $property) {
   return tripal_core_delete_property('pub', $pub_id, $property, 'tripal_pub');
 }
 
-/*
- *
+
+
+/**
+ * This function generates an array suitable for use with the 
+ * tripal_pub_create_citation function for any publication
+ * already stored in the Chado tables.
+ *  
+ * @param $pub_id
+ *   The publication ID
+ * @param $skip_existing
+ *   Set to TRUE to skip publications that already have a citation
+ *   in the pubprop table.  Set to FALSE to generate a citation 
+ *   regardless if the citation already exists.
+ *   
+ * @return
+ *   An array suitable for the trpial_pub_create_citation function. On
+ *   failure returns FALSE.
+ */
+
+function tripal_pub_get_publication_array($pub_id, $skip_existing = TRUE) {
+
+  $options = array('return_array' => 1);
+
+  // ---------------------------------
+  // get the publication
+  // ---------------------------------
+  $values = array('pub_id' => $pub_id);
+  $pub = tripal_core_generate_chado_var('pub', $values);
+
+  // expand the title
+  $pub = tripal_core_expand_chado_vars($pub, 'field', 'pub.title');
+  $pub = tripal_core_expand_chado_vars($pub, 'field', 'pub.volumetitle');
+  $pub = tripal_core_expand_chado_vars($pub, 'field', 'pub.uniquename');
+  $pub_array = array();
+  if (trim($pub->title)) {
+    $pub_array['Title'] = $pub->title;
+  }
+  if (trim($pub->volumetitle)) {
+    $pub_array['Volume Title'] = $pub->volumetitle;
+  }
+  if (trim($pub->volume)) {
+    $pub_array['Volume'] = $pub->volume;
+  }
+  if (trim($pub->series_name)) {
+    $pub_array['Series Name'] = $pub->series_name;
+  }
+  if (trim($pub->issue)) {
+    $pub_array['Issue'] = $pub->issue;
+  }
+  if (trim($pub->pyear)) {
+    $pub_array['Year'] = $pub->pyear;
+  }
+  if (trim($pub->pages)) {
+    $pub_array['Pages'] = $pub->pages;
+  }
+  if (trim($pub->miniref)) {
+    $pub_array['Mini Ref'] = $pub->miniref;
+  }
+  if (trim($pub->uniquename)) {
+    $pub_array['Uniquename'] = $pub->uniquename;
+  }
+  $pub_array['Publication Type'][] = $pub->type_id->name;
+
+  // ---------------------------------
+  // get the citation
+  // ---------------------------------
+  $values = array(
+    'pub_id' => $pub->pub_id, 
+    'type_id' => array(
+      'name' => 'Citation',
+    ),
+  );
+  $citation = tripal_core_generate_chado_var('pubprop', $values);
+  if ($citation) {
+    $citation = tripal_core_expand_chado_vars($citation, 'field', 'pubprop.value', $options);
+    if (count($citation) > 1) {
+    	watchdog('tripal_pub', "Publication has multiple citations already: %pub_id",
+    	array('%pub_id' => $pubid), WATCHDOG_ERROR);
+    	return FALSE;
+    }
+    elseif (count($citation) == 1 and $skip_existing == TRUE) {
+    	// skip this publication, it already has a citation
+    	return FALSE;
+    }
+  }  
+
+  // ---------------------------------
+  // get the publication types
+  // ---------------------------------
+  $values = array(
+    'pub_id' => $pub->pub_id, 
+    'type_id' => array(
+      'name' => 'Publication Type',
+    ),
+  );
+  $ptypes = tripal_core_generate_chado_var('pubprop', $values, $options);
+  if ($ptypes) {
+    $ptypes = tripal_core_expand_chado_vars($ptypes, 'field', 'pubprop.value', $options);
+    foreach ($ptypes as $ptype) {
+     $pub_array['Publication Type'][] = $ptype->value;
+    }
+  }
+
+  // ---------------------------------
+  // get the authors list
+  // ---------------------------------
+  $values = array(
+    'pub_id' => $pub->pub_id, 
+    'type_id' => array(
+      'name' => 'Authors',
+    ),
+  );
+  $authors = tripal_core_generate_chado_var('pubprop', $values);
+  $authors = tripal_core_expand_chado_vars($authors, 'field', 'pubprop.value', $options);
+  if (count($authors) > 1) {
+   watchdog('tripal_pub', "Publication has multiple author lists. It should have only one list: %pub_id",
+   array('%pub_id' => $pubid), WATCHDOG_ERROR);
+   return FALSE;
+  }
+  else if (trim($authors->value)) {
+    $pub_array['Authors'] = $authors->value;
+  }
+  // if there is no 'Author's property then try to retreive authors from the pubauthor table
+  else {
+    $sql = "SELECT string_agg(surname || ' ' || givennames, ', ') FROM {pubauthor} WHERE pub_id = %d GROUP BY pub_id";
+    $au = db_result(chado_query($sql));
+    if ($au) {
+    	$pub_array['Authors'] = $au;
+    }
+  }
+
+  //Get other props
+  $props = array(
+    'Journal Abbreviation',
+    'Elocation',
+    'Media Code',
+    'Conference Name',
+    'Keywords',
+    'Series Name',
+    'pISSN',
+    'Publication Date',
+    'Journal Code',
+    'Journal Alias',
+    'Journal Country',
+    'Published Location',
+    'Publication Model',
+    'Language Abbr',
+    'Alias',
+    'Publication Dbxref',
+    'Copyright',
+    'Abstract',
+    'Notes',
+    'Citation',
+    'Language',
+    'URL',
+    'eISSN',
+    'DOI',
+    'ISSN',
+    'Publication Code',
+    'Comments',
+    'Publisher',
+    'Media Alias',
+    'Original Title');
+  foreach ($props AS $prop) {
+    $sql = 
+      "SELECT value FROM {pubprop} 
+       WHERE type_id = (SELECT cvterm_id FROM {cvterm} WHERE name = '%s' AND cv_id = (SELECT cv_id FROM cv WHERE name = 'tripal_pub')) 
+       AND pub_id = %d";
+    $val = trim(db_result(chado_query($sql, $prop, $pub->pub_id)));
+    if ($val) {
+      $pub_array[$prop] =$val;
+    } 
+  }
+  return $pub_array;  
+}
+
+
+/**
+ * This function generates citations for publications.  It requires
+ * an array structure with keys being the terms in the Tripal
+ * publication ontology.  This function is intended to be used
+ * for any function that needs to generate a citation. 
+ * 
+ * @param $pub
+ *   An array structure containing publication details where the keys
+ *   are the publication ontology term names and values are the 
+ *   corresponding details.  The pub array can contain the following
+ *   keys with corresponding values:   
+ *     - Publication Type:  an array of publication types. a publication can have more than one type
+ *     - Authors: a  string containing all of the authors of a publication
+ *     - Journal Name:  a string containing the journal name
+ *     - Journal Abbreviation: a string containing the journal name abbreviation
+ *     - Series Name: a string containing the series (e.g. conference proceedings) name
+ *     - Series Abbreviation: a string containing the series name abbreviation     
+ *     - Volume: the serives volume number
+ *     - Issue: the series issue number
+ *     - Pages: the page numbers for the publication
+ *     - Publication Date:  A date in the format "Year Month Day"
+ *      
+ * @return
+ *   A text string containing the citation
  */
 function tripal_pub_create_citation($pub) {
-  $citation = $pub['Authors'] . '. ' . $pub['Title'] .  '. ';
-
-  if ($pub['Journal Name']) {
-    $citation .= $pub['Journal Name'] . '. ';
-  }
-  elseif ($pub['Journal Abbreviation']) {
-    $citation .= $pub['Journal Abbreviation'] . '. ';
-  }
-  $citation .= $pub['Publication Date'];
-  if ($pub['Volume'] or $pub['Issue'] or $pub['Pages']) {
-    $citation .= '; ';
-  }
-  if ($pub['Volume']) {
-    $citation .= $pub['Volume'];
-  }
-  if ($pub['Issue']) {
-    $citation .= '(' . $pub['Issue'] . ')';
-  }
-  if ($pub['Pages']) {
-    if($pub['Volume']) {
-      $citation .= ':';
+	$citation = '';
+	$pub_type = '';
+	
+	// An article may have more than one publication type. For example,
+	// a publication type can be 'Journal Article' but also a 'Clinical Trial'.
+	// Therefore, we need to select the type that makes most sense for 
+	// construction of the citation. Here we'll iterate through them all
+	// and select the one that matches best.
+	if(is_array($pub['Publication Type'])) {
+	  foreach ($pub['Publication Type'] as $ptype) {
+	    if ($ptype == 'Journal Article' ) {
+	      $pub_type = $ptype;
+	      break;
+	    } else if ($ptype == 'Conference Proceedings'){ 
+	      $pub_type = $ptype;
+	      break;
+	    } else if ($ptype == 'Book') {
+	      $pub_type = $ptype;
+	      break;
+	    } else if ($ptype == 'Book Chapter') {
+	      $pub_type = $ptype;
+	      break;
+	    }
+	  }
+	  if (!$pub_type) {
+      watchdog('tripal_pub', "Cannot generate citation for publication type: %types", 
+        array('%types' => print_r($pub['Publication Type'], TRUE)), WATCHDOG_ERROR);
+      return FALSE;
     }
-    $citation .= $pub['Pages'];
+	}
+	else {
+	  $pub_type = $pub['Publication Type'];
+	}		
+  print "[$pub_type]\n";
+	//----------------------
+  // Journal Article
+  //----------------------
+	if ($pub_type == 'Journal Article') {
+	  $citation = $pub['Authors'] . '. ' . $pub['Title'] .  '. ';
+	
+	  if ($pub['Journal Name']) {
+	    $citation .= $pub['Journal Name'] . '. ';
+	  }
+	  elseif ($pub['Journal Abbreviation']) {
+	    $citation .= $pub['Journal Abbreviation'] . '. ';
+	  }
+	  elseif ($pub['Series Name']) {
+	    $citation .= $pub['Series Name'] . '. ';	
+	  }
+	  elseif ($pub['Series Abbreviation']) {
+      $citation .= $pub['Series Abbreviation'] . '. ';
+    }
+    if ($pub['Publication Date']) {
+	    $citation .= $pub['Publication Date'];
+    }
+    elseif ($pub['Year']) {
+    	$citation .= $pub['Year'];
+    }
+	  if ($pub['Volume'] or $pub['Issue'] or $pub['Pages']) {
+	    $citation .= '; ';
+	  }
+	  if ($pub['Volume']) {
+	    $citation .= $pub['Volume'];
+	  }
+	  if ($pub['Issue']) {
+	    $citation .= '(' . $pub['Issue'] . ')';
+	  }
+	  if ($pub['Pages']) {
+	    if($pub['Volume']) {
+	      $citation .= ':';
+	    }
+	    $citation .= $pub['Pages'];
+	  }
+	  $citation .= '.';
+	}
+	//----------------------
+  // Book
+  //----------------------
+	elseif ($pub_type == 'Book') {
+	
+	}
+	//----------------------
+  // Book Chapter
+  //----------------------
+  elseif ($pub_type == 'Book Chapter') {
+  	
   }
-  $citation .= '.';
+	//----------------------
+	// Conference Proceedings
+  //----------------------
+  elseif ($pub_type == 'Conference Proceedings') {
+    $citation = $pub['Authors'] . '. ' . $pub['Title'] .  '. ';
+  
+    if ($pub['Conference Name']) {
+      $citation .= $pub['Conference Name'] . '. ';
+    }
+    elseif ($pub['Series Name']) {
+      $citation .= $pub['Series Name'] . '. ';  
+    }
+    elseif ($pub['Series Abbreviation']) {
+      $citation .= $pub['Series Abbreviation'] . '. ';
+    }
+    if ($pub['Publication Date']) {
+      $citation .= $pub['Publication Date'];
+    }
+    elseif ($pub['Year']) {
+      $citation .= $pub['Year'];
+    }
+    if ($pub['Volume'] or $pub['Issue'] or $pub['Pages']) {
+      $citation .= '; ';
+    }
+    if ($pub['Volume']) {
+      $citation .= $pub['Volume'];
+    }
+    if ($pub['Issue']) {
+      $citation .= '(' . $pub['Issue'] . ')';
+    }
+    if ($pub['Pages']) {
+      if($pub['Volume']) {
+        $citation .= ':';
+      }
+      $citation .= $pub['Pages'];
+    }
+    $citation .= '.';
+  }
 
   return $citation;
 }

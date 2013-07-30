@@ -76,12 +76,12 @@ function get_tripal_library_admin_form_taxonomy_set(&$form) {
   );
 
   // get the list of libraries
-  $sql = "SELECT * FROM {Library} ORDER BY uniquename";
+  $sql = "SELECT * FROM {library} ORDER BY uniquename";
   $lib_rset = chado_query($sql);
 
   // iterate through all of the libraries
   $lib_boxes = array();
-  while ($library = db_fetch_object($lib_rset)) {
+  foreach ($lib_rset as $library) {
     $lib_boxes[$library->library_id] = "$library->name";
   }
 
@@ -164,7 +164,7 @@ function get_tripal_library_admin_form_sync_set(&$form) {
 
 
   // get the list of libraries
-  $sql = "SELECT * FROM {Library} ORDER BY uniquename";
+  $sql = "SELECT * FROM {library} ORDER BY uniquename";
   $lib_rset = chado_query($sql);
 
   // if we've added any libraries to the list that can be synced
@@ -173,11 +173,12 @@ function get_tripal_library_admin_form_sync_set(&$form) {
   // a message stating that all libraries are currently synced.
   $lib_boxes = array();
   $added = 0;
-  while ($library = db_fetch_object($lib_rset)) {
+  foreach ($lib_rset as $libary) {
     // check to see if the library is already present as a node in drupal.
     // if so, then skip it.
-    $sql = "SELECT * FROM {chado_library} WHERE library_id = %d";
-    if (!db_fetch_object(db_query($sql, $library->library_id))) {
+    $sql = "SELECT * FROM {chado_library} WHERE library_id = :library_id";
+    $chado_library = db_query($sql, array(':library_id' => $library->library_id))->fetchObject();
+    if (!$chado_library) {
       $lib_boxes[$library->library_id] = "$library->name";
       $added++;
     }

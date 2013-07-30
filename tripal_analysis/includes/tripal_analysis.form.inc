@@ -5,7 +5,7 @@
  *
  * @ingroup tripal_analysis
  */
-function chado_analysis_form(&$node, $form_state) {
+function chado_analysis_form(&$node, $form_state = NULL) {
   tripal_core_ahah_init_form();
   $form = array();
 
@@ -181,6 +181,25 @@ function chado_analysis_form(&$node, $form_state) {
   	$properties_select[$prop->cvterm_id] = $prop->name;
   	$properties_list[$prop->cvterm_id] = $prop;
   }
+  
+  $form['properties'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Analysis Details'),
+    '#description' => t('You may add additional 
+      properties by
+      selecting a property type from the dropdown and adding text.  You may add 
+      as many properties as desired by clicking the plus button on the right.  To 
+      remove a property, click the minus button.  If a property is not available
+      you may add it by ' . l('adding the term', 'admin/tripal/tripal_cv/cvterm/add') . '
+      to the <b>analysis_property</b> vocabulary within the <b>tripal</b> database'),
+  );
+  $form['properties']['table'] = array(
+    '#type' => 'markup',
+    '#value' =>  '',
+    '#prefix' => '<div id="tripal-analysis-edit-properties-table">',
+    '#suffix' => '</div>',
+  );
+  
   // add in the properties from the analysisprop table
   $num_properties += chado_analysis_node_form_add_analysisprop_table_props($form, $form_state, $analysis_id, $d_properties, $d_removed);
   
@@ -300,7 +319,7 @@ function tripal_analysis_validate($node, &$form) {
 function chado_analysis_node_form_add_new_empty_props(&$form, $properties_select) {
 
   // add one more blank set of property fields
-  $form['properties']['new']["new_id"] = array(
+  $form['properties']['table']['new']["new_id"] = array(
     '#type'          => 'select',
     '#options'       => $properties_select,
     '#ahah' => array(
@@ -310,14 +329,14 @@ function chado_analysis_node_form_add_new_empty_props(&$form, $properties_select
       'method'  => 'replace',          
   ),
   );
-  $form['properties']['new']["new_value"] = array(
+  $form['properties']['table']['new']["new_value"] = array(
     '#type'          => 'textarea',
     '#default_value' => '',
     '#cols'          => 5,
     '#rows'          => $rows,
     '#description'   => '<div id="tripal-analysis-new_value-desc"></div>'
     );
-    $form['properties']['new']["add"] = array(
+    $form['properties']['table']['new']["add"] = array(
     '#type'         => 'image_button',      
     '#value'        => t('Add'),
     '#src'          => drupal_get_path('theme', 'tripal') . '/images/add.png',
@@ -371,11 +390,11 @@ function chado_analysis_node_form_add_new_props(&$form, $form_state, &$d_propert
 
 
         // add the new fields
-        $form['properties']['new'][$new_id][$rank]["new_id-$new_id-$rank"] = array(
+        $form['properties']['table']['new'][$new_id][$rank]["new_id-$new_id-$rank"] = array(
           '#type'          => 'item',
           '#value'         => $cvterm[0]->name
         );
-        $form['properties']['new'][$new_id][$rank]["new_value-$new_id-$rank"] = array(
+        $form['properties']['table']['new'][$new_id][$rank]["new_value-$new_id-$rank"] = array(
           '#type'          => 'textarea',
           '#default_value' => $value,
           '#cols'          => 50,
@@ -383,7 +402,7 @@ function chado_analysis_node_form_add_new_props(&$form, $form_state, &$d_propert
           '#description'   => $cvterm->definition,
         );
 
-        $form['properties']['new'][$new_id][$rank]["remove-$new_id-$rank"] = array(
+        $form['properties']['table']['new'][$new_id][$rank]["remove-$new_id-$rank"] = array(
           '#type'         => 'image_button',
           '#value'        => t('Remove'),
           '#src'          => drupal_get_path('theme', 'tripal') . '/images/minus.png',
@@ -422,11 +441,11 @@ function chado_analysis_node_form_add_new_props(&$form, $form_state, &$d_propert
     $rows = 1;
 
     // add the new fields
-    $form['properties']['new'][$new_id][$rank]["new_id-$new_id-$rank"] = array(
+    $form['properties']['table']['new'][$new_id][$rank]["new_id-$new_id-$rank"] = array(
       '#type'          => 'item',
       '#value'         => $cvterm[0]->name
     );
-    $form['properties']['new'][$new_id][$rank]["new_value-$new_id-$rank"] = array(
+    $form['properties']['table']['new'][$new_id][$rank]["new_value-$new_id-$rank"] = array(
       '#type'          => 'textarea',
       '#default_value' => $new_value,
       '#cols'          => 50,
@@ -434,7 +453,7 @@ function chado_analysis_node_form_add_new_props(&$form, $form_state, &$d_propert
       '#description'   => $cvterm->definition,
     );
 
-    $form['properties']['new'][$new_id][$rank]["remove-$new_id-$rank"] = array(
+    $form['properties']['table']['new'][$new_id][$rank]["remove-$new_id-$rank"] = array(
       '#type'         => 'image_button',
       '#value'        => t('Remove'),
       '#src'          => drupal_get_path('theme', 'tripal') . '/images/minus.png',
@@ -467,7 +486,8 @@ function chado_analysis_node_form_add_analysisprop_table_props(&$form, $form_sta
     SELECT CVT.cvterm_id, CVT.name, CVT.definition, PP.value, PP.rank
     FROM {analysisprop} PP
       INNER JOIN {cvterm} CVT on CVT.cvterm_id = PP.type_id
-    WHERE PP.analysis_id = %d
+      INNER JOIN {cv} CV on CVT.cv_id = CV.cv_id
+    WHERE PP.analysis_id = %d and CV.name = 'analysis_property'
     ORDER BY CVT.name, PP.rank
   ";
   $analysis_props = chado_query($sql, $analysis_id);
@@ -492,11 +512,11 @@ function chado_analysis_node_form_add_analysisprop_table_props(&$form, $form_sta
     $d_properties[$type_id][$rank]['definition']  = $prop->definition;
     $num_properties++;
 
-    $form['properties'][$type_id][$rank]["prop_id-$type_id-$rank"] = array(
+    $form['properties']['table'][$type_id][$rank]["prop_id-$type_id-$rank"] = array(
       '#type'          => 'item',
       '#value'         => $prop->name,
     );
-    $form['properties'][$type_id][$rank]["prop_value-$type_id-$rank"] = array(
+    $form['properties']['table'][$type_id][$rank]["prop_value-$type_id-$rank"] = array(
       '#type'          => 'textarea',
       '#default_value' => $prop->value,
       '#cols'          => 50,
@@ -504,7 +524,7 @@ function chado_analysis_node_form_add_analysisprop_table_props(&$form, $form_sta
       '#description'   => $prop->definition,
     );
 
-    $form['properties'][$type_id][$rank]["remove-$type_id-$rank"] = array(
+    $form['properties']['table'][$type_id][$rank]["remove-$type_id-$rank"] = array(
       '#type'         => 'image_button',
       '#value'        => t('Remove'),
       '#src'          => drupal_get_path('theme', 'tripal') . '/images/minus.png',
@@ -529,8 +549,8 @@ function tripal_analysis_theme_node_form_properties($form) {
 
     // first add in the properties derived from the analysisprop table
     // the array tree for these properties looks like this:
-    // $form['properties'][$type_id][$rank]["prop_id-$type_id-$rank"]
-    foreach ($form['properties'] as $type_id => $elements) {
+    // $form['properties']['table'][$type_id][$rank]["prop_id-$type_id-$rank"]
+    foreach ($form['properties']['table'] as $type_id => $elements) {
       // there are other fields in the properties array so we only
       // want the numeric ones those are our type_id
       if (is_numeric($type_id)) {
@@ -548,8 +568,8 @@ function tripal_analysis_theme_node_form_properties($form) {
 
     // second, add in any new properties added by the user through AHAH callbacks
     // the array tree for these properties looks like this:
-    // $form['properties']['new'][$type_id][$rank]["new_id-$new_id-$rank"]
-    foreach ($form['properties']['new'] as $type_id => $elements) {
+    // $form['properties']['table']['new'][$type_id][$rank]["new_id-$new_id-$rank"]
+    foreach ($form['properties']['table']['new'] as $type_id => $elements) {
       if (is_numeric($type_id)) {
         foreach ($elements as $rank => $element) {
           if (is_numeric($rank)) {
@@ -565,14 +585,14 @@ function tripal_analysis_theme_node_form_properties($form) {
 
     // finally add in a set of blank field for adding a new property
     $rows[] = array(
-    drupal_render($form['properties']['new']['new_id']),
-    drupal_render($form['properties']['new']['new_value']),
-    drupal_render($form['properties']['new']['add']),
+    drupal_render($form['properties']['table']['new']['new_id']),
+    drupal_render($form['properties']['table']['new']['new_value']),
+    drupal_render($form['properties']['table']['new']['add']),
     );
   }
 
   $headers = array('Property Type','Value', '');
-  return theme('table', $headers, $rows, array('id'=> "tripal-analysis-edit-properties-table"));
+  return theme('table', $headers, $rows);
 }
 
 /*
@@ -593,11 +613,11 @@ function tripal_analysis_property_add() {
 
   // return the updated JSON
   drupal_json(
-  array(
+    array(
       'status'   => $status, 
       'data'     => $data,
       'settings' => $settings,
-  )
+    )
   );
 }
 /*
@@ -651,17 +671,13 @@ function tripal_analysis_property_get_description() {
 function theme_chado_analysis_node_form($form) {
 
   $properties_table = tripal_analysis_theme_node_form_properties($form);
-
-  $markup  = drupal_render($form['analysis_id']);
-  $markup .= drupal_render($form['title']);
-  $markup .= drupal_render($form['type_id']);
-  $markup .= drupal_render($form['description']);
-  $markup .= "<b>Include Additional Details</b><br>You may add additional properties to this analysis by scrolling to the bottom of this table, selecting a property type from the dropdown and adding text.  You may add as many properties as desired by clicking the plus button on the right.  To remove a property, click the minus button";
   $markup .= $properties_table;
 
-  $form['properties'] = array(
+  $form['properties']['table'] = array(
     '#type' => 'markup',
     '#value' =>  $markup,
+    '#prefix' => '<div id="tripal-analysis-edit-properties-table">',
+    '#suffix' => '</div>',
   );
   $form['buttons']['#weight'] = 50;
   return drupal_render($form);

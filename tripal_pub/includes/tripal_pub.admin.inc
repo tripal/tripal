@@ -20,6 +20,7 @@ function tripal_pub_admin() {
   if (!$active_jobs) {
     get_tripal_pub_admin_form_select_search_list($form);
     get_tripal_pub_admin_form_importing_set($form);
+    get_tripal_pub_admin_form_default_type($form);
     get_tripal_pub_admin_form_cleanup_set($form);
   }
   else {
@@ -33,6 +34,51 @@ function tripal_pub_admin() {
   }
 
   return system_settings_form($form);
+}
+
+/**
+ * 
+ * @param $form
+ */
+function get_tripal_pub_admin_form_default_type(&$form) {
+
+  // get the list of publication types.  In the Tripal publication
+  // ontologies these are all grouped under the term 'Publication Type'
+  // we want the default to be 'Journal Article'
+  $sql = "
+    SELECT CVTS.cvterm_id, CVTS.name
+    FROM {cvtermpath} CVTP
+      INNER JOIN {cvterm} CVTS ON CVTP.subject_id = CVTS.cvterm_id
+      INNER JOIN {cvterm} CVTO ON CVTP.object_id = CVTO.cvterm_id
+      INNER JOIN {cv} ON CVTO.cv_id = CV.cv_id
+    WHERE CV.name = 'tripal_pub' and CVTO.name = 'Publication Type' and 
+      NOT CVTS.is_obsolete = 1
+    ORDER BY CVTS.name ASC 
+  ";
+  $results = chado_query($sql);
+  $pub_types = array();
+  while ($pub_type = db_fetch_object($results)) {
+    $pub_types[$pub_type->cvterm_id] = $pub_type->name;
+    if (strcmp($pub_type->name,"Journal Article") == 0) {
+      $d_type_id = $pub_type->cvterm_id;
+    }
+  }
+  
+  // override the default by using the stored variable
+  $d_type_id = variable_get('tripal_pub_default_type', $d_type_id);
+  
+  $form['default_type'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Default Publication Type'),
+  );
+  $form['default_type']['type_id'] = array(
+    '#type' => 'select',
+    '#title' => t('Publication Type'),
+    '#options' => $pub_types,
+    '#description' => t('Please set a default publiation type used for manual entry of a new publication.  This is useful in the event that someone is manually adding the same
+      publication repetitively'),
+    '#default_value' => $d_type_id
+  );
 }
 /**
  *
@@ -51,7 +97,7 @@ function get_tripal_pub_admin_form_importing_set(&$form) {
       'title_year' => t('Title and Year'), 
       'title_year_media' => t('Title, Year, Media name (e.g. Journal Name, etc.)'), 
       'title_year_type' => t('Title, Year, Media type (e.g. Journal, Conference Proceedings, etc.'),
-  ),
+    ),
     '#description' => t('During import, Tripal will attempt to find duplicate publications. 
        There are several options for how to find a duplicate publication.  Choose the
        option that best suits your needs.'),
@@ -142,6 +188,9 @@ function tripal_pub_admin_validate($form, &$form_state) {
 
   $import_duplicate_check = $form_state['values']['import_duplicate_check'];
   variable_set('tripal_pub_import_duplicate_check', $import_duplicate_check);
+  
+  $default_type = $form_state['values']['type_id'];
+  variable_set('tripal_pub_default_type', $default_type);
 
   // -------------------------------------
   // Submit the Cleanup Job if selected

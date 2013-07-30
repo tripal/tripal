@@ -25,21 +25,21 @@ function tripal_pub_importers_list() {
     }
 
     $rows[] = array(
-    l(t('Edit/Test'), "admin/tripal/tripal_pub/import/edit/$importer->pub_import_id"),
-    $importer->name,
-    $criteria['remote_db'],
-    $criteria_str,
-    $importer->disabled ? 'Yes' : 'No',
-    $importer->do_contact ? 'Yes' : 'No',
-    l(t('Delete'), "admin/tripal/tripal_pub/import/delete/$importer->pub_import_id"),
+      l(t('Edit/Test'), "admin/tripal/tripal_pub/import/edit/$importer->pub_import_id"),
+      $importer->name,
+      $criteria['remote_db'],
+      $criteria_str,
+      $importer->disabled ? 'Yes' : 'No',
+      $importer->do_contact ? 'Yes' : 'No',
+      l(t('Delete'), "admin/tripal/tripal_pub/import/delete/$importer->pub_import_id"),
     );
   }
 
   $rows[] = array(
     'data' => array(
-  array('data' => l(t('Create a new publication importer.'), "admin/tripal/tripal_pub/import/new"),
+     array('data' => l(t('Create a new publication importer.'), "admin/tripal/tripal_pub/import/new"),
         'colspan' => 7),
-  )
+     )
   );
 
   $page = theme('table', $header, $rows);
@@ -54,6 +54,18 @@ function tripal_pub_importer_setup($action = 'new', $pub_import_id = NULL) {
 
   $pager_id = 0;
   $limit = 20;
+  
+  // make sure the tripal_pub and tripal_contact ontologies are loaded
+  $values = array('name' => 'tripal_pub');
+  $tpub_cv = tripal_core_chado_select('cv', array('cv_id'), $values);
+  if (count($tpub_cv) == 0) {
+  	drupal_set_message(t('Before importing publications you must first ') . l(t('load the Tripal Pub Ontology'), 'admin/tripal/tripal_cv/obo_loader'), 'error');
+  }
+  $values = array('name' => 'tripal_contact');
+  $tpub_cv = tripal_core_chado_select('cv', array('cv_id'), $values);
+  if (count($tpub_cv) == 0) {
+    drupal_set_message(t('If you want to create contact pages for authors, you must first ') . l(t('load the Tripal Contact Ontology'), 'admin/tripal/tripal_cv/obo_loader'), 'error');
+  }
 
   // generate the search form
   $form = drupal_get_form('tripal_pub_importer_setup_form',  $pub_import_id, $action);
@@ -309,6 +321,7 @@ function tripal_pub_importer_setup_form(&$form_state = NULL, $pub_import_id = NU
     'NOT' => 'NOT'
     );
     for($i = 1; $i <= $num_criteria; $i++) {
+    	$is_phrase = 1;
 
       // if we have criteria supplied from the database then use that as the initial defaults
       if ($criteria) {
@@ -322,6 +335,7 @@ function tripal_pub_importer_setup_form(&$form_state = NULL, $pub_import_id = NU
       $scope        = isset($_SESSION['tripal_pub_import']['criteria'][$i]['scope'])        ? $_SESSION['tripal_pub_import']['criteria'][$i]['scope']        : $scope;
       $is_phrase    = isset($_SESSION['tripal_pub_import']['criteria'][$i]['is_phrase'])    ? $_SESSION['tripal_pub_import']['criteria'][$i]['is_phrase']    : $is_phrase;
       $operation    = isset($_SESSION['tripal_pub_import']['criteria'][$i]['operation'])    ? $_SESSION['tripal_pub_import']['criteria'][$i]['operation']    : $operation;
+      
       // If the form_state has variables then use those.  This happens when an error occurs on the form or the
       // form is resbumitted using AJAX
       if ($form_state['values']) {
@@ -332,23 +346,24 @@ function tripal_pub_importer_setup_form(&$form_state = NULL, $pub_import_id = NU
       }
 
       $form['criteria'][$i]["search_terms-$i"] = array(
-      '#type'          => 'textfield',
-      '#description'   => t('Please provide a list of words for searching. You may use 
-        conjunctions such as "AND" or "OR" to separate words if they are expected in 
-        the same scope. Uncheck the "Is Phrase" checkbox to use conjunctions'),
-      '#default_value' => $search_terms,
-      '#required'      => TRUE,
+        '#type'          => 'textfield',
+        '#description'   => t('Please provide a list of words for searching. You may use 
+          conjunctions such as "AND" or "OR" to separate words if they are expected in 
+          the same scope, but do not mix ANDs and ORs.  Uncheck the "Is Phrase" checkbox to use conjunctions'),
+        '#default_value' => $search_terms,
+        '#required'      => TRUE,
+        '#maxlength' => 2048,
       );
       $form['criteria'][$i]["scope-$i"] = array(
-      '#type'          => 'select',
-      '#description'   => t('Please select the fields to search for this term.'),
-      '#options'       => $scope_choices,
-      '#default_value' => $scope,
+        '#type'          => 'select',
+        '#description'   => t('Please select the fields to search for this term.'),
+        '#options'       => $scope_choices,
+        '#default_value' => $scope,
       );
       $form['criteria'][$i]["is_phrase-$i"] = array(
-      '#type'    => 'checkbox',
-      '#title'   => t('Is Phrase?'),    
-      '#default_value' => $is_phrase,
+        '#type'    => 'checkbox',
+        '#title'   => t('Is Phrase?'),    
+        '#default_value' => $is_phrase,
       );
 
       if ($i == 1) {
@@ -416,7 +431,7 @@ function tripal_pub_importer_setup_form(&$form_state = NULL, $pub_import_id = NU
 
     // allow the selected remote database to make changes to the form if needed
     $callback = "tripal_pub_remote_alter_form_$remote_db";
-    call_user_func($callback, &$form, $form_state);
+    $form = call_user_func($callback, $form, $form_state);
 
     return $form;
 }
@@ -437,14 +452,22 @@ function tripal_pub_importer_setup_form_validate($form, &$form_state) {
     $scope =  $form_state['values']["scope-$i"];
     $is_phrase =  $form_state['values']["is_phrase-$i"];
     $operation =  $form_state['values']["operation-$i"];
+    
+    if (!$is_phrase) {
+    	if (preg_match('/and/i', $search_terms) and preg_match('/or/i', $search_terms)) {
+    	  form_set_error("search_terms-$i", "You may use 'AND' or 'OR' but cannot use both. Add a new entry below with the same scope for the other conunction.");
+    	  $_SESSION['tripal_pub_import']['perform_search'] = 0;	
+    	}
+    }
   }
 
   if ($days and !is_numeric($days) or preg_match('/\./', $days)) {
     form_set_error("days", "Please enter a numeric, non decimal value, for the number of days.");
+    $_SESSION['tripal_pub_import']['perform_search'] = 0;
   }
   // allow the selected remote database to validate any changes to the form if needed
   $callback = "tripal_pub_remote_validate_form_$remote_db";
-  call_user_func($callback, &$form, $form_state);
+  $form = call_user_func($callback, $form, $form_state);
 }
 
 /**

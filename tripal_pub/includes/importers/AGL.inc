@@ -2,7 +2,8 @@
 /**
  *
  */
-function tripal_pub_remote_alter_form_AGL(&$form, $form_state) {
+function tripal_pub_remote_alter_form_AGL($form, $form_state) {
+
   $num_criteria = $form['num_criteria']['#default_value'];
 
   // So far we haven't been able to get AGL to filter results to only
@@ -15,12 +16,12 @@ function tripal_pub_remote_alter_form_AGL(&$form, $form_state) {
   for($i = 1; $i <= $num_criteria; $i++) {
     unset($form['criteria'][$i]["scope-$i"]['#options']['journal']);
   }
-
+  return $form;
 }
 /**
  *
  */
-function tripal_pub_remote_validate_form_AGL(&$form, $form_state) {
+function tripal_pub_remote_validate_form_AGL($form, $form_state) {
   $days =  trim($form_state['values']["days"]);
   $num_criteria = $form['num_criteria']['#default_value'];
 
@@ -42,6 +43,7 @@ function tripal_pub_remote_validate_form_AGL(&$form, $form_state) {
       form_set_error("search_terms-$i", "Unfortuantely, the AGL importer can only support a single accession at a time. Please remove the others.");
     }
   }
+  return $form;
 }
 /**
  *
@@ -329,7 +331,7 @@ function tripal_pub_remote_search_AGL($search_array, $num_to_retrieve, $pager_id
     );
     yaz_ccl_conf($yazc, $fields);
 
-    if (!yaz_ccl_parse($yazc, $ccl, &$cclresult)) {
+    if (!yaz_ccl_parse($yazc, $ccl, $cclresult)) {
       drupal_set_message('Error parsing search string: ' . $cclresult["errorstring"], "error");
       watchdog('tripal_pub', 'Error: %errstr', array('%errstr' => $cclresult["errorstring"]), WATCHDOG_ERROR);
       return array();
@@ -436,8 +438,10 @@ function tripal_pub_AGL_range($search_array, $start = 0, $limit = 10) {
 function tripal_pub_AGL_parse_pubxml($pub_xml) {
   $pub = array();
 
-  // publications from the NAL Article Citation Database are all journal articles
-  $pub['Publication Type'][] = 'Journal Article';
+  // we will set the default publication type as a journal article. The NAL
+  // dataset doesn't specify an article type so we'll have to glean the type
+  // from other information (e.g. series name has 'Proceedings' in it)
+  $pub['Publication Type'][0] = 'Journal Article';
 
   if (!$pub_xml) {
     return $pub;
@@ -693,7 +697,20 @@ function tripal_pub_AGL_parse_pubxml($pub_xml) {
           $codes = tripal_pub_remote_search_AGL_get_subfield($xml);
           foreach ($codes as $code => $value) {
             switch ($code) {
+            	case 'a':
+            		if (preg_match('/Proceedings/i', $value)) {
+            		  $pub['Series Name'] = preg_replace('/\.$/', '', $value);
+            		  $pub['Publication Type'][0] = 'Conference Proceedings';
+            		}
+            		else {
+            			$pub['Journal Name'] = preg_replace('/\.$/', '', $value);
+            		}
+                break;
               case 't':
+                if (preg_match('/Proceedings/i', $value)) {
+                  $pub['Series Name'] = preg_replace('/\.$/', '', $value);
+                  $pub['Publication Type'][0] = 'Conference Proceedings';
+                }
                 $pub['Journal Name'] = preg_replace('/\.$/', '', $value);
                 break;
               case 'g':
@@ -769,21 +786,26 @@ function tripal_pub_AGL_parse_pubxml($pub_xml) {
   }
 
   // build the full authors list
-  foreach ($pub['Author List'] as $author) {
-    if ($author['valid'] == 'N') {
-      // skip non-valid entries.  A non-valid entry should have
-      // a corresponding corrected entry so we can saftely skip it.
-      continue;
-    }
-    if ($author['Collective']) {
-      $authors .= $author['Collective'] . ', ';
-    }
-    else {
-      $authors .= $author['Surname'] . ' ' . $author['First Initials'] . ', ';
-    }
+  if (is_array($pub['Author List'])) {
+	  foreach ($pub['Author List'] as $author) {
+	    if ($author['valid'] == 'N') {
+	      // skip non-valid entries.  A non-valid entry should have
+	      // a corresponding corrected entry so we can saftely skip it.
+	      continue;
+	    }
+	    if ($author['Collective']) {
+	      $authors .= $author['Collective'] . ', ';
+	    }
+	    else {
+	      $authors .= $author['Surname'] . ' ' . $author['First Initials'] . ', ';
+	    }
+	  }
+	  $authors = substr($authors, 0, -2);
+	  $pub['Authors'] = $authors;
   }
-  $authors = substr($authors, 0, -2);
-  $pub['Authors'] = $authors;
+  else {
+    $pub['Authors'] = $pub['Author List'];	
+  }
 
   // build the citation
   $pub['Citation'] = tripal_pub_create_citation($pub);

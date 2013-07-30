@@ -617,7 +617,7 @@ function tripal_views_get_integration_array_for_chado_table($table_name, $base_t
 /**
  * Adds the joins necessary to link a chado table to it's node counterpart
  *
- * @param &$defn_array
+ * @param $defn_array
  *   The current definition array for a given table
  *
  * @ingroup tripal_views_api

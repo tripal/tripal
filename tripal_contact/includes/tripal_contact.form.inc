@@ -4,7 +4,7 @@
  *
  *
  *
- *  @parm &$node
+ *  @parm $node
  *    The node that is created when the database is initialized
  *
  *  @parm $form_state

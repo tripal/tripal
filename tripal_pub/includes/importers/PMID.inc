@@ -9,7 +9,7 @@
 /**
  *
  */
-function tripal_pub_remote_alter_form_PMID(&$form, $form_state) {
+function tripal_pub_remote_alter_form_PMID($form, $form_state) {
   $num_criteria = $form['num_criteria']['#default_value'];
 
   // PubMed doesn't have an 'Abstract' field, so we need to convert the criteria
@@ -17,11 +17,13 @@ function tripal_pub_remote_alter_form_PMID(&$form, $form_state) {
   for($i = 1; $i <= $num_criteria; $i++) {
     $form['criteria'][$i]["scope-$i"]['#options']['abstract'] = 'Abstract/Title';
   }
+
+  return $form;
 }
 /**
  *
  */
-function tripal_pub_remote_validate_form_PMID(&$form, $form_state) {
+function tripal_pub_remote_validate_form_PMID($form, $form_state) {
   $num_criteria = $form['num_criteria']['#default_value'];
 
   for ($i = 1; $i <= $num_criteria; $i++) {
@@ -31,6 +33,7 @@ function tripal_pub_remote_validate_form_PMID(&$form, $form_state) {
       form_set_error("search_terms-$i", "The PubMed accession must be a numeric value, prefixed with 'PMID:' (e.g. PMID:23024789).");
     }
   }
+  return $form;
 }
 /**
  *
@@ -56,30 +59,47 @@ function tripal_pub_remote_search_PMID($search_array, $num_to_retrieve, $pager_i
 
     // if this is phrase make sure the search terms are surrounded by quotes
     if ($is_phrase) {
-      $search_terms = "\"$search_terms\"";
+      $search_str .= "(\"$search_terms\" |SCOPE|) ";
     }
-    $search_str .= '(';
+    // if this is not a phase then we want to separate each 'OR or 'AND' into a unique criteria
+    else {
+    	$search_str .= "(";
+    	if (preg_match('/and/i', $search_terms)) {
+    	  $elements = preg_split('/\s+and+\s/i', $search_terms);
+    	  foreach ($elements as $element) {
+          $search_str .= "($element |SCOPE|) AND ";
+    	  }
+    	  $search_str = substr($search_str, 0, -5); // remove trailing 'AND '              
+    	} 
+      elseif (preg_match('/or/i', $search_terms)) {
+        $elements = preg_split('/\s+or+\s/i', $search_terms);
+        foreach ($elements as $element) {
+          $search_str .= "($element |SCOPE|) OR ";
+        }
+        $search_str = substr($search_str, 0, -4); // remove trailing 'OR '        
+      }
+      else {
+      	$search_str .= "($search_terms |SCOPE|) ";
+      }
+      $search_str .= ') ';
+    }
 
     if ($scope == 'title') {
-      $search_str .= $search_terms . '[Title]';
+    	$search_str = preg_replace('/\|SCOPE\|/', '[Title]', $search_str);
     }
     elseif ($scope == 'author') {
-      $search_str .= $search_terms . '[Author]';
+    	$search_str = preg_replace('/\|SCOPE\|/', '[Author]', $search_str);
     }
     elseif ($scope == 'abstract') {
-      $search_str .= $search_terms . '[Title/Abstract]';
+    	$search_str = preg_replace('/\|SCOPE\|/', '[Title/Abstract]', $search_str);
     }
     elseif ($scope == 'journal') {
-      $search_str .= $search_terms . '[Journal]';
+      $search_str = preg_replace('/\|SCOPE\|/', '[Journal]', $search_str);
     }
     elseif ($scope == 'id') {
-      $search_terms = preg_replace('/PMID:([^\s]*)/', '$1', $search_terms);
-      $search_str .=  $search_terms . '[Uid]';
+      $search_str = preg_replace('/PMID:([^\s]*)/', '$1', $search_str);
+      $search_str = preg_replace('/\|SCOPE\|/', '[Uid]', $search_str);
     }
-    else {
-      $search_str .= $search_terms;
-    }
-    $search_str .= ')';
   }
   if ($days) {
     // get the date of the day suggested
@@ -91,6 +111,7 @@ function tripal_pub_remote_search_PMID($search_array, $num_to_retrieve, $pager_i
   $search_array['limit'] = $num_to_retrieve;
   $search_array['search_string'] = $search_str;
 
+  //dpm($search_str);
   unset($_SESSION['tripal_pub_PMID_query']);
   // we want to get the list of pubs using the search terms but using a Drupal style pager
   $pubs = tripal_pager_callback('tripal_pub_PMID_range',  $num_to_retrieve, $pager_id,
@@ -367,7 +388,7 @@ function tripal_pub_PMID_parse_pubxml($pub_xml) {
     }
   }
   $pub['Citation'] = tripal_pub_create_citation($pub);
-
+  
   $pub['raw'] = $pub_xml;
   return $pub;
 }
@@ -513,13 +534,14 @@ function tripal_pub_PMID_parse_publication_type($xml, &$pub) {
       switch ($element) {
         case 'PublicationType':
           $xml->read();
-          $pub_cvterm = tripal_cv_get_cvterm_by_name($xml->value, NULL, 'tripal_pub');
+          $value = $xml->value;          
+          $pub_cvterm = tripal_cv_get_cvterm_by_name($value, NULL, 'tripal_pub');          
           if (!$pub_cvterm) {
             // see if this we can find the name using a synonym
-            $pub_cvterm = tripal_cv_get_cvterm_by_synonym($xml->value, NULL, 'tripal_pub');
+            $pub_cvterm = tripal_cv_get_cvterm_by_synonym($value, NULL, 'tripal_pub');
             if (!$pub_cvterm) {
               watchdog('tpub_pubmed', 'Cannot find a valid vocabulary term for the publication type: "%term".',
-              array('%term' => $xml->value), WATCHDOG_ERROR);
+              array('%term' => $value), WATCHDOG_ERROR);
             }
           }
           else {

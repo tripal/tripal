@@ -63,6 +63,9 @@ function chado_pub_form($node, $form_state) {
       $d_type_id = $pub_type->cvterm_id;
     }
   }
+  
+  // reset the default to use the stored variable if one exists
+  $d_type_id = variable_get('tripal_pub_default_type', $d_type_id);
 
   // get publication properties list
   $properties_select = array();
@@ -122,19 +125,21 @@ function chado_pub_form($node, $form_state) {
     '#default_value' => $d_pyear,
     '#required' => TRUE,
     '#size' => 5,
+    '#description' => t('Enter the year of publication. Also, if available, please add a <b>Publication Date</b> property to specify the full date of publication.'),
   );
   $form['uniquename'] = array(
     '#type' => 'textarea',
     '#title' => t('Citation'),
     '#default_value' => $d_uniquename,
-    '#description' => t('All publications must have a unique citation. Please enter the full citation for this publication. 
-      For PubMed style citations list 
+    '#description' => t('All publications must have a unique citation. 
+      <b>Please enter the full citation for this publication or leave blank and one will be generated 
+      automatically if possible</b>.  For PubMed style citations list 
       the last name of the author followed by initials. Each author should be separated by a comma. Next comes 
       the title, followed by the series title (e.g. journal name), publication date (4 digit year, 3 character Month, day), volume, issue and page numbers. You may also use HTML to provide a link in the citation.  
       Below is an example: <pre>Medeiros PM, Ladio AH, Santos AM, Albuquerque UP. <a href="http://www.ncbi.nlm.nih.gov/pubmed/23462414" target="_blank">Does the selection of medicinal plants by Brazilian local populations 
         suffer taxonomic influence?</a> J Ethnopharmacol. 2013 Apr 19; 146(3):842-52.</pre>'),
-    '#required' => TRUE,
   );
+
 
   // add in the properties that are actually stored in the pub table fields.
   $num_properties = chado_pub_node_form_add_pub_table_props($form, $form_state, $properties_list,
@@ -195,11 +200,15 @@ function chado_pub_validate($node, &$form) {
   $pub_id       = $node->pub_id;
   $num_properties = $node->num_properties;
   $num_new = $node->num_new;
+  dpm($node);
+  
+  $pub = array();
 
   // if this is a delete then don't validate
   if($node->op == 'Delete') {
     return;
   }
+  
 
   // make sure the year is four digits
   if(!preg_match('/^\d{4}$/', $pyear)){
@@ -215,9 +224,9 @@ function chado_pub_validate($node, &$form) {
     $message = t('Invalid publication type.');
     form_set_error('type_id', $message);
     return;
-  }
+  }  
 
-  // get the media name looking at the properties
+  // get the media name looking at the properties  
   foreach ($node as $element => $value) {
     // if this is an existing property (either previously in the database or
     // added via AHAH/AJAX callback)
@@ -230,16 +239,28 @@ function chado_pub_validate($node, &$form) {
       if($prop_type->name == 'Citation') {
         $uniquename = $value;
       }
+      $pub[$prop_type->name] = $value;
     }
     // if this is a new property (added by this submit of the form)
-    elseif ($element = 'new_id') {
+    elseif ($element == 'new_id') {    	 
       $prop_type = tripal_cv_get_cvterm_by_id($value);
       if($prop_type->name == 'Conference Name' or $prop_type->name == 'Journal Name') {
         $series_name = $node->new_value;
       }
       if($prop_type->name == 'Citation') {
-        $uniquename = $value;
+        $uniquename = $node->new_value;
       }
+      $pub[$prop_type->name] = $node->new_value;
+    }
+  }
+  // if the citation is missing then try to generate one
+  if (!$uniquename) {
+    $pub['Title'] = $title;
+    $pub['Publication Type'][0] = $cvterm[0]->name;
+    $pub['Year'] = $pyear;
+    $uniquename = tripal_pub_create_citation($pub);
+    if (!$uniquename) {
+    	form_set_error('uniquename', 'Cannot automatically generate a citation for this publication type. Please add one manually.');
     }
   }
 

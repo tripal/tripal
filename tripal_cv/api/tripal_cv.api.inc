@@ -264,6 +264,9 @@ function tripal_cv_get_cvterm_by_name($name, $cv_id = NULL, $cv_name = 'tripal')
       array('%name' => $name, '%cv' => $cv_name ? $cv_name : $cv_id), WATCHDOG_ERROR);
     return FALSE;
   }
+  if (count($r) == 0) {
+  	return FALSE;
+  }
   return $r[0];
 }
 
@@ -830,6 +833,7 @@ function tripal_cv_get_custom_tables($table = NULL) {
  *   
  * @ingroup tripal_cv_api
  */
+
 function tripal_cv_submit_obo_job($obo_id = NULL, $obo_name = NULL, $obo_url = NULL, $obo_file = NULL) {
   global $user;
 
@@ -874,5 +878,34 @@ function tripal_cv_add_obo_ref($name, $path) {
   $record->name = $name;
   $record->path = $path;
   drupal_write_record('tripal_cv_obo', $record);
-  return $record->obo_id;
+  return $record->obo_id;  
+}
+
+/**
+ * This function is intended to be used in autocomplete forms
+ * for searching for CV terms that begin with the provided string
+ * 
+ * @param $cv_id
+ * The CV ID in which to search for the term
+ * @param $string
+ * The string to search for
+ * 
+ * @return
+ * A json array of terms that begin with the provided string
+ *  
+ * @ingroup tripal_cv_api
+ */
+function tripal_cv_cvterm_name_autocomplete($cv_id, $string = '') {
+  $sql = "
+    SELECT cvterm_id, name 
+    FROM {cvterm} 
+    WHERE cv_id = %d and lower(name) like lower('%s%%') 
+    ORDER by name
+  ";
+  $results = chado_query($sql, $cv_id, $string);
+  $items = array();
+  while($term = db_fetch_object($results)) {
+     $items[$term->name] = $term->name;
+  }  
+  drupal_json($items);   
 }
