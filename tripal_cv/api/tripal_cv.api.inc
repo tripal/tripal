@@ -831,6 +831,7 @@ function tripal_cv_get_custom_tables($table = NULL) {
  *   
  * @ingroup tripal_cv_api
  */
+
 function tripal_cv_submit_obo_job($obo_id = NULL, $obo_name = NULL, $obo_url = NULL, $obo_file = NULL) {
   global $user;
 
@@ -875,7 +876,7 @@ function tripal_cv_add_obo_ref($name, $path) {
   $record->name = $name;
   $record->path = $path;
   drupal_write_record('tripal_cv_obo', $record);
-  return $record->obo_id;
+  return $record->obo_id;  
 }
 
 /**
