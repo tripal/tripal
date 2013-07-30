@@ -6,61 +6,6 @@
  */
 
 /**
- * Purpose: Provide Guidance to new Tripal Admin
- *
- * @return
- *   HTML Formatted text
- *
- * @ingroup tripal_views_integration
- */
-function tripal_views_description_page() {
-
-  $text .= '<h3>Tripal Views Quick Links:</h3>';
-  $text .= "<ul>
-             <li><a href=\"" . url("admin/tripal/views/integration/list")  .  "\">List of integrated tables</a></li>
-             <li><a href=\"" . url("admin/tripal/views/integration/new") .  "\">Integrate a new table</a></li>
-             <li><a href=\"" . url("admin/tripal/views/integration/import") .  "\">Import a previously exported table integration.</a></li>
-           </ul>";
-
-  $text .= '<h3>Views Integration Description:</h3>';
-  $text .= '<p>Tripal Views provides an interface for integrating <a href="http://drupal.org/project/views">Drupal Views</a>
-            with Tripal materialized views.  This will allow site administrators to create custom queries for the materialized views
-            and in turn provide custom content pages, custom blocks and custom search forms. The forms allow a site administrator
-            to select a materialized view and associate other Chado tables on which the view can join.  Usage of this module requires
-            a good understanding of foreign-key relationships in Chado.
-            </p>';
-
-  $text .= '<h3>Setup Instructions:</h3>';
-  $text .= '<p>After installation of the Tripal core module.  The following tasks should be performed
-            <ol>
-              <li><b>Set Permissions</b>: To allow access to site administrators for this module, simply
-               <a href="' . url('admin/user/permissions') . '">assign permissions</a> to the appropriate user roles for the
-               permission type "manage tripal_views_integration". </li>
-            </ol>
-            </p>';
-  $text .= '<h3>Usage Instructions:</h3>';
-  $text .= "<p>To use Tripal Views integration follow these steps:
-            <ol>
-               <li><b>Identify or create a materialized view:</b> Using the <a href=\"" . url("admin/tripal/views/mviews") . "\">
-                 Tripal materialized View</a> interface, identify the view you would like to integrate or create a new one.</li>
-               <li><b>Setup the Views Integration</b>: Navigate to the <a href=\"" . url("admin/tripal/views/integration/mviews/new") . "\">
-                 Tripal views integration setup page</a> to integrate the selected materialized view.  Provide a  user friendly name
-                 and description to help you remember the purpose for integrating the view.  Next, select the view you want to integrate
-                 from the provided select box.  If your materialized view has fields that can join with other Chado tables, you may
-                 provide those relationships in the provided form.  Finally, if your fields require a special handler for display, you
-                 may select it from the drop down provided</li>
-               <li><b>Create custom pages/block/search form</b>:  After saving setup information from step 2 above, you will be redirected to the
-                 Drupal Views interface</a> where you can create a custom page, block or search form.</li>
-               <li><b>Review your integrated views</b>:  A page providing a
-                 <a href=\"" . url("admin/tripal/views/integration/mviews/list") . "\">list of all integrated views</a> is provided. You may
-                 view this page to see all integrated views, but also to remove any unwanted integrations.</li>
-            </ol>
-
-            </p>";
-  return $text;
-}
-
-/**
  * Purpose: Generates a themable table containing the list of integrated tables
  *   The look-and-feel of the table can be altered by overriding the theme for
  *   tables.
