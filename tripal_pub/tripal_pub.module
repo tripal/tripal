@@ -202,55 +202,55 @@ function tripal_pub_theme() {
   // node templates
     'tripal_pub_base' => array(
       'arguments' => array('node' => NULL),
-  ),
+    ),
     'tripal_pub_properties' => array(
       'arguments' => array('node' => NULL)
-  ),
+    ),
     'tripal_pub_authors' => array(
       'arguments' => array('node' => NULL)
-  ),
+    ),
     'tripal_pub_references' => array(
       'arguments' => array('node' => NULL)
-  ),
+    ),
     'tripal_pub_relationships' => array(
       'arguments' => array('node' => NULL)
-  ),
+    ),
     'tripal_pub_featuremaps' => array(
       'arguments' => array('node' => NULL)
-  ),
+    ),
     'tripal_pub_features' => array(
       'arguments' => array('node' => NULL)
-  ),
+    ),
     'tripal_pub_libraries' => array(
       'arguments' => array('node' => NULL)
-  ),
+    ),
     'tripal_pub_projects' => array(
       'arguments' => array('node' => NULL)
-  ),
+    ),
     'tripal_pub_stocks' => array(
       'arguments' => array('node' => NULL)
-  ),
+    ),
 
-  // instructions page for the pub module
+    // instructions page for the pub module
     'tripal_pub_admin' => array(
       'template' => 'tripal_pub_admin',  
       'arguments' =>  array(NULL),  
       'path' => drupal_get_path('module', 'tripal_pub') . '/theme' 
-      ),
+    ),
 
-      // themed forms
+    // themed forms
     'tripal_pub_importer_setup_form' => array(
-       'arguments' => array('form'),
-      ),
+      'arguments' => array('form'),
+    ),
     'tripal_pub_search_form' => array(
-       'arguments' => array('form'),
-      ),
+      'arguments' => array('form'),
+    ),
     'chado_pub_node_form' => array(
-       'arguments' => array('form'),
-      ),
-      );
+      'arguments' => array('form'),
+    ),
+  );
 
-      return $themes;
+  return $themes;
 }
 
 /**

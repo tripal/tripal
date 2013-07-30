@@ -27,9 +27,10 @@ function tripal_views_menu() {
   $items['admin/tripal/views'] = array(
     'title' => 'Views Integration',
     'description' => 'Integration with Drupal Views',
-    'page callback' => 'tripal_views_description_page',
-    'access arguments' => array('administer site configuration'),
-    'type' => MENU_NORMAL_ITEM,
+    'page callback' => 'theme',
+    'page arguments' => array('tripal_views_admin'),
+    'access arguments' => array('manage tripal_views_integration'),
+    'type' => MENU_NORMAL_ITEM
   );
 
   $items['admin/tripal/views/integration/list'] = array(
@@ -170,6 +171,12 @@ function tripal_views_theme() {
     ),
     'sequence_combo' => array(
       'arguments' => array('element' => NULL)
+    ),
+    // instructions page for the pub module
+    'tripal_views_admin' => array(
+      'template' => 'tripal_views_admin',  
+      'arguments' =>  array(NULL),  
+      'path' => drupal_get_path('module', 'tripal_views') . '/theme' 
     ),
   );
 }
