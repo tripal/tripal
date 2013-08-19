@@ -645,14 +645,14 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
       // the same parent.
       elseif (array_key_exists('Parent', $tags)) {
         $date = getdate();
-        $attr_uniquename = $tags['Parent'][0] . "-$type-$landmark-" . $date[0] . ":$fmin..$fmax";
+        $attr_uniquename = $tags['Parent'][0] . "-$type-$landmark-" . $date[0] . ":" . ($fmin + 1) . ".." . $fmax;
         $attr_name = $attr_uniquename;
       }
       // generate a unique name based on the date, type and location
       // and set the name to simply be the type
       else {
         $date = getdate();
-        $attr_uniquename = $date[0] . "-$type-$landmark:$fmin..$fmax";
+        $attr_uniquename = $date[0] . "-$type-$landmark:" . ($fmin + 1) . ".." . $fmax;
         $attr_name = $type;
       }      
     }

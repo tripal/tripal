@@ -465,7 +465,7 @@ function tripal_feature_seq_extract_get_features($org_commonname, $genus, $speci
   
   if (!$type and !$feature_name and !$genus) {
     print "Please provide a type, feature name or genus\n";
-     eturn;
+     return;
   }
 
   // get the list of features

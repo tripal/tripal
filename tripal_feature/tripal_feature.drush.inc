@@ -79,7 +79,7 @@ function drush_tripal_feature_tripal_get_sequence() {
   $derive_from_parent = drush_get_option('parent');
   $aggregate = drush_get_option('agg');
   $child = drush_get_option('child');
-  
+    
   tripal_feature_seq_extract_get_features($org_commonname, $genus, $species, $analysis_name, 
     $type, $feature_name, $upstream, $downstream, $output_format, $derive_from_parent, 
     $aggregate, $child);   
