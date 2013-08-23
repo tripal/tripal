@@ -498,10 +498,13 @@ function tripal_feature_get_formatted_sequence($feature_id, $feature_name,
     if($subject_rel) {
       $psql = '
         PREPARE feature_by_subject (int, text) AS
-        SELECT feature_id 
+        SELECT F2.feature_id, F2.name, F2.uniquename, CVT2.name as feature_type, O.genus, O.species
         FROM feature F
-          INNER JOIN feature_relationship FR ON FR.subject_id = F.feature_id
-          INNER JOIN cvterm CVT              ON CVT.cvterm_id = FR.type_id
+          INNER JOIN feature_relationship FR ON FR.subject_id  = F.feature_id
+          INNER JOIN cvterm CVT              ON CVT.cvterm_id  = FR.type_id
+          INNER JOIN feature F2              ON F2.feature_id  = FR.object_id
+          INNER JOIN cvterm CVT2             ON CVT2.cvterm_id = F2.type_id
+          INNER JOIN organism O              ON O.organism_id  = F2.organism_id
         WHERE 
           F.feature_id = $1 AND
           CVT.name     = $2
@@ -517,10 +520,13 @@ function tripal_feature_get_formatted_sequence($feature_id, $feature_name,
     if($object_rel) {
       $psql = '
         PREPARE feature_by_object (int, text) AS
-        SELECT feature_id 
+        SELECT F2.feature_id, F2.name, F2.uniquename, CVT2.name as feature_type, O.genus, O.species
         FROM feature F
-          INNER JOIN feature_relationship FR ON FR.object_id = F.feature_id
-          INNER JOIN cvterm CVT              ON CVT.cvterm_id = FR.type_id
+          INNER JOIN feature_relationship FR ON FR.object_id   = F.feature_id
+          INNER JOIN cvterm CVT              ON CVT.cvterm_id  = FR.type_id
+          INNER JOIN feature F2              ON F2.feature_id  = FR.subject_id
+          INNER JOIN cvterm CVT2             ON CVT2.cvterm_id = F2.type_id
+          INNER JOIN organism O              ON O.organism_id  = F2.organism_id
         WHERE 
           F.feature_id = $1 AND
           CVT.name     = $2
@@ -535,13 +541,19 @@ function tripal_feature_get_formatted_sequence($feature_id, $feature_name,
     }
     $sequences = '';
     while ($feature = db_fetch_object($features)) {  
+
       // recurse and get the sequences for these in the relationship
-      $sequence .= tripal_feature_get_formatted_sequence($feature->feature_id, $feature_name, 
+      if ($subject_rel) {
+        $defline = "$feature_name -> $subject_rel -> $feature->uniquename $feature->feature_type ($feature->genus $feature->species)";
+      }
+      if ($object_rel) {
+        $defline = "$feature->uniquename $feature->feature_type ($feature->genus $feature->species) -> $object_rel -> $feature_name";
+      }
+      $sequences .= tripal_feature_get_formatted_sequence($feature->feature_id, $defline, 
         $num_bases_per_line, $derive_from_parent, $aggregate, $output_format,
-        $upstream, $downstream, $sub_features);  
+        $upstream, $downstream, $sub_features,'','');  
     }  
     return $sequences;  
-    
   }
   
   // prepare statements we'll need to use later
