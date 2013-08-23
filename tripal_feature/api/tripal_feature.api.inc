@@ -466,7 +466,15 @@ function tripal_feature_reverse_complement($sequence) {
  * @param $downstream
  *   An integer specifying the number of downstream bases to include in the 
  *   output.
- *
+ * @param $sub_features
+ *   Only include sub features (or child features) of the types provided in the array 
+ * @param $subject_rel
+ *   Retreives the sequence of any features in relationship with the feature_id
+ *   where the feature_id is the subject of the relationship.
+ * @param $object_rel
+ *   Retreives the sequence of any features in relationship with the feature_id
+ *   where the feature_id is the object of the relationship. 
+ *      
  * @return
  *   The DNA/protein sequence formated as requested.
  *
@@ -474,7 +482,7 @@ function tripal_feature_reverse_complement($sequence) {
  */
 function tripal_feature_get_formatted_sequence($feature_id, $feature_name, 
   $num_bases_per_line, $derive_from_parent, $aggregate, $output_format,
-  $upstream, $downstream, $sub_features = array()) {
+  $upstream, $downstream, $sub_features = array(), $subject_rel, $object_rel) {
   
   // to speed things up we need to make sure we have a persistent connection
   $connection = tripal_db_persistent_chado(); 
@@ -486,6 +494,56 @@ function tripal_feature_get_formatted_sequence($feature_id, $feature_name,
      $downstream = 0;
   }
   
+  if ($subject_rel or $object_rel) { 
+    if($subject_rel) {
+      $psql = '
+        PREPARE feature_by_subject (int, text) AS
+        SELECT feature_id 
+        FROM feature F
+          INNER JOIN feature_relationship FR ON FR.subject_id = F.feature_id
+          INNER JOIN cvterm CVT              ON CVT.cvterm_id = FR.type_id
+        WHERE 
+          F.feature_id = $1 AND
+          CVT.name     = $2
+      ';  
+      $status = tripal_core_chado_prepare('feature_by_subject', $psql, array('int', 'text'));
+      if (!$status) {
+        watchdog('tripal_feature', "init: not able to prepare SQL statement '%name'", 
+          array('%name' => 'feature_by_subject'), 'WATCHDOG ERROR');
+      }    
+      $sql = "EXECUTE feature_by_subject (%d,'%s')";
+      $features = chado_query($sql, $feature_id, $subject_rel); 
+    }
+    if($object_rel) {
+      $psql = '
+        PREPARE feature_by_object (int, text) AS
+        SELECT feature_id 
+        FROM feature F
+          INNER JOIN feature_relationship FR ON FR.object_id = F.feature_id
+          INNER JOIN cvterm CVT              ON CVT.cvterm_id = FR.type_id
+        WHERE 
+          F.feature_id = $1 AND
+          CVT.name     = $2
+      ';
+      $status = tripal_core_chado_prepare('feature_by_object', $psql, array('int', 'text'));
+      if (!$status) {
+        watchdog('tripal_feature', "init: not able to prepare SQL statement '%name'", 
+          array('%name' => 'feature_by_object'), 'WATCHDOG ERROR');
+      }
+      $sql = "EXECUTE feature_by_object (%d,'%s')";
+      $features = chado_query($sql, $feature_id, $object_rel);     
+    }
+    $sequences = '';
+    while ($feature = db_fetch_object($features)) {  
+      // recurse and get the sequences for these in the relationship
+      $sequence .= tripal_feature_get_formatted_sequence($feature->feature_id, $feature_name, 
+        $num_bases_per_line, $derive_from_parent, $aggregate, $output_format,
+        $upstream, $downstream, $sub_features);  
+    }  
+    return $sequences;  
+    
+  }
+  
   // prepare statements we'll need to use later
   if (!tripal_core_is_sql_prepared('sequence_by_parent')) {
     // prepare the queries we're going to use later during the render phase
@@ -493,72 +551,73 @@ function tripal_feature_get_formatted_sequence($feature_id, $feature_name,
     // cases cases where the alignment is in the reverse direction and when
     // the upstream and downstream extensions go beyond the lenght of the 
     // parent sequence.
-    $psql ='PREPARE sequence_by_parent (int, int, int) AS 
-            SELECT srcname, srcfeature_id, strand, srctypename, typename,
-              fmin, fmax, upstream, downstream, adjfmin, adjfmax, 
-              substring(residues from (adjfmin + 1) for (upstream + (fmax - fmin) + downstream))  as residues,
-              genus, species
-            FROM (
-              SELECT
-                OF.name srcname, FL.srcfeature_id, FL.strand, 
-                OCVT.name as srctypename, SCVT.name as typename,
-                FL.fmin, FL.fmax, OO.genus, OO.species,
-                CASE 
-                  WHEN FL.strand >= 0 THEN 
-                    CASE 
-                       WHEN FL.fmin - $1 <= 0 THEN 0
-                       ELSE FL.fmin - $1
-                    END
-                  WHEN FL.strand < 0 THEN
-                    CASE 
-                       WHEN FL.fmin - $2 <= 0 THEN 0
-                       ELSE FL.fmin - $2
-                    END                   
-                END as adjfmin,                                                                
-                CASE 
-                  WHEN FL.strand >= 0 THEN
-                    CASE 
-                      WHEN FL.fmax + $2 > OF.seqlen THEN OF.seqlen 
-                      ELSE FL.fmax + $2
-                    END
-                  WHEN FL.strand < 0 THEN
-                    CASE
-                      WHEN FL.fmax + $1 > OF.seqlen THEN OF.seqlen
-                      ELSE FL.fmax + $1   
-                    END               
-                END as adjfmax,                     
-                CASE 
-                  WHEN FL.strand >= 0 THEN 
-                    CASE 
-                       WHEN FL.fmin - $1 <= 0 THEN FL.fmin
-                       ELSE $1
-                    END
-                  ELSE
-                    CASE 
-                       WHEN FL.fmax + $1 > OF.seqlen THEN OF.seqlen - FL.fmax
-                       ELSE $1
-                    END                   
-                END as upstream,                
-                CASE 
-                  WHEN FL.strand >= 0 THEN 
-                    CASE 
-                       WHEN FL.fmax + $2 > OF.seqlen THEN OF.seqlen - FL.fmax
-                       ELSE $2
-                    END
-                  ELSE
-                    CASE 
-                       WHEN FL.fmin - $2 <= 0 THEN FL.fmin
-                       ELSE $2
-                    END                   
-                END as downstream,  
-                OF.residues                                                     
-              FROM {featureloc} FL 
-                INNER JOIN {feature} SF on FL.feature_id = SF.feature_id
-                INNER JOIN {cvterm} SCVT on SF.type_id = SCVT.cvterm_id
-                INNER JOIN {feature} OF on FL.srcfeature_id = OF.feature_id                
-                INNER JOIN {cvterm} OCVT on OF.type_id = OCVT.cvterm_id
-                INNER JOIN {organism} OO on OF.organism_id = OO.organism_id
-              WHERE SF.feature_id = $3 and NOT (OF.residues = \'\' or OF.residues IS NULL)) as tbl1
+    $psql ='
+      PREPARE sequence_by_parent (int, int, int) AS 
+      SELECT srcname, srcfeature_id, strand, srctypename, typename,
+        fmin, fmax, upstream, downstream, adjfmin, adjfmax, 
+        substring(residues from (adjfmin + 1) for (upstream + (fmax - fmin) + downstream))  as residues,
+        genus, species
+      FROM (
+        SELECT
+          OF.name srcname, FL.srcfeature_id, FL.strand, 
+          OCVT.name as srctypename, SCVT.name as typename,
+          FL.fmin, FL.fmax, OO.genus, OO.species,
+          CASE 
+            WHEN FL.strand >= 0 THEN 
+              CASE 
+                 WHEN FL.fmin - $1 <= 0 THEN 0
+                 ELSE FL.fmin - $1
+              END
+            WHEN FL.strand < 0 THEN
+              CASE 
+                 WHEN FL.fmin - $2 <= 0 THEN 0
+                 ELSE FL.fmin - $2
+              END                   
+          END as adjfmin,                                                                
+          CASE 
+            WHEN FL.strand >= 0 THEN
+              CASE 
+                WHEN FL.fmax + $2 > OF.seqlen THEN OF.seqlen 
+                ELSE FL.fmax + $2
+              END
+            WHEN FL.strand < 0 THEN
+              CASE
+                WHEN FL.fmax + $1 > OF.seqlen THEN OF.seqlen
+                ELSE FL.fmax + $1   
+              END               
+          END as adjfmax,                     
+          CASE 
+            WHEN FL.strand >= 0 THEN 
+              CASE 
+                 WHEN FL.fmin - $1 <= 0 THEN FL.fmin
+                 ELSE $1
+              END
+            ELSE
+              CASE 
+                 WHEN FL.fmax + $1 > OF.seqlen THEN OF.seqlen - FL.fmax
+                 ELSE $1
+              END                   
+          END as upstream,                
+          CASE 
+            WHEN FL.strand >= 0 THEN 
+              CASE 
+                 WHEN FL.fmax + $2 > OF.seqlen THEN OF.seqlen - FL.fmax
+                 ELSE $2
+              END
+            ELSE
+              CASE 
+                 WHEN FL.fmin - $2 <= 0 THEN FL.fmin
+                 ELSE $2
+              END                   
+          END as downstream,  
+          OF.residues                                                     
+        FROM {featureloc} FL 
+          INNER JOIN {feature} SF on FL.feature_id = SF.feature_id
+          INNER JOIN {cvterm} SCVT on SF.type_id = SCVT.cvterm_id
+          INNER JOIN {feature} OF on FL.srcfeature_id = OF.feature_id                
+          INNER JOIN {cvterm} OCVT on OF.type_id = OCVT.cvterm_id
+          INNER JOIN {organism} OO on OF.organism_id = OO.organism_id
+        WHERE SF.feature_id = $3 and NOT (OF.residues = \'\' or OF.residues IS NULL)) as tbl1
     ';              
     $status = tripal_core_chado_prepare('sequence_by_parent', $psql, array('int', 'int', 'int'));
     if (!$status) {
@@ -627,7 +686,7 @@ function tripal_feature_get_formatted_sequence($feature_id, $feature_name,
         $i = 0;
         while ($child = db_fetch_object($children)) {
           // if the callee has specified that only certain sub features should be
-          // included then continue of this child is not one of those allowed
+          // included then continue if this child is not one of those allowed
           // subfeatures
           if (count($sub_features) > 0 and !in_array($child->type_name, $sub_features)) {
              continue;
