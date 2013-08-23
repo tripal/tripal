@@ -41,6 +41,8 @@ function tripal_feature_drush_command() {
       'parent'   => dt('Set this argument to 1 to retrieve the sequence from the parent in an alignment rather than the residues column of the feature itself.'),
       'agg'      => dt('Set this argument to 1 to aggregate sub features into a single sequence.  This is useful, for example, for obtaining CDS sequence from an mRNA'),
       'child'    => dt('Set this argument to the sequence ontology term for the children to aggregate.  This is useful in the case where a gene has exons as well as CDSs and UTRs.  You may sepcify as many feature types as desired by separating each with a single comma (no spaces).'),
+      'object_rel'  => dt('Retreives the sequence of any features in relationship with the matched features from other criteria where the feature is the subject of the relationship'),
+      'subject_rel' => dt('Retreives the sequence of any features in relationship with the matched features from other criteria where the feature is the object of the relationship. '),
     ),
     'examples' => array(
       'Standard example' => 'drush tripal-current-job',
@@ -79,10 +81,12 @@ function drush_tripal_feature_tripal_get_sequence() {
   $derive_from_parent = drush_get_option('parent');
   $aggregate = drush_get_option('agg');
   $child = drush_get_option('child');
+  $object_rel = drush_get_option('object_rel');
+  $subject_rel = drush_get_option('subject_rel');
     
   tripal_feature_seq_extract_get_features($org_commonname, $genus, $species, $analysis_name, 
     $type, $feature_name, $upstream, $downstream, $output_format, $derive_from_parent, 
-    $aggregate, $child);   
+    $aggregate, $child, $subject_rel, $object_rel);   
 }
 /*
  * 
