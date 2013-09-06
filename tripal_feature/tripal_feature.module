@@ -1370,18 +1370,21 @@ function tripal_feature_get_matched_alignments($feature) {
           "  INNER JOIN {featureloc} FL1 on FL1.srcfeature_id = F1.feature_id ".
           "  INNER JOIN {feature} F2 on FL1.feature_id = F2.feature_id ".
           "  INNER JOIN {featureloc} FL2 on FL2.feature_id = F2.feature_id ".
-          "  INNER JOIN {feature} F3 on FL2.srcfeature_id = F3.feature_id ".
           "  INNER JOIN {cvterm} CVT2 on F2.type_id = CVT2.cvterm_id ".
-          "WHERE F1.feature_id = %d and NOT F3.feature_id = %d ".
+          "WHERE F1.feature_id = %d " .
           "  AND (CVT2.name = 'match' or CVT2.name like '%_match') ".
           "ORDER BY FL1.fmin";
 
-   $results = chado_query($sql, $feature->feature_id, $feature->feature_id);
+   $results = chado_query($sql, $feature->feature_id);
 
    // iterate through the results and add them to our featurelocs array
    $featurelocs = array();
    while ($fl = db_fetch_object($results)) {
-      $featurelocs[] = $fl ;
+     // ignore featurelocs where the left and right srcfeature is the same
+     if (strcmp($fl->left_srcfeature_id, $fl->right_srcfeature_id) == 0) {
+       continue;
+     }
+     $featurelocs[] = $fl ;
    }
    return $featurelocs;
 }
@@ -1880,7 +1883,7 @@ function tripal_feature_preprocess_tripal_feature_alignments(&$variables) {
 
   // get matched alignments (those with an itermediate 'match' or 'EST_match', etc
   $mfeaturelocs = tripal_feature_get_matched_alignments($feature);
-  $feature->matched_featurelocs = tripal_feature_get_matched_alignments($feature);
+  $feature->matched_featurelocs = mfeaturelocs;
 
   // combine all three alignments into a single array for printing together in
   // a single list
