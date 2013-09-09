@@ -613,7 +613,7 @@ function chado_library_update($node) {
     // this here just to make not we've addressed it.
   }
 
-  $library_id = chado_get_id_for_node('library', $node->nid ;
+  $library_id = chado_get_id_for_node('library', $node->nid);
   // update the library record
   $match = array(
      'library_id' => $library_id,

@@ -1,5 +1,5 @@
 name = Tripal Organism
-description = A module for interfacing the GMOD chado database with Drupal, providing viewing, inserting and editing of organisms.
+description = A module for interfacing organisms from the GMOD chado database with Drupal. It provides viewing, inserting and editing of organisms.
 core = 7.x
 project = tripal_organism
 package = Tripal

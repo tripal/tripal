@@ -31,6 +31,24 @@ function tripal_analysis_init() {
 }
 
 /**
+ * Provide information to drupal about the node types that we're creating
+ * in this module
+ *
+ * @ingroup tripal_analysis
+ */
+function tripal_analysis_node_info() {
+  $nodes = array();
+  $nodes['chado_analysis'] = array(
+      'name' => t('Analysis'),
+      'base' => 'chado_analysis',
+      'description' => t('An analysis'),
+      'has_title' => FALSE,
+      'title_label' => t('Analysis'),
+      'locked' => TRUE
+  );
+  return $nodes;
+}
+/**
  * Implementation of hook_menu().
  * Entry points and paths of the module
  *
@@ -88,28 +106,6 @@ function tripal_analysis_menu() {
   return $items;
 }
 
-
-/**
- * Provide information to drupal about the node types that we're creating
- * in this module
- *
- * @ingroup tripal_analysis
- */
-function tripal_analysis_node_info() {
-  $nodes = array();
-  $nodes['chado_analysis'] = array(
-      'name' => t('Analysis'),
-      'module' => 'chado_analysis',
-      'description' => t('An analysis from the chado database'),
-      'has_title' => FALSE,
-      'title_label' => t('Analysis'),
-      'has_body' => FALSE,
-      'body_label' => t('Analysis Description'),
-      'locked' => TRUE
-  );
-  return $nodes;
-}
-
 /**
  *  When a new chado_analysis node is created we also need to add information
  *  to our chado_analysis table.  This function is called on insert of a new
@@ -121,10 +117,10 @@ function chado_analysis_insert($node) {
   global $user;
 
   // Create a timestamp so we can insert it into the chado database
-  $time = $node->timeexecuted;
+  $time  = $node->timeexecuted;
   $month = $time['month'];
-  $day = $time['day'];
-  $year = $time['year'];
+  $day   = $time['day'];
+  $year  = $time['year'];
   $timestamp = $month . '/' . $day . '/' . $year;
 
   // If this analysis already exists then don't recreate it in chado
@@ -141,15 +137,15 @@ function chado_analysis_insert($node) {
   if (!$analysis) {
     // insert and then get the newly inserted analysis record
     $values = array(
-      'name' => $node->analysisname,
-      'description' => $node->description,
-      'program' => $node->program,
+      'name'           => $node->analysisname,
+      'description'    => $node->description,
+      'program'        => $node->program,
       'programversion' => $node->programversion,
-      'algorithm' => $node->algorithm,
-      'sourcename' => $node->sourcename,
-      'sourceversion' => $node->sourceversion,
-      'sourceuri' => $node->sourceuri,
-      'timeexecuted' => $timestamp
+      'algorithm'      => $node->algorithm,
+      'sourcename'     => $node->sourcename,
+      'sourceversion'  => $node->sourceversion,
+      'sourceuri'      => $node->sourceuri,
+      'timeexecuted'   => $timestamp
     );
     if (tripal_core_chado_insert('analysis', $values)) {
       $analysis = tripal_core_chado_select('analysis', array('*'), $values);
@@ -160,13 +156,13 @@ function chado_analysis_insert($node) {
   // Make sure the entry for this analysis doesn't already exist in the
   // chado_analysis table if it doesn't exist then we want to add it.
   $node_check_sql = "SELECT * FROM {chado_analysis} ".
-                    "WHERE analysis_id = %d";
-  $node_check = db_fetch_object(db_query($node_check_sql, $analysis_id));
+                    "WHERE analysis_id = :analysis_id";
+  $node_check = db_query($node_check_sql, array(':analysis_id' => $analysis_id))->fetchObject();
   if (!$node_check) {
     // next add the item to the drupal table
     $sql = "INSERT INTO {chado_analysis} (nid, vid, analysis_id) ".
-             "VALUES (%d, %d, %d)";
-    db_query($sql, $node->nid, $node->vid, $analysis_id);
+           "VALUES (:nid, :vid, :analysis_id)";
+    db_query($sql, array(':nid' => $node->nid, ':vid' => $node->vid, ':analysis_id' => $analysis_id));
     // Create a title for the analysis node using the unique keys so when the
     // node is saved, it will have a title
     $record = new stdClass();
@@ -190,7 +186,8 @@ function chado_analysis_insert($node) {
   $node->analysis_id = $analysis_id; // we need to set this for children
     
   // now add the properties
-  $properties = array(); // stores all of the properties we need to add    
+  $properties = array(); // stores all of the properties we need to add   
+   
   // get the list of properties for easy lookup (without doing lots of database queries
   $properties_list = array();
   $sql = "
@@ -250,28 +247,28 @@ function chado_analysis_insert($node) {
 function chado_analysis_delete($node) {
   $analysis_id = chado_get_id_for_node('analysis', $node->nid);
   
-  // if we don't have an organism id for this node then this isn't a node of
-  // type chado_organism or the entry in the chado_organism table was lost.
+  // if we don't have an analysis id for this node then this isn't a node of
+  // type chado_analysis or the entry in the chado_analysis table was lost.
   if (!$analysis_id) {
     return;
   }
 
   // Remove data from the {chado_analysis}, {node}, and {node_revisions} tables
   $sql_del = "DELETE FROM {chado_analysis} ".
-              "WHERE nid = %d ".
-              "AND vid = %d";
-  db_query($sql_del, $node->nid, $node->vid);
+              "WHERE nid = :nid ".
+              "AND vid = :vid";
+  db_query($sql_del, array(':nid' => $node->nid, ':vid' => $node->vid));
   $sql_del = "DELETE FROM {node} ".
-              "WHERE nid = %d ".
-              "AND vid = %d";
-  db_query($sql_del, $node->nid, $node->vid);
+              "WHERE nid = :nid ".
+              "AND vid = :vid";
+  db_query($sql_del, array(':nid' => $node->nid, ':vid' => $node->vid));
   $sql_del = "DELETE FROM {node_revisions} ".
-              "WHERE nid = %d ".
-              "AND vid = %d";
-  db_query($sql_del, $node->nid, $node->vid);
+              "WHERE nid = :nid ".
+              "AND vid = :vid";
+  db_query($sql_del, array(':nid' => $node->nid, ':vid' => $node->vid));
 
   //Remove from analysis and analysisprop tables of chado database as well
-  chado_query("DELETE FROM {analysis} WHERE analysis_id = %d", $analysis_id);
+  chado_query("DELETE FROM {analysis} WHERE analysis_id = :analysis_id", array(':analysis_id' => $analysis_id));
 }
 
 /**
@@ -295,26 +292,41 @@ function chado_analysis_update($node) {
   $timestamp = $month . '/' . $day . '/' . $year;
 
   // get the analysis_id for this node:
-  $sql = "SELECT analysis_id ".
-      "FROM {chado_analysis} ".
-      "WHERE nid = %d";
-  $analysis_id = db_fetch_object(db_query($sql, $node->nid))->analysis_id;
+  $sql = "
+    SELECT analysis_id 
+    FROM {chado_analysis} 
+    WHERE nid = :nid
+  ";
+  $analysis = db_query($sql, array(':nid' => $node->nid))->fetchObject();
+  $analysis_id = $analysis->analysis_id;
 
-  $sql = "UPDATE {analysis} ".
-      "SET name = '%s', ".
-      "    description = '%s', ".
-      "    program = '%s', ".
-      "    programversion = '%s', ".
-      "    algorithm = '%s', ".
-      "    sourcename = '%s', ".
-      "    sourceversion = '%s', ".
-      "    sourceuri = '%s', ".
-      "    timeexecuted = '%s' ".
-      "WHERE analysis_id = %d ";
+  $sql = " 
+    UPDATE {analysis} 
+    SET name = :name, 
+        description = :description, 
+        program = :program, 
+        programversion = :programversion, 
+        algorithm = :algorithm, 
+        sourcename = :sourcename, 
+        sourceversion = :sourceversion, 
+        sourceuri = :sourceuri, 
+        timeexecuted = :timeexecuted 
+    WHERE analysis_id = :analysis_id 
+  ";
 
-  chado_query($sql, $node->analysisname, $node->description, $node->program,
-  $node->programversion, $node->algorithm, $node->sourcename,
-  $node->sourceversion, $node->sourceuri, $timestamp, $analysis_id);
+  $args = array(
+    ':name' => $node->analysisname, 
+    ':description' => $node->description, 
+    ':program' => $node->program, 
+    ':programversion' => $node->programversion, 
+    ':algorithm' => $node->algorithm, 
+    ':sourcename' => $node->sourcename, 
+    ':sourceversion' => $node->sourceversion, 
+    ':sourceuri' => $node->sourceuri, 
+    ':timeexecuted' => $timestamp,
+    ':analysis_id' => $anslysis_id 
+  );
+  chado_query($sql, $args);
 
   // Create a title for the analysis node using the unique keys so when the
   // node is saved, it will have a title
@@ -504,9 +516,9 @@ function chado_analysis_access($op, $node, $account) {
   if ($op == 'view') {
     if (!user_access('access chado_analysis content', $account)) {
       return FALSE;
-      }
+    }
   }
-    return NULL;
+  return NULL;
 }
 
 /**
@@ -518,11 +530,26 @@ function chado_analysis_access($op, $node, $account) {
  */
 function tripal_analysis_perm() {
   return array(
-    'access chado_analysis content',
-    'create chado_analysis content',
-    'delete chado_analysis content',
-    'edit chado_analysis content',
-    'administer tripal analyses',
+    'access chado_analysis content' => array(
+      'title' => t('View Analyses'),
+      'description' => t('Allow users to view analysis pages.'),
+    ),
+    'create chado_analysis content'=> array(
+      'title' => t('Create Analyses'),
+      'description' => t('Allow users to create new analysis pages.'),
+    ),
+    'delete chado_analysis content'=> array(
+      'title' => t('Delete Analyses'),
+      'description' => t('Allow users to delete analysis pages.'),
+    ),
+    'edit chado_analysis content'=> array(
+      'title' => t('Edit Analyses'),
+      'description' => t('Allow users to edit analysis pages.'),
+    ),
+    'adminster tripal analysis'=> array(
+      'title' => t('Administer Analyses'),
+      'description' => t('Allow users to administer all analyses.'),
+    ),
   );
 }
 
@@ -597,33 +624,21 @@ function tripal_analysis_block($op = 'list', $delta = 0, $edit=array()) {
   }
 }
 
-/*******************************************************************************
- * tripal_analysis_nodeapi()
- * HOOK: Implementation of hook_nodeapi()
- * Display blast results for allowed node types
+/**
+ * 
+ * Implements hook_node_view()
  */
-function tripal_analysis_nodeapi(&$node,  $op, $teaser, $page) {
-
-  switch ($op) {
-    case 'view':
-
-      if ($teaser) {
-        return '';
-      }
-      // Abort if this node is not one of the types we should show.
-      if (strcmp($node->type, 'chado_feature') == 0) {
-        if ($node->build_mode == NODE_BUILD_SEARCH_INDEX) {
-           // return results for searching
-        } 
-        else {
-           // return normal results
-           $node->content['tripal_feature_analyses'] = array(
-                  '#value' => theme('tripal_feature_analyses',   $node),
-                  '#weight' => 8
-           );
-        }
-      }
-      break;
+function tripal_analysis_node_view ($node, $view_mode, $langcode) {
+  if ($node->type == 'chado_feature') {
+    if ($view_mode == 'search_index') {
+       // return results for searching
+    } 
+    if ($view_mode == 'full') {
+       // return normal results
+       $node->content['tripal_feature_analyses'] = array(
+         '#markup' => theme('tripal_feature_analyses',  $node),
+       );
+    }
   }
 }
 

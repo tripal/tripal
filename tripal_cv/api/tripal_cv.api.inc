@@ -899,13 +899,14 @@ function tripal_cv_cvterm_name_autocomplete($cv_id, $string = '') {
   $sql = "
     SELECT cvterm_id, name 
     FROM {cvterm} 
-    WHERE cv_id = %d and lower(name) like lower('%s%%') 
-    ORDER by name
+    WHERE cv_id = :cv_id and name like :name 
+    ORDER by name 
+    LIMIT 25 OFFSET 0
   ";
-  $results = chado_query($sql, $cv_id, $string);
+  $results = chado_query($sql, array(':cv_id' => $cv_id, ':name' => $string . '%'));
   $items = array();
-  while($term = db_fetch_object($results)) {
+  foreach ($results as $term) {
      $items[$term->name] = $term->name;
   }  
-  drupal_json($items);   
+  drupal_json_output($items);   
 }
