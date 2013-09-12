@@ -468,12 +468,13 @@ function tripal_feature_reverse_complement($sequence) {
  *   output.
  * @param $sub_features
  *   Only include sub features (or child features) of the types provided in the array 
- * @param $subject_rel
- *   Retreives the sequence of any features in relationship with the feature_id
- *   where the feature_id is the subject of the relationship.
- * @param $object_rel
- *   Retreives the sequence of any features in relationship with the feature_id
- *   where the feature_id is the object of the relationship. 
+ * @param $relationship
+ *   If a relationship name is provided (e.g. sequence_of) then any sequences that
+ *   are in relationships of this type with matched sequences are also included
+ * @param $rel_part
+ *   If a relationship is provided in the preceeding argument then the rel_part
+ *   must be either 'object' or 'subject' to indicate which side of the 
+ *   relationship the matched features belong
  *      
  * @return
  *   The DNA/protein sequence formated as requested.
@@ -482,7 +483,7 @@ function tripal_feature_reverse_complement($sequence) {
  */
 function tripal_feature_get_formatted_sequence($feature_id, $feature_name, 
   $num_bases_per_line, $derive_from_parent, $aggregate, $output_format,
-  $upstream, $downstream, $sub_features = array(), $subject_rel, $object_rel) {
+  $upstream, $downstream, $sub_features = array(), $relationship = '', $rel_part = '') {
   
   // to speed things up we need to make sure we have a persistent connection
   $connection = tripal_db_persistent_chado(); 
@@ -494,54 +495,66 @@ function tripal_feature_get_formatted_sequence($feature_id, $feature_name,
      $downstream = 0;
   }
   
-  if ($subject_rel or $object_rel) { 
-    if($subject_rel) {
+  if ($rel_part == "object" or $rel_part == "subject") { 
+    if($rel_part == "subject") {
       $psql = '
-        PREPARE feature_by_subject (int, text) AS
-        SELECT feature_id 
-        FROM feature F
-          INNER JOIN feature_relationship FR ON FR.subject_id = F.feature_id
-          INNER JOIN cvterm CVT              ON CVT.cvterm_id = FR.type_id
+        PREPARE feature_rel_get_object (int, text) AS
+        SELECT FO.feature_id, FO.name, FO.uniquename, CVTO.name as feature_type, O.genus, O.species
+        FROM feature FS
+          INNER JOIN feature_relationship FR ON FR.subject_id   = FS.feature_id
+          INNER JOIN cvterm CVTFR            ON CVTFR.cvterm_id = FR.type_id
+          INNER JOIN feature FO              ON FO.feature_id   = FR.object_id
+          INNER JOIN cvterm CVTO             ON CVTO.cvterm_id  = FO.type_id
+          INNER JOIN organism O              ON O.organism_id   = FO.organism_id
         WHERE 
-          F.feature_id = $1 AND
-          CVT.name     = $2
+          FS.feature_id = $1 AND
+          CVTFR.name    = $2
       ';  
-      $status = tripal_core_chado_prepare('feature_by_subject', $psql, array('int', 'text'));
+      $status = tripal_core_chado_prepare('feature_rel_get_object', $psql, array('int', 'text'));
       if (!$status) {
         watchdog('tripal_feature', "init: not able to prepare SQL statement '%name'", 
           array('%name' => 'feature_by_subject'), 'WATCHDOG ERROR');
       }    
-      $sql = "EXECUTE feature_by_subject (%d,'%s')";
-      $features = chado_query($sql, $feature_id, $subject_rel); 
+      $sql = "EXECUTE feature_rel_get_object(%d,'%s')";
+      $features = chado_query($sql, $feature_id, $relationship); 
     }
-    if($object_rel) {
+    if($rel_part == "object") {
       $psql = '
-        PREPARE feature_by_object (int, text) AS
-        SELECT feature_id 
-        FROM feature F
-          INNER JOIN feature_relationship FR ON FR.object_id = F.feature_id
-          INNER JOIN cvterm CVT              ON CVT.cvterm_id = FR.type_id
+        PREPARE feature_rel_get_subject (int, text) AS
+        SELECT FS.feature_id, FS.name, FS.uniquename, CVTO.name as feature_type, O.genus, O.species
+        FROM feature FO
+          INNER JOIN feature_relationship FR ON FR.object_id    = FO.feature_id
+          INNER JOIN cvterm CVTFR            ON CVTFR.cvterm_id = FR.type_id
+          INNER JOIN feature FS              ON FS.feature_id   = FR.subject_id
+          INNER JOIN cvterm CVTO             ON CVTO.cvterm_id  = FS.type_id
+          INNER JOIN organism O              ON O.organism_id   = FS.organism_id
         WHERE 
-          F.feature_id = $1 AND
-          CVT.name     = $2
+          FO.feature_id = $1 AND
+          CVTFR.name    = $2
       ';
-      $status = tripal_core_chado_prepare('feature_by_object', $psql, array('int', 'text'));
+      $status = tripal_core_chado_prepare('feature_rel_get_subject', $psql, array('int', 'text'));
       if (!$status) {
         watchdog('tripal_feature', "init: not able to prepare SQL statement '%name'", 
           array('%name' => 'feature_by_object'), 'WATCHDOG ERROR');
       }
-      $sql = "EXECUTE feature_by_object (%d,'%s')";
-      $features = chado_query($sql, $feature_id, $object_rel);     
+      $sql = "EXECUTE feature_rel_get_subject(%d,'%s')";
+      $features = chado_query($sql, $feature_id, $relationship);     
     }
     $sequences = '';
     while ($feature = db_fetch_object($features)) {  
+
       // recurse and get the sequences for these in the relationship
-      $sequence .= tripal_feature_get_formatted_sequence($feature->feature_id, $feature_name, 
+      if ($rel_part == "subject") {
+        $defline = "$feature_name, $relationship, $feature->uniquename $feature->feature_type ($feature->genus $feature->species)";
+      }
+      if ($rel_part == "object") {
+        $defline = "$feature->uniquename $feature->feature_type ($feature->genus $feature->species), $relationship, $feature_name";
+      }
+      $sequences .= tripal_feature_get_formatted_sequence($feature->feature_id, $defline, 
         $num_bases_per_line, $derive_from_parent, $aggregate, $output_format,
-        $upstream, $downstream, $sub_features);  
+        $upstream, $downstream, $sub_features,'','');  
     }  
     return $sequences;  
-    
   }
   
   // prepare statements we'll need to use later
@@ -763,7 +776,7 @@ function tripal_feature_get_formatted_sequence($feature_id, $feature_name,
       elseif ($output_format == 'fasta_txt') {
          $seq = wordwrap($seq, $num_bases_per_line, "\r\n", TRUE);
       }
-      $residues .= ">$feature_name. Sequence derived from $parent->srctypename of $parent->genus $parent->species: $parent->srcname:" . ($parent->adjfmin + 1) . ".." . $parent->adjfmax ." ($dir). ";
+      $residues .= ">$feature_name. Sequence derived from feature of type, '$parent->srctypename', of $parent->genus $parent->species: $parent->srcname:" . ($parent->adjfmin + 1) . ".." . $parent->adjfmax ." ($dir). ";
       if (count($types) > 0) {
         $residues .= "Excludes all bases but those of type(s): " . implode(', ', $types) . ". " ;
       }

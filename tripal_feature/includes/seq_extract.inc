@@ -456,7 +456,7 @@ function tripal_feature_seq_extract_form_submit($form, &$form_state) {
  */
 function tripal_feature_seq_extract_get_features($org_commonname, $genus, $species, $analysis_name, 
   $type, $feature_name, $upstream, $downstream, $output_format, $derive_from_parent, $aggregate, 
-  $child, $subject_rel, $object_rel) {
+  $child, $relationship, $rel_part) {
     
   $sub_features = explode(',', $child);
     
@@ -534,7 +534,7 @@ function tripal_feature_seq_extract_get_features($org_commonname, $genus, $speci
     // generate the sequence
     $sequence = tripal_feature_get_formatted_sequence($feature_id, $feature_name, 
       $num_bases_per_line, $derive_from_parent, $aggregate, $output_format,
-      $upstream, $downstream, $sub_features, $subject_rel, $object_rel);
+      $upstream, $downstream, $sub_features, $relationship, $rel_part);
     
     // print the sequence
     print $sequence;
