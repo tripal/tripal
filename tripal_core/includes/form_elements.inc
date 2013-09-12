@@ -117,7 +117,8 @@ function file_upload_combo_validate($element, &$form) {
       foreach ($vals as $i => $value) {
         $values[] = trim($value);
       }
-    }       
+    }
+    fclose($fh);       
   }
   
   // add a new 'items_array' element that contains the array of 
