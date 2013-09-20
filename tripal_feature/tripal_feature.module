@@ -285,6 +285,10 @@ function tripal_feature_theme() {
        'arguments' => array('node' => NULL),
        'template' => 'tripal_feature_sequence',
     ),
+    'tripal_feature_proteins' => array(
+       'arguments' => array('node' => NULL),
+       'template' => 'tripal_feature_proteins',
+    ),
     'tripal_feature_synonyms' => array(
        'arguments' => array('node' => NULL),
        'template' => 'tripal_feature_synonyms',
@@ -1846,6 +1850,20 @@ function tripal_feature_nodeapi(&$node, $op, $teaser, $page) {
  * @ingroup tripal_feature
  */
 function tripal_feature_preprocess_tripal_feature_relationships(&$variables) {
+  // we want to provide a new variable that contains the matched features.
+  $feature = $variables['node']->feature;
+
+  if (!$feature->all_relationships) {
+    $feature->all_relationships = tripal_feature_get_feature_relationships($feature);
+  }
+}
+
+/**
+ *
+ *
+ * @ingroup tripal_feature
+ */
+function tripal_feature_preprocess_tripal_feature_proteins(&$variables) {
   // we want to provide a new variable that contains the matched features.
   $feature = $variables['node']->feature;
 
