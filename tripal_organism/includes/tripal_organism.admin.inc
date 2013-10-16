@@ -392,7 +392,6 @@ function tripal_organism_reindex_features($organism_id = NULL, $job_id = NULL) {
     if ($job_id and $i % $interval == 0) {
       tripal_job_set_progress($job_id , intval(($i/$count)*100));
     }
-    tripal_feature_sync_feature($feature_id);
     $i++;
   }
 }

@@ -14,7 +14,7 @@
  */
 
 require_once "includes/tripal_feature.admin.inc";
-require_once "includes/syncFeatures.inc";
+require_once "includes/tripal_feature.sync_features.inc";
 require_once "includes/indexFeatures.inc";
 require_once "includes/fasta_loader.inc";
 require_once "includes/gff_loader.inc";
@@ -503,7 +503,7 @@ function chado_feature_insert($node) {
     'type_id' => $type[0]->cvterm_id,
   );
   $feature = tripal_core_chado_select('feature', array('feature_id'), $values);
-
+    
   // add the genbank accession and synonyms
   chado_feature_add_synonyms($node->synonyms, $feature[0]->feature_id);
 
@@ -564,7 +564,7 @@ function chado_feature_update($node) {
     );
     $options = array('return_record' => TRUE);
     $status = tripal_core_chado_update('feature', $match, $values, $options);
-
+    
     // add the genbank synonyms
     chado_feature_add_synonyms($node->synonyms, $feature_id);
   }
@@ -576,6 +576,8 @@ function chado_feature_update($node) {
     WATCHDOG_WARNING
     );
   }
+  
+
 }
 /**
  *
@@ -801,6 +803,7 @@ function chado_feature_form($node, $param) {
     '#value' => $feature->feature_id,
   );
 
+  /*
   $form['title']= array(
     '#type' => 'textfield',
     '#title' => t('Title'),
@@ -808,7 +811,7 @@ function chado_feature_form($node, $param) {
     '#default_value' => $node->title,
     '#description' => t('The title must be a unique identifier for this feature.  It is recommended to use a combination of uniquename, organism and feature type in the title as this is guranteed to be unique.'),
     '#maxlength' => 255
-  );
+  );*/
 
   $form['uniquename']= array(
     '#type' => 'textfield',
@@ -946,7 +949,6 @@ function chado_feature_validate($node) {
   if ($node->feature_type == 'contig' and $node->gbaccession) {
     form_set_error('gbaccession', t("Contigs cannot have a genbank accession number.  Please change the feature type or remove the accession number"));
   }
-
 }
 /**
  *  When a node is requested by the user this function is called to allow us
@@ -962,8 +964,26 @@ function chado_feature_load($node) {
   $values = array('feature_id' => $feature_id);
   $feature = tripal_core_generate_chado_var('feature', $values);
 
-  if (strcmp($feature->name, $feature->uniquename)==0) {
-     $node->title = $feature->name . " (" . $feature->type_id->name . ") " . $feature->organism_id->genus . " " . $feature->organism_id->species ;
+  // by default, the titles are saved using the unique constraint.  We will
+  // keep it the same, but remove the duplicate name if the unique name and name
+  // are identical
+  $title_type = variable_get('chado_feature_title', 'unique_constraint');
+  if($title_type == 'unique_constraint') {
+    if (strcmp($feature->name, $feature->uniquename)==0) {
+      $node->title = $feature->name . " (" . $feature->type_id->name . ") " . $feature->organism_id->genus . " " . $feature->organism_id->species ;
+    }
+    // in previous version of Tripal, the feature title was simply the unique name. 
+    // so, we recreate the title just to be sure all of our feature pages are consistent
+    else {
+      $node->title = $feature->name . ", " . $feature->uniquename . " (" . $feature->type_id->name . ") " . $feature->organism_id->genus . " " . $feature->organism_id->species ;  
+    }
+  }
+  // set the title to be the feature name or uniquename as configured
+  if($title_type == 'feature_name') {
+    $node->title = $feature->name;
+  }
+  if($title_type == 'feature_unique_name') {
+    $node->title = $feature->uniquename;  
   }
 
   $additions = new stdClass();
@@ -1820,10 +1840,61 @@ function chado_feature_view($node, $teaser = FALSE, $page = FALSE) {
  * @ingroup tripal_feature
  */
 function tripal_feature_nodeapi(&$node, $op, $teaser, $page) {
-
+  
   switch ($op) {
-    // Note that this function only adds feature view to an organism node.
-    // The view of a feature node is controled by the theme *.tpl file
+    
+     // set the title to ensure it is always unique
+    case 'presave':
+      switch ($node->type) {
+        case 'chado_feature':
+          
+          $values = array('organism_id' => $node->organism_id);
+          $organism = tripal_core_chado_select('organism', array('genus','species'), $values);
+          $node->title = $node->fname . ', ' . $node->uniquename . ' (' . $node->feature_type . ') ' . $organism[0]->genus . ' ' . $organism[0]->species;
+          break;
+      }
+      break;
+      
+    // set the URL path after inserting.  We do it here because we do not 
+    // know the feature_id in the presave  
+    case 'insert':
+      switch ($node->type) {
+        case 'chado_feature':
+          if (!$node->feature_id) {
+            $sql = "SELECT * FROM {chado_feature} WHERE nid = %d";
+            $chado_feature = db_fetch_object(db_query($sql, $node->nid));
+            $node->feature_id = $chado_feature->feature_id;
+          }
+
+          
+          // remove any previous alias
+          db_query("DELETE FROM {url_alias} WHERE src = '%s'", "node/$node->nid");
+          
+          // set the URL for this feature page
+          $url_alias = tripal_feature_get_feature_url($node);
+          path_set_alias("node/$node->nid", $url_alias);
+          break;
+      }
+      break;
+      
+    // set the URL path after inserting.  We do it here because we do not 
+    // know the feature_id in the presave  
+    case 'update':
+      switch ($node->type) {
+        case 'chado_feature':
+          
+          // remove any previous alias
+          db_query("DELETE FROM {url_alias} WHERE src = '%s'", "node/$node->nid");
+          
+          // set the URL for this feature page
+          $url_alias = tripal_feature_get_feature_url($node);
+          path_set_alias("node/$node->nid", $url_alias);
+          break;
+      }
+      break;
+      
+      
+    // add items to other nodes, build index and search results
     case 'view':
       switch ($node->type) {
         case 'chado_organism':
@@ -2117,7 +2188,7 @@ function tripal_feature_del_vocabulary() {
  * @ingroup tripal_feature
  */
 function tripal_feature_return_fasta($feature, $desc) {
-  $fasta  = ">" . variable_get('chado_feature_accession_prefix', 'ID') . "$feature->feature_id|$feature->name";
+  $fasta  = ">" . variable_get('chado_feature_accession_prefix', 'FID') . "$feature->feature_id|$feature->name";
   $fasta .= " $desc\n";
   $fasta .= wordwrap($feature->residues, 50, "\n", TRUE);
   $fasta .= "\n\n";

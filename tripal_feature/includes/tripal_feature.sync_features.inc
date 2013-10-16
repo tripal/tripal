@@ -10,9 +10,9 @@
 // Parameter f specifies the feature_id to sync
 // -f 0 will sync all features
 
-$arguments = getopt("f:");
+$arguments = getopt("f:t:");
 
-if (isset($arguments['f'])) {
+if (isset($arguments['f']) and isset($arguments['t']) and $arguments['t'] == 'chado_feature') {
   $drupal_base_url = parse_url('http://www.example.com');
   $_SERVER['HTTP_HOST'] = $drupal_base_url['host'];
   $_SERVER['REQUEST_URI'] = $_SERVER['SCRIPT_NAME'] = $_SERVER['PHP_SELF'];
@@ -24,10 +24,10 @@ if (isset($arguments['f'])) {
 
   $feature_id = $arguments['f'];
 
-  if ($feature_id > 0 ) {
+  if ($feature_id > 0) {
     tripal_feature_sync_feature($feature_id);
   }
-  else{
+  else {
     print "syncing all features...\n";
     tripal_feature_sync_features();
   }
@@ -51,12 +51,11 @@ function tripal_feature_sync_form() {
   $form['feature_types'] = array(
     '#title'       => t('Feature Types'),
     '#type'        => 'textarea',
-    '#description' => t('Enter the names of the sequence types that the ".
-       "site will support with independent pages.  Pages for these data ".
-       "types will be built automatically for features that exist in the ".
+    '#description' => t("Enter the names of the feature types to sync.  Pages for these feature ".
+       "types will be created automatically for features that exist in the ".
        "chado database.  The names listed here should be spearated by ".
        "spaces or entered separately on new lines. The names must match ".
-       "exactly (spelling and case) with terms in the sequence ontology'),
+       "exactly (spelling and case) with terms in the sequence ontology"),
     '#required'    => TRUE,
     '#default_value' => variable_get('chado_sync_feature_types', 'gene contig'),
   );
@@ -71,7 +70,7 @@ function tripal_feature_sync_form() {
   $form['organism_id'] = array(
     '#title'       => t('Organism'),
     '#type'        => t('select'),
-    '#description' => t("Choose the organism for which features set above will be synced. Only organisms which also have been synced will appear in this list."),
+    '#description' => t("Choose the organism for which features types set above will be synced. Only organisms which also have been synced will appear in this list."),
     '#options'     => $organisms,
   );
 
@@ -126,48 +125,64 @@ function tripal_feature_set_urls($job_id = NULL) {
   $sql = "SELECT * FROM {chado_feature}";
   $nodes = db_query($sql);
   while ($node = db_fetch_object($nodes)) {
-    // now get the feature details
-    $sql = "SELECT * 
-            FROM {feature} F
-              INNER JOIN {organism} O on O.organism_id = F.organism_id
-            WHERE F.feature_id = %d";     
-    $feature = db_fetch_object(chado_query($sql, $node->feature_id));
-    if ($feature) {
-      tripal_feature_set_feature_url($node, $feature);
-    }
+
+    print "Setting URL alias for feature $feature->name: node/$node->nid => $url_alias\n";
+
+    // remove any previous alias
+    db_query("DELETE FROM {url_alias} WHERE src = '%s'", "node/$node->nid");
+    
+    // add the new alias
+    $url_alias = tripal_feature_get_feature_url($node);
+    path_set_alias("node/$node->nid", $url_alias);
   }
 }
 /**
  *
  */
-function tripal_feature_set_feature_url($node, $feature) {
+function tripal_feature_get_feature_url($node) {
 
   // determine which URL alias to use
   $alias_type = variable_get('chado_feature_url', 'internal ID');
-  $aprefix = variable_get('chado_feature_accession_prefix', 'ID');  
-  $genus = preg_replace('/\s/', '_', strtolower($feature->genus));
-  $species = preg_replace('/\s/', '_', strtolower($feature->species));    
+  $aprefix = variable_get('chado_feature_accession_prefix', 'SID');
+
+  // get the feature 
+  $values = array('feature_id' => $node->feature_id);        
+  $feature = tripal_core_chado_select('feature', array('*'), $values);
+
+  $feature = (object) $feature[0];
+  
+  // get the organism
+  $values = array('organism_id' => $feature->organism_id);
+  $organism  = tripal_core_chado_select('organism', array('*'), $values);  
+  $genus = preg_replace('/\s/', '_', strtolower($organism[0]->genus));
+  $species = preg_replace('/\s/', '_', strtolower($organism[0]->species)); 
+
+  // get the type
+  $values = array('cvterm_id' => $feature->type_id);
+  $cvterm = tripal_core_chado_select('cvterm', array('name'), $values);
+  $type = preg_replace('/\s/', '_', $cvterm[0]->name);
+  
   switch ($alias_type) {
-    case 'feature name':
+    case 'feature_name':
       $url_alias = $feature->name;
       break;
-    case 'feature unique name':
+    case 'feature_unique_name':
       $url_alias = $feature->uniquename;
       break;
     case 'genus_species_uqname':
       $url_alias = $genus . "/" . $genus . "_" . $species . "/" . $feature->uniquename;
       break;
-    case 'genus species name':
-      $url_alias = $genus . "/" . $genus . "_" . $species . "/" . $feature->name;
+    case 'genus_species_name':
+      $url_alias = $genus . "/" . $genus . "_" . $species . "/" . $feature->sname;
+      break;
+    case 'genus_species_type_uname':
+      $url_alias = $genus . "/" . $genus . "_" . $species . "/" . $type . "/" . $feature->uniquename;
       break;
     default:
-      $url_alias = "$aprefix$feature->feature_id";
+      $url_alias = "$aprefix$node->feature_id";
   }
-  print "Setting URL alias for $feature->name: node/$node->nid => $url_alias\n";
-  // remove any previous alias
-  db_query("DELETE FROM {url_alias} WHERE src = '%s'", "node/$node->nid");
-  // add the new alias
-  path_set_alias("node/$node->nid", $url_alias);
+ 
+  return $url_alias;
 }
 /**
  *
@@ -176,7 +191,7 @@ function tripal_feature_set_feature_url($node, $feature) {
  */
 function tripal_feature_sync_features($max_sync = 0, $organism_id = NULL,
   $feature_types = NULL, $job_id = NULL) {
-  //print "Syncing features (max of $max_sync)\n";
+  
   $i = 0;
 
   // get the list of available sequence ontology terms for which
@@ -268,7 +283,7 @@ function tripal_feature_sync_features($max_sync = 0, $organism_id = NULL,
       # to avoid this problem we will call this script through an
       # independent system call
       print "$i of $num_ids Syncing feature id: $feature_id\n";
-      $cmd = "php " . drupal_get_path('module', 'tripal_feature') . "/includes/syncFeatures.inc -f $feature_id ";
+      $cmd = "php " . drupal_get_path('module', 'tripal_feature') . "/includes/tripal_feature.sync_features.inc -f $feature_id -t chado_feature";
       system($cmd);
 
     }
@@ -290,7 +305,7 @@ function tripal_feature_sync_feature($feature_id) {
   $create_node = 1;   // set to 0 if the node exists and we just sync and not create
 
   // get the accession prefix
-  $aprefix = variable_get('chado_feature_accession_prefix', 'ID');
+  $aprefix = variable_get('chado_feature_accession_prefix', 'FID');
 
   // if we don't have a feature_id then return
   if (!$feature_id) {
@@ -412,13 +427,6 @@ function tripal_feature_sync_feature($feature_id) {
   // set the taxonomy for this node
   drupal_set_message(t("%feature_id ($node->nid): setting taxonomy", array('%feature_id' => $feature_id)));
   tripal_feature_set_taxonomy($node, $feature_id);
-
-  // reindex the node
-  // drupal_set_message(t("$feature_id( $node->nid): indexing"));
-  // tripal_feature_index_feature ($feature_id,$node->nid);
-
-  // set the URL alias for this node
-  tripal_feature_set_feature_url($node, $feature);
 
 
   return '';

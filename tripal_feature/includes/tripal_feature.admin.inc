@@ -21,13 +21,14 @@ function tripal_feature_admin() {
   }
   if (!$active_jobs) {
 
+    get_tripal_feature_admin_form_title_set($form);
     get_tripal_feature_admin_form_url_set($form);
 
     $form['browser'] = array(
        '#type' => 'fieldset',
        '#title' => t('Feature Browser'),
-       '#collapsible' => 1,
-       '#collapsed' => 1 ,
+       '#collapsible' => TRUE,
+       '#collapsed' => TRUE,
     );
     $allowedoptions1  = array(
       'show_feature_browser' => "Show the feature browser on the organism page. The browser loads when page loads. This may be slow for large sites.",
@@ -88,8 +89,8 @@ function tripal_feature_admin() {
     $form['summary'] = array(
        '#type' => 'fieldset',
        '#title' => t('Feature Summary Report'),
-       '#collapsible' => 1,
-       '#collapsed' => 1 ,
+       '#collapsible' => TRUE,
+       '#collapsed' => TRUE,
     );
     $allowedoptions2 ['show_feature_summary'] = "Show the feature summary on the organism page. The summary loads when page loads.";
     $allowedoptions2 ['hide_feature_summary'] = "Hide the feature summary on the organism page. Disables the feature summary.";
@@ -126,7 +127,9 @@ function tripal_feature_admin() {
   else {
     $form['notice'] = array(
        '#type' => 'fieldset',
-       '#title' => t('Feature Management Temporarily Unavailable')
+       '#title' => t('Feature Management Temporarily Unavailable'),
+       '#collapsible' => FALSE,
+       '#collapsed' => FALSE,
     );
     $form['notice']['message'] = array(
        '#value' => t('Currently, feature management jobs are waiting or ".
@@ -150,47 +153,46 @@ function tripal_feature_admin_validate($form, &$form_state) {
 
   variable_set('chado_browser_feature_types', $form_state['values']['feature_types']);
 
-  // if the user wants to sync up the chado features then
-  // add the job to the management queue
   switch ($form_state['values']['op']) {
 
     case  t('Sync all Features') :
       tripal_add_job('Sync all features', 'tripal_feature',
         'tripal_feature_sync_features', $job_args, $user->uid);
-    break;
+      break;
 
     case t('Set/Reset Taxonomy for all feature nodes') :
-    tripal_add_job('Set all feature taxonomy', 'tripal_feature',
-      'tripal_features_set_taxonomy', $job_args, $user->uid);
-    break;
+      tripal_add_job('Set all feature taxonomy', 'tripal_feature',
+        'tripal_features_set_taxonomy', $job_args, $user->uid);
+      break;
 
     case t('Reindex all feature nodes') :
-    tripal_add_job('Reindex all features', 'tripal_feature',
-      'tripal_features_reindex', $job_args, $user->uid);
-    break;
+      tripal_add_job('Reindex all features', 'tripal_feature',
+        'tripal_features_reindex', $job_args, $user->uid);
+      break;
 
     case t('Clean up orphaned features') :
-    tripal_add_job('Cleanup orphaned features', 'tripal_feature',
-      'tripal_features_cleanup', $job_args, $user->uid);
-    break;
+      tripal_add_job('Cleanup orphaned features', 'tripal_feature',
+        'tripal_features_cleanup', $job_args, $user->uid);
+      break;
 
     case t('Set Browser') :
       variable_set('tripal_feature_browse_setting', $form_state['values']['browse_features']);
       variable_set('tripal_library_feature_browse_setting', $form_state['values']['browse_features_library']);
       variable_set('tripal_analysis_feature_browse_setting', $form_state['values']['browse_features_analysis']);
-    break;
+      break;
 
     case t('Set Summary') :
       variable_set('tripal_feature_summary_setting', $form_state['values']['feature_summary']);
       variable_set('tripal_feature_summary_report_mapping', $form_state['values']['feature_mapping']);
-    break;
+      break;
 
     case t('Set Feature URLs') :
       variable_set('chado_feature_url', $form_state['values']['feature_url']);
       tripal_add_job('Set Feature URLs', 'tripal_feature',
         'tripal_feature_set_urls', $job_args, $user->uid);
-    break;
-    }
+      break;
+  }
+    
 }
 /**
  *
@@ -201,8 +203,8 @@ function get_tripal_feature_admin_form_cleanup_set(&$form) {
   $form['cleanup'] = array(
     '#type' => 'fieldset',
     '#title' => t('Clean Up'),
-    '#collapsible' => 1,
-    '#collapsed' => 1 ,
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
   );
   $form['cleanup']['description'] = array(
     '#type' => 'item',
@@ -233,8 +235,8 @@ function get_tripal_feature_admin_form_reindex_set(&$form) {
   $form['reindex'] = array(
     '#type' => 'fieldset',
     '#title' => t('Index/Reindex'),
-    '#collapsible' => 1,
-    '#collapsed' => 1 ,
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
   );
   $form['reindex']['description'] = array(
      '#type' => 'item',
@@ -262,8 +264,8 @@ function get_tripal_feature_admin_form_taxonomy_set(&$form) {
   $form['taxonomy'] = array(
     '#type' => 'fieldset',
     '#title' => t('Set Taxonomy'),
-    '#collapsible' => 1,
-    '#collapsed' => 1 ,
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
   );
 
   $form['taxonomy']['description'] = array(
@@ -299,36 +301,80 @@ function get_tripal_feature_admin_form_taxonomy_set(&$form) {
 
 }
 
+/**
+ * 
+ * @param $form
+ */
+function get_tripal_feature_admin_form_title_set(&$form) {
+
+  $form['title'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Feature Page Titles'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+  );
+  $form['title']['desc'] = array(
+    '#type'        => 'markup',
+    '#value' => t('Each synced feature must have a unique page title, however, features
+                   may have the same name if they are of different types or from
+                   different organisms.  Therefore, we must be sure that the 
+                   page titles can uniquely identify the feature being viewed.  Select
+                   an option below that will uniquely identify all features on your site.'),
+  );
+  $options = array(
+    'feature_unique_name'  => 'Feature unique name',
+    'feature_name'         => 'Feature name',
+    'unique_constraint'    => 'Feature Name, uniquename, type and species',
+  );
+  $form['title']['chado_feature_title'] = array(
+    '#title'         => t('Feature Page Titles'),
+    '#type'          => 'radios',
+    '#description'   => t('Choose a title type  from the list above that is 
+      guaranteed to be unique for all features.  If in doubt it is safest to 
+      choose the last option as that guarantees uniqueness. Click the 
+      \'Save Configuration\' button at the bottom to save your selection.'),
+    '#required'      => FALSE,
+    '#options'       => $options,
+    '#default_value' => variable_get('chado_feature_title', 'unique_constraint'),
+  );
+}
+/**
+ * 
+ * @param $form
+ */
 function get_tripal_feature_admin_form_url_set(&$form) {
 
   $form['url'] = array(
     '#type' => 'fieldset',
-    '#title' => t('Feature URL Path')
+    '#title' => t('Feature URL Path'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
   );
   $form['url']['desc'] = array(
     '#type'        => 'markup',
-    '#value' => t('Each synced feature will have a unique URL which consists of '.
-                        'the site domain followed by a unique identifer: for '.
-                        'example http://my-tripal-site.org/ID1034, where the '.
-                        'element just after the final slash is the unique '.
-                        'identifier for the feature.'),
+    '#value' => t('Each synced feature will have a unique URL which consists of 
+      the site domain followed by a unique identifer: for example 
+      http://my-tripal-site.org/FID1034, where the element just after the final 
+      slash is the unique identifier for the feature.'),
   );
   $options = array(
-    'internal ID'          => 'Internal ID (Chado feature_id)',
-    'feature unique name'  => 'Feature unique name',
-    'feature name'         => 'Feature name',
+    'internal ID'          => 'Internal ID (Uses the Chado feature_id. Please set the ID Prefix below.)',
+    'feature_unique_name'  => 'Feature unique name',
+    'feature_name'         => 'Feature name',
     'genus_species_uqname' => 'Genus + species + unique name (e.g. http://your.site.url/[genus]/[genus]_[species]/[unique_name]',
     'genus_species_name'   => 'Genus + species + name (e.g. http://your.site.url/[genus]/[genus]_[species]/[name]',
+    'genus_species_type_uname'  => 'Genus + species + type + unique name (e.g. http://your.site.url/[genus]/[genus]_[species]/[type]/[unique name]',
   );
   
   $form['url']['chado_feature_url'] = array(
     '#title'         => t('Unique Identifier'),
     '#type'          => 'radios',
-    '#description'   => t('Choose an identifier type '.
-                        'from the list above that is guaranteed to be unique in your synced '.
-                        'dataset. If in doubt it is safest to coose the internal ID. '.
-                        'The descrpitor need not be unique amont the total dataset. '.
-                        'It only need be unique among the synced dataset.'),
+    '#description'   => t('Choose an identifier type from the list above that is 
+      guaranteed to be unique for all features you want to sync. If in doubt it 
+      is safest to coose the internal ID or the final option with the genus, species, 
+      type and unique name. Click the \'Save Configuration\' button at the bottom to save 
+      your selection Click the \'Set Feature URLs\' button to submit a job to reset 
+      the URLs for all synced features.'),
     '#required'      => FALSE,
     '#options'       => $options,
     '#default_value' => variable_get('chado_feature_url', 'internal ID'),
@@ -341,13 +387,24 @@ function get_tripal_feature_admin_form_url_set(&$form) {
                         "this prefix will be prepended to the internal ID number (e.g. ID38294). ".
                         "if you chose to use the feature name or unique name then this prfix is not used"),
     '#required'    => TRUE,
-    '#default_value' => variable_get('chado_feature_accession_prefix', 'ID'),
+    '#default_value' => variable_get('chado_feature_accession_prefix', 'FID'),
+  );
+  
+  $form['url']['note'] = array(
+    '#type'        => 'markup',
+    '#value' => t('<b>Note:</b> It is important to set a unique URL for each feature, and that
+       URL must be unique. However, it may be difficult for 3rd party programs (e.g. GBrowse) to
+       link to features when the intenal ID or the URL contains genus, species and or type information.
+       Therefore, Tripal provides a way to link to any feature simply using the name, unique name or
+       synonym.  If you use the URL http://your.site.url/feature/[feature], where [feature] is a name,
+       unique name, or synonym, then Tripal will automatically redirect to the feature page that matches.
+       If there are more than one match, a list of available features will be provided from which the 
+       user can select.<br>'),
   );
 
   $form['url']['button'] = array(
     '#type' => 'submit',
     '#value' => t('Set Feature URLs'),
-    '#weight' => 3,
   );
 }
 
@@ -520,7 +577,7 @@ function theme_tripal_feature_search_index($node) {
   $content = '';
 
   // get the accession prefix
-  $aprefix = variable_get('chado_feature_accession_prefix', 'ID');
+  $aprefix = variable_get('chado_feature_accession_prefix', 'FID');
 
   $content .= "<h1>$feature->uniquename</h1>. ";
   $content .= "<strong>$aprefix$feature->feature_id.</strong> ";
@@ -549,7 +606,7 @@ function theme_tripal_feature_search_results($node) {
   $content = '';
 
   // get the accession prefix
-  $aprefix = variable_get('chado_feature_accession_prefix', 'ID');
+  $aprefix = variable_get('chado_feature_accession_prefix', 'FID');
 
   $content .= "Feature Name: <h1>$feature->uniquename</h1>. ";
   $content .= "<strong>Accession: $aprefix$feature->feature_id.</strong>";
