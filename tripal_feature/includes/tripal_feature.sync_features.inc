@@ -166,11 +166,33 @@ function tripal_feature_set_urls($na = NULL, $job = NULL) {
   $nodes = db_query($sql);  
   while ($node = db_fetch_object($nodes)) {
    
-    // remove any previous alias
+    // get the URL alias
     $src = "node/$node->nid";
     $dst = tripal_feature_get_feature_url($node, $url_alias);
+    if (!$dst) {
+      db_query('DEALLOCATE "del_url_alias_by_src"');
+      db_query('DEALLOCATE "ins_url_alias_nisrds"');
+      db_query("ROLLBACK"); 
+      return; 
+    }    
+    
+    // remove any previous alias and then add the new one
     $success = db_query("EXECUTE del_url_alias_by_src('%s')", $src);    
+    if (!$success) {
+      db_query('DEALLOCATE "del_url_alias_by_src"');
+      db_query('DEALLOCATE "ins_url_alias_nisrds"');
+      db_query("ROLLBACK");
+      watchdog('trp-seturl', "Failed Removing URL Alias: %src", array('%src' => $src), WATCHDOG_ERROR);
+      return;
+    }
     $success = db_query("EXECUTE ins_url_alias_nisrds('%s', '%s')", $src, $dst);
+    if (!$success) {
+      db_query('DEALLOCATE "del_url_alias_by_src"');
+      db_query('DEALLOCATE "ins_url_alias_nisrds"');
+      db_query("ROLLBACK");
+      watchdog('trp-seturl', "Failed Adding URL Alias: %dst", array('%dst' => $dst), WATCHDOG_ERROR);
+      return;
+    }
 
     // update the job status every 1% features
     if ($job and $num_set % $num_per_interval == 0) {
@@ -220,13 +242,20 @@ function tripal_feature_get_feature_url($node, $url_alias = NULL) {
   $values = array('feature_id' => $node->feature_id); 
   $options = array('statement_name' => 'sel_feature_id');       
   $feature = tripal_core_chado_select('feature', array('*'), $values, $options);
-
+  if (!$feature) {
+    watchdog('trp-seturl', "Cannot find feature when setting URL alias for feature: %id", array('%id' => $node->feature_id), WATCHDOG_ERROR);
+    return FALSE;  
+  }
   $feature = (object) $feature[0];
   
   // get the organism
   $values = array('organism_id' => $feature->organism_id);
   $options = array('statement_name' => 'sel_organism_id');
   $organism  = tripal_core_chado_select('organism', array('*'), $values, $options);  
+  if (!$organism) {
+    watchdog('trp-seturl', "Cannot find organism when setting URL alias for feature: %id", array('%id' => $node->feature_id), WATCHDOG_ERROR);
+    return FALSE;  
+  }
   $genus = preg_replace('/\s/', '_', strtolower($organism[0]->genus));
   $species = preg_replace('/\s/', '_', strtolower($organism[0]->species)); 
 
@@ -234,6 +263,10 @@ function tripal_feature_get_feature_url($node, $url_alias = NULL) {
   $values = array('cvterm_id' => $feature->type_id);
   $options = array('statement_name' => 'sel_cvterm_id');
   $cvterm = tripal_core_chado_select('cvterm', array('name'), $values, $options);
+  if (!$cvterm) {
+    watchdog('trp-seturl', "Cannot find type when setting URL alias for feature: %id", array('%id' => $node->feature_id), WATCHDOG_ERROR);
+    return FALSE;  
+  }
   $type = preg_replace('/\s/', '_', $cvterm[0]->name);
   
   // now substitute in the values
