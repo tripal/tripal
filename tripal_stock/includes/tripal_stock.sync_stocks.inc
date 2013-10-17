@@ -161,19 +161,19 @@ function tripal_stock_get_stock_url($node) {
   
   switch ($alias_type) {
     case 'stock_name':
-      $url_alias = $stock->name;
+      $url_alias = "stock/" . $stock->name;
       break;
     case 'stock_unique_name':
-      $url_alias = $stock->uniquename;
+      $url_alias = "stock/" . $stock->uniquename;
       break;
     case 'genus_species_uqname':
-      $url_alias = $genus . "/" . $genus . "_" . $species . "/" . $stock->uniquename;
+      $url_alias = "stock/" . $genus . "_" . $species . "/" . $stock->uniquename;
       break;
     case 'genus_species_name':
-      $url_alias = $genus . "/" . $genus . "_" . $species . "/" . $stock->name;
+      $url_alias = "stock/" . $genus . "_" . $species . "/" . $stock->name;
       break;
     case 'genus_species_type_uname':
-      $url_alias = $genus . "/" . $genus . "_" . $species . "/" . $type . "/" . $stock->uniquename;
+      $url_alias = "stock/" . $genus . "_" . $species . "/" . $type . "/" . $stock->uniquename;
       break;
     default:
       $url_alias = "$aprefix$node->stock_id";

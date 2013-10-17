@@ -163,19 +163,19 @@ function tripal_feature_get_feature_url($node) {
   
   switch ($alias_type) {
     case 'feature_name':
-      $url_alias = $feature->name;
+      $url_alias = "feature/" . $feature->name;
       break;
     case 'feature_unique_name':
-      $url_alias = $feature->uniquename;
+      $url_alias = "feature/" . $feature->uniquename;
       break;
     case 'genus_species_uqname':
-      $url_alias = $genus . "/" . $genus . "_" . $species . "/" . $feature->uniquename;
+      $url_alias = "feature/" . $genus . "_" . $species . "/" . $feature->uniquename;
       break;
     case 'genus_species_name':
-      $url_alias = $genus . "/" . $genus . "_" . $species . "/" . $feature->name;
+      $url_alias = "feature/" . $genus . "_" . $species . "/" . $feature->name;
       break;
     case 'genus_species_type_uname':
-      $url_alias = $genus . "/" . $genus . "_" . $species . "/" . $type . "/" . $feature->uniquename;
+      $url_alias = "feature/" . $genus . "_" . $species . "/" . $type . "/" . $feature->uniquename;
       break;
     default:
       $url_alias = "$aprefix$node->feature_id";
