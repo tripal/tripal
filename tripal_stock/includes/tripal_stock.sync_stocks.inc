@@ -119,19 +119,55 @@ function tripal_stock_sync_form_submit($form, &$form_state) {
  */
 function tripal_stock_set_urls($job_id = NULL) {
   
-  // first get the list of stocks that have been synced
+  // get the number of records we need to set URLs for
+  $csql = "SELECT count(*) FROM {chado_stock}";
+  $num_nodes = db_result(db_query($csql));
+  
+  print "$job_id\n";
+  
+  // calculate the interval at which we will print an update on the screen
+  $num_set = 0;
+  $num_per_interval = 10000;                      
+  
+  // prepate the statements which will quickly add url alias
+  $psql = "
+    PREPARE del_url_alias_by_src (text) AS
+    DELETE FROM {url_alias} WHERE src = \$1
+  ";
+  db_query($psql);
+  $psql = "
+    PREPARE ins_url_alias_nisrds (text, text) AS
+    INSERT INTO url_alias (src, dst) VALUES (\$1, \$2)
+  ";
+  db_query($psql);
+  
+  
+  // get the list of stocks that have been synced
   $sql = "SELECT * FROM {chado_stock}";
-  $nodes = db_query($sql);
+  $nodes = db_query($sql);  
   while ($node = db_fetch_object($nodes)) {
-    
+   
     // remove any previous alias
-    db_query("DELETE FROM {url_alias} WHERE src = '%s'", "node/$node->nid");
-    
-    // add the new alias
-    $url_alias = tripal_stock_get_stock_url($node);
-    print "Setting URL alias for stock $stock->name: node/$node->nid => $url_alias\n";
-    path_set_alias("node/$node->nid", $url_alias);
+    $src = "node/$node->nid";
+    $dst = tripal_stock_get_stock_url($node);
+    $success = db_query("EXECUTE del_url_alias_by_src('%s')", $src);    
+    $success = db_query("EXECUTE ins_url_alias_nisrds('%s', '%s')", $src, $dst);
+
+    // update the job status every 1% stocks
+    if ($job and $num_nodes % $num_per_interval == 0) {
+      $percent = ($num_set / $num_nodes) * 100;
+      tripal_job_set_progress($job, intval($percent));
+      $percent = sprintf("%.2f", $percent);
+      print "Setting URLs (" . $percent . "%). Memory: " . number_format(memory_get_usage()) . " bytes.\r";
+      
+    }
+    $num_set++;
   }
+  $percent = ($num_set / $num_nodes) * 100;
+  tripal_job_set_progress($job, intval($percent));
+  $percent = sprintf("%.2f", $percent);
+  print "Setting URLs (" . $percent . "%). Memory: " . number_format(memory_get_usage()) . " bytes.\r";
+  print "\nDone. Set " . number_format($num_set) . " URLs\n";
 }
 /**
  *
