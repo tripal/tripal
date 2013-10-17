@@ -115,9 +115,13 @@ function tripal_stock_sync_form_submit($form, &$form_state) {
   tripal_add_job($title, 'tripal_stock', 'tripal_stock_sync_stocks', $job_args, $user->uid);
 }
 /**
- *
+ *  
+ * @param $na 
+ *   Tripal expects all jobs to have at least one argument. For this function
+ *   we don't need any, so we have this dummy argument as a filler
+ * @param $job_id
  */
-function tripal_stock_set_urls($job_id = NULL) {
+function tripal_stock_set_urls($na = NULL, $job = NULL) {
   
   // get the number of records we need to set URLs for
   $csql = "SELECT count(*) FROM {chado_stock}";
@@ -127,7 +131,7 @@ function tripal_stock_set_urls($job_id = NULL) {
   
   // calculate the interval at which we will print an update on the screen
   $num_set = 0;
-  $num_per_interval = 10000;                      
+  $num_per_interval = 100;
   
   // prepate the statements which will quickly add url alias
   $psql = "
@@ -154,7 +158,7 @@ function tripal_stock_set_urls($job_id = NULL) {
     $success = db_query("EXECUTE ins_url_alias_nisrds('%s', '%s')", $src, $dst);
 
     // update the job status every 1% stocks
-    if ($job and $num_nodes % $num_per_interval == 0) {
+    if ($job and $num_set % $num_per_interval == 0) {
       $percent = ($num_set / $num_nodes) * 100;
       tripal_job_set_progress($job, intval($percent));
       $percent = sprintf("%.2f", $percent);
