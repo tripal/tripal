@@ -370,7 +370,7 @@ function get_tripal_feature_admin_form_url_set(&$form) {
     '#title' => 'URL Syntax',
     '#type' => 'textfield',
     '#description' => t('You may rearrange elements in this text box to
-      customize the URLs.  The available tags include: \'feature\', [id],
+      customize the URLs.  The available tags include: [id],
       [uniquename]. [name], [species], [genus], [type]. You can separate or
       include any text between the tags. Click the "Set Feature URLs" button to 
       reset the URLs for all feature pages.  Click the "Save Configuration" button to

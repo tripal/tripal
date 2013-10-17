@@ -127,7 +127,7 @@ function get_tripal_stock_admin_form_url_set(&$form) {
     '#title' => 'URL Syntax',
     '#type' => 'textfield',
     '#description' => t('You may rearrange elements in this text box to
-      customize the URLs.  The available tags include: \'stock\', [id],
+      customize the URLs.  The available tags include: [id],
       [uniquename]. [name], [species], [genus], [type]. You can separate or
       include any text between the tags. Click the "Set Stock URLs" button to 
       reset the URLs for all stock pages.  Click the "Save Configuration" button to
