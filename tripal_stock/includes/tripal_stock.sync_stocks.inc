@@ -123,14 +123,13 @@ function tripal_stock_set_urls($job_id = NULL) {
   $sql = "SELECT * FROM {chado_stock}";
   $nodes = db_query($sql);
   while ($node = db_fetch_object($nodes)) {
-
-    print "Setting URL alias for stock $stock->name: node/$node->nid => $url_alias\n";
-
+    
     // remove any previous alias
     db_query("DELETE FROM {url_alias} WHERE src = '%s'", "node/$node->nid");
     
     // add the new alias
     $url_alias = tripal_stock_get_stock_url($node);
+    print "Setting URL alias for stock $stock->name: node/$node->nid => $url_alias\n";
     path_set_alias("node/$node->nid", $url_alias);
   }
 }
@@ -171,7 +170,7 @@ function tripal_stock_get_stock_url($node) {
       $url_alias = $genus . "/" . $genus . "_" . $species . "/" . $stock->uniquename;
       break;
     case 'genus_species_name':
-      $url_alias = $genus . "/" . $genus . "_" . $species . "/" . $stock->sname;
+      $url_alias = $genus . "/" . $genus . "_" . $species . "/" . $stock->name;
       break;
     case 'genus_species_type_uname':
       $url_alias = $genus . "/" . $genus . "_" . $species . "/" . $type . "/" . $stock->uniquename;

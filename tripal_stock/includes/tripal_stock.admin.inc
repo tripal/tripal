@@ -15,6 +15,7 @@
 function tripal_stock_admin() {
   $form = array();
 
+  /*
   // before proceeding check to see if we have any
   // currently processing jobs.
   $active_jobs = FALSE;
@@ -37,7 +38,7 @@ function tripal_stock_admin() {
     );
     return system_settings_form($form);
   }
-  
+*/  
   get_tripal_stock_admin_form_title_set($form);
   get_tripal_stock_admin_form_url_set($form);
   get_tripal_stock_admin_form_vocabulary_set($form);       

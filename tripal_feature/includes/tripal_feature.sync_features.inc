@@ -125,14 +125,13 @@ function tripal_feature_set_urls($job_id = NULL) {
   $sql = "SELECT * FROM {chado_feature}";
   $nodes = db_query($sql);
   while ($node = db_fetch_object($nodes)) {
-
-    print "Setting URL alias for feature $feature->name: node/$node->nid => $url_alias\n";
-
+   
     // remove any previous alias
     db_query("DELETE FROM {url_alias} WHERE src = '%s'", "node/$node->nid");
     
     // add the new alias
     $url_alias = tripal_feature_get_feature_url($node);
+    print "Setting URL alias for feature $feature->name: node/$node->nid => $url_alias\n";
     path_set_alias("node/$node->nid", $url_alias);
   }
 }
@@ -173,7 +172,7 @@ function tripal_feature_get_feature_url($node) {
       $url_alias = $genus . "/" . $genus . "_" . $species . "/" . $feature->uniquename;
       break;
     case 'genus_species_name':
-      $url_alias = $genus . "/" . $genus . "_" . $species . "/" . $feature->sname;
+      $url_alias = $genus . "/" . $genus . "_" . $species . "/" . $feature->name;
       break;
     case 'genus_species_type_uname':
       $url_alias = $genus . "/" . $genus . "_" . $species . "/" . $type . "/" . $feature->uniquename;

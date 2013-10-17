@@ -12,6 +12,7 @@
  */
 function tripal_feature_admin() {
 
+  /*
   // before proceeding check to see if we have any
   // currently processing jobs. If so, we don't want
   // to give the opportunity to sync libraries
@@ -20,7 +21,7 @@ function tripal_feature_admin() {
     $active_jobs = TRUE;
   }
   if (!$active_jobs) {
-
+*/
     get_tripal_feature_admin_form_title_set($form);
     get_tripal_feature_admin_form_url_set($form);
 
@@ -123,7 +124,7 @@ function tripal_feature_admin() {
     get_tripal_feature_admin_form_taxonomy_set($form);
     get_tripal_feature_admin_form_reindex_set($form);
     get_tripal_feature_admin_form_cleanup_set($form);
-  }
+/*  }
   else {
     $form['notice'] = array(
        '#type' => 'fieldset',
@@ -139,6 +140,7 @@ function tripal_feature_admin() {
           "jobs page.'),
     );
   }
+  */
   return system_settings_form($form);
 }
 
