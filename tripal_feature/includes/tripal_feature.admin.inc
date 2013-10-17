@@ -346,64 +346,61 @@ function get_tripal_feature_admin_form_title_set(&$form) {
  */
 function get_tripal_feature_admin_form_url_set(&$form) {
 
+ 
   $form['url'] = array(
     '#type' => 'fieldset',
     '#title' => t('Feature URL Path'),
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
   );
-  $form['url']['desc'] = array(
-    '#type'        => 'markup',
-    '#value' => t('Each synced feature will have a unique URL which consists of 
-      the site domain followed by a unique identifer: for example 
-      http://my-tripal-site.org/FID1034, where the element just after the final 
-      slash is the unique identifier for the feature.'),
-  );
+
   $options = array(
-    'internal ID'          => 'Internal ID (Uses the Chado feature_id. Please set the ID Prefix below.)',
-    'feature_unique_name'  => 'Feature unique name',
-    'feature_name'         => 'Feature name',
-    'genus_species_uqname' => 'Genus + species + unique name (e.g. http://your.site.url/[genus]/[genus]_[species]/[unique_name]',
-    'genus_species_name'   => 'Genus + species + name (e.g. http://your.site.url/[genus]/[genus]_[species]/[name]',
-    'genus_species_type_uname'  => 'Genus + species + type + unique name (e.g. http://your.site.url/[genus]/[genus]_[species]/[type]/[unique name]',
+    'SID[id]'      => '[id]:' . t('The Chado feature_id'),
+    'feature'      => 'feature:' . t('Chado table name'),
+    '[genus]'      => '[genus]:' . t('Genus to which the feature belongs'),
+    '[species]'    => '[species]:' . t('Species to which the feature belongs'),
+    '[type]'       => '[type]:' . t('The type of feature'),
+    '[uniquename]' => '[uniquename]:' . t('The feature unique name'),
+    '[name]'       => '[name]:' . t('The feature name'),
+    'reset'        => t('Reset'),
+  );
+  
+
+  $form['url']['chado_feature_url_string'] = array(
+    '#title' => 'URL Syntax',
+    '#type' => 'textfield',
+    '#description' => t('You may rearrange elements in this text box to
+      customize the URLs.  The available tags include: \'feature\', [id],
+      [uniquename]. [name], [species], [genus], [type]. You can separate or
+      include any text between the tags. Click the "Set Feature URLs" button to 
+      reset the URLs for all feature pages.  Click the "Save Configuration" button to
+      simply save this setup. <b>Important</b>: be sure that whatever you choose will always be unique even considering
+      future data that may be added.  If you include the Chado table name, genus, species, type 
+      and uniquename you are guaranteed to have a unique URL. For example feature/[genus]/[species]/[type]/[uniquename]'),
+    '#size' => 150,
+    '#default_value' => variable_get('chado_feature_url_string', '/feature/[genus]/[species]/[type]/[uniquename]'), 
   );
   
   $form['url']['chado_feature_url'] = array(
-    '#title'         => t('Unique Identifier'),
-    '#type'          => 'radios',
-    '#description'   => t('Choose an identifier type from the list above that is 
-      guaranteed to be unique for all features you want to sync. If in doubt it 
-      is safest to coose the internal ID or the final option with the genus, species, 
-      type and unique name. Click the \'Save Configuration\' button at the bottom to save 
-      your selection Click the \'Set Feature URLs\' button to submit a job to reset 
-      the URLs for all synced features.'),
+    '#title'         => t('URL components'),
+    '#type'          => 'checkboxes',
     '#required'      => FALSE,
     '#options'       => $options,
-    '#default_value' => variable_get('chado_feature_url', 'internal ID'),
-  );
-
-  $form['url']['chado_feature_accession_prefix'] = array(
-    '#title'       => t('ID Prefix'),
-    '#type'        => t('textfield'),
-    '#description' => t("If you choose an Internal ID above you must also enter an ID prefix.".
-                        "this prefix will be prepended to the internal ID number (e.g. ID38294). ".
-                        "if you chose to use the feature name or unique name then this prfix is not used"),
-    '#required'    => TRUE,
-    '#default_value' => variable_get('chado_feature_accession_prefix', 'FID'),
-  );
+    '#description'   => t('Click the item above to make it appear in the URL Syntax box'),
+    '#attributes'    => array(
+      'onclick' => '
+        box = $(\'#edit-chado-feature-url-string\');
+        if (this.value == \'reset\') {
+          box.val(\'\');
+        }
+        else {        
+          box.val(box.val() + "/" + this.value);          
+        }
+        this.checked = false;
+      ',
+    ),
+  );  
   
-  $form['url']['note'] = array(
-    '#type'        => 'markup',
-    '#value' => t('<b>Note:</b> It is important to set a unique URL for each feature, and that
-       URL must be unique. However, it may be difficult for 3rd party programs (e.g. GBrowse) to
-       link to features when the intenal ID or the URL contains genus, species and or type information.
-       Therefore, Tripal provides a way to link to any feature simply using the name, unique name or
-       synonym.  If you use the URL http://your.site.url/feature/[feature], where [feature] is a name,
-       unique name, or synonym, then Tripal will automatically redirect to the feature page that matches.
-       If there are more than one match, a list of available features will be provided from which the 
-       user can select.<br>'),
-  );
-
   $form['url']['button'] = array(
     '#type' => 'submit',
     '#value' => t('Set Feature URLs'),

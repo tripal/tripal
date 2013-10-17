@@ -140,9 +140,12 @@ function tripal_feature_set_urls($job_id = NULL) {
  */
 function tripal_feature_get_feature_url($node) {
 
-  // determine which URL alias to use
-  $alias_type = variable_get('chado_feature_url', 'internal ID');
-  $aprefix = variable_get('chado_feature_accession_prefix', 'SID');
+  // get the starting URL alias
+  $url_alias = variable_get('chado_feature_url_string', '/feature/[genus]/[species]/[type]/[uniquename]'); 
+  if (!$url_alias) {
+    $url_alias = '/feature/[genus]/[species]/[type]/[uniquename]';
+  } 
+  $url_alias = preg_replace('/^\//', '', $url_alias); // remove any preceeding forward slash
 
   // get the feature 
   $values = array('feature_id' => $node->feature_id);        
@@ -161,25 +164,13 @@ function tripal_feature_get_feature_url($node) {
   $cvterm = tripal_core_chado_select('cvterm', array('name'), $values);
   $type = preg_replace('/\s/', '_', $cvterm[0]->name);
   
-  switch ($alias_type) {
-    case 'feature_name':
-      $url_alias = "feature/" . $feature->name;
-      break;
-    case 'feature_unique_name':
-      $url_alias = "feature/" . $feature->uniquename;
-      break;
-    case 'genus_species_uqname':
-      $url_alias = "feature/" . $genus . "_" . $species . "/" . $feature->uniquename;
-      break;
-    case 'genus_species_name':
-      $url_alias = "feature/" . $genus . "_" . $species . "/" . $feature->name;
-      break;
-    case 'genus_species_type_uname':
-      $url_alias = "feature/" . $genus . "_" . $species . "/" . $type . "/" . $feature->uniquename;
-      break;
-    default:
-      $url_alias = "$aprefix$node->feature_id";
-  }
+  // now substitute in the values
+  $url_alias = preg_replace('/\[id\]/', $feature->feature_id, $url_alias);
+  $url_alias = preg_replace('/\[genus\]/', $genus, $url_alias);
+  $url_alias = preg_replace('/\[species\]/', $species, $url_alias);
+  $url_alias = preg_replace('/\[type\]/', $type, $url_alias);
+  $url_alias = preg_replace('/\[name\]/', $feature->name, $url_alias);
+  $url_alias = preg_replace('/\[uniquename\]/', $feature->uniquename, $url_alias);
  
   return $url_alias;
 }

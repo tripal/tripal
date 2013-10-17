@@ -15,30 +15,6 @@
 function tripal_stock_admin() {
   $form = array();
 
-  /*
-  // before proceeding check to see if we have any
-  // currently processing jobs.
-  $active_jobs = FALSE;
-  if (tripal_get_module_active_jobs('tripal_stock')) {
-    $active_jobs = TRUE;
-  }
-  if ($active_jobs) {
-    $form['notice'] = array(
-       '#type' => 'fieldset',
-       '#title' => t('Stock Management Temporarily Unavailable'),
-       '#collapsible' => FALSE,
-       '#collapsed' => FALSE,
-    );
-    $form['notice']['message'] = array(
-       '#value' => t("Currently, jobs are waiting or ".
-          "are running. Managemment features have been hidden until these ".
-          "jobs complete.  Please check back later once these jobs have ".
-          "finished.  You can view the status of pending jobs in the Tripal ".
-          "jobs page."),
-    );
-    return system_settings_form($form);
-  }
-*/  
   get_tripal_stock_admin_form_title_set($form);
   get_tripal_stock_admin_form_url_set($form);
   get_tripal_stock_admin_form_vocabulary_set($form);       
@@ -62,12 +38,14 @@ function tripal_stock_admin() {
 function tripal_stock_admin_validate($form, &$form_state) {
   global $user;  // we need access to the user info
   $job_args = array();
+
+  variable_set('chado_stock_types_cv', $form_state['values']['stock_types_cv']);
+  variable_set('chado_stock_prop_types_cv', $form_state['values']['stock_prop_types_cv']);
+  variable_set('chado_stock_relationship_cv', $form_state['values']['stock_relationship_cv']);  
+  variable_set('chado_stock_url_string', $form_state['values']['chado_stock_url_string']);
   
   switch ($form_state['values']['op']) {
     case  t('Set Controlled Vacabularies') :      
-      variable_set('chado_stock_types_cv', $form_state['values']['stock_types_cv']);
-      variable_set('chado_stock_prop_types_cv', $form_state['values']['stock_prop_types_cv']);
-      variable_set('chado_stock_relationship_cv', $form_state['values']['stock_relationship_cv']);
       break;
       
     case t('Clean up orphaned stocks') :
@@ -76,11 +54,11 @@ function tripal_stock_admin_validate($form, &$form_state) {
       break;
     
     case t('Set Stock URLs') :
-      variable_set('chado_stock_url', $form_state['values']['stock_url']);
       tripal_add_job('Set Stock URLs', 'tripal_stock',
         'tripal_stock_set_urls', $job_args, $user->uid);
       break;
   }
+
 }
 
 /**
@@ -132,46 +110,54 @@ function get_tripal_stock_admin_form_url_set(&$form) {
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
   );
-  $form['url']['desc'] = array(
-    '#type'        => 'markup',
-    '#value' => t('Each synced stock will have a unique URL which consists of 
-      the site domain followed by a unique identifer: for example 
-      http://my-tripal-site.org/SID1034, where the element just after the final 
-      slash is the unique identifier for the stock.'),
-  );
+
   $options = array(
-    'internal ID'               => 'Internal ID (Uses the Chado stock_id. Please set the ID Prefix below)',
-    'stock_unique_name'         => 'Stock unique name',
-    'stock_name'                => 'Stock name',
-    'genus_species_uqname'      => 'Genus + species + unique name (e.g. http://your.site.url/[genus]/[genus]_[species]/[unique name]',
-    'genus_species_name'        => 'Genus + species + name (e.g. http://your.site.url/[genus]/[genus]_[species]/[name]',
-    'genus_species_type_uname'  => 'Genus + species + type + unique name (e.g. http://your.site.url/[genus]/[genus]_[species]/[type]/[unique name]',
+    'SID[id]'      => '[id]:' . t('The Chado stock_id'),
+    'stock'        => 'stock:' . t('Chado table name'),
+    '[genus]'      => '[genus]:' . t('Genus to which the stock belongs'),
+    '[species]'    => '[species]:' . t('Species to which the stock belongs'),
+    '[type]'       => '[type]:' . t('The type of stock'),
+    '[uniquename]' => '[uniquename]:' . t('The stock unique name'),
+    '[name]'       => '[name]:' . t('The stock name'),
+    'reset'        => t('Reset'),
+  );
+  
+
+  $form['url']['chado_stock_url_string'] = array(
+    '#title' => 'URL Syntax',
+    '#type' => 'textfield',
+    '#description' => t('You may rearrange elements in this text box to
+      customize the URLs.  The available tags include: \'stock\', [id],
+      [uniquename]. [name], [species], [genus], [type]. You can separate or
+      include any text between the tags. Click the "Set Stock URLs" button to 
+      reset the URLs for all stock pages.  Click the "Save Configuration" button to
+      simply save this setup. <b>Important</b>: be sure that whatever you choose will always be unique even considering
+      future data that may be added.  If you include the Chado table name, genus, species, type 
+      and uniquename you are guaranteed to have a unique URL. For example stock/[genus]/[species]/[type]/[uniquename]'),
+    '#size' => 150,
+    '#default_value' => variable_get('chado_stock_url_string', '/stock/[genus]/[species]/[type]/[uniquename]'), 
   );
   
   $form['url']['chado_stock_url'] = array(
-    '#title'         => t('Unique Identifier'),
-    '#type'          => 'radios',
-    '#description'   => t('Choose an identifier type from the list above that is 
-      guaranteed to be unique for all stocks. If in doubt it is safest to choose the 
-      internal ID. Click the \'Save Configuration\' button at the bottom to save 
-      your selection Click the \'Set Stock URLs\' button to submit a job to reset 
-      the URLs for all synced stocks.'),
+    '#title'         => t('URL components'),
+    '#type'          => 'checkboxes',
     '#required'      => FALSE,
     '#options'       => $options,
-    '#default_value' => variable_get('chado_stock_url', 'internal ID'),
-  );
-
-  $form['url']['chado_stock_accession_prefix'] = array(
-    '#title'       => t('ID Prefix'),
-    '#type'        => t('textfield'),
-    '#description' => t("If you choose an Internal ID above you must also enter 
-      an ID prefix. This prefix will be prepended to the internal ID number 
-      (e.g. ID38294). if you chose to use the stock name or unique name then 
-      this prfix is not used"),
-    '#required'    => TRUE,
-    '#default_value' => variable_get('chado_stock_accession_prefix', 'SID'),
-  );
-
+    '#description'   => t('Click the item above to make it appear in the URL Syntax box'),
+    '#attributes'    => array(
+      'onclick' => '
+        box = $(\'#edit-chado-stock-url-string\');
+        if (this.value == \'reset\') {
+          box.val(\'\');
+        }
+        else {        
+          box.val(box.val() + "/" + this.value);          
+        }
+        this.checked = false;
+      ',
+    ),
+  );  
+  
   $form['url']['button'] = array(
     '#type' => 'submit',
     '#value' => t('Set Stock URLs'),

@@ -244,12 +244,10 @@ function tripal_feature_menu() {
 
   // the menu link for addressing any feature (by name, uniquename, synonym)
   $items['feature/%'] = array(
-    'title' => 'Matched Features',
-    'description' => 'Shows all features that match the provided ID.  If multiple features match even by name, uniquename or synonym then a page is presented to allow the user to select which one they intended.',
     'page callback' => 'tripal_feature_match_features_page',
     'page arguments' => array(1),
     'access arguments' => array('access chado_feature content'),
-    'type' => MENU_NORMAL_ITEM,
+    'type' => MENU_LOCAL_TASK,
   );
 
   return $items;
@@ -2304,6 +2302,18 @@ function tripal_feature_coder_ignore() {
  * features is shown.
  */
 function tripal_feature_match_features_page($id) {
+  
+  // if the URL alias configuration is set such that the URL
+  // always begins with 'feature' then we want to use the ID as it is and
+  // forward it on. Otherwise, try to find the matching feature.
+  $url_alias = variable_get('chado_feature_url_string', '/feature/[genus]/[species]/[type]/[uniquename]'); 
+  if (!$url_alias) {
+    $url_alias = '/feature/[genus]/[species]/[type]/[uniquename]';
+  } 
+  $url_alias = preg_replace('/^\//', '', $url_alias); // remove any preceeding forward slash  
+  if (preg_match('/^feature\//', $url_alias)) {
+    drupal_goto($id);
+  }
 
   $sql = "
     SELECT
@@ -2350,7 +2360,7 @@ function tripal_feature_match_features_page($id) {
   // if we have more than one match then generate the table, otherwise, redirect
   // to the matched feature
   if ($num_matches == 1) {
-    drupal_goto(url("node/" . $curr_match->nid));
+    drupal_goto("node/" . $curr_match->nid);
   }
   if ($num_matches == 0) {
     return "<p>No features matched the given name '$id'</p>";

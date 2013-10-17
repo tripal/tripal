@@ -138,9 +138,12 @@ function tripal_stock_set_urls($job_id = NULL) {
  */
 function tripal_stock_get_stock_url($node) {
 
-  // determine which URL alias to use
-  $alias_type = variable_get('chado_stock_url', 'internal ID');
-  $aprefix = variable_get('chado_stock_accession_prefix', 'SID');
+  // get the starting URL alias
+  $url_alias = variable_get('chado_stock_url_string', '/stock/[genus]/[species]/[type]/[uniquename]'); 
+  if (!$url_alias) {
+    $url_alias = '/stock/[genus]/[species]/[type]/[uniquename]';
+  } 
+  $url_alias = preg_replace('/^\//', '', $url_alias); // remove any preceeding forward slash
 
   // get the stock 
   $values = array('stock_id' => $node->stock_id);        
@@ -159,25 +162,13 @@ function tripal_stock_get_stock_url($node) {
   $cvterm = tripal_core_chado_select('cvterm', array('name'), $values);
   $type = preg_replace('/\s/', '_', $cvterm[0]->name);
   
-  switch ($alias_type) {
-    case 'stock_name':
-      $url_alias = "stock/" . $stock->name;
-      break;
-    case 'stock_unique_name':
-      $url_alias = "stock/" . $stock->uniquename;
-      break;
-    case 'genus_species_uqname':
-      $url_alias = "stock/" . $genus . "_" . $species . "/" . $stock->uniquename;
-      break;
-    case 'genus_species_name':
-      $url_alias = "stock/" . $genus . "_" . $species . "/" . $stock->name;
-      break;
-    case 'genus_species_type_uname':
-      $url_alias = "stock/" . $genus . "_" . $species . "/" . $type . "/" . $stock->uniquename;
-      break;
-    default:
-      $url_alias = "$aprefix$node->stock_id";
-  }
+  // now substitute in the values
+  $url_alias = preg_replace('/\[id\]/', $stock->stock_id, $url_alias);
+  $url_alias = preg_replace('/\[genus\]/', $genus, $url_alias);
+  $url_alias = preg_replace('/\[species\]/', $species, $url_alias);
+  $url_alias = preg_replace('/\[type\]/', $type, $url_alias);
+  $url_alias = preg_replace('/\[name\]/', $stock->name, $url_alias);
+  $url_alias = preg_replace('/\[uniquename\]/', $stock->uniquename, $url_alias);
  
   return $url_alias;
 }

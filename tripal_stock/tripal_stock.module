@@ -126,6 +126,14 @@ function tripal_stock_menu() {
     'type' => MENU_LOCAL_TASK,
     'weight' => 10,
   );
+  
+  // the menu link for addressing any stock (by name, uniquename, synonym)
+  $items['stock/%'] = array(
+    'page callback' => 'tripal_stock_match_stocks_page',
+    'page arguments' => array(1),
+    'access arguments' => array('access chado_stock content'),
+    'type' => MENU_LOCAL_TASK,
+  );
   return $items;
 }
 
@@ -559,21 +567,35 @@ function chado_stock_validate($node, &$form) {
   $int_in_chado_sql = "SELECT count(*) as count FROM {%s} WHERE %s=%d";
   $string_in_chado_sql = "SELECT count(*) as count FROM {%s} WHERE %s='%s'";
 
-  // Validate Uniquename only if add
-  if (empty($node->stock_id)) {
-    $chado_row = db_fetch_object(chado_query("SELECT * FROM {stock} WHERE uniquename='" . $node->uniquename . "'"));
-    if (!empty($chado_row->stock_id)) {
-      $drupal_row = db_fetch_object(db_query("SELECT * FROM {chado_stock} WHERE stock_id=" . $chado_row->stock_id));
-      if (!empty($drupal_row->nid)) {
-        $link = l('node/' . $drupal_row->nid, $node->uniquename);
-        form_set_error('uniquename', "There is already a stock with that uniquename $link. Please enter another uniquename.");
-      }
-      else {
-        form_set_error('uniquename', "There is already a stock with that uniquename (although it's not sync'd with drupal). Please enter another uniquename.");
-      }
+  // if this is an update, we want to make sure that a different stock for
+  // the organism doesn't already have this uniquename. We don't want to give
+  // two sequences the same uniquename
+  if ($node->stock_id) {
+    $sql = "SELECT *
+            FROM {stock} S
+              INNER JOIN {cvterm} CVT ON S.type_id = CVT.cvterm_id
+            WHERE uniquename = '%s'
+             AND organism_id = %d AND CVT.name = '%s' AND NOT stock_id = %d";
+    $result = db_fetch_object(chado_query($sql, $node->uniquename, $node->organism_id, $node->stock_type, $node->stock_id));
+    if ($result) {
+      form_set_error('uniquename', t("Stock update cannot proceed. The stock name '$node->uniquename' is not unique for this organism. Please provide a unique name for this stock."));
     }
   }
 
+  // if this is an insert then we just need to make sure this name doesn't
+  // already exist for this organism if it does then we need to throw an error
+  else {
+    $sql = "SELECT *
+            FROM {Stock} S
+              INNER JOIN {cvterm} CVT ON S.type_id = CVT.cvterm_id
+            WHERE uniquename = '%s'
+             AND organism_id = %d AND CVT.name = '%s'";
+    $result = db_fetch_object(chado_query($sql, $node->uniquename, $node->organism_id, $node->stock_type));
+    if ($result) {
+      form_set_error('uniquename', t("Stock insert cannot proceed. The stock name '$node->uniquename' already exists for this organism. Please provide a unique name for this stock."));
+    }
+  }
+  
 
   // Check Type of Stock is valid cvterm_id in chado ( $form['values']['details']['type_id'] )
   if ( $node->type_id == 0) {
@@ -1158,3 +1180,72 @@ function tripal_stock_nodeapi(&$node, $op, $teaser, $page) {
   }
 }
 
+/*
+ * Uses the value provided in the $id argument to find all stocks that match
+ * that ID by name, stockname or synonym.  If it matches uniquenly to a single
+ * stock it will redirect to that stock page, otherwise, a list of matching
+ * stocks is shown.
+ */
+function tripal_stock_match_stocks_page($id) {
+  
+  // if the URL alias configuration is set such that the URL
+  // always begins with 'stock' then we want to use the ID as it is and
+  // forward it on. Otherwise, try to find the matching stock.
+  $url_alias = variable_get('chado_stock_url_string', '/stock/[genus]/[species]/[type]/[uniquename]'); 
+  if (!$url_alias) {
+    $url_alias = '/stock/[genus]/[species]/[type]/[uniquename]';
+  } 
+  $url_alias = preg_replace('/^\//', '', $url_alias); // remove any preceeding forward slash  
+  if (preg_match('/^stock\//', $url_alias)) {
+    drupal_goto($id);
+  }
+  
+
+  $sql = "
+    SELECT
+      S.name, S.uniquename, S.stock_id,
+      O.genus, O.species, O.organism_id,
+      CVT.cvterm_id, CVT.name as type_name,
+      CS.nid
+    FROM {stock} S
+      INNER JOIN {organism} O on S.organism_id = O.organism_id
+      INNER JOIN {cvterm} CVT on CVT.cvterm_id = S.type_id
+      INNER JOIN public.chado_stock CS on CS.stock_id = S.stock_id
+    WHERE
+      S.uniquename = '%s' or S.name = '%s'
+  ";
+  $results = chado_query($sql, $id, $id);
+
+  $num_matches = 0;
+
+  // iterate through the matches and build the table for showing matches
+  $header = array('Uniquename', 'Name', 'Type', 'Species');
+  $rows = array();
+  $curr_match;
+  while ($match = db_fetch_object($results)) {
+    $curr_match = $match;
+    $rows[] = array(
+       $match->uniquename,
+       "<a href=\"" . url("node/". $match->nid) ."\">" . $match->name . "</a>",
+       $match->type_name,
+       '<i>' . $match->genus . ' ' . $match->species . '</i>',
+    );
+    $num_matches++;
+  }
+
+  // if we have more than one match then generate the table, otherwise, redirect
+  // to the matched stock
+  if ($num_matches == 1) {
+    drupal_goto("node/" . $curr_match->nid);
+  }
+  if ($num_matches == 0) {
+    return "<p>No stocks matched the given name '$id'</p>";
+  }
+
+  $table_attrs = array(
+    'class' => 'tripal-table tripal-table-horz'
+  );
+  $output = "<p>The following stocks match the name '$id'.</p>";
+  $output .= theme_table($header, $rows, $table_attrs, $caption);
+  return $output;
+}
