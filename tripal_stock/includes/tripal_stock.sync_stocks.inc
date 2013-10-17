@@ -126,14 +126,13 @@ function tripal_stock_set_urls($na = NULL, $job = NULL) {
   // get the number of records we need to set URLs for
   $csql = "SELECT count(*) FROM {chado_stock}";
   $num_nodes = db_result(db_query($csql));
-  
-  print "$job_id\n";
-  
+    
   // calculate the interval at which we will print an update on the screen
   $num_set = 0;
   $num_per_interval = 100;
   
-  // prepate the statements which will quickly add url alias
+  // prepate the statements which will quickly add url alias. Because these
+  // are not Chado tables we must manually prepare them 
   $psql = "
     PREPARE del_url_alias_by_src (text) AS
     DELETE FROM {url_alias} WHERE src = \$1
@@ -145,6 +144,13 @@ function tripal_stock_set_urls($na = NULL, $job = NULL) {
   ";
   db_query($psql);
   
+  // get the URL alias syntax string
+  $url_alias = variable_get('chado_stock_url_string', '/stock/[genus]/[species]/[type]/[uniquename]'); 
+  if (!$url_alias) {
+    $url_alias = '/stock/[genus]/[species]/[type]/[uniquename]';
+  } 
+  $url_alias = preg_replace('/^\//', '', $url_alias); // remove any preceeding forward slash
+  
   
   // get the list of stocks that have been synced
   $sql = "SELECT * FROM {chado_stock}";
@@ -153,7 +159,7 @@ function tripal_stock_set_urls($na = NULL, $job = NULL) {
    
     // remove any previous alias
     $src = "node/$node->nid";
-    $dst = tripal_stock_get_stock_url($node);
+    $dst = tripal_stock_get_stock_url($node, $url_alias);
     $success = db_query("EXECUTE del_url_alias_by_src('%s')", $src);    
     $success = db_query("EXECUTE ins_url_alias_nisrds('%s', '%s')", $src, $dst);
 
@@ -172,34 +178,51 @@ function tripal_stock_set_urls($na = NULL, $job = NULL) {
   $percent = sprintf("%.2f", $percent);
   print "Setting URLs (" . $percent . "%). Memory: " . number_format(memory_get_usage()) . " bytes.\r";
   print "\nDone. Set " . number_format($num_set) . " URLs\n";
+  
+  // unprepare the statements
+  db_query('DEALLOCATE "del_url_alias_by_src"');
+  db_query('DEALLOCATE "ins_url_alias_nisrds"');
 }
 /**
- *
+ * 
+ * @param $node
+ *   A node object containing at least the stock_id and nid
+ * @param $url_alias
+ *   Optional.  This should be the URL alias syntax string that contains
+ *   placeholders such as [id], [genus], [species], [name], [uniquename],
+ *   and [type].  These placeholders will be substituted for actual values.
+ *   If this parameter is not provided then the value of the 
+ *   chado_stock_url_string Drupal variable will be used.
  */
-function tripal_stock_get_stock_url($node) {
+function tripal_stock_get_stock_url($node, $url_alias = NULL) {
 
   // get the starting URL alias
-  $url_alias = variable_get('chado_stock_url_string', '/stock/[genus]/[species]/[type]/[uniquename]'); 
-  if (!$url_alias) {
-    $url_alias = '/stock/[genus]/[species]/[type]/[uniquename]';
-  } 
-  $url_alias = preg_replace('/^\//', '', $url_alias); // remove any preceeding forward slash
+  if(!$url_alias) {
+    $url_alias = variable_get('chado_stock_url_string', '/stock/[genus]/[species]/[type]/[uniquename]'); 
+    if (!$url_alias) {
+      $url_alias = '/stock/[genus]/[species]/[type]/[uniquename]';
+    } 
+    $url_alias = preg_replace('/^\//', '', $url_alias); // remove any preceeding forward slash
+  }
 
   // get the stock 
-  $values = array('stock_id' => $node->stock_id);        
-  $stock = tripal_core_chado_select('stock', array('*'), $values);
+  $values = array('stock_id' => $node->stock_id); 
+  $options = array('statement_name' => 'sel_stock_id');       
+  $stock = tripal_core_chado_select('stock', array('*'), $values, $options);
 
   $stock = (object) $stock[0];
   
   // get the organism
   $values = array('organism_id' => $stock->organism_id);
-  $organism  = tripal_core_chado_select('organism', array('*'), $values);  
+  $options = array('statement_name' => 'sel_organism_id');
+  $organism  = tripal_core_chado_select('organism', array('*'), $values, $options);  
   $genus = preg_replace('/\s/', '_', strtolower($organism[0]->genus));
   $species = preg_replace('/\s/', '_', strtolower($organism[0]->species)); 
 
   // get the type
   $values = array('cvterm_id' => $stock->type_id);
-  $cvterm = tripal_core_chado_select('cvterm', array('name'), $values);
+  $options = array('statement_name' => 'sel_cvterm_id');
+  $cvterm = tripal_core_chado_select('cvterm', array('name'), $values, $options);
   $type = preg_replace('/\s/', '_', $cvterm[0]->name);
   
   // now substitute in the values

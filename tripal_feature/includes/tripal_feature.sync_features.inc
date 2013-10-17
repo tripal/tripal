@@ -124,19 +124,18 @@ function tripal_feature_sync_form_submit($form, &$form_state) {
  *   we don't need any, so we have this dummy argument as a filler
  * @param $job_id
  */
-function tripal_feature_set_urls($na = NULL, $job_id = NULL) {
+function tripal_feature_set_urls($na = NULL, $job = NULL) {
   
   // get the number of records we need to set URLs for
   $csql = "SELECT count(*) FROM {chado_feature}";
   $num_nodes = db_result(db_query($csql));
-  
-  print "$job_id\n";
-  
+    
   // calculate the interval at which we will print an update on the screen
   $num_set = 0;
-  $num_per_interval = 10000;                      
+  $num_per_interval = 100;
   
-  // prepate the statements which will quickly add url alias
+  // prepate the statements which will quickly add url alias. Because these
+  // are not Chado tables we must manually prepare them 
   $psql = "
     PREPARE del_url_alias_by_src (text) AS
     DELETE FROM {url_alias} WHERE src = \$1
@@ -148,6 +147,13 @@ function tripal_feature_set_urls($na = NULL, $job_id = NULL) {
   ";
   db_query($psql);
   
+  // get the URL alias syntax string
+  $url_alias = variable_get('chado_feature_url_string', '/feature/[genus]/[species]/[type]/[uniquename]'); 
+  if (!$url_alias) {
+    $url_alias = '/feature/[genus]/[species]/[type]/[uniquename]';
+  } 
+  $url_alias = preg_replace('/^\//', '', $url_alias); // remove any preceeding forward slash
+  
   
   // get the list of features that have been synced
   $sql = "SELECT * FROM {chado_feature}";
@@ -156,12 +162,12 @@ function tripal_feature_set_urls($na = NULL, $job_id = NULL) {
    
     // remove any previous alias
     $src = "node/$node->nid";
-    $dst = tripal_feature_get_feature_url($node);
+    $dst = tripal_feature_get_feature_url($node, $url_alias);
     $success = db_query("EXECUTE del_url_alias_by_src('%s')", $src);    
     $success = db_query("EXECUTE ins_url_alias_nisrds('%s', '%s')", $src, $dst);
 
     // update the job status every 1% features
-    if ($job and $num_nodes % $num_per_interval == 0) {
+    if ($job and $num_set % $num_per_interval == 0) {
       $percent = ($num_set / $num_nodes) * 100;
       tripal_job_set_progress($job, intval($percent));
       $percent = sprintf("%.2f", $percent);
@@ -175,34 +181,51 @@ function tripal_feature_set_urls($na = NULL, $job_id = NULL) {
   $percent = sprintf("%.2f", $percent);
   print "Setting URLs (" . $percent . "%). Memory: " . number_format(memory_get_usage()) . " bytes.\r";
   print "\nDone. Set " . number_format($num_set) . " URLs\n";
+  
+  // unprepare the statements
+  db_query('DEALLOCATE "del_url_alias_by_src"');
+  db_query('DEALLOCATE "ins_url_alias_nisrds"');
 }
 /**
- *
+ * 
+ * @param $node
+ *   A node object containing at least the feature_id and nid
+ * @param $url_alias
+ *   Optional.  This should be the URL alias syntax string that contains
+ *   placeholders such as [id], [genus], [species], [name], [uniquename],
+ *   and [type].  These placeholders will be substituted for actual values.
+ *   If this parameter is not provided then the value of the 
+ *   chado_feature_url_string Drupal variable will be used.
  */
-function tripal_feature_get_feature_url($node) {
+function tripal_feature_get_feature_url($node, $url_alias = NULL) {
 
   // get the starting URL alias
-  $url_alias = variable_get('chado_feature_url_string', '/feature/[genus]/[species]/[type]/[uniquename]'); 
-  if (!$url_alias) {
-    $url_alias = '/feature/[genus]/[species]/[type]/[uniquename]';
-  } 
-  $url_alias = preg_replace('/^\//', '', $url_alias); // remove any preceeding forward slash
+  if(!$url_alias) {
+    $url_alias = variable_get('chado_feature_url_string', '/feature/[genus]/[species]/[type]/[uniquename]'); 
+    if (!$url_alias) {
+      $url_alias = '/feature/[genus]/[species]/[type]/[uniquename]';
+    } 
+    $url_alias = preg_replace('/^\//', '', $url_alias); // remove any preceeding forward slash
+  }
 
   // get the feature 
-  $values = array('feature_id' => $node->feature_id);        
-  $feature = tripal_core_chado_select('feature', array('*'), $values);
+  $values = array('feature_id' => $node->feature_id); 
+  $options = array('statement_name' => 'sel_feature_id');       
+  $feature = tripal_core_chado_select('feature', array('*'), $values, $options);
 
   $feature = (object) $feature[0];
   
   // get the organism
   $values = array('organism_id' => $feature->organism_id);
-  $organism  = tripal_core_chado_select('organism', array('*'), $values);  
+  $options = array('statement_name' => 'sel_organism_id');
+  $organism  = tripal_core_chado_select('organism', array('*'), $values, $options);  
   $genus = preg_replace('/\s/', '_', strtolower($organism[0]->genus));
   $species = preg_replace('/\s/', '_', strtolower($organism[0]->species)); 
 
   // get the type
   $values = array('cvterm_id' => $feature->type_id);
-  $cvterm = tripal_core_chado_select('cvterm', array('name'), $values);
+  $options = array('statement_name' => 'sel_cvterm_id');
+  $cvterm = tripal_core_chado_select('cvterm', array('name'), $values, $options);
   $type = preg_replace('/\s/', '_', $cvterm[0]->name);
   
   // now substitute in the values
