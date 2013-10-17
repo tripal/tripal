@@ -114,8 +114,7 @@ function tripal_feature_sync_form_submit($form, &$form_state) {
 
   variable_set('chado_sync_feature_types', $feature_types);
 
-  tripal_add_job($title, 'tripal_feature',
-    'tripal_feature_sync_features', $job_args, $user->uid);
+  tripal_add_job($title, 'tripal_feature', 'tripal_feature_sync_features', $job_args, $user->uid);
 }
 /**
  *  
@@ -125,6 +124,13 @@ function tripal_feature_sync_form_submit($form, &$form_state) {
  * @param $job_id
  */
 function tripal_feature_set_urls($na = NULL, $job = NULL) {
+  
+  // begin the transaction
+  db_query("BEGIN");
+      
+  print "\nNOTE: Setting of URLs is performed using a database transaction. \n" .
+        "If the load fails or is terminated prematurely then the entire set of \n" .
+        "new URLs will be rolled back and no changes will be made\n\n";
   
   // get the number of records we need to set URLs for
   $csql = "SELECT count(*) FROM {chado_feature}";
@@ -185,6 +191,8 @@ function tripal_feature_set_urls($na = NULL, $job = NULL) {
   // unprepare the statements
   db_query('DEALLOCATE "del_url_alias_by_src"');
   db_query('DEALLOCATE "ins_url_alias_nisrds"');
+  
+  db_query("COMMIT");
 }
 /**
  * 

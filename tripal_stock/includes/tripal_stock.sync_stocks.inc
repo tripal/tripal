@@ -123,6 +123,13 @@ function tripal_stock_sync_form_submit($form, &$form_state) {
  */
 function tripal_stock_set_urls($na = NULL, $job = NULL) {
   
+  // begin the transaction
+  db_query("BEGIN");
+      
+  print "\nNOTE: Setting of URLs is performed using a database transaction. \n" .
+        "If the load fails or is terminated prematurely then the entire set of \n" .
+        "new URLs will be rolled back and no changes will be made\n\n";
+  
   // get the number of records we need to set URLs for
   $csql = "SELECT count(*) FROM {chado_stock}";
   $num_nodes = db_result(db_query($csql));
@@ -182,6 +189,8 @@ function tripal_stock_set_urls($na = NULL, $job = NULL) {
   // unprepare the statements
   db_query('DEALLOCATE "del_url_alias_by_src"');
   db_query('DEALLOCATE "ins_url_alias_nisrds"');
+  
+  db_query("COMMIT");
 }
 /**
  * 
