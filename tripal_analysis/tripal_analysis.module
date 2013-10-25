@@ -379,14 +379,26 @@ function chado_analysis_update($node) {
 
   // now add in the properties by first removing any the analysis
   // already has and adding the ones we have
-  tripal_core_chado_delete('analysisprop', array('analysis_id' => $analysis_id));
+  $sql = "
+    DELETE FROM {analysisprop} WHERE analysis_id = %d AND type_id IN (
+      SELECT CVT.cvterm_id
+      FROM  {cvterm} CVT
+        INNER JOIN {cv} ON CVT.cv_id = CV.cv_id
+      WHERE CV.name = 'analysis_property')
+  ";
+  $success = chado_query($sql, $analysis_id);
+  if (!$success) {
+  	drupal_set_message("Cannot update analysis properties", "error");
+  	watchdog('t_analysis', "Cannot update analysis properties.", array(), WATCHDOG_ERROR);
+  	return;
+  }
   foreach ($properties as $property => $elements) {
     foreach ($elements as $rank => $value) {
       $status = tripal_analysis_insert_property($analysis_id, $property, $value, FALSE, 'analysis_property');
       if (!$status) {
         drupal_set_message("Error cannot add property: '$property'", "error");
         watchdog('t_analysis', "Error cannot add property: '%prop'",
-        array('%prop' => $property), WATCHDOG_ERROR);
+          array('%prop' => $property), WATCHDOG_ERROR);
       }
     }
   }
