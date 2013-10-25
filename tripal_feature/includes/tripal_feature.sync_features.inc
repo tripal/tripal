@@ -176,6 +176,12 @@ function tripal_feature_set_urls($na = NULL, $job = NULL) {
       return; 
     }    
     
+    // if the src and dst is the same (the URL alias couldn't be set)
+    // then skip to the next one. There's nothing we can do about this one.
+    if($src == $dst) {
+      continue;
+    }
+    
     // remove any previous alias and then add the new one
     $success = db_query("EXECUTE del_url_alias_by_src('%s')", $src);    
     if (!$success) {
@@ -277,6 +283,13 @@ function tripal_feature_get_feature_url($node, $url_alias = NULL) {
   $url_alias = preg_replace('/\[name\]/', $feature->name, $url_alias);
   $url_alias = preg_replace('/\[uniquename\]/', $feature->uniquename, $url_alias);
  
+  // the dst field of the url_alias table is only 128 characters long. 
+  // if this is the case then simply return the node URL, we can't set this one
+  if (strlen($url_alias) > 128) {
+    watchdog('trp-seturl', "Cannot set alias longer than 128 characters: %alias.", array('%alias' => $url_alias), WATCHDOG_ERROR);
+    return "node/" . $node->nid;
+  }
+  
   return $url_alias;
 }
 /**
