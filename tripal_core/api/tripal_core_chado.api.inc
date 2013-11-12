@@ -2189,7 +2189,7 @@ function tripal_core_expand_chado_vars($object, $type, $to_expand, $table_option
         // if we did not expand this table we should return a message that the foreign table
         // could not be expanded
         if (!$did_expansion) {
-          watchdog('tripal_core', 'tripal_core_expand_chado_vars: Could not expand table, %table. It is ',
+          watchdog('tripal_core', 'tripal_core_expand_chado_vars: Could not expand table, %table. It is ' .
             'not in a foreign key relationship with the base object nor with any other expanded table. ' .
             'Check the table definition to ensure that a proper foreign key relationship is present.',
             array('%table' => $foreign_table), WATCHDOG_ERROR);
