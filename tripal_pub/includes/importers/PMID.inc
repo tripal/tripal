@@ -114,7 +114,7 @@ function tripal_pub_remote_search_PMID($search_array, $num_to_retrieve, $pager_i
   $search_array['limit'] = $num_to_retrieve;
   $search_array['search_string'] = $search_str;
 
-  dpm($search_str);
+  //dpm($search_str);
   unset($_SESSION['tripal_pub_PMID_query']);
   // we want to get the list of pubs using the search terms but using a Drupal style pager
   $pubs = tripal_pager_callback('tripal_pub_PMID_range',  $num_to_retrieve, $pager_id,
