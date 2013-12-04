@@ -202,6 +202,8 @@ function tripal_pub_PMID_search_init($search_str, $retmax){
   $rfh = fopen($query_url, "r");
   if (!$rfh) {
     drupal_set_message('Could not perform Pubmed query. Cannot connect to Entrez.', 'error');
+    watchdog('tpub_import', "Could not perform Pubmed query. Cannot connect to Entrez.",
+              array(), WATCHDOG_ERROR);
     return 0;
   }
 
@@ -279,6 +281,8 @@ $retmod = 'null', $start = 0, $limit = 10, $args = array()){
   $rfh = fopen($fetch_url, "r");
   if (!$rfh) {
     drupal_set_message('ERROR: Could not perform PubMed query.', 'error');
+    watchdog('tpub_import', "Could not perform PubMed query: %fetch_url.",
+              array('%fetch_url' => $fetch_url), WATCHDOG_ERROR);
     return '';
   }
   $results = '';

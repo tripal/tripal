@@ -333,7 +333,7 @@ function tripal_pub_remote_search_AGL($search_array, $num_to_retrieve, $pager_id
 
     if (!yaz_ccl_parse($yazc, $ccl, $cclresult)) {
       drupal_set_message('Error parsing search string: ' . $cclresult["errorstring"], "error");
-      watchdog('tripal_pub', 'Error: %errstr', array('%errstr' => $cclresult["errorstring"]), WATCHDOG_ERROR);
+      watchdog('tpub_import', 'Error: %errstr', array('%errstr' => $cclresult["errorstring"]), WATCHDOG_ERROR);
       return array();
     }
     $search_str = $cclresult["rpn"];
@@ -374,6 +374,8 @@ function tripal_pub_AGL_count($search_array) {
       $error_msg .= " $additional";
     }
     drupal_set_message("ERROR preparing search at AGL: ($error_no) $error_msg", "error");
+    watchdog('tpub_import', "ERROR preparing search at AGL: (%error_no) %error_msg",
+              array('%error_no' => $error_no, '%error_msg' => $error_msg), WATCHDOG_ERROR);
     return 0;
   }
   if (!yaz_wait()) {
@@ -384,6 +386,8 @@ function tripal_pub_AGL_count($search_array) {
       $error_msg .= " $additional";
     }
     drupal_set_message("ERROR waiting on search at AGL: ($error_no) $error_msg", "error");
+    watchdog('tpub_import', "ERROR waiting on search at AGL: (%error_no) %error_msg",
+              array('%error_no' => $error_no, '%error_msg' => $error_msg), WATCHDOG_ERROR);
     return 0;
   }
 
@@ -416,6 +420,8 @@ function tripal_pub_AGL_range($search_array, $start = 0, $limit = 10) {
       $error_msg .= " $additional";
     }
     drupal_set_message("ERROR waiting on search at AGL: ($error_no) $error_msg", "error");
+    watchdog('tpub_import', "ERROR waiting on search at AGL: (%error_no) %error_msg",
+              array('%error_no' => $error_no, '%error_msg' => $error_msg), WATCHDOG_ERROR);
     return $pubs;
   }
    
