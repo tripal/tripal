@@ -70,7 +70,7 @@ class tripal_views_handler_filter_no_results extends views_handler_filter {
       // If set, change the no_results text
       if (!empty($this->options['apply_button'])) {
         if (!$jquery_loaded) {
-          drupal_set_html_head('<script type="text/javascript" src="' . $base_url . '/misc/jquery.js"></script>');
+          drupal_add_html_head('<script type="text/javascript" src="' . $base_url . '/misc/jquery.js"></script>');
           $jquery_loaded = TRUE;
         }
         $javascript = '<script type="text/javascript">'."\n"
@@ -78,14 +78,14 @@ class tripal_views_handler_filter_no_results extends views_handler_filter {
           ."  $('div.view-empty').html('" . addslashes($this->options['no_results_text']) . "');\n"
           ."});\n"
           .'</script>'."\n";
-        drupal_set_html_head($javascript);
+        drupal_add_html_head($javascript);
       }
     }
 
     // Set the Apply button text
     if (!empty($this->options['apply_button'])) {
       if (!$jquery_loaded) {
-        drupal_set_html_head('<script type="text/javascript" src="' . $base_url . '/misc/jquery.js"></script>');
+        drupal_add_html_head('<script type="text/javascript" src="' . $base_url . '/misc/jquery.js"></script>');
         $jquery_loaded = TRUE;
       }
       $javascript = '<script type="text/javascript">'."\n"
@@ -93,7 +93,7 @@ class tripal_views_handler_filter_no_results extends views_handler_filter {
         ."  $('div.views-submit-button').html(" . '"' . "<input type='submit' id='edit-submit-all-analysis' value='" . $this->options['apply_button'] . "' class='form-submit'>" . '"' . ");\n"
         ."});\n"
         .'</script>' . "\n";
-      drupal_set_html_head($javascript);
+      drupal_add_html_head($javascript);
     }
   }
 

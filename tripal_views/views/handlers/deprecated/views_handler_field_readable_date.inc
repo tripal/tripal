@@ -19,7 +19,7 @@ class views_handler_field_readable_date extends views_handler_field {
 
   function options_form(&$form, &$form_state) {
     parent::options_form($form, $form_state);
-    $time = time();
+    $time = $REQUEST_TIME;
 
     $form['date_format'] = array(
       '#type' => 'select',
@@ -62,7 +62,7 @@ class views_handler_field_readable_date extends views_handler_field {
       return theme('views_nodate');
     }
     else {
-      $time_diff = time() - $value; // will be positive for a datetime in the past (ago), and negative for a datetime in the future (hence)
+      $time_diff = $REQUEST_TIME - $value; // will be positive for a datetime in the past (ago), and negative for a datetime in the future (hence)
       switch ($format) {
         case 'raw time ago':
           return format_interval($time_diff, is_numeric($custom_format) ? $custom_format : 2);

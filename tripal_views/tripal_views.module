@@ -46,7 +46,7 @@ function tripal_views_menu() {
     'title' => 'Integrate A Table',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_views_integration_form'),
-    'access arguments' => array('manage tripal_views_integration'), 
+    'access arguments' => array('manage tripal_views_integration'),
     'type' => MENU_NORMAL_ITEM,
   );
 
@@ -54,7 +54,7 @@ function tripal_views_menu() {
     'title' => 'Edit Views Integration',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_views_integration_form', 5),
-    'access arguments' => array('manage tripal_views_integration'), 
+    'access arguments' => array('manage tripal_views_integration'),
     'type' => MENU_CALLBACK,
   );
 
@@ -62,7 +62,7 @@ function tripal_views_menu() {
     'title' => 'Delete Views Integration',
     'page callback' => 'tripal_views_integration_delete',
     'page arguments' => array(5),
-    'access arguments' => array('manage tripal_views_integration'), 
+    'access arguments' => array('manage tripal_views_integration'),
     'type' => MENU_CALLBACK,
   );
 
@@ -70,7 +70,7 @@ function tripal_views_menu() {
     'title' => 'Import Views Integration',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_views_integration_import_form'),
-    'access arguments' => array('manage tripal_views_integration'), 
+    'access arguments' => array('manage tripal_views_integration'),
     'type' => MENU_NORMAL_ITEM,
   );
 
@@ -81,27 +81,29 @@ function tripal_views_menu() {
     'access arguments' => array('manage tripal_views_integration'),
     'type' => MENU_CALLBACK,
   );
-  
-  // Menu item for the AJAX callback function that retrieves the 
+
+  // D6:
+  // Menu item for the AJAX callback function that retrieves the
   // portion of the form that contains all of the fields for the table being integrated
-  $items['tripal/views/integration/ajax/view_setup_table'] = array(
-    'title' => 'Import Views Integration',
-    'page callback' => 'tripal_views_integration_ajax_view_setup_table',
-    'page arguments' => array(),
-    'access arguments' => array('manage tripal_views_integration'), 
-    'type' => MENU_CALLBACK,
-  );
-  
-  // Menu item for the AJAX callback function that retrieves the list of 
-  // column names for the table that is selected to be joined. 
-  $items['tripal/views/integration/ajax/join_field/%/%'] = array(
-    'title' => 'Import Views Integration',
-    'page callback' => 'tripal_views_integration_ajax_join_field',
-    'page arguments' => array(5, 6),
-    'access arguments' => array('manage tripal_views_integration'), 
-    'type' => MENU_CALLBACK,
-  );
-  
+  //$items['tripal/views/integration/ajax/view_setup_table'] = array(
+  //  'title' => 'Import Views Integration',
+  //  'page callback' => 'tripal_views_integration_ajax_view_setup_table',
+  //  'page arguments' => array(),
+  //  'access arguments' => array('manage tripal_views_integration'),
+  //  'type' => MENU_CALLBACK,
+  //);
+
+  // D6:
+  // Menu item for the AJAX callback function that retrieves the list of
+  // column names for the table that is selected to be joined.
+  //$items['tripal/views/integration/ajax/join_field/%/%'] = array(
+  //  'title' => 'Import Views Integration',
+  //  'page callback' => 'tripal_views_integration_ajax_join_field',
+  //  'page arguments' => array(5, 6),
+  //  'access arguments' => array('manage tripal_views_integration'),
+  //  'type' => MENU_CALLBACK,
+  //);
+
   return $items;
 }
 
@@ -127,7 +129,7 @@ function tripal_views_init() {
  *
  * @ingroup tripal_views
  */
-function tripal_views_perm() {
+function tripal_views_permission() {
   return array(
     'manage tripal_views_integration',
   );
@@ -174,9 +176,9 @@ function tripal_views_theme() {
     ),
     // instructions page for the pub module
     'tripal_views_admin' => array(
-      'template' => 'tripal_views_admin',  
-      'arguments' =>  array(NULL),  
-      'path' => drupal_get_path('module', 'tripal_views') . '/theme' 
+      'template' => 'tripal_views_admin',
+      'arguments' =>  array(NULL),
+      'path' => drupal_get_path('module', 'tripal_views') . '/theme'
     ),
   );
 }
@@ -213,10 +215,10 @@ function tripal_views_biological_data_page() {
 }
 
 /*
- * 
+ *
  */
 function tripal_views_form_alter(&$form, &$form_state, $form_id) {
-  if ($form_id == "tripal_views_integration_form") {    
+  if ($form_id == "tripal_views_integration_form") {
     // updating the form through the ahah callback sets the action of
     // the form to the ahah callback URL. We need to set it back
     // to the normal form URL
