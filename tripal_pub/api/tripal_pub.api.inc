@@ -664,7 +664,7 @@ function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE,
       return FALSE;
     }
   }
-  print "PUB ID: $pub_id\n";
+  //print "PUB ID: $pub_id\n";
   // if there is a pub id and we've been told not to update then return
   if ($pub_id and !$update_if_exists) {
     $action = 'skipped';
