@@ -26,8 +26,10 @@
  */
 function tripal_views_get_table_lightest_priority($table_name) {
 
-  $sql = "SELECT priority FROM {tripal_views} WHERE table_name='%s' ORDER BY priority ASC";
-  $setup = db_fetch_object(db_query($sql, $table_name));
+  // D7 TODO: Check DBTNG changes work
+  $sql = "SELECT priority FROM {tripal_views} WHERE table_name=:table ORDER BY priority ASC";
+  $setup = db_query($sql, array(':table' => $table_name));
+  $setup = $setup->fetchObject();
   if ($setup) {
     return $setup->priority;
   }
@@ -54,8 +56,10 @@ function tripal_views_get_table_lightest_priority($table_name) {
  */
 function tripal_views_get_lightest_priority_setup($table_name) {
 
-  $sql = "SELECT setup_id FROM {tripal_views} WHERE table_name='%s' ORDER BY priority ASC";
-  $setup = db_fetch_object(db_query($sql, $table_name));
+  // D7 TODO: Check DBTNG changes work
+  $sql = "SELECT setup_id FROM {tripal_views} WHERE table_name=:table ORDER BY priority ASC";
+  $setup = db_query($sql, array(':table' => $table_name));
+  $setup = $setup->fetchObject();
   if ($setup) {
     return $setup->setup_id;
   }
@@ -80,8 +84,10 @@ function tripal_views_get_lightest_priority_setup($table_name) {
  */
 function tripal_views_get_setup_id($table_name, $priority) {
 
-  $sql = "SELECT setup_id FROM {tripal_views} WHERE table_name='%s' AND priority=%d ORDER BY priority ASC";
-  $setup = db_fetch_object(db_query($sql, $table_name, $priority));
+  // D7 TODO: Check DBTNG changes work
+  $sql = "SELECT setup_id FROM {tripal_views} WHERE table_name=:table AND priority=:priority ORDER BY priority ASC";
+  $setup = db_query($sql, array(':table' => $table_name, ':priority' => $priority));
+  $setup = $setup->fetchObject();
   if ($setup) {
     return $setup->setup_id;
   }
@@ -108,12 +114,16 @@ function tripal_views_get_setup_id($table_name, $priority) {
 function tripal_views_is_integrated($table_name, $priority = NULL) {
 
   if ($priority) {
-    $sql = "SELECT setup_id FROM {tripal_views} WHERE table_name='%s' AND priority=%d";
-    $setup = db_fetch_object(db_query($sql, $table_name, $priority));
+    // D7 TODO: Check DBTNG changes work
+    $sql = "SELECT setup_id FROM {tripal_views} WHERE table_name=:table AND priority=:priority";
+    $setup = db_query($sql, array(':table' => $table_name, ':priority' => $priority));
+    $setup = $setup->fetchObject();
   }
   else {
-    $sql = "SELECT setup_id FROM {tripal_views} WHERE table_name='%s' ORDER BY priority ASC";
-    $setup = db_fetch_object(db_query($sql, $table_name));
+    // D7 TODO: Check DBTNG changes work
+    $sql = "SELECT setup_id FROM {tripal_views} WHERE table_name=:table ORDER BY priority ASC";
+    $setup = db_query($sql, array(':table' => $table_name));
+    $setup = $setup->fetchObject();
   }
   if ($setup) {
     return $setup->setup_id;
@@ -209,15 +219,22 @@ function tripal_views_integration_add_entry($defn_array) {
     'base_table' => $defn_array['base_table'],
   );
   if ($defn_array['type'] == 'mview') {
-    $mview = db_fetch_object(db_query("SELECT mview_id FROM {tripal_mviews} WHERE mv_table='%s'", $defn_array['table']));
+    // D7 TODO: Check DBTNG changes work
+    $mview = db_query("SELECT mview_id FROM {tripal_mviews} WHERE mv_table=:table", array(':table' => $defn_array['table']));
+    $mview = $mview->fetchObject();
     $view_record['mview_id'] = $mview->mview_id;
     if (!$mview->mview_id) {
       return FALSE;
     }
   }
   if ($view_record['name']) { // && $view_record['comment']) {  # SPF: commented out 9/24/2012 .. It's not required on the form
-    if ($defn_array['additional_content']) {
-      $setup = db_fetch_object(db_query("SELECT * FROM {tripal_views} WHERE table_name='%s' AND priority=%d", $view_record['table_name'], $view_record['priority']));
+    if (isset($defn_array['additional_content'])) {
+      // D7 TODO: Check DBTNG changes work
+      $setup = db_query(
+        "SELECT * FROM {tripal_views} WHERE table_name=:table AND priority=:priority",
+        array(':table' => $view_record['table_name'], ':priority' => $view_record['priority'])
+      );
+      $setup = $setup->fetchObject();
       if (empty($setup->setup_id)) {
         $status = drupal_write_record('tripal_views', $view_record);
       }
@@ -240,11 +257,14 @@ function tripal_views_integration_add_entry($defn_array) {
     // Need to update the tripal_views record so base_table can be false
     // this is a fix because drupal_write_record() puts in defaults if !isset()
     // and a variable is considered not set if it's null!
+    // D7 TODO: Check DBTNG changes work
     db_query(
-      "UPDATE {tripal_views} SET base_table=%d WHERE table_name='%s' AND priority=%d",
-      $defn_array['base_table'],
-      $defn_array['table'],
-      $defn_array['priority']
+      "UPDATE {tripal_views} SET base_table=:base WHERE table_name=:table AND priority=:priority",
+      array(
+        ':base' => $defn_array['base_table'],
+        ':table' => $defn_array['table'],
+        ':priority' => $defn_array['priority']
+      )
     );
 
     // Insert Field Definitions
@@ -257,8 +277,16 @@ function tripal_views_integration_add_entry($defn_array) {
         'type' => $field['type'],
       );
       if ($view_record['setup_id'] && $field['name'] && $field['title'] && $field['description'] && $field['type']) {
-        if ($defn_array['additional_content']) {
-          $is = db_fetch_object(db_query("SELECT true as present FROM {tripal_views_field} WHERE column_name='%s' AND setup_id=%d", $field_record['column_name'], $field_record['setup_id']));
+        if (isset($defn_array['additional_content'])) {
+          // D7 TODO: Check DBTNG changes work
+          $is = db_query(
+            "SELECT true as present FROM {tripal_views_field} WHERE column_name=:column AND setup_id=:setup",
+            array(
+              ':column' => $field_record['column_name'],
+              ':setup' => $field_record['setup_id']
+              )
+            );
+          $is = $is->fetchObject();
           if (!$is->present) {
             $status = drupal_write_record('tripal_views_field', $field_record);
           }
@@ -371,7 +399,9 @@ function tripal_views_integration_add_entry($defn_array) {
 function tripal_views_integration_export_entry($setup_id) {
 
   // Main setup details
-  $r = db_fetch_object(db_query("SELECT * FROM {tripal_views} WHERE setup_id=%d", $setup_id));
+  // D7 TODO: Check DBTNG changes work
+  $r = db_query("SELECT * FROM {tripal_views} WHERE setup_id=:setup", array(':setup' => $setup_id));
+  $r = $r->fetchObject();
   $defn_array = array(
     'table' => $r->table_name,
     'name' => $r->name,
@@ -383,8 +413,9 @@ function tripal_views_integration_export_entry($setup_id) {
   );
 
   // Add fields
-  $resource = db_query("SELECT * FROM {tripal_views_field} WHERE setup_id=%d", $setup_id);
-  while ($r = db_fetch_object($resource)) {
+  // D7 TODO: Check DBTNG changes work
+  $resource = db_query("SELECT * FROM {tripal_views_field} WHERE setup_id=:setup", array(':setup' => $setup_id));
+  foreach ($resource as $r) {
     $defn_array['fields'][ $r->column_name ] = array(
         'name' => $r->column_name,
         'title' => $r->name,
@@ -396,16 +427,18 @@ function tripal_views_integration_export_entry($setup_id) {
   }
 
   // Add handlers
-  $resource = db_query("SELECT * FROM {tripal_views_handlers} WHERE setup_id=%d", $setup_id);
-  while ($r = db_fetch_object($resource)) {
+  // D7 TODO: Check DBTNG changes work
+  $resource = db_query("SELECT * FROM {tripal_views_handlers} WHERE setup_id=:setup", array(':setup' => $setup_id));
+  foreach ($resource as $r) {
     $defn_array['fields'][ $r->column_name ]['handlers'][ $r->handler_type ] = array(
       'name' => $r->handler_name
     );
   }
 
   // Add joins
-  $resource = db_query("SELECT * FROM {tripal_views_join} WHERE setup_id=%d", $setup_id);
-  while ($r = db_fetch_object($resource)) {
+  // D7 TODO: Check DBTNG changes work
+  $resource = db_query("SELECT * FROM {tripal_views_join} WHERE setup_id=:setup", array(':setup' => $setup_id));
+  foreach ($resource as $r) {
     $defn_array['fields'][ $r->base_field ]['joins'][ $r->left_table ] = array(
       'table' => $r->left_table,
       'field' => $r->left_field,
@@ -431,11 +464,15 @@ function tripal_views_integration_export_entry($setup_id) {
  */
 function tripal_views_integration_remove_entry_by_table_name($table_name, $priority) {
 
-  $views = db_fetch_object(db_query(
-    "SELECT * FROM {tripal_views} WHERE table_name='%s' AND priority=%d",
-    $table_name,
-    $priority
-  ));
+  // D7 TODO: Check DBTNG changes work
+  $views = db_query(
+    "SELECT * FROM {tripal_views} WHERE table_name=:table AND priority=:priority",
+    array(
+      ':table' => $table_name,
+      ':priority' => $priority
+    )
+  );
+  $views = $views->fetchObject();
   if ($views->setup_id) {
     tripal_views_integration_remove_entry_by_setup_id($views->setup_id);
     return TRUE;
@@ -456,10 +493,11 @@ function tripal_views_integration_remove_entry_by_table_name($table_name, $prior
  */
 function tripal_views_integration_remove_entry_by_setup_id($setup_id) {
 
-    db_query('DELETE FROM {tripal_views} WHERE setup_id=%d', $setup_id);
-    db_query('DELETE FROM {tripal_views_field} WHERE setup_id=%d', $setup_id);
-    db_query('DELETE FROM {tripal_views_handlers} WHERE setup_id=%d', $setup_id);
-    db_query('DELETE FROM {tripal_views_join} WHERE setup_id=%d', $setup_id);
+    // D7 TODO: Check DBTNG changes work
+    db_query('DELETE FROM {tripal_views} WHERE setup_id=:setup', array(':setup' => $setup_id));
+    db_query('DELETE FROM {tripal_views_field} WHERE setup_id=:setup', array(':setup' => $setup_id));
+    db_query('DELETE FROM {tripal_views_handlers} WHERE setup_id=:setup', array(':setup' => $setup_id));
+    db_query('DELETE FROM {tripal_views_join} WHERE setup_id=:setup', array(':setup' => $setup_id));
 
 }
 
@@ -749,8 +787,16 @@ function tripal_views_clone_integration($table_name, $new_priority = NULL, $temp
     $defn_array['priority'] = $defn_array['priority'] - 1;
   }
 
+  // D7 TODO: Check DBTNG changes work
   tripal_views_integration_add_entry($defn_array);
-  $setup_id = db_result(db_query("SELECT setup_id FROM {tripal_views} WHERE table_name='%s' AND priority=%d", $table_name, $new_priority));
+  $setup_id = db_query(
+    "SELECT setup_id FROM {tripal_views} WHERE table_name=:table AND priority=:priority",
+    array(
+      ':table' => $table_name,
+      ':priority' => $new_priority
+    )
+  );
+  $setup_id = $setup_id->fetchObject();
 
   if (empty($setup_id)) {
     watchdog('tripal_views','Unable to clone the setup for %table in order to add the following field to the integration: %field.',
@@ -791,7 +837,15 @@ function tripal_views_add_field_to_integration($table_name, $priority, $field) {
   }
 
   // First get the setup_id
-  $setup_id = db_result(db_query("SELECT setup_id FROM {tripal_views} WHERE table_name='%s' AND priority=%d", $table_name, $priority));
+  // D7 TODO: Check DBTNG changes work
+  $setup_id = db_query(
+    "SELECT setup_id FROM {tripal_views} WHERE table_name=:table AND priority=:priority",
+    array(
+      ':table' => $table_name,
+      ':priority' => $priority
+    )
+  );
+  $setup_id = $setup_id->fetchObject();
 
   // If there isn't an integration matching that table/priority combination
   // then clone the lightest priority integration
@@ -800,9 +854,15 @@ function tripal_views_add_field_to_integration($table_name, $priority, $field) {
   }
 
   // Now delete any existing field
-  db_query("DELETE FROM {tripal_views_field} WHERE setup_id=%d AND column_name='%s'", $setup_id, $field['name']);
-  db_query("DELETE FROM {tripal_views_handlers} WHERE setup_id=%d AND column_name='%s'", $setup_id, $field['name']);
-  db_query("DELETE FROM {tripal_views_join} WHERE setup_id=%d AND base_table='%s' AND base_field='%s'", $setup_id, $table_name, $field['name']);
+  db_query("DELETE FROM {tripal_views_field} WHERE setup_id=:setup AND column_name=:column",
+    array(':setup' => $setup_id, 'column' => $field['name'])
+  );
+  db_query("DELETE FROM {tripal_views_handlers} WHERE setup_id=:setup AND column_name=:column",
+    array(':setup' => $setup_id, 'column' => $field['name'])
+  );
+  db_query("DELETE FROM {tripal_views_join} WHERE setup_id=:setup AND base_table=:table AND base_field=:field",
+    array(':setup' => $setup_id, ':table' => $table_name, ':field' => $field['name'])
+  );
 
   // Now we need to add/update the field
   $field_record = array(
@@ -814,7 +874,12 @@ function tripal_views_add_field_to_integration($table_name, $priority, $field) {
   );
   if ($setup_id && $field['name'] && $field['title'] && $field['description'] && $field['type']) {
     if ($defn_array['additional_content']) {
-      $is = db_fetch_object(db_query("SELECT true as present FROM {tripal_views_field} WHERE column_name='%s' AND setup_id=%d", $field_record['column_name'], $field_record['setup_id']));
+      // D7 TODO: Check DBTNG changes work
+      $is = db_query(
+        "SELECT true as present FROM {tripal_views_field} WHERE column_name=:column AND setup_id=:setup",
+        array(':column' => $field_record['column_name'], ':setup' => $field_record['setup_id'])
+      );
+      $is = $is->fetchObject();
       if (!$is->present) {
         $status = drupal_write_record('tripal_views_field', $field_record);
       }
@@ -924,11 +989,13 @@ function tripal_views_add_field_to_integration($table_name, $priority, $field) {
  */
 function tripal_views_remove_join_from_integration($setup_id, $base_table, $base_field, $left_table, $left_field) {
   db_query(
-    "DELETE FROM {tripal_views_join} WHERE setup_id=%d AND base_table='%s' AND base_field='%s' AND left_table='%s' AND left_field='%s'",
-    $setup_id,
-    $base_table,
-    $base_field,
-    $left_table,
-    $left_field
+    "DELETE FROM {tripal_views_join} WHERE setup_id=:setup AND base_table=:base-table AND base_field=:base-field AND left_table=:left-table AND left_field=:left-field",
+    array(
+      ':setup' => $setup_id,
+      ':base-table' => $base_table,
+      ':base-field' => $base_field,
+      ':left-table' => $left_table,
+      ':left-field' => $left_field
+    )
   );
 }

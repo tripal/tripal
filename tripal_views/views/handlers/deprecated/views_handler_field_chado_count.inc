@@ -45,13 +45,15 @@ class views_handler_field_chado_count extends views_handler_field {
       $primary_id = $record->{$this->aliases['primary_id']};
 
       //Select count from database
+      // D7 TODO: Check DBTNG changes work
       $sql = 'SELECT count(*) as count FROM %s WHERE %s=%d';
-      $result = db_fetch_object(chado_query(
+      $result = chado_query(
         $sql,
         $this->aliases['current_table'],
         $this->aliases['foreign_key'],
         $primary_id
-      ));
+      );
+      $result = $result->fetchObject();
 
       //Add to view results
       $this->view->result[$key]->{$this->field} = $result->count;

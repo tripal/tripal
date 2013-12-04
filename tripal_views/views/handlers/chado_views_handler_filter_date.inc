@@ -50,7 +50,12 @@ class chado_views_handler_filter_date extends views_handler_filter_date {
   function op_between($field) {
 
     // Check whether we have a UNIX timestamp or an ISO Timestamp
-    $check = db_fetch_object(db_query("SELECT $this->real_field as val FROM $this->table WHERE $this->real_field IS NOT NULL LIMIT 1"));
+    // D7 TODO: Check DBTNG changes work
+    $check = db_query(
+      "SELECT :field as val FROM :table WHERE :field IS NOT NULL LIMIT 1",
+      array(':field' => $this->real_field, ':table' => $this->table)
+    );
+    $check = $check->fetchObject();
     if (preg_match('/^\d+$/', $check->val)) {
       // this is a unix timestamp
       $is_unix = TRUE;
@@ -102,7 +107,12 @@ class chado_views_handler_filter_date extends views_handler_filter_date {
     $value = intval(strtotime($this->value['value'], 0));
 
     // Check whether we have a UNIX timestamp or an ISO Timestamp
-    $check = db_fetch_object(db_query("SELECT $this->real_field as val FROM $this->table WHERE $this->real_field IS NOT NULL LIMIT 1"));
+    // D7 TODO: Check DBTNG changes work
+    $check = db_query(
+      "SELECT :field as val FROM :table WHERE :field IS NOT NULL LIMIT 1",
+      array(':field' => $this->real_field, ':table' => $this->table)
+    );
+    $check = $check->fetchObject();
     if (preg_match('/^\d+$/', $check->val)) {
       // this is a unix timestamp
       $is_unix = TRUE;

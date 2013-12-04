@@ -205,8 +205,9 @@ class views_handler_join_chado_aggregator extends views_join {
               WHERE typname='nd_genotype_experiment'
                 AND attrelid=typrelid
                 AND attname NOT IN ('cmin','cmax','ctid','oid','tableoid','xmin','xmax')";
+      // D7 TODO: Check DBTNG changes work
       $resource = chado_query($sql);
-      while ($r = db_fetch_object($resource)) {
+      foreach ($resource as $r) {
         $table = $opt['table'];
         $alias = ''; //no alias needed if table is current table (only option if no schema api definition)
         $fname = $r->column;

@@ -27,8 +27,10 @@ class views_handler_field_dbxref_accession_link extends views_handler_field {
     $db_id = $values->{$this->aliases['db_id']};
 
     if (!empty($db_id) AND !empty($accession)) {
+      // D7 TODO: Check DBTNG changes work
       // @coder-ignore: non-drupal schema therefore table prefixing does not apply
-      $result = db_fetch_object(chado_query('SELECT urlprefix FROM {db} WHERE db_id=%d', $db_id));
+      $result = chado_query('SELECT urlprefix FROM {db} WHERE db_id=%d', $db_id);
+      $result = $result->fetchObject()
       $urlprefix = $result->urlprefix;
 
       if (!empty($urlprefix)) {

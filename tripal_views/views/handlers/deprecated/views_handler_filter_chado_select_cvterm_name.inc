@@ -41,9 +41,10 @@ class views_handler_filter_chado_select_cvterm_name extends views_handler_filter
             .' LEFT JOIN {cvterm} cvterm ON cvterm.cvterm_id=' . $this->view->base_table . '.type_id '
             .'LEFT JOIN {cv} cv ON cv.cv_id=cvterm.cv_id';
         }
+        // D7 TODO: Check DBTNG changes work
         $resource = chado_query($sql);
         $cvterms = array();
-        while ( $r = db_fetch_object($resource) ) {
+        foreach ($resource as $r) {
           $results = tripal_core_chado_select('cvterm', array('cvterm_id', 'name'), array('cv_id' => $r->cv_id));
           if (empty($results)) {
             $results = array();
@@ -56,11 +57,12 @@ class views_handler_filter_chado_select_cvterm_name extends views_handler_filter
 
     }
     else {
+      // D7 TODO: Check DBTNG changes work
       // @coder-ignore: non-drupal schema therefore table prefixing does not apply
       $sql = "SELECT cvterm_id, name FROM {cvterm} WHERE cvterm_id IN (SELECT distinct(type_id) FROM {%s})";
       $resource = chado_query($sql, $this->table);
       $cvterms = array();
-      while ( $r = db_fetch_object($resource) ) {
+      foreach ($resource as $r) {
         $cvterms[$r->cvterm_id] = $r->name;
       }
     }

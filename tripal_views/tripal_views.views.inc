@@ -237,7 +237,8 @@ function tripal_views_views_data() {
 
   $tvi_query = db_query('SELECT * FROM {tripal_views}');
 
-  while ($tvi_row = db_fetch_object($tvi_query)) {
+  // D7 TODO: Check DBTNG changes work
+  foreach ($tvi_query as $tvi_row) {
 
     // check to see if this is the lightest (drupal-style) priority setup for this table
     // if not then don't use this definition
@@ -262,8 +263,10 @@ function tripal_views_views_data() {
     if ($mview_id) {
 
       // get the base table name from the materialized view
-      $sql = "SELECT name, mv_specs FROM {tripal_mviews} WHERE mview_id = %d";
-      $mview_table = db_fetch_object(db_query($sql, $mview_id));
+      // D7 TODO: Check DBTNG changes work
+      $sql = "SELECT name, mv_specs FROM {tripal_mviews} WHERE mview_id = :id";
+      $mview_table = db_query($sql, array(':id' => $mview_id));
+      $mview_table = $mview_table->fetchObject();
       $base_table = $mview_table->name;
 
       // get the columns in this materialized view.  They are separated by commas
@@ -281,9 +284,10 @@ function tripal_views_views_data() {
       }
 
       // get the field name and descriptions
-      $sql = "SELECT * FROM {tripal_views_field} WHERE setup_id=%d";
-      $query = db_query($sql, $setup_id);
-      while ($field = db_fetch_object($query)) {
+      // D7 TODO: Check DBTNG changes work
+      $sql = "SELECT * FROM {tripal_views_field} WHERE setup_id=:setup";
+      $query = db_query($sql, array(':setup' => $setup_id));
+      foreach($query as $field) {
         $base_fields[$field->column_name]['name'] = $field->name;
         $base_fields[$field->column_name]['help'] = $field->description;
       }
@@ -297,16 +301,17 @@ function tripal_views_views_data() {
       // as compared to create a whole new one
       if ($base_table == 'node') {
 
-      	/* -- SPF Jun 13, 2013 -- not sure why the node table 
+      	/* -- SPF Jun 13, 2013 -- not sure why the node table
       	 *    is included in the Chado integrated tables. I've commented
-      	 *    out.  I think it was here for integration of chado tables wiht 
+      	 *    out.  I think it was here for integration of chado tables wiht
       	 *    nodes, but code to do this has been added below and it's not
       	 *    necessary to have the node table in the list of integrated tables
       	 *
         // Add any joins between the node table and other tables
+        // D7 TODO: Check DBTNG changes work
         $sql = "SELECT * FROM {tripal_views_join} WHERE setup_id = %d";
         $joins = db_query($sql, $setup_id);
-        while ($join = db_fetch_object($joins)) {
+        foreach ($joins as $join) {
           $left_table = $join->left_table;
           $left_field = $join->left_field;
           $base_field = $join->base_field;
@@ -324,9 +329,10 @@ function tripal_views_views_data() {
 
 
         // Add in any handlers for node fields
+        // D7 TODO: Check DBTNG changes work
         $sql = "SELECT * FROM {tripal_views_handlers} WHERE setup_id=%d";
         $query = db_query($sql, $setup_id);
-        while ($handler = db_fetch_object($query)) {
+        foreach ($query as $handler) {
           $data[$base_table][$handler->column_name][$handler->handler_type]['handler'] = $handler->handler_name;
 
           // Add in any additional arguments
@@ -337,7 +343,7 @@ function tripal_views_views_data() {
         }
         */
         continue;
-      } 
+      }
 
       // get the table description
       $table_desc = tripal_core_get_chado_table_schema($base_table);
@@ -354,9 +360,9 @@ function tripal_views_views_data() {
       }
 
       // get the field name and descriptions
-      $sql = "SELECT * FROM {tripal_views_field} WHERE setup_id=%d";
-      $query = db_query($sql, $setup_id);
-      while ($field = db_fetch_object($query)) {
+      $sql = "SELECT * FROM {tripal_views_field} WHERE setup_id=:setup";
+      $query = db_query($sql, array(':setup' => $setup_id));
+      foreach ($query as $field) {
         $base_fields[$field->column_name]['name'] = $field->name;
         $base_fields[$field->column_name]['help'] = $field->description;
       }
@@ -392,9 +398,10 @@ function tripal_views_views_data() {
 
 
       // now add the handlers
-      $sql = "SELECT * FROM {tripal_views_handlers} WHERE setup_id = %d AND column_name = '%s'";
-      $handlers = db_query($sql, $setup_id, $column_name);
-      while ($handler = db_fetch_object($handlers)) {
+      // D7 TODO: Check DBTNG changes work
+      $sql = "SELECT * FROM {tripal_views_handlers} WHERE setup_id = :setup AND column_name = :column";
+      $handlers = db_query($sql, array(':setup' => $setup_id, ':column' => $column_name));
+      foreach ($handlers as $handler) {
         $data[$base_table][$column_name][$handler->handler_type]['handler'] = $handler->handler_name;
 
         // Add in any additional arguments
@@ -403,18 +410,18 @@ function tripal_views_views_data() {
           $data[$base_table][$column_name][$handler->handler_type] = array_merge($data[$base_table][$column_name][$handler->handler_type], unserialize($handler->arguments));
         }
       };
-      
+
       // add in joins to the node tables if the Chado schema is local
 		  if (tripal_core_chado_schema_exists()) {
-		    
+
 		    $linker_table = 'chado_' . $base_table;
 		    $linker_name = ucwords(str_replace('_', ' ', $base_table));
 		    $schema = tripal_core_get_chado_table_schema($base_table);
 		    $pkey = $schema['primary key'][0];
-		    
+
 		    // if a node linking table exists then add in the joins
-		    if (db_table_exists($linker_table)) {		
-		    		    		      
+		    if (db_table_exists($linker_table)) {
+
 		    	// add the linker table to the data array
 			    $data[$linker_table] = array(
 			      // describe the table
@@ -462,8 +469,8 @@ function tripal_views_views_data() {
               'sort' => array(
                 'handler' => 'views_handler_sort',
               ),
-            ),            
-          );  
+            ),
+          );
 
           // add the join instructions for the base table
           // (we'll add the recipricol joins for the node table in the hook_views_data_alter
@@ -477,7 +484,7 @@ function tripal_views_views_data() {
             'field' => 'organism_id',
           );
 
-			
+
 			    // Add relationship between linker and base table
 			    $data[$linker_table][$base_table . '_nid'] = array(
 			      'group' => $linker_name,
@@ -493,7 +500,7 @@ function tripal_views_views_data() {
 			        'base field' => $pkey
 			      ),
 			    );
-			
+
 			    // Add node relationship to base table
 			    $data[$linker_table][$linker_table .'_nid'] = array(
 			      'group' => $linker_name,
@@ -509,22 +516,23 @@ function tripal_views_views_data() {
 			        'base field' => 'nid'
 			      ),
 			    );
-		    } 
-		  }		  
+		    }
+		  }
     }
 
     // now add the joins
-    $sql = "SELECT * FROM {tripal_views_join} WHERE setup_id = %d";
-    $joins = db_query($sql, $setup_id);
+    // D7 TODO: Check DBTNG changes work
+    $sql = "SELECT * FROM {tripal_views_join} WHERE setup_id = :setup";
+    $joins = db_query($sql, array(':setup' => $setup_id));
     if (!isset($joins)) {
       $joins = array();
     }
-    while ($join = db_fetch_object($joins)) {
+    foreach ($joins as $join) {
       $left_table = $join->left_table;
       $left_field = $join->left_field;
       $base_field = $join->base_field;
       $handler = $join->handler;
-      
+
       // if the 'node' table is in our integrated list then
       // we want to skip it. It shouldn't be there.
       if ($left_table == 'node') {
@@ -549,21 +557,23 @@ function tripal_views_views_data() {
  * @ingroup tripal_views
  */
 function tripal_views_views_data_alter(&$data) {
+    // D7 TODO: Check DBTNG changes work
     $tvi_query = db_query('SELECT * FROM {tripal_views}');
 
     // iterate through the views that we manage
-    while ($tvi_row = db_fetch_object($tvi_query)) {
+    foreach ($tvi_query as $tvi_row) {
 
       //ids we'll use for queries
       $mview_id = $tvi_row->mview_id;
       $setup_id = $tvi_row->setup_id;
-      
+
 
       // iterate through the columns and alter the existing data array for
       // joins to other tables
-      $sql = "SELECT * FROM {tripal_views_join} WHERE setup_id = %d";
-      $joins = db_query($sql, $setup_id);
-      while ($join = db_fetch_object($joins)) {
+      // D7 TODO: Check DBTNG changes work
+      $sql = "SELECT * FROM {tripal_views_join} WHERE setup_id = :setup";
+      $joins = db_query($sql, array(':setup' => $setup_id));
+      foreach ($joins as $join) {
         $left_table = $join->left_table;
         $left_field = $join->left_field;
         $base_field = $join->base_field;
@@ -577,14 +587,14 @@ function tripal_views_views_data_alter(&$data) {
           );
         }
       }
-      
+
       // add in joins to the node tables if the Chado schema is local
       if (tripal_core_chado_schema_exists()) {
         $base_table = $tvi_row->table_name;
         $linker_table = 'chado_' . $base_table;
         // if a node linking table exists then add in the joins
-        if (db_table_exists($linker_table)) {         
-      
+        if (db_table_exists($linker_table)) {
+
           $data['node']['table']['join'][$linker_table] = array(
             'left_field' => 'nid',
             'field' => 'nid',
@@ -596,7 +606,7 @@ function tripal_views_views_data_alter(&$data) {
           );
         }
       }
-    }     
+    }
     return $data;
 }
 

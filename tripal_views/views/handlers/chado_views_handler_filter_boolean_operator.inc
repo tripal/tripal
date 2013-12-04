@@ -66,7 +66,12 @@ class chado_views_handler_filter_boolean_operator extends views_handler_filter_b
     }
 
     // check if its a t/f or 1/0 boolean
-    $check = db_fetch_object(db_query("SELECT %s as val FROM %s LIMIT 1", $this->real_field, $this->table));
+    // D7 TODO: Check DBTNG changes work
+    $check = db_query(
+      "SELECT :field as val FROM :table LIMIT 1",
+      array(':field' => $this->real_field, ':table' => $this->table)
+    );
+    $check = $check->fetchObject();
     if (preg_match('/^[tTfF]/', $check->val)) {
       $true = 't';
       $false = 'f';

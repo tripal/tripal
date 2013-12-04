@@ -34,12 +34,13 @@ function tripal_views_integration_setup_list() {
   $rows = array();
 
   // get the list of materialized views
+  // D7 TODO: Check DBTNG changes work
   $tviews = db_query('SELECT tv.setup_id, tv.name, tv.table_name, tc.table_id, tv.priority, tv.comment '
                      .'FROM {tripal_views} tv '
                      .'LEFT JOIN {tripal_custom_tables} tc ON tc.table_name=tv.table_name '
                      .'WHERE tv.mview_id IS NOT NULL '
                      .'ORDER BY tv.table_name ASC, tv.priority ASC');
-  while ($tview = db_fetch_object($tviews)) {
+  foreach ($tviews as $tview) {
     $rows[] = array(
       l(t('Edit'), "admin/tripal/views/integration/edit/" . $tview->setup_id) . "<br />"
         . l(t('Export'), "admin/tripal/views/integration/export/" . $tview->setup_id) . "<br />"
@@ -67,12 +68,13 @@ function tripal_views_integration_setup_list() {
   $rows = array();
 
   // get the list of chado tables
+  // D7 TODO: Check DBTNG changes work
   $tviews = db_query('SELECT tv.setup_id, tv.name, tv.table_name, tv.priority, tv.comment '
                      .'FROM {tripal_views} tv '
                      .'LEFT JOIN {tripal_custom_tables} tc ON tc.table_name=tv.table_name '
                      .'WHERE mview_id IS NULL AND tc.table_id IS NOT NULL '
                      .'ORDER BY table_name ASC, priority ASC');
-  while ($tview = db_fetch_object($tviews)) {
+  foreach ($tviews as $tview) {
     $rows[] = array(
       l(t('Edit'), "admin/tripal/views/integration/edit/" . $tview->setup_id) . "<br />"
         . l(t('Export'), "admin/tripal/views/integration/export/" . $tview->setup_id) . "<br />"
@@ -97,12 +99,13 @@ function tripal_views_integration_setup_list() {
   $rows = array();
 
   // get the list of chado tables
+  // D7 TODO: Check DBTNG changes work
   $tviews = db_query('SELECT tv.setup_id, tv.name, tv.table_name, tv.priority, tv.comment '
                      .'FROM {tripal_views} tv '
                      .'LEFT JOIN {tripal_custom_tables} tc ON tc.table_name=tv.table_name '
                      .'WHERE mview_id IS NULL AND tc.table_id IS NULL '
                      .'ORDER BY table_name ASC, priority ASC');
-  while ($tview = db_fetch_object($tviews)) {
+  foreach ($tviews as $tview) {
     $rows[] = array(
       l(t('Edit'), "admin/tripal/views/integration/edit/" . $tview->setup_id) . "<br />"
         . l(t('Export'), "admin/tripal/views/integration/export/" . $tview->setup_id) . "<br />"
@@ -167,44 +170,50 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL) {
   if (isset($setup_id)) {
 
     // get the deafult setup values
-    $sql = "SELECT * FROM {tripal_views} WHERE setup_id = %d";
-    $setup_obj = db_fetch_object(db_query($sql, $setup_id));
+    // D7 TODO: Check DBTNG changes work
+    $sql = "SELECT * FROM {tripal_views} WHERE setup_id = :setup";
+    $setup_obj = db_query($sql, array(':setup' => $setup_id));
+    $setup_obj = $setup_obj->fetchObject();
     $mview_id = $setup_obj->mview_id;
     $table_name = $setup_obj->table_name;
     $form_state['values']['mview_id'] = $mview_id;
     $form_state['values']['table_name'] = $table_name;
 
     // get the default field name/description
-    $sql = "SELECT * FROM {tripal_views_field} WHERE setup_id=%d";
-    $query = db_query($sql, $setup_id);
+    // D7 TODO: Check DBTNG changes work
+    $sql = "SELECT * FROM {tripal_views_field} WHERE setup_id=:setup";
+    $query = db_query($sql, array(':setup' => $setup_id));
     $default_fields = array();
-    while ($field = db_fetch_object($query)) {
+    foreach ($query as $field) {
       $default_fields[$field->column_name]['name'] = $field->name;
       $default_fields[$field->column_name]['description'] = $field->description;
     }
 
     // get the default join settings and handlers
-    $sql = "SELECT * FROM {tripal_views_join} WHERE setup_id = %d";
-    $query = db_query($sql, $setup_id);
+    // D7 TODO: Check DBTNG changes work
+    $sql = "SELECT * FROM {tripal_views_join} WHERE setup_id = :setup";
+    $query = db_query($sql, array(':setup' => $setup_id));
     $default_joins = array();
-    while ($join = db_fetch_object($query)) {
+    foreach ($query as $join) {
       $default_joins[$join->base_field]['left_table'] = $join->left_table;
       $default_joins[$join->base_field]['left_field'] = $join->left_field;
     }
 
     // get the default handlers
-    $sql = "SELECT * FROM {tripal_views_handlers} WHERE setup_id = %d";
-    $query = db_query($sql, $setup_id);
+    // D7 TODO: Check DBTNG changes work
+    $sql = "SELECT * FROM {tripal_views_handlers} WHERE setup_id = :setup";
+    $query = db_query($sql, array(':setup' => $setup_id));
     $default_handlers = array();
-    while ($handler = db_fetch_object($query)) {
+    foreach ($query as $handler) {
       $default_handlers[$handler->column_name][$handler->handler_type]['handler_name'] = $handler->handler_name;
       $default_handlers[$handler->column_name][$handler->handler_type]['arguments'] = $handler->arguments;
     }
 
     // get the default join handlers
-    $sql = "SELECT * FROM {tripal_views_join} WHERE setup_id = %d";
-    $query = db_query($sql, $setup_id);
-    while ($handler = db_fetch_object($query)) {
+    // D7 TODO: Check DBTNG changes work
+    $sql = "SELECT * FROM {tripal_views_join} WHERE setup_id = :setup";
+    $query = db_query($sql, array(':setup' => $setup_id));
+    foreach ($query as $handler) {
       $default_handlers[$handler->base_field]['join']['handler_name'] = $handler->handler;
       //$default_handlers[$handler->base_field]['join']['arguments'] = $handler->arguments;
     }
@@ -247,10 +256,11 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL) {
 
 
   // build the form element that lists the materialized views
+  // D7 TODO: Check DBTNG changes work
   $query = db_query("SELECT mview_id, name FROM {tripal_mviews} WHERE mv_schema is NULL or mv_schema = '' ORDER BY name");
   $mview_tables = array();
   $mview_tables['0'] = 'Select';
-  while ($mview = db_fetch_object($query)) {
+  foreach ($query as $mview) {
     $mview_tables[$mview->mview_id] = $mview->name;
   }
   $form['base_table_type']['mview_id'] = array(
@@ -366,8 +376,10 @@ function tripal_views_integration_form(&$form_state, $setup_id = NULL) {
     // where the first word is the column name and the rest is the type
     $columns = array();
     if ($mview_id) {
-      $sql = "SELECT mv_specs FROM {tripal_mviews} WHERE mview_id = %d";
-      $mview = db_fetch_object(db_query($sql, $mview_id));
+      // D7 TODO: Check DBTNG changes work
+      $sql = "SELECT mv_specs FROM {tripal_mviews} WHERE mview_id = :id";
+      $mview = db_query($sql, array(':id' => $mview_id));
+      $mview = $mview->fetchObject();
       $columns = explode(",", $mview->mv_specs);
     }
     else {
@@ -847,8 +859,10 @@ function tripal_views_integration_form_submit($form, &$form_state) {
 
   // get details about this mview
   if ($mview_id) {
-    $sql = "SELECT * FROM {tripal_mviews} WHERE mview_id = %d";
-    $mview = db_fetch_object(db_query($sql, $mview_id));
+    // D7 TODO: Check DBTNG changes work
+    $sql = "SELECT * FROM {tripal_mviews} WHERE mview_id = :id";
+    $mview = db_query($sql, array(':id' => $mview_id));
+    $mview = $mview->fetchObject();
     $table_name = $mview->mv_table;
     $table_id = $mview_id;
     $type = 'mview';
@@ -862,8 +876,10 @@ function tripal_views_integration_form_submit($form, &$form_state) {
   $tripal_views_record = array();
   if ($mview_id) {
     // get details about this mview
-    $sql = "SELECT * FROM {tripal_mviews} WHERE mview_id = %d";
-    $mview = db_fetch_object(db_query($sql, $mview_id));
+    // D7 TODO: Check DBTNG changes work
+    $sql = "SELECT * FROM {tripal_mviews} WHERE mview_id = :id";
+    $mview = db_query($sql, array(':id' => $mview_id));
+    $mview = $mview->fetchObject();
 
     // build the record for insert/update
     $tripal_views_record = array(
@@ -913,9 +929,9 @@ function tripal_views_integration_form_submit($form, &$form_state) {
 
   // if this is an update then clean out the existing joins and handlers so we can add new ones
   if ($setup_id) {
-    db_query("DELETE FROM {tripal_views_field} WHERE setup_id = %d", $setup_id);
-    db_query("DELETE FROM {tripal_views_join} WHERE setup_id = %d", $setup_id);
-    db_query("DELETE FROM {tripal_views_handlers} WHERE setup_id = %d", $setup_id);
+    db_query("DELETE FROM {tripal_views_field} WHERE setup_id = :setup", array(':setup' => $setup_id));
+    db_query("DELETE FROM {tripal_views_join} WHERE setup_id = :setup", array(':setup' => $setup_id));
+    db_query("DELETE FROM {tripal_views_handlers} WHERE setup_id = :setup", array(':setup' => $setup_id));
   }
 
   // iterate through the columns of the form and add

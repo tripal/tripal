@@ -106,7 +106,8 @@ class tripal_views_handler_filter_select_string extends chado_views_handler_filt
         //$options['<select '.$this->table.'>'] = '--None--';
         $options['All'] = '--Any--';
       }
-      while ($r = db_fetch_object($results)) {
+      // D7 TODO: Check DBTNG changes work
+      foreach ($results as $r) {
         if (drupal_strlen($r->{$this->field}) > $max_length) {
           $options[$r->{$this->field}] = drupal_substr($r->{$this->field}, 0, $max_length) . '...';
         }

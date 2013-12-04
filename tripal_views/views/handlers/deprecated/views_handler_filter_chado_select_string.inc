@@ -78,7 +78,7 @@ class views_handler_filter_chado_select_string extends views_handler_filter_stri
       $where = '';
       $filters = $this->view->filter;
       foreach ($filters as $filter_name => $details) {
-         // we only want to inclue non-exposed filters 
+         // we only want to inclue non-exposed filters
          if ($details->options['exposed'] == FALSE) {
             // we only want to filter on the table we're getting the list from
             if (strcmp($details->table, $this->table)==0) {
@@ -86,7 +86,7 @@ class views_handler_filter_chado_select_string extends views_handler_filter_stri
               $where .= ' AND ';
             }
          }
-      } 
+      }
       if ($where) {
          $where = "WHERE $where";
          $where = substr($where, 0, -5); # remove the final ' AND '
@@ -105,7 +105,8 @@ class views_handler_filter_chado_select_string extends views_handler_filter_stri
         //$options['<select '.$this->table.'>'] = '--None--';
         $options['All'] = '--Any--';
       }
-      while ($r = db_fetch_object($results)) {
+      // D7 TODO: Check DBTNG changes work
+      foreach ($results as $r) {
         if (drupal_strlen($r->{$this->field}) > $max_length) {
           $options[$r->{$this->field}] = drupal_substr($r->{$this->field}, 0, $max_length) . '...';
         }
