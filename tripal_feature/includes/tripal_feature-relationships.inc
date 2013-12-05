@@ -498,9 +498,9 @@ function theme_tripal_feature_edit_ALL_relationships_form($form) {
 
   $output .= '<br /><fieldset>';
   $output .= '<legend>Edit Already Existing Relationships<span class="form-optional" title="This field is optional">(optional)</span></legend>';
-  $output .= '<p>Each relationship for this stock is listed below, one per line. The textboxes indicating '
-        .'the subject and object of the relationship can contain the uniquename, name, database '
-      .'reference or synonym of a stock of the same organism.</p>';
+  $output .= '<p>Each relationship for this stock is listed below, one per line. The textboxes indicating ' .
+             'the subject and object of the relationship can contain the uniquename, name, database ' .
+             'reference or synonym of a stock of the same organism.</p>';
   $output .= '<table>';
   $output .= '<tr><th>#</th><th>Subject</th><th>Type</th><th>Object</th><th></th></tr>';
 

@@ -252,11 +252,11 @@ function tripal_db_get_dbxref($select_values) {
 function tripal_db_get_dbxref_by_accession($accession, $db_id=0) {
 
   if (!empty($db_id)) {
-  	$sql = "SELECT * FROM {dbxref} WHERE accession = :accession AND db_id = :db_id";
+    $sql = "SELECT * FROM {dbxref} WHERE accession = :accession AND db_id = :db_id";
     $r = chado_query($sql, array(':accession' => $accession, ':db_id' => $db_id));
   }
   else {
-  	$sql = "SELECT * FROM {dbxref} WHERE accession = :accession";
+    $sql = "SELECT * FROM {dbxref} WHERE accession = :accession";
     $r = chado_query($sql, array(':accession' => $accession));
   }
 

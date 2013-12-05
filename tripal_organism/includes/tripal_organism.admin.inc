@@ -48,10 +48,10 @@ function get_tripal_organism_admin_form_cleanup_set(&$form) {
   );
   $form['cleanup']['description'] = array(
     '#type' => 'item',
-    '#value' => t("With Drupal and chado residing in different databases ".
-    "it is possible that nodes in Drupal and organisms in Chado become ".
-    "\"orphaned\".  This can occur if an organism node in Drupal is ".
-    "deleted but the corresponding chado organism is not and/or vice ".
+    '#value' => t("With Drupal and chado residing in different databases " .
+    "it is possible that nodes in Drupal and organisms in Chado become " .
+    "\"orphaned\".  This can occur if an organism node in Drupal is " .
+    "deleted but the corresponding chado organism is not and/or vice " .
     "versa. Click the button below to resolve these discrepancies."),
     '#weight' => 1,
   );
@@ -84,9 +84,11 @@ function get_tripal_organism_admin_form_taxonomy_set(&$form) {
 
   $form['taxonify']['description'] = array(
     '#type' => 'item',
-    '#value' => t("Drupal allows for assignment of \"taxonomy\" or catagorical terms to " .
-                 "nodes. These terms allow for advanced filtering during searching. This option allows ".
-                 "for setting taxonomy only for features that belong to the selected organisms below.  All other features will be unaffected.  To set taxonomy for all features in the site see the Feature Administration page."),
+    '#value' => t(
+      "Drupal allows for assignment of \"taxonomy\" or catagorical terms to " .
+      "nodes. These terms allow for advanced filtering during searching. This option allows " .
+      "for setting taxonomy only for features that belong to the selected organisms below.  All " . 
+      "other features will be unaffected.  To set taxonomy for all features in the site see the Feature Administration page."),
     '#weight' => 1,
   );
 
@@ -274,7 +276,7 @@ function tripal_organism_admin_validate($form, &$form_state) {
         $sql = "SELECT * FROM {organism} WHERE organism_id = :organism_id";
         $organism = chado_query($sql, array(':organism_id' => $organism_id))->fetchObject();
         $job_args[0] = $organism_id;
-        tripal_add_job("Reindex features for organism: $organism->genus ".
+        tripal_add_job("Reindex features for organism: $organism->genus " .
          "$organism->species", 'tripal_organism' ,
          'tripal_organism_reindex_features', $job_args, $user->uid);
       }
@@ -291,7 +293,7 @@ function tripal_organism_admin_validate($form, &$form_state) {
         $sql = "SELECT * FROM {organism} WHERE organism_id = :organism_id";
         $organism = chado_query($sql, array(':organism_id' => $organism_id))->fetchObject();
         $job_args[0] = $organism_id;
-        tripal_add_job("Set taxonomy for features in organism: ".
+        tripal_add_job("Set taxonomy for features in organism: " .
           "$organism->genus $organism->species" , 'tripal_organism',
           'tripal_organism_taxonify_features', $job_args, $user->uid);
       }
@@ -326,7 +328,7 @@ function tripal_organism_sync_organisms($organism_id = NULL, $job_id = NULL) {
 
   // We'll use the following SQL statement for checking if the organism
   // already exists as a drupal node.
-  $sql = "SELECT * FROM {chado_organism} ".
+  $sql = "SELECT * FROM {chado_organism} " .
          "WHERE organism_id = :organism_id";
 
   foreach ($results as $organism) {
@@ -429,8 +431,8 @@ function tripal_organism_taxonify_features($organism_id = NULL, $job_id = NULL) 
   tripal_feature_set_vocabulary();
 
   // use this SQL for getting the nodes
-  $nsql =  "SELECT * FROM {chado_feature} CF ".
-          "  INNER JOIN {node} N ON N.nid = CF.nid ".
+  $nsql = "SELECT * FROM {chado_feature} CF " .
+          "  INNER JOIN {node} N ON N.nid = CF.nid " .
           "WHERE feature_id = :feature_id";
 
   // iterate through the features and set the taxonomy

@@ -103,10 +103,10 @@ function tripal_core_edit_custom_table($table_id, $table_name, $schema, $skip_cr
  * @ingroup tripal_custom_tables_api
  */
 function tripal_core_create_custom_table($table, $schema, $skip_creation = 1) {
-	global $databases;
-	$created = 0;
-	$recreated = 0;
-	
+  global $databases;
+  $created = 0;
+  $recreated = 0;
+  
   // see if the table entry already exists in the tripal_custom_tables table.
   $sql = "SELECT * FROM {tripal_custom_tables} WHERE table_name = :table_name";
   $results = db_query($sql, array(':table_name' => $table));
@@ -117,15 +117,15 @@ function tripal_core_create_custom_table($table, $schema, $skip_creation = 1) {
   
   // if the table does not exist then create it
   if (!$exists) { 
-  	$previous_db = tripal_db_set_active('chado');  // use chado database   
-    try {    	
+    $previous_db = tripal_db_set_active('chado');  // use chado database   
+    try {      
       $ret = db_create_table($table, $schema);
       tripal_db_set_active($previous_db);  // now use drupal database
       $created = 1;
     }
     catch (Exception $e) {
-    	tripal_db_set_active($previous_db);  // now use drupal database
-    	$error = $e->getMessage();
+      tripal_db_set_active($previous_db);  // now use drupal database
+      $error = $e->getMessage();
       watchdog('tripal_core', "Error adding custom table: @message",
         array('@message' => $error), WATCHDOG_ERROR);
       drupal_set_message("Could not add custom table. $error.", "error");
@@ -138,12 +138,12 @@ function tripal_core_create_custom_table($table, $schema, $skip_creation = 1) {
   if ($exists and is_object($centry) and !$skip_creation) {    
     
     // drop the table we'll recreate it with the new schema    
-    try {	    
-	    chado_query('DROP TABLE {' . $table . '}');
-	    $previous_db = tripal_db_set_active('chado');  // use chado database
-	    db_create_table($table, $schema);
-	    tripal_db_set_active($previous_db);  // now use drupal database    
-	    $recreated = 1;
+    try {      
+      chado_query('DROP TABLE {' . $table . '}');
+      $previous_db = tripal_db_set_active('chado');  // use chado database
+      db_create_table($table, $schema);
+      tripal_db_set_active($previous_db);  // now use drupal database    
+      $recreated = 1;
     }
     catch (Exception $e) {
       tripal_db_set_active('default');  // now use drupal database
@@ -193,11 +193,11 @@ function tripal_core_create_custom_table($table, $schema, $skip_creation = 1) {
           chado_query($sql);
         }
         catch (Exception $e) {
-        	$error = $e->getMessage();
+          $error = $e->getMessage();
           watchdog('tripal_core', "Error, could not add foreign key contraint to custom table: %error",
             array('%error' => $error), WATCHDOG_ERROR);
           drupal_set_message("Could not add foreign key contraint to table: $error", 'error');      
-          return FALSE;        	
+          return FALSE;          
         }
       }
     }
@@ -207,10 +207,10 @@ function tripal_core_create_custom_table($table, $schema, $skip_creation = 1) {
     drupal_set_message("Custom table created successfully.", 'status');
   }
   elseif ($recreated) {
-  	drupal_set_message("Custom table re-created successfully.", 'status');
+    drupal_set_message("Custom table re-created successfully.", 'status');
   }
   else {
-  	drupal_set_message("Custom table already exists. Table structure not changed, but definition array has been saved.", 'status');
+    drupal_set_message("Custom table already exists. Table structure not changed, but definition array has been saved.", 'status');
   }
   return TRUE;
 }

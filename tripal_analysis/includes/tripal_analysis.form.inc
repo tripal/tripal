@@ -178,8 +178,8 @@ function chado_analysis_form(&$node, $form_state = NULL) {
   ";
   $prop_types = chado_query($sql);
   while ($prop = db_fetch_object($prop_types)) {
-  	$properties_select[$prop->cvterm_id] = $prop->name;
-  	$properties_list[$prop->cvterm_id] = $prop;
+    $properties_select[$prop->cvterm_id] = $prop->name;
+    $properties_list[$prop->cvterm_id] = $prop;
   }
   
   $form['properties'] = array(
@@ -243,10 +243,10 @@ function tripal_analysis_validate($node, &$form) {
     $analysis = $result[0];
       
     // if the name has changed make sure it doesn't conflict with an existing name
-    if($analysis->name != $node->analysisname) {
+    if ($analysis->name != $node->analysisname) {
       $values = array('name' => $node->analysisname);
       $result = tripal_core_chado_select('analysis', array('analysis_id'), $values);
-      if($result and count($result) > 0) {
+      if ($result and count($result) > 0) {
         form_set_error('analysisname', 'Cannot update the analysis with this analysis name. An analysis with this name already exists.');
         return;
       }  
@@ -254,7 +254,7 @@ function tripal_analysis_validate($node, &$form) {
     
     // if the unique constraint has changed check to make sure it doesn't conflict with an
     // existing record
-    if($analysis->program != $node->program or $analysis->programversion != $node->programversion or 
+    if ($analysis->program != $node->program or $analysis->programversion != $node->programversion or 
        $analysis->sourcename != $node->sourcename) {
       $values = array(
         'program' => $node->program,
@@ -278,7 +278,7 @@ function tripal_analysis_validate($node, &$form) {
       }  
     }
   }
-  else{
+  else {
     // To differentiate if we are syncing or creating a new analysis altogther, see if an
     // analysis_id already exists
     if ($node->analysis_id and $node->analysis_id != 0) {
@@ -305,7 +305,7 @@ function tripal_analysis_validate($node, &$form) {
       // title, so it should be unique      
       $values = array('name' => $node->analysisname);
       $result = tripal_core_chado_select('analysis', array('analysis_id'), $values);
-      if($result and count($result) > 0) {
+      if ($result and count($result) > 0) {
         form_set_error('analysisname', 'Cannot add the analysis with this analysis name. An analysis with this name already exists.');
         return;
       }
@@ -367,10 +367,10 @@ function chado_analysis_node_form_add_new_props(&$form, $form_state, &$d_propert
 
         // skip any properties that the user requested to delete through a previous
         // AHAH callback or through the current AHAH callback
-        if($d_removed["$new_id-$rank"]) {
+        if ($d_removed["$new_id-$rank"]) {
           continue;
         }
-        if($form_state['post']['remove-' . $new_id . '-' . $rank]) {
+        if ($form_state['post']['remove-' . $new_id . '-' . $rank]) {
           $d_removed["$new_id-$rank"] = 1;
           continue;
         }
@@ -420,7 +420,7 @@ function chado_analysis_node_form_add_new_props(&$form, $form_state, &$d_propert
 
 
   // second add in any new properties added during this callback
-  if($form_state['post']['add']) {
+  if ($form_state['post']['add']) {
     $new_id = $form_state['values']['new_id'];
     $new_value = $form_state['values']['new_value'];
 
@@ -478,7 +478,7 @@ function chado_analysis_node_form_add_analysisprop_table_props(&$form, $form_sta
   // get the properties for this analysis
   $num_properties = 0;
 
-  if(!$analysis_id) {
+  if (!$analysis_id) {
     return $num_properties;
   }
 
@@ -498,10 +498,10 @@ function chado_analysis_node_form_add_analysisprop_table_props(&$form, $form_sta
     
     // skip any properties that the user requested to delete through a previous
     // AHAH callback or through the current AHAH callback
-    if($d_removed["$type_id-$rank"]) {
+    if ($d_removed["$type_id-$rank"]) {
       continue;
     }
-    if($form_state['post']['remove-' . $type_id . '-' . $rank]) {
+    if ($form_state['post']['remove-' . $type_id . '-' . $rank]) {
       $d_removed["$type_id-$rank"] = 1;
       continue;
     }
@@ -591,7 +591,7 @@ function tripal_analysis_theme_node_form_properties($form) {
     );
   }
 
-  $headers = array('Property Type','Value', '');
+  $headers = array('Property Type', 'Value', '');
   return theme('table', $headers, $rows);
 }
 

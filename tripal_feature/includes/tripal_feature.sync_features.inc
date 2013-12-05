@@ -39,22 +39,22 @@ function tripal_feature_sync_form() {
 
   $form['description'] = array(
   '#type' => 'item',
-  '#value' => t("Add feature types, optionally select an organism and ".
-     "click the 'Sync all Features' button to create Drupal ".
-     "content for features in chado. Only features of the types listed ".
-     "below in the Feature Types box will be synced. You may limit the ".
-     "features to be synced by a specific organism. Depending on the ".
-     "number of features in the chado database this may take a long ".
+  '#value' => t("Add feature types, optionally select an organism and " .
+     "click the 'Sync all Features' button to create Drupal " .
+     "content for features in chado. Only features of the types listed " .
+     "below in the Feature Types box will be synced. You may limit the " .
+     "features to be synced by a specific organism. Depending on the " .
+     "number of features in the chado database this may take a long " .
      "time to complete. "),
   );
 
   $form['feature_types'] = array(
     '#title'       => t('Feature Types'),
     '#type'        => 'textarea',
-    '#description' => t("Enter the names of the feature types to sync.  Pages for these feature ".
-       "types will be created automatically for features that exist in the ".
-       "chado database.  The names listed here should be spearated by ".
-       "spaces or entered separately on new lines. The names must match ".
+    '#description' => t("Enter the names of the feature types to sync.  Pages for these feature " .
+       "types will be created automatically for features that exist in the " .
+       "chado database.  The names listed here should be spearated by " .
+       "spaces or entered separately on new lines. The names must match " .
        "exactly (spelling and case) with terms in the sequence ontology"),
     '#required'    => TRUE,
     '#default_value' => variable_get('chado_sync_feature_types', 'gene contig'),
@@ -106,7 +106,7 @@ function tripal_feature_sync_form_submit($form, &$form_state) {
 
   if ($organism_id) {
     $organism = tripal_core_chado_select('organism', array('genus', 'species'), array('organism_id' => $organism_id));
-    $title = "Sync all features for " .  $organism[0]->genus . " " . $organism[0]->species;
+    $title = "Sync all features for " . $organism[0]->genus . " " . $organism[0]->species;
   }
   else {
     $title = t('Sync all features for all synced organisms');
@@ -178,7 +178,7 @@ function tripal_feature_set_urls($na = NULL, $job = NULL) {
     
     // if the src and dst is the same (the URL alias couldn't be set)
     // then skip to the next one. There's nothing we can do about this one.
-    if($src == $dst) {
+    if ($src == $dst) {
       continue;
     }
     
@@ -236,7 +236,7 @@ function tripal_feature_set_urls($na = NULL, $job = NULL) {
 function tripal_feature_get_feature_url($node, $url_alias = NULL) {
 
   // get the starting URL alias
-  if(!$url_alias) {
+  if (!$url_alias) {
     $url_alias = variable_get('chado_feature_url_string', '/feature/[genus]/[species]/[type]/[uniquename]'); 
     if (!$url_alias) {
       $url_alias = '/feature/[genus]/[species]/[type]/[uniquename]';
@@ -341,11 +341,11 @@ function tripal_feature_sync_features($max_sync = 0, $organism_id = NULL,
   $where_org = drupal_substr($where_org, 0, drupal_strlen($where_org)-3);  # strip trailing 'OR'
 
   // use this SQL statement to get the features that we're going to upload
-  $sql = "SELECT feature_id ".
-        "FROM {FEATURE} F ".
-        "  INNER JOIN {Cvterm} CVT ON F.type_id = CVT.cvterm_id ".
-        "  INNER JOIN {CV} on CV.cv_id = CVT.cv_id ".
-        "WHERE ($where_cvt) AND ($where_org) AND CV.name = 'sequence' ".
+  $sql = "SELECT feature_id " .
+        "FROM {FEATURE} F " .
+        "  INNER JOIN {Cvterm} CVT ON F.type_id = CVT.cvterm_id " .
+        "  INNER JOIN {CV} on CV.cv_id = CVT.cv_id " .
+        "WHERE ($where_cvt) AND ($where_org) AND CV.name = 'sequence' " .
         "ORDER BY feature_id";
 
   // get the list of features
@@ -422,18 +422,18 @@ function tripal_feature_sync_feature($feature_id) {
   }
 
   // get information about this feature
-  $fsql = "SELECT F.feature_id, F.name, F.uniquename,O.genus, ".
-         "    O.species,CVT.name as cvname,F.residues,F.organism_id ".
-         "FROM {FEATURE} F ".
-         "  INNER JOIN {Cvterm} CVT ON F.type_id = CVT.cvterm_id ".
-         "  INNER JOIN {Organism} O ON F.organism_id = O.organism_ID ".
+  $fsql = "SELECT F.feature_id, F.name, F.uniquename,O.genus, " .
+         "    O.species,CVT.name as cvname,F.residues,F.organism_id " .
+         "FROM {FEATURE} F " .
+         "  INNER JOIN {Cvterm} CVT ON F.type_id = CVT.cvterm_id " .
+         "  INNER JOIN {Organism} O ON F.organism_id = O.organism_ID " .
          "WHERE F.feature_id = %d";
   $feature = db_fetch_object(chado_query($fsql, $feature_id));
 
   // get the synonyms for this feature
-  $synsql = "SELECT S.name ".
-            "FROM {feature_synonym} FS ".
-            "  INNER JOIN {synonym} S on FS.synonym_id = S.synonym_id ".
+  $synsql = "SELECT S.name " .
+            "FROM {feature_synonym} FS " .
+            "  INNER JOIN {synonym} S on FS.synonym_id = S.synonym_id " .
             "WHERE FS.feature_id = %d";
   $synonyms = chado_query($synsql, $feature_id);
 
@@ -448,9 +448,9 @@ function tripal_feature_sync_feature($feature_id) {
   // but without a corresponding entry in the chado_feature table if so then we want to
   // clean up that node.  (If a node is found we don't know if it belongs to our feature or
   // not since features can have the same name/title.)
-  $tsql =  "SELECT * FROM {node} N ".
+  $tsql =  "SELECT * FROM {node} N " .
            "WHERE title = '%s'";
-  $cnsql = "SELECT * FROM {chado_feature} ".
+  $cnsql = "SELECT * FROM {chado_feature} " .
            "WHERE nid = %d";
   $nodes = db_query($tsql, $feature->name);
   // cycle through all nodes that may have this title
@@ -464,10 +464,10 @@ function tripal_feature_sync_feature($feature_id) {
 
   // check if this feature already exists in the chado_feature table.
   // if we have a chado feature, we want to check to see if we have a node
-  $cfsql = "SELECT * FROM {chado_feature} ".
+  $cfsql = "SELECT * FROM {chado_feature} " .
            "WHERE feature_id = %d";
   // @coder-ignore: don't need to use db_rewrite_sql() since need all nodes regardless of access control
-  $nsql =  "SELECT * FROM {node} N ".
+  $nsql =  "SELECT * FROM {node} N " .
            "WHERE nid = %d";
   $chado_feature = db_fetch_object(db_query($cfsql, $feature->feature_id));
   if ($chado_feature) {

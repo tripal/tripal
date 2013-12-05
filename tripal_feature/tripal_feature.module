@@ -512,7 +512,7 @@ function chado_feature_insert($node) {
   $node_check = db_fetch_object(db_query($node_check_sql, $feature[0]->feature_id));
   if (!$node_check) {
     // next add the item to the drupal table
-    $sql = "INSERT INTO {chado_feature} (nid, vid, feature_id, sync_date) ".
+    $sql = "INSERT INTO {chado_feature} (nid, vid, feature_id, sync_date) " .
            "VALUES (%d, %d, %d, " . time() . ")";
       db_query($sql, $node->nid, $node->vid, $feature[0]->feature_id);
   }
@@ -593,16 +593,16 @@ function chado_feature_delete($node) {
   }
 
   // remove the drupal content
-  $sql_del = "DELETE FROM {chado_feature} ".
-             "WHERE nid = %d ".
+  $sql_del = "DELETE FROM {chado_feature} " .
+             "WHERE nid = %d " .
              "AND vid = %d";
   db_query($sql_del, $node->nid, $node->vid);
-  $sql_del = "DELETE FROM {node} ".
-             "WHERE nid = %d ".
+  $sql_del = "DELETE FROM {node} " .
+             "WHERE nid = %d " .
              "AND vid = %d";
   db_query($sql_del, $node->nid, $node->vid);
-  $sql_del = "DELETE FROM {node_revisions} ".
-             "WHERE nid = %d ".
+  $sql_del = "DELETE FROM {node_revisions} " .
+             "WHERE nid = %d " .
              "AND vid = %d";
   db_query($sql_del, $node->nid, $node->vid);
 
@@ -649,27 +649,27 @@ function chado_feature_add_synonyms($synonyms, $feature_id) {
     // check to see if we have this accession number already in the database
     // if so then don't add it again. it messes up drupal if the insert fails.
     // It is possible for the accession number to be present and not the feature
-    $synonym_sql = "SELECT synonym_id FROM {synonym} ".
+    $synonym_sql = "SELECT synonym_id FROM {synonym} " .
                    "WHERE name = '%s'";
     $synonym = db_fetch_object(chado_query($synonym_sql, $syn));
     if (!$synonym) {
-      $synonym_isql = "INSERT INTO {synonym} (name,synonym_sgml,type_id) ".
-                      "VALUES ('%s','%s', ".
-                      "   (SELECT cvterm_id ".
-                      "    FROM {CVTerm} CVT ".
-                      "    INNER JOIN CV ON CVT.cv_id = CV.cv_id ".
+      $synonym_isql = "INSERT INTO {synonym} (name,synonym_sgml,type_id) " .
+                      "VALUES ('%s','%s', " .
+                      "   (SELECT cvterm_id " .
+                      "    FROM {CVTerm} CVT " .
+                      "    INNER JOIN CV ON CVT.cv_id = CV.cv_id " .
                       "    WHERE CV.name = 'feature_property' and CVT.name = 'synonym'))";
       if (!chado_query($synonym_isql, $syn, $syn)) {
         $error .= "Could not add synonym. ";
       }
       // now get the synonym we just added
-      $synonym_sql = "SELECT synonym_id FROM {synonym} ".
+      $synonym_sql = "SELECT synonym_id FROM {synonym} " .
                      "WHERE name = '%s'";
       $synonym = db_fetch_object(chado_query($synonym_sql, $syn));
     }
 
     // now add in our new sysnonym
-    $feature_syn_isql = "INSERT INTO {feature_synonym} (synonym_id,feature_id,pub_id) ".
+    $feature_syn_isql = "INSERT INTO {feature_synonym} (synonym_id,feature_id,pub_id) " .
                         "VALUES (%d,%d,1)";
     if (!chado_query($feature_syn_isql, $synonym->synonym_id, $feature_id)) {
       $error .= "Could not add synonyms to feature. ";
@@ -690,11 +690,11 @@ function chado_feature_add_gbaccession($accession, $feature_id) {
   // use chado database
 
   // remove any old accession from genbank dbEST
-  $fdbxref_dsql = "DELETE FROM {feature_dbxref} ".
-                 "WHERE feature_id = %d and dbxref_id IN ".
-                 "   (SELECT DBX.dbxref_id FROM {dbxref} DBX ".
-                 "    INNER JOIN DB  ON DB.db_id = DBX.db_id ".
-                 "    INNER JOIN feature_dbxref FDBX ON DBX.dbxref_id = FDBX.dbxref_id ".
+  $fdbxref_dsql = "DELETE FROM {feature_dbxref} " .
+                 "WHERE feature_id = %d and dbxref_id IN " .
+                 "   (SELECT DBX.dbxref_id FROM {dbxref} DBX " .
+                 "    INNER JOIN DB  ON DB.db_id = DBX.db_id " .
+                 "    INNER JOIN feature_dbxref FDBX ON DBX.dbxref_id = FDBX.dbxref_id " .
                  "    WHERE DB.name = 'DB:Genbank' and FDBX.feature_id = %d)";
   if (!chado_query($fdbxref_dsql, $feature_id, $feature_id)) {
     $error .= "Could not remove accession from feature. ";
@@ -705,32 +705,32 @@ function chado_feature_add_gbaccession($accession, $feature_id) {
     return;
   }
   // get the db_id
-  $db_sql = "SELECT db_id FROM {DB} ".
+  $db_sql = "SELECT db_id FROM {DB} " .
             "WHERE name = 'DB:Genbank_est'";
   $db = db_fetch_object(chado_query($db_sql));
 
   // check to see if we have this accession number already in the database
   // if so then don't add it again. it messes up drupal if the insert fails.
   // It is possible for the accession number to be present and not the feature
-  $dbxref_sql = "SELECT dbxref_id FROM {dbxref} ".
+  $dbxref_sql = "SELECT dbxref_id FROM {dbxref} " .
                 "WHERE db_id = %d and accession = '%s'";
   $dbxref = db_fetch_object(chado_query($dbxref_sql, $db->db_id, $accession));
   if (!$dbxref) {
     // add the accession number
-    $dbxref_isql = "INSERT INTO {dbxref} (db_id,accession) ".
+    $dbxref_isql = "INSERT INTO {dbxref} (db_id,accession) " .
                    "  VALUES (%d, '%s') ";
     if (!chado_query($dbxref_isql, $db->db_id, $accession)) {
       $error .= 'Could not add accession as a database reference ';
     }
     // get the dbxref_id for the just added accession number
-    $dbxref_sql = "SELECT dbxref_id FROM {dbxref} ".
+    $dbxref_sql = "SELECT dbxref_id FROM {dbxref} " .
                   "WHERE db_id = %d and accession = '%s'";
     $dbxref = db_fetch_object(chado_query($dbxref_sql, $db->db_id, $accession));
   }
 
 
   // associate the accession number with the feature
-  $feature_dbxref_isql = "INSERT INTO {feature_dbxref} (feature_id,dbxref_id) ".
+  $feature_dbxref_isql = "INSERT INTO {feature_dbxref} (feature_id,dbxref_id) " .
                          "  VALUES (%d, %d) ";
   if (!chado_query($feature_dbxref_isql, $feature_id, $dbxref->dbxref_id)) {
     $error .= 'Could not add feature database reference. ';
@@ -911,7 +911,7 @@ function chado_feature_validate($node) {
   // make sure the feature type is a real sequence ontology term
   $type = tripal_cv_get_cvterm_by_name($node->feature_type, NULL, 'sequence');
   if (!$type) {
-     form_set_error('feature_type', t("The feature type is not a valid name from the Sequence Ontology."));	
+    form_set_error('feature_type', t("The feature type is not a valid name from the Sequence Ontology."));
   }
 
   // if this is an update, we want to make sure that a different feature for
@@ -966,7 +966,7 @@ function chado_feature_load($node) {
   // keep it the same, but remove the duplicate name if the unique name and name
   // are identical
   $title_type = variable_get('chado_feature_title', 'unique_constraint');
-  if($title_type == 'unique_constraint') {
+  if ($title_type == 'unique_constraint') {
     if (strcmp($feature->name, $feature->uniquename)==0) {
       $node->title = $feature->name . " (" . $feature->type_id->name . ") " . $feature->organism_id->genus . " " . $feature->organism_id->species ;
     }
@@ -977,10 +977,10 @@ function chado_feature_load($node) {
     }
   }
   // set the title to be the feature name or uniquename as configured
-  if($title_type == 'feature_name') {
+  if ($title_type == 'feature_name') {
     $node->title = $feature->name;
   }
-  if($title_type == 'feature_unique_name') {
+  if ($title_type == 'feature_unique_name') {
     $node->title = $feature->uniquename;  
   }
 
@@ -1006,11 +1006,11 @@ function tripal_feature_load_organism($organism_id) {
  */
 function tripal_feature_load_synonyms($feature_id) {
 
-  $sql = "SELECT S.name ".
-        "FROM {Feature_Synonym} FS ".
-        "  INNER JOIN {Synonym} S ".
-        "    ON FS.synonym_id = S.Synonym_id ".
-        "WHERE FS.feature_id = %d ".
+  $sql = "SELECT S.name " .
+        "FROM {Feature_Synonym} FS " .
+        "  INNER JOIN {Synonym} S " .
+        "    ON FS.synonym_id = S.Synonym_id " .
+        "WHERE FS.feature_id = %d " .
         "ORDER BY S.name ";
   $results = chado_query($sql, $feature_id);
   $synonyms = array();
@@ -1052,13 +1052,13 @@ function tripal_feature_load_properties($feature_id) {
  */
 function tripal_feature_load_references($feature_id) {
 
-  $sql = "SELECT F.uniquename,F.Feature_id,DBX.accession,DB.description as dbdesc, ".
-        "   DB.db_id, DB.name as db_name, DB.urlprefix,DBX.dbxref_id ".
-        "FROM {feature} F ".
-        "  INNER JOIN {feature_dbxref} FDBX on F.feature_id = FDBX.feature_id ".
-        "  INNER JOIN {dbxref} DBX on DBX.dbxref_id = FDBX.dbxref_id ".
-        "  INNER JOIN {db} on DB.db_id = DBX.db_id ".
-        "WHERE F.feature_id = %d ".
+  $sql = "SELECT F.uniquename,F.Feature_id,DBX.accession,DB.description as dbdesc, " .
+        "   DB.db_id, DB.name as db_name, DB.urlprefix,DBX.dbxref_id " .
+        "FROM {feature} F " .
+        "  INNER JOIN {feature_dbxref} FDBX on F.feature_id = FDBX.feature_id " .
+        "  INNER JOIN {dbxref} DBX on DBX.dbxref_id = FDBX.dbxref_id " .
+        "  INNER JOIN {db} on DB.db_id = DBX.db_id " .
+        "WHERE F.feature_id = %d " .
         "ORDER BY DB.name ";
   $results = chado_query($sql, $feature_id);
   $references = array();
@@ -1245,7 +1245,7 @@ function tripal_feature_load_featureloc_sequences($feature_id, $featurelocs) {
     $rel_featurelocs = tripal_feature_load_featurelocs($rel->subject_id, 'as_child', 0);
     foreach ($rel_featurelocs as $rfindex => $rel_featureloc) {
       // keep track of this unique source feature
-      $src = $rel_featureloc->src_feature_id ."-". $rel_featureloc->src_cvterm_id;
+      $src = $rel_featureloc->src_feature_id . "-" . $rel_featureloc->src_cvterm_id;
 
       // copy over the results to the relationship object.  Since there can
       // be more than one feature location for each relationship feature we
@@ -1271,14 +1271,14 @@ function tripal_feature_load_featureloc_sequences($feature_id, $featurelocs) {
   // where this feature is found.   We want to get the sequence for each
   // location and then annotate it with the parts found from the relationships
   // locations determiend above.
-  $sql = "SELECT substring(residues from %d for %d) as residues ".
-         "FROM {feature} ".
+  $sql = "SELECT substring(residues from %d for %d) as residues " .
+         "FROM {feature} " .
          "WHERE feature_id = %d";
   $floc_sequences = array();
   foreach ($featurelocs as $featureloc) {
 
     // build the src name so we can keep track of the different parts for each feature
-    $src = $featureloc->srcfeature_id->feature_id ."-". $featureloc->srcfeature_id->type_id->cvterm_id;
+    $src = $featureloc->srcfeature_id->feature_id . "-" . $featureloc->srcfeature_id->type_id->cvterm_id;
 
     // orient the parts to the beginning of the feature sequence
     if (!empty($rel_locs[$src]['parts'])) {
@@ -1365,36 +1365,36 @@ function tripal_feature_get_matched_alignments($feature) {
   // not want to include these, so we have to filter on the SO terms:
   // match, or %_match
   //
-   $sql = "SELECT  ".
-          "   FL1.featureloc_id    as left_featureloc_id, ".
-          "   FL1.srcfeature_id    as left_srcfeature_id, ".
-          "   FL1.feature_id       as left_feature_id, ".
-          "   FL1.fmin             as left_fmin, ".
-          "   FL1.is_fmin_partial  as left_is_fmin_partial, ".
-          "   FL1.fmax             as left_fmax, ".
-          "   FL1.is_fmax_partial  as left_is_fmax_partial, ".
-          "   FL1.strand           as left_strand,  ".
-          "   FL1.phase            as left_phase, ".
-          "   FL1.locgroup         as left_locgroup, ".
-          "   FL1.rank             as left_rank, ".
-          "   FL2.featureloc_id    as right_featureloc_id, ".
-          "   FL2.srcfeature_id    as right_srcfeature_id, ".
-          "   FL2.feature_id       as right_feature_id, ".
-          "   FL2.fmin             as right_fmin, ".
-          "   FL2.is_fmin_partial  as right_is_fmin_partial, ".
-          "   FL2.fmax             as right_fmax, ".
-          "   FL2.is_fmax_partial  as right_is_fmax_partial, ".
-          "   FL2.strand           as right_strand,  ".
-          "   FL2.phase            as right_phase, ".
-          "   FL2.locgroup         as right_locgroup, ".
-          "   FL2.rank             as right_rank ".
-          "FROM {feature} F1 ".
-          "  INNER JOIN {featureloc} FL1 on FL1.srcfeature_id = F1.feature_id ".
-          "  INNER JOIN {feature} F2 on FL1.feature_id = F2.feature_id ".
-          "  INNER JOIN {featureloc} FL2 on FL2.feature_id = F2.feature_id ".
-          "  INNER JOIN {cvterm} CVT2 on F2.type_id = CVT2.cvterm_id ".
+   $sql = "SELECT  " .
+          "   FL1.featureloc_id    as left_featureloc_id, " .
+          "   FL1.srcfeature_id    as left_srcfeature_id, " .
+          "   FL1.feature_id       as left_feature_id, " .
+          "   FL1.fmin             as left_fmin, " .
+          "   FL1.is_fmin_partial  as left_is_fmin_partial, " .
+          "   FL1.fmax             as left_fmax, " .
+          "   FL1.is_fmax_partial  as left_is_fmax_partial, " .
+          "   FL1.strand           as left_strand,  " .
+          "   FL1.phase            as left_phase, " .
+          "   FL1.locgroup         as left_locgroup, " .
+          "   FL1.rank             as left_rank, " .
+          "   FL2.featureloc_id    as right_featureloc_id, " .
+          "   FL2.srcfeature_id    as right_srcfeature_id, " .
+          "   FL2.feature_id       as right_feature_id, " .
+          "   FL2.fmin             as right_fmin, " .
+          "   FL2.is_fmin_partial  as right_is_fmin_partial, " .
+          "   FL2.fmax             as right_fmax, " .
+          "   FL2.is_fmax_partial  as right_is_fmax_partial, " .
+          "   FL2.strand           as right_strand,  " .
+          "   FL2.phase            as right_phase, " .
+          "   FL2.locgroup         as right_locgroup, " .
+          "   FL2.rank             as right_rank " .
+          "FROM {feature} F1 " .
+          "  INNER JOIN {featureloc} FL1 on FL1.srcfeature_id = F1.feature_id " .
+          "  INNER JOIN {feature} F2 on FL1.feature_id = F2.feature_id " .
+          "  INNER JOIN {featureloc} FL2 on FL2.feature_id = F2.feature_id " .
+          "  INNER JOIN {cvterm} CVT2 on F2.type_id = CVT2.cvterm_id " .
           "WHERE F1.feature_id = %d " .
-          "  AND (CVT2.name = 'match' or CVT2.name like '%_match') ".
+          "  AND (CVT2.name = 'match' or CVT2.name like '%_match') " .
           "ORDER BY FL1.fmin";
 
    $results = chado_query($sql, $feature->feature_id);
@@ -1571,28 +1571,28 @@ function tripal_feature_load_library_feature_browser($library) {
   $where_cvt = drupal_substr($where_cvt, 0, drupal_strlen($where_cvt)-3);  # strip trailing 'OR'
 
   // get the features for this library
-  $sql  = "SELECT F.name,F.feature_id,F.uniquename,CVT.name as cvname ".
-         "FROM {feature} F ".
-            "  INNER JOIN {cvterm} CVT on F.type_id = CVT.cvterm_id ".
-            "  INNER JOIN {library_feature} LF on F.feature_id = LF.feature_id ".
-            "  INNER JOIN {library} L on LF.library_id = L.library_id ".
-          "WHERE LF.library_id = %d and ($where_cvt) ".
+  $sql  = "SELECT F.name,F.feature_id,F.uniquename,CVT.name as cvname " .
+         "FROM {feature} F " .
+            "  INNER JOIN {cvterm} CVT on F.type_id = CVT.cvterm_id " .
+            "  INNER JOIN {library_feature} LF on F.feature_id = LF.feature_id " .
+            "  INNER JOIN {library} L on LF.library_id = L.library_id " .
+          "WHERE LF.library_id = %d and ($where_cvt) " .
           "ORDER BY feature_id ASC";
 
   // the counting SQL
-  $csql  = "SELECT count(*) ".
-          "FROM {feature} F".
-            "  INNER JOIN {cvterm} CVT on F.type_id = CVT.cvterm_id ".
-            "  INNER JOIN {library_feature} LF on F.feature_id = LF.feature_id ".
-            "  INNER JOIN {library} L on LF.library_id = L.library_id ".
-          "WHERE LF.library_id = %d and ($where_cvt) ".
+  $csql  = "SELECT count(*) " .
+          "FROM {feature} F" .
+            "  INNER JOIN {cvterm} CVT on F.type_id = CVT.cvterm_id " .
+            "  INNER JOIN {library_feature} LF on F.feature_id = LF.feature_id " .
+            "  INNER JOIN {library} L on LF.library_id = L.library_id " .
+          "WHERE LF.library_id = %d and ($where_cvt) " .
           "GROUP BY L.library_id ";
 
   $org_features = chado_pager_query($sql, 10, 0, $csql, $library->library_id);
   $pager = theme('pager');
 
   // prepare the query that will lookup node ids
-  $sql = "SELECT nid FROM {chado_feature} ".
+  $sql = "SELECT nid FROM {chado_feature} " .
          "WHERE feature_id = %d";
   $i=0;
   $features = array();
@@ -1631,28 +1631,28 @@ function tripal_feature_load_analysis_feature_browser($analysis) {
   $where_cvt = drupal_substr($where_cvt, 0, drupal_strlen($where_cvt)-3);  # strip trailing 'OR'
 
   // get the features for this library
-  $sql  = "SELECT F.name,F.feature_id,F.uniquename,CVT.name as cvname ".
-         "FROM {feature} F ".
-            "  INNER JOIN {cvterm} CVT on F.type_id = CVT.cvterm_id ".
-            "  INNER JOIN {analysisfeature} AF on F.feature_id = AF.feature_id ".
-            "  INNER JOIN {analysis} A on AF.analysis_id = A.analysis_id ".
-          "WHERE A.analysis_id = %d and ($where_cvt) ".
+  $sql  = "SELECT F.name,F.feature_id,F.uniquename,CVT.name as cvname " .
+         "FROM {feature} F " .
+            "  INNER JOIN {cvterm} CVT on F.type_id = CVT.cvterm_id " .
+            "  INNER JOIN {analysisfeature} AF on F.feature_id = AF.feature_id " .
+            "  INNER JOIN {analysis} A on AF.analysis_id = A.analysis_id " .
+          "WHERE A.analysis_id = %d and ($where_cvt) " .
           "ORDER BY feature_id ASC";
 
   // the counting SQL
-  $csql  = "SELECT count(*) ".
-          "FROM {feature} F".
-            "  INNER JOIN {cvterm} CVT on F.type_id = CVT.cvterm_id ".
-            "  INNER JOIN {analysisfeature} AF on F.feature_id = AF.feature_id ".
-            "  INNER JOIN {analysis} A on AF.analysis_id = A.analysis_id ".
-          "WHERE A.analysis_id = %d and ($where_cvt) ".
+  $csql  = "SELECT count(*) " .
+          "FROM {feature} F" .
+            "  INNER JOIN {cvterm} CVT on F.type_id = CVT.cvterm_id " .
+            "  INNER JOIN {analysisfeature} AF on F.feature_id = AF.feature_id " .
+            "  INNER JOIN {analysis} A on AF.analysis_id = A.analysis_id " .
+          "WHERE A.analysis_id = %d and ($where_cvt) " .
           "GROUP BY A.analysis_id ";
 
   $org_features = chado_pager_query($sql, 10, 0, $csql, $analysis->analysis_id);
   $pager = theme('pager');
 
   // prepare the query that will lookup node ids
-  $sql = "SELECT nid FROM {chado_feature} ".
+  $sql = "SELECT nid FROM {chado_feature} " .
          "WHERE feature_id = %d";
   $i=0;
   $features = array();
@@ -1843,7 +1843,7 @@ function tripal_feature_nodeapi(&$node, $op, $teaser, $page) {
         case 'chado_feature':
           
           $values = array('organism_id' => $node->organism_id);
-          $organism = tripal_core_chado_select('organism', array('genus','species'), $values);
+          $organism = tripal_core_chado_select('organism', array('genus', 'species'), $values);
           $node->title = $node->fname . ', ' . $node->uniquename . ' (' . $node->feature_type . ') ' . $organism[0]->genus . ' ' . $organism[0]->species;
           break;
       }
@@ -2345,7 +2345,7 @@ function tripal_feature_match_features_page($id) {
     $synonyms = preg_replace('/[\"\{\}]/', '', $synonyms);
     $rows[] = array(
        $match->uniquename,
-       "<a href=\"" . url("node/". $match->nid) ."\">" . $match->name . "</a>",
+       "<a href=\"" . url("node/" . $match->nid) . "\">" . $match->name . "</a>",
        $match->type_name,
        '<i>' . $match->genus . ' ' . $match->species . '</i>',
        $synonyms,

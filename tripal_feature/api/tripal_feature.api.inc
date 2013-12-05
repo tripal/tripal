@@ -496,7 +496,7 @@ function tripal_feature_get_formatted_sequence($feature_id, $feature_name,
   }
   
   if ($rel_part == "object" or $rel_part == "subject") { 
-    if($rel_part == "subject") {
+    if ($rel_part == "subject") {
       $psql = '
         PREPARE feature_rel_get_object (int, text) AS
         SELECT FO.feature_id, FO.name, FO.uniquename, CVTO.name as feature_type, O.genus, O.species
@@ -518,7 +518,7 @@ function tripal_feature_get_formatted_sequence($feature_id, $feature_name,
       $sql = "EXECUTE feature_rel_get_object(%d,'%s')";
       $features = chado_query($sql, $feature_id, $relationship); 
     }
-    if($rel_part == "object") {
+    if ($rel_part == "object") {
       $psql = '
         PREPARE feature_rel_get_subject (int, text) AS
         SELECT FS.feature_id, FS.name, FS.uniquename, CVTO.name as feature_type, O.genus, O.species
@@ -552,7 +552,7 @@ function tripal_feature_get_formatted_sequence($feature_id, $feature_name,
       }
       $sequences .= tripal_feature_get_formatted_sequence($feature->feature_id, $defline, 
         $num_bases_per_line, $derive_from_parent, $aggregate, $output_format,
-        $upstream, $downstream, $sub_features,'','');  
+        $upstream, $downstream, $sub_features, '', '');  
     }  
     return $sequences;  
   }
@@ -776,7 +776,7 @@ function tripal_feature_get_formatted_sequence($feature_id, $feature_name,
       elseif ($output_format == 'fasta_txt') {
          $seq = wordwrap($seq, $num_bases_per_line, "\r\n", TRUE);
       }
-      $residues .= ">$feature_name. Sequence derived from feature of type, '$parent->srctypename', of $parent->genus $parent->species: $parent->srcname:" . ($parent->adjfmin + 1) . ".." . $parent->adjfmax ." ($dir). ";
+      $residues .= ">$feature_name. Sequence derived from feature of type, '$parent->srctypename', of $parent->genus $parent->species: $parent->srcname:" . ($parent->adjfmin + 1) . ".." . $parent->adjfmax . " ($dir). ";
       if (count($types) > 0) {
         $residues .= "Excludes all bases but those of type(s): " . implode(', ', $types) . ". " ;
       }
@@ -1038,7 +1038,7 @@ function tripal_feature_add_dbxref($feature_id, $dbname, $accession) {
     $options = array('statement_name' => 'ins_db_na');
     $success = tripal_core_chado_insert('db', $values, $options);
       if (!$success) {
-      watchdog('tripal_feature', 'tripal_feature_add_dbxref: The feature dbxref entry for feature, %feature_id, ". 
+      watchdog('tripal_feature', 'tripal_feature_add_dbxref: The feature dbxref entry for feature, %feature_id, " . 
         "could not be added because the database, %dbname, does not exist and cannot be added.', 
         array('%feature_id' => $feature_id, '%dbname' => $dbname), WATCHDOG_WARNING);
       return FALSE;
@@ -1062,7 +1062,7 @@ function tripal_feature_add_dbxref($feature_id, $dbname, $accession) {
     $options = array('statement_name' => 'ins_featuredbxref_dbfe');
     $success = tripal_core_chado_insert('feature_dbxref', $values, $options);
     if (!$success) {
-      watchdog('tripal_feature', 'tripal_feature_add_dbxref: The feature dbxref entry for feature, %feature_id, '. 
+      watchdog('tripal_feature', 'tripal_feature_add_dbxref: The feature dbxref entry for feature, %feature_id, ' . 
         'could not be added: %db:%accession.', array('%feature_id' => $feature_id, '%db' => $dbname, 
         '%accession' => $accession), WATCHDOG_WARNING);
       return FALSE;
@@ -1096,7 +1096,7 @@ function tripal_feature_add_cvterm($feature_id, $cvname, $cvterm) {
     $options = array('statement_name' => 'ins_cv_na');
     $success = tripal_core_chado_insert('cv', $values, $options);
       if (!$success) {
-      watchdog('tripal_feature', 'tripal_feature_add_cvterm: The feature cvterm entry for feature, %feature_id, ". 
+      watchdog('tripal_feature', 'tripal_feature_add_cvterm: The feature cvterm entry for feature, %feature_id, " . 
         "could not be added because the CV, %cvname, does not exist and cannot be added.', 
         array('%feature_id' => $feature_id, '%cvname' => $cvname), WATCHDOG_WARNING);
       return FALSE;
@@ -1121,7 +1121,7 @@ function tripal_feature_add_cvterm($feature_id, $cvname, $cvterm) {
     $options = array('statement_name' => 'ins_featurecvterm_cvfepu');
     $success = tripal_core_chado_insert('feature_cvterm', $values, $options);
     if (!$success) {
-      watchdog('tripal_feature', 'tripal_feature_add_cvterm: The feature cvterm entry for feature, %feature_id, '. 
+      watchdog('tripal_feature', 'tripal_feature_add_cvterm: The feature cvterm entry for feature, %feature_id, ' . 
         'could not be added: %cvterm.', array('%feature_id' => $feature_id, '%cvterm' => $cvterm), WATCHDOG_WARNING);
       return FALSE;
     }

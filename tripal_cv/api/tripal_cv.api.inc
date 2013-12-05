@@ -265,7 +265,7 @@ function tripal_cv_get_cvterm_by_name($name, $cv_id = NULL, $cv_name = 'tripal')
     return FALSE;
   }
   if (count($r) == 0) {
-  	return FALSE;
+    return FALSE;
   }
   return $r[0];
 }
@@ -307,10 +307,10 @@ function tripal_cv_get_cvterm_by_synonym($synonym, $cv_id = NULL, $cv_name = 'tr
   $synonym = tripal_core_chado_select('cvtermsynonym', array('cvterm_id'), $values, $options);
   
   // if the synonym doens't exist or more than one record is returned then return false
-  if(count($synonym) == 0) {
+  if (count($synonym) == 0) {
     return FALSE;
   }
-  if(count($synonym) > 1) {
+  if (count($synonym) > 1) {
     return FALSE;
   }
   
@@ -381,7 +381,7 @@ function tripal_cv_update_cvtermpath($cvid, $job_id = NULL) {
     tripal_db_set_active($previous); 
   }
   catch (Exception $e) {
-    tripal_db_set_active($previous);	
+    tripal_db_set_active($previous);  
     $error = $e->getMessage();
     watchdog('tripal_cv', "Could not fill cvtermpath table: @error", array('@error' => $error), WATCHDOG_ERROR);
     return FALSE;

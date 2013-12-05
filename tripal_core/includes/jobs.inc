@@ -229,10 +229,10 @@ function tripal_jobs_view($job_id) {
   } 
   
   // build the links
-  $links  = l('Return to jobs list', "admin/tripal/tripal_jobs/") . ' | ';
-  $links .= l('Re-run this job', "admin/tripal/tripal_jobs/rerun/" . $job->job_id)  . ' | ';
+  $links  = l('Return to jobs list', "admin/tripal/tripal_jobs/") . ' | ' .
+  $links .= l('Re-run this job', "admin/tripal/tripal_jobs/rerun/" . $job->job_id) . ' | ';
   if ($job->start_time == 0 and $job->end_time == 0) {
-    $links .= l('Cancel this job', "admin/tripal/tripal_jobs/cancel/" . $job->job_id)  . ' | ';
+    $links .= l('Cancel this job', "admin/tripal/tripal_jobs/cancel/" . $job->job_id) . ' | ';
   }
   
   // make our start and end times more legible
@@ -245,7 +245,7 @@ function tripal_jobs_view($job_id) {
   
   // construct the table rows
   $rows[] = array('Job Description', $job->job_name);
-  $rows[] = array('Submitting Module',$job->modulename);
+  $rows[] = array('Submitting Module', $job->modulename);
   $rows[] = array('Callback function', $job->callback);
   $rows[] = array('Arguments', $arguments);
   $rows[] = array('Progress', $job->progress . "%");
@@ -266,7 +266,7 @@ function tripal_jobs_view($job_id) {
     'caption' => '',
     'colgroups' => array(), 
     'empty' => '', 
-  );  	
+  );    
   
   $output = '<p>' . substr($links, 0, -2) . '</p>'; // remove trailing |
   $output .= theme_table($table);

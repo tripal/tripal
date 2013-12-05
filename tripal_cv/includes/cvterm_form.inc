@@ -7,26 +7,26 @@
  */
 function tripal_cv_cvterm_edit_form($form, &$form_state) {
 
-	$step = 0;
+  $step = 0;
   if (empty($form_state['storage']['step'])) {
     $form_state['storage']['step'] = 0;
   }
   else {
-  	$step = $form_state['storage']['step'];
+    $step = $form_state['storage']['step'];
   }
 
   $cv_id = 0;
   if ($step == 1) {
-  	$cv_id = $form_state['storage']['cv_id'];
-  	$cvterm_name = $form_state['storage']['name'];
-  	$cvterm_id = $form_state['storage']['cvterm_id'];
-  }	
+    $cv_id = $form_state['storage']['cv_id'];
+    $cvterm_name = $form_state['storage']['name'];
+    $cvterm_id = $form_state['storage']['cvterm_id'];
+  }  
   // get the cv if form was submitted via AJAX
   $cvterm = '';
   if (array_key_exists('values', $form_state)) {
     $cv_id = $form_state['values']['cv_id'];   
     if (array_key_exists('cvterm', $form_state['values'])) {
-    	$cvterm = $form_state['values']['cvterm'];
+      $cvterm = $form_state['values']['cvterm'];
     }    
   }   
     
@@ -54,22 +54,22 @@ function tripal_cv_cvterm_edit_form($form, &$form_state) {
   );
     
   if ($cv_id and $step == 0) {
-  	
-  	$form['name']= array(
+    
+    $form['name']= array(
       '#type'          => 'textfield',
       '#title'         => t("Term Name"),
       '#default_value' => $cvterm,
       '#required'      => TRUE,
       '#autocomplete_path' => "admin/tripal/tripal_cv/cvterm/auto_name/$cv_id",
-  	  '#description'   => t('Enter the term to edit.')
+      '#description'   => t('Enter the term to edit.')
     );
     $form['continue']= array(
       '#type'          => 'submit',
       '#value'         => 'continue',
     );
   }
-  elseif ($step == 1) {  	
-  	   
+  elseif ($step == 1) {    
+       
     tripal_cv_add_cvterm_form_fields($form, $form_state, $cv_id, $cvterm_name);
     
     // when editing there are certain fields the user should not change for a term
@@ -100,7 +100,7 @@ function tripal_cv_cvterm_edit_form($form, &$form_state) {
   } 
   
   if ($step == 0) {
-  	// if we don't have a cv_id then this is the first time the form has
+    // if we don't have a cv_id then this is the first time the form has
     // benn loaded and we need to create the div where ajax replacement elements get stored
     $form['div_replace'] = array(
       '#type' => 'item',
@@ -116,12 +116,12 @@ function tripal_cv_cvterm_edit_form($form, &$form_state) {
  * @param $form_state
  */
 function tripal_cv_cvterm_add_form($form, &$form_state) {
-	$cv_id = 0;
-	if (array_key_exists('values', $form_state)) {
-	  $cv_id = $form_state['values']['cv_id'];	 
-	}
-	
-	// get a list of CVs
+  $cv_id = 0;
+  if (array_key_exists('values', $form_state)) {
+    $cv_id = $form_state['values']['cv_id'];   
+  }
+  
+  // get a list of CVs
   $cvs = array();
   $sql = "SELECT * FROM {cv} WHERE NOT name = 'tripal' ORDER BY name ";
   $results = chado_query($sql);
@@ -248,23 +248,23 @@ function tripal_cv_add_cvterm_form_fields(&$form, $form_state, $cv_id = 0, $cvte
  * @param $form_state
  */
 function tripal_cv_cvterm_edit_form_validate($form, &$form_state) {
-	$cv_id = array_key_exists('cv_id', $form_state['values']) ? $form_state['values']['cv_id'] : '';
+  $cv_id = array_key_exists('cv_id', $form_state['values']) ? $form_state['values']['cv_id'] : '';
   $db_id = array_key_exists('db_id', $form_state['values']) ? $form_state['values']['db_id'] : '';
   $name = array_key_exists('name', $form_state['values']) ? $form_state['values']['name'] : '';
   $cvterm_id = array_key_exists('cvterm_id', $form_state['values']) ? $form_state['values']['cvterm_id'] : '';
   $accession = array_key_exists('accession', $form_state['values']) ? $form_state['values']['accession'] : '';
   
   $step = $form_state['storage']['step'];
-	 
+   
   // make sure the cv term name is unique for this vocabulary
   if ($step == 1) {
-	  $values = array('name' => $name, 'cv_id' => $cv_id);
-	  $results = tripal_core_chado_select('cvterm', array('cvterm_id'), $values);
-	  foreach ($results as $r) {   
-	    if ($r->cvterm_id != $cvterm_id) {
-	      form_set_error('name', 'The term name must be unique for this vocabulary. Another term with this name already exists.');
-	    }
-	  }
+    $values = array('name' => $name, 'cv_id' => $cv_id);
+    $results = tripal_core_chado_select('cvterm', array('cvterm_id'), $values);
+    foreach ($results as $r) {   
+      if ($r->cvterm_id != $cvterm_id) {
+        form_set_error('name', 'The term name must be unique for this vocabulary. Another term with this name already exists.');
+      }
+    }
   }
 }
 /**
@@ -273,24 +273,24 @@ function tripal_cv_cvterm_edit_form_validate($form, &$form_state) {
  * @param $form_state
  */
 function tripal_cv_cvterm_add_form_validate($form, &$form_state) {
-	$cv_id = array_key_exists('cv_id', $form_state['values']) ? $form_state['values']['cv_id'] : '';
+  $cv_id = array_key_exists('cv_id', $form_state['values']) ? $form_state['values']['cv_id'] : '';
   $db_id = array_key_exists('db_id', $form_state['values']) ? $form_state['values']['db_id'] : '';
   $name = array_key_exists('name', $form_state['values']) ? $form_state['values']['name'] : '';
   $accession = array_key_exists('accession', $form_state['values']) ? $form_state['values']['accession'] : '';
-		
+    
   $values = array('cv_id' => $cv_id);
   $results = tripal_core_chado_select('cv', array('name'), $values);
-  if (!$results or count($results) == 0){
+  if (!$results or count($results) == 0) {
     form_set_error('cv_id', 'The controlled vocabulary does not exist');
   }
 
   // make sure the DB exists
   $values = array('db_id' => $db_id);
   $results = tripal_core_chado_select('db', array('name'), $values);
-  if (!$results or count($results) == 0){
+  if (!$results or count($results) == 0) {
     form_set_error('db_id', 'The database name does not exist');
   }
-	
+  
   // make sure the cv term name is unique for this vocabulary
   $values = array('name' => $name, 'cv_id' => $cv_id);
   $results = tripal_core_chado_select('cvterm', array('cvterm_id'), $values);   
@@ -314,8 +314,8 @@ function tripal_cv_cvterm_add_form_validate($form, &$form_state) {
  * @ingroup tripal_cv
  */
 function tripal_cv_cvterm_edit_form_submit($form, &$form_state) {
-	
-	$cv_id = array_key_exists('cv_id', $form_state['values']) ? $form_state['values']['cv_id'] : '';
+  
+  $cv_id = array_key_exists('cv_id', $form_state['values']) ? $form_state['values']['cv_id'] : '';
   $name = array_key_exists('name', $form_state['values']) ? $form_state['values']['name'] : '';
   $definition = array_key_exists('definition', $form_state['values']) ? $form_state['values']['definition'] : '';
   $is_relationship = array_key_exists('is_relationship', $form_state['values']) ? $form_state['values']['is_relationship'] : '';
@@ -328,15 +328,15 @@ function tripal_cv_cvterm_edit_form_submit($form, &$form_state) {
   $op    = array_key_exists('op', $form_state['values'])         ? trim($form_state['values']['op']) : '';
   
   
-	$step = $form_state['storage']['step'];
+  $step = $form_state['storage']['step'];
 
-	switch ($step) {
-		case 0:  // a cvterm name has been selected
-			$cv_id = array_key_exists('cv_id', $form_state['values']) ? trim($form_state['values']['cv_id']) : '';
-			$name  = array_key_exists('name', $form_state['values'])  ? trim($form_state['values']['name'])  : '';
-			
-			// get the original cvterm_id
-	    $values = array('name' => $name, 'cv_id' => $cv_id);
+  switch ($step) {
+    case 0:  // a cvterm name has been selected
+      $cv_id = array_key_exists('cv_id', $form_state['values']) ? trim($form_state['values']['cv_id']) : '';
+      $name  = array_key_exists('name', $form_state['values'])  ? trim($form_state['values']['name'])  : '';
+      
+      // get the original cvterm_id
+      $values = array('name' => $name, 'cv_id' => $cv_id);
       $results = tripal_core_chado_select('cvterm', array('cvterm_id'), $values);  
       $cvterm = $results[0]; 
     
@@ -345,50 +345,50 @@ function tripal_cv_cvterm_edit_form_submit($form, &$form_state) {
       $form_state['storage']['step'] = 1;
       $form_state['storage']['cvterm_id'] = $cvterm->cvterm_id;
       $form_state['rebuild'] = TRUE;
-			break;
-			
-		case 1:  // update/delete button has been clicked					
-		  
-			if ($op == 'Update') {
-			  // get the cv
-			  $values = array('cv_id' => $cv_id);
-			  $results = tripal_core_chado_select('cv', array('name'), $values);
-			  $cv = $results[0];
-			  
-			  // get the db
-			  $values = array('db_id' => $db_id);
-			  $results = tripal_core_chado_select('db', array('name'), $values);
-			  $db = $results[0];
-			  
-			  // now add the term
-			  $term = array(    
-			    'name' => $name,
-			    'namespace' => $cv->name,
-			    'id' => $accession,
-			    'def' => $definition,
-			    'is_obsolete' => $is_obsolete,
-			  );  
-			  
-			  $cvterm = tripal_cv_add_cvterm($term, $cv->name, $is_relationship, TRUE, $db->name);
-			  if ($cvterm) {
-			    drupal_set_message('Term updated successfully.');
-			  } 
-			  else {
-			    drupal_set_message('Could not add term. Check Drupal recent logs for error messages.', 'error');  
-			  }
-			}
-			if ($op == 'Delete') {
-			  $values = array('cvterm_id' => $cvterm_id);
-			  $success = tripal_core_chado_delete('cvterm', $values);
-			  if ($success) {
-			    drupal_set_message('Term deleted successfully.');	
-			  } 
-			  else {
-			    drupal_set_message('Could not delete term term. Check Drupal recent logs for error messages.', 'error');	
-			  }			     	
-			}
-			break;
-	} 		 
+      break;
+      
+    case 1:  // update/delete button has been clicked          
+      
+      if ($op == 'Update') {
+        // get the cv
+        $values = array('cv_id' => $cv_id);
+        $results = tripal_core_chado_select('cv', array('name'), $values);
+        $cv = $results[0];
+        
+        // get the db
+        $values = array('db_id' => $db_id);
+        $results = tripal_core_chado_select('db', array('name'), $values);
+        $db = $results[0];
+        
+        // now add the term
+        $term = array(    
+          'name' => $name,
+          'namespace' => $cv->name,
+          'id' => $accession,
+          'def' => $definition,
+          'is_obsolete' => $is_obsolete,
+        );  
+        
+        $cvterm = tripal_cv_add_cvterm($term, $cv->name, $is_relationship, TRUE, $db->name);
+        if ($cvterm) {
+          drupal_set_message('Term updated successfully.');
+        } 
+        else {
+          drupal_set_message('Could not add term. Check Drupal recent logs for error messages.', 'error');  
+        }
+      }
+      if ($op == 'Delete') {
+        $values = array('cvterm_id' => $cvterm_id);
+        $success = tripal_core_chado_delete('cvterm', $values);
+        if ($success) {
+          drupal_set_message('Term deleted successfully.');  
+        } 
+        else {
+          drupal_set_message('Could not delete term term. Check Drupal recent logs for error messages.', 'error');  
+        }             
+      }
+      break;
+  }      
 }
 
 /**
@@ -397,15 +397,15 @@ function tripal_cv_cvterm_edit_form_submit($form, &$form_state) {
  * @param unknown_type $form_state
  */
 function tripal_cv_cvterm_add_form_submit($form, &$form_state) {
-	$cv_id = array_key_exists('cv_id', $form_state['values']) ? $form_state['values']['cv_id'] : '';
-	$name = array_key_exists('name', $form_state['values']) ? $form_state['values']['name'] : '';
-	$definition = array_key_exists('definition', $form_state['values']) ? $form_state['values']['definition'] : '';
-	$is_relationship = array_key_exists('is_relationship', $form_state['values']) ? $form_state['values']['is_relationship'] : '';
-	$is_obsolete = array_key_exists('is_obsolete', $form_state['values']) ? $form_state['values']['is_obsolete'] : '';
-	
-	$db_id = array_key_exists('db_id', $form_state['values']) ? $form_state['values']['db_id'] : '';
-	$accession = array_key_exists('accession', $form_state['values']) ? $form_state['values']['accession'] : '';
-	
+  $cv_id = array_key_exists('cv_id', $form_state['values']) ? $form_state['values']['cv_id'] : '';
+  $name = array_key_exists('name', $form_state['values']) ? $form_state['values']['name'] : '';
+  $definition = array_key_exists('definition', $form_state['values']) ? $form_state['values']['definition'] : '';
+  $is_relationship = array_key_exists('is_relationship', $form_state['values']) ? $form_state['values']['is_relationship'] : '';
+  $is_obsolete = array_key_exists('is_obsolete', $form_state['values']) ? $form_state['values']['is_obsolete'] : '';
+  
+  $db_id = array_key_exists('db_id', $form_state['values']) ? $form_state['values']['db_id'] : '';
+  $accession = array_key_exists('accession', $form_state['values']) ? $form_state['values']['accession'] : '';
+  
   // get the database
   $values = array('db_id' => $db_id);
   $results = tripal_core_chado_select('db', array('name'), $values);

@@ -27,11 +27,11 @@ function tripal_db_select_form() {
  */
 function tripal_db_db_edit_form($form, &$form_state) {
   
-	// get the dbid if form was submitted via AJAX
-	$dbid = 0;
-	if (array_key_exists('values', $form_state)) {
+  // get the dbid if form was submitted via AJAX
+  $dbid = 0;
+  if (array_key_exists('values', $form_state)) {
     $dbid = $form_state['values']['dbid'];
-	}  
+  }  
   
   // get a list of db from chado for user to choose
   $sql = "SELECT * FROM {db} WHERE NOT name = 'tripal' ORDER BY name ";
@@ -62,25 +62,25 @@ function tripal_db_db_edit_form($form, &$form_state) {
   // add in the other fields
   if ($dbid) {
     tripal_db_add_db_form_fields($form, $form_state, $dbid);
-    	  
-	  $form['update'] = array(
-	    '#type'         => 'submit',
-	    '#value'        => t('Update'),
-	  );
-	  $form['delete'] = array(
-	    '#type'         => 'submit',
-	    '#value'        => t('Delete'),
-	    '#attributes'   => array('onclick' => 'if(!confirm("Really Delete?")){return false;}'), 
+        
+    $form['update'] = array(
+      '#type'         => 'submit',
+      '#value'        => t('Update'),
+    );
+    $form['delete'] = array(
+      '#type'         => 'submit',
+      '#value'        => t('Delete'),
+      '#attributes'   => array('onclick' => 'if(!confirm("Really Delete?")){return false;}'), 
     );
   }
   else {
-  	// if we don't have a dbid then this is the first time the form has
-  	// benn loaded and we need to create the div where ajax replacement elements get stored
-  	$form['div_replace'] = array(
-  	  '#type' => 'item',
-  	  '#prefix' => '<div id="db-edit-div">',
-  	  '#suffix' => '</div>',
-  	);
+    // if we don't have a dbid then this is the first time the form has
+    // benn loaded and we need to create the div where ajax replacement elements get stored
+    $form['div_replace'] = array(
+      '#type' => 'item',
+      '#prefix' => '<div id="db-edit-div">',
+      '#suffix' => '</div>',
+    );
   }
   return $form;
 }
@@ -92,8 +92,8 @@ function tripal_db_db_edit_form($form, &$form_state) {
  * @ingroup tripal_db
  */
 function tripal_db_db_add_form($form, $form_state) {
-	
-	// add in the form fields to this form
+  
+  // add in the form fields to this form
   tripal_db_add_db_form_fields($form, $form_state);
   
   $form['add'] = array(
@@ -112,8 +112,8 @@ function tripal_db_db_add_form($form, $form_state) {
  * @ingroup tripal_db
  */
 function tripal_db_add_db_form_fields(&$form, $form_state, $dbid = NULL) {
-	
-	$default_db        = '';
+  
+  $default_db        = '';
   $default_desc      = '';
   $default_url       = '';
   $default_urlprefix = '';
@@ -288,17 +288,17 @@ function tripal_db_db_edit_form_submit($form, &$form_state) {
  * @ingroup tripal_db
  */
 function tripal_db_edit_form_ajax($form, $form_state) {
-	
-	$elements = array();
-	
-	// add in the form fields and the buttons	
-	if (array_key_exists('dbid', $form_state['values'])) {
-		$elements['fields'] = $form['fields'];
-		$elements['update'] = $form['update'];
-		$elements['delete'] = $form['delete'];
-	}
-	
-	 // add back in the db-edit-div that is used for the next round of AJAX
+  
+  $elements = array();
+  
+  // add in the form fields and the buttons  
+  if (array_key_exists('dbid', $form_state['values'])) {
+    $elements['fields'] = $form['fields'];
+    $elements['update'] = $form['update'];
+    $elements['delete'] = $form['delete'];
+  }
+  
+   // add back in the db-edit-div that is used for the next round of AJAX
   $elements['fields']['#prefix'] =  '<div id="db-edit-div">';
   $elements['fields']['#suffix'] =  '</div">';
   
@@ -307,8 +307,8 @@ function tripal_db_edit_form_ajax($form, $form_state) {
   $elements['fields']['description']['#value'] = $elements['fields']['description']['#default_value'];
   $elements['fields']['url']['#value']         = $elements['fields']['url']['#default_value'];
   $elements['fields']['urlprefix']['#value']   = $elements['fields']['urlprefix']['#default_value'];
-	
-	//drupal_set_message('<pre>' . print_r($elements, TRUE) . '</pre>', "status");
-	
+  
+  //drupal_set_message('<pre>' . print_r($elements, TRUE) . '</pre>', "status");
+  
   return $elements;
 }

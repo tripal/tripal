@@ -54,14 +54,14 @@ function tripal_organism_get_synced() {
   $orgs = db_query($dsql);
 
   // use this SQL statement for getting the organisms
-  $csql =  "SELECT * FROM {Organism} ".
+  $csql =  "SELECT * FROM {Organism} " .
            "WHERE organism_id = :organism_id";
 
   $org_list = array();
 
   // iterate through the organisms and build an array of those that are synced
   foreach ($orgs as $org) {
-  	$args = array(':organism_id' => $org->organism_id);
+    $args = array(':organism_id' => $org->organism_id);
     $org = chado_query($csql, $args)->fetchObject();
     $org_list[] = $org;
   }
@@ -74,9 +74,9 @@ function tripal_organism_get_synced() {
  * @param $nid
  */
 function tripal_organism_get_image_url($organism, $nid = NULL) {
-	$url = '';
-	
-	// first look for an image with the genus/species name.  This is old-style tripal
+  $url = '';
+  
+  // first look for an image with the genus/species name.  This is old-style tripal
   // and we keep it for backwards compatibility.  If we don't find that file
   // then look for the image with the node ID in the name. If we don't find that then
   // no image tag is generated  

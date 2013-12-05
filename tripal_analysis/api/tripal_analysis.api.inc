@@ -17,7 +17,7 @@
  */
 function tripal_analysis_register_child($modulename) {
   $sql = "SELECT * FROM {tripal_analysis} WHERE modulename = '%s'";
-  if(!db_result($sql, $modulename)) {
+  if (!db_result($sql, $modulename)) {
     $sql = "INSERT INTO {tripal_analysis} (modulename) VALUES ('%s')";
     db_query($sql, $modulename);
   }

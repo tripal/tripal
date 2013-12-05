@@ -84,7 +84,7 @@ function drush_tripal_feature_tripal_get_sequence() {
   $relationship = drush_get_option('relationship');
   $rel_part = drush_get_option('rel_part');
 
-  if($relationship and !$rel_part){
+  if ($relationship and !$rel_part) {
     print "Please specify both 'relationship' and a 'rel_part' arguments. Both must be used together\n";
     return;
   }

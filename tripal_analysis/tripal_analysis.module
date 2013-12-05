@@ -128,7 +128,7 @@ function chado_analysis_insert($node) {
   if ($analysis_id) {
     $values = array('analysis_id' => $node->analysis_id);
     $result = tripal_core_chado_select('analysis', array('analysis_id'), $values);
-    if($result and count($result) > 0) {
+    if ($result and count($result) > 0) {
       $analysis = $result[0];
     }
   }
@@ -155,12 +155,12 @@ function chado_analysis_insert($node) {
 
   // Make sure the entry for this analysis doesn't already exist in the
   // chado_analysis table if it doesn't exist then we want to add it.
-  $node_check_sql = "SELECT * FROM {chado_analysis} ".
+  $node_check_sql = "SELECT * FROM {chado_analysis} " .
                     "WHERE analysis_id = :analysis_id";
   $node_check = db_query($node_check_sql, array(':analysis_id' => $analysis_id))->fetchObject();
   if (!$node_check) {
     // next add the item to the drupal table
-    $sql = "INSERT INTO {chado_analysis} (nid, vid, analysis_id) ".
+    $sql = "INSERT INTO {chado_analysis} (nid, vid, analysis_id) " .
            "VALUES (:nid, :vid, :analysis_id)";
     db_query($sql, array(':nid' => $node->nid, ':vid' => $node->vid, ':analysis_id' => $analysis_id));
     // Create a title for the analysis node using the unique keys so when the
@@ -254,16 +254,16 @@ function chado_analysis_delete($node) {
   }
 
   // Remove data from the {chado_analysis}, {node}, and {node_revisions} tables
-  $sql_del = "DELETE FROM {chado_analysis} ".
-              "WHERE nid = :nid ".
+  $sql_del = "DELETE FROM {chado_analysis} " .
+              "WHERE nid = :nid " .
               "AND vid = :vid";
   db_query($sql_del, array(':nid' => $node->nid, ':vid' => $node->vid));
-  $sql_del = "DELETE FROM {node} ".
-              "WHERE nid = :nid ".
+  $sql_del = "DELETE FROM {node} " .
+              "WHERE nid = :nid " .
               "AND vid = :vid";
   db_query($sql_del, array(':nid' => $node->nid, ':vid' => $node->vid));
-  $sql_del = "DELETE FROM {node_revisions} ".
-              "WHERE nid = :nid ".
+  $sql_del = "DELETE FROM {node_revisions} " .
+              "WHERE nid = :nid " .
               "AND vid = :vid";
   db_query($sql_del, array(':nid' => $node->nid, ':vid' => $node->vid));
 
@@ -400,9 +400,9 @@ function chado_analysis_update($node) {
   ";
   $success = chado_query($sql, $analysis_id);
   if (!$success) {
-  	drupal_set_message("Cannot update analysis properties", "error");
-  	watchdog('t_analysis', "Cannot update analysis properties.", array(), WATCHDOG_ERROR);
-  	return;
+    drupal_set_message("Cannot update analysis properties", "error");
+    watchdog('t_analysis', "Cannot update analysis properties.", array(), WATCHDOG_ERROR);
+    return;
   }
   foreach ($properties as $property => $elements) {
     foreach ($elements as $rank => $value) {
@@ -546,19 +546,19 @@ function tripal_analysis_perm() {
       'title' => t('View Analyses'),
       'description' => t('Allow users to view analysis pages.'),
     ),
-    'create chado_analysis content'=> array(
+    'create chado_analysis content' => array(
       'title' => t('Create Analyses'),
       'description' => t('Allow users to create new analysis pages.'),
     ),
-    'delete chado_analysis content'=> array(
+    'delete chado_analysis content' => array(
       'title' => t('Delete Analyses'),
       'description' => t('Allow users to delete analysis pages.'),
     ),
-    'edit chado_analysis content'=> array(
+    'edit chado_analysis content' => array(
       'title' => t('Edit Analyses'),
       'description' => t('Allow users to edit analysis pages.'),
     ),
-    'adminster tripal analysis'=> array(
+    'adminster tripal analysis' => array(
       'title' => t('Administer Analyses'),
       'description' => t('Allow users to administer all analyses.'),
     ),
@@ -640,7 +640,7 @@ function tripal_analysis_block($op = 'list', $delta = 0, $edit=array()) {
  * 
  * Implements hook_node_view()
  */
-function tripal_analysis_node_view ($node, $view_mode, $langcode) {
+function tripal_analysis_node_view($node, $view_mode, $langcode) {
   if ($node->type == 'chado_feature') {
     if ($view_mode == 'search_index') {
        // return results for searching

@@ -4,7 +4,7 @@
  */
 function tripal_feature_seq_extract_page() {
   
-  if ($_SESSION['tripal_feature_seq_extract']['download']){   
+  if ($_SESSION['tripal_feature_seq_extract']['download']) {   
     $genus      = $_SESSION['tripal_feature_seq_extract']['genus'];
     $species    = $_SESSION['tripal_feature_seq_extract']['species'];
     $analysis   = $_SESSION['tripal_feature_seq_extract']['analysis'];
@@ -45,7 +45,7 @@ function tripal_feature_seq_extract_page() {
         views must be populated before using this form.  Those views should be re-populated 
         when new data is added.  If you use the " . l('jquery_update module', 'http://drupal.org/project/jquery_update') . ", it may break this form.
         You will need to update the  jquery_update/replace/jquery.form.js file with " .
-        l('a more recent version','https://raw.github.com/malsup/form/master/jquery.form.js') . "</p>         
+        l('a more recent version', 'https://raw.github.com/malsup/form/master/jquery.form.js') . "</p>         
       </div>
     ";
   }
@@ -471,12 +471,12 @@ function tripal_feature_seq_extract_get_features($org_commonname, $genus, $speci
 
   // get the list of features
   $vars = array();
-  $sql  = "SELECT DISTINCT F.feature_id, F.name, F.uniquename, O.genus, O.species, CVT.name as feature_type ".
-          "FROM {feature} F ".
-          "  INNER JOIN {organism} O on O.organism_id = F.organism_id ".
+  $sql  = "SELECT DISTINCT F.feature_id, F.name, F.uniquename, O.genus, O.species, CVT.name as feature_type " .
+          "FROM {feature} F " .
+          "  INNER JOIN {organism} O on O.organism_id = F.organism_id " .
           "  INNER JOIN {cvterm} CVT on CVT.cvterm_id = F.type_id ";
   if ($analysis_name) {
-     $sql .= "  INNER JOIN {analysisfeature} AF on AF.feature_id = F.feature_id ".
+     $sql .= "  INNER JOIN {analysisfeature} AF on AF.feature_id = F.feature_id " .
              "  INNER JOIN {analysis} A on AF.analysis_id = A.analysis_id ";
   }         
   $sql .= "WHERE (1=1) ";
@@ -524,7 +524,7 @@ function tripal_feature_seq_extract_get_features($org_commonname, $genus, $speci
     $feature_id = $feature->feature_id;
     
     // build the header for each FASTA entry
-    if($feature->uniquename == $feature->name) {
+    if ($feature->uniquename == $feature->name) {
       $feature_name = "$feature->uniquename $feature->feature_type ($feature->genus $feature->species)";
     } 
     else {

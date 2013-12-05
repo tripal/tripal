@@ -112,7 +112,7 @@ function get_tripal_analysis_admin_form_taxonomy_set(&$form) {
   $form['taxonify']['description'] = array(
        '#type' => 'item',
        '#value' => t("Drupal allows for assignment of \"taxonomy\" or catagorical terms to " .
-          "nodes. These terms allow for advanced filtering during searching. This option allows ".
+          "nodes. These terms allow for advanced filtering during searching. This option allows " .
           "for setting taxonomy only for features that belong to the selected analyses below.  All other features will be unaffected.  To set taxonomy for all features in the site see the Feature Administration page."),
      '#weight' => 1,
   );
@@ -202,10 +202,10 @@ function get_tripal_analysis_admin_form_cleanup_set(&$form) {
   );
   $form['cleanup']['description'] = array(
        '#type' => 'item',
-       '#value' => t("With Drupal and chado residing in different databases ".
-          "it is possible that nodes in Drupal and analyses in Chado become ".
-          "\"orphaned\".  This can occur if an analysis node in Drupal is ".
-          "deleted but the corresponding chado analysis is not and/or vice ".
+       '#value' => t("With Drupal and chado residing in different databases " .
+          "it is possible that nodes in Drupal and analyses in Chado become " .
+          "\"orphaned\".  This can occur if an analysis node in Drupal is " .
+          "deleted but the corresponding chado analysis is not and/or vice " .
           "versa. Click the button below to resolve these discrepancies."),
        '#weight' => 1,
   );
@@ -272,8 +272,8 @@ function get_tripal_analysis_admin_form_sync_set(&$form) {
       $form['sync']['analyses'] = array(
            '#title'       => t('Available analyses'),
            '#type'        => t('checkboxes'),
-           '#description' => t("Check the analyses you want to sync.  Drupal ".
-              "content will be created for each of the analyses listed above. ".
+           '#description' => t("Check the analyses you want to sync.  Drupal " .
+              "content will be created for each of the analyses listed above. " .
               "Select 'All analyses' to sync all of them."),
            '#required'    => FALSE,
            '#prefix'      => '<div id="ana_boxes">',
@@ -400,17 +400,17 @@ function tripal_analysis_sync_analyses($analysis_id = NULL, $job_id = NULL) {
   $page_content = '';
 
   if (!$analysis_id) {
-    $sql = "SELECT Analysis_id, name, description, program, ".
-        "  programversion, algorithm, sourcename, sourceversion, sourceuri, ".
-          "  timeexecuted ".
+    $sql = "SELECT Analysis_id, name, description, program, " .
+        "  programversion, algorithm, sourcename, sourceversion, sourceuri, " .
+          "  timeexecuted " .
           "FROM {Analysis} ";
     $results = chado_query($sql);
   }
   else {
-    $sql = "SELECT Analysis_id, name, description, program, ".
-         "  programversion, algorithm, sourcename, sourceversion, sourceuri, ".
-          "  timeexecuted ".
-          "FROM {Analysis} ".
+    $sql = "SELECT Analysis_id, name, description, program, " .
+         "  programversion, algorithm, sourcename, sourceversion, sourceuri, " .
+          "  timeexecuted " .
+          "FROM {Analysis} " .
           "WHERE analysis_id = %d";
     $results = chado_query($sql, $analysis_id);
   }
@@ -418,7 +418,7 @@ function tripal_analysis_sync_analyses($analysis_id = NULL, $job_id = NULL) {
 
   // We'll use the following SQL statement for checking if the analysis
   // already exists as a drupal node.
-  $sql = "SELECT * FROM {chado_analysis} ".
+  $sql = "SELECT * FROM {chado_analysis} " .
           "WHERE analysis_id = %d";
 
   while ($analysis = db_fetch_object($results)) {

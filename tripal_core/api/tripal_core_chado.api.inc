@@ -616,7 +616,7 @@ function tripal_core_chado_delete($table, $match, $options = NULL) {
       $sql .= "$field IN (";
       $index = 0;
       foreach ($value as $v) {
-      	$sql .= ":$field" . $index . ", ";
+        $sql .= ":$field" . $index . ", ";
         $args[":$field" . $index] = $v;
         $index++;
       }
@@ -970,7 +970,7 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
         $sql .= "$field IN (";
         $index = 0;
         foreach ($value as $v) {
-        	$sql .= ":$field" . $index . ', ';
+          $sql .= ":$field" . $index . ', ';
           $args[":$field" . $index] = $v;
           $index++;
         }
@@ -993,8 +993,8 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
           $args[":$field"] = $value[0];
         }
         else {
-	        $sql .= "$field $operator :$field AND ";
-	        $args[":$field"] = $value[0];        	
+          $sql .= "$field $operator :$field AND ";
+          $args[":$field"] = $value[0];          
         }
       }
     } // end foreach item in where clause
@@ -1441,7 +1441,7 @@ function tripal_core_generate_chado_var($table, $values, $base_options = array()
   // convert the results into an array
   $results_arr = array(); 
   foreach ($results as $record) {
-  	$results_arr[] = $record;
+    $results_arr[] = $record;
   }
   // check only one result returned
   if (!$return_array) {
@@ -1900,13 +1900,13 @@ function chado_query_range($query, $args, $from, $count) {
  * @ingroup tripal_chado_api
  */
 function chado_query($sql, $args = array()) {
-	
+  
   $is_local = tripal_core_is_chado_local();
     
   // if Chado is local to the database then prefix the Chado table
   // names with 'chado'.
   if ($is_local) {
-  	$sql = preg_replace('/\n/', '', $sql);  // remove carriage returns
+    $sql = preg_replace('/\n/', '', $sql);  // remove carriage returns
     $sql = preg_replace('/\{(.*?)\}/', 'chado.$1', $sql);
     $results = db_query($sql, $args);
   }
@@ -1935,10 +1935,10 @@ function chado_query($sql, $args = array()) {
  * @ingroup tripal_chado_api
  */
 function chado_get_id_for_node($table, $nid) {
-	$sql = "SELECT " . $table . "_id as id FROM {chado_$table} WHERE nid = :nid";
-	$result = db_query($sql, array(':nid' => $nid))->fetchObject();
-	
-	return $result->id;
+  $sql = "SELECT " . $table . "_id as id FROM {chado_$table} WHERE nid = :nid";
+  $result = db_query($sql, array(':nid' => $nid))->fetchObject();
+  
+  return $result->id;
 }
 
 /**
@@ -1952,7 +1952,7 @@ function chado_get_id_for_node($table, $nid) {
  *  @ingroup tripal_chado_api
  */
 function chado_get_node_id($table, $id) {
-	$sql = "SELECT nid FROM {chado_$table} WHERE " . $table . "_id = :" . $table . "_id";
+  $sql = "SELECT nid FROM {chado_$table} WHERE " . $table . "_id = :" . $table . "_id";
   $result = db_query($sql, array(":" . $table . "_id" => $id))->fetchObject();
   return $results->nid;
 }
@@ -2384,9 +2384,9 @@ function tripal_get_chado_custom_schema($table) {
  *   TRUE/FALSE depending upon whether it exists
  */
 function chado_table_exists($table) {
-	global $databases;
-	
-	$default_db = $databases['default']['default']['database'];
+  global $databases;
+  
+  $default_db = $databases['default']['default']['database'];
 
   $sql = "
     SELECT 1
@@ -2399,7 +2399,7 @@ function chado_table_exists($table) {
   $results = db_query($sql, array(':table_name' => $table));
   $exists = $results->fetchObject();
   if (!$exists) {
-  	return FALSE;
+    return FALSE;
   }
   return TRUE;
 }
@@ -2527,10 +2527,10 @@ function tripal_core_set_chado_version() {
 
   // check that Chado is installed if not return 'uninstalled as the version'
   $chado_exists = tripal_core_chado_schema_exists();
-  if (!$chado_exists) {  	
+  if (!$chado_exists) {    
     // if it's not in the drupal database check to see if it's specified in the $db_url
     // in the settings.php    
-    if (!array_key_exists('chado', $databases)) {    	
+    if (!array_key_exists('chado', $databases)) {      
       // if it's not in the drupal database or specified in the $db_url then
       // return uninstalled as the version
       return 'not installed';
@@ -2540,8 +2540,8 @@ function tripal_core_set_chado_version() {
     tripal_db_set_active($previous_db);
   }
   else {
-  	$is_local = 1;
-  	$prop_exists = db_table_exists('chado.chadoprop');
+    $is_local = 1;
+    $prop_exists = db_table_exists('chado.chadoprop');
   }
   
   // if the table doesn't exist then we don't know what version but we know
@@ -2558,9 +2558,9 @@ function tripal_core_set_chado_version() {
     WHERE CV.name = 'chado_properties' and CVT.name = 'version'
   ";
   if (!$is_local) {
-	  $previous_db = tripal_db_set_active('chado');
-	  $results = db_query($sql);
-	  tripal_db_set_active($previous_db);
+    $previous_db = tripal_db_set_active('chado');
+    $results = db_query($sql);
+    tripal_db_set_active($previous_db);
   }
   else {
     $results = chado_query($sql);
@@ -2852,7 +2852,7 @@ function tripal_db_set_active($dbname  = 'default') {
   
   $chado_exists = variable_get('chado_schema_exists', FALSE);
   if ($chado_exists) {
-    if($dbname == 'chado') {
+    if ($dbname == 'chado') {
       db_query('set search_path to chado');
       return 'default';
     }

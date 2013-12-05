@@ -39,9 +39,9 @@ function tripal_feature_admin() {
 
     $form['browser']['browser_desc'] = array(
        '#type'        => 'markup',
-       '#value' => 'A feature browser can be added to an organism page to allow users to quickly '.
-          'access a feature.  This will most likely not be the ideal mechanism for accessing feature '.
-          'information, especially for large sites, but it will alow users exploring the site (such '.
+       '#value' => 'A feature browser can be added to an organism page to allow users to quickly ' .
+          'access a feature.  This will most likely not be the ideal mechanism for accessing feature ' .
+          'information, especially for large sites, but it will alow users exploring the site (such ' .
           'as students) to better understand the data types available on the site.',
 
     );
@@ -98,7 +98,7 @@ function tripal_feature_admin() {
 
     $form['summary']['feature_summary'] = array(
        '#title' => 'Feature Summary on Organism Page',
-       '#description' => 'A feature summary can be added to an organism page to allow users to see the '.
+       '#description' => 'A feature summary can be added to an organism page to allow users to see the ' .
           'type and quantity of features available for the organism.',
        '#type' => 'radios',
        '#options' => $allowedoptions2,
@@ -106,10 +106,10 @@ function tripal_feature_admin() {
     );
     $form['summary']['feature_mapping'] = array(
        '#title' => 'Map feature types',
-       '#description' => t('You may specify which Sequence Ontology (SO) terms to show in the '.
-          'feature summary report by listing them in the following text area.   Enter one per line. '.
-          'If left blank, all SO terms for all features will be shown in the report. Only those terms '.
-          'listed below will be shown in the report. Terms will appear in the report in the same order listed. To rename a '.
+       '#description' => t('You may specify which Sequence Ontology (SO) terms to show in the ' .
+          'feature summary report by listing them in the following text area.   Enter one per line. ' .
+          'If left blank, all SO terms for all features will be shown in the report. Only those terms ' .
+          'listed below will be shown in the report. Terms will appear in the report in the same order listed. To rename a ' .
           'SO term to be more human readable form, use an \'=\' sign after the SO term (e.g. \'polypeptide = Protein\')'),
        '#type' => 'textarea',
        '#rows' => 15,
@@ -133,10 +133,10 @@ function tripal_feature_admin() {
        '#collapsed' => FALSE,
     );
     $form['notice']['message'] = array(
-       '#value' => t('Currently, feature management jobs are waiting or ".
-          "are running. Managemment features have been hidden until these ".
-          "jobs complete.  Please check back later once these jobs have ".
-          "finished.  You can view the status of pending jobs in the Tripal ".
+       '#value' => t('Currently, feature management jobs are waiting or " .
+          "are running. Managemment features have been hidden until these " .
+          "jobs complete.  Please check back later once these jobs have " .
+          "finished.  You can view the status of pending jobs in the Tripal " .
           "jobs page.'),
     );
   }
@@ -210,14 +210,14 @@ function get_tripal_feature_admin_form_cleanup_set(&$form) {
   );
   $form['cleanup']['description'] = array(
     '#type' => 'item',
-    '#value' => t("With Drupal and chado residing in different databases ".
-      "it is possible that nodes in Drupal and features in Chado become ".
-      "\"orphaned\".  This can occur if a feature node in Drupal is ".
-      "deleted but the corresponding chado feature is not and/or vice ".
-      "versa.  The Cleanup function will also remove nodes for features ".
-      "that are not in the list of allowed feature types as specified ".
-      "above.  This is helpful when a feature type needs to be ".
-      "removed but was previously present as Drupal nodes. ".
+    '#value' => t("With Drupal and chado residing in different databases " .
+      "it is possible that nodes in Drupal and features in Chado become " .
+      "\"orphaned\".  This can occur if a feature node in Drupal is " .
+      "deleted but the corresponding chado feature is not and/or vice " .
+      "versa.  The Cleanup function will also remove nodes for features " .
+      "that are not in the list of allowed feature types as specified " .
+      "above.  This is helpful when a feature type needs to be " .
+      "removed but was previously present as Drupal nodes. " .
       "Click the button below to resolve these discrepancies."),
     '#weight' => 1,
   );
@@ -242,10 +242,10 @@ function get_tripal_feature_admin_form_reindex_set(&$form) {
   );
   $form['reindex']['description'] = array(
      '#type' => 'item',
-     '#value' => t("Indexing or reindexing of nodes is required for Drupal's full text searching. ".
-        "Index features for the first time to allow for searching of content, and later when content for features ".
-        "is updated.  Depending on the number of features this may take ".
-        "quite a while. Click the button below to begin reindexing of ".
+     '#value' => t("Indexing or reindexing of nodes is required for Drupal's full text searching. " .
+        "Index features for the first time to allow for searching of content, and later when content for features " .
+        "is updated.  Depending on the number of features this may take " .
+        "quite a while. Click the button below to begin reindexing of " .
         "features. "),
      '#weight' => 1,
   );
@@ -272,8 +272,8 @@ function get_tripal_feature_admin_form_taxonomy_set(&$form) {
 
   $form['taxonomy']['description'] = array(
      '#type' => 'item',
-     '#value' => t("Drupal allows for assignment of \"taxonomy\" or ".
-        "catagorical terms to nodes. These terms allow for advanced ".
+     '#value' => t("Drupal allows for assignment of \"taxonomy\" or " .
+        "catagorical terms to nodes. These terms allow for advanced " .
         "filtering during searching."),
      '#weight' => 1,
   );
@@ -286,7 +286,7 @@ function get_tripal_feature_admin_form_taxonomy_set(&$form) {
   $form['taxonomy']['tax_classes'] = array(
    '#title'       => t('Available Taxonomic Classes'),
    '#type'        => t('checkboxes'),
-   '#description' => t("Please select the class of terms to assign to ".
+   '#description' => t("Please select the class of terms to assign to " .
       "chado features"),
    '#required'    => FALSE,
    '#prefix'      => '<div id="taxclass_boxes">',
@@ -420,7 +420,7 @@ function tripal_features_set_taxonomy($max_sync = 0, $job_id = NULL) {
 
   // iterate through all drupal feature nodes and set the taxonomy
   $results = db_query("SELECT * FROM {chado_feature}");
-  $nsql =  "SELECT * FROM {node} ".
+  $nsql =  "SELECT * FROM {node} " .
           "WHERE nid = %d";
   $i = 0;
 
@@ -500,10 +500,10 @@ function tripal_feature_set_taxonomy($node, $feature_id) {
   }
 
   // get the cvterm and the organism for this feature
-  $sql = "SELECT CVT.name AS cvname, O.genus, O.species ".
-        "FROM {CVTerm} CVT ".
-        "  INNER JOIN {Feature} F on F.type_id = CVT.cvterm_id ".
-        "  INNER JOIN {Organism} O ON F.organism_id = O.organism_id ".
+  $sql = "SELECT CVT.name AS cvname, O.genus, O.species " .
+        "FROM {CVTerm} CVT " .
+        "  INNER JOIN {Feature} F on F.type_id = CVT.cvterm_id " .
+        "  INNER JOIN {Organism} O ON F.organism_id = O.organism_id " .
         "WHERE F.feature_id = $feature_id";
   $feature = db_fetch_object(chado_query($sql));
 
@@ -518,9 +518,9 @@ function tripal_feature_set_taxonomy($node, $feature_id) {
 
   // get the library that this feature may belong to and add it as taxonomy
   if ($do_lb && $lb_vid) {
-    $sql = "SELECT L.name ".
-           "FROM {Library} L ".
-           "  INNER JOIN {Library_feature} LF ON LF.library_id = L.library_id ".
+    $sql = "SELECT L.name " .
+           "FROM {Library} L " .
+           "  INNER JOIN {Library_feature} LF ON LF.library_id = L.library_id " .
            "WHERE LF.feature_id = %d ";
     $library = db_fetch_object(chado_query($sql, $feature_id));
     $tags["$lb_vid"] = "$library->name";
@@ -534,9 +534,9 @@ function tripal_feature_set_taxonomy($node, $feature_id) {
   // get the analysis that this feature may belong to and add it as taxonomy
   // We'll add each one individually since there may be more than one analysis
   if ($do_an && $an_vid) {
-    $sql = "SELECT A.name ".
-           "FROM {Analysis} A ".
-           "  INNER JOIN {Analysisfeature} AF ON AF.analysis_id = A.analysis_id ".
+    $sql = "SELECT A.name " .
+           "FROM {Analysis} A " .
+           "  INNER JOIN {Analysisfeature} AF ON AF.analysis_id = A.analysis_id " .
            "WHERE AF.feature_id = $feature_id ";
     $results = chado_query($sql);
     $analysis_terms = array();

@@ -210,19 +210,19 @@ function tripal_organism_permission() {
       'title' => t('View Organisms'),
       'description' => t('Allow users to view organism pages.'),
     ),
-    'create chado_organism content'=> array(
+    'create chado_organism content' => array(
       'title' => t('Create Organisms'),
       'description' => t('Allow users to create new organism pages.'),
     ),
-    'delete chado_organism content'=> array(
+    'delete chado_organism content' => array(
       'title' => t('Delete Organisms'),
       'description' => t('Allow users to delete organism pages.'),
     ),
-    'edit chado_organism content'=> array(
+    'edit chado_organism content' => array(
       'title' => t('Edit Organisms'),
       'description' => t('Allow users to edit organism pages.'),
     ),
-    'adminster tripal organism'=> array(
+    'adminster tripal organism' => array(
       'title' => t('Administer Organisms'),
       'description' => t('Allow users to administer all organisms.'),
     ),
@@ -316,7 +316,7 @@ function chado_organism_insert($node) {
 
   if (!chado_get_id_for_node('organism', $node->nid) ) {
     // next add the item to the drupal table
-    $sql = "INSERT INTO {chado_organism} (nid, vid, organism_id) ".
+    $sql = "INSERT INTO {chado_organism} (nid, vid, organism_id) " .
            "VALUES (:nid, :vid, :organism_id)";
     $args = array(':nid' => $node->nid, ':vid' => $node->vid, ':organism_id' => $organism_id);
     db_query($sql, $args);
@@ -380,16 +380,16 @@ function chado_organism_delete($node) {
   }
 
   // Remove data from the {chado_organism}, {node}, and {node_revisions} tables
-  $sql_del = "DELETE FROM {chado_organism} ".
-             "WHERE nid = :nid ".
+  $sql_del = "DELETE FROM {chado_organism} " .
+             "WHERE nid = :nid " .
              "AND vid = :vid";
   db_query($sql_del, array(':nid' => $node->nid, ':vid' => $node->vid));
-  $sql_del = "DELETE FROM {node} ".
-             "WHERE nid = :nid ".
+  $sql_del = "DELETE FROM {node} " .
+             "WHERE nid = :nid " .
              "AND vid = :vid";
   db_query($sql_del, array(':nid' => $node->nid, ':vid' => $node->vid));
-  $sql_del = "DELETE FROM {node_revisions} ".
-             "WHERE nid = ':nid' ".
+  $sql_del = "DELETE FROM {node_revisions} " .
+             "WHERE nid = ':nid' " .
              "AND vid = ':vid'";
   db_query($sql_del, array(':nid' => $node->nid, ':vid' => $node->vid));
 
@@ -405,8 +405,8 @@ function chado_organism_delete($node) {
     tripal_core_chado_delete('organism', array('organism_id' => $organism_id));
   }
   else {
-    drupal_set_message(t("Organism deleted from drupal. Warning: at least one ".
-                       "library or feature depends on this organism. It was ".
+    drupal_set_message(t("Organism deleted from drupal. Warning: at least one " .
+                       "library or feature depends on this organism. It was " .
                "not removed from chado."));
   }
 }
@@ -421,7 +421,7 @@ function chado_organism_add_image($node) {
   if (isset($_FILES['files']) && 
       $_FILES['files']['name']['organism_image'] &&
       is_uploaded_file($_FILES['files']['tmp_name']['organism_image'])) {
-      	
+        
     // make sure the destination directory exists
     $dest = tripal_file_directory_path() . "/tripal_organism/images";    
     file_prepare_directory($dest, FILE_CREATE_DIRECTORY);
@@ -434,7 +434,7 @@ function chado_organism_add_image($node) {
       drupal_set_message(t("Organism image was not uploaded."));
     }
     else {
-    	file_move($file, $destination . "/" . $node->nid . ".jpg", FILE_EXISTS_REPLACE);
+      file_move($file, $destination . "/" . $node->nid . ".jpg", FILE_EXISTS_REPLACE);
     }
   }
 }
@@ -519,7 +519,7 @@ function chado_organism_form($node, $param) {
 function chado_organism_load($nodes) {
 
   foreach ($nodes as $nid => $node) {
-  	// find the organism and add in the details
+    // find the organism and add in the details
     $organism_id = chado_get_id_for_node('organism', $nid);
 
     // build the organism variable
@@ -555,7 +555,7 @@ function tripal_organism_job_describe_args($callback, $args) {
   $new_args = array();
   if ($callback == 'tripal_organism_sync_organisms') {
     $organism = tripal_core_chado_select('organism', array('genus', 'species'), array('organism_id' => $args[0]));
-    $new_args['Organism'] = $organism[0]->genus ." ". $organism[0]->species;
+    $new_args['Organism'] = $organism[0]->genus . " " . $organism[0]->species;
   }
   return $new_args;
 }

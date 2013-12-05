@@ -312,8 +312,8 @@ function theme_tripal_feature_edit_ALL_db_references_form($form) {
 
   $output .= '<br /><fieldset>';
   $output .= '<legend>Edit Existing Database References<span class="form-optional" title="This field is optional">(optional)</span></legend>';
-  $output .= '<p>Below is a list of already existing database references, one per line. When entering a database reference, the accession '
-         .'is a unique identifier for this feature in the specified database.</p>';
+  $output .= '<p>Below is a list of already existing database references, one per line. When entering a database reference, the accession ' .
+             'is a unique identifier for this feature in the specified database.</p>';
   $output .= '<table>';
   $output .= '<tr><th>#</th><th>Database</th><th>Accession</th><th></th></tr>';
 
