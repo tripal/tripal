@@ -502,7 +502,7 @@ function chado_pub_insert($node) {
   else {
     drupal_set_message(t('Unable to add publication.', 'warning'));
     watchdog('tripal_pub', 'Insert publication: Unable to create pub where values: %values',
-    array('%values' => print_r($values, TRUE)), WATCHDOG_WARNING);
+      array('%values' => print_r($values, TRUE)), WATCHDOG_WARNING);
   }
 }
 

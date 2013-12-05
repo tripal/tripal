@@ -66,7 +66,8 @@ function tripal_pub_sync_pub($pub) {
   global $user;
 
   if(!$pub->pyear) {
-    watchdog('tpub_sync', "Skipping pub without published year: %title.", array('%title' => $pub->title), WATCHDOG_WARNING);
+    watchdog('tpub_sync', "Skipping pub without published year: %title.", 
+      array('%title' => $pub->title), WATCHDOG_WARNING);
     return FALSE;
   }
 
@@ -90,7 +91,8 @@ function tripal_pub_sync_pub($pub) {
       print "Added " . $pub->pub_id . "\n";
     }
     else {
-      watchdog('tpub_sync', "Unable to create publication node: %title.", array('%title' => $pub->title), WATCHDOG_ERROR);
+      watchdog('tpub_sync', "Unable to create publication node: %title.", 
+        array('%title' => $pub->title), WATCHDOG_ERROR);
       return FALSE;
     }
   }
@@ -98,7 +100,7 @@ function tripal_pub_sync_pub($pub) {
   else {
     form_set_error(NULL,'',TRUE);
     watchdog('tpub_sync', "Unable to create publication node: %title\n%errs",
-    array('%title' => $pub->title, '%errs' => print_r($errors, TRUE)), WATCHDOG_ERROR);
+      array('%title' => $pub->title, '%errs' => print_r($errors, TRUE)), WATCHDOG_ERROR);
     return FALSE;
   }
   return $node;
