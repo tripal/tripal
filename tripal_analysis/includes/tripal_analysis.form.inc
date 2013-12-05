@@ -137,10 +137,10 @@ function chado_analysis_form(&$node, $form_state = NULL) {
   $day = preg_replace("/^\d+-\d+-0?(\d+) .*/", "$1", $default_time);
   // If the time is not set, use current time
   if (!$default_time) {
-    $default_time = time();
-    $year = format_date($default_time, 'custom', 'Y');
+    $default_time = REQUEST_TIME;
+    $year  = format_date($default_time, 'custom', 'Y');
     $month = format_date($default_time, 'custom', 'n');
-    $day = format_date($default_time, 'custom', 'j');
+    $day   = format_date($default_time, 'custom', 'j');
   }
   $form['timeexecuted']= array(
       '#type' => 'date',
@@ -177,7 +177,7 @@ function chado_analysis_form(&$node, $form_state = NULL) {
     ORDER BY CVT.name ASC
   ";
   $prop_types = chado_query($sql);
-  while ($prop = db_fetch_object($prop_types)) {
+  while ($prop = $prop_types->fetchObject()) {
     $properties_select[$prop->cvterm_id] = $prop->name;
     $properties_list[$prop->cvterm_id] = $prop;
   }
@@ -322,11 +322,12 @@ function chado_analysis_node_form_add_new_empty_props(&$form, $properties_select
   $form['properties']['table']['new']["new_id"] = array(
     '#type'          => 'select',
     '#options'       => $properties_select,
-    '#ahah' => array(
-      'path'    => "tripal_analysis/properties/description",
-      'wrapper' => 'tripal-analysis-new_value-desc',
-      'event'   => 'change',
-      'method'  => 'replace',          
+    '#ajax' => array(
+      'callback' => "tripal_analysis_property_get_description",
+      'wrapper'  => 'tripal-analysis-new_value-desc',
+      'effect'   => 'fade',
+      'event'    => 'change',
+      'method'   => 'replace',          
   ),
   );
   $form['properties']['table']['new']["new_value"] = array(
@@ -340,11 +341,12 @@ function chado_analysis_node_form_add_new_empty_props(&$form, $properties_select
     '#type'         => 'image_button',      
     '#value'        => t('Add'),
     '#src'          => drupal_get_path('theme', 'tripal') . '/images/add.png',
-    '#ahah' => array(
-      'path'    => "tripal_analysis/properties/add",
-      'wrapper' => 'tripal-analysis-edit-properties-table',
-      'event'   => 'click',
-      'method'  => 'replace',          
+    '#ajax' => array(
+      'callback' => "tripal_analysis_property_add",
+      'wrapper'  => 'tripal-analysis-edit-properties-table',
+      'effect'   => 'fade',
+      'event'    => 'click',
+      'method'   => 'replace',          
     ),
     '#attributes' => array('onClick' => 'return false;'),
     );
@@ -406,11 +408,12 @@ function chado_analysis_node_form_add_new_props(&$form, $form_state, &$d_propert
           '#type'         => 'image_button',
           '#value'        => t('Remove'),
           '#src'          => drupal_get_path('theme', 'tripal') . '/images/minus.png',
-          '#ahah' => array(
-            'path'    => "tripal_analysis/properties/minus/$new_id/$rank",
-            'wrapper' => 'tripal-analysis-edit-properties-table',
-            'event'   => 'click',
-            'method'  => 'replace',
+          '#ajax' => array(
+            'callback' => "tripal_analysis/properties/minus/$new_id/$rank",
+            'wrapper'  => 'tripal-analysis-edit-properties-table',
+            'effect'   => 'fade',
+            'event'    => 'click',
+            'method'   => 'replace',
         ),
           '#attributes' => array('onClick' => 'return false;'),
         );
@@ -487,11 +490,11 @@ function chado_analysis_node_form_add_analysisprop_table_props(&$form, $form_sta
     FROM {analysisprop} PP
       INNER JOIN {cvterm} CVT on CVT.cvterm_id = PP.type_id
       INNER JOIN {cv} CV on CVT.cv_id = CV.cv_id
-    WHERE PP.analysis_id = %d and CV.name = 'analysis_property'
+    WHERE PP.analysis_id = :analysis_id and CV.name = 'analysis_property'
     ORDER BY CVT.name, PP.rank
   ";
-  $analysis_props = chado_query($sql, $analysis_id);
-  while ($prop = db_fetch_object($analysis_props)) {
+  $analysis_props = chado_query($sql, array(':analysis_id' => $analysis_id));
+  while ($prop = $analysis_props->fetchObject()) {
 
     $type_id = $prop->cvterm_id;
     $rank = count($d_properties[$type_id]);

@@ -90,11 +90,11 @@ function get_tripal_project_admin_form_sync_set(&$form) {
     // a message stating that all projects are currently synced.
     $proj_boxes = array();
     $added = 0;
-    while ($project = db_fetch_object($org_rset)) {
+    while ($project = $org_rset->fetchObject()) {
       // check to see if the project is already present as a node in drupal.
       // if so, then skip it.
-      $sql = "SELECT * FROM {chado_project} WHERE project_id = %d";
-      if (!db_fetch_object(db_query($sql, $project->project_id))) {
+      $sql = "SELECT * FROM {chado_project} WHERE project_id = :project_id";
+      if (!db_query($sql, array(':project_id' => $project->project_id))->fetchObject()) { 
         $proj_boxes[$project->project_id] = $project->name;
         $added++;
       }
@@ -156,7 +156,7 @@ function tripal_project_admin_validate($form, &$form_state) {
       if ($project_id and preg_match("/^\d+$/i" , $project_id)) {
         // get the list of projects
         $sql = "SELECT * FROM {Project} WHERE project_id = %d";
-        $project = db_fetch_object(chado_query($sql, $project_id));
+        $project = chado_query($sql, $project_id)->fetchObject();
         $to_sync[$project_id] = "$project->genus $project->species";
       }
     }
@@ -183,7 +183,7 @@ function tripal_project_admin_validate($form, &$form_state) {
       if ($project_id and preg_match("/^\d+$/i" , $project_id)) {
         // get the project info
         $sql = "SELECT * FROM {project} WHERE project_id = %d";
-        $project = db_fetch_object(chado_query($sql , $project_id));
+        $project = chado_query($sql , $project_id)->fetchObject();
         $job_args[0] = $project_id;
         tripal_add_job("Reindex features for project: $project->genus ".
          "$project->species", 'tripal_project' ,
@@ -200,7 +200,7 @@ function tripal_project_admin_validate($form, &$form_state) {
       if ($project_id and preg_match("/^\d+$/i", $project_id)) {
         // get the project info
         $sql = "SELECT * FROM {project} WHERE project_id = %d";
-        $project = db_fetch_object(chado_query($sql , $project_id));
+        $project = chado_query($sql , $project_id)->fetchObject();
         $job_args[0] = $project_id;
         tripal_add_job("Set taxonomy for features in project: ".
           "$project->genus $project->species" , 'tripal_project',
@@ -239,11 +239,11 @@ function tripal_project_sync_projects($project_id = NULL, $job_id = NULL) {
   $sql = "SELECT * FROM {chado_project} ".
          "WHERE project_id = %d";
 
-  while ($project = db_fetch_object($results)) {
+  while ($project = $results->fetchObject()) {
 
     // check if this project already exists in the drupal database. if it
     // does then skip this project and go to the next one.
-    if (!db_fetch_object(db_query($sql, $project->project_id))) {
+    if (!db_query($sql, $project->project_id)->fetchObject()) {
 
       $new_node = new stdClass();
       $new_node->type = 'chado_project';
@@ -290,14 +290,14 @@ function tripal_project_sync_all_projects() {
   //retrieve all projects in drupal
   $resource = db_query('SELECT project_id FROM {chado_project}');
   $drupal_projects = array();
-  while ($r = db_fetch_object($resource)) {
+  while ($r = $resource->fetchObject()) {
     $drupal_projects[$r->project_id] = $r->project_id;
   }
 
   // retrieve all projects in chado
   $chado_projects = array();
   $resource = chado_query('SELECT project_id FROM {project}');
-  while ($r = db_fetch_object($resource)) {
+  while ($r = $resource->fetchObject()) {
     // if not already in drupal add to list to be sync'd
     if (!isset($drupal_projects[$r->project_id])) {
       $chado_projects[$r->project_id] = $r->project_id;

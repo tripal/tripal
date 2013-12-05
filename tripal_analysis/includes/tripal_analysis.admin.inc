@@ -55,7 +55,7 @@ function tripal_analysis_admin() {
   $sql = "SELECT modulename FROM {tripal_analysis}";
   $result = db_query($sql);
   $counter = 0;  //keep track of the number of sub-modules
-  while ($data = db_fetch_object($result)) {
+  while ($data = $result->fetchObject()) {
 
     // Check if the hook_get_settings() function is already defined.
     $func = $data->modulename . "_get_settings";
@@ -105,7 +105,7 @@ function get_tripal_analysis_admin_form_taxonomy_set(&$form) {
 
   // iterate through all of the libraries
   $lib_boxes = array();
-  while ($analysis = db_fetch_object($lib_rset)) {
+  while ($analysis = $lib_rset->fetchObject()) {
     $lib_boxes[$analysis->analysis_id] = "$analysis->name";
   }
 
@@ -158,7 +158,7 @@ function get_tripal_analysis_admin_form_reindex_set(&$form) {
 
   // iterate through all of the libraries
   $lib_boxes = array();
-  while ($analysis = db_fetch_object($lib_rset)) {
+  while ($analysis = $lib_rset->fetchObject()) {
     $lib_boxes[$analysis->analysis_id] = "$analysis->name";
   }
   $form['reindex']['description'] = array(
@@ -254,11 +254,11 @@ function get_tripal_analysis_admin_form_sync_set(&$form) {
     // a message stating that all analyses are currently synced.
     $ana_boxes = array();
     $added = 0;
-    while ($analysis = db_fetch_object($ana_rset)) {
+    while ($analysis = $ana_rset->fetchObject()) {
       // check to see if the analysis is already present as a node in drupal.
       // if so, then skip it.
-      $sql = "SELECT * FROM {chado_analysis} WHERE analysis_id = %d";
-      if (!db_fetch_object(db_query($sql, $analysis->analysis_id))) {
+      $sql = "SELECT * FROM {chado_analysis} WHERE analysis_id = :analysis_id";
+      if (!db_query($sql, array(':analysis_id' => $analysis->analysis_id))->fetchObject()) {
         $ana_boxes[$analysis->analysis_id] = "$analysis->name";
         $added++;
       }
@@ -329,8 +329,8 @@ function tripal_analysis_admin_validate($form, &$form_state) {
       }
       if ($analysis_id and preg_match("/^\d+$/i", $analysis_id)) {
         // get the list of analyses
-        $sql = "SELECT * FROM {analysis} WHERE analysis_id = %d";
-        $analysis = db_fetch_object(chado_query($sql, $analysis_id));
+        $sql = "SELECT * FROM {analysis} WHERE analysis_id = :analysis_id";
+        $analysis = chado_query($sql, array(':analysis_id' => $analysis_id))->fetchObject();
         $to_sync[$analysis_id] = $analysis->name;
       }
     }
@@ -355,8 +355,8 @@ function tripal_analysis_admin_validate($form, &$form_state) {
     foreach ($analyses as $analysis_id) {
       if ($analysis_id and preg_match("/^\d+$/i", $analysis_id)) {
         // get the analysis info
-        $sql = "SELECT * FROM {analysis} WHERE analysis_id = %d";
-        $analysis = db_fetch_object(chado_query($sql, $analysis_id));
+        $sql = "SELECT * FROM {analysis} WHERE analysis_id = :analysis_id";
+        $analysis = chado_query($sql, array(':analysis_id' => $analysis_id))->fetchObject();
         $job_args[0] = $analysis_id;
         tripal_add_job("Reindex features for analysis: $analysis->name", 'tripal_analysis',
              'tripal_analysis_reindex_features', $job_args, $user->uid);
@@ -373,8 +373,8 @@ function tripal_analysis_admin_validate($form, &$form_state) {
     foreach ($analyses as $analysis_id) {
       if ($analysis_id and preg_match("/^\d+$/i", $analysis_id)) {
         // get the analysis info
-        $sql = "SELECT * FROM {analysis} WHERE analysis_id = %d";
-        $analysis = db_fetch_object(chado_query($sql, $analysis_id));
+        $sql = "SELECT * FROM {analysis} WHERE analysis_id = :analysis_id";
+        $analysis = chado_query($sql, array(':analysis_id' => $analysis_id))->fetchObject();
         $job_args[0] = $analysis_id;
         tripal_add_job("Set taxonomy for features in analysis: $analysis->name", 'tripal_analysis',
              'tripal_analysis_taxonify_features', $job_args, $user->uid);
@@ -403,25 +403,25 @@ function tripal_analysis_sync_analyses($analysis_id = NULL, $job_id = NULL) {
     $sql = "SELECT Analysis_id, name, description, program, " .
         "  programversion, algorithm, sourcename, sourceversion, sourceuri, " .
           "  timeexecuted " .
-          "FROM {Analysis} ";
+          "FROM {analysis} ";
     $results = chado_query($sql);
   }
   else {
     $sql = "SELECT Analysis_id, name, description, program, " .
          "  programversion, algorithm, sourcename, sourceversion, sourceuri, " .
           "  timeexecuted " .
-          "FROM {Analysis} " .
-          "WHERE analysis_id = %d";
-    $results = chado_query($sql, $analysis_id);
+          "FROM {analysis} " .
+          "WHERE analysis_id = :analysis_id";
+    $results = chado_query($sql, array(':analysis_id' => $analysis_id));
   }
 
 
   // We'll use the following SQL statement for checking if the analysis
   // already exists as a drupal node.
   $sql = "SELECT * FROM {chado_analysis} " .
-          "WHERE analysis_id = %d";
+          "WHERE analysis_id = :analysis_id";
 
-  while ($analysis = db_fetch_object($results)) {
+  while ($analysis = $results->fetchObject()) {
         print "syncing analysis ";
         print $analysis->name;
         print ", ";
@@ -430,17 +430,17 @@ function tripal_analysis_sync_analyses($analysis_id = NULL, $job_id = NULL) {
 
     // check if this analysis already exists in the drupal database. if it
     // does then skip this analysis and go to the next one.
-    if (!db_fetch_object(db_query($sql, $analysis->analysis_id))) {
+    if (!db_query($sql, array(':analysis_id' => $analysis->analysis_id))->fetchObject()) {
 
       $new_node = new stdClass();
 
       // try to access analysis type for this analysis
       $sql = "SELECT * FROM {analysisprop}
-                    WHERE analysis_id = %d
+                    WHERE analysis_id = :analysis_id
                     AND type_id =
-                        (SELECT cvterm_id from {cvterm} where name = '%s')
+                        (SELECT cvterm_id from {cvterm} where name = :name)
             ";
-      $analysis_type = db_fetch_object(chado_query($sql, $analysis->analysis_id, "analysis_type"));
+      $analysis_type = chado_query($sql, array(':analysis_id' => $analysis->analysis_id, ':name' => "analysis_type"))->fetchObject();
 
       // Get the type of analysis using cvterm_id
             // Current possibilities: kegg, unigene, interpro, blast

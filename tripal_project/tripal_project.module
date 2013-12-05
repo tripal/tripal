@@ -66,13 +66,28 @@ function tripal_project_menu() {
  *
  * @ingroup tripal_project
  */
-function tripal_project_perm() {
+function tripal_project_permission() {
   return array(
-    'access chado_projects content',
-    'create chado_projects content',
-    'delete chado_projects content',
-    'edit chado_projects content',
-    'adminster tripal projects',
+    'access chado_project content' => array(
+      'title' => t('View Projects'),
+      'description' => t('Allow users to view project pages.'),
+    ),
+    'create chado_project content' => array(
+      'title' => t('Create Projects'),
+      'description' => t('Allow users to create new project pages.'),
+    ),
+    'delete chado_project content' => array(
+      'title' => t('Delete Projects'),
+      'description' => t('Allow users to delete project pages.'),
+    ),
+    'edit chado_project content' => array(
+      'title' => t('Edit Projects'),
+      'description' => t('Allow users to edit project pages.'),
+    ),
+    'adminster tripal project' => array(
+      'title' => t('Administer Projects'),
+      'description' => t('Allow users to administer all projects.'),
+    ),
   );
 }
 
@@ -81,12 +96,13 @@ function tripal_project_perm() {
  *
  * This hook allows node modules to limit access to the node types they define.
  *
- *  @param $op
- *  The operation to be performed
- *
  *  @param $node
  *  The node on which the operation is to be performed, or, if it does not yet exist, the
  *  type of node to be created
+ *  
+ *  @param $op
+ *  The operation to be performed
+ *
  *
  *  @param $account
  *  A user object representing the user for whom the operation is to be performed
@@ -99,7 +115,7 @@ function tripal_project_perm() {
  *  
  * @ingroup tripal_project
  */
-function chado_project_access($op, $node, $account) {
+function chado_project_node_access($node, $op, $account) {
 
   if ($op == 'create') {
     if (!user_access('create chado_projects content', $account)) {
@@ -139,7 +155,7 @@ function tripal_project_node_info() {
   return array(
     'chado_project' => array(
       'name' => t('Project'),
-      'module' => 'chado_project',
+      'base' => 'chado_project',
       'description' => t('A module for interfacing the GMOD chado database with Drupal, providing viewing of projects'),
       'has_title' => TRUE,
       'title_label' => t('Project Name'),
@@ -266,12 +282,12 @@ function chado_project_validate($node) {
   // check to make sure the name on the project is unique
   // before we try to insert into chado.
   if ($node->project_id) {
-    $sql = "SELECT * FROM {project} WHERE name = '%s' AND NOT project_id = %d";
-    $project = db_fetch_object(chado_query($sql, $node->title, $node->project_id));
+    $sql = "SELECT * FROM {project} WHERE name = :name AND NOT project_id = :project_id";
+    $project = chado_query($sql, array(':name' => $node->title, ':project_id' => $node->project_id))->fetchObject();
   }
   else {
-    $sql = "SELECT * FROM {project} WHERE name = '%s'";
-    $project = db_fetch_object(chado_query($sql, $node->title));
+    $sql = "SELECT * FROM {project} WHERE name = :name";
+    $project = chado_query($sql, array(':name' => $node->title))->fetchObject();
   }
   if ($project) {
     form_set_error('title', t('The unique project name already exists. Please choose another'));
@@ -310,8 +326,8 @@ function chado_project_insert($node) {
     if (!$project_id) {
        // next add the item to the drupal table
       $sql = "INSERT INTO {chado_project} (nid, vid, project_id) ".
-             "VALUES (%d, %d, %d)";
-      db_query($sql, $node->nid, $node->vid, $project['project_id']);
+             "VALUES (:nid, :vid, :project_id)";
+      db_query($sql, array(':nid' => $node->nid, ':vid' => $node->vid, ':project_id' => $project['project_id']));
     }
   }
   else {
@@ -345,22 +361,22 @@ function chado_project_delete($node) {
   // Remove data from {chado_project}, {node} and {node_revisions} tables of
   // drupal database
   $sql_del = "DELETE FROM {chado_project} ".
-             "WHERE nid = %d ".
-             "AND vid = %d";
-  db_query($sql_del, $node->nid, $node->vid);
-  $sql_del = "DELETE FROM {node_revisions} ".
-             "WHERE nid = %d ".
-             "AND vid = %d";
-  db_query($sql_del, $node->nid, $node->vid);
+             "WHERE nid = :nid ".
+             "AND vid = :vid";
+  db_query($sql_del, array(':nid' => $node->nid, ':vid' => $node->vid));
+  $sql_del = "DELETE FROM {node_revision} ".
+             "WHERE nid = :nid ".
+             "AND vid = :vod";
+  db_query($sql_del,  array(':nid' => $node->nid, ':vid' => $node->vid));
   $sql_del = "DELETE FROM {node} ".
-             "WHERE nid = %d ".
-             "AND vid = %d";
-  db_query($sql_del, $node->nid, $node->vid);
+             "WHERE nid = :nid ".
+             "AND vid = :vid";
+  db_query($sql_del,  array(':nid' => $node->nid, ':vid' => $node->vid));
 
 
   // Remove data from project and projectprop tables of chado database as well
-  chado_query("DELETE FROM {projectprop} WHERE project_id = %d", $project_id);
-  chado_query("DELETE FROM {project} WHERE project_id = %d", $project_id);
+  chado_query("DELETE FROM {projectprop} WHERE project_id = :project_id", array(':project_id' => $project_id));
+  chado_query("DELETE FROM {project} WHERE project_id = :project_id", array(':project_id' => $project_id));
 }
 
 /**
@@ -421,65 +437,63 @@ function chado_project_load($node) {
 }
 
 /**
- * Display block with projects
- * @param op    - parameter to define the phase being called for the block
- * @param delta - id of the block to return (ignored when op is list)
- * @param edit  - when op is save, contains the submitted form data
  *
  * @ingroup tripal_project
  */
-function tripal_project_block($op = 'list', $delta = '0', $edit = array()) {
-  switch ($op) {
-    case 'list':
+function tripal_project_block_info() {
 
-    $blocks['projectbase']['info'] = t('Tripal Project Details');
-    $blocks['projectbase']['cache'] = BLOCK_NO_CACHE;
-
-    $blocks['projectprops']['info'] = t('Tripal Project Properties');
-    $blocks['projectprops']['cache'] = BLOCK_NO_CACHE;
-
-    $blocks['projectpubs']['info'] = t('Tripal Project Publications');
-    $blocks['projectpubs']['cache'] = BLOCK_NO_CACHE;
-
-    $blocks['projectcont']['info'] = t('Tripal Project Contact');
-    $blocks['projectcont']['cache'] = BLOCK_NO_CACHE;
-
-    $blocks['projectrels']['info'] = t('Tripal Project Relationships');
-    $blocks['projectrels']['cache'] = BLOCK_NO_CACHE;
-
-    return $blocks;
-
-    case 'view':
-      if (user_access('access chado_project content') and arg(0) == 'node' and is_numeric(arg(1))) {
-        $nid = arg(1);
-        $node = node_load($nid);
-
-        $block = array();
-        switch ($delta) {
-          case 'projectbase':
-            $block['subject'] = t('Project Details');
-            $block['content'] = theme('tripal_project_base', $node);
-            break;
-          case 'projectprops':
-            $block['subject'] = t('Properties');
-            $block['content'] = theme('tripal_project_properties', $node);
-            break;
-          case 'projectpubs':
-            $block['subject'] = t('Publications');
-            $block['content'] = theme('tripal_project_publications', $node);
-            break;
-          case 'projectcont':
-            $block['subject'] = t('Contact');
-            $block['content'] = theme('tripal_project_contact', $node);
-            break;
-          case 'projectrels':
-            $block['subject'] = t('Relationships');
-            $block['content'] = theme('tripal_project_relationships', $node);
-            break;
-          default :
-        }
-        return $block;
-      }
+  $blocks['projectbase']['info'] = t('Tripal Project Details');
+  $blocks['projectbase']['cache'] = BLOCK_NO_CACHE;
+  
+  $blocks['projectprops']['info'] = t('Tripal Project Properties');
+  $blocks['projectprops']['cache'] = BLOCK_NO_CACHE;
+  
+  $blocks['projectpubs']['info'] = t('Tripal Project Publications');
+  $blocks['projectpubs']['cache'] = BLOCK_NO_CACHE;
+  
+  $blocks['projectcont']['info'] = t('Tripal Project Contact');
+  $blocks['projectcont']['cache'] = BLOCK_NO_CACHE;
+  
+  $blocks['projectrels']['info'] = t('Tripal Project Relationships');
+  $blocks['projectrels']['cache'] = BLOCK_NO_CACHE;
+  
+  return $blocks;
+}
+/**
+ *
+ * @ingroup tripal_project
+ */
+function tripal_project_block_view($delta = '') {
+ 
+  if (user_access('access chado_project content') and arg(0) == 'node' and is_numeric(arg(1))) {
+    $nid = arg(1);
+    $node = node_load($nid);
+  
+    $block = array();
+    switch ($delta) {
+      case 'projectbase':
+        $block['subject'] = t('Project Details');
+        $block['content'] = theme('tripal_project_base', $node);
+        break;
+      case 'projectprops':
+        $block['subject'] = t('Properties');
+        $block['content'] = theme('tripal_project_properties', $node);
+        break;
+      case 'projectpubs':
+        $block['subject'] = t('Publications');
+        $block['content'] = theme('tripal_project_publications', $node);
+        break;
+      case 'projectcont':
+        $block['subject'] = t('Contact');
+        $block['content'] = theme('tripal_project_contact', $node);
+        break;
+      case 'projectrels':
+        $block['subject'] = t('Relationships');
+        $block['content'] = theme('tripal_project_relationships', $node);
+        break;
+      default :
+    }
+    return $block;
   }
 }
 /**
@@ -501,18 +515,18 @@ function tripal_project_preprocess_tripal_project_relationships(&$variables) {
       INNER JOIN {project} P            ON PR.object_project_id = P.project_id
       INNER JOIN {cvterm} CVT           ON PR.type_id           = CVT.cvterm_id
       LEFT JOIN public.chado_project CP ON P.project_id         = CP.project_id
-    WHERE PR.subject_project_id = %d
+    WHERE PR.subject_project_id = :project_id
   ";
-  $as_subject = chado_query($sql, $project->project_id);
+  $as_subject = chado_query($sql, array(':project_id' => $project->project_id));
   $sql = "
     SELECT P.name, P.project_id, CP.nid, CVT.name as rel_type
     FROM project_relationship PR
       INNER JOIN {project} P            ON PR.subject_project_id = P.project_id
       INNER JOIN {cvterm} CVT           ON PR.type_id            = CVT.cvterm_id
       LEFT JOIN public.chado_project CP ON P.project_id          = CP.project_id
-    WHERE PR.object_project_id = %d
+    WHERE PR.object_project_id = :project_id
   ";
-  $as_object = chado_query($sql, $project->project_id);
+  $as_object = chado_query($sql, array(':project_id' => $project->project_id));
 
   // combine both object and subject relationshisp into a single array
   $relationships = array();
@@ -520,7 +534,7 @@ function tripal_project_preprocess_tripal_project_relationships(&$variables) {
   $relationships['subject'] = array();
 
   // iterate through the object relationships
-  while ($relationship = db_fetch_object($as_object)) {
+  while ($relationship = $as_object->fetchObject()) {
 
      // get the relationship and child types
      $rel_type = t(preg_replace('/_/', " ", $relationship->rel_type));
@@ -536,7 +550,7 @@ function tripal_project_preprocess_tripal_project_relationships(&$variables) {
   }
 
   // now add in the subject relationships
-  while ($relationship = db_fetch_object($as_subject)) {
+  while ($relationship = $as_subject->fetchObject()) {
 
      // get the relationship and child types
      $rel_type = t(preg_replace('/_/', " ", $relationship->rel_type));

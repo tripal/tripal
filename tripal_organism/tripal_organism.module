@@ -39,50 +39,50 @@ function tripal_organism_node_info() {
 }
 
 /**
- * Display block with organisms
- * @param op    - parameter to define the phase being called for the block
- * @param delta - id of the block to return (ignored when op is list)
- * @param edit  - when op is save, contains the submitted form data
  *
  * @ingroup tripal_organism
  */
-function tripal_organism_block($op = 'list', $delta = '0', $edit = array()) {
-  switch ($op) {
-    case 'list':
-      $blocks['base']['info'] = t('Tripal Organism Details');
-      $blocks['base']['cache'] = BLOCK_NO_CACHE;
+function tripal_organism_block_info() {
 
-      $blocks['description']['info'] = t('Tripal Organism Description');
-      $blocks['description']['cache'] = BLOCK_NO_CACHE;
+  $blocks['base']['info'] = t('Tripal Organism Details');
+  $blocks['base']['cache'] = BLOCK_NO_CACHE;
 
-      $blocks['image']['info'] = t('Tripal Organism Image');
-      $blocks['image']['cache'] = BLOCK_NO_CACHE;
+  $blocks['description']['info'] = t('Tripal Organism Description');
+  $blocks['description']['cache'] = BLOCK_NO_CACHE;
 
-      return $blocks;
+  $blocks['image']['info'] = t('Tripal Organism Image');
+  $blocks['image']['cache'] = BLOCK_NO_CACHE;
 
-    case 'view':
-      if (user_access('access chado_feature content') and arg(0) == 'node' and is_numeric(arg(1))) {
-        $nid = arg(1);
-        $node = node_load($nid);
+  return $blocks;
+   
+}
+/**
+ *
+ * @ingroup tripal_organism
+ */
+function tripal_organism_block_view($delta = '') {
 
-        $block = array();
-        switch ($delta) {
-          case 'base':
-            $block['subject'] = t('Organism Details');
-            $block['content'] = theme('tripal_organism_base', $node);
-            break;
-          case 'description':
-            $block['subject'] = t('Organism Description');
-            $block['content'] = theme('tripal_organism_description', $node);
-            break;
-          case 'image':
-            $block['subject'] = t('Organism Image');
-            $block['content'] = theme('tripal_organism_image', $node);
-            break;
-          default:
-        }
-        return $block;
-      }
+  if (user_access('access chado_feature content') and arg(0) == 'node' and is_numeric(arg(1))) {
+    $nid = arg(1);
+    $node = node_load($nid);
+  
+    $block = array();
+    switch ($delta) {
+      case 'base':
+        $block['subject'] = t('Organism Details');
+        $block['content'] = theme('tripal_organism_base', $node);
+        break;
+      case 'description':
+        $block['subject'] = t('Organism Description');
+        $block['content'] = theme('tripal_organism_description', $node);
+        break;
+      case 'image':
+        $block['subject'] = t('Organism Image');
+        $block['content'] = theme('tripal_organism_image', $node);
+        break;
+      default:
+    }
+    return $block;
   }
 }
 /**
@@ -153,13 +153,14 @@ function tripal_organism_theme() {
  * Implement hook_access().
  *
  * This hook allows node modules to limit access to the node types they define.
- *
- *  @param $op
- *  The operation to be performed
- *
+ * 
  *  @param $node
  *  The node on which the operation is to be performed, or, if it does not yet exist, the
  *  type of node to be created
+ *  
+ *  @param $op
+ *  The operation to be performed
+ *
  *
  *  @param $account
  *  A user object representing the user for whom the operation is to be performed
@@ -172,7 +173,7 @@ function tripal_organism_theme() {
  *
  * @ingroup tripal_organism
  */
-function chado_organism_access($op, $node, $account) {
+function chado_organism_node_access($node, $op, $account) {
   if ($op == 'create') {
     if (!user_access('create chado_organism content', $account)) {
       return FALSE;
@@ -388,7 +389,7 @@ function chado_organism_delete($node) {
              "WHERE nid = :nid " .
              "AND vid = :vid";
   db_query($sql_del, array(':nid' => $node->nid, ':vid' => $node->vid));
-  $sql_del = "DELETE FROM {node_revisions} " .
+  $sql_del = "DELETE FROM {node_revision} " .
              "WHERE nid = ':nid' " .
              "AND vid = ':vid'";
   db_query($sql_del, array(':nid' => $node->nid, ':vid' => $node->vid));

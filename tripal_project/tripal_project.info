@@ -1,8 +1,8 @@
 name = Tripal Project
 description = A module for interfacing the GMOD chado database with Drupal, providing viewing of projects
-core = 6.x
+core = 7.x
 project = tripal_project
 package = Tripal
-version = 6.x-1.1
+version = 7.x-2.0
 dependencies[] = tripal_core
 dependencies[] = tripal_cv
