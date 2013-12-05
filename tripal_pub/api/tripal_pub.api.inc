@@ -1178,6 +1178,10 @@ function tripal_pub_create_citation($pub) {
         $pub_type = $ptype;
         break;
       } 
+      else if ($ptype == 'Letter') {
+        $pub_type = $ptype;
+        break;
+      } 
       else if ($ptype == 'Book Chapter') {
         $pub_type = $ptype;
         break;
