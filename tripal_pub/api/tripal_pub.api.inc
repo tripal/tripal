@@ -664,7 +664,7 @@ function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE,
       return FALSE;
     }
   }
-  print "PUB ID: $pub_id\n";
+  //print "PUB ID: $pub_id\n";
   // if there is a pub id and we've been told not to update then return
   if ($pub_id and !$update_if_exists) {
     $action = 'skipped';
@@ -1029,13 +1029,13 @@ function tripal_pub_get_publication_array($pub_id, $skip_existing = TRUE) {
   if ($citation) {
     $citation = tripal_core_expand_chado_vars($citation, 'field', 'pubprop.value', $options);
     if (count($citation) > 1) {
-    	watchdog('tripal_pub', "Publication has multiple citations already: %pub_id",
-    	array('%pub_id' => $pubid), WATCHDOG_ERROR);
-    	return FALSE;
+      watchdog('tripal_pub', "Publication has multiple citations already: %pub_id",
+      array('%pub_id' => $pubid), WATCHDOG_ERROR);
+      return FALSE;
     }
     elseif (count($citation) == 1 and $skip_existing == TRUE) {
-    	// skip this publication, it already has a citation
-    	return FALSE;
+      // skip this publication, it already has a citation
+      return FALSE;
     }
   }  
 
@@ -1080,7 +1080,7 @@ function tripal_pub_get_publication_array($pub_id, $skip_existing = TRUE) {
     $sql = "SELECT string_agg(surname || ' ' || givennames, ', ') FROM {pubauthor} WHERE pub_id = %d GROUP BY pub_id";
     $au = db_result(chado_query($sql));
     if ($au) {
-    	$pub_array['Authors'] = $au;
+      $pub_array['Authors'] = $au;
     }
   }
 
@@ -1156,95 +1156,94 @@ function tripal_pub_get_publication_array($pub_id, $skip_existing = TRUE) {
  *   A text string containing the citation
  */
 function tripal_pub_create_citation($pub) {
-	$citation = '';
-	$pub_type = '';
-	
-	// An article may have more than one publication type. For example,
-	// a publication type can be 'Journal Article' but also a 'Clinical Trial'.
-	// Therefore, we need to select the type that makes most sense for 
-	// construction of the citation. Here we'll iterate through them all
-	// and select the one that matches best.
-	if(is_array($pub['Publication Type'])) {
-	  foreach ($pub['Publication Type'] as $ptype) {
-	    if ($ptype == 'Journal Article' ) {
-	      $pub_type = $ptype;
-	      break;
-	    } else if ($ptype == 'Conference Proceedings'){ 
-	      $pub_type = $ptype;
-	      break;
-	    } else if ($ptype == 'Book') {
-	      $pub_type = $ptype;
-	      break;
-	    } else if ($ptype == 'Book Chapter') {
-	      $pub_type = $ptype;
-	      break;
-	    }
-	  }
-	  if (!$pub_type) {
+  $citation = '';
+  $pub_type = '';
+  
+  // An article may have more than one publication type. For example,
+  // a publication type can be 'Journal Article' but also a 'Clinical Trial'.
+  // Therefore, we need to select the type that makes most sense for 
+  // construction of the citation. Here we'll iterate through them all
+  // and select the one that matches best.
+  if(is_array($pub['Publication Type'])) {
+    foreach ($pub['Publication Type'] as $ptype) {
+      if ($ptype == 'Journal Article' ) {
+        $pub_type = $ptype;
+        break;
+      } else if ($ptype == 'Conference Proceedings'){ 
+        $pub_type = $ptype;
+        break;
+      } else if ($ptype == 'Book') {
+        $pub_type = $ptype;
+        break;
+      } else if ($ptype == 'Book Chapter') {
+        $pub_type = $ptype;
+        break;
+      }
+    }
+    if (!$pub_type) {
       watchdog('tripal_pub', "Cannot generate citation for publication type: %types", 
         array('%types' => print_r($pub['Publication Type'], TRUE)), WATCHDOG_ERROR);
       return FALSE;
     }
-	}
-	else {
-	  $pub_type = $pub['Publication Type'];
-	}		
-  print "[$pub_type]\n";
-	//----------------------
+  }
+  else {
+    $pub_type = $pub['Publication Type'];
+  }    
+  //----------------------
   // Journal Article
   //----------------------
-	if ($pub_type == 'Journal Article') {
-	  $citation = $pub['Authors'] . '. ' . $pub['Title'] .  '. ';
-	
-	  if ($pub['Journal Name']) {
-	    $citation .= $pub['Journal Name'] . '. ';
-	  }
-	  elseif ($pub['Journal Abbreviation']) {
-	    $citation .= $pub['Journal Abbreviation'] . '. ';
-	  }
-	  elseif ($pub['Series Name']) {
-	    $citation .= $pub['Series Name'] . '. ';	
-	  }
-	  elseif ($pub['Series Abbreviation']) {
+  if ($pub_type == 'Journal Article') {
+    $citation = $pub['Authors'] . '. ' . $pub['Title'] .  '. ';
+  
+    if ($pub['Journal Name']) {
+      $citation .= $pub['Journal Name'] . '. ';
+    }
+    elseif ($pub['Journal Abbreviation']) {
+      $citation .= $pub['Journal Abbreviation'] . '. ';
+    }
+    elseif ($pub['Series Name']) {
+      $citation .= $pub['Series Name'] . '. ';  
+    }
+    elseif ($pub['Series Abbreviation']) {
       $citation .= $pub['Series Abbreviation'] . '. ';
     }
     if ($pub['Publication Date']) {
-	    $citation .= $pub['Publication Date'];
+      $citation .= $pub['Publication Date'];
     }
     elseif ($pub['Year']) {
-    	$citation .= $pub['Year'];
+      $citation .= $pub['Year'];
     }
-	  if ($pub['Volume'] or $pub['Issue'] or $pub['Pages']) {
-	    $citation .= '; ';
-	  }
-	  if ($pub['Volume']) {
-	    $citation .= $pub['Volume'];
-	  }
-	  if ($pub['Issue']) {
-	    $citation .= '(' . $pub['Issue'] . ')';
-	  }
-	  if ($pub['Pages']) {
-	    if($pub['Volume']) {
-	      $citation .= ':';
-	    }
-	    $citation .= $pub['Pages'];
-	  }
-	  $citation .= '.';
-	}
-	//----------------------
+    if ($pub['Volume'] or $pub['Issue'] or $pub['Pages']) {
+      $citation .= '; ';
+    }
+    if ($pub['Volume']) {
+      $citation .= $pub['Volume'];
+    }
+    if ($pub['Issue']) {
+      $citation .= '(' . $pub['Issue'] . ')';
+    }
+    if ($pub['Pages']) {
+      if($pub['Volume']) {
+        $citation .= ':';
+      }
+      $citation .= $pub['Pages'];
+    }
+    $citation .= '.';
+  }
+  //----------------------
   // Book
   //----------------------
-	elseif ($pub_type == 'Book') {
-	
-	}
-	//----------------------
+  elseif ($pub_type == 'Book') {
+  
+  }
+  //----------------------
   // Book Chapter
   //----------------------
   elseif ($pub_type == 'Book Chapter') {
-  	
+    
   }
-	//----------------------
-	// Conference Proceedings
+  //----------------------
+  // Conference Proceedings
   //----------------------
   elseif ($pub_type == 'Conference Proceedings') {
     $citation = $pub['Authors'] . '. ' . $pub['Title'] .  '. ';

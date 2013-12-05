@@ -14,7 +14,7 @@
  */
 
 require_once "includes/tripal_feature.admin.inc";
-require_once "includes/syncFeatures.inc";
+require_once "includes/tripal_feature.sync_features.inc";
 require_once "includes/indexFeatures.inc";
 require_once "includes/fasta_loader.inc";
 require_once "includes/gff_loader.inc";
@@ -244,12 +244,10 @@ function tripal_feature_menu() {
 
   // the menu link for addressing any feature (by name, uniquename, synonym)
   $items['feature/%'] = array(
-    'title' => 'Matched Features',
-    'description' => 'Shows all features that match the provided ID.  If multiple features match even by name, uniquename or synonym then a page is presented to allow the user to select which one they intended.',
     'page callback' => 'tripal_feature_match_features_page',
     'page arguments' => array(1),
     'access arguments' => array('access chado_feature content'),
-    'type' => MENU_NORMAL_ITEM,
+    'type' => MENU_LOCAL_TASK,
   );
 
   return $items;
@@ -284,6 +282,10 @@ function tripal_feature_theme() {
     'tripal_feature_sequence' => array(
        'arguments' => array('node' => NULL),
        'template' => 'tripal_feature_sequence',
+    ),
+    'tripal_feature_proteins' => array(
+       'arguments' => array('node' => NULL),
+       'template' => 'tripal_feature_proteins',
     ),
     'tripal_feature_synonyms' => array(
        'arguments' => array('node' => NULL),
@@ -499,7 +501,7 @@ function chado_feature_insert($node) {
     'type_id' => $type[0]->cvterm_id,
   );
   $feature = tripal_core_chado_select('feature', array('feature_id'), $values);
-
+    
   // add the genbank accession and synonyms
   chado_feature_add_synonyms($node->synonyms, $feature[0]->feature_id);
 
@@ -560,7 +562,7 @@ function chado_feature_update($node) {
     );
     $options = array('return_record' => TRUE);
     $status = tripal_core_chado_update('feature', $match, $values, $options);
-
+    
     // add the genbank synonyms
     chado_feature_add_synonyms($node->synonyms, $feature_id);
   }
@@ -572,6 +574,8 @@ function chado_feature_update($node) {
     WATCHDOG_WARNING
     );
   }
+  
+
 }
 /**
  *
@@ -797,6 +801,7 @@ function chado_feature_form($node, $param) {
     '#value' => $feature->feature_id,
   );
 
+  /*
   $form['title']= array(
     '#type' => 'textfield',
     '#title' => t('Title'),
@@ -804,7 +809,7 @@ function chado_feature_form($node, $param) {
     '#default_value' => $node->title,
     '#description' => t('The title must be a unique identifier for this feature.  It is recommended to use a combination of uniquename, organism and feature type in the title as this is guranteed to be unique.'),
     '#maxlength' => 255
-  );
+  );*/
 
   $form['uniquename']= array(
     '#type' => 'textfield',
@@ -942,7 +947,6 @@ function chado_feature_validate($node) {
   if ($node->feature_type == 'contig' and $node->gbaccession) {
     form_set_error('gbaccession', t("Contigs cannot have a genbank accession number.  Please change the feature type or remove the accession number"));
   }
-
 }
 /**
  *  When a node is requested by the user this function is called to allow us
@@ -958,8 +962,26 @@ function chado_feature_load($node) {
   $values = array('feature_id' => $feature_id);
   $feature = tripal_core_generate_chado_var('feature', $values);
 
-  if (strcmp($feature->name, $feature->uniquename)==0) {
-     $node->title = $feature->name . " (" . $feature->type_id->name . ") " . $feature->organism_id->genus . " " . $feature->organism_id->species ;
+  // by default, the titles are saved using the unique constraint.  We will
+  // keep it the same, but remove the duplicate name if the unique name and name
+  // are identical
+  $title_type = variable_get('chado_feature_title', 'unique_constraint');
+  if($title_type == 'unique_constraint') {
+    if (strcmp($feature->name, $feature->uniquename)==0) {
+      $node->title = $feature->name . " (" . $feature->type_id->name . ") " . $feature->organism_id->genus . " " . $feature->organism_id->species ;
+    }
+    // in previous version of Tripal, the feature title was simply the unique name. 
+    // so, we recreate the title just to be sure all of our feature pages are consistent
+    else {
+      $node->title = $feature->name . ", " . $feature->uniquename . " (" . $feature->type_id->name . ") " . $feature->organism_id->genus . " " . $feature->organism_id->species ;  
+    }
+  }
+  // set the title to be the feature name or uniquename as configured
+  if($title_type == 'feature_name') {
+    $node->title = $feature->name;
+  }
+  if($title_type == 'feature_unique_name') {
+    $node->title = $feature->uniquename;  
   }
 
   $additions = new stdClass();
@@ -1370,18 +1392,21 @@ function tripal_feature_get_matched_alignments($feature) {
           "  INNER JOIN {featureloc} FL1 on FL1.srcfeature_id = F1.feature_id ".
           "  INNER JOIN {feature} F2 on FL1.feature_id = F2.feature_id ".
           "  INNER JOIN {featureloc} FL2 on FL2.feature_id = F2.feature_id ".
-          "  INNER JOIN {feature} F3 on FL2.srcfeature_id = F3.feature_id ".
           "  INNER JOIN {cvterm} CVT2 on F2.type_id = CVT2.cvterm_id ".
-          "WHERE F1.feature_id = %d and NOT F3.feature_id = %d ".
+          "WHERE F1.feature_id = %d " .
           "  AND (CVT2.name = 'match' or CVT2.name like '%_match') ".
           "ORDER BY FL1.fmin";
 
-   $results = chado_query($sql, $feature->feature_id, $feature->feature_id);
+   $results = chado_query($sql, $feature->feature_id);
 
    // iterate through the results and add them to our featurelocs array
    $featurelocs = array();
    while ($fl = db_fetch_object($results)) {
-      $featurelocs[] = $fl ;
+     // ignore featurelocs where the left and right srcfeature is the same
+     if (strcmp($fl->left_srcfeature_id, $fl->right_srcfeature_id) == 0) {
+       continue;
+     }
+     $featurelocs[] = $fl ;
    }
    return $featurelocs;
 }
@@ -1809,10 +1834,61 @@ function chado_feature_view($node, $teaser = FALSE, $page = FALSE) {
  * @ingroup tripal_feature
  */
 function tripal_feature_nodeapi(&$node, $op, $teaser, $page) {
-
+  
   switch ($op) {
-    // Note that this function only adds feature view to an organism node.
-    // The view of a feature node is controled by the theme *.tpl file
+    
+     // set the title to ensure it is always unique
+    case 'presave':
+      switch ($node->type) {
+        case 'chado_feature':
+          
+          $values = array('organism_id' => $node->organism_id);
+          $organism = tripal_core_chado_select('organism', array('genus','species'), $values);
+          $node->title = $node->fname . ', ' . $node->uniquename . ' (' . $node->feature_type . ') ' . $organism[0]->genus . ' ' . $organism[0]->species;
+          break;
+      }
+      break;
+      
+    // set the URL path after inserting.  We do it here because we do not 
+    // know the feature_id in the presave  
+    case 'insert':
+      switch ($node->type) {
+        case 'chado_feature':
+          if (!$node->feature_id) {
+            $sql = "SELECT * FROM {chado_feature} WHERE nid = %d";
+            $chado_feature = db_fetch_object(db_query($sql, $node->nid));
+            $node->feature_id = $chado_feature->feature_id;
+          }
+
+          
+          // remove any previous alias
+          db_query("DELETE FROM {url_alias} WHERE src = '%s'", "node/$node->nid");
+          
+          // set the URL for this feature page
+          $url_alias = tripal_feature_get_feature_url($node);
+          path_set_alias("node/$node->nid", $url_alias);
+          break;
+      }
+      break;
+      
+    // set the URL path after inserting.  We do it here because we do not 
+    // know the feature_id in the presave  
+    case 'update':
+      switch ($node->type) {
+        case 'chado_feature':
+          
+          // remove any previous alias
+          db_query("DELETE FROM {url_alias} WHERE src = '%s'", "node/$node->nid");
+          
+          // set the URL for this feature page
+          $url_alias = tripal_feature_get_feature_url($node);
+          path_set_alias("node/$node->nid", $url_alias);
+          break;
+      }
+      break;
+      
+      
+    // add items to other nodes, build index and search results
     case 'view':
       switch ($node->type) {
         case 'chado_organism':
@@ -1839,6 +1915,20 @@ function tripal_feature_nodeapi(&$node, $op, $teaser, $page) {
  * @ingroup tripal_feature
  */
 function tripal_feature_preprocess_tripal_feature_relationships(&$variables) {
+  // we want to provide a new variable that contains the matched features.
+  $feature = $variables['node']->feature;
+
+  if (!$feature->all_relationships) {
+    $feature->all_relationships = tripal_feature_get_feature_relationships($feature);
+  }
+}
+
+/**
+ *
+ *
+ * @ingroup tripal_feature
+ */
+function tripal_feature_preprocess_tripal_feature_proteins(&$variables) {
   // we want to provide a new variable that contains the matched features.
   $feature = $variables['node']->feature;
 
@@ -1876,7 +1966,7 @@ function tripal_feature_preprocess_tripal_feature_alignments(&$variables) {
 
   // get matched alignments (those with an itermediate 'match' or 'EST_match', etc
   $mfeaturelocs = tripal_feature_get_matched_alignments($feature);
-  $feature->matched_featurelocs = tripal_feature_get_matched_alignments($feature);
+  $feature->matched_featurelocs = mfeaturelocs;
 
   // combine all three alignments into a single array for printing together in
   // a single list
@@ -2092,7 +2182,7 @@ function tripal_feature_del_vocabulary() {
  * @ingroup tripal_feature
  */
 function tripal_feature_return_fasta($feature, $desc) {
-  $fasta  = ">" . variable_get('chado_feature_accession_prefix', 'ID') . "$feature->feature_id|$feature->name";
+  $fasta  = ">" . variable_get('chado_feature_accession_prefix', 'FID') . "$feature->feature_id|$feature->name";
   $fasta .= " $desc\n";
   $fasta .= wordwrap($feature->residues, 50, "\n", TRUE);
   $fasta .= "\n\n";
@@ -2208,6 +2298,18 @@ function tripal_feature_coder_ignore() {
  * features is shown.
  */
 function tripal_feature_match_features_page($id) {
+  
+  // if the URL alias configuration is set such that the URL
+  // always begins with 'feature' then we want to use the ID as it is and
+  // forward it on. Otherwise, try to find the matching feature.
+  $url_alias = variable_get('chado_feature_url_string', '/feature/[genus]/[species]/[type]/[uniquename]'); 
+  if (!$url_alias) {
+    $url_alias = '/feature/[genus]/[species]/[type]/[uniquename]';
+  } 
+  $url_alias = preg_replace('/^\//', '', $url_alias); // remove any preceeding forward slash  
+  if (preg_match('/^feature\//', $url_alias)) {
+    drupal_goto($id);
+  }
 
   $sql = "
     SELECT
@@ -2254,7 +2356,7 @@ function tripal_feature_match_features_page($id) {
   // if we have more than one match then generate the table, otherwise, redirect
   // to the matched feature
   if ($num_matches == 1) {
-    drupal_goto(url("node/" . $curr_match->nid));
+    drupal_goto("node/" . $curr_match->nid);
   }
   if ($num_matches == 0) {
     return "<p>No features matched the given name '$id'</p>";
