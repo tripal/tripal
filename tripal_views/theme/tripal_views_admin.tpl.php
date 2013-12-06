@@ -1,18 +1,10 @@
-<h3>Tripal Views Quick Links:</h3>
-<ul>
-  <li><?php print l('List of integrated tables',"admin/tripal/views/integration/list") ?></li>
-  <li><?php print l('Integrate a new table',"admin/tripal/views/integration/new") ?></li>
-  <li><?php print l('Import a previously exported table integration.',"admin/tripal/views/integration/import") ?></li>
-</ul>
-
-<br>
 <h3>Views Integration Description:</h3>
 <p>Tripal Views provides an interface for integrating <a href="http://drupal.org/project/views">Drupal Views</a>
    with Chado tables, custom tables and materialized views.  This allows site administrators to create custom pages
    and forms for tables in the Chado schema (if Chado was installed by Tripal).  All tables in Chado are integrated
    automatically with Drupal Views but custom tables and materialized views are not.  After creating a new materialized
    view or custom table you can follow the links above to integrate the table with Drupal Views.  The interface allows
-   you to specify which fields the table can be joined with other tables and also specify field, sort and filter 
+   you to specify which fields the table can be joined with other tables and also specify field, sort and filter
    handlers for views.  Different handlers provide different functionality.
 </p>
 
@@ -38,8 +30,8 @@
      provide those relationships in the provided form.  Finally, if your fields require a special handlers, you
      may select them from the drop downs provided</li>
    <li><b>Alter an existing integration</b>:  If a table is already integrated you can alter its integration configuration by navigating
-     to the <?php print l('list of integrated tables', 'admin/tripal/views/integration/list')?>, select the table from the list and alter it accordingly.  
-     You can create new integration configurations for tables that are already integrated by lowering the priority setting.  The configuration setting 
+     to the <?php print l('list of integrated tables', 'admin/tripal/views/integration/list')?>, select the table from the list and alter it accordingly.
+     You can create new integration configurations for tables that are already integrated by lowering the priority setting.  The configuration setting
      with the lowest priority will be selected.</li>
    <li><b>Create custom pages/block/search form</b>:  After saving conifguration settings from either step above, you can navigate to the
      Drupal Views interface where you can create a custom page, block or search form.</li>

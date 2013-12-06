@@ -4,6 +4,7 @@ core = 7.x
 project = tripal_core
 package = Tripal
 version = 7.x-2.0beta
+configure = admin/tripal/views-integration
 
 files[] = views/handlers/chado_views_handler_relationship.inc
 files[] = views/handlers/views_handler_join_chado_through_linking.inc

@@ -7,7 +7,6 @@ require_once "includes/tripal_views_integration_port.inc";
 
 /**
  * Implements hook_menu()
- *
  * Purpose: this hook provides details about new menu items added by this module
  *
  * @ingroup tripal_views
@@ -24,16 +23,16 @@ function tripal_views_menu() {
     'type' => MENU_NORMAL_ITEM,
   );
 
-  $items['admin/tripal/views'] = array(
+  $items['admin/tripal/views-integration'] = array(
     'title' => 'Views Integration',
     'description' => 'Integration of all the chado tables and fields with Drupal Views.',
-    'page callback' => 'theme',
-    'page arguments' => array('tripal_views_admin'),
+    //'page callback' => 'theme',
+    //'page arguments' => array('tripal_views_admin'),
     'access arguments' => array('manage tripal_views_integration'),
     'type' => MENU_NORMAL_ITEM
   );
 
-  $items['admin/tripal/views/integration/list'] = array(
+  $items['admin/tripal/views-integration/list'] = array(
     'title' => 'List of Integrated Tables',
     'description' => 'Provide a list of all integrated tables and allows for adding new tables or editing already integrated tables.',
     'page callback' => 'tripal_views_integration_setup_list',
@@ -42,15 +41,17 @@ function tripal_views_menu() {
     'weight' => 0,
   );
 
-  $items['admin/tripal/views/integration/new'] = array(
+  $items['admin/tripal/views-integration/new'] = array(
     'title' => 'Integrate A Table',
+    'description' => 'Describe to Tripal Views how to integrate a new chado table or materialized view.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_views_integration_form'),
     'access arguments' => array('manage tripal_views_integration'),
     'type' => MENU_NORMAL_ITEM,
+    'weight' => 1,
   );
 
-  $items['admin/tripal/views/integration/edit/%'] = array(
+  $items['admin/tripal/views-integration/edit/%'] = array(
     'title' => 'Edit Views Integration',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_views_integration_form', 5),
@@ -58,7 +59,7 @@ function tripal_views_menu() {
     'type' => MENU_CALLBACK,
   );
 
-  $items['admin/tripal/views/integration/delete/%'] = array(
+  $items['admin/tripal/views-integration/delete/%'] = array(
     'title' => 'Delete Views Integration',
     'page callback' => 'tripal_views_integration_delete',
     'page arguments' => array(5),
@@ -66,43 +67,44 @@ function tripal_views_menu() {
     'type' => MENU_CALLBACK,
   );
 
-  $items['admin/tripal/views/import'] = array(
+  $items['admin/tripal/views-integration/import'] = array(
     'title' => 'Import Views Integration',
+    'description' => 'Import a Tripal Views Integration from another site.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_views_integration_import_form'),
     'access arguments' => array('manage tripal_views_integration'),
     'type' => MENU_NORMAL_ITEM,
+    'weight' => 2,
   );
 
-  $items['admin/tripal/views/integration/export/%'] = array(
-    'title' => 'Import Views Integration',
+  $items['admin/tripal/views-integration/export'] = array(
+    'title' => 'Export Views Integration',
+    'description' => 'Export a Tripal Views Integration for use in another Tripal site',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_views_integration_export_form', 5),
+    'access arguments' => array('manage tripal_views_integration'),
+    'type' => MENU_NORMAL_ITEM,
+    'weight' => 3,
+  );
+
+  $items['admin/tripal/views-integration/export/%'] = array(
+    'title' => 'Export Views Integration',
+    'description' => 'Export a Tripal Views Integration for use in another Tripal site',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_views_integration_export_form', 5),
     'access arguments' => array('manage tripal_views_integration'),
     'type' => MENU_CALLBACK,
   );
 
-  // D6:
-  // Menu item for the AJAX callback function that retrieves the
-  // portion of the form that contains all of the fields for the table being integrated
-  //$items['tripal/views/integration/ajax/view_setup_table'] = array(
-  //  'title' => 'Import Views Integration',
-  //  'page callback' => 'tripal_views_integration_ajax_view_setup_table',
-  //  'page arguments' => array(),
-  //  'access arguments' => array('manage tripal_views_integration'),
-  //  'type' => MENU_CALLBACK,
-  //);
-
-  // D6:
-  // Menu item for the AJAX callback function that retrieves the list of
-  // column names for the table that is selected to be joined.
-  //$items['tripal/views/integration/ajax/join_field/%/%'] = array(
-  //  'title' => 'Import Views Integration',
-  //  'page callback' => 'tripal_views_integration_ajax_join_field',
-  //  'page arguments' => array(5, 6),
-  //  'access arguments' => array('manage tripal_views_integration'),
-  //  'type' => MENU_CALLBACK,
-  //);
+  $items['admin/tripal/views-integration/help'] = array(
+    'title' => 'Help',
+    'description' => "A description of the Tripal Views module including a short description of it's usage.",
+    'page callback' => 'theme',
+    'page arguments' => array('tripal_views_admin'),
+    'access arguments' => array('manage tripal_views_integration'),
+    'type' => MENU_NORMAL_ITEM,
+    'weight' => 4,
+  );
 
   return $items;
 }
@@ -125,8 +127,17 @@ function tripal_views_init() {
 }
 
 /**
- * Implements hook_views_api()
- *
+ * Implements hook_help()
+ * Purpose: Adds a help page to the module list
+ */
+function tripal_views_help ($path, $arg) {
+  if ($path == 'admin/help#tripal_views') {
+    return theme('tripal_views_admin', array());
+  }
+}
+
+/**
+ * Implements hook_permissions()
  * Purpose: Set the permission types that the chado module uses.
  *
  * @ingroup tripal_views
