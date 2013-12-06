@@ -34,7 +34,6 @@ function tripal_views_integration_setup_list() {
   $rows = array();
 
   // get the list of materialized views
-  // D7 TODO: Check DBTNG changes work
   $tviews = db_query('SELECT tv.setup_id, tv.name, tv.table_name, tc.table_id, tv.priority, tv.comment '
                      .'FROM {tripal_views} tv '
                      .'LEFT JOIN {tripal_custom_tables} tc ON tc.table_name=tv.table_name '
@@ -68,7 +67,6 @@ function tripal_views_integration_setup_list() {
   $rows = array();
 
   // get the list of chado tables
-  // D7 TODO: Check DBTNG changes work
   $tviews = db_query('SELECT tv.setup_id, tv.name, tv.table_name, tv.priority, tv.comment '
                      .'FROM {tripal_views} tv '
                      .'LEFT JOIN {tripal_custom_tables} tc ON tc.table_name=tv.table_name '
@@ -99,7 +97,6 @@ function tripal_views_integration_setup_list() {
   $rows = array();
 
   // get the list of chado tables
-  // D7 TODO: Check DBTNG changes work
   $tviews = db_query('SELECT tv.setup_id, tv.name, tv.table_name, tv.priority, tv.comment '
                      .'FROM {tripal_views} tv '
                      .'LEFT JOIN {tripal_custom_tables} tc ON tc.table_name=tv.table_name '
@@ -161,17 +158,29 @@ function tripal_views_integration_form($form, $form_state) {
   $form = array();
   $data = array();
   $form['#cache'] = TRUE;
-  $setup_id = $form_state['build_info']['args'][0];
+  if (isset($form_state['build_info']['args'][0])) {
+    $setup_id = $form_state['build_info']['args'][0];
+  }
+  else {
+    $setup_id = NULL;
+  }
 
-  // initialize Tripal AHAH
-  tripal_core_ahah_init_form();
+  // if Ajax is triggered to change the fields table
+  // then make some tweaks before the form is rendered
+  if (isset($form_state['triggering_element'])) {
+
+    $triggering_element = $form_state['triggering_element']['#name'];
+    if (($triggering_element == 'table_name' OR $triggering_element == 'mview_id')) {
+      $form_state['values'][$triggering_element] = $form_state['triggering_element']['#value'];
+      $setup_id = NULL;
+    }
+  }
 
   // if a setup_id is provided then we want to get the form defaults
   $setup_obj = array();
   if (isset($setup_id)) {
 
-    // get the deafult setup values
-    // D7 TODO: Check DBTNG changes work
+    // get the default setup values
     $sql = "SELECT * FROM {tripal_views} WHERE setup_id = :setup";
     $setup_obj = db_query($sql, array(':setup' => $setup_id));
     $setup_obj = $setup_obj->fetchObject();
@@ -181,7 +190,6 @@ function tripal_views_integration_form($form, $form_state) {
     $form_state['values']['table_name'] = $table_name;
 
     // get the default field name/description
-    // D7 TODO: Check DBTNG changes work
     $sql = "SELECT * FROM {tripal_views_field} WHERE setup_id=:setup";
     $query = db_query($sql, array(':setup' => $setup_id));
     $default_fields = array();
@@ -191,7 +199,6 @@ function tripal_views_integration_form($form, $form_state) {
     }
 
     // get the default join settings and handlers
-    // D7 TODO: Check DBTNG changes work
     $sql = "SELECT * FROM {tripal_views_join} WHERE setup_id = :setup";
     $query = db_query($sql, array(':setup' => $setup_id));
     $default_joins = array();
@@ -201,7 +208,6 @@ function tripal_views_integration_form($form, $form_state) {
     }
 
     // get the default handlers
-    // D7 TODO: Check DBTNG changes work
     $sql = "SELECT * FROM {tripal_views_handlers} WHERE setup_id = :setup";
     $query = db_query($sql, array(':setup' => $setup_id));
     $default_handlers = array();
@@ -211,7 +217,6 @@ function tripal_views_integration_form($form, $form_state) {
     }
 
     // get the default join handlers
-    // D7 TODO: Check DBTNG changes work
     $sql = "SELECT * FROM {tripal_views_join} WHERE setup_id = :setup";
     $query = db_query($sql, array(':setup' => $setup_id));
     foreach ($query as $handler) {
@@ -224,6 +229,7 @@ function tripal_views_integration_form($form, $form_state) {
        '#type' => 'hidden',
        '#value' => $setup_id,
     );
+
   }
 
   // add a fieldset for the MView & Chado table selectors
@@ -239,16 +245,20 @@ function tripal_views_integration_form($form, $form_state) {
   // build the form element for the Chado tables
   $chado_tables = tripal_core_get_chado_tables(TRUE);
   $chado_tables = array_merge(array('Select'), $chado_tables);
+  $default = '';
+  if ($setup_id) {
+    $default = (!$setup_obj->mview_id) ? $setup_obj->table_name : '';
+  }
   $form['base_table_type']['table_name'] = array(
     '#title' => t('Chado/Custom Table'),
     '#type' => 'select',
     '#options' => $chado_tables,
     '#description' => t('Tables from Chado, custom tables and materialized view tables (non-legacy MViews) can be selected for integration.'),
-    '#default_value' => (!$setup_obj->mview_id) ? $setup_obj->table_name : '',
+    '#default_value' => $default,
     '#ajax' => array(
        //D6: 'path' => 'tripal/views/integration/ajax/view_setup_table',
        'callback' => 'tripal_views_integration_ajax_view_setup_table',
-       'wrapper' => 'table-rows-div',
+       'wrapper' => 'fieldset-table-rows-wrapper',
        'effect' => 'fade',
        'event' => 'change',
        'method' => 'replace',
@@ -264,16 +274,20 @@ function tripal_views_integration_form($form, $form_state) {
   foreach ($query as $mview) {
     $mview_tables[$mview->mview_id] = $mview->name;
   }
+  $default = '';
+  if ($setup_id && isset($setup_obj->mview_id)) {
+    $default = $setup_obj->mview_id;
+  }
   $form['base_table_type']['mview_id'] = array(
     '#title' => t('Legacy Materialized View'),
     '#type' => 'select',
     '#options' => $mview_tables,
     '#description' => 'Which materialized view to use.',
-    '#default_value' => $setup_obj->mview_id,
+    '#default_value' => $default,
     '#ajax' => array(
        //D6: 'path' => 'tripal/views/integration/ajax/view_setup_table',
        'callback' => 'tripal_views_integration_ajax_view_setup_table',
-       'wrapper' => 'table-rows-div',
+       'wrapper' => 'fieldset-table-rows-wrapper',
        'effect' => 'fade',
        'event' => 'change',
        'method' => 'replace',
@@ -287,10 +301,14 @@ function tripal_views_integration_form($form, $form_state) {
   );
 
   // field for the name of the
+  $default = '';
+  if ($setup_id && isset($setup_obj->name)) {
+    $default = $setup_obj->name;
+  }
   $form['views_type']['row_name'] = array(
     '#title' => t('View Type Name'),
     '#type' => 'textfield',
-    '#default_value' => $setup_obj->name,
+    '#default_value' => $default,
     '#size' => 60,
     '#maxlength' => 128,
     '#description' => 'Provide the view type name.  This is the name that will appear in '.
@@ -307,6 +325,14 @@ function tripal_views_integration_form($form, $form_state) {
   foreach (range(-10, 10) as $v) {
     $priorities[$v] = (string) $v;
   }
+  $default = -1;
+  if ($setup_id && isset($setup_obj->priority)) {
+    $default = $setup_obj->priority;
+    if ($setup_obj->priority >= 9) {
+      drupal_set_message('You are editing a default views integration. To ensure your changes
+        are used, change the priority to -10.', 'warning');
+    }
+  }
   $form['views_type']['row_priority'] = array(
     '#type' => 'select',
     '#title' => t('Priority'),
@@ -316,13 +342,13 @@ function tripal_views_integration_form($form, $form_state) {
       .'core with a priority of 10 and another by a custom module of 5 and yours is -1 then '
       .'you definition will be used for that table because -1 is lighter then both 5 and 10.'),
     '#options' => $priorities,
-    '#default_value' => (isset($setup_obj->priority)) ? $setup_obj->priority : -1,
+    '#default_value' => $default,
   );
-  if ($setup_obj->priority >= 9) {
-    drupal_set_message('You are editing a default views integration. To ensure your changes
-    are used, change the priority to -10.', 'warning');
-  }
 
+  $default = true;
+  if ($setup_id && isset($setup_obj->priority)) {
+    $default = ($setup_obj->priority >= 9) ? true : false;
+  }
   $form['views_type']['new_integration'] = array(
     '#type' => 'checkbox',
     '#title' => t('Create a New Tripal Views Integration Record'),
@@ -330,32 +356,40 @@ function tripal_views_integration_form($form, $form_state) {
       .'will be created rather then overriding the current one with your changes. This '
       .'especially important if you are editing one of the default views integrations '
       .'(ie: if the original priority was either 10 or 9).'),
-    '#default_value' => ($setup_obj->priority >= 9) ? true : false,
+    '#default_value' => $default,
   );
 
+  $default = true;
+  if ($setup_id && isset($setup_obj->base_table)) {
+    $default = $setup_obj->base_table;
+  }
   $form['views_type']['base_table'] = array(
     '#type' => 'checkbox',
     '#title' => t('Base Table?'),
     '#description' => t('If you want this table to show up as one of the options in the '
       . 'add view page, then check this checkbox. It allows you to create listings '
       . 'primarily from this table'),
-    '#default_value' => (isset($setup_obj->base_table)) ? $setup_obj->base_table : 1,
+    '#default_value' => $default,
   );
 
+  $default = '';
+  if ($setup_id && isset($setup_obj->comment)) {
+    $default = $setup_obj->comment;
+  }
   $form['views_type']['row_description'] = array(
     '#title' => t('Comment'),
     '#type' => 'textarea',
     '#description' => '(Optional). Provide any details regarding this setup you would like. This '.
                       'description will appear when selecting a type for a new Drupal View',
     '#required' => FALSE,
-    '#default_value' => (isset($setup_obj->comment)) ? $setup_obj->comment : '',
+    '#default_value' => $default,
   );
 
   // we need a div block where the table fields will get put when the
   // AHAH callback is made
   $form['view_setup_table'] = array(
     '#type' => 'item',
-    '#prefix' => '<div id="table-rows-div">',
+    '#prefix' => '<div id="fieldset-table-rows-wrapper">',
     '#suffix' => '</div>',
   );
 
@@ -363,11 +397,12 @@ function tripal_views_integration_form($form, $form_state) {
   // add the fieldset for the table fields, but only if the $mview_id or $table_name
   // is set. The only times these values are set is if we're editing an existing
   // record or if the AHAH callback is being made.
-  if ($form_state['values']['mview_id'] or $form_state['values']['table_name']) {
+  if (isset($form_state['values']['mview_id']) or isset($form_state['values']['table_name'])) {
     $mview_id = $form_state['values']['mview_id'];
     $table_name = $form_state['values']['table_name'];
     $form['view_setup_table'] = array(
       '#type' => 'fieldset',
+      '#title' => t('Table Fields'),
       '#prefix' => '<div id="fieldset-table-rows-wrapper">',
       '#suffix' => '</div>',
     );
@@ -465,7 +500,7 @@ function tripal_views_integration_form($form, $form_state) {
       $form['view_setup_table']["$table_id-$i"]["fields_name_$table_id-$i"] = array(
         '#type' => 'item',
         '#prefix' => "<div class=\"column-one\">",
-        '#value' => '<span class="column-name">' . filter_xss($column_name) . '</span>'.
+        '#markup' => '<span class="column-name">' . filter_xss($column_name) . '</span>'.
                     '<br /><span class="column-type">' . filter_xss($column_type) . '</span>',
         '#suffix' => "</div>",
       );
@@ -486,9 +521,13 @@ function tripal_views_integration_form($form, $form_state) {
         $default_name = $default_fields[$column_name]['name'];
         $default_descrip = $default_fields[$column_name]['description'];
       }
-      else {
+      elseif (isset($form_state['values']["fields_readable_name_$table_id-$i"])) {
         $default_name = $form_state['values']["fields_readable_name_$table_id-$i"];
         $default_descrip = $form_state['values']["fields_description_$table_id-$i"];
+      }
+      else {
+        $default_name = ucwords(str_replace('_',' ', $column_name));
+        $default_descrip = 'TODO: please describe this field!';
       }
       $form['view_setup_table']["$table_id-$i"]['column-2']["fields_readable_name_$table_id-$i"] = array(
         '#type' => 'textfield',
@@ -543,8 +582,6 @@ function tripal_views_integration_form($form, $form_state) {
         '#required' => FALSE,
         '#default_value' => $default_join_table,
         '#ajax' => array(
-           //D6: 'path' => "tripal/views/integration/ajax/join_field/$table_id-$i/fields_join_column_$table_id-$i",
-           //D7 TODO: Add back in arguments!!
            'callback' => 'tripal_views_integration_ajax_join_field',
            'wrapper' => "fields-column-join-column-$table_id-$i",
            'effect' => 'fade',
@@ -927,6 +964,7 @@ function tripal_views_integration_form_submit($form, &$form_state) {
   else {  // this is an update
     // check to see if it was specified to create a new integration
     if ($form_state['values']['new_integration']) {
+      $setup_id = NULL;
       if (!drupal_write_record('tripal_views', $tripal_views_record)) {
         drupal_set_message(t("Failed to add record."), 'error');
         return;
@@ -1011,6 +1049,8 @@ function tripal_views_integration_form_submit($form, &$form_state) {
   else {
     drupal_set_message(t('Record Added'));
   }
+
+  $form_state['redirect'] = 'admin/tripal/views/integration/list';
 
   // now clear all the caches so that Drupal views picks up our chages
   views_invalidate_cache();
@@ -1099,46 +1139,28 @@ function tripal_views_integration_discover_handlers() {
 }
 
 /*
-*
-* */
-function tripal_views_integration_ajax_view_setup_table() {
-  // we only want the table row setup fields
-  $form = tripal_core_ahah_prepare_form();
-  $form = $form['view_setup_table'];
-  $data = drupal_render($form);
-
-  // bind javascript events to the new objects that will be returned
-  // so that AHAH enabled elements will work.
-  $settings = tripal_core_ahah_bind_events();
-
-  // return the updated JSON
-  drupal_json(
-    array(
-      'status'   => TRUE,
-      'data'     => $data,
-      'settings' => $settings,
-    )
-  );
-}
-/*
- * Used to pass in aquisition_id-1 and fields_join_column_aquisition_id-1
+ * Ajax Callback: Tripal Views Integration Form
+ * Replaces the entire fields table when the table or materialized view is set/changed
  */
-function tripal_views_integration_ajax_join_field($field, $join_field) {
-  // prepare and render the form
-  $form = tripal_core_ahah_prepare_form();
-  $form = $form['view_setup_table'][$field]['column-3'][$join_field];
-  $data = drupal_render($form);
+function tripal_views_integration_ajax_view_setup_table($form, $form_state) {
+  return $form['view_setup_table'];
+}
 
-  // bind javascript events to the new objects that will be returned
-  // so that AHAH enabled elements will work.
-  $settings = tripal_core_ahah_bind_events();
+/*
+ * Ajax Callback: Tripal Views Integration Form
+ * Replaces the join db field dropdown when the join table dropdown is changed
+ */
+function tripal_views_integration_ajax_join_field($form, $form_state) {
 
-  // return the updated JSON
-  drupal_json(
-    array(
-      'status'   => TRUE,
-      'data'     => $data,
-      'settings' => $settings,
-    )
-  );
+  // Determine which row we are dealing with from the name of the triggering element
+  if (preg_match('/fields_join_(\w+-\d+)/', $form_state['triggering_element']['#name'], $matches)) {
+    $field = $matches[1];
+    $join_field = 'fields_join_column_' . $matches[1];
+    // return the form element to be updated
+    return $form['view_setup_table'][$field]['column-3'][$join_field];
+  }
+  else {
+    watchdog('tripal_views', 'Tripal Views Integration Ajax failed due to being unable to determine which row needs updating', array(), WATCHDOG_ERROR);
+    return $form;
+  }
 }
