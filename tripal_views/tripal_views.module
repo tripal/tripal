@@ -26,7 +26,7 @@ function tripal_views_menu() {
 
   $items['admin/tripal/views'] = array(
     'title' => 'Views Integration',
-    'description' => 'Integration with Drupal Views',
+    'description' => 'Integration of all the chado tables and fields with Drupal Views.',
     'page callback' => 'theme',
     'page arguments' => array('tripal_views_admin'),
     'access arguments' => array('manage tripal_views_integration'),
@@ -148,7 +148,7 @@ function tripal_views_permission() {
  */
 function tripal_views_views_api() {
   return array(
-    'api' => 2.0,
+    'api' => 3.0,
   );
 }
 
@@ -160,26 +160,26 @@ function tripal_views_views_api() {
  *
  * @ingroup tripal_views
  */
-function tripal_views_theme() {
+function tripal_views_theme($existing, $type, $theme, $path) {
   return array(
     'tripal_views_integration_form' => array(
-      'arguments' => array('form' => NULL),
       'template'  => 'tripal_views_integration_fields_form',
+      'render element'=> 'form',
     ),
     'tripal_views_data_export_download_form' => array(
-      'arguments' => array('form' => NULL),
+      'render element'=> 'form',
       'template'  => 'tripal_views_data_export_download_form',
     ),
     'file_upload_combo' => array(
-      'arguments' => array('element' => NULL)
+      'variables' => array('element' => NULL)
     ),
     'sequence_combo' => array(
-      'arguments' => array('element' => NULL)
+      'variables' => array('element' => NULL)
     ),
-    // instructions page for the pub module
+    // instructions page for the views module
     'tripal_views_admin' => array(
       'template' => 'tripal_views_admin',
-      'arguments' =>  array(NULL),
+      'variables' =>  array(NULL),
       'path' => drupal_get_path('module', 'tripal_views') . '/theme'
     ),
   );
@@ -219,16 +219,18 @@ function tripal_views_biological_data_page() {
 /*
  *
  */
-function tripal_views_form_alter(&$form, &$form_state, $form_id) {
+function tripal_views_form_alter($form, $form_state, $form_id) {
   if ($form_id == "tripal_views_integration_form") {
     // updating the form through the ahah callback sets the action of
     // the form to the ahah callback URL. We need to set it back
     // to the normal form URL
-    if ($form_state['values']['setup_id']) {
-      $form['#action'] = url("admin/tripal/views/integration/edit/" . $form_state['values']['setup_id']);
+    /**
+    if (isset($form_state['input']['setup_id'])) {
+      $form['#action'] = url("admin/tripal/views/integration/edit/" . $form_state['input']['setup_id']);
     }
     else {
       $form['#action'] = url("admin/tripal/views/integration/new");
     }
+    */
   }
 }

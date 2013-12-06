@@ -61,7 +61,5 @@
 
 </style>
 
-<?php print drupal_render($form); ?>
-
-<!-- END -->
+<?php print drupal_render_children($form); ?>
 
