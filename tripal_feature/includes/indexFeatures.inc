@@ -74,9 +74,9 @@ function tripal_features_reindex($max_sync, $job_id = NULL) {
   // SQL statement is derived from the hook_search function in the Drupal API.
   // Essentially, this is the SQL statement that finds all nodes that need
   // reindexing, but adjusted to include the chado_feature
-  $sql = "SELECT N.nid, N.title, CF.feature_id ".
-        "FROM {node} N ".
-        "  INNER JOIN {chado_feature} CF ON CF.nid = N.nid ";
+  $sql = "SELECT N.nid, N.title, CF.feature_id " .
+         "FROM {node} N " .
+         "  INNER JOIN {chado_feature} CF ON CF.nid = N.nid ";
   $results = db_query($sql);
 
   // load into ids array
@@ -144,8 +144,8 @@ function tripal_feature_index_feature($feature_id, $nid) {
   // if we only have a feature_id then let's find a corresponding
   // node.  If we can't find a node then return.
   if (!$nid) {
-    $nsql = "SELECT N.nid,N.title FROM {chado_feature} CF ".
-            "  INNER JOIN {node} N ON N.nid = CF.nid ".
+    $nsql = "SELECT N.nid,N.title FROM {chado_feature} CF " .
+            "  INNER JOIN {node} N ON N.nid = CF.nid " .
             "WHERE CF.feature_id = %d";
     $node = db_fetch_object(db_query($nsql, $feature_id));
     if (!$node) {

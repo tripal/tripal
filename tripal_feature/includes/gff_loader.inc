@@ -403,7 +403,7 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
                 LEFT JOIN {cvtermsynonym} CVTS on CVTS.cvterm_id = CVT.cvterm_id
              WHERE CV.cv_id = $1 and 
                (lower(CVT.name) = lower($2) or lower(CVTS.synonym) = lower($3))";
-     $status = tripal_core_chado_prepare('sel_cvterm_idnasy', $psql, array('int','text','text'));
+     $status = tripal_core_chado_prepare('sel_cvterm_idnasy', $psql, array('int', 'text', 'text'));
      if (!$status) {
        watchdog('T_gff3_loader', 'cannot prepare statement \'sel_cvterm_idnasy\'.', 
          array(), WATCHDOG_ERROR);
@@ -420,7 +420,7 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
     $num_read += $size;
     $intv_read += $size; 
     
-    if($line_num < $start_line) {
+    if ($line_num < $start_line) {
       continue;
     }    
     
@@ -435,7 +435,7 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
     // check to see if we have FASTA section, if so then set the variable
     // to start parsing
     if (preg_match('/^##FASTA/i', $line)) {
-      if($remove) {
+      if ($remove) {
         // we're done because this is a delete operation so break out of the loop.
         break;         
       }
@@ -609,7 +609,7 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
           }
         } 
         else {
-          watchdog('T_gff3_loader', "The organism attribute '%org' on line %line is not properly formated. It ".
+          watchdog('T_gff3_loader', "The organism attribute '%org' on line %line is not properly formated. It " .
             "should be of the form: organism=Genus:species.  Skipping this line.", 
             array('%org' => $attr_organism, '%line' => $line_num), WATCHDOG_ERROR);
           $skip_feature = 1;  
@@ -645,14 +645,14 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
       // the same parent.
       elseif (array_key_exists('Parent', $tags)) {
         $date = getdate();
-        $attr_uniquename = $tags['Parent'][0] . "-$type-$landmark-" . $date[0] . ":$fmin..$fmax";
+        $attr_uniquename = $tags['Parent'][0] . "-$type-$landmark-" . $date[0] . ":" . ($fmin + 1) . ".." . $fmax;
         $attr_name = $attr_uniquename;
       }
       // generate a unique name based on the date, type and location
       // and set the name to simply be the type
       else {
         $date = getdate();
-        $attr_uniquename = $date[0] . "-$type-$landmark:$fmin..$fmax";
+        $attr_uniquename = $date[0] . "-$type-$landmark:" . ($fmin + 1) . ".." . $fmax;
         $attr_name = $type;
       }      
     }
@@ -704,11 +704,11 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
         $count = tripal_core_chado_select('feature', $columns, $select, $options); 
         if (!$count or count($count) == 0 or $count[0]->num_landmarks == 0) {
           watchdog('T_gff3_loader', "The landmark '%landmark' cannot be found for this organism (%species) " .
-                "Please add the landmark and then retry the import of this GFF3 ".
+                "Please add the landmark and then retry the import of this GFF3 " .
                 "file", array('%landmark' => $landmark, '%species' => $organism->genus . " " . $organism->species), WATCHDOG_ERROR);
           return '';
         }
-        elseif($count[0]->num_landmarks > 1) {
+        elseif ($count[0]->num_landmarks > 1) {
           watchdog('T_gff3_loader', "The landmark '%landmark' has more than one entry for this organism (%species) " .
                 "Cannot continue", array('%landmark' => $landmark, '%species' => $organism->genus . " " . $organism->species), WATCHDOG_ERROR);
           return '';  
@@ -716,7 +716,7 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
 
       }
       if ($count[0]->num_landmarks > 1) {
-        watchdog('T_gff3_loader', "The landmark '%landmark' is not unique for this organism. ".
+        watchdog('T_gff3_loader', "The landmark '%landmark' is not unique for this organism. " .
               "The features cannot be associated", array('%landmark' => $landmark), WATCHDOG_ERROR);
         return '';
       }  
@@ -850,7 +850,7 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
             FROM {feature_relationship} FR              
               INNER JOIN {featureloc} FL on FL.feature_id = FR.subject_id";
     if (!$connection) {
-      $sql .= "WHERE FR.object_id = %d ".
+      $sql .= "WHERE FR.object_id = %d " .
               "ORDER BY FL.fmin ASC ";
     }
     else {
@@ -957,8 +957,8 @@ function tripal_feature_load_gff3_derives_from($feature, $subject, $organism) {
   $options = array('statement_name' => 'sel_feature_orunty');
   $sfeature = tripal_core_chado_select('feature', array('feature_id'), $match, $options);
   if (count($sfeature)==0) {
-    watchdog('T_gff3_loader', "Could not add 'Derives_from' relationship ".
-      "for %uniquename and %subject.  Subject feature, '%subject', ".
+    watchdog('T_gff3_loader', "Could not add 'Derives_from' relationship " .
+      "for %uniquename and %subject.  Subject feature, '%subject', " .
       "cannot be found", array('%uniquename' => $feature->uniquename, '%subject' => $subject), WATCHDOG_ERROR);
     return;
   }
@@ -1008,7 +1008,7 @@ function tripal_feature_load_gff3_parents($feature, $cvterm, $parents, $organism
                INNER JOIN {cv} CV on CVT.cv_id = CV.cv_id
                LEFT JOIN {cvtermsynonym} CVTS on CVTS.cvterm_id = CVT.cvterm_id
              WHERE cv.name = $1 and (CVT.name = $2 or CVTS.synonym = $3)";
-    $status = tripal_core_chado_prepare('sel_cvterm_cvname_cvtname_synonym', $psql, array('text', 'text' ,'text'));
+    $status = tripal_core_chado_prepare('sel_cvterm_cvname_cvtname_synonym', $psql, array('text', 'text', 'text'));
     if (!$status) {
        watchdog("T_gff3_loader", "Cannot prepare statement 'sel_cvterm_cvname_cvtname_synonym' for ontology term", 
          array(), WATCHDOG_WARNING);

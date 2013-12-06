@@ -172,9 +172,9 @@ function tripal_cv_load_obo_v1_2_url($obo_name, $url, $jobid = NULL, $is_new = T
   $url_fh = fopen($url, "r");
   $obo_fh = fopen($temp, "w");
   if (!$url_fh) {
-    tripal_cv_obo_quiterror("Unable to download the remote OBO file at $url. Could a firewall be blocking outgoing connections? ".
-          " if you are unable to download the file you may manually downlod the OBO file and use the web interface to ".
-          " specify the location of the file on your server.");
+    tripal_cv_obo_quiterror("Unable to download the remote OBO file at $url. Could a firewall be blocking outgoing connections? " .
+      " if you are unable to download the file you may manually downlod the OBO file and use the web interface to " .
+      " specify the location of the file on your server.");
 
   }
   while (!feof($url_fh)) {
@@ -284,7 +284,7 @@ function tripal_cv_obo_quiterror($message) {
 /*
  * 
  */
-function tripal_cv_obo_load_typedefs($defaultcv, $newcvs, $default_db, $jobid){
+function tripal_cv_obo_load_typedefs($defaultcv, $newcvs, $default_db, $jobid) {
   $sql = "SELECT * FROM {tripal_obo_temp} WHERE type = 'Typedef' ";
   $typedefs = chado_query($sql);
   
@@ -912,7 +912,7 @@ function tripal_cv_obo_add_cvterm_dbxref($cvterm, $xref) {
       'return_record' => FALSE
     );
     $result = tripal_core_chado_insert('cvterm_dbxref', $values, $ins_options);
-    if (!$result){
+    if (!$result) {
       tripal_cv_obo_quiterror("Cannot add cvterm_dbxref: $xref");
       return FALSE;
     }
@@ -1001,7 +1001,7 @@ function tripal_cv_obo_add_dbxref($db_id, $accession, $version='', $description=
   );
   $options = array('statement_name' => 'sel_dbxref_idac');
   $result = tripal_core_chado_select('dbxref', array('dbxref_id'), $values, $options);
-  if (count($result) == 0){
+  if (count($result) == 0) {
     $ins_values = array(
       'db_id'       => $db_id,
       'accession'   => $accession,

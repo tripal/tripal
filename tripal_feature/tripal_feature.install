@@ -72,10 +72,10 @@ function tripal_feature_add_organism_count_mview() {
     // table name
     $view_name,
     // table schema definition
-    'organism_id integer, genus character varying(255), '.
-    '  species character varying(255), '.
-    '  common_name character varying(255), '.
-    '  num_features integer, cvterm_id integer, '.
+    'organism_id integer, genus character varying(255), ' .
+    '  species character varying(255), ' .
+    '  common_name character varying(255), ' .
+    '  num_features integer, cvterm_id integer, ' .
     '  feature_type character varying(255)',
     // columns for indexing
     'organism_id,cvterm_id,feature_type',

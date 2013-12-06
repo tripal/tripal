@@ -12,9 +12,9 @@
  * 
  */
 function tripal_custom_table_new_page() {
-	$output = drupal_render(drupal_get_form('tripal_custom_tables_form'));
-	return $output;   	
-	
+  $output = drupal_render(drupal_get_form('tripal_custom_tables_form'));
+  return $output;     
+  
 }
 /**
  * A template function which returns markup to display details for the custom table

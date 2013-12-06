@@ -334,7 +334,8 @@ function tripal_cv_cvterm_form(&$form_state, $action = 'add') {
       if ($name) {
         $form['add_cvterm']['name']['#attributes'] = array('readonly' => 'readonly');
         $form['add_cvterm']['name']['#description'] = 'The term name cannot be changed. If the name is incorrect, please create a new term and make this one as obsolete.';
-      } else {
+      } 
+      else {
         $form['add_cvterm']['name']['#autocomplete_path'] = "admin/tripal/tripal_cv/cvterm/auto_name/$cv_id";
         $form['add_cvterm']['name']['#ahah'] = array(
            'path'    => 'admin/tripal/tripal_cv/cvterm/ahah',
@@ -456,7 +457,7 @@ function tripal_cv_cvterm_form_submit($form, &$form_state) {
   // get the database
   $values = array('db_id' => $form_state['values']['db_id']);
   $results = tripal_core_chado_select('db', array('name'), $values);
-  if (!$results or count($results) == 0){
+  if (!$results or count($results) == 0) {
     drupal_set_message(t('Unable to add term.  Cannot find the database.'), 'error');
     return;
   }
@@ -465,7 +466,7 @@ function tripal_cv_cvterm_form_submit($form, &$form_state) {
   // get the cv
   $values = array('cv_id' => $form_state['values']['cv_id']);
   $results = tripal_core_chado_select('cv', array('name'), $values);
-  if (!$results or count($results) == 0){
+  if (!$results or count($results) == 0) {
     drupal_set_message(t('Unable to add term.  Cannot find the vocabulary.'), 'error');
     return;
   }

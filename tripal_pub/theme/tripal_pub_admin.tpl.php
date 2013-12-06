@@ -55,8 +55,10 @@ have been added to Chado database.</p>
 	<ol>
 		<li>Install the YAZ libraries: sudo apt-get install yaz libyaz4-dev</li>
 		<li>Install the PHP YAZ extension: sudo pecl install yaz</li>
-		<li>Add the text 'extesion=yaz.so' to the appropriate php.ini file
-		(e.g. /etc/php5/apache2filter/php.ini)</li>
+		<li>Add the text 'extension=yaz.so' to the appropriate php.ini file
+		(e.g. /etc/php5/apache2filter/php.ini). On Ubuntu you may need to
+		add it to the php.ini file specfic for the Apache webserver and 
+		also to the php.ini specific for the command-line.</li>
 		<li>Restart the webserver</li>
 	</ol>
 	</li>

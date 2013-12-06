@@ -137,10 +137,10 @@ function chado_analysis_form(&$node, $form_state = NULL) {
   $day = preg_replace("/^\d+-\d+-0?(\d+) .*/", "$1", $default_time);
   // If the time is not set, use current time
   if (!$default_time) {
-    $default_time = time();
-    $year = format_date($default_time, 'custom', 'Y');
+    $default_time = REQUEST_TIME;
+    $year  = format_date($default_time, 'custom', 'Y');
     $month = format_date($default_time, 'custom', 'n');
-    $day = format_date($default_time, 'custom', 'j');
+    $day   = format_date($default_time, 'custom', 'j');
   }
   $form['timeexecuted']= array(
       '#type' => 'date',
@@ -177,9 +177,9 @@ function chado_analysis_form(&$node, $form_state = NULL) {
     ORDER BY CVT.name ASC
   ";
   $prop_types = chado_query($sql);
-  while ($prop = db_fetch_object($prop_types)) {
-  	$properties_select[$prop->cvterm_id] = $prop->name;
-  	$properties_list[$prop->cvterm_id] = $prop;
+  while ($prop = $prop_types->fetchObject()) {
+    $properties_select[$prop->cvterm_id] = $prop->name;
+    $properties_list[$prop->cvterm_id] = $prop;
   }
   
   $form['properties'] = array(
@@ -243,10 +243,10 @@ function tripal_analysis_validate($node, &$form) {
     $analysis = $result[0];
       
     // if the name has changed make sure it doesn't conflict with an existing name
-    if($analysis->name != $node->analysisname) {
+    if ($analysis->name != $node->analysisname) {
       $values = array('name' => $node->analysisname);
       $result = tripal_core_chado_select('analysis', array('analysis_id'), $values);
-      if($result and count($result) > 0) {
+      if ($result and count($result) > 0) {
         form_set_error('analysisname', 'Cannot update the analysis with this analysis name. An analysis with this name already exists.');
         return;
       }  
@@ -254,7 +254,7 @@ function tripal_analysis_validate($node, &$form) {
     
     // if the unique constraint has changed check to make sure it doesn't conflict with an
     // existing record
-    if($analysis->program != $node->program or $analysis->programversion != $node->programversion or 
+    if ($analysis->program != $node->program or $analysis->programversion != $node->programversion or 
        $analysis->sourcename != $node->sourcename) {
       $values = array(
         'program' => $node->program,
@@ -278,7 +278,7 @@ function tripal_analysis_validate($node, &$form) {
       }  
     }
   }
-  else{
+  else {
     // To differentiate if we are syncing or creating a new analysis altogther, see if an
     // analysis_id already exists
     if ($node->analysis_id and $node->analysis_id != 0) {
@@ -305,7 +305,7 @@ function tripal_analysis_validate($node, &$form) {
       // title, so it should be unique      
       $values = array('name' => $node->analysisname);
       $result = tripal_core_chado_select('analysis', array('analysis_id'), $values);
-      if($result and count($result) > 0) {
+      if ($result and count($result) > 0) {
         form_set_error('analysisname', 'Cannot add the analysis with this analysis name. An analysis with this name already exists.');
         return;
       }
@@ -322,11 +322,12 @@ function chado_analysis_node_form_add_new_empty_props(&$form, $properties_select
   $form['properties']['table']['new']["new_id"] = array(
     '#type'          => 'select',
     '#options'       => $properties_select,
-    '#ahah' => array(
-      'path'    => "tripal_analysis/properties/description",
-      'wrapper' => 'tripal-analysis-new_value-desc',
-      'event'   => 'change',
-      'method'  => 'replace',          
+    '#ajax' => array(
+      'callback' => "tripal_analysis_property_get_description",
+      'wrapper'  => 'tripal-analysis-new_value-desc',
+      'effect'   => 'fade',
+      'event'    => 'change',
+      'method'   => 'replace',          
   ),
   );
   $form['properties']['table']['new']["new_value"] = array(
@@ -340,11 +341,12 @@ function chado_analysis_node_form_add_new_empty_props(&$form, $properties_select
     '#type'         => 'image_button',      
     '#value'        => t('Add'),
     '#src'          => drupal_get_path('theme', 'tripal') . '/images/add.png',
-    '#ahah' => array(
-      'path'    => "tripal_analysis/properties/add",
-      'wrapper' => 'tripal-analysis-edit-properties-table',
-      'event'   => 'click',
-      'method'  => 'replace',          
+    '#ajax' => array(
+      'callback' => "tripal_analysis_property_add",
+      'wrapper'  => 'tripal-analysis-edit-properties-table',
+      'effect'   => 'fade',
+      'event'    => 'click',
+      'method'   => 'replace',          
     ),
     '#attributes' => array('onClick' => 'return false;'),
     );
@@ -367,10 +369,10 @@ function chado_analysis_node_form_add_new_props(&$form, $form_state, &$d_propert
 
         // skip any properties that the user requested to delete through a previous
         // AHAH callback or through the current AHAH callback
-        if($d_removed["$new_id-$rank"]) {
+        if ($d_removed["$new_id-$rank"]) {
           continue;
         }
-        if($form_state['post']['remove-' . $new_id . '-' . $rank]) {
+        if ($form_state['post']['remove-' . $new_id . '-' . $rank]) {
           $d_removed["$new_id-$rank"] = 1;
           continue;
         }
@@ -406,11 +408,12 @@ function chado_analysis_node_form_add_new_props(&$form, $form_state, &$d_propert
           '#type'         => 'image_button',
           '#value'        => t('Remove'),
           '#src'          => drupal_get_path('theme', 'tripal') . '/images/minus.png',
-          '#ahah' => array(
-            'path'    => "tripal_analysis/properties/minus/$new_id/$rank",
-            'wrapper' => 'tripal-analysis-edit-properties-table',
-            'event'   => 'click',
-            'method'  => 'replace',
+          '#ajax' => array(
+            'callback' => "tripal_analysis/properties/minus/$new_id/$rank",
+            'wrapper'  => 'tripal-analysis-edit-properties-table',
+            'effect'   => 'fade',
+            'event'    => 'click',
+            'method'   => 'replace',
         ),
           '#attributes' => array('onClick' => 'return false;'),
         );
@@ -420,7 +423,7 @@ function chado_analysis_node_form_add_new_props(&$form, $form_state, &$d_propert
 
 
   // second add in any new properties added during this callback
-  if($form_state['post']['add']) {
+  if ($form_state['post']['add']) {
     $new_id = $form_state['values']['new_id'];
     $new_value = $form_state['values']['new_value'];
 
@@ -478,7 +481,7 @@ function chado_analysis_node_form_add_analysisprop_table_props(&$form, $form_sta
   // get the properties for this analysis
   $num_properties = 0;
 
-  if(!$analysis_id) {
+  if (!$analysis_id) {
     return $num_properties;
   }
 
@@ -487,21 +490,21 @@ function chado_analysis_node_form_add_analysisprop_table_props(&$form, $form_sta
     FROM {analysisprop} PP
       INNER JOIN {cvterm} CVT on CVT.cvterm_id = PP.type_id
       INNER JOIN {cv} CV on CVT.cv_id = CV.cv_id
-    WHERE PP.analysis_id = %d and CV.name = 'analysis_property'
+    WHERE PP.analysis_id = :analysis_id and CV.name = 'analysis_property'
     ORDER BY CVT.name, PP.rank
   ";
-  $analysis_props = chado_query($sql, $analysis_id);
-  while ($prop = db_fetch_object($analysis_props)) {
+  $analysis_props = chado_query($sql, array(':analysis_id' => $analysis_id));
+  while ($prop = $analysis_props->fetchObject()) {
 
     $type_id = $prop->cvterm_id;
     $rank = count($d_properties[$type_id]);
     
     // skip any properties that the user requested to delete through a previous
     // AHAH callback or through the current AHAH callback
-    if($d_removed["$type_id-$rank"]) {
+    if ($d_removed["$type_id-$rank"]) {
       continue;
     }
-    if($form_state['post']['remove-' . $type_id . '-' . $rank]) {
+    if ($form_state['post']['remove-' . $type_id . '-' . $rank]) {
       $d_removed["$type_id-$rank"] = 1;
       continue;
     }
@@ -591,7 +594,7 @@ function tripal_analysis_theme_node_form_properties($form) {
     );
   }
 
-  $headers = array('Property Type','Value', '');
+  $headers = array('Property Type', 'Value', '');
   return theme('table', $headers, $rows);
 }
 

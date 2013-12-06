@@ -14,7 +14,10 @@
  * Implementation of hook_install().
  */
 function tripal_project_install() {
-  drupal_install_schema('tripal_project');
+  
+  // create the module's data directory
+  tripal_create_moddir('tripal_project');
+  
   tripal_project_add_cvterms();
 }
 
@@ -22,7 +25,7 @@ function tripal_project_install() {
  * Implementation of hook_uninstall().
  */
 function tripal_project_uninstall() {
-  drupal_uninstall_schema('tripal_project');
+
 }
 
 /**
@@ -79,16 +82,4 @@ function tripal_project_add_cvterms() {
   // description in the libraryprop table.
   tripal_cv_add_cvterm(array('name' => 'project_description', 'def' => 'Description of a project'), 
     'tripal', 0, 1, 'tripal'); 
-}
-/**
- *  Update for Drupal 6.x, Tripal 1.0
- *  This update
- *   - adds the library types
- *
- * @ingroup tripal_library
- */
-function tripal_project_update_6000() {
-  // add in the missing library typ cv terms
-  tripal_project_add_cvterms();
-  return $ret;
 }

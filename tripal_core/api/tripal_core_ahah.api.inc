@@ -48,10 +48,10 @@ function tripal_core_ahah_init_form() {
  *
  * @ingroup tripal_ahah_api
  */
-function tripal_core_ahah_prepare_form() {
+function tripal_core_ahah_prepare_form(&$form_state = array()) {
   
   // Retrieve the form from the cache
-  $form_state = array('storage' => NULL);
+  $form_state['storage'] = NULL;
   $form_build_id = filter_xss($_POST['form_build_id']);
   if (!$form_build_id) {
     return FALSE;

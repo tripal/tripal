@@ -4,7 +4,7 @@
  */
 function tripal_feature_seq_extract_page() {
   
-  if ($_SESSION['tripal_feature_seq_extract']['download']){   
+  if ($_SESSION['tripal_feature_seq_extract']['download']) {   
     $genus      = $_SESSION['tripal_feature_seq_extract']['genus'];
     $species    = $_SESSION['tripal_feature_seq_extract']['species'];
     $analysis   = $_SESSION['tripal_feature_seq_extract']['analysis'];
@@ -45,7 +45,7 @@ function tripal_feature_seq_extract_page() {
         views must be populated before using this form.  Those views should be re-populated 
         when new data is added.  If you use the " . l('jquery_update module', 'http://drupal.org/project/jquery_update') . ", it may break this form.
         You will need to update the  jquery_update/replace/jquery.form.js file with " .
-        l('a more recent version','https://raw.github.com/malsup/form/master/jquery.form.js') . "</p>         
+        l('a more recent version', 'https://raw.github.com/malsup/form/master/jquery.form.js') . "</p>         
       </div>
     ";
   }
@@ -455,7 +455,8 @@ function tripal_feature_seq_extract_form_submit($form, &$form_state) {
  * 
  */
 function tripal_feature_seq_extract_get_features($org_commonname, $genus, $species, $analysis_name, 
-  $type, $feature_name, $upstream, $downstream, $output_format, $derive_from_parent, $aggregate, $child) {
+  $type, $feature_name, $upstream, $downstream, $output_format, $derive_from_parent, $aggregate, 
+  $child, $relationship, $rel_part) {
     
   $sub_features = explode(',', $child);
     
@@ -465,17 +466,17 @@ function tripal_feature_seq_extract_get_features($org_commonname, $genus, $speci
   
   if (!$type and !$feature_name and !$genus) {
     print "Please provide a type, feature name or genus\n";
-     eturn;
+     return;
   }
 
   // get the list of features
   $vars = array();
-  $sql  = "SELECT DISTINCT F.feature_id, F.name, F.uniquename, O.genus, O.species, CVT.name as feature_type ".
-          "FROM {feature} F ".
-          "  INNER JOIN {organism} O on O.organism_id = F.organism_id ".
+  $sql  = "SELECT DISTINCT F.feature_id, F.name, F.uniquename, O.genus, O.species, CVT.name as feature_type " .
+          "FROM {feature} F " .
+          "  INNER JOIN {organism} O on O.organism_id = F.organism_id " .
           "  INNER JOIN {cvterm} CVT on CVT.cvterm_id = F.type_id ";
   if ($analysis_name) {
-     $sql .= "  INNER JOIN {analysisfeature} AF on AF.feature_id = F.feature_id ".
+     $sql .= "  INNER JOIN {analysisfeature} AF on AF.feature_id = F.feature_id " .
              "  INNER JOIN {analysis} A on AF.analysis_id = A.analysis_id ";
   }         
   $sql .= "WHERE (1=1) ";
@@ -523,7 +524,7 @@ function tripal_feature_seq_extract_get_features($org_commonname, $genus, $speci
     $feature_id = $feature->feature_id;
     
     // build the header for each FASTA entry
-    if($feature->uniquename == $feature->name) {
+    if ($feature->uniquename == $feature->name) {
       $feature_name = "$feature->uniquename $feature->feature_type ($feature->genus $feature->species)";
     } 
     else {
@@ -533,7 +534,7 @@ function tripal_feature_seq_extract_get_features($org_commonname, $genus, $speci
     // generate the sequence
     $sequence = tripal_feature_get_formatted_sequence($feature_id, $feature_name, 
       $num_bases_per_line, $derive_from_parent, $aggregate, $output_format,
-      $upstream, $downstream, $sub_features);
+      $upstream, $downstream, $sub_features, $relationship, $rel_part);
     
     // print the sequence
     print $sequence;

@@ -12,9 +12,6 @@ function tripal_analysis_install() {
   // create the module's data directory
   tripal_create_moddir('tripal_analysis');
 
-  // Use schema API to create database table.
-  drupal_install_schema('tripal_analysis');
-
   // we may need the analysisfeatureprop table if it doesn't already exist
   tripal_analysis_create_analysisfeatureprop();
   
@@ -28,19 +25,20 @@ function tripal_analysis_install() {
 /*
  * 
  */
-function tripal_analysis_create_analysisfeatureprop(){
+function tripal_analysis_create_analysisfeatureprop() {
+  
   // Create analysisfeatureprop table in chado.  This is needed for Chado 
   // version 1.11, the table exists in Chado 1.2. 
   if (!db_table_exists('analysisfeatureprop')) {
-    $sql = "CREATE TABLE analysisfeatureprop (".
-            "  analysisfeatureprop_id SERIAL PRIMARY KEY, ".
+    $sql = "CREATE TABLE analysisfeatureprop (" .
+            "  analysisfeatureprop_id SERIAL PRIMARY KEY, " .
             "  analysisfeature_id     INTEGER NOT NULL REFERENCES analysisfeature(analysisfeature_id) " .
-            "    ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED, ".
-            "  type_id                INTEGER NOT NULL REFERENCES cvterm(cvterm_id) ".
-            "    ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED, ".
-            "  value                  TEXT, ".
-            "  rank                   INTEGER NOT NULL, ".
-            "  CONSTRAINT analysisfeature_id_type_id_rank UNIQUE(analysisfeature_id, type_id, rank)".
+            "    ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED, " .
+            "  type_id                INTEGER NOT NULL REFERENCES cvterm(cvterm_id) " .
+            "    ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED, " .
+            "  value                  TEXT, " .
+            "  rank                   INTEGER NOT NULL, " .
+            "  CONSTRAINT analysisfeature_id_type_id_rank UNIQUE(analysisfeature_id, type_id, rank)" .
             ")";
     chado_query($sql);
   } 
@@ -48,7 +46,7 @@ function tripal_analysis_create_analysisfeatureprop(){
 /*
  * 
  */
-function tripal_analysis_add_cvterms(){
+function tripal_analysis_add_cvterms() {
   
   tripal_cv_add_cv('tripal_analysis', 'Terms used for managing analyses in Tripal');
   
@@ -56,8 +54,8 @@ function tripal_analysis_add_cvterms(){
   // change change this property
   $term = array(
     'name' => 'analysis_type', 
-    'def' => 'The type of analysis was performed. This value is automatically set by '.
-             'each Tripal Analysis module and should be equal to the module name '.
+    'def' => 'The type of analysis was performed. This value is automatically set by ' .
+             'each Tripal Analysis module and should be equal to the module name ' .
              '(e.g. tripal_analysis_blast, tripal_analysis_go).'
   );
   tripal_cv_add_cvterm($term, 'tripal_analysis', 0, 1, 'tripal');
@@ -83,21 +81,22 @@ function tripal_analysis_add_cvterms(){
   // an analysis_type term in the 'tripal_analysis' vocabular we duplicate it here because the 
   // tripal_analysis vocabulary is intended for use by the extension modules.  user's should not be able
   // to directly modify properties set by extension modules for an analysis.
-  tripal_cv_add_cvterm(array('name' => 'Analysis Type','def' => 'The type of analysis was performed.'), 
+  tripal_cv_add_cvterm(array('name' => 'Analysis Type', 'def' => 'The type of analysis was performed.'), 
      'analysis_property', 0, 1, 'tripal');
 }
 /**
  * Implementation of hook_uninstall().
  */
 function tripal_analysis_uninstall() {
-  // Use schema API to delete database table.
-  drupal_uninstall_schema('tripal_analysis');
+
   // Remove analysis nodes from drupal.
-  $sql_ana_id = "SELECT nid, vid ".
-                 "FROM {node} ".
-                 "WHERE type like 'chado_analysi%'";
+  $sql_ana_id = "
+    SELECT nid, vid 
+    FROM {node} 
+    WHERE type like 'chado_analysi%'
+  ";
   $result = db_query($sql_ana_id);
-  while ($ana = db_fetch_object($result)) {
+  while ($ana = $result->fetchObject()) {
     node_delete($ana->nid);
   }
 }
@@ -145,14 +144,13 @@ function tripal_analysis_schema() {
 
   // tripal_analysis table
   $schema['tripal_analysis'] = array(
-    'description' => t('Table to store analysis sub-modules'),
+    'description' => 'Table to store analysis sub-modules',
     'fields' => array(
       'modulename' => array(
         'type' => 'text',
         'size' => 'small',
         'not null' => TRUE,
-        'description' => t('The module name. Tripal Analysis will use the '.
-                            'module name to call module_setting_form()')
+        'description' => 'The module name. Tripal Analysis will use the module name to call module_setting_form()'
       )
     ),
     'unique keys' => array(
@@ -163,64 +161,6 @@ function tripal_analysis_schema() {
   return $schema;
 }
 
-/**
- *  Update for Drupal 6.x, Tripal 1.1, Analysis Module 1.1
- *  This update adds a new analysis_organism materialized view
- *
- */
-function tripal_analysis_update_6100() {
-  // add the new materialized view
-  tripal_analysis_add_mview_analysis_organism();
-  
-  // move the analysis_type property into a new CV so that user's can change this property if
-  // they want too  
-  tripal_cv_add_cv('tripal_analysis', 'Terms used for managing analyses in Tripal');
-  
-  $sql = "
-    UPDATE {cvterm} SET cv_id = 
-      (SELECT cv_id FROM {cv} WHERE name = 'tripal_analysis')
-    WHERE cv_id = (SELECT cv_id FROM {cv} WHERE name = 'tripal') AND
-      name = 'analysis_type'
-  ";
-  chado_query($sql);
-  
-  $ret = array(
-    '#finished' => 1,
-  );
-
-  return $ret;
-}
-
-/**
- * Provide update script for adding new cvterms
- */
-function tripal_analysis_update_6001() {
-   // we have some new cvterms to add
-  tripal_cv_add_cvterm(array('name' => 'based_on_analysis', 'def' => 'The analysis that this analysis was based on. For example, blast/kegg/interpro analyses are based on a unigene analysis. The unigene analysis_id should be stored in analysisprop as the rank using this cvterm. The name of said unigene analysis can be inserted as the value in analysisprop.'), 'tripal', 0, 1, 'tripal');
-  tripal_cv_add_cvterm(array('name' => 'additional_files', 'def' => 'Additional files for this analysis. Each file should be separated by a semi-colon and have this format: <file description>, <file path>;'), 'tripal', 0, 1, 'tripal');
-  $ret = array(
-      '#finished' => 1,
-  );
-  return $ret;
-}
-
-/**
- *  Update for Drupal 6.x, Tripal 1.1, Analysis Module 1.1
- *  This update adds a new analysis_property cv and 'Analysis Type' cvterm
- */
-function tripal_analysis_update_6101() {
-  // the 'analysis_property' vocabulary is for user definable properties.  Even though we already have
-  // an analysis_type term in the 'tripal_analysis' vocabular we duplicate it here because the 
-  // tripal_analysis vocabulary is intended for use by the extension modules.  user's should not be able
-  // to directly modify properties set by extension modules for an analysis.
-   tripal_cv_add_cvterm(array('name' => 'Analysis Type','def' => 'The type of analysis was performed.'), 
-     'analysis_property', 0, 1, 'tripal');
-
-  $ret = array(
-      '#finished' => 1,
-  );
-  return $ret;
-}
 /**
  * Implementation of hook_requirements(). 
  */

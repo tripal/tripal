@@ -16,10 +16,10 @@
  * @ingroup tripal_analysis
  */
 function tripal_analysis_register_child($modulename) {
-  $sql = "SELECT * FROM {tripal_analysis} WHERE modulename = '%s'";
-  if(!db_result($sql, $modulename)) {
-    $sql = "INSERT INTO {tripal_analysis} (modulename) VALUES ('%s')";
-    db_query($sql, $modulename);
+  $sql = "SELECT * FROM {tripal_analysis} WHERE modulename = :modname";
+  if (!db_query($sql, array(':modname' => $modulename))->fetchField()) {
+    $sql = "INSERT INTO {tripal_analysis} (modulename) VALUES (:modname)";
+    db_query($sql, array(':modname' => $modulename));
   }
 }
 
@@ -33,8 +33,8 @@ function tripal_analysis_register_child($modulename) {
  */
 function tripal_analysis_unregister_child($modulename) {
   if (db_table_exists('tripal_analysis')) {
-      $sql = "DELETE FROM {tripal_analysis} WHERE modulename = '%s'";
-      db_query($sql, $modulename);
+      $sql = "DELETE FROM {tripal_analysis} WHERE modulename = :modname";
+      db_query($sql, array(':modname' => $modulename));
   }
 }
 /**
@@ -142,7 +142,7 @@ function tripal_analysis_get_node($analysis_id) {
   $sql = "SELECT *
            FROM {chado_analysis} CA
               INNER JOIN {node} N on CA.nid = N.nid
-           WHERE analysis_id = %d";
-  $node = db_fetch_object(db_query($sql, $analysis_id));
+           WHERE analysis_id = :analysis_id";
+  $node = db_query($sql, array(':analysis_id' => $analysis_id))->fetchObject();
   return $node;
 }

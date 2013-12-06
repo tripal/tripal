@@ -66,7 +66,7 @@ function tripal_create_moddir($module_name) {
 function tripal_create_mod_subdir($module_name, $path) {
 
   // make sure the module data directory exists
-	tripal_create_moddir($module_name);
+  tripal_create_moddir($module_name);
   
   // now make sure the sub dir exists
   $sub_dir = tripal_file_directory_path() . $module_name . $path;

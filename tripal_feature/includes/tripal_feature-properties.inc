@@ -277,8 +277,8 @@ function theme_tripal_feature_edit_ALL_properties_form($form) {
 
   $output .= '<br /><fieldset>';
   $output .= '<legend>Edit Already Existing Properties<span class="form-optional" title="This field is optional">(optional)</span></legend>';
-  $output .= '<p>Below is a list of already existing properties for this feature, one property per line. The type refers to the type of '
-         .'property and the value is the value for that property. </p>';
+  $output .= '<p>Below is a list of already existing properties for this feature, one property per line. The type refers to the type of ' .
+             'property and the value is the value for that property. </p>';
   $output .= '<table>';
   $output .= '<tr><th>#</th><th>Type</th><th>Value</th><th></th></tr>';
 

@@ -528,7 +528,7 @@ function tripal_feature_load_fasta($dfile, $organism_id, $type,
         // if the match_type is name and no regular expression was provided
         // then use the first word as the name, otherwise we don't set the name
         if (strcmp($match_type, 'Name')==0) {
-          if(preg_match("/^\s*(.*?)[\s\|].*$/", $line, $matches)){
+          if (preg_match("/^\s*(.*?)[\s\|].*$/", $line, $matches)) {
             if (strlen($matches[1]) > $feature_tbl['fields']['name']['length']) {
               watchdog('trp-fasta', "WARNING: Regular expression retrieves a feature name too long for the feature name. Line %line.", array('%line' => $i), 'error');  
             }
@@ -553,7 +553,7 @@ function tripal_feature_load_fasta($dfile, $organism_id, $type,
         // if the match_type is name and no regular expression was provided
         // then use the first word as the name, otherwise, we don't set the unqiuename
         if (strcmp($match_type, 'Unique name')==0) {
-          if(preg_match("/^\s*(.*?)[\s\|].*$/", $line, $matches)){
+          if (preg_match("/^\s*(.*?)[\s\|].*$/", $line, $matches)) {
             $uname = trim($matches[1]);
           }
           else {

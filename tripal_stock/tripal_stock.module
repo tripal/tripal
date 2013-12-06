@@ -21,7 +21,8 @@
  * Stock Module see the GMOD Wiki Page (http://gmod.org/wiki/Chado_Stock_Module)
  * @}
  */
-require_once("includes/tripal_stock-administration.inc");
+require_once("includes/tripal_stock.admin.inc");
+require_once("includes/tripal_stock.sync_stocks.inc");
 require_once("includes/other_module_api_functions.inc");
 require_once("includes/tripal_stock-secondary_tables.inc");
 require_once("includes/tripal_stock-properties.inc");
@@ -56,6 +57,15 @@ function tripal_stock_menu() {
     'page arguments' => array('tripal_stock_admin'),
     'access arguments' => array('administer tripal stocks'),
     'type' => MENU_NORMAL_ITEM
+  );
+  
+  $items['admin/tripal/tripal_stock/sync'] = array(
+    'title' => ' Sync Stocks',
+    'description' => 'Sync stocks from Chado with Drupal',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_stock_sync_form'),
+    'access arguments' => array('administer tripal stocks'),
+    'type' => MENU_NORMAL_ITEM,
   );
 
   // Adding Secondary Properties-----------------
@@ -115,6 +125,14 @@ function tripal_stock_menu() {
     'access arguments' => array('edit chado_stock content'),
     'type' => MENU_LOCAL_TASK,
     'weight' => 10,
+  );
+  
+  // the menu link for addressing any stock (by name, uniquename, synonym)
+  $items['stock/%'] = array(
+    'page callback' => 'tripal_stock_match_stocks_page',
+    'page arguments' => array(1),
+    'access arguments' => array('access chado_stock content'),
+    'type' => MENU_LOCAL_TASK,
   );
   return $items;
 }
@@ -345,6 +363,29 @@ function chado_stock_load($node) {
   $values = array('stock_id' => $stock_id);
   $stock = tripal_core_generate_chado_var('stock', $values);
   
+  
+  // by default, the titles are saved using the unique constraint.  We will
+  // keep it the same, but remove the duplicate name if the unique name and name
+  // are identical
+  $title_type = variable_get('chado_stock_title', 'unique_constraint');
+  if($title_type == 'unique_constraint') {
+    if (strcmp($stock->name, $stock->uniquename)==0) {
+      $node->title = $stock->name . " (" . $stock->type_id->name . ") " . $stock->organism_id->genus . " " . $stock->organism_id->species ;
+    }
+    // in previous version of Tripal, the stock title was simply the unique name. 
+    // so, we recreate the title just to be sure all of our stock pages are consistent
+    else {
+      $node->title = $stock->name . ", " . $stock->uniquename . " (" . $stock->type_id->name . ") " . $stock->organism_id->genus . " " . $stock->organism_id->species ;  
+    }
+  }
+  // set the title to be the stock name or uniquename as configured
+  if($title_type == 'stock_name') {
+    $node->title = $stock->name;
+  }
+  if($title_type == 'stock_unique_name') {
+    $node->title = $stock->uniquename;  
+  }
+  
   // add this to the node
   $additions = new stdClass();
   $additions->stock = $stock;
@@ -413,7 +454,7 @@ function chado_stock_form($node, $form_state) {
     '#title' => t('Stock Name')
   );
 
-  $form['names']['title'] = array(
+  $form['names']['sname'] = array(
     '#type' => 'textfield',
     '#title' => t('Name'),
     '#default_value' => $node->stock->name,
@@ -440,8 +481,11 @@ function chado_stock_form($node, $form_state) {
   $type_options = tripal_cv_get_cvterm_options( variable_get('chado_stock_types_cv', 'NULL') );
   $type_options[0] = 'Select a Type';
   if ($node->nid == '') {
-  $type_default = 0; }
-  else { $type_default = $node->stock->type_id->cvterm_id; }
+    $type_default = 0; 
+  }
+  else { 
+    $type_default = $node->stock->type_id->cvterm_id; 
+  }
   $form['details']['type_id'] = array(
     '#type' => 'select',
     '#title' => t('Type of Stock'),
@@ -462,7 +506,7 @@ function chado_stock_form($node, $form_state) {
   $form['details']['organism_id'] = array(
     '#type' => 'select',
     '#title' => t('Source Organism for stock'),
-    '#default_value' => $organism_default,
+    '#default_value' => $node->stock->organism_id->organism_id,
     '#options' => $organisms,
     '#required'    => TRUE
   );
@@ -523,21 +567,35 @@ function chado_stock_validate($node, &$form) {
   $int_in_chado_sql = "SELECT count(*) as count FROM {%s} WHERE %s=%d";
   $string_in_chado_sql = "SELECT count(*) as count FROM {%s} WHERE %s='%s'";
 
-  // Validate Uniquename only if add
-  if (empty($node->stock_id)) {
-    $chado_row = db_fetch_object(chado_query("SELECT * FROM {stock} WHERE uniquename='" . $node->uniquename . "'"));
-    if (!empty($chado_row->stock_id)) {
-      $drupal_row = db_fetch_object(db_query("SELECT * FROM {chado_stock} WHERE stock_id=" . $chado_row->stock_id));
-      if (!empty($drupal_row->nid)) {
-        $link = l('node/' . $drupal_row->nid, $node->uniquename);
-        form_set_error('uniquename', "There is already a stock with that uniquename $link. Please enter another uniquename.");
-      }
-      else {
-        form_set_error('uniquename', "There is already a stock with that uniquename (although it's not sync'd with drupal). Please enter another uniquename.");
-      }
+  // if this is an update, we want to make sure that a different stock for
+  // the organism doesn't already have this uniquename. We don't want to give
+  // two sequences the same uniquename
+  if ($node->stock_id) {
+    $sql = "SELECT *
+            FROM {stock} S
+              INNER JOIN {cvterm} CVT ON S.type_id = CVT.cvterm_id
+            WHERE uniquename = '%s'
+             AND organism_id = %d AND CVT.name = '%s' AND NOT stock_id = %d";
+    $result = db_fetch_object(chado_query($sql, $node->uniquename, $node->organism_id, $node->stock_type, $node->stock_id));
+    if ($result) {
+      form_set_error('uniquename', t("Stock update cannot proceed. The stock name '$node->uniquename' is not unique for this organism. Please provide a unique name for this stock."));
     }
   }
 
+  // if this is an insert then we just need to make sure this name doesn't
+  // already exist for this organism if it does then we need to throw an error
+  else {
+    $sql = "SELECT *
+            FROM {Stock} S
+              INNER JOIN {cvterm} CVT ON S.type_id = CVT.cvterm_id
+            WHERE uniquename = '%s'
+             AND organism_id = %d AND CVT.name = '%s'";
+    $result = db_fetch_object(chado_query($sql, $node->uniquename, $node->organism_id, $node->stock_type));
+    if ($result) {
+      form_set_error('uniquename', t("Stock insert cannot proceed. The stock name '$node->uniquename' already exists for this organism. Please provide a unique name for this stock."));
+    }
+  }
+  
 
   // Check Type of Stock is valid cvterm_id in chado ( $form['values']['details']['type_id'] )
   if ( $node->type_id == 0) {
@@ -579,8 +637,8 @@ function chado_stock_validate($node, &$form) {
     if ($num_rows->count != 1) {
       form_set_error('database', 'The database you selected is not valid. Please choose another one.'); }
   }
-
 }
+
 
 /**
  * Implements hook_insert(): Inserts data from chado_stock_form() into drupal and chado
@@ -594,8 +652,8 @@ function chado_stock_validate($node, &$form) {
  * @ingroup tripal_stock
  */
 function chado_stock_insert($node) {
-
-  //If the chado stock exists
+  
+  // If the chado stock exists (e.g. this is only a syncing operation)
   // then don't create but simply link to node
   if ($node->chado_stock_exists) {
     if (!empty($node->stock_id)) {
@@ -607,12 +665,15 @@ function chado_stock_insert($node) {
         $node->stock_id
       );
     }
+    
     return $node;
   }
 
-  // create dbxref
-  if ( !empty($node->accession) ) {
-    if ( !empty($node->database) ) {
+  // before we can add the stock, we must add the dbxref if one has been
+  // provided by the user.
+  $dbxref_status = 0;
+  if (!empty($node->accession) ) {
+    if (!empty($node->database) ) {
       $values = array(
         'db_id' => $node->database,
         'accession' => $node->accession,
@@ -630,11 +691,14 @@ function chado_stock_insert($node) {
           );
         }
       }
-      else { $dbxref_status = 1; }
+      else { 
+        $dbxref_status = 1;
+      }
     }
   }
 
-  // create stock
+  // create stock including the dbxref
+  $stock = '';
   if ($dbxref_status) {
     $values = array(
       'dbxref_id' => array(
@@ -642,56 +706,41 @@ function chado_stock_insert($node) {
         'accession' => $node->accession
       ),
       'organism_id' => $node->organism_id,
-      'name' => $node->title,
+      'name' => $node->sname,
       'uniquename' => $node->uniquename,
       'description' => $node->stock_description,
       'type_id' => $node->type_id
     );
-    $stock_status = tripal_core_chado_insert('stock', $values);
+    $stock = tripal_core_chado_insert('stock', $values);
   }
+  // create a stock without a dbxref
   else {
     $values = array(
       'organism_id' => $node->organism_id,
-      'name' => $node->title,
-      'uniquename' => $node->uniquename,
+      'name'        => $node->sname,
+      'uniquename'  => $node->uniquename,
       'description' => $node->stock_description,
-      'type_id' => $node->type_id
+      'type_id'     => $node->type_id
     );
-    $stock_status = tripal_core_chado_insert('stock', $values);
+    $stock = tripal_core_chado_insert('stock', $values);
   }
+  
+  // if the stock creation was succesful then add the URL and the entry in the
+  // chado_stock table
+  if (is_array($stock)) {
+    
+    // convert the stock into an object
+    $stock = (object) $stock;
 
-  // create drupal chado_stock entry
-  if ($stock_status) {
-    $values = array(
-      'organism_id' => $node->organism_id,
-      'uniquename' => $node->uniquename,
-      'type_id' => $node->type_id
-    );
-    $chado_stock = tripal_core_chado_select('stock', array('stock_id'), $values);
-    if (!empty($chado_stock[0]->stock_id)) {
-      db_query(
-        "INSERT INTO {chado_stock} (nid, vid, stock_id) "
-        ."VALUES (%d, %d, %d)",
-        $node->nid,
-        $node->vid,
-        $chado_stock[0]->stock_id
-      );
+    // add the entry to the chado_stock table
+    $sql = "INSERT INTO {chado_stock} (nid, vid, stock_id) VALUES (%d, %d, %d)";
+    db_query($sql, $node->nid, $node->vid, $stock->stock_id);
 
-        //Move on to next stage of Stock Creation based on next_stage_path field
-      if ($node->simulate_multipart) {
-        $next_stage_path = preg_replace('/%node/', $node->nid, $node->next_step_path);
-        $_REQUEST['destination'] = $next_stage_path;
-      }
-    }
-    else {
-      drupal_set_message(t('Error during stock creation.'), 'error');
-      watchdog('tripal_stock',
-        'Insert Stock: Unable to find newly created stock where values:%values',
-        array('%values' => print_r($values, TRUE)),
-        WATCHDOG_ERROR
-      );
-      return FALSE;
-    }
+    // Move on to next stage of Stock Creation based on next_stage_path field
+    if ($node->simulate_multipart) {
+      $next_stage_path = preg_replace('/%node/', $node->nid, $node->next_step_path);
+      $_REQUEST['destination'] = $next_stage_path;
+    }    
   }
   else {
     drupal_set_message(t('Error during stock creation.'), 'error');
@@ -702,7 +751,6 @@ function chado_stock_insert($node) {
     );
     return FALSE;
   }
-
 }
 
 /**
@@ -724,10 +772,6 @@ function chado_stock_update($node) {
     // there is no way to handle revisions in Chado but leave
     // this here just to make not we've addressed it.
   }
-//  if ($node->revision) {
-//    chado_stock_insert($node);
-//  }
-//  else {
 
   //update dbxref
   if ($node->database) {
@@ -794,7 +838,7 @@ function chado_stock_update($node) {
   //can't change stock id which is all thats stored in drupal thus only update chado
   $update_values = array(
     'organism_id' => $node->organism_id,
-    'name' => $node->title,
+    'name' => $node->sname,
     'uniquename' => $node->uniquename,
     'description' => $node->stock_description,
     'type_id' => $node->type_id,
@@ -805,11 +849,8 @@ function chado_stock_update($node) {
       'accession' => $node->accession
     );
   }
-  $status = tripal_core_chado_update(
-    'stock',
-    array('stock_id' => $node->stock_id),
-    $update_values
-  );
+  $status = tripal_core_chado_update('stock', array('stock_id' => $node->stock_id), $update_values);
+    
 
   if (!$status) {
     drupal_set_message(t('Unable to update stock'), 'error');
@@ -819,6 +860,11 @@ function chado_stock_update($node) {
       array('%mvalues' => print_r(array('stock_id' => $node->stock_id), TRUE), '%uvalues' => print_r($update_values, TRUE)),
       WATCHDOG_ERROR
     );
+  }
+  else {
+    // set the URL for this stock page
+    $values = array('stock_id' => $node->stock_id);
+    $stock = tripal_core_chado_select('stock', array('*'), $values);    
   }
 }
 
@@ -1059,8 +1105,59 @@ function tripal_stock_preprocess_tripal_stock_relationships(&$variables) {
 function tripal_stock_nodeapi(&$node, $op, $teaser, $page) {
 
   switch ($op) {
-    // Note that this function only adds stock view to an organism/feature
-    // node.
+    
+    // set the title to ensure it is always unique
+    case 'presave':
+      switch ($node->type) {
+        case 'chado_stock':
+          
+          $values = array('organism_id' => $node->organism_id);
+          $organism = tripal_core_chado_select('organism', array('genus','species'), $values);
+          $values = array('cvterm_id' => $node->type_id);
+          $cvterm = tripal_core_chado_select('cvterm', array('name'), $values);
+          $node->title = $node->sname . ', ' . $node->uniquename . ' (' . $cvterm[0]->name . ') ' . $organism[0]->genus . ' ' . $organism[0]->species;
+          break;
+      }
+      break;
+      
+    // set the URL path after inserting.  We do it here because we do not 
+    // know the stock_id in the presave  
+    case 'insert':
+      switch ($node->type) {
+        case 'chado_stock':
+          if (!$node->stock_id) {
+            $sql = "SELECT * FROM {chado_stock} WHERE nid = %d";
+            $chado_stock = db_fetch_object(db_query($sql, $node->nid));
+            $node->stock_id = $chado_stock->stock_id;
+          }
+          
+          // remove any previous alias
+          db_query("DELETE FROM {url_alias} WHERE src = '%s'", "node/$node->nid");
+          
+          // set the URL for this stock page
+          $url_alias = tripal_stock_get_stock_url($node);
+          path_set_alias("node/$node->nid", $url_alias);
+          break;
+      }
+      break;
+      
+    // set the URL path after inserting.  We do it here because we do not 
+    // know the stock_id in the presave  
+    case 'update':
+      switch ($node->type) {
+        case 'chado_stock':
+          
+          // remove any previous alias
+          db_query("DELETE FROM {url_alias} WHERE src = '%s'", "node/$node->nid");
+          
+          // set the URL for this stock page
+          $url_alias = tripal_stock_get_stock_url($node);
+          path_set_alias("node/$node->nid", $url_alias);
+          break;
+      }
+      break;
+      
+    // add items to other nodes, build index and search results
     case 'view':
       // add the stock to the organism/feature search indexing
       if ($node->build_mode == NODE_BUILD_SEARCH_INDEX) {
@@ -1083,3 +1180,72 @@ function tripal_stock_nodeapi(&$node, $op, $teaser, $page) {
   }
 }
 
+/*
+ * Uses the value provided in the $id argument to find all stocks that match
+ * that ID by name, stockname or synonym.  If it matches uniquenly to a single
+ * stock it will redirect to that stock page, otherwise, a list of matching
+ * stocks is shown.
+ */
+function tripal_stock_match_stocks_page($id) {
+  
+  // if the URL alias configuration is set such that the URL
+  // always begins with 'stock' then we want to use the ID as it is and
+  // forward it on. Otherwise, try to find the matching stock.
+  $url_alias = variable_get('chado_stock_url_string', '/stock/[genus]/[species]/[type]/[uniquename]'); 
+  if (!$url_alias) {
+    $url_alias = '/stock/[genus]/[species]/[type]/[uniquename]';
+  } 
+  $url_alias = preg_replace('/^\//', '', $url_alias); // remove any preceeding forward slash  
+  if (preg_match('/^stock\//', $url_alias)) {
+    drupal_goto($id);
+  }
+  
+
+  $sql = "
+    SELECT
+      S.name, S.uniquename, S.stock_id,
+      O.genus, O.species, O.organism_id,
+      CVT.cvterm_id, CVT.name as type_name,
+      CS.nid
+    FROM {stock} S
+      INNER JOIN {organism} O on S.organism_id = O.organism_id
+      INNER JOIN {cvterm} CVT on CVT.cvterm_id = S.type_id
+      INNER JOIN public.chado_stock CS on CS.stock_id = S.stock_id
+    WHERE
+      S.uniquename = '%s' or S.name = '%s'
+  ";
+  $results = chado_query($sql, $id, $id);
+
+  $num_matches = 0;
+
+  // iterate through the matches and build the table for showing matches
+  $header = array('Uniquename', 'Name', 'Type', 'Species');
+  $rows = array();
+  $curr_match;
+  while ($match = db_fetch_object($results)) {
+    $curr_match = $match;
+    $rows[] = array(
+       $match->uniquename,
+       "<a href=\"" . url("node/". $match->nid) ."\">" . $match->name . "</a>",
+       $match->type_name,
+       '<i>' . $match->genus . ' ' . $match->species . '</i>',
+    );
+    $num_matches++;
+  }
+
+  // if we have more than one match then generate the table, otherwise, redirect
+  // to the matched stock
+  if ($num_matches == 1) {
+    drupal_goto("node/" . $curr_match->nid);
+  }
+  if ($num_matches == 0) {
+    return "<p>No stocks matched the given name '$id'</p>";
+  }
+
+  $table_attrs = array(
+    'class' => 'tripal-table tripal-table-horz'
+  );
+  $output = "<p>The following stocks match the name '$id'.</p>";
+  $output .= theme_table($header, $rows, $table_attrs, $caption);
+  return $output;
+}

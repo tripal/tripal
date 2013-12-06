@@ -39,50 +39,50 @@ function tripal_organism_node_info() {
 }
 
 /**
- * Display block with organisms
- * @param op    - parameter to define the phase being called for the block
- * @param delta - id of the block to return (ignored when op is list)
- * @param edit  - when op is save, contains the submitted form data
  *
  * @ingroup tripal_organism
  */
-function tripal_organism_block($op = 'list', $delta = '0', $edit = array()) {
-  switch ($op) {
-    case 'list':
-      $blocks['base']['info'] = t('Tripal Organism Details');
-      $blocks['base']['cache'] = BLOCK_NO_CACHE;
+function tripal_organism_block_info() {
 
-      $blocks['description']['info'] = t('Tripal Organism Description');
-      $blocks['description']['cache'] = BLOCK_NO_CACHE;
+  $blocks['base']['info'] = t('Tripal Organism Details');
+  $blocks['base']['cache'] = BLOCK_NO_CACHE;
 
-      $blocks['image']['info'] = t('Tripal Organism Image');
-      $blocks['image']['cache'] = BLOCK_NO_CACHE;
+  $blocks['description']['info'] = t('Tripal Organism Description');
+  $blocks['description']['cache'] = BLOCK_NO_CACHE;
 
-      return $blocks;
+  $blocks['image']['info'] = t('Tripal Organism Image');
+  $blocks['image']['cache'] = BLOCK_NO_CACHE;
 
-    case 'view':
-      if (user_access('access chado_feature content') and arg(0) == 'node' and is_numeric(arg(1))) {
-        $nid = arg(1);
-        $node = node_load($nid);
+  return $blocks;
+   
+}
+/**
+ *
+ * @ingroup tripal_organism
+ */
+function tripal_organism_block_view($delta = '') {
 
-        $block = array();
-        switch ($delta) {
-          case 'base':
-            $block['subject'] = t('Organism Details');
-            $block['content'] = theme('tripal_organism_base', $node);
-            break;
-          case 'description':
-            $block['subject'] = t('Organism Description');
-            $block['content'] = theme('tripal_organism_description', $node);
-            break;
-          case 'image':
-            $block['subject'] = t('Organism Image');
-            $block['content'] = theme('tripal_organism_image', $node);
-            break;
-          default:
-        }
-        return $block;
-      }
+  if (user_access('access chado_feature content') and arg(0) == 'node' and is_numeric(arg(1))) {
+    $nid = arg(1);
+    $node = node_load($nid);
+  
+    $block = array();
+    switch ($delta) {
+      case 'base':
+        $block['subject'] = t('Organism Details');
+        $block['content'] = theme('tripal_organism_base', $node);
+        break;
+      case 'description':
+        $block['subject'] = t('Organism Description');
+        $block['content'] = theme('tripal_organism_description', $node);
+        break;
+      case 'image':
+        $block['subject'] = t('Organism Image');
+        $block['content'] = theme('tripal_organism_image', $node);
+        break;
+      default:
+    }
+    return $block;
   }
 }
 /**
@@ -153,13 +153,14 @@ function tripal_organism_theme() {
  * Implement hook_access().
  *
  * This hook allows node modules to limit access to the node types they define.
- *
- *  @param $op
- *  The operation to be performed
- *
+ * 
  *  @param $node
  *  The node on which the operation is to be performed, or, if it does not yet exist, the
  *  type of node to be created
+ *  
+ *  @param $op
+ *  The operation to be performed
+ *
  *
  *  @param $account
  *  A user object representing the user for whom the operation is to be performed
@@ -172,7 +173,7 @@ function tripal_organism_theme() {
  *
  * @ingroup tripal_organism
  */
-function chado_organism_access($op, $node, $account) {
+function chado_organism_node_access($node, $op, $account) {
   if ($op == 'create') {
     if (!user_access('create chado_organism content', $account)) {
       return FALSE;
@@ -210,19 +211,19 @@ function tripal_organism_permission() {
       'title' => t('View Organisms'),
       'description' => t('Allow users to view organism pages.'),
     ),
-    'create chado_organism content'=> array(
+    'create chado_organism content' => array(
       'title' => t('Create Organisms'),
       'description' => t('Allow users to create new organism pages.'),
     ),
-    'delete chado_organism content'=> array(
+    'delete chado_organism content' => array(
       'title' => t('Delete Organisms'),
       'description' => t('Allow users to delete organism pages.'),
     ),
-    'edit chado_organism content'=> array(
+    'edit chado_organism content' => array(
       'title' => t('Edit Organisms'),
       'description' => t('Allow users to edit organism pages.'),
     ),
-    'adminster tripal organism'=> array(
+    'adminster tripal organism' => array(
       'title' => t('Administer Organisms'),
       'description' => t('Allow users to administer all organisms.'),
     ),
@@ -316,7 +317,7 @@ function chado_organism_insert($node) {
 
   if (!chado_get_id_for_node('organism', $node->nid) ) {
     // next add the item to the drupal table
-    $sql = "INSERT INTO {chado_organism} (nid, vid, organism_id) ".
+    $sql = "INSERT INTO {chado_organism} (nid, vid, organism_id) " .
            "VALUES (:nid, :vid, :organism_id)";
     $args = array(':nid' => $node->nid, ':vid' => $node->vid, ':organism_id' => $organism_id);
     db_query($sql, $args);
@@ -380,16 +381,16 @@ function chado_organism_delete($node) {
   }
 
   // Remove data from the {chado_organism}, {node}, and {node_revisions} tables
-  $sql_del = "DELETE FROM {chado_organism} ".
-             "WHERE nid = :nid ".
+  $sql_del = "DELETE FROM {chado_organism} " .
+             "WHERE nid = :nid " .
              "AND vid = :vid";
   db_query($sql_del, array(':nid' => $node->nid, ':vid' => $node->vid));
-  $sql_del = "DELETE FROM {node} ".
-             "WHERE nid = :nid ".
+  $sql_del = "DELETE FROM {node} " .
+             "WHERE nid = :nid " .
              "AND vid = :vid";
   db_query($sql_del, array(':nid' => $node->nid, ':vid' => $node->vid));
-  $sql_del = "DELETE FROM {node_revisions} ".
-             "WHERE nid = ':nid' ".
+  $sql_del = "DELETE FROM {node_revision} " .
+             "WHERE nid = ':nid' " .
              "AND vid = ':vid'";
   db_query($sql_del, array(':nid' => $node->nid, ':vid' => $node->vid));
 
@@ -405,8 +406,8 @@ function chado_organism_delete($node) {
     tripal_core_chado_delete('organism', array('organism_id' => $organism_id));
   }
   else {
-    drupal_set_message(t("Organism deleted from drupal. Warning: at least one ".
-                       "library or feature depends on this organism. It was ".
+    drupal_set_message(t("Organism deleted from drupal. Warning: at least one " .
+                       "library or feature depends on this organism. It was " .
                "not removed from chado."));
   }
 }
@@ -421,7 +422,7 @@ function chado_organism_add_image($node) {
   if (isset($_FILES['files']) && 
       $_FILES['files']['name']['organism_image'] &&
       is_uploaded_file($_FILES['files']['tmp_name']['organism_image'])) {
-      	
+        
     // make sure the destination directory exists
     $dest = tripal_file_directory_path() . "/tripal_organism/images";    
     file_prepare_directory($dest, FILE_CREATE_DIRECTORY);
@@ -434,7 +435,7 @@ function chado_organism_add_image($node) {
       drupal_set_message(t("Organism image was not uploaded."));
     }
     else {
-    	file_move($file, $destination . "/" . $node->nid . ".jpg", FILE_EXISTS_REPLACE);
+      file_move($file, $destination . "/" . $node->nid . ".jpg", FILE_EXISTS_REPLACE);
     }
   }
 }
@@ -519,7 +520,7 @@ function chado_organism_form($node, $param) {
 function chado_organism_load($nodes) {
 
   foreach ($nodes as $nid => $node) {
-  	// find the organism and add in the details
+    // find the organism and add in the details
     $organism_id = chado_get_id_for_node('organism', $nid);
 
     // build the organism variable
@@ -555,7 +556,7 @@ function tripal_organism_job_describe_args($callback, $args) {
   $new_args = array();
   if ($callback == 'tripal_organism_sync_organisms') {
     $organism = tripal_core_chado_select('organism', array('genus', 'species'), array('organism_id' => $args[0]));
-    $new_args['Organism'] = $organism[0]->genus ." ". $organism[0]->species;
+    $new_args['Organism'] = $organism[0]->genus . " " . $organism[0]->species;
   }
   return $new_args;
 }

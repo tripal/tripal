@@ -87,7 +87,7 @@ function tripal_feature_delete_form_validate($form, &$form_state) {
                      INNER JOIN {cv} CV on CVT.cv_id = CV.cv_id
                      LEFT JOIN {cvtermsynonym} CVTS on CVTS.cvterm_id = CVT.cvterm_id
                   WHERE cv.name = '%s' and (CVT.name = '%s' or CVTS.synonym = '%s')";
-    $cvterm = db_fetch_object(db_query($cvtermsql, 'sequence', $seq_type, $seq_type));
+    $cvterm = db_fetch_object(chado_query($cvtermsql, 'sequence', $seq_type, $seq_type));
     if (!$cvterm) {
       form_set_error('seq_type', t("The Sequence Ontology (SO) term selected for the sequence type is not available in the database. Please check spelling or select another."));
     }

@@ -82,19 +82,8 @@ function tripal_analysis_menu() {
       'type' => MENU_NORMAL_ITEM,
       'file' => 'includes/tripal_analysis.admin.inc',
   );
- 
-    
-  // AJAX calls for adding/removing properties to a contact
-  $items['tripal_analysis/properties/add'] = array(
-    'page callback' => 'tripal_analysis_property_add',
-    'access arguments' => array('edit chado_analysis content'),
-    'type ' => MENU_CALLBACK,
-  );
-  $items['tripal_analysis/properties/description'] = array(
-    'page callback' => 'tripal_analysis_property_get_description',
-    'access arguments' => array('edit chado_analysis content'),
-    'type ' => MENU_CALLBACK,
-  );
+     
+
   $items['tripal_analysis/properties/minus/%/%'] = array(
     'page callback' => 'tripal_analysis_property_delete',
     'page arguments' => array(3, 4),
@@ -128,7 +117,7 @@ function chado_analysis_insert($node) {
   if ($analysis_id) {
     $values = array('analysis_id' => $node->analysis_id);
     $result = tripal_core_chado_select('analysis', array('analysis_id'), $values);
-    if($result and count($result) > 0) {
+    if ($result and count($result) > 0) {
       $analysis = $result[0];
     }
   }
@@ -155,12 +144,12 @@ function chado_analysis_insert($node) {
 
   // Make sure the entry for this analysis doesn't already exist in the
   // chado_analysis table if it doesn't exist then we want to add it.
-  $node_check_sql = "SELECT * FROM {chado_analysis} ".
+  $node_check_sql = "SELECT * FROM {chado_analysis} " .
                     "WHERE analysis_id = :analysis_id";
   $node_check = db_query($node_check_sql, array(':analysis_id' => $analysis_id))->fetchObject();
   if (!$node_check) {
     // next add the item to the drupal table
-    $sql = "INSERT INTO {chado_analysis} (nid, vid, analysis_id) ".
+    $sql = "INSERT INTO {chado_analysis} (nid, vid, analysis_id) " .
            "VALUES (:nid, :vid, :analysis_id)";
     db_query($sql, array(':nid' => $node->nid, ':vid' => $node->vid, ':analysis_id' => $analysis_id));
     // Create a title for the analysis node using the unique keys so when the
@@ -200,7 +189,7 @@ function chado_analysis_insert($node) {
       ORDER BY CVT.name ASC
   ";
   $prop_types = chado_query($sql);
-  while ($prop = db_fetch_object($prop_types)) {
+  while ($prop = $prop_types->fetchObject()) {
     $properties_list[$prop->cvterm_id] = $prop->name;
   }
     
@@ -254,16 +243,16 @@ function chado_analysis_delete($node) {
   }
 
   // Remove data from the {chado_analysis}, {node}, and {node_revisions} tables
-  $sql_del = "DELETE FROM {chado_analysis} ".
-              "WHERE nid = :nid ".
+  $sql_del = "DELETE FROM {chado_analysis} " .
+              "WHERE nid = :nid " .
               "AND vid = :vid";
   db_query($sql_del, array(':nid' => $node->nid, ':vid' => $node->vid));
-  $sql_del = "DELETE FROM {node} ".
-              "WHERE nid = :nid ".
+  $sql_del = "DELETE FROM {node} " .
+              "WHERE nid = :nid " .
               "AND vid = :vid";
   db_query($sql_del, array(':nid' => $node->nid, ':vid' => $node->vid));
-  $sql_del = "DELETE FROM {node_revisions} ".
-              "WHERE nid = :nid ".
+  $sql_del = "DELETE FROM {node_revision} " .
+              "WHERE nid = :nid " .
               "AND vid = :vid";
   db_query($sql_del, array(':nid' => $node->nid, ':vid' => $node->vid));
 
@@ -359,7 +348,7 @@ function chado_analysis_update($node) {
       ORDER BY CVT.name ASC
       ";
   $prop_types = chado_query($sql);
-  while ($prop = db_fetch_object($prop_types)) {
+  while ($prop = $prop_types->fetchObject()) {
     $properties_list[$prop->cvterm_id] = $prop->name;
   }
 
@@ -391,14 +380,26 @@ function chado_analysis_update($node) {
 
   // now add in the properties by first removing any the analysis
   // already has and adding the ones we have
-  tripal_core_chado_delete('analysisprop', array('analysis_id' => $analysis_id));
+  $sql = "
+    DELETE FROM {analysisprop} WHERE analysis_id = :analysis_id AND type_id IN (
+      SELECT CVT.cvterm_id
+      FROM  {cvterm} CVT
+        INNER JOIN {cv} ON CVT.cv_id = CV.cv_id
+      WHERE CV.name = 'analysis_property')
+  ";
+  $success = chado_query($sql, array(':analysis_id' => $analysis_id));
+  if (!$success) {
+    drupal_set_message("Cannot update analysis properties", "error");
+    watchdog('t_analysis', "Cannot update analysis properties.", array(), WATCHDOG_ERROR);
+    return;
+  }
   foreach ($properties as $property => $elements) {
     foreach ($elements as $rank => $value) {
       $status = tripal_analysis_insert_property($analysis_id, $property, $value, FALSE, 'analysis_property');
       if (!$status) {
         drupal_set_message("Error cannot add property: '$property'", "error");
         watchdog('t_analysis', "Error cannot add property: '%prop'",
-        array('%prop' => $property), WATCHDOG_ERROR);
+          array('%prop' => $property), WATCHDOG_ERROR);
       }
     }
   }
@@ -477,12 +478,12 @@ function tripal_analysis_help($path, $arg) {
  *
  * This hook allows node modules to limit access to the node types they define.
  *
- *  @param $op
- *  The operation to be performed
- *
  *  @param $node
  *  The node on which the operation is to be performed, or, if it does not yet exist, the
  *  type of node to be created
+ *  
+ *  @param $op
+ *  The operation to be performed
  *
  *  @param $account
  *  A user object representing the user for whom the operation is to be performed
@@ -495,7 +496,7 @@ function tripal_analysis_help($path, $arg) {
  *
  * @ingroup tripal_analysis
  */
-function chado_analysis_access($op, $node, $account) {
+function chado_analysis_node_access($node, $op, $account) {
 
   if ($op == 'create') {
     if (!user_access('create chado_analysis content', $account)) {
@@ -528,25 +529,25 @@ function chado_analysis_access($op, $node, $account) {
  *
  * @ingroup tripal_analysis
  */
-function tripal_analysis_perm() {
+function tripal_analysis_permission() {
   return array(
     'access chado_analysis content' => array(
       'title' => t('View Analyses'),
       'description' => t('Allow users to view analysis pages.'),
     ),
-    'create chado_analysis content'=> array(
+    'create chado_analysis content' => array(
       'title' => t('Create Analyses'),
       'description' => t('Allow users to create new analysis pages.'),
     ),
-    'delete chado_analysis content'=> array(
+    'delete chado_analysis content' => array(
       'title' => t('Delete Analyses'),
       'description' => t('Allow users to delete analysis pages.'),
     ),
-    'edit chado_analysis content'=> array(
+    'edit chado_analysis content' => array(
       'title' => t('Edit Analyses'),
       'description' => t('Allow users to edit analysis pages.'),
     ),
-    'adminster tripal analysis'=> array(
+    'adminster tripal analysis' => array(
       'title' => t('Administer Analyses'),
       'description' => t('Allow users to administer all analyses.'),
     ),
@@ -589,38 +590,42 @@ function tripal_analysis_theme() {
 /**
  *
  *
- * @ingroup tripal_feature
+ * @ingroup tripal_analysis
  */
-function tripal_analysis_block($op = 'list', $delta = 0, $edit=array()) {
-  switch ($op) {
-    case 'list':
-      $blocks['base']['info'] = t('Tripal Analysis Details');
-      $blocks['base']['cache'] = BLOCK_NO_CACHE;
-      
-      $blocks['featureblast']['info'] = t('Tripal Feature Analyses');
-      $blocks['featureblast']['cache'] = BLOCK_NO_CACHE;
-      
-      return $blocks;
+function tripal_analysis_block_info() {
+  $blocks['base']['info'] = t('Tripal Analysis Details');
+  $blocks['base']['cache'] = BLOCK_NO_CACHE;
+  
+  $blocks['featureblast']['info'] = t('Tripal Feature Analyses');
+  $blocks['featureblast']['cache'] = BLOCK_NO_CACHE;
+  
+  return $blocks;
+}
 
-  case 'view':
-    if (user_access('access chado_analysis content') and arg(0) == 'node' and is_numeric(arg(1))) {
-      $nid = arg(1);
-      $node = node_load($nid);
+/**
+ *
+ *
+ * @ingroup tripal_analysis
+ */
+function tripal_analysis_block_view($delta = '') {
 
-      $block = array();
-      switch ($delta) {       
-        case 'base':
-          $block['subject'] = t('Analysis Details');
-          $block['content'] = theme('tripal_analysis_base', $node);
-          break;
-        case 'tripal_feature_analyses':
-          $block['subject'] = t('Feature Analyses');
-          $block['content'] = theme('tripal_feature_analyses', $node);
-          break;
-        default :
-      }
-      return $block;
+  if (user_access('access chado_analysis content') and arg(0) == 'node' and is_numeric(arg(1))) {
+    $nid = arg(1);
+    $node = node_load($nid);
+
+    $block = array();
+    switch ($delta) {       
+      case 'base':
+        $block['subject'] = t('Analysis Details');
+        $block['content'] = theme('tripal_analysis_base', $node);
+        break;
+      case 'tripal_feature_analyses':
+        $block['subject'] = t('Feature Analyses');
+        $block['content'] = theme('tripal_feature_analyses', $node);
+        break;
+      default :
     }
+    return $block;
   }
 }
 
@@ -628,7 +633,7 @@ function tripal_analysis_block($op = 'list', $delta = 0, $edit=array()) {
  * 
  * Implements hook_node_view()
  */
-function tripal_analysis_node_view ($node, $view_mode, $langcode) {
+function tripal_analysis_node_view($node, $view_mode, $langcode) {
   if ($node->type == 'chado_feature') {
     if ($view_mode == 'search_index') {
        // return results for searching

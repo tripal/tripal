@@ -100,6 +100,9 @@ function tripal_pub_remote_search_PMID($search_array, $num_to_retrieve, $pager_i
       $search_str = preg_replace('/PMID:([^\s]*)/', '$1', $search_str);
       $search_str = preg_replace('/\|SCOPE\|/', '[Uid]', $search_str);
     }
+    else {
+      $search_str = preg_replace('/\|SCOPE\|/', '', $search_str);  
+    }
   }
   if ($days) {
     // get the date of the day suggested
@@ -199,6 +202,8 @@ function tripal_pub_PMID_search_init($search_str, $retmax){
   $rfh = fopen($query_url, "r");
   if (!$rfh) {
     drupal_set_message('Could not perform Pubmed query. Cannot connect to Entrez.', 'error');
+    watchdog('tpub_import', "Could not perform Pubmed query. Cannot connect to Entrez.",
+              array(), WATCHDOG_ERROR);
     return 0;
   }
 
@@ -276,6 +281,8 @@ $retmod = 'null', $start = 0, $limit = 10, $args = array()){
   $rfh = fopen($fetch_url, "r");
   if (!$rfh) {
     drupal_set_message('ERROR: Could not perform PubMed query.', 'error');
+    watchdog('tpub_import', "Could not perform PubMed query: %fetch_url.",
+              array('%fetch_url' => $fetch_url), WATCHDOG_ERROR);
     return '';
   }
   $results = '';
