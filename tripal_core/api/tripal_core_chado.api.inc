@@ -1904,7 +1904,7 @@ function chado_query($sql, $args = array()) {
   $is_local = tripal_core_is_chado_local();
 
   if (!is_array($args)) {
-    watchdog('tripal_core', 'Need to pass an array to chado_query, ":value" passed instead. Query: :query', array(':value' => $args, ':query' => $sql), WATCHDOG_ERROR);
+    watchdog('tripal_core', 'Need to pass an array to chado_query, "%value" passed instead. Query: %query', array('%value' => $args, '%query' => $sql), WATCHDOG_ERROR);
     $args = array($args);
   }
 
