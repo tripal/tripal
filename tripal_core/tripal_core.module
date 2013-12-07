@@ -7,7 +7,7 @@
  /**
  * @defgroup tripal_modules Tripal Modules
  * @{
- * All documented functions for the various Tripal Modules excluding API functions and Views Integration functions. 
+ * All documented functions for the various Tripal Modules excluding API functions and Views Integration functions.
  * @}
  */
 
@@ -16,12 +16,12 @@
  * @{
  * Provides an application programming interface (API) for Tripal
  *
- * The Tripal API currently provides generic insert/update/select functions for all chado content as 
- * well as some module specific functions that insert/update/delete/select specific chado content. 
+ * The Tripal API currently provides generic insert/update/select functions for all chado content as
+ * well as some module specific functions that insert/update/delete/select specific chado content.
  *
  * This API is currently in its infancy and some necessary functions might be missing. If you find
- * a missing function that you think should be included go to the sourceforge feature request 
- * page and request it's inclusion in the API. Such feature requests with a working function 
+ * a missing function that you think should be included go to the sourceforge feature request
+ * page and request it's inclusion in the API. Such feature requests with a working function
  * definition will be given priority.
  * @}
  */
@@ -58,28 +58,28 @@ require_once "includes/form_elements.inc";
  * @ingroup tripal_core
  */
 function tripal_core_init() {
-  global $base_url;     
-    
-  // add javascript files 
+  global $base_url;
+
+  // add javascript files
   drupal_add_js(drupal_get_path('theme', 'tripal') . '/js/tripal.ahah.js');
-  
+
   // create the 'tripal' controlled volcabulary in chado but only if it doesn't already exist, and
   // only if the chado database is present.
   if (tripal_core_is_chado_installed()) {
-  
+
     // make sure the current version of chado is set
-    tripal_core_set_chado_version();  
-  
+    tripal_core_set_chado_version();
+
     // if the Tripal cv is missing then add
     $results = chado_query("SELECT * FROM {cv} WHERE name = 'tripal'");
-    $tripal_cv = $results->fetchObject();    
+    $tripal_cv = $results->fetchObject();
     if (!$tripal_cv) {
       $results = chado_query(
         "INSERT INTO {cv} (name,definition) " .
         "VALUES ('tripal', 'Terms used by Tripal for modules to manage data such as that stored in property tables like featureprop, analysisprop, etc')"
       );
     }
-    
+
     // if the Tripal db is missing then add it
     $results = chado_query("SELECT * FROM {db} WHERE name = 'tripal'");
     $tripal_db = $results->fetchObject();
@@ -104,16 +104,16 @@ function tripal_core_init() {
   // make sure the date time settings are the way Tripal will insert them
   // otherwise PostgreSQL version that may have a different datestyle setting
   // will fail when inserting or updating a date column in a table.
-  db_query("SET DATESTYLE TO :style", array(':style' => 'MDY')); 
-   
+  db_query("SET DATESTYLE TO :style", array(':style' => 'MDY'));
+
   // If we want AHAH elements on the node forms (e.g. chado_pub form) then we need to include
   // the node.pages file. Otherwise this error message is given:
   //
-  // warning: call_user_func_array() expects parameter 1 to be a valid callback, 
-  // function 'node_form' not found or invalid function name 
+  // warning: call_user_func_array() expects parameter 1 to be a valid callback,
+  // function 'node_form' not found or invalid function name
   // in /var/www/includes/form.inc on line 382.
-  module_load_include('inc', 'node', 'node.pages');    
-  
+  module_load_include('inc', 'node', 'node.pages');
+
 }
 
 /**
@@ -127,10 +127,9 @@ function tripal_core_menu() {
 
   // Triapl setting groups
   $items['admin/tripal'] = array(
-    'title' => 'Tripal Management',
+    'title' => 'Tripal',
     'description' => "Manage the behavior or Tripal and its various modules.",
-    'position' => 'right',
-    'weight' => -5,
+    'weight' => -8,
     'page callback' => 'system_admin_menu_block_page',
     'access arguments' => array('administer site configuration'),
     'file' => 'system.admin.inc',
@@ -138,10 +137,12 @@ function tripal_core_menu() {
   );
   $items['admin/tripal/customize'] = array(
     'title' => 'Customize Tripal',
+    'description' => 'Information on how to customize tripal',
     'position' => 'right',
     'page callback' => 'theme',
     'page arguments' => array('tripal_core_customize'),
     'access arguments' => array('administer site configuration'),
+    'weight' => 10
   );
   $items['admin/tripal/chado_install'] = array(
     'title' => 'Install Chado Schema',
@@ -150,6 +151,7 @@ function tripal_core_menu() {
     'page arguments' => array('tripal_core_chado_load_form'),
     'access arguments' => array('install chado'),
     'type' => MENU_NORMAL_ITEM,
+    'weight' => 10
   );
 
   // Jobs Management
@@ -159,6 +161,7 @@ function tripal_core_menu() {
     'page callback' => 'tripal_jobs_report',
     'access arguments' => array('access administration pages'),
     'type' => MENU_NORMAL_ITEM,
+    'weight' => -10
   );
   $items['admin/tripal/tripal_jobs/cancel/%'] = array(
     'title' => 'Jobs',
@@ -187,51 +190,67 @@ function tripal_core_menu() {
 
   // Materialized Views
   $items['admin/tripal/mviews'] = array(
-    'title' => 'MViews',
+    'title' => 'Materialized Views',
     'description' => 'Materialized views are used to improve speed of large or complex queries.',
+    'access arguments' => array('access administration pages'),
+    'type' => MENU_NORMAL_ITEM,
+    'weight' => -10
+  );
+  $items['admin/tripal/mviews/list'] = array(
+    'title' => 'List Materialized Views',
+    'description' => 'A list of existing materialized views with the ability to edit & delete existing materialized views.',
     'page callback' => 'tripal_mviews_report',
     'access arguments' => array('access administration pages'),
     'type' => MENU_NORMAL_ITEM,
+    'weight' => -10
   );
   $items['admin/tripal/mviews/report/%'] = array(
     'title' => 'Materialized View',
-    'description' => 'Materialized views are used to improve speed of large or complex queries.',
+    'description' => 'Materialized views are used to improve speed of large or complex queries. These are database views as compared to Drupal views.',
     'page callback' => 'tripal_mview_report',
     'page arguments' => array(4),
     'access arguments' => array('access administration pages'),
     'type' => MENU_NORMAL_ITEM,
   );
   $items['admin/tripal/mviews/new'] = array(
-    'title' => 'Create MView',
-    'description' => 'Materialized views are used to improve speed of large or complex queries.',
+    'title' => 'Create Materialized View',
+    'description' => 'Create a new materialized view.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_mviews_form'),
     'access arguments' => array('access administration pages'),
-    'type' => MENU_CALLBACK,
+    'type' => MENU_NORMAL_ITEM,
   );
   $items['admin/tripal/mviews/edit/%'] = array(
-    'title' => 'Edit MView',
+    'title' => 'Edit Materialized View',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_mviews_form', 4),
     'access arguments' => array('access administration pages'),
     'type' => MENU_NORMAL_ITEM,
   );
   $items['admin/tripal/mviews/action/%/%'] = array(
-    'title' => 'Create MView',
+    'title' => 'Create Materialized View',
     'description' => 'Materialized views are used to improve speed of large or complex queries.',
     'page callback' => 'tripal_mviews_action',
     'page arguments' => array(4, 5, "1"),
     'access arguments' => array('access administration pages'),
     'type' => MENU_CALLBACK,
   );
-  
+
   // Custom Tables
   $items['admin/tripal/custom_tables'] = array(
     'title' => 'Custom Tables',
-    'description' => 'Custom tables are added to Chado.',
+    'description' => 'Creation of custom tables that are added to Chado database.',
+    'access arguments' => array('access administration pages'),
+    'type' => MENU_NORMAL_ITEM,
+    'weight' => -10
+  );
+  $items['admin/tripal/custom_tables/list'] = array(
+    'title' => 'List of Custom Tables',
+    'description' => 'Provides a list of all custom tables created by Tripal and allows for editing or removing existing custom tables.',
     'page callback' => 'tripal_custom_tables_list',
     'access arguments' => array('access administration pages'),
     'type' => MENU_NORMAL_ITEM,
+    'weight' => -10
   );
   $items['admin/tripal/custom_tables/view/%'] = array(
     'title' => 'Custom Tables',
@@ -243,10 +262,10 @@ function tripal_core_menu() {
   );
   $items['admin/tripal/custom_tables/new'] = array(
     'title' => 'Create Custom Table',
-    'description' => 'Custom tables are added to Chado.',
+    'description' => 'An interface for creating your own custom tables.',
     'page callback' => 'tripal_custom_table_new_page',
     'access arguments' => array('access administration pages'),
-    'type' => MENU_CALLBACK,
+    'type' => MENU_NORMAL_ITEM,
   );
   $items['admin/tripal/custom_tables/edit/%'] = array(
     'title' => 'Edit Custom Table',
@@ -256,12 +275,21 @@ function tripal_core_menu() {
     'type' => MENU_NORMAL_ITEM,
   );
   $items['admin/tripal/custom_tables/action/%/%'] = array(
-    'title' => 'Create Custom TAble',
+    'title' => 'Create Custom Table',
     'description' => 'Custom tables are added to Chado.',
     'page callback' => 'tripal_custom_tables_action',
     'page arguments' => array(4, 5, "1"),
     'access arguments' => array('access administration pages'),
     'type' => MENU_CALLBACK,
+  );
+
+  // Create menu item for chado-specific module config
+  $items['admin/tripal/chado'] = array(
+    'title' => 'Chado Module-Specific Configuration',
+    'description' => 'Configuration for specific chado data types such as Vocabularies, Features, etc.',
+    'access arguments' => array('access administration pages'),
+    'type' => MENU_NORMAL_ITEM,
+    'weight' => -10
   );
 
   return $items;

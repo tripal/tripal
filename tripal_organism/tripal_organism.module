@@ -19,6 +19,7 @@ function tripal_organism_init() {
   drupal_add_js(drupal_get_path('theme', 'tripal') . '/js/tripal_organism.js');
   drupal_add_css(drupal_get_path('theme', 'tripal') . '/css/tripal_organism.css');
 }
+
 /**
  *  Provide information to drupal about the node types that we're creating
  *  in this module
@@ -54,7 +55,7 @@ function tripal_organism_block_info() {
   $blocks['image']['cache'] = BLOCK_NO_CACHE;
 
   return $blocks;
-   
+
 }
 /**
  *
@@ -65,7 +66,7 @@ function tripal_organism_block_view($delta = '') {
   if (user_access('access chado_feature content') and arg(0) == 'node' and is_numeric(arg(1))) {
     $nid = arg(1);
     $node = node_load($nid);
-  
+
     $block = array();
     switch ($delta) {
       case 'base':
@@ -96,16 +97,23 @@ function tripal_organism_menu() {
   $items = array();
 
   // the administative settings menu
-  $items['admin/tripal/tripal_organism'] = array(
+  $items['admin/tripal/chado/tripal_organism'] = array(
    'title' => 'Organisms',
    'description' => 'Basic Description of Tripal Organism Module Functionality',
+   'access arguments' => array('adminster tripal organism'),
+   'type' => MENU_NORMAL_ITEM,
+  );
+
+  $items['admin/tripal/chado/tripal_organism/help'] = array(
+   'title' => 'Help',
+   'description' => "A description of the Tripal Organism module including a short description of it's usage.",
    'page callback' => 'theme',
    'page arguments' => array('tripal_organism_admin'),
    'access arguments' => array('adminster tripal organism'),
    'type' => MENU_NORMAL_ITEM,
   );
 
-  $items['admin/tripal/tripal_organism/configuration'] = array(
+  $items['admin/tripal/chado/tripal_organism/configuration'] = array(
    'title' => 'Configuration',
    'description' => 'Manage integration of Chado organisms including associated features',
    'page callback' => 'drupal_get_form',
@@ -117,6 +125,17 @@ function tripal_organism_menu() {
 
   return $items;
 }
+
+/**
+ * Implements hook_help()
+ * Purpose: Adds a help page to the module list
+ */
+function tripal_organism_help ($path, $arg) {
+  if ($path == 'admin/help#tripal_organism') {
+    return theme('tripal_organism_admin', array());
+  }
+}
+
 /**
  *  We need to let drupal know about our theme functions and their arguments.
  *  We create theme functions to allow users of the module to customize the
@@ -153,11 +172,11 @@ function tripal_organism_theme() {
  * Implement hook_access().
  *
  * This hook allows node modules to limit access to the node types they define.
- * 
+ *
  *  @param $node
  *  The node on which the operation is to be performed, or, if it does not yet exist, the
  *  type of node to be created
- *  
+ *
  *  @param $op
  *  The operation to be performed
  *
@@ -168,7 +187,7 @@ function tripal_organism_theme() {
  *  @return
  *  If the permission for the specified operation is not set then return FALSE. If the
  *  permission is set then return NULL as this allows other modules to disable
- *  access.  The only exception is when the $op == 'create'.  We will always 
+ *  access.  The only exception is when the $op == 'create'.  We will always
  *  return TRUE if the permission is set.
  *
  * @ingroup tripal_organism
@@ -231,12 +250,12 @@ function tripal_organism_permission() {
 }
 
 /**
- * Implementation of hook_validate 
- * 
+ * Implementation of hook_validate
+ *
  * @param $node
  * @param $form
  * @param $form_state
- * 
+ *
  *  @ingroup tripal_organism
  */
 function chado_organism_validate($node, $form, &$form_state) {
@@ -246,9 +265,9 @@ function chado_organism_validate($node, $form, &$form_state) {
     $sql = "
       SELECT *
       FROM {organism} O
-      WHERE 
-        genus = :genus AND 
-        species = :species AND NOT 
+      WHERE
+        genus = :genus AND
+        species = :species AND NOT
         organism_id = :organism_id
     ";
     $args = array(':genus' => $node->genus, ':species' => $node->species, ':organism_id' => $node->organism_id);
@@ -419,16 +438,16 @@ function chado_organism_delete($node) {
 function chado_organism_add_image($node) {
   // check to see if a file was uploaded. If so then copy it to the images
   // directory for display with the organism
-  if (isset($_FILES['files']) && 
+  if (isset($_FILES['files']) &&
       $_FILES['files']['name']['organism_image'] &&
       is_uploaded_file($_FILES['files']['tmp_name']['organism_image'])) {
-        
+
     // make sure the destination directory exists
-    $dest = tripal_file_directory_path() . "/tripal_organism/images";    
+    $dest = tripal_file_directory_path() . "/tripal_organism/images";
     file_prepare_directory($dest, FILE_CREATE_DIRECTORY);
-        
+
     // now move the file
-    $validators = array('file_validate_is_image' => array()); 
+    $validators = array('file_validate_is_image' => array());
     $destination = "public://tripal/tripal_organism/images/";
     $file = file_save_upload('organism_image', $validators, $destination);
     if (!$file) {
@@ -459,7 +478,7 @@ function chado_organism_form($node, $param) {
   $species        = property_exists($node, 'species')        ? property_exists($node, 'species')        : $organism->species;
   $common_name    = property_exists($node, 'common_name')    ? property_exists($node, 'common_name')    : $organism->common_name;
   $description    = property_exists($node, 'description')    ? property_exists($node, 'description')    : $organism->comment;
-  $organism_image = property_exists($node, 'organism_image') ? property_exists($node, 'organism_image') : '';   
+  $organism_image = property_exists($node, 'organism_image') ? property_exists($node, 'organism_image') : '';
 
   $form = array();
   $form['#attributes']['enctype'] = 'multipart/form-data';
@@ -528,7 +547,7 @@ function chado_organism_load($nodes) {
     $organism = tripal_core_generate_chado_var('organism', $values);
 
     // add in the description field
-    $organism = tripal_core_expand_chado_vars($organism, 'field', 'organism.comment');    
+    $organism = tripal_core_expand_chado_vars($organism, 'field', 'organism.comment');
     $nodes[$nid]->organism = $organism;
   }
 }

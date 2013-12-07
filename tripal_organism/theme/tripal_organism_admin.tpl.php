@@ -1,10 +1,3 @@
-  
-
-  <h3>Tripal Organism Quick Links:</h3>
-  <ul>
-    <li><a href="<?php print url("admin/tripal/tripal_organism/configuration") ?>">Organism Configuration</a></li>
-  </ul>
-<br>
   <h3>Module Description:</h3>
   <p>The Tripal Organism module allows you to add, edit and/or delete chado organisms.
     Furthermore, it also provides listing of organisms and details page for each organism.
@@ -17,7 +10,7 @@
   <ul>
       <li><p><b>Set Permissions</b>: By default only the site administrator account has access to create, edit, delete
        or administer features. Navigate to the <?php print l('permissions page', 'admin/user/permissions')?> and set the
-       permissions under the 'tripal_organism' section as appropriate for your site. For a simple setup, allow anonymous 
+       permissions under the 'tripal_organism' section as appropriate for your site. For a simple setup, allow anonymous
        users access to view content and create a special role for creating, editing and other administrative tasks.</p></li>
 
       <li><p><b>Create an Organism</b>: Organism pages can be created in two ways:</p>
@@ -39,8 +32,8 @@
             The Tripal organism module also provides the following functionality</p>
             <ul>
 
-    <li><p><b>Simple Search Tool</b>: A <?php print l('simple search tool','chado/organisms') ?> is provided for 
+    <li><p><b>Simple Search Tool</b>: A <?php print l('simple search tool','chado/organisms') ?> is provided for
     finding organisms. This tool relies on Drupal Views.  <a href="http://drupal.org/project/views">Drupal Views</a>
-    which must be installed to see the search tool.  Look for it in the navigation menu under the item 
+    which must be installed to see the search tool.  Look for it in the navigation menu under the item
     "Search Biological Data". </p></li>
             </ul>

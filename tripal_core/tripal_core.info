@@ -4,3 +4,4 @@ core = 7.x
 project = tripal_core
 package = Tripal
 version = 7.x-2.0
+configure = admin/tripal

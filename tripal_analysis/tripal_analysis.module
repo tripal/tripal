@@ -8,10 +8,10 @@
  * @ingroup tripal_modules
  * @{
  * Provides functions for managing chado analysis' including creating details pages for each one
- * 
+ *
  * @}
- * 
- * 
+ *
+ *
  */
 
 require('api/tripal_analysis.api.inc');
@@ -27,7 +27,7 @@ require('includes/tripal_analysis.form.inc');
  */
 function tripal_analysis_init() {
   drupal_add_js(drupal_get_path('theme', 'tripal') . '/js/tripal_analysis.js');
-  drupal_add_css(drupal_get_path('theme', 'tripal') . '/css/tripal_analysis.css');    
+  drupal_add_css(drupal_get_path('theme', 'tripal') . '/css/tripal_analysis.css');
 }
 
 /**
@@ -63,17 +63,25 @@ function tripal_analysis_menu() {
      'type' => MENU_CALLBACK
   );
   // Tripal Analysis administrative settings
-  $items['admin/tripal/tripal_analysis'] = array(
+  $items['admin/tripal/chado/tripal_analysis'] = array(
       'title' => 'Analyses',
-      'description' => 'Basic Description of Tripal Analysis Module Functionality.',
+      'description' => 'A bioinformatics analysis producing features.',
+      'access arguments' => array('administer tripal analyses'),
+      'type' => MENU_NORMAL_ITEM,
+  );
+
+  $items['admin/tripal/chado/tripal_analysis/help'] = array(
+      'title' => 'Help',
+      'description' => "A description of the Tripal Analysis module including a short description of it's usage.",
       'page callback' => 'theme',
       'page arguments' => array('tripal_analysis_admin'),
       'access arguments' => array('administer tripal analyses'),
       'type' => MENU_NORMAL_ITEM,
       'file' => 'includes/tripal_analysis.admin.inc',
+      'weight' => 10
   );
 
-  $items['admin/tripal/tripal_analysis/configuration'] = array(
+  $items['admin/tripal/chado/tripal_analysis/configuration'] = array(
       'title' => 'Configuration',
       'description' => 'Settings for the displays of analysis results.',
       'page callback' => 'drupal_get_form',
@@ -82,7 +90,7 @@ function tripal_analysis_menu() {
       'type' => MENU_NORMAL_ITEM,
       'file' => 'includes/tripal_analysis.admin.inc',
   );
-     
+
 
   $items['tripal_analysis/properties/minus/%/%'] = array(
     'page callback' => 'tripal_analysis_property_delete',
@@ -90,9 +98,19 @@ function tripal_analysis_menu() {
     'access arguments' => array('edit chado_analysis content'),
     'type ' => MENU_CALLBACK,
   );
-  
-  
+
+
   return $items;
+}
+
+/**
+ * Implements hook_help()
+ * Purpose: Adds a help page to the module list
+ */
+function tripal_analysis_help ($path, $arg) {
+  if ($path == 'admin/help#tripal_analysis') {
+    return theme('tripal_analysis_admin', array());
+  }
 }
 
 /**
@@ -121,7 +139,7 @@ function chado_analysis_insert($node) {
       $analysis = $result[0];
     }
   }
-  
+
   // If the analysis doesn't exist then let's create it in chado.
   if (!$analysis) {
     // insert and then get the newly inserted analysis record
@@ -173,10 +191,10 @@ function chado_analysis_insert($node) {
   // use by other analysis modules that may be using this function
   $node->analysis = $analysis;
   $node->analysis_id = $analysis_id; // we need to set this for children
-    
+
   // now add the properties
-  $properties = array(); // stores all of the properties we need to add   
-   
+  $properties = array(); // stores all of the properties we need to add
+
   // get the list of properties for easy lookup (without doing lots of database queries
   $properties_list = array();
   $sql = "
@@ -192,7 +210,7 @@ function chado_analysis_insert($node) {
   while ($prop = $prop_types->fetchObject()) {
     $properties_list[$prop->cvterm_id] = $prop->name;
   }
-    
+
   // get the properties that should be added. Properties are in one of two forms:
   //  1) prop_value-[type id]-[index]
   //  2) new_value-[type id]-[index]
@@ -235,7 +253,7 @@ function chado_analysis_insert($node) {
  */
 function chado_analysis_delete($node) {
   $analysis_id = chado_get_id_for_node('analysis', $node->nid);
-  
+
   // if we don't have an analysis id for this node then this isn't a node of
   // type chado_analysis or the entry in the chado_analysis table was lost.
   if (!$analysis_id) {
@@ -282,38 +300,38 @@ function chado_analysis_update($node) {
 
   // get the analysis_id for this node:
   $sql = "
-    SELECT analysis_id 
-    FROM {chado_analysis} 
+    SELECT analysis_id
+    FROM {chado_analysis}
     WHERE nid = :nid
   ";
   $analysis = db_query($sql, array(':nid' => $node->nid))->fetchObject();
   $analysis_id = $analysis->analysis_id;
 
-  $sql = " 
-    UPDATE {analysis} 
-    SET name = :name, 
-        description = :description, 
-        program = :program, 
-        programversion = :programversion, 
-        algorithm = :algorithm, 
-        sourcename = :sourcename, 
-        sourceversion = :sourceversion, 
-        sourceuri = :sourceuri, 
-        timeexecuted = :timeexecuted 
-    WHERE analysis_id = :analysis_id 
+  $sql = "
+    UPDATE {analysis}
+    SET name = :name,
+        description = :description,
+        program = :program,
+        programversion = :programversion,
+        algorithm = :algorithm,
+        sourcename = :sourcename,
+        sourceversion = :sourceversion,
+        sourceuri = :sourceuri,
+        timeexecuted = :timeexecuted
+    WHERE analysis_id = :analysis_id
   ";
 
   $args = array(
-    ':name' => $node->analysisname, 
-    ':description' => $node->description, 
-    ':program' => $node->program, 
-    ':programversion' => $node->programversion, 
-    ':algorithm' => $node->algorithm, 
-    ':sourcename' => $node->sourcename, 
-    ':sourceversion' => $node->sourceversion, 
-    ':sourceuri' => $node->sourceuri, 
+    ':name' => $node->analysisname,
+    ':description' => $node->description,
+    ':program' => $node->program,
+    ':programversion' => $node->programversion,
+    ':algorithm' => $node->algorithm,
+    ':sourcename' => $node->sourcename,
+    ':sourceversion' => $node->sourceversion,
+    ':sourceuri' => $node->sourceuri,
     ':timeexecuted' => $timestamp,
-    ':analysis_id' => $anslysis_id 
+    ':analysis_id' => $anslysis_id
   );
   chado_query($sql, $args);
 
@@ -448,31 +466,6 @@ function chado_analysis_view($node, $teaser = FALSE, $page = FALSE) {
   return $node;
 }
 
-
-
-
-
-/**
- * Display help and module information
- * @param path which path of the site we're displaying help
- * @param arg array that holds the current path as would be returned from arg()
- * function
- * @return help text for the path
- *
- * @ingroup tripal_analysis
- */
-function tripal_analysis_help($path, $arg) {
-  $output = '';
-  switch ($path) {
-    case "admin/help#tripal_analysis":
-      $output = '<p>' .
-      t("Displays links to nodes created on this date") .
-                '</p>';
-      break;
-  }
-  return $output;
-}
-
 /**
  * Implement hook_access().
  *
@@ -481,7 +474,7 @@ function tripal_analysis_help($path, $arg) {
  *  @param $node
  *  The node on which the operation is to be performed, or, if it does not yet exist, the
  *  type of node to be created
- *  
+ *
  *  @param $op
  *  The operation to be performed
  *
@@ -491,7 +484,7 @@ function tripal_analysis_help($path, $arg) {
  *  @return
  *  If the permission for the specified operation is not set then return FALSE. If the
  *  permission is set then return NULL as this allows other modules to disable
- *  access.  The only exception is when the $op == 'create'.  We will always 
+ *  access.  The only exception is when the $op == 'create'.  We will always
  *  return TRUE if the permission is set.
  *
  * @ingroup tripal_analysis
@@ -568,13 +561,13 @@ function tripal_analysis_theme() {
        'template' => 'tripal_analysis_base',
     ),
     'tripal_feature_analyses' => array(
-      'template' => 'tripal_feature_analyses',  
-      'arguments' =>  array('node' => NULL),  
+      'template' => 'tripal_feature_analyses',
+      'arguments' =>  array('node' => NULL),
     ),
     'tripal_analysis_admin' => array(
-      'template' => 'tripal_analysis_admin',  
-      'arguments' =>  array(NULL),  
-      'path' => drupal_get_path('module', 'tripal_analysis') . '/theme', 
+      'template' => 'tripal_analysis_admin',
+      'arguments' =>  array(NULL),
+      'path' => drupal_get_path('module', 'tripal_analysis') . '/theme',
     ),
      'tripal_analysis_properties' => array(
      'arguments' => array('node' => NULL)
@@ -584,7 +577,7 @@ function tripal_analysis_theme() {
       'arguments' => array('form'),
     ),
   );
-  
+
   return $items;
 }
 /**
@@ -595,10 +588,10 @@ function tripal_analysis_theme() {
 function tripal_analysis_block_info() {
   $blocks['base']['info'] = t('Tripal Analysis Details');
   $blocks['base']['cache'] = BLOCK_NO_CACHE;
-  
+
   $blocks['featureblast']['info'] = t('Tripal Feature Analyses');
   $blocks['featureblast']['cache'] = BLOCK_NO_CACHE;
-  
+
   return $blocks;
 }
 
@@ -614,7 +607,7 @@ function tripal_analysis_block_view($delta = '') {
     $node = node_load($nid);
 
     $block = array();
-    switch ($delta) {       
+    switch ($delta) {
       case 'base':
         $block['subject'] = t('Analysis Details');
         $block['content'] = theme('tripal_analysis_base', $node);
@@ -630,14 +623,14 @@ function tripal_analysis_block_view($delta = '') {
 }
 
 /**
- * 
+ *
  * Implements hook_node_view()
  */
 function tripal_analysis_node_view($node, $view_mode, $langcode) {
   if ($node->type == 'chado_feature') {
     if ($view_mode == 'search_index') {
        // return results for searching
-    } 
+    }
     if ($view_mode == 'full') {
        // return normal results
        $node->content['tripal_feature_analyses'] = array(
@@ -665,7 +658,7 @@ function tripal_analysis_views_api() {
 
 
 /*
- * 
+ *
  */
 function tripal_analysis_form_alter(&$form, &$form_state, $form_id) {
   if ($form_id == "chado_analysis_node_form") {
