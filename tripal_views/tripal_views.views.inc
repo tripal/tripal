@@ -1,7 +1,7 @@
 <?php
 
-include('views/handlers/views_handler_join_chado_through_linking.inc');
-include('views/handlers/views_handler_join_chado_aggregator.inc');
+// include('views/handlers/views_handler_join_chado_through_linking.inc');
+// include('views/handlers/views_handler_join_chado_aggregator.inc');
 include('api/tripal_views.api.inc');
 
 
@@ -67,6 +67,7 @@ function tripal_views_views_handlers() {
     'handlers' => array(
 
       // Custom Tripal Filter Handlers
+      /** D7 @todo: get handlers working
       'tripal_views_handler_filter_file_upload' => array(
         'parent' => 'views_handler_filter',
       ),
@@ -85,32 +86,40 @@ function tripal_views_views_handlers() {
       'tripal_views_handler_filter_sequence' => array(
         'parent' => 'chado_views_handler_filter_string',
       ),
+      */
 
       // Custom Tripal Field Handlers
+      /** D7 @todo: get handlers working
       'tripal_views_handler_field_aggregate' => array(
         'parent' => 'chado_views_handler_field',
       ),
       'tripal_views_handler_field_sequence' => array(
         'parent' => 'chado_views_handler_field',
       ),
+      */
 
       // Join Handlers
+      /** D7 @todo: determine if we need these anymore :)
       'views_handler_join_chado_aggregator' => array(
         'parent' => 'views_join',
       ),
       'views_handler_join_chado_through_linking' => array(
         'parent' => 'views_join',
       ),
+      */
 
       // Relationship Handlers
+      /** D7 @todo: determine if we need these anymore
       'chado_views_handler_relationship' => array(
         'parent' => 'views_handler_relationship'
       ),
       'chado_views_handler_relationship_to_node' => array(
         'parent' => 'views_handler_relationship'
       ),
+      */
 
       // Wrappers for Default Views Handlers-----
+      /** D7 @todo: determine if we need these anymore :)
       // Field Handlers
       'chado_views_handler_field' => array(
         'parent' => 'views_handler_field'
@@ -174,6 +183,7 @@ function tripal_views_views_handlers() {
       'chado_views_handler_sort_random' => array(
         'parent' => 'views_handler_sort_random'
       ),
+      */
     ),
   );
 }
@@ -189,7 +199,6 @@ function tripal_views_views_handlers() {
  * @todo add if !<chado/drupal same db> around NID portion
  *
  * @ingroup tripal_views
- */
 function tripal_views_views_pre_render(&$view) {
 
   // We need to unset the exposed_input for the view so we can repopulate that
@@ -205,6 +214,7 @@ function tripal_views_views_pre_render(&$view) {
   $form = drupal_get_form('tripal_views_data_export_download_form', $view, $display_id, $args);
   $view->attachment_after = $form;
 }
+*/
 
 /**
  * Generates a dynamic data array for Views
@@ -218,8 +228,8 @@ function tripal_views_views_pre_render(&$view) {
  *
  * @ingroup tripal_views
  */
-
 function tripal_views_views_data() {
+  $data = array();
 
   // Make sure all chado tables are integrated
   tripal_views_integrate_all_chado_tables();
@@ -376,6 +386,7 @@ function tripal_views_views_data() {
         'group' => "$tvi_row->name",
         'title' => "$tvi_row->name",
         'help'  => $tvi_row->comment,
+        'search_path' => 'chado'
       );
     }
     else {
@@ -383,6 +394,7 @@ function tripal_views_views_data() {
         'group' => "$tvi_row->name",
         'title' => "$tvi_row->name",
         'help'  => $tvi_row->comment,
+        'search_path' => 'chado'
       );
     }
 
@@ -474,6 +486,7 @@ function tripal_views_views_data() {
 
           // add the join instructions for the base table
           // (we'll add the recipricol joins for the node table in the hook_views_data_alter
+          /**
           $data[$base_table]['table']['join'][$linker_table] = array(
             'left_field' => 'organism_id',
             'field' => 'organism_id',
@@ -483,6 +496,7 @@ function tripal_views_views_data() {
             'left_field' => 'organism_id',
             'field' => 'organism_id',
           );
+          */
 
 
 			    // Add relationship between linker and base table
@@ -520,42 +534,49 @@ function tripal_views_views_data() {
 		  }
     }
 
-    // now add the joins
-    // D7 TODO: Check DBTNG changes work
-    $sql = "SELECT * FROM {tripal_views_join} WHERE setup_id = :setup";
-    $joins = db_query($sql, array(':setup' => $setup_id));
-    if (!isset($joins)) {
-      $joins = array();
-    }
-    foreach ($joins as $join) {
-      $left_table = $join->left_table;
-      $left_field = $join->left_field;
-      $base_field = $join->base_field;
-      $handler = $join->handler;
-
-      // if the 'node' table is in our integrated list then
-      // we want to skip it. It shouldn't be there.
-      if ($left_table == 'node') {
-      	continue;
+    // only add joins if this is a base table
+    // this keeps the list of available fields manageable
+    // all other tables should be added via relationships
+    // D7 todo: add tripal_views_join field that determines whether a join is added
+    if ($is_base_table) {
+      // now add the joins
+      // D7 TODO: Check DBTNG changes work
+      $sql = "SELECT * FROM {tripal_views_join} WHERE setup_id = :setup";
+      $joins = db_query($sql, array(':setup' => $setup_id));
+      if (!isset($joins)) {
+        $joins = array();
       }
+      foreach ($joins as $join) {
+        $left_table = $join->left_table;
+        $left_field = $join->left_field;
+        $base_field = $join->base_field;
+        $handler = $join->handler;
 
-      // add join entry
-      $data[$base_table]['table']['join'][$left_table] = array(
-        'left_field' => $left_field,
-        'field' => $base_field,
-      );
-      if ($handler) {
-        $data[$base_table]['table']['join'][$left_table]['handler'] = $handler;
+        // if the 'node' table is in our integrated list then
+        // we want to skip it. It shouldn't be there.
+        if ($left_table == 'node') {
+          continue;
+        }
+
+        // add join entry
+        $data[$left_table]['table']['join'][$base_table] = array(
+          'left_field' => $base_field,
+          'field' => $left_table . '_id',
+        );
+        if ($handler) {
+          $data[$left_table]['table']['join'][$base_table]['handler'] = $handler;
+        }
       }
     }
   }
+
   return $data;
 }
 
 /**
  *
  * @ingroup tripal_views
- */
+
 function tripal_views_views_data_alter(&$data) {
     // D7 TODO: Check DBTNG changes work
     $tvi_query = db_query('SELECT * FROM {tripal_views}');
@@ -609,10 +630,10 @@ function tripal_views_views_data_alter(&$data) {
     }
     return $data;
 }
+*/
 
 /**
  * Implementation of hook_views_plugins().
- */
 function tripal_views_views_plugins() {
   $tc_path = drupal_get_path('module', 'tripal_views');
 
@@ -652,6 +673,7 @@ function tripal_views_views_plugins() {
     ),
   );
 }
+*/
 
 /**
  * Implementation of hook_views_pre_view().
@@ -661,7 +683,7 @@ function tripal_views_views_pre_view(&$view, &$display_id, &$args) {
   // merge the $_GET and $_POST into the $_GET. This is because
   // Views and Views Data Export modules only uses the $_GET variable but
   // file uploads require $_POST. We need to make sure these two modules
-  // have access to everything needed for this view to work properlys
+  // have access to everything needed for this view to work properly
   $_GET = array_merge($_GET, $_POST);
 }
 
@@ -677,35 +699,8 @@ function tripal_views_views_pre_view(&$view, &$display_id, &$args) {
   $view->attachment_after = $form;
 }*/
 
-/*
- *
-
-function tripal_views_views_query_alter(&$view, &$query){
-  // iterate through the tables and see if they are chado tables.
-  // if they are then prefix them with a "chado." prefix
-  dpm($query);
-  $tables = $query->tables;
-  foreach ($tables as $base => $subtables) {
-    $desc = tripal_core_get_chado_table_schema($base);
-    if ($desc) {
-      $query->tables["chado." . $base] = $subtables;
-      unset($query->tables[$base]);
-      $base = "chado." . $base;
-    }
-    foreach ($subtables as $subtable => $values) {
-      $desc = tripal_core_get_chado_table_schema($subtable);
-      if ($desc) {
-        $query->tables[$base]["chado." . $subtable] = $values;
-        unset($query->tables[$base][$subtable]);
-      }
-    }
-  }
-
-  dpm($query);
-} */
 /**
  * Implementation of hook_views_pre_execute().
- */
 function tripal_views_views_pre_execute(&$view) {
   // if the base table is a chado table then we want to set the
   // search path so it can find all of the tables.
@@ -716,9 +711,10 @@ function tripal_views_views_pre_execute(&$view) {
     tripal_db_set_chado_search_path('chado');
   }
 }
+*/
+
 /**
  * Implementation of hook_views_post_render().
- */
 function tripal_views_views_post_render(&$view, &$output, &$cache) {
   // if the base table and the query is completed we want to set
   // the search path back to the default.
@@ -727,10 +723,10 @@ function tripal_views_views_post_render(&$view, &$output, &$cache) {
     tripal_db_set_default_search_path();
   }
 }
+*/
 
 /**
  * the Download Views data export form
- */
 function tripal_views_data_export_download_form(&$form_state, $view, $display_id, $args) {
   $form = array();
   $urls = array();
@@ -797,15 +793,16 @@ function tripal_views_data_export_download_form(&$form_state, $view, $display_id
   }
   return $form;
 }
+*/
 
 /**
  * Submit for the Download Views data export form
- */
 function tripal_views_data_export_download_form_submit($form, &$form_state) {
   $urls = $form_state['storage']['urls'];
   $display_id = $form_state['values']['file_type'];
   drupal_goto($urls[$display_id]['path'], $urls[$display_id]['query']);
 }
+*/
 
 
 

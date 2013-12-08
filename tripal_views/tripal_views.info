@@ -46,5 +46,5 @@ files[] = views/handlers/tripal_views_handler_field_aggregate.inc
 files[] = views_data_export/plugins/tripal_views_plugin_style_export_fasta.inc
 
 dependencies[] = views
-dependencies[] = views_data_export
+;dependencies[] = views_data_export
 dependencies[] = tripal_core
