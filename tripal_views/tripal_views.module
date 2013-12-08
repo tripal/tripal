@@ -30,7 +30,7 @@ function tripal_views_menu() {
     //'page arguments' => array('tripal_views_admin'),
     'access arguments' => array('manage tripal_views_integration'),
     'type' => MENU_NORMAL_ITEM,
-    'weight' => -10
+    'weight' => 2
   );
 
   $items['admin/tripal/views-integration/list'] = array(

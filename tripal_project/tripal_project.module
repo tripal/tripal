@@ -37,16 +37,23 @@ function tripal_project_views_api() {
  * @ingroup tripal_project
  */
 function tripal_project_menu() {
-  $items[ 'admin/tripal/tripal_project' ]= array(
+  $items[ 'admin/tripal/chado/tripal_project' ]= array(
     'title' => 'Projects',
     'description' => ('A module for interfacing the GMOD chado database with Drupal, providing viewing of projects'),
+    'access arguments' => array('adminster tripal projects'),
+    'type' => MENU_NORMAL_ITEM
+  );
+
+  $items[ 'admin/tripal/chado/tripal_project/help' ]= array(
+    'title' => 'Help',
+    'description' => ("A description of the Tripal Project module including a short description of it's usage."),
     'page callback' => 'theme',
     'page arguments' => array('tripal_project_admin'),
     'access arguments' => array('adminster tripal projects'),
     'type' => MENU_NORMAL_ITEM
   );
 
-  $items[ 'admin/tripal/tripal_project/configuration' ]= array(
+  $items[ 'admin/tripal/chado/tripal_project/configuration' ]= array(
     'title' => 'Configuration',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_project_admin'),
@@ -55,6 +62,16 @@ function tripal_project_menu() {
   );
 
   return $items;
+}
+
+/**
+ * Implements hook_help()
+ * Purpose: Adds a help page to the module list
+ */
+function tripal_project_help ($path, $arg) {
+  if ($path == 'admin/help#tripal_project') {
+    return theme('tripal_project_admin', array());
+  }
 }
 
 /**
@@ -99,7 +116,7 @@ function tripal_project_permission() {
  *  @param $node
  *  The node on which the operation is to be performed, or, if it does not yet exist, the
  *  type of node to be created
- *  
+ *
  *  @param $op
  *  The operation to be performed
  *
@@ -110,9 +127,9 @@ function tripal_project_permission() {
  *  @return
  *  If the permission for the specified operation is not set then return FALSE. If the
  *  permission is set then return NULL as this allows other modules to disable
- *  access.  The only exception is when the $op == 'create'.  We will always 
+ *  access.  The only exception is when the $op == 'create'.  We will always
  *  return TRUE if the permission is set.
- *  
+ *
  * @ingroup tripal_project
  */
 function chado_project_node_access($node, $op, $account) {
@@ -444,19 +461,19 @@ function tripal_project_block_info() {
 
   $blocks['projectbase']['info'] = t('Tripal Project Details');
   $blocks['projectbase']['cache'] = BLOCK_NO_CACHE;
-  
+
   $blocks['projectprops']['info'] = t('Tripal Project Properties');
   $blocks['projectprops']['cache'] = BLOCK_NO_CACHE;
-  
+
   $blocks['projectpubs']['info'] = t('Tripal Project Publications');
   $blocks['projectpubs']['cache'] = BLOCK_NO_CACHE;
-  
+
   $blocks['projectcont']['info'] = t('Tripal Project Contact');
   $blocks['projectcont']['cache'] = BLOCK_NO_CACHE;
-  
+
   $blocks['projectrels']['info'] = t('Tripal Project Relationships');
   $blocks['projectrels']['cache'] = BLOCK_NO_CACHE;
-  
+
   return $blocks;
 }
 /**
@@ -464,11 +481,11 @@ function tripal_project_block_info() {
  * @ingroup tripal_project
  */
 function tripal_project_block_view($delta = '') {
- 
+
   if (user_access('access chado_project content') and arg(0) == 'node' and is_numeric(arg(1))) {
     $nid = arg(1);
     $node = node_load($nid);
-  
+
     $block = array();
     switch ($delta) {
       case 'projectbase':
