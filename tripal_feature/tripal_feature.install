@@ -13,43 +13,10 @@ function tripal_feature_install() {
   // create the module's data directory
   tripal_create_moddir('tripal_feature');
 
-  // create the tables that correlate drupal nodes with chado
-  // features, organisms, etc....
-  drupal_install_schema('tripal_feature');
-
   // add the materialized view
   tripal_feature_add_organism_count_mview();
 
 }
-/**
- *  Update for Drupal 6.x, Tripal 0.2b, Feature Module 0.2
- *  This update adjusts the materialized view by adding a 'cvterm_id' column
- *
- * @ingroup tripal_feature
- */
-function tripal_feature_update_6000() {
-  // recreate the materialized view
-  tripal_feature_add_organism_count_mview();
-  $ret = array(
-    '#finished' => 1,
-  );
-
-  return $ret;
-}
-
-/**
- *
- * @ingroup tripal_feature
- */
-/*
-function tripal_feature_update_6300() {
-  // add the relationship aggregator table to the database
-  $schema = tripal_feature_get_schemas('tripal_feature_relagg');
-  $ret = array();
-  db_create_table($ret, 'tripal_feature_relagg', $schema['tripal_feature_relagg']);
-
-  return $ret;
-} */
 /**
  *
  * @ingroup tripal_feature
@@ -120,8 +87,6 @@ function tripal_feature_uninstall() {
   if ($mview_id) {
     tripal_mviews_action("delete", $mview_id);
   }
-
-  drupal_uninstall_schema('tripal_feature');
 
   // Get the list of nodes to remove
   $sql_feature_id = "SELECT nid, vid " .

@@ -15,7 +15,6 @@
 
 require_once "includes/tripal_feature.admin.inc";
 require_once "includes/tripal_feature.sync_features.inc";
-require_once "includes/indexFeatures.inc";
 require_once "includes/fasta_loader.inc";
 require_once "includes/gff_loader.inc";
 require_once "includes/seq_extract.inc";
@@ -87,14 +86,14 @@ function tripal_feature_node_info() {
   $nodes = array();
 
   $nodes['chado_feature'] = array(
-    'name' => t('Feature'),
-    'module' => 'chado_feature',
+    'name'        => t('Feature'),
+    'base'        => 'chado_feature',
     'description' => t('A feature from the chado database'),
-    'has_title' => FALSE,
+    'has_title'   => FALSE,
     'title_label' => t('Feature'),
-    'has_body' => FALSE,
-    'body_label' => t('Feature Description'),
-    'locked' => TRUE
+    'has_body'    => FALSE,
+    'body_label'  => t('Feature Description'),
+    'locked'      => TRUE
   );
   return $nodes;
 }
@@ -106,13 +105,28 @@ function tripal_feature_node_info() {
  *
  * @ingroup tripal_feature
  */
-function tripal_feature_perm() {
+function tripal_feature_permissions() {
   return array(
-    'access chado_feature content',
-    'create chado_feature content',
-    'delete chado_feature content',
-    'edit chado_feature content',
-    'administer tripal features',
+    'access chado_feature content' => array(
+      'title' => t('View Features'),
+      'description' => t('Allow users to view feature pages.'),
+    ),
+    'create chado_feature content' => array(
+      'title' => t('Create Features'),
+      'description' => t('Allow users to create new feature pages.'),
+    ),
+    'delete chado_feature content' => array(
+      'title' => t('Delete Features'),
+      'description' => t('Allow users to delete feature pages.'),
+    ),
+    'edit chado_feature content' => array(
+      'title' => t('Edit Features'),
+      'description' => t('Allow users to edit feature pages.'),
+    ),
+    'adminster tripal feature' => array(
+      'title' => t('Administer Features'),
+      'description' => t('Allow users to administer all features.'),
+    ),
   );
 }
 
@@ -121,12 +135,12 @@ function tripal_feature_perm() {
  *
  * This hook allows node modules to limit access to the node types they define.
  *
- *  @param $op
- *  The operation to be performed
- *
  *  @param $node
  *  The node on which the operation is to be performed, or, if it does not yet exist, the
  *  type of node to be created
+ *  
+ *  @param $op
+ *  The operation to be performed
  *
  *  @param $account
  *  A user object representing the user for whom the operation is to be performed
@@ -139,7 +153,7 @@ function tripal_feature_perm() {
  *  
  * @ingroup tripal_feature
  */
-function chado_feature_access($op, $node, $account) {
+function chado_feature_node_access($node, $op, $account) {
   if ($op == 'create') {
     if (!user_access('create chado_feature content', $account)) {
       return FALSE;
@@ -344,108 +358,111 @@ function tripal_feature_theme() {
  *
  * @ingroup tripal_feature
  */
-function tripal_feature_block($op = 'list', $delta = 0, $edit=array()) {
-  switch ($op) {
-    case 'list':
-      $blocks['references']['info'] = t('Tripal Feature References');
-      $blocks['references']['cache'] = BLOCK_NO_CACHE;
+function tripal_feature_block_info() {
 
-      $blocks['base']['info'] = t('Tripal Feature Details');
-      $blocks['base']['cache'] = BLOCK_NO_CACHE;
+  $blocks['references']['info'] = t('Tripal Feature References');
+  $blocks['references']['cache'] = BLOCK_NO_CACHE;
 
-      $blocks['sequence']['info'] = t('Tripal Feature Sequence');
-      $blocks['sequence']['cache'] = BLOCK_NO_CACHE;
+  $blocks['base']['info'] = t('Tripal Feature Details');
+  $blocks['base']['cache'] = BLOCK_NO_CACHE;
 
-      $blocks['featureloc_sequences']['info'] = t('Tripal Feature Annotated Sequence');
-      $blocks['featureloc_sequences']['cache'] = BLOCK_NO_CACHE;
+  $blocks['sequence']['info'] = t('Tripal Feature Sequence');
+  $blocks['sequence']['cache'] = BLOCK_NO_CACHE;
 
-      $blocks['synonyms']['info'] = t('Tripal Feature Synonyms');
-      $blocks['synonyms']['cache'] = BLOCK_NO_CACHE;
+  $blocks['featureloc_sequences']['info'] = t('Tripal Feature Annotated Sequence');
+  $blocks['featureloc_sequences']['cache'] = BLOCK_NO_CACHE;
 
-      $blocks['properties']['info'] = t('Tripal Feature Properties');
-      $blocks['properties']['cache'] = BLOCK_NO_CACHE;;
+  $blocks['synonyms']['info'] = t('Tripal Feature Synonyms');
+  $blocks['synonyms']['cache'] = BLOCK_NO_CACHE;
 
-      $blocks['terms']['info'] = t('Tripal Annotated Terms');
-      $blocks['terms']['cache'] = BLOCK_NO_CACHE;;
+  $blocks['properties']['info'] = t('Tripal Feature Properties');
+  $blocks['properties']['cache'] = BLOCK_NO_CACHE;;
 
-      $blocks['alignments']['info'] = t('Tripal Feature Alignments');
-      $blocks['alignments']['cache'] = BLOCK_NO_CACHE;
+  $blocks['terms']['info'] = t('Tripal Annotated Terms');
+  $blocks['terms']['cache'] = BLOCK_NO_CACHE;;
 
-      $blocks['relationships']['info'] = t('Tripal Feature Relationships');
-      $blocks['relationships']['cache'] = BLOCK_NO_CACHE;
+  $blocks['alignments']['info'] = t('Tripal Feature Alignments');
+  $blocks['alignments']['cache'] = BLOCK_NO_CACHE;
 
-      $blocks['org_feature_counts']['info'] = t('Tripal Organism Feature Counts');
-      $blocks['org_feature_counts']['cache'] = BLOCK_NO_CACHE;
+  $blocks['relationships']['info'] = t('Tripal Feature Relationships');
+  $blocks['relationships']['cache'] = BLOCK_NO_CACHE;
 
-      $blocks['org_feature_browser']['info'] = t('Tripal Organism Feature Browser');
-      $blocks['org_feature_browser']['cache'] = BLOCK_NO_CACHE;
+  $blocks['org_feature_counts']['info'] = t('Tripal Organism Feature Counts');
+  $blocks['org_feature_counts']['cache'] = BLOCK_NO_CACHE;
 
-      return $blocks;
+  $blocks['org_feature_browser']['info'] = t('Tripal Organism Feature Browser');
+  $blocks['org_feature_browser']['cache'] = BLOCK_NO_CACHE;
 
-  case 'view':
-    if (user_access('access chado_feature content') and arg(0) == 'node' and is_numeric(arg(1))) {
-      $nid = arg(1);
-      $node = node_load($nid);
-
-      $block = array();
-      switch ($delta) {
-        case 'references':
-          $block['subject'] = t('References');
-          $block['content'] = theme('tripal_feature_references', $node);
-          break;
-        case 'base':
-          $block['subject'] = t('Feature Details');
-          $block['content'] = theme('tripal_feature_base', $node);
-          break;
-        case 'synonyms':
-          $block['subject'] = t('Synonyms');
-          $block['content'] = theme('tripal_feature_synonyms', $node);
-          break;
-        case 'properties':
-          $block['subject'] = t('Properties');
-          $block['content'] = theme('tripal_feature_properties', $node);
-          break;
-        case 'terms':
-          $block['subject'] = t('Annotated Terms');
-          $block['content'] = theme('tripal_feature_terms', $node);
-          break;
-        case 'sequence':
-          $block['subject'] = t('Sequence');
-          $block['content'] = theme('tripal_feature_sequence', $node);
-          break;
-        case 'featureloc_sequences':
-          $block['subject'] = t('Formatted Sequences');
-          $block['content'] = theme('tripal_feature_featureloc_sequences', $node);
-          break;
-        case 'alignments':
-          $block['subject'] = t('Alignments');
-          $block['content'] = theme('tripal_feature_alignments', $node);
-          break;
-        case 'relationships':
-          $block['subject'] = t('Relationships');
-          $block['content'] = theme('tripal_feature_relationships', $node);
-          break;
-        case 'org_feature_counts':
-          $block['subject'] = t('Feature Type Summary');
-          $block['content'] = theme('tripal_organism_feature_counts', $node);
-          break;
-        case 'org_feature_browser':
-          $block['subject'] = t('Feature Browser');
-          $block['content'] = theme('tripal_organism_feature_browser', $node);
-          break;
-        case 'library_feature_browser':
-          $block['subject'] = t('Library Feature Browser');
-          $block['content'] = theme('tripal_library_feature_browser', $node);
-          break;
-        case 'analysis_feature_browser':
-          $block['subject'] = t('Analysis Feature Browser');
-          $block['content'] = theme('tripal_analysis_feature_browser', $node);
-          break;
-        default :
-      }
-      return $block;
+  return $blocks;
+}
+/**
+ *
+ *
+ * @ingroup tripal_feature
+ */
+function tripal_feature_block_view($delta = '') {
+  
+  if (user_access('access chado_feature content') and arg(0) == 'node' and is_numeric(arg(1))) {
+    $nid = arg(1);
+    $node = node_load($nid);
+  
+    $block = array();
+    switch ($delta) {
+      case 'references':
+        $block['subject'] = t('References');
+        $block['content'] = theme('tripal_feature_references', $node);
+        break;
+      case 'base':
+        $block['subject'] = t('Feature Details');
+        $block['content'] = theme('tripal_feature_base', $node);
+        break;
+      case 'synonyms':
+        $block['subject'] = t('Synonyms');
+        $block['content'] = theme('tripal_feature_synonyms', $node);
+        break;
+      case 'properties':
+        $block['subject'] = t('Properties');
+        $block['content'] = theme('tripal_feature_properties', $node);
+        break;
+      case 'terms':
+        $block['subject'] = t('Annotated Terms');
+        $block['content'] = theme('tripal_feature_terms', $node);
+        break;
+      case 'sequence':
+        $block['subject'] = t('Sequence');
+        $block['content'] = theme('tripal_feature_sequence', $node);
+        break;
+      case 'featureloc_sequences':
+        $block['subject'] = t('Formatted Sequences');
+        $block['content'] = theme('tripal_feature_featureloc_sequences', $node);
+        break;
+      case 'alignments':
+        $block['subject'] = t('Alignments');
+        $block['content'] = theme('tripal_feature_alignments', $node);
+        break;
+      case 'relationships':
+        $block['subject'] = t('Relationships');
+        $block['content'] = theme('tripal_feature_relationships', $node);
+        break;
+      case 'org_feature_counts':
+        $block['subject'] = t('Feature Type Summary');
+        $block['content'] = theme('tripal_organism_feature_counts', $node);
+        break;
+      case 'org_feature_browser':
+        $block['subject'] = t('Feature Browser');
+        $block['content'] = theme('tripal_organism_feature_browser', $node);
+        break;
+      case 'library_feature_browser':
+        $block['subject'] = t('Library Feature Browser');
+        $block['content'] = theme('tripal_library_feature_browser', $node);
+        break;
+      case 'analysis_feature_browser':
+        $block['subject'] = t('Analysis Feature Browser');
+        $block['content'] = theme('tripal_analysis_feature_browser', $node);
+        break;
+      default :
     }
-
+    return $block;
   }
 }
 /**
@@ -513,7 +530,7 @@ function chado_feature_insert($node) {
   if (!$node_check) {
     // next add the item to the drupal table
     $sql = "INSERT INTO {chado_feature} (nid, vid, feature_id, sync_date) " .
-           "VALUES (%d, %d, %d, " . time() . ")";
+           "VALUES (%d, %d, %d, " . REQUEST_TIME . ")";
       db_query($sql, $node->nid, $node->vid, $feature[0]->feature_id);
   }
 }
@@ -601,7 +618,7 @@ function chado_feature_delete($node) {
              "WHERE nid = %d " .
              "AND vid = %d";
   db_query($sql_del, $node->nid, $node->vid);
-  $sql_del = "DELETE FROM {node_revisions} " .
+  $sql_del = "DELETE FROM {node_revision} " .
              "WHERE nid = %d " .
              "AND vid = %d";
   db_query($sql_del, $node->nid, $node->vid);
@@ -746,7 +763,6 @@ function chado_feature_add_gbaccession($accession, $feature_id) {
  */
 function chado_feature_form($node, $param) {
 
-  $type = node_get_types('type', $node);
   $form = array();
 
   $feature = $node->feature;
@@ -1792,117 +1808,85 @@ function tripal_feature_color_sequence($sequence, $parts, $defline) {
 }
 
 /**
- *  This function customizes the view of the chado_feature node.  It allows
- *  us to generate the markup.
  *
  * @ingroup tripal_feature
  */
-function chado_feature_view($node, $teaser = FALSE, $page = FALSE) {
-
-  if (!$teaser) {
-    // use drupal's default node view:
-    $node = node_prepare($node, $teaser);
-
-    // if we're building the node for searching then
-    // we want to handle this within the module and
-    // not allow theme customization.  We don't want to
-    // index all items (such as DNA sequence).
-    if ($node->build_mode == NODE_BUILD_SEARCH_INDEX) {
-      $node->content['index_version'] = array(
-        '#value' => theme('tripal_feature_search_index', $node),
-        '#weight' => 1,
-      );
-    }
-    elseif ($node->build_mode == NODE_BUILD_SEARCH_RESULT) {
-      $node->content['index_version'] = array(
-        '#value' => theme('tripal_feature_search_results', $node),
-        '#weight' => 1,
-      );
-    }
-    else {
-       // do nothing here, let the theme derived template handle display
-    }
+function tripal_feature_node_presave($node) {
+  
+  // set the title to ensure it is always unique
+  switch ($node->type) {
+    case 'chado_feature':
+      
+      $values = array('organism_id' => $node->organism_id);
+      $organism = tripal_core_chado_select('organism', array('genus', 'species'), $values);
+      $node->title = $node->fname . ', ' . $node->uniquename . ' (' . $node->feature_type . ') ' . $organism[0]->genus . ' ' . $organism[0]->species;
+      break;
   }
-
-  return $node;
 }
 
 /**
- * Display feature information for associated organisms. This function also
- * provides contents for indexing
  *
  * @ingroup tripal_feature
  */
-function tripal_feature_nodeapi(&$node, $op, $teaser, $page) {
+function tripal_feature_node_insert($node) {
   
-  switch ($op) {
-    
-     // set the title to ensure it is always unique
-    case 'presave':
-      switch ($node->type) {
-        case 'chado_feature':
-          
-          $values = array('organism_id' => $node->organism_id);
-          $organism = tripal_core_chado_select('organism', array('genus', 'species'), $values);
-          $node->title = $node->fname . ', ' . $node->uniquename . ' (' . $node->feature_type . ') ' . $organism[0]->genus . ' ' . $organism[0]->species;
-          break;
+  // set the URL path after inserting.  We do it here because we do not 
+  // know the feature_id in the presave 
+  switch ($node->type) {
+    case 'chado_feature':
+      if (!$node->feature_id) {
+        $sql = "SELECT * FROM {chado_feature} WHERE nid = %d";
+        $chado_feature = db_fetch_object(db_query($sql, $node->nid));
+        $node->feature_id = $chado_feature->feature_id;
       }
+      
+      // remove any previous alias
+      db_query("DELETE FROM {url_alias} WHERE src = '%s'", "node/$node->nid");
+      
+      // set the URL for this feature page
+      $url_alias = tripal_feature_get_feature_url($node);
+      path_set_alias("node/$node->nid", $url_alias);
       break;
+  }
+}
+/**
+ *
+ * @ingroup tripal_feature
+ */
+function tripal_feature_node_update($node) {
+  
+  // set the URL path after inserting.  We do it here because we do not 
+  // know the feature_id in the presave  
+  switch ($node->type) {
+    case 'chado_feature':
       
-    // set the URL path after inserting.  We do it here because we do not 
-    // know the feature_id in the presave  
-    case 'insert':
-      switch ($node->type) {
-        case 'chado_feature':
-          if (!$node->feature_id) {
-            $sql = "SELECT * FROM {chado_feature} WHERE nid = %d";
-            $chado_feature = db_fetch_object(db_query($sql, $node->nid));
-            $node->feature_id = $chado_feature->feature_id;
-          }
-
-          
-          // remove any previous alias
-          db_query("DELETE FROM {url_alias} WHERE src = '%s'", "node/$node->nid");
-          
-          // set the URL for this feature page
-          $url_alias = tripal_feature_get_feature_url($node);
-          path_set_alias("node/$node->nid", $url_alias);
-          break;
-      }
+      // remove any previous alias
+      db_query("DELETE FROM {url_alias} WHERE src = '%s'", "node/$node->nid");
+      
+      // set the URL for this feature page
+      $url_alias = tripal_feature_get_feature_url($node);
+      path_set_alias("node/$node->nid", $url_alias);
       break;
-      
-    // set the URL path after inserting.  We do it here because we do not 
-    // know the feature_id in the presave  
-    case 'update':
-      switch ($node->type) {
-        case 'chado_feature':
-          
-          // remove any previous alias
-          db_query("DELETE FROM {url_alias} WHERE src = '%s'", "node/$node->nid");
-          
-          // set the URL for this feature page
-          $url_alias = tripal_feature_get_feature_url($node);
-          path_set_alias("node/$node->nid", $url_alias);
-          break;
-      }
-      break;
-      
-      
-    // add items to other nodes, build index and search results
-    case 'view':
-      switch ($node->type) {
-        case 'chado_organism':
-        // Show feature browser
-          $types_to_show = array('chado_organism', 'chado_library');
-          if (in_array($node->type, $types_to_show, TRUE)) {
-            $node->content['tripal_organism_feature_counts'] = array(
-              '#value' => theme('tripal_organism_feature_counts', $node),
-            );
-            $node->content['tripal_organism_feature_browser'] = array(
-              '#value' => theme('tripal_organism_feature_browser', $node),
-            );
-          }
-        break;
+  }
+}
+/**
+ *
+ * @ingroup tripal_feature
+ */
+function tripal_feature_node_update($node) { 
+  
+  // add items to other nodes, build index and search results
+  switch ($node->type) {
+    case 'chado_organism':
+      // Show feature browser
+      $types_to_show = array('chado_organism', 'chado_library');
+      if (in_array($node->type, $types_to_show, TRUE)) {
+        $node->content['tripal_organism_feature_counts'] = array(
+          '#value' => theme('tripal_organism_feature_counts', $node),
+        );
+        $node->content['tripal_organism_feature_browser'] = array(
+          '#value' => theme('tripal_organism_feature_browser', $node),
+        );
       }
     break;
   }
@@ -2159,16 +2143,16 @@ function tripal_feature_del_vocabulary() {
   // need to be installed for the taxonomy to work.
   foreach ($vocabularies as $vocab) {
     if ($vocab->name == 'Feature Type') {
-      taxonomy_del_vocabulary($vocab->vid);
+      taxonomy_vocabulary_delete($vocab->vid);
     }
     if ($vocab->name == 'Organism') {
-      taxonomy_del_vocabulary($vocab->vid);
+      taxonomy_vocabulary_delete($vocab->vid);
     }
     if ($vocab->name == 'Library') {
-      taxonomy_del_vocabulary($vocab->vid);
+      taxonomy_vocabulary_delete($vocab->vid);
     }
     if ($vocab->name == 'Analysis') {
-      taxonomy_del_vocabulary($vocab->vid);
+      taxonomy_vocabulary_delete($vocab->vid);
     }
   }
 

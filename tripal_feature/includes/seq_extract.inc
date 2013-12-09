@@ -20,11 +20,11 @@ function tripal_feature_seq_extract_page() {
     unset($_SESSION['tripal_feature_seq_extract']['download']);
      
     if ($format == 'fasta_html') {
-      drupal_set_header('Content-Type: text/html');
+      drupal_add_http_header('Content-Type: text/html');
     }
     else {
-      drupal_set_header('Content-Type: text');
-      drupal_set_header('Content-Disposition: attachment; filename="sequences.fasta.txt"');
+      drupal_add_http_header('Content-Type: text');
+      drupal_add_http_header('Content-Disposition: attachment; filename="sequences.fasta.txt"');
     }
     
     tripal_feature_seq_extract_get_features(NULL, $genus, $species, $analysis, 
