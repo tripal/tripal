@@ -178,10 +178,6 @@ function tripal_views_theme($existing, $type, $theme, $path) {
       'template'  => 'tripal_views_integration_fields_form',
       'render element'=> 'form',
     ),
-    'tripal_views_data_export_download_form' => array(
-      'render element'=> 'form',
-      'template'  => 'tripal_views_data_export_download_form',
-    ),
     'file_upload_combo' => array(
       'variables' => array('element' => NULL)
     ),

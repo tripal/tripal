@@ -109,12 +109,6 @@ function tripal_views_views_pre_render(&$view) {
   // view has populated the $view->exposed_input variable
   unset($view->exposed_input);
 
-  // we want to add to the bottom of the views the form for downloading
-  // results in other formats (e.g. Excel, FASTA, CSV, etc.).  The Views Data
-  // Export module provides small images at the bottom, but we want to provide
-  // a more intutitive interface for getting different file formats
-  // $form = drupal_get_form('tripal_views_data_export_download_form', $view, $display_id, $args);
-  // $view->attachment_after = $form;
 }
 
 /**
@@ -439,50 +433,6 @@ function tripal_views_views_data_alter(&$data) {
 }
 
 /**
- * Implementation of hook_views_plugins().
- */
-function tripal_views_views_plugins() {
-  $tc_path = drupal_get_path('module', 'tripal_views');
-
-  $style_defaults = array(
-    'path' => $tc_path . '/views_data_export/plugins',
-    'parent' => 'views_data_export',
-    'theme' => 'views_data_export',
-    'theme path' => $tc_path . '/views_data_export/theme',
-    'theme file' => 'tripal_views_data_export.theme.inc',
-    'uses row plugin' => FALSE,
-    'uses fields' => TRUE,
-    'uses options' => TRUE,
-    'type' => 'data_export',
-  );
-
-  // add FASTA format as a new style for the existing views_export_data Display
-  return array(
-    'style' => array(
-      'views_data_export_fasta' => array(
-        'title' => t('FASTA file'),
-        'help' => t('Display results in FASTA format. All fields in results are on the definition line while the feature.residues field must be present .'),
-        'handler' => 'tripal_views_plugin_style_export_fasta',
-        // Views Data Export element that will be used to set additional headers when serving the feed.
-        'export headers' => array('Content-type: text/plain; charset=utf-8'),
-        // Views Data Export element mostly used for creating some additional classes and template names.
-        'export feed type' => 'fasta',
-        'export feed text' => 'FASTA',
-        'export feed file' => '%view.fna',
-        'export feed icon' => $tc_path . '/views_data_export/images/fasta.png',
-        'additional themes' => array(
-          'views_data_export_fasta_header' => 'style',
-          'views_data_export_fasta_body' => 'style',
-          'views_data_export_fasta_footer' => 'style',
-        ),
-        'additional themes base' => 'views_data_export_fasta',
-      ) + $style_defaults,
-    ),
-  );
-}
-*/
-
-/**
  * Implementation of hook_views_pre_view().
  */
 function tripal_views_views_pre_view(&$view, &$display_id, &$args) {
@@ -493,98 +443,3 @@ function tripal_views_views_pre_view(&$view, &$display_id, &$args) {
   // have access to everything needed for this view to work properly
   $_GET = array_merge($_GET, $_POST);
 }
-
-/**
- * Implementation of hook_views_pre_build().
- */
-/* function tripal_views_views_pre_render(&$view, &$display_id, &$args){
-  // we want to add to the bottom of the views the form for downloading
-  // results in other formats (e.g. Excel, FASTA, CSV, etc.).  The Views Data
-  // Export module provides small images at the bottom, but we want to provide
-  // a more intutitive interface for getting different file formats
-  $form = drupal_get_form('tripal_views_data_export_download_form',$view,$display_id,$args);
-  $view->attachment_after = $form;
-}*/
-
-/**
- * the Download Views data export form
-function tripal_views_data_export_download_form(&$form_state, $view, $display_id, $args) {
-  $form = array();
-  $urls = array();
-
-  // get any export_data_export displays
-  $displays = $view->display;
-  $options = array();
-  $default = '';
-  $current_display = $view->current_display;
-  foreach ($displays as $name => $display) {
-    if (preg_match("/^views_data_export/", $name)) {
-
-      // only add this display to the form if it is attached
-      $display_options = $display->display_options;
-      if (strcmp($display_options['displays'][$current_display], $current_display) != 0) {
-         continue;
-      }
-
-      // set the first item as default
-      if (!$default) {
-        $default = $display->id;
-      }
-
-      $path = $display->display_options['path'];
-      $query = $view->get_exposed_input();  // retrieves elements in $_GET array
-
-      $urls[$display->id]['path'] = $path;
-      $urls[$display->id]['query'] = $query;
-
-      // add the new item to the options array
-      $options[$display->id] = $display->display_title;
-    }
-  }
-
-  // only generate the form if we have views_data_export displays attached
-  // to this view
-  if (count($options) > 0) {
-
-    $form_state['storage']['urls'] = $urls;
-    $form['#cache'] = TRUE;
-
-    // we want the form to redirect to a new window
-    $form['#attributes']['target'] = "_blank";
-
-    // now build the form elements
-    $form['downloads'] = array(
-      '#type' => 'fieldset',
-      '#title' => 'Download Results',
-      '#collapsible' => TRUE,
-      '#collapsed' => FALSE
-    );
-    $form['downloads']['file_type'] = array(
-      '#title' => t('File format'),
-      '#type' => 'radios',
-      '#options' => $options,
-      '#required' => TRUE,
-      '#default_value' => $default,
-      '#description' => t('Please select a file format to download'),
-    );
-    $form['downloads']['submit'] = array(
-      '#value' => t('Download Results'),
-      '#type' => 'submit',
-    );
-  }
-  return $form;
-}
-*/
-
-/**
- * Submit for the Download Views data export form
-function tripal_views_data_export_download_form_submit($form, &$form_state) {
-  $urls = $form_state['storage']['urls'];
-  $display_id = $form_state['values']['file_type'];
-  drupal_goto($urls[$display_id]['path'], $urls[$display_id]['query']);
-}
-*/
-
-
-
-
