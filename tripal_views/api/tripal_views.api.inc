@@ -339,12 +339,9 @@ function tripal_views_integration_add_entry($defn_array) {
             'left_field' => $join['field'],
           );
 
-          if (!empty($join['handler'])) {
-            $join_record['handler'] = $join['handler'];
-          }
-          else {
-            $join_record['handler'] = 'views_join';
-          }
+          $join_record['handler'] = (!empty($join['handler'])) ? $join['handler'] : 'views_join';
+          $join_record['relationship_handler'] = (!empty($join['relationship_handler'])) ? $join['relationship_handler'] : 'views_handler_relationship';
+          $join_record['relationship_only'] = (!empty($join['relationship_only'])) ? $join['relationship_only'] : 0;
 
           if ($view_record['setup_id'] && $defn_array['table'] && $field['name'] && $join['table'] && $join['field']) {
             $status = drupal_write_record('tripal_views_join', $join_record);
@@ -674,7 +671,7 @@ function tripal_views_get_integration_array_for_chado_table($table_name, $base_t
     }
   }
 
-  // Add Joins & Relationship Handlers to fields
+  // Add Joins & Relationships for foreign keys to fields
   if (!isset($schema['foreign keys'])) {
     $schema['foreign keys'] = array();
     watchdog('tripal_views', 'There are no foreign keys defined for %table in the Chado Schema API.', array('%table' => $table_name), WATCHDOG_WARNING);
@@ -686,123 +683,31 @@ function tripal_views_get_integration_array_for_chado_table($table_name, $base_t
         'table' => $foreign_key_schema['table'],
         'field' => $right_field,
         /**D6 'handler' => 'views_handler_join_chado_aggregator'*/
-        'handler' => 'views_handler_join'
-      );
-
-      // Relationship Handler
-      $defn_array['fields'][$left_field]['handlers']['relationship'] = array(
-        /**D6 'name' => 'chado_views_handler_relationship',*/
-        'name' => 'views_handler_relationship',
-        'base' => $foreign_key_schema['table'],
-        'base field' => $right_field,
-        'label' => $table_name . ' ' . $left_field . ' => ' . $foreign_key_schema['table'] . ' ' . $right_field
+        'handler' => 'views_handler_join',
+        'relationship_handler' => 'views_handler_relationship',
       );
     }
   }
 
-  return $defn_array;
-}
+  // Add in reverse relationships
+  if (isset($schema['referring_tables'])) {
+    foreach ($schema['referring_tables'] as $referring_table) {
 
-/**
- * Adds the joins necessary to link a chado table to it's node counterpart
- *
- * @param $defn_array
- *   The current definition array for a given table
- *
- * @ingroup tripal_views_api
- */
-function tripal_views_add_node_relationship_to_chado_table_integration($defn_array) {
-  $integrations[$defn_array['table']] = $defn_array;
-  $primary_key = $defn_array['table'] . '_id';
-  $chado_linking = 'chado_' . $defn_array['table'];
-
-  if (empty($defn_array['table'])) {
-    watchdog('tripal_views','Tried to add a node=>chado relationship for an empty table defn: %defn',
-      array('%defn' => print_r($defn_array,TRUE)),WATCHDOG_WARNING);
-    return FALSE;
+      // D7 @todo: fix referring_tables in schema to list the keys like foreign keys does
+      $referring_schema = tripal_core_get_chado_table_schema($referring_table);
+      $referring_schema_fk_columns = $referring_schema['foreign keys'][$table_name]['columns'];
+      foreach ($referring_schema_fk_columns as $left_field => $right_field) {
+        $defn_array['fields'][$right_field]['joins'][ $referring_table ] = array(
+          'table' => $referring_table,
+          'field' => $left_field,
+          'relationship_handler' => 'views_handler_relationship',
+          'relationship_only' => 1
+        );
+      }
+    }
   }
 
-  // Add table.primary_key => chado_table.primary key join to $defn_array
-  $integrations[$defn_array['table']]['fields'][$primary_key]['joins'][$chado_linking] = array(
-    'table' => $chado_linking,
-    'field' => $primary_key,
-  );
-
-  // Create chado_table defn_array
-  $integrations[$chado_linking] = array(
-    'table' => $chado_linking,
-    'type' => 'drupal',
-    'name' => 'Chado ' . $defn_array['table'] . ' Node',
-    'description' => 'Links chado content to its drupal node counterpart',
-    'priority' => $defn_array['priority'],
-    'base_table' => FALSE,
-    'fields' => array(
-      $primary_key => array(
-        'name' => $primary_key,
-        'title' => ucwords(str_replace('_', ' ', $primary_key)),
-        'type' => 'int',
-        'description' => 'The primary key of the chado ' . $defn_array['table'] . ' table',
-        'handlers' => array(),
-        'joins' => array(
-          $defn_array['table'] => array(
-            'table' => $defn_array['table'],
-            'field' => $primary_key,
-          )
-        ),
-      ),
-      'nid' => array(
-        'name' => 'nid',
-        'title' => 'Node ID',
-        'type' => 'int',
-        'description' => 'Link ' . ucfirst($defn_array['table']) . ' to it\'s node',
-        'handlers' => array(
-          'relationship' => array(
-            'name' => 'chado_views_handler_relationship_to_node',
-            'title' => ucfirst($defn_array['table']) . ' to Node',
-            'label' => ucfirst($defn_array['table']) . ' to Node',
-            'base table' => $defn_array['table'],
-            'base field' => $primary_key
-          )
-        ),
-        'joins' => array(
-          'node' => array(
-            'table' => 'node',
-            'field' => 'nid',
-          ),
-        ),
-      )
-    ),
-  );
-
-  // Create node defn_array
-  $integrations['node'] = array(
-    'table' => 'node',
-    'name' => 'Node',
-    'description' => 'Primary Drupal Content',
-    'priority' => $defn_array['priority'],
-    'additional_content' => TRUE, // Allows multiple modules to add to the node setup
-    'fields' => array(
-      'nid' => array(
-        'name' => 'nid',
-        'title' => 'Node ID',
-        'type' => 'int',
-        'description' => 'the primary key of the drupal node table',
-        'handlers' => array(),
-        'joins' => array(
-          $defn_array['table'] => array(
-            'table' => $defn_array['table'],
-            'field' => 'nid',
-          ),
-          $chado_linking => array(
-            'table' => $chado_linking,
-            'field' => 'nid',
-          ),
-        ),
-      ),
-    ),
-  );
-
-  return $integrations;
+  return $defn_array;
 }
 
 /**

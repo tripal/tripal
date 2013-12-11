@@ -108,6 +108,39 @@ function tripal_views_update_6040() {
 }
 
 /**
+ * Tripal Views Update for 7.x-2.0
+ *   - Add relationship_only field to tripal_views_join
+ *   - Add relationship_handler field to tripal_views_join
+ */
+function tripal_views_update_7020() {
+
+  // Add relationship_handler to tripal_views_join
+  db_add_field(
+    'tripal_views_join',
+    'relationship_handler',
+    array(
+      'type' => 'varchar',
+      'length' => '255',
+      'not null' => TRUE,
+      'default' => 'views_handler_relationship'
+    )
+  );
+
+  // Add relationship_only to tripal_views_join
+  db_add_field(
+    'tripal_views_join',
+    'relationship_only',
+    array(
+      'type' => 'int',
+      'not null ' => TRUE,
+      'default' => 0
+    )
+  );
+
+  return t('Updated Tripal Views to better handle relationships. Relationships are now handled through joins rather than handlers (backwards compatible).');
+}
+
+/**
  * Describe the Tripal Views Schema
  *
  * Tables include:
@@ -263,6 +296,17 @@ function tripal_views_views_schema() {
         'length' => '255',
         'not null' => TRUE,
         'default' => '',
+      ),
+      'relationship_handler' => array(
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => TRUE,
+        'default' => 'views_handler_relationship'
+      ),
+      'relationship_only' => array(
+        'type' => 'int',
+        'not null ' => TRUE,
+        'default' => 0
       ),
       'arguments' => array(
         'description' => 'arguments that may get passed to the handler',

@@ -46,6 +46,7 @@ class tripal_views_handler_filter_no_results extends views_handler_filter {
 
   function query() {
     global $base_url;
+    $jquery_loaded = FALSE;
 
     // Check that all filter types don't return arrays
     // If they do then just show results by default b/c there is no way to tell the
