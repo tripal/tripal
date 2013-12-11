@@ -677,8 +677,8 @@ function tripal_feature_set_vocabulary() {
        'required' => 0,
        'weight' => 1,
     );
-    drupal_execute('taxonomy_form_vocabulary', $form_state, $values);
-    drupal_execute('taxonomy_form_vocabulary', $form_state);
+    drupal_form_submit('taxonomy_form_vocabulary', $form_state, $values);
+    drupal_form_submit('taxonomy_form_vocabulary', $form_state);
   }
 
   if (!$op_vid) {
@@ -695,8 +695,8 @@ function tripal_feature_set_vocabulary() {
        'required' => 0,
        'weight' => 2,
     );
-    drupal_execute('taxonomy_form_vocabulary', $form_state, $values);
-    drupal_execute('taxonomy_form_vocabulary', $form_state);
+    drupal_form_submit('taxonomy_form_vocabulary', $form_state, $values);
+    drupal_form_submit('taxonomy_form_vocabulary', $form_state);
   }
 
   if (!$lb_vid) {
@@ -713,8 +713,8 @@ function tripal_feature_set_vocabulary() {
        'required' => 0,
        'weight' => 3,
     );
-    drupal_execute('taxonomy_form_vocabulary', $form_state, $values);
-    drupal_execute('taxonomy_form_vocabulary', $form_state);
+    drupal_form_submit('taxonomy_form_vocabulary', $form_state, $values);
+    drupal_form_submit('taxonomy_form_vocabulary', $form_state);
   }
 
   if (!$an_vid) {
@@ -731,7 +731,7 @@ function tripal_feature_set_vocabulary() {
        'required' => 0,
        'weight' => 4,
     );
-    drupal_execute('taxonomy_form_vocabulary', $form_state, $values);
-    drupal_execute('taxonomy_form_vocabulary', $form_state);
+    drupal_form_submit('taxonomy_form_vocabulary', $form_state, $values);
+    drupal_form_submit('taxonomy_form_vocabulary', $form_state);
   }
 }
