@@ -840,7 +840,7 @@ function tripal_pub_add_authors($pub_id, $authors, $do_contact) {
     $values = array(
       'pub_id' => $pub_id,
       'rank' => $rank,
-      'surname' => $author['Surname'] ? $author['Surname'] : $author['Collective'],
+      'surname' => $author['Surname'] ? substr($author['Surname'], 0, 100) : substr($author['Collective'], 0, 100),
       'givennames' => $author['Given Name'],
       'suffix' => $author['Suffix'],
     );
