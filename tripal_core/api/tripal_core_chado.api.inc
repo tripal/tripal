@@ -2160,6 +2160,9 @@ function tripal_core_expand_chado_vars($object, $type, $to_expand, $table_option
               $object->expanded = $to_expand;
             }
             else {
+              if (!is_object($object->{$foreign_table})) {
+                $object->{$foreign_table} = new stdClass();
+              }
               $object->{$foreign_table} = $foreign_object;
               $object->expanded = $to_expand;
             }
