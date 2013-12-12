@@ -17,12 +17,9 @@ class tripal_views_handler_filter_select_cvterm extends views_handler_filter_str
   * Determine which cv to limit the cvterms to
   */
   function init(&$view, $options) {
-
-    include_once('chado_wrapper_functions.inc');
-
     parent::init($view, $options);
 
-    if ($this->options['show_all']) {
+    if (isset($this->options['show_all'])) {
       $cv_id = variable_get('chado_' . $this->view->base_table . '_cv', NULL);
       if ($cv_id) {
         $results = tripal_core_chado_select('cvterm', array('cvterm_id', 'name'), array('cv_id' => $cv_id));
@@ -62,8 +59,8 @@ class tripal_views_handler_filter_select_cvterm extends views_handler_filter_str
     else {
       // @coder-ignore: non-drupal schema therefore table prefixing does not apply
       // D7 TODO: Check DBTNG changes work
-      $sql = "SELECT cvterm_id, name FROM {cvterm} WHERE cvterm_id IN (SELECT distinct(%s) FROM {%s})";
-      $resource = chado_query($sql, $this->field, $this->table);
+      $sql = "SELECT cvterm_id, name FROM {cvterm} WHERE cvterm_id IN (SELECT distinct(" . $this->field . ") FROM {" . $this->table . "})";
+      $resource = chado_query($sql);
       $cvterms = array();
       foreach ($resource as $r) {
         $cvterms[$r->cvterm_id] = $r->name;
@@ -98,14 +95,14 @@ class tripal_views_handler_filter_select_cvterm extends views_handler_filter_str
       '#default_value' => ($this->options['values_form_type']) ? $this->options['values_form_type'] : 'select',
     );
 
-    $form['multiple'] = array(
+    $form['select_multiple'] = array(
       '#type' => 'checkbox',
       '#title' => t('Select Multiple'),
       '#description' => t('Allows more then one option to be selected.'),
-      '#default_value' => (isset($this->options['multiple'])) ? $this->options['multiple'] : FALSE,
+      '#default_value' => (isset($this->options['select_multiple'])) ? $this->options['select_multiple'] : FALSE,
     );
 
-    $form['optional'] = array(
+    $form['select_optional'] = array(
       '#type' => 'checkbox',
       '#title' => t('Optional'),
       '#description' => t('Adds --Any-- to the available options.'),
@@ -118,25 +115,15 @@ class tripal_views_handler_filter_select_cvterm extends views_handler_filter_str
       '#description' => 'Otherwise only cvterms used in the base table will be used'
     );
 
-    $form['agg'] = array(
-      '#type' => 'fieldset',
-      '#title' => 'Apply to fields that are aggregated'
-    );
+  }
 
-    $form['agg']['records_with'] = array(
-      '#type' => 'checkbox',
-      '#title' => t('Filter base table records'),
-      '#description' => t('Filters %base_table to only those with the value in the aggregate array.', array('%base_table' => $this->view->base_table)),
-      '#default_value' => (isset($this->options['agg']['records_with'])) ? $this->options['agg']['records_with'] : TRUE,
-    );
-
-    $form['agg']['aggregates_with'] = array(
-      '#type' => 'checkbox',
-      '#title' => t('Filter aggregates displayed'),
-      '#description' => t('Filters the aggregates shown based on the value. Doesn\'t affect the number of %base_table records.', array('%base_table' => $this->view->base_table)),
-      '#default_value' => (isset($this->options['agg']['aggregates_with'])) ? $this->options['agg']['aggregates_with'] : TRUE,
-    );
-
+  /**
+   * Assign our new form elements values to the options array
+   */
+  function options_submit(&$form, &$form_state) {
+    $this->options['values_form_type'] = $form_state['input']['options']['values_form_type'];
+    $this->options['select_multiple'] = $form_state['input']['options']['select_multiple'];
+    $this->options['select_optional'] = $form_state['input']['options']['select_optional'];
   }
 
   /**
@@ -151,74 +138,25 @@ class tripal_views_handler_filter_select_cvterm extends views_handler_filter_str
       return;
     }
 
-    $this->ensure_my_table();
-    $field = "$this->table_alias.$this->real_field";
-
-    $table = $this->query->get_table_info($this->table);
-    if (preg_match('/aggregator/', $table['join']->definition['handler'])) {
-      $this->aggregated = TRUE;
-    }
-    else {
-      $this->aggregated = FALSE;
-    }
-
-    if (!$this->aggregated) {
-
-      if ($this->options['multiple']) {
-        // Remove any if it's there
+    if (is_array($this->value)) {
+      if (isset($this->value['All'])) {
         unset($this->value['All']);
-
-        if (sizeof($this->value)) {
-          $holders = array();
-          foreach ($this->value as $v) {
-            if (preg_match('/^[\d\.]+$/', $v)) {
-              $holders[] = '%d';
-            }
-            else {
-              $holders[] = "'%s'";
-            }
-          }
-          $where = $field . " IN (" . implode(", ", $holders) . ")";
-        }
-      }
-      elseif ($this->value != 'All') {
-        if (preg_match('/^\d+$/', $this->value)) {
-          $where = $field . ' = %d';
-        }
-        else {
-          $where = $field . " " . $this->operator . " '%s'";
-        }
       }
 
-      if ($where) {
-        $this->query->add_where($this->options['group'], $where, $this->value);
+      if ($this->operator == '!=') {
+        $this->operator = 'NOT IN';
+      }
+      else {
+        $this->operator = 'IN';
       }
     }
-    else {
 
-      // Only base records with value in the aggregated field
-      // This doesn't restrict the items in the aggregate field
-      $this->ensure_my_table();
-      if ($this->options['agg']['records_with']) {
-        $where = "'%s' = ANY($field)";
-        $this->query->add_where($this->options['group'], $where, $this->value);
-      }
+    $this->ensure_my_table();
+    $field = $this->table_alias . "." . $this->real_field;
+    $table = $this->query->get_table_info($this->table);
 
-      // To restrict the items in the aggregate...
-      // Tell the join handler about the filter
-      // so it can be done in the join query
-      if ($this->options['agg']['aggregates_with']) {
-
-        if (sizeof($this->value) == 1 && is_array($this->value)) {
-          $table['join']->filter[] = $field . " " . $this->operator . " '" . array_pop($this->value) . "'";
-        }
-        elseif (sizeof($this->value) == 1 && is_string($this->value)) {
-          $table['join']->filter[] = $field . " " . $this->operator . " '" . $this->value . "'";
-        }
-        elseif (sizeof($this->value) > 1 && is_array($this->value)) {
-          $table['join']->filter[] = $field . " IN (" . implode(',',$this->value) . ")";
-        }
-      }
+    if ($this->value) {
+      $this->query->add_where($this->options['group'], $field, $this->value, $this->operator);
     }
 
   }
@@ -230,9 +168,16 @@ class tripal_views_handler_filter_select_cvterm extends views_handler_filter_str
   function value_form(&$form, &$form_state) {
     parent::value_form($form, $form_state);
 
-    if (preg_match('/select/', $this->options['values_form_type'])) {
+    if (isset($this->options['values_form_type']) AND preg_match('/textfield/', $this->options['values_form_type'])) {
+      $form['value'] = array(
+        '#type' => 'textfield',
+        '#title' => t('%label', array('%label' => $this->options['expose']['label'])),
+        '#default_value' => $this->value,
+      );
+    }
+    else {
       // Get Options
-      if ($this->options['optional']) {
+      if ($this->options['select_optional']) {
         $options['<select ' . $this->table . '>'] = '--None--';
         $options['All'] = '--Any--';
       }
@@ -253,53 +198,27 @@ class tripal_views_handler_filter_select_cvterm extends views_handler_filter_str
       //Select List
       $form['value'] = array(
           '#type' => 'select',
-          '#title' => t('%label', array('%label' => $this->options['label'])),
+          '#title' => t('%label', array('%label' => $this->options['expose']['label'])),
           '#options' => $options,
           '#default_value' => $this->value,
       );
 
-      if ($this->options['multiple']) {
+      if ($this->options['select_multiple']) {
         $form['value']['#multiple'] = TRUE;
       }
 
     }
-    else {
-      $form['value'] = array(
-        '#type' => 'textfield',
-        '#title' => t('%label', array('%label' => $this->options['label'])),
-        '#default_value' => $this->value,
-      );
-    }
+
   }
 
- /**
-  * Ensures the select list gets rendered when the filter is exposed
-  */
+  /**
+   * Ensure the value form gets exposed correctly
+   */
   function exposed_form(&$form, &$form_state) {
-    if (empty($this->options['exposed'])) {
-      return;
-    }
+    parent::exposed_form($form, $form_state);
 
-    $value = $this->options['expose']['identifier'];
-    $this->value_form($form, $form_state);
-    $form[$value] = $form['value'];
-
-    if (isset($form[$value]['#title']) && !empty($form[$value]['#type']) && $form[$value]['#type'] != 'checkbox') {
-      unset($form[$value]['#title']);
-    }
-
-    $this->exposed_translate($form[$value], 'value');
-
-    if (!empty($form['#type']) && ($form['#type'] == 'checkboxes' || ($form['#type'] == 'select' && !empty($form['#multiple'])))) {
-      unset($form[$value]['#default_value']);
-    }
-
-    if (!empty($form['#type']) && $form['#type'] == 'select' && empty($form['#multiple'])) {
-      $form[$value]['#default_value'] = 'All';
-    }
-
-    if ($value != 'value') {
-      unset($form['value']);
+    if ($this->options['select_multiple']) {
+      $form[$this->real_field]['#multiple'] = TRUE;
     }
 
   }

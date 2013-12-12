@@ -119,10 +119,9 @@ function tripal_views_init() {
   // the user go to views UI. It would be ideal to do this in a hook called only once
   // directly after install/enabling of the module but such a hook doesn't
   // exist in Drupal 6
-  // D7 TODO: Check DBTNG changes work
   $tripal_views = db_query("SELECT true as has_rows FROM {tripal_views}");
   $tripal_views = $tripal_views->fetchObject();
-  if (!$tripal_views->has_rows) {
+  if (isset($tripal_views->has_rows)) {
     tripal_views_integrate_all_chado_tables();
   }
 }

@@ -151,6 +151,9 @@ function tripal_views_integration_delete($setup_id) {
  * @return
  *    A proper Drupal form associative array.
  *
+ * D7 @todo: Add ability to manage custom fields
+ * D7 @todo: Update relationship handler to work with the new tripal_views_join method
+ *
  * @ingroup tripal_views_integration
  */
 function tripal_views_integration_form($form, $form_state) {

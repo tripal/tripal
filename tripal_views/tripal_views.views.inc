@@ -97,8 +97,6 @@ function tripal_views_views_handlers() {
  *   Looking up the NID here ensures the query is only executed once
  *   for all stocks in the table.
  *
- * @todo add if !<chado/drupal same db> around NID portion
- *
  * @ingroup tripal_views
  */
 function tripal_views_views_pre_render(&$view) {
@@ -120,6 +118,8 @@ function tripal_views_views_pre_render(&$view) {
  *   using the data stored in the tripal_views tables.
  *
  * @return a data array formatted for the Views module
+ *
+ * D7 @todo: Add support for materialized views relationships using the new method
  *
  * @ingroup tripal_views
  */
@@ -338,8 +338,6 @@ function tripal_views_views_data() {
       }
     }
   }
-
-  ddl('cleared view cache');
 
   return $data;
 }
