@@ -2170,6 +2170,9 @@ function tripal_core_expand_chado_vars($object, $type, $to_expand, $table_option
           // if the object returned is NULL then handle that
           else {
             if (count($foreign_table_desc['foreign keys'][$base_table]['columns']) > 1) {
+              if (!is_object($object->{$foreign_table})) {
+                $object->{$foreign_table} = new stdClass();
+              }
               $object->{$foreign_table}->{$left} = NULL;
             }
             else {
