@@ -200,7 +200,6 @@ function chado_pub_validate($node, &$form) {
   $pub_id       = $node->pub_id;
   $num_properties = $node->num_properties;
   $num_new = $node->num_new;
-  dpm($node);
   
   $pub = array();
 
