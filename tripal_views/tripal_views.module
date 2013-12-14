@@ -68,6 +68,14 @@ function tripal_views_menu() {
     'type' => MENU_CALLBACK,
   );
 
+  $items['admin/tripal/views-integration/delete-all/confirm'] = array(
+    'title' => 'Delete ALL Views Integration',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_views_integration_delete_all_form'),
+    'access arguments' => array('manage tripal_views_integration'),
+    'type' => MENU_CALLBACK,
+  );
+
   $items['admin/tripal/views-integration/import'] = array(
     'title' => 'Import Views Integration',
     'description' => 'Import a Tripal Views Integration from another site.',
@@ -121,8 +129,10 @@ function tripal_views_init() {
   // exist in Drupal 6
   $tripal_views = db_query("SELECT true as has_rows FROM {tripal_views}");
   $tripal_views = $tripal_views->fetchObject();
-  if (isset($tripal_views->has_rows)) {
-    tripal_views_integrate_all_chado_tables();
+  if (isset($tripal_views)) {
+    if (!$tripal_views->has_rows) {
+      tripal_views_rebuild_views_integrations();
+    }
   }
 }
 

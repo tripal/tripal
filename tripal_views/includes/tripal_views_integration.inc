@@ -18,7 +18,10 @@
 function tripal_views_integration_setup_list() {
   $output = '';
 
-  $output .=  l(t('Add a New Entry'), "admin/tripal/views/integration/new") ;
+  $output .= '<ul class="action-links">';
+  $output .=  '<li>' . l(t('Add a New Entry'), "admin/tripal/views-integration/new") . '</li>';
+  $output .=  '<li style="float: right;">' . l(t('Delete ALL Entries'), "admin/tripal/views-integration/delete-all/confirm") . '</li>';
+  $output .= '</ul>';
 
   $output .= '<p>' . t('The following tables are available for integration with Drupal Views. If '
     . 'a table is integrated more than once, then the setup with the lightest '
@@ -26,7 +29,6 @@ function tripal_views_integration_setup_list() {
     . 'that will be used instead of the default setup with priority 10. '
     . 'Priorities range from -10 to +10  where a setup with -10 has '
     . 'greater precedent than any other and +10 has the least.') . '</p>';
-
 
   // Start with materialized views
   $output .= '<br /><h3>Legacy Materialized Views</h3>';
@@ -57,7 +59,6 @@ function tripal_views_integration_setup_list() {
   }
   else {
     $output .= '<p>There are currently no Materialized Views defined. ';
-    $output .=  l(t('Add a New Entry'), "admin/tripal/views/integration/new") . '</p>';
 
   }
 
@@ -133,6 +134,63 @@ function tripal_views_integration_delete($setup_id) {
   tripal_views_integration_remove_entry_by_setup_id($setup_id);
   drupal_set_message(t("Record Deleted"));
   drupal_goto('admin/tripal/views/integration');
+
+}
+
+/**
+ * Purpose: Deletes ALL Tripal Views Integrations.  This
+ *   function is meant to be called from a menu item. After completion it
+ *   redirects the user to the views intergation page.
+ *
+ * @ingroup tripal_views_integration
+ */
+function tripal_views_integration_delete_all_form ($form, $form_state) {
+
+  $form['extra'] = array(
+    '#type' => 'item',
+    '#markup' => t('This will REMOVE ALL views integrations (both custom and default) '
+      . 'from your website. This allows integrations to be rebuilt to new default '
+      . 'settings and is especially useful after an upgrade to the views integration system.'),
+  );
+
+  $form['description'] = array(
+    '#type' => 'item',
+    '#markup' => t('Are you sure you want to REMOVE ALL Views Integrations (including custom integrations) from your system?'),
+  );
+
+  $form['actions'] = array('#type' => 'actions');
+
+  $form['actions']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Confirm'),
+  );
+
+  $form['actions']['cancel'] = array(
+    '#type' => 'link',
+    '#title' => t('Cancel'),
+    '#href' => 'admin/tripal/views-integration/list',
+  );
+
+  // By default, render the form using theme_confirm_form().
+  if (!isset($form['#theme'])) {
+    $form['#theme'] = 'confirm_form';
+  }
+
+  return $form;
+}
+
+/**
+ * Purpose: Deletes ALL Tripal Views Integrations.  This
+ *   function is meant to be called from a menu item. After completion it
+ *   redirects the user to the views intergation page.
+ *
+ * @ingroup tripal_views_integration
+ */
+function tripal_views_integration_delete_all_form_submit ($form, &$form_state) {
+
+  tripal_views_rebuild_views_integrations(TRUE);
+
+  $form_state['redirect'] = 'admin/tripal/views-integration/list';
 
 }
 

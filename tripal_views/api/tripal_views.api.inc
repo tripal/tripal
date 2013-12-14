@@ -158,6 +158,37 @@ function tripal_views_is_lightest_priority_setup($setup_id, $table_name) {
 }
 
 /**
+ * Purpose: Deletes ALL Tripal Views Integrations.
+ */
+function tripal_views_delete_all_integrations() {
+
+  db_query("DELETE FROM {tripal_views}");
+  db_query("DELETE FROM {tripal_views_field}");
+  db_query("DELETE FROM {tripal_views_handlers}");
+  db_query("DELETE FROM {tripal_views_join}");
+
+  drupal_set_message("Successfully deleted all views integration.");
+
+}
+
+
+/**
+ * Rebuilds all the default integrations
+ *
+ * @param $delete_first
+ *   If TRUE then all integrations are first deleted.
+ */
+function tripal_views_rebuild_views_integrations($delete_first = FALSE) {
+
+  if ($delete_first) {
+    tripal_views_delete_all_integrations();
+  }
+
+  tripal_views_integrate_all_chado_tables();
+  drupal_set_message('Successfully rebuilt default Tripal Views Integrations');
+}
+
+/**
  * Add views integration records into the tripal_views* tables
  *
  * @param $defn_array
@@ -667,6 +698,9 @@ function tripal_views_get_integration_array_for_chado_table($table_name, $base_t
       // Specify specialty handlers
       if ($field_name == 'type_id' OR $field_name == 'cvterm_id') {
         $defn_array['fields'][$field_name]['handlers']['filter']['name'] = 'tripal_views_handler_filter_select_cvterm';
+      }
+      if (preg_match('/name/',$field_name)) {
+        $defn_array['fields'][$field_name]['handlers']['filter']['name'] = 'tripal_views_handler_filter_select_string';
       }
     }
   }
