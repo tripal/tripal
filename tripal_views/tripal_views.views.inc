@@ -68,18 +68,18 @@ function tripal_views_views_handlers() {
       'tripal_views_handler_filter_no_results' => array(
         'parent' => 'views_handler_filter'
       ),
+      'tripal_views_handler_filter_select_cvterm' => array(
+        'parent' => 'tripal_views_handler_filter_select_string',
+      ),
+      'tripal_views_handler_filter_select_string' => array(
+        'parent' => 'views_handler_filter_string',
+      ),
       /** D7 @todo: get handlers working
       'tripal_views_handler_filter_file_upload' => array(
         'parent' => 'views_handler_filter',
       ),
       'tripal_views_handler_filter_textarea' => array(
         'parent' => 'views_handler_filter',
-      ),
-      'tripal_views_handler_filter_select_cvterm' => array(
-        'parent' => 'views_handler_filter_string',
-      ),
-      'tripal_views_handler_filter_select_string' => array(
-        'parent' => 'chado_views_handler_filter_string',
       ),
       'tripal_views_handler_filter_sequence' => array(
         'parent' => 'chado_views_handler_filter_string',

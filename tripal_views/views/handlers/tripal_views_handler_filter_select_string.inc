@@ -8,7 +8,63 @@
  * @ingroup views_filter_handlers
  * @ingroup tripal_core
  */
-class tripal_views_handler_filter_select_string extends chado_views_handler_filter_string {
+class tripal_views_handler_filter_select_string extends views_handler_filter_string {
+
+  /**
+   * Provide the options used in the select list.
+   * Override this function in extended handlers to easily change option list.
+   *
+   * @return
+   *   An array of options where the key is the value of this field in the database
+   */
+  function get_select_options() {
+
+    // build a where clause that will filter the list in the drop box
+    // using fields that are not exposed and that are for the table
+    // from whcih the values in the drop box will be slected and
+    // we only want to use non-exposed fields because these are not
+    // available to the user to edit--they're fixed.
+    $where = '';
+    $filters = (is_array($this->view->filter)) ? $this->view->filter : array();
+    foreach ($filters as $filter_name => $details) {
+       // we only want to inclue non-exposed filters
+       if ($details->options['exposed'] == FALSE) {
+          // we only want to filter on the table we're getting the list from
+          if (strcmp($details->table, $this->table)==0) {
+            $where .= "$details->field $details->operator " . $details->value['value'];
+            $where .= ' AND ';
+          }
+       }
+    }
+    if ($where) {
+       $where = "WHERE $where";
+       $where = substr($where, 0, -5); # remove the final ' AND '
+    }
+
+    // get the values from the table
+    $sql = 'SELECT ' . $this->real_field . ' FROM {' . $this->table . '}' . $where . ' ORDER BY ' . $this->field . ' ASC';
+    $results = chado_query($sql);
+
+    // Build the select box options
+    $max_length = $this->options['max_length'];
+    if (!$max_length) {
+      $max_length = 40;
+    }
+    $options = array();
+    if ($this->options['optional']) {
+      $options['All'] = '--Any--';
+    }
+    foreach ($results as $r) {
+      if (drupal_strlen($r->{$this->field}) > $max_length) {
+        $options[$r->{$this->field}] = drupal_substr($r->{$this->field}, 0, $max_length) . '...';
+      }
+      else {
+        $options[$r->{$this->field}] = $r->{$this->field};
+      }
+    }
+
+    return $options;
+  }
 
   function options_form(&$form, &$form_state) {
     parent::options_form($form, $form_state);
@@ -23,18 +79,18 @@ class tripal_views_handler_filter_select_string extends chado_views_handler_filt
       '#default_value' => ($this->options['values_form_type']) ? $this->options['values_form_type'] : 'select',
     );
 
-    $form['multiple'] = array(
+    $form['select_multiple'] = array(
       '#type' => 'checkbox',
       '#title' => t('Select Multiple'),
       '#description' => t('Allows more then one option to be selected.'),
-      '#default_value' => (isset($this->options['multiple'])) ? $this->options['multiple'] : FALSE,
+      '#default_value' => (isset($this->options['select_multiple'])) ? $this->options['select_multiple'] : FALSE,
     );
 
-    $form['optional'] = array(
+    $form['select_optional'] = array(
       '#type' => 'checkbox',
       '#title' => t('Optional'),
       '#description' => t('Adds --Any-- to the available options.'),
-      '#default_value' => (isset($this->options['optional'])) ? $this->options['optional'] : TRUE,
+      '#default_value' => (isset($this->options['select_optional'])) ? $this->options['select_optional'] : TRUE,
     );
 
     $form['max_length'] = array(
@@ -53,6 +109,15 @@ class tripal_views_handler_filter_select_string extends chado_views_handler_filt
 
   }
 
+  /**
+   * Assign our new form elements values to the options array
+   */
+  function options_submit(&$form, &$form_state) {
+    $this->options['values_form_type'] = $form_state['input']['options']['values_form_type'];
+    $this->options['select_multiple'] = $form_state['input']['options']['select_multiple'];
+    $this->options['select_optional'] = $form_state['input']['options']['select_optional'];
+  }
+
  /**
   * Defines the value field in both the views filter options form
   *   and the exposed form
@@ -60,7 +125,22 @@ class tripal_views_handler_filter_select_string extends chado_views_handler_filt
   function value_form(&$form, &$form_state) {
     parent::value_form($form, $form_state);
 
-    if (preg_match('/textfield/', $this->options['values_form_type'])) {
+    if (preg_match('/select/', $this->options['values_form_type'])) {
+
+      //Select List
+      $form['value'] = array(
+          '#type' => 'select',
+          '#title' => t('%label', array('%label' => $this->options['label'])),
+          '#options' => $this->get_select_options(),
+          '#default_value' => $this->value,
+      );
+
+      if ($this->options['select_multiple']) {
+        $form['value']['#multiple'] = TRUE;
+      }
+    }
+    else {
+
       $form['value'] = array(
         '#type' => 'textfield',
         '#title' => t('%label', array('%label' => $this->options['label'])),
@@ -68,98 +148,17 @@ class tripal_views_handler_filter_select_string extends chado_views_handler_filt
       );
 
     }
-    else {
-
-      // build a where clause that will filter the list in the drop box
-      // using fields that are not exposed and that are for the table
-      // from whcih the values in the drop box will be slected and
-      // we only want to use non-exposed fields because these are not
-      // available to the user to edit--they're fixed.
-      $where = '';
-      $filters = (is_array($this->view->filter)) ? $this->view->filter : array();
-      foreach ($filters as $filter_name => $details) {
-         // we only want to inclue non-exposed filters
-         if ($details->options['exposed'] == FALSE) {
-            // we only want to filter on the table we're getting the list from
-            if (strcmp($details->table, $this->table)==0) {
-              $where .= "$details->field $details->operator " . $details->value['value'];
-              $where .= ' AND ';
-            }
-         }
-      }
-      if ($where) {
-         $where = "WHERE $where";
-         $where = substr($where, 0, -5); # remove the final ' AND '
-      }
-
-      // get the values from the table
-      $sql = "SELECT $this->real_field FROM {$this->table} $where ORDER BY $this->field ASC";
-      $results = chado_query($sql);
-
-      // Build the select box options
-      $max_length = $this->options['max_length'];
-      if (!$max_length) {
-        $max_length = 40;
-      }
-      $options = array();
-      if ($this->options['optional']) {
-        //$options['<select '.$this->table.'>'] = '--None--';
-        $options['All'] = '--Any--';
-      }
-      // D7 TODO: Check DBTNG changes work
-      foreach ($results as $r) {
-        if (drupal_strlen($r->{$this->field}) > $max_length) {
-          $options[$r->{$this->field}] = drupal_substr($r->{$this->field}, 0, $max_length) . '...';
-        }
-        else {
-          $options[$r->{$this->field}] = $r->{$this->field};
-        }
-      }
-
-      //Select List
-      $form['value'] = array(
-          '#type' => 'select',
-          '#title' => t('%label', array('%label' => $this->options['label'])),
-          '#options' => $options,
-          '#default_value' => $this->value,
-      );
-
-      if ($this->options['multiple']) {
-        $form['value']['#multiple'] = TRUE;
-      }
-    }
   }
 
- /**
-  * Ensures the select list gets rendered when the filter is exposed
-  */
+  /**
+   * Ensure the value form gets exposed correctly
+   */
   function exposed_form(&$form, &$form_state) {
-    if (empty($this->options['exposed'])) {
-      return;
+    parent::exposed_form($form, $form_state);
+
+    if ($this->options['select_multiple']) {
+      $form[$this->options['id']]['#multiple'] = TRUE;
     }
-
-    $value = $this->options['expose']['identifier'];
-    $this->value_form($form, $form_state);
-    $form[$value] = $form['value'];
-
-    if (isset($form[$value]['#title']) && !empty($form[$value]['#type']) && $form[$value]['#type'] != 'checkbox') {
-      unset($form[$value]['#title']);
-    }
-
-    $this->exposed_translate($form[$value], 'value');
-
-    if (!empty($form['#type']) && ($form['#type'] == 'checkboxes' || ($form['#type'] == 'select' && !empty($form['#multiple'])))) {
-      unset($form[$value]['#default_value']);
-    }
-
-    if (!empty($form['#type']) && $form['#type'] == 'select' && empty($form['#multiple'])) {
-      $form[$value]['#default_value'] = 'All';
-    }
-
-    if ($value != 'value') {
-      unset($form['value']);
-    }
-
   }
 
  /**
@@ -173,192 +172,26 @@ class tripal_views_handler_filter_select_string extends chado_views_handler_filt
       return;
     }
 
+    if (is_array($this->value)) {
+      if (isset($this->value['All'])) {
+        unset($this->value['All']);
+      }
+
+      if ($this->operator == '!=') {
+        $this->operator = 'NOT IN';
+      }
+      else {
+        $this->operator = 'IN';
+      }
+    }
+
     $this->ensure_my_table();
-
+    $field = $this->table_alias . "." . $this->real_field;
     $table = $this->query->get_table_info($this->table);
-    if (preg_match('/aggregator/', $table['join']->definition['handler'])) {
-      $this->aggregated = TRUE;
-    }
-    else {
-      $this->aggregated = FALSE;
+
+    if ($this->value) {
+      $this->query->add_where($this->options['group'], $field, $this->value, $this->operator);
     }
 
-    // filter the aggregates
-    if ($this->options['agg']['aggregates_with']) {
-      $this->query_restrict_curr_table_records();
-    }
-
-    // filter the base table
-    if ($this->options['agg']['records_with']) {
-      $this->query_restrict_base_records();
-    }
-
-
-
-
-  }
-
-  /**
-   * This function alters the query by adding the appropriate WHERE
-   * to filter the base table to only those with the value in the aggregate array.
-   *
-   * Note: this function is called only from query()
-   */
-  function query_restrict_base_records() {
-    if (!$this->aggregated) {
-      // Not Aggregated ---------------
-
-      $this->ensure_my_table();
-      $field = "$this->table_alias.$this->real_field";
-      $upper = $this->case_transform();
-
-      if ($this->options['multiple'] AND is_array($this->value)) {
-        // Remove any if it's there
-        unset($this->value['All']);
-
-        if (sizeof($this->value)) {
-          $holders = array();
-          foreach ($this->value as $v) {
-            if (preg_match('/^[\d\.]+$/', $v)) {
-              $holders[] = '%f';
-            }
-            else {
-              $holders[] = "'%s'";
-            }
-          }
-          $where = "$field IN (" . implode(", ", $holders) . ")";
-          $this->query->add_where($this->options['group'], $where, $this->value);
-        }
-      }
-      else {
-
-        // Deal with All/Any as value
-        if (preg_match('/All/', $this->value)) {
-          // Don't do anything
-        }
-        else {
-          $info = $this->operators();
-          if (!empty($info[$this->operator]['method'])) {
-            $this->{$info[$this->operator]['method']}($field, $upper);
-          }
-        }
-      }
-
-    }
-    else {
-      // Is Aggregated ----------------
-
-      $this->ensure_my_table();
-      $field = "$this->table_alias.$this->real_field";
-      $upper = $this->case_transform();
-
-      if ($this->options['multiple'] AND is_array($this->value)) {
-        // Remove any if it's there
-        unset($this->value['All']);
-
-        if (sizeof($this->value) > 1) {
-          $holders = array();
-          foreach ($this->value as $v) {
-            $holders[] = "'%s'";
-          }
-          $where = $field .' && ARRAY[' . implode(", ", $holders) . ']';
-          $this->query->add_where($this->options['group'], $where, $this->value);
-
-        }
-        elseif (sizeof($this->value) == 1) {
-          $where = "'%s' = ANY($field)";
-          $this->query->add_where($this->options['group'], $where, array_pop($this->value));
-        }
-      }
-      else {
-
-        // Deal with All/Any as value
-        if (preg_match('/All/', $this->value)) {
-          // Don't do anything
-        }
-        else {
-          $where = "'%s' = ANY($field)";
-          $this->query->add_where($this->options['group'], $where, $this->value);
-        }
-      }
-
-    }
-  }
-
-  /**
-   * This function alters the query by adding the appropriate WHERE
-   * to filter the aggregates shown based on the value. Doesn't affect
-   * the number of base table records.
-   *
-   * Note: this function is called only from query()
-   */
-  function query_restrict_curr_table_records() {
-
-    if (!$this->aggregated) {
-      // Not Aggregated ---------------
-      // Warn the admin/user that they have selected that the aggregates should be filtered
-      // on a field that isn't aggregated...
-      watchdog(
-        'tripal_views',
-        'You have chosen to filter the aggregates shown for %table %field
-          in %view; however, that field is not aggregated (ie: it is part of the base table
-          or is a 1:1 relationship to the base table)',
-        array(
-          '%field' => $this->field,
-          '%table' => $this->table,
-          '%view' => $this->view->name
-        ),
-        WATCHDOG_WARNING
-      );
-      // Do nothing!
-    }
-    else {
-      // Is Aggregated ----------------
-
-      $this->ensure_my_table();
-      $field = "$this->table_alias.$this->real_field";
-      $upper = $this->case_transform();
-
-      if ($this->options['multiple'] AND is_array($this->value)) {
-        // Remove any if it's there
-        unset($this->value['All']);
-
-        if (sizeof($this->value) > 1) {
-          $holders = array();
-          foreach ($this->value as $v) {
-            $holders[] = "'%s'";
-          }
-          $where = $field .' IN (' . implode(", ", $holders) . ')';
-          $where = vsprintf($where, $this->value);
-
-          // Add the where to the chado aggregated join object for this table
-          // then the views_handler_join_chado_aggregator will add this to the WHERE
-          // clause of the sub-query generating the aggregated listing
-          $this->query->table_queue[ $this->table ]['join']->filter[] = $where;
-
-        }
-        elseif (sizeof($this->value) == 1) {
-          $where = "$field = '%s'";
-          $where = vsprintf($where, $this->value);
-
-          // Add the where to the chado aggregated join object for this table
-          // then the views_handler_join_chado_aggregator will add this to the WHERE
-          // clause of the sub-query generating the aggregated listing
-          $this->query->table_queue[ $this->table ]['join']->filter[] = $where;
-        }
-      }
-      else {
-
-        // Deal with All/Any as value
-        if (preg_match('/All/', $this->value)) {
-          // Don't do anything
-        }
-        else {
-          $where = "'%s' = ANY($field)";
-          $this->query->add_where($this->options['group'], $where, $this->value);
-        }
-      }
-
-    }
   }
 }
