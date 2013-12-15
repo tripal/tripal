@@ -3,7 +3,7 @@ description = This module provides integration with Drupal Views. Other Tripal m
 core = 7.x
 project = tripal_core
 package = Tripal
-version = 7.x-2.0beta
+version = 7.x-2.0-beta1
 configure = admin/tripal/views-integration
 
 files[] = views/handlers/tripal_views_handler_filter_textarea.inc
