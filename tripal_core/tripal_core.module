@@ -349,6 +349,12 @@ function tripal_core_theme() {
       'template' => 'tripal_core_customize',
       'path' => drupal_get_path('module', 'tripal_core') . '/theme'
     ),
+    'theme_file_upload_combo' => array(
+      'render element' => 'element',
+    ),
+    'theme_sequence_combo' => array(
+      'render element' => 'element',
+    ),
   );
 }
 

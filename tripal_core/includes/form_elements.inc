@@ -8,28 +8,34 @@
 /**
  * Register form elements
  */
-function tripal_core_elements() {
+function tripal_core_element_info() {
+  $elements = array();
 
-  $type['file_upload_combo'] = array(
-    '#input'            => TRUE,
-    '#process'          => array('expand_file_upload_combo'),
-    '#element_validate' => array('file_upload_combo_validate'),
+  $elements['file_upload_combo'] = array(
+    '#input' => TRUE,
+    '#process' => array('expand_file_upload_combo'),
+    '#value_callback' =>'file_upload_combo_value_callback',
+    '#theme' => 'theme_file_upload_combo',
+    '#theme_wrappers' => array('form_element'),
   );
-  
-  $type['sequence_combo'] = array(
+
+  $elements['sequence_combo'] = array(
     '#input' => TRUE,
     '#process' => array('expand_sequence_combo'),
-    '#element_validate' => array('sequence_combo_validate'),
+    '#value_callback' => 'sequence_combo_value_callback',
+    '#theme' => 'theme_sequence_combo',
+    '#theme_wrappers' => array('form_element'),
+    '#tree' => TRUE,
   );
 
-  return $type;
+  return $elements;
 }
 
 /**
  * Upload File and keep track of previously uploaded files
  * Form element description
  */
-function expand_file_upload_combo($element, $edit, $form_state, $complete_form) {
+function expand_file_upload_combo($element, $form_state, $complete_form) {
 
   // set the default values for each field
   if (empty($element['#value'])) {
@@ -47,16 +53,16 @@ function expand_file_upload_combo($element, $edit, $form_state, $complete_form) 
   $parents[] = 'items';
   $element['items'] = array(
     '#type' => 'textarea',
-    '#default_value' => $element['#value']['items'],
+    '#default_value' => (isset($element['#value']['items'])) ? $element['#value']['items'] : '',
   );
-  
+
   // add file upload element
   $parents = $element['#parents'];
   $parents[] = 'items_file';
   $element['items_file'] = array(
     '#type' => 'file',
     '#title' =>  'File upload',
-    '#default_value' => $element['#value']['items_file'],
+    '#default_value' => (isset($element['#value']['items_file'])) ? $element['#value']['items_file'] : '',
   );
 
   // add hidden elelment
@@ -64,7 +70,7 @@ function expand_file_upload_combo($element, $edit, $form_state, $complete_form) 
   $parents[] = 'file_path';
   $element['file_path'] = array(
     '#type' => 'hidden',
-    '#default_value' => $element['#value']['file_path'],
+    '#default_value' => (isset($element['#value']['file_path'])) ? $element['#value']['file_path'] : '',
   );
 
   return $element;
@@ -74,20 +80,37 @@ function expand_file_upload_combo($element, $edit, $form_state, $complete_form) 
 /**
  * Theme the file upload combo form element
  */
-function theme_file_upload_combo($element) {
-  return theme('form_element', $element, '<div class="container-inline">' . $element['#children'] . '</div>');
+function theme_file_upload_combo($variables) {
+  $element = $variables['element'];
+  $output = '';
+
+  $output .= drupal_render($element['items']);
+  $output .= " "; // This space forces our fields to have a little room in between.
+  $output .= drupal_render($element['items_file']);
+  $output .= " "; // This space forces our fields to have a little room in between.
+  $output .= drupal_render($element['file_path']);
+
+  return $output;
 }
 
 
 /**
  * Validate all content passed into the file upload combo form element
  */
-function file_upload_combo_validate($element, &$form) {
-  
+function file_upload_combo_value_callback($element, $input = FALSE, &$form_state) {
   $values = array();
-  
+
+  if ($input == FALSE) {
+    if (!empty($element['#default_value'])) {
+      return $element['#default_value'];
+    }
+    else {
+      return;
+    }
+  }
+
   // get the items in the textbox
-  $items =  $form['values'][$element['#name']]['items'];
+  $items =  $input['items'];
   if ($items) {
     // split on new line or comma
     $vals  = preg_split("/[\n,]+/", $items);
@@ -100,9 +123,9 @@ function file_upload_combo_validate($element, &$form) {
   // merge any items from the file upload
   $file = file_save_upload($element['#name'], array());
   if ($file) {
-    $file_path = $file->filepath;
-    
-    $form['values'][$element['#name']]['file_path'] = $file_path;
+    $file_path = $file->uri;
+
+    $input['file_path'] = $file_path;
     // we need to add our file path to the $_GET element as if it were
     // submitted along with the rest of the form
     $_GET[$element['#name']]['file_path'] = $file_path;
@@ -118,18 +141,20 @@ function file_upload_combo_validate($element, &$form) {
         $values[] = trim($value);
       }
     }
-    fclose($fh);       
+    fclose($fh);
   }
-  
-  // add a new 'items_array' element that contains the array of 
+
+  // add a new 'items_array' element that contains the array of
   // submitted items from both the textbox and the input file
-  $form['values'][$element['#name']]['items_array'] = $values;
+  $input['items_array'] = $values;
+  return $input;
 }
+
 /**
  * Form element description
  */
-function expand_sequence_combo($element, $edit, $form_state, $complete_form) {
- 
+function expand_sequence_combo($element, $form_state, $complete_form) {
+
   // set the default values for each field
   if (empty($element['#value'])) {
     $element['#value'] = array(
@@ -137,7 +162,7 @@ function expand_sequence_combo($element, $edit, $form_state, $complete_form) {
       'downstream' => '',
     );
   }
-  
+
   $element['#tree'] = TRUE;
 
   // add the upstream box
@@ -157,17 +182,19 @@ function expand_sequence_combo($element, $edit, $form_state, $complete_form) {
      '#prefix' => '<br>',
      '#title' => t('Get Downstream Bases'),
      '#description' => t('Specify the number of downstream bases to include in the sequnce'),
-     '#default_value' => $element['#value']['downstream'],     
+     '#default_value' => $element['#value']['downstream'],
   );
   return $element;
 }
+
 /**
  * Validate all content passed into the sequence combo form element
+ * D7 @todo: test/fix this callback
  */
-function sequence_combo_validate($element, &$form) {
+function sequence_combo_value_callback($element, $input = FALSE, &$form_state) {
   $upstream = $form['values'][$element['#name']]['upstream'];
   $downstream = $form['values'][$element['#name']]['downstream'];
-  
+
 
   if ($upstream < 0) {
     form_set_error($element['#name'], 'Please provide a positive number for upstream bases');
@@ -187,6 +214,13 @@ function sequence_combo_validate($element, &$form) {
 /**
  * Theme the file sequence form element
  */
-function theme_sequence_combo($element) {
-  return theme('form_element', $element, '<div class="container-inline">' . $element['#children'] . '</div>');
+function theme_sequence_combo($variables) {
+  $element = $variables['element'];
+  $output = '';
+
+  $output .= drupal_render($element['upstream']);
+  $output .= " "; // This space forces our fields to have a little room in between.
+  $output .= drupal_render($element['downstream']);
+
+  return $output;
 }
