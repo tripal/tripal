@@ -84,13 +84,11 @@ function tripal_views_views_handlers() {
       'tripal_views_handler_filter_textarea' => array(
         'parent' => 'views_handler_filter',
       ),
-      /** D7 @todo: get handlers working
       'tripal_views_handler_filter_file_upload' => array(
         'parent' => 'views_handler_filter',
       ),
-      'tripal_views_handler_filter_textarea' => array(
-        'parent' => 'views_handler_filter',
-      ),
+      /** D7 @todo: get handlers working
+
       */
       /** CANT FIX UNTIL Tripal Feature is working
       'tripal_views_handler_filter_sequence' => array(
@@ -145,7 +143,7 @@ function tripal_views_views_data() {
   // Filter handler that lets the admin say:
   // "Show no results until they enter search parameters"
   $data['views']['search_results'] = array(
-    'title' => t('Search Results'),
+    'title' => t('Delay Results'),
     'help' => t('Delay results until Apply/Search is clicked by the user.'),
     'filter' => array(
       'handler' => 'tripal_views_handler_filter_no_results',

@@ -5,6 +5,8 @@
  * Purpose: This Handler provides a file upload field by extending the
  * views_handler_filter object.
  *
+ * D7: still not compatible
+ *
  * @ingroup tripal_views_integration
  */
 class tripal_views_handler_filter_file_upload extends views_handler_filter {
@@ -71,7 +73,7 @@ class tripal_views_handler_filter_file_upload extends views_handler_filter {
     $field = "$this->table.$this->real_field";
 
     // get the form element values
-    $value = $this->value[0]; 
+    $value = $this->value[0];
     $values = $value['items_array'];
 
     // iterate through all of the values and generate the corresponding

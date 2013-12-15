@@ -22,7 +22,7 @@ class tripal_views_handler_filter_no_results extends views_handler_filter {
 
     $form['msg'] = array(
       '#type' => 'item',
-      '#value' => t('This filter ensures that when the page is first loaded, there are no results '
+      '#markup' => t('This filter ensures that when the page is first loaded, there are no results '
         .'(query is not run). This imitates an advanced search form allowing users to first enter '
         .'filter values and then retrieve results. This is especially suited for views with a very '
         .'large number of results if left unfiltered since it removes the long load time before '
@@ -30,16 +30,18 @@ class tripal_views_handler_filter_no_results extends views_handler_filter {
     );
 
     $form['apply_button'] = array(
-      '#type' => 'textfield',
-      '#title' => 'Apply Button Text',
-      '#default_value' => isset($this->options['apply_button']) ? $this->options['apply_button'] : 'Search'
+      '#type' => 'item',
+      '#title' => t('Apply Button Text'),
+      '#markup' => t('This can now to be changed through the Views UI in the "Advanced" '
+        . 'area by clicking "Settings" for the "Exposed Form Style" when the style is "Basic".')
     );
 
     $form['no_results_text'] = array(
-      '#type' => 'textarea',
-      '#title' => 'Header Text before Search',
-      '#description' => 'This text will replace the no results text when the view is first loaded (before the user clicks Apply/Search)',
-      '#default_value' => isset($this->options['no_results_text']) ? $this->options['no_results_text'] : ''
+      '#type' => 'item',
+      '#title' => t('Header Text before Search'),
+      '#markup' => t('When the view is first loaded (before any filters are applied), '
+        . 'the "No Results Behaviour" textare added in the "Advanced" are of the Views '
+        . 'UI will be shown to the user.'),
     );
 
   }
@@ -65,36 +67,7 @@ class tripal_views_handler_filter_no_results extends views_handler_filter {
 
     if (empty($this->view->exposed_input) && !$all_arrays) {
       $this->view->executed = TRUE;
-
       $jquery_loaded = FALSE;
-
-      // If set, change the no_results text
-      if (!empty($this->options['apply_button'])) {
-        if (!$jquery_loaded) {
-          drupal_add_html_head('<script type="text/javascript" src="' . $base_url . '/misc/jquery.js"></script>');
-          $jquery_loaded = TRUE;
-        }
-        $javascript = '<script type="text/javascript">'."\n"
-          ."$(document).ready(function(){\n"
-          ."  $('div.view-empty').html('" . addslashes($this->options['no_results_text']) . "');\n"
-          ."});\n"
-          .'</script>'."\n";
-        drupal_add_html_head($javascript);
-      }
-    }
-
-    // Set the Apply button text
-    if (!empty($this->options['apply_button'])) {
-      if (!$jquery_loaded) {
-        drupal_add_html_head('<script type="text/javascript" src="' . $base_url . '/misc/jquery.js"></script>');
-        $jquery_loaded = TRUE;
-      }
-      $javascript = '<script type="text/javascript">'."\n"
-        ."$(document).ready(function(){\n"
-        ."  $('div.views-submit-button').html(" . '"' . "<input type='submit' id='edit-submit-all-analysis' value='" . $this->options['apply_button'] . "' class='form-submit'>" . '"' . ");\n"
-        ."});\n"
-        .'</script>' . "\n";
-      drupal_add_html_head($javascript);
     }
   }
 

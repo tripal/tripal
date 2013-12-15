@@ -7,6 +7,8 @@
  * Handles fields which may be aggregated during the chado join process. This field
  * will render an aggregated field as a pre_rendered list and will dynamically detect
  * whether the field is aggregated or not.
+ *
+ * D7: still not compatible
  */
 class tripal_views_handler_field_aggregate extends chado_views_handler_field {
 
