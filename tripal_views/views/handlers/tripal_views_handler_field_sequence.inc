@@ -7,12 +7,7 @@
  * Handles display of sequence data.  If will aggregate sequences that need
  * to be aggregated (e.g. coding sequences) and provide
  */
-class tripal_views_handler_field_sequence extends chado_views_handler_field {
-
-  function init(&$view, $options) {
-    parent::init($view, $options);
-
-  }
+class tripal_views_handler_field_sequence extends views_handler_field {
 
   /**
    * Defines the options form (form available to admin when they add a field to a view)
@@ -264,4 +259,6 @@ class tripal_views_handler_field_sequence extends chado_views_handler_field {
     } */
     return $residues;
   }
+
+
 }

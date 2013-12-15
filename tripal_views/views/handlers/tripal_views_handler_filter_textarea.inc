@@ -28,7 +28,7 @@ class tripal_views_handler_filter_textarea extends views_handler_filter {
   }
 
   /**
-   * Ensures the textarea field gets rendered when the filter is exposed. 
+   * Ensures the textarea field gets rendered when the filter is exposed.
    */
   function exposed_form(&$form, &$form_state) {
 
@@ -53,23 +53,23 @@ class tripal_views_handler_filter_textarea extends views_handler_filter {
   }
 
   /**
-   *  Validates the input form
-   */
-  function exposed_validate(&$form, &$form_state) {
-     //dpm($form_state);
-  }
-
-  /**
    *
    */
   function query() {
+
+    // make optional
+    // if it is not set or empty then don't restrict the query
+    if (!$this->value) {
+      return;
+    }
+
     $this->ensure_my_table();
     $field = "$this->table.$this->real_field";
 
     // get the form element value
     if (is_array($this->value)) {
       $value = $this->value[0];
-    } 
+    }
     else {
       $value = $this->value;
     }
@@ -79,20 +79,17 @@ class tripal_views_handler_filter_textarea extends views_handler_filter {
     $value = preg_replace("/\s+\n/", "\n", $value);
     $value = preg_replace("/,\n/", "\n", $value);
     $values = preg_split("/[\n,]+/", $value);
-    
-    // iterate through all of the values and generate the corresponding
-    // sprintf style holders
-    $holders = array();     
-    for ($i = 0 ; $i < count($values); $i++) {
-      $values[$i] = trim($values[$i]);
-      $holders[] = "'%s'";
+    $values = array_filter($values);
+
+    if (sizeof($values)) {
+      $operator = 'IN';
+    }
+    else {
+      $operator = '=';
     }
 
-    // if we have any values supplied then update the where clause for
-    // the views query
-    if (count($holders) > 0) {
-      $where = "$field IN (" . implode(", ", $holders) . ")";
-      $this->query->add_where($this->options['group'], $where, $values);
+    if (!empty($values)) {
+      $this->query->add_where($this->options['group'], $field, $values, $operator);
     }
   }
 }

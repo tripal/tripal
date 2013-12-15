@@ -43,9 +43,9 @@ function tripal_views_integration_setup_list() {
                      .'ORDER BY tv.table_name ASC, tv.priority ASC');
   foreach ($tviews as $tview) {
     $rows[] = array(
-      l(t('Edit'), "admin/tripal/views/integration/edit/" . $tview->setup_id) . "<br />"
-        . l(t('Export'), "admin/tripal/views/integration/export/" . $tview->setup_id) . "<br />"
-        . l(t('Delete'), "admin/tripal/views/integration/delete/" . $tview->setup_id),
+      l(t('Edit'), "admin/tripal/views-integration/edit/" . $tview->setup_id) . "<br />"
+        . l(t('Export'), "admin/tripal/views-integration/export/" . $tview->setup_id) . "<br />"
+        . l(t('Delete'), "admin/tripal/views-integration/delete/" . $tview->setup_id),
       $tview->name,
       $tview->table_name,
       ($tview->table_id) ? 'No' : 'Yes',
@@ -75,9 +75,9 @@ function tripal_views_integration_setup_list() {
                      .'ORDER BY table_name ASC, priority ASC');
   foreach ($tviews as $tview) {
     $rows[] = array(
-      l(t('Edit'), "admin/tripal/views/integration/edit/" . $tview->setup_id) . "<br />"
-        . l(t('Export'), "admin/tripal/views/integration/export/" . $tview->setup_id) . "<br />"
-        . l(t('Delete'), "admin/tripal/views/integration/delete/" . $tview->setup_id),
+      l(t('Edit'), "admin/tripal/views-integration/edit/" . $tview->setup_id) . "<br />"
+        . l(t('Export'), "admin/tripal/views-integration/export/" . $tview->setup_id) . "<br />"
+        . l(t('Delete'), "admin/tripal/views-integration/delete/" . $tview->setup_id),
       $tview->name,
       $tview->table_name,
       $tview->priority,
@@ -105,9 +105,9 @@ function tripal_views_integration_setup_list() {
                      .'ORDER BY table_name ASC, priority ASC');
   foreach ($tviews as $tview) {
     $rows[] = array(
-      l(t('Edit'), "admin/tripal/views/integration/edit/" . $tview->setup_id) . "<br />"
-        . l(t('Export'), "admin/tripal/views/integration/export/" . $tview->setup_id) . "<br />"
-        . l(t('Delete'), "admin/tripal/views/integration/delete/" . $tview->setup_id),
+      l(t('Edit'), "admin/tripal/views-integration/edit/" . $tview->setup_id) . "<br />"
+        . l(t('Export'), "admin/tripal/views-integration/export/" . $tview->setup_id) . "<br />"
+        . l(t('Delete'), "admin/tripal/views-integration/delete/" . $tview->setup_id),
       $tview->name,
       $tview->table_name,
       $tview->priority,
@@ -133,7 +133,7 @@ function tripal_views_integration_delete($setup_id) {
 
   tripal_views_integration_remove_entry_by_setup_id($setup_id);
   drupal_set_message(t("Record Deleted"));
-  drupal_goto('admin/tripal/views/integration');
+  drupal_goto('admin/tripal/views-integration');
 
 }
 
@@ -214,9 +214,8 @@ function tripal_views_integration_delete_all_form_submit ($form, &$form_state) {
  *
  * @ingroup tripal_views_integration
  */
-function tripal_views_integration_form($form, $form_state) {
+function tripal_views_integration_form($form, $form_state, $arg) {
 
-  $form = array();
   $data = array();
   $form['#cache'] = TRUE;
   if (isset($form_state['build_info']['args'][0])) {
@@ -317,7 +316,7 @@ function tripal_views_integration_form($form, $form_state) {
     '#description' => t('Tables from Chado, custom tables and materialized view tables (non-legacy MViews) can be selected for integration.'),
     '#default_value' => $default,
     '#ajax' => array(
-       //D6: 'path' => 'tripal/views/integration/ajax/view_setup_table',
+       //D6: 'path' => 'tripal/views-integration/ajax/view_setup_table',
        'callback' => 'tripal_views_integration_ajax_view_setup_table',
        'wrapper' => 'fieldset-table-rows-wrapper',
        'effect' => 'fade',
@@ -346,7 +345,7 @@ function tripal_views_integration_form($form, $form_state) {
     '#description' => 'Which materialized view to use.',
     '#default_value' => $default,
     '#ajax' => array(
-       //D6: 'path' => 'tripal/views/integration/ajax/view_setup_table',
+       //D6: 'path' => 'tripal/views-integration/ajax/view_setup_table',
        'callback' => 'tripal_views_integration_ajax_view_setup_table',
        'wrapper' => 'fieldset-table-rows-wrapper',
        'effect' => 'fade',
@@ -908,7 +907,7 @@ function tripal_views_integration_form($form, $form_state) {
     }
   }
 
-  $form['#redirect'] = 'admin/tripal/views/integration/list';
+  $form['#redirect'] = 'admin/tripal/views-integration/list';
 
   return $form;
 }
@@ -1111,7 +1110,7 @@ function tripal_views_integration_form_submit($form, &$form_state) {
     drupal_set_message(t('Record Added'));
   }
 
-  $form_state['redirect'] = 'admin/tripal/views/integration/list';
+  $form_state['redirect'] = 'admin/tripal/views-integration/list';
 
   // now clear all the caches so that Drupal views picks up our chages
   views_invalidate_cache();

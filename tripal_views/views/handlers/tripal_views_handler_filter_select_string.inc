@@ -130,7 +130,7 @@ class tripal_views_handler_filter_select_string extends views_handler_filter_str
       //Select List
       $form['value'] = array(
           '#type' => 'select',
-          '#title' => t('%label', array('%label' => $this->options['label'])),
+          '#title' => t('%label', array('%label' => $this->options['expose']['label'])),
           '#options' => $this->get_select_options(),
           '#default_value' => $this->value,
       );
@@ -143,7 +143,7 @@ class tripal_views_handler_filter_select_string extends views_handler_filter_str
 
       $form['value'] = array(
         '#type' => 'textfield',
-        '#title' => t('%label', array('%label' => $this->options['label'])),
+        '#title' => t('%label', array('%label' => $this->options['expose']['label'])),
         '#default_value' => $this->value,
       );
 

@@ -55,15 +55,15 @@ function tripal_views_menu() {
   $items['admin/tripal/views-integration/edit/%'] = array(
     'title' => 'Edit Views Integration',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_views_integration_form', 5),
+    'page arguments' => array('tripal_views_integration_form', 4),
     'access arguments' => array('manage tripal_views_integration'),
-    'type' => MENU_CALLBACK,
+    'type' => MENU_NORMAL_ITEM,
   );
 
   $items['admin/tripal/views-integration/delete/%'] = array(
     'title' => 'Delete Views Integration',
     'page callback' => 'tripal_views_integration_delete',
-    'page arguments' => array(5),
+    'page arguments' => array(4),
     'access arguments' => array('manage tripal_views_integration'),
     'type' => MENU_CALLBACK,
   );
@@ -90,7 +90,7 @@ function tripal_views_menu() {
     'title' => 'Export Views Integration',
     'description' => 'Export a Tripal Views Integration for use in another Tripal site',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_views_integration_export_form', 5),
+    'page arguments' => array('tripal_views_integration_export_form', 4),
     'access arguments' => array('manage tripal_views_integration'),
     'type' => MENU_NORMAL_ITEM,
     'weight' => 3,
@@ -100,7 +100,7 @@ function tripal_views_menu() {
     'title' => 'Export Views Integration',
     'description' => 'Export a Tripal Views Integration for use in another Tripal site',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_views_integration_export_form', 5),
+    'page arguments' => array('tripal_views_integration_export_form', 4),
     'access arguments' => array('manage tripal_views_integration'),
     'type' => MENU_CALLBACK,
   );
