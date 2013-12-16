@@ -284,9 +284,6 @@ function tripal_views_views_data() {
     // only add joins if this is a base table
     // this keeps the list of available fields manageable
     // all other tables should be added via relationships
-    // D7 @todo: add tripal_views_join field that determines whether a join is added
-    if ($is_base_table) {
-
       $sql = "SELECT * FROM {tripal_views_join} WHERE setup_id = :setup";
       $joins = db_query($sql, array(':setup' => $setup_id));
       if (!isset($joins)) {
@@ -346,7 +343,6 @@ function tripal_views_views_data() {
           array_merge($data[$base_table][$fake_field]['relationship'], unserialize($join->arguments));
         }
       }
-    }
   }
 
   return $data;
