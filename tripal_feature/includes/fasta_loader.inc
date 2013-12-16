@@ -36,7 +36,7 @@ function tripal_feature_fasta_load_form( ) {
   $org_rset = chado_query($sql);
   $organisms = array();
   $organisms[''] = '';
-  while ($organism = db_fetch_object($org_rset)) {
+  while ($organism = $org_rset->fetchObject()) {
     $organisms[$organism->organism_id] = "$organism->genus $organism->species ($organism->common_name)";
   }
   $form['organism_id'] = array(
@@ -63,7 +63,7 @@ function tripal_feature_fasta_load_form( ) {
   $lib_rset = chado_query($sql);
   $libraries = array();
   $libraries[''] = '';
-  while ($library = db_fetch_object($lib_rset)) {
+  while ($library = $lib_rset->fetchObject()) {
     $libraries[$library->library_id] = "$library->name ($library->type)";
   }
   //   $form['library_id'] = array (
@@ -132,7 +132,7 @@ function tripal_feature_fasta_load_form( ) {
   $org_rset = chado_query($sql);
   $analyses = array();
   $analyses[''] = '';
-  while ($analysis = db_fetch_object($org_rset)) {
+  while ($analysis = $org_rset->fetchObject()) {
     $analyses[$analysis->analysis_id] = "$analysis->name ($analysis->program $analysis->programversion, $analysis->sourcename)";
   }
   $form['analysis']['analysis_id'] = array(
@@ -202,7 +202,7 @@ function tripal_feature_fasta_load_form( ) {
   $db_rset = chado_query($sql);
   $dbs = array();
   $dbs[''] = '';
-  while ($db = db_fetch_object($db_rset)) {
+  while ($db = $db_rset->fetchObject()) {
     $dbs[$db->db_id] = "$db->name";
   }
   $form['advanced']['db']['db_id'] = array(
@@ -350,13 +350,13 @@ function tripal_feature_fasta_load_form_validate($form, &$form_state) {
                FROM {cvterm} CVT
                   INNER JOIN {cv} CV on CVT.cv_id = CV.cv_id
                   LEFT JOIN {cvtermsynonym} CVTS on CVTS.cvterm_id = CVT.cvterm_id
-               WHERE cv.name = '%s' and (CVT.name = '%s' or CVTS.synonym = '%s')";
-  $cvterm = db_fetch_object(chado_query($cvtermsql, 'sequence', $type, $type));
+               WHERE cv.name = :cvname and (CVT.name = :name or CVTS.synonym = :synonym)";
+  $cvterm = chado_query($cvtermsql, array(':cvname' => 'sequence', ':name' => $type, ':synonym' => $type))->fetchObject();
   if (!$cvterm) {
     form_set_error('type', t("The Sequence Ontology (SO) term selected for the sequence type is not available in the database. Please check spelling or select another."));
   }
   if ($rel_type) {
-    $cvterm = db_fetch_object(chado_query($cvtermsql, 'sequence', $parent_type, $parent_type));
+    $cvterm = chado_query($cvtermsql, array(':cvname' => 'sequence', ':name' => $parent_type, ':synonym' => $parent_type))->fetchObject();
     if (!$cvterm) {
       form_set_error('parent_type', t("The Sequence Ontology (SO) term selected for the parent relationship is not available in the database. Please check spelling or select another."));
     }
@@ -444,21 +444,21 @@ function tripal_feature_load_fasta($dfile, $organism_id, $type,
                FROM {cvterm} CVT
                   INNER JOIN {cv} CV on CVT.cv_id = CV.cv_id
                   LEFT JOIN {cvtermsynonym} CVTS on CVTS.cvterm_id = CVT.cvterm_id
-               WHERE cv.name = '%s' and (CVT.name = '%s' or CVTS.synonym = '%s')";
-  $cvterm = db_fetch_object(chado_query($cvtermsql, 'sequence', $type, $type));     
+               WHERE cv.name = :cvname and (CVT.name = :name or CVTS.synonym = :synonym)";
+  $cvterm = chado_query($cvtermsql, array(':cvname' => 'sequence', ':name' => $type, ':synonym' => $type))->fetchObject();     
   if (!$cvterm) {
     watchdog("T_fasta_loader", "Cannot find the term type: '%type'", array('%type' => $type), WATCHDOG_ERROR);
     return 0;
   }
   if ($parent_type) {
-    $parentcvterm = db_fetch_object(chado_query($cvtermsql, 'sequence', $parent_type, $parent_type));
+    $parentcvterm = chado_query($cvtermsql, array(':cvname' => 'sequence', ':name' => $parent_type, ':synonym' => $parent_type))->fetchObject();
     if (!$parentcvterm) {
       watchdog("T_fasta_loader", "Cannot find the paretne term type: '%type'", array('%type' => $parentcvterm), WATCHDOG_ERROR);
       return 0;
     }
   }
   if ($rel_type) {
-    $relcvterm = db_fetch_object(chado_query($cvtermsql, 'relationship', $rel_type, $rel_type));
+    $relcvterm = chado_query($cvtermsql, array(':cvname' => 'relationship', ':name' => $rel_type, ':synonym' => $rel_type))->fetchObject();
     if (!$relcvterm) {
       watchdog("T_fasta_loader", "Cannot find the relationship term type: '%type'", array('%type' => $relcvterm), WATCHDOG_ERROR);
       return 0;

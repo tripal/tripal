@@ -33,7 +33,7 @@ function tripal_feature_gff3_load_form() {
   $org_rset = chado_query($sql);
   $organisms = array();
   $organisms[''] = '';
-  while ($organism = db_fetch_object($org_rset)) {
+  while ($organism = $org_rset->fetchObject()) {
     $organisms[$organism->organism_id] = "$organism->genus $organism->species ($organism->common_name)";
   }
   $form['organism_id'] = array(
@@ -49,7 +49,7 @@ function tripal_feature_gff3_load_form() {
   $org_rset = chado_query($sql);
   $analyses = array();
   $analyses[''] = '';
-  while ($analysis = db_fetch_object($org_rset)) {
+  while ($analysis = $org_rset->fetchObject()) {
     $analyses[$analysis->analysis_id] = "$analysis->name ($analysis->program $analysis->programversion, $analysis->sourcename)";
   }
   $form['analysis_id'] = array(
@@ -372,8 +372,8 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
 
   // get the controlled vocaubulary that we'll be using.  The
   // default is the 'sequence' ontology
-  $sql = "SELECT * FROM {cv} WHERE name = '%s'";
-  $cv = db_fetch_object(chado_query($sql, 'sequence'));
+  $sql = "SELECT * FROM {cv} WHERE name = :cvname";
+  $cv = chado_query($sql, array(':cvname' => 'sequence'))->fetchObject();
   if (!$cv) {   
     watchdog('T_gff3_loader', "Cannot find the 'sequence' ontology", 
       array(), WATCHDOG_ERROR);
@@ -381,8 +381,8 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
   }
 
   // get the organism for which this GFF3 file belongs
-  $sql = "SELECT * FROM {organism} WHERE organism_id = %d";
-  $organism = db_fetch_object(chado_query($sql, $organism_id));
+  $sql = "SELECT * FROM {organism} WHERE organism_id = :organism_id";
+  $organism = chado_query($sql, array(':organism_id' => $organism_id))->fetchObject();
 
   $interval = intval($filesize * 0.0001);
   if ($interval == 0) {
@@ -448,8 +448,9 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
       $rstart = $region_matches[2];
       $rend = $region_matches[3];
       if ($landmark_type) {
-        $result = chado_query("EXECUTE sel_cvterm_idnasy (%d, '%s', '%s')", $cv->cv_id, $landmark_type, $landmark_type);
-        $cvterm = db_fetch_object($result);
+        $result = chado_query("EXECUTE sel_cvterm_idnasy (:cv_id, :name, :synonym)", 
+          array(':cv_id' => $cv->cv_id, ':name' => $landmark_type, ':synonym' => $landmark_type));
+        $cvterm = $result->fetchObject();
         if (!$cvterm) {
           watchdog('T_gff3_loader', 'cannot find feature type \'%landmark_type\' on line %line_num of the GFF file', 
             array('%landmark_type' => $landmark_type, '%line_num' => $line_num), WATCHDOG_ERROR);
@@ -513,9 +514,10 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
       $phase = '';
     }
   
-    $result = chado_query("EXECUTE sel_cvterm_idnasy (%d, '%s', '%s')", $cv->cv_id, $type, $type);
+    $result = chado_query("EXECUTE sel_cvterm_idnasy (:cv_id, :name, :synonym)", 
+      array(':cv_id' => $cv->cv_id, ':name' => $type, ':synonym' => $type));
 
-    $cvterm = db_fetch_object($result);
+    $cvterm = $result->fetchObject();
     if (!$cvterm) {
       watchdog('T_gff3_loader', 'cannot find feature term \'%type\' on line %line_num of the GFF file', 
         array('%type' => $type, '%line_num' => $line_num), WATCHDOG_ERROR);
@@ -847,10 +849,10 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
     
     // build and prepare the SQL for selecting the children relationship
     $sql = "SELECT DISTINCT FR.feature_relationship_id, FL.fmin, FR.rank
-            FROM {feature_relationship} FR              
+            FROM {feature_relationship} FR
               INNER JOIN {featureloc} FL on FL.feature_id = FR.subject_id";
     if (!$connection) {
-      $sql .= "WHERE FR.object_id = %d " .
+      $sql .= "WHERE FR.object_id = :feature_id " .
               "ORDER BY FL.fmin ASC ";
     }
     else {
@@ -869,19 +871,19 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
     // on the fmin.  The start rank is 1.  This allows features with other
     // relationships to be '0' (the default), and doesn't interfer with the
     // ordering defined here.        
-    while ($parent = db_fetch_object($parents)) {
+    while ($parent = $parents->fetchObject()) {
       
       // get the children
       if ($connection) {      
-        $result = chado_query('EXECUTE sel_gffchildren (%d)', $parent->feature_id);
+        $result = chado_query('EXECUTE sel_gffchildren (:feature_id)', array(':feature_id' => $parent->feature_id));
       }
       else {
-        $result = chado_query($sql, $parent->feature_id);
+        $result = chado_query($sql, array(':feature_id' => $parent->feature_id));
       }
       
       // build an array of the children
       $children = array();
-      while ($child = db_fetch_object($result)) {
+      while ($child = $result->fetchObject()) {
          $children[] = $child;  
       }
       
@@ -1032,8 +1034,10 @@ function tripal_feature_load_gff3_parents($feature, $cvterm, $parents, $organism
     $parent_type = $result[0]->type_name;
 
     // try to find the parent
-    $parentcvterm = db_fetch_object(chado_query("EXECUTE sel_cvterm_cvname_cvtname_synonym ('%s', '%s', '%s')", 'sequence', $parent_type, $parent_type));
-    $relcvterm = db_fetch_object(chado_query("EXECUTE sel_cvterm_cvname_cvtname_synonym ('%s', '%s', '%s')", 'relationship', $rel_type, $rel_type));
+    $parentcvterm = chado_query("EXECUTE sel_cvterm_cvname_cvtname_synonym (:cvname, :name, :synonym)", 
+      array(':cvname' => 'sequence', ':name' => $parent_type, ':synonym' => $parent_type))->fetchObject();
+    $relcvterm = chado_query("EXECUTE sel_cvterm_cvname_cvtname_synonym (:cvname, :name, :synonym)", 
+      array(':cvname' => 'relationship', ':name' => $rel_type, ':synonymn' => $rel_type))->fetchObject();
     $values = array(
         'organism_id' => $organism_id,
         'uniquename' => $parent,
@@ -1373,7 +1377,8 @@ function tripal_feature_load_gff3_alias($feature, $aliases) {
         } 
       }    
       // insert the null pub 
-      $result = db_fetch_object(chado_query("EXECUTE ins_pub_uniquename_typeid ('%s', '%s')", 'null', 'null'));
+      $result = chado_query("EXECUTE ins_pub_uniquename_typeid (:uname, :type_id)", 
+        array(':uname' => 'null', ':type_id' => 'null'))->fetchObject();
       if (!$result) {
         watchdog("T_gff3_loader", "Cannot add null publication needed for setup of alias", array(), WATCHDOG_WARNING);
         return 0;
@@ -1856,7 +1861,7 @@ function tripal_feature_load_gff3_fasta($fh, $interval, &$num_read, &$intv_read,
         }
         // if we have a feature then add the residues
         else {    
-          $feature = db_fetch_object($result);    
+          $feature = $result->fetchObject();    
           $values = array('residues' => $residues);
           $match = array('feature_id' => $feature->feature_id);
           $options = array('statement_name' => 'upd_feature_re');
@@ -1880,7 +1885,7 @@ function tripal_feature_load_gff3_fasta($fh, $interval, &$num_read, &$intv_read,
   }
   // if we have a feature then add the residues
   else {        
-    $feature = db_fetch_object($result);    
+    $feature = $result->fetchObject();    
     $values = array('residues' => $residues);
     $match = array('feature_id' => $feature->feature_id);
     $options = array('statement_name' => 'upd_feature_re');

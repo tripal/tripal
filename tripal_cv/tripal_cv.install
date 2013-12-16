@@ -6,6 +6,23 @@
  */
 
 /**
+ * Implementation of hook_requirements().
+ */
+function tripal_cv_requirements($phase) {
+  $requirements = array();
+  if ($phase == 'install') {
+    // make sure chado is installed
+    if (!tripal_core_is_chado_installed()) {
+      $requirements ['tripal_cv'] = array(
+        'title' => "tripal_cv",
+        'value' => "ERROR: Chado most be installed before this module can be enabled",
+        'severity' => REQUIREMENT_ERROR,
+      );
+    }
+  }
+  return $requirements;
+}
+/**
  * Implementation of hook_install().
  *
  * @ingroup tripal_cv
@@ -14,45 +31,21 @@ function tripal_cv_install() {
 
   // create the module's data directory
   tripal_create_moddir('tripal_cv');
-
-  // Create the MView
-  tripal_add_mview(
-    // view name
-    'cv_root_mview',
-    // module name
-    'tripal_cv',
-    // table name
-    'cv_root_mview',
-    // table schema
-    'name character varying(1024), cvterm_id integer, cv_id integer,
-     cv_name character varying(255)',
-    // indexed columns
-    'cvterm_id, cv_id',
-    // SQL statement that populates the view
-    'SELECT DISTINCT CVT.name,CVT.cvterm_id, CV.cv_id, CV.name
-     FROM {cvterm_relationship} CVTR
-       INNER JOIN {cvterm} CVT on CVTR.object_id = CVT.cvterm_id
-       INNER JOIN {cv} CV on CV.cv_id = CVT.cv_id
-     WHERE CVTR.object_id not in
-       (SELECT subject_id FROM {cvterm_relationship}) ',
-    // special index
-    ''
-  );
-
+    
+  // add the cv_root_mview 
+  tripal_cv_add_cv_root_mview();
+  
   // create the tables that correlate OBO files/references with a chado CV
   tripal_cv_add_obo_defaults();
 }
-
 /**
  * Implementation of hook_uninstall().
  *
  * @ingroup tripal_cv
  */
 function tripal_cv_uninstall() {
-
   // remove the materialized view
-  $mview = tripal_mviews_get_mview_id('cv_root_mview');
-  if ($mview) {
+  if ($mview = tripal_mviews_get_mview_id('cv_root_mview')) {
     tripal_mviews_action('delete', $mview);
   }
 }
@@ -63,20 +56,81 @@ function tripal_cv_uninstall() {
  * @ingroup tripal_cv
  */
 function tripal_cv_schema() {
+  
   $schema['tripal_cv_obo'] = array(
     'fields' => array(
-      'obo_id' => array('type' => 'serial', 'unsigned' => TRUE, 'not null' => TRUE),
-      'name'  => array('type' => 'varchar', 'length' => 255),
-      'path'   => array('type' => 'varchar', 'length' => 1024),
+      'obo_id' => array(
+        'type' => 'serial', 
+        'unsigned' => TRUE, 
+        'not null' => TRUE
+      ),
+      'name' => array(
+        'type' => 'varchar', 
+         'length' => 255
+       ),
+      'path'  => array(
+        'type' => 'varchar', 
+        'length' => 1024
+      ),
     ),
     'indexes' => array(
-      'obo_id' => array('obo_id'),
+      'tripal_cv_obo_idx1' => array('obo_id'),
     ),
     'primary key' => array('obo_id'),
   );
 
   return $schema;
 }
+
+/**
+ * 
+ * @ingroup tripal_cv
+ */
+function tripal_cv_add_cv_root_mview() {
+  $mv_name = 'cv_root_mview';
+  $comment = 'A list of the root terms for all controlled vocabularies. This is needed for viewing CV trees';
+  $schema = array(
+    'table' => $mv_name,
+    'description' => $comment,
+    'fields' => array(
+      'name' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ),
+      'cvterm_id' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'cv_id' => array(
+        'type' => 'int',
+        'not null' => TRUE, 
+      ),
+      'cv_name' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ),
+    ),
+    'indexes' => array(
+      'cv_root_mview_indx1' => array('cvterm_id'),
+      'cv_root_mview_indx2' => array('cv_id'),
+    ),
+  );
+  
+  $sql = "
+    SELECT DISTINCT CVT.name,CVT.cvterm_id, CV.cv_id, CV.name
+    FROM cvterm_relationship CVTR
+      INNER JOIN cvterm CVT on CVTR.object_id = CVT.cvterm_id
+      INNER JOIN cv CV on CV.cv_id = CVT.cv_id
+    WHERE CVTR.object_id not in
+      (SELECT subject_id FROM cvterm_relationship)
+  ";
+  
+  // Create the MView
+  tripal_add_mview($mv_name, 'tripal_cv', $schema, $sql, $comment);
+}
+
 
 /**
  * Add's defaults to the tripal_cv_obo table
@@ -98,22 +152,4 @@ function tripal_cv_add_obo_defaults() {
   foreach ($ontologies as $o) {
     db_query("INSERT INTO {tripal_cv_obo} (name,path) VALUES (:name, :path)", array(':name' => $o[0], ':path' => $o[1]));
   }
-}
-
-/**
- * Implementation of hook_requirements(). 
- */
-function tripal_cv_requirements($phase) {
-  $requirements = array();
-  if ($phase == 'install') {
-    // make sure chado is installed
-    if (!tripal_core_is_chado_installed()) {
-      $requirements ['tripal_cv'] = array(
-            'title' => "tripal_cv",
-            'value' => "ERROR: Chado most be installed before this module can be enabled",
-            'severity' => REQUIREMENT_ERROR,
-      );
-    }
-  }
-  return $requirements;
 }

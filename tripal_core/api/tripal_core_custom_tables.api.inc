@@ -126,8 +126,7 @@ function tripal_core_create_custom_table($table, $schema, $skip_creation = 1) {
     catch (Exception $e) {
       tripal_db_set_active($previous_db);  // now use drupal database
       $error = $e->getMessage();
-      watchdog('tripal_core', "Error adding custom table: @message",
-        array('@message' => $error), WATCHDOG_ERROR);
+      watchdog('tripal_core', "Error adding custom table: @message", array('@message' => $error), WATCHDOG_ERROR);
       drupal_set_message("Could not add custom table. $error.", "error");
       return FALSE;
     }    

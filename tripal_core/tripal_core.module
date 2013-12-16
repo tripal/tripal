@@ -65,7 +65,7 @@ function tripal_core_init() {
 
   // create the 'tripal' controlled volcabulary in chado but only if it doesn't already exist, and
   // only if the chado database is present.
-  if (tripal_core_is_chado_installed()) {
+  if (tripal_core_is_chado_installed()) {    
 
     // make sure the current version of chado is set
     tripal_core_set_chado_version();
@@ -242,7 +242,7 @@ function tripal_core_menu() {
     'title' => 'Materialized View',
     'description' => 'Materialized views are used to improve speed of large or complex queries. These are database views as compared to Drupal views.',
     'page callback' => 'tripal_mview_report',
-    'page arguments' => array(4),
+    'page arguments' => array(5),
     'access arguments' => array('access administration pages'),
     'type' => MENU_NORMAL_ITEM,
   );
@@ -257,7 +257,7 @@ function tripal_core_menu() {
   $items['admin/tripal/schema/mviews/edit/%'] = array(
     'title' => 'Edit Materialized View',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_mviews_form', 4),
+    'page arguments' => array('tripal_mviews_form', 5),
     'access arguments' => array('access administration pages'),
     'type' => MENU_NORMAL_ITEM,
   );
@@ -265,7 +265,7 @@ function tripal_core_menu() {
     'title' => 'Create Materialized View',
     'description' => 'Materialized views are used to improve speed of large or complex queries.',
     'page callback' => 'tripal_mviews_action',
-    'page arguments' => array(4, 5, "1"),
+    'page arguments' => array(5, 6, "1"),
     'access arguments' => array('access administration pages'),
     'type' => MENU_CALLBACK,
   );

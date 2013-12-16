@@ -171,7 +171,7 @@ function tripal_feature_seq_extract_form(&$form_state = NULL) {
   $results = chado_query($sql);
   $genus = array();
   $genus[] = '';
-  while ($organism = db_fetch_object($results)) {
+  while ($organism = $results->fetchObject()) {
     $genus[$organism->genus] = $organism->genus;  
   }
   
@@ -196,11 +196,11 @@ function tripal_feature_seq_extract_form(&$form_state = NULL) {
     $sql = "
       SELECT DISTINCT species 
       FROM {organism} 
-      WHERE genus = '%s'
+      WHERE genus = :genus
       ORDER BY species
     ";
-    $results = chado_query($sql, $dgenus);
-    while ($organism = db_fetch_object($results)) {
+    $results = chado_query($sql, array(':genus' => $dgenus));
+    while ($organism = $results->fetchObject()) {
       $species[$organism->species] = $organism->species;  
     }
   }  
@@ -227,17 +227,17 @@ function tripal_feature_seq_extract_form(&$form_state = NULL) {
       FROM {analysis_organism} AO 
         INNER JOIN {analysis} A ON A.analysis_id = AO.analysis_id
         INNER JOIN {organism} O ON O.organism_id = AO.organism_id
-      WHERE O.genus = '%s'
+      WHERE O.genus = :genus
     ";
     $args = array();
-    $args[] = $dgenus;
+    $args[':genus'] = $dgenus;
     if ($dspecies) {
-      $sql .= " AND O.species = '%s' ";
-      $args[] = $dspecies;
+      $sql .= " AND O.species = :species ";
+      $args[':species'] = $dspecies;
     }
     $sql .=" ORDER BY A.name ";
     $results = chado_query($sql, $args);  
-    while ($analysis = db_fetch_object($results)) {
+    while ($analysis = $results->fetchObject()) {
       $analyses[$analysis->name] = $analysis->name;  
     }
   }
@@ -256,18 +256,18 @@ function tripal_feature_seq_extract_form(&$form_state = NULL) {
     $sql = "
       SELECT DISTINCT OFC.cvterm_id, OFC.feature_type
       FROM {organism_feature_count} OFC 
-      WHERE OFC.genus = '%s'
+      WHERE OFC.genus = :genus
     ";
     $args = array();
-    $args[] = $dgenus;
+    $args['genus'] = $dgenus;
     if ($dspecies) {
-      $sql .= " AND OFC.species = '%s'";
-      $args[] = $dspecies;
+      $sql .= " AND OFC.species = :species";
+      $args['species'] = $dspecies;
     }
     $sql .= " ORDER BY OFC.feature_type ";
     $results = chado_query($sql, $args);
     
-    while ($type = db_fetch_object($results)) {
+    while ($type = $results->fetchObject()) {
       $ftype[$type->feature_type] = $type->feature_type;  
     }
   }
@@ -481,45 +481,45 @@ function tripal_feature_seq_extract_get_features($org_commonname, $genus, $speci
   }         
   $sql .= "WHERE (1=1) ";
   if ($org_commonname) {
-    $sql .= "AND O.common_name = '%s' ";
-    $vars[] = $org_commonname;
+    $sql .= "AND O.common_name = :common_name ";
+    $vars[':common_name'] = $org_commonname;
   }
   if ($genus) {
-    $sql .= "AND O.genus = '%s' ";
-    $vars[] = $genus;
+    $sql .= "AND O.genus = :genus ";
+    $vars[':genus'] = $genus;
   }
   if ($species) {
-    $sql .= "AND O.species = '%s' ";
-    $vars[] = $species;
+    $sql .= "AND O.species = :species ";
+    $vars[':species'] = $species;
   }
   if ($type) {
-    $sql .= "AND CVT.name = '%s' ";
-    $vars[] = $type; 
+    $sql .= "AND CVT.name = ':cvtname ";
+    $vars[':cvtname'] = $type; 
   }
   if ($feature_name) {
     if (is_array($feature_name)) {
       $sql .= "AND F.name IN (";
       foreach ($feature_name as $i => $fname) {
-        $sql .= "'%s', ";
-        $vars[] = $fname;
+        $sql .= ":fname$i, ";
+        $vars[":fname$i"] = $fname;
       } 
       // remove the trailing comma and close the paren
       $sql = substr($sql, 0, -2) . ")";
     }
     else {
-      $sql .= "AND F.name = '%s'";
-      $vars[] = $feature_name;
+      $sql .= "AND F.name = :fname";
+      $vars[':fname'] = $feature_name;
     }
   }
   if ($analysis_name) {
-    $sql .= "AND A.name = '%s'";
-    $vars[] = $analysis_name;
+    $sql .= "AND A.name = :aname";
+    $vars[':aname'] = $analysis_name;
   }
   $num_bases_per_line = 50;
   $num_seqs = 0;
   $q = chado_query($sql, $vars);
   
-  while ($feature = db_fetch_object($q)) {
+  while ($feature = $q->fetchObject()) {
     
     $feature_id = $feature->feature_id;
     
