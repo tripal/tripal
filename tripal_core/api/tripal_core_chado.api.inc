@@ -1635,6 +1635,9 @@ function tripal_core_expand_chado_vars($object, $type, $to_expand, $table_option
               $object->expanded = $to_expand;
             }
             else {
+              if (!is_object($object->{$foreign_table})) {
+                $object->{$foreign_table} = new stdClass();
+              }
               $object->{$foreign_table} = $foreign_object;
               $object->expanded = $to_expand;
             }
@@ -1642,6 +1645,9 @@ function tripal_core_expand_chado_vars($object, $type, $to_expand, $table_option
           // if the object returned is NULL then handle that
           else {
             if (count($foreign_table_desc['foreign keys'][$base_table]['columns']) > 1) {
+              if (!is_object($object->{$foreign_table})) {
+                $object->{$foreign_table} = new stdClass();
+              }
               $object->{$foreign_table}->{$left} = NULL;
             }
             else {
@@ -2416,27 +2422,21 @@ function chado_table_exists($table) {
  */
 function tripal_core_chado_schema_exists() {
 
-  $exists = variable_get('chado_schema_exists', FALSE);
-
-  if (!$exists) {
-    // This is postgresql-specific code to check the existence of the chado schema
-    // @coder-ignore: acting on pg_catalog schema rather then drupal schema therefore, table prefixing does not apply
-    $sql = "
-      SELECT nspname
-      FROM pg_catalog.pg_namespace
-      WHERE nspname = 'chado'
-    ";
-    $results = db_query($sql);
-    $name = $results->fetchObject();
-    if ($name) {
-      variable_set('chado_schema_exists', TRUE);
-      return TRUE;
-    }
-    else {
-      return FALSE;
-    }
+  // This is postgresql-specific code to check the existence of the chado schema
+  // @coder-ignore: acting on pg_catalog schema rather then drupal schema therefore, table prefixing does not apply
+  $sql = "
+    SELECT nspname
+    FROM pg_catalog.pg_namespace
+    WHERE nspname = 'chado'
+  ";
+  $results = db_query($sql);
+  $name = $results->fetchObject();
+  if ($name) {
+    return TRUE;
   }
-  return TRUE;
+  else {
+    return FALSE;
+  }
 }
 /**
  * Check that any given schema exists
@@ -2604,10 +2604,10 @@ function tripal_core_set_chado_version() {
  */
 function tripal_core_get_chado_version($exact = FALSE, $warn_if_unsupported = FALSE) {
   // first get the chado version that is installed
-  $exact_version = variable_get('chado_version', '');
-  if (!$exact_version) {
+//  $exact_version = variable_get('chado_version', '');
+//  if (!$exact_version) {
     $exact_version = tripal_core_set_chado_version();
-  }
+//  }
 
   // Tripal only supports v1.11 or newer.. really this is the same as v1.1
   // but at the time the v1.11 schema API was written we didn't know that so

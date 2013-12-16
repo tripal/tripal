@@ -1266,6 +1266,8 @@ function tripal_feature_load_featureloc_sequences($feature_id, $featurelocs) {
       // copy over the results to the relationship object.  Since there can
       // be more than one feature location for each relationship feature we
       // use the '$src' variable to keep track of these.
+      $rel->featurelocs = new stdClass();
+      $rel->featurelocs->$src = new stdClass();
       $rel->featurelocs->$src->src_uniquename = $rel_featureloc->src_uniquename;
       $rel->featurelocs->$src->src_cvterm_id  = $rel_featureloc->src_cvterm_id;
       $rel->featurelocs->$src->src_cvname     = $rel_featureloc->src_cvname;

@@ -362,11 +362,9 @@ function tripal_core_install_sql($sql_file) {
       if (strcmp($type, 'set') == 0 and $chado_local) {
         $query = preg_replace("/public/m", "chado", $query);
       }
-      
-      
-      $previous = tripal_db_set_active('chado');
+
+      // execute the statement
       $result = db_query($query);
-      tripal_db_set_active($previous);
 
       if (!$result) {
         $error  = pg_last_error();
