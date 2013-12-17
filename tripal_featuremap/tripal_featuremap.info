@@ -1,9 +1,9 @@
 name = Tripal Feature Map
-description = A module for interfacing the GMOD chado database with Drupal, providing viewing, inserting and editing of maps.
-core = 6.x
+description = A module for interfacing the GMOD chado database with Drupal, providing viewing, inserting and editing of maps (e.g. genetic maps).
+core = 7.x
 project = tripal_featuremap
 package = Tripal
-version = 6.x-1.1
+version = 7.x-2.0-beta
 dependencies[] = tripal_core
 dependencies[] = tripal_organism
 dependencies[] = tripal_feature

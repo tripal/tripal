@@ -55,7 +55,7 @@ function chado_featuremap_form($node) {
     ORDER BY CVT.name ASC 
   ";
   $prop_types = chado_query($sql);
-  while ($prop = db_fetch_object($prop_types)) {
+  while ($prop = $prop_types->fetchObject()) {
     $properties_select[$prop->cvterm_id] = $prop->name;
     $properties_list[$prop->cvterm_id] = $prop;
   }
@@ -129,13 +129,13 @@ function chado_featuremap_validate($node, &$form) {
   if ($node->featuremap_id) {
     $sql = "
       SELECT * FROM {featuremap} 
-      WHERE name = '%s' AND NOT featuremap_id = %d
+      WHERE name = :name AND NOT featuremap_id = :featuremap_id
     ";
-    $featuremap = db_fetch_object(chado_query($sql, $node->title, $node->featuremap_id));
+    $featuremap = chado_query($sql, array(':name' => $node->title, ':featurempa_id' => $node->featuremap_id))->fetchObject();
   }
   else {
-    $sql = "SELECT * FROM {featuremap} WHERE name = '%s'";
-    $featuremap = db_fetch_object(chado_query($sql, $node->title));
+    $sql = "SELECT * FROM {featuremap} WHERE name = :name";
+    $featuremap = chado_query($sql, array(':name' => $node->title))->fetchObject();
   }
   if ($featuremap) {
     form_set_error('name', t('The unique map name already exists. Please choose another'));
@@ -326,11 +326,11 @@ function chado_featuremap_node_form_add_featuremapprop_table_props(&$form, $form
     SELECT CVT.cvterm_id, CVT.name, CVT.definition, PP.value, PP.rank
     FROM {featuremapprop} PP
       INNER JOIN {cvterm} CVT on CVT.cvterm_id = PP.type_id
-    WHERE PP.featuremap_id = %d
+    WHERE PP.featuremap_id = :featuremap_id
     ORDER BY CVT.name, PP.rank
   ";
-  $featuremap_props = chado_query($sql, $featuremap_id);
-  while ($prop = db_fetch_object($featuremap_props)) {
+  $featuremap_props = chado_query($sql, array(':featuremap_id' => $featuremap_id));
+  while ($prop = $featuremap_props->fetchObject()) {
 
     $type_id = $prop->cvterm_id;
     $rank = count($d_properties[$type_id]);

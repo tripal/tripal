@@ -173,7 +173,7 @@ function tripal_contact_theme() {
 /**
  * Implement hook_perm().
  */
-function tripal_contact_perm() {
+function tripal_contact_permissions() {
   return array(
     'access chado_contact content',
     'create chado_contact content',
@@ -188,12 +188,12 @@ function tripal_contact_perm() {
  *
  * This hook allows node modules to limit access to the node types they define.
  *
- *  @param $op
- *  The operation to be performed
- *
  *  @param $node
  *  The node on which the operation is to be performed, or, if it does not yet exist, the
  *  type of node to be created
+ *  
+ *  @param $op
+ *  The operation to be performed
  *
  *  @param $account
  *  A user object representing the user for whom the operation is to be performed
@@ -205,7 +205,7 @@ function tripal_contact_perm() {
  *  return TRUE if the permission is set.
  *
  */
-function chado_contact_access($op, $node, $account ) {
+function chado_contact_node_access($node, $op, $account ) {
   if ($op == 'create') {
     if (!user_access('create chado_contact content', $account)) {
       return FALSE;

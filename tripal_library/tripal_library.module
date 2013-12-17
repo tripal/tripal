@@ -79,7 +79,7 @@ function tripal_library_permisssions() {
     ),
     'adminster tripal library' => array(
       'title' => t('Administer Libraries'),
-      'description' => t('Allow users to administer all librarys.'),
+      'description' => t('Allow users to administer all libraries.'),
     ),
   );
 }
@@ -87,13 +87,13 @@ function tripal_library_permisssions() {
  * Implement hook_access().
  *
  * This hook allows node modules to limit access to the node types they define.
- *
- *  @param $op
- *  The operation to be performed
- *
+ * 
  *  @param $node
  *  The node on which the operation is to be performed, or, if it does not yet exist, the
  *  type of node to be created
+ *
+ *  @param $op
+ *  The operation to be performed
  *
  *  @param $account
  *  A user object representing the user for whom the operation is to be performed
@@ -106,7 +106,7 @@ function tripal_library_permisssions() {
  *
  * @ingroup tripal_library
  */
-function chado_library_node_access($op, $node, $account) {
+function chado_library_node_access($node, $op, $account) {
   if ($op == 'create') {
     if (!user_access('create chado_library content', $account)) {
       return FALSE;
@@ -376,42 +376,6 @@ function theme_tripal_library_node_libraries($node) {
  */
 function tripal_library_cron() {
 
-}
-/**
- *  The following function proves access control for users trying to
- *  perform actions on data managed by this module
- *
- * @ingroup tripal_library
- */
-function tripal_library_node_access($op, $node, $account) {
-  if ($op == 'create') {
-    if (!user_access('create chado_library content', $account)) {
-      return FALSE;
-    }
-  }
-
-  if ($op == 'update') {
-    if (!user_access('edit any chado_library content', $account) &&
-        !user_access('edit own chado_library content', $account)) {
-        return FALSE;
-    }
-    if (user_access('edit own chado_library content', $account) &&
-      $account->uid != $node->uid) {
-      return FALSE;
-    }
-  }
-
-  if ($op == 'delete') {
-    if (!user_access('delete any chado_library content', $account) &&
-      !user_access('delete own chado_library content', $account)) {
-      return FALSE;
-    }
-    if (user_access('delete own chado_library content', $account) &&
-      $account->uid != $node->uid) {
-      return FALSE;
-    }
-  }
-  return NULL;
 }
 
 

@@ -53,7 +53,7 @@ function tripal_featuremap_node_info() {
   $nodes = array();
   $nodes['chado_featuremap'] = array(
       'name' => t('Map'),
-      'module' => 'chado_featuremap',
+      'base' => 'chado_featuremap',
       'description' => t('A feature map from the chado database (e.g. genetic map)'),
       'has_title' => FALSE,
       'title_label' => t('Feature Map'),
@@ -71,13 +71,28 @@ function tripal_featuremap_node_info() {
  *
  * @ingroup tripal_featuremap
  */
-function tripal_featuremap_perm() {
+function tripal_featuremap_permissions() {
   return array(
-    'access chado_featuremap content',
-    'create chado_featuremap content',
-    'delete chado_featuremap content',
-    'edit chado_featuremap content',
-    'administer tripal featuremap',
+    'access chado_featuremap content' => array(
+      'title' => t('View Maps'),
+      'description' => t('Allow users to view map pages.'),
+    ),
+    'create chado_featuremap content' => array(
+      'title' => t('Create Maps'),
+      'description' => t('Allow users to create new map pages.'),
+    ),
+    'delete chado_featuremap content' => array(
+      'title' => t('Delete Maps'),
+      'description' => t('Allow users to delete map pages.'),
+    ),
+    'edit chado_featuremap content' => array(
+      'title' => t('Edit Maps'),
+      'description' => t('Allow users to edit map pages.'),
+    ),
+    'adminster tripal featuremap' => array(
+      'title' => t('Administer Maps'),
+      'description' => t('Allow users to administer all maps.'),
+    ),
   );
 }
 /**
@@ -180,35 +195,6 @@ function tripal_featuremap_views_api() {
   );
 }
 
-
-
-/**
- * Implementation of hook_nodeapi().
- * Display map information for associated features or organisms
- * This function also provides contents for indexing
- *
- * @ingroup tripal_featuremap
- */
-function tripal_featuremap_nodeapi(&$node, $op, $teaser, $page) {
-
-  switch ($op) {
-    // Note that this function only adds map view to an organism/feature
-    // node.
-    case 'view':
-      // add the map to the organism/feature search indexing
-      if ($node->build_mode == NODE_BUILD_SEARCH_INDEX) {
-        $node->content['tripal_featuremap_index_version'] = array(
-          '#value' => theme('tripal_featuremap_search_index', $node),
-        );
-      }
-      elseif ($node->build_mode == NODE_BUILD_SEARCH_RESULT) {
-        $node->content['tripal_featuremap_index_version'] = array(
-          '#value' => theme('tripal_featuremap_search_result', $node),
-        );
-      }
-  }
-}
-
 /**
  *  We need to let drupal know about our theme functions and their arguments.
  *  We create theme functions to allow users of the module to customize the
@@ -258,6 +244,64 @@ function tripal_featuremap_theme() {
 }
 
 /**
+ * @ingroup tripal_library
+ */
+function tripal_featuremap_block_info() {
+
+  $blocks['mapbase']['info'] = t('Tripal Map Details');
+  $blocks['mapbase']['cache'] = BLOCK_NO_CACHE;
+
+  $blocks['mapprops']['info'] = t('Tripal Map Properties');
+  $blocks['mapprops']['cache'] = BLOCK_NO_CACHE;
+  
+  $blocks['mappos']['info'] = t('Tripal Map Features');
+  $blocks['mappos']['cache'] = BLOCK_NO_CACHE;
+  
+  $blocks['mappubs']['info'] = t('Tripal Map Publications');
+  $blocks['mappubs']['cache'] = BLOCK_NO_CACHE;
+
+  $blocks['maprefs']['info'] = t('Tripal Map References');
+  $blocks['maprefs']['cache'] = BLOCK_NO_CACHE;
+    
+  return $blocks;
+}
+/**
+ * @ingroup tripal_library
+ */
+function tripal_featuremap_block_view($delta = '') {
+
+  if (user_access('access chado_library content') and arg(0) == 'node' and is_numeric(arg(1))) {
+    $nid = arg(1);
+    $node = node_load($nid);
+
+    $block = array();
+    switch ($delta) {
+      case 'mapbase':
+        $block['subject'] = t('Library Details');
+        $block['content'] = theme('tripal_featuremap_base', $node);
+        break;
+      case 'mapprops':
+        $block['subject'] = t('Properties');
+        $block['content'] = theme('tripal_featuremap_properties', $node);
+        break;
+      case 'mappos':
+        $block['subject'] = t('Features');
+        $block['content'] = theme('tripal_featuremap_featurepos', $node);
+        break;
+      case 'mappubs':
+        $block['subject'] = t('Publications');
+        $block['content'] = theme('tripal_featuremap_publication', $node);
+        break;
+      case 'maprefs':
+        $block['subject'] = t('References');
+        $block['content'] = theme('tripal_featuremap_references', $node);
+        break;
+      default :
+    }
+    return $block;
+  }
+}
+/**
  * This function is an extension of the chado_feature_view and
  * chado_organism_view by providing the markup for the map object
  * THAT WILL BE INDEXED.
@@ -279,12 +323,12 @@ function tripal_featuremap_cron() {
  *
  * This hook allows node modules to limit access to the node types they define.
  *
- *  @param $op
- *  The operation to be performed
- *
  *  @param $node
  *  The node on which the operation is to be performed, or, if it does not yet exist, the
  *  type of node to be created
+ *
+ *  @param $op
+ *  The operation to be performed
  *
  *  @param $account
  *  A user object representing the user for whom the operation is to be performed
@@ -297,7 +341,7 @@ function tripal_featuremap_cron() {
  *
  * @ingroup tripal_featuremap
  */
-function tripal_featuremap_map_access($op, $node, $account) {
+function chado_featuremap_node_access($node, $op, $account) {
   if ($op == 'create') {
     if (!user_access('create chado_featuremap content', $account)) {
       return FALSE;
@@ -375,7 +419,7 @@ function chado_featuremap_insert($node) {
       ORDER BY CVT.name ASC 
     ";
     $prop_types = chado_query($sql);
-    while ($prop = db_fetch_object($prop_types)) {
+    while ($prop = $prop_types->fetchObject()) {
       $properties_list[$prop->cvterm_id] = $prop->name;
     }   
   
@@ -441,14 +485,13 @@ function chado_featuremap_insert($node) {
     $featuremap_id = chado_get_id_for_node('featuremap', $node->nid) ;
     if (!$featuremap_id) {
        // next add the item to the drupal table
-      $sql = "INSERT INTO {chado_featuremap} (nid, vid, featuremap_id) VALUES (%d, %d, %d)";
-      db_query($sql, $node->nid, $node->vid, $featuremap['featuremap_id']);
-    }       
+      $sql = "
+        INSERT INTO {chado_featuremap} (nid, vid, featuremap_id) 
+        VALUES (:nid, :vid, :featuremap_id)
+      ";
+      db_query($sql, array(':nid' => $node->nid, ':vid' => $node->vid, ':featuremap_id' => $featuremap['featuremap_id']));
+    }
   }
-
-  
-  
-  
 }
 /**
  * Update nodes
@@ -494,7 +537,7 @@ function chado_featuremap_update($node) {
     ORDER BY CVT.name ASC 
   ";
   $prop_types = chado_query($sql);
-  while ($prop = db_fetch_object($prop_types)) {
+  while ($prop = $prop_types->fetchObject()) {
     $properties_list[$prop->cvterm_id] = $prop->name;
   }
   
@@ -613,32 +656,14 @@ function chado_featuremap_delete(&$node) {
 
   // Remove data from {chado_featuremap}, {node} and {node_revisions} tables of
   // drupal database
-  $sql_del = "DELETE FROM {chado_featuremap} ".
-            "WHERE nid = %d ".
-            "AND vid = %d";
-  db_query($sql_del, $node->nid, $node->vid);
-  $sql_del = "DELETE FROM {node} ".
-            "WHERE nid = %d ".
-            "AND vid = %d";
-  db_query($sql_del, $node->nid, $node->vid);
-  $sql_del = "DELETE FROM {node_revisions} ".
-            "WHERE nid = %d ".
-            "AND vid = %d";
-  db_query($sql_del, $node->nid, $node->vid);
+  $sql_del = "DELETE FROM {chado_featuremap} WHERE nid = :nid AND vid = :vid";
+  db_query($sql_del, array(':nid' => $node->nid, ':vid' => $node->vid));
+  $sql_del = "DELETE FROM {node} WHERE nid = :nid AND vid = :vid";
+  db_query($sql_del, array(':nid' => $node->nid, ':vid' => $node->vid));
+  $sql_del = "DELETE FROM {node_revisions} WHERE nid = :nid AND vid = :vid";
+  db_query($sql_del, array(':nid' => $node->nid, ':vid' => $node->vid));
 
   // Remove data from map and mapprop tables of chado database as well
-  chado_query("DELETE FROM {featuremap} WHERE featuremap_id = %d", $featuremap_id);
-  chado_query("DELETE FROM {featuremapprop} WHERE featuremap_id = %d", $featuremap_id);
-}
-
-/*
- *
- */
-function theme_tripal_featuremap_search_result($node) {
-
-}
-
-function tripal_featuremap_form_alter(&$form, &$form_state, $form_id) {
-  if ($form_id == "chado_featuremap_node_form") {
-  }
+  chado_query("DELETE FROM {featuremap} WHERE featuremap_id = :featuremap_id", array(':featuremap_id' => $featuremap_id));
+  chado_query("DELETE FROM {featuremapprop} WHERE featuremap_id = :featuremap_id", array(':featuremap_id' => $featuremap_id));
 }
