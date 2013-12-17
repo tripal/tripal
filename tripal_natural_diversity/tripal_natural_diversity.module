@@ -52,19 +52,61 @@ function tripal_natural_diversity_theme() {
 }
 
 /**
- * Implements hook_nodeapi().
+ * @ingroup tripal_library
+ */
+function tripal_natural_diversity_block_info() {
+
+  $blocks['ndfgenotype']['info'] = t('Tripal Natural Diversity Feature Genotypes');
+  $blocks['ndfgenotype']['cache'] = BLOCK_NO_CACHE;
+
+  $blocks['ndsgenotype']['info'] = t('Tripal Natural Diversity Library Genotypes');
+  $blocks['ndsgenotype']['cache'] = BLOCK_NO_CACHE;
+
+  $blocks['ndsphenotype']['info'] = t('Tripal Natural Diversity Stock Phenotypes');
+  $blocks['ndsphenotype']['cache'] = BLOCK_NO_CACHE;
+
+  return $blocks;
+}
+/**
+ * @ingroup tripal_library
+ */
+function tripal_natural_diversity_block_view($delta = '') {
+
+  if (user_access('access chado_library content') and arg(0) == 'node' and is_numeric(arg(1))) {
+    $nid = arg(1);
+    $node = node_load($nid);
+
+    $block = array();
+    switch ($delta) {
+    	case 'ndfgenotype':
+    	  $block['subject'] = t('Genotypes');
+    	  $block['content'] = theme('tripal_feature_nd_genotypes', $node);
+    	  break;
+    	case 'ndsgenotype':
+    	  $block['subject'] = t('Stock Genotypes');
+    	  $block['content'] = theme('tripal_stock_nd_genotypes', $node);
+    	  break;
+    	case 'ndsphenotype':
+    	  $block['subject'] = t('Phenotypes');
+    	  $block['content'] = theme('tripal_stock_nd_phenotypes', $node);
+    	  break;
+    	default :
+    }
+    return $block;
+  }
+}
+/**
  *
  * @ingroup tripal_natural_diversity
  */
-function tripal_natural_diversity_nodeapi(&$node, $op, $teaser, $page){
-  switch ($op) {
-    case 'view':
-      if ($node->type == 'chado_feature') {
-        // the tripal_genetic module provides a tripal_feature_genotype
-        // template.  The only difference between them is the addition of
-        // project information by this module's template.  Therefore,
-        // if the tripal_genetic content is present get rid of as this
-        // module superceeds it.
+function tripal_natural_diversity_node_view(&$node, $view_mode, $langcode) {
+    if ($node->type == 'chado_feature') {
+      // the tripal_genetic module provides a tripal_feature_genotype
+      // template.  The only difference between them is the addition of
+      // project information by this module's template.  Therefore,
+      // if the tripal_genetic content is present get rid of as this
+      // module superceeds it.
+      if ($view_mode == 'full') {
         if (array_key_exists('tripal_feature_genotypes', $node->content)) {
           unset($node->content['tripal_feature_genotypes']);
         }
@@ -72,7 +114,9 @@ function tripal_natural_diversity_nodeapi(&$node, $op, $teaser, $page){
            '#value' => theme('tripal_feature_nd_genotypes', $node),
         );
       }
-      if ($node->type == 'chado_stock') {
+    }
+    if ($node->type == 'chado_stock') {
+      if ($view_mode == 'full') {
         $node->content['tripal_stock_nd_genotypes'] = array(
            '#value' => theme('tripal_stock_nd_genotypes', $node),
         );
@@ -80,15 +124,6 @@ function tripal_natural_diversity_nodeapi(&$node, $op, $teaser, $page){
            '#value' => theme('tripal_stock_nd_phenotypes', $node),
         );
       }
-      break;
-  }
-}
-
-/**
- *
- *
- * @ingroup tripal_natural_diversity
- */
-function tripal_natural_diversity_preprocess_tripal_stock_nd_genotypes(&$variables){
-
+    }
+    break;
 }
