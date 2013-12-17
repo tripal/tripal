@@ -336,18 +336,22 @@ function tripal_mviews_action($op, $mview_id, $redirect = FALSE) {
     tripal_add_job("Populate materialized view '$mview->name'", 'tripal_core',
        'tripal_update_mview', $args, $user->uid);
   }
+  
+  // if op is to delete then do so
   if ($op == 'delete') {
+    
     // remove the mview from the tripal_mviews table
-    $sql = "DELETE FROM {tripal_mviews} " .
-           "WHERE mview_id = $mview_id";
+    $sql = "DELETE FROM {tripal_mviews} WHERE mview_id = $mview_id";
     db_query($sql);
+    
+    // does the table already exist?
+    $mview_exists = db_table_exists('chado.' . $mview->mv_table);
+    
     // drop the table from chado if it exists
-    $previous_db = tripal_db_set_active('chado');  // use chado database
-    if (db_table_exists($mview->mv_table)) {
+    if ($mview_exists) {
       $sql = "DROP TABLE {" . $mview->mv_table . "}";
       chado_query($sql);
     }
-    tripal_db_set_active($previous_db);  // now use drupal database
   }
 
   // Redirect the user

@@ -133,6 +133,10 @@ function tripal_feature_add_organism_count_mview() {
         'type' => 'int',
         'not null' => TRUE,
       ),
+      'cvterm_id' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
       'feature_type' => array(
         'type' => 'varchar',
         'length' => '255',

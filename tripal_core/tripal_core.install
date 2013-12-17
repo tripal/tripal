@@ -97,18 +97,67 @@ function tripal_core_mviews_schema() {
 
   $schema['tripal_mviews'] = array(
     'fields' => array(
-      'mview_id'      => array('type' => 'serial', 'unsigned' => TRUE, 'not NULL' => TRUE),
-      'name'          => array('type' => 'varchar', 'length' => 255, 'not NULL' => TRUE),
-      'modulename'    => array('type' => 'varchar', 'length' => 50, 'not NULL' => TRUE, 'description' => 'The module name that provides the callback for this job'),
-      'mv_table'      => array('type' => 'varchar', 'length' => 128, 'not NULL' => FALSE),
-      'mv_specs'      => array('type' => 'text', 'size' => 'normal', 'not NULL' => FALSE),
-      'mv_schema'     => array('type' => 'text', 'size' => 'normal', 'not NULL' => FALSE),
-      'indexed'       => array('type' => 'text', 'size' => 'normal', 'not NULL' => FALSE),
-      'query'         => array('type' => 'text', 'size' => 'normal', 'not NULL' => TRUE),
-      'special_index' => array('type' => 'text', 'size' => 'normal', 'not NULL' => FALSE),
-      'last_update'   => array('type' => 'int', 'not NULL' => FALSE, 'description' => 'UNIX integer time'),
-      'status'        => array('type' => 'text', 'size' => 'normal', 'not NULL' => FALSE),
-      'comment'       => array('type' => 'text', 'size' => 'normal', 'not NULL' => FALSE),
+      'mview_id' => array(
+        'type' => 'serial', 
+        'unsigned' => TRUE, 
+        'not NULL' => TRUE
+      ),
+      'name' => array(
+        'type' => 'varchar', 
+        'length' => 255, 
+        'not NULL' => TRUE
+      ),
+      'modulename' => array(
+        'type' => 'varchar', 
+        'length' => 50, 
+        'not NULL' => TRUE, 
+        'description' => 'The module name that provides the callback for this job'
+      ),    
+      'mv_table' => array(
+        'type' => 'varchar', 
+        'length' => 128, 
+        'not NULL' => FALSE
+      ),
+      'mv_specs' => array(
+        'type' => 'text', 
+        'size' => 'normal', 
+        'not NULL' => FALSE
+      ),
+      'mv_schema' => array(
+        'type' => 'text', 
+        'size' => 'normal', 
+        'not NULL' => FALSE
+      ),
+      'indexed' => array(
+        'type' => 'text', 
+        'size' => 'normal', 
+        'not NULL' => FALSE
+      ),
+      'query' => array(
+        'type' => 'text', 
+        'size' => 'normal', 
+        'not NULL' => TRUE
+      ),
+      'special_index' => array(
+        'type' => 'text', 
+        'size' => 'normal', 
+        'not NULL' => FALSE
+      ),
+      'last_update' => array(
+        'type' => 'int', 
+        'not NULL' => FALSE, 
+        'description' => 'UNIX integer time'
+      ),
+      'status'        => array(
+        'type' => 'text', 
+        'size' => 'normal', 
+        'not NULL' => FALSE
+      ),
+      'comment' => array(
+        'type' => 'text', 
+        'size' => 'normal', 
+        'not NULL' => FALSE
+      ),
     ),
     'indexes' => array(
       'mview_id' => array('mview_id')
@@ -134,22 +183,95 @@ function tripal_core_jobs_schema() {
   $schema = array();
   $schema['tripal_jobs'] = array(
     'fields' => array(
-      'job_id' => array('type' => 'serial', 'unsigned' => TRUE, 'not NULL' => TRUE),
-      'uid' => array('type' => 'int', 'unsigned' => TRUE, 'not NULL' => TRUE, 'description' => 'The Drupal userid of the submitee'),
-      'job_name' => array('type' => 'varchar', 'length' => 255, 'not NULL' => TRUE),
-      'modulename' => array('type' => 'varchar', 'length' => 50, 'not NULL' => TRUE, 'description' => 'The module name that provides the callback for this job'),
-      'callback' => array('type' => 'varchar', 'length' => 255, 'not NULL' => TRUE),
-      'arguments' => array('type' => 'text', 'size' => 'normal', 'not NULL' => FALSE),
-      'progress' => array('type' => 'int', 'unsigned' => TRUE, 'default' => 0, 'not NULL' => FALSE, 'description' => 'a value from 0 to 100 indicating percent complete'),
-      'status' => array('type' => 'varchar', 'length' => 50, 'not NULL' => TRUE),
-      'submit_date' => array('type' => 'int', 'not NULL' => TRUE, 'description' => 'UNIX integer submit time'),
-      'start_time' => array('type' => 'int', 'not NULL' => FALSE, 'description' => 'UNIX integer start time'),
-      'end_time' => array('type' => 'int', 'not NULL' => FALSE, 'description' => 'UNIX integer end time'),
-      'error_msg' => array('type' => 'text', 'size' => 'normal', 'not NULL' => FALSE),
-      'pid' => array('type' => 'int', 'unsigned' => TRUE, 'not NULL' => FALSE, 'description' => 'The process id for the job'),
-      'priority' => array('type' => 'int', 'unsigned' => TRUE, 'not NULL' => TRUE, 'default' => '0', 'description' => 'The job priority'),
-      'mlock' => array('type' => 'int', 'unsigned' => TRUE, 'not NULL' => FALSE, 'description' => 'If set to 1 then all jobs for the module are held until this one finishes'),
-      'lock' => array('type' => 'int', 'unsigned' => TRUE, 'not NULL' => FALSE, 'description' => 'If set to 1 then all jobs are held until this one finishes'),
+      'job_id' => array(
+        'type' => 'serial', 
+        'unsigned' => TRUE, 
+        'not NULL' => TRUE
+      ),
+      'uid' => array(
+        'type' => 'int', 
+        'unsigned' => TRUE, 
+        'not NULL' => TRUE, 
+        'description' => 'The Drupal userid of the submitee'
+      ),
+      'job_name' => array(
+        'type' => 'varchar', 
+        'length' => 255, 
+        'not NULL' => TRUE
+      ),
+      'modulename' => array(
+        'type' => 'varchar', 
+        'length' => 50, 
+        'not NULL' => TRUE, 
+        'description' => 'The module name that provides the callback for this job'
+      ),
+      'callback' => array(
+        'type' => 'varchar', 
+        'length' => 255, 
+        'not NULL' => TRUE
+      ),
+      'arguments' => array(
+        'type' => 'text', 
+        'size' => 'normal', 
+        'not NULL' => FALSE
+      ),
+      'progress' => array(
+        'type' => 'int', 
+        'unsigned' => TRUE, 
+        'default' => 0, 
+        'not NULL' => FALSE, 
+        'description' => 'a value from 0 to 100 indicating percent complete'
+      ),
+      'status' => array(
+        'type' => 'varchar', 
+        'length' => 50, 
+        'not NULL' => TRUE
+      ),
+      'submit_date' => array(
+        'type' => 'int', 
+        'not NULL' => TRUE, 
+        'description' => 'UNIX integer submit time'
+      ),
+      'start_time' => array(
+        'type' => 'int', 
+        'not NULL' => FALSE, 
+        'description' => 'UNIX integer start time'
+      ),
+      'end_time' => array(
+        'type' => 'int', 
+        'not NULL' => FALSE, 
+        'description' => 'UNIX integer end time'
+      ),
+      'error_msg' => array(
+        'type' => 'text', 
+        'size' => 'normal', 
+        'not NULL' => FALSE
+      ),
+      'pid' => array(
+        'type' => 'int', 
+        'unsigned' => TRUE, 
+        'not NULL' => FALSE, 
+        'description' => 'The process id for the job'
+      ),
+      'priority' => array(
+        'type' => 'int', 
+        'unsigned' => TRUE, 
+        'not NULL' => TRUE, 
+        'default' => '0', 
+        'description' => 'The job priority'
+      ),
+      'mlock' => array(
+        'type' => 'int', 
+        'unsigned' => TRUE, 
+        'not NULL' => FALSE, 
+        'description' => 'If set to 1 then all jobs for the module are held until this one finishes'
+      ),
+      'lock' => array(
+        'type' => 'int', 
+        'unsigned' => TRUE, 
+        'not NULL' => FALSE, 
+        'description' => 'If set to 1 then all jobs are held until this one finishes'
+      ),
     ),
     'indexes' => array(
       'job_id' => array('job_id'),
@@ -172,9 +294,20 @@ function tripal_core_custom_tables_schema() {
   $schema = array();
   $schema['tripal_custom_tables'] = array(
     'fields' => array(
-      'table_id' => array('type' => 'serial', 'unsigned' => TRUE, 'not NULL' => TRUE),
-      'table_name' => array('type' => 'varchar', 'length' => 255, 'not NULL' => TRUE),
-      'schema' => array('type' => 'text', 'not NULL' => TRUE),
+      'table_id' => array(
+        'type' => 'serial', 
+        'unsigned' => TRUE, 
+        'not NULL' => TRUE
+      ),
+      'table_name' => array(
+        'type' => 'varchar', 
+        'length' => 255, 
+        'not NULL' => TRUE
+      ),
+      'schema' => array(
+        'type' => 'text', 
+        'not NULL' => TRUE
+      ),
     ),
     'indexes' => array(
       'table_id' => array('table_id'),
