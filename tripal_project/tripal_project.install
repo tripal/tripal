@@ -11,6 +11,24 @@
  */
 
 /**
+ * Implementation of hook_requirements().
+ *
+ */
+function tripal_project_requirements($phase) {
+  $requirements = array();
+  if ($phase == 'install') {
+    // make sure chado is installed
+    if (!tripal_core_is_chado_installed()) {
+      $requirements ['tripal_project'] = array(
+        'title' => "tripal_project",
+        'value' => "ERROR: Chado most be installed before this module can be enabled",
+        'severity' => REQUIREMENT_ERROR,
+      );
+    }
+  }
+  return $requirements;
+}
+/**
  * Implementation of hook_install().
  */
 function tripal_project_install() {
@@ -54,24 +72,6 @@ function tripal_project_schema() {
   return $schema;
 }
 
-/**
- * Implementation of hook_requirements(). 
- *
- */
-function tripal_project_requirements($phase) {
-  $requirements = array();
-  if ($phase == 'install') {
-    // make sure chado is installed
-    if (!tripal_core_is_chado_installed()) {
-      $requirements ['tripal_project'] = array(
-            'title' => "tripal_project",
-            'value' => "ERROR: Chado most be installed before this module can be enabled",
-            'severity' => REQUIREMENT_ERROR,
-      );
-    }
-  }
-  return $requirements;
-}
 /*
  * 
  */

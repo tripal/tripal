@@ -16,6 +16,30 @@ require('api/tripal_project.api.inc');
  */
 
 /**
+ * Implementation of hook_node_info().
+ *
+ * This node_info, is a simple node that describes the functionallity of the module. It specifies
+ * that the title(Project Name) and body(Description) set to true so that they information can be
+ * entered
+ *
+ *
+ * @ingroup tripal_project
+ */
+function tripal_project_node_info() {
+  return array(
+    'chado_project' => array(
+      'name' => t('Project'),
+      'base' => 'chado_project',
+      'description' => t('A module for interfacing the GMOD chado database with Drupal, providing viewing of projects'),
+      'has_title' => TRUE,
+      'title_label' => t('Project Name'),
+      'had_body' => TRUE,
+      'body_label' => t('Full Description'),
+    )
+  );
+}
+
+/**
  * Implements hook_views_api()
  *
  * Purpose: Essentially this hook tells drupal that there is views support for
@@ -158,29 +182,6 @@ function chado_project_node_access($node, $op, $account) {
   return NULL;
 }
 
-/**
- * Implementation of hook_node_info().
- *
- * This node_info, is a simple node that describes the functionallity of the module. It specifies
- * that the title(Project Name) and body(Description) set to true so that they information can be
- * entered
- *
- *
- * @ingroup tripal_project
- */
-function tripal_project_node_info() {
-  return array(
-    'chado_project' => array(
-      'name' => t('Project'),
-      'base' => 'chado_project',
-      'description' => t('A module for interfacing the GMOD chado database with Drupal, providing viewing of projects'),
-      'has_title' => TRUE,
-      'title_label' => t('Project Name'),
-      'had_body' => TRUE,
-      'body_label' => t('Full Description'),
-    )
-  );
-}
 /**
  *  We need to let drupal know about our theme functions and their arguments.
  *  We create theme functions to allow users of the module to customize the
@@ -342,8 +343,10 @@ function chado_project_insert($node) {
     $project_id = chado_get_id_for_node('project', $node->nid) ;
     if (!$project_id) {
        // next add the item to the drupal table
-      $sql = "INSERT INTO {chado_project} (nid, vid, project_id) ".
-             "VALUES (:nid, :vid, :project_id)";
+      $sql = "
+        INSERT INTO {chado_project} (nid, vid, project_id) 
+        VALUES (:nid, :vid, :project_id)
+      ";
       db_query($sql, array(':nid' => $node->nid, ':vid' => $node->vid, ':project_id' => $project['project_id']));
     }
   }
@@ -377,19 +380,12 @@ function chado_project_delete($node) {
 
   // Remove data from {chado_project}, {node} and {node_revisions} tables of
   // drupal database
-  $sql_del = "DELETE FROM {chado_project} ".
-             "WHERE nid = :nid ".
-             "AND vid = :vid";
+  $sql_del = "DELETE FROM {chado_project} WHERE nid = :nid AND vid = :vid";
   db_query($sql_del, array(':nid' => $node->nid, ':vid' => $node->vid));
-  $sql_del = "DELETE FROM {node_revision} ".
-             "WHERE nid = :nid ".
-             "AND vid = :vod";
+  $sql_del = "DELETE FROM {node_revision} WHERE nid = :nid AND vid = :vod";
   db_query($sql_del,  array(':nid' => $node->nid, ':vid' => $node->vid));
-  $sql_del = "DELETE FROM {node} ".
-             "WHERE nid = :nid ".
-             "AND vid = :vid";
+  $sql_del = "DELETE FROM {node} WHERE nid = :nid AND vid = :vid";
   db_query($sql_del,  array(':nid' => $node->nid, ':vid' => $node->vid));
-
 
   // Remove data from project and projectprop tables of chado database as well
   chado_query("DELETE FROM {projectprop} WHERE project_id = :project_id", array(':project_id' => $project_id));
@@ -409,22 +405,18 @@ function chado_project_delete($node) {
 function chado_project_update($node) {
  if ($node->revision) {
     // there is no way to handle revisions in Chado but leave
-    // this here just to make not we've addressed it.
+    // this here just to make note we've addressed it.
   }
 
   // update the project and the description
   $project_id = chado_get_id_for_node('project', $node->nid) ;
-  $match = array(
-     'project_id' => $project_id,
-  );
+  $match = array('project_id' => $project_id);
   $values = array(
-     'name' => $node->title,
-     'description' => '',
+    'name' => $node->title,
+    'description' => '',
   );
   $status = tripal_core_chado_update('project', $match, $values);
   tripal_project_update_property($project_id, 'project_description', $node->project_description, 1);
-
-
 }
 
 /**

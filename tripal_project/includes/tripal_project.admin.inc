@@ -155,8 +155,8 @@ function tripal_project_admin_validate($form, &$form_state) {
       }
       if ($project_id and preg_match("/^\d+$/i" , $project_id)) {
         // get the list of projects
-        $sql = "SELECT * FROM {Project} WHERE project_id = %d";
-        $project = chado_query($sql, $project_id)->fetchObject();
+        $sql = "SELECT * FROM {project} WHERE project_id = :project_id";
+        $project = chado_query($sql, array(':project_id' => $project_id))->fetchObject();
         $to_sync[$project_id] = "$project->genus $project->species";
       }
     }
@@ -182,8 +182,8 @@ function tripal_project_admin_validate($form, &$form_state) {
     foreach ($projects as $project_id) {
       if ($project_id and preg_match("/^\d+$/i" , $project_id)) {
         // get the project info
-        $sql = "SELECT * FROM {project} WHERE project_id = %d";
-        $project = chado_query($sql , $project_id)->fetchObject();
+        $sql = "SELECT * FROM {project} WHERE project_id = :project_id";
+        $project = chado_query($sql , array(':project_id' => $project_id))->fetchObject();
         $job_args[0] = $project_id;
         tripal_add_job("Reindex features for project: $project->genus ".
          "$project->species", 'tripal_project' ,
@@ -199,8 +199,8 @@ function tripal_project_admin_validate($form, &$form_state) {
     foreach ($projects as $project_id) {
       if ($project_id and preg_match("/^\d+$/i", $project_id)) {
         // get the project info
-        $sql = "SELECT * FROM {project} WHERE project_id = %d";
-        $project = chado_query($sql , $project_id)->fetchObject();
+        $sql = "SELECT * FROM {project} WHERE project_id = :project_id";
+        $project = chado_query($sql , array(':project_id' => $project_id))->fetchObject();
         $job_args[0] = $project_id;
         tripal_add_job("Set taxonomy for features in project: ".
           "$project->genus $project->species" , 'tripal_project',
@@ -230,20 +230,19 @@ function tripal_project_sync_projects($project_id = NULL, $job_id = NULL) {
     $results = chado_query($sql);
   }
   else {
-    $sql = "SELECT * FROM {project} P WHERE project_id = %d";
-    $results = chado_query($sql, $project_id);
+    $sql = "SELECT * FROM {project} P WHERE project_id = :project_id";
+    $results = chado_query($sql, array(':project_id' => $project_id));
   }
 
   // We'll use the following SQL statement for checking if the project
   // already exists as a drupal node.
-  $sql = "SELECT * FROM {chado_project} ".
-         "WHERE project_id = %d";
+  $sql = "SELECT * FROM {chado_project} WHERE project_id = :project_id";
 
   while ($project = $results->fetchObject()) {
 
     // check if this project already exists in the drupal database. if it
     // does then skip this project and go to the next one.
-    if (!db_query($sql, $project->project_id)->fetchObject()) {
+    if (!db_query($sql, array(':project_id' => $project->project_id))->fetchObject()) {
 
       $new_node = new stdClass();
       $new_node->type = 'chado_project';
