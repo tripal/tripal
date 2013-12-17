@@ -126,7 +126,7 @@ function get_tripal_library_admin_form_reindex_set(&$form) {
 
   // iterate through all of the libraries
   $lib_boxes = array();
-  while ($library = db_fetch_object($lib_rset)) {
+  while ($library = $lib_rset->fetchObject()) {
     $lib_boxes[$library->library_id] = "$library->name";
   }
   $form['reindex']['description'] = array(
@@ -242,8 +242,8 @@ function tripal_library_admin_validate($form, &$form_state) {
     }
     if ($library_id and preg_match("/^\d+$/i", $library_id)) {
       // get the library info
-      $sql = "SELECT * FROM {Library} WHERE library_id = %d";
-      $library = db_fetch_object(chado_query($sql, $library_id));
+      $sql = "SELECT * FROM {library} WHERE library_id = :library_id";
+      $library = chado_query($sql, array(':library_id' => $library_id))->fetchObject();
       $to_sync[$library_id] = $library->name;
     }
   }
@@ -267,8 +267,8 @@ function tripal_library_admin_validate($form, &$form_state) {
     foreach ($libraries as $library_id) {
       if ($library_id and preg_match("/^\d+$/i", $library_id)) {
         // get the library info
-        $sql = "SELECT * FROM {Library} WHERE library_id = %d";
-        $library = db_fetch_object(chado_query($sql, $library_id));
+        $sql = "SELECT * FROM {Library} WHERE library_id = :library_id";
+        $library = chado_query($sql, array(':library_id' => $library_id))->fetchObject();
         $job_args[0] = $library_id;
         tripal_add_job("Reindex features for library: $library->name", 'tripal_library',
          'tripal_library_reindex_features', $job_args, $user->uid);
@@ -283,8 +283,8 @@ function tripal_library_admin_validate($form, &$form_state) {
     foreach ($libraries as $library_id) {
       if ($library_id and preg_match("/^\d+$/i", $library_id)) {
         // get the library info
-        $sql = "SELECT * FROM {Library} WHERE library_id = %d";
-        $library = db_fetch_object(chado_query($sql, $library_id));
+        $sql = "SELECT * FROM {Library} WHERE library_id = :libary_id";
+        $library = chado_query($sql, array(':library_id' => $library_id))->fetchObject();
         $job_args[0] = $library_id;
         tripal_add_job("Set taxonomy for features in library: $library->name", 'tripal_library',
          'tripal_library_taxonify_features', $job_args, $user->uid);
@@ -307,29 +307,18 @@ function tripal_library_admin_validate($form, &$form_state) {
  */
 function tripal_library_add_taxonomy($node, $library_id) {
 
-    //include the file containing the required functions.  We only have to
-    // do this because Drupal 6 fails to do this globally for us and
-    // the drupal_execute function below won't work
-    module_load_include('inc', 'taxonomy', 'taxonomy.admin');
-
-   /*   // get the vocabulary id
-    $vocabularies = taxonomy_get_vocabularies();
-    $vid = NULL;
-    foreach($vocabularies as $vocab){
-    if($vocab->name == 'DNA Libraries'){
-    $vid = $vocab->vid;
-    }
-    }
-
-    if(!$vid){  */
+  //include the file containing the required functions.  We only have to
+  // do this because Drupal 6 fails to do this globally for us and
+  // the drupal_execute function below won't work
+  module_load_include('inc', 'taxonomy', 'taxonomy.admin');
+    
    // add the vocabulary
   $vocab_form['values']['name'] = 'DNA Libraries';
   $vocab_form['values']['description'] = 'Allows for associating/searching of library features by library name';
   $vocab_form['values']['help'] = '';
   $vocab_form['values']['module'] = 'taxonomy';
-  drupal_execute('taxonomy_form_vocabulary', $vocab_form);
-  return;
-   //   }
+  drupal_form_submit('taxonomy_form_vocabulary', $vocab_form);
+  return;   
 
    // make sure this term doesn't already exist.  If it doesn't then add it
   if ($vid) {
@@ -346,7 +335,7 @@ function tripal_library_add_taxonomy($node, $library_id) {
       $form_state = array();
       $form_state['values']['name'] = $node->title;
       $form_state['values']['description'] = $library_id;
-      drupal_execute('taxonomy_form_term', $form_state, $vid);
+      drupal_form_submit('taxonomy_form_term', $form_state, $vid);
     }
   }
 }
@@ -364,24 +353,24 @@ function tripal_library_sync_libraries($library_id = NULL, $job_id = NULL) {
 
   // get the list of libraries and create new nodes
   if (!$library_id) {
-    $sql = "SELECT * FROM {Library} L";
+    $sql = "SELECT * FROM {library} L";
     $results = chado_query($sql);
   }
   else {
-    $sql = "SELECT * FROM {Library} L WHERE library_id = %d";
-    $results = chado_query($sql, $library_id);
+    $sql = "SELECT * FROM {library} L WHERE library_id = :library_id";
+    $results = chado_query($sql, array(':library_id' => $library_id));
   }
 
   // We'll use the following SQL statement for checking if the library
   // already exists as a drupal node.
   $sql = "SELECT * FROM {chado_library} ".
-        "WHERE library_id = %d";
+        "WHERE library_id = :libary_id";
 
-  while ($library = db_fetch_object($results)) {
+  while ($library = $results->fetchObject()) {
 
     // check if this library already exists in the drupal database. if it
     // does then skip this library and go to the next one.
-    if (!db_fetch_object(db_query($sql, $library->library_id))) {
+    if (!db_query($sql, array(':libary_id' => $library->library_id))->fetchObject()) {
 
     $new_node = new stdClass();
     $new_node->type = 'chado_library';
@@ -438,29 +427,35 @@ function tripal_library_feature_set_taxonomy($library_id = NULL) {
   // We'll use the following SQL statement for getting the node info
   if ($library_id) {
     print "Finding features for library with ID: $library_id\n";
-    $sql = "SELECT LF.feature_id, L.library_id, L.name as libname ".
-           "FROM {library_feature} LF ".
-           "INNER JOIN Library L ON LF.library_id = L.library_id ".
-           "WHERE L.library_id = $library_id ".
-           "ORDER BY LF.feature_id";
-    $features = chado_query($sql);
+    $sql = "
+      SELECT LF.feature_id, L.library_id, L.name as libname 
+      FROM {library_feature} LF 
+        INNER JOIN {library} L ON LF.library_id = L.library_id 
+      WHERE L.library_id = :library_id 
+      ORDER BY LF.feature_id
+    ";
+    $features = chado_query($sql, array(':library_id' => $library_id));
   }
   else {
     print "Finding features for all libraries\n";
-    $sql = "SELECT LF.feature_id, L.library_id, L.name as libname ".
-           "FROM {library_feature} LF ".
-           "INNER JOIN Library L ON LF.library_id = L.library_id ".
-           "ORDER BY LF.feature_id";
+    $sql = "
+      SELECT LF.feature_id, L.library_id, L.name as libname 
+      FROM {library_feature} LF 
+        INNER JOIN {library} L ON LF.library_id = L.library_id 
+      ORDER BY LF.feature_id
+    ";
     $features = chado_query($sql);
   }
 
-  $node_sql = "SELECT * FROM {chado_feature} CF ".
-             "  INNER JOIN {node} N ON CF.nid = N.nid ".
-             "WHERE feature_id = %d";
-
+  $node_sql = "
+    SELECT * 
+    FROM {chado_feature} CF 
+      INNER JOIN {node} N ON CF.nid = N.nid 
+    WHERE feature_id = :feature_id
+  ";
   // iterate through the features and add the taxonomy
-  while ($feature = db_fetch_object($features)) {
-    $node = db_fetch_object(db_query($node_sql, $feature->feature_id));
+  while ($feature = $features->fetchObject()) {
+    $node = db_query($node_sql, array(':feature_id' => $feature->feature_id))->fetchObject();
     $tags["$vid"] = $feature->libname;
     $terms['tags'] = $tags;
     taxonomy_node_save($node, $terms);
@@ -478,25 +473,29 @@ function tripal_library_reindex_features($library_id = NULL, $job_id = NULL) {
   // associated with the library. Otherwise get all sequences assoicated
   // with all libraries.
   if ($library_id) {
-    $sql = "SELECT LF.feature_id, L.library_id, L.name as libname ".
-           " FROM {library_feature} LF ".
-           "  INNER JOIN Library L ON LF.library_id = L.library_id ".
-           "WHERE L.library_id = $library_id ".
-           "ORDER BY LF.feature_id";
-    $results = chado_query($sql);
+    $sql = "
+      SELECT LF.feature_id, L.library_id, L.name as libname 
+      FROM {library_feature} LF 
+        INNER JOIN {library} L ON LF.library_id = L.library_id
+      WHERE L.library_id = :library_id 
+      ORDER BY LF.feature_id
+    ";
+    $results = chado_query($sql, array(':library_id' => $library_id));
   }
   else {
-    $sql = "SELECT LF.feature_id, L.library_id, L.name as libname ".
-           " FROM {library_feature} LF ".
-           "  INNER JOIN Library L ON LF.library_id = L.library_id ".
-           "ORDER BY LF.feature_id";
+    $sql = "
+      SELECT LF.feature_id, L.library_id, L.name as libname 
+      FROM {library_feature} LF 
+        INNER JOIN {library} L ON LF.library_id = L.library_id 
+      ORDER BY LF.feature_id
+    ";
     $results = chado_query($sql);
   }
 
    // load into ids array
   $count = 0;
   $ids = array();
-  while ($id = db_fetch_object($results)) {
+  while ($id = $results->fetchObject()) {
     $ids[$count] = $id->feature_id;
     $count++;
   }
@@ -521,25 +520,29 @@ function tripal_library_taxonify_features($library_id = NULL, $job_id = NULL) {
   // associated with the library. Otherwise get all sequences assoicated
   // with all libraries.
   if ($library_id) {
-    $sql = "SELECT LF.feature_id, L.library_id, L.name as libname ".
-           " FROM {library_feature} LF ".
-           "  INNER JOIN Library L ON LF.library_id = L.library_id ".
-           "WHERE L.library_id = $library_id ".
-           "ORDER BY LF.feature_id";
-    $results = chado_query($sql);
+    $sql = "
+      SELECT LF.feature_id, L.library_id, L.name as libname 
+      FROM {library_feature} LF 
+        INNER JOIN {library} L ON LF.library_id = L.library_id 
+      WHERE L.library_id = :library_id 
+      ORDER BY LF.feature_id
+    ";
+    $results = chado_query($sql, array(':library_id' => $library_id));
   }
   else {
-    $sql = "SELECT LF.feature_id, L.library_id, L.name as libname ".
-           " FROM {library_feature} LF ".
-           "  INNER JOIN Library L ON LF.library_id = L.library_id ".
-           "ORDER BY LF.feature_id";
+    $sql = "
+      SELECT LF.feature_id, L.library_id, L.name as libname 
+      FROM {library_feature} LF 
+        INNER JOIN {library} L ON LF.library_id = L.library_id 
+      ORDER BY LF.feature_id
+    ";
     $results = chado_query($sql);
   }
 
   // load into ids array
   $count = 0;
   $ids = array();
-  while ($id = db_fetch_object($results)) {
+  while ($id = $results->fetchObject()) {
     $ids[$count] = $id->feature_id;
     $count++;
   }
@@ -548,10 +551,12 @@ function tripal_library_taxonify_features($library_id = NULL, $job_id = NULL) {
   tripal_feature_set_vocabulary();
 
   // use this SQL for getting the nodes
-  $nsql =  "SELECT * FROM {chado_feature} CF ".
-          "  INNER JOIN {node} N ON N.nid = CF.nid ".
-          "WHERE feature_id = %d";
-
+  $nsql =  "
+    SELECT * 
+    FROM {chado_feature} CF 
+      INNER JOIN {node} N ON N.nid = CF.nid 
+    WHERE feature_id = :feature_id
+  ";
    // iterate through the features and set the taxonomy
   $interval = intval($count * 0.01);
   foreach ($ids as $feature_id) {
@@ -559,7 +564,7 @@ function tripal_library_taxonify_features($library_id = NULL, $job_id = NULL) {
     if ($job_id and $i % interval == 0) {
       tripal_job_set_progress($job_id, intval(($i/$count)*100));
     }
-      $node = db_fetch_object(db_query($nsql, $feature_id));
+      $node = db_query($nsql, array(':feature_id' => $feature_id))->fetchObject();
       tripal_feature_set_taxonomy($node, $feature_id);
       $i++;
   }

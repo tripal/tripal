@@ -5,124 +5,7 @@
  */
 
 /**
- * Implementation of hook_install().
- *
- * @ingroup tripal_library
- */
-function tripal_library_install() {
-  // create the module's data directory
-  tripal_create_moddir('tripal_library');
-
-  // create the tables that correlate drupal nodes with chado
-  // features, librarys, etc....
-  drupal_install_schema('tripal_library');
-
-  // Add the materialized view needed to count the features for the library
-  // Create the MView
-  tripal_add_mview('library_feature_count', 'tripal_library',
-    'library_feature_count',
-    'library_id integer, name character varying(255), '.
-    '  num_features integer, feature_type character varying(255)',
-    'library_id',
-    'SELECT '.
-    '   L.library_id, '.
-    '   L.name, '.
-    '    count(F.feature_id) as num_features, '.
-    '    CVT.name as feature_type '.
-    'FROM Library L '.
-    '    INNER JOIN Library_Feature LF  ON LF.library_id = L.library_id '.
-    '    INNER JOIN Feature F           ON LF.feature_id = F.feature_id '.
-    '    INNER JOIN Cvterm CVT          ON F.type_id = CVT.cvterm_id '.
-    'GROUP BY L.library_id, L.name, CVT.name',
-    ''
-  );
-  
-  // Add cvterms
-  tripal_library_add_cvterms();
-}
-
-/**
- * Implementation of hook_schema().
- *
- * @ingroup tripal_library
- */
-function tripal_library_schema() {
-  $schema = tripal_library_get_schemas();
-  return $schema;
-}
-
-/**
- * Implementation of hook_uninstall().
- *
- * @ingroup tripal_library
- */
-function tripal_library_uninstall() {
-  drupal_uninstall_schema('tripal_library');
-
-  // remove the materialized view
-  $sql = "SELECT * FROM {tripal_mviews} ".
-        "WHERE name = 'library_feature_count'";
-
-  if (db_table_exists('tripal_mviews')) {
-    $mview = db_fetch_object(db_query($sql));
-    if ($mview) {
-      tripal_mviews_action('delete', $mview->mview_id);
-    }
-  }
-
-  // Get the list of nodes to remove
-  $sql_lib_id = "SELECT nid, vid ".
-               "FROM {node} ".
-               "WHERE type='chado_library'";
-  $result = db_query($sql_lib_id);
-  while ($node = db_fetch_object($result)) {
-    node_delete($node->nid);
-  }
-}
-
-/**
- * This function simply defines all tables needed for the module to work
- * correctly.  By putting the table definitions in a separate function we
- * can easily provide the entire list for hook_install or individual
- * tables for an update.
- *
- * @ingroup tripal_library
- */
-function tripal_library_get_schemas() {
-  $schema = array();
-  $schema['chado_library'] = array(
-    'fields' => array(
-      'vid' => array(
-        'type' => 'int',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
-        'default' => 0
-      ),
-    'nid' => array(
-      'type' => 'int',
-      'unsigned' => TRUE,
-      'not null' => TRUE,
-      'default' => 0
-      ),
-    'library_id' => array(
-      'type' => 'int',
-      'not null' => TRUE,
-      'default' => 0
-      )
-      ),
-    'indexes' => array(
-      'library_id' => array('library_id')
-      ),
-    'unique keys' => array(
-      'nid_vid' => array('nid', 'vid'),
-      'vid' => array('vid')
-      ),
-    'primary key' => array('nid'),
-  );
-  return $schema;
-}
-/**
- * Implementation of hook_requirements(). 
+ * Implementation of hook_requirements().
  */
 function tripal_library_requirements($phase) {
   $requirements = array();
@@ -138,9 +21,125 @@ function tripal_library_requirements($phase) {
   }
   return $requirements;
 }
+/**
+ * Implementation of hook_install().
+ *
+ * @ingroup tripal_library
+ */
+function tripal_library_install() {
+  
+  // create the module's data directory
+  tripal_create_moddir('tripal_library');
 
-/*
- * 
+  // add the materialized view
+  tripal_library_add_mview_library_feature_count();
+  
+  // add cvterms
+  tripal_library_add_cvterms();
+}
+
+/**
+ * Implementation of hook_uninstall().
+ *
+ * @ingroup tripal_library
+ */
+function tripal_library_uninstall() {
+  // Drop the MView table if it exists
+  if ($mview_id = tripal_mviews_get_mview_id('library_feature_count')) {
+    tripal_mviews_action("delete", $mview_id);
+  }
+}
+
+/**
+ * Implementation of hook_schema().
+ *
+ * @ingroup tripal_library
+ */
+function tripal_library_schema() {
+  $schema['chado_library'] = array(
+    'fields' => array(
+      'vid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0
+      ),
+      'nid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0
+      ),
+      'library_id' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0
+      )
+    ),
+    'indexes' => array(
+      'chado_library_idx1' => array('library_id')
+    ),
+    'unique keys' => array(
+      'chado_library_uq1' => array('nid', 'vid'),
+      'chado_library_uq2' => array('vid')
+    ),
+    'primary key' => array('nid'),
+  );
+  return $schema;
+}
+
+/**
+ * @ingroup tripal_library
+ */
+function tripal_library_add_mview_library_feature_count(){
+  $view_name = 'library_feature_count';
+  $comment = 'Provides count of feature by type that are associated with all libraries';
+  
+  $schema = array(
+    'table' => $view_name,
+    'description' => $comment,
+    'fields' => array(
+      'library_id' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'name' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ),
+      'num_features' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'feature_type' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ),
+    ),
+    'indexes' => array(
+      'library_feature_count_idx1' => array('library_id'),
+    ),
+  );
+  
+  $sql = "
+    SELECT 
+      L.library_id, L.name, 
+      count(F.feature_id) as num_features, 
+      CVT.name as feature_type 
+    FROM library L 
+      INNER JOIN library_feature LF  ON LF.library_id = L.library_id 
+      INNER JOIN feature F           ON LF.feature_id = F.feature_id 
+      INNER JOIN cvterm CVT          ON F.type_id     = CVT.cvterm_id 
+    GROUP BY L.library_id, L.name, CVT.name
+  ";
+  
+  tripal_add_mview($view_name, 'tripal_library', $schema, $sql, $comment);
+}
+
+/**
+ * @ingroup tripal_library
  */
 function tripal_library_add_cvterms() {
   
@@ -163,17 +162,4 @@ function tripal_library_add_cvterms() {
     'tripal_library_types', 0, 1, 'tripal');
   tripal_cv_add_cvterm(array('name' => 'genomic_library','def' => 'Genomic Library'), 
     'tripal_library_types', 0, 1, 'tripal');
-}
-
-/**
- *  Update for Drupal 6.x, Tripal 1.0
- *  This update
- *   - adds the library types
- *
- * @ingroup tripal_library
- */
-function tripal_library_update_6000() {
-  // add in the missing library typ cv terms
-  tripal_library_add_cvterms();
-  return $ret;
 }

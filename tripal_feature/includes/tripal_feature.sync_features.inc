@@ -134,7 +134,7 @@ function tripal_feature_set_urls($na = NULL, $job = NULL) {
   
   // get the number of records we need to set URLs for
   $csql = "SELECT count(*) FROM {chado_feature}";
-  $num_nodes = db_result(db_query($csql));
+  $num_nodes = db_query($csql)->fetchField();
     
   // calculate the interval at which we will print an update on the screen
   $num_set = 0;
