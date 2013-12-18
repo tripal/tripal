@@ -28,12 +28,14 @@
 
 #tripal-views-integration-form  .field-headers {
    font-weight: bold;
+   height: 15px;
 }
 
 #tripal-views-integration-form  .field-headers div {
    display: inline-block;
    margin: 0px;
    vertical-align: top;
+   padding-left: 15px;
 }
 
 #tripal-views-integration-form .column-name {
@@ -45,18 +47,38 @@
 }
 
 #tripal-views-integration-form .column-one {
-   width: 10%;
+   width: 30%;
    height: 50px;
 }
 
-#tripal-views-integration-form .column-two, .column-three, .column-four {
-   width: 25%;
+#tripal-views-integration-form .column-two, .column-four {
+   width: 30%;
+}
+
+#tripal-views-integration-form .column-three {
+   width: 0%;
 }
 
 #tripal-views-integration-form  .fields-new-row {
    padding-bottom: 10px;
    margin-bottom: 5px;
    padding-top: 10px;
+}
+
+#tripal-views-integration-form  .joins-new-row {
+   padding-bottom: 10px;
+   margin-bottom: 5px;
+   padding-top: 10px;
+   border-bottom-style: solid;
+   border-bottom-width: 1px;
+}
+
+#tripal-views-integration-form .join-column-one, .join-column-two, .join-column-three {
+   display: inline-block;
+   margin: 0px;
+   vertical-align: top;
+   margin-left: 15px;
+   width: 30%;
 }
 
 </style>

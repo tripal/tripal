@@ -138,7 +138,7 @@ function tripal_featuremap_menu() {
     'title' => 'Maps',
     'description' => 'Basic Description of Tripal Map Module Functionality',
     'page callback' => 'theme',
-    'page arguments' => array('tripal_featuremap_help'),
+    'page arguments' => array('tripal_featuremap_admin'),
     'access arguments' => array('administer tripal featuremap'),
     'type' => MENU_NORMAL_ITEM,
   );
@@ -147,7 +147,7 @@ function tripal_featuremap_menu() {
     'title' => 'Configuration',
     'description' => 'Manage integration of Chado maps including associated features.',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_featuremap_help'),
+    'page arguments' => array('tripal_featuremap_admin'),
     'access arguments' => array('administer tripal featuremap'),
     'type' => MENU_NORMAL_ITEM,
   );
@@ -203,63 +203,46 @@ function tripal_featuremap_views_api() {
  * @ingroup tripal_featuremap
  */
 function tripal_featuremap_theme() {
-  $theme_path = drupal_get_path('module', 'tripal_featuremap') . '/theme';
-  $items = array(
-    // themed functions
+  return array(
     'tripal_featuremap_search_index' => array(
-      'arguments' => array('node'),
+       'arguments' => array('node'),
     ),
     'tripal_featuremap_search_result' => array(
-      'arguments' => array('node'),
+       'arguments' => array('node'),
     ),
-    // tripal_featuremap templates
     'tripal_featuremap_base' => array(
-      'arguments' => array('node' => NULL),
-      'template' => 'tripal_featuremap_base',
-      'path' => "$theme_path/tripal_featuremap",
+       'arguments' => array('node' => NULL),
+       'template' => 'tripal_featuremap_base',
     ),
     'tripal_featuremap_properties' => array(
       'arguments' => array('node' => NULL),
       'template' => 'tripal_featuremap_properties',
-      'path' => "$theme_path/tripal_featuremap",
     ),
     'tripal_featuremap_featurepos' => array(
       'arguments' => array('node' => NULL),
       'template' => 'tripal_featuremap_featurepos',
-      'path' => "$theme_path/tripal_featuremap",
     ),
     'tripal_featuremap_publication' => array(
       'arguments' => array('node' => NULL),
       'template' => 'tripal_featuremap_publication',
-      'path' => "$theme_path/tripal_featuremap",
     ),
     'tripal_featuremap_references' => array(
       'arguments' => array('node' => NULL),
       'template' => 'tripal_featuremap_references',
-      'path' => "$theme_path/tripal_featuremap",
     ),
-    'tripal_featuremap_help' => array(
-      'template' => 'tripal_featuremap_help',
+    'tripal_featuremap_admin' => array(
+      'template' => 'tripal_featuremap_admin',
       'arguments' =>  array(NULL),
-      'path' => $theme_path,
+      'path' => drupal_get_path('module', 'tripal_featuremap') . '/theme'
     ),
     
     // Themed Forms
     'chado_featuremap_node_form' => array(
-      'arguments' => array('form'),
+     'arguments' => array('form'),
     ),      
   );
-  return $items;
 }
-/**
- * Implements hook_help()
- * Purpose: Adds a help page to the module list
- */
-function tripal_featuremap_help ($path, $arg) {
-  if ($path == 'admin/help#tripal_featuremap') {
-    return theme('tripal_featuremap_help', array());
-  }
-}
+
 /**
  * @ingroup tripal_library
  */

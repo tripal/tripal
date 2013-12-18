@@ -46,13 +46,13 @@ function tripal_organism_node_info() {
 function tripal_organism_block_info() {
 
   $blocks['base']['info'] = t('Tripal Organism Details');
-  $blocks['base']['cache'] = BLOCK_NO_CACHE;
+  $blocks['base']['cache'] = DRUPAL_NO_CACHE;
 
   $blocks['description']['info'] = t('Tripal Organism Description');
-  $blocks['description']['cache'] = BLOCK_NO_CACHE;
+  $blocks['description']['cache'] = DRUPAL_NO_CACHE;
 
   $blocks['image']['info'] = t('Tripal Organism Image');
-  $blocks['image']['cache'] = BLOCK_NO_CACHE;
+  $blocks['image']['cache'] = DRUPAL_NO_CACHE;
 
   return $blocks;
 

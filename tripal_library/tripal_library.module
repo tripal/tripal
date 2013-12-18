@@ -87,7 +87,7 @@ function tripal_library_permisssions() {
  * Implement hook_access().
  *
  * This hook allows node modules to limit access to the node types they define.
- * 
+ *
  *  @param $node
  *  The node on which the operation is to be performed, or, if it does not yet exist, the
  *  type of node to be created
@@ -101,7 +101,7 @@ function tripal_library_permisssions() {
  *  @return
  *  If the permission for the specified operation is not set then return FALSE. If the
  *  permission is set then return NULL as this allows other modules to disable
- *  access.  The only exception is when the $op == 'create'.  We will always 
+ *  access.  The only exception is when the $op == 'create'.  We will always
  *  return TRUE if the permission is set.
  *
  * @ingroup tripal_library
@@ -287,25 +287,25 @@ function tripal_library_help ($path, $arg) {
 function tripal_library_block_info() {
 
   $blocks['libreferences']['info'] = t('Tripal Library Cross References');
-  $blocks['libreferences']['cache'] = BLOCK_NO_CACHE;
+  $blocks['libreferences']['cache'] = DRUPAL_NO_CACHE;
 
   $blocks['libbase']['info'] = t('Tripal Library Details');
-  $blocks['libbase']['cache'] = BLOCK_NO_CACHE;
+  $blocks['libbase']['cache'] = DRUPAL_NO_CACHE;
 
   $blocks['libterms']['info'] = t('Tripal Library Terms');
-  $blocks['libterms']['cache'] = BLOCK_NO_CACHE;
+  $blocks['libterms']['cache'] = DRUPAL_NO_CACHE;
 
   $blocks['libsynonyms']['info'] = t('Tripal Library Synonyms');
-  $blocks['libsynonyms']['cache'] = BLOCK_NO_CACHE;
+  $blocks['libsynonyms']['cache'] = DRUPAL_NO_CACHE;
 
   $blocks['libproperties']['info'] = t('Tripal Library Properties');
-  $blocks['libproperties']['cache'] = BLOCK_NO_CACHE;
+  $blocks['libproperties']['cache'] = DRUPAL_NO_CACHE;
 
   $blocks['featurelibs']['info'] = t('Tripal Feature Libraries');
-  $blocks['featurelibs']['cache'] = BLOCK_NO_CACHE;
+  $blocks['featurelibs']['cache'] = DRUPAL_NO_CACHE;
 
   $blocks['orglibs']['info'] = t('Tripal Organism Libraries');
-  $blocks['orglibs']['cache'] = BLOCK_NO_CACHE;
+  $blocks['orglibs']['cache'] = DRUPAL_NO_CACHE;
 
   return $blocks;
 }
@@ -371,9 +371,9 @@ function theme_tripal_library_search_index($node) {
     while ($library = $results->fetchObject()) {
       // get the description
       $sql = "
-        SELECT * 
-        FROM {libraryprop} LP 
-          INNER JOIN {cvterm} CVT ON CVT.cvterm_id = LP.type_id 
+        SELECT *
+        FROM {libraryprop} LP
+          INNER JOIN {cvterm} CVT ON CVT.cvterm_id = LP.type_id
         WHERE LP.library_id = :library_id
           AND CVT.name = 'library_description'
       ";
@@ -393,11 +393,11 @@ function theme_tripal_library_search_index($node) {
     $content = "";
     $organism_id = $node->feature->organism_id;
     $sql = "
-      SELECT * 
-      FROM {library} L 
-        INNER JOIN {library_feature} LF ON L.library_id = LF.library_id 
+      SELECT *
+      FROM {library} L
+        INNER JOIN {library_feature} LF ON L.library_id = LF.library_id
       WHERE LF.feature_id = :feature_id
-    "; 
+    ";
     $libraries = array();
     $results = chado_query($sql, array(':feature_id' => $node->feature->feature_id));
     while ($library = $results->fetchObject()) {
@@ -438,9 +438,9 @@ function theme_tripal_library_node_libraries($node) {
   elseif ($node->type == 'chado_feature' && $node->feature->feature_id) {
     $organism_id = $node->feature->organism_id;
     $sql = "
-      SELECT * 
-      FROM {library} L 
-        INNER JOIN Library_feature LF ON L.library_id = LF.library_id 
+      SELECT *
+      FROM {library} L
+        INNER JOIN Library_feature LF ON L.library_id = LF.library_id
       WHERE LF.feature_id = :feature_id
     ";
     $libraries = array();
@@ -599,8 +599,8 @@ function chado_library_validate($node) {
   // before we try to insert into chado.
   if ($node->library_id) {
     $sql = "
-      SELECT * 
-      FROM {library} 
+      SELECT *
+      FROM {library}
       WHERE uniquename = :uname AND NOT library_id = :library_id
     ";
     $lib = chado_query($sql, array(':uname' => $node->uniquename, ':library_id' => $node->library_id))->fetchObject();
@@ -646,7 +646,7 @@ function chado_library_insert($node) {
     if (!$library_id) {
        // next add the item to the drupal table
       $sql = "
-        INSERT INTO {chado_library} (nid, vid, library_id) 
+        INSERT INTO {chado_library} (nid, vid, library_id)
         VALUES (:nid, :vid, :library_id)
       ";
       db_query($sql, array(':nid' => $node->nid, ':vid' => $node->vid, ':library_id' => $library['library_id']));

@@ -4,21 +4,6 @@
  * @todo Add file header description
  */
 
-
-/**
- * Implements hook_install
- */
-function tripal_bulk_loader_install() {
-  drupal_install_schema('tripal_bulk_loader');
-}
-
-/**
- * Implements hook_uninstall
- */
-function tripal_bulk_loader_uninstall() {
-  drupal_uninstall_schema('tripal_bulk_loader');
-}
-
 /**
  * Implements hook_schema
  *
@@ -166,10 +151,9 @@ function tripal_bulk_loader_update_6150() {
 
   // Create tripal_bulk_loader_constants table
   $schema = tripal_bulk_loader_schema();
-  $ret = array();
-  db_create_table($ret, 'tripal_bulk_loader_constants', $schema['tripal_bulk_loader_constants']);
+  db_create_table('tripal_bulk_loader_constants', $schema['tripal_bulk_loader_constants']);
 
-  return $ret;
+  return 'Added support for loader-specific constants.';
 
 }
 
@@ -179,11 +163,9 @@ function tripal_bulk_loader_update_6150() {
  *   to allow multiple sets of constants per job
  */
 function tripal_bulk_loader_update_6151() {
-  $ret = array();
 
   $schema = tripal_bulk_loader_schema();
   db_add_field(
-    $ret,
     'tripal_bulk_loader_constants',
     'group_id',
     array(
@@ -194,14 +176,12 @@ function tripal_bulk_loader_update_6151() {
       )
     );
 
-  return $ret;
+  return 'Added support for multiple sets of loader-specific constants.';
 }
 
 function tripal_bulk_loader_update_6152() {
-  $ret = array();
 
   db_add_field(
-    $ret,
     'tripal_bulk_loader',
     'keep_track_inserted',
     array(
@@ -212,10 +192,10 @@ function tripal_bulk_loader_update_6152() {
     )
   );
 
-  return $ret;
+  return 'Added ability to rollback loading job based on storing loaded ids.';
 }
 /**
- * Implementation of hook_requirements(). 
+ * Implementation of hook_requirements().
   */
 function tripal_bulk_loader_requirements($phase) {
   $requirements = array();

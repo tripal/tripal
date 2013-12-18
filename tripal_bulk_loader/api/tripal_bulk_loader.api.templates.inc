@@ -29,7 +29,7 @@ function tripal_bulk_loader_is_record_name_unique($new_record_name, $template_id
 
   // get the template array if it's not supplied
   if (empty($template_array)) {
-    $template = db_fetch_object(db_query("SELECT * FROM {tripal_bulk_loader_template} WHERE template_id=%d", $template_id));
+    $template = db_query("SELECT * FROM {tripal_bulk_loader_template} WHERE template_id=:template", array(':template' => $template_id))->fetchObject();
     $template_array = unserialize($template->template_array);
     if (!is_array($template_array)) {
       watchdog(

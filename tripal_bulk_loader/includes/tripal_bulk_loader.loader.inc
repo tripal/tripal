@@ -74,10 +74,10 @@ function tripal_bulk_loader_add_loader_job_form_submit($form, $form_state) {
       $job_id = tripal_add_job("Bulk Loading Job: $fname", 'tripal_bulk_loader', 'tripal_bulk_loader_load_data', $job_args, $user->uid);
 
       // add job_id to bulk_loader node
-      $success = db_query("UPDATE {tripal_bulk_loader} SET job_id=%d WHERE nid=%d", $job_id, $form_state['values']['nid']);
+      $success = db_query("UPDATE {tripal_bulk_loader} SET job_id=:job WHERE nid=:nid", array(':job' => $job_id, ':nid' => $form_state['values']['nid']))->execute();
 
       // change status
-      db_query("UPDATE {tripal_bulk_loader} SET job_status='%s' WHERE nid=%d", 'Submitted to Queue', $form_state['values']['nid']);
+      db_query("UPDATE {tripal_bulk_loader} SET job_status=:status' WHERE nid=:nid", array(':status' => 'Submitted to Queue', ':nid' => $form_state['values']['nid']))->execute();
     }
     else {
       drupal_set_message(t("Can not open %file. Job not scheduled.", array('%file' => $form_state['values']['file'])));
@@ -85,23 +85,23 @@ function tripal_bulk_loader_add_loader_job_form_submit($form, $form_state) {
   }
   elseif (preg_match('/Re-Submit Job/', $form_state['values']['op'])) {
     tripal_jobs_rerun($form_state['values']['job_id']);
-    db_query("UPDATE {tripal_bulk_loader} SET job_status='%s' WHERE nid=%d", 'Submitted to Queue', $form_state['values']['nid']);
+    db_query("UPDATE {tripal_bulk_loader} SET job_status=:status WHERE nid=:nid", array(':status' => 'Submitted to Queue', 'nid' => $form_state['values']['nid']))->execute();
   }
   elseif (preg_match('/Cancel Job/', $form_state['values']['op'])) {
-    db_query("UPDATE {tripal_bulk_loader} SET job_status='%s' WHERE nid=%d", 'Job Cancelled', $form_state['values']['nid']);
+    db_query("UPDATE {tripal_bulk_loader} SET job_status=:status WHERE nid=:nid", array(':status' => 'Job Cancelled', ':nid' => $form_state['values']['nid']))->execute();
     tripal_jobs_cancel($form_state['values']['job_id']);
   }
   elseif (preg_match('/Revert/', $form_state['values']['op'])) {
 
     // Remove the records from the database that were already inserted
-    $resource = db_query('SELECT * FROM {tripal_bulk_loader_inserted} WHERE nid=%d ORDER BY tripal_bulk_loader_inserted_id DESC', $form_state['values']['nid']);
-    while ($r = db_fetch_object($resource)) {
+    $resource = db_query('SELECT * FROM {tripal_bulk_loader_inserted} WHERE nid=:nid ORDER BY tripal_bulk_loader_inserted_id DESC', array(':nid' => $form_state['values']['nid']));
+    while ($r = $resource->fetchObject()) {
       $ids = preg_split('/,/', $r->ids_inserted);
-      db_query('DELETE FROM {%s} WHERE %s IN (%s)', $r->table_inserted_into, $r->table_primary_key, $r->ids_inserted);
-      $result = db_fetch_object(db_query('SELECT true as present FROM {%s} WHERE %s IN (%s)', $r->table_inserted_into, $r->table_primary_key, $r->ids_inserted));
+      db_query('DELETE FROM {'.$r->table_inserted_into.'} WHERE '.$r->table_primary_key.' IN ('.$r->ids_inserted.')')->execute();
+      $result = db_query('SELECT true as present FROM {'.$r->table_inserted_into.'} WHERE '.$r->table_primary_key.' IN ('.$r->ids_inserted.')')->fetchObject();
       if (!$result->present) {
         drupal_set_message(t('Successfully Removed data Inserted into the %tableto table.', array('%tableto' => $r->table_inserted_into)));
-        db_query('DELETE FROM {tripal_bulk_loader_inserted} WHERE tripal_bulk_loader_inserted_id=%d', $r->tripal_bulk_loader_inserted_id);
+        db_query('DELETE FROM {tripal_bulk_loader_inserted} WHERE tripal_bulk_loader_inserted_id=:id', array(':id' => $r->tripal_bulk_loader_inserted_id))->execute();
       }
       else {
         drupal_set_message(t('Unable to remove data Inserted into the %tableto table!', array('%tableto' => $r->table_inserted_into)), 'error');
@@ -109,7 +109,7 @@ function tripal_bulk_loader_add_loader_job_form_submit($form, $form_state) {
     }
 
     // reset status
-    db_query("UPDATE {tripal_bulk_loader} SET job_status='%s' WHERE nid=%d", 'Reverted -Data Deleted', $form_state['values']['nid']);
+    db_query("UPDATE {tripal_bulk_loader} SET job_status=:status WHERE nid=:nid", array(':status' => 'Reverted -Data Deleted', ':nid' => $form_state['values']['nid']))->execute();
   }
 
 }
@@ -131,10 +131,10 @@ function tripal_bulk_loader_add_loader_job_form_submit($form, $form_state) {
 function tripal_bulk_loader_load_data($nid, $job_id) {
 
   // ensure no timeout
-  set_time_limit(0);
+  drupal_set_time_limit(0);
 
   // set the status of the job (in the node not the tripal jobs)
-  db_query("UPDATE {tripal_bulk_loader} SET job_status='%s' WHERE nid=%d", 'Loading...', $nid);
+  db_query("UPDATE {tripal_bulk_loader} SET job_status=:status WHERE nid=:nid", array(':status' => 'Loading...', ':nid' => $nid))->execute();
 
 
   $node = node_load($nid);
@@ -344,7 +344,7 @@ function tripal_bulk_loader_load_data($nid, $job_id) {
       $lockmode = variable_get('tripal_bulk_loader_lock', 'ROW EXCLUSIVE');
       foreach ($tables as $table) {
         print "\t\t\t$lockmode for $table\n";
-        chado_query("LOCK TABLE %s IN %s MODE", $table, $lockmode);
+        chado_query("LOCK TABLE ".$table." IN ".$lockmode." MODE");
       }
     }
 
@@ -460,7 +460,7 @@ function tripal_bulk_loader_load_data($nid, $job_id) {
   else {
     $status = 'Errors Encountered';
   }
-  db_query("UPDATE {tripal_bulk_loader} SET job_status='%s' WHERE nid=%d", $status, $nid);
+  db_query("UPDATE {tripal_bulk_loader} SET job_status=:status WHERE nid=:nid", array(':status' => $status, ':nid' => $nid))->execute();
 
 }
 
@@ -500,10 +500,10 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
   // get the table description
   $table_desc = tripal_core_get_chado_table_schema($table);
   if (!$table_desc) {
-    watchdog('T_bulk_loader', "Failure: Tripal does not know about the table named '%table'. If this is a custom table, 
+    watchdog('T_bulk_loader', "Failure: Tripal does not know about the table named '%table'. If this is a custom table,
       please define it first", array('%table' => $table), WATCHDOG_ERROR);
     $data[$priority]['error'] = TRUE;
-    return;  
+    return;
   }
 
   // Check that template required fields are present. if a required field is
@@ -600,7 +600,7 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
   // We check for "insert_unique" for backwards compatibilty but that mode no longer exists
   $data[$priority]['is_duplicate'] = 0;
   if (preg_match('/insert_unique/', $table_data['mode']) or
-     $table_data['select_if_duplicate'] == 1 or 
+     $table_data['select_if_duplicate'] == 1 or
      $table_data['update_if_duplicate'] == 1) {
     $options = array('is_duplicate' => TRUE);
     $duplicate = tripal_core_chado_select($table, array_keys($table_desc['fields']), $values, $options);
@@ -735,11 +735,12 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
 
       // add to tripal_bulk_loader_inserted
       if ($addt->node->keep_track_inserted) {
-        $insert_record = db_fetch_object(db_query(
-          "SELECT * FROM {tripal_bulk_loader_inserted} WHERE table_inserted_into='%s' AND nid=%d",
-          $table,
-          $addt->nid
-        ));
+        $insert_record = db_query(
+          "SELECT * FROM {tripal_bulk_loader_inserted} WHERE table_inserted_into=:table AND nid=:nid",
+          array(
+          ':table' => $table,
+          'nid' => $addt->nid
+        ))->fetchObject();
         if ($insert_record) {
           $insert_record->ids_inserted .= ',' . $record[$table_desc['primary key'][0] ];
           drupal_write_record('tripal_bulk_loader_inserted', $insert_record, 'tripal_bulk_loader_inserted_id');

@@ -71,13 +71,23 @@ function tripal_bulk_loader_admin_jobs() {
     array('data' => 'Progress', 'field' => 'progress'),
     '');
   $rows = array();
+  $query = db_select('tripal_bulk_loader', 'n')->extend('TableSort');
+  $query->join('tripal_bulk_loader_template', 't', 'cast(n.template_id as integer) = t.template_id');
+  $query->join('tripal_jobs', 'j', 'n.job_id = j.job_id');
+  $query->fields('n')
+    ->fields('t', array('name'))
+    ->fields('j', array('progress'))
+    ->orderByHeader($header);
+  $result = $query->execute();
+  /**
   $resource = pager_query("SELECT n.*, t.name as template_name, j.progress
     FROM {tripal_bulk_loader} n
     LEFT JOIN {tripal_bulk_loader_template} t ON cast(n.template_id as integer) = t.template_id
     LEFT JOIN {tripal_jobs} j ON n.job_id = j.job_id"
     . tablesort_sql($header),
     $num_jobs_per_page);
-  while ($n = db_fetch_object($resource)) {
+    */
+  foreach ($result as $n) {
     $rows[] = array(
       l($n->job_id, 'admin/tripal/tripal_jobs/view/' . $n->job_id),
       l($n->loader_name, 'node/' . $n->nid),
@@ -87,7 +97,7 @@ function tripal_bulk_loader_admin_jobs() {
       l('View', 'node/' . $n->nid) . ' | ' .  l('Edit', 'node/' . $n->nid . '/edit')
     );
   }
-  $output .= theme_table($header, $rows);
+  $output .= theme_table(array('header' => $header, 'rows' => $rows));
 
   $output .= theme('pager');
 

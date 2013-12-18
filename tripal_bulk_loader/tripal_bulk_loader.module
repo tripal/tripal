@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @file
  * The functions for the Tripal bulk loader.
@@ -218,11 +219,11 @@ function tripal_bulk_loader_theme() {
  *  @return
  *  If the permission for the specified operation is not set then return FALSE. If the
  *  permission is set then return NULL as this allows other modules to disable
- *  access.  The only exception is when the $op == 'create'.  We will always 
+ *  access.  The only exception is when the $op == 'create'.  We will always
  *  return TRUE if the permission is set.
  * @ingroup tripal_bulk_loader
  */
-function tripal_bulk_loader_access($op, $node, $account) {
+function tripal_bulk_loader_node_access($node, $op, $account) {
   if ($op == 'create') {
     if (!user_access('create tripal_bulk_loader', $account)) {
       return FALSE;
@@ -252,7 +253,7 @@ function tripal_bulk_loader_access($op, $node, $account) {
  *
  * @ingroup tripal_bulk_loader
  */
-function tripal_bulk_loader_perm() {
+function tripal_bulk_loader_permission() {
   return array(
       'access tripal_bulk_loader',
       'create tripal_bulk_loader',
@@ -275,7 +276,7 @@ function tripal_bulk_loader_node_info() {
   $nodes = array();
   $nodes['tripal_bulk_loader'] = array(
       'name' => t('Bulk Loading Job'),
-      'module' => 'tripal_bulk_loader',
+      'base' => 'tripal_bulk_loader',
       'description' => t('A bulk loader for inserting tab-delimited data into chado database'),
       'has_title' => TRUE,
       'has_body' => FALSE,
@@ -299,9 +300,9 @@ function tripal_bulk_loader_form($node, $form_state) {
   }
 
   $sql = "SELECT * FROM {tripal_bulk_loader_template}";
-  $results = db_query($sql);
+  $results = db_query($sql)->execute();
   $templates = array();
-  while ($template = db_fetch_object ($results)) {
+  foreach ($results as $template) {
     $templates [$template->template_id] = $template->name;
   }
 
@@ -376,27 +377,27 @@ function tripal_bulk_loader_form($node, $form_state) {
  * @ingroup tripal_bulk_loader
  */
 function tripal_bulk_loader_load($node) {
-  $sql = "SELECT * FROM {tripal_bulk_loader} WHERE nid = %d";
-  $node = db_fetch_object(db_query($sql, $node->nid));
+  $sql = "SELECT * FROM {tripal_bulk_loader} WHERE nid = :nid";
+  $node = db_query($sql, array(':nid' => $node->nid))->fetchObject();
 
   $node->title = 'Bulk Loading Job: ' . $node->loader_name;
 
   // Add job details
   $progress = tripal_bulk_loader_progess_file_get_progress($node->job_id);
-  $sql = "SELECT * FROM {tripal_jobs} WHERE job_id=%d";
-  $node->job = db_fetch_object(db_query($sql, $node->job_id));
+  $sql = "SELECT * FROM {tripal_jobs} WHERE job_id=:job_id";
+  $node->job = db_query($sql, array(':job_id' => $node->job_id))->fetchObject();
 
   // Add the loader template
-  $sql = "SELECT * FROM {tripal_bulk_loader_template} WHERE template_id=%d";
-  $results = db_fetch_object(db_query($sql, $node->template_id));
+  $sql = "SELECT * FROM {tripal_bulk_loader_template} WHERE template_id=:template";
+  $results = db_query($sql, array(':template' => $node->template_id))->fetchObject();
   $template = unserialize($results->template_array);
   $node->template = $results;
   $node->template->template_array = $template;
 
   // Add inserted records
-  $sql = 'SELECT * FROM {tripal_bulk_loader_inserted} WHERE nid=%d';
-  $resource = db_query($sql, $node->nid);
-  while ($r = db_fetch_object($resource)) {
+  $sql = 'SELECT * FROM {tripal_bulk_loader_inserted} WHERE nid=:nid';
+  $resource = db_query($sql, array(':nid' => $node->nid))->execute();
+  foreach ($resource as $r) {
     $r->num_inserted = sizeof(preg_split('/,/', $r->ids_inserted));
     $node->inserted_records->{$r->table_inserted_into} = $r;
   }
@@ -423,9 +424,9 @@ function tripal_bulk_loader_load($node) {
 
 
   // Add constants
-  $sql = 'SELECT * FROM {tripal_bulk_loader_constants} WHERE nid=%d ORDER BY group_id, record_id, field_id';
-  $resource = db_query($sql, $node->nid);
-  while ($r = db_fetch_object($resource)) {
+  $sql = 'SELECT * FROM {tripal_bulk_loader_constants} WHERE nid=:nid ORDER BY group_id, record_id, field_id';
+  $resource = db_query($sql, array(':nid' => $node->nid))->execute();
+  foreach ($resource as $r) {
     $node->constants[$r->group_id][$r->record_id][$r->field_id] = array(
       'constant_id' => $r->constant_id,
       'group_id' => $r->group_id,
@@ -452,8 +453,17 @@ function tripal_bulk_loader_load($node) {
 function tripal_bulk_loader_insert($node) {
 
   // Insert into tripal_bulk_loader
-  $sql = "INSERT INTO {tripal_bulk_loader} (nid, loader_name, template_id, file, file_has_header, job_status, keep_track_inserted) VALUES (%d, '%s', %d, '%s', %d, '%s', %d)";
-  db_query($sql, $node->nid, $node->loader_name, $node->template_id, $node->file, $node->has_header, 'Initialized', $node->keep_track_inserted);
+  $sql = "INSERT INTO {tripal_bulk_loader} (nid, loader_name, template_id, file, file_has_header, job_status, keep_track_inserted) VALUES (:nid, :loader, :template, :file, :header, :status, :ids)";
+  db_query($sql,
+    array(':nid' => $node->nid,
+      ':loader' => $node->loader_name,
+      ':template' => $node->template_id,
+      ':file' => $node->file,
+      ':header' => $node->has_header,
+      ':status' => 'Initialized',
+      ':ids' => $node->keep_track_inserted
+    )
+  )->execute();
 
   // Update title
   $node->title =$node->loader_name;
@@ -471,8 +481,8 @@ function tripal_bulk_loader_insert($node) {
  * @ingroup tripal_bulk_loader
  */
 function tripal_bulk_loader_delete($node) {
-  $sql = "DELETE FROM {tripal_bulk_loader} WHERE nid = %d";
-  db_query($sql, $node->nid);
+  $sql = "DELETE FROM {tripal_bulk_loader} WHERE nid = :nid";
+  db_query($sql, array(':nid' => $node->nid))->execute();
 }
 
 /**
@@ -484,8 +494,17 @@ function tripal_bulk_loader_delete($node) {
 function tripal_bulk_loader_update($node) {
 
   // Update tripal_bulk_loader
-  $sql = "UPDATE {tripal_bulk_loader} SET nid = %d, loader_name = '%s', template_id = %d, file = '%s', file_has_header = '%s', keep_track_inserted = %d WHERE nid = %d";
-  db_query($sql, $node->nid, $node->loader_name, $node->template_id, $node->file, $node->has_header, $node->keep_track_inserted, $node->nid);
+  $sql = "UPDATE {tripal_bulk_loader} SET nid = :nid, loader_name = :loader, template_id = :template, file = :file, file_has_header = :header, keep_track_inserted = :ids WHERE nid = :wherenid";
+  db_query($sql,
+    array(':nid' => $node->nid,
+      ':loader' => $node->loader_name,
+      ':template' => $node->template_id,
+      ':file' => $node->file,
+      ':header' => $node->has_header,
+      ':ids' => $node->keep_track_inserted,
+      ':wherenid' => $node->nid
+    )
+  )->execute();
 
   // Add a job if the user want to load the data
   global $user;
@@ -514,7 +533,7 @@ function tripal_bulk_loader_update($node) {
 function tripal_bulk_loader_preprocess_tripal_bulk_loader_template(&$variables) {
 
   $sql = "SELECT * FROM {tripal_bulk_loader_template} WHERE template_id=%d";
-  $template = db_fetch_object(db_query($sql, $variables['template_id']));
+  $template = db_query($sql, array(':template' => $variables['template_id']))->fetchObject();
   $template->template_array = unserialize($template->template_array);
   $variables['template'] = $template;
 
@@ -550,7 +569,7 @@ function tripal_bulk_loader_progess_file_get_progress($job_id, $update_progress 
   $num_lines = trim(`wc --lines < $filename`);
   $num_records = trim(`grep -o "." $filename | wc --lines`);
 
-  $job = db_fetch_object(db_query("SELECT j.*, b.file, b.file_has_header, c.num as num_constant_sets
+  $job = db_query("SELECT j.*, b.file, b.file_has_header, c.num as num_constant_sets
                               FROM {tripal_jobs} j
                               LEFT JOIN {tripal_bulk_loader} b ON b.job_id=j.job_id
                               LEFT JOIN (
@@ -558,7 +577,7 @@ function tripal_bulk_loader_progess_file_get_progress($job_id, $update_progress 
                                   FROM {tripal_bulk_loader_constants}
                                   GROUP BY nid
                                 ) c ON c.nid=b.nid
-                              WHERE j.job_id=%d", $job_id));
+                              WHERE j.job_id=:job", array(':job' =>$job_id))->execute();
   if ($job->num_constant_sets) {
     $num_constant_sets_loaded = round($job->progress / (100 / $job->num_constant_sets), 4);
 
