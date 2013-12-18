@@ -1,0 +1,110 @@
+#tripal_feature-featureloc_sequence,
+#tripal_feature-sequence-residues {
+  background-color: #FFFFFF;
+  font-family: monospace;
+}
+
+pre#tripal_feature-featureloc_sequence {
+  color: #000000;
+  height: 400px;
+  overflow: scroll;
+}
+
+div#tripal_feature-featureloc_sequence-legend {
+   padding: 0px 0px 10px 0px;
+   margin: 0px 0px 10px 0px;
+}
+div#tripal_feature-legend-item {
+   padding: 10px;
+   margin: 10px;
+}
+/* styles for cvterm types in sequences */
+div#tripal_feature-featureloc_sequence-legend span {
+   margin: 5px;
+   padding: 10px;
+}
+span.tripal_feature-featureloc_sequence-five_prime_UTR {
+   background-image: url('../images/type_color1.png');
+}
+
+span.tripal_feature-featureloc_sequence-three_prime_UTR {
+   background-image: url('../images/type_color2.png');
+}
+
+span.tripal_feature-featureloc_sequence-mRNA {
+   background-image: url('../images/type_color3.png');
+}
+
+span.tripal_feature-featureloc_sequence-CDS {
+   background-image: url('../images/type_color3.png');
+}
+
+span.tripal_feature-featureloc_sequence-exon {
+   background-image: url('../images/type_color1.png');
+}
+
+span.tripal_feature-featureloc_sequence-intron {
+   background-image: url('../images/type_color6.png');
+ 
+}
+/* information tables on the feature pages */
+table.tripal_feature-relationships-subject-table th {
+   background-color: #EEEEEE;
+   text-align: left;
+}
+table.tripal_feature-relationships-object-table th {
+   background-color: #EEEEEE;
+   text-align: left;
+}
+table.tripal_feature-locations-table th {
+   background-color: #EEEEEE;
+   text-align: left;
+}
+table.tripal_feature-references-table th {
+   background-color: #EEEEEE;
+   text-align: left;
+
+}
+/* feature relationship edit form */
+#tripal-feature-edit-ALL-relationships-form .form-item,
+#tripal-feature-edit-ALL-db-references-form .form-item {
+   float: left;
+   margin: 0 10px 0 0;
+   
+}
+#tripal-feature-edit-ALL-db-references-form .form-submit {
+   float: none;
+   display: block;
+}
+.tripal_feature-obsolete {
+   color: red;
+   font-weight: bold;
+   font-style: italic;
+   padding-bottom: 15px; 
+   text-align: center;
+}
+
+
+/* 
+ * Sequence Retrieval Form
+ */
+#tripal-feature-seq-extract-form-table {
+  border-collapse: collapse;
+  border: 0px solid #DDDDDD;
+  border-spacing: 0;  
+  margin: 1em 0;
+  width: auto;
+}
+#tripal-feature-seq-extract-form-table tr {
+  background-color: transparent;
+  border: 0px solid #CCCCCC;
+  padding: 0.1em 0.6em;  
+}
+#tripal-feature-seq-extract-form-table td {
+  border: 0px solid #DDDDDD;
+  padding: 0.25em 0.5em;
+  vertical-align: top;
+}
+#tripal-feature-seq-extract-form-table .form-item {
+  white-space: normal;
+}

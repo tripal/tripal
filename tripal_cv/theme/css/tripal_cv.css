@@ -1,0 +1,31 @@
+.treeview .placeholder {
+	/* background: url(images/ajax-loader.gif) 0 0 no-repeat; */
+	height: 16px;
+	width: 16px;
+	display: block;
+}
+
+#tripal_cv_cvterm_info_box {
+   position: absolute;
+   top: 0%; left: 30%;
+   padding:10px;
+   width:650px;
+   display: none;
+   border: 1px solid #000000;
+   background-color: #EFEFEF;
+   opacity: 0.90;
+   -moz-opacity: 0.90;
+   z-index: 10;
+   -webkit-border-radius: 5px;
+   -moz-border-radius: 5px;
+   border-radius: 5px;
+   color: #000000;
+}
+
+#tripal_cv_cvterm_info_box h3 {
+   border-bottom: 1px solid #AAAAAA;
+}
+
+#tripal_cv_cvterm_info {
+   color: #000000;
+}

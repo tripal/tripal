@@ -1,0 +1,212 @@
+.tripal-info-box {
+   width: 100%;
+   padding-bottom: 10px;
+}
+
+.tripal-info-box-nosidebar {
+   width: 100%;
+   padding-bottom: 10px;
+}
+
+.tripal-table {
+   width: 100%; 
+}
+.tripal-table th, 
+.tripal-table td {
+   vertical-align:text-top;
+   padding-left: 10px;
+   padding-right: 10px;
+   padding-top: 5px;
+   padding-bottom: 5px;
+}
+.tripal-table-horz {
+   border-top: 1px solid #999999;
+   border-bottom: 1px solid #999999; 
+}
+
+/* settings for vertical tables (headers across left-side) */
+table.tripal-table-vert .tripal-table-even-row th {
+   background-color: #EEEEEE;
+   font-weight: none;
+   text-align: right;
+}
+table.tripal-table-vert .tripal-table-odd-row th {
+   background-color: #FFFFFF;
+   text-align: right;
+}
+table.tripal-table-vert .tripal-table-even-row {
+   background-color: #EEEEEE;
+   border-top: 1px solid #CCCCCC;
+   border-bottom: 1px solid #CCCCCC;
+}
+table.tripal-table-vert .tripal-table-odd-row {
+   background-color: #FFFFFF;
+   border-top: 1px solid #CCCCCC;
+   border-bottom: 1px solid #CCCCCC;
+}
+/* settings for horizontal tables (headers across top) */
+table.tripal-table-horz th {
+   background-color: #EEEEFF;
+   font-weight: none;
+   text-align: left;
+}
+table.tripal-table-horz .tripal-table-even-row {
+   background-color: #FFFFFF;
+   font-weight: none;
+   text-align: left;
+   border-top: 1px solid #CCCCCC;
+   border-bottom: 1px solid #CCCCCC;
+}
+table.tripal-table-horz .tripal-table-odd-row {
+   background-color: #EEEEEE;
+   text-align: left;
+   border-top: 1px solid #CCCCCC;
+   border-bottom: 1px solid #CCCCCC;
+}
+
+.tripal-info-box-title {
+  font-size: 1.5em;
+  padding-bottom: 15px;
+}
+
+.tripal-info-box-title-nosidebar {
+  font-size: 1.5em;
+  padding-bottom: 15px;
+}
+
+.tripal-info-box-desc {
+  padding-bottom: 15px;
+}
+/* hide the title when inside of a block on a panel */
+.pane-block .tripal-info-box-title {
+   visibility: hidden;
+   padding: 0;
+   margin: 0;
+   height: 0px;
+}
+
+/* Ajax loader */
+#tripal_ajaxLoading {
+   position: fixed;
+   top: 40%;
+   left: 40%;
+   padding: 15px;
+   border: 1px solid #000000;
+   background-color: #EEEEEE;
+   opacity: 0.75;
+   -moz-opacity: 0.75;
+   z-index: 10;
+}
+
+#tripal_ajaxLoading #loadingText {
+   font-weight: bold;
+   font-size: 1.5em;
+   color: #000000;
+}
+
+/* Restrict the list of checkboxes in a 300px window */
+.form-checkboxes {
+   height: auto;
+   max-height: 300px;
+   overflow: auto;
+}
+
+/* no results message */
+.tripal-no-results {
+   font-style: italic;
+   padding: 10px;
+   background-color: #FFEEEE;
+}
+
+.tripal_toc {
+  float: left;
+  width: 20%;
+  background-color: #EEEEEE;
+
+  -moz-border-radius: 15px;
+  -webkit-border-radius: 15px;
+  -khtml-border-radius: 15px;
+  border-radius: 15px;
+
+  -moz-box-shadow: 3px 3px 4px #888888;
+  -webkit-box-shadow: 3px 3px 4px #888888;
+  box-shadow: 3px 3px 4px #888888;
+
+  padding: 20px;
+  min-height: 500px;
+  border-style:solid;
+  border-width:1px;
+}
+.tripal_toc ul {
+ margin-left: 0px;
+ margin-top: 5px;
+ padding-left: 15px;
+}
+.tripal_toc_title {
+  font-size: 1.5em;
+  line-height: 110%;
+  padding-bottom: 10px;
+}
+.tripal_toc_desc {
+ /*font-style: italic; */
+}
+.tripal_details {
+  float: left;
+  width: 69%;
+  background-color: #FFFFFF;
+
+  -moz-border-radius: 15px;
+  -webkit-border-radius: 15px;
+  -khtml-border-radius: 15px;
+  border-radius: 15px;
+
+  -moz-box-shadow: 3px 3px 4px #888888;
+  -webkit-box-shadow: 3px 3px 4px #888888;
+  box-shadow: 3px 3px 4px #888888;
+  padding: 20px;
+  min-height: 500px;
+  margin-right: 10px;
+  margin-bottom: 10px;
+  border-style:solid;
+  border-width:1px;
+  
+  overflow:auto;
+}
+
+.tripal_details_full {
+  float: left;
+  width: 95%;
+  background-color: #FFFFFF;
+
+  -moz-border-radius: 15px;
+  -webkit-border-radius: 15px;
+  -khtml-border-radius: 15px;
+  border-radius: 15px;
+
+  -moz-box-shadow: 3px 3px 4px #888888;
+  -webkit-box-shadow: 3px 3px 4px #888888;
+  box-shadow: 3px 3px 4px #888888;
+  padding: 20px;
+  min-height: 500px;
+  margin-right: 10px;
+  margin-bottom: 10px;
+  border-style:solid;
+  border-width:1px;
+  
+  overflow:auto;
+}
+
+.tripal-subtable {
+  border-collapse:collapse;
+  border: 0px solid black;
+  width: auto;
+}
+
+.tripal-subtable td {
+  padding: 0px 5px 5px 0px; 
+  border: 0px solid black;
+}
+
+.tripal-notice {
+  color: red;
+}

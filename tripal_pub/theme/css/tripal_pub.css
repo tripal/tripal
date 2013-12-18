@@ -1,0 +1,69 @@
+#tripal-pub-edit-properties-table {
+  width: auto;
+}
+
+#tripal-pub-edit-properties-table .form-item {
+  white-space: normal;
+}
+
+.tripal_pub-obsolete {
+   color: red;
+   font-weight: bold;
+   font-style: italic;
+   padding-bottom: 15px; 
+   text-align: center;
+}
+
+/*
+ * Importer Form Table 
+ */
+#tripal-pub-importer-table .form-item {
+  white-space: normal;
+}
+
+/* 
+ * Search Form Table 
+ */
+#tripal-pub-search-form-table{
+  border-collapse: collapse;
+  border: 0px solid #DDDDDD;
+  border-spacing: 0;  
+  margin: 1em 0;
+  width: auto;
+}
+#tripal-pub-search-form-table tr {
+  background-color: transparent;
+  border: 0px solid #CCCCCC;
+  padding: 0.1em 0.6em;  
+}
+#tripal-pub-search-form-table td {
+  border: 0px solid #DDDDDD;
+  padding: 0.25em 0.5em;
+  vertical-align: top;
+}
+#pub-search-form-dates-row {
+  clear: both;
+}
+#pub-search-form-dates label {
+  float: left; 
+  margin-right: 10px;
+}
+#pub-search-form-dates .form-item {
+  float: left; 
+  margin-right: 10px;
+}
+#edit-to-year-wrapper {
+  margin-top: 0px;
+  margin-bottom: 10px;
+}
+#edit-from-year-wrapper {
+  margin-top: 0px;
+  margin-bottom: 10px;
+}
+#tripal-pub-search-form-table #edit-search {
+  clear: both;
+}
+
+.tripal-pub-search-form-scope-select {
+  width: 150px;
+}
