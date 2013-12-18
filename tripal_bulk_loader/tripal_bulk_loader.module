@@ -174,29 +174,38 @@ function tripal_bulk_loader_menu() {
  */
 function tripal_bulk_loader_theme() {
   return array(
+    'node' => array(
+      'variables' => array('node' => NULL),
+      'path' => drupal_get_path('module', 'tripal_bulk_loader') . '/theme',
+    ),
     'tripal_bulk_loader_set_constants_form' => array(
-      'arguments' => array('form' => NULL),
+      'function' => 'theme_tripal_bulk_loader_set_constants_form',
+      'variables' => array('form' => NULL),
     ),
     'tripal_bulk_loader_template' => array(
-      'arguments' => array('template_id' => NULL),
-      'template' => 'tripal_bulk_loader_template'
+      'variables' => array('template_id' => NULL),
+      'template' => 'tripal_bulk_loader_template',
+      'path' => drupal_get_path('module', 'tripal_bulk_loader') . '/theme',
     ),
     'tripal_bulk_loader_modify_template_base_form' => array(
-      'arguments' => array('form' => NULL),
+      'variables' => array('form' => NULL),
       'template' => 'tripal_bulk_loader_modify_template_base_form',
+      'path' => drupal_get_path('module', 'tripal_bulk_loader') . '/theme',
     ),
     'tripal_bulk_loader_edit_template_field_form' => array(
-      'arguments' => array('form' => NULL),
+      'variables' => array('form' => NULL),
       'template' => 'tripal_bulk_loader_edit_template_field_form',
+      'path' => drupal_get_path('module', 'tripal_bulk_loader') . '/theme',
     ),
     'tripal_bulk_loader_add_template_field_form' => array(
-      'arguments' => array('form' => NULL),
+      'variables' => array('form' => NULL),
       'template' => 'tripal_bulk_loader_add_template_field_form',
+      'path' => drupal_get_path('module', 'tripal_bulk_loader') . '/theme',
     ),
     'tripal_bulk_loader_admin' => array(
       'template' => 'tripal_bulk_loader_admin',
-      'arguments' =>  array(NULL),
-      'path' => drupal_get_path('module', 'tripal_bulk_loader') . '/theme'
+      'variables' =>  array(NULL),
+      'path' => drupal_get_path('module', 'tripal_bulk_loader') . '/theme',
     ),
   );
 }
