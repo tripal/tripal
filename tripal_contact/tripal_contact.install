@@ -10,6 +10,24 @@
  * multiple contact/mysql instances as well as manage and create such contact instances
  */
 
+/**
+ * Implementation of hook_requirements().
+ *
+ */
+function tripal_contact_requirements($phase) {
+  $requirements = array();
+  if ($phase == 'install') {
+    // make sure chado is installed
+    if (!tripal_core_is_chado_installed()) {
+      $requirements ['tripal_contact'] = array(
+        'title' => "tripal_contact",
+        'value' => "ERROR: Chado most be installed before this module can be enabled",
+        'severity' => REQUIREMENT_ERROR,
+      );
+    }
+  }
+  return $requirements;
+}
 
 /**
  * Implementation of hook_install().
@@ -18,9 +36,6 @@ function tripal_contact_install() {
 	
 	// create the module's data directory
   tripal_create_moddir('tripal_contact');
-  
-  // add the tripal_contact table to Drupal
-  drupal_install_schema('tripal_contact');
   
   // add the contactprop table to Chado
   tripal_contact_add_custom_tables();
@@ -35,7 +50,7 @@ function tripal_contact_install() {
  * Implementation of hook_uninstall().
  */
 function tripal_contact_uninstall() {
-  drupal_uninstall_schema('tripal_contact');
+
 }
 
 /**
@@ -74,24 +89,7 @@ function tripal_contact_schema() {
   return $schema;
 }
 
-/**
- * Implementation of hook_requirements(). 
- *
- */
-function tripal_contact_requirements($phase) {
-  $requirements = array();
-  if ($phase == 'install') {
-    // make sure chado is installed
-    if (!tripal_core_is_chado_installed()) {
-      $requirements ['tripal_contact'] = array(
-            'title' => "tripal_contact",
-            'value' => "ERROR: Chado most be installed before this module can be enabled",
-            'severity' => REQUIREMENT_ERROR,
-      );
-    }
-  }
-  return $requirements;
-}
+
 /*
  * 
  */
@@ -154,25 +152,5 @@ function tripal_contact_add_custom_tables(){
       ),
     ),
   );
-  tripal_core_create_custom_table($ret, 'contactprop', $schema, TRUE);
-}
-/**
- *  Update for Drupal 6.x, Tripal 1.0
- *  This update
- *   - adds a new contact node
- *
- * @ingroup tripal_contact
- */
-function tripal_contact_update_6001() {
-  // add the tripal_contact table
-  drupal_install_schema('tripal_contact');
-  
-  // add the custom tables
-  tripal_contact_add_custom_tables();
-
-  // add loading of the the tripal contact ontology to the job queue
-  $obo_path =  realpath('./') . '/' . drupal_get_path('module', 'tripal_contact') . '/tcontact.obo';
-  $obo_id = tripal_cv_add_obo_ref('Tripal Contacts', $obo_path);
-  tripal_cv_submit_obo_job($obo_id);
-  return $ret;
+  tripal_core_create_custom_table('contactprop', $schema, TRUE);
 }

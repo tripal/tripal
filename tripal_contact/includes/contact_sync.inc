@@ -46,7 +46,7 @@ function tripal_contact_sync_contacts($job_id = NULL) {
   ";
   $results = db_query($sql);
 
-  while ($contact = db_fetch_object($results)) {
+  while ($contact = $results->fetchObject()) {
     $node = tripal_contact_sync_contact($contact);
   }
 }

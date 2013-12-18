@@ -840,7 +840,7 @@ function tripal_pub_add_authors($pub_id, $authors, $do_contact) {
     $values = array(
       'pub_id' => $pub_id,
       'rank' => $rank,
-      'surname' => $author['Surname'] ? $author['Surname'] : $author['Collective'],
+      'surname' => $author['Surname'] ? substr($author['Surname'], 0, 100) : substr($author['Collective'], 0, 100),
       'givennames' => $author['Given Name'],
       'suffix' => $author['Suffix'],
     );
@@ -1169,13 +1169,20 @@ function tripal_pub_create_citation($pub) {
       if ($ptype == 'Journal Article' ) {
         $pub_type = $ptype;
         break;
-      } else if ($ptype == 'Conference Proceedings'){ 
+      } 
+      else if ($ptype == 'Conference Proceedings'){ 
         $pub_type = $ptype;
         break;
-      } else if ($ptype == 'Book') {
+      } 
+      else if ($ptype == 'Book') {
         $pub_type = $ptype;
         break;
-      } else if ($ptype == 'Book Chapter') {
+      } 
+      else if ($ptype == 'Letter') {
+        $pub_type = $ptype;
+        break;
+      } 
+      else if ($ptype == 'Book Chapter') {
         $pub_type = $ptype;
         break;
       }
@@ -1193,6 +1200,47 @@ function tripal_pub_create_citation($pub) {
   // Journal Article
   //----------------------
   if ($pub_type == 'Journal Article') {
+    $citation = $pub['Authors'] . '. ' . $pub['Title'] .  '. ';
+  
+    if ($pub['Journal Name']) {
+      $citation .= $pub['Journal Name'] . '. ';
+    }
+    elseif ($pub['Journal Abbreviation']) {
+      $citation .= $pub['Journal Abbreviation'] . '. ';
+    }
+    elseif ($pub['Series Name']) {
+      $citation .= $pub['Series Name'] . '. ';  
+    }
+    elseif ($pub['Series Abbreviation']) {
+      $citation .= $pub['Series Abbreviation'] . '. ';
+    }
+    if ($pub['Publication Date']) {
+      $citation .= $pub['Publication Date'];
+    }
+    elseif ($pub['Year']) {
+      $citation .= $pub['Year'];
+    }
+    if ($pub['Volume'] or $pub['Issue'] or $pub['Pages']) {
+      $citation .= '; ';
+    }
+    if ($pub['Volume']) {
+      $citation .= $pub['Volume'];
+    }
+    if ($pub['Issue']) {
+      $citation .= '(' . $pub['Issue'] . ')';
+    }
+    if ($pub['Pages']) {
+      if($pub['Volume']) {
+        $citation .= ':';
+      }
+      $citation .= $pub['Pages'];
+    }
+    $citation .= '.';
+  }
+  //----------------------
+  // Letter
+  //----------------------
+  elseif ($pub_type == 'Letter') {
     $citation = $pub['Authors'] . '. ' . $pub['Title'] .  '. ';
   
     if ($pub['Journal Name']) {

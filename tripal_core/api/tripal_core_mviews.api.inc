@@ -35,31 +35,11 @@
  *   currently not used
  * @param $comment
  *   A string containing a description of the materialized view
- * @param $mv_schema
- *   If using the newer Schema API array to define the materialized view then
- *   this variable should contain the array or a string representation of the 
- *   array.
- * 
+ *
  * @ingroup tripal_mviews_api
  */
-function tripal_add_mview($name, $modulename, $mv_table, $mv_specs, $indexed,
-  $query, $special_index, $comment = NULL, $mv_schema = NULL) {
-
-  // get the table name from the schema array
-  $schema_arr = array();
-  if ($mv_schema) {
-    // if the schema is provided as a string then convert it to an array
-    if (!is_array($mv_schema)) {
-      eval("\$schema_arr = $mv_schema;");
-    }
-    // if the schema is provided as an array then create a string
-    // copy of it for storage in the mview 
-    else {
-      $schema_arr = $mv_schema;
-      $mv_schema = var_export($schema_arr, 1);
-    }
-    $mv_table = $schema_arr['table'];
-  }
+function tripal_add_legacy_mview($name, $modulename, $mv_table, $mv_specs, $indexed,
+  $query, $special_index, $comment = NULL) {
 
   // Create a new record
   $record = new stdClass();
@@ -71,7 +51,6 @@ function tripal_add_mview($name, $modulename, $mv_table, $mv_specs, $indexed,
   $record->query = $query;
   $record->special_index = $special_index;
   $record->comment = $comment;
-  $record->mv_schema = $mv_schema;
 
   // add the record to the tripal_mviews table and if successful
   // create the new materialized view in the chado schema
@@ -93,30 +72,76 @@ function tripal_add_mview($name, $modulename, $mv_table, $mv_specs, $indexed,
         $field = trim($field);
         $index .= "CREATE INDEX idx_${mv_table}_${field} ON $mv_table ($field);";
       }
-    }
+    } 
+  }
 
-    // create the table differently depending on if it the traditional method
-    // or the Drupal Schema API method
-    if ($mv_schema) {
-      if (!tripal_core_create_custom_table ($mv_table, $schema_arr, 0)) {
-        drupal_set_message(t("Could not create the materialized view. Check Drupal error report logs."), 'error');
-      }
-      else {
-        drupal_set_message(t("View '%name' created", array('%name' => $name)));
-      }
+  // add the table to the database
+  $sql = "CREATE TABLE {$mv_table} ($mv_specs); $index";
+  $previous_db = tripal_db_set_active('chado');  // use chado database
+  $results = db_query($sql);
+  tripal_db_set_active($previous_db);  // now use drupal database
+  if ($results) {
+    drupal_set_message(t("View '%name' created", array('%name' => $name)));
+  }
+  else {
+    drupal_set_message(t("Failed to create the materialized view table: '%mv_table'", array('%mv_table' => $mv_table)), 'error');
+  }
+}
+/**
+ * Add a materialized view to the chado database to help speed data access. This
+ * function supports the older style where postgres column specifications
+ * are provided using the $mv_table, $mv_specs and $indexed variables. It also
+ * supports the newer preferred method where the materialized view is described
+ * using the Drupal Schema API array.
+ *
+ * @param $name
+ *   The name of the materialized view.
+ * @param $modulename
+ *   The name of the module submitting the materialized view (e.g. 'tripal_library')
+ * @param $mv_schema
+ *   If using the newer Schema API array to define the materialized view then
+ *   this variable should contain the array or a string representation of the 
+ *   array.
+ * @param $query
+ *   The SQL query that loads the materialized view with data
+ * @param $comment
+ *   A string containing a description of the materialized view 
+ *   
+ * @ingroup tripal_mviews_api
+ */
+function tripal_add_mview($name, $modulename, $schema_arr, $query, $comment = NULL) {
+  
+  $mv_table = $schema_arr['table'];
+  
+  if (!$mv_table) {
+     watchdog('tripal_core', 'Must have a table name when creating an mview.', array(), WATCHDOG_ERROR);
+     return NULL;
+  }
+
+  // Create a new record
+  $record = new stdClass();
+  $record->name = $name;
+  $record->modulename = $modulename;
+  $record->mv_table = $mv_table;
+  $record->query = $query;
+  $record->comment = $comment;
+  $record->mv_schema = $mv_schema;
+
+  // add the record to the tripal_mviews table and if successful
+  // create the new materialized view in the chado schema
+  if (drupal_write_record('tripal_mviews', $record)) {
+
+    // drop the table from chado if it exists
+    if (chado_table_exists($mv_table)) {
+      $sql = 'DROP TABLE {' . $mv_table . '}';
+      chado_query($sql);
+    }   
+    // create the table
+    if (!tripal_core_create_custom_table ($mv_table, $schema_arr, 0)) {
+      drupal_set_message(t("Could not create the materialized view. Check Drupal error report logs."), 'error');
     }
     else {
-      // add the table to the database
-      $sql = "CREATE TABLE {$mv_table} ($mv_specs); $index";
-      $previous_db = tripal_db_set_active('chado');  // use chado database
-      $results = db_query($sql);
-      tripal_db_set_active($previous_db);  // now use drupal database
-      if ($results) {
-        drupal_set_message(t("View '%name' created", array('%name' => $name)));
-      }
-      else {
-        drupal_set_message(t("Failed to create the materialized view table: '%mv_table'", array('%mv_table' => $mv_table)), 'error');
-      }
+      drupal_set_message(t("View '%name' created", array('%name' => $name)));
     }
   }
 }
@@ -311,18 +336,22 @@ function tripal_mviews_action($op, $mview_id, $redirect = FALSE) {
     tripal_add_job("Populate materialized view '$mview->name'", 'tripal_core',
        'tripal_update_mview', $args, $user->uid);
   }
+  
+  // if op is to delete then do so
   if ($op == 'delete') {
+    
     // remove the mview from the tripal_mviews table
-    $sql = "DELETE FROM {tripal_mviews} " .
-           "WHERE mview_id = $mview_id";
+    $sql = "DELETE FROM {tripal_mviews} WHERE mview_id = $mview_id";
     db_query($sql);
+    
+    // does the table already exist?
+    $mview_exists = db_table_exists('chado.' . $mview->mv_table);
+    
     // drop the table from chado if it exists
-    $previous_db = tripal_db_set_active('chado');  // use chado database
-    if (db_table_exists($mview->mv_table)) {
-      $sql = "DROP TABLE " . $mview->mv_table;
-      db_query($sql);
+    if ($mview_exists) {
+      $sql = "DROP TABLE {" . $mview->mv_table . "}";
+      chado_query($sql);
     }
-    tripal_db_set_active($previous_db);  // now use drupal database
   }
 
   // Redirect the user

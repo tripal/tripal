@@ -420,14 +420,16 @@ function tripal_features_set_taxonomy($max_sync = 0, $job_id = NULL) {
 
   // iterate through all drupal feature nodes and set the taxonomy
   $results = db_query("SELECT * FROM {chado_feature}");
-  $nsql =  "SELECT * FROM {node} " .
-          "WHERE nid = %d";
+  $nsql =  "
+    SELECT * FROM {node} 
+    WHERE nid = :nid
+  ";
   $i = 0;
 
   // load into ids array
   $count = 0;
   $chado_features = array();
-  while ($chado_feature = db_fetch_object($results)) {
+  while ($chado_feature = $results->fetchObject()) {
     $chado_features[$count] = $chado_feature;
     $count++;
   }
@@ -441,7 +443,7 @@ function tripal_features_set_taxonomy($max_sync = 0, $job_id = NULL) {
     tripal_job_set_progress($job_id, intval(($i/$count)*100));
   }
   print "$i of $count: ";
-  $node = db_fetch_object(db_query($nsql, $chado_feature->nid));
+  $node = db_query($nsql, array(':nid' => $chado_feature->nid))->fetchObject();
   tripal_feature_set_taxonomy($node, $chado_feature->feature_id);
 
   $i++;
@@ -500,12 +502,14 @@ function tripal_feature_set_taxonomy($node, $feature_id) {
   }
 
   // get the cvterm and the organism for this feature
-  $sql = "SELECT CVT.name AS cvname, O.genus, O.species " .
-        "FROM {CVTerm} CVT " .
-        "  INNER JOIN {Feature} F on F.type_id = CVT.cvterm_id " .
-        "  INNER JOIN {Organism} O ON F.organism_id = O.organism_id " .
-        "WHERE F.feature_id = $feature_id";
-  $feature = db_fetch_object(chado_query($sql));
+  $sql = "
+    SELECT CVT.name AS cvname, O.genus, O.species 
+    FROM {CVTerm} CVT 
+      INNER JOIN {Feature} F on F.type_id = CVT.cvterm_id 
+      INNER JOIN {Organism} O ON F.organism_id = O.organism_id 
+    WHERE F.feature_id = :feature_id 
+  ";
+  $feature = chado_query($sql, array(':feature_id' => $feature_id))->fetchObject();
 
   // Set the feature type for this feature
   if ($do_ft && $ft_vid) {
@@ -518,11 +522,13 @@ function tripal_feature_set_taxonomy($node, $feature_id) {
 
   // get the library that this feature may belong to and add it as taxonomy
   if ($do_lb && $lb_vid) {
-    $sql = "SELECT L.name " .
-           "FROM {Library} L " .
-           "  INNER JOIN {Library_feature} LF ON LF.library_id = L.library_id " .
-           "WHERE LF.feature_id = %d ";
-    $library = db_fetch_object(chado_query($sql, $feature_id));
+    $sql = "
+      SELECT L.name 
+      FROM {Library} L 
+        INNER JOIN {Library_feature} LF ON LF.library_id = L.library_id 
+      WHERE LF.feature_id = :feature_id 
+    ";
+    $library = chado_query($sql, array(':feature_id' => $feature_id))->fetchObject();
     $tags["$lb_vid"] = "$library->name";
   }
 
@@ -534,13 +540,15 @@ function tripal_feature_set_taxonomy($node, $feature_id) {
   // get the analysis that this feature may belong to and add it as taxonomy
   // We'll add each one individually since there may be more than one analysis
   if ($do_an && $an_vid) {
-    $sql = "SELECT A.name " .
-           "FROM {Analysis} A " .
-           "  INNER JOIN {Analysisfeature} AF ON AF.analysis_id = A.analysis_id " .
-           "WHERE AF.feature_id = $feature_id ";
-    $results = chado_query($sql);
+    $sql = "
+      SELECT A.name 
+      FROM {Analysis} A 
+        INNER JOIN {analysisfeature} AF ON AF.analysis_id = A.analysis_id 
+      WHERE AF.feature_id = :feature_id 
+    ";
+    $results = chado_query($sql, array(':feature_id' => $feature_id));
     $analysis_terms = array();
-    while ($analysis=db_fetch_object($results)) {
+    while ($analysis = $results->fetchObject()) {
       $tags2["$an_vid"] = "$analysis->name";
       $terms['tags'] = $tags2;
       taxonomy_node_save($node, $terms);

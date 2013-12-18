@@ -61,7 +61,7 @@ function tripal_contact_node_info() {
   return array(
     'chado_contact' => array(
       'name' => t('Contact'),
-      'module' => 'chado_contact',
+      'base' => 'chado_contact',
       'description' => t('A contact from the Chado database'),
       'title_label' => t('Article Title'),
       'body_label' => t('Abstract'),
@@ -147,15 +147,19 @@ function tripal_contact_theme() {
   return array(
     'tripal_contact_base' => array(
       'arguments' => array('node' => NULL),
+      'template' => 'tripal_contact_base',
     ),
     'tripal_contact_properties' => array(
-      'arguments' => array('node' => NULL)
+      'arguments' => array('node' => NULL),
+      'template' => 'tripal_contact_properties',
     ),
     'tripal_contact_relationships' => array(
-      'arguments' => array('node' => NULL)
+      'arguments' => array('node' => NULL),
+      'template' => 'tripal_contact_relationships',
     ),
     'tripal_contact_publications' => array(
-      'arguments' => array('node' => NULL)
+      'arguments' => array('node' => NULL),
+      'template' => 'tripal_contact_publications',
     ),
     'tripal_contact_admin' => array(
       'template' => 'tripal_contact_admin',  
@@ -169,17 +173,83 @@ function tripal_contact_theme() {
     ),
   );
 }
+/**
+ * @ingroup tripal_library
+ */
+function tripal_contact_block_info() {
+
+  $blocks['contbase']['info'] = t('Tripal Contact Details');
+  $blocks['contbase']['cache'] = BLOCK_NO_CACHE;
+
+  $blocks['contprops']['info'] = t('Tripal Contact Properties');
+  $blocks['contprops']['cache'] = BLOCK_NO_CACHE;
+
+  $blocks['contrels']['info'] = t('Tripal Contact Relationships');
+  $blocks['contrels']['cache'] = BLOCK_NO_CACHE;
+
+  $blocks['contpubs']['info'] = t('Tripal Cotact Publications');
+  $blocks['contpubs']['cache'] = BLOCK_NO_CACHE;
+
+  return $blocks;
+}
+/**
+ * @ingroup tripal_library
+ */
+function tripal_contact_block_view($delta = '') {
+
+  if (user_access('access chado_library content') and arg(0) == 'node' and is_numeric(arg(1))) {
+    $nid = arg(1);
+    $node = node_load($nid);
+
+    $block = array();
+    switch ($delta) {
+      case 'contbase':
+        $block['subject'] = t('Details');
+        $block['content'] = theme('tripal_contact_base', $node);
+        break;
+      case 'contprops':
+        $block['subject'] = t('Properties');
+        $block['content'] = theme('tripal_contact_properties', $node);
+        break;
+      case 'contrels':
+        $block['subject'] = t('Relationships');
+        $block['content'] = theme('tripal_contact_relationships', $node);
+        break;
+      case 'contpubs':
+        $block['subject'] = t('Publications');
+        $block['content'] = theme('tripal_contact_publications', $node);
+        break;
+      default :
+    }
+    return $block;
+  }
+}
 
 /**
  * Implement hook_perm().
  */
-function tripal_contact_perm() {
+function tripal_contact_permissions() {
   return array(
-    'access chado_contact content',
-    'create chado_contact content',
-    'delete chado_contact content',
-    'edit chado_contact content',
-    'administer tripal contacts',
+    'access chado_contact content' => array(
+      'title' => t('View Contacts'),
+      'description' => t('Allow users to view contact pages.'),
+    ),
+    'create chado_contact content' => array(
+      'title' => t('Create Contacts'),
+      'description' => t('Allow users to create new contact pages.'),
+    ),
+    'delete chado_contact content' => array(
+      'title' => t('Delete Contacts'),
+      'description' => t('Allow users to delete contact pages.'),
+    ),
+    'edit chado_contact content' => array(
+      'title' => t('Edit Contacts'),
+      'description' => t('Allow users to edit contact pages.'),
+    ),
+    'adminster tripal contact' => array(
+      'title' => t('Administer Contacts'),
+      'description' => t('Allow users to administer all contacts.'),
+    ),
   );
 }
 
@@ -188,12 +258,12 @@ function tripal_contact_perm() {
  *
  * This hook allows node modules to limit access to the node types they define.
  *
- *  @param $op
- *  The operation to be performed
- *
  *  @param $node
  *  The node on which the operation is to be performed, or, if it does not yet exist, the
  *  type of node to be created
+ *  
+ *  @param $op
+ *  The operation to be performed
  *
  *  @param $account
  *  A user object representing the user for whom the operation is to be performed
@@ -205,7 +275,7 @@ function tripal_contact_perm() {
  *  return TRUE if the permission is set.
  *
  */
-function chado_contact_access($op, $node, $account ) {
+function chado_contact_node_access($node, $op, $account ) {
   if ($op == 'create') {
     if (!user_access('create chado_contact content', $account)) {
       return FALSE;
@@ -284,7 +354,7 @@ function chado_contact_insert($node) {
       ORDER BY CVTS.name ASC 
     ";
     $prop_types = chado_query($sql);
-    while ($prop = db_fetch_object($prop_types)) {
+    while ($prop = $prop_types->fetchObject()) {
       $properties_list[$prop->cvterm_id] = $prop->name;
     }   
   
@@ -333,8 +403,8 @@ function chado_contact_insert($node) {
     if (!$contact_id) {
        // next add the item to the drupal table
       $sql = "INSERT INTO {chado_contact} (nid, vid, contact_id) ".
-             "VALUES (%d, %d, %d)";
-      db_query($sql, $node->nid, $node->vid, $contact['contact_id']);
+             "VALUES (:nid, :vid, :contact_id)";
+      db_query($sql, array(':nid'=> $node->nid, ':vid' => $node->vid, ':contact_id' => $contact['contact_id']));
     }
   }
   else {
@@ -367,8 +437,8 @@ function chado_contact_update($node) {
   $contact_id = chado_get_id_for_node('contact', $node->nid) ;
   
   // check to see if this contact name doens't already exists.    
-  $sql = "SELECT contact_id FROM {contact} WHERE NOT contact_id = %d AND name = '%s'";
-  $contact = db_fetch_object(chado_query($sql, $contact_id, $node->contact_name));
+  $sql = "SELECT contact_id FROM {contact} WHERE NOT contact_id = :contact_id AND name = :name";
+  $contact = chado_query($sql, array(':contact_id' => $contact_id, ':name' => $node->contact_name))->fetchObject();
   if ($contact) {
     drupal_set_message(t('A contact with this name already exists. Cannot perform update.'), 'warning');
     return;  
@@ -407,7 +477,7 @@ function chado_contact_update($node) {
     ORDER BY CVTS.name ASC 
   ";
   $prop_types = chado_query($sql);
-  while ($prop = db_fetch_object($prop_types)) {
+  while ($prop = $prop_types->fetchObject()) {
     $properties_list[$prop->cvterm_id] = $prop->name;
   }
   
@@ -520,22 +590,16 @@ function chado_contact_delete(&$node) {
 
   // Remove data from {chado_contact}, {node} and {node_revisions} tables of
   // drupal database
-  $sql_del = "DELETE FROM {chado_contact} ".
-             "WHERE nid = %d ".
-             "AND vid = %d";
-  db_query($sql_del, $node->nid, $node->vid);
-  $sql_del = "DELETE FROM {node_revisions} ".
-             "WHERE nid = %d ".
-             "AND vid = %d";
-  db_query($sql_del, $node->nid, $node->vid);
-  $sql_del = "DELETE FROM {node} ".
-             "WHERE nid = %d ".
-             "AND vid = %d";
-  db_query($sql_del, $node->nid, $node->vid);
+  $sql_del = "DELETE FROM {chado_contact} WHERE nid = :nid AND vid = :vid";
+  db_query($sql_del, array(':nid' => $node->nid, ':vid' => $node->vid));
+  $sql_del = "DELETE FROM {node_revision} WHERE nid = :nid AND vid = :vid";
+  db_query($sql_del, array(':nid' => $node->nid, ':vid' => $node->vid));
+  $sql_del = "DELETE FROM {node} WHERE nid = :nid AND vid = :vid";
+  db_query($sql_del, array(':nid' => $node->nid, ':vid' => $node->vid));
 
   // Remove data from contact and contactprop tables of chado database as well
-  chado_query("DELETE FROM {contactprop} WHERE contact_id = %d", $contact_id);
-  chado_query("DELETE FROM {contact} WHERE contact_id = %d", $contact_id);
+  chado_query("DELETE FROM {contactprop} WHERE contact_id = :contact_id", array(':contact_id' => $contact_id));
+  chado_query("DELETE FROM {contact} WHERE contact_id = :contact_id", array(':contact_id' => $contact_id));
 }
 /**
  *
@@ -556,18 +620,18 @@ function tripal_contact_preprocess_tripal_contact_relationships(&$variables) {
       INNER JOIN {contact} C              ON PR.object_id  = C.contact_id
       INNER JOIN {cvterm} CVT             ON PR.type_id    = CVT.cvterm_id
       LEFT  JOIN public.chado_contact CP  ON C.contact_id  = CP.contact_id
-    WHERE PR.subject_id = %d
+    WHERE PR.subject_id = :contact_id
   ";
-  $as_subject = chado_query($sql, $contact->contact_id);
+  $as_subject = chado_query($sql, array(':contact_id' => $contact->contact_id));
   $sql = "
     SELECT C.name, C.contact_id, CP.nid, CVT.name as rel_type
     FROM contact_relationship PR
       INNER JOIN {contact} C              ON PR.subject_id = C.contact_id
       INNER JOIN {cvterm} CVT             ON PR.type_id    = CVT.cvterm_id
       LEFT  JOIN public.chado_contact CP  ON C.contact_id  = CP.contact_id
-    WHERE PR.object_id = %d
+    WHERE PR.object_id = :contact_id
   ";
-  $as_object = chado_query($sql, $contact->contact_id);
+  $as_object = chado_query($sql, array(':contact_id' => $contact->contact_id));
 
   // combine both object and subject relationshisp into a single array
   $relationships = array();
@@ -575,7 +639,7 @@ function tripal_contact_preprocess_tripal_contact_relationships(&$variables) {
   $relationships['subject'] = array();
 
   // iterate through the object relationships
-  while ($relationship = db_fetch_object($as_object)) {
+  while ($relationship = $as_object->fetchObject()) {
 
      // get the relationship and child types
      $rel_type = t(preg_replace('/_/', " ", $relationship->rel_type));
@@ -591,7 +655,7 @@ function tripal_contact_preprocess_tripal_contact_relationships(&$variables) {
   }
 
   // now add in the subject relationships
-  while ($relationship = db_fetch_object($as_subject)) {
+  while ($relationship = $as_subject->fetchObject()) {
 
      // get the relationship and child types
      $rel_type = t(preg_replace('/_/', " ", $relationship->rel_type));

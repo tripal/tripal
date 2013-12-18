@@ -188,13 +188,13 @@ function tripal_stock_perm() {
  * Implement hook_access().
  *
  * This hook allows node modules to limit access to the node types they define.
- *
- *  @param $op
- *  The operation to be performed
- *
+ * 
  *  @param $node
  *  The node on which the operation is to be performed, or, if it does not yet exist, the
  *  type of node to be created
+ *
+ *  @param $op
+ *  The operation to be performed
  *
  *  @param $account
  *  A user object representing the user for whom the operation is to be performed
@@ -207,7 +207,7 @@ function tripal_stock_perm() {
  *
  * @ingroup tripal_stock
  */
-function chado_stock_access($op, $node, $account) {
+function chado_stock_node_access($node, $op, $account) {
   if ($op == 'create') {
     if (!user_access('create chado_stock content', $account)) {
       return FALSE;

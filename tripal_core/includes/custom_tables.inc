@@ -296,9 +296,7 @@ function tripal_custom_tables_form_validate($form, &$form_state) {
         $results = db_query($sql, array(':table_id' => $table_id));
         $ct = $results->fetchObject();
         if ($ct->table_name != $schema_array['table']) {
-          $previous_db = tripal_db_set_active('chado');
-          $exists = db_table_exists($schema_array['table']);
-          tripal_db_set_active($previous_db);        
+          $exists = db_table_exists('chado.' . $schema_array['table']);
           if ($exists) {
             form_set_error($form_state['values']['schema'],
               t("The table name already exists, please choose a different name."));  

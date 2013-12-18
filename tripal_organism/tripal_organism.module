@@ -400,17 +400,11 @@ function chado_organism_delete($node) {
   }
 
   // Remove data from the {chado_organism}, {node}, and {node_revisions} tables
-  $sql_del = "DELETE FROM {chado_organism} " .
-             "WHERE nid = :nid " .
-             "AND vid = :vid";
+  $sql_del = "DELETE FROM {chado_organism} WHERE nid = :nid AND vid = :vid";
   db_query($sql_del, array(':nid' => $node->nid, ':vid' => $node->vid));
-  $sql_del = "DELETE FROM {node} " .
-             "WHERE nid = :nid " .
-             "AND vid = :vid";
+  $sql_del = "DELETE FROM {node} WHERE nid = :nid AND vid = :vid";
   db_query($sql_del, array(':nid' => $node->nid, ':vid' => $node->vid));
-  $sql_del = "DELETE FROM {node_revision} " .
-             "WHERE nid = ':nid' " .
-             "AND vid = ':vid'";
+  $sql_del = "DELETE FROM {node_revision} WHERE nid = ':nid' AND vid = ':vid'";
   db_query($sql_del, array(':nid' => $node->nid, ':vid' => $node->vid));
 
   // Test dependency before deleting from chado database. If a library or
@@ -426,8 +420,7 @@ function chado_organism_delete($node) {
   }
   else {
     drupal_set_message(t("Organism deleted from drupal. Warning: at least one " .
-                       "library or feature depends on this organism. It was " .
-               "not removed from chado."));
+      "library or feature depends on this organism. It was not removed from chado."));
   }
 }
 /**

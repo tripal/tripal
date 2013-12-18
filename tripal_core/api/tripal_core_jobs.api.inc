@@ -180,17 +180,21 @@ function tripal_jobs_get_end_time($job) {
  *
  * @param $job_id
  *   The job_id of the job to be re-ran
+ * @param $goto_jobs_page
+ *   If set to TRUE then after the re run job is added Drupal will redirect to the jobs page
  *
  * @ingroup tripal_jobs_api
  */
 function tripal_jobs_rerun($job_id, $goto_jobs_page = TRUE) {
   global $user;
+  
+  $user_id = $user->uid;
 
   $sql = "SELECT * FROM {tripal_jobs} WHERE job_id = :job_id";
   $results = db_query($sql, array(':job_id' => $job_id));
   $job = $results->fetchObject();
   $args = explode("::", $job->arguments);
-  $job_id = tripal_add_job($job->job_name, $job->modulename, $job->callback, $args, $user->uid, $job->priority);
+  $job_id = tripal_add_job($job->job_name, $job->modulename, $job->callback, $args, $user_id, $job->priority);
 
   if ($goto_jobs_page) {
     drupal_goto("admin/tripal/tripal_jobs");

@@ -134,7 +134,7 @@ function tripal_feature_set_urls($na = NULL, $job = NULL) {
   
   // get the number of records we need to set URLs for
   $csql = "SELECT count(*) FROM {chado_feature}";
-  $num_nodes = db_result(db_query($csql));
+  $num_nodes = db_query($csql)->fetchField();
     
   // calculate the interval at which we will print an update on the screen
   $num_set = 0;
@@ -164,7 +164,7 @@ function tripal_feature_set_urls($na = NULL, $job = NULL) {
   // get the list of features that have been synced
   $sql = "SELECT * FROM {chado_feature}";
   $nodes = db_query($sql);  
-  while ($node = db_fetch_object($nodes)) {
+  while ($node = $nodes->fetchObject()) {
    
     // get the URL alias
     $src = "node/$node->nid";
@@ -183,7 +183,7 @@ function tripal_feature_set_urls($na = NULL, $job = NULL) {
     }
     
     // remove any previous alias and then add the new one
-    $success = db_query("EXECUTE del_url_alias_by_src('%s')", $src);    
+    $success = db_query("EXECUTE del_url_alias_by_src(:src)", array(':src' => $src));    
     if (!$success) {
       db_query('DEALLOCATE "del_url_alias_by_src"');
       db_query('DEALLOCATE "ins_url_alias_nisrds"');
@@ -191,7 +191,7 @@ function tripal_feature_set_urls($na = NULL, $job = NULL) {
       watchdog('trp-seturl', "Failed Removing URL Alias: %src", array('%src' => $src), WATCHDOG_ERROR);
       return;
     }
-    $success = db_query("EXECUTE ins_url_alias_nisrds('%s', '%s')", $src, $dst);
+    $success = db_query("EXECUTE ins_url_alias_nisrds(:src, :dst)", array(':src' => $src, ':dst' => $dst));
     if (!$success) {
       db_query('DEALLOCATE "del_url_alias_by_src"');
       db_query('DEALLOCATE "ins_url_alias_nisrds"');
@@ -315,6 +315,7 @@ function tripal_feature_sync_features($max_sync = 0, $organism_id = NULL,
 
   print "Looking for features of type: $allowed_types\n";
 
+  # TODO: fix the hard-coding of variables in this SQL statement
   $so_terms = split(' ', $allowed_types);
   $where_cvt = "";
   foreach ($so_terms as $term) {
@@ -341,12 +342,13 @@ function tripal_feature_sync_features($max_sync = 0, $organism_id = NULL,
   $where_org = drupal_substr($where_org, 0, drupal_strlen($where_org)-3);  # strip trailing 'OR'
 
   // use this SQL statement to get the features that we're going to upload
-  $sql = "SELECT feature_id " .
-        "FROM {FEATURE} F " .
-        "  INNER JOIN {Cvterm} CVT ON F.type_id = CVT.cvterm_id " .
-        "  INNER JOIN {CV} on CV.cv_id = CVT.cv_id " .
-        "WHERE ($where_cvt) AND ($where_org) AND CV.name = 'sequence' " .
-        "ORDER BY feature_id";
+  $sql = "
+    SELECT feature_id 
+    FROM {FEATURE} F 
+      INNER JOIN {Cvterm} CVT ON F.type_id = CVT.cvterm_id 
+      INNER JOIN {CV} on CV.cv_id = CVT.cv_id 
+    WHERE ($where_cvt) AND ($where_org) AND CV.name = 'sequence' 
+    ORDER BY feature_id";
 
   // get the list of features
   $results = chado_query($sql);
@@ -354,7 +356,7 @@ function tripal_feature_sync_features($max_sync = 0, $organism_id = NULL,
   // load into ids array
   $count = 0;
   $ids = array();
-  while ($id = db_fetch_object($results)) {
+  while ($id = $results->fetchObject()) {
     $ids[$count] = $id->feature_id;
     $count++;
   }
@@ -365,7 +367,7 @@ function tripal_feature_sync_features($max_sync = 0, $organism_id = NULL,
   // pre-create the SQL statement that will be used to check
   // if a feature has already been synced.  We skip features
   // that have been synced
-  $sql = "SELECT * FROM {chado_feature} WHERE feature_id = %d";
+  $sql = "SELECT * FROM {chado_feature} WHERE feature_id = :feature_id";
 
   // Iterate through features that need to be synced
   $interval = intval($count * 0.01);
@@ -384,7 +386,7 @@ function tripal_feature_sync_features($max_sync = 0, $organism_id = NULL,
     if ($max_sync and $i == $max_sync) {
       return '';
     }
-    if (!db_fetch_object(db_query($sql, $feature_id))) {
+    if (!db_query($sql, array(':feature_id' => $feature_id))->fetchObject()) {
 
       # parsing all the features can cause memory overruns
       # we are not sure why PHP does not clean up the memory as it goes
@@ -422,24 +424,28 @@ function tripal_feature_sync_feature($feature_id) {
   }
 
   // get information about this feature
-  $fsql = "SELECT F.feature_id, F.name, F.uniquename,O.genus, " .
-         "    O.species,CVT.name as cvname,F.residues,F.organism_id " .
-         "FROM {FEATURE} F " .
-         "  INNER JOIN {Cvterm} CVT ON F.type_id = CVT.cvterm_id " .
-         "  INNER JOIN {Organism} O ON F.organism_id = O.organism_ID " .
-         "WHERE F.feature_id = %d";
-  $feature = db_fetch_object(chado_query($fsql, $feature_id));
+  $fsql = "
+    SELECT F.feature_id, F.name, F.uniquename,O.genus, 
+      O.species,CVT.name as cvname,F.residues,F.organism_id 
+    FROM {FEATURE} F 
+      INNER JOIN {Cvterm} CVT ON F.type_id = CVT.cvterm_id 
+      INNER JOIN {Organism} O ON F.organism_id = O.organism_ID 
+    WHERE F.feature_id = :feature_id
+  ";
+  $feature = chado_query($fsql, array(':feature_id' => $feature_id))->fetchObject();
 
   // get the synonyms for this feature
-  $synsql = "SELECT S.name " .
-            "FROM {feature_synonym} FS " .
-            "  INNER JOIN {synonym} S on FS.synonym_id = S.synonym_id " .
-            "WHERE FS.feature_id = %d";
-  $synonyms = chado_query($synsql, $feature_id);
+  $synsql = "
+    SELECT S.name 
+    FROM {feature_synonym} FS 
+      INNER JOIN {synonym} S on FS.synonym_id = S.synonym_id 
+    WHERE FS.feature_id = :feature_id
+  ";
+  $synonyms = chado_query($synsql, array(':feature_id' => $feature_id));
 
   // now add these synonyms to the feature object as a single string
   $synstring = '';
-  while ($synonym = db_fetch_object($synonyms)) {
+  while ($synonym = $synonyms->fetchObject()) {
     $synstring .= "$synonym->name\n";
   }
   $feature->synonyms = $synstring;
@@ -448,14 +454,12 @@ function tripal_feature_sync_feature($feature_id) {
   // but without a corresponding entry in the chado_feature table if so then we want to
   // clean up that node.  (If a node is found we don't know if it belongs to our feature or
   // not since features can have the same name/title.)
-  $tsql =  "SELECT * FROM {node} N " .
-           "WHERE title = '%s'";
-  $cnsql = "SELECT * FROM {chado_feature} " .
-           "WHERE nid = %d";
-  $nodes = db_query($tsql, $feature->name);
+  $tsql =  "SELECT * FROM {node} N WHERE title = :title";
+  $cnsql = "SELECT * FROM {chado_feature} WHERE nid = :nid";
+  $nodes = db_query($tsql, array(':title' => $feature->name));
   // cycle through all nodes that may have this title
-  while ($node = db_fetch_object($nodes)) {
-    $feature_nid = db_fetch_object(db_query($cnsql, $node->nid));
+  while ($node = $nodes->fetchObject()) {
+    $feature_nid = db_query($cnsql, array(':nid' => $node->nid))->fetchObject();
     if (!$feature_nid) {
       drupal_set_message(t("%feature_id: A node is present but the chado_feature entry is missing... correcting", array('%feature_id' => $feature_id)));
       node_delete($node->nid);
@@ -464,21 +468,19 @@ function tripal_feature_sync_feature($feature_id) {
 
   // check if this feature already exists in the chado_feature table.
   // if we have a chado feature, we want to check to see if we have a node
-  $cfsql = "SELECT * FROM {chado_feature} " .
-           "WHERE feature_id = %d";
+  $cfsql = "SELECT * FROM {chado_feature} WHERE feature_id = :feature_id";
   // @coder-ignore: don't need to use db_rewrite_sql() since need all nodes regardless of access control
-  $nsql =  "SELECT * FROM {node} N " .
-           "WHERE nid = %d";
-  $chado_feature = db_fetch_object(db_query($cfsql, $feature->feature_id));
+  $nsql =  "SELECT * FROM {node} N WHERE nid = :nid";
+  $chado_feature = db_query($cfsql, array(':feature_id' => $feature->feature_id))->fetchObject();
   if ($chado_feature) {
     drupal_set_message(t("%feature_id: A chado_feature entry exists", array('%feature_id' => $feature_id)));
-    $node = db_fetch_object(db_query($nsql, $chado_feature->nid));
+    $node = db_query($nsql, array(':nid' => $chado_feature->nid))->fetchObject();
     if (!$node) {
       // if we have a chado_feature but not a node then we have a problem and
       // need to cleanup
       drupal_set_message(t("%feature_id: The node is missing, but has a chado_feature entry... correcting", array('%feature_id' => $feature_id)));
-      $df_sql = "DELETE FROM {chado_feature} WHERE feature_id = %d";
-      db_query($df_sql, $feature_id);
+      $df_sql = "DELETE FROM {chado_feature} WHERE feature_id = :feature_id";
+      db_query($df_sql, array(':feature_id' => $feature_id));
     }
     else {
       drupal_set_message(t("%feature_id: A corresponding node exists", array('%feature_id' => $feature_id)));
@@ -497,8 +499,8 @@ function tripal_feature_sync_feature($feature_id) {
   // will call the hook_submit function which
   if ($create_node) {
     // get the organism for this feature
-    $sql = "SELECT * FROM {organism} WHERE organism_id = %d";
-    $organism = db_fetch_object(chado_query($sql, $feature->organism_id));
+    $sql = "SELECT * FROM {organism} WHERE organism_id = :organism_id";
+    $organism = chado_query($sql, array(':organism_id' => $feature->organism_id))->fetchObject();
 
     drupal_set_message(t("%feature_id: Creating node $feature->name", array('%feature_id' => $feature_id)));
     $new_node = new stdClass();

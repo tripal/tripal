@@ -78,7 +78,7 @@ function get_tripal_featuremap_admin_form_taxonomy_set(&$form) {
 
   // iterate through all of the maps
   $lib_boxes = array();
-  while ($featuremap = db_fetch_object($lib_rset)) {
+  while ($featuremap = $lib_rset->fetchObject()) {
     $lib_boxes[$featuremap->featuremap_id] = "$featuremap->name";
   }
 
@@ -123,7 +123,7 @@ function get_tripal_featuremap_admin_form_reindex_set(&$form) {
 
   // iterate through all of the maps
   $lib_boxes = array();
-  while ($featuremap = db_fetch_object($lib_rset)) {
+  while ($featuremap = $lib_rset->fetchObject()) {
     $lib_boxes[$featuremap->featuremap_id] = "$featuremap->name";
   }
   $form['reindex']['description'] = array(
@@ -170,11 +170,11 @@ function get_tripal_featuremap_admin_form_sync_set(&$form) {
   // a message stating that all maps are currently synced.
   $lib_boxes = array();
   $added = 0;
-  while ($featuremap = db_fetch_object($lib_rset)) {
+  while ($featuremap = $lib_rset->fetchObject()) {
     // check to see if the map is already present as a node in drupal.
     // if so, then skip it.
-    $sql = "SELECT * FROM {chado_featuremap} WHERE featuremap_id = %d";
-    if (!db_fetch_object(db_query($sql, $featuremap->featuremap_id))) {
+    $sql = "SELECT * FROM {chado_featuremap} WHERE featuremap_id = :featuremap_id";
+    if (!db_query($sql, array(':featuremap_id' => $featuremap->featuremap_id))->fetchObject()) {
       $lib_boxes[$featuremap->featuremap_id] = "$featuremap->name";
       $added++;
     }
@@ -238,8 +238,8 @@ function tripal_featuremap_admin_validate($form, &$form_state) {
     }
     if ($featuremap_id and preg_match("/^\d+$/i", $featuremap_id)) {
       // get the map info
-      $sql = "SELECT * FROM {featuremap} WHERE featuremap_id = %d";
-      $featuremap = db_fetch_object(chado_query($sql, $featuremap_id));
+      $sql = "SELECT * FROM {featuremap} WHERE featuremap_id = :featuremap_id";
+      $featuremap = chado_query($sql, array(':featuremap_id' => $featuremap_id))->fetchObject();
       $to_sync[$featuremap_id] = $featuremap->name;
     }
   }
@@ -263,8 +263,8 @@ function tripal_featuremap_admin_validate($form, &$form_state) {
     foreach ($featuremaps as $featuremap_id) {
       if ($featuremap_id and preg_match("/^\d+$/i", $featuremap_id)) {
         // get the map info
-        $sql = "SELECT * FROM {featuremap} WHERE featuremap_id = %d";
-        $featuremap = db_fetch_object(chado_query($sql, $featuremap_id));
+        $sql = "SELECT * FROM {featuremap} WHERE featuremap_id = :featuremap_id";
+        $featuremap = chado_query($sql, array(':featuremap_id' => $featuremap_id))->fetchObject();
         $job_args[0] = $featuremap_id;
         tripal_add_job("Reindex features for map: $featuremap->name", 'tripal_featuremap',
          'tripal_featuremap_reindex_features', $job_args, $user->uid);
@@ -279,8 +279,8 @@ function tripal_featuremap_admin_validate($form, &$form_state) {
     foreach ($featuremaps as $featuremap_id) {
       if ($featuremap_id and preg_match("/^\d+$/i", $featuremap_id)) {
         // get the map info
-        $sql = "SELECT * FROM {featuremap} WHERE featuremap_id = %d";
-        $featuremap = db_fetch_object(chado_query($sql, $featuremap_id));
+        $sql = "SELECT * FROM {featuremap} WHERE featuremap_id = :featuremap_id";
+        $featuremap = chado_query($sql, array(':featuremap_id' => $featuremap_id))->fetchObject();
         $job_args[0] = $featuremap_id;
         tripal_add_job("Set taxonomy for features in map: $featuremap->name", 'tripal_featuremap',
          'tripal_featuremap_taxonify_features', $job_args, $user->uid);
@@ -307,24 +307,24 @@ function tripal_featuremap_sync_featuremaps($featuremap_id = NULL, $job_id = NUL
 
   // get the list of featuremaps and create new nodes
   if (!$featuremap_id) {
-    $sql = "SELECT * FROM {featuremap} L";
+    $sql = "SELECT * FROM {featuremap} F";
     $results = chado_query($sql);
   }
   else {
-    $sql = "SELECT * FROM {featuremap} L WHERE featuremap_id = %d";
-    $results = chado_query($sql, $featuremap_id);
+    $sql = "SELECT * FROM {featuremap} F WHERE featuremap_id = :featuremap_id";
+    $results = chado_query($sql, array(':featuremap_id' => $featuremap_id));
   }
 
   // We'll use the following SQL statement for checking if the map
   // already exists as a drupal node.
   $sql = "SELECT * FROM {chado_featuremap} ".
-        "WHERE featuremap_id = %d";
+        "WHERE featuremap_id = :featuremap_id";
 
-  while ($featuremap = db_fetch_object($results)) {
+  while ($featuremap = $results->fetchObject()) {
 
     // check if this map already exists in the drupal database. if it
     // does then skip this map and go to the next one.
-    if (!db_fetch_object(db_query($sql, $featuremap->featuremap_id))) {
+    if (!db_query($sql, array(':featuremap_id' => $featuremap->featuremap_id))->fetchObject()) {
 
     $new_node = new stdClass();
     $new_node->type = 'chado_featuremap';

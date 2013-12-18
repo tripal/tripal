@@ -5,6 +5,24 @@
  */
 
 /**
+ * Implementation of hook_requirements().
+ */
+function tripal_featuremap_requirements($phase) {
+  $requirements = array();
+  if ($phase == 'install') {
+    // make sure chado is installed
+    if (!tripal_core_is_chado_installed()) {
+      $requirements ['tripal_featuremap'] = array(
+        'title' => "tripal_featuremap",
+        'value' => "ERROR: Chado most be installed before this module can be enabled",
+        'severity' => REQUIREMENT_ERROR,
+      );
+    }
+  }
+  return $requirements;
+}
+
+/**
  * Implementation of hook_install().
  *
  * @ingroup tripal_featuremap
@@ -13,10 +31,6 @@ function tripal_featuremap_install() {
   // create the module's data directory
   tripal_create_moddir('tripal_featuremap');
 
-  // create the tables that correlate drupal nodes with chado
-  // features, maps, etc....
-  drupal_install_schema('tripal_featuremap');
-  
   // add the featuremapprop table to Chado
   tripal_featuremap_add_custom_tables();
   
@@ -26,43 +40,20 @@ function tripal_featuremap_install() {
 }
 
 /**
- * Implementation of hook_schema().
- *
- * @ingroup tripal_featuremap
- */
-function tripal_featuremap_schema() {
-  $schema = tripal_featuremap_get_schemas();
-  return $schema;
-}
-
-/**
  * Implementation of hook_uninstall().
  *
  * @ingroup tripal_featuremap
  */
 function tripal_featuremap_uninstall() {
-  drupal_uninstall_schema('tripal_featuremap');
 
-  // Get the list of nodes to remove
-  $sql_lib_id = "SELECT nid, vid ".
-                "FROM {node} ".
-                "WHERE type='chado_featuremap'";
-  $result = db_query($sql_lib_id);
-  while ($node = db_fetch_object($result)) {
-    node_delete($node->nid);
-  }
 }
 
 /**
- * This function simply defines all tables needed for the module to work
- * correctly.  By putting the table definitions in a separate function we
- * can easily provide the entire list for hook_install or individual
- * tables for an update.
+ * Implementation of hook_schema().
  *
  * @ingroup tripal_featuremap
  */
-function tripal_featuremap_get_schemas() {
-  $schema = array();
+function tripal_featuremap_schema() {
   $schema['chado_featuremap'] = array(
     'fields' => array(
       'vid' => array(
@@ -95,23 +86,7 @@ function tripal_featuremap_get_schemas() {
   return $schema;
 }
 
-/**
- * Implementation of hook_requirements(). 
- */
-function tripal_featuremap_requirements($phase) {
-  $requirements = array();
-  if ($phase == 'install') {
-    // make sure chado is installed
-    if (!tripal_core_is_chado_installed()) {
-      $requirements ['tripal_featuremap'] = array(
-            'title' => "tripal_featuremap",
-            'value' => "ERROR: Chado most be installed before this module can be enabled",
-            'severity' => REQUIREMENT_ERROR,
-      );
-    }
-  }
-  return $requirements;
-}
+
 
 /*
  * 
@@ -218,7 +193,7 @@ function tripal_featuremap_add_custom_tables(){
       ),
     ),
   );  
-  tripal_core_create_custom_table($ret, 'featuremapprop', $schema, TRUE);
+  tripal_core_create_custom_table('featuremapprop', $schema, TRUE);
   
   // add the featuremap_dbxref table to Chado
   $schema = array (
@@ -270,7 +245,7 @@ function tripal_featuremap_add_custom_tables(){
     ),
     'referring_tables' => NULL,
   );
-  tripal_core_create_custom_table($ret, 'featuremap_dbxref', $schema, TRUE);
+  tripal_core_create_custom_table('featuremap_dbxref', $schema, TRUE);
   
   $schema = array (
     'table' => 'featureposprop',
@@ -330,23 +305,5 @@ function tripal_featuremap_add_custom_tables(){
       ),
     ),
   );
-  tripal_core_create_custom_table($ret, 'featureposprop', $schema, TRUE);
-}
-
-/**
- *  Update for Drupal 6.x, Tripal 1.1, FeatureMap Module 1.1
- *  This update adds a new featuremapprop, featureposprop, and featuremap_dbxref tables and 
- *  CV terms for the featuremap_property CV
- *
- */
-function tripal_featuremap_update_6100() {
-
-  tripal_featuremap_add_custom_tables();  
-  tripal_featuremap_add_cvterms();
-   
-  $ret = array(
-    '#finished' => 1,
-  );
-
-  return $ret;
+  tripal_core_create_custom_table('featureposprop', $schema, TRUE);
 }

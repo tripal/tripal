@@ -117,8 +117,8 @@ function tripal_contact_admin_validate($form, &$form_state) {
     foreach ($contacts as $contact_id) {
       if ($contact_id and preg_match("/^\d+$/i", $contact_id)) {
         // get the map info
-        $sql = "SELECT * FROM {contact} WHERE contact_id = %d";
-        $contact = db_fetch_object(chado_query($sql, $contact_id));
+        $sql = "SELECT * FROM {contact} WHERE contact_id = :contact_id";
+        $contact = db_fetch_object(chado_query($sql, array(':contact_id' => $contact_id)));
         $job_args[0] = $contact_id;
         tripal_add_job("Reindex features for map: $contact->name", 'tripal_contact',
          'tripal_contact_reindex_features', $job_args, $user->uid);

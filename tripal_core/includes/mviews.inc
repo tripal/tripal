@@ -25,14 +25,14 @@ function tripal_mview_report($mview_id) {
 
   // create a table with each row containig stats for
   // an individual job in the results set.
-  $output  = "<p>" . l("Return to table of materialized views", "admin/tripal/mviews/") . "</p>";
+  $output  = "<p>" . l("Return to table of materialized views", "admin/tripal/schema/mviews/") . "</p>";
   $output .= "<p>Details for <b>$mview->name</b>:</p>";
   
   // build the URLs using the url function so we can handle installations where
   // clean URLs are or are not used
-  $update_url = url("admin/tripal/mviews/action/update/$mview->mview_id");
-  $delete_url = url("admin/tripal/mviews/action/delete/$mview->mview_id");
-  $edit_url = url("admin/tripal/mviews/edit/$mview->mview_id");
+  $update_url = url("admin/tripal/schema/mviews/action/update/$mview->mview_id");
+  $delete_url = url("admin/tripal/schema/mviews/action/delete/$mview->mview_id");
+  $edit_url = url("admin/tripal/schema/mviews/edit/$mview->mview_id");
   $rows[] = array('Actions', "<a href='$update_url'>Populate</a>, <a href='$edit_url'>Edit</a>,  <a href='$delete_url'>Delete</a>");
   
   if ($mview->last_update > 0) {    
@@ -102,20 +102,20 @@ function tripal_mviews_report() {
     }
 
     $rows[] = array(
-      l(t('View'), "admin/tripal/mviews/report/$mview->mview_id") . " | " .
-      l(t('Edit'), "admin/tripal/mviews/edit/$mview->mview_id") . " | " .
-      l(t('Populate'), "admin/tripal/mviews/action/update/$mview->mview_id"),
+      l(t('View'), "admin/tripal/schema/mviews/report/$mview->mview_id") . " | " .
+      l(t('Edit'), "admin/tripal/schema/mviews/edit/$mview->mview_id") . " | " .
+      l(t('Populate'), "admin/tripal/schema/mviews/action/update/$mview->mview_id"),
       $mview->name,
       $update,
       $mview->status,
       $mview->comment,
-      l(t('Delete'), "admin/tripal/mviews/action/delete/$mview->mview_id"),
+      l(t('Delete'), "admin/tripal/schema/mviews/action/delete/$mview->mview_id"),
     );
   }
 
   $rows[] = array(
     'data' => array(
-      array('data' => l(t('Create a new materialized view.'), "admin/tripal/mviews/new"),
+      array('data' => l(t('Create a new materialized view.'), "admin/tripal/schema/mviews/new"),
         'colspan' => 6),
     )
   );
@@ -275,7 +275,7 @@ function tripal_mviews_form($form, &$form_state = NULL, $mview_id = NULL) {
   
   $form['return_link'] = array(
     '#type' => 'item',
-    '#description' => l("Return to table of materialized views", "admin/tripal/mviews/"),
+    '#description' => l("Return to table of materialized views", "admin/tripal/schema/mviews/"),
   );
   
 
@@ -391,7 +391,7 @@ function tripal_mviews_form($form, &$form_state = NULL, $mview_id = NULL) {
     '#weight'       => 9,
     '#executes_submit_callback' => TRUE,
   );
-  $form['#redirect'] = 'admin/tripal/mviews';
+  $form['#redirect'] = 'admin/tripal/schema/mviews';
 
   return $form;
 }

@@ -97,13 +97,11 @@ require_once "tripal_core.schema_v1.11.api.inc";
 function tripal_core_chado_insert($table, $values, $options = array()) {
 
   if (!is_array($values)) {
-    watchdog('tripal_core', 'Cannot pass non array as values for inserting.', array(),
-      WATCHDOG_ERROR);
+    watchdog('tripal_core', 'Cannot pass non array as values for inserting.', array(), WATCHDOG_ERROR);
     return FALSE;
   }
   if (count($values)==0) {
-    watchdog('tripal_core', 'Cannot pass an empty array as values for inserting.', array(),
-      WATCHDOG_ERROR);
+    watchdog('tripal_core', 'Cannot pass an empty array as values for inserting.', array(), WATCHDOG_ERROR);
     return FALSE;
   }
 
@@ -2426,15 +2424,19 @@ function tripal_core_chado_schema_exists() {
   // @coder-ignore: acting on pg_catalog schema rather then drupal schema therefore, table prefixing does not apply
   $sql = "
     SELECT nspname
-    FROM pg_catalog.pg_namespace
-    WHERE nspname = 'chado'
+    FROM pg_namespace
+    WHERE
+      has_schema_privilege(nspname, 'USAGE') AND
+      nspname = 'chado'
   ";
   $results = db_query($sql);
   $name = $results->fetchObject();
   if ($name) {
+    variable_set('chado_schema_exists', FALSE);
     return TRUE;
   }
   else {
+    variable_set('chado_schema_exists', TRUE);
     return FALSE;
   }
 }
@@ -2464,8 +2466,7 @@ function tripal_core_schema_exists($schema) {
   $name = $results->fetchObject();
   if (strcmp($name->nspname, $schema) != 0) {
     return FALSE;
-  }
-
+  }  
   return TRUE;
 }
 
@@ -2795,7 +2796,7 @@ function tripal_core_is_chado_installed() {
     return TRUE;
   }
 
-  // check to make sure the chado schema exists
+  // check to make sure the chado schema exists          
   return tripal_core_chado_schema_exists();
 }
 
@@ -2856,7 +2857,7 @@ function tripal_db_set_active($dbname  = 'default') {
   global $databases, $active_db;
 
   $chado_exists = variable_get('chado_schema_exists', FALSE);
-  if ($chado_exists) {
+  if ($dbname ) {
     if ($dbname == 'chado') {
       db_query('set search_path to chado');
       return 'default';

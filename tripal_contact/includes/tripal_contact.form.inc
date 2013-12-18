@@ -170,13 +170,13 @@ function chado_contact_validate($node, &$form) {
   if ($node->contact_id) {
     $sql = "
       SELECT * FROM {contact} 
-      WHERE name = '%s' AND NOT contact_id = %d
+      WHERE name = :name AND NOT contact_id = :contact_id
     ";
-    $contact = db_fetch_object(chado_query($sql, $title, $contact_id));
+    $contact = db_fetch_object(chado_query($sql, array(':name' => $title, ':contact_id' => $contact_id)));
   }
   else {
-    $sql = "SELECT * FROM {contact} WHERE name = '%s'";
-    $contact = db_fetch_object(chado_query($sql, $title));
+    $sql = "SELECT * FROM {contact} WHERE name = :name";
+    $contact = db_fetch_object(chado_query($sql, array(':name' => $title)));
   }
   if ($contact) {
     form_set_error('title', t('The contact name already exists. Please choose another'));
@@ -362,10 +362,10 @@ function chado_contact_node_form_add_contactprop_table_props(&$form, $form_state
     SELECT CVT.cvterm_id, CVT.name, CVT.definition, PP.value, PP.rank
     FROM {contactprop} PP
       INNER JOIN {cvterm} CVT on CVT.cvterm_id = PP.type_id
-    WHERE PP.contact_id = %d
+    WHERE PP.contact_id = :contact_id
     ORDER BY CVT.name, PP.rank
   ";
-  $contact_props = chado_query($sql, $contact_id);
+  $contact_props = chado_query($sql, array(':contact_id' => $contact_id));
   while ($prop = db_fetch_object($contact_props)) {
 
     $type_id = $prop->cvterm_id;

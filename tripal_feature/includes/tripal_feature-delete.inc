@@ -10,7 +10,7 @@ function tripal_feature_delete_form() {
   $org_rset = chado_query($sql);
   $organisms = array();
   $organisms[''] = '';
-  while ($organism = db_fetch_object($org_rset)) {
+  while ($organism = $org_rset->fetchObject()) {
     $organisms[$organism->organism_id] = "$organism->genus $organism->species ($organism->common_name)";
   }
   $form['desc'] = array(
@@ -50,7 +50,7 @@ function tripal_feature_delete_form() {
   $org_rset = chado_query($sql);
   $analyses = array();
   $analyses[''] = '';
-  while ($analysis = db_fetch_object($org_rset)) {
+  while ($analysis = $org_rset->fetchObject()) {
     $analyses[$analysis->analysis_id] = "$analysis->name ($analysis->program $analysis->programversion, $analysis->sourcename)";
   }
   //  TODO: ADD THIS BACK IN LATER
@@ -82,14 +82,18 @@ function tripal_feature_delete_form_validate($form, &$form_state) {
 
   // check to make sure the types exists
   if ($seq_type) {
-    $cvtermsql = "SELECT CVT.cvterm_id
-                  FROM {cvterm} CVT
-                     INNER JOIN {cv} CV on CVT.cv_id = CV.cv_id
-                     LEFT JOIN {cvtermsynonym} CVTS on CVTS.cvterm_id = CVT.cvterm_id
-                  WHERE cv.name = '%s' and (CVT.name = '%s' or CVTS.synonym = '%s')";
-    $cvterm = db_fetch_object(chado_query($cvtermsql, 'sequence', $seq_type, $seq_type));
+    $cvtermsql = "
+      SELECT CVT.cvterm_id
+      FROM {cvterm} CVT
+        INNER JOIN {cv} CV on CVT.cv_id = CV.cv_id
+        LEFT JOIN {cvtermsynonym} CVTS on CVTS.cvterm_id = CVT.cvterm_id
+      WHERE cv.name = :cvname and (CVT.name = :name or CVTS.synonym = :synonym)
+    ";
+    $cvterm = chado_query($cvtermsql, 
+      array(':cvname' => 'sequence', ':name' => $seq_type, ':synonym' => $seq_type))->fetchObject();
     if (!$cvterm) {
-      form_set_error('seq_type', t("The Sequence Ontology (SO) term selected for the sequence type is not available in the database. Please check spelling or select another."));
+      form_set_error('seq_type', t("The Sequence Ontology (SO) term selected for the " .
+      "sequence type is not available in the database. Please check spelling or select another."));
     }
   }
 }
