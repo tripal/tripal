@@ -344,7 +344,7 @@ function chado_project_insert($node) {
     if (!$project_id) {
        // next add the item to the drupal table
       $sql = "
-        INSERT INTO {chado_project} (nid, vid, project_id) 
+        INSERT INTO {chado_project} (nid, vid, project_id)
         VALUES (:nid, :vid, :project_id)
       ";
       db_query($sql, array(':nid' => $node->nid, ':vid' => $node->vid, ':project_id' => $project['project_id']));
@@ -452,19 +452,19 @@ function chado_project_load($node) {
 function tripal_project_block_info() {
 
   $blocks['projectbase']['info'] = t('Tripal Project Details');
-  $blocks['projectbase']['cache'] = BLOCK_NO_CACHE;
+  $blocks['projectbase']['cache'] = DRUPAL_NO_CACHE;
 
   $blocks['projectprops']['info'] = t('Tripal Project Properties');
-  $blocks['projectprops']['cache'] = BLOCK_NO_CACHE;
+  $blocks['projectprops']['cache'] = DRUPAL_NO_CACHE;
 
   $blocks['projectpubs']['info'] = t('Tripal Project Publications');
-  $blocks['projectpubs']['cache'] = BLOCK_NO_CACHE;
+  $blocks['projectpubs']['cache'] = DRUPAL_NO_CACHE;
 
   $blocks['projectcont']['info'] = t('Tripal Project Contact');
-  $blocks['projectcont']['cache'] = BLOCK_NO_CACHE;
+  $blocks['projectcont']['cache'] = DRUPAL_NO_CACHE;
 
   $blocks['projectrels']['info'] = t('Tripal Project Relationships');
-  $blocks['projectrels']['cache'] = BLOCK_NO_CACHE;
+  $blocks['projectrels']['cache'] = DRUPAL_NO_CACHE;
 
   return $blocks;
 }

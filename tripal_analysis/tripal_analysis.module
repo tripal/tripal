@@ -587,10 +587,10 @@ function tripal_analysis_theme() {
  */
 function tripal_analysis_block_info() {
   $blocks['base']['info'] = t('Tripal Analysis Details');
-  $blocks['base']['cache'] = BLOCK_NO_CACHE;
+  $blocks['base']['cache'] = DRUPAL_NO_CACHE;
 
   $blocks['featureblast']['info'] = t('Tripal Feature Analyses');
-  $blocks['featureblast']['cache'] = BLOCK_NO_CACHE;
+  $blocks['featureblast']['cache'] = DRUPAL_NO_CACHE;
 
   return $blocks;
 }
