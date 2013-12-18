@@ -12,27 +12,6 @@ require('api/tripal_library.api.inc');
 require('includes/tripal_library.admin.inc');
 
 /**
- * Display help and module information
- * @param path which path of the site we're displaying help
- * @param arg array that holds the current path as would be returned from arg()
- * function
- * @return help text for the path
- *
- * @ingroup tripal_library
- */
-function tripal_library_help($path, $arg) {
-  $output = '';
-  switch ($path) {
-    case "admin/help#tripal_library":
-      $output = '<p>'.
-      t("Displays links to nodes created on this date") .
-               '</p>';
-      break;
-  }
-  return $output;
-}
-
-/**
  * Provide information to drupal about the node types that we're creating
  * in this module
  *
