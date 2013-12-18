@@ -26,8 +26,8 @@ function tripal_bulk_loader_modify_template_base_form($form_state = NULL, $mode)
       $form_state['storage']['template_id'] = $_GET['template_id'];
     }
 
-    $sql = "SELECT * FROM {tripal_bulk_loader_template} WHERE template_id=%d";
-    $result = db_fetch_object(db_query($sql, $form_state['storage']['template_id']));
+    $sql = "SELECT * FROM {tripal_bulk_loader_template} WHERE template_id=:template";
+    $result = db_query($sql, array(':template' => $form_state['storage']['template_id']))->fetchObject();
     $form_state['storage']['template'] = unserialize($result->template_array);
     $form_state['storage']['template_name'] = $result->name;
 
@@ -65,7 +65,7 @@ function tripal_bulk_loader_modify_template_base_form($form_state = NULL, $mode)
       $resource = db_query($sql);
       $templates = array();
       $templates[''] = 'Select a Template';
-      while ($r = db_fetch_object($resource)) {
+      while ($r = $resource->fetchObject()) {
         $templates[$r->template_id] = $r->name;
       }
 
@@ -356,8 +356,8 @@ function tripal_bulk_loader_modify_template_base_form_submit($form, &$form_state
 
   $form_state['rebuild'] = TRUE;
   if ($form_state['storage']['template_id']) {
-    $sql = "SELECT * FROM {tripal_bulk_loader_template} WHERE template_id=%d";
-    $result = db_fetch_object(db_query($sql, $form_state['storage']['template_id']));
+    $sql = "SELECT * FROM {tripal_bulk_loader_template} WHERE template_id=:template";
+    $result = db_query($sql, array(':template' => $form_state['storage']['template_id']))->fetchObject();
     $form_state['storage']['template'] = unserialize($result->template_array);
   }
 
@@ -373,8 +373,8 @@ function tripal_bulk_loader_modify_template_base_form_submit($form, &$form_state
     case 'Edit Template':
       $form_state['storage']['template_id'] = $form_state['values']['template_id'];
 
-      $sql = "SELECT * FROM {tripal_bulk_loader_template} WHERE template_id=%d";
-      $result = db_fetch_object(db_query($sql, $form_state['storage']['template_id']));
+      $sql = "SELECT * FROM {tripal_bulk_loader_template} WHERE template_id=:template";
+      $result = db_query($sql, array(':template' => $form_state['storage']['template_id']))->fetchObject();
       $form_state['storage']['template'] = unserialize($result->template_array);
       $form_state['storage']['template_name'] = $result->name;
 
@@ -512,7 +512,7 @@ function tripal_bulk_loader_delete_template_base_form() {
   $resource = db_query($sql);
   $templates = array();
   $templates[''] = 'Select a Template';
-  while ($r = db_fetch_object($resource)) {
+  while ($r = $resource->fetchObject()) {
     $templates[$r->template_id] = $r->name;
   }
   $form['template_name'] = array(
@@ -543,8 +543,8 @@ function tripal_bulk_loader_delete_template_base_form() {
  * @ingroup tripal_bulk_loader
  */
 function tripal_bulk_loader_delete_template_base_form_submit($form, &$form_state) {
-  $sql = "DELETE FROM {tripal_bulk_loader_template} WHERE template_id=%d";
-  db_query($sql, $form_state['values']['template_name']);
+  $sql = "DELETE FROM {tripal_bulk_loader_template} WHERE template_id=:template";
+  db_query($sql, array(':template' => $form_state['values']['template_name']))->execute();
 }
 
 /**
@@ -590,7 +590,7 @@ function tripal_bulk_loader_import_export_template_form($form_state = NULL, $mod
     $resource = db_query($sql);
     $templates = array();
     $templates[''] = 'Select a Template';
-    while ($r = db_fetch_object($resource)) {
+    while ($r = $resource->fetchObject()) {
       $templates[$r->template_id] = $r->name;
     }
 
@@ -637,7 +637,7 @@ function tripal_bulk_loader_import_export_template_form($form_state = NULL, $mod
 function tripal_bulk_loader_import_export_template_form_submit($form, &$form_state) {
   switch ($form_state['values']['mode']) {
     case 'export':
-      $record = db_fetch_object(db_query("SELECT * FROM {tripal_bulk_loader_template} WHERE template_id=%d", $form_state['values']['template_id']));
+      $record = db_query("SELECT * FROM {tripal_bulk_loader_template} WHERE template_id=:template", array(':template' => $form_state['values']['template_id']))->fetchObject();
       //$form_state['storage']['template_array'] = $record->template_array;
       $t = var_export(unserialize($record->template_array), TRUE);
       $t = preg_replace("/\n\s+array/", "array", $t); // move array( to previous line
@@ -699,8 +699,8 @@ function tripal_bulk_loader_edit_template_record_form(&$form_state = NULL) {
 
   // If this is the first load of the form (no form state) we need to initialize some variables
   if (!$form_state['storage']['template']) {
-    $sql = "SELECT * FROM {tripal_bulk_loader_template} WHERE template_id=%d";
-    $template = db_fetch_object(db_query($sql, $template_id));
+    $sql = "SELECT * FROM {tripal_bulk_loader_template} WHERE template_id=:template";
+    $template = db_query($sql, array(':template' => $template_id))->fetchObject();
     $form_state['storage']['template_array'] = unserialize($template->template_array);
     $form_state['storage']['template'] = $template;
 
@@ -1040,8 +1040,8 @@ function tripal_bulk_loader_add_template_field_form(&$form_state = NULL) {
 
    // If this is the first load of the form (no form state) we need to initialize some variables
   if (!$form_state['storage']['template']) {
-    $sql = "SELECT * FROM {tripal_bulk_loader_template} WHERE template_id=%d";
-    $template = db_fetch_object(db_query($sql, $template_id));
+    $sql = "SELECT * FROM {tripal_bulk_loader_template} WHERE template_id=:template";
+    $template = db_query($sql, array(':template' => $template_id))->fetchObject();
     $form_state['storage']['template_array'] = unserialize($template->template_array);
     $form_state['storage']['template'] = $template;
 
@@ -1780,8 +1780,8 @@ function tripal_bulk_loader_edit_template_field_form(&$form_state = NULL) {
 
   // If this is the first load of the form (no form state) we need to initialize some variables
   if (!$form_state['storage']['template']) {
-    $sql = "SELECT * FROM {tripal_bulk_loader_template} WHERE template_id=%d";
-    $template = db_fetch_object(db_query($sql, $template_id));
+    $sql = "SELECT * FROM {tripal_bulk_loader_template} WHERE template_id=:template";
+    $template = db_query($sql, array(':template' => $template_id))->fetchObject();
     $form_state['storage']['template_array'] = unserialize($template->template_array);
     $form_state['storage']['template'] = $template;
 

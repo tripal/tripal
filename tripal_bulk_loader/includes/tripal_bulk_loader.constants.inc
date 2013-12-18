@@ -41,13 +41,14 @@ function tripal_bulk_loader_update_constant($nid, $group_id, $table, $field, $re
   );
 
   // Check to see if already exists
-  $exists = db_fetch_object(db_query(
-    "SELECT constant_id FROM {tripal_bulk_loader_constants} WHERE nid=%d AND record_id=%d AND field_id=%d AND group_id=%d",
-    $record['nid'],
-    $record['record_id'],
-    $record['field_id'],
-    $record['group_id']
-  ));
+  $exists = db_query(
+    "SELECT constant_id FROM {tripal_bulk_loader_constants} WHERE nid=:nid AND record_id=:record AND field_id=:field AND group_id=:group",
+    array(
+      ':nid' => $record['nid'],
+      ':record' => $record['record_id'],
+      ':field' => $record['field_id'],
+      ':group' => $record['group_id']
+  ))->fetchObject();
   if ($exists->constant_id) {
     $record['constant_id'] = $exists->constant_id;
     $status = drupal_write_record('tripal_bulk_loader_constants', $record, 'constant_id');
@@ -327,7 +328,7 @@ function tripal_bulk_loader_set_constants_form_submit($form, $form_state) {
 
   $op = $form_state['values'][ $form_state['clicked_button']['#name'] ];
   if (strcmp('Add Constant Set', $op) == 0) {
-      $max_group = db_fetch_object(db_query("SELECT max(group_id) as value FROM {tripal_bulk_loader_constants} WHERE nid=%d", $form_state['values']['nid']));
+      $max_group = db_query("SELECT max(group_id) as value FROM {tripal_bulk_loader_constants} WHERE nid=:nid", array(':nid' => $form_state['values']['nid']))->fetchObject();
       foreach ($indexes as $record_id => $array) {
         foreach ($array as $field_id) {
           tripal_bulk_loader_update_constant(
@@ -592,7 +593,7 @@ function tripal_bulk_loader_delete_constant_set_form_submit($form, $form_state) 
   $group_id = $form_state['values']['group_id'];
   $nid = $form_state['values']['nid'];
   if ($nid && $form_state['values']['confirm']) {
-    db_query("DELETE FROM {tripal_bulk_loader_constants} WHERE nid=%d AND group_id=%d", $nid, $group_id);
+    db_query("DELETE FROM {tripal_bulk_loader_constants} WHERE nid=:nid AND group_id=:group", array(':nid' => $nid, ':group' => $group_id))->execute();
     drupal_set_message(t('Constant set successfully deleted.'));
   }
 
