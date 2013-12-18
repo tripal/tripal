@@ -24,16 +24,16 @@ require_once "includes/cvtermpath_form.inc";
 function tripal_cv_init() {
 
   // add the tripal_cv JS and CSS
-  drupal_add_css(drupal_get_path('theme', 'tripal') . '/css/tripal_cv.css');
-  drupal_add_js(drupal_get_path('theme', 'tripal') . '/js/tripal_cv.js');
+  drupal_add_css(drupal_get_path('module', 'tripal_cv') . '/theme/css/tripal_cv.css');
+  drupal_add_js(drupal_get_path('module', 'tripal_cv') . '/theme/js/tripal_cv.js');
 
   // add the jgCharts.js
-  drupal_add_js(drupal_get_path('theme', 'tripal') . '/js/jgcharts/jgcharts.js');
+  drupal_add_js(drupal_get_path('module', 'tripal_cv') . '/theme/js/jgcharts/jgcharts.js');
 
   // add the jsTree JS and CSS
-  drupal_add_css(drupal_get_path('theme', 'tripal') . '/js/jsTree/source/tree_component.css');
-  drupal_add_js(drupal_get_path('theme', 'tripal') . '/js/jsTree/source/_lib.js');
-  drupal_add_js(drupal_get_path('theme', 'tripal') . '/js/jsTree/source/tree_component.js');
+  drupal_add_css(drupal_get_path('module', 'tripal_cv') . '/theme/js/jsTree/source/tree_component.css');
+  drupal_add_js(drupal_get_path('module', 'tripal_cv') . '/theme/js/jsTree/source/_lib.js');
+  drupal_add_js(drupal_get_path('module', 'tripal_cv') . '/theme/js/jsTree/source/tree_component.js');
 }
 
 /**
@@ -56,7 +56,7 @@ function tripal_cv_menu() {
     'title' => 'Help',
     'description' => "A description of the Tripal Controlled Vocabulary module including a short description of it's usage.",
     'page callback' => 'theme',
-    'page arguments' => array('tripal_cv_admin'),
+    'page arguments' => array('tripal_cv_help'),
     'access arguments' => array('administer controlled vocabularies'),
     'type' => MENU_NORMAL_ITEM,
     'weight' => 10
@@ -198,7 +198,7 @@ function tripal_cv_menu() {
  */
 function tripal_cv_help ($path, $arg) {
   if ($path == 'admin/help#tripal_cv') {
-    return theme('tripal_cv_admin', array());
+    return theme('tripal_cv_help', array());
   }
 }
 
@@ -266,11 +266,14 @@ function tripal_cv_form_alter(&$form, &$form_state, $form_id) {
  * @ingroup tripal_db
  */
 function tripal_cv_theme() {
-  return array(
-    'tripal_cv_admin' => array(
-      'template' => 'tripal_cv_admin',
+  $theme_path = drupal_get_path('module', 'tripal_cv') . '/theme';
+  $items = array(
+    'tripal_cv_help' => array(
+      'template' => 'tripal_cv_help',
       'arguments' =>  array(NULL),
-      'path' => drupal_get_path('module', 'tripal_cv') . '/theme',
+      'path' => $theme_path,
     ),
   );
+  
+  return $items;
 }

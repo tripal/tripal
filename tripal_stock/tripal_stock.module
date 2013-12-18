@@ -45,7 +45,7 @@ function tripal_stock_menu() {
     'title' => 'Stocks',
     'description' => 'Basic Description of Tripal Stock Module Functionality',
     'page callback' => 'theme',
-    'page arguments' => array('tripal_stock_admin'),
+    'page arguments' => array('tripal_stock_help'),
     'access arguments' => array('administer tripal stocks'),
     'type' => MENU_NORMAL_ITEM
   );
@@ -54,7 +54,7 @@ function tripal_stock_menu() {
     'title' => 'Configuration',
     'description' => 'Settings for Chado Stocks',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_stock_admin'),
+    'page arguments' => array('tripal_stock_help'),
     'access arguments' => array('administer tripal stocks'),
     'type' => MENU_NORMAL_ITEM
   );
@@ -259,9 +259,10 @@ function tripal_stock_views_api() {
  * @ingroup tripal_stock
  */
 function tripal_stock_theme() {
-  return array(
+  $theme_path = drupal_get_path('module', 'tripal_stock') . '/theme';
+  $items = array(
 
-    // Property edit forms--------------------------
+    // property edit forms function templates
     'tripal_stock_edit_ALL_properties_form' => array(
       'arguments' => array('form'),
       'function' => 'theme_tripal_stock_edit_ALL_properties_form',
@@ -274,55 +275,76 @@ function tripal_stock_theme() {
       'arguments' => array('form'),
       'function' => 'theme_tripal_stock_edit_ALL_relationships_form',
     ),
-    // Block Templates------------------------------
+    // tripal_stock templates
     'tripal_stock_base' => array(
       'arguments' => array('node' => NULL),
       'template' => 'tripal_stock_base',
+      'path' => "$theme_path/tripal_stock",
     ),
     'tripal_stock_properties' => array(
       'arguments' => array('node' => NULL),
       'template' => 'tripal_stock_properties',
+      'path' => "$theme_path/tripal_stock",
     ),
     'tripal_stock_references' => array(
       'arguments' => array('node' => NULL),
       'template' => 'tripal_stock_references',
+      'path' => "$theme_path/tripal_stock",
     ),
     'tripal_stock_relationships' => array(
       'arguments' => array('node' => NULL),
       'template' => 'tripal_stock_relationships',
+      'path' => "$theme_path/tripal_stock",
     ),
     'tripal_stock_synonyms' => array(
       'arguments' => array('node' => NULL),
       'template' => 'tripal_stock_synonyms',
+      'path' => "$theme_path/tripal_stock",
     ),
     'tripal_stock_collections' => array(
-       'arguments' => array('node' => NULL),
-       'template' => 'tripal_stock_collections',
+      'arguments' => array('node' => NULL),
+      'template' => 'tripal_stock_collections',
+      'path' => "$theme_path/tripal_stock",
     ),
     'tripal_stock_collections' => array(
-       'arguments' => array('node' => NULL),
-       'template' => 'tripal_stock_collections',
+      'arguments' => array('node' => NULL),
+      'template' => 'tripal_stock_collections',
+      'path' => "$theme_path/tripal_stock",
     ),
     'tripal_stock_phenotypes' => array(
-       'arguments' => array('node' => NULL),
-       'template' => 'tripal_stock_phenotypes',
+      'arguments' => array('node' => NULL),
+      'template' => 'tripal_stock_phenotypes',
+      'path' => "$theme_path/tripal_stock",
     ),
     'tripal_stock_locations' => array(
-       'arguments' => array('node' => NULL),
-       'template' => 'tripal_stock_locations',
+      'arguments' => array('node' => NULL),
+      'template' => 'tripal_stock_locations',
+      'path' => "$theme_path/tripal_stock",
     ),    
+    // tripal_organism templates
     'tripal_organism_stocks' => array(
-       'arguments' => array('node' => NULL),
-       'template' => 'tripal_organism_stocks',
+      'arguments' => array('node' => NULL),
+      'template' => 'tripal_organism_stocks',
+      'path' => "$theme_path/tripal_organism",
     ),    
-    'tripal_stock_admin' => array(
-      'template' => 'tripal_stock_admin',  
+    // help template
+    'tripal_stock_help' => array(
+      'template' => 'tripal_stock_help',  
       'arguments' =>  array(NULL),  
-      'path' => drupal_get_path('module', 'tripal_stock') . '/theme', 
+      'path' => $theme_path, 
     ),
   );
+  return $items;
 }
-
+/**
+ * Implements hook_help()
+ * Purpose: Adds a help page to the module list
+ */
+function tripal_stock_help ($path, $arg) {
+  if ($path == 'admin/help#tripal_stock') {
+    return theme('tripal_stock_help', array());
+  }
+}
 /**
  * Implements hook_node_info(): registers a stock node type
  *

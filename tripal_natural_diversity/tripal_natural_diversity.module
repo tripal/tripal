@@ -35,20 +35,27 @@ function tripal_natural_diversity_views_api() {
  * @ingroup tripal_natural_diversity
  */
 function tripal_natural_diversity_theme() {
-  return array(
+  $theme_path = drupal_get_path('module', 'tripal_natural_diversity') . '/theme';
+  $items = array(
+    // tripal_feature templates
     'tripal_feature_nd_genotypes' => array(
       'arguments' => array('node' => NULL),
       'template' => 'tripal_feature_nd_genotypes',
+      'path' => "$theme_path/tripal_feature",
     ),
+    // tripal_stock templates
     'tripal_stock_nd_genotypes' => array(
       'arguments' => array('node' => NULL),
       'template' => 'tripal_stock_nd_genotypes',
+      'path' => "$theme_path/tripal_stock",
     ),
     'tripal_stock_nd_phenotypes' => array(
       'arguments' => array('node' => NULL),
       'template' => 'tripal_stock_nd_phenotypes',
+      'path' => "$theme_path/tripal_stock",
     ),
   );
+  return $items;
 }
 
 /**

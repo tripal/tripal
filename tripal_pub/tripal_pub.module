@@ -24,8 +24,8 @@ require_once "includes/importers/AGL.inc";
  * @ingroup tripal_pub
  */
 function tripal_pub_init() {
-  drupal_add_js(drupal_get_path('theme', 'tripal') . '/js/tripal_pub.js');
-  drupal_add_css(drupal_get_path('theme', 'tripal') . '/css/tripal_pub.css');
+  drupal_add_css(drupal_get_path('module', 'tripal_pub') . '/theme/css/tripal_pub.css');
+  drupal_add_js(drupal_get_path('module', 'tripal_pub') . '/theme/js/tripal_pub.js');
 }
 
 
@@ -83,7 +83,7 @@ function tripal_pub_menu() {
     'title' => 'Publications',
     'description' => ('A module for interfacing the GMOD chado database with Drupal, providing viewing of publications'),
     'page callback' => 'theme',
-    'page arguments' => array('tripal_pub_admin'),
+    'page arguments' => array('tripal_pub_help'),
     'access arguments' => array('administer tripal pubs'),
     'type' => MENU_NORMAL_ITEM
   );
@@ -92,7 +92,7 @@ function tripal_pub_menu() {
     'title' => 'Configuration',
     'description' => 'Configure the Tripal publication module.',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_pub_admin'),
+    'page arguments' => array('tripal_pub_help'),
     'access arguments' => array('administer tripal pubs'),
     'type' => MENU_NORMAL_ITEM,
   );
@@ -197,45 +197,65 @@ function tripal_pub_menu() {
  *
  */
 function tripal_pub_theme() {
-
-  $themes = array(
-  // node templates
+  $theme_path = drupal_get_path('module', 'tripal_pub') . '/theme';
+  $items = array(
+    // node templates
     'tripal_pub_base' => array(
       'arguments' => array('node' => NULL),
+      'template' => 'tripal_project_base',
+      'path' => "$theme_path/tripal_pub",
     ),
     'tripal_pub_properties' => array(
-      'arguments' => array('node' => NULL)
+      'arguments' => array('node' => NULL),
+      'template' => 'tripal_project_base',
+      'path' => "$theme_path/tripal_pub",
     ),
     'tripal_pub_authors' => array(
-      'arguments' => array('node' => NULL)
+      'arguments' => array('node' => NULL),
+      'template' => 'tripal_project_base',
+      'path' => "$theme_path/tripal_pub",
     ),
     'tripal_pub_references' => array(
-      'arguments' => array('node' => NULL)
+      'arguments' => array('node' => NULL),
+      'template' => 'tripal_project_base',
+      'path' => "$theme_path/tripal_pub",
     ),
     'tripal_pub_relationships' => array(
-      'arguments' => array('node' => NULL)
+      'arguments' => array('node' => NULL),
+      'template' => 'tripal_project_base',
+      'path' => "$theme_path/tripal_pub",
     ),
     'tripal_pub_featuremaps' => array(
-      'arguments' => array('node' => NULL)
+      'arguments' => array('node' => NULL),
+      'template' => 'tripal_project_base',
+      'path' => "$theme_path/tripal_pub",
     ),
     'tripal_pub_features' => array(
-      'arguments' => array('node' => NULL)
+      'arguments' => array('node' => NULL),
+      'template' => 'tripal_project_base',
+      'path' => "$theme_path/tripal_pub",
     ),
     'tripal_pub_libraries' => array(
-      'arguments' => array('node' => NULL)
+      'arguments' => array('node' => NULL),
+      'template' => 'tripal_project_base',
+      'path' => "$theme_path/tripal_pub",
     ),
     'tripal_pub_projects' => array(
-      'arguments' => array('node' => NULL)
+      'arguments' => array('node' => NULL),
+      'template' => 'tripal_project_base',
+      'path' => "$theme_path/tripal_pub",
     ),
     'tripal_pub_stocks' => array(
-      'arguments' => array('node' => NULL)
+      'arguments' => array('node' => NULL),
+      'template' => 'tripal_project_base',
+      'path' => "$theme_path/tripal_pub",
     ),
 
     // instructions page for the pub module
-    'tripal_pub_admin' => array(
-      'template' => 'tripal_pub_admin',  
+    'tripal_pub_help' => array(
+      'template' => 'tripal_pub_help',  
       'arguments' =>  array(NULL),  
-      'path' => drupal_get_path('module', 'tripal_pub') . '/theme' 
+      'path' => $theme_path, 
     ),
 
     // themed forms
@@ -250,9 +270,18 @@ function tripal_pub_theme() {
     ),
   );
 
-  return $themes;
+  return $items;
 }
 
+/**
+ * Implements hook_help()
+ * Purpose: Adds a help page to the module list
+ */
+function tripal_pub_help ($path, $arg) {
+  if ($path == 'admin/help#tripal_pub') {
+    return theme('tripal_pub_help', array());
+  }
+}
 /**
  * Implement hook_perm().
  */

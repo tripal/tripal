@@ -72,7 +72,7 @@ function tripal_project_menu() {
     'title' => 'Help',
     'description' => ("A description of the Tripal Project module including a short description of it's usage."),
     'page callback' => 'theme',
-    'page arguments' => array('tripal_project_admin'),
+    'page arguments' => array('tripal_project_help'),
     'access arguments' => array('adminster tripal projects'),
     'type' => MENU_NORMAL_ITEM
   );
@@ -80,7 +80,7 @@ function tripal_project_menu() {
   $items[ 'admin/tripal/chado/tripal_project/configuration' ]= array(
     'title' => 'Configuration',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_project_admin'),
+    'page arguments' => array('tripal_project_help'),
     'access arguments' => array('adminster tripal projects'),
     'type' => MENU_NORMAL_ITEM
   );
@@ -94,7 +94,7 @@ function tripal_project_menu() {
  */
 function tripal_project_help ($path, $arg) {
   if ($path == 'admin/help#tripal_project') {
-    return theme('tripal_project_admin', array());
+    return theme('tripal_project_help', array());
   }
 }
 
@@ -190,33 +190,41 @@ function chado_project_node_access($node, $op, $account) {
  * @ingroup tripal_project
  */
 function tripal_project_theme() {
-  return array(
+  $theme_path = drupal_get_path('module', 'tripal_project') . '/theme';
+  
+  $items = array(
     'tripal_project_base' => array(
       'arguments' => array('node' => NULL),
       'template' => 'tripal_project_base',
+      'path' => "$theme_path/tripal_project",
     ),
     'tripal_project_contact' => array(
-       'arguments' => array('node' => NULL),
-       'template' => 'tripal_project_contact',
+      'arguments' => array('node' => NULL),
+      'template' => 'tripal_project_contact',
+      'path' => "$theme_path/tripal_project",
     ),
     'tripal_project_publications' => array(
-       'arguments' => array('node' => NULL),
-       'template' => 'tripal_project_publications',
+      'arguments' => array('node' => NULL),
+      'template' => 'tripal_project_publications',
+      'path' => "$theme_path/tripal_project",
     ),
     'tripal_project_relationships' => array(
-       'arguments' => array('node' => NULL),
-       'template' => 'tripal_project_relationships',
+      'arguments' => array('node' => NULL),
+      'template' => 'tripal_project_relationships',
+      'path' => "$theme_path/tripal_project",
     ),
     'tripal_project_properties' => array(
-       'arguments' => array('node' => NULL),
-       'template' => 'tripal_project_properties',
+      'arguments' => array('node' => NULL),
+      'template' => 'tripal_project_properties',
+      'path' => "$theme_path/tripal_project",
     ),
-    'tripal_project_admin' => array(
-      'template' => 'tripal_project_admin',
+    'tripal_project_help' => array(
+      'template' => 'tripal_project_help',
       'arguments' =>  array(NULL),
-      'path' => drupal_get_path('module', 'tripal_project') . '/theme'
+      'path' => $theme_path,
     ),
   );
+  return $items;
 }
 /**
  * Implementation of hook_form().

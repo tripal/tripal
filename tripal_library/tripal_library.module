@@ -144,7 +144,7 @@ function tripal_library_menu() {
     'title' => 'Libraries',
     'description' => 'Basic Description of Tripal Library Module Functionality',
     'page callback' => 'theme',
-    'page arguments' => array('tripal_library_admin'),
+    'page arguments' => array('tripal_library_help'),
     'access arguments' => array('administer tripal libraries'),
     'type' => MENU_NORMAL_ITEM,
   );
@@ -153,7 +153,7 @@ function tripal_library_menu() {
     'title' => 'Configuration',
     'description' => 'Configure the Tripal Library module',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_library_admin'),
+    'page arguments' => array('tripal_library_help'),
     'access arguments' => array('administer tripal libraries'),
     'type' => MENU_NORMAL_ITEM,
   );
@@ -212,50 +212,74 @@ function tripal_library_node_view(&$node, $view_mode, $langcode) {
  * @ingroup tripal_library
  */
 function tripal_library_theme() {
-  return array(
+  $theme_path = drupal_get_path('module', 'tripal_library') . '/theme';
+  $items = array(
+    // themed functions
     'tripal_library_library_table' => array(
-       'arguments' => array('libraries'),
+      'arguments' => array('libraries'),
     ),
     'tripal_library_search_index' => array(
-       'arguments' => array('node'),
+      'arguments' => array('node'),
     ),
     'tripal_library_search_result' => array(
-       'arguments' => array('node'),
+      'arguments' => array('node'),
     ),
+    // tripal_organism templates
     'tripal_organism_libraries' => array(
-       'arguments' => array('node' => NULL),
-       'template' => 'tripal_organism_libraries',
+      'arguments' => array('node' => NULL),
+      'template' => 'tripal_organism_libraries',
+      'path' => "$theme_path/tripal_organism",
     ),
+    // tripal_feature templates
     'tripal_feature_libraries' => array(
-       'arguments' => array('node' => NULL),
-       'template' => 'tripal_feature_libraries',
+      'arguments' => array('node' => NULL),
+      'template' => 'tripal_feature_libraries',
+      'path' => "$theme_path/tripal_feature",
     ),
+    // tripal_library templates
     'tripal_library_base' => array(
-       'arguments' => array('node' => NULL),
-       'template' => 'tripal_library_base',
+      'arguments' => array('node' => NULL),
+      'template' => 'tripal_library_base',
+      'path' => "$theme_path/tripal_library",
     ),
     'tripal_library_synonyms' => array(
-       'arguments' => array('node' => NULL),
-       'template' => 'tripal_library_synonyms',
+      'arguments' => array('node' => NULL),
+      'template' => 'tripal_library_synonyms',
+      'path' => "$theme_path/tripal_library",
     ),
     'tripal_library_references' => array(
-       'arguments' => array('node' => NULL),
-       'template' => 'tripal_library_references',
+      'arguments' => array('node' => NULL),
+      'template' => 'tripal_library_references',
+      'path' => "$theme_path/tripal_library",
     ),
     'tripal_library_properties' => array(
-       'arguments' => array('node' => NULL),
-       'template' => 'tripal_library_properties',
+      'arguments' => array('node' => NULL),
+      'template' => 'tripal_library_properties',
+      'path' => "$theme_path/tripal_library",
     ),
     'tripal_library_terms' => array(
-       'arguments' => array('node' => NULL),
-       'template' => 'tripal_library_terms',
+      'arguments' => array('node' => NULL),
+      'template' => 'tripal_library_terms',
+      'path' => "$theme_path/tripal_library",
     ),
-    'tripal_library_admin' => array(
-      'template' => 'tripal_library_admin',
+    // help template
+    'tripal_library_help' => array(
+      'template' => 'tripal_library_help',
       'arguments' =>  array(NULL),
-      'path' => drupal_get_path('module', 'tripal_library') . '/theme',
+      'path' => $theme_path,
     ),
   );
+  return $items;
+}
+
+/**
+ * Implements hook_help()
+ * Purpose: Adds a help page to the module list
+ */
+function tripal_library_help ($path, $arg) {
+  if ($path == 'admin/help#tripal_library') {
+    return theme('tripal_library_help', array());
+  }
 }
 /**
  * @ingroup tripal_library
