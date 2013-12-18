@@ -708,7 +708,6 @@ function tripal_views_get_integration_array_for_chado_table($table_name, $base_t
   // Add Joins & Relationships for foreign keys to fields
   if (!isset($schema['foreign keys'])) {
     $schema['foreign keys'] = array();
-    watchdog('tripal_views', 'There are no foreign keys defined for %table in the Chado Schema API.', array('%table' => $table_name), WATCHDOG_WARNING);
   }
   foreach ($schema['foreign keys'] as $foreign_key_schema) {
     foreach ($foreign_key_schema['columns'] as $left_field => $right_field) {
