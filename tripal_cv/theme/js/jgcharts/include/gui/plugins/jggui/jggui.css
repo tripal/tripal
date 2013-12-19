@@ -1,0 +1,182 @@
+*{
+	font-family:"Arial","Helvetica","Verdana","FreeSans","sans-serif";
+	font-size:11px
+}	
+
+.right{
+	float:right;
+}
+.clearfix{
+	clear:both;
+}
+
+/* THICKBOX CSS */
+
+/* ----------------------------------------------------------------------------------------------------------------*/
+/* ---------->>> global settings needed for thickbox <<<-----------------------------------------------------------*/
+/* ----------------------------------------------------------------------------------------------------------------*/
+*{padding: 0; margin: 0;}
+
+
+/* ----------------------------------------------------------------------------------------------------------------*/
+/* ---------->>> thickbox specific link and font settings <<<------------------------------------------------------*/
+/* ----------------------------------------------------------------------------------------------------------------*/
+#JGG_window {
+	font: 12px Arial, Helvetica, sans-serif;
+	color: #333333;
+}
+
+
+
+/* ----------------------------------------------------------------------------------------------------------------*/
+/* ---------->>> thickbox settings <<<-----------------------------------------------------------------------------*/
+/* ----------------------------------------------------------------------------------------------------------------*/
+#JGG_overlay {
+	position: fixed;
+	z-index:100;
+	top: 0px;
+	left: 0px;
+	height:100%;
+	width:100%;
+}
+
+.JGG_overlayMacFFBGHack {background: url(macFFBgHack.png) repeat;}
+.JGG_overlayBG {
+	background-color:#000;
+	filter:alpha(opacity=75);
+	-moz-opacity: 0.75;
+	opacity: 0.75;
+}
+
+* html #JGG_overlay { /* ie6 hack */
+     position: absolute;
+     height: expression(document.body.scrollHeight > document.body.offsetHeight ? document.body.scrollHeight : document.body.offsetHeight + 'px');
+}
+
+#JGG_window {
+	position: fixed;
+	background: #000;
+	z-index: 102;
+	color:#000000;
+	display:none;
+	border: 4px solid #525252;
+	text-align:left;
+	top:50%;
+	left:50%;
+}
+
+* html #JGG_window { /* ie6 hack */
+position: absolute;
+margin-top: expression(0 - parseInt(this.offsetHeight / 2) + (JGGWindowMargin = document.documentElement && document.documentElement.scrollTop || document.body.scrollTop) + 'px');
+}
+
+#JGG_window div#JGG_content {
+	display:block;
+	/*margin: 15px 0 0 15px;*/
+	margin: 0 0 0 0;
+}
+
+
+#JGG_HideSelect{
+	z-index:99;
+	position:fixed;
+	top: 0;
+	left: 0;
+	background-color:#fff;
+	border:none;
+	filter:alpha(opacity=0);
+	-moz-opacity: 0;
+	opacity: 0;
+	height:100%;
+	width:100%;
+}
+
+* html #JGG_HideSelect { /* ie6 hack */
+     position: absolute;
+     height: expression(document.body.scrollHeight > document.body.offsetHeight ? document.body.scrollHeight : document.body.offsetHeight + 'px');
+}
+
+/* THICKBOX CSS */
+
+
+#JGG_content{
+	
+}
+#JGG_top{
+	height:300px;width:100%;padding-top:10px;padding-bottom:10px;margin:auto;text-align:center;overflow:auto;
+}
+#JGG_bottom{
+	width:100%;
+}
+
+#jggui{
+	padding-bottom:5px;
+	width:100%;
+}
+#jggui input{
+	background:#000;
+	color:#fff;
+	border:0px solid #000;
+}
+#jggui input.button{
+	border:1px solid #fff;
+	padding:5px;
+	font-weight:bold;
+}
+#jggui input.title{
+	border:1px solid #fff;
+	width:100%;
+}
+.icon{padding:10px;float:left;text-align:center;margin:auto;width:100px;border:1px solid #999;margin:5px;background:#464b5c}
+.pressed{background:#fff;cursor:hand;}
+
+textarea.export{width:90%;border:0px;}
+div.export{padding:0px;padding-top:1px;}
+ul.export li a{font-size:0.9em;}
+
+/* COLORPICKER DEMO THEMEROLLER */
+
+div.hasPicker {
+	position: static;
+	width: 80px;
+}
+
+input.hex {
+	width: 58px;
+	/*height: 1.2em;*/
+	padding-left: 4px;
+	border: 1px solid #444;
+	border-right: none;
+	float: left;
+	outline: 0;
+}
+
+.pickerIcon {
+	background:#333 url(img/icon_color_arrow.gif) no-repeat scroll 50%;
+	border: 1px solid #444;
+	display:block;
+	float: right;
+	outline: 0 !important;
+}
+.pickerIcon span.inner {
+	display: block;
+	height: 14px;/*1.5em;*/
+	width:14px;
+}
+
+input.spinner, input.hex, select {
+	border: 1px solid #333;
+	background: #222;
+	color: #fff;
+	font-size: 1.1em;
+	padding-left: 3px;
+}
+input.hex:focus, select:focus {
+	background: #111;
+	border-color: 1px solid #444;
+}
+input.hex:focus {
+	border-right: none;
+}
+
+/* COLORPICKER DEMO THEMEROLLER */	

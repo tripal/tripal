@@ -36,8 +36,8 @@ function tripal_stock_get_stock_by_nid($nid) {
  */
 function tripal_stock_get_stock_by_stock_id($stock_id) {
 
-  $sql = "SELECT nid FROM {chado_stock} WHERE stock_id=%d";
-  $r = db_fetch_object(db_query($sql, $stock_id));
+  $sql = "SELECT nid FROM {chado_stock} WHERE stock_id = :stock_id";
+  $r = db_query($sql, array(':stock_id' => $stock_id))->fetchObject();
   if (!empty($r->nid)) {
     return node_load($r->nid);
   }
@@ -61,7 +61,7 @@ function tripal_stock_get_all_stocks() {
   $sql = "SELECT stock_id, nid from {chado_stock}";
   $resource = db_query($sql);
   $stocks = array();
-  while ($r = db_fetch_object($resource)) {
+  while ($r = $resource->fetchObject()) {
     $node = node_load($r->nid);
     if ($node) {
       $stocks[$r->stock_id] = $node;

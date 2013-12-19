@@ -45,18 +45,20 @@ function chado_pub_form($node, $form_state) {
   // ontologies these are all grouped under the term 'Publication Type'
   // we want the default to be 'Journal Article'
   $sql = "
-    SELECT CVTS.cvterm_id, CVTS.name
+    SELECT 
+      CVTS.cvterm_id, CVTS.name
     FROM {cvtermpath} CVTP
       INNER JOIN {cvterm} CVTS ON CVTP.subject_id = CVTS.cvterm_id
-      INNER JOIN {cvterm} CVTO ON CVTP.object_id = CVTO.cvterm_id
-      INNER JOIN {cv} ON CVTO.cv_id = CV.cv_id
-    WHERE CV.name = 'tripal_pub' and CVTO.name = 'Publication Type' and 
+      INNER JOIN {cvterm} CVTO ON CVTP.object_id  = CVTO.cvterm_id
+      INNER JOIN {cv}          ON CVTO.cv_id      = CV.cv_id
+    WHERE 
+      CV.name = 'tripal_pub' AND CVTO.name = 'Publication Type' AND 
       NOT CVTS.is_obsolete = 1
     ORDER BY CVTS.name ASC 
   ";
   $results = chado_query($sql);
   $pub_types = array();
-  while ($pub_type = db_fetch_object($results)) {
+  while ($pub_type = $results->fetchObject()) {
     $pub_types[$pub_type->cvterm_id] = $pub_type->name;
     // if we don't have a default type then set the default to be 'Journal Article'
     if (strcmp($pub_type->name,"Journal Article") == 0 and !$d_type_id) {
@@ -72,18 +74,19 @@ function chado_pub_form($node, $form_state) {
   $properties_select[] = 'Select a Property';
   $properties_list = array();
   $sql = "
-    SELECT DISTINCT CVTS.cvterm_id, CVTS.name, CVTS.definition
+    SELECT 
+      DISTINCT CVTS.cvterm_id, CVTS.name, CVTS.definition
     FROM {cvtermpath} CVTP
       INNER JOIN {cvterm} CVTS ON CVTP.subject_id = CVTS.cvterm_id
-      INNER JOIN {cvterm} CVTO ON CVTP.object_id = CVTO.cvterm_id
-      INNER JOIN {cv} ON CVTO.cv_id = CV.cv_id
+      INNER JOIN {cvterm} CVTO ON CVTP.object_id  = CVTO.cvterm_id
+      INNER JOIN {cv}          ON CVTO.cv_id      = CV.cv_id
     WHERE CV.name = 'tripal_pub' and 
-      (CVTO.name = 'Publication Details' or CVTS.name = 'Publication Type') and 
+      (CVTO.name = 'Publication Details' OR CVTS.name = 'Publication Type') AND 
       NOT CVTS.is_obsolete = 1
     ORDER BY CVTS.name ASC 
   ";
   $prop_types = chado_query($sql);
-  while ($prop = db_fetch_object($prop_types)) {
+  while ($prop = $prop_types->fetchObject()) {
     // the 'Citation' term is special because it serves
     // both as a property and as the uniquename for the publiation table
     if ($prop->name != "Citation") {
@@ -539,11 +542,11 @@ function chado_pub_node_form_add_pubprop_table_props(&$form, $form_state, $pub_i
     SELECT CVT.cvterm_id, CVT.name, CVT.definition, PP.value, PP.rank
     FROM {pubprop} PP
       INNER JOIN {cvterm} CVT on CVT.cvterm_id = PP.type_id
-    WHERE PP.pub_id = %d
+    WHERE PP.pub_id = :pub_id
     ORDER BY CVT.name, PP.rank
   ";
-  $pub_props = chado_query($sql, $pub_id);
-  while ($prop = db_fetch_object($pub_props)) {
+  $pub_props = chado_query($sql, array(':pub_id' => $pub_id));
+  while ($prop = $pub_props->fetchObject()) {
 
     $type_id = $prop->cvterm_id;
     $rank = count($d_properties[$type_id]);

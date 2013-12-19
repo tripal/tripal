@@ -106,7 +106,7 @@ function tripal_pub_remote_search_PMID($search_array, $num_to_retrieve, $pager_i
   }
   if ($days) {
     // get the date of the day suggested
-    $past_timestamp = time() - ($days * 86400);
+    $past_timestamp = REQUEST_TIME - ($days * 86400);
     $past_date = getdate($past_timestamp);
     $search_str .= " AND (\"" . sprintf("%04d/%02d/%02d", $past_date['year'], $past_date['mon'], $past_date['mday']) . "\"[Date - Create] : \"3000\"[Date - Create]))";
   }

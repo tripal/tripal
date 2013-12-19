@@ -36,16 +36,20 @@ function tripal_genetic_views_api() {
  * @ingroup tripal_genetic
  */
 function tripal_genetic_theme() {
-  return array(
+  $theme_path = drupal_get_path('module', 'tripal_genetic') . '/theme';
+  $items = array(
     'tripal_feature_genotypes' => array(
-       'arguments' => array('node' => NULL),
-       'template' => 'tripal_feature_genotypes',
+      'arguments' => array('node' => NULL),
+      'template' => 'tripal_feature_genotypes',
+      'path' => "$theme_path/tripal_feature",
     ),
     'tripal_stock_genotypes' => array(
-       'arguments' => array('node' => NULL),
-       'template' => 'tripal_stock_genotypes',
+      'arguments' => array('node' => NULL),
+      'template' => 'tripal_stock_genotypes',
+      'path' => "$theme_path/tripal_stock",
     ),
   );
+  return $items;
 }
 
 /**

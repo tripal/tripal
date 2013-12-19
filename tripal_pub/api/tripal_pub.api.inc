@@ -134,13 +134,13 @@ function tripal_pub_update_publications($do_contact = FALSE, $dbxref = NULL, $db
   if ($dbxref and preg_match('/^(.*?):(.*?)$/', $dbxref, $matches)) {
     $dbname = $matches[1];
     $accession = $matches[2];
-    $sql .= "WHERE DBX.accession = '%s' and DB.name = '%s' ";
-    $args[] = $accession;
-    $args[] = $dbname;
+    $sql .= "WHERE DBX.accession = :accession and DB.name = :dbname ";
+    $args[':accession'] = $accession;
+    $args[':dbname'] = $dbname;
   }
   elseif ($db) {
-    $sql .= " WHERE DB.name = '%s' ";
-    $args[] = $db;
+    $sql .= " WHERE DB.name = :dbname ";
+    $args[':dbname'] = $db;
   }
   $sql .= "ORDER BY DB.name, P.pub_id";
   $results = chado_query($sql, $args);
@@ -152,7 +152,7 @@ function tripal_pub_update_publications($do_contact = FALSE, $dbxref = NULL, $db
   $search = array();      // the search array passed to the search function
 
   // iterate through the pub IDs
-  while ($pub = db_fetch_object($results)) {
+  while ($pub = $results->fetchObject()) {
     $accession = $pub->accession;
     $remote_db = $pub->db_name;
 
@@ -170,8 +170,8 @@ function tripal_pub_update_publications($do_contact = FALSE, $dbxref = NULL, $db
           'scope' => 'id',
           'operation' => '',
           'is_phrase' => 0,
-    ),
-    ),
+        ),
+      ),
     );
     $pubs = tripal_pub_get_remote_search_results($remote_db, $search, 1, 0);
     tripal_pub_add_publications($pubs, $do_contact, TRUE);
@@ -225,7 +225,7 @@ function tripal_pub_import_publications($report_email = FALSE, $do_update = FALS
   $results = db_query($sql, $args);
   $do_contact = FALSE;
   $reports = array();
-  while ($import = db_fetch_object($results)) {
+  while ($import = $results->fetchObject()) {
     print "Importing: " . $import->name . "\n";
     // keep track if any of the importers want to create contacts from authors
     if ($import->do_contact == 1) {
@@ -736,14 +736,14 @@ function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE,
     $sql = "
       DELETE FROM {pubprop} 
       WHERE 
-        pub_id = %d AND 
+        pub_id = :pub_id AND 
         NOT type_id in (
           SELECT cvterm_id
           FROM {cvterm} 
           WHERE name = 'Publication Dbxref' 
         )
     ";
-    chado_query($sql, $pub_id);
+    chado_query($sql, array(':pub_id' => $pub_id));
   }
 
   // iterate through the properties and add them
@@ -805,8 +805,8 @@ function tripal_pub_add_authors($pub_id, $authors, $do_contact) {
   $rank = 0;
 
   // first remove any of the existing pubauthor entires
-  $sql = "DELETE FROM {pubauthor} WHERE pub_id = %d";
-  chado_query($sql, $pub_id);
+  $sql = "DELETE FROM {pubauthor} WHERE pub_id = :pub_id";
+  chado_query($sql, array(':pub_id' => $pub_id));
 
   // iterate through the authors and add them to the pubauthors and contact
   // tables of chado, then link them through the custom pubauthors_contact table
@@ -1077,8 +1077,13 @@ function tripal_pub_get_publication_array($pub_id, $skip_existing = TRUE) {
   }
   // if there is no 'Author's property then try to retreive authors from the pubauthor table
   else {
-    $sql = "SELECT string_agg(surname || ' ' || givennames, ', ') FROM {pubauthor} WHERE pub_id = %d GROUP BY pub_id";
-    $au = db_result(chado_query($sql));
+    $sql = "
+      SELECT string_agg(surname || ' ' || givennames, ', ') 
+      FROM {pubauthor} 
+      WHERE pub_id = :pub_id
+      GROUP BY pub_id
+    ";
+    $au = chado_query($sql, array(':pub_id' => $pub_id))->fetchField();
     if ($au) {
       $pub_array['Authors'] = $au;
     }
@@ -1119,9 +1124,18 @@ function tripal_pub_get_publication_array($pub_id, $skip_existing = TRUE) {
   foreach ($props AS $prop) {
     $sql = 
       "SELECT value FROM {pubprop} 
-       WHERE type_id = (SELECT cvterm_id FROM {cvterm} WHERE name = '%s' AND cv_id = (SELECT cv_id FROM cv WHERE name = 'tripal_pub')) 
-       AND pub_id = %d";
-    $val = trim(db_result(chado_query($sql, $prop, $pub->pub_id)));
+       WHERE type_id = 
+         (SELECT cvterm_id 
+          FROM {cvterm} 
+          WHERE name = :cvtname AND cv_id = 
+            (SELECT cv_id 
+             FROM cv 
+             WHERE name = 'tripal_pub'
+            )
+         ) 
+       AND pub_id = :pub_id
+    ";
+    $val = trim(chado_query($sql, array(':cvtname' => $prop, ':pub_id' => $pub->pub_id))->fetchField());
     if ($val) {
       $pub_array[$prop] =$val;
     } 

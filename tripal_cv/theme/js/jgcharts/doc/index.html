@@ -1,0 +1,591 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+    <meta http-equiv="Content-type" content="text/html; charset=UTF-8" />
+    <title>jgcharts - jQuery Google Charts</title>
+    <meta http-equiv="refresh" content="0; url=../include/demo/">
+    <meta http-equiv="Content-Language" content="en-us" />
+    <meta name="author" content="Massimiliano Balestrieri" />
+    <script type="text/javascript" src="../lib/jquery/jquery-1.3.1.min.js"></script>
+    <script type="text/javascript" src="../lib/farbtastic/farbtastic.js"></script>
+    <link rel="stylesheet" href="../lib/farbtastic/farbtastic.css" type="text/css" />
+    <script type="text/javascript" src="../lib/metadata/jquery.metadata.pack.js"></script>
+    <script type="text/javascript" src="../lib/sugar-arrays.js"></script>
+    <script type="text/javascript" src="../lib/iterators.js"></script>
+    <script type="text/javascript" src="../lib/jquery.tablelib.js"></script>
+    <script type="text/javascript" src="../jgcharts.pack.js"></script>
+    <script type="text/javascript" src="../plugins/table/jgtable.pack.js"></script>
+    <script type="text/javascript"><!--
+        jQuery(document).ready(function(){
+            jQuery(".jgtable").jgtable();
+            jQuery(".example h1").click(function(){
+                jQuery(this).parent().find("div, table").toggle();
+            })
+            .trigger("click");
+            
+            
+        });
+    --></script>
+    <style type="text/css">
+        body{font-family:Trebuchet MS,Arial,FreeSans,sans-serif;}
+        .example h1{border:1px dashed #000;padding:3px;}
+        table {width:100%}
+        table tbody tr td,table tbody tr th,table thead tr th
+        {text-align:left;font-weight:normal;font-size:80%;border:1px dashed #000; padding:3px; margin:1px}
+    </style>
+</head>
+<body>
+<h1>JQuery Google Charts 0.91 - Examples (<a href="dashboard.html">try dashboard for write metadata</a>)</h1>
+<div class="example">
+<h1>Example 1</h1>
+<table id="table-0" class="jgtable {size:'650x450',type:'lc',axis_step:10,title:false,title_color:'000000',title_size:10,bar_width:30,bar_spacing:1,fillarea:true,fillbottom:true,filltop:true,colors:['FFFF00','FFCC00','99CC00'],lines:[[1,1,0],[1,1,0],[1,1,0]],bg:false,bg_type:'solid',bg_angle:90,bg_offset:false,bg_width:20,bg_trasparency:false,chbg:false,chbg_type:'solid',chbg_angle:90,chbg_offset:false,chbg_width:20,chbg_trasparency:false,grid:false,grid_x:10,grid_y:10,grid_line:10,grid_blank:10}">
+<thead>
+<tr>
+    <th></th>
+    <th class="serie">CA</th>
+    <th class="serie">DF</th>
+</tr>
+</thead>
+<tbody>
+   <tr>
+    <th class="serie">01-03</th>
+    <td>105.7</td>
+    <td>97.9</td>
+  </tr>
+  <tr>
+    <th class="serie">02-03</th>
+    <td>108.1</td>
+    <td>101.6</td>
+  </tr>
+  <tr>
+    <th class="serie">03-03</th>
+    <td>110.7</td>
+    <td>102.9</td>
+  </tr>
+  
+  <tr>
+    <th class="serie">04-03</th>
+    <td>111.0</td>
+    <td>93.7</td>
+  </tr>
+  <tr>
+    <th class="serie">05-03</th>
+    <td>110.0</td>
+    <td>89.8</td>
+  </tr>
+  <tr>
+    <th class="serie">06-03</th>
+    <td>109.0</td>
+    <td>90.7</td>
+  </tr>
+  <tr>
+    <th class="serie">07-03</th>
+    <td>107.5</td>
+    <td>93.0</td>
+  </tr>
+  <tr>
+    <th class="serie">08-03</th>
+    <td>106.1</td>
+    <td>94.5</td>
+  </tr>
+  <tr>
+    <th class="serie">09-03</th>
+    <td>104.3</td>
+    <td>91.9</td>
+  </tr>
+  <tr>
+    <th class="serie">10-03</th>
+    <td>102.0</td>
+    <td>93.9</td>
+  </tr>
+  <tr>
+    <th class="serie">11-03</th>
+    <td>102.8</td>
+    <td>93.6</td>
+  </tr>
+  <tr>
+    <th class="serie">12-03</th>
+    <td>103.8</td>
+    <td>92.6</td>
+  </tr>
+  
+  <tr>
+    <th class="serie">01-04</th>
+    <td>102.9</td>
+    <td>94.0</td>
+  </tr>
+  <tr>
+    <th class="serie">02-04</th>
+    <td>102.1</td>
+    <td>92.7</td>
+  </tr>
+  <tr>
+    <th class="serie">03-04</th>
+    <td>100.6</td>
+    <td>96.0</td>
+  </tr>
+  
+ <tr>
+    <th class="serie">04-04</th>
+    <td>101.7</td>
+    <td>97.9</td>
+  </tr>
+  <tr>
+    <th class="serie">05-04</th>
+    <td>101.8</td>
+    <td>105.0</td>
+  </tr>
+  <tr>
+    <th class="serie">06-04</th>
+    <td>103.3</td>
+    <td>104.1</td>
+  </tr>
+  <tr>
+    <th class="serie">07-04</th>
+    <td>104.0</td>
+    <td>105.1</td>
+  </tr>
+  <tr>
+    <th class="serie">08-04</th>
+    <td>103.7</td>
+    <td>108.1</td>
+  </tr>
+  <tr>
+    <th class="serie">09-04</th>
+    <td>108.4</td>
+    <td>108.4</td>
+  </tr>
+  <tr>
+    <th class="serie">10-04</th>
+    <td>109.4</td>
+    <td>113.8</td>
+  </tr>
+  <tr>
+    <th class="serie">11-04</th>
+    <td>112.0</td>
+    <td>109.1</td>
+  </tr>
+  <tr>
+    <th class="serie">12-04</th>
+    <td>112.6</td>
+    <td>106.3</td>
+  </tr>
+  <tr>
+    <th class="serie">01-05</th>
+    <td>115.5</td>
+    <td>106.7</td>
+  </tr>
+  <tr>
+    <th class="serie">02-05</th>
+    <td>115.7</td>
+    <td>108.8</td>
+  </tr>
+  <tr>
+    <th class="serie">03-05</th>
+    <td>114.7</td>
+    <td>118.8</td>
+  </tr>
+  <tr>
+    <th class="serie">04-05</th>
+    <td>115.9</td>
+    <td>120.4</td>
+  </tr>
+  <tr>
+    <th class="serie">05-05</th>
+    <td>116.2</td>
+    <td>115.9</td>
+  </tr>
+  <tr>
+    <th class="serie">06-05</th>
+    <td>118.0</td>
+    <td>124.7</td>
+  </tr>
+  <tr>
+    <th class="serie">07-05</th>
+    <td>123.3</td>
+    <td>126.5</td>
+  </tr>
+  <tr>
+    <th class="serie">08-05</th>
+    <td>127.6</td>
+    <td>131.6</td>
+  </tr>
+  <tr>
+    <th class="serie">09-05</th>
+    <td>130.3</td>
+    <td>134.0</td>
+  </tr>
+  <tr>
+    <th class="serie">10-05</th>
+    <td>135.5</td>
+    <td>135.7</td>
+  </tr>
+  <tr>
+    <th class="serie">11-05</th>
+    <td>138.2</td>
+    <td>126.4</td>
+  </tr>
+  <tr>
+    <th class="serie">12-05</th>
+    <td>139.6</td>
+    <td>127.4</td>
+  </tr>
+  <tr>
+    <th class="serie">01-06</th>
+    <td>145.1</td>
+    <td>131.0</td>
+  </tr>
+  <tr>
+    <th class="serie">02-06</th>
+    <td>146.4</td>
+    <td>129.9</td>
+  </tr>
+  <tr>
+    <th class="serie">03-06</th>
+    <td>147.1</td>
+    <td>133.7</td>
+  </tr>
+  <tr>
+    <th class="serie">04-06</th>
+    <td>149.0</td>
+    <td>138.4</td>
+  </tr>
+  <tr>
+    <th class="serie">05-06</th>
+    <td>150.3</td>
+    <td>141.0</td>
+  </tr>
+  <tr>
+    <th class="serie">06-06</th>
+    <td>151.3</td>
+    <td>139.3</td>
+  </tr>
+  <tr>
+    <th class="serie">07-06</th>
+    <td>153.4</td>
+    <td>145.3</td>
+  </tr>
+  <tr>
+    <th class="serie">08-06</th>
+    <td>152.7</td>
+    <td>142.9</td>
+  </tr>
+  <tr>
+    <th class="serie">09-06</th>
+    <td>152.9</td>
+    <td>129.2</td>
+  </tr>
+  <tr>
+    <th class="serie">10-06</th>
+    <td>152.2</td>
+    <td>126.0</td>
+  </tr>
+  <tr>
+    <th class="serie">11-06</th>
+    <td>151.9</td>
+    <td>124.8</td>
+  </tr>
+  <tr>
+    <th class="serie">12-06</th>
+    <td>150.1</td>
+    <td>125.9</td>
+  </tr>
+  <tr>
+    <th class="serie">01-07</th>
+    <td>148.2</td>
+    <td>118.9</td>
+  </tr>
+  <tr>
+    <th class="serie">02-07</th>
+    <td>145.3</td>
+    <td>122.9</td>
+  </tr>
+  <tr>
+    <th class="serie">03-07</th>
+    <td>142.9</td>
+    <td>127.7</td>
+  </tr>
+  <tr>
+    <th class="serie">04-07</th>
+    <td>142.6</td>
+    <td>134.4</td>
+  </tr>
+  <tr>
+    <th class="serie">05-07</th>
+    <td>144.0</td>
+    <td>138.5</td>
+  </tr>
+  <tr>
+    <th class="serie">06-07</th>
+    <td>145.5</td>
+    <td>138.7</td>
+  </tr>
+  <tr>
+    <th class="serie">07-07</th>
+    <td>147.2</td>
+    <td>141.8</td>
+  </tr>
+  <tr>
+    <th class="serie">08-07</th>
+    <td>150.0</td>
+    <td>139.2</td>
+  </tr>
+  <tr>
+    <th class="serie">09-07</th>
+    <td>153.8</td>
+    <td>145.6</td>
+  </tr>
+  <tr>
+    <th class="serie">10-07</th>
+    <td>155.4</td>
+    <td>147.6</td>
+  </tr>
+  <tr>
+    <th class="serie">11-07</th>
+    <td>157.0</td>
+    <td>157.9</td>
+  </tr>
+  <tr>
+    <th class="serie">12-07</th>
+    <td>158.4</td>
+    <td>156.2</td>
+  </tr>
+  <tr>
+    <th class="serie">01-08</th>
+    <td>162.8</td>
+    <td>153.9</td>
+  </tr>
+  <tr>
+    <th class="serie">02-08</th>
+    <td>162.8</td>
+    <td>158.6</td>
+  </tr>
+  <tr>
+    <th class="serie">03-08</th>
+    <td>164.7</td>
+    <td>166.3</td>
+  </tr>
+  <tr>
+    <th class="serie">04-08</th>
+    <td>168.5</td>
+    <td>165.8</td>
+  </tr>
+</tbody>
+</table>
+</div>
+<div class="example">
+<h1>Example 2</h1>
+<table id="table-1" class="jgtable {size:'650x350',type:'bhg',axis_step:1,title:'Example 2',title_color:'000000',title_size:16,bar_width:30,bar_spacing:2,fillarea:true,fillbottom:true,filltop:false,colors:['5131c9','FFCC00','da1b1b'],lines:[[1,1,0],[1,1,0],[1,1,0]],bg:'FFFFFF',bg_type:'gradient',bg_angle:90,bg_offset:'6d6969',bg_width:20,bg_trasparency:false,chbg:'FFFFFF',chbg_type:'solid',chbg_angle:90,chbg_offset:'f8fdbf',chbg_width:10,chbg_trasparency:false,grid:true,grid_x:7,grid_y:10,grid_line:0,grid_blank:0}">
+  <thead>
+    <tr>
+        <th>Anno</th>
+        <th class="serie">Data 1</th>
+        <th class="serie">Data 2</th>
+        <th class="serie">Data 3</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+        <th class="serie">2001</th>
+        <td>153</td>
+        <td>60</td>
+        <td>52</td>
+    </tr>
+    <tr>
+        <th class="serie">2002</th>
+        <td>113</td>
+        <td>70</td>
+        <td>60</td>
+    </tr>
+    <tr>
+        <th class="serie">2003</th>
+        <td>120</td>
+        <td>80</td>
+        <td>40</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<div class="example">
+<h1>Example 3</h1>
+<table id="table-2" class="jgtable {size:'400x500',type:'bvg',axis_step:1,title:'Example 3',title_color:'c81e3d',title_size:16,bar_width:30,bar_spacing:2,fillarea:true,fillbottom:true,filltop:false,colors:['1aa22f','FFCC00','da1b1b'],lines:[[1,1,0],[1,1,0],[1,1,0]],bg:'FFFFFF',bg_type:'stripes',bg_angle:90,bg_offset:'b7b4b4',bg_width:10,bg_trasparency:false,chbg:'000000',chbg_type:'solid',chbg_angle:90,chbg_offset:'f8fdbf',chbg_width:10,chbg_trasparency:false,grid:false,grid_x:7,grid_y:10,grid_line:0,grid_blank:0}">
+  <thead>
+    <tr>
+        <th>Anno</th>
+        <th class="serie">Data 1</th>
+        <th class="serie">Data 2</th>
+        <th class="serie">Data 3</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+        <th class="serie">2001</th>
+        <td>153</td>
+        <td>60</td>
+        <td>52</td>
+    </tr>
+    <tr>
+        <th class="serie">2002</th>
+        <td>113</td>
+        <td>70</td>
+        <td>60</td>
+    </tr>
+    <tr>
+        <th class="serie">2003</th>
+        <td>120</td>
+        <td>80</td>
+        <td>40</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<div class="example">
+<h1>Example 4</h1>
+<table id="table-3" class="jgtable {size:'700x350',type:'p3',axis_step:1,title:'Example 4',title_color:'28179b',title_size:16,bar_width:30,bar_spacing:2,fillarea:true,fillbottom:true,filltop:false,colors:['a21a9c','FFCC00','da1b1b'],lines:[[1,1,0],[1,1,0],[1,1,0]],bg:'FFFFFF',bg_type:'gradient',bg_angle:90,bg_offset:'b7b4b4',bg_width:10,bg_trasparency:false,chbg:'f7f7f7',chbg_type:'gradient',chbg_angle:90,chbg_offset:'e81711',chbg_width:10,chbg_trasparency:false,grid:false,grid_x:7,grid_y:10,grid_line:0,grid_blank:0}">
+  <thead>
+    <tr>
+        <th>Anno</th>
+        <th class="serie">Data 4</th>
+        <th class="serie">Data 5</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+        <th class="serie">2001</th>
+        <td>40</td>
+        <td>30</td>
+    </tr>
+    <tr>
+        <th class="serie">2000</th>
+        <td>30</td>
+        <td>40</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<div class="example">
+<h1>Example 5</h1>
+<table id="table-4" class="jgtable {size:'450x350',type:'p',axis_step:1,title:'Example 5',title_color:'28179b',title_size:16,bar_width:30,bar_spacing:2,fillarea:true,fillbottom:true,filltop:false,colors:['a21a9c','FFCC00','da1b1b'],lines:[[1,1,0],[1,1,0],[1,1,0]],bg:'FFFFFF',bg_type:'gradient',bg_angle:90,bg_offset:'b7b4b4',bg_width:10,bg_trasparency:false,chbg:'f7f7f7',chbg_type:'gradient',chbg_angle:90,chbg_offset:'e81711',chbg_width:10,chbg_trasparency:false,grid:false,grid_x:7,grid_y:10,grid_line:0,grid_blank:0}">
+  <thead>
+    <tr>
+        <th>Anno</th>
+        <th class="serie">Data 4</th>
+        <th class="serie">Data 5</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+        <th class="serie">2001</th>
+        <td>40</td>
+        <td>30</td>
+    </tr>
+    <tr>
+        <th class="serie">2000</th>
+        <td>30</td>
+        <td>40</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<div class="example">
+<h1>Example 6</h1>
+<table id="table-5" class="jgtable {size:'650x450',type:'lc',axis_step:1,title:false,title_color:'FFFFFF',title_size:10,bar_width:30,bar_spacing:1,fillarea:false,fillbottom:true,filltop:true,colors:['f04242','FFCC00','99CC00'],lines:[[12,9,7],[14,9,7],[13,9,7]],bg:'dca0ee',bg_type:'solid',bg_angle:90,bg_offset:'FFFFFF',bg_width:20,bg_trasparency:false,chbg:'FFFFFF',chbg_type:'solid',chbg_angle:90,chbg_offset:'FFFFFF',chbg_width:20,chbg_trasparency:false,grid:true,grid_x:3,grid_y:3,grid_line:0,grid_blank:0}">
+  <thead>
+    <tr>
+        <th>Anno</th>
+        <th class="serie">Data 1</th>
+        <th class="serie">Data 2</th>
+        <th class="serie">Data 3</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+        <th class="serie">2001</th>
+        <td>153</td>
+        <td>60</td>
+        <td>52</td>
+    </tr>
+    <tr>
+        <th class="serie">2002</th>
+        <td>113</td>
+        <td>70</td>
+        <td>60</td>
+    </tr>
+    <tr>
+        <th class="serie">2003</th>
+        <td>120</td>
+        <td>80</td>
+        <td>40</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<div class="example">
+<h1>Example 7</h1>
+<table id="table-6" class="jgtable {size:'650x450',type:'bhs',axis_step:1,title:false,title_color:'FFFFFF',title_size:10,bar_width:90,bar_spacing:11,fillarea:false,fillbottom:true,filltop:true,colors:['f04242','FFCC00','99CC00'],lines:[[12,9,7],[14,9,7],[13,9,7]],bg:'dca0ee',bg_type:'gradient',bg_angle:40,bg_offset:'FFFFFF',bg_width:20,bg_trasparency:false,chbg:'bfbfbf',chbg_type:'stripes',chbg_angle:0,chbg_offset:'f5f5f5',chbg_width:10,chbg_trasparency:false,grid:false,grid_x:3,grid_y:3,grid_line:0,grid_blank:0}">
+  <thead>
+    <tr>
+        <th>Anno</th>
+        <th class="serie">Data 1</th>
+        <th class="serie">Data 2</th>
+        <th class="serie">Data 3</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+        <th class="serie">2001</th>
+        <td>153</td>
+        <td>60</td>
+        <td>52</td>
+    </tr>
+    <tr>
+        <th class="serie">2002</th>
+        <td>113</td>
+        <td>70</td>
+        <td>60</td>
+    </tr>
+    <tr>
+        <th class="serie">2003</th>
+        <td>120</td>
+        <td>80</td>
+        <td>40</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<div class="example">
+<h1>Example 8</h1>
+<table id="table-7" class="jgtable {size:'650x450',type:'bvs',axis_step:1,title:false,title_color:'FFFFFF',title_size:10,bar_width:90,bar_spacing:11,fillarea:false,fillbottom:true,filltop:true,colors:['f04242','FFCC00','99CC00'],lines:[[12,9,7],[14,9,7],[13,9,7]],bg:'dca0ee',bg_type:'gradient',bg_angle:40,bg_offset:'FFFFFF',bg_width:20,bg_trasparency:false,chbg:'bfbfbf',chbg_type:'stripes',chbg_angle:0,chbg_offset:'f5f5f5',chbg_width:10,chbg_trasparency:false,grid:false,grid_x:3,grid_y:3,grid_line:0,grid_blank:0}">
+  <thead>
+    <tr>
+        <th>Anno</th>
+        <th class="serie">Data 1</th>
+        <th class="serie">Data 2</th>
+        <th class="serie">Data 3</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+        <th class="serie">2001</th>
+        <td>153</td>
+        <td>60</td>
+        <td>52</td>
+    </tr>
+    <tr>
+        <th class="serie">2002</th>
+        <td>113</td>
+        <td>70</td>
+        <td>60</td>
+    </tr>
+    <tr>
+        <th class="serie">2003</th>
+        <td>120</td>
+        <td>80</td>
+        <td>40</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+</body>
+</html>    

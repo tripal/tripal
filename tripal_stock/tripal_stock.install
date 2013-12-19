@@ -7,14 +7,30 @@
  */
 
 /**
+ * Implementation of hook_requirements().
+ *
+ */
+function tripal_stock_requirements($phase) {
+  $requirements = array();
+  if ($phase == 'install') {
+    // make sure chado is installed
+    if (!tripal_core_is_chado_installed()) {
+      $requirements ['tripal_stock'] = array(
+        'title' => "tripal_stock",
+        'value' => "ERROR: Chado most be installed before this module can be enabled",
+        'severity' => REQUIREMENT_ERROR,
+      );
+    }
+  }
+  return $requirements;
+}
+
+/**
  * Implementation of hook_install().
  */
 function tripal_stock_install() {
   // create the module's data directory
   tripal_create_moddir('tripal_stock');
-  
-  // create the stock tables
-  drupal_install_schema('tripal_stock');
 }
 
 /**
@@ -22,18 +38,6 @@ function tripal_stock_install() {
  */
 
 function tripal_stock_uninstall() {
-  drupal_uninstall_schema('tripal_stock');
-
-  // Get the list of nodes to remove
-  $sql_lib_id = "SELECT nid, vid ".
-                 "FROM {node} ".
-                 "WHERE type='chado_stock'";
-  $result = db_query($sql_lib_id);
-
-  //delete all nodes
-  while ($node = db_fetch_object($result)) {
-  node_delete($node->nid);
-  }
 
 }
 
@@ -47,16 +51,16 @@ function tripal_stock_schema() {
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
-        ),
-      'nid' => array(
-          'type' => 'int',
-          'unsigned' => TRUE,
-          'not null' => TRUE,
       ),
-        'stock_id' => array(
-          'type' => 'int',
-          'unsigned' => TRUE,
-          'not null' => TRUE,
+      'nid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'stock_id' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
       ),
     ),
     'indexes' => array(
@@ -70,22 +74,4 @@ function tripal_stock_schema() {
   );
 
   return $schema;
-}
-/**
- * Implementation of hook_requirements(). 
- *
- */
-function tripal_stock_requirements($phase) {
-  $requirements = array();
-  if ($phase == 'install') {
-    // make sure chado is installed
-    if (!tripal_core_is_chado_installed()) {
-      $requirements ['tripal_stock'] = array(
-            'title' => "tripal_stock",
-            'value' => "ERROR: Chado most be installed before this module can be enabled",
-            'severity' => REQUIREMENT_ERROR,
-      );
-    }
-  }
-  return $requirements;
 }

@@ -15,8 +15,8 @@ require_once "includes/tripal_db.admin.inc";
 function tripal_db_init() {
 
   // add the tripal_db JS and CSS
-  drupal_add_css(drupal_get_path('theme', 'tripal') . '/css/tripal_db.css');
-  drupal_add_js(drupal_get_path('theme', 'tripal') . '/js/tripal_db.js');
+  drupal_add_css(drupal_get_path('module', 'tripal_db') . '/theme/css/tripal_db.css');
+  drupal_add_js(drupal_get_path('module', 'tripal_db') . '/theme/js/tripal_db.js');
 }
 /**
  *
@@ -36,7 +36,7 @@ function tripal_db_menu() {
     'title' => 'Help',
     'description' => "A description of the Tripal Database module including a short description of it's usage.",
     'page callback' => 'theme',
-    'page arguments' => array('tripal_db_admin'),
+    'page arguments' => array('tripal_db_help'),
     'access arguments' => array('administer db cross-references'),
     'type' => MENU_NORMAL_ITEM,
     'weight' => 10
@@ -72,7 +72,7 @@ function tripal_db_menu() {
  */
 function tripal_db_help ($path, $arg) {
   if ($path == 'admin/help#tripal_db') {
-    return theme('tripal_db_admin', array());
+    return theme('tripal_db_help', array());
   }
 }
 
@@ -114,11 +114,13 @@ function tripal_db_views_api() {
  * @ingroup tripal_db
  */
 function tripal_db_theme() {
-  return array(
-    'tripal_db_admin' => array(
-      'template' => 'tripal_db_admin',
+  $theme_path = drupal_get_path('module', 'tripal_db') . '/theme';
+  $items = array(
+    'tripal_db_help' => array(
+      'template' => 'tripal_db_help',
       'arguments' =>  array(NULL),
-      'path' => drupal_get_path('module', 'tripal_db') . '/theme',
+      'path' => $theme_path,
     ),
   );
+  return $items;
 }

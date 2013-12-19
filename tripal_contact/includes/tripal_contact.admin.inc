@@ -77,7 +77,7 @@ function get_tripal_contact_admin_form_reindex_set(&$form) {
 
   // iterate through all of the maps
   $lib_boxes = array();
-  while ($contact = db_fetch_object($lib_rset)) {
+  while ($contact = $lib_rset->fetchObject()) {
     $lib_boxes[$contact->contact_id] = "$contact->name";
   }
   $form['reindex']['description'] = array(
@@ -118,7 +118,7 @@ function tripal_contact_admin_validate($form, &$form_state) {
       if ($contact_id and preg_match("/^\d+$/i", $contact_id)) {
         // get the map info
         $sql = "SELECT * FROM {contact} WHERE contact_id = :contact_id";
-        $contact = db_fetch_object(chado_query($sql, array(':contact_id' => $contact_id)));
+        $contact = chado_query($sql, array(':contact_id' => $contact_id))->fetchObject();
         $job_args[0] = $contact_id;
         tripal_add_job("Reindex features for map: $contact->name", 'tripal_contact',
          'tripal_contact_reindex_features', $job_args, $user->uid);

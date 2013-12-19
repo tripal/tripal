@@ -46,18 +46,19 @@ function get_tripal_pub_admin_form_default_type(&$form) {
   // ontologies these are all grouped under the term 'Publication Type'
   // we want the default to be 'Journal Article'
   $sql = "
-    SELECT CVTS.cvterm_id, CVTS.name
+    SELECT 
+      CVTS.cvterm_id, CVTS.name
     FROM {cvtermpath} CVTP
       INNER JOIN {cvterm} CVTS ON CVTP.subject_id = CVTS.cvterm_id
-      INNER JOIN {cvterm} CVTO ON CVTP.object_id = CVTO.cvterm_id
-      INNER JOIN {cv} ON CVTO.cv_id = CV.cv_id
-    WHERE CV.name = 'tripal_pub' and CVTO.name = 'Publication Type' and 
+      INNER JOIN {cvterm} CVTO ON CVTP.object_id  = CVTO.cvterm_id
+      INNER JOIN {cv}          ON CVTO.cv_id      = CV.cv_id
+    WHERE CV.name = 'tripal_pub' AND CVTO.name = 'Publication Type' AND 
       NOT CVTS.is_obsolete = 1
     ORDER BY CVTS.name ASC 
   ";
   $results = chado_query($sql);
   $pub_types = array();
-  while ($pub_type = db_fetch_object($results)) {
+  while ($pub_type = $results->fetchObject()) {
     $pub_types[$pub_type->cvterm_id] = $pub_type->name;
     if (strcmp($pub_type->name,"Journal Article") == 0) {
       $d_type_id = $pub_type->cvterm_id;
@@ -156,7 +157,7 @@ function get_tripal_pub_admin_form_select_search_list(&$form) {
     ORDER BY CVTS.name ASC 
   ";
   $prop_types = chado_query($sql);
-  while ($prop = db_fetch_object($prop_types)) {
+  while ($prop = $prop_types->fetchObject()) {
     $properties[$prop->cvterm_id] = $prop->name;
   }
   $form['searching']['allowed_search_fields'] = array(
@@ -225,7 +226,7 @@ function tripal_pub_set_pub_url($node, $pub_id) {
   $url_alias = "pub/$pub_id";
 
   // remove any previous alias
-  db_query("DELETE FROM {url_alias} WHERE src = '%s'", $node_url);
+  db_query("DELETE FROM {url_alias} WHERE src = :src", array(':src' => $node_url));
   // add the new alias
   path_set_alias($node_url, $url_alias);
 

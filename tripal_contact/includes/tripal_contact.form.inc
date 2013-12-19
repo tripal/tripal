@@ -79,7 +79,7 @@ function chado_contact_form(&$node, $form_state) {
   ";
   $results = chado_query($sql);
   $contact_types = array();
-  while ($contact_type = db_fetch_object($results)) {
+  while ($contact_type = $results->fetchObject()) {
     $contact_types[$contact_type->cvterm_id] = $contact_type->name;
     if (strcmp($contact_type->name,"Person") == 0 and !$d_type_id) {
       $d_type_id = $contact_type->cvterm_id;
@@ -102,7 +102,7 @@ function chado_contact_form(&$node, $form_state) {
     ORDER BY CVTS.name ASC 
   ";
   $prop_types = chado_query($sql);
-  while ($prop = db_fetch_object($prop_types)) {
+  while ($prop = $prop_types->fetchObject()) {
     $properties_select[$prop->cvterm_id] = $prop->name;
     $properties_list[$prop->cvterm_id] = $prop;
   }
@@ -172,11 +172,11 @@ function chado_contact_validate($node, &$form) {
       SELECT * FROM {contact} 
       WHERE name = :name AND NOT contact_id = :contact_id
     ";
-    $contact = db_fetch_object(chado_query($sql, array(':name' => $title, ':contact_id' => $contact_id)));
+    $contact = chado_query($sql, array(':name' => $title, ':contact_id' => $contact_id))->fetchObject();
   }
   else {
     $sql = "SELECT * FROM {contact} WHERE name = :name";
-    $contact = db_fetch_object(chado_query($sql, array(':name' => $title)));
+    $contact = chado_query($sql, array(':name' => $title))->fetchObject();
   }
   if ($contact) {
     form_set_error('title', t('The contact name already exists. Please choose another'));
@@ -366,7 +366,7 @@ function chado_contact_node_form_add_contactprop_table_props(&$form, $form_state
     ORDER BY CVT.name, PP.rank
   ";
   $contact_props = chado_query($sql, array(':contact_id' => $contact_id));
-  while ($prop = db_fetch_object($contact_props)) {
+  while ($prop = $contact_props->fetchObject()) {
 
     $type_id = $prop->cvterm_id;
     $rank = count($d_properties[$type_id]);

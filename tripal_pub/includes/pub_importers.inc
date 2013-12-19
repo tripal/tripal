@@ -12,7 +12,7 @@ function tripal_pub_importers_list() {
   $rows = array();
   $importers = db_query("SELECT * FROM {tripal_pub_import} ORDER BY name");
 
-  while ($importer = db_fetch_object($importers)) {
+  while ($importer = $importers->fetchObject()) {
     $criteria = unserialize($importer->criteria);
     $num_criteria = $criteria['num_criteria'];
     $criteria_str = '';
@@ -176,8 +176,8 @@ function tripal_pub_importer_setup_form(&$form_state = NULL, $pub_import_id = NU
   // and one is provided then look it up in the database
   $criteria = NULL;
   if ($action == "edit" and !$form_state['values']) {
-    $sql = "SELECT * FROM {tripal_pub_import} WHERE pub_import_id = %d";
-    $importer = db_fetch_object(db_query($sql, $pub_import_id));
+    $sql = "SELECT * FROM {tripal_pub_import} WHERE pub_import_id = :pub_import_id";
+    $importer = db_query($sql, array(':pub_import_id' => $pub_import_id))->fetchObject();
 
     $criteria       = unserialize($importer->criteria);
     $remote_db      = $criteria['remote_db'];
@@ -520,8 +520,8 @@ function tripal_pub_importer_setup_form_submit($form, &$form_state) {
     );
     // first check to see if this pub_import_id is already present. If so,
     // do an update rather than an insert
-    $sql = "SELECT * FROM {tripal_pub_import} WHERE pub_import_id = %d";
-    $importer = db_fetch_object(db_query($sql, $pub_import_id));
+    $sql = "SELECT * FROM {tripal_pub_import} WHERE pub_import_id = :pub_import_id";
+    $importer = db_query($sql, array(':pub_import_id' => $pub_import_id))->fetchObject();
     if($importer) {
       // do the update
       $record['pub_import_id'] = $pub_import_id;
@@ -552,8 +552,8 @@ function tripal_pub_importer_setup_form_submit($form, &$form_state) {
     }
   }
   if ($form_state['values']['op'] == 'Delete Importer') {
-    $sql = "DELETE FROM {tripal_pub_import} WHERE pub_import_id = %d";
-    $success = db_query($sql, $pub_import_id);
+    $sql = "DELETE FROM {tripal_pub_import} WHERE pub_import_id = :pub_import_id";
+    $success = db_query($sql, array(':pub_import_id' => $pub_import_id));
     if ($success) {
       drupal_set_message('Publication importer deleted.');
       drupal_goto('admin/tripal/tripal_pub/import_list');
@@ -568,8 +568,8 @@ function tripal_pub_importer_setup_form_submit($form, &$form_state) {
  *
  */
 function tripal_pub_importer_delete($pub_import_id) {
-  $sql = "DELETE FROM {tripal_pub_import} WHERE pub_import_id = %d";
-  $success = db_query($sql, $pub_import_id);
+  $sql = "DELETE FROM {tripal_pub_import} WHERE pub_import_id = :pub_import_id";
+  $success = db_query($sql, array(':pub_import_id' => $pub_import_id));
   if ($success) {
     drupal_set_message('Publication importer deleted.');
     drupal_goto('admin/tripal/tripal_pub/import_list');

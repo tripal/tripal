@@ -154,7 +154,8 @@ function tripal_stock_add_ONE_relationship_form_validate($form, &$form_state) {
       form_set_error('type_id', 'Please select a type of relationship.');
     }
     else {
-      $tmp_obj = db_fetch_object(chado_query("SELECT count(*) as count FROM {cvterm} WHERE cvterm_id=%d", $form_state['values']['type_id']));
+      $sql = "SELECT count(*) as count FROM {cvterm} WHERE cvterm_id = :cvterm_id";
+      $tmp_obj = chado_query($sql, array(':cvterm_id' => $form_state['values']['type_id']))->fetchObject();
 
       if ($tmp_obj->count != 1) {
         form_set_error('type_id', 'The type you selected is not valid. Please choose another one.');
@@ -178,13 +179,14 @@ function tripal_stock_add_ONE_relationship_form_validate($form, &$form_state) {
 function tripal_stock_add_ONE_relationship_form_submit($form, &$form_state) {
 
   if ($form_state['values']['subject_id'] > 0) {
-    chado_query(
-      "INSERT INTO {stock_relationship} (subject_id, type_id, object_id, value) VALUES (%d, %d, %d, '%s')",
-      $form_state['values']['subject_id'],
-      $form_state['values']['type_id'],
-      $form_state['values']['object_id'],
-      $form_state['values']['r_description']
-    );
+    $sql = "
+      INSERT INTO {stock_relationship} (subject_id, type_id, object_id, value) 
+      VALUES (:subject_id, :type_id, :object_id, :value)
+    ";
+    chado_query($sql, array(':subject_id' => $form_state['values']['subject_id'],
+      ':type_id' => $form_state['values']['type_id'],
+      ':object_id' => $form_state['values']['object_id'],
+      ':value' => $form_state['values']['r_description']));
 
     drupal_set_message(t('Successfully Added Relationship.'));
   } //end of insert relationship
@@ -381,7 +383,8 @@ function tripal_stock_edit_ALL_relationships_form_validate($form, &$form_state) 
         form_set_error('type_id', 'Please select a type of relationship.');
       }
       else {
-        $tmp_obj = db_fetch_object(chado_query("SELECT count(*) as count FROM {cvterm} WHERE cvterm_id=%d", $form_state['values']["type_id-$i"]));
+        $sql = "SELECT count(*) as count FROM {cvterm} WHERE cvterm_id= :cvterm_id";
+        $tmp_obj = chado_query($sql, array(':cvterm_id' => $form_state['values']["type_id-$i"]))->fetchObject();
 
         if ($tmp_obj->count != 1) {
           form_set_error("type_id-$i", 'The type you selected is not valid. Please choose another one.');
@@ -446,14 +449,12 @@ function tripal_stock_edit_ALL_relationships_form_submit($form, &$form_state) {
  */
 function tripal_stock_update_relationship($stock_relationship_id, $subject_id, $cvterm_id, $object_id) {
 
-  chado_query(
-    "UPDATE {stock_relationship} SET subject_id=%d, type_id=%d, object_id=%d WHERE stock_relationship_id=%d",
-    $subject_id,
-    $cvterm_id,
-    $object_id,
-    $stock_relationship_id
-  );
-
+  $sql = "
+    UPDATE {stock_relationship} SET subject_id = :subject_id, type_id = :type_id, object_id = :object_id 
+    WHERE stock_relationship_id = :stock_relationship_id
+  ";
+  chado_query($sql, array(':subject_id' => $subject_id, ':type_id' => $cvterm_id,
+    ':object_id' => $object_id, ':stock_relationship_id' => $stock_relationship_id));
 }
 
 /**
@@ -462,12 +463,8 @@ function tripal_stock_update_relationship($stock_relationship_id, $subject_id, $
  * @ingroup tripal_stock
  */
 function tripal_stock_delete_relationship($stock_relationship_id) {
-
-  chado_query(
-    "DELETE FROM {stock_relationship} WHERE stock_relationship_id=%d",
-    $stock_relationship_id
-  );
-
+  $sql = "DELETE FROM {stock_relationship} WHERE stock_relationship_id = :stock_relationship_id";
+  chado_query($sql, array(':stock_relationship_id' => $stock_relationship_id));
 }
 
 /**
@@ -480,9 +477,9 @@ function theme_tripal_stock_edit_ALL_relationships_form($form) {
 
   $output .= '<br /><fieldset>';
   $output .= '<legend>Edit Already Existing Relationships<span class="form-optional" title="This field is optional">(optional)</span></legend>';
-  $output .= '<p>Each relationship for this stock is listed below, one per line. The textboxes indicating '
-        . 'the subject and object of the relationship can contain the uniquename, name, database '
-      . 'reference or synonym of a stock of the same organism.</p>';
+  $output .= '<p>Each relationship for this stock is listed below, one per line. The textboxes indicating ' .
+             'the subject and object of the relationship can contain the uniquename, name, database ' .
+             'reference or synonym of a stock of the same organism.</p>';
   $output .= '<table>';
   $output .= '<tr><th>#</th><th>Subject</th><th>Type</th><th>Object</th><th></th></tr>';
 

@@ -187,7 +187,7 @@ function get_tripal_stock_admin_form_vocabulary_set(&$form) {
   $sql = "SELECT * FROM {cv} ORDER BY name";
   $results = chado_query($sql);
   $cv_options = array();
-  while ($r = db_fetch_object($results)) {
+  while ($r = $results->fetchObject()) {
     $cv_options[$r->cv_id] = $r->name;
   }
 

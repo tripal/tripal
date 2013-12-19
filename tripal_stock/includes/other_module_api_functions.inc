@@ -4,10 +4,6 @@
  * @todo Add file header description
  */
 
-///////////////////////////////////////////////////////////////////////////
-// Module: tripal_core
-///////////////////////////////////////////////////////////////////////////
-
 /*************************************************************************
  * Purpose: Get max rank for a given set of criteria
  *   This function was developed with the many property tables in chado in mind
@@ -28,26 +24,36 @@
  */
 function get_max_chado_rank($tablename, $where_options) {
 
-  $where= array();
+  $where = array();
   //generate the where clause from supplied options
   // the key is the column name
+  $args = array();
+  $i = 0;
+  $sql = "
+    SELECT max(rank) as max_rank, count(rank) as count 
+    FROM {:table} 
+    WHERE 1=1
+  ";
+  $args[":table"] = $tablename;
   foreach ($where_options as $key => $val_array) {
     if (preg_match('/INT/', $val_array['type'])) {
-      $where[] = $key . "=" . $val_array['value'];
+      $sql .= " AND $key = :$key$i ";
+      $args[":$key$i"] = $val_array['value'];
     }
     else {
       if ($val_array['exact']) {
-        $operator='='; }
-      else { $operator='~'; }
-        $where[] = $key . $operator . "'" . $val_array['value'] . "'";
+        $operator = '='; 
+      }
+      else { 
+        $operator = '~'; 
+      }
+      $sql .= " AND $key $operator :$key$i ";
+      $args[":$key$i"] = $val_array['value'];
     }
+    $i++;
   }
-
-  $result = db_fetch_object(chado_query(
-    "SELECT max(rank) as max_rank, count(rank) as count FROM {%s} WHERE %s",
-    $tablename,
-    implode(' AND ', $where)
-  ));
+   
+  $result = chado_query($sql, $tablename, $args)->fetchObject();
   //drupal_set_message("Max Rank Query=SELECT max(rank) as max_rank, count(rank) as count FROM ".$tablename." WHERE ".implode(' AND ',$where));
   if ($result->count > 0) {
     return $result->max_rank;

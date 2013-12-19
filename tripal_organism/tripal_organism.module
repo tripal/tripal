@@ -16,8 +16,8 @@ require_once "includes/tripal_organism.admin.inc";
 function tripal_organism_init() {
 
   // add the jGCharts JS and CSS
-  drupal_add_js(drupal_get_path('theme', 'tripal') . '/js/tripal_organism.js');
-  drupal_add_css(drupal_get_path('theme', 'tripal') . '/css/tripal_organism.css');
+  drupal_add_css(drupal_get_path('module', 'tripal_organism') . '/theme/css/tripal_organism.css');
+  drupal_add_js(drupal_get_path('module', 'tripal_organism') . '/theme/js/tripal_organism.js');
 }
 
 /**
@@ -108,7 +108,7 @@ function tripal_organism_menu() {
    'title' => 'Help',
    'description' => "A description of the Tripal Organism module including a short description of it's usage.",
    'page callback' => 'theme',
-   'page arguments' => array('tripal_organism_admin'),
+   'page arguments' => array('tripal_organism_help'),
    'access arguments' => array('adminster tripal organism'),
    'type' => MENU_NORMAL_ITEM,
   );
@@ -117,7 +117,7 @@ function tripal_organism_menu() {
    'title' => 'Configuration',
    'description' => 'Manage integration of Chado organisms including associated features',
    'page callback' => 'drupal_get_form',
-   'page arguments' => array('tripal_organism_admin'),
+   'page arguments' => array('tripal_organism_help'),
    'access arguments' => array('adminster tripal organism'),
    'type' => MENU_NORMAL_ITEM,
   );
@@ -132,7 +132,7 @@ function tripal_organism_menu() {
  */
 function tripal_organism_help ($path, $arg) {
   if ($path == 'admin/help#tripal_organism') {
-    return theme('tripal_organism_admin', array());
+    return theme('tripal_organism_help', array());
   }
 }
 
@@ -144,29 +144,35 @@ function tripal_organism_help ($path, $arg) {
  * @ingroup tripal_organism
  */
 function tripal_organism_theme() {
-  return array(
+  $theme_path = drupal_get_path('module', 'tripal_organism') . '/theme';
+  $items = array(
     'tripal_organism_base' => array(
-       'arguments' => array('node' => NULL),
-       'template' => 'tripal_organism_base',
+      'arguments' => array('node' => NULL),
+      'template' => 'tripal_organism_base',
+      'path' => "$theme_path/tripal_organism",
     ),
     'tripal_organism_description' => array(
-       'arguments' => array('node' => NULL),
-       'template' => 'tripal_organism_description',
+      'arguments' => array('node' => NULL),
+      'template' => 'tripal_organism_description',
+      'path' => "$theme_path/tripal_organism",
     ),
     'tripal_organism_image' => array(
-       'arguments' => array('node' => NULL),
-       'template' => 'tripal_organism_image',
+      'arguments' => array('node' => NULL),
+      'template' => 'tripal_organism_image',
+      'path' => "$theme_path/tripal_organism",
     ),
     'tripal_organism_teaser' => array(
-       'arguments' => array('node' => NULL),
-       'template' => 'tripal_organism_teaser',
+      'arguments' => array('node' => NULL),
+      'template' => 'tripal_organism_teaser',
+      'path' => "$theme_path/tripal_organism",
     ),
-    'tripal_organism_admin' => array(
-      'template' => 'tripal_organism_admin',
+    'tripal_organism_help' => array(
+      'template' => 'tripal_organism_help',
       'arguments' =>  array(NULL),
-      'path' => drupal_get_path('module', 'tripal_organism') . '/theme'
+      'path' => $theme_path,
     ),
   );
+  return $items;
 }
 /**
  * Implement hook_access().

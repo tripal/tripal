@@ -99,7 +99,7 @@ function tripal_stock_add_ONE_property_form_validate($form, &$form_state) {
     }
     else {
       // Check that type is in chado
-      $num_rows = db_fetch_object(chado_query("SELECT count(*) as count FROM {cvterm} WHERE cvterm_id=%d", $form_state['values']['prop_type_id']));
+      $num_rows = chado_query("SELECT count(*) as count FROM {cvterm} WHERE cvterm_id=%d", $form_state['values']['prop_type_id'])->fetchObject();
       if ( $num_rows->count != 1) {
         form_set_error('prop_type_id', "The type you selected is not valid. Please choose another one. (CODE:$num_rows)");
       } // end of if more or less than 1 row
@@ -134,14 +134,15 @@ function tripal_stock_add_ONE_property_form_submit($form, &$form_state) {
     $rank = 0;
     }
     else { $rank = $max_rank+1; }
-
-    chado_query(
-      "INSERT INTO {stockprop} (stock_id, type_id, value, rank) VALUES (%d, %d, '%s', %d)",
-      $form_state['values']['prop_stock_id'],
-      $form_state['values']['prop_type_id'],
-      $form_state['values']['prop_value'],
-      $rank
-    );
+    
+    $sql = "
+      INSERT INTO {stockprop} (stock_id, type_id, value, rank) 
+      VALUES (:stock_id, :type_id, :value, :rank)
+    ";
+    chado_query($sql, array(':stock_id' => $form_state['values']['prop_stock_id'],
+      ':type_id' => $form_state['values']['prop_type_id'],
+      ':value' => $form_state['values']['prop_value'],
+      ':rank' => $rank));
 
     drupal_set_message(t("Successfully Added Property"));
 
@@ -158,7 +159,7 @@ function tripal_stock_add_ONE_property_form_submit($form, &$form_state) {
         )
       );
       module_load_include('inc', 'node', 'node.pages');
-      drupal_execute('chado_stock_node_form', $node_form_state, $node);
+      drupal_form_submit('chado_stock_node_form', $node_form_state, $node);
 
     }
 
@@ -287,34 +288,34 @@ function tripal_stock_edit_ALL_properties_form_submit($form, &$form_state) {
  */
 function tripal_stock_update_property($stockprop_id, $cvterm_id, $value, $preferred, $nid) {
 
-  $old_obj = db_fetch_object(chado_query("SELECT * FROM {stockprop} WHERE stockprop_id=%d", $stockprop_id));
+  $old_obj = chado_query("SELECT * FROM {stockprop} WHERE stockprop_id=%d", $stockprop_id)->fetchObject();
 
   // if they changed the type need to check rank
   //   (if there is another property of the same type then rank needs to be increased to prevent collisions)
   if ($cvterm_id == $old_obj->type_id) {
-    chado_query(
-      "UPDATE {stockprop} SET type_id=%d, value='%s' WHERE stockprop_id=%d",
-      $cvterm_id,
-      $value,
-      $stockprop_id
-    );
+    $sql = "
+      UPDATE {stockprop} SET type_id = :type_id, value = :value
+      WHERE stockprop_id = :stockprop_id
+    ";
+    chado_query($sql, array(':type_id' => $cvterm_id,
+      ':value' => $value, ':stockprop_id' => $stockprop_id));
   }
   else {
       //determine the rank for this property
-    $max_rank = get_max_chado_rank('stockprop',
-                                  array('stock_id' => array('type' => 'INT', 'value' => $old_obj->stock_id),
-                                        'type_id' => array('type' => 'INT', 'value' => $cvterm_id ) ));
+    $max_rank = get_max_chado_rank('stockprop', 
+      array('stock_id' => array('type' => 'INT', 'value' => $old_obj->stock_id),
+      'type_id' => array('type' => 'INT', 'value' => $cvterm_id))
+    );
     if ($max_rank == -1) {
       $rank = 0;
     }
     else { $rank = $max_rank+1; }
-      chado_query(
-        "UPDATE {stockprop} SET type_id=%d, value='%s', rank=%d WHERE stockprop_id=%d",
-        $cvterm_id,
-        $value,
-        $rank,
-        $stockprop_id
-     );
+      $sql = "
+        UPDATE {stockprop} SET type_id = :type_id, value = :value, rank = :rank 
+        WHERE stockprop_id = :stockprop_id
+      ";
+      chado_query($sql, array(':type_id' => $cvterm_id, ':value' => $value,
+        ':rank' => $rank, ':stockprop_id' => $stockprop_id));
   }
 
   // Set Preferred Synonym
@@ -329,7 +330,7 @@ function tripal_stock_update_property($stockprop_id, $cvterm_id, $value, $prefer
       )
     );
     module_load_include('inc', 'node', 'node.pages');
-    drupal_execute('chado_stock_node_form', $node_form_state, $node);
+    drupal_form_submit('chado_stock_node_form', $node_form_state, $node);
   }
 }
 
@@ -339,12 +340,7 @@ function tripal_stock_update_property($stockprop_id, $cvterm_id, $value, $prefer
  * @ingroup tripal_stock
  */
 function tripal_stock_delete_property($stockprop_id) {
-
-  chado_query(
-    "DELETE FROM {stockprop} WHERE stockprop_id=%d",
-    $stockprop_id
-  );
-
+  chado_query("DELETE FROM {stockprop} WHERE stockprop_id = :stockprop_id", array(':stockprop_id' => $stockprop_id));
 }
 
 /**
@@ -357,10 +353,10 @@ function theme_tripal_stock_edit_ALL_properties_form($form) {
 
   $output .= '<br /><fieldset>';
   $output .= '<legend>Edit Already Existing Properties<span class="form-optional" title="This field is optional">(optional)</span></legend>';
-  $output .= '<p>Below is a list of already existing properties for this stock, one property per line. The type refers to the type of '
-         .'property and the value is the value for that property. For example, if this stock has a seed coat colour of green then '
-       .'the property type=sead coat colour and the value=green. When the type of property is synonym, there is an extra checkbox '
-       .'allowing you to specify which is the <b>Preferred Synonym</b>. This will change the current name of the stock.</p>';
+  $output .= '<p>Below is a list of already existing properties for this stock, one property per line. The type refers to the type of ' .
+             'property and the value is the value for that property. For example, if this stock has a seed coat colour of green then ' .
+             'the property type=sead coat colour and the value=green. When the type of property is synonym, there is an extra checkbox ' .
+             'allowing you to specify which is the <b>Preferred Synonym</b>. This will change the current name of the stock.</p>';
   $output .= '<table>';
   $output .= '<tr><th>#</th><th>Type</th><th>Value</th><th></th></tr>';
 

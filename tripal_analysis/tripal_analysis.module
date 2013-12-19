@@ -26,8 +26,8 @@ require('includes/tripal_analysis.form.inc');
  * @ingroup tripal_analysis
  */
 function tripal_analysis_init() {
-  drupal_add_js(drupal_get_path('theme', 'tripal') . '/js/tripal_analysis.js');
-  drupal_add_css(drupal_get_path('theme', 'tripal') . '/css/tripal_analysis.css');
+  drupal_add_js(drupal_get_path('module', 'tripal_analysis') . '/theme/js/tripal_analysis.js');
+  drupal_add_css(drupal_get_path('module', 'tripal_analysis') . '/theme/css/tripal_analysis.css');
 }
 
 /**
@@ -74,7 +74,7 @@ function tripal_analysis_menu() {
       'title' => 'Help',
       'description' => "A description of the Tripal Analysis module including a short description of it's usage.",
       'page callback' => 'theme',
-      'page arguments' => array('tripal_analysis_admin'),
+      'page arguments' => array('tripal_analysis_help'),
       'access arguments' => array('administer tripal analyses'),
       'type' => MENU_NORMAL_ITEM,
       'file' => 'includes/tripal_analysis.admin.inc',
@@ -85,7 +85,7 @@ function tripal_analysis_menu() {
       'title' => 'Configuration',
       'description' => 'Settings for the displays of analysis results.',
       'page callback' => 'drupal_get_form',
-      'page arguments' => array('tripal_analysis_admin'),
+      'page arguments' => array('tripal_analysis_help'),
       'access arguments' => array('administer tripal analyses'),
       'type' => MENU_NORMAL_ITEM,
       'file' => 'includes/tripal_analysis.admin.inc',
@@ -109,7 +109,7 @@ function tripal_analysis_menu() {
  */
 function tripal_analysis_help ($path, $arg) {
   if ($path == 'admin/help#tripal_analysis') {
-    return theme('tripal_analysis_admin', array());
+    return theme('tripal_analysis_help', array());
   }
 }
 
@@ -555,26 +555,31 @@ function tripal_analysis_permission() {
  * @ingroup tripal_analysis
  */
 function tripal_analysis_theme() {
+  
+  $theme_path = drupal_get_path('module', 'tripal_analysis') . '/theme';
   $items = array(
     'tripal_analysis_base' => array(
        'arguments' => array('node' => NULL),
        'template' => 'tripal_analysis_base',
+       'path' => "$theme_path/tripal_analysis",
     ),
     'tripal_feature_analyses' => array(
       'template' => 'tripal_feature_analyses',
       'arguments' =>  array('node' => NULL),
+      'path' => "$theme_path/tripal_analysis",
     ),
-    'tripal_analysis_admin' => array(
-      'template' => 'tripal_analysis_admin',
+   'tripal_analysis_properties' => array(
+     'arguments' => array('node' => NULL),
+     'path' => "$theme_path/tripal_analysis",
+    ),
+    'tripal_analysis_help' => array(
+      'template' => 'tripal_analysis_help',
       'arguments' =>  array(NULL),
-      'path' => drupal_get_path('module', 'tripal_analysis') . '/theme',
+      'path' => $theme_path,
     ),
-     'tripal_analysis_properties' => array(
-     'arguments' => array('node' => NULL)
-    ),
-    // Themed Forms
     'chado_analysis_node_form' => array(
       'arguments' => array('form'),
+      'path' => $theme_path,
     ),
   );
 
