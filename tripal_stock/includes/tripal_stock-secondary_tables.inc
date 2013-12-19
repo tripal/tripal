@@ -222,11 +222,7 @@ function tripal_stock_is_obsolete_form($node, $stock_id) {
  * @ingroup tripal_stock
  */
 function tripal_stock_is_obsolete_form_submit($form, &$form_state) {
-
-  chado_query(
-    "UPDATE {stock} SET is_obsolete='t' WHERE stock_id=%d",
-    $form_state['values']['make_obsolete_stock_id']
-  );
-
+  $sql = "UPDATE {stock} SET is_obsolete='t' WHERE stock_id= :stock_id";
+  chado_query($sql, array(':stock_id' => $form_state['values']['make_obsolete_stock_id']));
 }
 

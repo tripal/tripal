@@ -299,35 +299,35 @@ function tripal_library_block_view($delta = '') {
 
     $block = array();
     switch ($delta) {
-    	case 'libreferences':
-    	  $block['subject'] = t('Cross References');
-    	  $block['content'] = theme('tripal_library_references', $node);
-    	  break;
-    	case 'libbase':
-    	  $block['subject'] = t('Library Details');
-    	  $block['content'] = theme('tripal_library_base', $node);
-    	  break;
-    	case 'libsynonyms':
-    	  $block['subject'] = t('Synonyms');
-    	  $block['content'] = theme('tripal_library_synonyms', $node);
-    	  break;
-    	case 'libproperties':
-    	  $block['subject'] = t('Properties');
-    	  $block['content'] = theme('tripal_library_properties', $node);
-    	  break;
-    	case 'libterms':
-    	  $block['subject'] = t('Library Terms');
-    	  $block['content'] = theme('tripal_library_terms', $node);
-    	  break;
-    	case 'featurelibs':
-    	  $block['subject'] = t('Libraries');
-    	  $block['content'] = theme('tripal_feature_libraries', $node);
-    	  break;
-    	case 'orglibs':
-    	  $block['subject'] = t('Libraries');
-    	  $block['content'] = theme('tripal_organism_libraries', $node);
-    	  break;
-    	default :
+      case 'libreferences':
+        $block['subject'] = t('Cross References');
+        $block['content'] = theme('tripal_library_references', $node);
+        break;
+      case 'libbase':
+        $block['subject'] = t('Library Details');
+        $block['content'] = theme('tripal_library_base', $node);
+        break;
+      case 'libsynonyms':
+        $block['subject'] = t('Synonyms');
+        $block['content'] = theme('tripal_library_synonyms', $node);
+        break;
+      case 'libproperties':
+        $block['subject'] = t('Properties');
+        $block['content'] = theme('tripal_library_properties', $node);
+        break;
+      case 'libterms':
+        $block['subject'] = t('Library Terms');
+        $block['content'] = theme('tripal_library_terms', $node);
+        break;
+      case 'featurelibs':
+        $block['subject'] = t('Libraries');
+        $block['content'] = theme('tripal_feature_libraries', $node);
+        break;
+      case 'orglibs':
+        $block['subject'] = t('Libraries');
+        $block['content'] = theme('tripal_organism_libraries', $node);
+        break;
+      default :
     }
     return $block;
   }

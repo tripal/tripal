@@ -115,7 +115,8 @@ function tripal_stock_add_ONE_dbreference_form_validate($form, &$form_state) {
 
     // Check database is valid db_id in chado
     if ( $form_state['values']['database'] > 0) {
-      $tmp_obj = db_fetch_object(chado_query("SELECT count(*) as count FROM {db} WHERE db_id=%d", $form_state['values']['database']));
+      $sql = "SELECT count(*) as count FROM {db} WHERE db_id = :db_id";
+      $tmp_obj = chado_query($sql, array(':db_id' => $form_state['values']['database']))->fetchObject();
 
       if ($tmp_obj->count != 1) {
         form_set_error('database', 'The database you selected is not valid. Please choose another one.');
@@ -126,7 +127,8 @@ function tripal_stock_add_ONE_dbreference_form_validate($form, &$form_state) {
     }
 
     // Check Accession is unique for database
-    $tmp_obj = db_fetch_object(chado_query("SELECT count(*) as count FROM {dbxref} WHERE accession='%s'", $form_state['values']['accession']));
+    $sql =  "SELECT count(*) as count FROM {dbxref} WHERE accession = :accession";
+    $tmp_obj = chado_query($sql, array(':accession' => $form_state['values']['accession']))->fetchObject();
 
     if ($tmp_obj->count > 0) {
       form_set_error('accession', 'This accession has already been assigned to another stock.');
@@ -158,21 +160,21 @@ function tripal_stock_add_ONE_dbreference_form_submit($form, &$form_state) {
 
 
     // create dbxref
-    chado_query(
-      "INSERT INTO {dbxref} (db_id, accession, description) VALUES (%d, '%s', '%s')",
-      $form_state['values']['database'],
-      $form_state['values']['accession'],
-      $form_state['values']['db_description']
-    );
+    $sql = "
+      INSERT INTO {dbxref} (db_id, accession, description) 
+      VALUES (:db_id, :accession, :description)
+    ";
+    chado_query($sql, array(':db_id' => $form_state['values']['database'], 
+      ':accession' => $form_state['values']['accession'], 
+      ':description' => $form_state['values']['db_description']
+    ));
 
     //create stock_dbxref
     $dbxref = tripal_db_get_dbxref_by_accession($form_state['values']['accession'], $form_state['values']['database']);
     if (!empty($dbxref->dbxref_id)) {
-      chado_query(
-        "INSERT INTO {stock_dbxref} (stock_id, dbxref_id) VALUES (%d, %d)",
-        $form_state['values']['db_stock_id'],
-        $dbxref->dbxref_id
-      );
+      $sl = "INSERT INTO {stock_dbxref} (stock_id, dbxref_id) VALUES (:stock_id, :dbxref_id)";
+      chado_query($sql, array(':stock_id' => $form_state['values']['db_stock_id'],
+        ':dbxref_id' => $dbxref->dbxref_id));
 
       drupal_set_message(t('Successfully Added Database Reference'));
     }
@@ -347,14 +349,8 @@ function tripal_stock_edit_ALL_db_references_form_submit($form, &$form_state) {
  * @ingroup tripal_stock
  */
 function tripal_stock_update_db_reference($dbxref_id, $database_id, $accession) {
-
-  chado_query(
-    "UPDATE {dbxref} SET db_id=%d, accession='%s' WHERE dbxref_id=%d",
-    $database_id,
-    $accession,
-    $dbxref_id
-  );
-
+  $sql = "UPDATE {dbxref} SET db_id = :db_id, accession = :accession WHERE dbxref_id = :dbxref_id";
+  chado_query($sql, array(':db_id' => $database_id, ':accession' => $accession, ':dbxref_id' =>  $dbxref_id));
 }
 
 /**
@@ -369,17 +365,8 @@ function tripal_stock_update_db_reference($dbxref_id, $database_id, $accession) 
  * @ingroup tripal_stock
  */
 function tripal_stock_delete_db_reference($dbxref_id) {
-
-  chado_query(
-    "DELETE FROM {dbxref} WHERE dbxref_id=%d",
-    $dbxref_id
-  );
-
-  chado_query(
-    "DELETE FROM {stock_dbxref} WHERE dbxref_id=%d",
-    $dbxref_id
-  );
-
+  chado_query("DELETE FROM {dbxref} WHERE dbxref_id = :dbxref_id", array(':dbxref_id' => $dbxref_id));
+  chado_query("DELETE FROM {stock_dbxref} WHERE dbxref_id = :dbxref_id", array(':dbxref_id' => $dbxref_id));
 }
 
 /**
