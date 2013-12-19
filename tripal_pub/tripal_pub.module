@@ -40,7 +40,7 @@ function tripal_pub_node_info() {
   return array(
     'chado_pub' => array(
       'name' => t('Publication'),
-      'module' => 'chado_pub',
+      'base' => 'chado_pub',
       'description' => t('A publication from the Chado database'),
       'title_label' => t('Article Title'),
       'body_label' => t('Abstract'),
@@ -283,15 +283,30 @@ function tripal_pub_help ($path, $arg) {
   }
 }
 /**
- * Implement hook_perm().
+ * Implement hook_permissions().
  */
-function tripal_pub_perm() {
+function tripal_pub_permissions() {
   return array(
-    'access chado_pub content',
-    'create chado_pub content',
-    'delete chado_pub content',
-    'edit chado_pub content',
-    'administer tripal pubs',
+    'access chado_pub content' => array(
+      'title' => t('View Publications'),
+      'description' => t('Allow users to view publication pages.'),
+    ),
+    'create chado_pub content' => array(
+      'title' => t('Create Publication'),
+      'description' => t('Allow users to create new publication pages.'),
+    ),
+    'delete chado_pub content' => array(
+      'title' => t('Delete Publication'),
+      'description' => t('Allow users to delete publication pages.'),
+    ),
+    'edit chado_pub content' => array(
+      'title' => t('Edit Publications'),
+      'description' => t('Allow users to edit publication pages.'),
+    ),
+    'adminster tripal pub' => array(
+      'title' => t('Administer Publications'),
+      'description' => t('Allow users to administer all publications.'),
+    ),
   );
 }
 
@@ -388,7 +403,7 @@ function chado_pub_insert($node) {
       ORDER BY CVTS.name ASC 
     ";
     $prop_types = chado_query($sql);
-    while ($prop = db_fetch_object($prop_types)) {
+    while ($prop = $prop_types->fetchObject()) {
       $properties_list[$prop->cvterm_id] = $prop->name;
       // The 'Citation' term is special because it serves
       // both as a property and as the uniquename for the
@@ -524,8 +539,8 @@ function chado_pub_insert($node) {
     if (!$pub_id) {
       // next add the item to the drupal table
       $sql = "INSERT INTO {chado_pub} (nid, vid, pub_id) ".
-             "VALUES (%d, %d, %d)";
-      db_query($sql, $node->nid, $node->vid, $pub['pub_id']);
+             "VALUES (:nid, :vid, :pub_id)";
+      db_query($sql, array(':nid' => $node->nid, ':vid' => $node->vid, ':pub_id' => $pub['pub_id']));
     }
   }
   else {
@@ -578,7 +593,7 @@ function chado_pub_update($node) {
     ORDER BY CVTS.name ASC 
   ";
   $prop_types = chado_query($sql);
-  while ($prop = db_fetch_object($prop_types)) {
+  while ($prop = $prop_types->fetchObject()) {
     $properties_list[$prop->cvterm_id] = $prop->name;
     // The 'Citation' term is special because it serves
     // both as a property and as the uniquename for the
@@ -776,42 +791,19 @@ function chado_pub_delete(&$node) {
     return;
   }
 
-  // Remove data from {chado_pub}, {node} and {node_revisions} tables of
+  // Remove data from {chado_pub}, {node} and {node_revision} tables of
   // drupal database
-  $sql_del = "DELETE FROM {chado_pub} ".
-             "WHERE nid = %d ".
-             "AND vid = %d";
-  db_query($sql_del, $node->nid, $node->vid);
-  $sql_del = "DELETE FROM {node_revisions} ".
-             "WHERE nid = %d ".
-             "AND vid = %d";
-  db_query($sql_del, $node->nid, $node->vid);
-  $sql_del = "DELETE FROM {node} ".
-             "WHERE nid = %d ".
-             "AND vid = %d";
-  db_query($sql_del, $node->nid, $node->vid);
+  $sql_del = "DELETE FROM {chado_pub} WHERE nid = :nid AND vid = :vid";
+  db_query($sql_del, array(':nid' => $node->nid, ':vid' => $node->vid));
+  $sql_del = "DELETE FROM {node_revision} WHERE nid = :nid AND vid = :vid";
+  db_query($sql_del, array(':nid' => $node->nid, ':vid' => $node->vid));
+  $sql_del = "DELETE FROM {node} WHERE nid = :nid AND vid = :vid";
+  db_query($sql_del, array(':nid' => $node->nid, ':vid' => $node->vid));
 
   // Remove data from pub and pubprop tables of chado database as well
-  chado_query("DELETE FROM {pubprop} WHERE pub_id = %d", $pub_id);
-  chado_query("DELETE FROM {pub} WHERE pub_id = %d", $pub_id);
+  chado_query("DELETE FROM {pubprop} WHERE pub_id = :pub_id", array(':pub_id' => $pub_id));
+  chado_query("DELETE FROM {pub} WHERE pub_id = :pub_id", array(':pub_id' => $pub_id));
 }
-
-/**
- * Because we are using AJAX with a node form we need to provide a callback
- * for the chado_pub node form.  This callback is different from the
- * default 'chado_pub_form' callback
- */
-/*
- function tripal_pub_forms($form_id, $args) {
- $forms = array();
- if($form_id == 'chado_pub_node_form') {
- $forms[$form_id] = array(
- 'callback' => 'chado_pub_node_form',
- 'callback arguments' => array($args)
- );
- }
- return $forms;
- }*/
 
 /*
  *
@@ -855,18 +847,18 @@ function tripal_pub_preprocess_tripal_pub_relationships(&$variables) {
       INNER JOIN {pub} P            ON PR.object_id = P.pub_id
       INNER JOIN {cvterm} CVT       ON PR.type_id   = CVT.cvterm_id
       LEFT JOIN public.chado_pub CP ON P.pub_id     = CP.pub_id
-    WHERE PR.subject_id = %d
+    WHERE PR.subject_id = :subject_id
   ";
-  $as_subject = chado_query($sql, $pub->pub_id);
+  $as_subject = chado_query($sql, array(':subject_id' => $pub->pub_id));
   $sql = "
     SELECT P.title, P.pub_id, CP.nid, CVT.name as rel_type
     FROM pub_relationship PR
       INNER JOIN {pub} P            ON PR.subject_id = P.pub_id
       INNER JOIN {cvterm} CVT       ON PR.type_id    = CVT.cvterm_id
       LEFT JOIN public.chado_pub CP ON P.pub_id      = CP.pub_id
-    WHERE PR.object_id = %d
+    WHERE PR.object_id = :object_id
   ";
-  $as_object = chado_query($sql, $pub->pub_id);
+  $as_object = chado_query($sql, array(':object_id' => $pub->pub_id));
 
   // combine both object and subject relationshisp into a single array
   $relationships = array();
@@ -874,7 +866,7 @@ function tripal_pub_preprocess_tripal_pub_relationships(&$variables) {
   $relationships['subject'] = array();
 
   // iterate through the object relationships
-  while ($relationship = db_fetch_object($as_object)) {
+  while ($relationship = $as_object->fetchObject()) {
 
     // get the relationship and child types
     $rel_type = t(preg_replace('/_/', " ", $relationship->rel_type));
@@ -890,7 +882,7 @@ function tripal_pub_preprocess_tripal_pub_relationships(&$variables) {
   }
 
   // now add in the subject relationships
-  while ($relationship = db_fetch_object($as_subject)) {
+  while ($relationship = $as_subject->fetchObject()) {
 
     // get the relationship and child types
     $rel_type = t(preg_replace('/_/', " ", $relationship->rel_type));
@@ -930,10 +922,11 @@ function tripal_pub_mail($key, &$message, $params) {
   }
 }
 
-/*
- *
+/**
+ * 
+ * @param $node
  */
-function tripal_pub_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
+function tripal_pub_node_insert($node) {
   // we want the publications to always have a URL of http://[base url]/pub/[pub id]
   // where [pub id] is the Chado publication ID.  This will allow for easy linking
   // into the publication without needing to know the node.  Of course if you know the
@@ -941,25 +934,42 @@ function tripal_pub_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
   // so the nodeapi function ensures that the URL path is set after insert or update
   // of the node and when the node is loaded if it hasn't yet been set.
   if ($node->type == 'chado_pub') {
-    switch ($op) {
-      case 'presave':
-        break;
-      case 'insert':
-        $pub_id = chado_get_id_for_node('pub', $node->nid);
-        tripal_pub_set_pub_url($node, $pub_id);
-        break;
-      case 'load':
-        if (!$node->path) {
-          $pub_id = chado_get_id_for_node('pub', $node->nid);
-          $path = tripal_pub_set_pub_url($node, $pub_id);
-        }
-        break;
-      case 'update':
-        $pub_id = chado_get_id_for_node('pub', $node->nid);
-        tripal_pub_set_pub_url($node, $pub_id);
-        break;
-      case 'view':
-        break;
+    $pub_id = chado_get_id_for_node('pub', $node->nid);
+    tripal_pub_set_pub_url($node, $pub_id);
+  }
+}
+/**
+ * 
+ * @param $node
+ * @param $types
+ */
+function tripal_pub_node_load($node, $types) {
+  // we want the publications to always have a URL of http://[base url]/pub/[pub id]
+  // where [pub id] is the Chado publication ID.  This will allow for easy linking
+  // into the publication without needing to know the node.  Of course if you know the
+  // node that will still work too (e.g. http://[base url]/node/[node id]
+  // so the nodeapi function ensures that the URL path is set after insert or update
+  // of the node and when the node is loaded if it hasn't yet been set.
+  if ($node->type == 'chado_pub') {
+    if (!$node->path) {
+      $pub_id = chado_get_id_for_node('pub', $node->nid);
+      $path = tripal_pub_set_pub_url($node, $pub_id);
     }
+  }
+}
+/**
+ *
+ * @param $node
+ */
+function tripal_pub_node_update($node) {
+  // we want the publications to always have a URL of http://[base url]/pub/[pub id]
+  // where [pub id] is the Chado publication ID.  This will allow for easy linking
+  // into the publication without needing to know the node.  Of course if you know the
+  // node that will still work too (e.g. http://[base url]/node/[node id]
+  // so the nodeapi function ensures that the URL path is set after insert or update
+  // of the node and when the node is loaded if it hasn't yet been set.
+  if ($node->type == 'chado_pub') {  
+    $pub_id = chado_get_id_for_node('pub', $node->nid);
+    tripal_pub_set_pub_url($node, $pub_id);
   }
 }

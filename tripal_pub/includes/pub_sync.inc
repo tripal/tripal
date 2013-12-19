@@ -42,14 +42,14 @@ function tripal_pub_sync_pubs($job_id = NULL) {
   // to sync that one.
   $sql = "
     SELECT P.*
-    FROM chado.pub P
-      LEFT JOIN {chado_pub} CP ON CP.pub_id = P.pub_id
+    FROM {pub} P
+      LEFT JOIN public.chado_pub CP ON CP.pub_id = P.pub_id
     WHERE CP.pub_id IS NULL and NOT P.title = 'NULL'
   ";
-  $results = db_query($sql);
+  $results = chado_query($sql);
 
 
-  while ($pub = db_fetch_object($results)) {
+  while ($pub = $results->fetchObject()) {
     $node = tripal_pub_sync_pub($pub);
   }
 }

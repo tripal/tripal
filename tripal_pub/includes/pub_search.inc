@@ -41,7 +41,7 @@ function tripal_pub_search_page() {
     // iterate through the results and construct the table displaying the publications
     $rows = array();
     $i = $page * $limit + 1;
-    while($pub = db_fetch_object($pubs)) {
+    while($pub = $pubs->fetchObject()) {
       // get the citation for this publication
       $values = array(
         'pub_id' => $pub->pub_id, 
@@ -140,7 +140,7 @@ function tripal_pub_search_form(&$form_state = NULL) {
   ";
   $allowed_fields = variable_get('tripal_pub_allowed_search_fields', array());
   $prop_types = chado_query($sql);
-  while ($prop = db_fetch_object($prop_types)) {
+  while ($prop = $prop_types->fetchObject()) {
     if($allowed_fields[$prop->cvterm_id] > 0) {
       $properties[$prop->cvterm_id] = $prop->name;
     }
@@ -414,8 +414,7 @@ function tripal_pub_get_search_results($search_array, $limit, $pager_id) {
             ";
   $where  = "WHERE (NOT P.title = 'null') "; // always exclude the dummy pub
   $order  = "ORDER BY P.pyear DESC, P.title ASC";
-  $fargs = array(); // arguments for from, inner join clause
-  $wargs = array();  // arguments for where clause
+  $args = array();  // arguments for where clause
   $join = 0;
 
   $num_criteria = $search_array['num_criteria'];
@@ -447,13 +446,13 @@ function tripal_pub_get_search_results($search_array, $limit, $pager_id) {
 
     $action = "= lower('%s')";
     if($mode == 'Contains') {
-      $action = 'LIKE lower(\'%%%s%%\')';
+      $action = 'LIKE lower(\'%%' . ":crit$i" . '%%\')';
     }
     if($mode == 'Starts With') {
-      $action = '= lower(\'%%%s\')';
+      $action = '= lower(\'%%' . ":crit$i" . '\')';
     }
     if($mode == 'Ends With') {
-      $action = '= lower(\'%s%%\')';
+      $action = '= lower(\'' . ":crit$i" . '%%\')';
     }
      
     // get the scope type
@@ -462,39 +461,35 @@ function tripal_pub_get_search_results($search_array, $limit, $pager_id) {
     $type_name = $cvterm[0]->name;
     if ($type_name == 'Title') {
       $where .= " $op (lower(P.title)  $action) ";
-      $wargs[] = $value;
+      $args[":crit$i"] = $value;
     }
     elseif ($type_name == 'Year') {
       $where .= " $op (lower(P.pyear)  $action) ";
-      $wargs[] = $value;
+      $args[":crit$i"] = $value;
     }
     elseif ($type_name == 'Volume') {
       $where .= " $op (lower(P.volume)  $action) ";
-      $wargs[] = $value;
+      $args[":crit$i"] = $value;
     }
     elseif ($type_name == 'Issue') {
       $where .= " $op (lower(P.issue)  $action)";
-      $wargs[] = $value;
+      $args[":crit$i"] = $value;
     }
     elseif ($type_name == 'Journal Name') {
-      $from .= " LEFT JOIN {pubprop} PP$i ON PP$i.pub_id = P.pub_id AND PP$i.type_id = %d ";
+      $from .= " LEFT JOIN {pubprop} PP$i ON PP$i.pub_id = P.pub_id AND PP$i.type_id = :crit$i ";
       $where .= " $op ((lower(P.series_name) $action and CVT.name = 'Journal Article') OR
                        (lower(PP$i.value) $action)) ";
-      $fargs[] = $type_id;
-      $wargs[] = $value;
-      $wargs[] = $value;
+      $args[":crit$i"] = $type_id;
     }
     elseif ($type_name == 'Conference Name') {
-      $from .= " LEFT JOIN {pubprop} PP$i ON PP$i.pub_id = P.pub_id AND PP$i.type_id = %d ";
+      $from .= " LEFT JOIN {pubprop} PP$i ON PP$i.pub_id = P.pub_id AND PP$i.type_id = :crit$i ";
       $where .= " $op ((lower(P.series_name) $action and CVT.name = 'Conference Proceedings') OR
                        (lower(PP$i.value) $action)) ";
-      $fargs[] = $type_id;
-      $wargs[] = $value;
-      $wargs[] = $value;
+      $args[":crit$i"] = $type_id;
     }
     elseif ($type_name == 'Publication Type') {
       $where .= " $op (lower(CVT.name) $action)";
-      $wargs[] = $value;
+      $args[":crit$i"] = $value;
     }
     elseif ($type_id == 0) { //'Any Field'
       $from .= " LEFT JOIN {pubprop} PP$i ON PP$i.pub_id = P.pub_id ";
@@ -506,32 +501,22 @@ function tripal_pub_get_search_results($search_array, $limit, $pager_id) {
                        lower(P.pubplace) $action OR
                        lower(P.miniref) $action OR
                        lower(P.series_name) $action) ";
-      $wargs[] = $value;
-      $wargs[] = $value;
-      $wargs[] = $value;
-      $wargs[] = $value;
-      $wargs[] = $value;
-      $wargs[] = $value;
-      $wargs[] = $value;
-      $wargs[] = $value;
+      $args[":crit$i"] = $value;
     }
     // for all other properties
     else {
-      $from .= " LEFT JOIN {pubprop} PP$i ON PP$i.pub_id = P.pub_id AND PP$i.type_id = %d ";
+      $from .= " LEFT JOIN {pubprop} PP$i ON PP$i.pub_id = P.pub_id AND PP$i.type_id = :crit$i ";
       $where .= " $op (lower(PP$i.value) $action) ";
-      $fargs[] = $type_id;
-      $wargs[] = $value;
+      $args[":crit$i"] = $type_id;
     }
 
   }
   if($from_year and $to_year) {
-    $where .= " AND (P.pyear ~ '....' AND to_number(P.pyear,'9999') >= %d AND to_number(P.pyear,'9999') <= %d) ";
-    $wargs[] = $from_year;
-    $wargs[] = $to_year;
+    $where .= " AND (P.pyear ~ '....' AND to_number(P.pyear,'9999') >= :from$i AND to_number(P.pyear,'9999') <= :to$i) ";
+    $args[":from$i"] = $from_year;
+    $args[":to$i"] = $to_year;
   }
   $sql = "$select $from $where $order";
   $count = "SELECT count(*) FROM ($select $from $where $order) as t1";
-  $args = array_merge($fargs, $wargs);
-  //dpm(array($mode, $sql, $args));
   return chado_pager_query($sql, $limit, $pager_id, $count, $args);
 }

@@ -315,7 +315,7 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
   $ret = array(); 
   if (!db_table_exists('tripal_gff_temp')) { 
     $schema = tripal_feature_get_custom_tables('tripal_gff_temp');  
-    $success = tripal_core_create_custom_table($ret, 'tripal_gff_temp', $schema['tripal_gff_temp']);
+    $success = tripal_core_create_custom_table('tripal_gff_temp', $schema['tripal_gff_temp']);
     if (!$success) {
       watchdog('T_gff3_loader', "Cannot create temporary loading table", array(), WATCHDOG_ERROR); 
       return;
