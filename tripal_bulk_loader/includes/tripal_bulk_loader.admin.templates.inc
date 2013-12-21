@@ -271,11 +271,25 @@ function tripal_bulk_loader_modify_template_base_form($form, $form_state = NULL,
           'submit-delete_record' => array(
             '#type' => 'link',
             '#href' => str_replace(array('%template','%priority','%action'), array($template_id, $priority,'delete_record'), $record_href_template),
+            '#options' => array(
+              'query' => array(
+                'record_name' => $table_array['record_id'],
+                'chado_table' => $table_array['table'],
+                'record_mode' => $mode_value
+              )
+            ),
             '#title' => 'Delete',
           ),
           'submit-duplicate_record' => array(
             '#type' => 'link',
             '#href' => str_replace(array('%template','%priority','%action'), array($template_id, $priority,'duplicate_record'), $record_href_template),
+            '#options' => array(
+              'query' => array(
+                'record_name' => $table_array['record_id'],
+                'chado_table' => $table_array['table'],
+                'record_mode' => $mode_value
+              )
+            ),
             '#title' => 'Duplicate'
           ),
           'submit-add_field' => array(
@@ -286,7 +300,7 @@ function tripal_bulk_loader_modify_template_base_form($form, $form_state = NULL,
         );
 
         foreach ($table_array['fields'] as $field_index => $field) {
-          $i = $field_index;
+          $i = $num_fields;
           $fk_value = '';
           if (isset($field['foreign key'])) {
             if (isset($field['foreign field'])) {
@@ -358,12 +372,23 @@ function tripal_bulk_loader_modify_template_base_form($form, $form_state = NULL,
             ),
             'edit_submit' => array(
               '#type' => 'link',
-              '#href' => str_replace(array('%template','%priority', '%field', '%action'), array($template_id, $priority, $i, 'edit_field'), $field_href_template),
+              '#href' => str_replace(array('%template','%priority', '%field', '%action'), array($template_id, $priority, $field_index, 'edit_field'), $field_href_template),
               '#title' => "Edit",
             ),
             'delete_submit' => array(
               '#type' => 'link',
-              '#href' => str_replace(array('%template','%priority', '%field', '%action'), array($template_id, $priority, $i,'delete_field'), $field_href_template),
+              '#href' => str_replace(array('%template','%priority', '%field', '%action'), array($template_id, $priority, $field_index,'delete_field'), $field_href_template),
+              '#options' => array(
+                'query' => array(
+                  'record_name' => $table_array['record_id'],
+                  'field_name' => $field['title'],
+                  'chado_table' => $table_array['table'],
+                  'chado_field' => $field['field'],
+                  'data_column' => (isset($field['spreadsheet column'])) ? $field['spreadsheet column'] : '',
+                  'constant_value' => (isset($field['constant value'])) ? $field['constant value'] : '',
+                  'foreign_record' => $fk_value
+                )
+              ),
               '#title' => "Delete",
             ),
           );
@@ -1035,7 +1060,21 @@ function tripal_bulk_loader_delete_template_record_form($form, $form_state) {
     return $form;
   }
 
-  $description = 'Are you sure you want to delete this record?';
+  $_GET['record_name'] = (isset($_GET['record_name'])) ?  $_GET['record_name'] : '';
+  $_GET['chado_table'] = (isset($_GET['chado_table'])) ?  $_GET['chado_table'] : '';
+  $_GET['record_mode'] = (isset($_GET['record_mode'])) ?  $_GET['record_mode'] : '';
+
+  $description = '';
+  $description .= '<table>';
+  $description .= '<tr><th></th><th>Record Name</th><th>Chado Table</th><th>Mode</th></tr>';
+  $description .= '<tr><td>' . $record_id
+                . '</td><td>' . $_GET['record_name']
+                . '</td><td>' . $_GET['chado_table']
+                . '</td><td>' . $_GET['record_mode']
+                . '</td></tr>';
+  $description .= '</table>';
+
+  $description .= '<p><strong>Are you sure you want to delete this record?</strong></p>';
   $yes = 'Delete Record';
   $no = 'Cancel';
 
@@ -1126,6 +1165,25 @@ function tripal_bulk_loader_duplicate_template_record_form($form, &$form_state) 
     return $form;
   }
 
+    $_GET['record_name'] = (isset($_GET['record_name'])) ?  $_GET['record_name'] : '';
+  $_GET['chado_table'] = (isset($_GET['chado_table'])) ?  $_GET['chado_table'] : '';
+  $_GET['record_mode'] = (isset($_GET['record_mode'])) ?  $_GET['record_mode'] : '';
+
+  $description = '';
+  $description .= '<table>';
+  $description .= '<caption>Record to be Duplicated</caption>';
+  $description .= '<tr><th></th><th>Record Name</th><th>Chado Table</th><th>Mode</th></tr>';
+  $description .= '<tr><td>' . $record_id
+                . '</td><td>' . $_GET['record_name']
+                . '</td><td>' . $_GET['chado_table']
+                . '</td><td>' . $_GET['record_mode']
+                . '</td></tr>';
+  $description .= '</table>';
+  $form['description'] = array(
+    '#type' => 'markup',
+    '#markup' => $description,
+  );
+
   $form['new_record_name'] = array(
     '#type' => 'textfield',
     '#title' => t('New Record Name'),
@@ -1169,13 +1227,13 @@ function tripal_bulk_loader_duplicate_template_record_form_submit($form, &$form_
   $result = db_query($sql, array(':template' => $form_state['storage']['template_id']))->fetchObject();
   $form_state['storage']['template'] = unserialize($result->template_array);
 
-      // original record (one to be duplicated)
-      $orig_priority = $form_state['storage']['record_id'];
-      $record = $form_state['storage']['template'][ $orig_priority ];
+  // original record (one to be duplicated)
+  $orig_priority = $form_state['storage']['record_id'];
+  $record = $form_state['storage']['template'][ $orig_priority ];
 
-      // new record
-      $record['record_id'] = $form_state['values']['new_record_name'];
-      $form_state['storage']['template'][] = $record;
+  // new record
+  $record['record_id'] = $form_state['values']['new_record_name'];
+  $form_state['storage']['template'][] = $record;
 
   $record = array(
     'template_id' => $form_state['storage']['template_id'],
@@ -2820,7 +2878,28 @@ function tripal_bulk_loader_delete_template_field_form($form, $form_state) {
     return $form;
   }
 
-  $description = 'Are you sure you want to delete this field?';
+  $_GET['record_name'] = (isset($_GET['record_name'])) ?  $_GET['record_name'] : '';
+  $_GET['field_name'] = (isset($_GET['field_name'])) ?  $_GET['field_name'] : '';
+  $_GET['chado_table'] = (isset($_GET['chado_table'])) ?  $_GET['chado_table'] : '';
+  $_GET['chado_field'] = (isset($_GET['chado_field'])) ?  $_GET['chado_field'] : '';
+  $_GET['data_column'] = (isset($_GET['data_column'])) ?  $_GET['data_column'] : '';
+  $_GET['constant_value'] = (isset($_GET['constant_value'])) ?  $_GET['constant_value'] : '';
+  $_GET['foreign_record'] = (isset($_GET['foreign_record'])) ?  $_GET['foreign_record'] : '';
+
+  $description = '';
+  $description .= '<table>';
+  $description .= '<tr><th>Record Name</th><th>Field Name</th><th>Chado Table</th><th>Chado Field</th><th>Data Column</th><th>Constant Value</th><th>Foreign Key</th></tr>';
+  $description .= '<tr><td>' . $_GET['record_name']
+                . '</td><td>' . $_GET['field_name']
+                . '</td><td>' . $_GET['chado_table']
+                . '</td><td>' . $_GET['chado_field']
+                . '</td><td>' . $_GET['data_column']
+                . '</td><td>' . $_GET['constant_value']
+                . '</td><td>' . $_GET['foreign_record']
+                . '</td></tr>';
+  $description .= '</table>';
+
+  $description .= '<p><strong>Are you sure you want to delete this field?</strong></p>';
   $yes = 'Delete Field';
   $no = 'Cancel';
 
@@ -2849,8 +2928,6 @@ function tripal_bulk_loader_delete_template_field_form($form, $form_state) {
  * Delete Field Form
  *
  * This form is meant to be called from a bulk loader form
- *
- * D7 @todo: Needs to be debugged
  *
  * @param $form_state
  *   Contains the values and storage for the form
