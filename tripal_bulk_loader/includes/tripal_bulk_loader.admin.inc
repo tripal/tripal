@@ -14,38 +14,11 @@
  */
 function tripal_bulk_loader_admin_manage_templates() {
   $output = '';
-
-  $output .= '<br /><h3>Quick Links:</h3>';
-  $output .= '<ul>'
-    . '<li>'
-      . t('<a href="@create">Create</a> a new template',
-      array('@create' => url('admin/tripal/tripal_bulk_loader_template/manage_templates/create')))
-      . '</li>'
-    . '<li>'
-      . t('<a href="@edit">Edit</a> an existing template',
-      array('@edit' => url('admin/tripal/tripal_bulk_loader_template/manage_templates/edit')))
-      . '</li>'
-    . '<li>'
-      . t('<a href="@delete">Delete</a> an existing template',
-      array('@delete' => url('admin/tripal/tripal_bulk_loader_template/manage_templates/delete')))
-      . '</li>'
-    . '<li>'
-      . t('<a href="@import">Import</a> a new template',
-      array('@import' => url('admin/tripal/tripal_bulk_loader_template/manage_templates/import')))
-      . '</li>'
-    . '<li>'
-      . t('<a href="@export">Export</a> an existing template',
-      array('@export' => url('admin/tripal/tripal_bulk_loader_template/manage_templates/export')))
-      . '</li>'
-    . '</ul>';
-
   $output .= '<p>' . t('Templates, as the term is used for this module, refer to plans
   describing how the columns in the data file supplied to a bulk loading job map to tables
   and fields in chado. Templates are created independently of bulk loading jobs so that
   they can be re-used. Thus you only need one template to load any number of files of the
   same format.') . '</p>';
-
-
 
   return $output;
 }
@@ -91,7 +64,7 @@ function tripal_bulk_loader_admin_jobs() {
     $rows[] = array(
       l($n->job_id, 'admin/tripal/tripal_jobs/view/' . $n->job_id),
       l($n->loader_name, 'node/' . $n->nid),
-      l($n->template_name, 'admin/tripal/tripal_bulk_loader_template/manage_templates/edit', array('query' => 'template_id=' . $n->template_id)),
+      l($n->template_name, 'admin/tripal/loaders/bulk/template/'.$n->template_id.'/edit'),
       $n->job_status,
       ($n->progress) ? $n->progress . '%' : '',
       l('View', 'node/' . $n->nid) . ' | ' .  l('Edit', 'node/' . $n->nid . '/edit')

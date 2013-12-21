@@ -17,26 +17,42 @@
  *
  * @ingroup tripal_bulk_loader
  */
-function tripal_bulk_loader_modify_template_base_form($form_state = NULL, $mode) {
-  $form = array();
+function tripal_bulk_loader_modify_template_base_form($form, $form_state = NULL, $mode) {
 
    // get template id from path and rebuild form
-  if ($_GET['template_id']) {
-    if (preg_match('/^\d+$/', $_GET['template_id'])) {
-      $form_state['storage']['template_id'] = $_GET['template_id'];
-    }
+  if (isset($form_state['build_info']['args'][1])) {
+    $mode = 'edit';
+    if (preg_match('/^\d+$/', $form_state['build_info']['args'][1])) {
+      $form_state['storage']['template_id'] = $form_state['build_info']['args'][1];
 
-    $sql = "SELECT * FROM {tripal_bulk_loader_template} WHERE template_id=:template";
-    $result = db_query($sql, array(':template' => $form_state['storage']['template_id']))->fetchObject();
-    $form_state['storage']['template'] = unserialize($result->template_array);
-    $form_state['storage']['template_name'] = $result->name;
+      $template_id = $form_state['storage']['template_id'];
 
-    $form_state['storage']['record2priority'] = array();
-    foreach ($form_state['storage']['template'] as $priority => $record_array) {
-      if (!is_array($record_array)) {
-        continue; }
-      $form_state['storage']['record2priority'][$record_array['record_id']] = $priority;
+      $sql = "SELECT * FROM {tripal_bulk_loader_template} WHERE template_id=:template";
+      $result = db_query($sql, array(':template' => $template_id))->fetchObject();
+      $form_state['storage']['template'] = unserialize($result->template_array);
+      if (!$form_state['storage']['template']) {
+        $form_state['storage']['template'] = array();
+      }
+      $form_state['storage']['template_name'] = $result->name;
+
+      $form_state['storage']['record2priority'] = array();
+      foreach ($form_state['storage']['template'] as $priority => $record_array) {
+        if (!is_array($record_array)) {
+          continue; }
+        $form_state['storage']['record2priority'][$record_array['record_id']] = $priority;
+      }
     }
+    else {
+      $form_state['storage']['template_id'] = FALSE;
+      $form['records']['no_records']['#value'] = TRUE;
+      $form['fields']['total_fields']['#value'] = 0;
+    }
+  }
+  else {
+    $mode = 'create';
+    $form_state['storage']['template_id'] = FALSE;
+    $form['records']['no_records']['#value'] = TRUE;
+    $form['fields']['total_fields']['#value'] = 0;
   }
 
   $form['mode'] = array(
@@ -48,7 +64,7 @@ function tripal_bulk_loader_modify_template_base_form($form_state = NULL, $mode)
     $form['template_name'] = array(
       '#type' => 'item',
       '#title' => 'Template',
-      '#value' => $form_state['storage']['template_name'],
+      '#markup' => $form_state['storage']['template_name'],
       '#weight' => 1,
     );
   }
@@ -82,22 +98,45 @@ function tripal_bulk_loader_modify_template_base_form($form_state = NULL, $mode)
     }
   }
 
+  $mode_title = (preg_match('/create/', $mode)) ? 'Create Template' : 'Edit Template';
+  $value = ($form_state['storage']['template_id'])? 'Save Template' : $mode_title;
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => $value,
+    '#weight' => 10,
+  );
+
+  if (preg_match('/edit/', $mode) && !$form_state['storage']['template_id']) {
+    return $form;
+  }
+
   $form['records'] = array(
-    '#type' => ($form_state['storage']['template_id'])? 'fieldset' : 'hidden',
+    '#type' => (isset($form_state['storage']['template_id']))? 'fieldset' : 'hidden',
     '#title' => t('Current Records'),
     '#collapsible' => TRUE,
     '#weight' => 2,
+    '#description' => t('A "Record" is an entry in a database table. Each of the records '
+      . 'added to the bulk loader will be added per constant set and per line of you '
+      . 'input file when a Tripal Bulk Loading Job is created using this template. '
+      . 'Furthermore, if you add two records for the same table (i.e. feature table) then '
+      . 'two distinct entries will be created per line (i.e. if recordA specifies a parent '
+      . 'feature and recordB specifies the child using different columns in the input file '
+      . 'then you will have one entry in the feature table specifying the parent and '
+      . 'another one for the child.')
   );
 
   $form['records']['description'] = array(
     '#type' => 'item',
-    '#value' => 'Records will be inserted into the chado database in the order listed below. To '
+    '#markup' => 'Records will be inserted into the chado database in the order listed below. To '
       .'change this order: <ul><li>Drag the rows into the correct order <br/>(If you don\'t have javascript enabled then enter '
       .'the numbers 1 and up in the Order textboxes to indicate the correct order).</li></ul>',
   );
 
   $form['records']['records-data'] = array(
+    '#prefix' => '<div id="tripal-bulk-loader-template-records">',
+    '#suffix' => '</div>',
     '#tree' => TRUE,
+    '#theme' => 'tripal_bulk_loader_modify_template_base_form_records'
   );
 
   $form['records']['no_records'] = array(
@@ -116,20 +155,24 @@ function tripal_bulk_loader_modify_template_base_form($form_state = NULL, $mode)
   );
 
   $form['fields'] = array(
-    '#type' => ($form_state['storage']['template_id'])? 'fieldset' : 'hidden',
+    '#type' => (isset($form_state['storage']['template_id']))? 'fieldset' : 'hidden',
     '#title' => t('Current Fields'),
     '#collapsible' => TRUE,
     '#weight' => 3,
+    '#description' => t('A "Field" is a single column in a database entry. As such a field '
+     . 'is always associated with a database entry (record).')
   );
 
   $form['fields']['fields-data'] = array(
     '#tree' => TRUE,
   );
 
-  if ($form_state['storage']['template']) {
+  if (isset($form_state['storage']['template'])) {
 
     // List Current Fields -------------------------------------------------------------
-    $i=1;
+    $num_fields=0;
+    $record_href_template = 'admin/tripal/loaders/bulk/template/%template/%action/%priority';
+    $field_href_template = 'admin/tripal/loaders/bulk/template/%template/%action/%priority/%field';
     foreach ($form_state['storage']['template'] as $priority => $table_array) {
       if (!is_array($table_array)) {
       continue; }
@@ -137,12 +180,14 @@ function tripal_bulk_loader_modify_template_base_form($form_state = NULL, $mode)
         $form['records']['no_records']['#value'] = FALSE;
 
         $mode_value = '';
+        $table_array['optional'] = (!isset($table_array['optional'])) ? FALSE : $table_array['optional'];
         if ($table_array['optional']) {
           $mode_value .= 'optional ';
         }
 
         // for backwards compatibility we want to convert insert_unique to be 'insert'
         // and optional to 'insert'
+        $table_array['mode'] = (!isset($table_array['mode'])) ? 'insert' : $table_array['mode'];
         if (strcmp($table_array['mode'], 'insert_unique')==0) {
           $mode_value .= 'insert or select if duplicate';
         }
@@ -163,36 +208,47 @@ function tripal_bulk_loader_modify_template_base_form($form_state = NULL, $mode)
         }
 
         // add in the select if duplicate
-        if ($table_array['select_if_duplicate']) {
-          $mode_value .= ' or select if duplicate';
+        if (isset($table_array['select_if_duplicate'])) {
+          if ($table_array['select_if_duplicate']) {
+            $mode_value .= ' or select if duplicate';
+          }
         }
-        if ($table_array['select_optional']) {
-          $mode_value .= ' (no fail)';
+        if (isset($table_array['select_optional'])) {
+          if ($table_array['select_optional']) {
+            $mode_value .= ' (no fail)';
+          }
         }
-        if ($table_array['update_if_duplicate']) {
-          $mode_value .= ' or update if duplicate';
+        if (isset($table_array['update_if_duplicate'])) {
+          if ($table_array['update_if_duplicate']) {
+            $mode_value .= ' or update if duplicate';
+          }
         }
 
 
         // add in the disabled
-        if ($table_array['disable']) {
-          $mode_value .= '. <font color="Red">DISABLED</font>';
+        if (isset($table_array['disable'])) {
+          if ($table_array['disable']) {
+            $mode_value .= '. <font color="Red">DISABLED</font>';
+          }
         }
 
         $form['records']['records-data'][$priority] = array(
           'title' => array(
-            '#type' => 'markup',
-            '#value' => filter_xss($priority . ". " . $table_array['record_id']),
+            '#type' => 'item',
+            '#markup' => filter_xss($priority . ". " . $table_array['record_id']),
             '#prefix' => "<a name=\"record_$priority\"></a>",
-            '#suffix' => "<p><a href=\"#fields_$priority\"> View Fields </a></p>",
+          ),
+          'view-fields-link' => array(
+            '#type' => 'markup',
+            '#markup' => "<a href=\"#fields_$priority\"> View Fields </a>",
           ),
           'chado_table' => array(
-            '#type' => 'markup',
-            '#value' => filter_xss($table_array['table']),
+            '#type' => 'item',
+            '#markup' => filter_xss($table_array['table']),
           ),
           'mode' => array(
             '#type' => 'item',
-            '#value' => $mode_value,
+            '#markup' => $mode_value,
           ),
           'new_priority' => array(
             '#type' => 'select',
@@ -208,31 +264,32 @@ function tripal_bulk_loader_modify_template_base_form($form_state = NULL, $mode)
             '#value' => $priority,
           ),
           'submit-edit_record' => array(
-            '#type' => 'submit',
-            '#name' => ($priority !== 0) ? (string)$priority : 'zero',
-            '#value' => 'Edit Record',
+            '#type' => 'link',
+            '#href' => str_replace(array('%template','%priority','%action'), array($template_id, $priority,'edit_record'), $record_href_template),
+            '#title' => 'Edit',
           ),
           'submit-delete_record' => array(
-            '#type' => 'submit',
-            '#name' => ($priority !== 0) ? (string)$priority : 'zero',
-            '#value' => 'Delete Record',
-          ),
-          'submit-add_field' => array(
-            '#type' => 'submit',
-            '#name' => ($priority !== 0) ? (string)$priority : 'zero',
-            '#value' => 'Add Field',
+            '#type' => 'link',
+            '#href' => str_replace(array('%template','%priority','%action'), array($template_id, $priority,'delete_record'), $record_href_template),
+            '#title' => 'Delete',
           ),
           'submit-duplicate_record' => array(
-            '#type' => 'submit',
-            '#name' => ($priority !== 0) ? (string)$priority : 'zero',
-            '#value' => 'Duplicate Record'
+            '#type' => 'link',
+            '#href' => str_replace(array('%template','%priority','%action'), array($template_id, $priority,'duplicate_record'), $record_href_template),
+            '#title' => 'Duplicate'
+          ),
+          'submit-add_field' => array(
+            '#type' => 'link',
+            '#href' => str_replace(array('%template','%priority','%action'), array($template_id, $priority,'add_field'), $record_href_template),
+            '#title' => 'Add Field',
           ),
         );
 
         foreach ($table_array['fields'] as $field_index => $field) {
+          $i = $field_index;
           $fk_value = '';
-          if ($field['foreign key']) {
-            if ($field['foreign field']) {
+          if (isset($field['foreign key'])) {
+            if (isset($field['foreign field'])) {
               $fk_value = $field['foreign key'] . " (" . $field['foreign field'] . ")";
             }
             else {
@@ -256,21 +313,24 @@ function tripal_bulk_loader_modify_template_base_form($form_state = NULL, $mode)
           $form['fields']['fields-data'][$i] = array(
             'record_id' => array(
               '#type' => 'item',
-              '#value' =>  $table_array['record_id'],
+              '#markup' =>  $table_array['record_id'],
               '#prefix' => "<a name=\"fields_$priority\"></a>",
-              '#suffix' => "<p><a href=\"#record_$priority\"> View Record </a></p>",
             ),
+            'view-record-link' => array(
+            '#type' => 'markup',
+            '#markup' => "<a href=\"#record_$priority\"> View Record</a>",
+          ),
             'priority_hidden' => array(
               '#type' => 'hidden',
               '#value' => $priority,
             ),
             'field_name' => array(
               '#type' => 'item',
-              '#value' => $field['title'],
+              '#markup' => $field['title'],
             ),
             'chado_table_name' => array(
               '#type' => 'item',
-              '#value' => $table_array['table'],
+              '#markup' => $table_array['table'],
             ),
             'chado_table_hidden' => array(
               '#type' => 'hidden',
@@ -278,19 +338,15 @@ function tripal_bulk_loader_modify_template_base_form($form_state = NULL, $mode)
             ),
             'chado_field_name' => array(
               '#type' => 'item',
-              '#value' => $field['field'],
-            ),
-            'sheet_name' => array(
-              '#type' => 'item',
-              '#value' => $field['spreadsheet sheet'],
+              '#markup' => $field['field'],
             ),
             'column_num' => array(
               '#type' => 'item',
-              '#value' => $field['spreadsheet column'],
+              '#markup' => (isset($field['spreadsheet column'])) ? $field['spreadsheet column'] : '',
             ),
             'constant_value' => array(
               '#type' => 'item',
-              '#value' => $field['constant value'],
+              '#markup' => (isset($field['constant value'])) ? $field['constant value'] : '',
             ),
             'field_index' => array(
               '#type' => 'hidden',
@@ -298,26 +354,25 @@ function tripal_bulk_loader_modify_template_base_form($form_state = NULL, $mode)
             ),
             'foreign_record_id' => array(
               '#type' => 'item',
-              '#value' => $fk_value,
+              '#markup' => $fk_value,
             ),
             'edit_submit' => array(
-              '#type' => 'submit',
-              '#name' => (string)$i,
-              '#value' => "Edit Field",
+              '#type' => 'link',
+              '#href' => str_replace(array('%template','%priority', '%field', '%action'), array($template_id, $priority, $i, 'edit_field'), $field_href_template),
+              '#title' => "Edit",
             ),
             'delete_submit' => array(
-              '#type' => 'submit',
-              '#name' => (string)$i,
-              '#value' => "Delete Field",
+              '#type' => 'link',
+              '#href' => str_replace(array('%template','%priority', '%field', '%action'), array($template_id, $priority, $i,'delete_field'), $field_href_template),
+              '#title' => "Delete",
             ),
           );
-
-          $i++;
+          $num_fields++;
         }
     }
     $form['fields']['total_fields'] = array(
-      '#type' => 'item',
-      '#value' => $i,
+      '#type' => 'hidden',
+      '#value' => $num_fields,
     );
 
   }
@@ -325,24 +380,16 @@ function tripal_bulk_loader_modify_template_base_form($form_state = NULL, $mode)
   if ($form['records']['no_records']['#value']) {
     $form['records']['description'] = array(
       '#type' => 'item',
-      '#value' => 'There are currently no records.',
+      '#markup' => 'There are currently no records. Click on the "New Record/Field" button below to add a record and the first field associated with it.',
     );
     unset($form['records']['submit-reorder']);
 
     $form['fields']['description'] = array(
       '#type' => 'item',
-      '#value' => 'There are currently no fields.',
+      '#markup' => 'There are currently no fields. Each field must be associated with a record, so, first, create a new record above.',
     );
 
   }
-
-  $mode_title = (preg_match('/create/', $mode)) ? 'Create Template' : 'Edit Template';
-  $value = ($form_state['storage']['template_id'])? 'Save Template' : $mode_title;
-  $form['submit'] = array(
-    '#type' => 'submit',
-    '#value' => $value,
-    '#weight' => 4,
-  );
 
   return $form;
 }
@@ -353,8 +400,9 @@ function tripal_bulk_loader_modify_template_base_form($form_state = NULL, $mode)
  * @ingroup tripal_bulk_loader
  */
 function tripal_bulk_loader_modify_template_base_form_submit($form, &$form_state) {
-
+  $save = TRUE;
   $form_state['rebuild'] = TRUE;
+
   if ($form_state['storage']['template_id']) {
     $sql = "SELECT * FROM {tripal_bulk_loader_template} WHERE template_id=:template";
     $result = db_query($sql, array(':template' => $form_state['storage']['template_id']))->fetchObject();
@@ -385,6 +433,9 @@ function tripal_bulk_loader_modify_template_base_form_submit($form, &$form_state
         }
         $form_state['storage']['record2priority'][$record_array['record_id']] = $priority;
       }
+
+      $form_state['rebuild'] = FALSE;
+      $form_state['redirect'] = 'admin/tripal/loaders/bulk/template/'.$form_state['storage']['template_id'].'/edit';
     break;
 
     case 'Create Template':
@@ -396,6 +447,8 @@ function tripal_bulk_loader_modify_template_base_form_submit($form, &$form_state
       $form_state['storage']['template_id'] = $record['template_id'];
       $form_state['storage']['template_name'] = $record['name'];
       $form_state['storage']['template'] = array();
+      $form['rebuild'] = FALSE;
+      $form_state['redirect'] = 'admin/tripal/loaders/bulk/template/'.$record['template_id'].'/edit';
     break;
 
     // Save Reordered Records -----------------------------------------------------
@@ -419,78 +472,22 @@ function tripal_bulk_loader_modify_template_base_form_submit($form, &$form_state
     break;
 
     case 'New Record/Field':
-      $query = array(
-        'template_id' => $form_state['storage']['template_id'],
-        'record_id' => 'NEW',
-      );
-      drupal_goto('admin/tripal/tripal_bulk_loader_template/add_field', $query);
+      $form_state['rebuild'] = FALSE;
+      $form_state['redirect'] = 'admin/tripal/loaders/bulk/template/'.$form_state['storage']['template_id'].'/add_record';
+      $save = FALSE;
     break;
 
-    case 'Edit Record':
-      $query = array(
-        'template_id' => $form_state['storage']['template_id'],
-        'record_id' => $form_state['clicked_button']['#name'],
-      );
-      drupal_goto('admin/tripal/tripal_bulk_loader_template/edit_record', $query);
-    break;
-
-    case 'Delete Record':
-    	$form_state['storage']['record2priority'] = array();
-      $new_template = tripal_bulk_loader_delete_record($form_state['clicked_button']['#name'], $form_state['storage']['template']);
-      if (!empty($new_template)) {
-      	$form_state['storage']['template'] = $new_template;
-      }
-    break;
-
-    case 'Add Field':
-      $query = array(
-        'template_id' => $form_state['storage']['template_id'],
-        'record_id' => $form_state['clicked_button']['#name'],
-      );
-      drupal_goto('admin/tripal/tripal_bulk_loader_template/add_field', $query);
-    break;
-
-    case 'Duplicate Record':
-      // original record (one to be duplicated)
-      $orig_priority = $form_state['clicked_button']['#name'];
-      $record = $form_state['storage']['template'][ $orig_priority ];
-
-      // new record
-      $new_priority = sizeof($form_state['storage']['template']) + 1;
-      $record['record_id'] = $record['record_id'] . '_' . date('YzHi');
-      $form_state['storage']['template'][ $new_priority ] = $record;
-    break;
-
-    case 'Edit Field':
-      $field_data_index = $form_state['clicked_button']['#name'];
-      $query = array(
-        'template_id' => $form_state['storage']['template_id'],
-        'record_id' => $form_state['values']['fields-data'][$field_data_index]['priority_hidden'],
-        'field_index' => $form_state['values']['fields-data'][$field_data_index]['field_index'],
-      );
-      drupal_goto('admin/tripal/tripal_bulk_loader_template/edit_field', $query);
-    break;
-
-    case 'Delete Field':
-    	// Delete Field
-      $field_data = $form_state['values']['fields-data'][$form_state['clicked_button']['#name']];
-      $priority = $field_data['priority_hidden'];
-      $field_key = $field_data['field_index'];
-      $new_template = tripal_bulk_loader_delete_field($priority, $field_key, $form_state['storage']['template']);
-			if (!empty($new_template)) {
-				$form_state['storage']['template'] = $new_template;
-			}
-      drupal_set_message(t('Deleted Field from Template.'));
-    break;
   } //end of switch
 
   // Save Template
-  $record = array(
-    'template_id' => $form_state['storage']['template_id'],
-    'template_array' => serialize($form_state['storage']['template'])
-  );
-  drupal_write_record('tripal_bulk_loader_template', $record, array('template_id'));
-  drupal_set_message(t('Template Saved.'));
+  if ($save) {
+    $record = array(
+      'template_id' => $form_state['storage']['template_id'],
+      'template_array' => serialize($form_state['storage']['template'])
+    );
+    drupal_write_record('tripal_bulk_loader_template', $record, array('template_id'));
+    drupal_set_message(t('Template Saved.'));
+  }
 
 }
 
@@ -671,6 +668,8 @@ function tripal_bulk_loader_import_export_template_form_submit($form, &$form_sta
 
 /**
  * Edit Record Form
+ *
+ * D7 @todo: Needs to be debugged
  *
  * This form is meant to be called from a bulk loader form. The following should be set
  * in the query section of the path:
@@ -900,6 +899,8 @@ function tripal_bulk_loader_edit_template_record_form(&$form_state = NULL) {
 /**
  * Implements hook_form_validate()
  *
+ * D7 @todo: Needs to be debugged
+ *
  * @ingroup tripal_bulk_loader
  */
 function tripal_bulk_loader_edit_template_record_form_validate($form, $form_state) {
@@ -921,6 +922,8 @@ function tripal_bulk_loader_edit_template_record_form_validate($form, $form_stat
 
 /**
  * Edit Record Form Submit
+ *
+ * D7 @todo: Needs to be debugged
  *
  * @param $form
  *   The form that was submitted
@@ -1005,17 +1008,11 @@ function tripal_bulk_loader_edit_template_record_form_submit($form, &$form_state
 }
 
 /**
- * @section
- * Add/Edit Field Forms
- */
-
-/**
- * Add Field Form
+ * Delete Record Form
  *
- * This form is meant to be called from a bulk loader form. Blank Defaults are in place but you
- * can use the following in the query of the path to set defaults for a given template:
- *  - template_id=\d+: the template to add the field to
- *  - record_id=\d+: the priority or key in the template array of the record to add the field to
+ * This form is meant to be called from a bulk loader form
+ *
+ * D7 @todo: Needs to be debugged
  *
  * @param $form_state
  *   Contains the values and storage for the form
@@ -1024,25 +1021,196 @@ function tripal_bulk_loader_edit_template_record_form_submit($form, &$form_state
  *
  * @ingroup tripal_bulk_loader
  */
-function tripal_bulk_loader_add_template_field_form(&$form_state = NULL) {
-  $form = array();
+function tripal_bulk_loader_delete_template_record_form($form, $form_state) {
   $form['#cache'] = TRUE; // Make sure the form is cached.
 
-  // get template id from path
-  $template_id = ($_GET['template_id']) ? $_GET['template_id'] : $form_state['values']['template_id'];
+  // get args from path
+  $template_id = (isset($form_state['build_info']['args'][0])) ? $form_state['build_info']['args'][0] : FALSE;
+  $form_state['storage']['template_id'] = $template_id;
+  $record_id = (isset($form_state['build_info']['args'][1])) ? $form_state['build_info']['args'][1] : FALSE;
+  $form_state['storage']['record_id'] = $record_id;
 
   // if there is no template supplied don't return rest of form
   if (!$template_id) {
     return $form;
   }
 
-  // Pre-set Variables needed for form proper------------------------------------------
+  $description = 'Are you sure you want to delete this record?';
+  $yes = 'Delete Record';
+  $no = 'Cancel';
 
-   // If this is the first load of the form (no form state) we need to initialize some variables
-  if (!$form_state['storage']['template']) {
+  $form['#attributes']['class'][] = 'confirmation';
+  $form['description'] = array('#markup' => $description);
+
+  $form['actions'] = array('#type' => 'actions');
+  $form['actions']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => $yes ? $yes : t('Confirm'),
+  );
+  $form['actions']['cancel'] = array(
+    '#type' => 'link',
+    '#title' => $no ? $no : t('Cancel'),
+    '#href' => 'admin/tripal/loaders/bulk/template/'.$template_id.'/edit',
+  );
+  // By default, render the form using theme_confirm_form().
+  if (!isset($form['#theme'])) {
+    $form['#theme'] = 'confirm_form';
+  }
+
+  return $form;
+}
+
+/**
+ * Delete Record Form
+ *
+ * This form is meant to be called from a bulk loader form
+ *
+ * D7 @todo: Needs to be debugged
+ *
+ * @param $form_state
+ *   Contains the values and storage for the form
+ * @return
+ *   A form array to be rendered by drupal_get_form
+ *
+ * @ingroup tripal_bulk_loader
+ */
+function tripal_bulk_loader_delete_template_record_form_submit($form, &$form_state) {
+  $form_state['rebuild']  = FALSE;
+  $template_id = $form_state['storage']['template_id'];
+  $form_state['redirect'] = 'admin/tripal/loaders/bulk/template/'.$template_id.'/edit';
+
+  $sql = "SELECT * FROM {tripal_bulk_loader_template} WHERE template_id=:template";
+  $result = db_query($sql, array(':template' => $form_state['storage']['template_id']))->fetchObject();
+  $form_state['storage']['template'] = unserialize($result->template_array);
+
+  $form_state['storage']['record2priority'] = array();
+  $new_template = tripal_bulk_loader_delete_record($form_state['storage']['record_id'], $form_state['storage']['template']);
+  if (!empty($new_template)) {
+    $form_state['storage']['template'] = $new_template;
+  }
+  drupal_set_message(t('Deleted Field from Template.'));
+
+  $record = array(
+    'template_id' => $form_state['storage']['template_id'],
+    'template_array' => serialize($form_state['storage']['template'])
+  );
+  drupal_write_record('tripal_bulk_loader_template', $record, array('template_id'));
+  drupal_set_message(t('Template Saved.'));
+}
+
+/**
+ * Duplicate Record Form
+ *
+ * This form is meant to be called from a bulk loader form
+ *
+ * D7 @todo: Needs to be debugged
+ *
+ * @param $form_state
+ *   Contains the values and storage for the form
+ * @return
+ *   A form array to be rendered by drupal_get_form
+ *
+ * @ingroup tripal_bulk_loader
+ */
+function tripal_bulk_loader_duplicate_template_record_form($form, &$form_state) {
+  $form['#cache'] = TRUE; // Make sure the form is cached.
+
+  // get args from path
+  $template_id = (isset($form_state['build_info']['args'][0])) ? $form_state['build_info']['args'][0] : FALSE;
+  $form_state['storage']['template_id'] = $template_id;
+  $record_id = (isset($form_state['build_info']['args'][1])) ? $form_state['build_info']['args'][1] : FALSE;
+  $form_state['storage']['record_id'] = $record_id;
+
+  // if there is no template supplied don't return rest of form
+  if (!$template_id) {
+    return $form;
+  }
+
+  $form['new_record_name'] = array(
+    '#type' => 'textfield',
+    '#title' => t('New Record Name'),
+    '#default_value' => $record_id . '_' . date('YzHi')
+  );
+
+  $form['actions'] = array('#type' => 'actions');
+  $form['actions']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Duplicate Record'),
+  );
+  $form['actions']['cancel'] = array(
+    '#type' => 'link',
+    '#title' => t('Cancel'),
+    '#href' => 'admin/tripal/loaders/bulk/template/'.$template_id.'/edit',
+  );
+
+  return $form;
+}
+
+/**
+ * Delete Record Form
+ *
+ * This form is meant to be called from a bulk loader form
+ *
+ * D7 @todo: Needs to be debugged
+ *
+ * @param $form_state
+ *   Contains the values and storage for the form
+ * @return
+ *   A form array to be rendered by drupal_get_form
+ *
+ * @ingroup tripal_bulk_loader
+ */
+function tripal_bulk_loader_duplicate_template_record_form_submit($form, &$form_state) {
+  $form_state['rebuild']  = FALSE;
+  $template_id = $form_state['storage']['template_id'];
+  $form_state['redirect'] = 'admin/tripal/loaders/bulk/template/'.$template_id.'/edit';
+
+  $sql = "SELECT * FROM {tripal_bulk_loader_template} WHERE template_id=:template";
+  $result = db_query($sql, array(':template' => $form_state['storage']['template_id']))->fetchObject();
+  $form_state['storage']['template'] = unserialize($result->template_array);
+
+      // original record (one to be duplicated)
+      $orig_priority = $form_state['storage']['record_id'];
+      $record = $form_state['storage']['template'][ $orig_priority ];
+
+      // new record
+      $record['record_id'] = $form_state['values']['new_record_name'];
+      $form_state['storage']['template'][] = $record;
+
+  $record = array(
+    'template_id' => $form_state['storage']['template_id'],
+    'template_array' => serialize($form_state['storage']['template'])
+  );
+  drupal_write_record('tripal_bulk_loader_template', $record, array('template_id'));
+  drupal_set_message(t('Template Saved.'));
+}
+
+/**
+ * @section
+ * Add/Edit Field Forms
+ */
+
+/**
+ * Determine default values needed for add/edit field form
+ */
+function tripal_bulk_loader_template_field_form_default_values($mode, &$form_state) {
+  $v = array();
+
+  $v['template_id'] = (isset($form_state['build_info']['args'][0])) ? $form_state['build_info']['args'][0] : FALSE;
+  $form_state['storage']['template_id'] = $v['template_id'];
+  $template_id = $v['template_id'];
+  $v['record_id'] = (isset($form_state['build_info']['args'][1])) ? $form_state['build_info']['args'][1] : FALSE;
+  $form_state['storage']['record_id'] = $v['record_id'];
+  $record_id = $v['record_id'];
+
+  // Get the template if not already stored
+  if (!isset($form_state['storage']['template'])) {
     $sql = "SELECT * FROM {tripal_bulk_loader_template} WHERE template_id=:template";
     $template = db_query($sql, array(':template' => $template_id))->fetchObject();
     $form_state['storage']['template_array'] = unserialize($template->template_array);
+    if (!$form_state['storage']['template_array']) {
+      $form_state['storage']['template_array'] = array();
+    }
     $form_state['storage']['template'] = $template;
 
     $form_state['storage']['record2priority'] = array();
@@ -1052,22 +1220,63 @@ function tripal_bulk_loader_add_template_field_form(&$form_state = NULL) {
       }
       $form_state['storage']['record2priority'][$record_array['record_id']] = $priority;
     }
-
-    $form_state['storage']['referring URL'] = $_SERVER["HTTP_REFERER"];
   }
   else {
     $template = $form_state['storage']['template'];
   }
 
-  $field_type = ($form_state['values']['field_type'])? $form_state['values']['field_type'] : 'table field';
+  $v['template_name'] = (isset($template->name)) ? $template->name : '';
 
-  // Tables and default table
+  $v['field_type'] = (isset($form_state['values']['field_type'])) ? $form_state['values']['field_type'] : 'table field';
+  $field_type = $v['field_type'];
+
+  // Set field type options
+  // Ensure other field type fields are reset/cleared except for those of the current type
+  // ie: if the type is changed from spreadsheet column to constant, the spreadsheet column
+  // fields should be cleared since they don't apply to a constant
+  switch ($v['field_type']) {
+    case 'table field':
+      $v['column_number'] = (isset($form_state['values']['column_number'])) ? $form_state['values']['column_number'] : '';
+      $v['column_exposed'] = (isset($form_state['values']['column_exposed'])) ? $form_state['values']['column_exposed'] : FALSE;
+      $v['column_exposed_desc'] = (isset($form_state['values']['column_exposed_desc'])) ? $form_state['values']['column_exposed_desc'] : FALSE;
+      $v['constant_value'] = '';
+      $v['constant_exposed'] = FALSE;
+      $v['constant_validate'] = FALSE;
+      break;
+    case 'constant':
+      $v['column_number'] = '';
+      $v['column_exposed'] = FALSE;
+      $v['column_exposed_desc'] = FALSE;
+      $v['constant_value'] = (isset($form_state['values']['constant_value'])) ? $form_state['values']['constant_value'] : '';
+      $v['constant_exposed'] = (isset($form_state['values']['constant_exposed'])) ? $form_state['values']['constant_exposed'] : FALSE;
+      $v['constant_validate'] = (isset($form_state['values']['constant_validate'])) ? $form_state['values']['constant_validate'] : FALSE;
+      break;
+    case 'foreign key':
+      $v['column_number'] = '';
+      $v['column_exposed'] = FALSE;
+      $v['column_exposed_desc'] = FALSE;
+      $v['constant_value'] = '';
+      $v['constant_exposed'] = FALSE;
+      $v['constant_validate'] = FALSE;
+      break;
+  }
+
+  // Use the record_id as the priority/field_group
+  if ($record_id) {
+    $form_state['values']['field_group'] = $record_id;
+    if (preg_match('/\d+/', $record_id)) {
+      $priority = $form_state['values']['field_group'];
+      $table = $form_state['storage']['template_array'][$priority]['table'];
+    }
+  }
+
+  // Chado Tables and default table
   $tables = tripal_core_get_chado_tables(TRUE);
-  if ($form_state['values']) {
+  if (isset($form_state['values']['chado_table'])) {
     if (!preg_match('/^' . current($tables) . '$/', $form_state['values']['chado_table'])) {
       $table = $form_state['values']['chado_table'];
     }
-    elseif ($form_state['values']['record_name']) {
+    elseif (isset($form_state['values']['record_name'])) {
       $record_name = $form_state['values']['record_name'];
       $priority = $form_state['storage']['record2priority'][$record_name];
       $table = $form_state['storage']['template_array'][$priority]['table'];
@@ -1077,32 +1286,74 @@ function tripal_bulk_loader_add_template_field_form(&$form_state = NULL) {
       $table = $form_state['storage']['template_array'][$priority]['table'];
     }
   }
-  if (!$table) {
+  if (!isset($table)) {
     $table = reset($tables);
   }
 
-  // get the record_id from the path
-  if ($_GET['record_id'] !== NULL) {
-    $form_state['values']['field_group'] = $_GET['record_id'];
-    if (preg_match('/\d+/', $_GET['record_id'])) {
-      $priority = $form_state['values']['field_group'];
-      $table = $form_state['storage']['template_array'][$priority]['table'];
-    }
-  }
-
-  $show_all = $form_state['values']['show_all_records'];
-
-  $table_description = tripal_core_get_chado_table_schema($table);
-
-  // Fields and foreign key / referral mappings
-  // build the fields array
+  // Chado fields
   $chado_fields = array();
+  $table_description = tripal_core_get_chado_table_schema($table);
   foreach ($table_description['fields'] as $field_name => $field_array) {
     $chado_fields[$field_name] = $field_name;
   }
+  // Chado Default Field
+  if (empty($chado_fields)) {
+    $field = NULL;
+  }
+  elseif (isset($form_state['values']['chado_field'])) {
+    if (isset($chado_fields[$form_state['values']['chado_field']])) {
+      $field = $form_state['values']['chado_field'];
+    }
+    else {
+      $field = current($chado_fields);
+    }
+  }
+  else {
+    $field = current($chado_fields);
+  }
 
+  // Field group options
+  if (!$form_state['storage']['record2priority']) {
+    $groups = array();
+  }
+  else {
+    $groups = array_flip($form_state['storage']['record2priority']);
+  }
+  $groups['NONE'] = 'Select a Record';
+  $groups['NEW'] = 'New Record';
+
+  // Field Group Default
+  if ($record_id) {
+    $field_group = $record_id;
+  }
+  elseif (isset($form_state['values']['field_group'])) {
+    $field_group = $form_state['values']['field_group'];
+  }
+  else {
+    if ($mode == 'add') {
+      $field_group = 'NEW';
+    }
+    else {
+      $field_group = 'NONE';
+    }
+  }
+
+  $v['field_group'] = $field_group;
+  $v['field_group_options'] = $groups;
+  $v['chado_table'] = $table;
+  $v['chado_table_options'] = $tables;
+  $v['chado_field'] = $field;
+  $v['chado_field_options'] = $chado_fields;
+
+  $v['record_name'] = (isset($form_state['values']['record_name'])) ? $form_state['values']['record_name'] : '';
+  $v['field_title'] = (isset($form_state['values']['field_title'])) ? $form_state['values']['field_title'] : '';
+
+  $v['show_all_records'] = (isset($form_state['values']['show_all_records'])) ? $form_state['values']['show_all_records'] : FALSE;
+
+  // Foreign key options
   $fk_options = array();
   $fk_options['NULL'] = 'None';
+  $show_all = $v['show_all_records'];
   if ($field_type == 'foreign key' and !$show_all) {
 
     $foreign_field2table = array();
@@ -1111,18 +1362,6 @@ function tripal_bulk_loader_add_template_field_form(&$form_state = NULL) {
         //$chado_fields[$left_field] = $left_field;
         $foreign_field2table[$left_field] = $key_table;
       }
-    }
-//   reset($chado_fields);
-
-    // set default field
-    if (empty($chado_fields)) {
-      $field = NULL;
-    }
-    elseif ($chado_fields[$form_state['values']['chado_field']]) {
-      $field = $form_state['values']['chado_field'];
-    }
-    else {
-      $field = current($chado_fields);
     }
 
     // Foreign key options
@@ -1174,54 +1413,62 @@ function tripal_bulk_loader_add_template_field_form(&$form_state = NULL) {
       }
     }
   }
+  $ref_chado_fields = (!empty($ref_chado_fields)) ? $ref_chado_fields : array('NULL', 'None');
 
-  // Ensure other field type fields are reset/cleared except for those of the current type
-  // ie: if the type is changed from spreadsheet column to constant, the spreadsheet column
-  // fields should be cleared since they don't apply to a constant
-  switch ($field_type) {
-    case 'table field':
-      // clear constant
-      $form_state['values']['constant_value'] = NULL;
-      // clear foreign key
-      // clears by default :)
-      break;
-    case 'constant':
-      // clear spreadsheet column
-      $form_state['values']['column_number'] = NULL;
-      $form_state['values']['column_exposed'] = NULL;
-      $template_field['exposed'] = NULL;
-      $form_state['values']['column_exposed_desc'] = NULL;
-      $template_field['exposed_description'] = NULL;
-      // clear foreign key
-      // clears by default :)
-      break;
-    case 'foreign key':
-      // clear constant
-      $form_state['values']['constant_value'] = NULL;
-      // clear spreadsheet column
-      $form_state['values']['column_number'] = NULL;
-      $form_state['values']['column_exposed'] = NULL;
-      $template_field['exposed'] = NULL;
-      $form_state['values']['column_exposed_desc'] = NULL;
-      $template_field['exposed_description'] = NULL;
-      break;
+  $v['foreign_record_options'] = $fk_options;
+  $v['foreign_record'] = (isset($form_state['values']['foreign_record'])) ? $form_state['values']['foreign_record'] : 'NULL';
+  $v['foreign_field_options'] = $ref_chado_fields;
+  $v['foreign_field'] = (isset($form_state['values']['foreign_field'])) ? $form_state['values']['foreign_field'] : current($ref_chado_fields);
+  $v['required'] = (isset($form_state['values']['required'])) ? $form_state['values']['required'] : FALSE;
+
+  $v['regex_are_set'] = (isset($form_state['storage']['regex']['pattern'])) ? TRUE : FALSE;
+  $v['regex-pattern'] = (isset($form_state['storage']['regex']['pattern'])) ? $form_state['storage']['regex']['pattern'] : array();
+  $v['regex-replace'] = (isset($form_state['storage']['regex']['replace'])) ? $form_state['storage']['regex']['replace'] : array();
+
+  $v['regex-test-string'] = (isset($form_state['storage']['test_regex_test'])) ? $form_state['storage']['test_regex_test'] : '';
+  $v['regex-test-result'] = (isset($form_state['storage']['test_regex_result'])) ? $form_state['storage']['test_regex_result'] : '';
+
+  return $v;
+}
+
+/**
+ * Add Field Form
+ *
+ * This form is meant to be called from a bulk loader form. Blank Defaults are in place but you
+ * can use the following in the query of the path to set defaults for a given template:
+ *  - template_id=\d+: the template to add the field to
+ *  - record_id=\d+: the priority or key in the template array of the record to add the field to
+ *
+ * @param $form_state
+ *   Contains the values and storage for the form
+ * @return
+ *   A form array to be rendered by drupal_get_form
+ *
+ * @ingroup tripal_bulk_loader
+ */
+function tripal_bulk_loader_add_template_field_form($form, $form_state = NULL) {
+  $form['#cache'] = TRUE; // Make sure the form is cached.
+
+  // if there is no template supplied don't return rest of form
+  if (!isset($form_state['build_info']['args'][0])) {
+    return $form;
   }
 
-  // Start of Form Proper-------------------------------------------------------------
+  $values = tripal_bulk_loader_template_field_form_default_values('add', $form_state);
 
   $form['template_name'] = array(
     '#type' => 'item',
     '#title' => 'Template',
-    '#value' => $template->name,
+    '#markup' => $values['template_name'],
   );
 
   $form['template_id'] = array(
     '#type' => 'hidden',
-    '#value' => $template_id,
+    '#value' => $values['template_id'],
   );
 
   $form['add_fields'] = array(
-    '#type' => 'fieldset',
+    '#type' => 'markup',
     '#prefix' => '<div id="tripal_bulk_loader_template-add_field">',
     '#suffix' => '</div>',
   );
@@ -1235,32 +1482,23 @@ function tripal_bulk_loader_add_template_field_form(&$form_state = NULL) {
       'foreign key' => t('Record Referral: Fields which map to a record in another table'),
     ),
     '#required' => TRUE,
-    '#default_value' => $field_type,
-    '#ahah' => array(
-      'path' => 'admin/tripal/tripal_bulk_loader_template/add_field_ahah',
+    '#default_value' => $values['field_type'],
+    '#ajax' => array(
+      'callback' => 'tripal_bulk_loader_add_field_ahah',
       'wrapper' => 'tripal_bulk_loader_template-add_field',
       'effect' => 'fade'
     ),
   );
 
-  // check template array for records then add one more
-  if (!$form_state['storage']['record2priority']) {
-    $groups = array();
-  }
-  else {
-    $groups = array_flip($form_state['storage']['record2priority']);
-  }
-  $groups['NONE'] = 'Select a Record';
-  $groups['NEW'] = 'New Record';
   $form['add_fields']['field_group']  = array(
     '#type' => 'select',
     '#title' => 'Record',
     '#description' => 'This is used to group a set of fields together allowing '
       .'multiple records to be inserted into the same table per line of the file',
-    '#options' => $groups,
-    '#default_value' => (preg_match('/\w+.*/', $form_state['values']['field_group'])) ? $form_state['values']['field_group'] : 'NONE',
-    '#ahah' => array(
-      'path' => 'admin/tripal/tripal_bulk_loader_template/add_field_ahah',
+    '#options' => $values['field_group_options'],
+    '#default_value' => $values['field_group'],
+    '#ajax' => array(
+      'callback' => 'tripal_bulk_loader_add_field_ahah',
       'wrapper' => 'tripal_bulk_loader_template-add_field',
       'effect' => 'fade'
     ),
@@ -1268,17 +1506,18 @@ function tripal_bulk_loader_add_template_field_form(&$form_state = NULL) {
   );
 
   $form['add_fields']['record_name'] = array(
-    '#type' => (preg_match('/NEW/', $form_state['values']['field_group'])) ? 'textfield' : 'hidden',
+    '#type' => (preg_match('/NEW/', $values['field_group'])) ? 'textfield' : 'hidden',
     '#title' => 'Unique Record Name',
     '#prefix' => '<div id="tripal_bulk_loader_template-add_record">',
     '#suffix' => '</div>',
-    '#default_value' => $form_state['values']['record_name'],
+    '#description' => 'A human-readable name for the record; it should be unique.',
+    '#default_value' => $values['record_name'],
   );
 
   $form['add_fields']['field_title'] = array(
     '#type' => 'textfield',
     '#title' => t('Human-readable Title for Field'),
-    '#default_value' => $form_state['values']['field_title'],
+    '#default_value' => $values['field_title'],
   );
 
 
@@ -1292,10 +1531,10 @@ function tripal_bulk_loader_add_template_field_form(&$form_state = NULL) {
   $form['add_fields']['chado']['chado_table'] = array(
     '#type' => 'select',
     '#title' => t('Chado Table'),
-    '#options' => $tables,
-    '#default_value' => $table,
-    '#ahah' => array(
-      'path' => 'admin/tripal/tripal_bulk_loader_template/add_field_ahah',
+    '#options' => $values['chado_table_options'],
+    '#default_value' => $values['chado_table'],
+    '#ajax' => array(
+      'callback' => 'tripal_bulk_loader_add_field_ahah',
       'wrapper' => 'tripal_bulk_loader_template-add_field',
       'effect' => 'fade'
       ),
@@ -1304,10 +1543,10 @@ function tripal_bulk_loader_add_template_field_form(&$form_state = NULL) {
   $form['add_fields']['chado']['chado_field'] = array(
     '#type' => 'select',
     '#title' => t('Chado Field/Column'),
-    '#options' => $chado_fields,
-    '#default_value' => $form_state['values']['chado_field'],
-    '#ahah' => array(
-      'path' => 'admin/tripal/tripal_bulk_loader_template/add_field_ahah',
+    '#options' => $values['chado_field_options'],
+    '#default_value' => $values['chado_field'],
+    '#ajax' => array(
+      'callback' => 'tripal_bulk_loader_add_field_ahah',
       'wrapper' => 'tripal_bulk_loader_template-add_field',
       'effect' => 'fade'
     ),
@@ -1318,39 +1557,29 @@ function tripal_bulk_loader_add_template_field_form(&$form_state = NULL) {
     '#type' => 'fieldset',
     '#title' => t('Data File Column'),
     '#collapsible' => TRUE,
-    '#collapsed' => ($field_type == 'table field')? FALSE : TRUE,
+    '#collapsed' => ($values['field_type'] == 'table field')? FALSE : TRUE,
   );
-
-  /**
-  $form['add_fields']['columns']['sheet_name'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Worksheet'),
-    '#description' => t('Specify the name of the worksheet.'),
-    '#size' => 5,
-    '#default_value' => ($form_state['values']['sheet_name'])? $form_state['values']['sheet_name'] : 'Sheet1',
-  );
-  */
 
   $form['add_fields']['columns']['column_number'] = array(
     '#type' => 'textfield',
     '#title' => t('Column'),
     '#description' => t('Specify the column in the data that this field maps to where the first column is 1.'),
     '#size' => 5,
-    '#default_value' => $form_state['values']['column_number'],
+    '#default_value' => $values['column_number'],
   );
 
   $form['add_fields']['columns']['column_exposed'] = array(
     '#type' => 'checkbox',
     '#title' => t('Allow Column to be set for each Bulk Loading Job'),
     '#description' => t('Adds a textbox field to the Bulk Loader Page to allow users to set this value.'),
-    '#default_value' => ($form_state['values']['column_exposed']) ? $form_state['values']['column_exposed'] : $template_field['exposed'],
+    '#default_value' => $values['column_exposed'],
   );
 
   $form['add_fields']['columns']['column_exposed_desc'] = array(
     '#type' => 'textfield',
     '#title' => t('Description for exposed field on bulk loading job'),
     '#description' => t('This description should tell the user what column should be entered here.'),
-    '#default_value' => ($form_state['values']['column_exposed_desc']) ? $form_state['values']['column_exposed_desc'] : $template_field['exposed_description'],
+    '#default_value' => $values['column_exposed_desc'],
   );
 
   // Global Value
@@ -1358,26 +1587,28 @@ function tripal_bulk_loader_add_template_field_form(&$form_state = NULL) {
     '#type' => 'fieldset',
     '#title' => t('Constant'),
     '#collapsible' => TRUE,
-    '#collapsed' => ($field_type == 'constant')? FALSE : TRUE,
+    '#collapsed' => ($values['field_type'] == 'constant')? FALSE : TRUE,
   );
 
   $form['add_fields']['constant']['constant_value'] = array(
     '#type' => 'textfield',
     '#title' => t('Constant Value'),
     '#description' => t('Specify the value you wish this field to have regardless of data file value.'),
-    '#default_value' => $form_state['values']['constant_value']
+    '#default_value' => $values['constant_value']
   );
 
   $form['add_fields']['constant']['constant_exposed'] = array(
     '#type' => 'checkbox',
     '#title' => t('Allow Constant to be set for each Bulk Loading Job'),
-    '#description' => t('Adds a textbox field to the Create Bulk Loader Form to allow users to set this value.')
+    '#description' => t('Adds a textbox field to the Create Bulk Loader Form to allow users to set this value.'),
+    '#default_value' => $values['constant_exposed'],
   );
 
   $form['add_fields']['constant']['constant_validate'] = array(
     '#type' => 'checkbox',
     '#title' => t('Ensure value is in table'),
     '#description' => t('Checks the database when a bulk loading job is created to ensure the value entered already exists in the database.'),
+    '#default_value' => $values['constant_validate'],
   );
 
   // Foreign Key / Referrer
@@ -1385,16 +1616,16 @@ function tripal_bulk_loader_add_template_field_form(&$form_state = NULL) {
     '#type' => 'fieldset',
     '#title' => 'Record Referral',
     '#collapsible' => TRUE,
-    '#collapsed' => ($field_type == 'foreign key')? FALSE : TRUE,
+    '#collapsed' => ($values['field_type'] == 'foreign key')? FALSE : TRUE,
   );
 
   $form['add_fields']['foreign_key']['show_all_records'] = array(
     '#type' => 'checkbox',
     '#title' => 'Refer to any record',
     '#description' => t('By default, the bulk loader will only allow referral to records in a foreign key relationship.  To allow referral to any previous record, check this box'),
-    '#default_value' => $show_all,
-    '#ahah' => array(
-      'path' => 'admin/tripal/tripal_bulk_loader_template/add_field_ahah',
+    '#default_value' => $values['show_all_records'],
+    '#ajax' => array(
+      'callback' => 'tripal_bulk_loader_add_field_ahah',
       'wrapper' => 'tripal_bulk_loader_template-add_field',
       'effect' => 'fade'
     ),
@@ -1404,45 +1635,47 @@ function tripal_bulk_loader_add_template_field_form(&$form_state = NULL) {
     '#type' => 'select',
     '#title' => 'Record to refer to',
     '#descripion' => 'Select the record that this value should refer to. The record needs to already exist.',
-    '#options' => $fk_options,
-    '#ahah' => array(
-      'path' => 'admin/tripal/tripal_bulk_loader_template/add_field_ahah',
+    '#options' => $values['foreign_record_options'],
+    '#ajax' => array(
+      'callback' => 'tripal_bulk_loader_add_field_ahah',
       'wrapper' => 'tripal_bulk_loader_template-add_field',
       'effect' => 'fade'
     ),
-    '#default_value' => ($form_state['values']['foreign_record']) ? $form_state['values']['foreign_record'] : $template_field['foreign key'],
+    '#default_value' => $values['foreign_record'],
   );
 
   $form['add_fields']['foreign_key']['foreign_field'] = array(
     '#type' => 'select',
     '#title' => 'Field to refer to',
     '#descripion' => 'Select the record that this value should refer to. The record needs to already exist.',
-    '#options' => $ref_chado_fields,
-    '#default_value' => ($form_state['values']['foreign_field']) ? $form_state['values']['foreign_field'] : $template_field['foreign_field'],
+    '#options' => $values['foreign_field_options'],
+    '#default_value' => $values['foreign_field'],
   );
 
 
   $form['add_fields']['additional'] = array(
     '#type' => 'fieldset',
     '#title' => 'Additional Options',
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE
   );
 
   $form['add_fields']['additional']['required'] = array(
     '#type' => 'checkbox',
     '#title' => 'Make this field required',
-    '#default_value' => (!empty($form_state['values']['required'])) ? $form_state['values']['required'] : $template_field['required'],
+    '#default_value' => $values['required'],
   );
 
   $form['add_fields']['additional']['regex_transform'] = array(
     '#type' => 'fieldset',
     '#title' => 'Transform Data File Value Rules',
     '#collapsible' => TRUE,
-    '#collapsed' => (!$form_state['storage']['regex']['pattern']) ? TRUE : FALSE,
+    '#collapsed' => $values['regex_are_set'],
   );
 
   $form['add_fields']['additional']['regex_transform']['regex_description'] = array(
     '#type' => 'item',
-    '#value' => 'A transformation rule allows you to transform the original value '
+    '#markup' => 'A transformation rule allows you to transform the original value '
       .'(usually from a user submitted data file) into the form you would like it stored '
       .'in the chado database. Each rule consists of a match pattern (a php regular expression '
       .'which determines which replacement patterns are applied and captures regions of the '
@@ -1454,18 +1687,15 @@ function tripal_bulk_loader_add_template_field_form(&$form_state = NULL) {
   $form['add_fields']['additional']['regex_transform']['regex-data'] = array(
     '#tree' => TRUE,
   );
-  if (!$form_state['storage']['regex']['pattern']) {
-    $form_state['storage']['regex']['pattern'] = array();
-  }
-  foreach ($form_state['storage']['regex']['pattern'] as $index => $pattern) {
+  foreach ($values['regex-pattern'] as $index => $pattern) {
     $data_element = array(
       'pattern' => array(
         '#type' => 'item',
-        '#value' => $pattern,
+        '#markup' => $pattern,
       ),
       'replace' => array(
         '#type' => 'item',
-        '#value' => $form_state['storage']['regex']['replace'][$index],
+        '#markup' => $values['regex-replace'][$index],
       ),
       'old_index' => array(
         '#type' => 'hidden',
@@ -1473,7 +1703,7 @@ function tripal_bulk_loader_add_template_field_form(&$form_state = NULL) {
       ),
       'new_index' => array(
         '#type' => 'select',
-        '#options' => range(0, sizeof($form_state['storage']['regex']['pattern'])-1),
+        '#options' => range(0, sizeof($values['regex-pattern'])-1),
         '#default_value' => $index,
       ),
       'id' => array(
@@ -1490,7 +1720,7 @@ function tripal_bulk_loader_add_template_field_form(&$form_state = NULL) {
   }
 
   $form['add_fields']['additional']['regex_transform']['submit-reorder_regex'] = array(
-    '#type' => ($form_state['storage']['regex']['pattern']) ? 'submit' : 'hidden',
+    '#type' => ($values['regex_are_set']) ? 'submit' : 'hidden',
     '#value' => 'Save Transformation Rule Order'
   );
 
@@ -1519,7 +1749,7 @@ function tripal_bulk_loader_add_template_field_form(&$form_state = NULL) {
     .'first set of round brackets.',
   );
 
-  if ($field_type == 'table field') {
+  if ($values['field_type'] == 'table field') {
     $tab = '&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp';
     $form['add_fields']['additional']['regex_transform']['new_regex']['replace']['#description'] .= '<p>'
       .'The following references are also available for data file fields: <b><#column:<i>number</i>#></b>. '
@@ -1547,7 +1777,7 @@ function tripal_bulk_loader_add_template_field_form(&$form_state = NULL) {
     '#title' => 'Test Value',
     '#description' => 'This should be a value that you expect the above transformation rules '
       .'to be applied to.',
-    '#default_value' => $form_state['storage']['test_regex_test'],
+    '#default_value' => $values['regex-test-string'],
   );
 
   $form['add_fields']['additional']['regex_transform']['test_regex']['test_result'] = array(
@@ -1555,7 +1785,7 @@ function tripal_bulk_loader_add_template_field_form(&$form_state = NULL) {
     '#title' => 'Test Result',
     '#description' => 'This is the value that would be saved to the database after the above transformation '
       .'riles were applied to the Test Value.',
-    '#default_value' => $form_state['storage']['test_regex_result'],
+    '#default_value' => $values['regex-test-result'],
   );
 
   $form['add_fields']['additional']['regex_transform']['test_regex']['submit-test'] = array(
@@ -1611,137 +1841,137 @@ function tripal_bulk_loader_add_template_field_form_validate($form, $form_state)
 function tripal_bulk_loader_add_template_field_form_submit($form, &$form_state) {
 
   $op = $form_state['values'][ $form_state['clicked_button']['#name'] ];
+  if ($op ==  'Save Changes') {
 
-  if (!$form_state['ahah_submission']) {
-    if ($op ==  'Save Changes') {
+    $template = $form_state['storage']['template_array'];
 
-      $template = $form_state['storage']['template_array'];
-
-       // If new record
-      if (preg_match('/NEW/', $form_state['values']['field_group'])) {
-        $record_name = $form_state['values']['record_name'];
-        $priority = sizeof($form_state['storage']['template_array']) + 1;
-        $record2priority[$record_name] = $priority;
-        $template[$priority]['table'] = $form_state['values']['chado_table'];
-        $template[$priority]['record_id'] = $record_name;
-
-      }
-      else {
-        $priority = $form_state['values']['field_group'];
-        $record_name = $record2priority[$priority];
-      }
-
-      // Add field to template array
-      if ($form_state['values']['field_type'] == 'table field') {
-        $field = array(
-          'type' => 'table field',
-          'title' => $form_state['values']['field_title'],
-          'field' => $form_state['values']['chado_field'],
-          'required' => $form_state['values']['required'],
-          //'allowed values' => empty by default,
-          'spreadsheet column' => $form_state['values']['column_number'],
-          'exposed' => $form_state['values']['column_exposed'],
-          'exposed_description' => $form_state['values']['column_exposed_desc'],
-        );
-      }
-      elseif ($form_state['values']['field_type'] == 'constant') {
-        $field = array(
-          'type' => 'constant',
-          'title' => $form_state['values']['field_title'],
-          'field' => $form_state['values']['chado_field'],
-          'required' => $form_state['values']['required'],
-          //'allowed values' => empty by default,
-          'constant value' => $form_state['values']['constant_value'],
-          'exposed' => $form_state['values']['constant_exposed'],
-          'exposed_validate' => $form_state['values']['constant_validate'],
-        );
-      }
-      elseif ($form_state['values']['field_type'] == 'foreign key') {
-        $field = array(
-          'type' => 'foreign key',
-          'title' => $form_state['values']['field_title'],
-          'field' => $form_state['values']['chado_field'],
-          'show_all_records' => $form_state['values']['show_all_records'],
-          'foreign key' => $form_state['values']['foreign_record'],
-          'foreign field' => $form_state['values']['foreign_field'],
-          'required' => $form_state['values']['required'],
-        );
-      }
-
-      // Deal with any additional options
-      if ($form_state['storage']['regex']) {
-        $field['regex'] = $form_state['storage']['regex'];
-      }
-
-      // Save Template
-      $template[$priority]['fields'][] = $field;
-      $form_state['storage']['template']->template_array = serialize($template);
-      $success = drupal_write_record('tripal_bulk_loader_template', $form_state['storage']['template'], array('template_id'));
-
-      if ($success) {
-        drupal_set_message(t('Successfully Added Field to Template'));
-        drupal_set_message(t('Template Saved.'));
-
-        $path = explode('?', $form_state['storage']['referring URL']);
-        parse_str($path[1], $query);
-        $query['template_id'] = $form_state['storage']['template']->template_id;
-        drupal_goto($path[0], $query);
-      }
-      else {
-        drupal_set_message(t('Unable to Save Template!'), 'error');
-        watchdog('T_bulk_loader',
-          'Unable to save bulk loader template: %template',
-          array('%template' => print_r($form_state['storage']['template'], TRUE)),
-          WATCHDOG_ERROR
-        );
-      }
-    }
-    elseif ($op ==  'Cancel') {
-        $path = explode('?', $form_state['storage']['referring URL']);
-        parse_str($path[1], $query);
-        $query['template_id'] = $form_state['storage']['template']->template_id;
-        drupal_goto($path[0], $query);
-    }
-    elseif ($op == 'Add Transformation') {
-
-      // Add transformation rule to original field
-      $form_state['storage']['regex']['pattern'][] = '/' . $form_state['values']['pattern'] . '/';
-      $form_state['storage']['regex']['replace'][] = $form_state['values']['replace'];
-      drupal_set_message(t('Successfully Added Transformation Rule'));
+     // If new record
+    if (preg_match('/NEW/', $form_state['values']['field_group'])) {
+      $record_name = $form_state['values']['record_name'];
+      $priority = sizeof($form_state['storage']['template_array']) + 1;
+      $record2priority[$record_name] = $priority;
+      $template[$priority]['table'] = $form_state['values']['chado_table'];
+      $template[$priority]['record_id'] = $record_name;
 
     }
-    elseif ($op == 'Save Transformation Rule Order') {
-
-      // Generate new regex array
-      $new_regex = array();
-      $old_regex = $form_state['storage']['regex'];
-      foreach ($form_state['values']['regex-data'] as $key => $element) {
-        $new_regex['pattern'][ $element['new_index'] ] = $old_regex['pattern'][ $element['old_index'] ];
-        $new_regex['replace'][ $element['new_index'] ] = $old_regex['replace'][ $element['old_index'] ];
-      }
-
-      // sort new regex arrays
-      ksort($new_regex['pattern']);
-      ksort($new_regex['replace']);
-
-      $form_state['storage']['regex'] = $new_regex;
+    else {
+      $priority = $form_state['values']['field_group'];
     }
-    elseif ($op == 'Delete Transformation') {
 
-      // Unset regex rule
-      $index = $form_state['clicked_button']['#name'];
-      unset($form_state['storage']['regex']['pattern'][$index]);
-      unset($form_state['storage']['regex']['replace'][$index]);
-
+    // Add field to template array
+    if ($form_state['values']['field_type'] == 'table field') {
+      $field = array(
+        'type' => 'table field',
+        'title' => $form_state['values']['field_title'],
+        'field' => $form_state['values']['chado_field'],
+        'required' => $form_state['values']['required'],
+        //'allowed values' => empty by default,
+        'spreadsheet column' => $form_state['values']['column_number'],
+        'exposed' => $form_state['values']['column_exposed'],
+        'exposed_description' => $form_state['values']['column_exposed_desc'],
+      );
     }
-    elseif ($op == 'Test Transformation Rules') {
-
-      $patterns = $form_state['storage']['regex']['pattern'];
-      $replaces = $form_state['storage']['regex']['replace'];
-      $test_string = $form_state['values']['test_string'];
-      $form_state['storage']['test_regex_result'] = preg_replace($patterns, $replaces, $test_string);
-      $form_state['storage']['test_regex_test'] = $test_string;
+    elseif ($form_state['values']['field_type'] == 'constant') {
+      $field = array(
+        'type' => 'constant',
+        'title' => $form_state['values']['field_title'],
+        'field' => $form_state['values']['chado_field'],
+        'required' => $form_state['values']['required'],
+        //'allowed values' => empty by default,
+        'constant value' => $form_state['values']['constant_value'],
+        'exposed' => $form_state['values']['constant_exposed'],
+        'exposed_validate' => $form_state['values']['constant_validate'],
+      );
     }
+    elseif ($form_state['values']['field_type'] == 'foreign key') {
+      $field = array(
+        'type' => 'foreign key',
+        'title' => $form_state['values']['field_title'],
+        'field' => $form_state['values']['chado_field'],
+        'show_all_records' => $form_state['values']['show_all_records'],
+        'foreign key' => $form_state['values']['foreign_record'],
+        'foreign field' => $form_state['values']['foreign_field'],
+        'required' => $form_state['values']['required'],
+      );
+    }
+
+    // Deal with any additional options
+    if (isset($form_state['storage']['regex'])) {
+      $field['regex'] = $form_state['storage']['regex'];
+    }
+
+    // Save Template
+    $template[$priority]['fields'][] = $field;
+    $form_state['storage']['template']->template_array = serialize($template);
+    $success = drupal_write_record('tripal_bulk_loader_template', $form_state['storage']['template'], array('template_id'));
+
+    if ($success) {
+      drupal_set_message(t('Successfully Added Field to Template'));
+      drupal_set_message(t('Template Saved.'));
+
+      //$path = explode('?', $form_state['storage']['referring URL']);
+      //parse_str($path[1], $query);
+      //$query['template_id'] = $form_state['storage']['template']->template_id;
+      //drupal_goto($path[0], $query);
+      $form_state['rebuild'] = FALSE;
+      $form_state['redirect'] = 'admin/tripal/loaders/bulk/template/'.$form_state['storage']['template_id'].'/edit';
+    }
+    else {
+      drupal_set_message(t('Unable to Save Template!'), 'error');
+      watchdog('T_bulk_loader',
+        'Unable to save bulk loader template: %template',
+        array('%template' => print_r($form_state['storage']['template'], TRUE)),
+        WATCHDOG_ERROR
+      );
+    }
+  }
+  elseif ($op ==  'Cancel') {
+      //$path = explode('?', $form_state['storage']['referring URL']);
+      //parse_str($path[1], $query);
+      //$query['template_id'] = $form_state['storage']['template']->template_id;
+      //drupal_goto($path[0], $query);
+      $form_state['rebuild'] = FALSE;
+      $form_state['redirect'] = 'admin/tripal/loaders/bulk/template/'.$form_state['storage']['template_id'].'/edit';
+  }
+  elseif ($op == 'Add Transformation') {
+
+    // Add transformation rule to original field
+    $form_state['storage']['regex']['pattern'][] = '/' . $form_state['values']['pattern'] . '/';
+    $form_state['storage']['regex']['replace'][] = $form_state['values']['replace'];
+    drupal_set_message(t('Successfully Added Transformation Rule'));
+
+  }
+  elseif ($op == 'Save Transformation Rule Order') {
+
+    // Generate new regex array
+    $new_regex = array();
+    $old_regex = $form_state['storage']['regex'];
+    foreach ($form_state['values']['regex-data'] as $key => $element) {
+      $new_regex['pattern'][ $element['new_index'] ] = $old_regex['pattern'][ $element['old_index'] ];
+      $new_regex['replace'][ $element['new_index'] ] = $old_regex['replace'][ $element['old_index'] ];
+    }
+
+    // sort new regex arrays
+    ksort($new_regex['pattern']);
+    ksort($new_regex['replace']);
+
+    $form_state['storage']['regex'] = $new_regex;
+  }
+  elseif ($op == 'Delete Transformation') {
+
+    // Unset regex rule
+    $index = $form_state['clicked_button']['#name'];
+    unset($form_state['storage']['regex']['pattern'][$index]);
+    unset($form_state['storage']['regex']['replace'][$index]);
+
+  }
+  elseif ($op == 'Test Transformation Rules') {
+
+    $patterns = $form_state['storage']['regex']['pattern'];
+    $replaces = $form_state['storage']['regex']['replace'];
+    $test_string = $form_state['values']['test_string'];
+    $form_state['storage']['test_regex_result'] = preg_replace($patterns, $replaces, $test_string);
+    $form_state['storage']['test_regex_test'] = $test_string;
   }
 
 }
@@ -1764,8 +1994,7 @@ function tripal_bulk_loader_add_template_field_form_submit($form, &$form_state) 
  *
  * @ingroup tripal_bulk_loader
  */
-function tripal_bulk_loader_edit_template_field_form(&$form_state = NULL) {
-  $form = array();
+function tripal_bulk_loader_edit_template_field_form($form, $form_state = NULL) {
   $form['#cache'] = TRUE; // Make sure the form is cached.
 
   // get template id from path
@@ -1980,7 +2209,7 @@ function tripal_bulk_loader_edit_template_field_form(&$form_state = NULL) {
     '#required' => TRUE,
     '#default_value' => $field_type,
     '#ahah' => array(
-      'path' => 'admin/tripal/tripal_bulk_loader_template/edit_field_ahah',
+      'callback' => 'tripal_bulk_loader_edit_field_ahah',
       'wrapper' => 'tripal_bulk_loader_template-edit_field',
       'effect' => 'fade'
     ),
@@ -2003,7 +2232,7 @@ function tripal_bulk_loader_edit_template_field_form(&$form_state = NULL) {
     '#options' => $groups,
     '#default_value' => (preg_match('/(\d+|\w+)/', $form_state['values']['field_group'])) ? $form_state['values']['field_group'] : $priority,
     '#ahah' => array(
-      'path' => 'admin/tripal/tripal_bulk_loader_template/edit_field_ahah',
+      'callback' => 'tripal_bulk_loader_edit_field_ahah',
       'wrapper' => 'tripal_bulk_loader_template-edit_field',
       'effect' => 'fade'
     ),
@@ -2037,7 +2266,7 @@ function tripal_bulk_loader_edit_template_field_form(&$form_state = NULL) {
     '#options' => $tables,
     '#default_value' => $table,
     '#ahah' => array(
-      'path' => 'admin/tripal/tripal_bulk_loader_template/edit_field_ahah',
+      'callback' => 'tripal_bulk_loader_edit_field_ahah',
       'wrapper' => 'tripal_bulk_loader_template-edit_field',
       'effect' => 'fade'
       ),
@@ -2049,7 +2278,7 @@ function tripal_bulk_loader_edit_template_field_form(&$form_state = NULL) {
     '#options' => $chado_fields,
     '#default_value' => ($form_state['values']['chado_field']) ? $form_state['values']['chado_field'] : $template_field['field'],
     '#ahah' => array(
-      'path' => 'admin/tripal/tripal_bulk_loader_template/edit_field_ahah',
+      'callback' => 'tripal_bulk_loader_edit_field_ahah',
       'wrapper' => 'tripal_bulk_loader_template-edit_field',
       'effect' => 'fade'
     ),
@@ -2138,7 +2367,7 @@ function tripal_bulk_loader_edit_template_field_form(&$form_state = NULL) {
     '#description' => t('By default, the bulk loader will only allow referral to records in a foreign key relationship.  To allow referral to any previous record, check this box'),
     '#default_value' => $show_all,
     '#ahah' => array(
-      'path' => 'admin/tripal/tripal_bulk_loader_template/edit_field_ahah',
+      'callback' => 'tripal_bulk_loader_edit_field_ahah',
       'wrapper' => 'tripal_bulk_loader_template-add_field',
       'effect' => 'fade'
     ),
@@ -2150,7 +2379,7 @@ function tripal_bulk_loader_edit_template_field_form(&$form_state = NULL) {
     '#descripion' => 'Select the record that this value should refer to. The record needs to already exist.',
     '#options' => $fk_options,
     '#ahah' => array(
-      'path' => 'admin/tripal/tripal_bulk_loader_template/edit_field_ahah',
+      'callback' => 'tripal_bulk_loader_edit_field_ahah',
       'wrapper' => 'tripal_bulk_loader_template-add_field',
       'effect' => 'fade'
     ),
@@ -2564,6 +2793,99 @@ function tripal_bulk_loader_edit_template_field_form_submit($form, &$form_state)
 }
 
 /**
+ * Delete Field Form
+ *
+ * This form is meant to be called from a bulk loader form
+ *
+ * @param $form_state
+ *   Contains the values and storage for the form
+ * @return
+ *   A form array to be rendered by drupal_get_form
+ *
+ * @ingroup tripal_bulk_loader
+ */
+function tripal_bulk_loader_delete_template_field_form($form, $form_state) {
+  $form['#cache'] = TRUE; // Make sure the form is cached.
+
+  // get args from path
+  $template_id = (isset($form_state['build_info']['args'][0])) ? $form_state['build_info']['args'][0] : FALSE;
+  $form_state['storage']['template_id'] = $template_id;
+  $record_id = (isset($form_state['build_info']['args'][1])) ? $form_state['build_info']['args'][1] : FALSE;
+  $form_state['storage']['record_id'] = $record_id;
+  $field_id = (isset($form_state['build_info']['args'][2])) ? $form_state['build_info']['args'][2] : FALSE;
+  $form_state['storage']['field_id'] = $field_id;
+
+  // if there is no template supplied don't return rest of form
+  if (!$template_id) {
+    return $form;
+  }
+
+  $description = 'Are you sure you want to delete this field?';
+  $yes = 'Delete Field';
+  $no = 'Cancel';
+
+  $form['#attributes']['class'][] = 'confirmation';
+  $form['description'] = array('#markup' => $description);
+
+  $form['actions'] = array('#type' => 'actions');
+  $form['actions']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => $yes ? $yes : t('Confirm'),
+  );
+  $form['actions']['cancel'] = array(
+    '#type' => 'link',
+    '#title' => $no ? $no : t('Cancel'),
+    '#href' => 'admin/tripal/loaders/bulk/template/'.$template_id.'/edit',
+  );
+  // By default, render the form using theme_confirm_form().
+  if (!isset($form['#theme'])) {
+    $form['#theme'] = 'confirm_form';
+  }
+
+  return $form;
+}
+
+/**
+ * Delete Field Form
+ *
+ * This form is meant to be called from a bulk loader form
+ *
+ * D7 @todo: Needs to be debugged
+ *
+ * @param $form_state
+ *   Contains the values and storage for the form
+ * @return
+ *   A form array to be rendered by drupal_get_form
+ *
+ * @ingroup tripal_bulk_loader
+ */
+function tripal_bulk_loader_delete_template_field_form_submit($form, &$form_state) {
+  $form_state['rebuild']  = FALSE;
+  $form_state['redirect'] = 'admin/tripal/loaders/bulk/template/'.$form_state['storage']['template_id'].'/edit';
+
+  $sql = "SELECT * FROM {tripal_bulk_loader_template} WHERE template_id=:template";
+  $result = db_query($sql, array(':template' => $form_state['storage']['template_id']))->fetchObject();
+  $form_state['storage']['template'] = unserialize($result->template_array);
+
+  $new_template = tripal_bulk_loader_delete_field(
+    $form_state['storage']['record_id'],
+    $form_state['storage']['field_id'],
+    $form_state['storage']['template']
+  );
+	if (!empty($new_template)) {
+		$form_state['storage']['template'] = $new_template;
+	}
+  drupal_set_message(t('Deleted Field from Template.'));
+
+  $record = array(
+    'template_id' => $form_state['storage']['template_id'],
+    'template_array' => serialize($form_state['storage']['template'])
+  );
+  drupal_write_record('tripal_bulk_loader_template', $record, array('template_id'));
+  drupal_set_message(t('Template Saved.'));
+}
+
+/**
  * @section
  * AHAH Callbacks
  */
@@ -2576,33 +2898,8 @@ function tripal_bulk_loader_edit_template_field_form_submit($form, &$form_state)
  *
  * @ingroup tripal_bulk_loader
  */
-function tripal_bulk_loader_add_field_ahah() {
-
-  $form_state = array('storage' => NULL, 'submitted' => FALSE);
-  $form_build_id = filter_xss($_POST['form_build_id']);
-  $form = form_get_cache($form_build_id, $form_state);
-  $args = $form['#parameters'];
-  $form_id = array_shift($args);
-  $form_state['post'] = $form['#post'] = $_POST;
-
-  // Enable the submit/validate handlers to determine whether AHAH-submittted.
-  $form_state['ahah_submission'] = TRUE;
-
-  $form['#programmed'] = $form['#redirect'] = FALSE;
-  drupal_process_form($form_id, $form, $form_state);
-  $form = drupal_rebuild_form($form_id, $form_state, $args, $form_build_id);
-
-  $form_element = $form['add_fields'];
-  // Remove the wrapper so we don't double it up.
-  //unset($form_element['#prefix'], $form_element['#suffix']);
-
-  $output = theme('status_messages');
-  $output .= drupal_render($form_element);
-
-  // Final rendering callback.
-  print drupal_json(array('status' => TRUE, 'data' => $output));
-  exit();
-
+function tripal_bulk_loader_add_field_ahah($form, $form_state) {
+  return $form['add_fields'];
 }
 
 /**

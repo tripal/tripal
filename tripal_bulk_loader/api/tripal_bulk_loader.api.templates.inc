@@ -32,13 +32,7 @@ function tripal_bulk_loader_is_record_name_unique($new_record_name, $template_id
     $template = db_query("SELECT * FROM {tripal_bulk_loader_template} WHERE template_id=:template", array(':template' => $template_id))->fetchObject();
     $template_array = unserialize($template->template_array);
     if (!is_array($template_array)) {
-      watchdog(
-        'tripal_bulk_loader',
-        'Unable to retrieve template array from database where template_id=%template_id',
-        array('%template_id' => $template_id),
-        WATCHDOG_WARNING
-      );
-      return FALSE;
+      return TRUE;
     }
   }
 
