@@ -708,11 +708,17 @@ function tripal_bulk_loader_import_export_template_form_submit($form, &$form_sta
  *
  * @ingroup tripal_bulk_loader
  */
-function tripal_bulk_loader_edit_template_record_form(&$form_state = NULL) {
+function tripal_bulk_loader_edit_template_record_form($form, $form_state) {
   $form['#cache'] = TRUE; // Make sure the form is cached.
 
-   // get template id from path
-  $template_id = ($_GET['template_id'] !== NULL) ? $_GET['template_id'] : $form_state['values']['template_id'];
+  // get args from path
+  $template_id = (isset($form_state['build_info']['args'][0])) ? $form_state['build_info']['args'][0] : FALSE;
+  $form_state['storage']['template_id'] = $template_id;
+
+  $record_id = (isset($form_state['build_info']['args'][1])) ? $form_state['build_info']['args'][1] : FALSE;
+  $form_state['storage']['record_id'] = $record_id;
+  $form_state['values']['field_group'] = $record_id;
+  $form_state['storage']['original_priority'] = $record_id;
 
   // if there is no template supplied don't return rest of form
   if (!$template_id) {
@@ -722,7 +728,7 @@ function tripal_bulk_loader_edit_template_record_form(&$form_state = NULL) {
   // Pre-process values/defaults ---------------------------
 
   // If this is the first load of the form (no form state) we need to initialize some variables
-  if (!$form_state['storage']['template']) {
+  if (!isset($form_state['storage']['template'])) {
     $sql = "SELECT * FROM {tripal_bulk_loader_template} WHERE template_id=:template";
     $template = db_query($sql, array(':template' => $template_id))->fetchObject();
     $form_state['storage']['template_array'] = unserialize($template->template_array);
@@ -742,16 +748,9 @@ function tripal_bulk_loader_edit_template_record_form(&$form_state = NULL) {
     $template = $form_state['storage']['template'];
   }
 
-  // get the record_id from the path
-  if ($_GET['record_id'] !== NULL) {
-    $form_state['values']['field_group'] = $_GET['record_id'];
-    $form_state['storage']['original_priority'] = $_GET['record_id'];
-  }
-
-
   // Tables and default table
   $tables = tripal_core_get_chado_tables(TRUE);
-  if ($form_state['values']['chado_table']) {
+  if (isset($form_state['values']['chado_table'])) {
     $table = $form_state['values']['chado_table'];
   }
   else {
@@ -759,37 +758,62 @@ function tripal_bulk_loader_edit_template_record_form(&$form_state = NULL) {
   }
 
   // get the default mode
-  $mode = $form_state['storage']['template_array'][$form_state['storage']['original_priority']]['mode'];
-  if (!$mode) {
+  if (isset($form_state['storage']['original_priority'])) {
+    if (isset($form_state['storage']['template_array'][$form_state['storage']['original_priority']]['mode'])) {
+      $mode = $form_state['storage']['template_array'][$form_state['storage']['original_priority']]['mode'];
+    }
+    else {
+      $mode = 'insert';
+    }
+
+    // get default for the select optional
+    if (isset($form_state['storage']['template_array'][$form_state['storage']['original_priority']]['select_optional'])) {
+      $select_optional = $form_state['storage']['template_array'][$form_state['storage']['original_priority']]['select_optional'];
+    }
+    else {
+      $select_optional = 0;
+    }
+
+    // get default for the select if duplicate
+    if (isset($form_state['storage']['template_array'][$form_state['storage']['original_priority']]['select_if_duplicate'])) {
+      $select_if_duplicate = $form_state['storage']['template_array'][$form_state['storage']['original_priority']]['select_if_duplicate'];
+    }
+    else {
+      $select_if_duplicate = 1;
+    }
+
+    // get default for the update if duplicate
+    if (isset($form_state['storage']['template_array'][$form_state['storage']['original_priority']]['update_if_duplicate'])) {
+      $update_if_duplicate = $form_state['storage']['template_array'][$form_state['storage']['original_priority']]['update_if_duplicate'];
+    }
+    else {
+      $update_if_duplicate = 0;
+    }
+
+    // get default for the select if duplicate
+    if (isset($form_state['storage']['template_array'][$form_state['storage']['original_priority']]['optional'])) {
+      $optional = $form_state['storage']['template_array'][$form_state['storage']['original_priority']]['optional'];
+    }
+    else {
+      $optional = 0;
+    }
+
+    // get the default for disabling the record
+    if (isset($form_state['storage']['template_array'][$form_state['storage']['original_priority']]['disable'])) {
+      $disable = $form_state['storage']['template_array'][$form_state['storage']['original_priority']]['disable'];
+    }
+    else {
+      $disable = 0;
+    }
+  }
+  else {
      $mode = 'insert';
+     $select_optional = 0;
+     $select_if_duplicate = 1;
+     $update_if_duplicate = 0;
+     $optional = 0;
+     $disable = 0;
   }
-
-  // get default for the select optional
-  $select_optional = $form_state['storage']['template_array'][$form_state['storage']['original_priority']]['select_optional'];
-  if (!isset($select_optional)) {
-    $select_optional = 0;
-  }
-
-  // get default for the select if duplicate
-  $select_if_duplicate = $form_state['storage']['template_array'][$form_state['storage']['original_priority']]['select_if_duplicate'];
-  if (!isset($select_if_duplicate)) {
-    $select_if_duplicate = 1;
-  }
-
-  // get default for the update if duplicate
-  $update_if_duplicate = $form_state['storage']['template_array'][$form_state['storage']['original_priority']]['update_if_duplicate'];
-  if (!isset($update_if_duplicate)) {
-    $update_if_duplicate = 0;
-  }
-
-  // get default for the select if duplicate
-  $optional = $form_state['storage']['template_array'][$form_state['storage']['original_priority']]['optional'];
-  if (!isset($optional)) {
-    $optional = 0;
-  }
-
-  // get the default for disabling the record
-  $disable = $form_state['storage']['template_array'][$form_state['storage']['original_priority']]['disable'];
 
   // this is just for backwards compatibility. the insert_unique mode type is no longer available
   if (strcmp($mode, 'insert_unique')==0) {
@@ -809,7 +833,7 @@ function tripal_bulk_loader_edit_template_record_form(&$form_state = NULL) {
   $form['template_name'] = array(
     '#type' => 'item',
     '#title' => 'Template',
-    '#value' => $template->name,
+    '#markup' => $template->name,
   );
 
   $form['template_id'] = array(
@@ -818,7 +842,7 @@ function tripal_bulk_loader_edit_template_record_form(&$form_state = NULL) {
   );
 
   $form['edit_record'] = array(
-    '#type' => 'fieldset',
+    '#type' => 'markup',
   );
 
   // check template array for records then add one more
@@ -866,7 +890,7 @@ function tripal_bulk_loader_edit_template_record_form(&$form_state = NULL) {
 
   $form['edit_record']['select_options'] = array(
      '#type' => 'markup',
-     '#value' => t('Additional Select Options:'),
+     '#markup' => t('Additional Select Options:'),
   );
   $form['edit_record']['select_optional'] = array(
      '#type' => 'checkbox',
@@ -878,7 +902,7 @@ function tripal_bulk_loader_edit_template_record_form(&$form_state = NULL) {
   $form['edit_record']['insert_options'] = array(
      '#type' => 'markup',
      '#prefix' => '<br>',
-     '#value' => t('Additional Insert Options:'),
+     '#markup' => t('Additional Insert Options:'),
   );
 
   $form['edit_record']['select_if_duplicate'] = array(
@@ -958,76 +982,68 @@ function tripal_bulk_loader_edit_template_record_form_validate($form, $form_stat
  * @ingroup tripal_bulk_loader
  */
 function tripal_bulk_loader_edit_template_record_form_submit($form, &$form_state) {
-  //dpm($form_state, 'form state -start submit');
 
-  if (!$form_state['ahah_submission']) {
-    if ($form_state['values']['op'] ==  'Edit Record') {
+  if ($form_state['values']['op'] ==  'Edit Record') {
 
-      $template = $form_state['storage']['template_array'];
-      $original_record_name = $template[ $form_state['storage']['original_priority'] ]['record_id'];
+    $template = $form_state['storage']['template_array'];
+    $original_record_name = $template[ $form_state['storage']['original_priority'] ]['record_id'];
 
-      // Edit Record
-      $record = $template[ $form_state['storage']['original_priority'] ];
-      $record['record_id'] = $form_state['values']['record_name'];
-      $record['mode'] = $form_state['values']['mode'];
-      $record['table'] = $form_state['values']['chado_table'];
-      $record['select_if_duplicate'] = $form_state['values']['select_if_duplicate'];
-      $record['update_if_duplicate'] = $form_state['values']['update_if_duplicate'];
-      $record['select_optional'] = $form_state['values']['select_optional'];
-      $record['disable'] = $form_state['values']['disable'];
-      $record['optional'] = $form_state['values']['optional'];
+    // Edit Record
+    $record = $template[ $form_state['storage']['original_priority'] ];
+    $record['record_id'] = $form_state['values']['record_name'];
+    $record['mode'] = $form_state['values']['mode'];
+    $record['table'] = $form_state['values']['chado_table'];
+    $record['select_if_duplicate'] = $form_state['values']['select_if_duplicate'];
+    $record['update_if_duplicate'] = $form_state['values']['update_if_duplicate'];
+    $record['select_optional'] = $form_state['values']['select_optional'];
+    $record['disable'] = $form_state['values']['disable'];
+    $record['optional'] = $form_state['values']['optional'];
 
-      if ($form_state['storage']['original_priority'] != $form_state['values']['field_group']) {
-        $record['fields'] = array_merge($record['fields'], $template[ $form_state['values']['field_group'] ]['fields']);
-        $template[ $form_state['values']['field_group'] ] = $record;
-        unset($template[ $form_state['storage']['original_priority'] ]);
-      }
-      else {
-        $template[ $form_state['storage']['original_priority'] ] = $record;
-      }
+    if ($form_state['storage']['original_priority'] != $form_state['values']['field_group']) {
+      $record['fields'] = array_merge($record['fields'], $template[ $form_state['values']['field_group'] ]['fields']);
+      $template[ $form_state['values']['field_group'] ] = $record;
+      unset($template[ $form_state['storage']['original_priority'] ]);
+    }
+    else {
+      $template[ $form_state['storage']['original_priority'] ] = $record;
+    }
 
-      // Go through all records and update this record name where it was used for a foreign key
-      // Foreach field in each record that is of type: foreign key
-      foreach ($template as $priority => $record) {
-        foreach ($record['fields'] as $field_index => $field) {
-          if ($field['type'] === 'foreign key') {
-            // Check if this points to the old record name and if so, update it
-            if ($field['foreign key'] === $original_record_name) {
-              $template[$priority]['fields'][$field_index]['foreign key'] = $form_state['values']['record_name'];
-            }
+    // Go through all records and update this record name where it was used for a foreign key
+    // Foreach field in each record that is of type: foreign key
+    foreach ($template as $priority => $record) {
+      foreach ($record['fields'] as $field_index => $field) {
+        if ($field['type'] === 'foreign key') {
+          // Check if this points to the old record name and if so, update it
+          if ($field['foreign key'] === $original_record_name) {
+            $template[$priority]['fields'][$field_index]['foreign key'] = $form_state['values']['record_name'];
           }
         }
       }
-
-      // Save Template
-      $form_state['storage']['template']->template_array = serialize($template);
-      $success = drupal_write_record('tripal_bulk_loader_template', $form_state['storage']['template'], array('template_id'));
-
-      if ($success) {
-        drupal_set_message(t('Successfully Updated Template Record'));
-        drupal_set_message(t('Template Saved.'));
-
-        $path = explode('?', $form_state['storage']['referring URL']);
-        parse_str($path[1], $query);
-        $query['template_id'] = $form_state['storage']['template']->template_id;
-        drupal_goto($path[0], $query);
-      }
-      else {
-        drupal_set_message(t('Unable to Save Template!'), 'error');
-        watchdog('T_bulk_loader',
-          'Unable to save bulk loader template: %template',
-          array('%template' => print_r($form_state['storage']['template'], TRUE)),
-          WATCHDOG_ERROR
-        );
-      }
     }
-    elseif ($form_state['values']['op'] ==  'Cancel') {
-        $path = explode('?', $form_state['storage']['referring URL']);
-        parse_str($path[1], $query);
-        $query['template_id'] = $form_state['storage']['template']->template_id;
-        //dpm('Redirecting to: '.$path[0].'?'.print_r($query,TRUE).' where the referring URL:'.$form_state['storage']['referring URL']);
-        drupal_goto($path[0], $query);
+
+    // Save Template
+    $form_state['storage']['template']->template_array = serialize($template);
+    $success = drupal_write_record('tripal_bulk_loader_template', $form_state['storage']['template'], array('template_id'));
+
+    if ($success) {
+      drupal_set_message(t('Successfully Updated Template Record'));
+      drupal_set_message(t('Template Saved.'));
+
+      $form_state['rebuild'] = FALSE;
+      $form_state['redirect'] = 'admin/tripal/loaders/bulk/template/' . $form_state['storage']['template']->template_id . '/edit';
     }
+    else {
+      drupal_set_message(t('Unable to Save Template!'), 'error');
+      watchdog('T_bulk_loader',
+        'Unable to save bulk loader template: %template',
+        array('%template' => print_r($form_state['storage']['template'], TRUE)),
+        WATCHDOG_ERROR
+      );
+    }
+  }
+  elseif ($form_state['values']['op'] ==  'Cancel') {
+      $form_state['rebuild'] = FALSE;
+      $form_state['redirect'] = 'admin/tripal/loaders/bulk/template/' . $form_state['storage']['template']->template_id . '/edit';
   }
 
 }
