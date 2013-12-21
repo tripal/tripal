@@ -21,8 +21,6 @@ td.tbl-action-field-links {
 <div id="tripal-bulk-loader-fields">
 <?php print drupal_render($form['template_name']); ?>
 
-<?php ddl($form, 'form in tpl'); ?>
-
 <!-- For each table display details in a draggable table -->
 <?php if (!$form['records']['no_records']['#value']) { ?>
   <fieldset><legend><?php print $form['records']['#title']; ?></legend>
