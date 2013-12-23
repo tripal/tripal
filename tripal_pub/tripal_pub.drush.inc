@@ -78,7 +78,7 @@ function drush_tripal_pub_tripal_pubs_import() {
   }
 
   if ($dbxref) {
-    tripal_pub_import_by_dbxref($dbxref, $create_contacts);
+    tripal_pub_import_by_dbxref($dbxref, $create_contacts, $update);
   }
   else {
     tripal_pub_import_publications($do_report, $update);

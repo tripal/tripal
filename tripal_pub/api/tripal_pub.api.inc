@@ -103,7 +103,8 @@ function tripal_pub_get_raw_data($dbxref) {
   }
   return 'Invalid DB xref';
 }
-/*
+
+/**
  * @ingroup tripal_pub_api
  */
 function tripal_pub_update_publications($do_contact = FALSE, $dbxref = NULL, $db = NULL) {
@@ -170,8 +171,8 @@ function tripal_pub_update_publications($do_contact = FALSE, $dbxref = NULL, $db
           'scope' => 'id',
           'operation' => '',
           'is_phrase' => 0,
-    ),
-    ),
+        ),
+      ),
     );
     $pubs = tripal_pub_get_remote_search_results($remote_db, $search, 1, 0);
     tripal_pub_add_publications($pubs, $do_contact, TRUE);
@@ -324,8 +325,8 @@ function tripal_pub_import_by_dbxref($pub_dbxref, $do_contact = FALSE, $do_updat
           'scope' => 'id',
           'operation' => '',
           'is_phrase' => 0,
-    ),
-    ),
+        ),
+      ),
     );
     $remote_db = $criteria['remote_db'];
     $pubs = tripal_pub_get_remote_search_results($remote_db, $criteria, $num_to_retrieve, $pager_id, $page);
@@ -365,13 +366,23 @@ function tripal_pub_add_publications($pubs, $do_contact, $update = FALSE) {
   foreach ($pubs as $pub) {
     $memory = number_format(memory_get_usage()) . " bytes";
     print "Processing $i of $total_pubs. Memory usage: $memory.\r";
-     
+
     // add the publication to Chado
     $action = '';
-    $pub_id = tripal_pub_add_publication($pub, $action, $do_contact, $update);
-    if ($pub_id){
+    
+    // make sure the publication has a citation before trying to add. The citation
+    // becomes the uniquename for the pub.  If it doesn't exist then the importer
+    // couldn't create one because the pub type is not handled, so skip it
+    if(!$pub['Citation']) {
+      $action = 'skipped';
+    }
+    else {
+      $pub_id = tripal_pub_add_publication($pub, $action, $do_contact, $update);
+    }
+    
+    if ($pub_id){  
       // add the publication cross reference (e.g. to PubMed)
-      if ($pub_id and $pub['Publication Dbxref']) {
+      if ($pub['Publication Dbxref']) {
         $pub_dbxref = tripal_pub_add_pub_dbxref($pub_id, $pub['Publication Dbxref']);
       }
       $pub['pub_id'] = $pub_id;
@@ -1189,7 +1200,7 @@ function tripal_pub_create_citation($pub) {
     }
     if (!$pub_type) {
       watchdog('tripal_pub', "Cannot generate citation for publication type: %types", 
-        array('%types' => print_r($pub['Publication Type'], TRUE)), WATCHDOG_ERROR);
+        array('%types' => print_r($pub['Publication Type'], TRUE)), WATCHDOG_WARNING);
       return FALSE;
     }
   }
