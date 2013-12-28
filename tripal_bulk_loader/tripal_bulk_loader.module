@@ -120,7 +120,7 @@ function tripal_bulk_loader_menu() {
     'title' => 'Add Template Field',
     'description' => 'Add a template field to an existing tripal bulk loader template.',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_bulk_loader_add_template_field_form',5),
+    'page arguments' => array('tripal_bulk_loader_template_field_form','create_record',5,FALSE),
     'access arguments' => array('administer tripal_bulk_loader'),
     'type' => MENU_CALLBACK,
   );
@@ -154,7 +154,7 @@ function tripal_bulk_loader_menu() {
     'title' => 'Add Template Field',
     'description' => 'Add a template field to an existing tripal bulk loader template.',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_bulk_loader_add_template_field_form',5,7),
+    'page arguments' => array('tripal_bulk_loader_template_field_form','create',5,7),
     'access arguments' => array('administer tripal_bulk_loader'),
     'type' => MENU_CALLBACK,
   );
@@ -162,7 +162,7 @@ function tripal_bulk_loader_menu() {
     'title' => 'Edit Template Field',
     'description' => 'Edit an existing field from a tripal bulk loader template.',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_bulk_loader_edit_template_field_form',5,7,8),
+    'page arguments' => array('tripal_bulk_loader_template_field_form','edit',5,7,8),
     'access arguments' => array('administer tripal_bulk_loader'),
     'type' => MENU_CALLBACK,
   );
@@ -203,12 +203,6 @@ function tripal_bulk_loader_menu() {
     'access arguments' => array('administer tripal_bulk_loader'),
     'weight' => 4,
     'type' => MENU_NORMAL_ITEM,
-  );
-  // AHAH ---------
-  $items['admin/tripal/loaders/bulk/edit_field_ahah'] = array(
-    'page callback' => 'tripal_bulk_loader_edit_field_ahah',
-    'access arguments' => array('administer tripal_bulk_loader'),
-    'type' => MENU_CALLBACK,
   );
 
   return $items;
