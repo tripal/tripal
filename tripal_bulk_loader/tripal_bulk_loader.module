@@ -215,6 +215,21 @@ function tblid_to_arg($arg, $map, $index) {
 }
 
 /**
+ * Implements hook_views_api()
+ *
+ * Purpose: Essentially this hook tells drupal that there is views support for
+ *  for this module which then includes tripal_views.views.inc where all the
+ *  views integration code is
+ *
+ * @ingroup tripal_views
+ */
+function tripal_bulk_loader_views_api() {
+  return array(
+    'api' => 3.0,
+  );
+}
+
+/**
  * Implements hook_theme
  *
  * @ingroup tripal_bulk_loader
