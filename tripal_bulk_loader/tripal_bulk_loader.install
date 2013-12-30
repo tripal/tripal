@@ -25,7 +25,7 @@ function tripal_bulk_loader_schema() {
         'type' => 'varchar',
       ),
       'template_id' => array(
-        'type' => 'varchar',
+        'type' => 'int',
       ),
       'file' => array(
         'type' => 'varchar',
@@ -194,9 +194,27 @@ function tripal_bulk_loader_update_6152() {
 
   return 'Added ability to rollback loading job based on storing loaded ids.';
 }
+
+/**
+ * Update to 7.x-2.0
+ * -Cast tripal_bulk_loader.template_id to int field
+ */
+function tripal_bulk_loader_update_7200() {
+
+  db_change_field(
+    'tripal_bulk_loader',
+    'template_id',
+    'template_id',
+    array('type' => 'int')
+  );
+
+  return 'Updated tripal_bulk_loader.template_id from character to integer';
+
+}
+
 /**
  * Implementation of hook_requirements().
-  */
+ */
 function tripal_bulk_loader_requirements($phase) {
   $requirements = array();
   if ($phase == 'install') {
